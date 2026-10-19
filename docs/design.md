@@ -17,7 +17,7 @@ Product and game design for the multiplatform rewrite. Numbers marked *(tune)* a
              │                                   ▼
    buddy perks (type / ability)  ◄────  partner raised with candies, items, EV training
              ▲                                   ▲
-             └──────── finished tasks ───────────┘  (candies, items, EVs by task category)
+             └──────── finished tasks ───────────┘  (candies, items, EVs via training plan)
 ```
 
 Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy's perks feed back into both.
