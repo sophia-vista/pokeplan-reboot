@@ -26,6 +26,8 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 
 - Minimum session 5 minutes; Deep Focus (motion-based on phones) boosts egg odds by one band (see `Egg` in `:shared`).
 - **Strict mode, always on.** Leaving the app (backgrounding it on Android, losing window focus on desktop, hiding the tab on web) starts a **10 second grace period**. Returning in time keeps the session; otherwise the egg is lost and the streak is hit. No pause button.
+- **The focus timer is phone-only.** Desktop and web are companions (see Platforms).
+- **Locking the screen does not count as leaving.** The session continues with the screen off; unlocking and opening another app starts the grace period. Face-down on the desk is the intended way to focus.
 - **Phone calls pause the timer** (incoming or ongoing); it resumes when the call ends.
 - **One emergency pause per day**, up to 2 minutes, started by the player before leaving. Anything else that takes the player out of the app fails the egg after the grace period.
 - Sweet spot is built in: Super Rares per focus-hour peak at about 60 minutes.
@@ -167,7 +169,7 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 
 ## Screens and flows (proposal, to confirm)
 
-Navigation is five bottom tabs: **Home / Planner / Focus / Collection / Me**.
+Navigation is five bottom tabs on the phone: **Home / Planner / Focus / Collection / Me**. Desktop and web have no Focus tab (four sections).
 
 - **Home:** the animated buddy with mood and a speech bubble; tap to pet (friendship, small daily cap). Streak flame, today's top tasks (tap to complete), a "Start focus" button at the default length, small candy and coin counters.
 - **Planner:** list and calendar views (the list can show as a mission board), category filter, quick-add sheet (title, priority, due, then "more" for category, recurrence, subtasks, reminder). Completing a task opens a reward sheet with the 10 second undo.
@@ -188,7 +190,7 @@ Local-first: the app keeps a local database and syncs to Supabase, so widgets an
 
 ## Platforms
 
-Android (full, plus widgets), desktop and web (same game, no widgets). Focus enforcement is looser on desktop and web (window focus or tab visibility only).
+Android (full, plus widgets). Desktop and web are **companions**: planner, calendar, collection, Pokédex, bag, shop, party management, friends and leaderboards, but **no focus timer** (people work in other windows there, so strict focus can't apply). Eggs are hatched on the phone and appear everywhere via sync. No widgets on desktop or web.
 
 ## Backend (Supabase)
 
@@ -208,7 +210,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 1. **Shared core (done in #2):** eggs, candy, levels, evolution, Pokédex.
 2. **Species data pipeline:** generate species, base stats, abilities, forms, evolutions, regional dex lists and rarity (by rule) for Gen 1 to 9 from a public dataset, plus the sprite fetch step. The 150 become the Home Region; National Dex numbers.
 3. **Pokémon depth:** IVs, EVs, natures with stats, abilities, shiny, items, transfer yields, perk calculation. Unit tested in `:shared`.
-4. **UI shell:** desktop and web screens (needs `dl.google.com` allowed in the environment).
+4. **UI shell:** desktop and web companion screens (no focus timer; needs `dl.google.com` allowed in the environment).
 5. **Backend:** Supabase schema, RLS, reward functions, sync.
 6. **Android app and widgets** (needs the Android SDK).
 7. **Online:** friends and weekly leaderboards first, with weekly contests; then trading and co-op focus.
@@ -216,16 +218,29 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 
 ## Risks
 
-- **IP:** names, sprites and cries are Nintendo / Game Freak / The Pokémon Company property. Fine for private use; a public release or store listing would likely be taken down. Keep species swappable data and consider an original-creature skin.
+- **IP:** names, sprites and cries are Nintendo / Game Freak / The Pokémon Company property. **Distribution is private: the owner and friends** (sideloaded APK, desktop builds, an invite-only web app), which keeps exposure low. A public release or store listing would likely be taken down; species stay data so an original-creature skin remains possible.
 - **Strict focus** can frustrate users with legitimate interruptions. Calls exempt; revisit after use.
 - **Balance:** perks, items and transfer yields compound. Simulate a few months of play before fixing numbers.
 - **Launch scope:** all regions at launch means a large data set to generate and test, and every region needs its theme, music and badge. Region content is data, so the code does not grow with it, but QA does. If time runs short, the order to ship is Home, Kanto, Johto, then the rest.
 - **Scope:** stats, items, perks and widgets are a lot. Milestone 2 should stay behind a clean interface so the UI work can start in parallel.
 
+## Defaults (proposal, change if you disagree)
+
+- Streak day rolls over at 4am local time.
+- A recurring task pays at most once per day, and recurrence is never more frequent than daily.
+- Linking a guest to an account that already has data asks which to keep; no merging.
+- Completing a task from the widget uses the same 10 second hold; the app shows a notification with Undo.
+- Reminders are silenced during a focus session.
+- Settings include account deletion and a data export.
+- Cheating: server sanity checks only (plausible durations, one session at a time); friends-only leaderboards make stronger anti-cheat unnecessary.
+- Offline hatching uses server-issued "egg tickets" (random seeds spent by the client, verified later) so an egg still hatches without a connection.
+- Game rules run on the server by compiling the shared Kotlin module to JS; a spike confirms this before Milestone 5.
+
 ## Open questions
 
 Being settled in rounds before any Pokémon-depth code is written. Decided: everything above not marked *(tune)* or *(proposal)*.
 
-- **To confirm:** the Screens and flows proposal; the Home Region keeping hand-set rarities; Mega / G-Max region assignment.
+- **Legendaries and mythicals:** how they are obtained (see Roster).
+- **To confirm:** the Screens and flows proposal; the Defaults above; the Home Region keeping hand-set rarities; Mega / G-Max region assignment.
 - **To tune by simulation before release:** rarity rule parameters across ~1,025 species, coin amounts, transfer yields, perk magnitudes and cap, catch-up discount, minimum task age, Mega bonus, rank names and thresholds, region unlock order, E to S rank mapping.
 - **To check:** Showdown sprite terms and build-time availability, whether the build environment can reach the data sources, Android permission flow for calendar import.
