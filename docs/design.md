@@ -28,6 +28,7 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 - **Strict mode, always on.** Leaving the app (backgrounding it on Android, losing window focus on desktop, hiding the tab on web) starts a **10 second grace period**. Returning in time keeps the session; otherwise the egg is lost and the streak is hit. No pause button.
 - **The focus timer is phone-only.** Desktop and web are companions (see Platforms).
 - **Locking the screen does not count as leaving.** The session continues with the screen off; unlocking and opening another app starts the grace period. Face-down on the desk is the intended way to focus.
+- **A failed session costs only the egg** (plus the streak rules). The buddy's friendship is never reduced.
 - **Phone calls pause the timer** (incoming or ongoing); it resumes when the call ends.
 - **One emergency pause per day**, up to 2 minutes, started by the player before leaving. Anything else that takes the player out of the app fails the egg after the grace period.
 - Sweet spot is built in: Super Rares per focus-hour peak at about 60 minutes.
@@ -55,11 +56,11 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 
 ## Planner (v1)
 
-In scope for v1: tasks with difficulty rank, category, planned date, due date/time, estimated duration and reminders; **recurring tasks** (daily, weekly, monthly, custom); **subtasks**; an **own calendar view** (month and week, tasks by due date) that also feeds the agenda widget; and **read-only import of device calendar events** on Android (needs the calendar permission; shown on the calendar and agenda, never paid as tasks).
+In scope for v1: tasks with difficulty rank, category, planned date, due date/time, estimated duration and reminders; **recurring tasks** (daily, weekly, monthly, custom); **subtasks**; an **own calendar** (month, week, day and agenda views) with a **drag-and-drop day / week planner** (time-blocking), which also feeds the agenda widget; **user-created lists** (projects) alongside the six categories; and **read-only import of device calendar events** on Android (needs the calendar permission; shown on the calendar and agenda, never paid as tasks).
 
 ### Task model, Today and focus link
 
-- **Fields:** title, notes, difficulty rank, category, **planned date** (when you intend to do it), **due date/time** (the deadline), estimated duration (optional), recurrence, reminders, subtasks.
+- **Fields:** title, notes, difficulty rank, category, optional list, **planned date** (when you intend to do it), **due date/time** (the deadline), estimated duration (optional), recurrence, reminders, subtasks.
 - **Views:** **Inbox** (no planned or due date; quick captures land here), **Today** (planned today + due today + overdue), **Upcoming**, **Calendar**, **All**.
 - **Focus on this task:** a session can be started from a task. The minutes are logged on it, and it shows its total focused time. Finishing a task you focused on gives a small bonus *(tune: +10% candies)*. Egg odds are unchanged. Sessions can also be started without a task.
 
@@ -115,9 +116,15 @@ At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are
 | Ability Capsule | swap to the other ability | rare drop |
 | Bottle Cap | raise one IV to 31 *(tune)* | rare drop, Pokédex milestones |
 | Held items (e.g. Leftovers, Choice Band style) | one small buddy perk | drops, shop |
+| Tera Shard (one per type) | set a Pokémon's Tera type; its type perk then uses it | shop, rare drops |
 | Evolution stones | evolve stone species | drops |
+| Link Cord | trade-style evolutions without a trade | shop |
+| Ability Patch | switch to the hidden ability | shop (expensive), rare drop |
+| Berries | feed one for a Contest condition boost and a little friendship | drops from paid tasks |
+| Form items (Arceus plates, Silvally memories, Rotom appliances, Griseous Orb, DNA splicers, etc.) | change a species' form | shop, drops (generated from species data) |
+| Tera Shard (one per type) | set a Pokémon's Tera type; its type perk then uses it | shop, rare drops |
 
-**Sources (both):** common items drop at random from paid tasks (chance by rank) and come as streak, badge and Pokédex milestone rewards. Rare items (Nature Mint, Ability Capsule, Bottle Cap, stones) are bought in a shop with **coins** earned from play. **Coins** are earned from paid tasks (by priority), completed focus sessions (by minutes), and transferring duplicates, plus streak and badge bonuses. Amounts to be tuned. Nothing is sold for real money.
+**Sources (both):** common items drop at random from paid tasks (chance by rank) and come as streak, badge and Pokédex milestone rewards. Rare items (Nature Mint, Ability Capsule, Bottle Cap, stones) are bought in a shop with **coins** earned from play. **Coins** are earned from paid tasks (by rank), completed focus sessions (by minutes), and transferring duplicates, plus streak and badge bonuses. Amounts to be tuned. Nothing is sold for real money.
 
 ### Duplicates → candy
 
@@ -254,6 +261,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 - **Strict focus** can frustrate users with legitimate interruptions. Calls exempt; revisit after use.
 - **Balance:** perks, items and transfer yields compound. Simulate a few months of play before fixing numbers.
 - **Launch scope:** all regions at launch means a large data set to generate and test, and every region needs its theme, music and badge. Region content is data, so the code does not grow with it, but QA does. If time runs short, the order to ship is Home, Kanto, Johto, then the rest.
+- **Planner scope:** a full drag-and-drop day / week planner, lists, recurrence with edit-this-or-all, and device calendar import make the planner a product on its own. It is the part users judge the app by, so it needs its own testing (recurrence and time zones especially).
 - **Scope:** stats, items, perks and widgets are a lot. Milestone 2 should stay behind a clean interface so the UI work can start in parallel.
 
 ## Defaults (proposal, change if you disagree)
@@ -268,11 +276,33 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 - Offline hatching uses server-issued "egg tickets" (random seeds spent by the client, verified later) so an egg still hatches without a connection.
 - Game rules run on the server by compiling the shared Kotlin module to JS; a spike confirms this before Milestone 5.
 
-## Gaps to define (found in review)
+### Planner defaults
 
-Planner and calendar: full recurrence rules (weekday, monthly, after completion, end, skip, edit this or all); multiple and relative reminders with snooze and quiet hours; day and agenda views and time-blocking depth; which device calendars to import; widget privacy for events; search, filters, projects or tags; natural-language quick-add and share-sheet capture; cancelled state; week start and locale; per-habit streaks; time zones and daylight saving.
+- **Time zones:** planned and due times are local wall-clock times. Changing time zone keeps the wall-clock time; recurring tasks keep it across daylight saving. Imported events keep their own zone.
+- **Recurrence:** every N days / weeks / months / years; chosen weekdays; monthly on a date, on the nth weekday or on the last day; on a **fixed schedule** or **N days after completion**; ends never, on a date, or after N times; skip one occurrence; edits ask "this one / this and following / all". Never more often than daily. Instances are generated 14 days ahead. A recurring task shows its own streak and completion history (no extra reward beyond the global streak).
+- **Reminders:** up to 3 per task, absolute or relative (at the time, 10 minutes, 1 hour or 1 day before); snooze (10 minutes, 1 hour, tomorrow); quiet hours default 22:00 to 07:00; silenced during focus; web push on the web; every signed-in device notifies, and dismissing on one clears the others when synced.
+- **Calendar:** all-day items sit above the timeline. Dragging a task from an unscheduled tray onto the day or week timeline sets its planned date and time; resizing sets the estimated duration; 15 minute snap; touch (long press) and mouse. Device calendars: the player picks which to show; events are read-only, recurring events expanded, never paid; private events show as "Busy" on widgets.
+- **Lists:** optional, user-created (name, colour, icon). A task has at most one list and one category. Archiving a list hides it. Lists carry no reward.
+- **Search and filters:** text search over title and notes; filters by category, list, rank, status and date range.
+- **Quick-add:** one natural-language parser shared by every platform, e.g. `Call mum tomorrow 5pm #Social !B` (`#` category or list, `!` rank). Also available from the widget and the share sheet.
+- **Task states:** open, done, **won't do** (no reward, hidden from stats), deleted (recoverable for 30 days). A reward is tied to one completion event; reopening and re-completing a task never pays twice.
+- **Locale:** week start and 12 / 24 hour follow the system, with an override. English only for v1.
 
-Pokémon: contest condition stats, scoring and berries; gender; friendship rules; item-based form changes; ability perk coverage policy (curated table of about 40, the rest fall back to the type perk); endgame candy sinks; Tera Shards to change the buddy's perk type; Pokédex text source; hidden-ability route; seen versus caught; PC box limits.
+### Pokémon defaults
+
+- **Gender:** stored per Pokémon, rolled at hatch from the species' ratio (genderless supported). Affects gendered forms and sprites and gender-dependent evolutions only.
+- **Friendship:** 0 to 255, starts at 70. Raised by petting (+2, up to +10 a day), a focus session with that buddy (+3), a paid task finished with that buddy as buddy (+1, up to +10 a day), a berry (+1) and each level gained (+1). Never lowered, no decay. Effects: perk strength scales from ×1.0 at 0 to ×1.2 at 255, friendship evolutions at 220, and the buddy's mood.
+- **Contests (come with the online release):** five condition stats (Cool, Beautiful, Cute, Smart, Tough), 0 to 255 each, built from the species' base stats, training and nature, then raised by feeding berries (a berry liked by the nature gives double, a disliked one half; up to 5 a day). Each week one condition is judged; friends' buddies are ranked by it, plus ribbon bonuses. Prizes are coins and ribbons. Numbers *(tune)*.
+- **Abilities and perks:** about 40 curated abilities have a perk; every other ability falls back to the type perk only.
+- **Endgame:** a level 100 Pokémon takes no more candies. Candies still level other Pokémon. Coin sinks: Tera Shards, Mega Stones, form items, Secret Base decor. Candy holdings cap at 9,999; excess converts to coins at 1:1 *(tune)*. Contests, ribbons and a hall of fame give maxed Pokémon a purpose.
+- **Pokédex text:** the latest English entry from the public dataset. **Seen** = appeared on a friend's profile or in a quest; **caught** = ever owned; otherwise a silhouette.
+- **PC and bag:** unlimited PC boxes of 30; bag stacks to 999.
+
+### Platform and operations defaults
+
+- Friends are added with a friend code or invite link; players can block; profiles show the buddy, party, trainer card and aggregate stats only, never task content.
+- No third-party analytics. Crash reports only, opt-in.
+- Tasks are private to the owner (row-level security); leaderboards expose aggregate numbers only.
 
 ## Open questions
 
