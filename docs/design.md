@@ -35,7 +35,18 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 - **Minimum task age:** a task only pays when it has existed for at least *(tune: 15 minutes)* before being completed. Younger tasks complete without a reward. There is no daily cap, so many real tasks always pay.
 - On-time bonus: finishing before the due date adds a bonus *(tune)*.
 - Subtasks pay a small fixed amount each *(tune)*. Watch that splitting a task into many tiny subtasks does not become the new exploit; the minimum age applies to subtasks too.
-- **Categories train stats** (see EVs): Health → HP, Work → Attack, Chores → Defense, School → Sp. Atk, Hobby → Sp. Def, Social → Speed. Leisure and Others: the player picks.
+- **Categories** are for organising only and never change rewards. Six, replacing the old eight (School, Work, Hobby, Leisure, Chores, Health, Social, Others, where Hobby/Leisure overlapped and Others was a dumping ground):
+
+| Category | Covers |
+|---|---|
+| Work | job, projects, admin |
+| School | classes, homework, exams |
+| Home | chores, errands, bills |
+| Health | exercise, sleep, appointments |
+| Social | friends, family, events |
+| Personal | hobbies, leisure, anything else (the default) |
+
+  Each has a colour used on the calendar and widgets. A weekly recap shows how the week split across categories.
 
 ## Pokémon
 
@@ -44,12 +55,22 @@ Each owned Pokémon has: species, level 1 to 100, nature, ability, 6 IVs, 6 EVs,
 - **Stats** use the Gen 3+ formula:
   - HP = ⌊(2·Base + IV + ⌊EV/4⌋) · Level / 100⌋ + Level + 10
   - Other = ⌊(⌊(2·Base + IV + ⌊EV/4⌋) · Level / 100⌋ + 5) · Nature⌋, with nature ×1.1 / ×0.9
-  - IV 0 to 31 rolled at hatch. EV 0 to 252 per stat, 510 total, gained from finished tasks by category.
+  - IV 0 to 31 rolled at hatch. EV 0 to 252 per stat, 510 total, gained from finished tasks through the Pokémon's training plan (below).
 - **Natures:** the existing 25. Each raises one stat and lowers another (five are neutral).
 - **Abilities:** each species has one or two; one is rolled at hatch. Abilities give buddy perks (below).
 - **Shiny:** rolled at hatch, base chance *(tune: about 1 in 512)*, with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation.
 - **Levelling:** 10 Rare Candies per level (as now). A Pokémon more than 5 levels below your partner needs half the candies *(tune)*, so new hatches catch up without outshining the partner.
 - **Evolution:** Super Candy at the species' evolution level (as now). Evolution stones for the species that use them.
+
+### Training plan
+
+Stat training is the player's choice, not tied to task type. Each Pokémon has a **training plan**: up to 2 focus stats, changeable at any time. When a task pays out:
+
+- The buddy gains EVs in its focus stats, split evenly. Amount = the task's priority *(tune)*, so a priority 5 task gives 5 EVs.
+- The rest of the party gains half *(tune)*, so a raised team is possible.
+- No plan set: no EVs. The same minimum task age applies, so there is nothing to farm.
+
+At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are the shortcut.
 
 ### Items (so a mid partner is not overshadowed)
 
@@ -86,7 +107,7 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 | Shiny hunter | Electric, Ice | small shiny chance bonus |
 | Streak keeper | Water, Fire, Poison | one missed day forgiven per week |
 
-- **Ability perk:** one extra, from the buddy's ability. Real abilities as flavour, data driven. Examples: Pickup (extra item chance), Early Bird (bonus for the first task before 9am), Technician (bonus for 5 to 20 minute sessions), Magic Guard (a failed session spares the streak once a week), Guts (bonus on priority 5 tasks), Synchronize (+EV on the task's stat).
+- **Ability perk:** one extra, from the buddy's ability. Real abilities as flavour, data driven. Examples: Pickup (extra item chance), Early Bird (bonus for the first task before 9am), Technician (bonus for 5 to 20 minute sessions), Magic Guard (a failed session spares the streak once a week), Guts (bonus on priority 5 tasks), Synchronize (+25% EV gain in the buddy's focus stats).
 - **Stats matter:** perk strength scales with the relevant stat (e.g. Attack for candy yield) and nature, so raising and training a partner pays.
 - **Caps:** total bonus from perks and held item stays below +25% *(tune)* so no single buddy breaks the economy.
 
