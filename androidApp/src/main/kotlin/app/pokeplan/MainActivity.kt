@@ -3,22 +3,20 @@ package app.pokeplan
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import app.pokeplan.app.Storage
 import app.pokeplan.ui.App
-import java.io.File
-
-/** The save is one JSON file in the app's private storage. */
-private class FileStorage(private val file: File) : Storage {
-    override fun load(): String? = if (file.exists()) file.readText() else null
-    override fun save(text: String) {
-        file.writeText(text)
-    }
-}
+import app.pokeplan.ui.Tab
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val storage = FileStorage(File(filesDir, "save.json"))
-        setContent { App(storage, focusTab = true) }
+        val storage = saveStorage(this)
+        val motion = AccelerometerMotion(this)
+        // A widget can open the app on a tab ("FOCUS" for the Start focus widget).
+        val tab = intent?.getStringExtra(EXTRA_TAB)?.let { name -> Tab.entries.firstOrNull { it.name == name } } ?: Tab.HOME
+        setContent { App(storage, focusTab = true, motion = motion, startTab = tab) }
+    }
+
+    companion object {
+        const val EXTRA_TAB = "app.pokeplan.TAB"
     }
 }
