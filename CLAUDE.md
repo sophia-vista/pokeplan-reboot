@@ -7,10 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Native Android productivity app that gamifies tasks and focus time with Pokémon: finishing a focus timer hatches an Egg, finishing a task earns Rare Candies (level up) and Super Candies (evolve). Originally a MOBDEVE pair project; this repo is a private personal copy continued by one maintainer, starting from a single "Initial commit" with no inherited history. `README.md` describes the user-facing features (Focus Timer, Task Planner, Pokedex, Pokemon Party).
 
 ## Layout
-The Android project is in `pokeplan/` (not the repo root). Run all Gradle commands from there. Single module `app`, package `com.mobdeve.s11.pokeplan`, Java 8, `minSdk 21` / `targetSdk 30`, view binding on, Android Gradle Plugin 7.0.2 with Gradle 7.0.2 (old: build with JDK 11, not 17 or newer).
+The original Android app is in `legacy-android/` (not the repo root; the root is reserved for the multiplatform rewrite, backend Supabase). Run all Gradle commands for it from there. Single module `app`, package `com.mobdeve.s11.pokeplan`, Java 8, `minSdk 21` / `targetSdk 30`, view binding on, Android Gradle Plugin 7.0.2 with Gradle 7.0.2 (old: build with JDK 11, not 17 or newer).
 
 ## Commands
-Run from `pokeplan/`:
+Run from `legacy-android/`:
 - Build debug APK: `./gradlew assembleDebug`
 - Install on a device or emulator: `./gradlew installDebug`
 - Unit tests (JVM): `./gradlew testDebugUnitTest`; one test: `./gradlew testDebugUnitTest --tests "com.mobdeve.s11.pokeplan.ExampleUnitTest"`
@@ -21,7 +21,7 @@ The only tests are the Android Studio templates (`ExampleUnitTest`, `ExampleInst
 
 ## Firebase (read before running)
 The app cannot run without Firebase: Auth (email and password), Realtime Database, plus Firestore, Storage and Analytics in the dependencies.
-- `pokeplan/app/google-services.json` is committed and belongs to the original Firebase project `pokeplan-8930c`, which is not this repo's own.
+- `legacy-android/app/google-services.json` is committed and belongs to the original Firebase project `pokeplan-8930c`, which is not this repo's own.
 - `DatabaseHelper.initLoggedInDB()` hardcodes that project's Realtime Database URL (`https://pokeplan-8930c-default-rtdb.asia-southeast1.firebasedatabase.app/`). For a reboot on a separate backend, create a new Firebase project, replace `google-services.json`, and change this URL; otherwise the app reads and writes the original project's data.
 - Realtime Database layout: top-level nodes `Users/{uid}`, `UserPokemon/{uid}`, `Tasks/{uid}`.
 - The login email and password are also stored in plain-text default `SharedPreferences` (`Keys.KEY_EMAIL`, `KEY_PASSWORD`) so `InitActivity` can sign the user in again on launch. Worth replacing if this ever leaves personal use.
@@ -57,4 +57,4 @@ Adapted from the Balai Yllana website repo's workflow.
   - Areas: `auth` (login, register, starter pick), `home`, `focus` (timer, eggs, Deep Focus), `tasks` (planner, reminders, candy rewards), `pokedex`, `party` (party, PC, levelling, evolution), `settings` (settings and profile), `data` (`DatabaseHelper`, Firebase, models), `ui` (shared widgets and navigation), `build` (Gradle, Firebase config, CI), `repo` (everything else). A change that touches several areas but serves one takes that area; otherwise `ui` or `repo`.
   - Examples: `fix/focus-deep-focus-threshold`, `content/pokedex-gen-three`, `feat/tasks-recurring-reminders`, `chore/build-upgrade-agp`.
 - **Claude sessions** follow the same convention. A cloud session is handed an automatic branch name (`ccr-…`, `claude/…`); ignore it and create a correctly named branch from the latest `main` instead. Never push to `main`.
-- **After the changes, open a PR** into `main`: bring in the latest `main` first, run `./gradlew testDebugUnitTest assembleDebug` from `pokeplan/` (and `lint` for UI or manifest changes), and read the diff once more. Title: `<type>(<area>): <what changed>`, sentence case, no final period, e.g. `fix(focus): Reset the timer when the screen turns off`. Claude stops there; the owner reviews and merges on GitHub, then deletes the branch.
+- **After the changes, open a PR** into `main`: bring in the latest `main` first, run `./gradlew testDebugUnitTest assembleDebug` from `legacy-android/` (and `lint` for UI or manifest changes), and read the diff once more. Title: `<type>(<area>): <what changed>`, sentence case, no final period, e.g. `fix(focus): Reset the timer when the screen turns off`. Claude stops there; the owner reviews and merges on GitHub, then deletes the branch.
