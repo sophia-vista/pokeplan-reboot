@@ -8,6 +8,7 @@ Product and game design for the multiplatform rewrite. Numbers marked *(tune)* a
 2. **More tasks, more productive.** The economy rewards finishing many real tasks, not gaming one big one.
 3. **Your partner matters.** A well-raised older Pokémon stays worth using; new hatches never make it obsolete.
 4. **Nostalgic pixel.** Gen 3 to 5 look and feel (GBA/DS era), cute and readable.
+5. **Gentle by design.** It should quietly help people with ADHD without ever saying so: low friction to start and capture, instant rewards, no shame (see ADHD-friendly design). Strictness applies to distractions, never to the person.
 
 ## Core loop
 
@@ -30,13 +31,14 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 - **Locking the screen does not count as leaving.** The session continues with the screen off; unlocking and opening another app starts the grace period. Face-down on the desk is the intended way to focus.
 - **A failed session costs only the egg** (plus the streak rules). The buddy's friendship is never reduced.
 - **Phone calls pause the timer** (incoming or ongoing); it resumes when the call ends.
-- **One emergency pause per day**, up to 2 minutes, started by the player before leaving. Anything else that takes the player out of the app fails the egg after the grace period.
+- **Two emergency pauses per day**, up to 3 minutes each, started by the player before leaving. Anything else that takes the player out of the app fails the egg after the grace period.
+- **No-blame recovery:** a failed session shows a neutral screen ("That egg went cold. Try again?") with a one-tap 5 minute retry. No red, no scolding.
 - Sweet spot is built in: Super Rares per focus-hour peak at about 60 minutes.
 
 ## Tasks
 
 - **Difficulty rank E, D, C, B, A** replaces the old priority 1 to 5 (E = old 1 … A = old 5). The player picks how hard a task is; **higher rank pays more, A the most**. Urgency comes from the due date, not the rank. Default rank is C. **S rank is not selectable**: it is reserved for special missions (legendary quest steps, weekly challenges). Reward tables are already ported (`CandyRewards`, indexed 1 to 5).
-- **Minimum task age:** a one-off task only pays when it has existed for at least *(tune: 15 minutes)* before being completed, counted from creation. Younger tasks complete without a reward. There is no daily cap, so many real tasks always pay.
+- **Minimum task age** scales with the difficulty rank *(tune)*: **E 2 minutes, D 5, C 10, B 15, A 20**, counted from creation. A one-off task only pays after that, so tiny tasks done right away still pay, but big ones cannot be created and instantly ticked. Younger tasks complete without a reward. There is no daily cap, so many real tasks always pay.
 - **Recurring tasks are exempt:** their instances are created ahead of time by the schedule, so they pay when their day comes.
 - On-time bonus: finishing before the due date adds a bonus *(tune)*. **Overdue tasks pay the normal reward**, just without the bonus, so old tasks get finished rather than abandoned.
 - **Subtasks** pay a flat 1 Rare Candy each *(tune)*, for up to 5 subtasks per task. The parent pays in full when it is finished. The minimum age applies to subtasks too.
@@ -53,6 +55,29 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 | Personal | hobbies, leisure, anything else (the default) |
 
   Each has a colour used on the calendar and widgets. A weekly recap shows how the week split across categories.
+
+## ADHD-friendly design (lowkey)
+
+The app never mentions ADHD; it just removes friction and shame.
+
+- **Low friction to start:** one-tap capture into the Inbox (widget, share sheet, quick-add), a **"Just 5 minutes"** button on any task that starts a minimum-length focus session on it, short sessions always welcome.
+- **Pick for me:** a button on Today that picks a random task from the list (a small bonus for taking it *(tune)*), for when choosing is the hard part.
+- **Time awareness:** after finishing a task you focused on, show **estimate vs actual** time, so over time guesses calibrate.
+- **Gradual reveal:** day one is tasks, focus and the buddy only. Other systems appear as the trainer rank rises *(proposal, tune)*:
+
+| Rank step | Appears |
+|---|---|
+| Start | tasks, planner, focus, buddy, Rare Candy, eggs |
+| 1 | Super Candy and evolution, Pokédex |
+| 2 | items, bag, shop, coins |
+| 3 | training plans, natures and stats detail, IV judge, Tera |
+| 4 | other regions, legendary quests |
+| 5 | contests, perfect dex, Hall of Fame |
+
+- **No shame:** warm, neutral copy; overdue is shown calmly (no red alarm styling); streaks forgive (see Retention); failing a focus session is recoverable in one tap.
+- **Few choices:** every form has sensible defaults (rank C, category Personal, 25 minute session) so the first screen asks for as little as possible.
+- **Reminders that persist gently:** up to 3 repeats until acknowledged, then stop.
+- **Considered, not included for now:** routines (recurring checklists with timers) and a one-tap "reschedule all overdue". Both can be added later.
 
 ## Planner (v1)
 
@@ -202,15 +227,15 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 | Super Candy chance | Psychic, Dragon, Ghost | higher chance of Super Candy |
 | Item finder | Grass, Bug, Dark | chance of an item drop per task |
 | Shiny hunter | Electric, Ice | small shiny chance bonus |
-| Streak keeper | Water, Fire, Poison | one missed day forgiven per week |
+| Streak keeper | Water, Fire, Poison | a second missed day forgiven per week (on top of the free one) |
 
-- **Ability perk:** one extra, from the buddy's ability. Real abilities as flavour, data driven. Examples: Pickup (extra item chance), Early Bird (bonus for the first task before 9am), Technician (bonus for 5 to 20 minute sessions), Magic Guard (a failed session spares the streak once a week), Guts (bonus on A-rank tasks), Synchronize (+25% EV gain in the buddy's focus stats).
+- **Ability perk:** one extra, from the buddy's ability. Real abilities as flavour, data driven. Examples: Pickup (extra item chance), Early Bird (bonus for the first task before 9am), Technician (bonus for 5 to 20 minute sessions), Magic Guard (one failed session a week keeps its egg), Guts (bonus on A-rank tasks), Synchronize (+25% EV gain in the buddy's focus stats).
 - **Stats matter:** perk strength scales with the relevant stat (e.g. Attack for candy yield) and nature, so raising and training a partner pays.
 - **Caps:** total bonus from perks and held item stays below +25% *(tune)* so no single buddy breaks the economy.
 
 ## Retention
 
-- Daily streak: kept alive by one paid task **or** one completed focus session that day, weekly goals, and a Pokédex with seen/caught, region completion rewards and a trainer card.
+- **Forgiving daily streak:** kept alive by one paid task **or** one completed focus session that day. **Everyone gets one free missed day per week** that does not break it, and Home shows "active days this week" as a ring. Weekly goals, and a Pokédex with seen/caught, region completion rewards and a trainer card.
 - Badges for milestones (tasks finished, focus hours), shown as gym badges.
 - **First online release:** friends and profiles (view a friend's buddy, party and trainer card) and **weekly friends-only leaderboards** (focus minutes, tasks finished, resetting weekly). Trading and co-op focus come later.
 - **Daily gifts:** send each friend one berry or small item a day; they open it as a gift. No cheers, comments or activity feed.
@@ -226,13 +251,13 @@ Beyond task reminders: a **streak-at-risk reminder** in the evening if nothing h
 - Crisp scaling: nearest-neighbour, integer scale, no blur.
 - Fonts: pixel font for headings only; body text stays a readable font.
 - Sound: cries, short jingles; a mute toggle.
-- Accessibility: content descriptions on all images, text scaling, colour-blind safe type chips.
+- Accessibility: content descriptions on all images, text scaling, colour-blind safe type chips, a reduce-motion option, a dyslexia-friendly font option, and every ceremony skippable.
 
 ## Screens and flows (proposal, to confirm)
 
 Navigation is five bottom tabs on the phone: **Home / Planner / Focus / Collection / Me**. Desktop and web have no Focus tab (four sections).
 
-- **Home:** a small pixel scene where the buddy wanders, idles and reacts to events, with a speech bubble. Tap the sprite to pet it (friendship, small daily cap); a berry button feeds it. There is no separate close-up screen. Streak flame, today's top tasks (tap to complete), a "Start focus" button at the default length, small candy and coin counters.
+- **Home:** a small pixel scene where the buddy wanders, idles and reacts to events, with a speech bubble. Tap the sprite to pet it (friendship, small daily cap); a berry button feeds it. There is no separate close-up screen. Streak ring (active days this week), today's top tasks (tap to complete) and a "Pick for me" button, a "Start focus" button at the default length, small candy and coin counters.
 - **Planner:** Inbox, Today, Upcoming, All and Calendar views (lists can show as a mission board; the calendar has drag-and-drop planning), category and list filters, search, quick-add sheet (title, difficulty, due, then "more" for category, recurrence, subtasks, reminder). Completing a task opens a reward sheet with the 10 second undo.
 - **Focus:** optional task to focus on, region picker, presets (15 / 25 / 45 / 60) plus custom, Deep Focus toggle, a short reminder of the strict rules, the egg during the session, the emergency pause button. On finish: hatch ceremony, then a summary card with actions (set as buddy, keep, transfer).
 - **Collection:** Party (6), PC boxes (30 each), Pokédex (National Dex, seen / caught, forms tab, cosmetic-forms collection), Bag. The Pokémon detail screen shows stats, nature, ability, an IV "judge" (qualitative, like the games), training plan, held item, and actions: feed Rare Candy, evolve, transfer, nickname, set as buddy.
