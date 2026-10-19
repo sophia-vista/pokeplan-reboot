@@ -76,29 +76,90 @@ object WidgetArt {
         addRoundRect(RectF(0f, 0f, width, height), floatArrayOf(radius, radius, radius, radius, bottom, bottom, bottom, bottom), Path.Direction.CW)
     }
 
-    /**
-     * The buddy standing on a soft shadow, drawn on a transparent square. When [petted] it hops a little and hearts rise
-     * above it, so a tap on the widget visibly answers.
-     */
-    fun buddyStage(context: Context, formId: Int, shiny: Boolean, petted: Boolean): Bitmap? =
-        remember("buddy:$formId:$shiny:$petted") {
-            val sprite = asset(context, "sprites/${if (shiny) "$formId-shiny" else "$formId"}.png") ?: return@remember null
-            val size = 360
-            val scale = 3
-            val scaled = Bitmap.createScaledBitmap(sprite, sprite.width * scale, sprite.height * scale, false)
-            val out = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    /** A real scene (assets/scenes) filling [width] x [height] like a photo, bottom-anchored, rounded, dimmed at night. */
+    fun scene(context: Context, name: String, night: Boolean, width: Int, height: Int, radius: Float): Bitmap? =
+        remember("scene:$name:$night:$width:$height:$radius") {
+            val source = asset(context, "scenes/$name.png") ?: return@remember null
+            val scale = maxOf(width.toFloat() / source.width, height.toFloat() / source.height)
+            val srcW = (width / scale).toInt().coerceAtMost(source.width)
+            val srcH = (height / scale).toInt().coerceAtMost(source.height)
+            val out = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(out)
-            val shadow = Paint().apply { color = Color.argb(60, 0, 0, 0); isAntiAlias = true }
-            canvas.drawOval(RectF(size * 0.22f, size - 62f, size * 0.78f, size - 26f), shadow)
-            val lift = if (petted) 22f else 0f
-            canvas.drawBitmap(scaled, (size - scaled.width) / 2f, size - scaled.height - 36f - lift, Paint().apply { isFilterBitmap = false })
-            if (petted) {
-                heart(canvas, size * 0.22f, 52f, 34f)
-                heart(canvas, size * 0.46f, 6f, 40f)
-                heart(canvas, size * 0.70f, 40f, 30f)
-            }
+            canvas.clipPath(roundedPath(width.toFloat(), height.toFloat(), radius, true))
+            canvas.drawBitmap(
+                source, android.graphics.Rect((source.width - srcW) / 2, source.height - srcH, (source.width - srcW) / 2 + srcW, source.height),
+                RectF(0f, 0f, width.toFloat(), height.toFloat()), Paint().apply { isFilterBitmap = true },
+            )
+            if (night) canvas.drawColor(Color.argb(0x99, 0x10, 0x1C, 0x3C))
             out
         }
+
+    /** What a still picture of the buddy shows around it. */
+    enum class Effect { NONE, HEARTS, SPARKLES }
+
+    private const val CANVAS = 192
+
+    /** One square picture of the buddy standing on a soft shadow, bottom-centred; [sprite] is enlarged by [scale] without smoothing. */
+    private fun standing(sprite: Bitmap, scale: Int, effect: Effect): Bitmap {
+        val scaled = Bitmap.createScaledBitmap(sprite, sprite.width * scale, sprite.height * scale, false)
+        val out = Bitmap.createBitmap(CANVAS, CANVAS, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(out)
+        canvas.drawOval(RectF(CANVAS * 0.2f, CANVAS - 26f, CANVAS * 0.8f, CANVAS - 8f), Paint().apply { color = Color.argb(70, 0, 0, 0); isAntiAlias = true })
+        val lift = if (effect == Effect.NONE) 0f else 14f
+        canvas.drawBitmap(scaled, (CANVAS - scaled.width) / 2f, CANVAS - scaled.height - 12f - lift, Paint().apply { isFilterBitmap = false })
+        when (effect) {
+            Effect.HEARTS -> { heart(canvas, CANVAS * 0.18f, 30f, 22f); heart(canvas, CANVAS * 0.45f, 4f, 26f); heart(canvas, CANVAS * 0.70f, 22f, 20f) }
+            Effect.SPARKLES -> { star(canvas, CANVAS * 0.2f, 40f, 9f); star(canvas, CANVAS * 0.5f, 10f, 12f); star(canvas, CANVAS * 0.8f, 36f, 8f); star(canvas, CANVAS * 0.35f, 70f, 6f) }
+            Effect.NONE -> Unit
+        }
+        return out
+    }
+
+    /** A still picture of the buddy from its regular sprite. */
+    fun still(context: Context, formId: Int, shiny: Boolean, effect: Effect = Effect.NONE): Bitmap? =
+        remember("still:$formId:$shiny:$effect") {
+            val sprite = asset(context, "sprites/${if (shiny) "$formId-shiny" else "$formId"}.png") ?: return@remember null
+            standing(sprite, 2, effect)
+        }
+
+    private var animations: Map<Int, Triple<Int, Int, IntArray>>? = null
+
+    /** assets/animated/animated.tsv: id to (frame width, frame height, frame times in ms) plus whether a shiny sheet exists. */
+    private fun animation(context: Context, id: Int): Triple<Int, Int, IntArray>? {
+        if (animations == null) {
+            animations = try {
+                context.assets.open("$RESOURCES/animated/animated.tsv").bufferedReader().readLines().filter { it.isNotBlank() }.associate { line ->
+                    val c = line.split('\t')
+                    c[0].toInt() to Triple(c[2].toInt(), c[3].toInt(), c[4].split(',').map { it.toInt() }.toIntArray())
+                }
+            } catch (e: Exception) {
+                emptyMap()
+            }
+        }
+        return animations?.get(id)
+    }
+
+    /**
+     * The buddy's real animation as at most [MAX_FRAMES] pictures spread evenly over one loop, each [FLIP_MILLIS] long
+     * when played by the widget's flipper, or null for a species without a Black/White animation.
+     */
+    fun idleFrames(context: Context, formId: Int, shiny: Boolean): List<Bitmap>? {
+        val (w, h, times) = animation(context, formId) ?: return null
+        val sheet = asset(context, "animated/${if (shiny) "$formId-shiny" else "$formId"}.png") ?: asset(context, "animated/$formId.png") ?: return null
+        val total = times.sum()
+        val count = minOf(MAX_FRAMES, (total + FLIP_MILLIS - 1) / FLIP_MILLIS).coerceAtLeast(1)
+        val scale = ((CANVAS - 12) / maxOf(w, h)).coerceAtLeast(1)
+        return (0 until count).map { j ->
+            val at = (j.toLong() * total / count).toInt()
+            var index = 0
+            var elapsed = 0
+            while (index < times.size - 1 && elapsed + times[index] <= at) { elapsed += times[index]; index++ }
+            standing(Bitmap.createBitmap(sheet, index * w, 0, w, h), scale, Effect.NONE)
+        }
+    }
+
+    const val FLIP_MILLIS = 200
+    private const val MAX_FRAMES = 20
 
     /** A small red heart, used for pets and friendship. */
     fun heart(size: Int): Bitmap = remember("heart:$size") {
@@ -115,6 +176,14 @@ object WidgetArt {
             close()
         }
         canvas.drawPath(path, Paint().apply { color = Color.rgb(0xE8, 0x44, 0x36); isAntiAlias = true })
+    }
+
+    private fun star(canvas: Canvas, cx: Float, cy: Float, r: Float) {
+        val path = Path().apply {
+            moveTo(cx, cy - r); lineTo(cx + r * 0.28f, cy - r * 0.28f); lineTo(cx + r, cy); lineTo(cx + r * 0.28f, cy + r * 0.28f)
+            lineTo(cx, cy + r); lineTo(cx - r * 0.28f, cy + r * 0.28f); lineTo(cx - r, cy); lineTo(cx - r * 0.28f, cy - r * 0.28f); close()
+        }
+        canvas.drawPath(path, Paint().apply { color = Color.rgb(0xFF, 0xCB, 0x05); isAntiAlias = true })
     }
 
     /** An item icon (a berry, the egg) enlarged by a whole number without smoothing. */

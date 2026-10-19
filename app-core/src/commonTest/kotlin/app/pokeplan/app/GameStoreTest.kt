@@ -403,21 +403,6 @@ class GameStoreTest {
     }
 
     @Test
-    fun the_buddy_sleeps_in_a_session_cheers_when_done_and_droops_after_quiet_days() {
-        val (s, clock) = started()
-        assertEquals(BuddyMood.WAITING, s.buddyMood())
-        s.startFocus(25, deepFocus = false)
-        assertEquals(BuddyMood.FOCUSING, s.buddyMood())
-        s.focusEvent(FocusEvent.GaveUp)
-        s.completeTask(s.data.tasks.single().id)
-        clock.advance(11_000)
-        s.tick()
-        assertEquals(BuddyMood.CHEERFUL, s.buddyMood())
-        clock.advance(3 * 24 * 3_600_000L)
-        assertEquals(BuddyMood.LONELY, s.buddyMood())
-    }
-
-    @Test
     fun reload_picks_up_a_change_made_by_another_store_on_the_same_save() {
         val storage = MemoryStorage()
         val clock = FakeClock(start)
@@ -434,5 +419,34 @@ class GameStoreTest {
         seen = null
         app.reload()
         assertNull(seen, "nothing changed the second time")
+    }
+
+    @Test
+    fun the_buddy_only_has_an_event_for_a_few_minutes_after_a_payout() {
+        val (s, clock) = started()
+        assertNull(s.buddyEvent())
+        s.completeTask(s.data.tasks.single().id)
+        clock.advance(11_000)
+        s.tick()
+        assertEquals(BuddyEvent.DONE, s.buddyEvent()?.event)
+        clock.advance(6 * 60_000L)
+        assertNull(s.buddyEvent())
+    }
+
+    @Test
+    fun level_progress_follows_the_candies_fed() {
+        val (s, _) = started()
+        val buddy = s.data.player.buddy!!
+        assertEquals(0f, s.levelProgress(buddy))
+        s.grant("rare-candy", 4)
+        s.feedRareCandy(buddy.id, 4)
+        assertEquals(0.4f, s.levelProgress(s.data.player.buddy!!), 0.001f)
+    }
+
+    @Test
+    fun the_scene_follows_the_type_and_night_falls_in_the_evening() {
+        assertEquals("mountain", BuddyScene.of(listOf(app.pokeplan.core.model.PokemonType.FIRE)))
+        assertEquals("meadow", BuddyScene.of(emptyList()))
+        assertTrue(BuddyScene.isNight(22) && BuddyScene.isNight(3) && !BuddyScene.isNight(12))
     }
 }

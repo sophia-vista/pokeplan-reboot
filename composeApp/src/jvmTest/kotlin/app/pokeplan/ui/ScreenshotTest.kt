@@ -72,6 +72,16 @@ class ScreenshotTest {
     }
 
     @Test
+    fun homeTorchicAfterAnEvent() {
+        val store = GameStore(MemoryStorage(), clock).also { it.start("Sophia", 255) }
+        store.completeTask(store.data.tasks.single().id)
+        clock.millis += 11_000
+        store.tick()
+        val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
+        render("home-torchic-event") { App(storage, focusTab = true) }
+    }
+
+    @Test
     fun planner() {
         val store = started()
         store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 45)

@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.lifecycle.lifecycleScope
 import app.pokeplan.ui.App
 import app.pokeplan.ui.Tab
-import app.pokeplan.widgets.updateWidgets
+import app.pokeplan.widgets.announceBuddyEvent
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 
@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
     /** Leaving the app: bring the widgets up to date with what just happened. */
     override fun onStop() {
         super.onStop()
-        lifecycleScope.launch { updateWidgets(applicationContext) }
+        lifecycleScope.launch { announceBuddyEvent(applicationContext) }
     }
 
     companion object {

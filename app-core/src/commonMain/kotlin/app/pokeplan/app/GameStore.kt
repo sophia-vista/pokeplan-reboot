@@ -644,17 +644,22 @@ class GameStore(
     /** Tasks finished since the day began. */
     fun doneToday(): Int = data.tasks.count { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= startOfTodayMillis }
 
-    /** The buddy's mood from what has happened: sleeping in a session, cheerful when today is done, lonely after two quiet days. */
-    fun buddyMood(): BuddyMood {
-        val pendingIds = data.pending.map { it.original.id }.toSet()
-        val open = todayTasks().count { it.id !in pendingIds }
-        return when {
-            data.focus != null -> BuddyMood.FOCUSING
-            open == 0 && doneToday() > 0 -> BuddyMood.CHEERFUL
-            data.activeDays.isNotEmpty() && today !in data.activeDays && today.minus(DatePeriod(days = 1)) !in data.activeDays -> BuddyMood.LONELY
-            data.rewardLog.isEmpty() && data.activeDays.isEmpty() -> BuddyMood.WAITING
-            else -> BuddyMood.CONTENT
-        }
+    /**
+     * The meaningful thing that happened in the last few minutes (an egg hatched, a task or session paid out), or null.
+     * The buddy only speaks and celebrates for these; the rest of the time it just idles.
+     */
+    fun buddyEvent(): BuddyEventNow? {
+        val recent = data.rewardLog.filter { nowMillis - it.atMillis < EVENT_MILLIS }
+        val latest = recent.lastOrNull() ?: return null
+        val hatched = recent.any { e -> e.rewards.any { it is Reward.Hatched } }
+        return BuddyEventNow(if (hatched) BuddyEvent.HATCHED else BuddyEvent.DONE, latest.atMillis)
+    }
+
+    /** Progress of [p] towards its next level, 0 to 1: the Rare Candies fed so far out of the ones this level needs. */
+    fun levelProgress(p: OwnedPokemon): Float {
+        if (!p.canFeed) return 1f
+        val partner = data.player.pokemon.filter { it.inParty }.maxOfOrNull { it.level } ?: p.level
+        return (p.candyProgress.toFloat() / CandyRules.candiesNeeded(p.level, partner)).coerceIn(0f, 1f)
     }
 
     /**
@@ -705,6 +710,9 @@ class GameStore(
 
     companion object {
         const val MAX_SUBTASKS = 5
+
+        /** How long a reward counts as "just happened" for the buddy. */
+        const val EVENT_MILLIS = 5 * 60_000L
 
         /** Friendship a day that petting can give. */
         const val PET_DAILY_CAP = 10
