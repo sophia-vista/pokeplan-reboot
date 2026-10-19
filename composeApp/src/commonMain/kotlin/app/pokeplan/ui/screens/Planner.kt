@@ -219,7 +219,7 @@ private fun TaskCard(model: AppModel, task: Task, expanded: Boolean, toggle: () 
                 else PixelButton("Reopen", { store.reopen(task.id) }, color = Pixel.InkSoft, compact = true)
             },
         ) {
-            Text(task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 2)
+            Text(task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 4)
             val overdue = task.state == TaskState.OPEN && isOverdue(model, task)
             val meta = taskMeta(task)
             val line = listOf(if (overdue) "Overdue" else "", meta).filter { it.isNotEmpty() }.joinToString("  ·  ")

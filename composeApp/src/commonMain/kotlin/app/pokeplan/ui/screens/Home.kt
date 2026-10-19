@@ -91,11 +91,12 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
             if (buddy != null) {
                 val berry = data.player.inventory.counts.keys.firstOrNull { Items.category(it) == ItemCategory.BERRY && data.player.inventory.has(it) }
                 BuddyStage(
-                    buddy = buddy, scene = BuddyScene.of(buddy.form.types), night = BuddyScene.isNight(store.now.hour),
+                    buddy = buddy, scene = BuddyScene.of(buddy.form.types), darkness = BuddyScene.darkness(store.now.hour, store.now.minute),
                     progress = store.levelProgress(buddy), event = store.buddyEvent(),
                     calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
-                    onPet = { store.pet(); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour) },
-                    onFeed = { berry?.let { store.useItem(it, buddy.id) }; BuddyReaction.feed(buddy) },
+                    onPet = { avoid -> store.pet(); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
+                    onFeed = { avoid -> berry?.let { store.useItem(it, buddy.id) }; BuddyReaction.feed(buddy, avoid = avoid) },
+                    onOpen = { model.openPokemonId = buddy.id; go(Tab.COLLECTION) },
                     celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
                 )
             }
@@ -173,7 +174,7 @@ fun TaskRow(task: Task, onDone: () -> Unit) {
         lead = { RankBadge(task.rank) },
         trail = { PixelButton("Done", onDone, color = Pixel.Green, compact = true) },
     ) {
-        Text(task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 2)
+        Text(task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 4)
         val meta = taskMeta(task)
         if (meta.isNotEmpty()) Text(meta, style = MaterialTheme.typography.bodyMedium)
     }

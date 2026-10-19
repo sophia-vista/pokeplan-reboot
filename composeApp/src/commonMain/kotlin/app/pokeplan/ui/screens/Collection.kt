@@ -97,12 +97,12 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
     SectionScaffold(current.title, null, onBack = { section = null }, icon = current.icon) {
         when (current) {
             Section.PARTY -> {
-                if (player.party.isEmpty()) TextBox { Text("Your party is empty.", style = MaterialTheme.typography.bodyLarge) }
+                if (player.party.isEmpty()) EmptyState("Your party is empty", "Hatch an egg with a focus session, or move a Pokémon here from the PC.")
                 player.party.forEach { p -> PokemonRow(p, p.id == player.buddyId) { selected = p.id } }
             }
             Section.PC -> {
                 val box = player.pokemon.filter { !it.inParty && !Guardians.canBe(it) }
-                if (box.isEmpty()) TextBox { Text("The PC is empty. New eggs go to your party first, then here.", style = MaterialTheme.typography.bodyLarge) }
+                if (box.isEmpty()) EmptyState("The PC is empty", "New eggs go to your party first, then here once it is full.")
                 FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     box.forEach { p -> PcTile(p) { selected = p.id } }
                 }
@@ -141,40 +141,66 @@ private fun PcTile(p: OwnedPokemon, onClick: () -> Unit) {
 
 // ----- Pokédex -------------------------------------------------------------------------------------------------------
 
+/** The National Dex split by generation, with the national numbers each generation covers. */
+private val generations = listOf(
+    "Gen 1" to 1..151, "Gen 2" to 152..251, "Gen 3" to 252..386, "Gen 4" to 387..493, "Gen 5" to 494..649,
+    "Gen 6" to 650..721, "Gen 7" to 722..809, "Gen 8" to 810..905, "Gen 9" to 906..1025,
+)
+
+/**
+ * The Pokédex. A region's list is numbered from 1 in its own order (the Home Region starts at 1 too); the National Dex tab
+ * uses the real National Dex numbers, a generation at a time.
+ */
 @Composable
 private fun PokedexView(model: AppModel) {
     val player = model.data.player
     val regions = TrainerRank.unlockedRegions(player.trainerPoints)
     var region by remember { mutableStateOf(Region.HOME) }
-    var shown by remember { mutableStateOf<Int?>(null) }
-    val dex = remember(region) { Dex.regionDex(region) }
-    val caught = dex.count { it.id in player.caught }
+    var national by remember { mutableStateOf(false) }
+    var generation by remember { mutableStateOf(0) }
+    var shown by remember { mutableStateOf<Pair<Int, Int>?>(null) }
 
-    if (regions.size > 1) {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            regions.forEach { r -> TabButton(r.label, r == region, { region = r }, Modifier.padding(0.dp)) }
+    // Each row is (number shown, species): own order from 1 for a region, the National Dex number for the National tab.
+    val rows = remember(region, national, generation) {
+        if (national) Dex.species.filter { it.id in generations[generation].second }.map { it.id to it }
+        else Dex.regionDex(region).mapIndexed { i, s -> (i + 1) to s }
+    }
+    val caught = rows.count { (_, s) -> s.id in player.caught }
+    val shiny = player.pokemon.filter { it.isShiny }.map { it.speciesId }.distinct().count { id -> rows.any { it.second.id == id } }
+
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        regions.forEach { r -> TabButton(r.label, !national && r == region, { national = false; region = r; shown = null }, Modifier.padding(0.dp)) }
+        TabButton("National", national, { national = true; shown = null }, Modifier.padding(0.dp))
+    }
+    if (national) FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        generations.forEachIndexed { i, (label, _) -> TabButton(label, i == generation, { generation = i; shown = null }, Modifier.padding(0.dp)) }
+    }
+    val title = if (national) "National Dex, ${generations[generation].first}" else region.label
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text("$title: $caught of ${rows.size} caught", style = MaterialTheme.typography.titleMedium)
+            if (shiny > 0) Text("$shiny shiny", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
-    TextBox { Text("${region.label}: $caught of ${dex.size} caught", style = MaterialTheme.typography.titleMedium) }
-    shown?.let { id ->
+    shown?.let { (number, id) ->
         TextBox(accent = Pixel.Yellow) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(Dex.species(id).name, style = MaterialTheme.typography.titleMedium)
+                Text("#$number  ${Dex.species(id).name}", style = MaterialTheme.typography.titleMedium)
                 Text(Dex.entry(id), style = MaterialTheme.typography.bodyLarge)
             }
         }
     }
     FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        dex.forEach { s ->
+        rows.forEach { (number, s) ->
             val have = s.id in player.caught
             Column(
                 Modifier.size(width = 76.dp, height = 88.dp).clip(RoundedCornerShape(12.dp)).background(Pixel.Panel)
-                    .clickable(enabled = have) { shown = s.id },
+                    .clickable(enabled = have) { shown = number to s.id },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 // Species you do not have yet show as a grey shape: the real sprite, tinted.
                 Sprite(Dex.defaultForm(s.id).id, false, if (have) s.name else "Not caught yet", size = 64.dp, silhouette = if (have) null else Pixel.Shade)
-                Text("#${s.id}", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+                Text("#$number", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
             }
         }
     }
@@ -231,7 +257,7 @@ private fun GuardiansView(model: AppModel, open: (String) -> Unit) {
         }
     }
     if (candidates.isEmpty()) {
-        TextBox { Text("No Guardians yet. Legendary and mythical Pokémon come from quests, never from eggs.", style = MaterialTheme.typography.bodyLarge) }
+        EmptyState("No Guardians yet", "Legendary and mythical Pokémon come from quests, never from eggs.")
     }
     candidates.filter { c -> slotted.none { it.id == c.id } }.forEach { g ->
         ListRow(
@@ -264,7 +290,7 @@ private fun QuestsView(model: AppModel) {
         )
     }
     if (active.isEmpty() && available.isEmpty()) {
-        TextBox { Text("No quests are open yet. They open as your trainer rank grows.", style = MaterialTheme.typography.bodyLarge) }
+        EmptyState("No quests yet", "Quests open as your trainer rank grows.")
     }
     if (active.isNotEmpty()) SectionLabel("In progress")
     active.forEach { q -> QuestCard(model, q) }
@@ -321,7 +347,7 @@ private fun BagView(model: AppModel) {
     var open by remember { mutableStateOf<String?>(null) }
     val items = player.inventory.counts.entries.filter { it.value > 0 }.sortedWith(compareBy({ Items.category(it.key)?.ordinal ?: 99 }, { it.key }))
     TextBox { Text("${player.coins} coins", style = MaterialTheme.typography.titleMedium) }
-    if (items.isEmpty()) TextBox { Text("The bag is empty. Finish tasks to find things.", style = MaterialTheme.typography.bodyLarge) }
+    if (items.isEmpty()) EmptyState("The bag is empty", "Finish tasks and focus sessions to find candies, berries and more.")
     items.forEach { (id, n) ->
         val usable = id in Items.vitamins || Items.category(id) == ItemCategory.BERRY
         ListRow(

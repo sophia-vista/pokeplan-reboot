@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -102,7 +103,12 @@ private fun SetupView(model: AppModel) {
     var taskId by remember { mutableStateOf(model.focusTaskId) }
     val tasks = store.todayTasks()
 
-    Stage("bw11", 168.dp) { ItemIcon("mystery-egg", size = 128.dp, modifier = Modifier.align(Alignment.Center)) }
+    // A slow, small wobble so the egg feels alive while you set up (still when Reduce motion is on).
+    val idle = rememberInfiniteTransition()
+    val tilt by idle.animateFloat(-2.5f, 2.5f, infiniteRepeatable(tween(1_800, easing = FastOutSlowInEasing), RepeatMode.Reverse))
+    Stage("bw11", 168.dp) {
+        ItemIcon("mystery-egg", size = 128.dp, modifier = Modifier.align(Alignment.Center).rotate(if (model.data.settings.reduceMotion) 0f else tilt))
+    }
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
