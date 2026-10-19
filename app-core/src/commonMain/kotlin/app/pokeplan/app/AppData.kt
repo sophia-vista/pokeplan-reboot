@@ -62,10 +62,18 @@ data class Settings(
     val region: Region = Region.HOME,
     val defaultFocusMinutes: Int = 25,
     val deepFocus: Boolean = false,
+    /** Master switch kept from the old Sound toggle; the sliders turn it on again. */
     val sound: Boolean = true,
+    /** Volume of cries and sound effects, 0 to 100. */
+    val effectsVolume: Int = 100,
+    /** Volume of music, 0 to 100. There is no music yet; the setting is kept for when there is. */
+    val musicVolume: Int = 70,
     val reduceMotion: Boolean = false,
     val weekStartsOnMonday: Boolean = true,
-)
+) {
+    /** How loud cries and effects play, 0 to 1 (0 when Sound was switched off). */
+    val effectsLevel: Float get() = if (sound) effectsVolume.coerceIn(0, 100) / 100f else 0f
+}
 
 /** A repeating task: the template its instances are copied from, and when they fall. */
 @Serializable

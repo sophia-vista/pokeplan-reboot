@@ -51,7 +51,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.pokeplan.app.BuddyEventNow
-import app.pokeplan.app.BuddyReaction
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.ui.AnimatedSprite
@@ -71,7 +70,7 @@ import kotlinx.coroutines.delay
 fun BuddyStage(
     buddy: OwnedPokemon, scene: String, night: Boolean, progress: Float, event: BuddyEventNow?,
     calm: Boolean, resting: Boolean, berry: String?,
-    onPet: () -> Unit, onFeed: () -> Unit, celebrated: Long, onCelebrated: (Long) -> Unit,
+    onPet: () -> String, onFeed: () -> String, celebrated: Long, onCelebrated: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var taps by remember { mutableIntStateOf(0) }
@@ -120,8 +119,7 @@ fun BuddyStage(
             Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp)
                 .offset { IntOffset(0, (hop.value + bob).dp.roundToPx()) }
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Pet ${buddy.nickname}", role = Role.Button) {
-                    onPet()
-                    react(BuddyReaction.PET)
+                    react(onPet())
                 },
             size = 144.dp, animate = !calm && !resting,
         )
@@ -145,8 +143,7 @@ fun BuddyStage(
         if (berry != null) Box(
             Modifier.align(Alignment.BottomEnd).padding(Spacing.S).size(40.dp).background(Color(0xCCFFFFFF), CircleShape)
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Give ${buddy.nickname} a ${Items.get(berry)?.name ?: berry}", role = Role.Button) {
-                    onFeed()
-                    react(BuddyReaction.FEED)
+                    react(onFeed())
                 },
             contentAlignment = Alignment.Center,
         ) { ItemIcon(berry, size = 28.dp, description = Items.get(berry)?.name ?: berry) }

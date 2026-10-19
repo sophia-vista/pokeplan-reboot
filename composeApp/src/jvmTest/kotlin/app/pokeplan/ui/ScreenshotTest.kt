@@ -176,7 +176,7 @@ class ScreenshotTest {
     fun meReview() = me("me-review", 2)
 
     @Test
-    fun meSettings() = me("me-settings", 3)
+    fun meSettings() = me("me-settings", 4)
 
     @Test
     fun collectionGuardians() {

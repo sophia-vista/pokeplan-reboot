@@ -11,7 +11,7 @@ class AndroidCryPlayer(private val context: Context) : CryPlayer {
     private var player: MediaPlayer? = null
 
     @Synchronized
-    override fun play(speciesId: Int) {
+    override fun play(speciesId: Int, volume: Float) {
         try {
             player?.release()
             val path = "composeResources/pokeplan.composeapp.generated.resources/files/cries/$speciesId.ogg"
@@ -25,6 +25,7 @@ class AndroidCryPlayer(private val context: Context) : CryPlayer {
                     if (!copy.exists()) context.assets.open(path).use { input -> copy.outputStream().use { input.copyTo(it) } }
                     setDataSource(copy.absolutePath)
                 }
+                setVolume(volume, volume)
                 setOnPreparedListener { it.start() }
                 setOnCompletionListener { it.release() }
                 setOnErrorListener { mp, _, _ -> mp.release(); true }

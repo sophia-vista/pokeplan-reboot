@@ -5,6 +5,6 @@ package app.pokeplan.ui
  * web uses an audio element. The desktop build has none (the JVM cannot play Ogg without extra libraries).
  */
 fun interface CryPlayer {
-    /** Plays the cry of species [speciesId] (its National Dex number). Never throws; a missing file is silent. */
-    fun play(speciesId: Int)
+    /** Plays the cry of species [speciesId] (its National Dex number) at [volume] (0 to 1). Never throws; a missing file is silent. */
+    fun play(speciesId: Int, volume: Float)
 }
