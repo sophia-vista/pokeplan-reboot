@@ -91,7 +91,7 @@ At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are
 | Held items (e.g. Leftovers, Choice Band style) | one small buddy perk | drops, shop |
 | Evolution stones | evolve stone species | drops |
 
-**Sources (both):** common items drop at random from paid tasks (chance by priority) and come as streak, badge and Pokédex milestone rewards. Rare items (Nature Mint, Ability Capsule, Bottle Cap, stones) are bought in a shop with **coins** earned from play. How coins are earned is still open. Nothing is sold for real money.
+**Sources (both):** common items drop at random from paid tasks (chance by priority) and come as streak, badge and Pokédex milestone rewards. Rare items (Nature Mint, Ability Capsule, Bottle Cap, stones) are bought in a shop with **coins** earned from play. **Coins** are earned from paid tasks (by priority), completed focus sessions (by minutes), and transferring duplicates, plus streak and badge bonuses. Amounts to be tuned. Nothing is sold for real money.
 
 ### Duplicates → candy
 
@@ -101,7 +101,10 @@ At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are
 
 ## Roster
 
-**Every species through Gen 9 (about 1,025), including alternate forms.** Details still open: which forms (regional, Mega, Gigantamax, gendered, etc.), how rarity is assigned across that many species, and where Gen 3 to 5 style art comes from for Gen 6 to 9 (official sprites in that style stop at Gen 5). Until those are settled, the 150-species list in `:shared` is a placeholder that will be replaced by generated data.
+**Every species through Gen 9 (about 1,025) with all alternate forms**: regional (Alolan, Galarian, Hisuian, Paldean), gender differences, Mega / Gigantamax, and cosmetic forms (Unown, Vivillon, Alcremie, etc.). The 150-species list in `:shared` is a placeholder that will be replaced by generated data.
+
+- **Rarity by rule** from game data, with one tunable table: evolution stage, base stat total, and legendary / mythical status (legendaries and mythicals are Super Rare, babies and unevolved forms lean Common, final evolutions lean Rare). Hand overrides are not planned.
+- **Art:** the Pokémon Showdown sprite sets (animated Gen 5 style where available, their sets for Gen 6 to 9 otherwise). Fetch and bundle them at build time rather than loading from Showdown at runtime, so the app does not depend on their server. The same IP caveat as the rest of the project applies (see Risks), and Showdown's own terms should be checked before any public release.
 
 ## Buddy and perks
 
@@ -184,7 +187,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 
 Being settled in rounds before any Pokémon-depth code is written. Done: focus interruptions, task age, streak, accounts, planner scope, overdue, subtasks, undo, buddy swap, shiny rate, item sources.
 
-- **Roster details:** forms, rarity rules, art source for Gen 6 to 9, coin earning.
+- **Roster details:** how Mega / Gigantamax work without battles, how cosmetic forms count toward the dex, rarity rule parameters, coin amounts, sprite hosting.
 - **Pokémon economy:** roster size, buddy rules, perk magnitudes, transfer rules, item sources, shiny rate.
 - **Online:** friends and co-op scope, what is public.
 - **Screens:** navigation, home layout, flows.
