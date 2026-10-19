@@ -28,13 +28,17 @@ import app.pokeplan.ui.screens.HomeScreen
 import app.pokeplan.ui.screens.MeScreen
 import app.pokeplan.ui.screens.OnboardingScreen
 import app.pokeplan.ui.screens.PlannerScreen
-import app.pokeplan.ui.screens.TabButton
+import app.pokeplan.ui.screens.NavButton
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelTheme
 import kotlinx.coroutines.delay
 import kotlin.time.Clock as SystemClock
 
-enum class Tab(val label: String) { HOME("Home"), PLANNER("Planner"), FOCUS("Focus"), COLLECTION("Pokémon"), ME("Me") }
+/** The bottom tabs, each with the real game item that stands for it. */
+enum class Tab(val label: String, val icon: String) {
+    HOME("Home", "town-map"), PLANNER("Planner", "journal"), FOCUS("Focus", "mystery-egg"),
+    COLLECTION("Pokémon", "poke-ball"), ME("Me", "member-card"),
+}
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
 class AppModel(val store: GameStore) {
@@ -96,7 +100,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean) {
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             tabs.forEach { t ->
-                TabButton(t.label, selected = t == tab, onClick = { go(t) }, modifier = Modifier.weight(1f))
+                NavButton(t.label, t.icon, selected = t == tab, onClick = { go(t) }, modifier = Modifier.weight(1f))
             }
         }
     }

@@ -25,10 +25,12 @@ import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.PickForMe
 import app.pokeplan.plan.Task
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.Tab
 import app.pokeplan.ui.describe
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.TextBox
 import kotlin.random.Random
@@ -45,15 +47,18 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Column {
+            Column(Modifier.weight(1f)) {
                 Text(data.trainerName, style = MaterialTheme.typography.titleMedium)
                 Text(TrainerRank.nameFor(data.player.trainerPoints), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
-            Text(
-                "${data.player.coins} coins   ${data.player.inventory[Items.RARE_CANDY]} candies",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                ItemIcon("amulet-coin", size = 28.dp)
+                Text("${data.player.coins}", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(end = 8.dp))
+                ItemIcon("rare-candy", size = 28.dp)
+                Text("${data.player.inventory[Items.RARE_CANDY]}", style = MaterialTheme.typography.bodyLarge)
+            }
         }
+        RankBar(data.player.trainerPoints)
 
         if (buddy != null) {
             TextBox(Modifier.fillMaxWidth()) {
@@ -76,17 +81,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
             )
         }
 
-        data.rewardLog.filter { !it.seen }.takeLast(3).takeIf { it.isNotEmpty() }?.let { fresh ->
-            TextBox(Modifier.fillMaxWidth()) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    fresh.forEach { entry ->
-                        Text(entry.source, style = MaterialTheme.typography.titleMedium)
-                        entry.rewards.forEach { Text(it.describe(), style = MaterialTheme.typography.bodyLarge) }
-                    }
-                    PixelButton("OK", { store.markRewardsSeen() }, Modifier.padding(top = 8.dp), Pixel.Green)
-                }
-            }
-        }
+        RewardBox(model)
 
         Text("Today", style = MaterialTheme.typography.titleMedium)
         val tasks = store.todayTasks()
@@ -97,14 +92,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
         tasks.forEach { t ->
             TaskRow(t, highlighted = picked?.id == t.id, onDone = { store.completeTask(t.id) })
         }
-        data.pending.forEach { p ->
-            TextBox(Modifier.fillMaxWidth()) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Done: ${p.done.title}", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                    PixelButton("Undo", { store.undoCompletion(p.original.id) }, color = Pixel.Red)
-                }
-            }
-        }
+        UndoRows(model)
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             PixelButton("Pick for me", {
@@ -138,5 +126,21 @@ private fun buddyLine(data: AppData): String {
         data.focus != null -> "I'm cheering you on!"
         done == 0 -> "Ready when you are."
         else -> "Nice work today!"
+    }
+}
+
+/** Progress to the next trainer rank, drawn like an HP bar. */
+@Composable
+private fun RankBar(points: Int) {
+    val next = TrainerRank.pointsToNext(points)
+    val rank = TrainerRank.rankFor(points)
+    val low = TrainerRank.thresholds[rank]
+    val high = TrainerRank.thresholds.getOrNull(rank + 1)
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        PixelBar(if (high == null) 1f else (points - low).toFloat() / (high - low), color = Pixel.Blue)
+        Text(
+            if (next == null) "Top rank" else "$next points to ${TrainerRank.names[rank + 1]}",
+            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+        )
     }
 }

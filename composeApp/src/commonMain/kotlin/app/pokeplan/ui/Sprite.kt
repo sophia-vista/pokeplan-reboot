@@ -17,6 +17,25 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 
 private val cache = mutableMapOf<String, ImageBitmap?>()
 
+/** The real game icon of a bag item (Rare Candy, a berry, an evolution stone...). Draws nothing if there is no icon for [itemId]. */
+@Composable
+fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp) {
+    val path = "files/items/$itemId.png"
+    val bitmap by produceState(cache[path], path) {
+        if (value == null) {
+            value = try {
+                Res.readBytes(path).decodeToImageBitmap()
+            } catch (e: Exception) {
+                null
+            }
+            cache[path] = value
+        }
+    }
+    Box(modifier.size(size)) {
+        bitmap?.let { Image(it, itemId, Modifier.size(size), contentScale = ContentScale.Fit, filterQuality = FilterQuality.None) }
+    }
+}
+
 /** A Pokémon sprite by form number, scaled without blur so the pixels stay crisp. */
 @Composable
 fun Sprite(formId: Int, shiny: Boolean, description: String, modifier: Modifier = Modifier, size: Dp = 96.dp) {

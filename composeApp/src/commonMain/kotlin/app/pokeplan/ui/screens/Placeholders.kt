@@ -25,9 +25,6 @@ private fun Soon(title: String, line: String) {
 }
 
 @Composable
-fun PlannerScreen(model: AppModel) = Soon("Planner", "Tasks, calendar and habits are coming next.")
-
-@Composable
 fun FocusScreen(model: AppModel) = Soon("Focus", "The focus timer is coming next.")
 
 @Composable
