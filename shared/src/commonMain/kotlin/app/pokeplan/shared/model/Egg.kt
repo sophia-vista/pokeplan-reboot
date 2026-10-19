@@ -1,6 +1,5 @@
 package app.pokeplan.shared.model
 
-import app.pokeplan.shared.data.Pokedex
 import kotlin.random.Random
 
 /** Percent chance of each rarity; the four values always add up to 100. */
@@ -41,11 +40,5 @@ object Egg {
         val band = bandStarts.indexOfLast { minutes >= it }
         // Deep Focus is worth one band.
         return tables[if (deepFocus) band + 1 else band]
-    }
-
-    fun hatch(duration: FocusDuration, deepFocus: Boolean, rng: Random = Random): Species {
-        val rarity = rates(duration, deepFocus).roll(rng)
-        val pool = Pokedex.hatchable(rarity)
-        return pool[rng.nextInt(pool.size)]
     }
 }

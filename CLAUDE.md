@@ -10,7 +10,7 @@ A fun productivity, growth and self-improvement app for Pokémon lovers: finishi
 - **The original app (`legacy-android/`):** a native Android Java app from a MOBDEVE pair project, kept as the reference for the old rules. It is no longer developed.
 
 ## Layout
-- `shared/`: the Kotlin Multiplatform game core (JVM and wasmJs targets), no UI. Packages under `app.pokeplan.shared`: `model` (focus duration, egg rarity tables, candy rewards, owned Pokémon), `dex` (the National Dex: species, forms, evolutions, regional dexes, hatch rules; `dex/generated/DexData.kt` is generated), and `data` (the original 150-species placeholder, being retired).
+- `shared/`: the Kotlin Multiplatform game core (JVM and wasmJs targets), no UI. Packages under `app.pokeplan.shared`: `model` (focus duration, egg rarity tables, candy rewards, types, rarity), `dex` (the National Dex: species, forms, evolutions, regional dexes, Pokédex text, hatch rules; `dex/generated/DexData.kt` is generated), and `pokemon` (an owned Pokémon with IVs, EVs, nature, ability, gender, shiny, friendship; stat formula; hatching; candy, friendship and shiny rules; evolution rules). `jvmMain/tools` holds JVM-only reports such as `./gradlew :shared:curationReport`.
 - `tools/species/generate.py`: stdlib Python that regenerates `DexData.kt` from the public PokeAPI CSVs. Run `python3 -I tools/species/generate.py`; it caches downloads in `tools/species/cache` (git-ignored).
 - `assets/sprites/`: Pokémon sprites (96×96 PNG, `<formId>.png` and `<formId>-shiny.png`, plus `manifest.tsv`) from the public PokeAPI/sprites repo, fetched with `python3 -I tools/sprites/fetch.py` (needs `tools/species/cache`, so run the species generator first). Form ids match `FormInfo.id`.
 - `docs/design.md`: product and game design.
