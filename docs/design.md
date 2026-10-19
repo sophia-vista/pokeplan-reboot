@@ -318,11 +318,24 @@ Local-first: the app keeps a local database and syncs to Supabase, so widgets an
 
 Android (full, plus widgets). Desktop and web are **companions**: planner, calendar, collection, Pokédex, bag, shop, party management, friends and leaderboards, but **no focus timer** (people work in other windows there, so strict focus can't apply). Eggs are hatched on the phone and appear everywhere via sync. No widgets on desktop or web.
 
+## Platform and apps
+
+PokéPlan is the first app of a planned **family of personal Pokémon apps** (a health-focused one next, others later) on **one account and one database**. The same Pokémon, items, dex progress and trainer rank appear in every app.
+
+- **The platform (shared by all apps):** account and trainer profile (name, rank, badges), the Pokémon collection and the buddy, the inventory and currencies (candies, coins, berries, items), dex progress and regions, friends, the hatching / evolution / transfer engines, perks, species data and sprites.
+- **An app:** its own data and screens. It turns its own activities into **activity events** ("30 minute workout", "task finished at rank C", "7 hours of sleep") and the platform turns each event into rewards (eggs, candies, items, coins) on the server, idempotently. An app never writes Pokémon or currency rows itself.
+- **Examples:** PokéPlan maps focus sessions to eggs and tasks, habits and goals to candies and items. A health app could map workouts, steps, sleep, hydration and medication to the same rewards. Mappings are per app; the reward engine is shared.
+- **One economy:** a single pool of candies, coins and items, so effort anywhere strengthens the same Pokémon. Each app has a daily reward limit *(tune)* so no app floods the economy, and every reward is a ledger row recording the app and the source, for auditing.
+- **The buddy works in every app.** Perk buckets stay the same (egg luck, candy yield, ...) and each app applies them to its own activities.
+- **Privacy:** health data is sensitive. It lives in its own schema, is readable only by its owner, and never appears to friends or on leaderboards. The platform only sees reward events ("workout done, 30 minutes"), never the details behind them. The no-health-claims rule applies to every app.
+- **Database:** one Supabase project with a schema per area (`platform`, `plan`, `health`, ...), row-level security on every table, and one login shared by all apps (each app is its own client with its own bundle id).
+- **Code:** Gradle modules `:pokemon-core` (species data, Pokémon, items, perks, engines) and `:plan-core` (tasks, habits, goals, focus), with future apps adding their own `:health-core` and so on. Nothing in `:pokemon-core` knows about tasks or focus sessions.
+
 ## Backend (Supabase)
 
 **Accounts:** players start as a guest on the device (Supabase anonymous sign-in) and can later link an email or Google account to sync and keep progress. No passwords are stored in the app.
 
-Server-authoritative for everything that grants value: hatching, candies, items, transfers, shiny rolls. Clients send intents ("finished task X", "hatch session Y") and the server validates and rolls. Row-level security so a user only reads and writes their own rows. Species, base stats, abilities and perk tables are data shipped with the app and mirrored on the server.
+Server-authoritative for everything that grants value: hatching, candies, items, transfers, shiny rolls. Tables are grouped in schemas per area (see Platform and apps): `platform` holds the shared trainer, Pokémon, inventory and reward ledger; `plan` holds PokéPlan's tasks, goals, habits, sessions and reviews. Clients send intents ("finished task X", "hatch session Y") and the server validates and rolls. Row-level security so a user only reads and writes their own rows. Species, base stats, abilities and perk tables are data shipped with the app and mirrored on the server.
 
 ## Data to add
 
@@ -333,7 +346,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 
 ## Milestones
 
-1. **Shared core (done in #2):** eggs, candy, levels, evolution, Pokédex.
+1. **Shared core (done):** eggs, candy, levels, evolution, Pokédex. Split into `:pokemon-core` and `:plan-core` so more apps can reuse the Pokémon side.
 2. **Species data pipeline:** generate species, base stats, abilities, forms, evolutions, regional dex lists and rarity (by rule) for Gen 1 to 9 from a public dataset, plus the sprite fetch step. The 150 become the Home Region; National Dex numbers.
 3. **Pokémon depth:** IVs, EVs, natures with stats, gender, abilities, shiny, friendship, items, evolution triggers, transfer yields, perk calculation. Unit tested in `:shared`.
 4. **Planner core:** task model, difficulty ranks, Today / Inbox logic, recurrence expansion (time zones and daylight saving included), habits and their streaks, goals and milestone rewards, reminders schedule, the quick-add parser, task-focus link, review and insight calculations. Pure Kotlin in `:shared`, heavily unit tested.
