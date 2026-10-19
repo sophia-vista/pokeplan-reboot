@@ -70,4 +70,16 @@ object HatchRules {
         val options = pool(region, rarity)
         return options[rng.nextInt(options.size)]
     }
+
+    /** Like [roll], but each option is picked in proportion to [weight] (lures and spotlight days). */
+    fun rollWeighted(region: Region, rarity: Rarity, rng: Random, weight: (HatchOption) -> Double): HatchOption {
+        val options = pool(region, rarity)
+        val weights = options.map { weight(it).coerceAtLeast(0.0) }
+        var pick = rng.nextDouble() * weights.sum()
+        for ((i, w) in weights.withIndex()) {
+            pick -= w
+            if (pick < 0) return options[i]
+        }
+        return options.last()
+    }
 }
