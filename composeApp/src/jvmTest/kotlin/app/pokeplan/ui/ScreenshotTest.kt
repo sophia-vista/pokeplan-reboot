@@ -132,4 +132,33 @@ class ScreenshotTest {
 
     @Test
     fun pokemonDetail() = collection("pokemon-detail", 0, open = true)
+
+    private fun me(name: String, section: Int) {
+        val store = storeWithTeam()
+        store.addGoal("Learn guitar").also { g ->
+            store.addMilestone(g.id, "Buy a guitar")
+            store.addMilestone(g.id, "Learn three chords")
+        }
+        val t = store.addTask("Write the report", Rank.B, planned = store.today)
+        clock.millis += 11 * 60_000L
+        store.completeTask(t.id)
+        clock.millis += 11_000
+        store.tick()
+        val model = AppModel(store)
+        render(name) {
+            PixelTheme { PixelBackground("bw08", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.MeScreen(model, section) } }
+        }
+    }
+
+    @Test
+    fun meGrowth() = me("me-growth", 0)
+
+    @Test
+    fun meGoals() = me("me-goals", 1)
+
+    @Test
+    fun meReview() = me("me-review", 2)
+
+    @Test
+    fun meSettings() = me("me-settings", 3)
 }
