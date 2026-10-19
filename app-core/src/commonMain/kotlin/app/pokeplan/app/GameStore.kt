@@ -10,6 +10,7 @@ import app.pokeplan.core.pokemon.CandyRules
 import app.pokeplan.core.pokemon.EvolutionContext
 import app.pokeplan.core.pokemon.EvolutionOption
 import app.pokeplan.core.pokemon.EvolutionRules
+import app.pokeplan.core.pokemon.FriendshipRules
 import app.pokeplan.core.pokemon.Guardians
 import app.pokeplan.core.pokemon.Hatching
 import app.pokeplan.core.pokemon.ItemCategory
@@ -47,6 +48,7 @@ import app.pokeplan.plan.Task
 import app.pokeplan.plan.TaskRules
 import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.TaskViews
+import app.pokeplan.plan.toEpochMillis
 import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
@@ -150,6 +152,9 @@ class GameStore(
     val now: LocalDateTime get() = nowMillis.toLocalDateTime(zone)
     val today: LocalDate get() = now.date
     private val epochDay: Long get() = today.toEpochDays()
+
+    /** The first millisecond of today in the player's time zone. */
+    val startOfTodayMillis: Long get() = LocalDateTime(today, kotlinx.datetime.LocalTime(0, 0)).toEpochMillis(zone)
 
     private fun newId(): String = "${nowMillis.toString(36)}-${rng.nextInt(Int.MAX_VALUE).toString(36)}"
 
@@ -620,6 +625,25 @@ class GameStore(
         return true
     }
 
+    /**
+     * Pets the buddy: friendship from [FriendshipRules.Source.PET], up to [PET_DAILY_CAP] a day *(tune)*.
+     * Returns the friendship gained, 0 when nothing changed (no buddy, or today's petting is used up; nothing is saved then).
+     */
+    fun pet(): Int {
+        val buddy = data.player.buddy ?: return 0
+        val key = "pet-$today"
+        val gainedToday = data.counters[key] ?: 0
+        if (gainedToday >= PET_DAILY_CAP || buddy.friendship >= FriendshipRules.MAX) return 0
+        val petted = buddy.gainFriendship(FriendshipRules.Source.PET)
+        val gained = petted.friendship - buddy.friendship
+        update { d ->
+            // Only today's counter is kept.
+            val counters = d.counters.filterKeys { !it.startsWith("pet-") } + (key to gainedToday + gained)
+            d.copy(counters = counters, player = d.player.copy(pokemon = d.player.pokemon.map { if (it.id == buddy.id) petted else it }))
+        }
+        return gained
+    }
+
     /** Uses a bag item on a Pokémon (vitamins, berries). Returns false if there is none or it does nothing. */
     fun useItem(itemId: String, pokemonId: String): Boolean {
         if (!data.player.inventory.has(itemId)) return false
@@ -649,6 +673,9 @@ class GameStore(
 
     companion object {
         const val MAX_SUBTASKS = 5
+
+        /** Friendship a day that petting can give. */
+        const val PET_DAILY_CAP = 10
         const val LOG_SIZE = 50
 
         // "kind" because the rewards have a field called "type" (the same setting the reward engine uses over JSON).

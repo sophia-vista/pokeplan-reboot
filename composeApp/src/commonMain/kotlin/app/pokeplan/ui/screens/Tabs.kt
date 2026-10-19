@@ -1,8 +1,11 @@
 package app.pokeplan.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -11,45 +14,57 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.Spacing
 
-/** A segmented pill: the filter tabs in the planner and the pickers. */
+/** A segmented filter (the planner's views, pickers): the selected one is filled, the others outlined. At least 44 dp tall. */
 @Composable
 fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Column(
+    val shape = RoundedCornerShape(12.dp)
+    Box(
         modifier
-            .clip(RoundedCornerShape(50))
-            .background(if (selected) Pixel.Ink else Pixel.Panel)
-            .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .defaultMinSize(minHeight = 44.dp)
+            .clip(shape)
+            .background(if (selected) Pixel.Ink else Pixel.Panel, shape)
+            .border(1.dp, if (selected) Pixel.Ink else Pixel.Border, shape)
+            .clickable(role = Role.Tab, onClick = onClick)
+            .semantics { this.selected = selected }
+            .padding(horizontal = Spacing.M, vertical = Spacing.S),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             label, textAlign = TextAlign.Center, maxLines = 1,
-            style = MaterialTheme.typography.labelMedium,
-            color = if (selected) Pixel.Yellow else Pixel.InkSoft,
+            style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium),
+            color = if (selected) Color.White else Pixel.Ink,
         )
     }
 }
 
-/** A bottom navigation item: a real item icon over the label; the selected one sits in a soft red pill. */
+/** A bottom navigation item: a real item icon over the label; the selected one has a filled pill and a bold label. */
 @Composable
 fun NavButton(label: String, iconItem: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(if (selected) Pixel.Red.copy(alpha = 0.12f) else androidx.compose.ui.graphics.Color.Transparent)
-            .clickable(onClick = onClick)
+            .defaultMinSize(minHeight = 56.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (selected) Pixel.Red.copy(alpha = 0.12f) else Color.Transparent)
+            .clickable(role = Role.Tab, onClick = onClick)
+            .semantics { this.selected = selected }
             .padding(vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        ItemIcon(iconItem, size = 30.dp)
+        ItemIcon(iconItem, size = 28.dp, description = null)
         Text(
             label, textAlign = TextAlign.Center, maxLines = 1,
-            style = MaterialTheme.typography.labelMedium,
+            style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium),
             color = if (selected) Pixel.Red else Pixel.InkSoft,
         )
     }

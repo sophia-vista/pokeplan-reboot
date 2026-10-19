@@ -36,6 +36,7 @@ import app.pokeplan.core.dex.Dex
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.NpcPortrait
 import app.pokeplan.ui.Sprite
+import app.pokeplan.ui.theme.GameBox
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.TextBox
@@ -157,7 +158,7 @@ private fun Dialogue(text: String, onNext: () -> Unit) {
         }
     }
     val blink = rememberInfiniteTransition().animateFloat(0.2f, 1f, infiniteRepeatable(tween(500), RepeatMode.Reverse)).value
-    TextBox(Modifier.clickable { if (!done) shown = text.length else onNext() }) {
+    GameBox(Modifier.clickable { if (!done) shown = text.length else onNext() }) {
         Box(Modifier.fillMaxWidth().padding(bottom = 4.dp)) {
             Text(text.take(shown), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().padding(end = 28.dp, bottom = 12.dp))
             if (done) ItemIcon("poke-ball", Modifier.align(Alignment.BottomEnd).alpha(blink), size = 24.dp)

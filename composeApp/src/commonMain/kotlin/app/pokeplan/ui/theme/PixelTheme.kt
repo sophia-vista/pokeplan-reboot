@@ -1,12 +1,20 @@
 package app.pokeplan.ui.theme
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
@@ -15,78 +23,125 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.jetbrains.compose.resources.Font
 import pokeplan.composeapp.generated.resources.Res
+import pokeplan.composeapp.generated.resources.nunito_bold
+import pokeplan.composeapp.generated.resources.nunito_regular
+import pokeplan.composeapp.generated.resources.nunito_semibold
 import pokeplan.composeapp.generated.resources.pokemon_dp
 import pokeplan.composeapp.generated.resources.pokemon_dp_bold
-import org.jetbrains.compose.resources.Font
 
-/** The palette: a DS-era handheld. Warm paper, dark navy outlines, saturated primaries. */
+/**
+ * The colour tokens (version 0.1 of docs/ui-ux-brief.md). Pokémon types keep their own colours elsewhere (the type plates);
+ * these colours are for the app's own controls. The names are kept from the first version of the theme so screens read the same.
+ */
 object Pixel {
-    val Paper = Color(0xFFF3F5FA)
-    val PaperDot = Color(0xFFE7EAF2)
+    /** `background` */
+    val Paper = Color(0xFFF7F5F0)
+    /** `surface`: cards, dialogs, sheets. */
     val Panel = Color(0xFFFFFFFF)
-    val Ink = Color(0xFF1C1F2B)
-    val InkSoft = Color(0xFF6A7088)
-    val Red = Color(0xFFE8412F)
+    /** `surfaceMuted`: secondary surfaces and empty progress tracks. */
+    val Shade = Color(0xFFECECF2)
+    /** `border` */
+    val Border = Color(0xFFE1E1E8)
+    /** `textPrimary` and `brandDark` */
+    val Ink = Color(0xFF252637)
+    /** `textSecondary` */
+    val InkSoft = Color(0xFF666B7E)
+    /** `brandPrimary` */
+    val Red = Color(0xFFE84436)
     val RedDark = Color(0xFFB62A1C)
-    val Blue = Color(0xFF3B82F6)
-    val BlueDark = Color(0xFF1F5BC4)
-    val Green = Color(0xFF2FBF71)
-    val GreenDark = Color(0xFF1B8A50)
+    /** `info` */
+    val Blue = Color(0xFF3478DB)
+    /** `success` */
+    val Green = Color(0xFF218858)
+    /** `warning` */
+    val Warning = Color(0xFF946000)
+    /** `danger` */
+    val Danger = Color(0xFFB42332)
+    /** A highlight for selected items and rewards. */
     val Yellow = Color(0xFFFFCB05)
-    val YellowDark = Color(0xFFC79A00)
-    val Shade = Color(0xFFDDE1EC)
-    val Sky = Color(0xFF88C8F0)
-    val SkyLight = Color(0xFFB8E4FA)
-    val Grass = Color(0xFF70C050)
-    val GrassDark = Color(0xFF489838)
     val Gray = Color(0xFF9AA1B5)
-    val GrayDark = Color(0xFF626A82)
 }
 
-/** The Pokémon DS-era (Diamond and Pearl) font, from the pokemon-assets package, for all text. */
+/** The spacing scale (4 dp base) and shape of the brief. */
+object Spacing {
+    val XS = 4.dp
+    val S = 8.dp
+    val M = 12.dp
+    val L = 16.dp
+    val XL = 20.dp
+    val XXL = 24.dp
+    val XXXL = 32.dp
+
+    /** Page horizontal padding. */
+    val Page = 20.dp
+
+    /** Space between sections. */
+    val Section = 24.dp
+    val CardRadius = 16.dp
+
+    /** Smallest touch target for an important control. */
+    val Target = 48.dp
+}
+
+/** The Pokémon DS-era (Diamond and Pearl) font, from the pokemon-assets package: for headings, big numbers and button labels. */
 @Composable
 fun pixelFont(): FontFamily = FontFamily(
     Font(Res.font.pokemon_dp, FontWeight.Normal),
     Font(Res.font.pokemon_dp_bold, FontWeight.Bold),
 )
 
+/** Nunito (OFL): the soft, legible body font for everything read in bulk. */
+@Composable
+fun bodyFont(): FontFamily = FontFamily(
+    Font(Res.font.nunito_regular, FontWeight.Normal),
+    Font(Res.font.nunito_semibold, FontWeight.Medium),
+    Font(Res.font.nunito_semibold, FontWeight.SemiBold),
+    Font(Res.font.nunito_bold, FontWeight.Bold),
+)
+
 @Composable
 fun PixelTheme(content: @Composable () -> Unit) {
-    val font = pixelFont()
-    fun style(size: Int, line: Int, weight: FontWeight = FontWeight.Normal) =
-        TextStyle(
-            fontFamily = font, fontSize = size.sp, lineHeight = line.sp, fontWeight = weight, color = Pixel.Ink,
-            lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
-        )
+    val display = pixelFont()
+    val body = bodyFont()
+    fun style(font: FontFamily, size: Int, line: Int, weight: FontWeight = FontWeight.Normal, color: Color = Pixel.Ink) = TextStyle(
+        fontFamily = font, fontSize = size.sp, lineHeight = line.sp, fontWeight = weight, color = color,
+        lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
+    )
     MaterialTheme(
         colorScheme = lightColorScheme(
             primary = Pixel.Red, onPrimary = Color.White, secondary = Pixel.Blue, tertiary = Pixel.Green,
             background = Pixel.Paper, surface = Pixel.Panel, onBackground = Pixel.Ink, onSurface = Pixel.Ink,
+            error = Pixel.Danger, outline = Pixel.Border,
         ),
         typography = Typography(
-            headlineMedium = style(32, 44, FontWeight.Bold),
-            titleMedium = style(22, 32, FontWeight.Bold),
-            bodyLarge = style(22, 32),
-            bodyMedium = style(18, 26),
-            labelLarge = style(20, 28, FontWeight.Bold),
-            labelMedium = style(16, 22),
+            // Pixel font: game headings, rank, stats, button labels. Everything meant to be read in bulk is Nunito.
+            headlineMedium = style(display, 30, 38, FontWeight.Bold),
+            titleLarge = style(display, 24, 32, FontWeight.Bold),
+            titleMedium = style(display, 20, 28, FontWeight.Bold),
+            titleSmall = style(display, 20, 26, FontWeight.Bold),
+            bodyLarge = style(body, 16, 24),
+            bodyMedium = style(body, 14, 20, color = Pixel.InkSoft),
+            labelLarge = style(display, 18, 24, FontWeight.Bold),
+            labelMedium = style(body, 12, 16, FontWeight.Medium),
         ),
     ) { content() }
 }
@@ -94,23 +149,28 @@ fun PixelTheme(content: @Composable () -> Unit) {
 /** Rounded corners; the old "step" argument is kept so callers read the same: a step is 5dp of radius. */
 fun NotchShape(step: Float): Shape = RoundedCornerShape((step * 5).dp)
 
-private val panelShape = RoundedCornerShape(18.dp)
+private val cardShape = RoundedCornerShape(Spacing.CardRadius)
 
-/** A white card with rounded corners and a soft shadow. [accent] draws a coloured strip along the left edge. */
+/** The basic card: white surface, 16 dp corners, a thin border, no shadow. [accent] puts a coloured strip on the left edge. */
 @Composable
 fun TextBox(modifier: Modifier = Modifier, accent: Color = Color.Transparent, content: @Composable () -> Unit) {
-    Box(
+    Row(
         modifier
             .fillMaxWidth()
-            .shadow(4.dp, panelShape, ambientColor = Pixel.Ink.copy(alpha = 0.25f), spotColor = Pixel.Ink.copy(alpha = 0.25f))
-            .background(Pixel.Panel, panelShape)
-            .clip(panelShape)
-            .drawBehind { if (accent != Color.Transparent) drawRect(accent, Offset.Zero, Size(6.dp.toPx(), size.height)) }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-    ) { content() }
+            .height(IntrinsicSize.Min)
+            .background(Pixel.Panel, cardShape)
+            .border(BorderStroke(1.dp, Pixel.Border), cardShape)
+            .clip(cardShape),
+    ) {
+        if (accent != Color.Transparent) Box(Modifier.width(4.dp).fillMaxHeight().background(accent))
+        Box(Modifier.weight(1f).padding(Spacing.L)) { content() }
+    }
 }
 
-/** A pill-shaped key with a darker lower edge. */
+/**
+ * A button. Solid colour for the main action; the neutral colours (`Pixel.InkSoft`, `Pixel.Ink`, `Pixel.Gray`) give the quiet
+ * secondary look: white with a border and dark text. A disabled button is grey. At least 44 dp tall (48 dp when not [compact]).
+ */
 @Composable
 fun PixelButton(
     text: String,
@@ -120,31 +180,97 @@ fun PixelButton(
     enabled: Boolean = true,
     compact: Boolean = false,
 ) {
-    val face = if (enabled) color else Pixel.Shade
-    val edge = if (enabled) darker(color) else Pixel.Gray
-    val shape = RoundedCornerShape(if (compact) 14.dp else 18.dp)
+    val secondary = color == Pixel.InkSoft || color == Pixel.Ink || color == Pixel.Gray
+    val shape = RoundedCornerShape(if (compact) 12.dp else 16.dp)
+    val face = when {
+        !enabled -> Pixel.Shade
+        secondary -> Pixel.Panel
+        else -> color
+    }
+    val label = when {
+        !enabled -> Pixel.InkSoft
+        secondary -> Pixel.Ink
+        else -> Color.White
+    }
+    val raised = enabled && !secondary
+    val edge = if (raised) darker(color) else Color.Transparent
+    val corner = if (compact) 12.dp else 16.dp
     Box(
         modifier
-            .padding(bottom = 3.dp)
-            .drawBehind { drawRoundRect(edge, Offset(0f, 3.dp.toPx()), Size(size.width, size.height), CornerRadius(if (compact) 14.dp.toPx() else 18.dp.toPx())) }
-            .background(face, shape)
+            .defaultMinSize(minWidth = Spacing.Target, minHeight = if (compact) 44.dp else Spacing.Target)
+            // A solid action key has a darker lower edge, like the buttons in the games; quiet buttons stay flat.
+            .drawBehind { if (raised) drawRoundRect(edge, Offset(0f, 3.dp.toPx()), Size(size.width, size.height), CornerRadius(corner.toPx())) }
+            .padding(bottom = if (raised) 3.dp else 0.dp)
             .clip(shape)
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(if (compact) PaddingValues(horizontal = 14.dp, vertical = 6.dp) else PaddingValues(horizontal = 20.dp, vertical = 12.dp)),
+            .background(face, shape)
+            .then(if (secondary && enabled) Modifier.border(BorderStroke(1.5.dp, Pixel.Border), shape) else Modifier)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .padding(PaddingValues(horizontal = if (compact) 14.dp else 20.dp, vertical = 8.dp)),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, style = MaterialTheme.typography.labelLarge, color = if (enabled) Color.White else Pixel.InkSoft)
+        Text(text, style = MaterialTheme.typography.labelLarge, color = label)
     }
 }
 
 fun darker(c: Color): Color = Color(c.red * 0.72f, c.green * 0.72f, c.blue * 0.72f, c.alpha)
 
-/** A rounded progress bar: [fraction] is 0 to 1. */
+/**
+ * A progress bar: a neutral track with a semantic fill. [label] is read out by screen readers ("3 of 5 tasks done"); put the
+ * same words next to the bar so the meaning does not rest on colour.
+ */
 @Composable
-fun PixelBar(fraction: Float, modifier: Modifier = Modifier, color: Color = Pixel.Green) {
+fun PixelBar(fraction: Float, modifier: Modifier = Modifier, color: Color = Pixel.Green, label: String? = null) {
     val shape = RoundedCornerShape(8.dp)
-    Box(modifier.fillMaxWidth().height(14.dp).clip(shape).background(Pixel.Shade, shape)) {
-        val f = fraction.coerceIn(0f, 1f)
-        if (f > 0f) Box(Modifier.fillMaxWidth(f).height(14.dp).background(color, shape))
+    val f = fraction.coerceIn(0f, 1f)
+    Box(
+        modifier
+            .fillMaxWidth()
+            .height(10.dp)
+            .clip(shape)
+            .background(Pixel.Border, shape)
+            .semantics {
+                progressBarRangeInfo = ProgressBarRangeInfo(f, 0f..1f)
+                if (label != null) contentDescription = label
+            },
+    ) {
+        if (f > 0f) Box(Modifier.fillMaxWidth(f).height(10.dp).background(color, shape))
     }
+}
+
+/**
+ * A bar in the style of the games' EXP and HP bars: a dark outline, a short label, a bright fill. Used for the trainer rank,
+ * where it adds the game feel; [label] is also read out by screen readers.
+ */
+@Composable
+fun ExpBar(fraction: Float, label: String, modifier: Modifier = Modifier, tag: String = "EXP", color: Color = Pixel.Blue) {
+    val f = fraction.coerceIn(0f, 1f)
+    androidx.compose.foundation.layout.Row(
+        modifier.fillMaxWidth().semantics { contentDescription = label; progressBarRangeInfo = ProgressBarRangeInfo(f, 0f..1f) },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
+    ) {
+        Text(tag, style = MaterialTheme.typography.labelMedium.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold), color = Pixel.Warning)
+        Box(Modifier.weight(1f).height(14.dp).clip(RoundedCornerShape(7.dp)).background(Pixel.Ink).padding(2.dp)) {
+            Box(Modifier.fillMaxWidth().height(10.dp).clip(RoundedCornerShape(5.dp)).background(Pixel.Shade))
+            if (f > 0f) Box(Modifier.fillMaxWidth(f).height(10.dp).clip(RoundedCornerShape(5.dp)).background(color))
+        }
+    }
+}
+
+/**
+ * The pixel-bordered text box of the games, for the moments that deserve it: rewards, the Professor's dialogue, a hatch.
+ * Everything else uses the calm [TextBox].
+ */
+@Composable
+fun GameBox(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    val shape = NotchShape(3f)
+    Box(
+        modifier
+            .fillMaxWidth()
+            .border(BorderStroke(3.dp, Pixel.Ink), shape)
+            .padding(3.dp)
+            .border(BorderStroke(2.dp, Pixel.Border), shape)
+            .background(Pixel.Panel, shape)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+    ) { content() }
 }

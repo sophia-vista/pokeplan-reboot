@@ -1,6 +1,7 @@
 package app.pokeplan.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,7 +23,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -30,11 +31,12 @@ import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.ScreenHeader
+import app.pokeplan.ui.theme.Spacing
 
 /** One entry of a tab's menu: a real item icon, a title, a line of detail, and an optional count badge. */
-data class MenuEntry(val key: String, val icon: String, val title: String, val detail: String, val badge: Int = 0)
+data class MenuEntry(val key: String, val icon: String, val title: String, val detail: String, val badge: Int = 0, val tint: Color = Pixel.Blue)
 
-private val menuShape = RoundedCornerShape(20.dp)
+private val menuShape = RoundedCornerShape(16.dp)
 
 /** The menu of a tab: big cards, two to a row, like the start menu of the games. */
 @Composable
@@ -53,16 +55,18 @@ fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
 private fun MenuCard(entry: MenuEntry, modifier: Modifier, onClick: () -> Unit) {
     Box(
         modifier
-            .shadow(4.dp, menuShape, ambientColor = Pixel.Ink.copy(alpha = 0.25f), spotColor = Pixel.Ink.copy(alpha = 0.25f))
             .background(Pixel.Panel, menuShape)
+            .border(1.dp, Pixel.Border, menuShape)
             .clip(menuShape)
-            .clickable(onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 16.dp),
     ) {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            ItemIcon(entry.icon, size = 64.dp)
+            Box(Modifier.size(72.dp).background(entry.tint.copy(alpha = 0.12f), CircleShape), contentAlignment = Alignment.Center) {
+                ItemIcon(entry.icon, size = 56.dp, description = null)
+            }
             Text(entry.title, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
-            Text(entry.detail, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, textAlign = TextAlign.Center, maxLines = 2)
+            Text(entry.detail, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, maxLines = 2)
         }
         if (entry.badge > 0) {
             Box(Modifier.align(Alignment.TopEnd).size(26.dp).background(Pixel.Red, CircleShape), contentAlignment = Alignment.Center) {
@@ -75,13 +79,13 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, onClick: () -> Unit) 
 /** A screen reached from a menu: the header with a Back button, and scrolling content. The system back gesture also goes back. */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun SectionScaffold(title: String, subtitle: String?, onBack: () -> Unit, content: @Composable () -> Unit) {
+fun SectionScaffold(title: String, subtitle: String?, onBack: () -> Unit, icon: String? = null, content: @Composable () -> Unit) {
     BackHandler(enabled = true, onBack = onBack)
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(title, subtitle = subtitle) { PixelButton("Back", onBack, color = Pixel.Ink, compact = true) }
+        ScreenHeader(title, subtitle = subtitle, icon = icon) { PixelButton("Back", onBack, color = Pixel.InkSoft, compact = true) }
         Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
+            verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) { content() }
     }
 }

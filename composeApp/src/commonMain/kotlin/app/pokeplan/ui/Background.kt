@@ -1,6 +1,15 @@
 package app.pokeplan.ui
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -67,6 +76,13 @@ fun PixelBackground(name: String, modifier: Modifier = Modifier, scale: Int = 3,
         },
         content = content,
     )
+}
+
+/** A rounded wallpaper banner, the place a Pokémon or an egg stands. */
+@Composable
+fun Stage(name: String, height: Dp, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
+    val shape = RoundedCornerShape(Spacing.CardRadius)
+    PixelBackground(name, modifier.fillMaxWidth().height(height).clip(shape).border(1.dp, Pixel.Border, shape), content = content)
 }
 
 private const val FRAME = 2

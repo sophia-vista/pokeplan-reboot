@@ -1,8 +1,7 @@
 package app.pokeplan.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.border
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -60,6 +59,9 @@ class AppModel(val store: GameStore, val motion: MotionSource? = null, val sync:
 
     var data: AppData by mutableStateOf(store.data)
         private set
+
+    /** A task picked on Home or in the Planner to focus on; the Focus screen offers it when it opens. */
+    var focusTaskId: String? by mutableStateOf(null)
 
     /** The current time, refreshed twice a second so timers redraw. */
     var now: Long by mutableStateOf(store.nowMillis)
@@ -145,7 +147,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab) {
     val go = { to: Tab -> selected = to.name }
 
     Column(Modifier.fillMaxSize()) {
-        PixelBackground(tab.background, Modifier.weight(1f).fillMaxWidth()) {
+        Box(Modifier.weight(1f).fillMaxWidth()) {
             when (tab) {
                 Tab.HOME -> HomeScreen(model, go)
                 Tab.PLANNER -> PlannerScreen(model)
@@ -155,8 +157,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab) {
             }
         }
         Row(
-            Modifier.fillMaxWidth().shadow(10.dp, RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp))
-                .background(Color.White, RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp))
+            Modifier.fillMaxWidth().background(Color.White).border(1.dp, Pixel.Border)
                 .padding(horizontal = 8.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {

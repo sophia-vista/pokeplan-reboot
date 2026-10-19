@@ -39,6 +39,7 @@ import app.pokeplan.plan.FocusRules
 import app.pokeplan.plan.Phase
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
+import app.pokeplan.ui.Stage
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
@@ -50,7 +51,7 @@ import app.pokeplan.ui.theme.TextBox
 fun FocusScreen(model: AppModel) {
     val session = model.data.focus
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader("Focus", subtitle = if (session == null) "Hatch an egg" else if (session.deepFocus) "Deep Focus" else "Egg incubating")
+        ScreenHeader("Focus", subtitle = if (session == null) "Hatch an egg" else if (session.deepFocus) "Deep Focus" else "Egg incubating", icon = "mystery-egg")
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -98,10 +99,10 @@ private fun SetupView(model: AppModel) {
     val settings = model.data.settings
     var minutes by remember { mutableStateOf(settings.defaultFocusMinutes) }
     var deep by remember { mutableStateOf(settings.deepFocus) }
-    var taskId by remember { mutableStateOf<String?>(null) }
+    var taskId by remember { mutableStateOf(model.focusTaskId) }
     val tasks = store.todayTasks()
 
-    ItemIcon("mystery-egg", size = 128.dp)
+    Stage("bw11", 168.dp) { ItemIcon("mystery-egg", size = 128.dp, modifier = Modifier.align(Alignment.Center)) }
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
