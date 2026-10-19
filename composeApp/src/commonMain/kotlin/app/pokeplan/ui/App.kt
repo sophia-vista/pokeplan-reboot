@@ -27,6 +27,7 @@ import app.pokeplan.app.GameStore
 import app.pokeplan.app.Storage
 import app.pokeplan.app.cloud.CloudClient
 import app.pokeplan.app.cloud.CloudConfig
+import app.pokeplan.app.cloud.SocialClient
 import app.pokeplan.app.cloud.SyncManager
 import app.pokeplan.app.cloud.SyncStatus
 import io.ktor.client.HttpClient
@@ -52,7 +53,7 @@ enum class Tab(val label: String, val icon: String, val background: String) {
 }
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
-class AppModel(val store: GameStore, val motion: MotionSource? = null, val sync: SyncManager? = null) {
+class AppModel(val store: GameStore, val motion: MotionSource? = null, val sync: SyncManager? = null, val social: SocialClient? = null) {
     /** Where the cloud sync stands, for Settings. */
     var syncStatus: SyncStatus by mutableStateOf(sync?.status?.value ?: SyncStatus.SignedOut)
         internal set
@@ -89,8 +90,8 @@ fun App(
     val model = remember {
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
-        val sync = if (cloud.enabled) SyncManager(store, CloudClient(cloud, HttpClient()) { clock.nowMillis() }) else null
-        AppModel(store, motion, sync)
+        val client = if (cloud.enabled) CloudClient(cloud, HttpClient()) { clock.nowMillis() } else null
+        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) })
     }
     val store = model.store
 
