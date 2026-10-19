@@ -19,7 +19,9 @@ import urllib.request
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 CACHE = os.path.join(ROOT, 'tools/species/cache')
 OUT = os.path.join(ROOT, 'assets/sprites')
-BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/'
+# Pinned to one commit for reproducibility. To update: git ls-remote https://github.com/PokeAPI/sprites refs/heads/master
+SPRITES_COMMIT = '7a7d66b1620e646f69afd48dc1273da9033ede9c'
+BASE = f'https://raw.githubusercontent.com/PokeAPI/sprites/{SPRITES_COMMIT}/sprites/pokemon/'
 ALL_VARIANTS = [('front', '{id}.png', '{id}.png'), ('shiny', 'shiny/{id}.png', '{id}-shiny.png'),
                 ('back', 'back/{id}.png', '{id}-back.png'), ('back-shiny', 'back/shiny/{id}.png', '{id}-back-shiny.png')]
 # The app has no battles, so back sprites are skipped unless asked for (they double the size).

@@ -16,7 +16,10 @@ import sys
 import urllib.request
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-BASE = 'https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/'
+# Pinned to one commit so the generated data is reproducible (and CI does not break when upstream changes).
+# To update: git ls-remote https://github.com/PokeAPI/pokeapi refs/heads/master, change the SHA, regenerate, review the diff.
+POKEAPI_COMMIT = '6fd69dfe90465ba96534f6816fc817737d1f97f6'
+BASE = f'https://raw.githubusercontent.com/PokeAPI/pokeapi/{POKEAPI_COMMIT}/data/v2/csv/'
 FILES = ['pokemon', 'pokemon_species', 'pokemon_species_names', 'pokemon_stats', 'pokemon_types', 'types',
          'pokemon_abilities', 'abilities', 'ability_names', 'pokemon_evolution', 'pokemon_forms',
          'pokedexes', 'pokemon_dex_numbers', 'items', 'moves', 'locations', 'pokemon_species_flavor_text']
