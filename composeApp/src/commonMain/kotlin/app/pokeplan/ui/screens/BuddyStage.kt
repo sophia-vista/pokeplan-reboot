@@ -10,10 +10,12 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -47,7 +49,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import app.pokeplan.app.BuddyEventNow
+import app.pokeplan.app.BuddyReaction
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.ui.AnimatedSprite
@@ -71,28 +75,29 @@ fun BuddyStage(
     modifier: Modifier = Modifier,
 ) {
     var taps by remember { mutableIntStateOf(0) }
-    var celebration by remember { mutableIntStateOf(0) }
-    var message by remember { mutableStateOf<String?>(null) }
+    var reaction by remember { mutableStateOf<String?>(null) }
+    var reactionId by remember { mutableIntStateOf(0) }
     val hop = remember { Animatable(0f) }
 
-    // A pet or a berry: one hop and hearts.
-    LaunchedEffect(taps) {
-        if (taps == 0 || calm) return@LaunchedEffect
-        hop.animateTo(-16f, tween(110))
-        hop.animateTo(0f, tween(150))
+    // Every reaction is one emoji above the buddy for a moment; a pet, a berry or an event also gets a hop.
+    fun react(emoji: String) {
+        reaction = emoji
+        reactionId++
     }
-    // A real event: its message for a few seconds and two hops with sparkles, once per event.
+    LaunchedEffect(reactionId) {
+        if (reactionId == 0) return@LaunchedEffect
+        if (!calm) {
+            hop.animateTo(-16f, tween(110))
+            hop.animateTo(0f, tween(150))
+        }
+        delay(2_200)
+        reaction = null
+    }
+    // A real event: its emoji, once per event (not again each time Home is opened).
     LaunchedEffect(event?.atMillis) {
         if (event == null || event.atMillis <= celebrated) return@LaunchedEffect
         onCelebrated(event.atMillis)
-        celebration++
-        message = event.event.message
-        if (!calm) repeat(2) {
-            hop.animateTo(-22f, tween(130))
-            hop.animateTo(0f, tween(170))
-        }
-        delay(3_500)
-        message = null
+        react(event.event.emoji)
     }
 
     // Species without an animation drift up and down very slowly so the scene is never frozen.
@@ -102,19 +107,21 @@ fun BuddyStage(
     val shape = RoundedCornerShape(Spacing.CardRadius)
     Box(modifier.fillMaxWidth().height(216.dp).clip(shape).border(1.dp, Pixel.Border, shape)) {
         SceneImage(scene, Modifier.matchParentSize(), night)
-        Box(
-            Modifier.align(Alignment.BottomCenter).padding(bottom = 38.dp).size(120.dp, 20.dp)
-                .drawBehind { drawOval(Color(0x40000000), Offset.Zero, Size(size.width, size.height)) },
-        )
-        Sparkles(celebration, calm, Modifier.align(Alignment.BottomCenter).padding(bottom = 80.dp))
-        Hearts(taps, calm, Modifier.align(Alignment.BottomCenter).padding(bottom = 130.dp))
+        // A small shadow made of a few flat rows, so it matches the pixels of the sprite.
+        Canvas(Modifier.align(Alignment.BottomCenter).padding(bottom = 40.dp).size(72.dp, 12.dp)) {
+            val rows = floatArrayOf(0.55f, 0.85f, 1f, 0.85f, 0.55f)
+            val rowHeight = size.height / rows.size
+            rows.forEachIndexed { i, share ->
+                drawRect(Color(0x40000000), Offset((size.width - size.width * share) / 2, i * rowHeight), Size(size.width * share, rowHeight))
+            }
+        }
         AnimatedSprite(
             buddy.form.id, buddy.isShiny, "${buddy.nickname}, level ${buddy.level}",
             Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp)
                 .offset { IntOffset(0, (hop.value + bob).dp.roundToPx()) }
-                .clickable(onClickLabel = "Pet ${buddy.nickname}", role = Role.Button) {
+                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Pet ${buddy.nickname}", role = Role.Button) {
                     onPet()
-                    taps++
+                    react(BuddyReaction.PET)
                 },
             size = 144.dp, animate = !calm && !resting,
         )
@@ -131,80 +138,17 @@ fun BuddyStage(
             }
         }
 
-        AnimatedVisibility(message != null, Modifier.align(Alignment.TopCenter).padding(top = Spacing.S), enter = fadeIn(), exit = fadeOut()) {
-            Text(
-                message ?: "", style = MaterialTheme.typography.labelMedium, color = Pixel.Ink,
-                modifier = Modifier.background(Color(0xE6FFFFFF), RoundedCornerShape(50)).padding(horizontal = Spacing.M, vertical = 5.dp),
-            )
+        AnimatedVisibility(reaction != null, Modifier.align(Alignment.Center).padding(bottom = 120.dp), enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut()) {
+            Text(reaction ?: "", fontSize = 30.sp, modifier = Modifier.semantics { contentDescription = "reaction" })
         }
 
         if (berry != null) Box(
             Modifier.align(Alignment.BottomEnd).padding(Spacing.S).size(40.dp).background(Color(0xCCFFFFFF), CircleShape)
-                .clickable(onClickLabel = "Give ${buddy.nickname} a ${Items.get(berry)?.name ?: berry}", role = Role.Button) {
+                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Give ${buddy.nickname} a ${Items.get(berry)?.name ?: berry}", role = Role.Button) {
                     onFeed()
-                    taps++
+                    react(BuddyReaction.FEED)
                 },
             contentAlignment = Alignment.Center,
         ) { ItemIcon(berry, size = 28.dp, description = Items.get(berry)?.name ?: berry) }
-    }
-}
-
-/** A few hearts rise from the buddy and fade out after each pet. */
-@Composable
-private fun Hearts(taps: Int, calm: Boolean, modifier: Modifier = Modifier) {
-    val rise = remember { Animatable(1f) }
-    LaunchedEffect(taps) {
-        if (taps == 0) return@LaunchedEffect
-        rise.snapTo(0f)
-        rise.animateTo(1f, tween(if (calm) 400 else 900))
-    }
-    if (rise.value >= 1f) return
-    Box(modifier.size(96.dp, 80.dp).graphicsLayer { alpha = 1f - rise.value }) {
-        listOf(0.dp to 0f, 40.dp to 0.25f, 72.dp to 0.1f).forEach { (x, delayShare) ->
-            val t = ((rise.value - delayShare) / (1f - delayShare)).coerceIn(0f, 1f)
-            Canvas(Modifier.offset(x = x, y = 60.dp - (if (calm) 0.dp else 60.dp * t)).size(22.dp)) {
-                val w = size.width
-                val h = size.height
-                drawPath(
-                    Path().apply {
-                        moveTo(w / 2, h * 0.92f)
-                        cubicTo(-w * 0.15f, h * 0.45f, w * 0.15f, -h * 0.1f, w / 2, h * 0.28f)
-                        cubicTo(w * 0.85f, -h * 0.1f, w * 1.15f, h * 0.45f, w / 2, h * 0.92f)
-                        close()
-                    },
-                    Pixel.Red,
-                )
-            }
-        }
-    }
-}
-
-/** A short burst of little stars around the buddy for a real event. */
-@Composable
-private fun Sparkles(celebration: Int, calm: Boolean, modifier: Modifier = Modifier) {
-    val progress = remember { Animatable(1f) }
-    LaunchedEffect(celebration) {
-        if (celebration == 0) return@LaunchedEffect
-        progress.snapTo(0f)
-        progress.animateTo(1f, tween(if (calm) 500 else 1_400))
-    }
-    if (progress.value >= 1f) return
-    Canvas(modifier.size(170.dp, 110.dp).graphicsLayer { alpha = 1f - progress.value }) {
-        val t = progress.value
-        listOf(
-            Offset(0.12f, 0.70f) to 10f, Offset(0.30f, 0.25f) to 14f, Offset(0.55f, 0.10f) to 9f,
-            Offset(0.78f, 0.30f) to 13f, Offset(0.90f, 0.72f) to 10f, Offset(0.5f, 0.55f) to 8f,
-        ).forEach { (at, radius) ->
-            val c = Offset(at.x * size.width, at.y * size.height - (if (calm) 0f else 26f * t))
-            val r = radius * density
-            drawPath(
-                Path().apply {
-                    moveTo(c.x, c.y - r); lineTo(c.x + r * 0.28f, c.y - r * 0.28f); lineTo(c.x + r, c.y)
-                    lineTo(c.x + r * 0.28f, c.y + r * 0.28f); lineTo(c.x, c.y + r); lineTo(c.x - r * 0.28f, c.y + r * 0.28f)
-                    lineTo(c.x - r, c.y); lineTo(c.x - r * 0.28f, c.y - r * 0.28f); close()
-                },
-                Pixel.Yellow,
-            )
-        }
     }
 }

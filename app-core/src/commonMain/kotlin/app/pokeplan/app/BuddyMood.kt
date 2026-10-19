@@ -23,12 +23,18 @@ object BuddyScene {
 }
 
 /**
- * What just happened that is worth a short factual message and one small celebration. The buddy never chats otherwise:
- * no permanent speech bubble, no needs, no mood meter.
+ * What just happened that is worth a small reaction: the buddy answers with one emoji above its head, like a game emote,
+ * and never with sentences. There is no permanent speech bubble, no needs and no mood meter.
  */
-enum class BuddyEvent(val message: String) {
-    HATCHED("A new Pokémon hatched!"),
-    DONE("Nice work!"),
+enum class BuddyEvent(val emoji: String) {
+    HATCHED("🎉"),
+    DONE("✨"),
+}
+
+/** The emoji for the buddy's other reactions. */
+object BuddyReaction {
+    const val PET = "❤️"
+    const val FEED = "😋"
 }
 
 /** A [BuddyEvent] and when its reward was paid, so a screen can celebrate it once and not again every time it is opened. */

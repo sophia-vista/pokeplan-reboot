@@ -13,7 +13,7 @@ import kotlin.math.roundToInt
 /**
  * Bitmaps for the widgets, all made from the app's real assets (sprites, items, box wallpapers). Widgets cannot use the
  * Compose renderer, so the tiling and the rounded corners are done here with a Canvas. Nothing here draws pixel art;
- * the only shapes drawn in code are the shadow under the buddy and the hearts of a pet, which are UI chrome.
+ * the only shape drawn in code is the small shadow under the buddy, which is UI chrome.
  */
 object WidgetArt {
     private val cache = LinkedHashMap<String, Bitmap>()
@@ -94,32 +94,32 @@ object WidgetArt {
             out
         }
 
-    /** What a still picture of the buddy shows around it. */
-    enum class Effect { NONE, HEARTS, SPARKLES }
-
     private const val CANVAS = 192
 
     /** One square picture of the buddy standing on a soft shadow, bottom-centred; [sprite] is enlarged by [scale] without smoothing. */
-    private fun standing(sprite: Bitmap, scale: Int, effect: Effect): Bitmap {
+    private fun standing(sprite: Bitmap, scale: Int, lifted: Boolean): Bitmap {
         val scaled = Bitmap.createScaledBitmap(sprite, sprite.width * scale, sprite.height * scale, false)
         val out = Bitmap.createBitmap(CANVAS, CANVAS, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(out)
-        canvas.drawOval(RectF(CANVAS * 0.2f, CANVAS - 26f, CANVAS * 0.8f, CANVAS - 8f), Paint().apply { color = Color.argb(70, 0, 0, 0); isAntiAlias = true })
-        val lift = if (effect == Effect.NONE) 0f else 14f
-        canvas.drawBitmap(scaled, (CANVAS - scaled.width) / 2f, CANVAS - scaled.height - 12f - lift, Paint().apply { isFilterBitmap = false })
-        when (effect) {
-            Effect.HEARTS -> { heart(canvas, CANVAS * 0.18f, 30f, 22f); heart(canvas, CANVAS * 0.45f, 4f, 26f); heart(canvas, CANVAS * 0.70f, 22f, 20f) }
-            Effect.SPARKLES -> { star(canvas, CANVAS * 0.2f, 40f, 9f); star(canvas, CANVAS * 0.5f, 10f, 12f); star(canvas, CANVAS * 0.8f, 36f, 8f); star(canvas, CANVAS * 0.35f, 70f, 6f) }
-            Effect.NONE -> Unit
+        // A small shadow of a few flat rows, so it matches the pixels of the sprite.
+        val shadow = Paint().apply { color = Color.argb(70, 0, 0, 0); isAntiAlias = false }
+        val rows = floatArrayOf(0.55f, 0.85f, 1f, 0.85f, 0.55f)
+        val rowHeight = 4f
+        rows.forEachIndexed { i, share ->
+            val width = CANVAS * 0.34f * share
+            val top = CANVAS - 6f - rowHeight * (rows.size - i)
+            canvas.drawRect(CANVAS / 2f - width / 2, top, CANVAS / 2f + width / 2, top + rowHeight, shadow)
         }
+        val lift = if (lifted) 14f else 0f
+        canvas.drawBitmap(scaled, (CANVAS - scaled.width) / 2f, CANVAS - scaled.height - 12f - lift, Paint().apply { isFilterBitmap = false })
         return out
     }
 
     /** A still picture of the buddy from its regular sprite. */
-    fun still(context: Context, formId: Int, shiny: Boolean, effect: Effect = Effect.NONE): Bitmap? =
-        remember("still:$formId:$shiny:$effect") {
+    fun still(context: Context, formId: Int, shiny: Boolean, lifted: Boolean = false): Bitmap? =
+        remember("still:$formId:$shiny:$lifted") {
             val sprite = asset(context, "sprites/${if (shiny) "$formId-shiny" else "$formId"}.png") ?: return@remember null
-            standing(sprite, 2, effect)
+            standing(sprite, 2, lifted)
         }
 
     private var animations: Map<Int, Triple<Int, Int, IntArray>>? = null
@@ -154,37 +154,12 @@ object WidgetArt {
             var index = 0
             var elapsed = 0
             while (index < times.size - 1 && elapsed + times[index] <= at) { elapsed += times[index]; index++ }
-            standing(Bitmap.createBitmap(sheet, index * w, 0, w, h), scale, Effect.NONE)
+            standing(Bitmap.createBitmap(sheet, index * w, 0, w, h), scale, false)
         }
     }
 
     const val FLIP_MILLIS = 200
     private const val MAX_FRAMES = 20
-
-    /** A small red heart, used for pets and friendship. */
-    fun heart(size: Int): Bitmap = remember("heart:$size") {
-        Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888).also { heart(Canvas(it), 0f, 0f, size.toFloat()) }
-    }!!
-
-    private fun heart(canvas: Canvas, left: Float, top: Float, size: Float) {
-        val w = size
-        val h = size
-        val path = Path().apply {
-            moveTo(left + w / 2, top + h * 0.92f)
-            cubicTo(left - w * 0.15f, top + h * 0.45f, left + w * 0.15f, top - h * 0.1f, left + w / 2, top + h * 0.28f)
-            cubicTo(left + w * 0.85f, top - h * 0.1f, left + w * 1.15f, top + h * 0.45f, left + w / 2, top + h * 0.92f)
-            close()
-        }
-        canvas.drawPath(path, Paint().apply { color = Color.rgb(0xE8, 0x44, 0x36); isAntiAlias = true })
-    }
-
-    private fun star(canvas: Canvas, cx: Float, cy: Float, r: Float) {
-        val path = Path().apply {
-            moveTo(cx, cy - r); lineTo(cx + r * 0.28f, cy - r * 0.28f); lineTo(cx + r, cy); lineTo(cx + r * 0.28f, cy + r * 0.28f)
-            lineTo(cx, cy + r); lineTo(cx - r * 0.28f, cy + r * 0.28f); lineTo(cx - r, cy); lineTo(cx - r * 0.28f, cy - r * 0.28f); close()
-        }
-        canvas.drawPath(path, Paint().apply { color = Color.rgb(0xFF, 0xCB, 0x05); isAntiAlias = true })
-    }
 
     /** An item icon (a berry, the egg) enlarged by a whole number without smoothing. */
     fun item(context: Context, id: String, scale: Int): Bitmap? = remember("item:$id:$scale") {
