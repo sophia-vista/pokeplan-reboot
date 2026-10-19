@@ -179,8 +179,18 @@ object Perks {
         PerkCondition.TOP_RANK_TASK -> ctx.taskRank == 5
     }
 
-    fun total(buddy: OwnedPokemon?, party: List<OwnedPokemon> = emptyList(), ctx: PerkContext = PerkContext()): PerkBonuses {
-        if (buddy == null) return PerkBonuses()
+    /**
+     * The perks from the buddy, its held item and ability, and the party, plus the slotted [guardians]. Guardian perks are
+     * added on top of the ordinary cap (see [Guardians]), so they work even with no buddy.
+     */
+    fun total(
+        buddy: OwnedPokemon?,
+        party: List<OwnedPokemon> = emptyList(),
+        ctx: PerkContext = PerkContext(),
+        guardians: List<OwnedPokemon> = emptyList(),
+    ): PerkBonuses {
+        val guardian = Guardians.perks(guardians)
+        if (buddy == null) return PerkBonuses(guardian)
         val sums = mutableMapOf<PerkBucket, Double>()
         fun add(bucket: PerkBucket, value: Double) { sums[bucket] = (sums[bucket] ?: 0.0) + value }
 
@@ -196,6 +206,62 @@ object Perks {
         party.filter { it.inParty && it.id != buddy.id }.take(MAX_ASSISTS).forEach { assist ->
             typePerks(assist).forEach { (b, v) -> add(b, v * ASSIST_SHARE) }
         }
-        return PerkBonuses(sums.mapValues { it.value.coerceAtMost(BUCKET_CAP) }, evGain, keeps)
+        val ordinary = sums.mapValues { it.value.coerceAtMost(BUCKET_CAP) }
+        val combined = (ordinary.keys + guardian.keys).associateWith { (ordinary[it] ?: 0.0) + (guardian[it] ?: 0.0) }
+        return PerkBonuses(combined, evGain, keeps)
+    }
+}
+
+/**
+ * The Guardian role of legendary-class and mythical Pokémon: slotted by trainer rank, a big perk each, outside the usual cap.
+ * See "Guardians" in docs/design.md. Numbers are *(tune)*.
+ */
+object Guardians {
+    /** The signature perk of a Guardian, percent. */
+    const val SIGNATURE_PERCENT = 10.0
+
+    /** A second type gives this share of the signature perk. */
+    const val SECOND_TYPE_SHARE = 0.5
+
+    /** The most Guardians can add to one bucket, on top of the ordinary cap. */
+    const val BUCKET_CAP = 15.0
+
+    /** Where lore, rather than type, decides the signature bucket (by species identifier). */
+    private val lore: Map<String, PerkBucket> = mapOf(
+        "uxie" to PerkBucket.SUPER_CANDY_CHANCE, // knowledge
+        "mesprit" to PerkBucket.STREAK_KEEPER, // emotion
+        "azelf" to PerkBucket.CANDY_YIELD, // willpower
+        "jirachi" to PerkBucket.EGG_LUCK, // wishes
+        "celebi" to PerkBucket.STREAK_KEEPER, // time
+    )
+
+    /** How many Guardian slots a trainer of [rankIndex] (0 is the first rank) has. */
+    fun slots(rankIndex: Int): Int = when {
+        rankIndex >= 9 -> 3
+        rankIndex >= 6 -> 2
+        rankIndex >= 4 -> 1
+        else -> 0
+    }
+
+    /** Only legendary-class and mythical Pokémon can be Guardians. */
+    fun canBe(p: OwnedPokemon): Boolean = p.species.isSpecial
+
+    /** One Guardian's signature perk(s): percent per bucket. */
+    fun signature(p: OwnedPokemon): Map<PerkBucket, Double> {
+        val types = p.form.types
+        val primary = lore[p.species.identifier] ?: TypePerks.bucket(types.first())
+        val result = mutableMapOf(primary to SIGNATURE_PERCENT)
+        types.getOrNull(1)?.let { second ->
+            val bucket = TypePerks.bucket(second)
+            result[bucket] = (result[bucket] ?: 0.0) + SIGNATURE_PERCENT * SECOND_TYPE_SHARE
+        }
+        return result
+    }
+
+    /** The combined Guardian perks, each bucket capped at [BUCKET_CAP]. Anything that is not a Guardian species is ignored. */
+    fun perks(guardians: List<OwnedPokemon>): Map<PerkBucket, Double> {
+        val sums = mutableMapOf<PerkBucket, Double>()
+        guardians.filter(::canBe).forEach { g -> signature(g).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v } }
+        return sums.mapValues { it.value.coerceAtMost(BUCKET_CAP) }
     }
 }

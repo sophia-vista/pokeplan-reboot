@@ -7,6 +7,7 @@ import app.pokeplan.core.pokemon.CandyRules
 import app.pokeplan.core.pokemon.EvolutionContext
 import app.pokeplan.core.pokemon.EvolutionOption
 import app.pokeplan.core.pokemon.EvolutionRules
+import app.pokeplan.core.pokemon.Guardians
 import app.pokeplan.core.pokemon.Hatching
 import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.ItemEffects
@@ -436,9 +437,11 @@ class GameStore(
     private fun replace(p: OwnedPokemon) =
         update { d -> d.copy(player = d.player.copy(pokemon = d.player.pokemon.map { if (it.id == p.id) p else it })) }
 
-    fun setBuddy(id: String) {
-        pokemon(id)
+    /** Makes a Pokémon the buddy. Guardians (legendaries and mythicals) cannot be buddies. Returns false if refused. */
+    fun setBuddy(id: String): Boolean {
+        if (Guardians.canBe(pokemon(id))) return false
         update { d -> d.copy(player = d.player.copy(buddyId = id)) }
+        return true
     }
 
     fun rename(id: String, nickname: String) = replace(pokemon(id).withNickname(nickname))
@@ -446,11 +449,41 @@ class GameStore(
     /** Puts a Pokémon in or out of the party (up to six). Returns false if the party is full or it is the last one. */
     fun setInParty(id: String, inParty: Boolean): Boolean {
         val p = pokemon(id)
+        if (inParty && Guardians.canBe(p)) return false
         val partySize = data.player.party.size
         if (inParty && !p.inParty && partySize >= OwnedPokemon.PARTY_SIZE) return false
         if (!inParty && p.inParty && (partySize <= 1 || id == data.player.buddyId)) return false
         replace(p.copy(inParty = inParty))
         return true
+    }
+
+    // --- Guardians ----------------------------------------------------------------------------------------------------
+
+    /** How many Guardians the player can slot at their rank. */
+    val guardianSlots: Int get() = Guardians.slots(data.player.rank)
+
+    /** Owned legendaries and mythicals, slotted or not. */
+    val guardianCandidates: List<OwnedPokemon> get() = data.player.pokemon.filter(Guardians::canBe)
+
+    /** Puts a Guardian in a free slot. Returns false if it is not a Guardian, is already slotted, or every slot is taken. */
+    fun slotGuardian(id: String): Boolean {
+        val p = pokemon(id)
+        if (!Guardians.canBe(p) || id in data.player.guardians || data.player.guardians.size >= guardianSlots) return false
+        update { d -> d.copy(player = d.player.copy(guardians = d.player.guardians + id)) }
+        return true
+    }
+
+    fun unslotGuardian(id: String) = update { d -> d.copy(player = d.player.copy(guardians = d.player.guardians - id)) }
+
+    /** Gives the player a Pokémon outright (a quest reward). It goes to the Guardian collection if it is a legendary or mythical. */
+    fun grantPokemon(speciesId: Int, source: String): OwnedPokemon {
+        val option = HatchOption(speciesId, Dex.defaultForm(speciesId).identifier)
+        val p = Hatching.create(newId(), option, OwnedPokemon.PARTY_SIZE, nowMillis, 60, rng).copy(inParty = false)
+        update { d ->
+            log(source, listOf(Reward.Hatched(p, fromTask = false)),
+                d.copy(player = d.player.copy(pokemon = d.player.pokemon + p, caught = d.player.caught + p.speciesId)))
+        }
+        return p
     }
 
     fun setTrainingPlan(id: String, plan: List<Stat>) = replace(pokemon(id).copy(trainingPlan = plan.distinct().take(2)))

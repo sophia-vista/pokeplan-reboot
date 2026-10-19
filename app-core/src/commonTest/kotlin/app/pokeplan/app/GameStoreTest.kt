@@ -286,4 +286,58 @@ class GameStoreTest {
         assertTrue(s.toggleRestDay(s.today))
         assertFalse(s.today in s.data.restDays)
     }
+
+    private fun GameStore.withPoints(points: Int): GameStore {
+        // Rank is decided by trainer points; the test store is loaded from a save that already has them.
+        val text = GameStore.json.encodeToString(AppData.serializer(), data.copy(player = data.player.copy(trainerPoints = points)))
+        return GameStore(MemoryStorage(text), Clock { nowMillis }, kotlinx.datetime.TimeZone.UTC, Random(8))
+    }
+
+    private val mewSpecies = app.pokeplan.core.dex.Dex.species.first { it.identifier == "mew" }.id
+    private val uxieSpecies = app.pokeplan.core.dex.Dex.species.first { it.identifier == "uxie" }.id
+
+    @Test
+    fun aGuardianCannotBeTheBuddyOrJoinTheParty() {
+        val (s0, _) = started()
+        val s = s0.withPoints(3_300)
+        val mew = s.grantPokemon(mewSpecies, "Quest: Mew")
+        assertFalse(mew.inParty)
+        assertFalse(s.setBuddy(mew.id))
+        assertFalse(s.setInParty(mew.id, true))
+        assertEquals(0, s.feedRareCandy(mew.id, 5))
+        assertFalse(s.transfer(mew.id), "legendaries cannot be transferred")
+        assertTrue(mewSpecies in s.data.player.caught)
+    }
+
+    @Test
+    fun guardiansNeedASlotAndSlotsOpenWithRank() {
+        val (s0, _) = started()
+        val low = s0.withPoints(700)
+        val mew = low.grantPokemon(mewSpecies, "Quest")
+        assertEquals(0, low.guardianSlots)
+        assertFalse(low.slotGuardian(mew.id))
+
+        val s = s0.withPoints(3_300) // rank 4: one slot
+        val m = s.grantPokemon(mewSpecies, "Quest")
+        val u = s.grantPokemon(uxieSpecies, "Quest")
+        assertEquals(1, s.guardianSlots)
+        assertTrue(s.slotGuardian(m.id))
+        assertFalse(s.slotGuardian(m.id), "already slotted")
+        assertFalse(s.slotGuardian(u.id), "no free slot")
+        s.unslotGuardian(m.id)
+        assertTrue(s.slotGuardian(u.id))
+        assertEquals(listOf(u.id), s.data.player.guardians)
+        assertFalse(s.slotGuardian(s.data.player.buddyId!!), "an ordinary Pokémon is not a Guardian")
+    }
+
+    @Test
+    fun aSlottedGuardianBoostsRewards() {
+        val (s0, clock) = started()
+        val s = s0.withPoints(3_300)
+        val u = s.grantPokemon(uxieSpecies, "Quest")
+        s.slotGuardian(u.id)
+        val perks = app.pokeplan.core.pokemon.Perks.total(s.data.player.buddy, s.data.player.party, guardians = s.data.player.guardianPokemon)
+        assertEquals(app.pokeplan.core.pokemon.Guardians.SIGNATURE_PERCENT,
+            perks[app.pokeplan.core.pokemon.PerkBucket.SUPER_CANDY_CHANCE] - app.pokeplan.core.pokemon.Perks.total(s.data.player.buddy, s.data.player.party)[app.pokeplan.core.pokemon.PerkBucket.SUPER_CANDY_CHANCE], 1e-9)
+    }
 }

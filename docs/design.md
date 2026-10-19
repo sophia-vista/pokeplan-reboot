@@ -249,6 +249,16 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 - **Stats matter:** perk strength scales with the relevant stat (e.g. Attack for candy yield) and nature, so raising and training a partner pays.
 - **Caps:** total bonus from perks, held item and party assists stays below +25% *(tune)* so no single buddy breaks the economy.
 
+## Guardians (legendaries and mythicals)
+
+*Direction from the owner: legendaries and mythicals act differently from ordinary Pokémon. They slot into a **Guardian** role and give **big boosts**.* The numbers below are a first proposal *(tune)*.
+
+- **A different role, not a bigger buddy.** Legendary-class and mythical Pokémon (the ones kept out of every egg pool) are **Guardians**. They cannot be the buddy, cannot join the party, cannot be transferred, and do not take Rare Candies or evolve: they are already at full power. They live in their own **Guardians** section of the Pokémon tab. They are earned through quests (see "Legendaries and mythicals"), never hatched.
+- **Guardian slots.** The player slots Guardians into a small number of slots, opened by trainer rank: **1 slot at rank 4** (the same rank that reveals legendary quests), **2 at rank 6**, **3 at rank 9** *(tune)*. A slotted Guardian can be swapped at any time, like the buddy.
+- **Big boosts.** Each Guardian has a **signature perk** in one of the existing buckets (Egg luck, Candy yield, Super Candy chance, Item finder, Shiny hunter, Streak keeper, Coins) worth **+10%**, plus half of that as a second perk from its second type where it has one. By default the bucket follows the Guardian's primary type, as for ordinary perks; lore gives overrides (Uxie: Super Candy chance for knowledge, Mesprit: Streak keeper for emotion, Azelf: Candy yield for willpower, Jirachi: Egg luck for wishes, Celebi: Streak keeper for time).
+- **Outside the cap.** The ordinary perk cap (+25% per bucket from buddy, held item and assists) does not apply to Guardians: their bonus is added on top, up to **+15%** in a bucket from Guardians, so a bucket can reach +40%. A Guardian's perk does not depend on level or friendship, which is what makes it different from the buddy's.
+- **Why.** The buddy is the one you grow and bond with; Guardians are the rare, hard-earned reward for sustained effort. A new Guardian changes how you play (which bucket do I want this week?) without adding a second thing to level.
+
 ## Retention
 
 - **Forgiving daily streak:** kept alive by one paid task **or** one completed focus session that day. **Everyone gets one free missed day per week** that does not break it, and Home shows "active days this week" as a ring. Weekly goals, and a Pokédex with seen/caught, region completion rewards and a trainer card.

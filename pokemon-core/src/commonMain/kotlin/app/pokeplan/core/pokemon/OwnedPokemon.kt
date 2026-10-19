@@ -56,7 +56,8 @@ data class OwnedPokemon(
 
     val bondStyle: BondStyle get() = nature.bondStyle
 
-    val canFeed: Boolean get() = level < CandyRules.MAX_LEVEL
+    /** Guardians (legendaries and mythicals) do not take candies: they are already at full power. */
+    val canFeed: Boolean get() = level < CandyRules.MAX_LEVEL && !species.isSpecial
 
     /**
      * Feeds one Rare Candy. [partnerLevel] is the level of the player's strongest partner, for the catch-up discount.
