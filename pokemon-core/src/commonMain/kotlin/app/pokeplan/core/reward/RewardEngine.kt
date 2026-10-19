@@ -27,9 +27,14 @@ data class PlayerState(
     val coins: Int = 0,
     /** Points towards the next Task Egg. */
     val eggMeter: Int = 0,
+    /** Trainer rank points, earned from rewards in every app. */
+    val trainerPoints: Int = 0,
 ) {
     val buddy: OwnedPokemon? get() = pokemon.firstOrNull { it.id == buddyId }
     val party: List<OwnedPokemon> get() = pokemon.filter { it.inParty }
+
+    /** The rank index (0 is the first rank). */
+    val rank: Int get() = TrainerRank.rankFor(trainerPoints)
 }
 
 sealed interface Reward {
@@ -155,7 +160,10 @@ object RewardEngine {
         val pokemon = (state.pokemon + hatched).map {
             if (it.id == buddy?.id) it.gainFriendship(FriendshipRules.Source.FOCUS_SESSION) else it
         }
-        return Outcome(state.copy(pokemon = pokemon, inventory = inventory, coins = state.coins + coins), rewards)
+        return Outcome(
+            state.copy(pokemon = pokemon, inventory = inventory, coins = state.coins + coins, trainerPoints = state.trainerPoints + TrainerRank.pointsForEffort(e.minutes)),
+            rewards,
+        )
     }
 
     fun achievement(state: PlayerState, e: AchievementEvent, rng: Random): Outcome {
@@ -214,6 +222,9 @@ object RewardEngine {
             pokemon = pokemon + egg
             rewards += Reward.Hatched(egg, fromTask = true)
         }
-        return Outcome(state.copy(pokemon = pokemon, inventory = inventory, coins = coins, eggMeter = meter), rewards)
+        return Outcome(
+            state.copy(pokemon = pokemon, inventory = inventory, coins = coins, eggMeter = meter, trainerPoints = state.trainerPoints + TrainerRank.pointsForAchievement(tier)),
+            rewards,
+        )
     }
 }

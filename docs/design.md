@@ -71,11 +71,11 @@ The app never mentions ADHD; it just removes friction and shame.
 | Rank step | Appears |
 |---|---|
 | Start | tasks, habits, planner, focus, buddy, Rare Candy, eggs, the weekly review |
-| 1 | Super Candy and evolution, Pokédex, goals |
+| 1 | Super Candy and evolution, Pokédex, goals, daily mini-quests, the region picker (Kanto opens) |
 | 1 | daily mini-quests |
 | 2 | items, bag, shop, coins, the Growth screen, Lures, spotlight days |
 | 3 | training plans, natures and stats detail, IV judge, Tera, bond styles, mood check-in |
-| 4 | other regions, legendary quests |
+| 4 | legendary quests (regions keep opening, one per rank) |
 | 5 | contests, perfect dex, Hall of Fame |
 
 - **No shame:** warm, neutral copy; overdue is shown calmly (no red alarm styling); streaks forgive (see Retention); failing a focus session is recoverable in one tap.
@@ -218,7 +218,7 @@ Perfect builds are shown on a Pokémon's page and in the Hall of Fame; they have
 Planned, with build order to be set later.
 
 - **Mission board (Mystery Dungeon):** tasks are shown as a job board using their difficulty rank. Presentation only; rewards stay as designed.
-- **Trainer rank (Mystery Dungeon guild ranks):** a rank earned from total paid tasks, focus time and streaks. Ranks unlock regions. Rank names and thresholds *(tune)*.
+- **Trainer rank (Mystery Dungeon guild ranks):** one rank for the whole account, earned in every app: 2 points per tier of finished work (so 2 for an E task up to 10 for an A task) and 1 point per 5 minutes of effort. Ten ranks (Rookie, Apprentice, Trainer, Ace, Veteran, Expert, Elite, Champion, Master, Legend) at 0, 500, 1,100, 1,800, 2,600, 3,500, 4,500, 5,700, 7,000 and 8,500 points. Each rank opens the next region in order (Home, Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea) and reveals features (see the table above). Names and thresholds are *(tune)*, aimed at a new region every 3 to 4 weeks.
 - **Personality quiz starter (Mystery Dungeon):** onboarding asks a short quiz, which suggests a starter and a nature; the player can override.
 - **Poké Assist perks (Pokémon Ranger):** the buddy's type and ability perks are presented as assists. No extra mechanics.
 - **Weekly contests (Contests / Pokéathlon):** a friends-only weekly event scored by a buddy's stats, nature and training, with ribbons. Comes with the online release and gives stats and natures a purpose.
