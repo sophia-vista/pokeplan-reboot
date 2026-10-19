@@ -20,22 +20,23 @@ class TrainerRankTest {
     @Test
     fun rankFollowsPoints() {
         assertEquals(0, TrainerRank.rankFor(0))
-        assertEquals(0, TrainerRank.rankFor(499))
-        assertEquals(1, TrainerRank.rankFor(500))
-        assertEquals("Apprentice", TrainerRank.nameFor(600))
+        val first = TrainerRank.thresholds[1]
+        assertEquals(0, TrainerRank.rankFor(first - 1))
+        assertEquals(1, TrainerRank.rankFor(first))
+        assertEquals("Apprentice", TrainerRank.nameFor(first + 100))
         assertEquals(9, TrainerRank.rankFor(1_000_000))
-        assertEquals(1, TrainerRank.pointsToNext(499))
-        assertNull(TrainerRank.pointsToNext(9_000))
+        assertEquals(1, TrainerRank.pointsToNext(first - 1))
+        assertNull(TrainerRank.pointsToNext(TrainerRank.thresholds.last() + 1))
     }
 
     @Test
     fun regionsOpenOnePerRankStartingWithHome() {
         assertEquals(listOf(Region.HOME), TrainerRank.unlockedRegions(0))
-        assertEquals(listOf(Region.HOME, Region.KANTO), TrainerRank.unlockedRegions(500))
-        assertEquals(Region.entries, TrainerRank.unlockedRegions(8_500))
+        assertEquals(listOf(Region.HOME, Region.KANTO), TrainerRank.unlockedRegions(TrainerRank.thresholds[1]))
+        assertEquals(Region.entries, TrainerRank.unlockedRegions(TrainerRank.thresholds.last()))
         assertTrue(TrainerRank.isUnlocked(Region.HOME, 0))
-        assertFalse(TrainerRank.isUnlocked(Region.JOHTO, 499))
-        assertTrue(TrainerRank.isUnlocked(Region.JOHTO, 1_100))
+        assertFalse(TrainerRank.isUnlocked(Region.JOHTO, TrainerRank.thresholds[2] - 1))
+        assertTrue(TrainerRank.isUnlocked(Region.JOHTO, TrainerRank.thresholds[2]))
         assertEquals(2, TrainerRank.rankToUnlock(Region.JOHTO))
     }
 

@@ -23,7 +23,7 @@ object TrainerRank {
     )
 
     /** Points needed to reach each rank, aimed at a new region every 3 to 4 weeks for a typical player. */
-    val thresholds: List<Int> = listOf(0, 500, 1_100, 1_800, 2_600, 3_500, 4_500, 5_700, 7_000, 8_500)
+    val thresholds: List<Int> = listOf(0, 625, 1_375, 2_250, 3_250, 4_375, 5_625, 7_125, 8_750, 10_625)
 
     /** Points for finished work of [tier] (1 to 5). */
     fun pointsForAchievement(tier: Int): Int = tier * 2

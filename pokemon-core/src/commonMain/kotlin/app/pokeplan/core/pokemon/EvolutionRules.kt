@@ -29,6 +29,15 @@ object EvolutionRules {
     const val SUPER_CANDY = "super-candy"
     const val LINK_CORD = "link-cord"
 
+    /**
+     * In-app evolution levels are this fraction of the games' levels (rounded up, at least 2). There are no battles, so
+     * levels only pace progress, and the full game levels made evolving a whole region take months longer than the
+     * pacing target. *(tune)*
+     */
+    const val LEVEL_SCALE = 0.5
+
+    fun requiredLevel(e: Evolution): Int? = e.level?.let { maxOf(2, kotlin.math.ceil(it * LEVEL_SCALE).toInt()) }
+
     fun timeOfDay(hour: Int): TimeOfDay = when (hour) {
         in 6..16 -> TimeOfDay.DAY
         in 17..18 -> TimeOfDay.DUSK
@@ -74,7 +83,7 @@ object EvolutionRules {
     private fun missing(p: OwnedPokemon, e: Evolution, ctx: EvolutionContext): List<String> {
         val missing = mutableListOf<String>()
         e.gender?.let { if (p.gender != it) missing += "to be ${it.name.lowercase()}" }
-        fun level() = e.level?.let { if (p.level < it) missing += "level $it" }
+        fun level() = requiredLevel(e)?.let { if (p.level < it) missing += "level $it" }
         fun time() = e.timeOfDay?.let {
             if (timeOfDay(ctx.hourOfDay) != it) missing += "to be ${it.name.lowercase()}time"
         }

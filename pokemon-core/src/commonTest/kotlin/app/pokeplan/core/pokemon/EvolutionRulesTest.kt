@@ -15,16 +15,26 @@ class EvolutionRulesTest {
 
     @Test
     fun levelEvolutionNeedsTheLevelAndASuperCandy() {
-        val early = EvolutionRules.options(pokemon(Ids.BULBASAUR, level = 15), ctx(12, candy)).single()
-        assertEquals(listOf("level 16"), early.missing)
-        val noCandy = EvolutionRules.options(pokemon(Ids.BULBASAUR, level = 16), ctx()).single()
+        val early = EvolutionRules.options(pokemon(Ids.BULBASAUR, level = 7), ctx(12, candy)).single()
+        assertEquals(listOf("level 8"), early.missing, "half the game's level 16")
+        val noCandy = EvolutionRules.options(pokemon(Ids.BULBASAUR, level = 8), ctx()).single()
         assertEquals(listOf("a Super Candy"), noCandy.missing)
-        val ready = EvolutionRules.options(pokemon(Ids.BULBASAUR, level = 16), ctx(12, candy)).single()
+        val ready = EvolutionRules.options(pokemon(Ids.BULBASAUR, level = 8), ctx(12, candy)).single()
         assertTrue(ready.available)
-        val result = EvolutionRules.evolve(pokemon(Ids.BULBASAUR, level = 16), ready)
+        val result = EvolutionRules.evolve(pokemon(Ids.BULBASAUR, level = 8), ready)
         assertEquals(2, result.pokemon.speciesId)
         assertEquals("Ivysaur", result.pokemon.nickname)
         assertEquals(mapOf(EvolutionRules.SUPER_CANDY to 1), result.consumed)
+    }
+
+    @Test
+    fun evolutionLevelsAreHalfTheGameLevels() {
+        fun level(from: Int, to: Int) = EvolutionRules.requiredLevel(app.pokeplan.core.dex.Dex.evolutionsFrom(from).first { it.to == to })
+        assertEquals(8, level(1, 2))
+        assertEquals(16, level(2, 3))
+        assertEquals(4, level(Ids.WURMPLE, 266), "level 7 rounds up")
+        assertEquals(null, level(Ids.PIKACHU, 26), "stone evolutions have no level")
+        assertEquals(2, EvolutionRules.requiredLevel(app.pokeplan.core.dex.Evolution(1, 2, app.pokeplan.core.dex.EvolutionKind.LEVEL, 2, null, null, null, null, null, null, null, null, emptyList())), "never below 2")
     }
 
     @Test
