@@ -25,7 +25,7 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 ## Focus
 
 - Minimum session 5 minutes; Deep Focus (motion-based on phones) boosts egg odds by one band (see `Egg` in `:shared`).
-- **Strict mode, always on.** Leaving the app (backgrounding it on Android, losing window focus on desktop, hiding the tab on web) starts a **10 second grace period**. Returning in time keeps the session; otherwise the egg is lost and the streak is hit. No pause button.
+- **Strict mode, always on.** Leaving the app (switching to another app or the home screen) starts a **10 second grace period**. Returning in time keeps the session; otherwise the egg is lost, and a failed session does not count toward the streak. The only pauses are the daily emergency pause and phone calls (below).
 - **The focus timer is phone-only.** Desktop and web are companions (see Platforms).
 - **Locking the screen does not count as leaving.** The session continues with the screen off; unlocking and opening another app starts the grace period. Face-down on the desk is the intended way to focus.
 - **A failed session costs only the egg** (plus the streak rules). The buddy's friendship is never reduced.
@@ -122,14 +122,13 @@ At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are
 | Ability Patch | switch to the hidden ability | shop (expensive), rare drop |
 | Berries | feed one for a Contest condition boost and a little friendship | drops from paid tasks |
 | Form items (Arceus plates, Silvally memories, Rotom appliances, Griseous Orb, DNA splicers, etc.) | change a species' form | shop, drops (generated from species data) |
-| Tera Shard (one per type) | set a Pokémon's Tera type; its type perk then uses it | shop, rare drops |
 
-**Sources (both):** common items drop at random from paid tasks (chance by rank) and come as streak, badge and Pokédex milestone rewards. Rare items (Nature Mint, Ability Capsule, Bottle Cap, stones) are bought in a shop with **coins** earned from play. **Coins** are earned from paid tasks (by rank), completed focus sessions (by minutes), and transferring duplicates, plus streak and badge bonuses. Amounts to be tuned. Nothing is sold for real money.
+**Sources (both):** common items drop at random from paid tasks (chance by rank) and come as streak, badge and Pokédex milestone rewards. Rare items (Nature Mint, Ability Capsule, Bottle Cap, Ability Patch, Link Cord, Tera Shards, form items, stones) are bought in a shop with **coins** earned from play. **Coins** are earned from paid tasks (by rank), completed focus sessions (by minutes), and transferring duplicates, plus streak and badge bonuses. Amounts to be tuned. Nothing is sold for real money.
 
 ### Duplicates → candy
 
 - Transfer any Pokémon you do not need for Rare Candies. Starting yields by rarity *(tune)*: Common 5, Uncommon 8, Rare 15, Super Rare 40. Perfect-IV or shiny ones show a warning first.
-- You cannot transfer the last one of a species you have not registered, nor your buddy.
+- You cannot transfer your buddy or your last party member, and **legendaries and mythicals cannot be transferred**. Transferring the only copy of a species keeps its Pokédex entry: caught is permanent.
 - This is the sink for hatches, so the PC never needs to be a graveyard.
 
 ## Roster
@@ -138,8 +137,8 @@ At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are
 
 - **Mega / Gigantamax are a temporary focus form.** A buddy holding its Mega Stone (or Dynamax Band for G-Max species) shows that form for the length of a focus session, with a bonus to that session's perk *(tune)*, then reverts. The stones are reusable key items, one per species, from the shop or rare drops.
 - **Cosmetic forms are a side collection** with their own progress bar and badge. 100% Pokédex means one of each species plus regional forms; cosmetic forms still appear when hatching.
-- **Rarity by rule** from game data, with one tunable table: evolution stage, base stat total, and legendary / mythical status (babies and unevolved forms lean Common, final evolutions lean Rare, pseudo-legendaries and other very strong lines Super Rare). **Legendaries and mythicals are not in any egg pool** (see below). Hand overrides are not planned, and the rule applies to the Home Region too.
-- **Art:** the Pokémon Showdown sprite sets (animated Gen 5 style where available, their sets for Gen 6 to 9 otherwise). Fetch and bundle them at build time rather than loading from Showdown at runtime, so the app does not depend on their server. The same IP caveat as the rest of the project applies (see Risks), and Showdown's own terms should be checked before any public release.
+- **Rarity by rule** from game data, with one tunable table: evolution stage, base stat total, and legendary / mythical status (babies and unevolved forms lean Common, final evolutions lean Rare, pseudo-legendaries and other very strong lines Super Rare). **Legendaries and mythicals are not in any egg pool** (see below). Hand overrides are not planned, and the rule applies to the Home Region too. **Every region must have at least one hatchable species in every rarity tier**; a data test fails the build otherwise.
+- **Art:** the Pokémon Showdown sprite sets (animated Gen 5 style where available, their sets for Gen 6 to 9 otherwise). Fetch and bundle them at build time rather than loading from Showdown at runtime, so the app does not depend on their server. Gen 6 to 9 sprites will not match the Gen 3 to 5 pixel look of the rest, which is accepted for now. The same IP caveat as the rest of the project applies (see Risks), and Showdown's own terms should be checked before any public release.
 
 ### Legendaries and mythicals
 
@@ -187,7 +186,7 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 | Shiny hunter | Electric, Ice | small shiny chance bonus |
 | Streak keeper | Water, Fire, Poison | one missed day forgiven per week |
 
-- **Ability perk:** one extra, from the buddy's ability. Real abilities as flavour, data driven. Examples: Pickup (extra item chance), Early Bird (bonus for the first task before 9am), Technician (bonus for 5 to 20 minute sessions), Magic Guard (a failed session spares the streak once a week), Guts (bonus on priority 5 tasks), Synchronize (+25% EV gain in the buddy's focus stats).
+- **Ability perk:** one extra, from the buddy's ability. Real abilities as flavour, data driven. Examples: Pickup (extra item chance), Early Bird (bonus for the first task before 9am), Technician (bonus for 5 to 20 minute sessions), Magic Guard (a failed session spares the streak once a week), Guts (bonus on A-rank tasks), Synchronize (+25% EV gain in the buddy's focus stats).
 - **Stats matter:** perk strength scales with the relevant stat (e.g. Attack for candy yield) and nature, so raising and training a partner pays.
 - **Caps:** total bonus from perks and held item stays below +25% *(tune)* so no single buddy breaks the economy.
 
@@ -211,8 +210,8 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 Navigation is five bottom tabs on the phone: **Home / Planner / Focus / Collection / Me**. Desktop and web have no Focus tab (four sections).
 
 - **Home:** the animated buddy with mood and a speech bubble; tap to pet (friendship, small daily cap). Streak flame, today's top tasks (tap to complete), a "Start focus" button at the default length, small candy and coin counters.
-- **Planner:** list and calendar views (the list can show as a mission board), category filter, quick-add sheet (title, difficulty, due, then "more" for category, recurrence, subtasks, reminder). Completing a task opens a reward sheet with the 10 second undo.
-- **Focus:** region picker, presets (15 / 25 / 45 / 60) plus custom, Deep Focus toggle, a short reminder of the strict rules, the egg during the session, the emergency pause button. On finish: hatch ceremony, then a summary card with actions (set as buddy, keep, transfer).
+- **Planner:** Inbox, Today, Upcoming, All and Calendar views (lists can show as a mission board; the calendar has drag-and-drop planning), category and list filters, search, quick-add sheet (title, difficulty, due, then "more" for category, recurrence, subtasks, reminder). Completing a task opens a reward sheet with the 10 second undo.
+- **Focus:** optional task to focus on, region picker, presets (15 / 25 / 45 / 60) plus custom, Deep Focus toggle, a short reminder of the strict rules, the egg during the session, the emergency pause button. On finish: hatch ceremony, then a summary card with actions (set as buddy, keep, transfer).
 - **Collection:** Party (6), PC boxes (30 each), Pokédex (National Dex, seen / caught, forms tab, cosmetic-forms collection), Bag. The Pokémon detail screen shows stats, nature, ability, an IV "judge" (qualitative, like the games), training plan, held item, and actions: feed Rare Candy, evolve, transfer, nickname, set as buddy.
 - **Me:** trainer card (badges, streak, totals), shop, friends and leaderboards (once online), settings (reminders, sound, theme, account linking, data export).
 - **Onboarding:** title → start as guest → personality quiz suggests a starter (player can override) → name the trainer → create a first task (tutorial) → first focus session (tutorial).
@@ -248,12 +247,14 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 
 1. **Shared core (done in #2):** eggs, candy, levels, evolution, Pokédex.
 2. **Species data pipeline:** generate species, base stats, abilities, forms, evolutions, regional dex lists and rarity (by rule) for Gen 1 to 9 from a public dataset, plus the sprite fetch step. The 150 become the Home Region; National Dex numbers.
-3. **Pokémon depth:** IVs, EVs, natures with stats, abilities, shiny, items, transfer yields, perk calculation. Unit tested in `:shared`.
-4. **UI shell:** desktop and web companion screens (no focus timer; needs `dl.google.com` allowed in the environment).
-5. **Backend:** Supabase schema, RLS, reward functions, sync.
-6. **Android app and widgets** (needs the Android SDK).
-7. **Online:** friends and weekly leaderboards first, with weekly contests; then trading and co-op focus.
-8. **After v1:** Secret Base decoration and photo mode.
+3. **Pokémon depth:** IVs, EVs, natures with stats, gender, abilities, shiny, friendship, items, evolution triggers, transfer yields, perk calculation. Unit tested in `:shared`.
+4. **Planner core:** task model, difficulty ranks, Today / Inbox logic, recurrence expansion (time zones and daylight saving included), reminders schedule, the quick-add parser, task-focus link. Pure Kotlin in `:shared`, heavily unit tested.
+5. **Economy simulator:** a script in `:shared` that plays months of tasks and focus sessions to tune every *(tune)* value before the UI is built on them.
+6. **UI shell:** desktop and web companion screens (no focus timer; needs `dl.google.com` allowed in the environment).
+7. **Backend:** Supabase schema, RLS, reward functions, sync.
+8. **Android app and widgets** (needs the Android SDK).
+9. **Online:** friends and weekly leaderboards first, with weekly contests; then trading and co-op focus.
+10. **After v1:** Secret Base decoration and photo mode.
 
 ## Risks
 
@@ -262,7 +263,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 - **Balance:** perks, items and transfer yields compound. Simulate a few months of play before fixing numbers.
 - **Launch scope:** all regions at launch means a large data set to generate and test, and every region needs its theme, music and badge. Region content is data, so the code does not grow with it, but QA does. If time runs short, the order to ship is Home, Kanto, Johto, then the rest.
 - **Planner scope:** a full drag-and-drop day / week planner, lists, recurrence with edit-this-or-all, and device calendar import make the planner a product on its own. It is the part users judge the app by, so it needs its own testing (recurrence and time zones especially).
-- **Scope:** stats, items, perks and widgets are a lot. Milestone 2 should stay behind a clean interface so the UI work can start in parallel.
+- **Scope:** stats, items, perks and widgets are a lot. The data pipeline and Pokémon depth should stay behind a clean interface so the UI work can start in parallel.
 
 ## Defaults (proposal, change if you disagree)
 
@@ -274,7 +275,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 - Settings include account deletion and a data export.
 - Cheating: server sanity checks only (plausible durations, one session at a time); friends-only leaderboards make stronger anti-cheat unnecessary.
 - Offline hatching uses server-issued "egg tickets" (random seeds spent by the client, verified later) so an egg still hatches without a connection.
-- Game rules run on the server by compiling the shared Kotlin module to JS; a spike confirms this before Milestone 5.
+- Game rules run on the server by compiling the shared Kotlin module to JS; a spike confirms this before the backend milestone.
 
 ### Planner defaults
 
@@ -308,6 +309,6 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 
 Being settled in rounds before any Pokémon-depth code is written. Decided: everything above not marked *(tune)* or *(proposal)*.
 
-- **To confirm:** the Screens and flows proposal; the Defaults above; Mega / G-Max region assignment.
+- **To confirm:** the Screens and flows proposal; the Defaults above; Mega / G-Max region assignment; S rank staying non-selectable.
 - **To tune by simulation before release:** rarity rule parameters across ~1,025 species, coin amounts, transfer yields, perk magnitudes and cap, catch-up discount, minimum task age, Mega bonus, rank names and thresholds, region unlock order, legendary quest requirements, E to S rank mapping.
 - **To check:** Showdown sprite terms and build-time availability, whether the build environment can reach the data sources, Android permission flow for calendar import.
