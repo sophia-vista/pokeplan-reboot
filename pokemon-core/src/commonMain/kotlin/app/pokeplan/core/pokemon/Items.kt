@@ -3,6 +3,7 @@ package app.pokeplan.core.pokemon
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.EvolutionKind
 import app.pokeplan.core.model.PokemonType
+import kotlinx.serialization.Serializable
 
 enum class ItemCategory { CANDY, VITAMIN, TRAINING, EVOLUTION, HELD, BERRY, LURE, TERA, FORM, KEY }
 
@@ -75,6 +76,7 @@ object Items {
 }
 
 /** What the player owns. Immutable: every change returns a new inventory. */
+@Serializable
 data class Inventory(val counts: Map<String, Int> = emptyMap()) {
     operator fun get(id: String): Int = counts[id] ?: 0
 

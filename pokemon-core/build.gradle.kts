@@ -2,10 +2,19 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
     jvm()
+
+    // The same rules run on the server (Supabase Edge Functions) as compiled JavaScript.
+    js(IR) {
+        nodejs()
+        useEsModules()
+        binaries.library()
+        generateTypeScriptDefinitions()
+    }
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
@@ -13,6 +22,9 @@ kotlin {
     }
 
     sourceSets {
+        commonMain.dependencies {
+            api(libs.kotlinx.serialization.json)
+        }
         commonTest.dependencies {
             implementation(kotlin("test"))
         }

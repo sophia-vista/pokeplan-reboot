@@ -7,6 +7,14 @@ plugins {
 kotlin {
     jvm()
 
+    // The same rules run on the server (Supabase Edge Functions) as compiled JavaScript.
+    js(IR) {
+        nodejs()
+        useEsModules()
+        binaries.library()
+        generateTypeScriptDefinitions()
+    }
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()

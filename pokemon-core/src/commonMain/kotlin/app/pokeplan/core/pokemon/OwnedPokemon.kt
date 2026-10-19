@@ -5,6 +5,7 @@ import app.pokeplan.core.dex.FormInfo
 import app.pokeplan.core.dex.Gender
 import app.pokeplan.core.dex.SpeciesInfo
 import app.pokeplan.core.model.PokemonType
+import kotlinx.serialization.Serializable
 
 /**
  * A Pokémon in the player's collection. Changes return a new instance.
@@ -12,6 +13,7 @@ import app.pokeplan.core.model.PokemonType
  * [personality] is a number rolled at hatch that fixes random choices such as Wurmple's evolution.
  * [candyProgress] counts Rare Candies fed towards the next level.
  */
+@Serializable
 data class OwnedPokemon(
     val id: String,
     val speciesId: Int,

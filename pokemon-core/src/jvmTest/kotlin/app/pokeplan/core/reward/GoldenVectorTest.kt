@@ -1,0 +1,55 @@
+package app.pokeplan.core.reward
+
+import app.pokeplan.core.dex.Region
+import app.pokeplan.core.pokemon.Ids
+import app.pokeplan.core.pokemon.Inventory
+import app.pokeplan.core.pokemon.Stat
+import app.pokeplan.core.pokemon.pokemon
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import java.io.File
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+/**
+ * One fixed input and the exact JSON the engine must give for it. The same file is checked on JavaScript by
+ * `tools/server/smoke.mjs`, so the app (JVM / web) and the server (JS) can never drift apart.
+ * Regenerate after a deliberate rule change: `UPDATE_GOLDEN=1 ./gradlew :pokemon-core:jvmTest --tests "*GoldenVectorTest*"`.
+ */
+class GoldenVectorTest {
+    private val file = File("../tools/server/golden.json")
+    private val json = RewardJson.json
+
+    private fun build(): JsonObject {
+        val buddy = pokemon(Ids.PIKACHU, level = 40).withTrainingPlan(listOf(Stat.SPEED)).withHeldItem("lucky-egg")
+        val state = PlayerState(listOf(buddy), buddy.id, Inventory().add("rare-candy", 12).add("lure-fire", 1), coins = 50, eggMeter = 4, trainerPoints = 700, caught = setOf(25, 4))
+        val stateJson = json.encodeToString(PlayerState.serializer(), state)
+        val effort = json.encodeToString(EffortEvent.serializer(), EffortEvent(30, true, Region.KANTO, epochDay = 11, newPokemonId = "new-1", nowMillis = 1_700_000_000_000))
+        val work = json.encodeToString(AchievementEvent.serializer(), AchievementEvent(4, Region.JOHTO, hourOfDay = 7, firstOfDay = true, onTime = true, newPokemonId = "new-2", nowMillis = 1_700_000_000_000))
+        return buildJsonObject {
+            put("state", stateJson)
+            put("effortEvent", effort)
+            put("effortSeed", 42)
+            put("effortOutcome", RewardJson.effort(stateJson, effort, 42))
+            put("achievementEvent", work)
+            put("achievementSeed", 7)
+            put("achievementOutcome", RewardJson.achievement(stateJson, work, 7))
+        }
+    }
+
+    @Test
+    fun theEngineMatchesTheGoldenFile() {
+        val actual = build()
+        if (System.getenv("UPDATE_GOLDEN") != null) {
+            file.parentFile.mkdirs()
+            file.writeText(Json { prettyPrint = true }.encodeToString(JsonObject.serializer(), actual) + "\n")
+        }
+        val expected = json.parseToJsonElement(file.readText()) as JsonObject
+        for (key in actual.keys) {
+            assertEquals((expected.getValue(key) as JsonPrimitive).content, (actual.getValue(key) as JsonPrimitive).content, "$key differs from tools/server/golden.json")
+        }
+    }
+}
