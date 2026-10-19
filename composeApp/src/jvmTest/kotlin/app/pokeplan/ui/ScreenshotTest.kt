@@ -205,6 +205,9 @@ class ScreenshotTest {
     fun meSettings() = me("me-settings", 4)
 
     @Test
+    fun meHelp() = me("me-help", 5)
+
+    @Test
     fun collectionGuardians() {
         val base = started()
         val text = GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), base.data.copy(player = base.data.player.copy(trainerPoints = 3_300)))
