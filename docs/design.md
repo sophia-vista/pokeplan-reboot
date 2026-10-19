@@ -72,7 +72,8 @@ The app never mentions ADHD; it just removes friction and shame.
 |---|---|
 | Start | tasks, habits, planner, focus, buddy, Rare Candy, eggs, the weekly review |
 | 1 | Super Candy and evolution, Pokédex, goals |
-| 2 | items, bag, shop, coins, the Growth screen |
+| 1 | daily mini-quests |
+| 2 | items, bag, shop, coins, the Growth screen, Lures, spotlight days |
 | 3 | training plans, natures and stats detail, IV judge, Tera |
 | 4 | other regions, legendary quests |
 | 5 | contests, perfect dex, Hall of Fame |
@@ -155,7 +156,8 @@ At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are
 | Evolution stones | evolve stone species | drops |
 | Link Cord | trade-style evolutions without a trade | shop |
 | Ability Patch | switch to the hidden ability | shop (expensive), rare drop |
-| Berries | feed one for a Contest condition boost and a little friendship | drops from paid tasks |
+| Berries | feed one for a Contest condition boost and a little friendship; also a mini-quest reward and the ingredient for Lures | drops from paid tasks, focus sessions, mini-quests |
+| Lure (by type) | bias the next hatch toward a type | crafted from berries, shop |
 | Form items (Arceus plates, Silvally memories, Rotom appliances, Griseous Orb, DNA splicers, etc.) | change a species' form | shop, drops (generated from species data) |
 
 **Sources (both):** common items drop at random from paid tasks (chance by rank) and come as streak, badge and Pokédex milestone rewards. Rare items (Nature Mint, Ability Capsule, Bottle Cap, Ability Patch, Link Cord, Tera Shards, form items, stones) are bought in a shop with **coins** earned from play. **Coins** are earned from paid tasks (by rank), completed focus sessions (by minutes), and transferring duplicates, plus streak and badge bonuses. Amounts to be tuned. Nothing is sold for real money.
@@ -241,7 +243,7 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 
 - **Ability perk:** one extra, from the buddy's ability. Real abilities as flavour, data driven. Examples: Pickup (extra item chance), Early Bird (bonus for the first task before 9am), Technician (bonus for 5 to 20 minute sessions), Magic Guard (one failed session a week keeps its egg), Guts (bonus on A-rank tasks), Synchronize (+25% EV gain in the buddy's focus stats).
 - **Stats matter:** perk strength scales with the relevant stat (e.g. Attack for candy yield) and nature, so raising and training a partner pays.
-- **Caps:** total bonus from perks and held item stays below +25% *(tune)* so no single buddy breaks the economy.
+- **Caps:** total bonus from perks, held item and party assists stays below +25% *(tune)* so no single buddy breaks the economy.
 
 ## Retention
 
@@ -256,6 +258,21 @@ The two loops feed each other so task-only and focus-only players both progress.
 
 - **Focus sessions also give coins and a berry** (amounts by minutes *(tune)*), not just an egg.
 - **Paid tasks fill an Egg meter** (rank-weighted: E counts 1, A counts 5 *(tune)*). Every 10 points *(tune)* produces a **Task Egg** from the player's selected region, hatched instantly with a small ceremony. It rolls on the odds of a short (about 15 minute) focus session, so long focus sessions remain the way to the rarest hatches.
+
+## Ideas adopted from other apps
+
+Studied: Forest and Tiimo (focus and planning), Finch and Pokémon Sleep (self-care and live collecting), Pokémon GO, Habitica, Duolingo, Todoist, Sunsama, SuperBetter. **Avoided on purpose:** HP loss for missed tasks, leagues against strangers, guilt-based notifications, ads, and paywalled core features.
+
+- **Day-load meter and "This evening".** Today shows planned minutes (estimated durations of today's tasks; tasks without an estimate count as 30 minutes *(tune)*) against free time (waking hours default 08:00 to 22:00, minus imported events). It is a calm bar; going over shows a gentle "That's a lot, move something?" and never a red alarm. Tasks planned for 18:00 or later, or flagged evening, sit under a separate **This evening** header.
+- **Icon timeline.** The day view shows colour-coded blocks with an icon per task (defaults from the category, changeable). Focus sessions of 15 minutes or more give a quiet **halfway notification** (on by default), and always an end alert, to ease transitions. Both come from the app itself and never count as leaving it.
+- **Daily mini-quests.** Three one-minute actions a day from a pool of about 30 system-defined ones (drink water, stand up and stretch, tidy for 2 minutes, text a friend, "open the task you've been avoiding", which starts a Just 5 minutes on your oldest unfinished task). Each is a berry *(tune)*, completing all three adds a small bonus *(tune)*. Honour system: tap when done. One re-roll a day. No streak on mini-quests. Appears at rank step 1.
+- **Rest days.** The player marks a day or a range as rest (sick, holiday, burnout), up to 14 days a month *(tune)*. The streak pauses without using up the free missed day, habits skip, reminders are silenced, and the welcome-back gift still applies. No penalty and no reward.
+- **Calm break after sessions.** After a completed session of 25 minutes or more, an optional 1 to 2 minute breathing moment with the buddy resting beside you, over a short original ambient loop. Skippable; +1 friendship once a day *(tune)*.
+- **Sleep and steps tie-in (after v1).** On Android, with permission, Health Connect sleep and step data can complete Health habits and goals automatically (for example a 7 hour sleep habit). Off by default, never required, no extra rewards beyond the habit's normal ones; only the result ("habit done") leaves the device.
+- **Lures.** A type-specific Lure item (crafted from berries or bought) used before a session makes species of that type 3 times as likely in that egg's pool *(tune)*. It does not touch rarity or shiny odds. The lure is only used up if the egg hatches; a failed session refunds it. Rank step 2.
+- **Spotlight days.** Each day a featured type (rotating through all 18) has species weighted 2 times in hatches *(tune)*, announced the day before. Missing one costs nothing. Seasonal events and a featured species can be added later. Rank step 2.
+- **Party assists.** Non-buddy party members each add 25% of their type perk strength *(tune)*. Type perks only (no ability perks); the overall perk cap still applies, so the other five slots matter without breaking the economy.
+- **Considered, not adopted:** body-double focus rooms (co-op focus stays a later release), a task breakdown helper, growth-profile evolution branching, expeditions.
 
 ## Notifications
 
@@ -319,7 +336,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 7. **Backend:** Supabase schema, RLS, reward functions, sync.
 8. **Android app and widgets** (needs the Android SDK).
 9. **Online:** friends and weekly leaderboards first, with weekly contests; then trading and co-op focus.
-10. **After v1:** Secret Base decoration and photo mode.
+10. **After v1:** Secret Base decoration, photo mode, and the Health Connect sleep and steps tie-in.
 
 ## Risks
 
