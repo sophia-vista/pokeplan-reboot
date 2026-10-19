@@ -163,6 +163,30 @@ class ScreenshotTest {
     @Test
     fun collectionParty() = collection("collection-party", 0)
 
+    private fun dark(name: String, tab: Tab) {
+        val store = storeWithTeam()
+        store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 45)
+        store.addTask("Reply to mail", Rank.E, planned = store.today)
+        store.changeSettings { it.copy(theme = app.pokeplan.app.ThemeMode.DARK) }
+        val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
+        render(name) { App(storage, focusTab = true, startTab = tab) }
+    }
+
+    @Test
+    fun darkHome() = dark("dark-home", Tab.HOME)
+
+    @Test
+    fun darkPlanner() = dark("dark-planner", Tab.PLANNER)
+
+    @Test
+    fun darkFocus() = dark("dark-focus", Tab.FOCUS)
+
+    @Test
+    fun darkPokemon() = dark("dark-pokemon", Tab.COLLECTION)
+
+    @Test
+    fun darkMe() = dark("dark-me", Tab.ME)
+
     @Test
     fun collectionDex() = collection("collection-dex", 2)
 

@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import app.pokeplan.app.ThemeMode
+import app.pokeplan.ui.theme.SectionLabel
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -278,6 +280,10 @@ private fun SettingsView(model: AppModel) {
             VolumeRow("Sound effects and cries", settings.effectsVolume) { v -> store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }
             VolumeRow("Music", settings.musicVolume, note = "Music comes with a later update.") { v -> store.changeSettings { s -> s.copy(musicVolume = v) } }
             Toggle("Haptics (vibrate when you pet the buddy)", settings.haptics) { store.changeSettings { s -> s.copy(haptics = it) } }
+            SectionLabel("Colours")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                ThemeMode.entries.forEach { mode -> TabButton(mode.label, settings.theme == mode, { store.changeSettings { s -> s.copy(theme = mode) } }) }
+            }
             Toggle("Reduce motion", settings.reduceMotion) { store.changeSettings { s -> s.copy(reduceMotion = it) } }
             Toggle("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {

@@ -20,11 +20,11 @@ import kotlin.math.floor
 /**
  * The page behind every screen: a soft pixel-dithered gradient whose colours follow the time of day (peach at dawn, mint in
  * the morning, warm cream in the afternoon, rose at dusk, blue-grey at night). The tones stay light so the dark text on it
- * is always readable; only the mood changes. Drawn once as a tiny bitmap of coarse "pixels" and scaled up without smoothing.
+ * is always readable; only the mood changes. In dark mode the same hues are pulled down to deep navy so the light text is readable. Drawn once as a tiny bitmap of coarse "pixels" and scaled up without smoothing.
  */
 @Composable
-fun DayBackground(hour: Int, minute: Int, modifier: Modifier = Modifier) {
-    val (top, bottom) = DayPalette.at(hour + minute / 60f)
+fun DayBackground(hour: Int, minute: Int, modifier: Modifier = Modifier, dark: Boolean = false) {
+    val (top, bottom) = DayPalette.at(hour + minute / 60f, dark)
     val cell = with(LocalDensity.current) { 4.dp.toPx() }
     Canvas(modifier.fillMaxSize()) {
         val cols = (size.width / cell).toInt() + 1
@@ -84,7 +84,15 @@ internal object DayPalette {
         Key(24f, Color(0xFFD3D9EE), Color(0xFFE8EBF6)),
     )
 
-    fun at(hour: Float): Pair<Color, Color> {
+    private val night = Color(0xFF12131D)
+
+    fun at(hour: Float, dark: Boolean = false): Pair<Color, Color> {
+        val (top, bottom) = lightAt(hour)
+        // Keep a trace of the hour's hue so the day still shows, at about an eighth of the light strength.
+        return if (dark) lerp(night, top, 0.12f) to lerp(night, bottom, 0.1f) else top to bottom
+    }
+
+    private fun lightAt(hour: Float): Pair<Color, Color> {
         val h = hour.coerceIn(0f, 24f)
         val i = keys.indexOfLast { it.hour <= h }.coerceAtMost(keys.size - 2)
         val a = keys[i]

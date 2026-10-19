@@ -49,9 +49,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             App(
                 storage, focusTab = true, motion = motion, startTab = tab, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), onDataChanged = ::keepWidgetsCurrent,
+                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), onDataChanged = ::keepWidgetsCurrent, onDark = ::matchSystemBars,
             )
         }
+    }
+
+    /** The tab bar under the navigation bar is dark in dark mode, so the navigation bar icons turn light. */
+    private fun matchSystemBars(dark: Boolean) {
+        androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightNavigationBars = !dark
     }
 
     /**
