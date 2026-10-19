@@ -138,7 +138,7 @@ fun BuddyStage(
             }
         }
 
-        AnimatedVisibility(reaction != null, Modifier.align(Alignment.Center).padding(bottom = 120.dp), enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut()) {
+        AnimatedVisibility(reaction != null, Modifier.align(Alignment.Center).padding(bottom = 150.dp), enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut()) {
             Text(reaction ?: "", fontSize = 30.sp, modifier = Modifier.semantics { contentDescription = "reaction" })
         }
 
