@@ -28,6 +28,25 @@ compose.resources {
 tasks.matching { it.name.startsWith("generateResourceAccessors") || it.name.startsWith("prepareComposeResources") || it.name.startsWith("convertXmlValueResources") }
     .configureEach { dependsOn(composeAssets) }
 
+// The app's version, from the VERSION file at the repo root, as a Kotlin constant every target can show (Settings → About).
+// POKEPLAN_BUILD is set by the release workflow to its run number; without it this is a development build.
+val generateAppVersion = tasks.register("generateAppVersion") {
+    val versionFile = rootProject.file("VERSION")
+    val build = System.getenv("POKEPLAN_BUILD")?.toIntOrNull() ?: 0
+    val out = layout.buildDirectory.dir("generated/appVersion")
+    inputs.file(versionFile)
+    inputs.property("build", build)
+    outputs.dir(out)
+    doLast {
+        val file = out.get().file("app/pokeplan/ui/AppVersion.kt").asFile
+        file.parentFile.mkdirs()
+        file.writeText(
+            "package app.pokeplan.ui\n\n/** Generated from the VERSION file by Gradle. */\nobject AppVersion {\n" +
+                "    const val NAME = \"${versionFile.readText().trim()}\"\n    const val BUILD = $build\n}\n",
+        )
+    }
+}
+
 kotlin {
     androidLibrary {
         namespace = "app.pokeplan.ui"
@@ -44,6 +63,7 @@ kotlin {
     }
 
     sourceSets {
+        commonMain.configure { kotlin.srcDir(generateAppVersion) }
         commonMain.dependencies {
             api(project(":app-core"))
             implementation(compose.runtime)

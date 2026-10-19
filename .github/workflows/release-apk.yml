@@ -1,7 +1,8 @@
 name: Latest APK
 
 # Every merge to main builds the Android app and replaces the "latest" release with it, so the newest version can be
-# downloaded on a phone from the repository's Releases page.
+# downloaded on a phone from the repository's Releases page. The first merge with a new number in the VERSION file also
+# creates that version's own release ("PokéPlan v0.2.0"), which stays as it was built.
 on:
   push:
     branches: [main]
@@ -25,16 +26,39 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
+      - name: Version
+        id: version
+        run: |
+          VERSION="$(tr -d '[:space:]' < VERSION)"
+          echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "VERSION must be MAJOR.MINOR.PATCH, got '$VERSION'"; exit 1; }
+          echo "name=$VERSION" >> "$GITHUB_OUTPUT"
       - name: Build
+        env:
+          # Becomes the Android versionCode and the "build N" shown in Settings → About.
+          POKEPLAN_BUILD: ${{ github.run_number }}
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
           ./gradlew :androidApp:assembleDebug --no-daemon
           cp androidApp/build/outputs/apk/debug/androidApp-debug.apk pokeplan.apk
+          cp pokeplan.apk "pokeplan-v${{ steps.version.outputs.name }}.apk"
       - name: Publish as the latest release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.name }}
         run: |
           gh release delete latest --yes --cleanup-tag || true
           gh release create latest pokeplan.apk --prerelease --target "$GITHUB_SHA" \
-            --title "Latest build" \
-            --notes "Built from ${GITHUB_SHA::7} on $(date -u +%Y-%m-%d). Debug build for private use; download pokeplan.apk on your phone and install it."
+            --title "Latest build (v$VERSION, build ${{ github.run_number }})" \
+            --notes "Version $VERSION, build ${{ github.run_number }}, from ${GITHUB_SHA::7} on $(date -u +%Y-%m-%d). Debug build for private use; download pokeplan.apk on your phone and install it."
+      - name: Publish this version's own release (once per version)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.name }}
+        run: |
+          if gh release view "v$VERSION" > /dev/null 2>&1; then
+            echo "v$VERSION already has its release; bump VERSION to publish a new one."
+          else
+            PRE=""; [ "${VERSION%%.*}" = "0" ] && PRE="--prerelease"
+            gh release create "v$VERSION" "pokeplan-v$VERSION.apk" $PRE --target "$GITHUB_SHA" \
+              --title "PokéPlan v$VERSION" --generate-notes
+          fi

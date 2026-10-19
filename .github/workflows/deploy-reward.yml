@@ -37,3 +37,4 @@ jobs:
         run: |
           test -n "$SUPABASE_ACCESS_TOKEN" || { echo "Add the SUPABASE_ACCESS_TOKEN repository secret first."; exit 1; }
           supabase functions deploy reward --project-ref "${{ inputs.project_ref }}" --use-api
+          echo "Deployed reward v$(tr -d '[:space:]' < VERSION) (${GITHUB_SHA::7}) to ${{ inputs.project_ref }}" | tee -a "$GITHUB_STEP_SUMMARY"
