@@ -40,6 +40,7 @@ import app.pokeplan.ui.screens.NavButton
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlin.time.Clock as SystemClock
 
 /** The bottom tabs, each with the real game item that stands for it. */
@@ -88,6 +89,8 @@ fun App(
     motion: MotionSource? = null,
     startTab: Tab = Tab.HOME,
     cloud: CloudConfig = CloudSettings.config,
+    /** Emits when something outside the app may have changed the save (the Android app coming back after a widget tap). */
+    externalChanges: Flow<Unit>? = null,
 ) {
     val model = remember {
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
@@ -96,6 +99,7 @@ fun App(
         AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) })
     }
     val store = model.store
+    if (externalChanges != null) LaunchedEffect(externalChanges) { externalChanges.collect { store.reload() } }
 
     // Cloud sync: follow the status, sync when signed in, and again a moment after any change (and now and then, to hear
     // about changes from other devices).

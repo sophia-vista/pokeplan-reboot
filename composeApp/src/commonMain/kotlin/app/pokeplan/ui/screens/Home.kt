@@ -42,7 +42,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import app.pokeplan.app.AppData
+import app.pokeplan.app.BuddyLines
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.PickForMe
@@ -111,7 +111,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
                 val berry = data.player.inventory.counts.keys.firstOrNull { Items.category(it) == ItemCategory.BERRY && data.player.inventory.has(it) }
                 Companion(
                     formId = buddy.form.id, shiny = buddy.isShiny, name = buddy.nickname, detail = "Lv. ${buddy.level}",
-                    line = buddyLine(data, open.isEmpty() && doneToday > 0), calm = data.settings.reduceMotion,
+                    line = store.buddyMood().line, calm = data.settings.reduceMotion,
                     onPet = { store.pet() },
                     berry = berry,
                     onFeed = { berry?.let { store.useItem(it, buddy.id) } },
@@ -203,7 +203,7 @@ private fun Companion(
                 .clickable(onClickLabel = "Pet $name", role = Role.Button) {
                     onPet()
                     taps++
-                    said = PET_LINES.random()
+                    said = BuddyLines.pet()
                 },
             size = 144.dp,
         )
@@ -218,14 +218,12 @@ private fun Companion(
                 .clickable(onClickLabel = "Give $name a ${(Items.get(berry)?.name ?: berry)}", role = Role.Button) {
                     onFeed()
                     taps++
-                    said = "Yum!"
+                    said = BuddyLines.feed()
                 },
             contentAlignment = Alignment.Center,
         ) { ItemIcon(berry, size = 32.dp, description = (Items.get(berry)?.name ?: berry)) }
     }
 }
-
-private val PET_LINES = listOf("That feels nice!", "Hehe!", "More, please!", "You're the best!", "Happy to be here!")
 
 /** A few hearts rise from the buddy and fade out after each pet. */
 @Composable
@@ -305,12 +303,4 @@ private fun RankProgress(points: Int) {
         ExpBar(if (high == null) 1f else (points - low).toFloat() / (high - low), label, color = Pixel.Yellow)
         Text(label, style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.9f))
     }
-}
-
-/** What the buddy says, by what has happened today. */
-private fun buddyLine(data: AppData, allDone: Boolean): String = when {
-    data.focus != null -> "Cheering you on!"
-    allDone -> "Great day!"
-    data.rewardLog.isEmpty() -> "Ready when you are"
-    else -> "Nice work!"
 }
