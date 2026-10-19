@@ -23,6 +23,16 @@ jobs:
         run: ./gradlew jvmTest compileKotlinWasmJs jsProductionLibraryCompileSync --no-daemon
       - name: The compiled engine matches the JVM (Node)
         run: node tools/server/smoke.mjs pokemon-core/build/compileSync/js/main/productionLibrary/kotlin
+      - name: The reward function's logic (Node)
+        run: node --experimental-strip-types supabase/functions/reward/core.test.ts
+
+  supabase:
+    name: Supabase schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Migrations and SQL tests (PostgreSQL 16)
+        run: supabase/tests/run.sh
 
   data:
     name: Generated data is up to date
