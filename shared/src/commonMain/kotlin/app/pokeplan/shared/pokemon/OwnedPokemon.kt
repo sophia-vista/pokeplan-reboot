@@ -95,9 +95,21 @@ data class OwnedPokemon(
         return copy(evs = next)
     }
 
+    /** Adds up to [points] EVs to one [stat] (a Vitamin), respecting the caps. */
+    fun gainEv(stat: Stat, points: Int): OwnedPokemon {
+        val room = minOf(StatCalculator.MAX_EV_PER_STAT - evs[stat], StatCalculator.MAX_EV_TOTAL - evs.total)
+        return copy(evs = evs.with(stat, evs[stat] + points.coerceIn(0, maxOf(room, 0))))
+    }
+
     fun withNickname(name: String): OwnedPokemon = copy(nickname = name.trim().ifEmpty { species.name })
 
     fun withHeldItem(item: String?): OwnedPokemon = copy(heldItem = item)
+
+    fun withNature(nature: Nature): OwnedPokemon = copy(nature = nature)
+
+    fun withAbility(ability: String): OwnedPokemon = copy(ability = ability)
+
+    fun withIv(stat: Stat, value: Int): OwnedPokemon = copy(ivs = ivs.with(stat, value))
 
     fun withTeraType(type: PokemonType?): OwnedPokemon = copy(teraType = type)
 
