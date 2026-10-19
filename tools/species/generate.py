@@ -21,8 +21,7 @@ FILES = ['pokemon', 'pokemon_species', 'pokemon_species_names', 'pokemon_stats',
          'pokemon_abilities', 'abilities', 'ability_names', 'pokemon_evolution', 'pokemon_forms',
          'pokedexes', 'pokemon_dex_numbers', 'items', 'moves', 'locations']
 OUT = os.path.join(ROOT, 'shared/src/commonMain/kotlin/app/pokeplan/shared/dex/generated/DexData.kt')
-HOME_SOURCE = os.path.join(ROOT, 'shared/src/commonMain/kotlin/app/pokeplan/shared/data/SpeciesData.kt')
-HOME_ALIASES = {'Bayleaf': 'Bayleef'}  # typo in the original app's data
+HOME_LIST = os.path.join(ROOT, 'tools/species/home-region.txt')
 CHUNK = 28000
 KIND_RANK = {'LEVEL': 0, 'STONE': 1, 'FRIENDSHIP': 2, 'LEVEL_TIME': 3, 'GENDER': 4, 'TRADE': 5, 'RANDOM': 6, 'TRIAL': 7}
 
@@ -245,22 +244,40 @@ def main():
                     seen.add(sid)
                     order.append(sid)
         region_lines.append(region + '|' + ','.join(map(str, order)))
-    # Home region: the original app's curated 150, matched by name
-    by_name = {v: k for k, v in names.items()}
-    with open(HOME_SOURCE, encoding='utf-8') as fh:
-        home_names = re.findall(r'Species\("([^"]+)", \d+', fh.read())
-    home = []
-    for n in home_names:
-        n = HOME_ALIASES.get(n, n)
-        assert n in by_name, 'no species named ' + n
-        home.append(by_name[n])
-    assert len(home) == 150 and len(set(home)) == 150
+    # Home region: the player's favourites from tools/species/home-region.txt
+    home = read_home_list(species, names)
     region_lines.insert(0, 'HOME|' + ','.join(map(str, home)))
     # Species whose Hisuian form is the one found in the Hisui dex (used to pick the variant in Sinnoh)
     region_lines.append('HISUI|' + ','.join(str(sid) for _, sid in sorted(dex_numbers[30])))
 
     write(species_lines, form_lines, evo_lines, region_lines)
     print(len(species_lines), 'species,', len(form_lines), 'forms,', len(evo_lines), 'evolutions,', len(region_lines), 'regions')
+
+
+def read_home_list(species, names):
+    import difflib
+    by_name = {v.lower(): k for k, v in names.items()}
+    by_ident = {r['identifier']: k for k, r in species.items()}
+    home, seen = [], set()
+    with open(HOME_LIST, encoding='utf-8') as fh:
+        for number, raw in enumerate(fh, 1):
+            line = raw.strip()
+            if not line or line.startswith('#'):
+                continue
+            sid = by_name.get(line.lower()) or by_ident.get(line.lower())
+            if sid is None:
+                close = difflib.get_close_matches(line.lower(), list(by_name) + list(by_ident), n=3)
+                sys.exit(f'{HOME_LIST}:{number}: no species called "{line}". Did you mean: {", ".join(dict.fromkeys(close)) or "?"}')
+            if sid in seen:
+                sys.exit(f'{HOME_LIST}:{number}: "{line}" is listed twice')
+            seen.add(sid)
+            home.append(sid)
+    if len(home) < 30:
+        sys.exit(f'{HOME_LIST}: only {len(home)} species; need at least 30')
+    special = [names[s] for s in home if species[s]['is_legendary'] == '1' or species[s]['is_mythical'] == '1']
+    if special:
+        print('note: legendary/mythical in your Home list (quest rewards, not eggs):', ', '.join(special))
+    return home
 
 
 def chunks(lines):

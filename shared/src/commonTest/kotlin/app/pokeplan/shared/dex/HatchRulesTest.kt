@@ -57,7 +57,7 @@ class HatchRulesTest {
     @Test
     fun regionSizesMatchTheGames() {
         val sizes = Region.entries.associateWith { Dex.regionDex(it).size }
-        assertEquals(150, sizes.getValue(Region.HOME))
+        assertTrue(sizes.getValue(Region.HOME) >= 30, "the Home Region is the player's own list (tools/species/home-region.txt)")
         assertEquals(151, sizes.getValue(Region.KANTO))
         assertEquals(256, sizes.getValue(Region.JOHTO))
         assertEquals(211, sizes.getValue(Region.HOENN))
@@ -88,13 +88,12 @@ class HatchRulesTest {
     }
 
     @Test
-    fun homeRegionKeepsTheOriginalNumbering() {
+    fun homeRegionIsTheFavouritesListInOrder() {
         val home = Dex.regionDex(Region.HOME)
-        assertEquals("Bulbasaur", home[0].name)
-        assertEquals("Bayleef", home.first { it.name.startsWith("Bayle") }.name)
-        assertEquals(150, home.map { it.id }.toSet().size)
-        // Super Rare must still exist once the legendary-class species are gone.
-        assertTrue(HatchRules.pool(Region.HOME, Rarity.SUPER_RARE).isNotEmpty())
+        assertTrue(home.size >= 30)
+        assertEquals(home.size, home.map { it.id }.toSet().size, "no duplicates")
+        // Every rarity tier must still have something to hatch once legendary-class species are removed.
+        for (r in Rarity.entries) assertTrue(HatchRules.pool(Region.HOME, r).isNotEmpty(), "Home has nothing at $r")
     }
 
     @Test
