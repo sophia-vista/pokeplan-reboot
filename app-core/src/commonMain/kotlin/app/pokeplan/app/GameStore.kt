@@ -681,7 +681,14 @@ class GameStore(
         // "kind" because the rewards have a field called "type" (the same setting the reward engine uses over JSON).
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true; classDiscriminator = "kind" }
 
-        /** The starters offered at the start: the first starter of each early generation, plus Pikachu. */
-        val starters: List<Int> = listOf(1, 4, 7, 25, 152, 155, 158, 252, 255, 258)
+        /** Every starter Pokémon of the main games, by generation, plus the two partner Pokémon of Let's Go. */
+        val starterGroups: List<Pair<String, List<Int>>> = listOf(
+            "Kanto" to listOf(1, 4, 7), "Johto" to listOf(152, 155, 158), "Hoenn" to listOf(252, 255, 258),
+            "Sinnoh" to listOf(387, 390, 393), "Unova" to listOf(495, 498, 501), "Kalos" to listOf(650, 653, 656),
+            "Alola" to listOf(722, 725, 728), "Galar" to listOf(810, 813, 816), "Paldea" to listOf(906, 909, 912),
+            "Partners" to listOf(25, 133),
+        )
+
+        val starters: List<Int> = starterGroups.flatMap { it.second }
     }
 }

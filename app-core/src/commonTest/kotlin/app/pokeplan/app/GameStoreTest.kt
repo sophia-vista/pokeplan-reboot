@@ -342,6 +342,18 @@ class GameStoreTest {
     }
 
     @Test
+    fun everyStarterCanBeChosen() {
+        assertEquals(29, GameStore.starters.size)
+        assertEquals(GameStore.starters.size, GameStore.starters.toSet().size)
+        for (id in GameStore.starters) {
+            val (s, _) = store()
+            s.start("Sophia", id)
+            assertEquals(id, s.data.player.buddy!!.speciesId)
+            assertTrue(s.data.player.buddy!!.inParty)
+        }
+    }
+
+    @Test
     fun aQuestIsAcceptedProgressesAndPaysItsGuardianWhenClaimed() {
         val (s0, clock) = started()
         val s = s0.withPoints(3_300) // rank 4
