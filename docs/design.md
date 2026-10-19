@@ -34,7 +34,7 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 
 ## Tasks
 
-- Priority 1 to 5; **priority 5 pays the most**. Reward tables are already ported (`CandyRewards`).
+- **Difficulty rank E, D, C, B, A** replaces the old priority 1 to 5 (E = old 1 … A = old 5). The player picks how hard a task is; **higher rank pays more, A the most**. Urgency comes from the due date, not the rank. Default rank is C. **S rank is not selectable**: it is reserved for special missions (legendary quest steps, weekly challenges). Reward tables are already ported (`CandyRewards`, indexed 1 to 5).
 - **Minimum task age:** a one-off task only pays when it has existed for at least *(tune: 15 minutes)* before being completed, counted from creation. Younger tasks complete without a reward. There is no daily cap, so many real tasks always pay.
 - **Recurring tasks are exempt:** their instances are created ahead of time by the schedule, so they pay when their day comes.
 - On-time bonus: finishing before the due date adds a bonus *(tune)*. **Overdue tasks pay the normal reward**, just without the bonus, so old tasks get finished rather than abandoned.
@@ -55,7 +55,13 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 
 ## Planner (v1)
 
-In scope for v1: tasks with priority, category, due date/time and reminders; **recurring tasks** (daily, weekly, monthly, custom); **subtasks**; an **own calendar view** (month and week, tasks by due date) that also feeds the agenda widget; and **read-only import of device calendar events** on Android (needs the calendar permission; shown on the calendar and agenda, never paid as tasks).
+In scope for v1: tasks with difficulty rank, category, planned date, due date/time, estimated duration and reminders; **recurring tasks** (daily, weekly, monthly, custom); **subtasks**; an **own calendar view** (month and week, tasks by due date) that also feeds the agenda widget; and **read-only import of device calendar events** on Android (needs the calendar permission; shown on the calendar and agenda, never paid as tasks).
+
+### Task model, Today and focus link
+
+- **Fields:** title, notes, difficulty rank, category, **planned date** (when you intend to do it), **due date/time** (the deadline), estimated duration (optional), recurrence, reminders, subtasks.
+- **Views:** **Inbox** (no planned or due date; quick captures land here), **Today** (planned today + due today + overdue), **Upcoming**, **Calendar**, **All**.
+- **Focus on this task:** a session can be started from a task. The minutes are logged on it, and it shows its total focused time. Finishing a task you focused on gives a small bonus *(tune: +10% candies)*. Egg odds are unchanged. Sessions can also be started without a task.
 
 ## Pokémon
 
@@ -71,11 +77,29 @@ Each owned Pokémon has: species, level 1 to 100, nature, ability, 6 IVs, 6 EVs,
 - **Levelling:** 10 Rare Candies per level (as now). A Pokémon more than 5 levels below your partner needs half the candies *(tune)*, so new hatches catch up without outshining the partner.
 - **Evolution:** Super Candy at the species' evolution level (as now). Evolution stones for the species that use them.
 
+### Evolution
+
+Every evolution is reachable solo. Each game trigger maps to an in-app one:
+
+| Game trigger | In the app |
+|---|---|
+| Level | Super Candy once the species' level is reached (as now) |
+| Stone / item | the evolution item |
+| Trade, trade with an item | a **Link Cord** item (holding the item where the game needs one); a real friend trade also works once trading exists |
+| Friendship (with or without day / night) | friendship at 220 or more, then a Super Candy, at the right time of day where it matters |
+| Level plus time of day | Super Candy used between 06:00 and 18:00 (day) or otherwise (night), local time |
+| Gender-dependent | uses the Pokémon's gender |
+| Special conditions (known move, location, party contents, weather, stats, beauty, etc.) | an **Evolution Trial**: a short quest (a number of paid tasks, or one focus session of a given length), flavoured after the original condition |
+| Branching (Eevee, Tyrogue, Poliwhirl…) | the trigger picks the branch |
+| Random branch (Wurmple) | decided when it hatches, as in the games |
+
+The data pipeline classifies every evolution into one of these.
+
 ### Training plan
 
 Stat training is the player's choice, not tied to task type. Each Pokémon has a **training plan**: up to 2 focus stats, changeable at any time. When a task pays out:
 
-- The buddy gains EVs in its focus stats, split evenly. Amount = the task's priority *(tune)*, so a priority 5 task gives 5 EVs.
+- The buddy gains EVs in its focus stats, split evenly. Amount = the task's rank number *(tune)* (E = 1 … A = 5), so an A-rank task gives 5 EVs.
 - The rest of the party gains half *(tune)*, so a raised team is possible.
 - No plan set: no EVs. The same minimum task age applies, so there is nothing to farm.
 
@@ -93,7 +117,7 @@ At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are
 | Held items (e.g. Leftovers, Choice Band style) | one small buddy perk | drops, shop |
 | Evolution stones | evolve stone species | drops |
 
-**Sources (both):** common items drop at random from paid tasks (chance by priority) and come as streak, badge and Pokédex milestone rewards. Rare items (Nature Mint, Ability Capsule, Bottle Cap, stones) are bought in a shop with **coins** earned from play. **Coins** are earned from paid tasks (by priority), completed focus sessions (by minutes), and transferring duplicates, plus streak and badge bonuses. Amounts to be tuned. Nothing is sold for real money.
+**Sources (both):** common items drop at random from paid tasks (chance by rank) and come as streak, badge and Pokédex milestone rewards. Rare items (Nature Mint, Ability Capsule, Bottle Cap, stones) are bought in a shop with **coins** earned from play. **Coins** are earned from paid tasks (by priority), completed focus sessions (by minutes), and transferring duplicates, plus streak and badge bonuses. Amounts to be tuned. Nothing is sold for real money.
 
 ### Duplicates → candy
 
@@ -131,7 +155,7 @@ Not hatched from random eggs, which keeps them special and avoids a 4 hour Deep 
 
 Planned, with build order to be set later.
 
-- **Mission board (Mystery Dungeon):** tasks are shown as a job board with ranks E to S, derived from priority *(tune)*. Presentation only; rewards stay as designed.
+- **Mission board (Mystery Dungeon):** tasks are shown as a job board using their difficulty rank. Presentation only; rewards stay as designed.
 - **Trainer rank (Mystery Dungeon guild ranks):** a rank earned from total paid tasks, focus time and streaks. Ranks unlock regions. Rank names and thresholds *(tune)*.
 - **Personality quiz starter (Mystery Dungeon):** onboarding asks a short quiz, which suggests a starter and a nature; the player can override.
 - **Poké Assist perks (Pokémon Ranger):** the buddy's type and ability perks are presented as assists. No extra mechanics.
@@ -180,7 +204,7 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 Navigation is five bottom tabs on the phone: **Home / Planner / Focus / Collection / Me**. Desktop and web have no Focus tab (four sections).
 
 - **Home:** the animated buddy with mood and a speech bubble; tap to pet (friendship, small daily cap). Streak flame, today's top tasks (tap to complete), a "Start focus" button at the default length, small candy and coin counters.
-- **Planner:** list and calendar views (the list can show as a mission board), category filter, quick-add sheet (title, priority, due, then "more" for category, recurrence, subtasks, reminder). Completing a task opens a reward sheet with the 10 second undo.
+- **Planner:** list and calendar views (the list can show as a mission board), category filter, quick-add sheet (title, difficulty, due, then "more" for category, recurrence, subtasks, reminder). Completing a task opens a reward sheet with the 10 second undo.
 - **Focus:** region picker, presets (15 / 25 / 45 / 60) plus custom, Deep Focus toggle, a short reminder of the strict rules, the egg during the session, the emergency pause button. On finish: hatch ceremony, then a summary card with actions (set as buddy, keep, transfer).
 - **Collection:** Party (6), PC boxes (30 each), Pokédex (National Dex, seen / caught, forms tab, cosmetic-forms collection), Bag. The Pokémon detail screen shows stats, nature, ability, an IV "judge" (qualitative, like the games), training plan, held item, and actions: feed Rare Candy, evolve, transfer, nickname, set as buddy.
 - **Me:** trainer card (badges, streak, totals), shop, friends and leaderboards (once online), settings (reminders, sound, theme, account linking, data export).
@@ -246,9 +270,9 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 
 ## Gaps to define (found in review)
 
-Planner and calendar: task and focus link; difficulty versus priority; a planned-for date and an Inbox; full recurrence rules (weekday, monthly, after completion, end, skip, edit this or all); multiple and relative reminders with snooze and quiet hours; day and agenda views, estimated duration and time-blocking; which device calendars to import; widget privacy for events; search, filters, projects or tags; natural-language quick-add and share-sheet capture; cancelled state; week start and locale; per-habit streaks; time zones and daylight saving.
+Planner and calendar: full recurrence rules (weekday, monthly, after completion, end, skip, edit this or all); multiple and relative reminders with snooze and quiet hours; day and agenda views and time-blocking depth; which device calendars to import; widget privacy for events; search, filters, projects or tags; natural-language quick-add and share-sheet capture; cancelled state; week start and locale; per-habit streaks; time zones and daylight saving.
 
-Pokémon: evolution trigger mapping; contest condition stats, scoring and berries; gender; friendship rules; item-based form changes; ability perk coverage policy (curated table of about 40, the rest fall back to the type perk); endgame candy sinks; Tera Shards to change the buddy's perk type; Pokédex text source; hidden-ability route; seen versus caught; PC box limits.
+Pokémon: contest condition stats, scoring and berries; gender; friendship rules; item-based form changes; ability perk coverage policy (curated table of about 40, the rest fall back to the type perk); endgame candy sinks; Tera Shards to change the buddy's perk type; Pokédex text source; hidden-ability route; seen versus caught; PC box limits.
 
 ## Open questions
 
