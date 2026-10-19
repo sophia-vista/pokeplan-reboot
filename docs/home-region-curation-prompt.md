@@ -9,7 +9,7 @@ The Home Region is your own starter dex: the first collection you try to complet
 3. Go through the rounds. When you say "final", the assistant gives one list, one species per line.
 4. Paste that list back to Claude Code. It replaces `tools/species/home-region.txt`, regenerates the data (`python3 -I tools/species/generate.py`) and runs the tests, which check the size, duplicates and that every rarity tier still has something to hatch.
 
-To refresh the candidates table after any rule change: `./gradlew :shared:curationReport`.
+To refresh the candidates table after any rule change: `./gradlew :pokemon-core:curationReport`.
 
 ## The prompt
 
