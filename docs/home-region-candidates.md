@@ -6,19 +6,19 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 
 | Tier | Lines | In Home now |
 |---|---|---|
-| Common | 122 | 11 |
-| Uncommon | 155 | 9 |
-| Rare | 134 | 30 |
-| Super Rare | 12 | 5 |
+| Common | 122 | 18 |
+| Uncommon | 155 | 15 |
+| Rare | 134 | 20 |
+| Super Rare | 12 | 6 |
 
 ## Common (122 lines)
 
 | Line | Types (final forms) | Gen | Species | Home |
 |---|---|---|---|---|
-| Caterpie → Metapod → Butterfree | Bug/Flying | 1 | 3 |  |
-| Weedle → Kakuna → Beedrill | Bug/Poison | 1 | 3 |  |
-| Rattata → Raticate | Normal | 1 | 2 |  |
-| Spearow → Fearow | Normal/Flying | 1 | 2 |  |
+| Caterpie → Metapod → Butterfree | Bug/Flying | 1 | 3 | yes |
+| Weedle → Kakuna → Beedrill | Bug/Poison | 1 | 3 | yes |
+| Rattata → Raticate | Normal | 1 | 2 | yes |
+| Spearow → Fearow | Normal/Flying | 1 | 2 | yes |
 | Ekans → Arbok | Poison | 1 | 2 |  |
 | Sandshrew → Sandslash | Ground | 1 | 2 |  |
 | Paras → Parasect | Bug/Grass | 1 | 2 |  |
@@ -31,9 +31,9 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 | Ditto | Normal | 1 | 1 |  |
 | Sentret → Furret | Normal | 2 | 2 | yes |
 | Hoothoot → Noctowl | Normal/Flying | 2 | 2 | yes |
-| Ledyba → Ledian | Bug/Flying | 2 | 2 |  |
+| Ledyba → Ledian | Bug/Flying | 2 | 2 | yes |
 | Spinarak → Ariados | Bug/Poison | 2 | 2 | yes |
-| Chinchou → Lanturn | Water/Electric | 2 | 2 | yes |
+| Chinchou → Lanturn | Water/Electric | 2 | 2 |  |
 | Igglybuff → Jigglypuff → Wigglytuff | Normal/Fairy | 2 | 3 |  |
 | Natu → Xatu | Psychic/Flying | 2 | 2 |  |
 | Hoppip → Skiploom → Jumpluff | Grass/Flying | 2 | 3 |  |
@@ -50,18 +50,18 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 | Smoochum → Jynx | Ice/Psychic | 2 | 2 |  |
 | Poochyena → Mightyena | Dark | 3 | 2 |  |
 | Wurmple → (Silcoon → Beautifly / Cascoon → Dustox) | Bug/Flying/Poison | 3 | 5 |  |
-| Taillow → Swellow | Normal/Flying | 3 | 2 |  |
-| Wingull → Pelipper | Water/Flying | 3 | 2 |  |
+| Taillow → Swellow | Normal/Flying | 3 | 2 | yes |
+| Wingull → Pelipper | Water/Flying | 3 | 2 | yes |
 | Surskit → Masquerain | Bug/Flying | 3 | 2 |  |
 | Shroomish → Breloom | Grass/Fighting | 3 | 2 |  |
 | Nincada → (Ninjask / Shedinja) | Bug/Flying/Ghost | 3 | 3 |  |
-| Azurill → Marill → Azumarill | Water/Fairy | 3 | 3 | yes |
+| Azurill → Marill → Azumarill | Water/Fairy | 3 | 3 |  |
 | Skitty → Delcatty | Normal | 3 | 2 |  |
 | Sableye | Dark/Ghost | 3 | 1 |  |
-| Mawile | Steel/Fairy | 3 | 1 |  |
+| Mawile | Steel/Fairy | 3 | 1 | yes |
 | Meditite → Medicham | Fighting/Psychic | 3 | 2 |  |
-| Plusle | Electric | 3 | 1 | yes |
-| Minun | Electric | 3 | 1 | yes |
+| Plusle | Electric | 3 | 1 |  |
+| Minun | Electric | 3 | 1 |  |
 | Volbeat | Bug | 3 | 1 |  |
 | Illumise | Bug | 3 | 1 |  |
 | Gulpin → Swalot | Poison | 3 | 2 |  |
@@ -83,7 +83,7 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 | Absol | Dark | 3 | 1 | yes |
 | Wynaut → Wobbuffet | Psychic | 3 | 2 |  |
 | Luvdisc | Water | 3 | 1 |  |
-| Bidoof → Bibarel | Normal/Water | 4 | 2 |  |
+| Bidoof → Bibarel | Normal/Water | 4 | 2 | yes |
 | Kricketot → Kricketune | Bug | 4 | 2 |  |
 | Burmy → (Wormadam / Mothim) | Bug/Grass/Flying | 4 | 3 |  |
 | Pachirisu | Electric | 4 | 1 | yes |
@@ -95,7 +95,7 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 | Carnivine | Grass | 4 | 1 |  |
 | Finneon → Lumineon | Water | 4 | 2 |  |
 | Rotom | Electric/Ghost | 4 | 1 |  |
-| Patrat → Watchog | Normal | 5 | 2 |  |
+| Patrat → Watchog | Normal | 5 | 2 | yes |
 | Purrloin → Liepard | Dark | 5 | 2 |  |
 | Woobat → Swoobat | Psychic/Flying | 5 | 2 | yes |
 | Audino | Normal | 5 | 1 |  |
@@ -114,7 +114,7 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 | Dedenne | Electric/Fairy | 6 | 1 |  |
 | Klefki | Steel/Fairy | 6 | 1 |  |
 | Yungoos → Gumshoos | Normal | 7 | 2 |  |
-| Cutiefly → Ribombee | Bug/Fairy | 7 | 2 |  |
+| Cutiefly → Ribombee | Bug/Fairy | 7 | 2 | yes |
 | Wishiwashi | Water | 7 | 1 |  |
 | Dewpider → Araquanid | Water/Bug | 7 | 2 |  |
 | Morelull → Shiinotic | Grass/Fairy | 7 | 2 |  |
@@ -186,7 +186,7 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 | Snorunt → (Glalie / Froslass) | Ice/Ghost | 3 | 3 |  |
 | Clamperl → (Huntail / Gorebyss) | Water | 3 | 3 |  |
 | Relicanth | Water/Rock | 3 | 1 |  |
-| Starly → Staravia → Staraptor | Normal/Flying | 4 | 3 |  |
+| Starly → Staravia → Staraptor | Normal/Flying | 4 | 3 | yes |
 | Cranidos → Rampardos | Rock | 4 | 2 |  |
 | Shieldon → Bastiodon | Rock/Steel | 4 | 2 |  |
 | Combee → Vespiquen | Bug/Flying | 4 | 2 |  |
@@ -209,8 +209,8 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 | Pidove → Tranquill → Unfezant | Normal/Flying | 5 | 3 |  |
 | Blitzle → Zebstrika | Electric | 5 | 2 |  |
 | Sewaddle → Swadloon → Leavanny | Bug/Grass | 5 | 3 |  |
-| Venipede → Whirlipede → Scolipede | Bug/Poison | 5 | 3 |  |
-| Cottonee → Whimsicott | Grass/Fairy | 5 | 2 |  |
+| Venipede → Whirlipede → Scolipede | Bug/Poison | 5 | 3 | yes |
+| Cottonee → Whimsicott | Grass/Fairy | 5 | 2 | yes |
 | Petilil → Lilligant | Grass | 5 | 2 |  |
 | Darumaka → Darmanitan | Fire | 5 | 2 |  |
 | Dwebble → Crustle | Bug/Rock | 5 | 2 |  |
@@ -222,7 +222,7 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 | Gothita → Gothorita → Gothitelle | Psychic | 5 | 3 |  |
 | Solosis → Duosion → Reuniclus | Psychic | 5 | 3 |  |
 | Ducklett → Swanna | Water/Flying | 5 | 2 |  |
-| Deerling → Sawsbuck | Normal/Grass | 5 | 2 |  |
+| Deerling → Sawsbuck | Normal/Grass | 5 | 2 | yes |
 | Karrablast → Escavalier | Bug/Steel | 5 | 2 |  |
 | Frillish → Jellicent | Water/Ghost | 5 | 2 |  |
 | Joltik → Galvantula | Bug/Electric | 5 | 2 | yes |
@@ -234,7 +234,7 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 | Bouffalant | Normal | 5 | 1 |  |
 | Heatmor | Fire | 5 | 1 |  |
 | Durant | Bug/Steel | 5 | 1 |  |
-| Fletchling → Fletchinder → Talonflame | Fire/Flying | 6 | 3 |  |
+| Fletchling → Fletchinder → Talonflame | Fire/Flying | 6 | 3 | yes |
 | Pancham → Pangoro | Fighting/Dark | 6 | 2 |  |
 | Furfrou | Normal | 6 | 1 |  |
 | Honedge → Doublade → Aegislash | Steel/Ghost | 6 | 3 |  |
@@ -252,7 +252,7 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 | Grubbin → Charjabug → Vikavolt | Bug/Electric | 7 | 3 |  |
 | Crabrawler → Crabominable | Fighting/Ice | 7 | 2 |  |
 | Oricorio | Fire/Flying | 7 | 1 |  |
-| Rockruff → Lycanroc | Rock | 7 | 2 |  |
+| Rockruff → Lycanroc | Rock | 7 | 2 | yes |
 | Mareanie → Toxapex | Poison/Water | 7 | 2 |  |
 | Mudbray → Mudsdale | Ground | 7 | 2 |  |
 | Fomantis → Lurantis | Grass | 7 | 2 |  |
@@ -302,9 +302,9 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 
 | Line | Types (final forms) | Gen | Species | Home |
 |---|---|---|---|---|
-| Bulbasaur → Ivysaur → Venusaur | Grass/Poison | 1 | 3 | yes |
-| Charmander → Charmeleon → Charizard | Fire/Flying | 1 | 3 | yes |
-| Squirtle → Wartortle → Blastoise | Water | 1 | 3 | yes |
+| Bulbasaur → Ivysaur → Venusaur | Grass/Poison | 1 | 3 |  |
+| Charmander → Charmeleon → Charizard | Fire/Flying | 1 | 3 |  |
+| Squirtle → Wartortle → Blastoise | Water | 1 | 3 |  |
 | Nidoran♀ → Nidorina → Nidoqueen | Poison/Ground | 1 | 3 |  |
 | Nidoran♂ → Nidorino → Nidoking | Poison/Ground | 1 | 3 |  |
 | Vulpix → Ninetales | Fire | 1 | 2 | yes |
@@ -326,65 +326,65 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 | Staryu → Starmie | Water/Psychic | 1 | 2 |  |
 | Magikarp → Gyarados | Water/Flying | 1 | 2 |  |
 | Lapras | Water/Ice | 1 | 1 |  |
-| Eevee → (Vaporeon / Jolteon / Flareon / Espeon / Umbreon / Leafeon / Glaceon / Sylveon) | Water/Electric/Fire/Psychic/Dark/Grass/Ice/Fairy | 1 | 9 |  |
+| Eevee → (Vaporeon / Jolteon / Flareon / Espeon / Umbreon / Leafeon / Glaceon / Sylveon) | Water/Electric/Fire/Psychic/Dark/Grass/Ice/Fairy | 1 | 9 | yes |
 | Porygon → Porygon2 → Porygon-Z | Normal | 1 | 3 |  |
 | Aerodactyl | Rock/Flying | 1 | 1 |  |
-| Chikorita → Bayleef → Meganium | Grass | 2 | 3 | yes |
-| Cyndaquil → Quilava → Typhlosion | Fire | 2 | 3 | yes |
-| Totodile → Croconaw → Feraligatr | Water | 2 | 3 | yes |
+| Chikorita → Bayleef → Meganium | Grass | 2 | 3 |  |
+| Cyndaquil → Quilava → Typhlosion | Fire | 2 | 3 |  |
+| Totodile → Croconaw → Feraligatr | Water | 2 | 3 |  |
 | Togepi → Togetic → Togekiss | Fairy/Flying | 2 | 3 | yes |
 | Mareep → Flaaffy → Ampharos | Electric | 2 | 3 | yes |
 | Yanma → Yanmega | Bug/Flying | 2 | 2 |  |
 | Murkrow → Honchkrow | Dark/Flying | 2 | 2 | yes |
-| Girafarig → Farigiraf | Normal/Psychic | 2 | 2 |  |
+| Girafarig → Farigiraf | Normal/Psychic | 2 | 2 | yes |
 | Dunsparce → Dudunsparce | Normal | 2 | 2 |  |
 | Gligar → Gliscor | Ground/Flying | 2 | 2 |  |
 | Qwilfish → Overqwil | Dark/Poison | 2 | 2 |  |
 | Shuckle | Bug/Rock | 2 | 1 |  |
 | Sneasel → (Weavile / Sneasler) | Dark/Ice/Fighting/Poison | 2 | 3 |  |
 | Teddiursa → Ursaring → Ursaluna | Ground/Normal | 2 | 3 |  |
-| Swinub → Piloswine → Mamoswine | Ice/Ground | 2 | 3 |  |
+| Swinub → Piloswine → Mamoswine | Ice/Ground | 2 | 3 | yes |
 | Corsola → Cursola | Ghost | 2 | 2 |  |
 | Stantler → Wyrdeer | Normal/Psychic | 2 | 2 |  |
 | Elekid → Electabuzz → Electivire | Electric | 2 | 3 |  |
 | Magby → Magmar → Magmortar | Fire | 2 | 3 |  |
-| Treecko → Grovyle → Sceptile | Grass | 3 | 3 | yes |
-| Torchic → Combusken → Blaziken | Fire/Fighting | 3 | 3 | yes |
-| Mudkip → Marshtomp → Swampert | Water/Ground | 3 | 3 | yes |
+| Treecko → Grovyle → Sceptile | Grass | 3 | 3 |  |
+| Torchic → Combusken → Blaziken | Fire/Fighting | 3 | 3 |  |
+| Mudkip → Marshtomp → Swampert | Water/Ground | 3 | 3 |  |
 | Zigzagoon → Linoone → Obstagoon | Dark/Normal | 3 | 3 | yes |
 | Ralts → Kirlia → (Gardevoir / Gallade) | Psychic/Fairy/Fighting | 3 | 4 |  |
 | Nosepass → Probopass | Rock/Steel | 3 | 2 |  |
-| Aron → Lairon → Aggron | Steel/Rock | 3 | 3 | yes |
+| Aron → Lairon → Aggron | Steel/Rock | 3 | 3 |  |
 | Trapinch → Vibrava → Flygon | Ground/Dragon | 3 | 3 | yes |
 | Feebas → Milotic | Water | 3 | 2 |  |
-| Duskull → Dusclops → Dusknoir | Ghost | 3 | 3 | yes |
-| Spheal → Sealeo → Walrein | Ice/Water | 3 | 3 |  |
-| Turtwig → Grotle → Torterra | Grass/Ground | 4 | 3 | yes |
-| Chimchar → Monferno → Infernape | Fire/Fighting | 4 | 3 | yes |
-| Piplup → Prinplup → Empoleon | Water/Steel | 4 | 3 | yes |
+| Duskull → Dusclops → Dusknoir | Ghost | 3 | 3 |  |
+| Spheal → Sealeo → Walrein | Ice/Water | 3 | 3 | yes |
+| Turtwig → Grotle → Torterra | Grass/Ground | 4 | 3 |  |
+| Chimchar → Monferno → Infernape | Fire/Fighting | 4 | 3 |  |
+| Piplup → Prinplup → Empoleon | Water/Steel | 4 | 3 |  |
 | Shinx → Luxio → Luxray | Electric | 4 | 3 |  |
 | Budew → Roselia → Roserade | Grass/Poison | 4 | 3 |  |
 | Mime Jr. → Mr. Mime → Mr. Rime | Ice/Psychic | 4 | 3 |  |
-| Happiny → Chansey → Blissey | Normal | 4 | 3 | yes |
+| Happiny → Chansey → Blissey | Normal | 4 | 3 |  |
 | Munchlax → Snorlax | Normal | 4 | 2 |  |
 | Riolu → Lucario | Fighting/Steel | 4 | 2 | yes |
 | Hippopotas → Hippowdon | Ground | 4 | 2 |  |
-| Snivy → Servine → Serperior | Grass | 5 | 3 | yes |
-| Tepig → Pignite → Emboar | Fire/Fighting | 5 | 3 | yes |
-| Oshawott → Dewott → Samurott | Water | 5 | 3 | yes |
+| Snivy → Servine → Serperior | Grass | 5 | 3 |  |
+| Tepig → Pignite → Emboar | Fire/Fighting | 5 | 3 |  |
+| Oshawott → Dewott → Samurott | Water | 5 | 3 |  |
 | Roggenrola → Boldore → Gigalith | Rock | 5 | 3 |  |
 | Drilbur → Excadrill | Ground/Steel | 5 | 2 |  |
 | Timburr → Gurdurr → Conkeldurr | Fighting | 5 | 3 |  |
 | Tympole → Palpitoad → Seismitoad | Water/Ground | 5 | 3 |  |
 | Basculin → Basculegion | Water/Ghost | 5 | 2 |  |
-| Sandile → Krokorok → Krookodile | Ground/Dark | 5 | 3 | yes |
-| Archen → Archeops | Rock/Flying | 5 | 2 |  |
-| Zorua → Zoroark | Dark | 5 | 2 |  |
+| Sandile → Krokorok → Krookodile | Ground/Dark | 5 | 3 |  |
+| Archen → Archeops | Rock/Flying | 5 | 2 | yes |
+| Zorua → Zoroark | Dark | 5 | 2 | yes |
 | Vanillite → Vanillish → Vanilluxe | Ice | 5 | 3 |  |
 | Klink → Klang → Klinklang | Steel | 5 | 3 |  |
 | Tynamo → Eelektrik → Eelektross | Electric | 5 | 3 |  |
-| Litwick → Lampent → Chandelure | Ghost/Fire | 5 | 3 |  |
-| Axew → Fraxure → Haxorus | Dragon | 5 | 3 | yes |
+| Litwick → Lampent → Chandelure | Ghost/Fire | 5 | 3 | yes |
+| Axew → Fraxure → Haxorus | Dragon | 5 | 3 |  |
 | Cubchoo → Beartic | Ice | 5 | 2 |  |
 | Cryogonal | Ice | 5 | 1 |  |
 | Mienfoo → Mienshao | Fighting | 5 | 2 |  |
@@ -397,11 +397,11 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 | Froakie → Frogadier → Greninja | Water/Dark | 6 | 3 |  |
 | Litleo → Pyroar | Fire/Normal | 6 | 2 |  |
 | Flabébé → Floette → Florges | Fairy | 6 | 3 |  |
-| Skiddo → Gogoat | Grass | 6 | 2 |  |
+| Skiddo → Gogoat | Grass | 6 | 2 | yes |
 | Tyrunt → Tyrantrum | Rock/Dragon | 6 | 2 |  |
 | Amaura → Aurorus | Rock/Ice | 6 | 2 |  |
 | Bergmite → Avalugg | Ice | 6 | 2 |  |
-| Noibat → Noivern | Flying/Dragon | 6 | 2 |  |
+| Noibat → Noivern | Flying/Dragon | 6 | 2 | yes |
 | Rowlet → Dartrix → Decidueye | Grass/Ghost | 7 | 3 |  |
 | Litten → Torracat → Incineroar | Fire/Dark | 7 | 3 |  |
 | Popplio → Brionne → Primarina | Water/Fairy | 7 | 3 |  |
@@ -418,7 +418,7 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 | Sizzlipede → Centiskorch | Fire/Bug | 8 | 2 |  |
 | Sinistea → Polteageist | Ghost | 8 | 2 |  |
 | Hatenna → Hattrem → Hatterene | Psychic/Fairy | 8 | 3 |  |
-| Impidimp → Morgrem → Grimmsnarl | Dark/Fairy | 8 | 3 |  |
+| Impidimp → Morgrem → Grimmsnarl | Dark/Fairy | 8 | 3 | yes |
 | Dracozolt | Electric/Dragon | 8 | 1 |  |
 | Arctozolt | Electric/Ice | 8 | 1 |  |
 | Dracovish | Water/Dragon | 8 | 1 |  |
@@ -451,7 +451,7 @@ Every Pokémon line that can hatch from an egg, with its rarity tier. **Tier bel
 | Goomy → Sliggoo → Goodra | Dragon | 6 | 3 |  |
 | Jangmo-o → Hakamo-o → Kommo-o | Dragon/Fighting | 7 | 3 |  |
 | Duraludon → Archaludon | Steel/Dragon | 8 | 2 |  |
-| Dreepy → Drakloak → Dragapult | Dragon/Ghost | 8 | 3 |  |
+| Dreepy → Drakloak → Dragapult | Dragon/Ghost | 8 | 3 | yes |
 | Frigibax → Arctibax → Baxcalibur | Dragon/Ice | 9 | 3 |  |
 
 ## Quest and milestone only (never hatch from eggs)
