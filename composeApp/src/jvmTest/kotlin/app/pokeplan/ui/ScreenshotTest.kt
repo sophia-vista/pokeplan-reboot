@@ -79,6 +79,9 @@ class ScreenshotTest {
         render("planner") {
             PixelTheme { PixelBackground("bw07", Modifier.fillMaxSize()) { PlannerScreen(model) } }
         }
+        render("planner-today") {
+            PixelTheme { PixelBackground("bw07", Modifier.fillMaxSize()) { PlannerScreen(model, startView = 0) } }
+        }
     }
 
     @Test
@@ -176,4 +179,23 @@ class ScreenshotTest {
             PixelTheme { PixelBackground("bw15", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.CollectionScreen(model, 4) } }
         }
     }
+
+    @Test
+    fun collectionMenu() = collection("collection-menu", -1)
+
+    @Test
+    fun collectionQuests() {
+        val base = started()
+        val text = GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), base.data.copy(player = base.data.player.copy(trainerPoints = 3_300)))
+        val store = GameStore(MemoryStorage(text), clock)
+        store.acceptQuest("azelf")
+        store.acceptQuest("uxie")
+        val model = AppModel(store)
+        render("collection-quests") {
+            PixelTheme { PixelBackground("bw15", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.CollectionScreen(model, 5) } }
+        }
+    }
+
+    @Test
+    fun meMenu() = me("me-menu", -1)
 }

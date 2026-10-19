@@ -340,4 +340,39 @@ class GameStoreTest {
         assertEquals(app.pokeplan.core.pokemon.Guardians.SIGNATURE_PERCENT,
             perks[app.pokeplan.core.pokemon.PerkBucket.SUPER_CANDY_CHANCE] - app.pokeplan.core.pokemon.Perks.total(s.data.player.buddy, s.data.player.party)[app.pokeplan.core.pokemon.PerkBucket.SUPER_CANDY_CHANCE], 1e-9)
     }
+
+    @Test
+    fun aQuestIsAcceptedProgressesAndPaysItsGuardianWhenClaimed() {
+        val (s0, clock) = started()
+        val s = s0.withPoints(3_300) // rank 4
+        val azelf = app.pokeplan.app.quest.Quests.get("azelf")!!
+        assertTrue(s.availableQuests.any { it.id == "azelf" })
+        assertTrue(s.acceptQuest("azelf"))
+        assertFalse(s.acceptQuest("azelf"), "already taken")
+        assertEquals(1, s.activeQuests.size)
+        assertFalse(s.questReady(azelf))
+        assertEquals(null, s.claimQuest("azelf"))
+
+        // Finish what it asks: 10 Deep Focus sessions, 10 hard tasks, and a 7 day streak.
+        repeat(10) {
+            s.startFocus(25, deepFocus = true)
+            clock.advance(25 * 60_000L + 1)
+            s.tickFocus()
+        }
+        val progress = s.questProgress(azelf)
+        assertEquals(10, progress.first { it.first.kind == app.pokeplan.app.quest.RequirementKind.DEEP_FOCUS_SESSIONS }.second)
+        assertFalse(s.questReady(azelf), "tasks and the streak are still missing")
+    }
+
+    @Test
+    fun atMostThreeQuestsAreActiveAtOnce() {
+        val (s0, _) = started()
+        val s = s0.withPoints(10_000)
+        val ids = s.availableQuests.take(4).map { it.id }
+        assertEquals(4, ids.size)
+        assertTrue(s.acceptQuest(ids[0]))
+        assertTrue(s.acceptQuest(ids[1]))
+        assertTrue(s.acceptQuest(ids[2]))
+        assertFalse(s.acceptQuest(ids[3]))
+    }
 }

@@ -42,6 +42,8 @@ data class AppData(
     val rewardLog: List<RewardEntry> = emptyList(),
     /** The signed-in cloud account, if any. */
     val account: Account? = null,
+    /** Legendary and mythical quests the player has accepted, by quest id. */
+    val quests: Map<String, QuestState> = emptyMap(),
     /** Evolution trials already completed. */
     val completedTrials: Set<String> = emptySet(),
     /** Emergency pauses used on [emergencyPausesDay]. */
@@ -109,3 +111,7 @@ data class Account(
     val unsynced: Boolean = true,
     val syncedAtMillis: Long = 0,
 )
+
+/** A quest the player has taken on. Progress is counted from [acceptedAtMillis]; [completedAtMillis] is set when the reward is claimed. */
+@Serializable
+data class QuestState(val acceptedAtMillis: Long, val completedAtMillis: Long? = null)
