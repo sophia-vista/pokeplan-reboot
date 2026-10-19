@@ -1,5 +1,8 @@
 package app.pokeplan.app
 
+import app.pokeplan.app.quest.Quest
+import app.pokeplan.app.quest.Quests
+import app.pokeplan.app.quest.Requirement
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.HatchOption
 import app.pokeplan.core.model.PokemonType
@@ -351,6 +354,44 @@ class GameStore(
         return true
     }
 
+    // --- quests -------------------------------------------------------------------------------------------------------
+
+    /** Quests accepted and not yet claimed. */
+    val activeQuests: List<Quest>
+        get() = data.quests.filterValues { it.completedAtMillis == null }.keys.mapNotNull(Quests::get)
+
+    /** Quests that are unlocked and not taken yet. */
+    val availableQuests: List<Quest>
+        get() = Quests.all.filter { it.id !in data.quests && Quests.lockedReason(it, data) == null }
+
+    /** Progress on each of a quest's requirements: (requirement, current count). */
+    fun questProgress(quest: Quest): List<Pair<Requirement, Int>> {
+        val state = data.quests[quest.id] ?: return quest.requirements.map { it to 0 }
+        return quest.requirements.map { it to Quests.current(it, state, data, zone, streak.current) }
+    }
+
+    fun questReady(quest: Quest): Boolean {
+        val state = data.quests[quest.id] ?: return false
+        return state.completedAtMillis == null && Quests.isComplete(quest, state, data, zone, streak.current)
+    }
+
+    /** Takes a quest on. Returns false if it is locked, already taken, or [Quests.MAX_ACTIVE] are in progress. */
+    fun acceptQuest(id: String): Boolean {
+        val quest = Quests.get(id) ?: return false
+        if (id in data.quests || Quests.lockedReason(quest, data) != null || activeQuests.size >= Quests.MAX_ACTIVE) return false
+        update { it.copy(quests = it.quests + (id to QuestState(nowMillis))) }
+        return true
+    }
+
+    /** Claims the reward of a finished quest: the Pokémon joins the collection. Returns it, or null if the quest is not finished. */
+    fun claimQuest(id: String): OwnedPokemon? {
+        val quest = Quests.get(id) ?: return null
+        if (!questReady(quest)) return null
+        val reward = grantPokemon(quest.speciesId, "Quest: ${quest.title}")
+        update { d -> d.copy(quests = d.quests + (id to d.quests.getValue(id).copy(completedAtMillis = nowMillis))) }
+        return reward
+    }
+
     // --- growth -------------------------------------------------------------------------------------------------------
 
     /** What the last [days] days went into, by category. */
@@ -408,7 +449,7 @@ class GameStore(
                 update { d ->
                     log("Focus: $minutes min", outcome.rewards, d.copy(
                         player = outcome.state, focus = null, activeDays = d.activeDays + today, lastFocusEnd = FocusEnd(nowMillis, true),
-                        focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, true, session.taskId),
+                        focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, true, session.taskId, session.deepFocus),
                         tasks = d.tasks.map { if (it.id == session.taskId) it.copy(focusedMinutes = it.focusedMinutes + minutes) else it },
                     ))
                 }
@@ -419,7 +460,7 @@ class GameStore(
                 update { d ->
                     d.copy(
                         focus = null, lastFocusEnd = FocusEnd(nowMillis, false, phase.reason),
-                        focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, false, session.taskId),
+                        focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, false, session.taskId, session.deepFocus),
                     )
                 }
                 FocusResult.Failed(phase.reason)

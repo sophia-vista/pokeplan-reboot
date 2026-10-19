@@ -42,28 +42,41 @@ import app.pokeplan.ui.theme.TextBox
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.plus
 
-private enum class MeSection(val label: String) { GROWTH("Growth"), GOALS("Goals"), REVIEW("Review"), SETTINGS("Settings") }
+private enum class MeSection(val label: String, val icon: String) {
+    GROWTH("Growth", "exp-share"), GOALS("Goals", "star-piece"), REVIEW("Review", "journal"), SETTINGS("Settings", "gb-sounds"),
+}
 
 @Composable
-fun MeScreen(model: AppModel, startSection: Int = 0) {
-    var section by remember { mutableStateOf(MeSection.entries[startSection]) }
+fun MeScreen(model: AppModel, startSection: Int = -1) {
+    var section by remember { mutableStateOf(MeSection.entries.getOrNull(startSection)) }
     val data = model.data
-    Column(Modifier.fillMaxSize()) {
-        ScreenHeader("Me", subtitle = "${data.trainerName} · ${TrainerRank.nameFor(data.player.trainerPoints)}")
-        Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            TrainerCard(model)
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                MeSection.entries.forEach { s -> TabButton(s.label, s == section, { section = s }, Modifier.weight(1f)) }
+    val current = section
+    if (current == null) {
+        Column(Modifier.fillMaxSize()) {
+            ScreenHeader("Me", subtitle = "${data.trainerName} · ${TrainerRank.nameFor(data.player.trainerPoints)}")
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                TrainerCard(model)
+                MenuGrid(
+                    listOf(
+                        MenuEntry("GROWTH", "exp-share", "Growth", "your week"),
+                        MenuEntry("GOALS", "star-piece", "Goals", "${data.goals.size} goals"),
+                        MenuEntry("REVIEW", "journal", "Review", if (model.store.canReview()) "ready this week" else "done this week", badge = if (model.store.canReview()) 1 else 0),
+                        MenuEntry("SETTINGS", "gb-sounds", "Settings", "name, region, sound"),
+                    ),
+                ) { key -> section = MeSection.valueOf(key) }
             }
-            when (section) {
-                MeSection.GROWTH -> GrowthView(model)
-                MeSection.GOALS -> GoalsView(model)
-                MeSection.REVIEW -> ReviewView(model)
-                MeSection.SETTINGS -> SettingsView(model)
-            }
+        }
+        return
+    }
+    SectionScaffold(current.label, null, onBack = { section = null }) {
+        when (current) {
+            MeSection.GROWTH -> GrowthView(model)
+            MeSection.GOALS -> GoalsView(model)
+            MeSection.REVIEW -> ReviewView(model)
+            MeSection.SETTINGS -> SettingsView(model)
         }
     }
 }

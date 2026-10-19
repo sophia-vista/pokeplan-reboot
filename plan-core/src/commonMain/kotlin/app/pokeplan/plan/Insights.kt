@@ -13,6 +13,8 @@ data class FocusRecord(
     val minutes: Int,
     val completed: Boolean,
     val taskId: String? = null,
+    /** Whether it was a Deep Focus session. */
+    val deepFocus: Boolean = false,
 )
 
 /** The Growth screen's numbers. See "Growth" in docs/design.md. */

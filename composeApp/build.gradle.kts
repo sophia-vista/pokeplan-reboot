@@ -46,6 +46,7 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.components.resources)
+            implementation("org.jetbrains.compose.ui:ui-backhandler:${libs.versions.compose.get()}")
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
