@@ -47,6 +47,7 @@ object BuddyScene {
  * and never with sentences. There is no permanent speech bubble, no needs and no mood meter.
  */
 enum class BuddyEvent(val emoji: String) {
+    SHINY("🌟"),
     HATCHED("🎉"),
     DONE("✨"),
 }

@@ -9,8 +9,11 @@ import app.pokeplan.core.reward.Reward
 fun Reward.describe(): String = when (this) {
     is Reward.Hatched -> {
         val name = Dex.species(pokemon.speciesId).name
-        val shiny = if (pokemon.isShiny) " It is shiny!" else ""
-        (if (fromTask) "A Task Egg hatched: $name!" else "Your egg hatched: $name!") + shiny
+        when {
+            pokemon.isShiny -> "✨ A shiny $name hatched! ✨"
+            fromTask -> "A Task Egg hatched: $name!"
+            else -> "Your egg hatched: $name!"
+        }
     }
     is Reward.Candies -> "$amount ${if (type == CandyType.SUPER) "Super" else "Rare"} ${if (amount == 1) "Candy" else "Candies"}"
     is Reward.Coins -> "$amount coins"

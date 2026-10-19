@@ -79,7 +79,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1) {
 
     val current = view
     if (current == null) {
-        Column(Modifier.fillMaxSize().background(Pixel.Paper)) {
+        Column(Modifier.fillMaxSize()) {
             ScreenHeader("Planner", subtitle = "${tasksFor(View.TODAY).size} to do today", icon = "journal")
             Column(
                 Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),

@@ -277,6 +277,7 @@ private fun SettingsView(model: AppModel) {
             Toggle("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
             VolumeRow("Sound effects and cries", settings.effectsVolume) { v -> store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }
             VolumeRow("Music", settings.musicVolume, note = "Music comes with a later update.") { v -> store.changeSettings { s -> s.copy(musicVolume = v) } }
+            Toggle("Haptics (vibrate when you pet the buddy)", settings.haptics) { store.changeSettings { s -> s.copy(haptics = it) } }
             Toggle("Reduce motion", settings.reduceMotion) { store.changeSettings { s -> s.copy(reduceMotion = it) } }
             Toggle("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {

@@ -259,6 +259,7 @@ class PetAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val store = widgetStore(context)
         store.pet()
+        if (store.data.settings.haptics) app.pokeplan.AndroidHaptics(context).tick()
         // The callback stays alive while the hearts show (settleLater), long enough for the cry to play out.
         store.data.player.buddy?.takeIf { store.data.settings.effectsLevel > 0f }?.let { AndroidCryPlayer(context).play(it.speciesId, store.data.settings.effectsLevel) }
         BuddyTalk.show(context, store.data.player.buddy?.let { BuddyReaction.pet(it, store.now.hour, avoid = BuddyTalk.last(context)) } ?: "❤️")

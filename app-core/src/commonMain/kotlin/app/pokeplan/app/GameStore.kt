@@ -128,6 +128,9 @@ class GameStore(
         if (account != null && account == before.account && after.copy(account = null) != before.copy(account = null)) {
             after = after.copy(account = account.copy(unsynced = true))
         }
+        // A shiny stays in the Shiny Dex even if it is transferred later.
+        val shinyNow = after.player.pokemon.filter { it.isShiny }.map { it.speciesId }.toSet()
+        if (!after.shinySpecies.containsAll(shinyNow)) after = after.copy(shinySpecies = after.shinySpecies + shinyNow)
         data = after
         storage.save(json.encodeToString(AppData.serializer(), data))
         listeners.toList().forEach { it(data) }
@@ -626,9 +629,14 @@ class GameStore(
     fun transferBlock(id: String): TransferBlock? =
         Transfer.block(pokemon(id), id == data.player.buddyId, data.player.party.size)
 
-    /** Sends a duplicate away for Rare Candies and coins. Returns false if it may not be transferred. */
+    fun isFavorite(id: String): Boolean = id in data.favorites
+
+    /** Stars or unstars a Pokémon; a starred one cannot be transferred. */
+    fun toggleFavorite(id: String) = update { d -> d.copy(favorites = if (id in d.favorites) d.favorites - id else d.favorites + id) }
+
+    /** Sends a duplicate away for Rare Candies and coins. Returns false if it may not be transferred (or is starred). */
     fun transfer(id: String): Boolean {
-        if (transferBlock(id) != null) return false
+        if (transferBlock(id) != null || id in data.favorites) return false
         val p = pokemon(id)
         val quote = Transfer.quote(p)
         update { d ->
@@ -651,8 +659,13 @@ class GameStore(
     fun buddyEvent(): BuddyEventNow? {
         val recent = data.rewardLog.filter { nowMillis - it.atMillis < EVENT_MILLIS }
         val latest = recent.lastOrNull() ?: return null
-        val hatched = recent.any { e -> e.rewards.any { it is Reward.Hatched } }
-        return BuddyEventNow(if (hatched) BuddyEvent.HATCHED else BuddyEvent.DONE, latest.atMillis)
+        val hatches = recent.flatMap { e -> e.rewards.filterIsInstance<Reward.Hatched>() }
+        val event = when {
+            hatches.any { it.pokemon.isShiny } -> BuddyEvent.SHINY
+            hatches.isNotEmpty() -> BuddyEvent.HATCHED
+            else -> BuddyEvent.DONE
+        }
+        return BuddyEventNow(event, latest.atMillis)
     }
 
     /** Progress of [p] towards its next level, 0 to 1: the Rare Candies fed so far out of the ones this level needs. */
