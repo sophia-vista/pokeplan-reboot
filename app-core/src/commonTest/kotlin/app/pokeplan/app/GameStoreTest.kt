@@ -340,4 +340,16 @@ class GameStoreTest {
         assertEquals(app.pokeplan.core.pokemon.Guardians.SIGNATURE_PERCENT,
             perks[app.pokeplan.core.pokemon.PerkBucket.SUPER_CANDY_CHANCE] - app.pokeplan.core.pokemon.Perks.total(s.data.player.buddy, s.data.player.party)[app.pokeplan.core.pokemon.PerkBucket.SUPER_CANDY_CHANCE], 1e-9)
     }
+
+    @Test
+    fun everyStarterCanBeChosen() {
+        assertEquals(29, GameStore.starters.size)
+        assertEquals(GameStore.starters.size, GameStore.starters.toSet().size)
+        for (id in GameStore.starters) {
+            val (s, _) = store()
+            s.start("Sophia", id)
+            assertEquals(id, s.data.player.buddy!!.speciesId)
+            assertTrue(s.data.player.buddy!!.inParty)
+        }
+    }
 }

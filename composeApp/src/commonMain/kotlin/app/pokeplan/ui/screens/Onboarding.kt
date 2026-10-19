@@ -9,12 +9,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
@@ -54,10 +55,10 @@ private val greeting = listOf(
 
 /** An intro in the style of the old games: a Professor, a text box that types itself out, a name, a first partner. */
 @Composable
-fun OnboardingScreen(store: GameStore) {
-    var step by remember { mutableStateOf(Step.GREETING) }
+fun OnboardingScreen(store: GameStore, startStep: Int = 0) {
+    var step by remember { mutableStateOf(Step.entries[startStep]) }
     var line by remember { mutableStateOf(0) }
-    var name by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf(if (startStep > 1) "Sophia" else "") }
     var starter by remember { mutableStateOf(GameStore.starters.first()) }
 
     Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.SpaceBetween) {
@@ -114,21 +115,27 @@ private fun YesNo(onYes: () -> Unit, onNo: () -> Unit) {
     }
 }
 
-/** The starters in a row of tappable sprites. */
+/** All the starters, by game, as tappable sprites under a big preview of the one picked. */
 @Composable
 private fun StarterPicker(selected: Int, onSelect: (Int) -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Sprite(Dex.defaultForm(selected).id, false, Dex.species(selected).name, size = 192.dp)
-        FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            GameStore.starters.forEach { id ->
-                val chosen = id == selected
-                Box(
-                    Modifier.padding(3.dp)
-                        .background(if (chosen) Pixel.Yellow else Color_White, RoundedCornerShape(14.dp))
-                        .clickable { onSelect(id) }
-                        .padding(4.dp),
-                ) { Sprite(Dex.defaultForm(id).id, false, Dex.species(id).name, size = 56.dp) }
+    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        // The pick stays on show; only the list of starters scrolls.
+        Sprite(Dex.defaultForm(selected).id, false, Dex.species(selected).name, size = 128.dp)
+        Text(Dex.species(selected).name, style = MaterialTheme.typography.titleMedium)
+        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        GameStore.starterGroups.forEach { (game, ids) ->
+            Text(game, style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                ids.forEach { id ->
+                    val chosen = id == selected
+                    Box(
+                        Modifier.background(if (chosen) Pixel.Yellow else Color_White, RoundedCornerShape(14.dp))
+                            .clickable { onSelect(id) }
+                            .padding(4.dp),
+                    ) { Sprite(Dex.defaultForm(id).id, false, Dex.species(id).name, size = 56.dp) }
+                }
             }
+        }
         }
     }
 }

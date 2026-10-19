@@ -176,4 +176,12 @@ class ScreenshotTest {
             PixelTheme { PixelBackground("bw15", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.CollectionScreen(model, 4) } }
         }
     }
+
+    @Test
+    fun onboardingStarters() {
+        val store = GameStore(MemoryStorage(), clock)
+        render("onboarding-starters") {
+            PixelTheme { PixelBackground("bw12", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.OnboardingScreen(store, startStep = 3) } }
+        }
+    }
 }
