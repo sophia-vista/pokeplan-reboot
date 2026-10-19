@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import app.pokeplan.app.BuddyReaction
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.reward.TrainerRank
@@ -93,8 +94,8 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
                     buddy = buddy, scene = BuddyScene.of(buddy.form.types), night = BuddyScene.isNight(store.now.hour),
                     progress = store.levelProgress(buddy), event = store.buddyEvent(),
                     calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
-                    onPet = { store.pet(); model.cry(buddy.speciesId) },
-                    onFeed = { berry?.let { store.useItem(it, buddy.id) } },
+                    onPet = { store.pet(); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour) },
+                    onFeed = { berry?.let { store.useItem(it, buddy.id) }; BuddyReaction.feed(buddy) },
                     celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
                 )
             }

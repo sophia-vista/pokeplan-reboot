@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## Unreleased
+
+- System bars match the app: the red header runs under the status bar and the white tab bar under the navigation bar.
+- Sound effects and Music volume sliders replace the Sound toggle (music itself comes later).
+- The buddy's pet and berry reactions are a wider set of emoji picked from its bond style, type and the time of day.
+- The Buddy widget refreshes when the buddy, its level, a berry, a focus session or today's tasks change.
+
 ## 0.1.0
 
 The first private build.

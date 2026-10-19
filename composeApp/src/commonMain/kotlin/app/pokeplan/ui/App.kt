@@ -7,11 +7,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,7 +67,8 @@ class AppModel(
 ) {
     /** Plays [speciesId]'s cry if the platform can and Sound is on. */
     fun cry(speciesId: Int) {
-        if (data.settings.sound) cries?.play(speciesId)
+        val volume = data.settings.effectsLevel
+        if (volume > 0f) cries?.play(speciesId, volume)
     }
 
     /** Where the cloud sync stands, for Settings. */
@@ -103,6 +112,8 @@ fun App(
     /** Emits when something outside the app may have changed the save (the Android app coming back after a widget tap). */
     externalChanges: Flow<Unit>? = null,
     cries: CryPlayer? = null,
+    /** Called after every change to the saved data (the Android app uses it to keep its widgets up to date). */
+    onDataChanged: ((AppData) -> Unit)? = null,
 ) {
     val model = remember {
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
@@ -111,6 +122,10 @@ fun App(
         AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries)
     }
     val store = model.store
+    if (onDataChanged != null) DisposableEffect(store) {
+        val stop = store.observe(onDataChanged)
+        onDispose(stop)
+    }
     if (externalChanges != null) LaunchedEffect(externalChanges) { externalChanges.collect { store.reload() } }
 
     // Cloud sync: follow the status, sync when signed in, and again a moment after any change (and now and then, to hear
@@ -145,9 +160,10 @@ fun App(
     }
 
     PixelTheme {
-        Box(Modifier.fillMaxSize().background(Pixel.Paper).safeDrawingPadding()) {
+        Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
             if (!model.data.onboarded) {
-                PixelBackground("bw12", Modifier.fillMaxSize()) { OnboardingScreen(store) }
+                // The intro's picture runs under the system bars; only its content keeps clear of them.
+                PixelBackground("bw12", Modifier.fillMaxSize()) { Box(Modifier.fillMaxSize().safeDrawingPadding()) { OnboardingScreen(store) } }
             } else {
                 MainShell(model, focusTab, startTab)
             }
@@ -162,7 +178,10 @@ private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab) {
     val tab = Tab.valueOf(selected).takeIf { it in tabs } ?: Tab.HOME
     val go = { to: Tab -> selected = to.name }
 
-    Column(Modifier.fillMaxSize()) {
+    // The red header colour continues under the status bar and the white tab bar under the system navigation bar, so the
+    // system bars match the app instead of showing the cream page colour. The keyboard lifts the whole column.
+    Column(Modifier.fillMaxSize().imePadding()) {
+        Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).background(Pixel.Red))
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when (tab) {
                 Tab.HOME -> HomeScreen(model, go)
@@ -172,14 +191,16 @@ private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab) {
                 Tab.ME -> MeScreen(model)
             }
         }
-        Row(
-            Modifier.fillMaxWidth().background(Color.White).border(1.dp, Pixel.Border)
-                .padding(horizontal = 8.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            tabs.forEach { t ->
-                NavButton(t.label, t.icon, selected = t == tab, onClick = { go(t) }, modifier = Modifier.weight(1f))
+        Column(Modifier.fillMaxWidth().background(Color.White).border(1.dp, Pixel.Border)) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                tabs.forEach { t ->
+                    NavButton(t.label, t.icon, selected = t == tab, onClick = { go(t) }, modifier = Modifier.weight(1f))
+                }
             }
+            Spacer(Modifier.fillMaxWidth().windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
     }
 }

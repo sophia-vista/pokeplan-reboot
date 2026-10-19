@@ -449,4 +449,17 @@ class GameStoreTest {
         assertEquals("meadow", BuddyScene.of(emptyList()))
         assertTrue(BuddyScene.isNight(22) && BuddyScene.isNight(3) && !BuddyScene.isNight(12))
     }
+
+    @Test
+    fun pet_reactions_come_from_the_buddys_bond_style_type_and_time_of_day() {
+        val (s, _) = started()
+        val buddy = s.data.player.buddy!!
+        val pool = BuddyReaction.petPool(buddy, hour = 22)
+        assertTrue(pool.size >= 8, "a wide set, got $pool")
+        assertTrue(pool.any { it in listOf("😴", "💤", "🌙") }, "night adds a sleepy one")
+        val random = Random(3)
+        val seen = (1..200).map { BuddyReaction.pet(buddy, 22, random) }.toSet()
+        assertTrue(seen.all { it in pool })
+        assertTrue(seen.size >= 5, "should vary, got $seen")
+    }
 }

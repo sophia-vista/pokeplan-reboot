@@ -16,7 +16,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.graphics.Color
+import kotlin.math.roundToInt
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -266,7 +275,8 @@ private fun SettingsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Toggle("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
-            Toggle("Sound", settings.sound) { store.changeSettings { s -> s.copy(sound = it) } }
+            VolumeRow("Sound effects and cries", settings.effectsVolume) { v -> store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }
+            VolumeRow("Music", settings.musicVolume, note = "Music comes with a later update.") { v -> store.changeSettings { s -> s.copy(musicVolume = v) } }
             Toggle("Reduce motion", settings.reduceMotion) { store.changeSettings { s -> s.copy(reduceMotion = it) } }
             Toggle("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -281,6 +291,27 @@ private fun SettingsView(model: AppModel) {
     }
     AccountCard(model)
     AboutCard()
+}
+
+/** A labelled volume slider, 0 to 100 in steps of 10. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun VolumeRow(label: String, value: Int, note: String? = null, onChange: (Int) -> Unit) {
+    Column {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(label, style = MaterialTheme.typography.bodyLarge)
+            Text("$value%", style = MaterialTheme.typography.bodyMedium)
+        }
+        val colors = SliderDefaults.colors(thumbColor = Pixel.Red, activeTrackColor = Pixel.Red, inactiveTrackColor = Pixel.Shade, activeTickColor = Color.Transparent, inactiveTickColor = Color.Transparent)
+        val interaction = remember { MutableInteractionSource() }
+        Slider(
+            value = value / 100f, onValueChange = { onChange((it * 10).roundToInt() * 10) }, valueRange = 0f..1f, steps = 9,
+            colors = colors, interactionSource = interaction,
+            thumb = { SliderDefaults.Thumb(interaction, colors = colors, thumbSize = DpSize(24.dp, 24.dp)) },
+            modifier = Modifier.semantics { contentDescription = "$label volume $value percent" },
+        )
+        if (note != null) Text(note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    }
 }
 
 /** The app's version, so a bug report or a friend's install can say exactly which build it is. */

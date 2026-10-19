@@ -254,8 +254,8 @@ class PetAction : ActionCallback {
         val store = widgetStore(context)
         store.pet()
         // The callback stays alive while the hearts show (settleLater), long enough for the cry to play out.
-        store.data.player.buddy?.takeIf { store.data.settings.sound }?.let { AndroidCryPlayer(context).play(it.speciesId) }
-        BuddyTalk.show(context, BuddyReaction.PET)
+        store.data.player.buddy?.takeIf { store.data.settings.effectsLevel > 0f }?.let { AndroidCryPlayer(context).play(it.speciesId, store.data.settings.effectsLevel) }
+        BuddyTalk.show(context, store.data.player.buddy?.let { BuddyReaction.pet(it, store.now.hour) } ?: "❤️")
         updateWidgets(context)
         BuddyTalk.settleLater(context)
     }
@@ -268,7 +268,7 @@ class FeedAction : ActionCallback {
         val buddy = store.data.player.buddy ?: return
         val berry = berryOf(store) ?: return
         store.useItem(berry, buddy.id)
-        BuddyTalk.show(context, BuddyReaction.FEED)
+        BuddyTalk.show(context, BuddyReaction.feed(buddy))
         updateWidgets(context)
         BuddyTalk.settleLater(context)
     }
