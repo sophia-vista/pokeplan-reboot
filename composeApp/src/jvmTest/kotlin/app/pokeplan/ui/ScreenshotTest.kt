@@ -134,9 +134,9 @@ class ScreenshotTest {
         render("focus-running") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.FocusScreen(model) } } }
     }
 
-    private fun storeWithTeam(): GameStore {
+    private fun storeWithTeam(hatched: Int = 4): GameStore {
         val store = started()
-        repeat(4) {
+        repeat(hatched) {
             store.startFocus(25, deepFocus = false)
             clock.millis += 25 * 60_000L + 1
             store.tickFocus()
@@ -148,8 +148,8 @@ class ScreenshotTest {
         return store
     }
 
-    private fun collection(name: String, section: Int, open: Boolean = false) {
-        val store = storeWithTeam()
+    private fun collection(name: String, section: Int, open: Boolean = false, hatched: Int = 4) {
+        val store = storeWithTeam(hatched)
         val model = AppModel(store)
         render(name) {
             PixelTheme {
@@ -186,6 +186,9 @@ class ScreenshotTest {
 
     @Test
     fun darkMe() = dark("dark-me", Tab.ME)
+
+    @Test
+    fun collectionPc() = collection("collection-pc", 1, hatched = 14)
 
     @Test
     fun collectionDex() = collection("collection-dex", 2)
