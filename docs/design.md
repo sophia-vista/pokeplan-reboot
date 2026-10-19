@@ -103,6 +103,8 @@ At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are
 
 **Every species through Gen 9 (about 1,025) with all alternate forms**: regional (Alolan, Galarian, Hisuian, Paldean), gender differences, Mega / Gigantamax, and cosmetic forms (Unown, Vivillon, Alcremie, etc.). The 150-species list in `:shared` is a placeholder that will be replaced by generated data.
 
+- **Mega / Gigantamax are a temporary focus form.** A buddy holding its Mega Stone (or Dynamax Band for G-Max species) shows that form for the length of a focus session, with a bonus to that session's perk *(tune)*, then reverts. The stones are reusable key items, one per species, from the shop or rare drops.
+- **Cosmetic forms are a side collection** with their own progress bar and badge. 100% Pokédex means one of each species plus regional forms; cosmetic forms still appear when hatching.
 - **Rarity by rule** from game data, with one tunable table: evolution stage, base stat total, and legendary / mythical status (legendaries and mythicals are Super Rare, babies and unevolved forms lean Common, final evolutions lean Rare). Hand overrides are not planned.
 - **Art:** the Pokémon Showdown sprite sets (animated Gen 5 style where available, their sets for Gen 6 to 9 otherwise). Fetch and bundle them at build time rather than loading from Showdown at runtime, so the app does not depend on their server. The same IP caveat as the rest of the project applies (see Risks), and Showdown's own terms should be checked before any public release.
 
@@ -131,7 +133,7 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 
 - Daily streak: kept alive by one paid task **or** one completed focus session that day, weekly goals, and a Pokédex with seen/caught, region completion rewards and a trainer card.
 - Badges for milestones (tasks finished, focus hours), shown as gym badges.
-- Later: friends see your buddy and party; co-op focus sessions; trading.
+- **First online release:** friends and profiles (view a friend's buddy, party and trainer card) and **weekly friends-only leaderboards** (focus minutes, tasks finished, resetting weekly). Trading and co-op focus come later.
 
 ## Look and feel
 
@@ -141,6 +143,18 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 - Fonts: pixel font for headings only; body text stays a readable font.
 - Sound: cries, short jingles; a mute toggle.
 - Accessibility: content descriptions on all images, text scaling, colour-blind safe type chips.
+
+## Screens and flows (proposal, to confirm)
+
+Navigation is five bottom tabs: **Home / Planner / Focus / Collection / Me**.
+
+- **Home:** the animated buddy with mood and a speech bubble; tap to pet (friendship, small daily cap). Streak flame, today's top tasks (tap to complete), a "Start focus" button at the default length, small candy and coin counters.
+- **Planner:** list and calendar views, category filter, quick-add sheet (title, priority, due, then "more" for category, recurrence, subtasks, reminder). Completing a task opens a reward sheet with the 10 second undo.
+- **Focus:** presets (15 / 25 / 45 / 60) plus custom, Deep Focus toggle, a short reminder of the strict rules, the egg during the session, the emergency pause button. On finish: hatch ceremony, then a summary card with actions (set as buddy, keep, transfer).
+- **Collection:** Party (6), PC boxes (30 each), Pokédex (National Dex, seen / caught, forms tab, cosmetic-forms collection), Bag. The Pokémon detail screen shows stats, nature, ability, an IV "judge" (qualitative, like the games), training plan, held item, and actions: feed Rare Candy, evolve, transfer, nickname, set as buddy.
+- **Me:** trainer card (badges, streak, totals), shop, friends and leaderboards (once online), settings (reminders, sound, theme, account linking, data export).
+- **Onboarding:** title → start as guest → choose a starter from the starter set → name the trainer → create a first task (tutorial) → first focus session (tutorial).
+- **Offline:** everything works offline. Because the server grants rewards, offline completions show as "pending" and resolve on sync; a focus session's start and end times are sent and validated for plausibility.
 
 ## Android widgets
 
@@ -185,9 +199,9 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 
 ## Open questions
 
-Being settled in rounds before any Pokémon-depth code is written. Done: focus interruptions, task age, streak, accounts, planner scope, overdue, subtasks, undo, buddy swap, shiny rate, item sources.
+Being settled in rounds before any Pokémon-depth code is written. Decided: everything above not marked *(tune)* or *(proposal)*.
 
-- **Roster details:** how Mega / Gigantamax work without battles, how cosmetic forms count toward the dex, rarity rule parameters, coin amounts, sprite hosting.
+- **To confirm:** the Screens and flows proposal.
+- **To tune by simulation before release:** rarity rule parameters across ~1,025 species, coin amounts, transfer yields, perk magnitudes and cap, catch-up discount, minimum task age, Mega bonus.
+- **To check:** Showdown sprite terms and build-time availability, whether the build environment can reach the data sources, Android permission flow for calendar import.
 - **Pokémon economy:** roster size, buddy rules, perk magnitudes, transfer rules, item sources, shiny rate.
-- **Online:** friends and co-op scope, what is public.
-- **Screens:** navigation, home layout, flows.
