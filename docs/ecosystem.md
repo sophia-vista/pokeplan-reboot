@@ -146,6 +146,10 @@ Otherwise stay with manual check-ins.
 7. **Grow**, then **health integration**, then **Home** modules.
 8. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
 
+### Ideas parked
+
+- **Poketch-style utilities** *(owner's idea, from Diamond and Pearl)*: a small set of handy tools that live in the app and as widgets, each one a "Poketch app" the player switches between with a button, like the watch in the games. Candidates that fit the product: a digital clock and calendar, a counter, a stopwatch and a countdown (tied to Focus), a step or water-intake counter (a Care module hook), a memo pad, a calculator, a day-care or "buddy check" screen and a coin toss for undecided moments. It stays plain utility: no text from the buddy, real game assets for icons, and any effort it records goes through the normal effort events.
+
 ## 9. Open questions
 
 - Per-module daily rank caps, or one shared cap?
