@@ -18,7 +18,8 @@ A fun productivity, growth and self-improvement app for Pokémon lovers: finishi
 - `docs/design.md`: product and game design.
 - `docs/home-region-curation-prompt.md` and `docs/home-region-candidates.md`: the kit for curating the Home Region (`tools/species/home-region.txt`) in a separate chat. Regenerate the candidates table with `./gradlew :pokemon-core:curationReport`.
 - `legacy-android/`: the original Android app (Gradle project; see below). Single module `app`, package `com.mobdeve.s11.pokeplan`, Java 8, `minSdk 21` / `targetSdk 30`, view binding on, Android Gradle Plugin 7.0.2 with Gradle 7.0.2 (old: build with JDK 11, not 17 or newer).
-- Planned and not yet present: `composeApp` (UI, needs Compose dependencies from `dl.google.com`), and an Android app module.
+- `composeApp/`: the shared Compose Multiplatform UI (targets: Android library, desktop JVM, wasmJs web), package `app.pokeplan.ui`; `App()` in `commonMain` is the entry point. Sprites are copied from `assets/sprites` into Compose resources by the `prepareSpriteResources` task (read them with `Res.readBytes("files/sprites/<formId>.png")`).
+- `androidApp/`: the thin Android application (`MainActivity` calls `App()`); AGP 9, compileSdk 37, targetSdk 36, minSdk 26. Needs an Android SDK (`sdk.dir` in the git-ignored `local.properties`, or `ANDROID_HOME`) with `platforms;android-37.0` and build tools.
 
 ## Commands (rewrite, from the repo root)
 - All tests (JVM): `./gradlew jvmTest`; one module: `./gradlew :pokemon-core:jvmTest`; one class: `./gradlew :pokemon-core:jvmTest --tests "app.pokeplan.core.EggTest"`
@@ -28,8 +29,9 @@ A fun productivity, growth and self-improvement app for Pokémon lovers: finishi
 - Supabase backend (`supabase/`, see `supabase/README.md`): SQL tests `supabase/tests/run.sh` (starts a throwaway PostgreSQL 16, applies `supabase/migrations/*.sql`, runs `supabase/tests/*.test.sql`; also reads `tools/server/golden.json` and the rank thresholds from `TrainerRank.kt`, so the SQL cannot drift from the Kotlin). The reward Edge Function's logic is tested under Node with the compiled engine: `node --experimental-strip-types supabase/functions/reward/core.test.ts` (after the JS build above). Deploying needs `supabase/functions/reward/build.sh`.
 - CI (`.github/workflows/ci.yml`) runs on every PR: unit tests, the wasm and JS builds, the Node smoke test, the reward function test, the Supabase schema tests, and a check that regenerating the Dex data changes nothing. It passed on its first run (PR #23).
 - Economy simulation: `./gradlew :plan-core:simulateEconomy` writes `docs/economy-report.md` (about 1 to 2 minutes). Re-run it after changing any reward, rank, egg, candy or transfer number and compare with the pacing targets in docs/design.md.
-- Gradle 9.8.1, Kotlin 2.4.21, any JDK 17 to 21.
-- In the cloud sandbox: `dl.google.com` (Google's Maven and the Android SDK) is blocked, so anything needing `androidx.*` (Compose, the Android target) cannot resolve until the environment allows it. Maven Central rate-limits the shared proxy; a Gradle init script in `~/.gradle/init.d` that tries `https://maven-central.storage-download.googleapis.com/maven2` first avoids that. PokeAPI data and sprites are reachable through `raw.githubusercontent.com` (not `pokeapi.co`).
+- Android app: `./gradlew :androidApp:assembleDebug` (APK in `androidApp/build/outputs/apk/debug/`). Desktop: `./gradlew :composeApp:run`. Web: `./gradlew :composeApp:wasmJsBrowserDevelopmentRun`. Compile checks without a display: `./gradlew :composeApp:compileKotlinJvm :composeApp:compileKotlinWasmJs`.
+- Gradle 9.8.1, Kotlin 2.4.21, AGP 9.4.1, Compose Multiplatform 1.12.2, any JDK 17 to 21.
+- In the cloud sandbox: `dl.google.com` (Google's Maven and the Android SDK) must be in the environment's allowed domains. The SDK is installed to `~/android-sdk` by the environment's setup script (cmdline-tools, `platform-tools`, `platforms;android-37.0`, `build-tools;37.0.0`). Maven Central rate-limits the shared proxy; a Gradle init script in `~/.gradle/init.d` that tries `https://maven-central.storage-download.googleapis.com/maven2` first avoids that. PokeAPI data and sprites are reachable through `raw.githubusercontent.com` (not `pokeapi.co`).
 
 ## Commands (legacy-android)
 Run from `legacy-android/`:
