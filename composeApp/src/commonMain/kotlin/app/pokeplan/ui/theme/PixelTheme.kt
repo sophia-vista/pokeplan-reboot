@@ -18,8 +18,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,29 +58,36 @@ import pokeplan.composeapp.generated.resources.pokemon_dp_bold
  * these colours are for the app's own controls. The names are kept from the first version of the theme so screens read the same.
  */
 object Pixel {
+    /** True while the dark palette is in use. Set by [PixelTheme]; reading a token in a composable follows it. */
+    internal var dark by mutableStateOf(false)
+
     /** `background` */
-    val Paper = Color(0xFFF7F5F0)
+    val Paper: Color get() = if (dark) Color(0xFF14151F) else Color(0xFFF7F5F0)
     /** `surface`: cards, dialogs, sheets. */
-    val Panel = Color(0xFFFFFFFF)
+    val Panel: Color get() = if (dark) Color(0xFF1F2132) else Color(0xFFFFFFFF)
     /** `surfaceMuted`: secondary surfaces and empty progress tracks. */
-    val Shade = Color(0xFFECECF2)
+    val Shade: Color get() = if (dark) Color(0xFF2B2E44) else Color(0xFFECECF2)
     /** `border` */
-    val Border = Color(0xFFE1E1E8)
+    val Border: Color get() = if (dark) Color(0xFF3A3E58) else Color(0xFFE1E1E8)
     /** `textPrimary` and `brandDark` */
-    val Ink = Color(0xFF252637)
+    val Ink: Color get() = if (dark) Color(0xFFECEDF5) else Color(0xFF252637)
+    /** Text and icons on something filled with [Ink] (the selected tab). */
+    val OnInk: Color get() = if (dark) Color(0xFF14151F) else Color.White
+    /** The dark frame of the EXP bars, dark in both palettes. */
+    val Outline: Color get() = Color(0xFF252637)
     /** `textSecondary` */
-    val InkSoft = Color(0xFF666B7E)
+    val InkSoft: Color get() = if (dark) Color(0xFFA9AEC4) else Color(0xFF666B7E)
     /** `brandPrimary` */
-    val Red = Color(0xFFE84436)
+    val Red: Color get() = if (dark) Color(0xFFEC4C3E) else Color(0xFFE84436)
     val RedDark = Color(0xFFB62A1C)
     /** `info` */
-    val Blue = Color(0xFF3478DB)
+    val Blue: Color get() = if (dark) Color(0xFF4A89E8) else Color(0xFF3478DB)
     /** `success` */
-    val Green = Color(0xFF218858)
+    val Green: Color get() = if (dark) Color(0xFF2A9966) else Color(0xFF218858)
     /** `warning` */
-    val Warning = Color(0xFF946000)
+    val Warning: Color get() = if (dark) Color(0xFFD99A1E) else Color(0xFF946000)
     /** `danger` */
-    val Danger = Color(0xFFB42332)
+    val Danger: Color get() = if (dark) Color(0xFFE5525F) else Color(0xFFB42332)
     /** A highlight for selected items and rewards. */
     val Yellow = Color(0xFFFFCB05)
     val Gray = Color(0xFF9AA1B5)
@@ -118,8 +130,11 @@ fun bodyFont(): FontFamily = FontFamily(
     Font(Res.font.nunito_bold, FontWeight.Bold),
 )
 
+/** [dark] picks the dark palette for everything below; the tokens in [Pixel] change with it. */
 @Composable
-fun PixelTheme(content: @Composable () -> Unit) {
+fun PixelTheme(dark: Boolean = false, content: @Composable () -> Unit) {
+    // Set before anything below reads a token, so the first frame already has the right colours.
+    remember(dark) { Pixel.dark = dark }
     val display = pixelFont()
     val body = bodyFont()
     fun style(font: FontFamily, size: Int, line: Int, weight: FontWeight = FontWeight.Normal, color: Color = Pixel.Ink) = TextStyle(
@@ -127,11 +142,19 @@ fun PixelTheme(content: @Composable () -> Unit) {
         lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
     )
     MaterialTheme(
-        colorScheme = lightColorScheme(
-            primary = Pixel.Red, onPrimary = Color.White, secondary = Pixel.Blue, tertiary = Pixel.Green,
-            background = Pixel.Paper, surface = Pixel.Panel, onBackground = Pixel.Ink, onSurface = Pixel.Ink,
-            error = Pixel.Danger, outline = Pixel.Border,
-        ),
+        colorScheme = if (dark) {
+            darkColorScheme(
+                primary = Pixel.Red, onPrimary = Color.White, secondary = Pixel.Blue, tertiary = Pixel.Green,
+                background = Pixel.Paper, surface = Pixel.Panel, onBackground = Pixel.Ink, onSurface = Pixel.Ink,
+                surfaceVariant = Pixel.Shade, onSurfaceVariant = Pixel.InkSoft, error = Pixel.Danger, outline = Pixel.Border,
+            )
+        } else {
+            lightColorScheme(
+                primary = Pixel.Red, onPrimary = Color.White, secondary = Pixel.Blue, tertiary = Pixel.Green,
+                background = Pixel.Paper, surface = Pixel.Panel, onBackground = Pixel.Ink, onSurface = Pixel.Ink,
+                error = Pixel.Danger, outline = Pixel.Border,
+            )
+        },
         typography = Typography(
             // Pixel font: game headings, rank, stats, button labels. Everything meant to be read in bulk is Nunito.
             headlineMedium = style(display, 30, 38, FontWeight.Bold),
@@ -250,7 +273,7 @@ fun ExpBar(fraction: Float, label: String, modifier: Modifier = Modifier, tag: S
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
     ) {
         Text(tag, style = MaterialTheme.typography.labelMedium.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold), color = Pixel.Warning)
-        Box(Modifier.weight(1f).height(14.dp).clip(RoundedCornerShape(7.dp)).background(Pixel.Ink).padding(2.dp)) {
+        Box(Modifier.weight(1f).height(14.dp).clip(RoundedCornerShape(7.dp)).background(Pixel.Outline).padding(2.dp)) {
             Box(Modifier.fillMaxWidth().height(10.dp).clip(RoundedCornerShape(5.dp)).background(Pixel.Shade))
             if (f > 0f) Box(Modifier.fillMaxWidth(f).height(10.dp).clip(RoundedCornerShape(5.dp)).background(color))
         }

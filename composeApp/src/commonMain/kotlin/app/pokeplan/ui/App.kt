@@ -2,6 +2,8 @@ package app.pokeplan.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
+import app.pokeplan.app.ThemeMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -137,6 +139,8 @@ fun App(
     haptics: HapticPlayer? = null,
     /** Called after every change to the saved data (the Android app uses it to keep its widgets up to date). */
     onDataChanged: ((AppData) -> Unit)? = null,
+    /** Called when the app switches between the light and dark colours, so the host can match the system bar icons. */
+    onDark: ((Boolean) -> Unit)? = null,
 ) {
     val model = remember {
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
@@ -183,10 +187,16 @@ fun App(
         }
     }
 
-    PixelTheme {
+    val dark = when (model.data.settings.theme) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+    LaunchedEffect(dark) { onDark?.invoke(dark) }
+    PixelTheme(dark) {
         Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
             val clock = store.now
-            DayBackground(clock.hour, clock.minute)
+            DayBackground(clock.hour, clock.minute, dark = dark)
             if (!model.data.onboarded) {
                 // The intro's picture runs under the system bars; only its content keeps clear of them.
                 PixelBackground("bw12", Modifier.fillMaxSize()) { Box(Modifier.fillMaxSize().safeDrawingPadding()) { OnboardingScreen(store) } }
@@ -228,7 +238,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab, launche
                 Tab.ME -> MeScreen(model)
             }
         }
-        Column(Modifier.fillMaxWidth().background(Color.White).border(1.dp, Pixel.Border)) {
+        Column(Modifier.fillMaxWidth().background(Pixel.Panel).border(1.dp, Pixel.Border)) {
             // Five labels in one row cannot grow with the system text size without being cut off, so the tab bar's text
             // scales up to 1.25x and its icons and touch targets carry the rest.
             val density = LocalDensity.current

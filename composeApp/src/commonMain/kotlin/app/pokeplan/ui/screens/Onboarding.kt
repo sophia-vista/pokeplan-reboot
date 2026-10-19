@@ -132,7 +132,7 @@ private fun StarterPicker(selected: Int, onSelect: (Int) -> Unit) {
                 ids.forEach { id ->
                     val chosen = id == selected
                     Box(
-                        Modifier.background(if (chosen) Pixel.Yellow else Color_White, RoundedCornerShape(14.dp))
+                        Modifier.background(if (chosen) Pixel.Yellow else Pixel.Panel, RoundedCornerShape(14.dp))
                             .clickable { onSelect(id) }
                             .padding(4.dp),
                     ) { Sprite(Dex.defaultForm(id).id, false, Dex.species(id).name, size = 56.dp) }
@@ -143,7 +143,6 @@ private fun StarterPicker(selected: Int, onSelect: (Int) -> Unit) {
     }
 }
 
-private val Color_White = androidx.compose.ui.graphics.Color.White
 
 /**
  * A text box that types its line out. Tap while it types to show the rest; tap when it is complete to go on.

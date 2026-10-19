@@ -63,6 +63,10 @@ data class AppData(
     }
 }
 
+/** Which colours the app uses: the phone's choice, or always light or dark. */
+@Serializable
+enum class ThemeMode(val label: String) { SYSTEM("Match phone"), LIGHT("Light"), DARK("Dark") }
+
 @Serializable
 data class Settings(
     val region: Region = Region.HOME,
@@ -78,6 +82,7 @@ data class Settings(
     /** A short vibration when the buddy is petted or fed (Android). */
     val haptics: Boolean = true,
     val weekStartsOnMonday: Boolean = true,
+    val theme: ThemeMode = ThemeMode.SYSTEM,
 ) {
     /** How loud cries and effects play, 0 to 1 (0 when Sound was switched off). */
     val effectsLevel: Float get() = if (sound) effectsVolume.coerceIn(0, 100) / 100f else 0f

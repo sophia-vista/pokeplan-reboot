@@ -43,7 +43,7 @@ fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: M
         Text(
             label, textAlign = TextAlign.Center, maxLines = 1,
             style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium),
-            color = if (selected) Color.White else Pixel.Ink,
+            color = if (selected) Pixel.OnInk else Pixel.Ink,
         )
     }
 }
