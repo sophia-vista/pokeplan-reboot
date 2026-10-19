@@ -65,7 +65,7 @@ Each owned Pokémon has: species, level 1 to 100, nature, ability, 6 IVs, 6 EVs,
   - IV 0 to 31 rolled at hatch. EV 0 to 252 per stat, 510 total, gained from finished tasks through the Pokémon's training plan (below).
 - **Natures:** the existing 25. Each raises one stat and lowers another (five are neutral).
 - **Abilities:** each species has one or two; one is rolled at hatch. Abilities give buddy perks (below).
-- **Shiny:** rolled at hatch, base chance *(tune: about 1 in 512)*, with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation.
+- **Shiny:** rolled at hatch, base chance **1 in 128** per egg (about a month at ~5 eggs a day), with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation.
 - **Levelling:** 10 Rare Candies per level (as now). A Pokémon more than 5 levels below your partner needs half the candies *(tune)*, so new hatches catch up without outshining the partner.
 - **Evolution:** Super Candy at the species' evolution level (as now). Evolution stones for the species that use them.
 
@@ -91,7 +91,7 @@ At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are
 | Held items (e.g. Leftovers, Choice Band style) | one small buddy perk | drops, shop |
 | Evolution stones | evolve stone species | drops |
 
-Items are earned by finishing tasks and keeping streaks. They are not sold for real money.
+**Sources (both):** common items drop at random from paid tasks (chance by priority) and come as streak, badge and Pokédex milestone rewards. Rare items (Nature Mint, Ability Capsule, Bottle Cap, stones) are bought in a shop with **coins** earned from play. How coins are earned is still open. Nothing is sold for real money.
 
 ### Duplicates → candy
 
@@ -99,7 +99,13 @@ Items are earned by finishing tasks and keeping streaks. They are not sold for r
 - You cannot transfer the last one of a species you have not registered, nor your buddy.
 - This is the sink for hatches, so the PC never needs to be a graveyard.
 
+## Roster
+
+**Every species through Gen 9 (about 1,025), including alternate forms.** Details still open: which forms (regional, Mega, Gigantamax, gendered, etc.), how rarity is assigned across that many species, and where Gen 3 to 5 style art comes from for Gen 6 to 9 (official sprites in that style stop at Gen 5). Until those are settled, the 150-species list in `:shared` is a placeholder that will be replaced by generated data.
+
 ## Buddy and perks
+
+The buddy can be **swapped freely at any time**. Perks apply when a reward is earned, so a player can pick an Egg luck buddy before a session. Friendship is per Pokémon, which gives a reason to stick with one.
 
 One party Pokémon is the **buddy**. It lives on the home screen and widget, reacts to the day (sleeps during focus, cheers when a task is done, droops when idle), and gives perks that scale with its level and friendship.
 
@@ -154,7 +160,8 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 
 ## Data to add
 
-- Per-species base stats and abilities for the 150 species, generated at build time from a public dataset (needs the build environment to reach it).
+- Per-species base stats, abilities, types, evolutions and forms for **every species through Gen 9**, generated at build time from a public dataset (needs the build environment to reach it). Dex numbers move to the National Dex (the current 150 use custom numbers).
+- A rarity for every species, assigned by rule (see Roster).
 - Ability → perk table, type → perk table, item table, all as plain data with tests.
 
 ## Milestones
@@ -175,8 +182,9 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 
 ## Open questions
 
-Being settled in rounds before any Pokémon-depth code is written. Done: focus interruptions, task age, streak, accounts, planner scope, overdue, subtasks, undo.
+Being settled in rounds before any Pokémon-depth code is written. Done: focus interruptions, task age, streak, accounts, planner scope, overdue, subtasks, undo, buddy swap, shiny rate, item sources.
 
+- **Roster details:** forms, rarity rules, art source for Gen 6 to 9, coin earning.
 - **Pokémon economy:** roster size, buddy rules, perk magnitudes, transfer rules, item sources, shiny rate.
 - **Online:** friends and co-op scope, what is public.
 - **Screens:** navigation, home layout, flows.
