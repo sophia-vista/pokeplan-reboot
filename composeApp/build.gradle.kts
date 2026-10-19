@@ -31,6 +31,8 @@ kotlin {
         namespace = "app.pokeplan.ui"
         compileSdk = 37
         minSdk = 26
+        // Compose resources (sprites, fonts, icons) are packaged as Android assets.
+        androidResources { enable = true }
     }
     jvm()
     @OptIn(ExperimentalWasmDsl::class)

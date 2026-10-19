@@ -67,7 +67,7 @@ class AppModel(val store: GameStore, val motion: MotionSource? = null) {
  * strict focus makes no sense (people work in other windows there).
  */
 @Composable
-fun App(storage: Storage, focusTab: Boolean = true, motion: MotionSource? = null) {
+fun App(storage: Storage, focusTab: Boolean = true, motion: MotionSource? = null, startTab: Tab = Tab.HOME) {
     val model = remember { AppModel(GameStore(storage, Clock { SystemClock.System.now().toEpochMilliseconds() }), motion) }
     val store = model.store
 
@@ -84,16 +84,16 @@ fun App(storage: Storage, focusTab: Boolean = true, motion: MotionSource? = null
             if (!model.data.onboarded) {
                 PixelBackground("bw12", Modifier.fillMaxSize()) { OnboardingScreen(store) }
             } else {
-                MainShell(model, focusTab)
+                MainShell(model, focusTab, startTab)
             }
         }
     }
 }
 
 @Composable
-private fun MainShell(model: AppModel, focusTab: Boolean) {
+private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab) {
     val tabs = Tab.entries.filter { focusTab || it != Tab.FOCUS }
-    var selected by rememberSaveable { mutableStateOf(Tab.HOME.name) }
+    var selected by rememberSaveable { mutableStateOf(startTab.name) }
     val tab = Tab.valueOf(selected).takeIf { it in tabs } ?: Tab.HOME
     val go = { to: Tab -> selected = to.name }
 

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_today_description">Today\'s tasks. Tap the tick to finish one.</string>
+    <string name="widget_buddy_description">Your buddy and your streak.</string>
+    <string name="widget_focus_description">Start a focus session and hatch an egg.</string>
+</resources>
