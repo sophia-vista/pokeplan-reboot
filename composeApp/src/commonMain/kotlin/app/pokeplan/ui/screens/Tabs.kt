@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.NotchShape
 import app.pokeplan.ui.theme.Pixel
@@ -28,7 +27,7 @@ fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: M
     ) {
         Text(
             label, textAlign = TextAlign.Center, maxLines = 1,
-            style = MaterialTheme.typography.labelLarge.copy(fontSize = 8.sp),
+            style = MaterialTheme.typography.labelMedium,
             color = if (selected) Pixel.Ink else Pixel.Shade,
         )
     }
@@ -47,7 +46,7 @@ fun NavButton(label: String, iconItem: String, selected: Boolean, onClick: () ->
         ItemIcon(iconItem, size = 30.dp)
         Text(
             label, textAlign = TextAlign.Center, maxLines = 1,
-            style = MaterialTheme.typography.labelLarge.copy(fontSize = 7.sp),
+            style = MaterialTheme.typography.labelMedium,
             color = if (selected) Pixel.Ink else Pixel.Shade,
         )
     }

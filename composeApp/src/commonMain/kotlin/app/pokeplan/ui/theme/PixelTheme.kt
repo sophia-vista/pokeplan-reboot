@@ -26,21 +26,24 @@ import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pokeplan.composeapp.generated.resources.Res
-import pokeplan.composeapp.generated.resources.pressstart2p_regular
+import pokeplan.composeapp.generated.resources.pokemon_dp
+import pokeplan.composeapp.generated.resources.pokemon_dp_bold
 import org.jetbrains.compose.resources.Font
 
 /** The palette: a DS-era handheld. Warm paper, dark navy outlines, saturated primaries. */
 object Pixel {
     val Paper = Color(0xFFF4E9C8)
     val PaperDot = Color(0xFFE9DCB4)
-    val Panel = Color(0xFFFFFDF4)
-    val Ink = Color(0xFF202840)
+    val Panel = Color(0xFFFFFFFF)
+    val Ink = Color(0xFF181820)
     val InkSoft = Color(0xFF68708C)
     val Red = Color(0xFFE8483C)
     val RedDark = Color(0xFFA82820)
@@ -59,25 +62,33 @@ object Pixel {
     val GrayDark = Color(0xFF606878)
 }
 
+/** The Pokémon DS-era (Diamond and Pearl) font, from the pokemon-assets package, for all text. */
 @Composable
-fun pixelFont(): FontFamily = FontFamily(Font(Res.font.pressstart2p_regular))
+fun pixelFont(): FontFamily = FontFamily(
+    Font(Res.font.pokemon_dp, FontWeight.Normal),
+    Font(Res.font.pokemon_dp_bold, FontWeight.Bold),
+)
 
 @Composable
 fun PixelTheme(content: @Composable () -> Unit) {
-    val heading = pixelFont()
-    val body = FontFamily.SansSerif
+    val font = pixelFont()
+    fun style(size: Int, line: Int, weight: FontWeight = FontWeight.Normal) =
+        TextStyle(
+            fontFamily = font, fontSize = size.sp, lineHeight = line.sp, fontWeight = weight, color = Pixel.Ink,
+            lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
+        )
     MaterialTheme(
         colorScheme = lightColorScheme(
             primary = Pixel.Red, onPrimary = Color.White, secondary = Pixel.Blue, tertiary = Pixel.Green,
             background = Pixel.Paper, surface = Pixel.Panel, onBackground = Pixel.Ink, onSurface = Pixel.Ink,
         ),
         typography = Typography(
-            // The pixel font is for headings only; body text stays readable.
-            headlineMedium = TextStyle(fontFamily = heading, fontSize = 20.sp, lineHeight = 28.sp),
-            titleMedium = TextStyle(fontFamily = heading, fontSize = 11.sp, lineHeight = 18.sp),
-            bodyLarge = TextStyle(fontFamily = body, fontSize = 17.sp, lineHeight = 24.sp, color = Pixel.Ink),
-            bodyMedium = TextStyle(fontFamily = body, fontSize = 14.sp, lineHeight = 20.sp),
-            labelLarge = TextStyle(fontFamily = heading, fontSize = 10.sp, lineHeight = 16.sp),
+            headlineMedium = style(32, 44, FontWeight.Bold),
+            titleMedium = style(22, 32, FontWeight.Bold),
+            bodyLarge = style(22, 32),
+            bodyMedium = style(18, 26),
+            labelLarge = style(20, 28, FontWeight.Bold),
+            labelMedium = style(16, 22),
         ),
     ) { content() }
 }
