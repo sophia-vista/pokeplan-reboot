@@ -479,4 +479,27 @@ class GameStoreTest {
             last = next
         }
     }
+
+    @Test
+    fun a_starred_pokemon_cannot_be_transferred_until_unstarred() {
+        val (s, _) = started()
+        val extra = s.grantPokemon(16, "Test")
+        assertNull(s.transferBlock(extra.id))
+        s.toggleFavorite(extra.id)
+        assertTrue(s.isFavorite(extra.id))
+        assertFalse(s.transfer(extra.id))
+        s.toggleFavorite(extra.id)
+        assertTrue(s.transfer(extra.id))
+    }
+
+    @Test
+    fun a_shiny_stays_in_the_shiny_dex_after_it_is_transferred() {
+        val base = started().first
+        val shiny = base.data.player.pokemon.first().copy(isShiny = true)
+        val data = base.data.copy(player = base.data.player.copy(pokemon = listOf(shiny) + base.data.player.pokemon.drop(1)))
+        val storage = MemoryStorage(GameStore.json.encodeToString(AppData.serializer(), data))
+        val store = GameStore(storage, FakeClock(start), utc, Random(7))
+        store.changeSettings { it.copy(reduceMotion = true) }
+        assertTrue(shiny.speciesId in store.data.shinySpecies)
+    }
 }

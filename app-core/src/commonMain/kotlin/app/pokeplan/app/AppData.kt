@@ -49,6 +49,10 @@ data class AppData(
     /** Emergency pauses used on [emergencyPausesDay]. */
     val emergencyPausesDay: LocalDate? = null,
     val emergencyPausesUsed: Int = 0,
+    /** Pokémon the player starred: they cannot be transferred by accident. Stays on this device's save. */
+    val favorites: Set<String> = emptySet(),
+    /** Species the player has ever owned as a shiny, kept even after the shiny is transferred. */
+    val shinySpecies: Set<Int> = emptySet(),
     /** Rare Candy rewards from subtasks and the like are counted per day here when a cap needs them. */
     val counters: Map<String, Int> = emptyMap(),
 ) {
@@ -69,6 +73,8 @@ data class Settings(
     /** Volume of music, 0 to 100. There is no music yet; the setting is kept for when there is. */
     val musicVolume: Int = 70,
     val reduceMotion: Boolean = false,
+    /** A short vibration when the buddy is petted or fed (Android). */
+    val haptics: Boolean = true,
     val weekStartsOnMonday: Boolean = true,
 ) {
     /** How loud cries and effects play, 0 to 1 (0 when Sound was switched off). */

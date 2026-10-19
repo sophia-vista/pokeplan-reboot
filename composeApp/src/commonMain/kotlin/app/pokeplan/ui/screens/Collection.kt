@@ -98,13 +98,13 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
         when (current) {
             Section.PARTY -> {
                 if (player.party.isEmpty()) EmptyState("Your party is empty", "Hatch an egg with a focus session, or move a Pokémon here from the PC.")
-                player.party.forEach { p -> PokemonRow(p, p.id == player.buddyId) { selected = p.id } }
+                player.party.forEach { p -> PokemonRow(p, p.id == player.buddyId, store.isFavorite(p.id)) { selected = p.id } }
             }
             Section.PC -> {
                 val box = player.pokemon.filter { !it.inParty && !Guardians.canBe(it) }
                 if (box.isEmpty()) EmptyState("The PC is empty", "New eggs go to your party first, then here once it is full.")
                 FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    box.forEach { p -> PcTile(p) { selected = p.id } }
+                    box.forEach { p -> PcTile(p, store.isFavorite(p.id)) { selected = p.id } }
                 }
             }
             Section.DEX -> PokedexView(model)
@@ -116,26 +116,31 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
 }
 
 @Composable
-private fun PokemonRow(p: OwnedPokemon, buddy: Boolean, onClick: () -> Unit) {
+private fun PokemonRow(p: OwnedPokemon, buddy: Boolean, favorite: Boolean, onClick: () -> Unit) {
     ListRow(
         lead = { Sprite(p.form.id, p.isShiny, p.nickname, size = 64.dp) },
         onClick = onClick,
-        trail = { if (buddy) Text("Buddy", style = MaterialTheme.typography.labelMedium, color = Pixel.Red) },
+        trail = {
+            Column(horizontalAlignment = Alignment.End) {
+                if (buddy) Text("Buddy", style = MaterialTheme.typography.labelMedium, color = Pixel.Red)
+                if (favorite) Text("★ Starred", style = MaterialTheme.typography.labelMedium, color = Pixel.Warning)
+            }
+        },
     ) {
-        Text(p.nickname + if (p.isShiny) "  *" else "", style = MaterialTheme.typography.titleMedium)
-        Text("Lv. ${p.level}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        Text(p.nickname, style = MaterialTheme.typography.titleMedium)
+        Text(if (p.isShiny) "Lv. ${p.level}  ·  ✨ Shiny" else "Lv. ${p.level}", style = MaterialTheme.typography.bodyMedium, color = if (p.isShiny) Pixel.Warning else Pixel.InkSoft)
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) { p.form.types.forEach { TypePlate(it, width = 56.dp) } }
     }
 }
 
 @Composable
-private fun PcTile(p: OwnedPokemon, onClick: () -> Unit) {
+private fun PcTile(p: OwnedPokemon, favorite: Boolean, onClick: () -> Unit) {
     Column(
         Modifier.clip(RoundedCornerShape(14.dp)).background(Pixel.Panel).clickable(onClick = onClick).padding(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Sprite(p.form.id, p.isShiny, p.nickname, size = 64.dp)
-        Text("Lv. ${p.level}", style = MaterialTheme.typography.labelMedium)
+        Text("Lv. ${p.level}" + (if (p.isShiny) " ✨" else "") + (if (favorite) " ★" else ""), style = MaterialTheme.typography.labelMedium)
     }
 }
 
@@ -166,7 +171,7 @@ private fun PokedexView(model: AppModel) {
         else Dex.regionDex(region).mapIndexed { i, s -> (i + 1) to s }
     }
     val caught = rows.count { (_, s) -> s.id in player.caught }
-    val shiny = player.pokemon.filter { it.isShiny }.map { it.speciesId }.distinct().count { id -> rows.any { it.second.id == id } }
+    val shiny = rows.count { (_, sp) -> sp.id in model.data.shinySpecies }
 
     FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         regions.forEach { r -> TabButton(r.label, !national && r == region, { national = false; region = r; shown = null }, Modifier.padding(0.dp)) }
@@ -179,7 +184,7 @@ private fun PokedexView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text("$title: $caught of ${rows.size} caught", style = MaterialTheme.typography.titleMedium)
-            if (shiny > 0) Text("$shiny shiny", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Text("✨ $shiny shiny found", style = MaterialTheme.typography.bodyMedium, color = if (shiny > 0) Pixel.Warning else Pixel.InkSoft)
         }
     }
     shown?.let { (number, id) ->
@@ -200,10 +205,15 @@ private fun PokedexView(model: AppModel) {
             ) {
                 // Species you do not have yet show as a grey shape: the real sprite, tinted.
                 Sprite(Dex.defaultForm(s.id).id, false, if (have) s.name else "Not caught yet", size = 64.dp, silhouette = if (have) null else Pixel.Shade)
-                Text("#$number", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+                Text("#$number" + if (s.id in model.data.shinySpecies) " ✨" else "", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
             }
         }
     }
+    Text(
+        "Every egg has about a 1 in 128 chance of being shiny, a little better for longer sessions and with a Shiny hunter buddy. " +
+            "A ✨ marks species you have found as a shiny.",
+        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+    )
 }
 
 // ----- Guardians -----------------------------------------------------------------------------------------------------
@@ -506,9 +516,15 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                     } else {
                         PixelButton("Rename", { renaming = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     }
+                    val starred = store.isFavorite(p.id)
+                    if (!p.species.isSpecial) {
+                        PixelButton(if (starred) "★ Starred (tap to unstar)" else "☆ Star (keep safe)", { store.toggleFavorite(p.id) }, Modifier.fillMaxWidth(), if (starred) Pixel.Warning else Pixel.InkSoft, compact = true)
+                    }
                     val block = store.transferBlock(p.id)
                     if (block != null) {
                         Text(block.reason, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    } else if (starred) {
+                        Text("Starred Pokémon cannot be transferred. Unstar it first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     } else if (!confirmTransfer) {
                         PixelButton("Transfer", { confirmTransfer = true }, Modifier.fillMaxWidth(), Pixel.Red, compact = true)
                     } else {

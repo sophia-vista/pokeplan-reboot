@@ -2,6 +2,7 @@ package app.pokeplan
 
 import android.graphics.Color
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -43,7 +44,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             App(
                 storage, focusTab = true, motion = motion, startTab = tab, startPokemon = pokemon, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), onDataChanged = ::keepWidgetsCurrent,
+                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), onDataChanged = ::keepWidgetsCurrent,
             )
         }
     }
@@ -53,6 +54,7 @@ class MainActivity : ComponentActivity() {
      * tasks), a moment after the last change so a burst of saves refreshes them once.
      */
     private fun keepWidgetsCurrent(data: AppData) {
+        keepScreenOn(data.focus != null)
         val buddy = data.player.buddy
         val signature = listOf(
             buddy?.id, buddy?.form?.id, buddy?.isShiny, buddy?.nickname, buddy?.level, buddy?.candyProgress,
@@ -71,6 +73,11 @@ class MainActivity : ComponentActivity() {
             delay(800)
             updateWidgets(applicationContext)
         }
+    }
+
+    /** The screen stays on while a focus session runs, so the timer stays visible. */
+    private fun keepScreenOn(on: Boolean) = runOnUiThread {
+        if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     override fun onResume() {

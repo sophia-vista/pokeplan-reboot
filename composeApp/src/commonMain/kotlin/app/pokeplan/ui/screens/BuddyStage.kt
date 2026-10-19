@@ -44,14 +44,13 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.pokeplan.app.BuddyEvent
 import app.pokeplan.app.BuddyEventNow
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.OwnedPokemon
@@ -72,7 +71,7 @@ import kotlinx.coroutines.delay
 fun BuddyStage(
     buddy: OwnedPokemon, scene: String, darkness: Float, progress: Float, event: BuddyEventNow?,
     calm: Boolean, resting: Boolean, berry: String?,
-    onPet: (avoid: String?) -> String, onFeed: (avoid: String?) -> String, onOpen: () -> Unit,
+    onPet: (avoid: String?) -> String, onFeed: (avoid: String?) -> String, onOpen: () -> Unit, onHaptic: () -> Unit,
     celebrated: Long, onCelebrated: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -81,7 +80,6 @@ fun BuddyStage(
     var reactionId by remember { mutableIntStateOf(0) }
     val hop = remember { Animatable(0f) }
     var lastReaction by remember { mutableStateOf<String?>(null) }
-    val haptics = LocalHapticFeedback.current
 
     // Every reaction is one emoji above the buddy for a moment; a pet, a berry or an event also gets a hop.
     fun react(emoji: String) {
@@ -95,7 +93,7 @@ fun BuddyStage(
             hop.animateTo(-16f, tween(110))
             hop.animateTo(0f, tween(150))
         }
-        delay(2_200)
+        delay(if (reaction == BuddyEvent.SHINY.emoji) 3_800 else 2_200)
         reaction = null
     }
     // A real event: its emoji, once per event (not again each time Home is opened).
@@ -125,7 +123,7 @@ fun BuddyStage(
             Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp)
                 .offset { IntOffset(0, (hop.value + bob).dp.roundToPx()) }
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Pet ${buddy.nickname}", role = Role.Button) {
-                    haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onHaptic()
                     react(onPet(lastReaction))
                 },
             size = 144.dp, animate = !calm && !resting,
@@ -151,7 +149,7 @@ fun BuddyStage(
         if (berry != null) Box(
             Modifier.align(Alignment.BottomEnd).padding(Spacing.S).size(40.dp).background(Color(0xCCFFFFFF), CircleShape)
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Give ${buddy.nickname} a ${Items.get(berry)?.name ?: berry}", role = Role.Button) {
-                    haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onHaptic()
                     react(onFeed(lastReaction))
                 },
             contentAlignment = Alignment.Center,

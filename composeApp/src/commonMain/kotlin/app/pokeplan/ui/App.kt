@@ -67,7 +67,13 @@ enum class Tab(val label: String, val icon: String, val background: String) {
 class AppModel(
     val store: GameStore, val motion: MotionSource? = null, val sync: SyncManager? = null, val social: SocialClient? = null,
     private val cries: CryPlayer? = null,
+    private val haptics: HapticPlayer? = null,
 ) {
+    /** A light vibration, if the platform can and Haptics is on in Settings. */
+    fun haptic() {
+        if (data.settings.haptics) haptics?.tick()
+    }
+
     /** Plays [speciesId]'s cry if the platform can and Sound is on. */
     fun cry(speciesId: Int) {
         val volume = data.settings.effectsLevel
@@ -119,6 +125,7 @@ fun App(
     /** Emits when something outside the app may have changed the save (the Android app coming back after a widget tap). */
     externalChanges: Flow<Unit>? = null,
     cries: CryPlayer? = null,
+    haptics: HapticPlayer? = null,
     /** Called after every change to the saved data (the Android app uses it to keep its widgets up to date). */
     onDataChanged: ((AppData) -> Unit)? = null,
 ) {
@@ -126,11 +133,12 @@ fun App(
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
         val client = if (cloud.enabled) CloudClient(cloud, HttpClient()) { clock.nowMillis() } else null
-        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries).also { it.openPokemonId = startPokemon }
+        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries, haptics).also { it.openPokemonId = startPokemon }
     }
     val store = model.store
     if (onDataChanged != null) DisposableEffect(store) {
         val stop = store.observe(onDataChanged)
+        onDataChanged(store.data) // the state the app starts in counts too (a focus session already running keeps the screen on)
         onDispose(stop)
     }
     if (externalChanges != null) LaunchedEffect(externalChanges) { externalChanges.collect { store.reload() } }
@@ -168,6 +176,8 @@ fun App(
 
     PixelTheme {
         Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+            val clock = store.now
+            DayBackground(clock.hour, clock.minute)
             if (!model.data.onboarded) {
                 // The intro's picture runs under the system bars; only its content keeps clear of them.
                 PixelBackground("bw12", Modifier.fillMaxSize()) { Box(Modifier.fillMaxSize().safeDrawingPadding()) { OnboardingScreen(store) } }

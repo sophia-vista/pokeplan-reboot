@@ -67,7 +67,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
     val doneToday = data.tasks.count { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
     val total = doneToday + open.size
 
-    Column(Modifier.fillMaxSize().background(Pixel.Paper)) {
+    Column(Modifier.fillMaxSize()) {
         ScreenHeader(
             title = data.trainerName,
             subtitle = "Rank: ${TrainerRank.nameFor(points)}",
@@ -96,7 +96,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
                     calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
                     onPet = { avoid -> store.pet(); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
                     onFeed = { avoid -> berry?.let { store.useItem(it, buddy.id) }; BuddyReaction.feed(buddy, avoid = avoid) },
-                    onOpen = { model.openPokemonId = buddy.id; go(Tab.COLLECTION) },
+                    onOpen = { model.openPokemonId = buddy.id; go(Tab.COLLECTION) }, onHaptic = { model.haptic() },
                     celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
                 )
             }

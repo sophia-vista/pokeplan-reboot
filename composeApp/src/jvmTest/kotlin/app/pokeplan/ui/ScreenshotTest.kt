@@ -95,6 +95,17 @@ class ScreenshotTest {
     }
 
     @Test
+    fun dayBackgrounds() {
+        render("day-backgrounds", frames = 3) {
+            androidx.compose.foundation.layout.Row(Modifier.fillMaxSize()) {
+                listOf(7 to 0, 12 to 0, 20 to 0, 23 to 30).forEach { (h, m) ->
+                    Box(Modifier.weight(1f).fillMaxSize()) { DayBackground(h, m) }
+                }
+            }
+        }
+    }
+
+    @Test
     fun planner() {
         val store = started()
         store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 45)
