@@ -25,13 +25,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.pokeplan.app.PcSort
+import app.pokeplan.app.PcView
 import app.pokeplan.app.quest.Quest
 import app.pokeplan.app.quest.Quests
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.Region
+import app.pokeplan.core.model.PokemonType
 import app.pokeplan.core.pokemon.CandyRules
 import app.pokeplan.core.pokemon.Guardians
 import app.pokeplan.core.pokemon.PerkBucket
@@ -64,6 +68,8 @@ private enum class Section(val title: String, val icon: String) {
 fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String? = null) {
     var section by remember { mutableStateOf(Section.entries.getOrNull(startSection)) }
     var selected by remember { mutableStateOf(startOpen) }
+    // Kept here, not in the PC section, so opening a Pokémon and coming back leaves the sort and filters as they were.
+    var pcView by remember { mutableStateOf(PcView()) }
     val player = model.data.player
     val store = model.store
 
@@ -103,8 +109,13 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
             Section.PC -> {
                 val box = player.pokemon.filter { !it.inParty && !Guardians.canBe(it) }
                 if (box.isEmpty()) EmptyState("The PC is empty", "New eggs go to your party first, then here once it is full.")
-                FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    box.forEach { p -> PcTile(p, store.isFavorite(p.id)) { selected = p.id } }
+                else {
+                    val shown = pcView.apply(box) { store.isFavorite(it) }
+                    PcControls(pcView, { pcView = it }, shown.size, box.size)
+                    if (shown.isEmpty()) EmptyState("Nothing matches", "Try another type or clear the filters.")
+                    FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        shown.forEach { p -> PcTile(p, store.isFavorite(p.id)) { selected = p.id } }
+                    }
                 }
             }
             Section.DEX -> PokedexView(model)
@@ -130,6 +141,44 @@ private fun PokemonRow(p: OwnedPokemon, buddy: Boolean, favorite: Boolean, onCli
         Text(p.nickname, style = MaterialTheme.typography.titleMedium)
         Text(if (p.isShiny) "Lv. ${p.level}  ·  ✨ Shiny" else "Lv. ${p.level}", style = MaterialTheme.typography.bodyMedium, color = if (p.isShiny) Pixel.Warning else Pixel.InkSoft)
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) { p.form.types.forEach { TypePlate(it, width = 56.dp) } }
+    }
+}
+
+/** Search, sort and filters for the PC boxes. A type plate is dimmed until chosen; choosing it again clears it. */
+@Composable
+private fun PcControls(view: PcView, change: (PcView) -> Unit, shown: Int, total: Int) {
+    Column(Modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedTextField(
+            view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
+            placeholder = { Text("Search by name") }, textStyle = MaterialTheme.typography.bodyLarge,
+        )
+        var open by remember { mutableStateOf(false) }
+        PixelButton(if (open) "Hide sort and filters" else "Sort and filters", { open = !open }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+        if (open) {
+            SectionLabel("Sort by")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                PcSort.entries.forEach { TabButton(it.label, view.sort == it, { change(view.copy(sort = it)) }) }
+            }
+            SectionLabel("Show")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                TabButton("✨ Shiny", view.shinyOnly, { change(view.copy(shinyOnly = !view.shinyOnly)) })
+                TabButton("★ Starred", view.starredOnly, { change(view.copy(starredOnly = !view.starredOnly)) })
+            }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                PokemonType.entries.forEach { t ->
+                    val on = view.type == t
+                    Box(
+                        Modifier.clip(RoundedCornerShape(6.dp)).alpha(if (on || view.type == null) 1f else 0.35f)
+                            .clickable(role = Role.Button, onClickLabel = "Show only ${t.label}") { change(view.copy(type = if (on) null else t)) }
+                            .padding(2.dp),
+                    ) { TypePlate(t, width = 56.dp) }
+                }
+            }
+        }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text(if (view.filtering) "$shown of $total" else "$total stored", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+            if (view.filtering) PixelButton("Clear", { change(view.copy(type = null, shinyOnly = false, starredOnly = false, search = "")) }, color = Pixel.InkSoft, compact = true)
+        }
     }
 }
 
