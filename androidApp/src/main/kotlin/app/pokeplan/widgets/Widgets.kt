@@ -3,6 +3,7 @@ package app.pokeplan.widgets
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.os.SystemClock
 import android.widget.RemoteViews
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -44,6 +45,7 @@ import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
+import androidx.glance.layout.wrapContentSize
 import androidx.glance.semantics.contentDescription
 import androidx.glance.semantics.semantics
 import androidx.glance.text.FontWeight
@@ -83,10 +85,11 @@ private fun rankColor(rank: Rank) = when (rank) {
     Rank.A -> Color(0xFFB42332)
 }
 
-private fun openApp(context: Context, tab: String? = null, pokemon: String? = null) = actionStartActivity(
+private fun openApp(context: Context, tab: String? = null, pokemon: String? = null, addTask: Boolean = false) = actionStartActivity(
     Intent(context, MainActivity::class.java).apply {
         tab?.let { putExtra(MainActivity.EXTRA_TAB, it) }
         pokemon?.let { putExtra(MainActivity.EXTRA_POKEMON, it) }
+        if (addTask) putExtra(MainActivity.EXTRA_ADD_TASK, true)
     },
 )
 
@@ -147,6 +150,12 @@ private fun TodayContent(context: Context, state: TodayState, header: Bitmap?) {
                     style = TextStyle(color = ColorProvider(red), fontSize = 15.sp, fontWeight = FontWeight.Bold),
                 )
                 Spacer(GlanceModifier.defaultWeight())
+                Text(
+                    "+ Add", GlanceModifier.pill().padding(horizontal = 10.dp, vertical = 4.dp).semantics { contentDescription = "Add a task" }
+                        .clickable(rippleOverride = R.drawable.no_ripple, onClick = openApp(context, "PLANNER", addTask = true)),
+                    style = TextStyle(color = ColorProvider(green), fontSize = 12.sp, fontWeight = FontWeight.Bold),
+                )
+                Spacer(GlanceModifier.width(6.dp))
                 if (state.total > 0) Text(
                     "${state.done} of ${state.total} done", GlanceModifier.pill().padding(horizontal = 10.dp, vertical = 4.dp),
                     style = TextStyle(color = ColorProvider(ink), fontSize = 12.sp, fontWeight = FontWeight.Medium),
@@ -227,6 +236,10 @@ private object BuddyTalk {
         return prefs.getString("emoji", null)
     }
 
+    /** Milliseconds until the current reaction ends, 0 if none. */
+    fun remaining(context: Context): Long =
+        (context.getSharedPreferences(FILE, Context.MODE_PRIVATE).getLong("until", 0) - System.currentTimeMillis()).coerceAtLeast(0)
+
     /** The last event the widget reacted to, so one event is reacted to once. */
     fun celebrated(context: Context): Long = context.getSharedPreferences(FILE, Context.MODE_PRIVATE).getLong("celebrated", 0)
     fun celebrate(context: Context, at: Long) = context.getSharedPreferences(FILE, Context.MODE_PRIVATE).edit().putLong("celebrated", at).apply()
@@ -293,6 +306,8 @@ class BuddyWidget : GlanceAppWidget() {
         val store = widgetStore(context)
         val buddy = store.data.player.buddy
         val moment = BuddyTalk.current(context)
+        // Whatever showed a still picture, the animation comes back: an alarm refreshes the widget when the reaction ends.
+        if (moment != null) scheduleWidgetRefresh(context, BuddyTalk.remaining(context) + 300)
         val berry = berryOf(store)
         val d = density(context)
         val darkness = BuddyScene.darkness(store.now.hour, store.now.minute)
@@ -373,7 +388,11 @@ private fun BuddyContent(context: Context, s: BuddyState) {
 
 // ----- Start focus ----------------------------------------------------------------------------------------------------
 
-private data class FocusState(val running: Boolean, val title: String, val detail: String, val wallpaper: Bitmap?, val egg: Bitmap?)
+private data class FocusState(
+    val running: Boolean, val title: String, val detail: String, val wallpaper: Bitmap?, val egg: Bitmap?,
+    /** A ticking countdown to the end of the session, built as a Chronometer so the system keeps it right. */
+    val countdown: RemoteViews? = null,
+)
 
 class FocusWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Responsive(setOf(DpSize(110.dp, 55.dp), DpSize(110.dp, 110.dp), DpSize(250.dp, 110.dp)))
@@ -390,6 +409,10 @@ class FocusWidget : GlanceAppWidget() {
                 running = true,
                 title = if (paused) "Paused" else "Focusing",
                 detail = if (paused) "Open the app to continue" else "Egg hatches around ${clock(end)}",
+                countdown = if (paused) null else RemoteViews(context.packageName, R.layout.widget_countdown).also {
+                    it.setChronometerCountDown(R.id.countdown, true)
+                    it.setChronometer(R.id.countdown, SystemClock.elapsedRealtime() + (end - store.nowMillis).coerceAtLeast(0), null, true)
+                },
                 wallpaper = WidgetArt.wallpaper(context, "bw11", (420 * d).toInt(), (200 * d).toInt(), 20 * d, d),
                 egg = WidgetArt.item(context, "mystery-egg", 3),
             )
@@ -428,6 +451,7 @@ private fun FocusContent(context: Context, s: FocusState) {
                     style = TextStyle(color = ColorProvider(Color.White), fontSize = 15.sp, fontWeight = FontWeight.Bold),
                 )
                 Spacer(GlanceModifier.height(4.dp))
+                if (s.countdown != null) AndroidRemoteViews(remoteViews = s.countdown, modifier = GlanceModifier.wrapContentSize())
                 Text(
                     s.detail, GlanceModifier.pill().padding(horizontal = 8.dp, vertical = 3.dp),
                     style = TextStyle(color = ColorProvider(ink), fontSize = 11.sp), maxLines = 2,

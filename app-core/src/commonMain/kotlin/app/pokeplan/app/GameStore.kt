@@ -629,6 +629,9 @@ class GameStore(
     fun transferBlock(id: String): TransferBlock? =
         Transfer.block(pokemon(id), id == data.player.buddyId, data.player.party.size)
 
+    /** Remembers that the player has seen what is new in [version]. */
+    fun markVersionSeen(version: String) = update { it.copy(lastSeenVersion = version) }
+
     fun isFavorite(id: String): Boolean = id in data.favorites
 
     /** Stars or unstars a Pokémon; a starred one cannot be transferred. */

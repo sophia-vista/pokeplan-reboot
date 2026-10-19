@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="add_task"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_add_task"
+        android:shortcutLongLabel="@string/shortcut_add_task_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="app.pokeplan"
+            android:targetClass="app.pokeplan.MainActivity">
+            <extra android:name="app.pokeplan.TAB" android:value="PLANNER" />
+            <extra android:name="app.pokeplan.ADD_TASK" android:value="true" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="start_focus"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_start_focus"
+        android:shortcutLongLabel="@string/shortcut_start_focus_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="app.pokeplan"
+            android:targetClass="app.pokeplan.MainActivity">
+            <extra android:name="app.pokeplan.TAB" android:value="FOCUS" />
+        </intent>
+    </shortcut>
+</shortcuts>

@@ -90,6 +90,9 @@ class AppModel(
     /** A task picked on Home or in the Planner to focus on; the Focus screen offers it when it opens. */
     var focusTaskId: String? by mutableStateOf(null)
 
+    /** Set by the widget's "+" and the app icon's "Add task" shortcut: the Planner opens on Today with the keyboard up. */
+    var addTaskRequested: Boolean by mutableStateOf(false)
+
     /** A Pokémon the Pokémon tab should open on (the buddy's level chip on Home, the widget's chip). Used once. */
     var openPokemonId: String? by mutableStateOf(null)
 
@@ -110,6 +113,9 @@ class AppModel(
     }
 }
 
+/** A request to open the app on a tab, a Pokémon, or the add-task box. */
+data class AppLaunch(val tab: Tab?, val pokemon: String? = null, val addTask: Boolean = false)
+
 /**
  * The whole app. [storage] is where the save lives on this platform; [focusTab] is false on desktop and the web, where
  * strict focus makes no sense (people work in other windows there).
@@ -121,6 +127,9 @@ fun App(
     motion: MotionSource? = null,
     startTab: Tab = Tab.HOME,
     startPokemon: String? = null,
+    startAddTask: Boolean = false,
+    /** Where the app was asked to go while it was already open (a widget tap or a shortcut). */
+    launches: Flow<AppLaunch>? = null,
     cloud: CloudConfig = CloudSettings.config,
     /** Emits when something outside the app may have changed the save (the Android app coming back after a widget tap). */
     externalChanges: Flow<Unit>? = null,
@@ -133,7 +142,7 @@ fun App(
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
         val client = if (cloud.enabled) CloudClient(cloud, HttpClient()) { clock.nowMillis() } else null
-        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries, haptics).also { it.openPokemonId = startPokemon }
+        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries, haptics).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask }
     }
     val store = model.store
     if (onDataChanged != null) DisposableEffect(store) {
@@ -182,18 +191,25 @@ fun App(
                 // The intro's picture runs under the system bars; only its content keeps clear of them.
                 PixelBackground("bw12", Modifier.fillMaxSize()) { Box(Modifier.fillMaxSize().safeDrawingPadding()) { OnboardingScreen(store) } }
             } else {
-                MainShell(model, focusTab, startTab)
+                MainShell(model, focusTab, startTab, launches)
             }
         }
     }
 }
 
 @Composable
-private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab) {
+private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab, launches: Flow<AppLaunch>?) {
     val tabs = Tab.entries.filter { focusTab || it != Tab.FOCUS }
     var selected by rememberSaveable { mutableStateOf(startTab.name) }
     val tab = Tab.valueOf(selected).takeIf { it in tabs } ?: Tab.HOME
     val go = { to: Tab -> selected = to.name }
+    LaunchedEffect(launches) {
+        launches?.collect { launch ->
+            model.openPokemonId = launch.pokemon
+            model.addTaskRequested = launch.addTask
+            launch.tab?.let { selected = it.name }
+        }
+    }
 
     // The red header colour continues under the status bar and the white tab bar under the system navigation bar, so the
     // system bars match the app instead of showing the cream page colour. The keyboard lifts the whole column.
@@ -202,7 +218,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab) {
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when (tab) {
                 Tab.HOME -> HomeScreen(model, go)
-                Tab.PLANNER -> PlannerScreen(model)
+                Tab.PLANNER -> PlannerScreen(model, startView = if (model.addTaskRequested) 0 else -1)
                 Tab.FOCUS -> FocusScreen(model)
                 Tab.COLLECTION -> {
                     val open = remember { model.openPokemonId }

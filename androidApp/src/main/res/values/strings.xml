@@ -3,4 +3,8 @@
     <string name="widget_today_description">Today\'s tasks. Tap the tick to finish one.</string>
     <string name="widget_buddy_description">Your buddy on a wallpaper. Tap it to pet it, tap the berry to feed it.</string>
     <string name="widget_focus_description">Start a focus session and hatch an egg; shows the running session.</string>
+    <string name="shortcut_add_task">Add task</string>
+    <string name="shortcut_add_task_long">Add a task to today</string>
+    <string name="shortcut_start_focus">Start focus</string>
+    <string name="shortcut_start_focus_long">Start a focus session</string>
 </resources>

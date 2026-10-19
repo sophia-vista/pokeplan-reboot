@@ -502,4 +502,12 @@ class GameStoreTest {
         store.changeSettings { it.copy(reduceMotion = true) }
         assertTrue(shiny.speciesId in store.data.shinySpecies)
     }
+
+    @Test
+    fun the_seen_version_is_remembered() {
+        val (s, _) = started()
+        assertEquals("0.1.0", s.data.lastSeenVersion)
+        s.markVersionSeen("0.2.0")
+        assertEquals("0.2.0", s.data.lastSeenVersion)
+    }
 }

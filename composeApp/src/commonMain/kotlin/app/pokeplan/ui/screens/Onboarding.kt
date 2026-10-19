@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.GameStore
 import app.pokeplan.core.dex.Dex
+import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.NpcPortrait
 import app.pokeplan.ui.Sprite
@@ -103,6 +104,7 @@ fun OnboardingScreen(store: GameStore, startStep: Int = 0) {
             }
             Step.FAREWELL -> Dialogue("Wonderful! Your first task is waiting. Finish it, and your adventure begins!") {
                 store.start(name, starter)
+                store.markVersionSeen(AppVersion.NAME)
             }
         }
     }

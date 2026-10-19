@@ -1,5 +1,6 @@
 package app.pokeplan
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.WindowManager
@@ -12,6 +13,7 @@ import app.pokeplan.app.AppData
 import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.ui.App
+import app.pokeplan.ui.AppLaunch
 import app.pokeplan.ui.Tab
 import app.pokeplan.widgets.announceBuddyEvent
 import app.pokeplan.widgets.updateWidgets
@@ -23,6 +25,9 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     /** Fires when the app comes back to the front: a widget may have changed the save meanwhile. */
     private val resumes = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    /** A widget tap or shortcut while the app is already open (the activity is single-instance). */
+    private val launches = MutableSharedFlow<AppLaunch>(extraBufferCapacity = 1)
     private var created = false
 
     private var widgetSignature: Int? = null
@@ -39,11 +44,11 @@ class MainActivity : ComponentActivity() {
         val storage = saveStorage(this)
         val motion = AccelerometerMotion(this)
         // A widget can open the app on a tab ("FOCUS" for the Start focus widget).
-        val pokemon = intent?.getStringExtra(EXTRA_POKEMON)
-        val tab = intent?.getStringExtra(EXTRA_TAB)?.let { name -> Tab.entries.firstOrNull { it.name == name } } ?: Tab.HOME
+        val first = launchFrom(intent)
+        val tab = first.tab ?: Tab.HOME
         setContent {
             App(
-                storage, focusTab = true, motion = motion, startTab = tab, startPokemon = pokemon, externalChanges = resumes,
+                storage, focusTab = true, motion = motion, startTab = tab, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
                 cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), onDataChanged = ::keepWidgetsCurrent,
             )
         }
@@ -80,6 +85,19 @@ class MainActivity : ComponentActivity() {
         if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
+    private fun launchFrom(intent: Intent?) = AppLaunch(
+        tab = intent?.getStringExtra(EXTRA_TAB)?.let { name -> Tab.entries.firstOrNull { it.name == name } },
+        pokemon = intent?.getStringExtra(EXTRA_POKEMON),
+        // A shortcut's extra may arrive as a boolean or as text.
+        addTask = intent?.extras?.get(EXTRA_ADD_TASK)?.toString() == "true",
+    )
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        launches.tryEmit(launchFrom(intent))
+    }
+
     override fun onResume() {
         super.onResume()
         // The first resume follows onCreate, which has just read the save.
@@ -96,5 +114,6 @@ class MainActivity : ComponentActivity() {
     companion object {
         const val EXTRA_TAB = "app.pokeplan.TAB"
         const val EXTRA_POKEMON = "app.pokeplan.POKEMON"
+        const val EXTRA_ADD_TASK = "app.pokeplan.ADD_TASK"
     }
 }
