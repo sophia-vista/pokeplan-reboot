@@ -129,6 +129,8 @@ fun BuddyStage(
             size = 144.dp, animate = !calm && !resting,
         )
 
+        if (buddy.isShiny && !calm && !resting) ShinyGlints(Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp).size(144.dp))
+
         // Level and progress: small, in the corner, readable on any scene.
         Column(
             Modifier.align(Alignment.BottomStart).padding(Spacing.S).clip(RoundedCornerShape(10.dp)).background(Color(0x55000000))
@@ -154,5 +156,38 @@ fun BuddyStage(
                 },
             contentAlignment = Alignment.Center,
         ) { ItemIcon(berry, size = 28.dp, description = Items.get(berry)?.name ?: berry) }
+    }
+}
+
+/**
+ * A few small four-point glints that flash around a shiny buddy, one at a time and never all together, like the shine in the
+ * games. UI chrome drawn in code (no sprite art): each star is a little pointed shape that grows, then fades.
+ */
+@Composable
+private fun ShinyGlints(modifier: Modifier = Modifier) {
+    val loop by rememberInfiniteTransition().animateFloat(0f, 1f, infiniteRepeatable(tween(7_200, easing = androidx.compose.animation.core.LinearEasing)))
+    // Where each glint sits (share of the sprite's box) and when in the loop it flashes.
+    val glints = remember { listOf(Triple(0.22f, 0.30f, 0.00f), Triple(0.78f, 0.22f, 0.27f), Triple(0.68f, 0.62f, 0.52f), Triple(0.30f, 0.70f, 0.77f)) }
+    Canvas(modifier) {
+        glints.forEach { (x, y, start) ->
+            val local = (loop - start + 1f) % 1f
+            if (local < 0.18f) {
+                val k = local / 0.18f
+                val power = kotlin.math.sin(k * 3.1415927f)
+                val c = Offset(size.width * x, size.height * y)
+                fun star(r: Float) = Path().apply {
+                    moveTo(c.x, c.y - r)
+                    quadraticTo(c.x, c.y, c.x + r, c.y)
+                    quadraticTo(c.x, c.y, c.x, c.y + r)
+                    quadraticTo(c.x, c.y, c.x - r, c.y)
+                    quadraticTo(c.x, c.y, c.x, c.y - r)
+                    close()
+                }
+                val r = size.minDimension * 0.11f * (0.4f + power)
+                // A gold halo under a pale core, so the glint shows on light scenes too.
+                drawPath(star(r * 1.3f), Color(0xFFFFB300).copy(alpha = power.coerceIn(0f, 1f) * 0.85f))
+                drawPath(star(r), Color(0xFFFFFBE0).copy(alpha = power.coerceIn(0f, 1f)))
+            }
+        }
     }
 }

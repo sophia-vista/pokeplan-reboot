@@ -72,6 +72,14 @@ class ScreenshotTest {
     }
 
     @Test
+    fun homeShinyBuddy() {
+        val store = started()
+        val data = store.data.copy(player = store.data.player.copy(pokemon = store.data.player.pokemon.map { it.copy(isShiny = true) }))
+        val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), data.copy(lastSeenVersion = app.pokeplan.ui.AppVersion.NAME)))
+        render("home-shiny", frames = 47) { App(storage, focusTab = true) }
+    }
+
+    @Test
     fun homeTorchicAfterAnEvent() {
         val store = GameStore(MemoryStorage(), clock).also { it.start("Sophia", 255) }
         store.completeTask(store.data.tasks.single().id)
