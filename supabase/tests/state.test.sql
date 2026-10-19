@@ -7,6 +7,11 @@ select test.eq('rank 8 at 10624', platform.rank_for(10624), 8);
 select test.eq('top rank', platform.rank_for(10625), 9);
 select test.eq('beyond the top', platform.rank_for(10000000), 9);
 
+select test.eq('no guardian slots at rank 3', platform.guardian_slots(3), 0);
+select test.eq('one at rank 4', platform.guardian_slots(4), 1);
+select test.eq('two at rank 6', platform.guardian_slots(6), 2);
+select test.eq('three at rank 9', platform.guardian_slots(9), 3);
+
 \set golden `cat "$GOLDEN"`
 create temp table golden as select :'golden'::jsonb as j;
 grant select on golden to public;
@@ -23,7 +28,7 @@ set role service_role;
 
 -- An empty player loads as the engine's empty state.
 select test.eq('empty state', pg_temp.norm(platform.load_state('00000000-0000-0000-0000-0000000000a1')->'state'),
-  '{"pokemon":[],"buddyId":null,"inventory":{"counts":{}},"coins":0,"eggMeter":0,"trainerPoints":0,"caught":[]}'::jsonb);
+  '{"pokemon":[],"buddyId":null,"inventory":{"counts":{}},"coins":0,"eggMeter":0,"trainerPoints":0,"caught":[],"guardians":[]}'::jsonb);
 
 -- Save the golden starting state, then load it back unchanged.
 select platform.apply_outcome('00000000-0000-0000-0000-0000000000a1', 0, 'plan', 'test', 'seed-state', 0, '{}',
@@ -75,3 +80,16 @@ select platform.apply_outcome('00000000-0000-0000-0000-0000000000a1', 2, 'plan',
 reset role;
 select test.eq('one Pokémon left', (select count(*) from platform.pokemon where user_id = '00000000-0000-0000-0000-0000000000a1'), 1::bigint);
 select test.eq('caught kept after transfer', (select cardinality(caught) from platform.profiles where user_id = '00000000-0000-0000-0000-0000000000a1'), 3);
+
+set role service_role;
+-- Guardians: rank 1 (700 points) has no slot, so slotting one is refused; at rank 4 it is allowed.
+select test.throws('no guardian slot at this rank', $$select platform.apply_outcome('00000000-0000-0000-0000-0000000000a1', 3, 'plan', 'x', 'g1', 0, '{}',
+  jsonb_set(jsonb_build_object('state', (select ((j->>'effortOutcome')::jsonb)->'state' from golden), 'rewards', '[]'::jsonb), '{state,guardians}', '["test-pikachu"]'))$$, '23514');
+select platform.apply_outcome('00000000-0000-0000-0000-0000000000a1', 3, 'plan', 'x', 'g2', 0, '{}',
+  jsonb_set(jsonb_set(jsonb_build_object('state', (select ((j->>'effortOutcome')::jsonb)->'state' from golden), 'rewards', '[]'::jsonb),
+    '{state,guardians}', '["test-pikachu"]'), '{state,trainerPoints}', '3300'));
+select test.eq('guardian saved and loaded', platform.load_state('00000000-0000-0000-0000-0000000000a1')->'state'->'guardians', '["test-pikachu"]'::jsonb);
+select platform.apply_outcome('00000000-0000-0000-0000-0000000000a1', 4, 'plan', 'x', 'g3', 0, '{}',
+  jsonb_set(jsonb_set(jsonb_build_object('state', (select ((j->>'effortOutcome')::jsonb)->'state' from golden), 'rewards', '[]'::jsonb),
+    '{state,guardians}', '[]'), '{state,trainerPoints}', '3300'));
+reset role;

@@ -161,4 +161,19 @@ class ScreenshotTest {
 
     @Test
     fun meSettings() = me("me-settings", 3)
+
+    @Test
+    fun collectionGuardians() {
+        val base = started()
+        val text = GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), base.data.copy(player = base.data.player.copy(trainerPoints = 3_300)))
+        val store = GameStore(MemoryStorage(text), clock)
+        val ids = listOf("uxie", "mew", "celebi").map { name ->
+            store.grantPokemon(app.pokeplan.core.dex.Dex.species.first { it.identifier == name }.id, "Quest").id
+        }
+        store.slotGuardian(ids[0])
+        val model = AppModel(store)
+        render("collection-guardians") {
+            PixelTheme { PixelBackground("bw15", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.CollectionScreen(model, 4) } }
+        }
+    }
 }

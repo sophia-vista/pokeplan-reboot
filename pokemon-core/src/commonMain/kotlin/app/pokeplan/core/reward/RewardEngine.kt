@@ -34,8 +34,11 @@ data class PlayerState(
     val trainerPoints: Int = 0,
     /** Every species ever owned (the Pokédex's "caught"); it never shrinks, even after a transfer. */
     val caught: Set<Int> = emptySet(),
+    /** Ids of the Pokémon slotted as Guardians (legendaries and mythicals), at most as many as the rank has slots. */
+    val guardians: List<String> = emptyList(),
 ) {
     val buddy: OwnedPokemon? get() = pokemon.firstOrNull { it.id == buddyId }
+    val guardianPokemon: List<OwnedPokemon> get() = guardians.mapNotNull { id -> pokemon.firstOrNull { it.id == id } }
     val party: List<OwnedPokemon> get() = pokemon.filter { it.inParty }
 
     /** The rank index (0 is the first rank). */
@@ -158,7 +161,7 @@ object RewardEngine {
 
     fun effort(state: PlayerState, e: EffortEvent, rng: Random): Outcome {
         val buddy = state.buddy
-        val perks = Perks.total(buddy, state.party, PerkContext(sessionMinutes = e.minutes, megaActive = buddy != null && Perks.megaReady(buddy)))
+        val perks = Perks.total(buddy, state.party, PerkContext(sessionMinutes = e.minutes, megaActive = buddy != null && Perks.megaReady(buddy)), state.guardianPokemon)
         val rewards = mutableListOf<Reward>()
         var inventory = state.inventory
 
@@ -197,7 +200,7 @@ object RewardEngine {
     fun achievement(state: PlayerState, e: AchievementEvent, rng: Random): Outcome {
         val tier = e.tier
         val buddy = state.buddy
-        val perks = Perks.total(buddy, state.party, PerkContext(taskRank = tier, hourOfDay = e.hourOfDay, firstTaskOfDay = e.firstOfDay))
+        val perks = Perks.total(buddy, state.party, PerkContext(taskRank = tier, hourOfDay = e.hourOfDay, firstTaskOfDay = e.firstOfDay), state.guardianPokemon)
         val rewards = mutableListOf<Reward>()
         var inventory = state.inventory
         var coins = state.coins
