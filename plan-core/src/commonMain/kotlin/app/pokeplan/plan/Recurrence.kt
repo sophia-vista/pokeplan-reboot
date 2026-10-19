@@ -1,5 +1,6 @@
 package app.pokeplan.plan
 
+import kotlinx.serialization.Serializable
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -18,20 +19,30 @@ internal fun daysInMonth(year: Int, month: Int): Int = when (month) {
 }
 
 /** Never more often than daily. */
+@Serializable
 sealed interface Repeat {
+    @Serializable
     data class Daily(val every: Int = 1) : Repeat
     /** Chosen weekdays every [every] weeks; empty [days] means the weekday of the start date. */
+    @Serializable
     data class Weekly(val every: Int = 1, val days: Set<DayOfWeek> = emptySet()) : Repeat
+    @Serializable
     data class Monthly(val every: Int = 1, val rule: MonthlyRule) : Repeat
+    @Serializable
     data class Yearly(val every: Int = 1) : Repeat
 }
 
+@Serializable
 sealed interface MonthlyRule {
     /** A day of the month; in shorter months it falls on the last day. */
+    @Serializable
     data class DayOfMonth(val day: Int) : MonthlyRule
     /** The [n]th (1 to 4) [weekday] of the month. */
+    @Serializable
     data class NthWeekday(val n: Int, val weekday: DayOfWeek) : MonthlyRule
+    @Serializable
     data object LastDay : MonthlyRule
+    @Serializable
     data class LastWeekday(val weekday: DayOfWeek) : MonthlyRule
 }
 
@@ -43,9 +54,13 @@ enum class RepeatMode {
     AFTER_COMPLETION,
 }
 
+@Serializable
 sealed interface RepeatEnd {
+    @Serializable
     data object Never : RepeatEnd
+    @Serializable
     data class On(val date: LocalDate) : RepeatEnd
+    @Serializable
     data class After(val count: Int) : RepeatEnd
 }
 
@@ -53,6 +68,7 @@ sealed interface RepeatEnd {
  * A repeating schedule. Dates are wall-clock, so the time of day stays the same across daylight saving.
  * Skipped dates are not generated but still count towards [RepeatEnd.After].
  */
+@Serializable
 data class Recurrence(
     val repeat: Repeat,
     val start: LocalDate,

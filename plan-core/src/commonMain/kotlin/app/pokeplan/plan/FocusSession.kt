@@ -1,5 +1,6 @@
 package app.pokeplan.plan
 
+import kotlinx.serialization.Serializable
 import app.pokeplan.core.dex.Region
 import app.pokeplan.core.model.PokemonType
 import app.pokeplan.core.reward.EffortEvent
@@ -9,16 +10,22 @@ enum class PauseReason { CALL, EMERGENCY }
 enum class FailReason { LEFT_APP, MOVED_PHONE, GAVE_UP }
 
 /** What a session is doing right now. */
+@Serializable
 sealed interface Phase {
+    @Serializable
     data object Running : Phase
 
     /** The player left the app; they have [FocusRules.GRACE_MILLIS] from [since] to come back. */
+    @Serializable
     data class Away(val since: Long) : Phase
 
+    @Serializable
     data class Paused(val reason: PauseReason, val since: Long) : Phase
 
+    @Serializable
     data class Completed(val at: Long) : Phase
 
+    @Serializable
     data class Failed(val reason: FailReason, val at: Long) : Phase
 }
 
@@ -53,6 +60,7 @@ sealed interface FocusEvent {
  * [tick] only moves the clock (grace expiring, a long emergency pause ending, the timer finishing).
  * `buddyIdAtStart` and `lure` are locked in when the session starts: perks use the buddy at that moment.
  */
+@Serializable
 data class FocusSession(
     val id: String,
     val startedAtMillis: Long,

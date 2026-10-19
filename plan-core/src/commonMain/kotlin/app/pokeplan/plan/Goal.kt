@@ -1,7 +1,9 @@
 package app.pokeplan.plan
 
+import kotlinx.serialization.Serializable
 import app.pokeplan.core.pokemon.Items
 
+@Serializable
 data class Milestone(
     val id: String,
     val title: String,
@@ -14,6 +16,7 @@ data class Milestone(
 }
 
 /** A long-term aim ("Learn guitar") above tasks and habits. */
+@Serializable
 data class Goal(
     val id: String,
     val title: String,
