@@ -181,6 +181,14 @@ class ScreenshotTest {
     }
 
     @Test
+    fun onboardingStarters() {
+        val store = GameStore(MemoryStorage(), clock)
+        render("onboarding-starters") {
+            PixelTheme { PixelBackground("bw12", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.OnboardingScreen(store, startStep = 3) } }
+        }
+    }
+
+    @Test
     fun collectionMenu() = collection("collection-menu", -1)
 
     @Test
