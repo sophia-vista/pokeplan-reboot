@@ -7,6 +7,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 
 /** One finished or failed focus session, as kept in the history. */
+@kotlinx.serialization.Serializable
 data class FocusRecord(
     val startedAtMillis: Long,
     val minutes: Int,
