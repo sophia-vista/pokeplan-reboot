@@ -192,9 +192,14 @@ from Guardians). Nothing below changes them.
 | Any-Pokémon-as-Guardian, life-stat mapping, domain-reading perks, deployment fatigue, soft-reset shiny hunting, wild battles | Break the principles or belong to the later standalone game |
 | Legendary trading | Legendaries are already untransferable |
 
-### Still open
+### Decided (owner)
 
-1. Do regions map to modules for flavour, or stay purely geographic? *(lean: geographic)*
-2. Are legendaries required for regional dex completion, or bonus pages? *(lean: bonus)*
-3. Plan arcs: keep one quest per legendary (as built), or one arc that yields the trio in sequence? *(lean: as built)*
-4. Keep Darkrai as an opt-in shadow collectible, or leave it out? *(lean: out)*
+1. **Regions** stay purely geographic and module-agnostic: a region is a list of species to collect, not a theme owned by a module.
+2. **Legendaries and mythicals count towards regional dex completion.** A region is complete only with its legendary-class and mythical species, which are earned through quests, not eggs. Consequences to handle when the completion rewards are built: the "completes the Home dex at about day 67" pacing in docs/design.md covers the hatchable species only, so completion also waits on the quests (rank-gated, long); the Dex should show those pages as "earned by quest" so they never read as missing eggs; and the economy simulation should report both "hatchable done" and "fully complete".
+3. **Plan arcs stay as built:** one quest per legendary. For future modules, arcs should add up to **one cohesive but small and quick story** (see below).
+4. **Darkrai is out.**
+
+### Story direction (future)
+
+Keep it light: a few short beats, never a cutscene, never a wall of text. One shared thread runs through every module's arc so they read as one world rather than separate checklists. Each arc is quick (a handful of beats, tied to the effort the quest already asks for) and each beat is one or two lines with the patron's sprite and the usual reaction emoji. The story reacts to real effort only and never reads a domain (no task titles, notes or values), like every other event. The lake trio's arcs (knowledge, emotion, willpower) are the template; the thread that joins modules is still to be written, and should be agreed before the second module's arc ships.
+
