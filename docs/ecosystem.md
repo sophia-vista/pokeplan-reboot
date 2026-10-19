@@ -156,3 +156,45 @@ Otherwise stay with manual check-ins.
 - Is the failed-focus egg loss acceptable, or should it soften?
 - Do you want Care's cloud sync at all, or strictly on-device?
 - What does Health Connect show on your phone? (Settings → Health Connect → App permissions / Data sources.)
+
+## 10. Game layer
+
+Reconciles an outside draft (the "Game Layer Spec") with what is built. **Shiny odds and the Guardian rules stay exactly as
+they are in docs/design.md** *(owner's decision)*: shiny is about 1 in 128 per egg, and Guardians are legendary-class and
+mythical Pokémon in rank-opened slots with +10% signature perks added on top of the ordinary cap (up to +15% in a bucket
+from Guardians). Nothing below changes them.
+
+### Already true, no work
+
+- Guardians are legendary and mythical only; they cannot be the buddy, join the party or be transferred (so no migration).
+- Every legendary and mythical has a quest; Uxie, Mesprit and Azelf are the lake trio, written around knowledge, emotion and willpower, with the buckets in design.md.
+- A granted legendary gets one ordinary shiny roll when it is created and is never rerolled; there is no re-encounter.
+- Seen and caught states, the IV judge, mints, Bottle Caps and the Ability Capsule exist.
+
+### Adopt when the module that needs it ships
+
+- **Encounter methods as egg variants.** The way an egg was earned biases the roll (a min IV floor, a nature bias, a type pool). All numbers live in the versioned rules table; no battles, balls or catch rates. Only the **best two** methods apply to one egg; every method has a daily cap; one egg per source record (the existing idempotency key).
+- **Return after a break** is one of the best methods: coming back is rewarded, never punished. It needs a daily cap so it cannot be farmed.
+- **Dex as journal.** An entry shows the date and the *kind* of action that produced it, never a title, note or value.
+- **Badges** as cosmetic trophies for a module's own milestone, and an optional quarterly or annual review ceremony. They never gate levels, items or domain access.
+- **Legendary patrons per module** (one Guardian-style legendary per module, earned by an arc), added one at a time after Care v1 and only where the link is obvious (the lake trio sets the bar).
+- A **legendary IV floor** of three perfect stats is a small change in `Hatching.create` for quest-granted legendaries *(proposed, not built)*.
+- An **Oak intro**: the starter picker plus one question (calm, focused or curious) that picks the first egg's type pool. Charm pass.
+
+### Not adopted
+
+| Idea | Why |
+|---|---|
+| Shiny odds 1/4096 and a Shiny Charm | Shiny stays about 1 in 128 |
+| One Guardian slot with a single +15% effect inside the cap | Guardians stay as designed |
+| Party slots 2 to 6 as cosmetic only | Non-buddy party members keep their 25% perk share |
+| Steps, Oval Charm and step-based eggs | Eggs hatch from focus time; there are no steps |
+| Any-Pokémon-as-Guardian, life-stat mapping, domain-reading perks, deployment fatigue, soft-reset shiny hunting, wild battles | Break the principles or belong to the later standalone game |
+| Legendary trading | Legendaries are already untransferable |
+
+### Still open
+
+1. Do regions map to modules for flavour, or stay purely geographic? *(lean: geographic)*
+2. Are legendaries required for regional dex completion, or bonus pages? *(lean: bonus)*
+3. Plan arcs: keep one quest per legendary (as built), or one arc that yields the trio in sequence? *(lean: as built)*
+4. Keep Darkrai as an opt-in shadow collectible, or leave it out? *(lean: out)*
