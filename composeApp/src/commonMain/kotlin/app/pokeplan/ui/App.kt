@@ -41,9 +41,18 @@ enum class Tab(val label: String, val icon: String, val background: String) {
 }
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
-class AppModel(val store: GameStore) {
+class AppModel(val store: GameStore, val motion: MotionSource? = null) {
     var data: AppData by mutableStateOf(store.data)
         private set
+
+    /** The current time, refreshed twice a second so timers redraw. */
+    var now: Long by mutableStateOf(store.nowMillis)
+        private set
+
+    fun tick() {
+        store.tick()
+        now = store.nowMillis
+    }
 
     init {
         store.observe { data = it }
@@ -55,14 +64,14 @@ class AppModel(val store: GameStore) {
  * strict focus makes no sense (people work in other windows there).
  */
 @Composable
-fun App(storage: Storage, focusTab: Boolean = true) {
-    val model = remember { AppModel(GameStore(storage, Clock { SystemClock.System.now().toEpochMilliseconds() })) }
+fun App(storage: Storage, focusTab: Boolean = true, motion: MotionSource? = null) {
+    val model = remember { AppModel(GameStore(storage, Clock { SystemClock.System.now().toEpochMilliseconds() }), motion) }
     val store = model.store
 
     LaunchedEffect(Unit) {
         store.refresh()
         while (true) {
-            store.tick()
+            model.tick()
             delay(500)
         }
     }

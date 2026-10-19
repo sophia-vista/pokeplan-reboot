@@ -313,7 +313,7 @@ class GameStore(
                 val outcome = RewardEngine.effort(if (player.buddyId == session.buddyIdAtStart) player else player, event, rng)
                 update { d ->
                     log("Focus: $minutes min", outcome.rewards, d.copy(
-                        player = outcome.state, focus = null, activeDays = d.activeDays + today,
+                        player = outcome.state, focus = null, activeDays = d.activeDays + today, lastFocusEnd = FocusEnd(nowMillis, true),
                         focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, true, session.taskId),
                         tasks = d.tasks.map { if (it.id == session.taskId) it.copy(focusedMinutes = it.focusedMinutes + minutes) else it },
                     ))
@@ -323,13 +323,18 @@ class GameStore(
             is Phase.Failed -> {
                 val minutes = (session.focusedMillis(phase.at) / 60_000L).toInt()
                 update { d ->
-                    d.copy(focus = null, focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, false, session.taskId))
+                    d.copy(
+                        focus = null, lastFocusEnd = FocusEnd(nowMillis, false, phase.reason),
+                        focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, false, session.taskId),
+                    )
                 }
                 FocusResult.Failed(phase.reason)
             }
             else -> null
         }
     }
+
+    fun dismissFocusEnd() = update { it.copy(lastFocusEnd = null) }
 
     // --- Pokémon ------------------------------------------------------------------------------------------------------
 
