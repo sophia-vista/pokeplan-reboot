@@ -22,3 +22,13 @@ kotlin {
         }
     }
 }
+
+// Plays months of simulated players through the reward engine and writes docs/economy-report.md.
+tasks.register<JavaExec>("simulateEconomy") {
+    group = "tools"
+    val main = kotlin.targets.getByName("jvm").compilations.getByName("main")
+    dependsOn(main.compileTaskProvider)
+    classpath = files(main.output.allOutputs, main.runtimeDependencyFiles)
+    mainClass.set("app.pokeplan.plan.tools.EconomySimulatorKt")
+    args(rootProject.file("docs/economy-report.md").absolutePath)
+}

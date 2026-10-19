@@ -112,7 +112,7 @@ Each owned Pokémon has: species, level 1 to 100, nature, ability, 6 IVs, 6 EVs,
 - **Abilities:** each species has one or two; one is rolled at hatch. Abilities give buddy perks (below).
 - **Shiny:** rolled at hatch, base chance **1 in 128** per egg (about a month at ~5 eggs a day), with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation.
 - **Levelling:** 10 Rare Candies per level (as now). A Pokémon more than 5 levels below your partner needs half the candies *(tune)*, so new hatches catch up without outshining the partner.
-- **Evolution:** Super Candy at the species' evolution level (as now). Evolution stones for the species that use them.
+- **Evolution:** Super Candy at half the species' game evolution level. Evolution stones for the species that use them.
 
 ### Evolution
 
@@ -120,7 +120,7 @@ Every evolution is reachable solo. Each game trigger maps to an in-app one:
 
 | Game trigger | In the app |
 |---|---|
-| Level | Super Candy once the species' level is reached (as now) |
+| Level | Super Candy once the Pokémon reaches **half the species' game level** (rounded up, at least 2) *(tune)*; there are no battles, so levels only pace progress |
 | Stone / item | the evolution item |
 | Trade, trade with an item | a **Link Cord** item (holding the item where the game needs one); a real friend trade also works once trading exists |
 | Friendship (with or without day / night) | friendship at 220 or more, then a Super Candy, at the right time of day where it matters |
@@ -164,7 +164,7 @@ At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are
 
 ### Duplicates → candy
 
-- Transfer any Pokémon you do not need for Rare Candies. Starting yields by rarity *(tune)*: Common 5, Uncommon 8, Rare 15, Super Rare 40. Perfect-IV or shiny ones show a warning first.
+- Transfer any Pokémon you do not need for Rare Candies. Yields by rarity *(tune)*: Common 8, Uncommon 12, Rare 22, Super Rare 60, plus a fifth of the candies already fed. Perfect-IV or shiny ones show a warning first.
 - You cannot transfer your buddy or your last party member, and **legendaries and mythicals cannot be transferred**. Transferring the only copy of a species keeps its Pokédex entry: caught is permanent.
 - This is the sink for hatches, so the PC never needs to be a graveyard.
 
@@ -190,6 +190,7 @@ Not hatched from random eggs, which keeps them special and avoids a 4 hour Deep 
 - The **Home Region** is the player's own list of favourites, kept in `tools/species/home-region.txt` (one name per line; edit it and run the generator). It started as the original app's curated 150 and is now the owner's own curated list of 171 species (59 hatchable entry points across all four tiers, plus 26 legendary-class and mythical species earned through quests and milestones). The dex is meant to be completed in about 2 months at about 5 eggs a day; the economy simulator checks that pace. It is the starter dex every player begins in, keeping its local numbers 1 to 150. Its ten legendary-class species (Mew, Celebi, Jirachi, Uxie, Mesprit, Azelf, Manaphy, Shaymin, Victini, Keldeo) leave the egg pool and become quest rewards, so its rarities are re-derived by the rarity rule like every other region.
 - Every other region is a real game's regional dex: Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea. **All are in at launch.** Regional dexes are data (lists pointing at species), generated from a public dataset; other regions use the rarity rule.
 - A Pokémon has one record with a **National Dex number**; a region is just a list of those. Regional forms hatch in their home region (Alolan forms in Alola, and so on).
+- **Soft pity:** within a rarity, species the player has not caught yet are 3 times as likely to be picked (rarity odds are unchanged), so the last few species do not take forever. "Caught" is permanent, even after a transfer.
 - **Where a region's eggs start:** a species can hatch in a region if its pre-evolution is not in that region's dex (a region that has Pikachu but not Pichu can hatch Pikachu), so no region depends on another to be completed. Hisui's dex is merged into Sinnoh, and Hisuian forms hatch there.
 - **Region picker:** before a focus session the player chooses which region the egg comes from. Eggs hatch from that region's pool only. Each region has its own dex progress bar, badge and background theme.
 - **Unlock by trainer rank** (below). The National Dex is the combination of all regions.
@@ -201,6 +202,7 @@ Collecting is **fast at the start and deep at the end.** The simulator tunes tow
 
 - **Basic dex of the Home Region (every species caught, including evolutions): about 2 months** *(tune)*. Each later region is about the same once unlocked.
 - **Region unlocks:** trainer rank opens a new region about every 3 to 4 weeks *(tune)*, so a player is usually collecting in more than one region.
+- **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Home dex at a median of day 67, opens a region every 20 to 28 days, and earns enough Rare Candies to evolve the whole Home Region in 45 to 90 days and enough Super Candies in about 20.
 - **The long tail** (months to years) is made of layers, each with its own progress, badge and showcase:
 
 | Layer | Goal |
@@ -218,7 +220,7 @@ Perfect builds are shown on a Pokémon's page and in the Hall of Fame; they have
 Planned, with build order to be set later.
 
 - **Mission board (Mystery Dungeon):** tasks are shown as a job board using their difficulty rank. Presentation only; rewards stay as designed.
-- **Trainer rank (Mystery Dungeon guild ranks):** one rank for the whole account, earned in every app: 2 points per tier of finished work (so 2 for an E task up to 10 for an A task) and 1 point per 5 minutes of effort. Ten ranks (Rookie, Apprentice, Trainer, Ace, Veteran, Expert, Elite, Champion, Master, Legend) at 0, 500, 1,100, 1,800, 2,600, 3,500, 4,500, 5,700, 7,000 and 8,500 points. Each rank opens the next region in order (Home, Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea) and reveals features (see the table above). Names and thresholds are *(tune)*, aimed at a new region every 3 to 4 weeks.
+- **Trainer rank (Mystery Dungeon guild ranks):** one rank for the whole account, earned in every app: 2 points per tier of finished work (so 2 for an E task up to 10 for an A task) and 1 point per 5 minutes of effort. Ten ranks (Rookie, Apprentice, Trainer, Ace, Veteran, Expert, Elite, Champion, Master, Legend) at 0, 625, 1,375, 2,250, 3,250, 4,375, 5,625, 7,125, 8,750 and 10,625 points. Each rank opens the next region in order (Home, Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea) and reveals features (see the table above). Names and thresholds are *(tune)*, aimed at a new region every 3 to 4 weeks.
 - **Personality quiz starter (Mystery Dungeon):** onboarding asks a short quiz, which suggests a starter and a nature; the player can override.
 - **Poké Assist perks (Pokémon Ranger):** the buddy's type and ability perks are presented as assists. No extra mechanics.
 - **Weekly contests (Contests / Pokéathlon):** a friends-only weekly event scored by a buddy's stats, nature and training, with ribbons. Comes with the online release and gives stats and natures a purpose.
@@ -350,7 +352,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 2. **Species data pipeline:** generate species, base stats, abilities, forms, evolutions, regional dex lists and rarity (by rule) for Gen 1 to 9 from a public dataset, plus the sprite fetch step. The 150 become the Home Region; National Dex numbers.
 3. **Pokémon depth:** IVs, EVs, natures with stats, gender, abilities, shiny, friendship, items, evolution triggers, transfer yields, perk calculation. Unit tested in `:pokemon-core`.
 4. **Planner core:** task model, difficulty ranks, Today / Inbox logic, recurrence expansion (time zones and daylight saving included), habits and their streaks, goals and milestone rewards, reminders schedule, the quick-add parser, task-focus link, review and insight calculations. Pure Kotlin in `:plan-core`, heavily unit tested.
-5. **Economy simulator:** a JVM tool depending on both cores that plays months of tasks and focus sessions to tune every *(tune)* value against the pacing targets before the UI is built on them.
+5. **Economy simulator (done):** a JVM tool depending on both cores that plays months of tasks and focus sessions to tune every *(tune)* value against the pacing targets before the UI is built on them.
 6. **UI shell:** desktop and web companion screens (no focus timer; needs `dl.google.com` allowed in the environment).
 7. **Backend:** Supabase schema, RLS, reward functions, sync.
 8. **Android app and widgets** (needs the Android SDK).

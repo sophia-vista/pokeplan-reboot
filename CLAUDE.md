@@ -23,6 +23,7 @@ A fun productivity, growth and self-improvement app for Pokémon lovers: finishi
 - All tests (JVM): `./gradlew jvmTest`; one module: `./gradlew :pokemon-core:jvmTest`; one class: `./gradlew :pokemon-core:jvmTest --tests "app.pokeplan.core.EggTest"`
 - Compile the web target: `./gradlew compileKotlinWasmJs` (wasm tests need yarn and a browser and are not run here)
 - Regenerate Dex data: `python3 -I tools/species/generate.py`
+- Economy simulation: `./gradlew :plan-core:simulateEconomy` writes `docs/economy-report.md` (about 1 to 2 minutes). Re-run it after changing any reward, rank, egg, candy or transfer number and compare with the pacing targets in docs/design.md.
 - Gradle 9.8.1, Kotlin 2.4.21, any JDK 17 to 21.
 - In the cloud sandbox: `dl.google.com` (Google's Maven and the Android SDK) is blocked, so anything needing `androidx.*` (Compose, the Android target) cannot resolve until the environment allows it. Maven Central rate-limits the shared proxy; a Gradle init script in `~/.gradle/init.d` that tries `https://maven-central.storage-download.googleapis.com/maven2` first avoids that. PokeAPI data and sprites are reachable through `raw.githubusercontent.com` (not `pokeapi.co`).
 

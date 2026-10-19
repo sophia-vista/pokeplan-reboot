@@ -29,6 +29,8 @@ data class PlayerState(
     val eggMeter: Int = 0,
     /** Trainer rank points, earned from rewards in every app. */
     val trainerPoints: Int = 0,
+    /** Every species ever owned (the Pokédex's "caught"); it never shrinks, even after a transfer. */
+    val caught: Set<Int> = emptySet(),
 ) {
     val buddy: OwnedPokemon? get() = pokemon.firstOrNull { it.id == buddyId }
     val party: List<OwnedPokemon> get() = pokemon.filter { it.inParty }
@@ -116,6 +118,9 @@ object RewardEngine {
     const val COINS_PER_TIER = 2
 
     const val LURE_WEIGHT = 3.0
+
+    /** Soft pity: within a rarity, species you have not caught yet are this many times as likely. *(tune)* */
+    const val UNCAUGHT_WEIGHT = 3.0
     const val SPOTLIGHT_WEIGHT = 2.0
 
     /** Base chance (percent) of an item drop, plus 2 per tier. *(tune)* */
@@ -144,9 +149,12 @@ object RewardEngine {
 
         val rarity = luckyBump(Egg.rates(e.minutes, e.deepFocus).roll(rng), perks[PerkBucket.EGG_LUCK], rng)
         val spotlight = Spotlight.typeFor(e.epochDay)
+        val caught = state.caught + state.pokemon.map { it.speciesId }
         val option = HatchRules.rollWeighted(e.region, rarity, rng) { o ->
             val types = Dex.form(o.formIdentifier)!!.types
-            (if (e.lure != null && e.lure in types) LURE_WEIGHT else 1.0) * (if (spotlight in types) SPOTLIGHT_WEIGHT else 1.0)
+            (if (e.lure != null && e.lure in types) LURE_WEIGHT else 1.0) *
+                (if (spotlight in types) SPOTLIGHT_WEIGHT else 1.0) *
+                (if (o.speciesId !in caught) UNCAUGHT_WEIGHT else 1.0)
         }
         val hatched = Hatching.create(e.newPokemonId, option, state.party.size, e.nowMillis, e.minutes, rng, perks.multiplier(PerkBucket.SHINY_HUNTER))
         rewards += Reward.Hatched(hatched, fromTask = false)
@@ -161,7 +169,10 @@ object RewardEngine {
             if (it.id == buddy?.id) it.gainFriendship(FriendshipRules.Source.FOCUS_SESSION) else it
         }
         return Outcome(
-            state.copy(pokemon = pokemon, inventory = inventory, coins = state.coins + coins, trainerPoints = state.trainerPoints + TrainerRank.pointsForEffort(e.minutes)),
+            state.copy(
+                pokemon = pokemon, inventory = inventory, coins = state.coins + coins,
+                trainerPoints = state.trainerPoints + TrainerRank.pointsForEffort(e.minutes), caught = caught + hatched.speciesId,
+            ),
             rewards,
         )
     }
@@ -214,16 +225,23 @@ object RewardEngine {
 
         // Egg meter
         var meter = state.eggMeter + tier
+        var caught = state.caught + state.pokemon.map { it.speciesId }
         if (meter >= EGG_METER_SIZE) {
             meter -= EGG_METER_SIZE
             val partySize = pokemon.count { it.inParty }
             val rarity = luckyBump(Egg.rates(TASK_EGG_MINUTES, false).roll(rng), perks[PerkBucket.EGG_LUCK], rng)
-            val egg = Hatching.hatchAtRarity(e.newPokemonId, rarity, e.region, partySize, e.nowMillis, TASK_EGG_MINUTES, rng, perks.multiplier(PerkBucket.SHINY_HUNTER))
+            val known = state.caught + pokemon.map { it.speciesId }
+            val option = HatchRules.rollWeighted(e.region, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
+            val egg = Hatching.create(e.newPokemonId, option, partySize, e.nowMillis, TASK_EGG_MINUTES, rng, perks.multiplier(PerkBucket.SHINY_HUNTER))
             pokemon = pokemon + egg
+            caught = known + egg.speciesId
             rewards += Reward.Hatched(egg, fromTask = true)
         }
         return Outcome(
-            state.copy(pokemon = pokemon, inventory = inventory, coins = coins, eggMeter = meter, trainerPoints = state.trainerPoints + TrainerRank.pointsForAchievement(tier)),
+            state.copy(
+                pokemon = pokemon, inventory = inventory, coins = coins, eggMeter = meter,
+                trainerPoints = state.trainerPoints + TrainerRank.pointsForAchievement(tier), caught = caught,
+            ),
             rewards,
         )
     }

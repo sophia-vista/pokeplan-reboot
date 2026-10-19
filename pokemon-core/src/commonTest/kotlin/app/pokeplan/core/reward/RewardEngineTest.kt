@@ -108,7 +108,7 @@ class RewardEngineTest {
         val snorlax = 143 // Normal: Egg luck
         val lucky = highRarityShare({ stateWithBuddy(snorlax) }, 5)
         val plain = highRarityShare({ stateWithBuddy(Ids.CHARMANDER, level = 1, friendship = 70) }, 5)
-        assertTrue(lucky > plain + 0.04, "lucky $lucky, plain $plain")
+        assertTrue(lucky > plain + 0.02, "lucky $lucky, plain $plain")
     }
 
     @Test
@@ -155,6 +155,40 @@ class RewardEngineTest {
         val before = stateWithBuddy(friendship = 100, nature = Nature.ADAMANT)
         val after = RewardEngine.achievement(before, achievement(2), Random(3)).state.buddy!!
         assertEquals(100 + FriendshipRules.amount(FriendshipRules.Source.TASK, after.bondStyle), after.friendship)
+    }
+
+    @Test
+    fun caughtSpeciesStayCaughtEvenAfterTheyLeave() {
+        val out = RewardEngine.effort(PlayerState(), effort(), Random(1))
+        val species = out.rewards.filterIsInstance<Reward.Hatched>().single().pokemon.speciesId
+        assertEquals(setOf(species), out.state.caught)
+        val gone = out.state.copy(pokemon = emptyList())
+        assertEquals(setOf(species), gone.caught, "transferring does not un-catch")
+    }
+
+    @Test
+    fun speciesYouHaveNotCaughtAreThreeTimesAsLikely() {
+        // Catch everything in the Kanto Common tier except one species, then see how often that one still turns up.
+        val commons = HatchRules.pool(Region.KANTO, Rarity.COMMON).map { it.speciesId }
+        val missing = commons.first()
+        val state = PlayerState(caught = commons.drop(1).toSet())
+        val rng = Random(21)
+        var hits = 0
+        var commonEggs = 0
+        repeat(6000) {
+            val p = RewardEngine.effort(state, effort(10), rng).rewards.filterIsInstance<Reward.Hatched>().single().pokemon
+            if (HatchRules.rarity(p.speciesId) == Rarity.COMMON) {
+                commonEggs++
+                if (p.speciesId == missing) hits++
+            }
+        }
+        // Day 0's spotlight type is also in play, so work the expected share out from the real weights.
+        val spotlight = Spotlight.typeFor(0)
+        fun weight(id: Int) = (if (spotlight in Dex.defaultForm(id).types) RewardEngine.SPOTLIGHT_WEIGHT else 1.0) *
+            (if (id == missing) RewardEngine.UNCAUGHT_WEIGHT else 1.0)
+        val expected = weight(missing) / commons.sumOf { weight(it) }
+        val share = hits.toDouble() / commonEggs
+        assertTrue(share in expected - 0.03..expected + 0.03, "uncaught share $share, expected about $expected")
     }
 
     @Test

@@ -11,16 +11,16 @@ class TransferTest {
     @Test
     fun yieldsFollowTheRarityOfTheLine() {
         val caterpie = pokemon(10)
-        assertEquals(5, Transfer.quote(caterpie).rareCandies)
-        assertEquals(10, Transfer.quote(caterpie).coins)
+        assertEquals(8, Transfer.quote(caterpie).rareCandies)
+        assertEquals(16, Transfer.quote(caterpie).coins)
         val dratini = pokemon(147)
-        assertEquals(40, Transfer.quote(dratini).rareCandies)
+        assertEquals(60, Transfer.quote(dratini).rareCandies)
     }
 
     @Test
     fun fedCandiesPartlyComeBack() {
         val p = pokemon(10).copy(totalCandies = 50)
-        assertEquals(5 + 10, Transfer.quote(p).rareCandies)
+        assertEquals(8 + 10, Transfer.quote(p).rareCandies)
     }
 
     @Test

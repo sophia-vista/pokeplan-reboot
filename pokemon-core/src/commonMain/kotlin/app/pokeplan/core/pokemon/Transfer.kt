@@ -15,7 +15,7 @@ data class TransferQuote(val rareCandies: Int, val coins: Int, val returnedItem:
 object Transfer {
     /** Starting yields by rarity. *(tune)* */
     val candiesByRarity: Map<Rarity, Int> = mapOf(
-        Rarity.COMMON to 5, Rarity.UNCOMMON to 8, Rarity.RARE to 15, Rarity.SUPER_RARE to 40,
+        Rarity.COMMON to 8, Rarity.UNCOMMON to 12, Rarity.RARE to 22, Rarity.SUPER_RARE to 60,
     )
 
     /** Coins are twice the candy yield; a fifth of the candies already fed come back. *(tune)* */
