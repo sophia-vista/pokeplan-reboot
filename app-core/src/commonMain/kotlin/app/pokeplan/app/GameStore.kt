@@ -93,6 +93,22 @@ class GameStore(
         return { listeners -= listener }
     }
 
+    /**
+     * Picks up a change another process made to the save (an Android widget). Nothing is written back, so the app never
+     * overwrites a widget's tap with its older copy.
+     */
+    fun reload() {
+        val text = storage.load() ?: return
+        val fresh = try {
+            json.decodeFromString(AppData.serializer(), text)
+        } catch (e: Exception) {
+            return
+        }
+        if (fresh == data) return
+        data = fresh
+        listeners.toList().forEach { it(data) }
+    }
+
     private fun load(): AppData {
         val text = storage.load() ?: return AppData()
         return try {
@@ -623,6 +639,22 @@ class GameStore(
             ))
         }
         return true
+    }
+
+    /** Tasks finished since the day began. */
+    fun doneToday(): Int = data.tasks.count { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= startOfTodayMillis }
+
+    /** The buddy's mood from what has happened: sleeping in a session, cheerful when today is done, lonely after two quiet days. */
+    fun buddyMood(): BuddyMood {
+        val pendingIds = data.pending.map { it.original.id }.toSet()
+        val open = todayTasks().count { it.id !in pendingIds }
+        return when {
+            data.focus != null -> BuddyMood.FOCUSING
+            open == 0 && doneToday() > 0 -> BuddyMood.CHEERFUL
+            data.activeDays.isNotEmpty() && today !in data.activeDays && today.minus(DatePeriod(days = 1)) !in data.activeDays -> BuddyMood.LONELY
+            data.rewardLog.isEmpty() && data.activeDays.isEmpty() -> BuddyMood.WAITING
+            else -> BuddyMood.CONTENT
+        }
     }
 
     /**
