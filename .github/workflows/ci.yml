@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    name: Tests and builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Unit tests (JVM) and the web and JavaScript builds
+        run: ./gradlew jvmTest compileKotlinWasmJs jsProductionLibraryCompileSync --no-daemon
+      - name: The compiled engine matches the JVM (Node)
+        run: node tools/server/smoke.mjs pokemon-core/build/compileSync/js/main/productionLibrary/kotlin
+
+  data:
+    name: Generated data is up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Regenerate the Pokédex data
+        run: python3 -I tools/species/generate.py
+      - name: Fail if it changed
+        run: git diff --exit-code -- pokemon-core/src/commonMain/kotlin/app/pokeplan/core/dex/generated
