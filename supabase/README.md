@@ -24,6 +24,7 @@ They cannot set coins, levels, items, shininess or task completion: those column
 2. Link and push the schema: `supabase link --project-ref <ref>` then `supabase db push`.
 3. In *Project settings → API → Exposed schemas* add `platform` and `plan`.
 4. Build and deploy the function: `supabase/functions/reward/build.sh && supabase functions deploy reward`. `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided to functions automatically.
+   Without a computer set up for it: add the repository secret `SUPABASE_ACCESS_TOKEN` (Supabase → Account → Access Tokens → Generate new token; GitHub → Settings → Secrets and variables → Actions), then run *Actions → Deploy the reward function → Run workflow* (`.github/workflows/deploy-reward.yml`). Run it again after any change to the engine or the function.
 5. In *Authentication → Providers* turn on email and Google.
 
 ## Cloud save and sign-in
