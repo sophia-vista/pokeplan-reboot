@@ -67,6 +67,16 @@ class DexDataTest {
     }
 
     @Test
+    fun everySpeciesHasPokedexText() {
+        for (s in Dex.species) {
+            val text = Dex.entry(s.id)
+            assertTrue(text.length in 30..400, "${s.name}: ${text.length} chars")
+            assertTrue(!text.contains('\n') && !text.contains("  "), "${s.name} has stray whitespace")
+        }
+        assertTrue(Dex.entry(1).startsWith("A strange seed") || Dex.entry(1).contains("seed"), Dex.entry(1))
+    }
+
+    @Test
     fun genderRatiosArePresent() {
         assertEquals(null, Dex.species(132).femaleEighths, "Ditto is genderless")
         assertEquals(0, Dex.species(106).femaleEighths, "Hitmonlee is male only")

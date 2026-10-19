@@ -12,6 +12,11 @@ object Dex {
     private val evolutionsFromId: Map<Int, List<Evolution>> by lazy { evolutions.groupBy { it.from } }
     private val evolutionsIntoId: Map<Int, List<Evolution>> by lazy { evolutions.groupBy { it.to } }
 
+    private val entries: Map<Int, String> by lazy { DexParser.entries() }
+
+    /** The Pokédex text for [speciesId] (the most recent game's English entry). */
+    fun entry(speciesId: Int): String = entries.getValue(speciesId)
+
     private val regionData: Map<String, List<Int>> by lazy { DexParser.regions() }
 
     /** Species of [region] in dex order. For [Region.HOME] the position is the Home Region's own number. */

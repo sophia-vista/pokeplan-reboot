@@ -1,5 +1,6 @@
 package app.pokeplan.shared.dex
 
+import app.pokeplan.shared.dex.generated.DEX_ENTRIES
 import app.pokeplan.shared.dex.generated.DEX_EVOLUTIONS
 import app.pokeplan.shared.dex.generated.DEX_FORMS
 import app.pokeplan.shared.dex.generated.DEX_REGIONS
@@ -68,6 +69,10 @@ internal object DexParser {
             conditions = list(f[12], ';'),
         )
     }
+
+    /** Pokédex text per species id. */
+    fun entries(): Map<Int, String> = DEX_ENTRIES.joinToString("").lineSequence().filter { it.isNotBlank() }
+        .associate { line -> line.substringBefore('|').toInt() to line.substringAfter('|') }
 
     /** Region name to ordered species ids. Includes the extra "HISUI" list used to pick Hisuian variants. */
     fun regions(): Map<String, List<Int>> = rows(DEX_REGIONS).associate { f -> f[0] to f[1].split(',').map { it.toInt() } }
