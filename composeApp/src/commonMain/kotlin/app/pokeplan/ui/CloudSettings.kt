@@ -8,8 +8,8 @@ import app.pokeplan.app.cloud.CloudConfig
  * online features are not set up. See supabase/README.md.
  */
 object CloudSettings {
-    const val URL = ""
-    const val ANON_KEY = ""
+    const val URL = "https://pnqbeiicririgfavhqxm.supabase.co"
+    const val ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBucWJlaWljcmlyaWdmYXZocXhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzODAxMTEsImV4cCI6MjEwNzk1NjExMX0.J9bUARTLUjz1WXQnswXsJy-JGvQfCeAtKCIZEWooPrk"
 
     val config = CloudConfig(URL, ANON_KEY)
 }
