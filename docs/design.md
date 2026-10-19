@@ -244,6 +244,12 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 - Offline hatching uses server-issued "egg tickets" (random seeds spent by the client, verified later) so an egg still hatches without a connection.
 - Game rules run on the server by compiling the shared Kotlin module to JS; a spike confirms this before Milestone 5.
 
+## Gaps to define (found in review)
+
+Planner and calendar: task and focus link; difficulty versus priority; a planned-for date and an Inbox; full recurrence rules (weekday, monthly, after completion, end, skip, edit this or all); multiple and relative reminders with snooze and quiet hours; day and agenda views, estimated duration and time-blocking; which device calendars to import; widget privacy for events; search, filters, projects or tags; natural-language quick-add and share-sheet capture; cancelled state; week start and locale; per-habit streaks; time zones and daylight saving.
+
+Pokémon: evolution trigger mapping; contest condition stats, scoring and berries; gender; friendship rules; item-based form changes; ability perk coverage policy (curated table of about 40, the rest fall back to the type perk); endgame candy sinks; Tera Shards to change the buddy's perk type; Pokédex text source; hidden-ability route; seen versus caught; PC box limits.
+
 ## Open questions
 
 Being settled in rounds before any Pokémon-depth code is written. Decided: everything above not marked *(tune)* or *(proposal)*.
