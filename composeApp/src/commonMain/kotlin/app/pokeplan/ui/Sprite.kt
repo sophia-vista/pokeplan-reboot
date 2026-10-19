@@ -56,3 +56,22 @@ fun Sprite(formId: Int, shiny: Boolean, description: String, modifier: Modifier 
         }
     }
 }
+
+/** A character portrait from assets/npc ("oak"). A Poké Ball stands in until the file is there. */
+@Composable
+fun NpcPortrait(name: String, modifier: Modifier = Modifier, size: Dp = 200.dp) {
+    val path = "files/npc/$name.png"
+    val bitmap by produceState(cache[path], path) {
+        if (value == null) {
+            value = try {
+                Res.readBytes(path).decodeToImageBitmap()
+            } catch (e: Exception) {
+                null
+            }
+            cache[path] = value
+        }
+    }
+    val image = bitmap
+    if (image != null) Image(image, name, modifier.size(size), contentScale = ContentScale.Fit, filterQuality = FilterQuality.None)
+    else ItemIcon("poke-ball", modifier, size = size / 2)
+}

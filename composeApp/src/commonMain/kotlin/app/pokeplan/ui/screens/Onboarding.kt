@@ -1,81 +1,159 @@
 package app.pokeplan.ui.screens
 
-import androidx.compose.foundation.border
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.GameStore
 import app.pokeplan.core.dex.Dex
+import app.pokeplan.ui.ItemIcon
+import app.pokeplan.ui.NpcPortrait
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.TextBox
+import kotlinx.coroutines.delay
 
-/** Title, then pick a starter and a name. The first reward arrives within about two minutes of opening the app. */
+private enum class Step { GREETING, NAME, CONFIRM_NAME, STARTER, CONFIRM_STARTER, FAREWELL }
+
+/** What the Professor says before asking for a name. Written for this app, in the cadence of the games' intro. */
+private val greeting = listOf(
+    "Hello there! Welcome to the world of PokéPlan!",
+    "I am Professor Oak. People around here just call me the Professor.",
+    "Pokémon live alongside people everywhere. And they love to help.",
+    "Finish your tasks and keep your focus, and they will grow beside you.",
+    "Eggs will hatch. Friends will join your team. It all starts with one small step.",
+    "But first, tell me a little about yourself.",
+)
+
+/** An intro in the style of the old games: a Professor, a text box that types itself out, a name, a first partner. */
 @Composable
 fun OnboardingScreen(store: GameStore) {
-    var step by remember { mutableStateOf(0) }
-    var starter by remember { mutableStateOf(GameStore.starters.first()) }
+    var step by remember { mutableStateOf(Step.GREETING) }
+    var line by remember { mutableStateOf(0) }
     var name by remember { mutableStateOf("") }
+    var starter by remember { mutableStateOf(GameStore.starters.first()) }
 
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        TextBox(Modifier.padding(top = 24.dp), accent = Pixel.Red) {
-            Text("PokéPlan", Modifier.fillMaxWidth(), style = MaterialTheme.typography.headlineMedium, color = Pixel.Red, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-        }
-        if (step == 0) {
-            TextBox(Modifier.fillMaxWidth()) {
-                Text(
-                    "Plan your day, focus, and grow a team of Pokémon along the way. Every task and every focus session " +
-                        "earns something.",
-                    style = MaterialTheme.typography.bodyLarge,
-                )
+    Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.SpaceBetween) {
+        // The upper part: the Professor, or the Pokémon being considered.
+        Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+            when (step) {
+                Step.STARTER -> StarterPicker(starter) { starter = it }
+                Step.CONFIRM_STARTER -> Sprite(Dex.defaultForm(starter).id, false, Dex.species(starter).name, size = 240.dp)
+                else -> NpcPortrait("oak", size = 280.dp)
             }
-            PixelButton("Start as guest", { step = 1 }, Modifier.fillMaxWidth(), Pixel.Red)
-        } else {
-            Text("Choose your first partner", style = MaterialTheme.typography.titleMedium)
-            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                GameStore.starters.forEach { id ->
-                    val form = Dex.defaultForm(id)
-                    val chosen = id == starter
-                    Box(
-                        Modifier.padding(4.dp)
-                            .border(if (chosen) 4.dp else 2.dp, if (chosen) Pixel.Red else Pixel.Shade, RoundedCornerShape(4.dp))
-                            .clickable { starter = id }
-                            .padding(6.dp),
-                    ) { Sprite(form.id, false, Dex.species(id).name, size = 72.dp) }
+        }
+
+        when (step) {
+            Step.GREETING -> Dialogue(greeting[line]) {
+                if (line < greeting.lastIndex) line++ else step = Step.NAME
+            }
+            Step.NAME -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Dialogue("What is your name?") {}
+                TextBox {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(
+                            name, { name = it.take(24) }, Modifier.weight(1f), singleLine = true,
+                            textStyle = MaterialTheme.typography.bodyLarge,
+                            placeholder = { Text("Your name", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
+                        )
+                        PixelButton("OK", { step = Step.CONFIRM_NAME }, color = Pixel.Green, enabled = name.isNotBlank())
+                    }
                 }
             }
-            TextBox(Modifier.fillMaxWidth()) {
-                Text("You chose ${Dex.species(starter).name}!", style = MaterialTheme.typography.bodyLarge)
+            Step.CONFIRM_NAME -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Dialogue("So your name is ${name.trim()}. Is that right?") {}
+                YesNo(onYes = { line = 0; step = Step.STARTER }, onNo = { step = Step.NAME })
             }
-            OutlinedTextField(
-                name, { name = it.take(24) }, Modifier.fillMaxWidth(), singleLine = true,
-                label = { Text("Your trainer name") },
-            )
-            PixelButton("Begin", { store.start(name, starter) }, Modifier.fillMaxWidth(), Pixel.Red)
+            Step.STARTER -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Dialogue("Now, ${name.trim()}, choose your first partner.") {}
+                PixelButton("Choose ${Dex.species(starter).name}", { step = Step.CONFIRM_STARTER }, Modifier.fillMaxWidth(), Pixel.Red)
+            }
+            Step.CONFIRM_STARTER -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Dialogue("So, you want ${Dex.species(starter).name}? It will be yours.") {}
+                YesNo(onYes = { step = Step.FAREWELL }, onNo = { step = Step.STARTER })
+            }
+            Step.FAREWELL -> Dialogue("Wonderful! Your first task is waiting. Finish it, and your adventure begins!") {
+                store.start(name, starter)
+            }
+        }
+    }
+}
+
+@Composable
+private fun YesNo(onYes: () -> Unit, onNo: () -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+        PixelButton("Yes", onYes, Modifier.weight(1f), Pixel.Green)
+        PixelButton("No", onNo, Modifier.weight(1f), Pixel.InkSoft)
+    }
+}
+
+/** The starters in a row of tappable sprites. */
+@Composable
+private fun StarterPicker(selected: Int, onSelect: (Int) -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Sprite(Dex.defaultForm(selected).id, false, Dex.species(selected).name, size = 192.dp)
+        FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            GameStore.starters.forEach { id ->
+                val chosen = id == selected
+                Box(
+                    Modifier.padding(3.dp)
+                        .background(if (chosen) Pixel.Yellow else Color_White, RoundedCornerShape(14.dp))
+                        .clickable { onSelect(id) }
+                        .padding(4.dp),
+                ) { Sprite(Dex.defaultForm(id).id, false, Dex.species(id).name, size = 56.dp) }
+            }
+        }
+    }
+}
+
+private val Color_White = androidx.compose.ui.graphics.Color.White
+
+/**
+ * A text box that types its line out. Tap while it types to show the rest; tap when it is complete to go on.
+ * A small Poké Ball blinks at the corner when there is more.
+ */
+@Composable
+private fun Dialogue(text: String, onNext: () -> Unit) {
+    var shown by remember(text) { mutableStateOf(0) }
+    val done = shown >= text.length
+    LaunchedEffect(text) {
+        while (shown < text.length) {
+            delay(28)
+            shown++
+        }
+    }
+    val blink = rememberInfiniteTransition().animateFloat(0.2f, 1f, infiniteRepeatable(tween(500), RepeatMode.Reverse)).value
+    TextBox(Modifier.clickable { if (!done) shown = text.length else onNext() }) {
+        Box(Modifier.fillMaxWidth().padding(bottom = 4.dp)) {
+            Text(text.take(shown), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().padding(end = 28.dp, bottom = 12.dp))
+            if (done) ItemIcon("poke-ball", Modifier.align(Alignment.BottomEnd).alpha(blink), size = 24.dp)
         }
     }
 }

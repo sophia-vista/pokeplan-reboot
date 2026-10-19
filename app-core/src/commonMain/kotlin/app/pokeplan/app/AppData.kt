@@ -3,6 +3,7 @@ package app.pokeplan.app
 import app.pokeplan.core.dex.Region
 import app.pokeplan.core.reward.PlayerState
 import app.pokeplan.core.reward.Reward
+import app.pokeplan.plan.FailReason
 import app.pokeplan.plan.FocusRecord
 import app.pokeplan.plan.FocusSession
 import app.pokeplan.plan.Goal
@@ -33,6 +34,8 @@ data class AppData(
     val focusHistory: List<FocusRecord> = emptyList(),
     /** The session in progress, if any. */
     val focus: FocusSession? = null,
+    /** How the last focus session ended, until the player has seen it. */
+    val lastFocusEnd: FocusEnd? = null,
     /** Completions waiting out their 10 second undo window. */
     val pending: List<PendingCompletion> = emptyList(),
     /** What recent rewards were, newest last; the UI shows the unseen ones. */
@@ -84,3 +87,7 @@ data class RewardEntry(
     val rewards: List<Reward>,
     val seen: Boolean = false,
 )
+
+/** The end of a focus session: finished (the egg hatched) or failed for [failReason]. */
+@Serializable
+data class FocusEnd(val atMillis: Long, val completed: Boolean, val failReason: FailReason? = null)

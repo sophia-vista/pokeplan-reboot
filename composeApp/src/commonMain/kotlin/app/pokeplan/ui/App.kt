@@ -1,6 +1,9 @@
 package app.pokeplan.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,9 +44,18 @@ enum class Tab(val label: String, val icon: String, val background: String) {
 }
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
-class AppModel(val store: GameStore) {
+class AppModel(val store: GameStore, val motion: MotionSource? = null) {
     var data: AppData by mutableStateOf(store.data)
         private set
+
+    /** The current time, refreshed twice a second so timers redraw. */
+    var now: Long by mutableStateOf(store.nowMillis)
+        private set
+
+    fun tick() {
+        store.tick()
+        now = store.nowMillis
+    }
 
     init {
         store.observe { data = it }
@@ -55,14 +67,14 @@ class AppModel(val store: GameStore) {
  * strict focus makes no sense (people work in other windows there).
  */
 @Composable
-fun App(storage: Storage, focusTab: Boolean = true) {
-    val model = remember { AppModel(GameStore(storage, Clock { SystemClock.System.now().toEpochMilliseconds() })) }
+fun App(storage: Storage, focusTab: Boolean = true, motion: MotionSource? = null) {
+    val model = remember { AppModel(GameStore(storage, Clock { SystemClock.System.now().toEpochMilliseconds() }), motion) }
     val store = model.store
 
     LaunchedEffect(Unit) {
         store.refresh()
         while (true) {
-            store.tick()
+            model.tick()
             delay(500)
         }
     }
@@ -96,7 +108,9 @@ private fun MainShell(model: AppModel, focusTab: Boolean) {
             }
         }
         Row(
-            Modifier.fillMaxWidth().background(Pixel.Ink).padding(horizontal = 4.dp, vertical = 6.dp),
+            Modifier.fillMaxWidth().shadow(10.dp, RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp))
+                .background(Color.White, RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp))
+                .padding(horizontal = 8.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             tabs.forEach { t ->
