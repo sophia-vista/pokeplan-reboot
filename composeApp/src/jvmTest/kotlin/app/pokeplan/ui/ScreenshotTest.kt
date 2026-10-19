@@ -94,4 +94,42 @@ class ScreenshotTest {
         val model = AppModel(store)
         render("focus-running") { PixelTheme { PixelBackground("bw11", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.FocusScreen(model) } } }
     }
+
+    private fun storeWithTeam(): GameStore {
+        val store = started()
+        repeat(4) {
+            store.startFocus(25, deepFocus = false)
+            clock.millis += 25 * 60_000L + 1
+            store.tickFocus()
+        }
+        store.grant("rare-candy", 30)
+        store.grant("protein", 2)
+        store.grant("berry-sweet", 3)
+        store.feedRareCandy(store.data.player.buddyId!!, 12)
+        return store
+    }
+
+    private fun collection(name: String, section: Int, open: Boolean = false) {
+        val store = storeWithTeam()
+        val model = AppModel(store)
+        render(name) {
+            PixelTheme {
+                PixelBackground("bw15", Modifier.fillMaxSize()) {
+                    app.pokeplan.ui.screens.CollectionScreen(model, section, if (open) store.data.player.buddyId else null)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun collectionParty() = collection("collection-party", 0)
+
+    @Test
+    fun collectionDex() = collection("collection-dex", 2)
+
+    @Test
+    fun collectionBag() = collection("collection-bag", 3)
+
+    @Test
+    fun pokemonDetail() = collection("pokemon-detail", 0, open = true)
 }
