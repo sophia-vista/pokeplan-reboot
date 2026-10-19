@@ -18,6 +18,10 @@ export interface Database {
   /** The task's focused minutes, for the "focused on it" bonus. */
   focusedMinutes(user: string, taskId: string): Promise<number>;
   rankFor(points: number): number;
+  /** platform.pull_save: {version, data} where data is null if nothing was uploaded yet. */
+  pullSave(user: string): Promise<{ version: number; data: unknown }>;
+  /** platform.push_save: the new version. Throws an error with code "40001" when the version is stale. */
+  pushSave(user: string, expectedVersion: number, data: unknown): Promise<number>;
 }
 
 export interface Clock {
@@ -28,10 +32,13 @@ export interface Clock {
 
 export class RequestError extends Error {
   readonly status: number;
+  /** More fields for the response body (the current version on a conflict). */
+  readonly extra: Record<string, unknown>;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, extra: Record<string, unknown> = {}) {
     super(message);
     this.status = status;
+    this.extra = extra;
   }
 }
 
@@ -131,5 +138,34 @@ export async function handleReward(user: string, body: Body, engine: Engine, db:
       if ((e as { code?: string }).code === "40001" && attempt < MAX_RETRIES) continue;
       throw e;
     }
+  }
+}
+
+/**
+ * The cloud save: {"kind": "pull"} returns {version, data}; {"kind": "push", "expectedVersion": n, "data": {...}} saves the
+ * document and returns {version}. A stale version is a 409 carrying the version on the server; a document the rules refuse
+ * (points that went down, a party that is too big) is a 422.
+ */
+export async function handleSync(user: string, body: Body, db: Database) {
+  const kind = text(body, "kind");
+  if (kind === "pull") return await db.pullSave(user);
+  if (kind !== "push") throw new RequestError(400, `unknown kind ${kind}`);
+
+  const expected = int(body, "expectedVersion", 0, 2_000_000_000);
+  const data = body.data;
+  if (typeof data !== "object" || data === null || Array.isArray(data)) throw new RequestError(400, "data must be an object");
+  if (typeof (data as { player?: unknown }).player !== "object" || (data as { player?: unknown }).player === null) {
+    throw new RequestError(400, "data.player is required");
+  }
+  try {
+    return { version: await db.pushSave(user, expected, data) };
+  } catch (e) {
+    const code = (e as { code?: string }).code;
+    if (code === "40001") {
+      const { version } = await db.pullSave(user);
+      throw new RequestError(409, "the save changed somewhere else", { version });
+    }
+    if (code === "P0001" || code === "23514" || code === "23503") throw new RequestError(422, (e as Error).message);
+    throw e;
   }
 }

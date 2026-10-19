@@ -57,6 +57,9 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
 import kotlin.random.Random
 
 /** What a focus session turned out to be. */
@@ -100,9 +103,45 @@ class GameStore(
     }
 
     private fun update(change: (AppData) -> AppData) {
-        data = change(data)
+        val before = data
+        var after = change(before)
+        // Anything but the account itself changing means the cloud copy is out of date.
+        val account = after.account
+        if (account != null && account == before.account && after.copy(account = null) != before.copy(account = null)) {
+            after = after.copy(account = account.copy(unsynced = true))
+        }
+        data = after
         storage.save(json.encodeToString(AppData.serializer(), data))
         listeners.toList().forEach { it(data) }
+    }
+
+    // --- cloud account ------------------------------------------------------------------------------------------------
+
+    /** Remembers a signed-in session. Progress made as a guest counts as not yet in the cloud. */
+    fun signedIn(email: String, userId: String, accessToken: String, refreshToken: String, expiresAtMillis: Long) = update { d ->
+        val same = d.account?.userId == userId
+        d.copy(account = Account(email, userId, accessToken, refreshToken, expiresAtMillis, if (same) d.account!!.version else 0, if (same) d.account!!.unsynced else true))
+    }
+
+    fun refreshedSession(accessToken: String, refreshToken: String, expiresAtMillis: Long) =
+        update { d -> d.copy(account = d.account?.copy(accessToken = accessToken, refreshToken = refreshToken, expiresAtMillis = expiresAtMillis)) }
+
+    /** Signs out. The progress on this device stays; it just stops syncing. */
+    fun signOut() = update { it.copy(account = null) }
+
+    /** This device's save as the document the cloud stores (everything but the account). */
+    fun cloudDocument(): JsonObject {
+        val full = json.encodeToJsonElement(AppData.serializer(), data.copy(account = null)) as JsonObject
+        return JsonObject(full.filterKeys { it != "account" })
+    }
+
+    /** The cloud accepted the document at [version]. */
+    fun markSynced(version: Int) = update { d -> d.copy(account = d.account?.copy(version = version, unsynced = false, syncedAtMillis = nowMillis)) }
+
+    /** Replaces this device's progress with the cloud's. The account stays. */
+    fun adoptCloud(document: JsonObject, version: Int) {
+        val incoming = json.decodeFromJsonElement(AppData.serializer(), document)
+        update { d -> incoming.copy(account = d.account?.copy(version = version, unsynced = false, syncedAtMillis = nowMillis)) }
     }
 
     // --- time and ids -------------------------------------------------------------------------------------------------

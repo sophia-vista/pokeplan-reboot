@@ -25,6 +25,11 @@ import app.pokeplan.app.AppData
 import app.pokeplan.app.Clock
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.Storage
+import app.pokeplan.app.cloud.CloudClient
+import app.pokeplan.app.cloud.CloudConfig
+import app.pokeplan.app.cloud.SyncManager
+import app.pokeplan.app.cloud.SyncStatus
+import io.ktor.client.HttpClient
 import app.pokeplan.ui.screens.CollectionScreen
 import app.pokeplan.ui.screens.FocusScreen
 import app.pokeplan.ui.screens.HomeScreen
@@ -38,13 +43,20 @@ import kotlinx.coroutines.delay
 import kotlin.time.Clock as SystemClock
 
 /** The bottom tabs, each with the real game item that stands for it. */
+private const val SYNC_DEBOUNCE_MILLIS = 3_000L
+private const val SYNC_EVERY_MILLIS = 120_000L
+
 enum class Tab(val label: String, val icon: String, val background: String) {
     HOME("Home", "town-map", "bw01"), PLANNER("Planner", "journal", "bw07"), FOCUS("Focus", "mystery-egg", "bw11"),
     COLLECTION("Pokémon", "poke-ball", "bw15"), ME("Me", "member-card", "bw08"),
 }
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
-class AppModel(val store: GameStore, val motion: MotionSource? = null) {
+class AppModel(val store: GameStore, val motion: MotionSource? = null, val sync: SyncManager? = null) {
+    /** Where the cloud sync stands, for Settings. */
+    var syncStatus: SyncStatus by mutableStateOf(sync?.status?.value ?: SyncStatus.SignedOut)
+        internal set
+
     var data: AppData by mutableStateOf(store.data)
         private set
 
@@ -67,9 +79,43 @@ class AppModel(val store: GameStore, val motion: MotionSource? = null) {
  * strict focus makes no sense (people work in other windows there).
  */
 @Composable
-fun App(storage: Storage, focusTab: Boolean = true, motion: MotionSource? = null, startTab: Tab = Tab.HOME) {
-    val model = remember { AppModel(GameStore(storage, Clock { SystemClock.System.now().toEpochMilliseconds() }), motion) }
+fun App(
+    storage: Storage,
+    focusTab: Boolean = true,
+    motion: MotionSource? = null,
+    startTab: Tab = Tab.HOME,
+    cloud: CloudConfig = CloudSettings.config,
+) {
+    val model = remember {
+        val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
+        val store = GameStore(storage, clock)
+        val sync = if (cloud.enabled) SyncManager(store, CloudClient(cloud, HttpClient()) { clock.nowMillis() }) else null
+        AppModel(store, motion, sync)
+    }
     val store = model.store
+
+    // Cloud sync: follow the status, sync when signed in, and again a moment after any change (and now and then, to hear
+    // about changes from other devices).
+    val sync = model.sync
+    if (sync != null) {
+        LaunchedEffect(sync) { sync.status.collect { model.syncStatus = it } }
+        val account = model.data.account
+        LaunchedEffect(account?.userId) {
+            if (account != null) {
+                sync.sync()
+                while (true) {
+                    delay(SYNC_EVERY_MILLIS)
+                    sync.sync()
+                }
+            }
+        }
+        LaunchedEffect(account?.unsynced, account?.syncedAtMillis) {
+            if (account?.unsynced == true && model.syncStatus !is SyncStatus.Conflict && model.syncStatus !is SyncStatus.Refused) {
+                delay(SYNC_DEBOUNCE_MILLIS)
+                sync.sync()
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         store.refresh()
