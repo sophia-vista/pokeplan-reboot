@@ -27,7 +27,7 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 ## Focus
 
 - Minimum session 5 minutes.
-- **Deep Focus:** the phone must stay still (accelerometer, as in the old app); picking it up or moving it fails the session. In exchange the egg odds go up one band (see `Egg` in `:shared`).
+- **Deep Focus:** the phone must stay still (accelerometer, as in the old app); picking it up or moving it fails the session. In exchange the egg odds go up one band (see `Egg` in `:pokemon-core`).
 - **Perks are locked when the session starts:** egg-luck and shiny perks use the buddy at the moment start is pressed, so swapping later does not change that egg. Task perks use the buddy at completion time.
 - **Strict mode, always on.** Leaving the app (switching to another app or the home screen) starts a **10 second grace period**. Returning in time keeps the session; otherwise the egg is lost, and a failed session does not count toward the streak. The only pauses are the daily emergency pause and phone calls (below).
 - **The focus timer is phone-only.** Desktop and web are companions (see Platforms).
@@ -170,7 +170,7 @@ At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are
 
 ## Roster
 
-**Every species through Gen 9 (about 1,025) with all alternate forms**: regional (Alolan, Galarian, Hisuian, Paldean), gender differences, Mega / Gigantamax, and cosmetic forms (Unown, Vivillon, Alcremie, etc.). The 150-species list in `:shared` becomes the **Home Region** (below); the rest comes from generated data.
+**Every species through Gen 9 (about 1,025) with all alternate forms**: regional (Alolan, Galarian, Hisuian, Paldean), gender differences, Mega / Gigantamax, and cosmetic forms (Unown, Vivillon, Alcremie, etc.). The 150-species list in `:pokemon-core` becomes the **Home Region** (below); the rest comes from generated data.
 
 - **Mega / Gigantamax are a temporary focus form.** A buddy holding its Mega Stone (or Dynamax Band for G-Max species) shows that form for the length of a focus session, with a bonus to that session's perk *(tune)*, then reverts. The stones are reusable key items, one per species, from the shop or rare drops.
 - **Cosmetic forms are a side collection** with their own progress bar and badge. 100% Pokédex means one of each species plus regional forms; cosmetic forms still appear when hatching.
@@ -348,9 +348,9 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 
 1. **Shared core (done):** eggs, candy, levels, evolution, Pokédex. Split into `:pokemon-core` and `:plan-core` so more apps can reuse the Pokémon side.
 2. **Species data pipeline:** generate species, base stats, abilities, forms, evolutions, regional dex lists and rarity (by rule) for Gen 1 to 9 from a public dataset, plus the sprite fetch step. The 150 become the Home Region; National Dex numbers.
-3. **Pokémon depth:** IVs, EVs, natures with stats, gender, abilities, shiny, friendship, items, evolution triggers, transfer yields, perk calculation. Unit tested in `:shared`.
-4. **Planner core:** task model, difficulty ranks, Today / Inbox logic, recurrence expansion (time zones and daylight saving included), habits and their streaks, goals and milestone rewards, reminders schedule, the quick-add parser, task-focus link, review and insight calculations. Pure Kotlin in `:shared`, heavily unit tested.
-5. **Economy simulator:** a script in `:shared` that plays months of tasks and focus sessions to tune every *(tune)* value against the pacing targets before the UI is built on them.
+3. **Pokémon depth:** IVs, EVs, natures with stats, gender, abilities, shiny, friendship, items, evolution triggers, transfer yields, perk calculation. Unit tested in `:pokemon-core`.
+4. **Planner core:** task model, difficulty ranks, Today / Inbox logic, recurrence expansion (time zones and daylight saving included), habits and their streaks, goals and milestone rewards, reminders schedule, the quick-add parser, task-focus link, review and insight calculations. Pure Kotlin in `:plan-core`, heavily unit tested.
+5. **Economy simulator:** a JVM tool depending on both cores that plays months of tasks and focus sessions to tune every *(tune)* value against the pacing targets before the UI is built on them.
 6. **UI shell:** desktop and web companion screens (no focus timer; needs `dl.google.com` allowed in the environment).
 7. **Backend:** Supabase schema, RLS, reward functions, sync.
 8. **Android app and widgets** (needs the Android SDK).

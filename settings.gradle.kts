@@ -27,4 +27,5 @@ dependencyResolutionManagement {
     }
 }
 
-include(":shared")
+include(":pokemon-core")
+include(":plan-core")
