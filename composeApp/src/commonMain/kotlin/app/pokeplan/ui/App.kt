@@ -52,7 +52,15 @@ enum class Tab(val label: String, val icon: String, val background: String) {
 }
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
-class AppModel(val store: GameStore, val motion: MotionSource? = null, val sync: SyncManager? = null, val social: SocialClient? = null) {
+class AppModel(
+    val store: GameStore, val motion: MotionSource? = null, val sync: SyncManager? = null, val social: SocialClient? = null,
+    private val cries: CryPlayer? = null,
+) {
+    /** Plays [speciesId]'s cry if the platform can and Sound is on. */
+    fun cry(speciesId: Int) {
+        if (data.settings.sound) cries?.play(speciesId)
+    }
+
     /** Where the cloud sync stands, for Settings. */
     var syncStatus: SyncStatus by mutableStateOf(sync?.status?.value ?: SyncStatus.SignedOut)
         internal set
@@ -88,12 +96,13 @@ fun App(
     motion: MotionSource? = null,
     startTab: Tab = Tab.HOME,
     cloud: CloudConfig = CloudSettings.config,
+    cries: CryPlayer? = null,
 ) {
     val model = remember {
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
         val client = if (cloud.enabled) CloudClient(cloud, HttpClient()) { clock.nowMillis() } else null
-        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) })
+        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries)
     }
     val store = model.store
 

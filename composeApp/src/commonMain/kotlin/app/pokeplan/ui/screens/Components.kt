@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.core.model.CandyType
 import app.pokeplan.core.reward.Reward
+import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
@@ -28,13 +30,16 @@ import kotlinx.datetime.LocalDate
 fun RewardBox(model: AppModel) {
     val fresh = model.data.rewardLog.filter { !it.seen }.takeLast(3)
     if (fresh.isEmpty()) return
+    // A hatched Pokémon calls out once, when its box first shows.
+    val hatched = fresh.flatMap { e -> e.rewards.filterIsInstance<Reward.Hatched>().map { e.atMillis to it.pokemon.speciesId } }.lastOrNull()
+    LaunchedEffect(hatched?.first) { hatched?.let { model.cry(it.second) } }
     GameBox(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             fresh.forEach { entry ->
                 Text(entry.source, style = MaterialTheme.typography.titleMedium)
                 entry.rewards.forEach { r ->
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (r is Reward.Hatched) Sprite(r.pokemon.form.id, r.pokemon.isShiny, r.pokemon.nickname, size = 64.dp)
+                        if (r is Reward.Hatched) AnimatedSprite(r.pokemon.form.id, r.pokemon.isShiny, r.pokemon.nickname, size = 72.dp, animate = !model.data.settings.reduceMotion, ground = 4.dp)
                         else r.iconItem()?.let { ItemIcon(it, size = 32.dp) }
                         Text(r.describe(), style = MaterialTheme.typography.bodyLarge)
                     }

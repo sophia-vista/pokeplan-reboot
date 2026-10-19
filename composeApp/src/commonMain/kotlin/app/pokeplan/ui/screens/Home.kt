@@ -48,6 +48,7 @@ import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.PickForMe
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.TaskState
+import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.PixelBackground
@@ -112,7 +113,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
                 Companion(
                     formId = buddy.form.id, shiny = buddy.isShiny, name = buddy.nickname, detail = "Lv. ${buddy.level}",
                     line = buddyLine(data, open.isEmpty() && doneToday > 0), calm = data.settings.reduceMotion,
-                    onPet = { store.pet() },
+                    onPet = { store.pet().also { model.cry(buddy.speciesId) } },
                     berry = berry,
                     onFeed = { berry?.let { store.useItem(it, buddy.id) } },
                 )
@@ -197,15 +198,15 @@ private fun Companion(
                 .drawBehind { drawOval(Color(0x33000000), Offset.Zero, Size(size.width, size.height)) },
         )
         Hearts(taps, calm, Modifier.align(Alignment.BottomCenter).padding(bottom = 130.dp))
-        Sprite(
+        AnimatedSprite(
             formId, shiny, name,
-            Modifier.align(Alignment.BottomCenter).padding(bottom = 26.dp).offset { IntOffset(0, hop.value.dp.roundToPx()) }
+            Modifier.align(Alignment.BottomCenter).padding(bottom = 44.dp).offset { IntOffset(0, hop.value.dp.roundToPx()) }
                 .clickable(onClickLabel = "Pet $name", role = Role.Button) {
                     onPet()
                     taps++
                     said = PET_LINES.random()
                 },
-            size = 144.dp,
+            size = 144.dp, animate = !calm,
         )
         NamePlate(name, detail, Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.S))
         Text(

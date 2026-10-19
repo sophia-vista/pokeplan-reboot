@@ -17,5 +17,5 @@ class BrowserStorage : Storage {
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
-    ComposeViewport { App(BrowserStorage(), focusTab = false) }
+    ComposeViewport { App(BrowserStorage(), focusTab = false, cries = WebCryPlayer()) }
 }
