@@ -106,6 +106,9 @@ class SyncManager(private val store: GameStore, private val cloud: CloudClient) 
 
     private fun failed(r: CloudResult.Failure): SyncStatus = if (r.offline) SyncStatus.Offline(r.message) else SyncStatus.Refused(r.message)
 
+    /** The signed-in session, refreshed if it is about to run out, for calls other than the save (friends, gifts). Null if signed out or refused. */
+    suspend fun session(): Session? = freshSession()
+
     /** The stored session, refreshed if it is about to run out. Null (with the status set) if it cannot be. */
     private suspend fun freshSession(): Session? {
         val a = store.data.account ?: return null

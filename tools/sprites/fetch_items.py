@@ -42,7 +42,7 @@ SAME = ['rare-candy', 'ability-capsule', 'ability-patch', 'bottle-cap', 'dynamax
         'town-map', 'journal', 'mystery-egg', 'poke-ball', 'member-card',
         # Menu entries inside the tabs.
         'great-ball', 'storage-key', 'seal-bag', 'master-ball', 'oaks-letter', 'exp-share', 'heart-scale', 'gb-sounds',
-        'oaks-parcel', 'timer-ball', 'premier-ball']
+        'oaks-parcel', 'timer-ball', 'premier-ball', 'friend-ball']
 
 
 def read_csv(name):

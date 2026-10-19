@@ -2,10 +2,11 @@ package app.pokeplan.app.cloud
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.header
-import io.ktor.client.request.post
+import io.ktor.client.request.request
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.serialization.json.Json
@@ -86,32 +87,56 @@ class CloudClient(private val config: CloudConfig, private val http: HttpClient,
         )
     }
 
-    private suspend fun <T> call(path: String, body: JsonObject, bearer: String?, parse: (JsonObject) -> T): CloudResult<T> {
+    /**
+     * The social functions of the `platform` schema, called over PostgREST as the signed-in player. [function] is the SQL
+     * function name; the result is whatever JSON it returns (an array for functions that return rows).
+     */
+    suspend fun rpc(session: Session, function: String, args: JsonObject = JsonObject(emptyMap())): CloudResult<JsonElement> =
+        send("/rest/v1/rpc/$function", args.toString(), session.accessToken, post = true, profile = "platform") { it }
+
+    /** Rows of a table in the `platform` schema (RLS decides which are the player's), e.g. `gifts?opened_at=is.null`. */
+    suspend fun rows(session: Session, table: String, query: String): CloudResult<JsonElement> =
+        send("/rest/v1/$table?$query", null, session.accessToken, post = false, profile = "platform") { it }
+
+    private suspend fun <T> call(path: String, body: JsonObject, bearer: String?, parse: (JsonObject) -> T): CloudResult<T> =
+        send(path, body.toString(), bearer, post = true, profile = null) { element ->
+            parse(element as? JsonObject ?: throw IllegalStateException("not an object"))
+        }
+
+    private suspend fun <T> send(path: String, body: String?, bearer: String?, post: Boolean, profile: String?, parse: (JsonElement) -> T): CloudResult<T> {
         val response = try {
-            http.post(config.base + path) {
+            http.request(config.base + path) {
+                method = if (post) HttpMethod.Post else HttpMethod.Get
                 header("apikey", config.anonKey)
                 header("Authorization", "Bearer ${bearer ?: config.anonKey}")
-                contentType(ContentType.Application.Json)
-                setBody(body.toString())
+                if (profile != null) {
+                    header("Accept-Profile", profile)
+                    if (post) header("Content-Profile", profile)
+                }
+                if (body != null) {
+                    contentType(ContentType.Application.Json)
+                    setBody(body)
+                }
             }
         } catch (e: Exception) {
             return CloudResult.Failure("No connection.")
         }
         val text = response.bodyAsText()
-        val parsed: JsonObject? = try {
-            (json.parseToJsonElement(text) as? JsonElement)?.takeIf { it !is JsonNull }?.jsonObject
+        val element: JsonElement? = try {
+            if (text.isBlank()) JsonNull else json.parseToJsonElement(text)
         } catch (e: Exception) {
             null
         }
-        if (!response.status.isSuccess() || parsed == null) {
+        val obj = element as? JsonObject
+        if (!response.status.isSuccess() || element == null) {
             val message = listOf("error_description", "msg", "message", "error")
-                .firstNotNullOfOrNull { parsed?.get(it)?.jsonPrimitive?.contentOrNull } ?: "Something went wrong (${response.status.value})."
-            return CloudResult.Failure(message, response.status.value, parsed)
+                .firstNotNullOfOrNull { obj?.get(it)?.jsonPrimitive?.contentOrNull } ?: "Something went wrong (${response.status.value})."
+            return CloudResult.Failure(message, response.status.value, obj)
         }
         return try {
-            CloudResult.Ok(parse(parsed))
+            CloudResult.Ok(parse(element))
         } catch (e: Exception) {
-            CloudResult.Failure("The server answered in a way this app did not expect.", response.status.value, parsed)
+            CloudResult.Failure("The server answered in a way this app did not expect.", response.status.value, obj)
         }
     }
 }

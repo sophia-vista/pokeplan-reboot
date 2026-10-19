@@ -47,7 +47,7 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.plus
 
 private enum class MeSection(val label: String, val icon: String) {
-    GROWTH("Growth", "exp-share"), GOALS("Goals", "star-piece"), REVIEW("Review", "journal"), SETTINGS("Settings", "gb-sounds"),
+    GROWTH("Growth", "exp-share"), GOALS("Goals", "star-piece"), REVIEW("Review", "journal"), FRIENDS("Friends", "friend-ball"), SETTINGS("Settings", "gb-sounds"),
 }
 
 @Composable
@@ -64,12 +64,13 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
             ) {
                 TrainerCard(model)
                 MenuGrid(
-                    listOf(
+                    (listOf(
                         MenuEntry("GROWTH", "exp-share", "Growth", "your week"),
                         MenuEntry("GOALS", "star-piece", "Goals", "${data.goals.size} goals"),
                         MenuEntry("REVIEW", "journal", "Review", if (model.store.canReview()) "ready this week" else "done this week", badge = if (model.store.canReview()) 1 else 0),
+                    ) + (if (model.social != null) listOf(MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board")) else emptyList()) + listOf(
                         MenuEntry("SETTINGS", "gb-sounds", "Settings", "name, region, sound"),
-                    ),
+                    )),
                 ) { key -> section = MeSection.valueOf(key) }
             }
         }
@@ -80,6 +81,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
             MeSection.GROWTH -> GrowthView(model)
             MeSection.GOALS -> GoalsView(model)
             MeSection.REVIEW -> ReviewView(model)
+            MeSection.FRIENDS -> FriendsView(model)
             MeSection.SETTINGS -> SettingsView(model)
         }
     }
