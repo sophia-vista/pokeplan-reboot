@@ -19,6 +19,7 @@ A fun productivity, growth and self-improvement app for Pokémon lovers: finishi
 - `docs/home-region-curation-prompt.md` and `docs/home-region-candidates.md`: the kit for curating the Home Region (`tools/species/home-region.txt`) in a separate chat. Regenerate the candidates table with `./gradlew :pokemon-core:curationReport`.
 - `legacy-android/`: the original Android app (Gradle project; see below). Single module `app`, package `com.mobdeve.s11.pokeplan`, Java 8, `minSdk 21` / `targetSdk 30`, view binding on, Android Gradle Plugin 7.0.2 with Gradle 7.0.2 (old: build with JDK 11, not 17 or newer).
 - `composeApp/`: the shared Compose Multiplatform UI (targets: Android library, desktop JVM, wasmJs web), package `app.pokeplan.ui`; `App()` in `commonMain` is the entry point. Sprites are copied from `assets/sprites` into Compose resources by the `prepareSpriteResources` task (read them with `Res.readBytes("files/sprites/<formId>.png")`).
+- Signing: every build (local and CI) uses the committed `androidApp/pokeplan-debug.keystore` (alias `pokeplan`, password `pokeplan`), SHA-1 `1A:28:99:CD:34:46:02:04:1E:AF:7B:15:7F:D1:07:41:BC:30:F0:A5`, so the app signature is stable. Private repo only; TODO before any public release: move to a secret key.
 - `androidApp/`: the thin Android application (`MainActivity` calls `App()`); AGP 9, compileSdk 37, targetSdk 36, minSdk 26. Needs an Android SDK (`sdk.dir` in the git-ignored `local.properties`, or `ANDROID_HOME`) with `platforms;android-37.0` and build tools.
 
 ## Commands (rewrite, from the repo root)
