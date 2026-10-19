@@ -1,6 +1,7 @@
 package app.pokeplan.core.pokemon
 
 import app.pokeplan.core.dex.BaseStats
+import kotlinx.serialization.Serializable
 
 enum class Stat(val label: String) {
     HP("HP"),
@@ -21,6 +22,7 @@ operator fun BaseStats.get(stat: Stat): Int = when (stat) {
 }
 
 /** Six per-stat numbers: IVs, EVs or computed stats. */
+@Serializable
 data class StatSpread(
     val hp: Int = 0,
     val attack: Int = 0,

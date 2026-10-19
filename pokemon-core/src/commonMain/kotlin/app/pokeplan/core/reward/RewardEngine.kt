@@ -17,9 +17,12 @@ import app.pokeplan.core.pokemon.PerkBucket
 import app.pokeplan.core.pokemon.PerkContext
 import app.pokeplan.core.pokemon.Perks
 import kotlin.math.roundToInt
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlin.random.Random
 
 /** Everything the reward engine reads and changes about one player. */
+@Serializable
 data class PlayerState(
     val pokemon: List<OwnedPokemon> = emptyList(),
     val buddyId: String? = null,
@@ -39,17 +42,30 @@ data class PlayerState(
     val rank: Int get() = TrainerRank.rankFor(trainerPoints)
 }
 
+@Serializable
 sealed interface Reward {
+    @Serializable
+    @SerialName("hatched")
     data class Hatched(val pokemon: OwnedPokemon, val fromTask: Boolean) : Reward
+    @Serializable
+    @SerialName("candies")
     data class Candies(val type: CandyType, val amount: Int) : Reward
+    @Serializable
+    @SerialName("coins")
     data class Coins(val amount: Int) : Reward
+    @Serializable
+    @SerialName("item")
     data class ItemDrop(val itemId: String, val amount: Int) : Reward
+    @Serializable
+    @SerialName("evs")
     data class Evs(val points: Int) : Reward
 }
 
+@Serializable
 data class Outcome(val state: PlayerState, val rewards: List<Reward>)
 
 /** A stretch of effort from any app: a focus session, a workout, ... *(see "Platform and apps" in docs/design.md)* */
+@Serializable
 data class EffortEvent(
     val minutes: Int,
     val deepFocus: Boolean,
@@ -63,6 +79,7 @@ data class EffortEvent(
 )
 
 /** A finished piece of work of some [tier] (1 to 5): a task, a habit, a milestone... */
+@Serializable
 data class AchievementEvent(
     val tier: Int,
     val region: Region,
