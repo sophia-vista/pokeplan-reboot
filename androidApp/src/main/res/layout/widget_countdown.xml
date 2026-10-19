@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Focus widget's live countdown: the system ticks it, so it stays right without the widget being updated. -->
+<Chronometer xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/countdown"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/pill_white"
+    android:paddingHorizontal="10dp"
+    android:paddingVertical="3dp"
+    android:textColor="#252637"
+    android:textSize="13sp"
+    android:textStyle="bold" />

@@ -358,24 +358,41 @@ private fun BagView(model: AppModel) {
     val items = player.inventory.counts.entries.filter { it.value > 0 }.sortedWith(compareBy({ Items.category(it.key)?.ordinal ?: 99 }, { it.key }))
     TextBox { Text("${player.coins} coins", style = MaterialTheme.typography.titleMedium) }
     if (items.isEmpty()) EmptyState("The bag is empty", "Finish tasks and focus sessions to find candies, berries and more.")
-    items.forEach { (id, n) ->
-        val usable = id in Items.vitamins || Items.category(id) == ItemCategory.BERRY
-        ListRow(
-            lead = { ItemIcon(id, size = 40.dp) },
-            onClick = if (usable) ({ open = if (open == id) null else id }) else null,
-            trail = { Text("x$n", style = MaterialTheme.typography.titleMedium) },
-        ) { Text(Items.name(id), style = MaterialTheme.typography.bodyLarge) }
-        if (open == id) {
-            TextBox {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("Use on:", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    player.party.forEach { p ->
-                        PixelButton(p.nickname, { store.useItem(id, p.id); if (!store.data.player.inventory.has(id)) open = null }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+    items.groupBy { Items.category(it.key) }.forEach { (category, group) ->
+        SectionLabel(category.bagLabel())
+        group.forEach { (id, n) ->
+            val usable = id in Items.vitamins || Items.category(id) == ItemCategory.BERRY
+            ListRow(
+                lead = { ItemIcon(id, size = 40.dp) },
+                onClick = if (usable) ({ open = if (open == id) null else id }) else null,
+                trail = { Text("x$n", style = MaterialTheme.typography.titleMedium) },
+            ) { Text(Items.name(id), style = MaterialTheme.typography.bodyLarge) }
+            if (open == id) {
+                TextBox {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("Use on:", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                        player.party.forEach { p ->
+                            PixelButton(p.nickname, { store.useItem(id, p.id); if (!store.data.player.inventory.has(id)) open = null }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+                        }
                     }
                 }
             }
         }
     }
+}
+
+private fun ItemCategory?.bagLabel(): String = when (this) {
+    ItemCategory.CANDY -> "Candies"
+    ItemCategory.VITAMIN -> "Vitamins"
+    ItemCategory.TRAINING -> "Training"
+    ItemCategory.EVOLUTION -> "Evolution items"
+    ItemCategory.HELD -> "Held items"
+    ItemCategory.BERRY -> "Berries"
+    ItemCategory.LURE -> "Lures"
+    ItemCategory.TERA -> "Tera Shards"
+    ItemCategory.FORM -> "Forms"
+    ItemCategory.KEY -> "Key items"
+    null -> "Other"
 }
 
 // ----- One Pokémon ---------------------------------------------------------------------------------------------------

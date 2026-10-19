@@ -11,6 +11,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import kotlinx.datetime.isoDayNumber
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -164,25 +169,44 @@ fun DifficultyPicker(selected: Rank, onSelect: (Rank) -> Unit) {
     }
 }
 
-/** Add a task with just a title; "More options" adds difficulty and a day. "Call mum tomorrow 5pm 30m" is understood too. */
+private const val WEEKEND = 100
+private const val NO_DATE = -1
+
+/** Days from [today] to the coming Saturday (today on a Saturday or Sunday). */
+private fun daysToWeekend(today: LocalDate): Int = today.dayOfWeek.isoDayNumber.let { if (it >= 6) 0 else 6 - it }
+
+/** Add a task with just a title; the chips pick a day and "More options" adds difficulty. "Call mum tomorrow 5pm 30m" is understood too. */
 @Composable
 private fun QuickAddBox(model: AppModel, view: View) {
     var text by remember { mutableStateOf("") }
     var rank by remember { mutableStateOf(Rank.C) }
-    var day by remember { mutableStateOf<Int?>(null) } // null: as typed / the view's default; 0 today; 1 tomorrow
+    var day by remember { mutableStateOf<Int?>(null) } // null: as typed / the view's default; 0 today; 1 tomorrow; WEEKEND; NO_DATE
+    val focus = remember { FocusRequester() }
+    // "Add task" from a widget or the app icon's shortcut lands here with the keyboard open.
+    LaunchedEffect(model.addTaskRequested) {
+        if (model.addTaskRequested) {
+            focus.requestFocus()
+            model.addTaskRequested = false
+        }
+    }
     var more by remember { mutableStateOf(false) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
-                    text, { text = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
+                    text, { text = it }, Modifier.weight(1f).focusRequester(focus), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
                     placeholder = { Text("Add a task", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
                 )
                 PixelButton("Add", {
                     if (text.isNotBlank()) {
                         val parsed = QuickAdd.parse(text, model.store.today)
-                        val chosenDay: LocalDate? = day?.let { model.store.today.plus(DatePeriod(days = it)) }
-                        val planned = chosenDay ?: parsed.planned ?: if (parsed.due == null && view == View.TODAY) model.store.today else null
+                        val picked = day
+                        val planned: LocalDate? = when {
+                            picked == NO_DATE -> null
+                            picked == WEEKEND -> model.store.today.plus(DatePeriod(days = daysToWeekend(model.store.today)))
+                            picked != null -> model.store.today.plus(DatePeriod(days = picked))
+                            else -> parsed.planned ?: if (parsed.due == null && view == View.TODAY) model.store.today else null
+                        }
                         model.store.addTask(
                             title = parsed.title.ifBlank { text.trim() }, rank = parsed.rank ?: rank,
                             category = parsed.category ?: Category.PERSONAL,
@@ -192,16 +216,14 @@ private fun QuickAddBox(model: AppModel, view: View) {
                     }
                 }, color = Pixel.Red, enabled = text.isNotBlank())
             }
-            PixelButton(if (more) "Fewer options" else "More options", { more = !more }, color = Pixel.InkSoft, compact = true)
-            if (more) {
-                DifficultyPicker(rank) { rank = it }
-                Text("When?", style = MaterialTheme.typography.bodyLarge)
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    TabButton("As typed", day == null, { day = null }, Modifier.weight(1f))
-                    TabButton("Today", day == 0, { day = 0 }, Modifier.weight(1f))
-                    TabButton("Tomorrow", day == 1, { day = 1 }, Modifier.weight(1f))
+            // When: tap a chip to choose a day, tap it again to go back to what the text says ("tomorrow 5pm") or the view's default.
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                listOf("Today" to 0, "Tomorrow" to 1, "Weekend" to WEEKEND, "No date" to NO_DATE).forEach { (label, value) ->
+                    TabButton(label, day == value, { day = if (day == value) null else value })
                 }
             }
+            PixelButton(if (more) "Fewer options" else "More options", { more = !more }, color = Pixel.InkSoft, compact = true)
+            if (more) DifficultyPicker(rank) { rank = it }
         }
     }
 }

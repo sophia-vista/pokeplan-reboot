@@ -15,6 +15,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import app.pokeplan.ui.WhatsNew
+import app.pokeplan.ui.AppVersion
+import app.pokeplan.app.cloud.SyncStatus
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -74,7 +83,8 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
             icon = "town-map",
             footer = { RankProgress(points) },
             trailing = {
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    SyncChip(model) { go(Tab.ME) }
                     StatChip("${data.player.coins}", { ItemIcon("amulet-coin", size = 28.dp, description = "Coins") })
                     StatChip("${data.player.inventory[Items.RARE_CANDY]}", { ItemIcon("rare-candy", size = 28.dp, description = "Rare Candies") })
                 }
@@ -85,6 +95,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.L),
         ) {
+            WhatsNewCard(model)
             RewardBox(model)
             UndoRows(model)
 
@@ -191,5 +202,43 @@ private fun RankProgress(points: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         ExpBar(if (high == null) 1f else (points - low).toFloat() / (high - low), label, color = Pixel.Yellow)
         Text(label, style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.9f))
+    }
+}
+
+/** After an update: what is new in this version, once. Nothing when there is no entry or it has been seen. */
+@Composable
+private fun WhatsNewCard(model: AppModel) {
+    val version = AppVersion.NAME
+    val lines = WhatsNew.forVersion(version) ?: return
+    if (model.data.lastSeenVersion == version) return
+    TextBox(accent = Pixel.Yellow) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("What's new in $version", style = MaterialTheme.typography.titleSmall)
+            lines.forEach { Text("•  $it", style = MaterialTheme.typography.bodyLarge) }
+            PixelButton("Got it", { model.store.markVersionSeen(version) }, Modifier.fillMaxWidth(), Pixel.Green)
+        }
+    }
+}
+
+/** Where the cloud save stands, as a small dot and word. Only shown when signed in; tapping it opens Settings. */
+@Composable
+private fun SyncChip(model: AppModel, open: () -> Unit) {
+    val account = model.data.account ?: return
+    val (label, color) = when (val status = model.syncStatus) {
+        is SyncStatus.Syncing -> "Syncing" to Pixel.Blue
+        is SyncStatus.Offline -> "Offline" to Pixel.Warning
+        is SyncStatus.Conflict -> "Choose a save" to Pixel.Danger
+        is SyncStatus.Refused -> "Not saved" to Pixel.Danger
+        else -> if (account.unsynced) "Waiting" to Pixel.Warning else "Synced" to Pixel.Green
+    }
+    Row(
+        Modifier.clip(RoundedCornerShape(50)).background(Pixel.Panel)
+            .clickable(onClickLabel = "Open the account settings", role = Role.Button, onClick = open)
+            .padding(horizontal = 10.dp, vertical = 6.dp)
+            .semantics(mergeDescendants = true) { contentDescription = "Cloud save: $label" },
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Box(Modifier.size(8.dp).background(color, CircleShape))
+        Text(label, style = MaterialTheme.typography.labelMedium, color = Pixel.Ink)
     }
 }

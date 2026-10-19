@@ -49,6 +49,8 @@ data class AppData(
     /** Emergency pauses used on [emergencyPausesDay]. */
     val emergencyPausesDay: LocalDate? = null,
     val emergencyPausesUsed: Int = 0,
+    /** The app version whose "What's new" the player has seen. Saves from before this existed count as 0.1.0. */
+    val lastSeenVersion: String = "0.1.0",
     /** Pokémon the player starred: they cannot be transferred by accident. Stays on this device's save. */
     val favorites: Set<String> = emptySet(),
     /** Species the player has ever owned as a shiny, kept even after the shiny is transferred. */
