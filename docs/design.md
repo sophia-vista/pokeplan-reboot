@@ -101,12 +101,33 @@ At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are
 
 ## Roster
 
-**Every species through Gen 9 (about 1,025) with all alternate forms**: regional (Alolan, Galarian, Hisuian, Paldean), gender differences, Mega / Gigantamax, and cosmetic forms (Unown, Vivillon, Alcremie, etc.). The 150-species list in `:shared` is a placeholder that will be replaced by generated data.
+**Every species through Gen 9 (about 1,025) with all alternate forms**: regional (Alolan, Galarian, Hisuian, Paldean), gender differences, Mega / Gigantamax, and cosmetic forms (Unown, Vivillon, Alcremie, etc.). The 150-species list in `:shared` becomes the **Home Region** (below); the rest comes from generated data.
 
 - **Mega / Gigantamax are a temporary focus form.** A buddy holding its Mega Stone (or Dynamax Band for G-Max species) shows that form for the length of a focus session, with a bonus to that session's perk *(tune)*, then reverts. The stones are reusable key items, one per species, from the shop or rare drops.
 - **Cosmetic forms are a side collection** with their own progress bar and badge. 100% Pokédex means one of each species plus regional forms; cosmetic forms still appear when hatching.
 - **Rarity by rule** from game data, with one tunable table: evolution stage, base stat total, and legendary / mythical status (legendaries and mythicals are Super Rare, babies and unevolved forms lean Common, final evolutions lean Rare). Hand overrides are not planned.
 - **Art:** the Pokémon Showdown sprite sets (animated Gen 5 style where available, their sets for Gen 6 to 9 otherwise). Fetch and bundle them at build time rather than loading from Showdown at runtime, so the app does not depend on their server. The same IP caveat as the rest of the project applies (see Risks), and Showdown's own terms should be checked before any public release.
+
+### Regions
+
+- The current curated 150 are the **Home Region**: the starter dex every player begins in, keeping its local numbers 1 to 150 and its hand-set rarities *(proposal)*.
+- Every other region is a real game's regional dex: Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea. **All are in at launch.** Regional dexes are data (lists pointing at species), generated from a public dataset; other regions use the rarity rule.
+- A Pokémon has one record with a **National Dex number**; a region is just a list of those. Regional forms hatch in their home region (Alolan forms in Alola, and so on).
+- **Region picker:** before a focus session the player chooses which region the egg comes from. Eggs hatch from that region's pool only. Each region has its own dex progress bar, badge and background theme.
+- **Unlock by trainer rank** (below). The National Dex is the combination of all regions.
+- Mega / Gigantamax forms are available through the region where they were introduced (Kalos for Mega, Galar for G-Max, etc.) *(proposal)*.
+
+## Spin-off inspired features
+
+Planned, with build order to be set later.
+
+- **Mission board (Mystery Dungeon):** tasks are shown as a job board with ranks E to S, derived from priority *(tune)*. Presentation only; rewards stay as designed.
+- **Trainer rank (Mystery Dungeon guild ranks):** a rank earned from total paid tasks, focus time and streaks. Ranks unlock regions. Rank names and thresholds *(tune)*.
+- **Personality quiz starter (Mystery Dungeon):** onboarding asks a short quiz, which suggests a starter and a nature; the player can override.
+- **Poké Assist perks (Pokémon Ranger):** the buddy's type and ability perks are presented as assists. No extra mechanics.
+- **Weekly contests (Contests / Pokéathlon):** a friends-only weekly event scored by a buddy's stats, nature and training, with ribbons. Comes with the online release and gives stats and natures a purpose.
+- **Secret Base and photo mode (Secret Base, Pokémon-Amie, Snap):** decorate the buddy's home scene and take snapshots of the buddy or a hatch. After v1.
+- **Focus view for v1 is the egg only** (calm and distraction-free). An expedition view was considered and left out.
 
 ## Buddy and perks
 
@@ -149,11 +170,11 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 Navigation is five bottom tabs: **Home / Planner / Focus / Collection / Me**.
 
 - **Home:** the animated buddy with mood and a speech bubble; tap to pet (friendship, small daily cap). Streak flame, today's top tasks (tap to complete), a "Start focus" button at the default length, small candy and coin counters.
-- **Planner:** list and calendar views, category filter, quick-add sheet (title, priority, due, then "more" for category, recurrence, subtasks, reminder). Completing a task opens a reward sheet with the 10 second undo.
-- **Focus:** presets (15 / 25 / 45 / 60) plus custom, Deep Focus toggle, a short reminder of the strict rules, the egg during the session, the emergency pause button. On finish: hatch ceremony, then a summary card with actions (set as buddy, keep, transfer).
+- **Planner:** list and calendar views (the list can show as a mission board), category filter, quick-add sheet (title, priority, due, then "more" for category, recurrence, subtasks, reminder). Completing a task opens a reward sheet with the 10 second undo.
+- **Focus:** region picker, presets (15 / 25 / 45 / 60) plus custom, Deep Focus toggle, a short reminder of the strict rules, the egg during the session, the emergency pause button. On finish: hatch ceremony, then a summary card with actions (set as buddy, keep, transfer).
 - **Collection:** Party (6), PC boxes (30 each), Pokédex (National Dex, seen / caught, forms tab, cosmetic-forms collection), Bag. The Pokémon detail screen shows stats, nature, ability, an IV "judge" (qualitative, like the games), training plan, held item, and actions: feed Rare Candy, evolve, transfer, nickname, set as buddy.
 - **Me:** trainer card (badges, streak, totals), shop, friends and leaderboards (once online), settings (reminders, sound, theme, account linking, data export).
-- **Onboarding:** title → start as guest → choose a starter from the starter set → name the trainer → create a first task (tutorial) → first focus session (tutorial).
+- **Onboarding:** title → start as guest → personality quiz suggests a starter (player can override) → name the trainer → create a first task (tutorial) → first focus session (tutorial).
 - **Offline:** everything works offline. Because the server grants rewards, offline completions show as "pending" and resolve on sync; a focus session's start and end times are sent and validated for plausibility.
 
 ## Android widgets
@@ -177,31 +198,34 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 
 ## Data to add
 
-- Per-species base stats, abilities, types, evolutions and forms for **every species through Gen 9**, generated at build time from a public dataset (needs the build environment to reach it). Dex numbers move to the National Dex (the current 150 use custom numbers).
+- Per-species base stats, abilities, types, evolutions and forms for **every species through Gen 9**, generated at build time from a public dataset (needs the build environment to reach it). Species use National Dex numbers; the Home Region keeps its own local numbering.
+- Regional dex lists for all regions, as lists of National Dex numbers.
 - A rarity for every species, assigned by rule (see Roster).
 - Ability → perk table, type → perk table, item table, all as plain data with tests.
 
 ## Milestones
 
 1. **Shared core (done in #2):** eggs, candy, levels, evolution, Pokédex.
-2. **Species data pipeline:** generate species, base stats, abilities, forms, evolutions and rarity (by rule) for Gen 1 to 9 from a public dataset, plus the sprite fetch step. Replaces the 150-species placeholder; National Dex numbers.
+2. **Species data pipeline:** generate species, base stats, abilities, forms, evolutions, regional dex lists and rarity (by rule) for Gen 1 to 9 from a public dataset, plus the sprite fetch step. The 150 become the Home Region; National Dex numbers.
 3. **Pokémon depth:** IVs, EVs, natures with stats, abilities, shiny, items, transfer yields, perk calculation. Unit tested in `:shared`.
 4. **UI shell:** desktop and web screens (needs `dl.google.com` allowed in the environment).
 5. **Backend:** Supabase schema, RLS, reward functions, sync.
 6. **Android app and widgets** (needs the Android SDK).
-7. **Online:** friends and weekly leaderboards first; then trading and co-op focus.
+7. **Online:** friends and weekly leaderboards first, with weekly contests; then trading and co-op focus.
+8. **After v1:** Secret Base decoration and photo mode.
 
 ## Risks
 
 - **IP:** names, sprites and cries are Nintendo / Game Freak / The Pokémon Company property. Fine for private use; a public release or store listing would likely be taken down. Keep species swappable data and consider an original-creature skin.
 - **Strict focus** can frustrate users with legitimate interruptions. Calls exempt; revisit after use.
 - **Balance:** perks, items and transfer yields compound. Simulate a few months of play before fixing numbers.
+- **Launch scope:** all regions at launch means a large data set to generate and test, and every region needs its theme, music and badge. Region content is data, so the code does not grow with it, but QA does. If time runs short, the order to ship is Home, Kanto, Johto, then the rest.
 - **Scope:** stats, items, perks and widgets are a lot. Milestone 2 should stay behind a clean interface so the UI work can start in parallel.
 
 ## Open questions
 
 Being settled in rounds before any Pokémon-depth code is written. Decided: everything above not marked *(tune)* or *(proposal)*.
 
-- **To confirm:** the Screens and flows proposal.
-- **To tune by simulation before release:** rarity rule parameters across ~1,025 species, coin amounts, transfer yields, perk magnitudes and cap, catch-up discount, minimum task age, Mega bonus.
+- **To confirm:** the Screens and flows proposal; the Home Region keeping hand-set rarities; Mega / G-Max region assignment.
+- **To tune by simulation before release:** rarity rule parameters across ~1,025 species, coin amounts, transfer yields, perk magnitudes and cap, catch-up discount, minimum task age, Mega bonus, rank names and thresholds, region unlock order, E to S rank mapping.
 - **To check:** Showdown sprite terms and build-time availability, whether the build environment can reach the data sources, Android permission flow for calendar import.
