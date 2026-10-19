@@ -462,4 +462,21 @@ class GameStoreTest {
         assertTrue(seen.all { it in pool })
         assertTrue(seen.size >= 5, "should vary, got $seen")
     }
+
+    @Test
+    fun the_scene_darkens_slowly_and_a_pet_never_repeats_its_emoji() {
+        assertEquals(0f, BuddyScene.darkness(12, 0))
+        assertEquals(BuddyScene.MAX_DARKNESS, BuddyScene.darkness(23, 0))
+        assertTrue(BuddyScene.darkness(19, 30) > 0f && BuddyScene.darkness(19, 30) < BuddyScene.MAX_DARKNESS)
+        assertTrue(BuddyScene.darkness(6, 0) > 0f && BuddyScene.darkness(8, 0) == 0f)
+        val (s, _) = started()
+        val buddy = s.data.player.buddy!!
+        val random = Random(5)
+        var last: String? = null
+        repeat(100) {
+            val next = BuddyReaction.pet(buddy, 14, random, avoid = last)
+            assertTrue(next != last, "repeated $next")
+            last = next
+        }
+    }
 }

@@ -21,8 +21,25 @@ object BuddyScene {
         else -> "meadow"
     }
 
-    /** The scene darkens between 8 pm and 6 am. */
+    /** Between 8 pm and 6 am: the time-of-day reactions use this. */
     fun isNight(hour: Int): Boolean = hour >= 20 || hour < 6
+
+    /** The darkest the scene gets, as the strength of its night tint (0 to 1). */
+    const val MAX_DARKNESS = 0.6f
+
+    /**
+     * How dark the scene is at [hour]:[minute]: none in the day, a slow dusk from 6 pm to 9 pm, full night until 5 am and
+     * a dawn until 7 am, so the scene never switches abruptly.
+     */
+    fun darkness(hour: Int, minute: Int): Float {
+        val t = hour + minute / 60f
+        return when {
+            t >= 21f || t < 5f -> MAX_DARKNESS
+            t >= 18f -> MAX_DARKNESS * (t - 18f) / 3f
+            t < 7f -> MAX_DARKNESS * (7f - t) / 2f
+            else -> 0f
+        }
+    }
 }
 
 /**
@@ -66,20 +83,28 @@ object BuddyReaction {
     private fun timeOfDay(hour: Int) = if (BuddyScene.isNight(hour)) night else if (hour in 6..9) morning else emptyList()
 
     /** The emoji for a pet right now: about half from its bond style, a third from its type, the rest from the time of day. */
-    fun pet(buddy: OwnedPokemon, hour: Int, random: Random = Random): String {
+    fun pet(buddy: OwnedPokemon, hour: Int, random: Random = Random, avoid: String? = null): String {
+        var emoji = pick(buddy, hour, random)
+        // Never the same one twice in a row.
+        repeat(5) { if (emoji == avoid) emoji = pick(buddy, hour, random) }
+        return emoji
+    }
+
+    private fun pick(buddy: OwnedPokemon, hour: Int, random: Random): String {
         val roll = random.nextInt(100)
-        val timePool = timeOfDay(hour)
         val pool = when {
             roll < 50 -> byBond.getValue(buddy.bondStyle)
             roll < 85 -> buddy.form.types.flatMap { byType[it].orEmpty() }.ifEmpty { byBond.getValue(buddy.bondStyle) }
-            else -> timePool.ifEmpty { byBond.getValue(buddy.bondStyle) }
+            else -> timeOfDay(hour).ifEmpty { byBond.getValue(buddy.bondStyle) }
         }
         return pool.random(random)
     }
 
     /** The emoji for a berry: delighted for a Pokémon that loves gifts, otherwise a happy bite. */
-    fun feed(buddy: OwnedPokemon, random: Random = Random): String =
-        (if (buddy.bondStyle == BondStyle.GIFTS) listOf("😍", "🥰", "💝") else listOf("😋", "🍓", "😊")).random(random)
+    fun feed(buddy: OwnedPokemon, random: Random = Random, avoid: String? = null): String {
+        val pool = if (buddy.bondStyle == BondStyle.GIFTS) listOf("😍", "🥰", "💝") else listOf("😋", "🍓", "😊")
+        return (pool - setOfNotNull(avoid)).random(random)
+    }
 }
 
 /** A [BuddyEvent] and when its reward was paid, so a screen can celebrate it once and not again every time it is opened. */

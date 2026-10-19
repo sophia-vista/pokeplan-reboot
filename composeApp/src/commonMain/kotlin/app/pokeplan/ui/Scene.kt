@@ -23,7 +23,7 @@ private val scenes = mutableMapOf<String, ImageBitmap?>()
  * anchored at the bottom, where the ground is. With [night] it is dimmed with a cool tint.
  */
 @Composable
-fun SceneImage(name: String, modifier: Modifier = Modifier, night: Boolean = false) {
+fun SceneImage(name: String, modifier: Modifier = Modifier, darkness: Float = 0f) {
     val image by produceState(scenes[name], name) {
         if (value == null) {
             value = try {
@@ -45,6 +45,6 @@ fun SceneImage(name: String, modifier: Modifier = Modifier, night: Boolean = fal
             srcOffset = IntOffset((scene.width - srcW) / 2, scene.height - srcH), srcSize = IntSize(srcW, srcH),
             dstSize = IntSize(size.width.toInt(), size.height.toInt()), filterQuality = FilterQuality.Medium,
         )
-        if (night) drawRect(Color(0x99101C3C), Offset.Zero, Size(size.width, size.height))
+        if (darkness > 0f) drawRect(Color(0xFF101C3C).copy(alpha = darkness.coerceIn(0f, 1f)), Offset.Zero, Size(size.width, size.height))
     }
 }

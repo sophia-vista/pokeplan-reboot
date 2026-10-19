@@ -7,6 +7,12 @@ release always has the newest merge).
 
 ## Unreleased
 
+- Pokédex: the Home Region and every region are numbered from 1 in their own order; a new National tab (by generation) uses the real National Dex numbers; each list shows caught and shiny counts.
+- The buddy's level chip opens its detail screen (app and widget); a light vibration on a pet; the same emoji never repeats twice in a row.
+- The scene darkens slowly through dusk and lightens through dawn (in the app and the widget) instead of switching at 8 pm and 6 am.
+- The egg on the Focus setup screen wobbles gently; friendlier empty states for party, PC, bag, Guardians, quests and friends.
+- Large system text: the tab bar scales up to 1.25x, rank badges keep their size, task titles wrap to four lines.
+
 - System bars match the app: the red header runs under the status bar and the white tab bar under the navigation bar.
 - Sound effects and Music volume sliders replace the Sound toggle (music itself comes later).
 - The buddy's pet and berry reactions are a wider set of emoji picked from its bond style, type and the time of day.

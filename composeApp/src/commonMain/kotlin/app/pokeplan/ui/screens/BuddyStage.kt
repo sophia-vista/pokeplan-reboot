@@ -44,6 +44,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -68,18 +70,22 @@ import kotlinx.coroutines.delay
  */
 @Composable
 fun BuddyStage(
-    buddy: OwnedPokemon, scene: String, night: Boolean, progress: Float, event: BuddyEventNow?,
+    buddy: OwnedPokemon, scene: String, darkness: Float, progress: Float, event: BuddyEventNow?,
     calm: Boolean, resting: Boolean, berry: String?,
-    onPet: () -> String, onFeed: () -> String, celebrated: Long, onCelebrated: (Long) -> Unit,
+    onPet: (avoid: String?) -> String, onFeed: (avoid: String?) -> String, onOpen: () -> Unit,
+    celebrated: Long, onCelebrated: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var taps by remember { mutableIntStateOf(0) }
     var reaction by remember { mutableStateOf<String?>(null) }
     var reactionId by remember { mutableIntStateOf(0) }
     val hop = remember { Animatable(0f) }
+    var lastReaction by remember { mutableStateOf<String?>(null) }
+    val haptics = LocalHapticFeedback.current
 
     // Every reaction is one emoji above the buddy for a moment; a pet, a berry or an event also gets a hop.
     fun react(emoji: String) {
+        lastReaction = emoji
         reaction = emoji
         reactionId++
     }
@@ -105,7 +111,7 @@ fun BuddyStage(
 
     val shape = RoundedCornerShape(Spacing.CardRadius)
     Box(modifier.fillMaxWidth().height(216.dp).clip(shape).border(1.dp, Pixel.Border, shape)) {
-        SceneImage(scene, Modifier.matchParentSize(), night)
+        SceneImage(scene, Modifier.matchParentSize(), darkness)
         // A small shadow made of a few flat rows, so it matches the pixels of the sprite.
         Canvas(Modifier.align(Alignment.BottomCenter).padding(bottom = 40.dp).size(72.dp, 12.dp)) {
             val rows = floatArrayOf(0.55f, 0.85f, 1f, 0.85f, 0.55f)
@@ -119,14 +125,16 @@ fun BuddyStage(
             Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp)
                 .offset { IntOffset(0, (hop.value + bob).dp.roundToPx()) }
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Pet ${buddy.nickname}", role = Role.Button) {
-                    react(onPet())
+                    haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    react(onPet(lastReaction))
                 },
             size = 144.dp, animate = !calm && !resting,
         )
 
         // Level and progress: small, in the corner, readable on any scene.
         Column(
-            Modifier.align(Alignment.BottomStart).padding(Spacing.S).background(Color(0x55000000), RoundedCornerShape(10.dp))
+            Modifier.align(Alignment.BottomStart).padding(Spacing.S).clip(RoundedCornerShape(10.dp)).background(Color(0x55000000))
+                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Open ${buddy.nickname}", role = Role.Button, onClick = onOpen)
                 .padding(horizontal = 8.dp, vertical = 5.dp)
                 .semantics(mergeDescendants = true) { contentDescription = "${buddy.nickname}, level ${buddy.level}, ${(progress * 100).toInt()} percent to the next level" },
         ) {
@@ -143,7 +151,8 @@ fun BuddyStage(
         if (berry != null) Box(
             Modifier.align(Alignment.BottomEnd).padding(Spacing.S).size(40.dp).background(Color(0xCCFFFFFF), CircleShape)
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Give ${buddy.nickname} a ${Items.get(berry)?.name ?: berry}", role = Role.Button) {
-                    react(onFeed())
+                    haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    react(onFeed(lastReaction))
                 },
             contentAlignment = Alignment.Center,
         ) { ItemIcon(berry, size = 28.dp, description = Items.get(berry)?.name ?: berry) }

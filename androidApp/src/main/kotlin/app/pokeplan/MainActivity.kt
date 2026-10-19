@@ -38,10 +38,11 @@ class MainActivity : ComponentActivity() {
         val storage = saveStorage(this)
         val motion = AccelerometerMotion(this)
         // A widget can open the app on a tab ("FOCUS" for the Start focus widget).
+        val pokemon = intent?.getStringExtra(EXTRA_POKEMON)
         val tab = intent?.getStringExtra(EXTRA_TAB)?.let { name -> Tab.entries.firstOrNull { it.name == name } } ?: Tab.HOME
         setContent {
             App(
-                storage, focusTab = true, motion = motion, startTab = tab, externalChanges = resumes,
+                storage, focusTab = true, motion = motion, startTab = tab, startPokemon = pokemon, externalChanges = resumes,
                 cries = AndroidCryPlayer(this), onDataChanged = ::keepWidgetsCurrent,
             )
         }
@@ -87,5 +88,6 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_TAB = "app.pokeplan.TAB"
+        const val EXTRA_POKEMON = "app.pokeplan.POKEMON"
     }
 }

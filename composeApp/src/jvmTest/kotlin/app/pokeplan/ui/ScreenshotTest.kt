@@ -27,8 +27,8 @@ import kotlin.test.assertTrue
  */
 @OptIn(ExperimentalComposeUiApi::class)
 class ScreenshotTest {
-    private fun render(name: String, frames: Int = 60, content: @Composable () -> Unit) {
-        val scene = ImageComposeScene(width = 540, height = 1080, density = Density(1.5f)) { content() }
+    private fun render(name: String, frames: Int = 60, fontScale: Float = 1f, content: @Composable () -> Unit) {
+        val scene = ImageComposeScene(width = 540, height = 1080, density = Density(1.5f, fontScale)) { content() }
         var nanos = 0L
         // Sprites load asynchronously, so draw a few frames with a short wait between them.
         repeat(frames) {
@@ -80,6 +80,18 @@ class ScreenshotTest {
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
         // Stop early: a reaction lasts about two seconds of animation time, so it is on screen at frame 30.
         render("home-torchic-event", frames = 30) { App(storage, focusTab = true) }
+    }
+
+    @Test
+    fun largeText() {
+        val store = started()
+        store.addTask("Write the report for the quarterly review", Rank.B, planned = store.today, estimateMinutes = 45)
+        val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
+        render("large-text-home", fontScale = 1.8f) { App(storage, focusTab = true) }
+        val model = AppModel(store)
+        render("large-text-planner", fontScale = 1.8f) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 0) } }
+        }
     }
 
     @Test

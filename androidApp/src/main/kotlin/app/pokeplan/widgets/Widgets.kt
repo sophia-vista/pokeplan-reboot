@@ -83,8 +83,11 @@ private fun rankColor(rank: Rank) = when (rank) {
     Rank.A -> Color(0xFFB42332)
 }
 
-private fun openApp(context: Context, tab: String? = null) = actionStartActivity(
-    Intent(context, MainActivity::class.java).apply { tab?.let { putExtra(MainActivity.EXTRA_TAB, it) } },
+private fun openApp(context: Context, tab: String? = null, pokemon: String? = null) = actionStartActivity(
+    Intent(context, MainActivity::class.java).apply {
+        tab?.let { putExtra(MainActivity.EXTRA_TAB, it) }
+        pokemon?.let { putExtra(MainActivity.EXTRA_POKEMON, it) }
+    },
 )
 
 /** Brings every widget up to date; called when the app is left and after a tap on a widget. */
@@ -209,6 +212,9 @@ private object BuddyTalk {
     private const val FILE = "buddy_widget"
     private const val SHOWN_MILLIS = 4_000L
 
+    /** The last reaction shown, so a pet never repeats it straight away. */
+    fun last(context: Context): String? = context.getSharedPreferences(FILE, Context.MODE_PRIVATE).getString("emoji", null)
+
     fun show(context: Context, emoji: String) {
         context.getSharedPreferences(FILE, Context.MODE_PRIVATE).edit()
             .putString("emoji", emoji).putLong("until", System.currentTimeMillis() + SHOWN_MILLIS).apply()
@@ -255,7 +261,7 @@ class PetAction : ActionCallback {
         store.pet()
         // The callback stays alive while the hearts show (settleLater), long enough for the cry to play out.
         store.data.player.buddy?.takeIf { store.data.settings.effectsLevel > 0f }?.let { AndroidCryPlayer(context).play(it.speciesId, store.data.settings.effectsLevel) }
-        BuddyTalk.show(context, store.data.player.buddy?.let { BuddyReaction.pet(it, store.now.hour) } ?: "❤️")
+        BuddyTalk.show(context, store.data.player.buddy?.let { BuddyReaction.pet(it, store.now.hour, avoid = BuddyTalk.last(context)) } ?: "❤️")
         updateWidgets(context)
         BuddyTalk.settleLater(context)
     }
@@ -268,14 +274,14 @@ class FeedAction : ActionCallback {
         val buddy = store.data.player.buddy ?: return
         val berry = berryOf(store) ?: return
         store.useItem(berry, buddy.id)
-        BuddyTalk.show(context, BuddyReaction.feed(buddy))
+        BuddyTalk.show(context, BuddyReaction.feed(buddy, avoid = BuddyTalk.last(context)))
         updateWidgets(context)
         BuddyTalk.settleLater(context)
     }
 }
 
 private data class BuddyState(
-    val name: String?, val level: Int, val progress: Float, val reaction: String?, val description: String,
+    val name: String?, val buddyId: String?, val level: Int, val progress: Float, val reaction: String?, val description: String,
     val scene: Bitmap?, val still: Bitmap?, val idle: RemoteViews?, val berryName: String?, val berryIcon: Bitmap?,
 )
 
@@ -288,7 +294,7 @@ class BuddyWidget : GlanceAppWidget() {
         val moment = BuddyTalk.current(context)
         val berry = berryOf(store)
         val d = density(context)
-        val night = BuddyScene.isNight(store.now.hour)
+        val darkness = BuddyScene.darkness(store.now.hour, store.now.minute)
         val calm = store.data.settings.reduceMotion || store.data.focus != null
         // The idle animation plays by itself in a flipper; a pet or an event swaps in one still picture with its effect.
         val animated = if (buddy != null && moment == null && !calm) WidgetArt.idleFrames(context, buddy.form.id, buddy.isShiny) else null
@@ -301,9 +307,9 @@ class BuddyWidget : GlanceAppWidget() {
             }
         }
         val state = BuddyState(
-            name = buddy?.nickname, level = buddy?.level ?: 1, progress = buddy?.let { store.levelProgress(it) } ?: 0f,
+            name = buddy?.nickname, buddyId = buddy?.id, level = buddy?.level ?: 1, progress = buddy?.let { store.levelProgress(it) } ?: 0f,
             reaction = moment, description = "${buddy?.nickname}, level ${buddy?.level}",
-            scene = buddy?.let { WidgetArt.scene(context, BuddyScene.of(it.form.types), night, (420 * d).toInt(), (200 * d).toInt(), 20 * d) },
+            scene = buddy?.let { WidgetArt.scene(context, BuddyScene.of(it.form.types), darkness, (420 * d).toInt(), (200 * d).toInt(), 20 * d) },
             still = if (idle == null) buddy?.let { WidgetArt.still(context, it.form.id, it.isShiny, lifted = moment != null) } else null,
             idle = idle, berryName = berry?.let { Items.get(it)?.name }, berryIcon = berry?.let { WidgetArt.item(context, it, 2) },
         )
@@ -339,6 +345,7 @@ private fun BuddyContent(context: Context, s: BuddyState) {
         Box(GlanceModifier.fillMaxSize().padding(8.dp), contentAlignment = Alignment.BottomStart) {
             Column(
                 GlanceModifier.background(Color(0x66000000)).cornerRadius(10.dp).padding(horizontal = 8.dp, vertical = 5.dp)
+                    .clickable(rippleOverride = R.drawable.no_ripple, onClick = openApp(context, "COLLECTION", s.buddyId))
                     .semantics { contentDescription = "${s.name}, level ${s.level}, ${(s.progress * 100).toInt()} percent to the next level" },
             ) {
                 Text("${s.name}  Lv. ${s.level}", style = TextStyle(color = ColorProvider(Color.White), fontSize = 11.sp, fontWeight = FontWeight.Medium))

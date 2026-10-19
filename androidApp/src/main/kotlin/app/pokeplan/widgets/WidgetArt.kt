@@ -77,8 +77,10 @@ object WidgetArt {
     }
 
     /** A real scene (assets/scenes) filling [width] x [height] like a photo, bottom-anchored, rounded, dimmed at night. */
-    fun scene(context: Context, name: String, night: Boolean, width: Int, height: Int, radius: Float): Bitmap? =
-        remember("scene:$name:$night:$width:$height:$radius") {
+    fun scene(context: Context, name: String, darkness: Float, width: Int, height: Int, radius: Float): Bitmap? {
+        // The tint is quantized so a slowly changing dusk does not build a new picture every minute.
+        val tint = (darkness.coerceIn(0f, 1f) * 20).toInt()
+        return remember("scene:$name:$tint:$width:$height:$radius") {
             val source = asset(context, "scenes/$name.png") ?: return@remember null
             val scale = maxOf(width.toFloat() / source.width, height.toFloat() / source.height)
             val srcW = (width / scale).toInt().coerceAtMost(source.width)
@@ -90,9 +92,10 @@ object WidgetArt {
                 source, android.graphics.Rect((source.width - srcW) / 2, source.height - srcH, (source.width - srcW) / 2 + srcW, source.height),
                 RectF(0f, 0f, width.toFloat(), height.toFloat()), Paint().apply { isFilterBitmap = true },
             )
-            if (night) canvas.drawColor(Color.argb(0x99, 0x10, 0x1C, 0x3C))
+            if (tint > 0) canvas.drawColor(Color.argb((tint / 20f * 255).toInt(), 0x10, 0x1C, 0x3C))
             out
         }
+    }
 
     private const val CANVAS = 192
 

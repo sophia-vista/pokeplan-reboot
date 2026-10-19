@@ -130,7 +130,7 @@ fun FriendsView(model: AppModel) {
 
     SectionLabel("Friends")
     val accepted = friends.filter { it.accepted }
-    if (accepted.isEmpty() && !loading) TextBox { Text("No friends yet. Share your code.", style = MaterialTheme.typography.bodyLarge) }
+    if (accepted.isEmpty() && !loading) EmptyState("No friends yet", "Share your friend code, or add a friend with theirs, to see their buddy and the weekly board.")
     accepted.forEach { f ->
         ListRow(
             lead = {

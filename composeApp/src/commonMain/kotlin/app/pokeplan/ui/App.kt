@@ -19,6 +19,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -81,6 +84,9 @@ class AppModel(
     /** A task picked on Home or in the Planner to focus on; the Focus screen offers it when it opens. */
     var focusTaskId: String? by mutableStateOf(null)
 
+    /** A Pokémon the Pokémon tab should open on (the buddy's level chip on Home, the widget's chip). Used once. */
+    var openPokemonId: String? by mutableStateOf(null)
+
     /** When the buddy last celebrated an event, so opening Home again does not repeat it. */
     var celebratedAt: Long by mutableStateOf(0L)
 
@@ -108,6 +114,7 @@ fun App(
     focusTab: Boolean = true,
     motion: MotionSource? = null,
     startTab: Tab = Tab.HOME,
+    startPokemon: String? = null,
     cloud: CloudConfig = CloudSettings.config,
     /** Emits when something outside the app may have changed the save (the Android app coming back after a widget tap). */
     externalChanges: Flow<Unit>? = null,
@@ -119,7 +126,7 @@ fun App(
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
         val client = if (cloud.enabled) CloudClient(cloud, HttpClient()) { clock.nowMillis() } else null
-        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries)
+        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries).also { it.openPokemonId = startPokemon }
     }
     val store = model.store
     if (onDataChanged != null) DisposableEffect(store) {
@@ -187,17 +194,26 @@ private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab) {
                 Tab.HOME -> HomeScreen(model, go)
                 Tab.PLANNER -> PlannerScreen(model)
                 Tab.FOCUS -> FocusScreen(model)
-                Tab.COLLECTION -> CollectionScreen(model)
+                Tab.COLLECTION -> {
+                    val open = remember { model.openPokemonId }
+                    LaunchedEffect(Unit) { model.openPokemonId = null }
+                    CollectionScreen(model, startOpen = open)
+                }
                 Tab.ME -> MeScreen(model)
             }
         }
         Column(Modifier.fillMaxWidth().background(Color.White).border(1.dp, Pixel.Border)) {
-            Row(
-                Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                tabs.forEach { t ->
-                    NavButton(t.label, t.icon, selected = t == tab, onClick = { go(t) }, modifier = Modifier.weight(1f))
+            // Five labels in one row cannot grow with the system text size without being cut off, so the tab bar's text
+            // scales up to 1.25x and its icons and touch targets carry the rest.
+            val density = LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density, density.fontScale.coerceAtMost(1.25f))) {
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    tabs.forEach { t ->
+                        NavButton(t.label, t.icon, selected = t == tab, onClick = { go(t) }, modifier = Modifier.weight(1f))
+                    }
                 }
             }
             Spacer(Modifier.fillMaxWidth().windowInsetsBottomHeight(WindowInsets.navigationBars))
