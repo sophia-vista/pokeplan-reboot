@@ -39,7 +39,10 @@ SAME = ['rare-candy', 'ability-capsule', 'ability-patch', 'bottle-cap', 'dynamax
         'hp-up', 'protein', 'iron', 'calcium', 'zinc', 'carbos',
         'oval-charm', 'lucky-egg', 'star-piece', 'scope-lens', 'shiny-charm', 'leftovers', 'amulet-coin',
         # Tab icons: Home, Planner, Focus, Pokémon, Me.
-        'town-map', 'journal', 'mystery-egg', 'poke-ball', 'member-card']
+        'town-map', 'journal', 'mystery-egg', 'poke-ball', 'member-card',
+        # Menu entries inside the tabs.
+        'great-ball', 'storage-key', 'seal-bag', 'master-ball', 'oaks-letter', 'exp-share', 'heart-scale', 'gb-sounds',
+        'oaks-parcel', 'timer-ball', 'premier-ball']
 
 
 def read_csv(name):

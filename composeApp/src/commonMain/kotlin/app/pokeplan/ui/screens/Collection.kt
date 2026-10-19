@@ -27,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.pokeplan.app.quest.Quest
+import app.pokeplan.app.quest.Quests
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.Region
 import app.pokeplan.core.pokemon.CandyRules
@@ -47,15 +49,20 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.ScreenHeader
+import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.TextBox
 
-private enum class Section(val label: String) { PARTY("Party"), PC("PC"), DEX("Dex"), BAG("Bag"), GUARDIANS("Guard") }
+private enum class Section(val title: String, val icon: String) {
+    PARTY("Party", "poke-ball"), PC("PC boxes", "storage-key"), DEX("Pokédex", "great-ball"), BAG("Bag", "seal-bag"),
+    GUARDIANS("Guardians", "master-ball"), QUESTS("Quests", "oaks-letter"),
+}
 
 @Composable
-fun CollectionScreen(model: AppModel, startSection: Int = 0, startOpen: String? = null) {
-    var section by remember { mutableStateOf(Section.entries[startSection]) }
+fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String? = null) {
+    var section by remember { mutableStateOf(Section.entries.getOrNull(startSection)) }
     var selected by remember { mutableStateOf(startOpen) }
     val player = model.data.player
+    val store = model.store
 
     val open = selected?.let { id -> player.pokemon.firstOrNull { it.id == id } }
     if (open != null) {
@@ -63,31 +70,44 @@ fun CollectionScreen(model: AppModel, startSection: Int = 0, startOpen: String? 
         return
     }
 
-    Column(Modifier.fillMaxSize()) {
-        ScreenHeader("Pokémon", subtitle = "${player.party.size}/6 in party · ${player.pokemon.size} owned · ${player.caught.size} seen")
-        Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Section.entries.forEach { s -> TabButton(s.label, s == section, { section = s }, Modifier.weight(1f)) }
+    val current = section
+    if (current == null) {
+        Column(Modifier.fillMaxSize()) {
+            ScreenHeader("Pokémon", subtitle = "${player.pokemon.size} owned · ${player.caught.size} seen")
+            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp)) {
+                val ready = store.activeQuests.count { store.questReady(it) }
+                MenuGrid(
+                    listOf(
+                        MenuEntry("PARTY", "poke-ball", "Party", "${player.party.size} of 6"),
+                        MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { !it.inParty && !Guardians.canBe(it) }} stored"),
+                        MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught"),
+                        MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items"),
+                        MenuEntry("GUARDIANS", "master-ball", "Guardians", if (store.guardianSlots == 0) "opens at rank ${TrainerRank.names[4]}" else "${player.guardians.size} of ${store.guardianSlots} slotted"),
+                        MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready),
+                    ),
+                ) { key -> section = Section.valueOf(key) }
             }
-            when (section) {
-                Section.PARTY -> {
-                    if (player.party.isEmpty()) TextBox { Text("Your party is empty.", style = MaterialTheme.typography.bodyLarge) }
-                    player.party.forEach { p -> PokemonRow(p, p.id == player.buddyId) { selected = p.id } }
-                }
-                Section.PC -> {
-                    val box = player.pokemon.filter { !it.inParty && !Guardians.canBe(it) }
-                    if (box.isEmpty()) TextBox { Text("The PC is empty. New eggs go to your party first, then here.", style = MaterialTheme.typography.bodyLarge) }
-                    FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        box.forEach { p -> PcTile(p) { selected = p.id } }
-                    }
-                }
-                Section.DEX -> PokedexView(model)
-                Section.BAG -> BagView(model)
-                Section.GUARDIANS -> GuardiansView(model) { selected = it }
+        }
+        return
+    }
+
+    SectionScaffold(current.title, null, onBack = { section = null }) {
+        when (current) {
+            Section.PARTY -> {
+                if (player.party.isEmpty()) TextBox { Text("Your party is empty.", style = MaterialTheme.typography.bodyLarge) }
+                player.party.forEach { p -> PokemonRow(p, p.id == player.buddyId) { selected = p.id } }
             }
+            Section.PC -> {
+                val box = player.pokemon.filter { !it.inParty && !Guardians.canBe(it) }
+                if (box.isEmpty()) TextBox { Text("The PC is empty. New eggs go to your party first, then here.", style = MaterialTheme.typography.bodyLarge) }
+                FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    box.forEach { p -> PcTile(p) { selected = p.id } }
+                }
+            }
+            Section.DEX -> PokedexView(model)
+            Section.BAG -> BagView(model)
+            Section.GUARDIANS -> GuardiansView(model) { selected = it }
+            Section.QUESTS -> QuestsView(model)
         }
     }
 }
@@ -218,6 +238,73 @@ private fun GuardiansView(model: AppModel, open: (String) -> Unit) {
         ) {
             Text(g.nickname, style = MaterialTheme.typography.titleMedium)
             Text(perkText(g), style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+        }
+    }
+}
+
+// ----- Quests --------------------------------------------------------------------------------------------------------
+
+@Composable
+private fun QuestsView(model: AppModel) {
+    val store = model.store
+    val data = model.data
+    val active = store.activeQuests
+    val available = store.availableQuests
+    val done = data.quests.count { it.value.completedAtMillis != null }
+    val locked = Quests.all.filter { it.id !in data.quests && Quests.lockedReason(it, data) != null }.sortedBy { it.unlockRank }.take(3)
+
+    TextBox(accent = Pixel.Yellow) {
+        Text(
+            "Every legendary and mythical Pokémon has a quest. Take one on, keep doing what you already do, and it fills in by itself. " +
+                "No deadlines. Up to ${Quests.MAX_ACTIVE} at a time.",
+            style = MaterialTheme.typography.bodyLarge,
+        )
+    }
+    if (active.isEmpty() && available.isEmpty()) {
+        TextBox { Text("No quests are open yet. They open as your trainer rank grows.", style = MaterialTheme.typography.bodyLarge) }
+    }
+    if (active.isNotEmpty()) SectionLabel("In progress")
+    active.forEach { q -> QuestCard(model, q) }
+    if (available.isNotEmpty()) SectionLabel("Available")
+    available.take(12).forEach { q -> QuestCard(model, q) }
+    if (available.size > 12) TextBox { Text("${available.size - 12} more are open. Finish one to see the next.", style = MaterialTheme.typography.bodyMedium) }
+    if (locked.isNotEmpty()) {
+        SectionLabel("Coming up")
+        locked.forEach { q ->
+            ListRow(lead = { Sprite(Dex.defaultForm(q.speciesId).id, false, "Locked", size = 56.dp, silhouette = Pixel.Shade) }) {
+                Text(q.title, style = MaterialTheme.typography.bodyLarge)
+                Text(Quests.lockedReason(q, data) ?: "", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+        }
+    }
+    if (done > 0) Text("$done quest${if (done == 1) "" else "s"} completed", style = MaterialTheme.typography.bodyLarge, color = Pixel.Ink)
+}
+
+@Composable
+private fun QuestCard(model: AppModel, quest: Quest) {
+    val store = model.store
+    val state = model.data.quests[quest.id]
+    val ready = store.questReady(quest)
+    TextBox(accent = if (ready) Pixel.Green else Pixel.Blue) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Sprite(Dex.defaultForm(quest.speciesId).id, false, Dex.species(quest.speciesId).name, size = 64.dp)
+                Column(Modifier.weight(1f)) {
+                    Text(Dex.species(quest.speciesId).name, style = MaterialTheme.typography.titleMedium)
+                    Text(quest.title, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                }
+                if (quest.longTerm) Text("long road", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+            }
+            Text(quest.story, style = MaterialTheme.typography.bodyMedium)
+            store.questProgress(quest).forEach { (req, now) ->
+                val shown = now.coerceAtMost(req.target)
+                Text("${req.text}: $shown of ${req.target}", style = MaterialTheme.typography.bodyMedium)
+                PixelBar(shown.toFloat() / req.target, color = if (shown >= req.target) Pixel.Green else Pixel.Blue)
+            }
+            when {
+                state == null -> PixelButton("Take on this quest", { store.acceptQuest(quest.id) }, Modifier.fillMaxWidth(), Pixel.Blue, enabled = store.activeQuests.size < Quests.MAX_ACTIVE, compact = true)
+                ready -> PixelButton("Claim ${Dex.species(quest.speciesId).name}", { store.claimQuest(quest.id) }, Modifier.fillMaxWidth(), Pixel.Green)
+            }
         }
     }
 }
