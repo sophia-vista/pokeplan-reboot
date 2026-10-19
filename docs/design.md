@@ -107,12 +107,20 @@ At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are
 
 - **Mega / Gigantamax are a temporary focus form.** A buddy holding its Mega Stone (or Dynamax Band for G-Max species) shows that form for the length of a focus session, with a bonus to that session's perk *(tune)*, then reverts. The stones are reusable key items, one per species, from the shop or rare drops.
 - **Cosmetic forms are a side collection** with their own progress bar and badge. 100% Pokédex means one of each species plus regional forms; cosmetic forms still appear when hatching.
-- **Rarity by rule** from game data, with one tunable table: evolution stage, base stat total, and legendary / mythical status (legendaries and mythicals are Super Rare, babies and unevolved forms lean Common, final evolutions lean Rare). Hand overrides are not planned.
+- **Rarity by rule** from game data, with one tunable table: evolution stage, base stat total, and legendary / mythical status (babies and unevolved forms lean Common, final evolutions lean Rare, pseudo-legendaries and other very strong lines Super Rare). **Legendaries and mythicals are not in any egg pool** (see below). Hand overrides are not planned, and the rule applies to the Home Region too.
 - **Art:** the Pokémon Showdown sprite sets (animated Gen 5 style where available, their sets for Gen 6 to 9 otherwise). Fetch and bundle them at build time rather than loading from Showdown at runtime, so the app does not depend on their server. The same IP caveat as the rest of the project applies (see Risks), and Showdown's own terms should be checked before any public release.
+
+### Legendaries and mythicals
+
+Not hatched from random eggs, which keeps them special and avoids a 4 hour Deep Focus egg being 70% legendary.
+
+- **Legendary quests:** each region has quests for its legendaries (the games' legendaries for that region). A quest unlocks at a trainer rank plus a share of that regional dex *(tune: about 80%)* and asks for a long strict focus session (Deep Focus) and a set number of paid tasks within a time window *(tune)*. Finishing it grants a Legendary Egg that hatches that specific species. There is no extra pacing: the requirements set the pace.
+- **Mythical rewards:** milestone based (long streaks, task totals, top rank, full regional dex), one fixed species per milestone. Events can add more later.
+- **Species with a tradition of being obtainable in the wild** (the pseudo-legendary lines, Absol, etc.) stay in the egg pools, in the Super Rare tier by the rule.
 
 ### Regions
 
-- The current curated 150 are the **Home Region**: the starter dex every player begins in, keeping its local numbers 1 to 150 and its hand-set rarities *(proposal)*.
+- The current curated 150 are the **Home Region**: the starter dex every player begins in, keeping its local numbers 1 to 150. Its ten legendary-class species (Mew, Celebi, Jirachi, Uxie, Mesprit, Azelf, Manaphy, Shaymin, Victini, Keldeo) leave the egg pool and become quest rewards, so its rarities are re-derived by the rarity rule like every other region.
 - Every other region is a real game's regional dex: Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea. **All are in at launch.** Regional dexes are data (lists pointing at species), generated from a public dataset; other regions use the rarity rule.
 - A Pokémon has one record with a **National Dex number**; a region is just a list of those. Regional forms hatch in their home region (Alolan forms in Alola, and so on).
 - **Region picker:** before a focus session the player chooses which region the egg comes from. Eggs hatch from that region's pool only. Each region has its own dex progress bar, badge and background theme.
@@ -240,7 +248,6 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 
 Being settled in rounds before any Pokémon-depth code is written. Decided: everything above not marked *(tune)* or *(proposal)*.
 
-- **Legendaries and mythicals:** how they are obtained (see Roster).
-- **To confirm:** the Screens and flows proposal; the Defaults above; the Home Region keeping hand-set rarities; Mega / G-Max region assignment.
-- **To tune by simulation before release:** rarity rule parameters across ~1,025 species, coin amounts, transfer yields, perk magnitudes and cap, catch-up discount, minimum task age, Mega bonus, rank names and thresholds, region unlock order, E to S rank mapping.
+- **To confirm:** the Screens and flows proposal; the Defaults above; Mega / G-Max region assignment.
+- **To tune by simulation before release:** rarity rule parameters across ~1,025 species, coin amounts, transfer yields, perk magnitudes and cap, catch-up discount, minimum task age, Mega bonus, rank names and thresholds, region unlock order, legendary quest requirements, E to S rank mapping.
 - **To check:** Showdown sprite terms and build-time availability, whether the build environment can reach the data sources, Android permission flow for calendar import.
