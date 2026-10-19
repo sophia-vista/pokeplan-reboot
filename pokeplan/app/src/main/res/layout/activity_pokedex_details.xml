@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/lightest_gray">
+
+    <TextView
+        android:id="@+id/tv_pkdexdetails_species"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="24dp"
+        android:fontFamily="@font/raleway_bold"
+        android:gravity="bottom"
+        android:textAllCaps="false"
+        android:textColor="@color/darkest_gray"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView4"
+        app:layout_constraintStart_toEndOf="@+id/imageView4"
+        app:layout_constraintTop_toTopOf="@+id/imageView4"
+        app:lineHeight="38dp"
+        tools:text="Flaaffy" />
+
+    <TextView
+        android:id="@+id/tv_pkdexdetails_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/raleway_light_italic"
+        android:textAllCaps="false"
+        android:textColor="@color/darker_gray"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@+id/tv_pkdexdetails_species"
+        app:layout_constraintTop_toBottomOf="@+id/tv_pkdexdetails_species"
+        app:lineHeight="38dp"
+        tools:text="Electric" />
+
+    <TextView
+        android:id="@+id/tv_pkdexdetails_dexnum"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="32dp"
+        android:fontFamily="@font/raleway_light_italic"
+        android:gravity="center"
+        android:textAllCaps="false"
+        android:textColor="@color/darkest_gray"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/imageView4"
+        app:lineHeight="38dp"
+        tools:text="#095" />
+
+    <TextView
+        android:id="@+id/tv_pkdexdetails_evolveto_level"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/raleway_light_italic"
+        android:textAllCaps="false"
+        android:textColor="@color/darker_gray"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="@+id/iv_evolveto_arrow"
+        app:layout_constraintStart_toStartOf="@+id/iv_evolveto_arrow"
+        app:layout_constraintTop_toBottomOf="@+id/iv_evolveto_arrow"
+        app:lineHeight="38dp"
+        tools:text="Level 16" />
+
+    <TextView
+        android:id="@+id/tv_pkdexdetails_info"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="40dp"
+        android:fontFamily="@font/raleway_light_italic"
+        android:textAllCaps="false"
+        android:textColor="@color/darker_gray"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_pkdexdetails_evolveto_label2"
+        tools:text="Flaaffy’s wool quality changes so that it can generate a high amount of static electricity with a small amount of wool. The bare and slick parts of its hide are shielded against electricity." />
+
+    <TextView
+        android:id="@+id/tv_pkdexdetails_evolveto_label"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:fontFamily="@font/raleway_bold"
+        android:text="@string/pkdexdetails_evolvesto_label"
+        android:textAllCaps="false"
+        android:textColor="@color/darkest_gray"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_pkdexdetails_info"
+        app:lineHeight="38dp" />
+
+    <TextView
+        android:id="@+id/tv_pkdexdetails_evolveto_label2"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/raleway_bold"
+        android:text="@string/pkdexdetails_information_label"
+        android:textAllCaps="false"
+        android:textColor="@color/darkest_gray"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView4"
+        app:lineHeight="38dp" />
+
+    <ImageView
+        android:id="@+id/imageView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/gl_tasklist_hor8p2"
+        app:srcCompat="@drawable/circle" />
+
+    <ImageView
+        android:id="@+id/iv_pkdexdetails_icon"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView4"
+        app:layout_constraintEnd_toEndOf="@+id/imageView4"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/imageView4"
+        app:layout_constraintTop_toTopOf="@+id/imageView4"
+        app:layout_constraintVertical_bias="1.0"
+        tools:srcCompat="@drawable/pkmn_77" />
+
+    <ImageView
+        android:id="@+id/iv_pkdexdetails_evolveto_ogicon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        app:layout_constraintEnd_toStartOf="@+id/tv_pkdexdetails_evolveto_level"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_pkdexdetails_evolveto_label"
+        tools:srcCompat="@drawable/pkmn_77" />
+
+    <TextView
+        android:id="@+id/tv_pkdexdetails_evolveto_evospecies"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:fontFamily="@font/raleway_bold"
+        android:textAllCaps="false"
+        android:textColor="@color/darkest_gray"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="@+id/iv_pkdexdetails_evolveto_evoicon"
+        app:layout_constraintStart_toStartOf="@+id/iv_pkdexdetails_evolveto_evoicon"
+        app:layout_constraintTop_toBottomOf="@+id/iv_pkdexdetails_evolveto_evoicon"
+        app:lineHeight="38dp"
+        tools:text="Ampharos" />
+
+    <TextView
+        android:id="@+id/tv_pkdexdetails_evolveto_ogspecies"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:fontFamily="@font/raleway_bold"
+        android:textAllCaps="false"
+        android:textColor="@color/darkest_gray"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="@+id/iv_pkdexdetails_evolveto_ogicon"
+        app:layout_constraintStart_toStartOf="@+id/iv_pkdexdetails_evolveto_ogicon"
+        app:layout_constraintTop_toBottomOf="@+id/iv_pkdexdetails_evolveto_ogicon"
+        app:lineHeight="38dp"
+        tools:text="Flaaffy" />
+
+    <ImageView
+        android:id="@+id/iv_pkdexdetails_evolveto_evoicon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tv_pkdexdetails_evolveto_level"
+        app:layout_constraintTop_toTopOf="@+id/iv_pkdexdetails_evolveto_ogicon"
+        tools:srcCompat="@drawable/pkmn_78" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/gl_tasklist_hor8p2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.12" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_pkdexdetails_label"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/green"
+        app:layout_constraintBottom_toTopOf="@+id/gl_tasklist_hor8p2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
+
+        <ImageView
+            android:id="@+id/iv_init_bg6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:alpha="0.25"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/background_tower" />
+
+        <ImageButton
+            android:id="@+id/ib_pkdexdetails_back"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:backgroundTint="#00FFFFFF"
+            android:scaleType="fitCenter"
+            android:src="@drawable/arrow_back"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_taskdetails_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tv_taskdetails_title"
+            app:tint="@color/darker_pink" />
+
+        <TextView
+            android:id="@+id/tv_taskdetails_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:fontFamily="@font/raleway_semibold"
+            android:text="@string/pkdexdetails_title"
+            android:textColor="@color/darker_gray"
+            android:textSize="28sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/iv_evolveto_arrow"
+        android:layout_width="23dp"
+        android:layout_height="24dp"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_pkdexdetails_evolveto_ogicon"
+        app:layout_constraintEnd_toStartOf="@+id/iv_pkdexdetails_evolveto_evoicon"
+        app:layout_constraintStart_toEndOf="@+id/iv_pkdexdetails_evolveto_ogicon"
+        app:layout_constraintTop_toTopOf="@+id/iv_pkdexdetails_evolveto_ogicon"
+        app:srcCompat="@drawable/arrow_next"
+        app:tint="@color/darker_gray" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

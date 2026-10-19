@@ -1,0 +1,162 @@
+<resources>
+    <!-- General -->
+    <string name="app_name">PokéPlan</string>
+    <string name="tagline">Gotta plan \'em all!</string>
+
+    <!-- Login / Register -->
+    <string name="register_tagline">Hello! Create a new account now.</string>
+    <string name="login_tagline">Welcome back! Log in with an existing account.</string>
+    <string name="register_s_tagline">Choose wisely! You may only pick one.</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="name">Name</string>
+    <string name="email">Email</string>
+    <string name="register_s_title">Choose Your Starter</string>
+    <string name="forgot_title">Enter your e-mail.</string>
+    <string name="forgot_button">Reset Password</string>
+
+    <!-- Focus Timer -->
+    <string name="focustimer_title">FOCUS TIMER</string>
+    <string name="focustimer_start_button">START TIMER</string>
+    <string name="focustimer_stop_button">STOP TIMER</string>
+    <string name="focustimer_finish_button">MAKE A NEW TIMER</string>
+    <string name="focustimer_start_tagline">
+        Ready to hatch an egg?</string>
+    <string name="focustimer_ongoing_tagline">
+        Stay focused! Don\'t leave this screen!</string>
+    <string name="focustimer_finish_tagline">Congratulations!</string>
+
+    <!-- Focus Timer Stop Timer Dialog -->
+    <string name="focustimer_dialog_confirm_title">Stop Timer</string>
+    <string name="focustimer_dialog_confirm_text">
+        Stopping the timer will reset your progress with the egg. Continue?</string>
+    <string name="focustimer_dialog_confirm_btncancel">Cancel</string>
+    <string name="focustimer_dialog_confirm_btnstop">Stop Timer</string>
+
+    <!-- Focus Timer Hatch Dialog -->
+    <string name="focustimer_dialog_hatch_title">Oh! What\'s this?</string>
+    <string name="focustimer_dialog_hatch_text">
+        You hatched a</string>
+    <string name="focustimer_dialog_info_title">Focus Timer</string>
+    <string name="focustimer_dialog_info_text">Using this focus timer would help you stay productive by removing your impulse to check your phone. During the duration of this timer, you are not allowed to leave the screen. After the set time, you would receive a Pokémon.</string>
+
+
+    <string name="focustimer_dialog_error_title">Invalid Time</string>
+    <string name="focustimer_dialog_error_text">
+        Minimum time is 5 minutes.</string>
+
+    <!-- Focus Timer egg break -->
+    <string name="focustimer_dialog_egg_break_title">Oh no!</string>
+    <string name="focustimer_dialog_egg_break_text">It seems like your egg won\'t hatch. Try to stay focused next time!</string>
+
+    <!-- Task List -->
+    <string name="tasklist_title">TASK LIST</string>
+    <string name="tasklist_ongoing_label">Ongoing Tasks</string>
+    <string name="tasklist_completed_label">Completed Tasks</string>
+    <string name="taskdetails_label">VIEW TASK</string>
+
+    <string-array name="tasklist_filter">
+        <item>ALL</item>
+        <item>School</item>
+        <item>Work</item>
+        <item>Hobby</item>
+        <item>Leisure</item>
+        <item>Chores</item>
+        <item>Health</item>
+        <item>Social</item>
+        <item>Others</item>
+    </string-array>
+
+
+    <!-- Add Task -->
+    <string name="add_task_title">ADD TASK</string>
+    <string name="add_task_name">Name of Task</string>
+    <string name="add_task_type">Type of Task</string>
+    <string name="add_task_start_date">Start Date</string>
+    <string name="add_task_start_time">Start Time</string>
+    <string name="add_task_end_date">End Date</string>
+    <string name="add_task_end_time">End Time</string>
+    <string name="add_task_priority">Priority</string>
+    <string-array name="notifs_time">
+        <item>0 Minutes</item>
+        <item>10 Minutes</item>
+        <item>30 Minutes</item>
+        <item>1 Hour</item>
+        <item>2 Hours</item>
+        <item>4 Hours</item>
+        <item>8 Hours</item>
+        <item>12 Hours</item>
+        <item>1 Day</item>
+    </string-array>
+    <string-array name="notifs_when">
+        <item>Before Start Time</item>
+        <item>Before End Time</item>
+    </string-array>
+    <string name="add_task_notes">Notes</string>
+
+    <string name="task_category_school">School</string>
+    <string name="task_category_work">Work</string>
+    <string name="task_category_hobby">Hobby</string>
+    <string name="task_category_leisure">Leisure</string>
+    <string name="task_category_chores">Chores</string>
+    <string name="task_category_health">Health</string>
+    <string name="task_category_social">Social</string>
+    <string name="task_category_others">Others</string>
+
+    <string name="task_priority_trivial">Trivial</string>
+    <string name="task_priority_low">Low</string>
+    <string name="task_priority_mid">Mid</string>
+    <string name="task_priority_high">High</string>
+    <string name="task_priority_critical">Critical</string>
+
+    <!-- Home -->
+    <string name="home_title">PokéPlan</string>
+    <string name="home_userprofile_btn">User Profile</string>
+    <string name="home_pokemonpc_btn">Pokemon PC</string>
+    <string name="home_party_label">Your Party</string>
+
+    <!-- Pokemon Details (Party) -->
+    <string name="pkmndetails_title">VIEW POKEMON</string>
+    <string name="pkmndetails_type_label">TYPE</string>
+    <string name="pkmndetails_nature_label">NATURE</string>
+    <string name="pkmndetails_metdate_label">MET DATE</string>
+    <string name="pkmndetails_rarecandy_btn">Feed 1 Rare Candy</string>
+    <string name="pkmndetails_supercandy_btn">Feed 1 Super Candy</string>
+    <string name="pkmndetails_movetopc_btn">Move to PC</string>
+    <string name="pokemondetails_rename_caption">Name your Pokemon!</string>
+    <string name="pkdexdetails_title">VIEW POKEDEX</string>
+    <string name="pkmndetails_movetopcdiag_title">Move to PC</string>
+    <string name="pkmndetails_movetopcdiag_text">This would remove the pokemon from your party.</string>
+    <string name="pkmndetails_movetopcdiag_button">Move to PC</string>
+
+    <string name="pkmndetails_movetopartydiag_title">Move to Party</string>
+    <string name="pkmndetails_movetopartydiag_text">This would add the pokemon to your party.</string>
+    <string name="pkmndetails_movetopartydiag_button">Move to Party</string>
+    <string name="pkmndetails_releasepkmndiag_button">Release</string>
+    <string name="pkmndetails_releasepkmndiag_title">Release Pokemon?</string>
+    <string name="pkmndetails_releasepkmndiag_text">You won\'t be able to see this Pokemon again. Are you sure?</string>
+
+    <!-- Task Details -->
+    <string name="task_details_confirm_finish_title">Finish Task</string>
+    <string name="task_details_confirm_finish_text">Are you sure? You won\'t be able to undo this!</string>
+    <string name="task_details_confirm_finish_button">Finish</string>
+    <string name="task_details_delete_task_title">Deleting the Task</string>
+    <string name="task_details_delete_task_text">This would remove the task from your ongoing or completed task list.</string>
+    <string name="task_details_delete_task_button">Delete task</string>
+    <string name="task_details_candy_title">Congratulations!</string>
+    <string name="pokemon_pc">POKEMON PC</string>
+    <string name="nopkmnpc">You have no Pokemon in the PC yet.</string>
+    <string name="birthday">Birthday</string>
+
+    <!-- Settings Buttons -->
+    <string name="faqs_title">FAQs</string>
+    <string name="about_title">ABOUT</string>
+    <string name="about_text">PokéPlan is a productivity application created solely for academic purposes. The Pokémon and their sounds are owned by Nintendo and The Pokémon Company. This application also made use of icons from Flaticon.</string>
+    <string name="pkdexdetails_information_label">INFORMATION</string>
+    <string name="pkdexdetails_evolvesto_label">EVOLVES TO</string>
+    <string name="init_welcometo_label">Welcome to</string>
+    <string name="init_register_btn">REGISTER</string>
+    <string name="init_login_btn">LOGIN</string>
+    <string name="login_label">Login</string>
+    <string name="home_progress_label">YOUR PROGRESS</string>
+</resources>
