@@ -35,8 +35,9 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 - Priority 1 to 5; **priority 5 pays the most**. Reward tables are already ported (`CandyRewards`).
 - **Minimum task age:** a one-off task only pays when it has existed for at least *(tune: 15 minutes)* before being completed, counted from creation. Younger tasks complete without a reward. There is no daily cap, so many real tasks always pay.
 - **Recurring tasks are exempt:** their instances are created ahead of time by the schedule, so they pay when their day comes.
-- On-time bonus: finishing before the due date adds a bonus *(tune)*.
-- Subtasks pay a small fixed amount each *(tune)*. Watch that splitting a task into many tiny subtasks does not become the new exploit; the minimum age applies to subtasks too.
+- On-time bonus: finishing before the due date adds a bonus *(tune)*. **Overdue tasks pay the normal reward**, just without the bonus, so old tasks get finished rather than abandoned.
+- **Subtasks** pay a flat 1 Rare Candy each *(tune)*, for up to 5 subtasks per task. The parent pays in full when it is finished. The minimum age applies to subtasks too.
+- **Undo:** completing a task shows its reward and grants it after a 10 second undo window; undo cancels it. After that completion is final.
 - **Categories** are for organising only and never change rewards. Six, replacing the old eight (School, Work, Hobby, Leisure, Chores, Health, Social, Others, where Hobby/Leisure overlapped and Others was a dumping ground):
 
 | Category | Covers |
@@ -49,6 +50,10 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 | Personal | hobbies, leisure, anything else (the default) |
 
   Each has a colour used on the calendar and widgets. A weekly recap shows how the week split across categories.
+
+## Planner (v1)
+
+In scope for v1: tasks with priority, category, due date/time and reminders; **recurring tasks** (daily, weekly, monthly, custom); **subtasks**; an **own calendar view** (month and week, tasks by due date) that also feeds the agenda widget; and **read-only import of device calendar events** on Android (needs the calendar permission; shown on the calendar and agenda, never paid as tasks).
 
 ## Pokémon
 
@@ -170,9 +175,8 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 
 ## Open questions
 
-Being settled in rounds before any Pokémon-depth code is written. Done: focus interruptions, task age, streak, accounts.
+Being settled in rounds before any Pokémon-depth code is written. Done: focus interruptions, task age, streak, accounts, planner scope, overdue, subtasks, undo.
 
-- **Tasks and calendar:** v1 planner features, overdue handling, subtask payouts, undo.
 - **Pokémon economy:** roster size, buddy rules, perk magnitudes, transfer rules, item sources, shiny rate.
 - **Online:** friends and co-op scope, what is public.
 - **Screens:** navigation, home layout, flows.
