@@ -9,6 +9,11 @@ on:
 permissions:
   contents: write
 
+# Two merges close together must not delete each other's release halfway; the newer one wins.
+concurrency:
+  group: latest-apk
+  cancel-in-progress: true
+
 jobs:
   apk:
     name: Build and publish the APK
