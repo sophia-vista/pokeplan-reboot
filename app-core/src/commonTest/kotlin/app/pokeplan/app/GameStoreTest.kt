@@ -401,4 +401,38 @@ class GameStoreTest {
         assertTrue(s.pet() > 0)
         assertEquals(1, s.data.counters.keys.count { it.startsWith("pet-") })
     }
+
+    @Test
+    fun the_buddy_sleeps_in_a_session_cheers_when_done_and_droops_after_quiet_days() {
+        val (s, clock) = started()
+        assertEquals(BuddyMood.WAITING, s.buddyMood())
+        s.startFocus(25, deepFocus = false)
+        assertEquals(BuddyMood.FOCUSING, s.buddyMood())
+        s.focusEvent(FocusEvent.GaveUp)
+        s.completeTask(s.data.tasks.single().id)
+        clock.advance(11_000)
+        s.tick()
+        assertEquals(BuddyMood.CHEERFUL, s.buddyMood())
+        clock.advance(3 * 24 * 3_600_000L)
+        assertEquals(BuddyMood.LONELY, s.buddyMood())
+    }
+
+    @Test
+    fun reload_picks_up_a_change_made_by_another_store_on_the_same_save() {
+        val storage = MemoryStorage()
+        val clock = FakeClock(start)
+        val app = GameStore(storage, clock, utc, Random(7)).also { it.start("Sophia", 25) }
+        val widget = GameStore(storage, clock, utc, Random(8))
+        val before = widget.data.player.buddy!!.friendship
+        assertTrue(widget.pet() > 0)
+        assertEquals(before, app.data.player.buddy!!.friendship)
+        var seen: AppData? = null
+        app.observe { seen = it }
+        app.reload()
+        assertTrue(app.data.player.buddy!!.friendship > before)
+        assertNotNull(seen)
+        seen = null
+        app.reload()
+        assertNull(seen, "nothing changed the second time")
+    }
 }
