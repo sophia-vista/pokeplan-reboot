@@ -72,6 +72,9 @@ class AppModel(
     /** A task picked on Home or in the Planner to focus on; the Focus screen offers it when it opens. */
     var focusTaskId: String? by mutableStateOf(null)
 
+    /** When the buddy last celebrated an event, so opening Home again does not repeat it. */
+    var celebratedAt: Long by mutableStateOf(0L)
+
     /** The current time, refreshed twice a second so timers redraw. */
     var now: Long by mutableStateOf(store.nowMillis)
         private set

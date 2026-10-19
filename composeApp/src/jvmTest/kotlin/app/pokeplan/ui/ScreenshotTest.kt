@@ -27,11 +27,11 @@ import kotlin.test.assertTrue
  */
 @OptIn(ExperimentalComposeUiApi::class)
 class ScreenshotTest {
-    private fun render(name: String, content: @Composable () -> Unit) {
+    private fun render(name: String, frames: Int = 60, content: @Composable () -> Unit) {
         val scene = ImageComposeScene(width = 540, height = 1080, density = Density(1.5f)) { content() }
         var nanos = 0L
         // Sprites load asynchronously, so draw a few frames with a short wait between them.
-        repeat(60) {
+        repeat(frames) {
             scene.render(nanos)
             nanos += 50_000_000
             Thread.sleep(20)
@@ -69,6 +69,17 @@ class ScreenshotTest {
         store.grant("berry-sweet", 2)
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
         render("home-rewards") { App(storage, focusTab = true) }
+    }
+
+    @Test
+    fun homeTorchicAfterAnEvent() {
+        val store = GameStore(MemoryStorage(), clock).also { it.start("Sophia", 255) }
+        store.completeTask(store.data.tasks.single().id)
+        clock.millis += 11_000
+        store.tick()
+        val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
+        // Stop early: a reaction lasts about two seconds of animation time, so it is on screen at frame 30.
+        render("home-torchic-event", frames = 30) { App(storage, focusTab = true) }
     }
 
     @Test
