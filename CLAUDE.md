@@ -14,6 +14,7 @@ A fun productivity, growth and self-improvement app for Pokémon lovers: finishi
 - `tools/species/generate.py`: stdlib Python that regenerates `DexData.kt` from the public PokeAPI CSVs. Run `python3 -I tools/species/generate.py`; it caches downloads in `tools/species/cache` (git-ignored).
 - `assets/sprites/`: Pokémon sprites (96×96 PNG, `<formId>.png` and `<formId>-shiny.png`, plus `manifest.tsv`) from the public PokeAPI/sprites repo, fetched with `python3 -I tools/sprites/fetch.py` (needs `tools/species/cache`, so run the species generator first). Form ids match `FormInfo.id`.
 - `docs/design.md`: product and game design.
+- `docs/home-region-curation-prompt.md` and `docs/home-region-candidates.md`: the kit for curating the Home Region (`tools/species/home-region.txt`) in a separate chat. Regenerate the candidates table with `./gradlew :shared:curationReport`.
 - `legacy-android/`: the original Android app (Gradle project; see below). Single module `app`, package `com.mobdeve.s11.pokeplan`, Java 8, `minSdk 21` / `targetSdk 30`, view binding on, Android Gradle Plugin 7.0.2 with Gradle 7.0.2 (old: build with JDK 11, not 17 or newer).
 - Planned and not yet present: `composeApp` (UI, needs Compose dependencies from `dl.google.com`), an Android app module, and `supabase/` (schema and functions).
 
