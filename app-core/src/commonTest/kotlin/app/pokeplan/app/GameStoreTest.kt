@@ -375,4 +375,18 @@ class GameStoreTest {
         assertTrue(s.acceptQuest(ids[2]))
         assertFalse(s.acceptQuest(ids[3]))
     }
+
+    @Test
+    fun petting_the_buddy_gives_friendship_up_to_the_daily_cap_and_resets_tomorrow() {
+        val (s, clock) = started()
+        val before = s.data.player.buddy!!.friendship
+        var total = 0
+        repeat(20) { total += s.pet() }
+        assertTrue(total in 10..11, "gained $total")
+        assertEquals(before + total, s.data.player.buddy!!.friendship)
+        assertEquals(0, s.pet())
+        clock.advance(24 * 3_600_000L)
+        assertTrue(s.pet() > 0)
+        assertEquals(1, s.data.counters.keys.count { it.startsWith("pet-") })
+    }
 }

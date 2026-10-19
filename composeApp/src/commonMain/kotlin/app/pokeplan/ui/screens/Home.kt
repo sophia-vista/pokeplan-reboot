@@ -1,6 +1,19 @@
 package app.pokeplan.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.IntOffset
+import app.pokeplan.core.pokemon.ItemCategory
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -94,7 +107,16 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
             RewardBox(model)
             UndoRows(model)
 
-            if (buddy != null) Companion(buddy.form.id, buddy.isShiny, buddy.nickname, "Lv. ${buddy.level}", buddyLine(data, open.isEmpty() && doneToday > 0))
+            if (buddy != null) {
+                val berry = data.player.inventory.counts.keys.firstOrNull { Items.category(it) == ItemCategory.BERRY && data.player.inventory.has(it) }
+                Companion(
+                    formId = buddy.form.id, shiny = buddy.isShiny, name = buddy.nickname, detail = "Lv. ${buddy.level}",
+                    line = buddyLine(data, open.isEmpty() && doneToday > 0), calm = data.settings.reduceMotion,
+                    onPet = { store.pet() },
+                    berry = berry,
+                    onFeed = { berry?.let { store.useItem(it, buddy.id) } },
+                )
+            }
 
             when {
                 next != null -> NextUp(
@@ -142,21 +164,99 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
     }
 }
 
-/** The buddy standing on a wallpaper banner (the one place a texture is used on Home), with a name plate. */
+/**
+ * The buddy standing on a wallpaper banner (the one place a texture is used on Home), with a name plate.
+ * Tap it to pet it: it hops, hearts float up and it says something. The first few pets a day also raise friendship;
+ * after that it is just for fun. A berry from the bag can be given from the button.
+ */
 @Composable
-private fun Companion(formId: Int, shiny: Boolean, name: String, detail: String, line: String) {
+private fun Companion(
+    formId: Int, shiny: Boolean, name: String, detail: String, line: String, calm: Boolean,
+    onPet: () -> Int, berry: String?, onFeed: () -> Unit,
+) {
+    var said by remember { mutableStateOf<String?>(null) }
+    var taps by remember { mutableStateOf(0) }
+    val hop = remember { Animatable(0f) }
+    LaunchedEffect(taps) {
+        if (taps == 0) return@LaunchedEffect
+        if (!calm) {
+            hop.animateTo(-18f, tween(110))
+            hop.animateTo(0f, tween(150))
+        }
+    }
+    LaunchedEffect(said) {
+        if (said != null) {
+            delay(2_400)
+            said = null
+        }
+    }
     val shape = RoundedCornerShape(Spacing.CardRadius)
     PixelBackground("bw01", Modifier.fillMaxWidth().height(216.dp).clip(shape).border(1.dp, Pixel.Border, shape)) {
         Box(
             Modifier.align(Alignment.BottomCenter).padding(bottom = 46.dp).size(132.dp, 22.dp)
                 .drawBehind { drawOval(Color(0x33000000), Offset.Zero, Size(size.width, size.height)) },
         )
-        Sprite(formId, shiny, name, Modifier.align(Alignment.BottomCenter).padding(bottom = 26.dp), size = 144.dp)
+        Hearts(taps, calm, Modifier.align(Alignment.BottomCenter).padding(bottom = 130.dp))
+        Sprite(
+            formId, shiny, name,
+            Modifier.align(Alignment.BottomCenter).padding(bottom = 26.dp).offset { IntOffset(0, hop.value.dp.roundToPx()) }
+                .clickable(onClickLabel = "Pet $name", role = Role.Button) {
+                    onPet()
+                    taps++
+                    said = PET_LINES.random()
+                },
+            size = 144.dp,
+        )
         NamePlate(name, detail, Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.S))
         Text(
-            line, style = MaterialTheme.typography.labelMedium,
+            said ?: line, style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.S).background(Pixel.Panel, RoundedCornerShape(50)).padding(horizontal = Spacing.M, vertical = 6.dp),
         )
+        if (berry != null) Box(
+            Modifier.align(Alignment.BottomEnd).padding(Spacing.S).size(48.dp).background(Pixel.Panel, CircleShape)
+                .border(1.dp, Pixel.Border, CircleShape)
+                .clickable(onClickLabel = "Give $name a ${(Items.get(berry)?.name ?: berry)}", role = Role.Button) {
+                    onFeed()
+                    taps++
+                    said = "Yum!"
+                },
+            contentAlignment = Alignment.Center,
+        ) { ItemIcon(berry, size = 32.dp, description = (Items.get(berry)?.name ?: berry)) }
+    }
+}
+
+private val PET_LINES = listOf("That feels nice!", "Hehe!", "More, please!", "You're the best!", "Happy to be here!")
+
+/** A few hearts rise from the buddy and fade out after each pet. */
+@Composable
+private fun Hearts(taps: Int, calm: Boolean, modifier: Modifier = Modifier) {
+    val rise = remember { Animatable(1f) }
+    LaunchedEffect(taps) {
+        if (taps == 0) return@LaunchedEffect
+        rise.snapTo(0f)
+        rise.animateTo(1f, tween(if (calm) 400 else 900))
+    }
+    if (rise.value >= 1f) return
+    Box(modifier.size(96.dp, 80.dp).graphicsLayer { alpha = 1f - rise.value }) {
+        listOf(0.dp to 0f, 40.dp to 0.25f, 72.dp to 0.1f).forEach { (x, delayShare) ->
+            val t = ((rise.value - delayShare) / (1f - delayShare)).coerceIn(0f, 1f)
+            Heart(Modifier.offset(x = x, y = 60.dp - (if (calm) 0.dp else 60.dp * t)).size(22.dp))
+        }
+    }
+}
+
+@Composable
+private fun Heart(modifier: Modifier = Modifier) {
+    Canvas(modifier) {
+        val w = size.width
+        val h = size.height
+        val path = Path().apply {
+            moveTo(w / 2, h * 0.92f)
+            cubicTo(-w * 0.15f, h * 0.45f, w * 0.15f, -h * 0.1f, w / 2, h * 0.28f)
+            cubicTo(w * 0.85f, -h * 0.1f, w * 1.15f, h * 0.45f, w / 2, h * 0.92f)
+            close()
+        }
+        drawPath(path, Pixel.Red)
     }
 }
 

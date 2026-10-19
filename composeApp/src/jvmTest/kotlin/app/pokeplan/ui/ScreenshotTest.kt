@@ -66,6 +66,7 @@ class ScreenshotTest {
         clock.millis += 11_000
         store.tick()
         store.grant("rare-candy", 12)
+        store.grant("berry-sweet", 2)
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
         render("home-rewards") { App(storage, focusTab = true) }
     }

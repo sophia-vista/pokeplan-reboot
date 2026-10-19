@@ -42,6 +42,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.Font
 import pokeplan.composeapp.generated.resources.Res
+import pokeplan.composeapp.generated.resources.nunito_bold
+import pokeplan.composeapp.generated.resources.nunito_regular
+import pokeplan.composeapp.generated.resources.nunito_semibold
 import pokeplan.composeapp.generated.resources.pokemon_dp
 import pokeplan.composeapp.generated.resources.pokemon_dp_bold
 
@@ -106,10 +109,19 @@ fun pixelFont(): FontFamily = FontFamily(
     Font(Res.font.pokemon_dp_bold, FontWeight.Bold),
 )
 
+/** Nunito (OFL): the soft, legible body font for everything read in bulk. */
+@Composable
+fun bodyFont(): FontFamily = FontFamily(
+    Font(Res.font.nunito_regular, FontWeight.Normal),
+    Font(Res.font.nunito_semibold, FontWeight.Medium),
+    Font(Res.font.nunito_semibold, FontWeight.SemiBold),
+    Font(Res.font.nunito_bold, FontWeight.Bold),
+)
+
 @Composable
 fun PixelTheme(content: @Composable () -> Unit) {
     val display = pixelFont()
-    val body = FontFamily.SansSerif
+    val body = bodyFont()
     fun style(font: FontFamily, size: Int, line: Int, weight: FontWeight = FontWeight.Normal, color: Color = Pixel.Ink) = TextStyle(
         fontFamily = font, fontSize = size.sp, lineHeight = line.sp, fontWeight = weight, color = color,
         lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
@@ -121,7 +133,7 @@ fun PixelTheme(content: @Composable () -> Unit) {
             error = Pixel.Danger, outline = Pixel.Border,
         ),
         typography = Typography(
-            // Pixel font: game headings, rank, stats, button labels. Everything meant to be read in bulk is plain sans.
+            // Pixel font: game headings, rank, stats, button labels. Everything meant to be read in bulk is Nunito.
             headlineMedium = style(display, 30, 38, FontWeight.Bold),
             titleLarge = style(display, 24, 32, FontWeight.Bold),
             titleMedium = style(display, 20, 28, FontWeight.Bold),
