@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: VERSION is MAJOR.MINOR.PATCH
+        run: grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' VERSION
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

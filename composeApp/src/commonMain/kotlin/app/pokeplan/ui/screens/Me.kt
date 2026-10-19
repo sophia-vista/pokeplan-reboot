@@ -35,6 +35,8 @@ import app.pokeplan.plan.GoalRules
 import app.pokeplan.plan.Reviews
 import app.pokeplan.plan.TaskState
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.AppVersion
+import app.pokeplan.ui.display
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.theme.ListRow
@@ -278,6 +280,22 @@ private fun SettingsView(model: AppModel) {
         }
     }
     AccountCard(model)
+    AboutCard()
+}
+
+/** The app's version, so a bug report or a friend's install can say exactly which build it is. */
+@Composable
+private fun AboutCard() {
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("About", style = MaterialTheme.typography.titleMedium)
+            Text("PokéPlan ${AppVersion.display}", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                "A private fan project. Pokémon names, sprites and sounds belong to Nintendo, Game Freak and The Pokémon Company.",
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            )
+        }
+    }
 }
 
 /** Sign in, sign out and the state of the cloud save. Without a configured project it says online features are not set up. */

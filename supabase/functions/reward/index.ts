@@ -5,6 +5,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 import { RewardApi } from "./engine/pokeplan-pokemon-core.mjs";
 import { type Database, handleReward, handleSync, RequestError } from "./core.ts";
+// Written by build.sh from the VERSION file and the commit being deployed.
+import { COMMIT, VERSION } from "./version.ts";
 
 const url = Deno.env.get("SUPABASE_URL")!;
 const service = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -55,12 +57,16 @@ const db: Database = {
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Expose-Headers": "x-pokeplan-version",
+  "x-pokeplan-version": VERSION,
 };
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: cors });
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  // A plain GET says which version is deployed.
+  if (req.method === "GET") return json({ function: "reward", version: VERSION, commit: COMMIT });
   if (req.method !== "POST") return new Response("POST only", { status: 405, headers: cors });
   try {
     const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer /i, "");
