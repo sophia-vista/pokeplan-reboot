@@ -192,9 +192,14 @@ from Guardians). Nothing below changes them.
 | Any-Pokémon-as-Guardian, life-stat mapping, domain-reading perks, deployment fatigue, soft-reset shiny hunting, wild battles | Break the principles or belong to the later standalone game |
 | Legendary trading | Legendaries are already untransferable |
 
-### Still open
+### Decided (owner)
 
-1. Do regions map to modules for flavour, or stay purely geographic? *(lean: geographic)*
-2. Are legendaries required for regional dex completion, or bonus pages? *(lean: bonus)*
-3. Plan arcs: keep one quest per legendary (as built), or one arc that yields the trio in sequence? *(lean: as built)*
-4. Keep Darkrai as an opt-in shadow collectible, or leave it out? *(lean: out)*
+1. **Regions are custom and tied to modules, for flavour.** A module's region is a hand-curated list of species made for that module, in the same way as the Home Region (`tools/species/home-region.txt`), not a copy of a game region. Its theme, patron legendaries and egg type pool fit the module (the lake trio suit Plan, so Plan's list is where they belong; the other lists are curated module by module, and Care's before Care v1 ships). The game regions (Kanto and the rest) stay as the ordinary collectable dexes. It is flavour, not ownership: a custom region holds no domain data, and *(proposed)* it is **not gated by using the module**, so nobody has to use a module they do not want to finish a dex. The same limits as every egg method apply (best two methods, daily caps). Curation uses the existing kit (`docs/home-region-curation-prompt.md`, `./gradlew :pokemon-core:curationReport`).
+2. **Legendaries and mythicals count towards regional dex completion.** A region is complete only with its legendary-class and mythical species, which are earned through quests, not eggs. Consequences to handle when the completion rewards are built: the "completes the Home dex at about day 67" pacing in docs/design.md covers the hatchable species only, so completion also waits on the quests (rank-gated, long); the Dex should show those pages as "earned by quest" so they never read as missing eggs; and the economy simulation should report both "hatchable done" and "fully complete".
+3. **Plan arcs stay as built:** one quest per legendary. For future modules, arcs should add up to **one cohesive but small and quick story** (see below).
+4. **Darkrai is out.**
+
+### Story direction (future)
+
+Keep it light: a few short beats, never a cutscene, never a wall of text. One shared thread runs through every module's arc so they read as one world rather than separate checklists. Each arc is quick (a handful of beats, tied to the effort the quest already asks for) and each beat is one or two lines with the patron's sprite and the usual reaction emoji. The story reacts to real effort only and never reads a domain (no task titles, notes or values), like every other event. The lake trio's arcs (knowledge, emotion, willpower) are the template; the thread that joins modules is still to be written, and should be agreed before the second module's arc ships.
+
