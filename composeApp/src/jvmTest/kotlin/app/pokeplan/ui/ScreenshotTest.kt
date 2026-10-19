@@ -77,7 +77,7 @@ class ScreenshotTest {
         val model = AppModel(store)
         store.addSubtask(store.data.tasks.last().id, "Open the draft")
         render("planner") {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model) } }
+            PixelTheme { PixelBackground("bw07", Modifier.fillMaxSize()) { PlannerScreen(model) } }
         }
     }
 }

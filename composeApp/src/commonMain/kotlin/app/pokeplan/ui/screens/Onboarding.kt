@@ -42,7 +42,9 @@ fun OnboardingScreen(store: GameStore) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("PokéPlan", style = MaterialTheme.typography.headlineMedium, color = Pixel.Red, modifier = Modifier.padding(top = 24.dp))
+        TextBox(Modifier.padding(top = 24.dp), accent = Pixel.Red) {
+            Text("PokéPlan", Modifier.fillMaxWidth(), style = MaterialTheme.typography.headlineMedium, color = Pixel.Red, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        }
         if (step == 0) {
             TextBox(Modifier.fillMaxWidth()) {
                 Text(

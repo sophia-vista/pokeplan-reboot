@@ -140,6 +140,7 @@ fun PixelButton(
     modifier: Modifier = Modifier,
     color: Color = Pixel.Blue,
     enabled: Boolean = true,
+    compact: Boolean = false,
 ) {
     val face = if (enabled) color else Pixel.Gray
     val edge = if (enabled) darker(color) else Pixel.GrayDark
@@ -154,7 +155,7 @@ fun PixelButton(
                 drawRect(Color.White.copy(alpha = 0.35f), Offset(line, line), Size(size.width - line * 2, line / 2))
             }
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(PaddingValues(horizontal = 16.dp, vertical = 11.dp)),
+            .padding(if (compact) PaddingValues(horizontal = 12.dp, vertical = 6.dp) else PaddingValues(horizontal = 16.dp, vertical = 11.dp)),
         contentAlignment = Alignment.Center,
     ) {
         Text(text, style = MaterialTheme.typography.labelLarge, color = Color.White)

@@ -7,5 +7,6 @@ All art is real game assets, never generated (the owner's rule). This is a priva
 | Pokémon sprites (front and shiny) | `assets/sprites/` | PokeAPI/sprites, `tools/sprites/fetch.py` |
 | Item icons (bag, tab icons) | `assets/items/` | PokeAPI/sprites, `tools/sprites/fetch_items.py` |
 | Font for all text | `assets/fonts/pokemon_dp.ttf`, `pokemon_dp_bold.ttf` | `Pokemon-DP` and `Pokemon-DP-Bold` from [hexparrot/pokemon-assets](https://github.com/hexparrot/pokemon-assets) (a fork of itsjavi/pokemon-assets, MIT for the package; the fonts are recreations of the games' fonts). Licence file next to them. |
+| Backgrounds | `assets/backgrounds/bw01, bw07, bw08, bw11, bw12, bw15.png` | The Pokémon Black/White PC box wallpapers (01, 07, 08, 11, 12, 15), from [kwsch/PKHeX](https://github.com/kwsch/PKHeX) `PKHeX.Drawing.Misc/Resources/img/box/bw` at commit `bfe89c7`. PKHeX is GPL-3 (licence next to them); the art is Game Freak's. Private use only. Tiled, mirrored and drawn at a whole-number scale. |
 
 The same package also has GBC, GBA and DS fonts, menu sprites, ribbons, marks, type badges (SVG) and sound effects, if we want more.

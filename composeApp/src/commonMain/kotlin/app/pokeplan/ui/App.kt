@@ -35,9 +35,9 @@ import kotlinx.coroutines.delay
 import kotlin.time.Clock as SystemClock
 
 /** The bottom tabs, each with the real game item that stands for it. */
-enum class Tab(val label: String, val icon: String) {
-    HOME("Home", "town-map"), PLANNER("Planner", "journal"), FOCUS("Focus", "mystery-egg"),
-    COLLECTION("Pokémon", "poke-ball"), ME("Me", "member-card"),
+enum class Tab(val label: String, val icon: String, val background: String) {
+    HOME("Home", "town-map", "bw01"), PLANNER("Planner", "journal", "bw07"), FOCUS("Focus", "mystery-egg", "bw11"),
+    COLLECTION("Pokémon", "poke-ball", "bw15"), ME("Me", "member-card", "bw08"),
 }
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
@@ -70,7 +70,7 @@ fun App(storage: Storage, focusTab: Boolean = true) {
     PixelTheme {
         Box(Modifier.fillMaxSize().background(Pixel.Paper).safeDrawingPadding()) {
             if (!model.data.onboarded) {
-                OnboardingScreen(store)
+                PixelBackground("bw12", Modifier.fillMaxSize()) { OnboardingScreen(store) }
             } else {
                 MainShell(model, focusTab)
             }
@@ -86,7 +86,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean) {
     val go = { to: Tab -> selected = to.name }
 
     Column(Modifier.fillMaxSize()) {
-        Box(Modifier.weight(1f).fillMaxWidth()) {
+        PixelBackground(tab.background, Modifier.weight(1f).fillMaxWidth()) {
             when (tab) {
                 Tab.HOME -> HomeScreen(model, go)
                 Tab.PLANNER -> PlannerScreen(model)

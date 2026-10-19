@@ -10,16 +10,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.TextBox
 
 @Composable
 private fun Soon(title: String, line: String) {
-    Box(Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
-        TextBox {
-            androidx.compose.foundation.layout.Column {
-                Text(title, style = MaterialTheme.typography.titleMedium)
-                Text(line, Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium)
-            }
+    androidx.compose.foundation.layout.Column(Modifier.fillMaxSize()) {
+        ScreenHeader(title)
+        Box(Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
+            TextBox { Text(line, style = MaterialTheme.typography.bodyLarge) }
         }
     }
 }
