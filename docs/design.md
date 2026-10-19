@@ -183,6 +183,7 @@ Not hatched from random eggs, which keeps them special and avoids a 4 hour Deep 
 
 - **Legendary quests:** each region has quests for its legendaries (the games' legendaries for that region). A quest unlocks at a trainer rank plus a share of that regional dex *(tune: about 80%)* and asks for a long strict focus session (Deep Focus) and a set number of paid tasks within a time window *(tune)*. Finishing it grants a Legendary Egg that hatches that specific species. There is no extra pacing: the requirements set the pace.
 - **Mythical rewards:** milestone based (long streaks, task totals, top rank, full regional dex), one fixed species per milestone. Events can add more later.
+- **Every legendary and mythical has a quest** *(decided by the owner)*. Mythicals with no in-game encounter get **long-term quests**: available fairly early, but slow to finish (weeks of steady use, not a single push). Legendaries in the Home Region are tied to its lore: the lake trio (Uxie, Mesprit, Azelf) stand for the core self-improvement ideas of the app, so their quests are written around those ideas (knowledge, emotion, willpower) rather than generic task counts. Quest design for each species is still to do; the 26 quest-only species in the Home list are confirmed as quest-only.
 - **Species with a tradition of being obtainable in the wild** (the pseudo-legendary lines, Absol, etc.) stay in the egg pools, in the Super Rare tier by the rule.
 
 ### Regions
