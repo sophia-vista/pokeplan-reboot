@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Downloads item icons from the public PokeAPI/sprites repository into assets/items.
+"""Downloads item icons and type plates from the public PokeAPI/sprites repository into assets/items and assets/types.
 
 Usage: python3 -I tools/sprites/fetch_items.py
 
@@ -80,5 +80,28 @@ def main():
     print(f'{len(wanted) - len(missing)} icons, missing: {missing}')
 
 
+def fetch_types():
+    """The 18 type name plates (Sword and Shield style) into assets/types/<type>.png."""
+    out = os.path.join(ROOT, 'assets/types')
+    os.makedirs(out, exist_ok=True)
+    base = f'https://raw.githubusercontent.com/PokeAPI/sprites/{SPRITES_COMMIT}/sprites/types/generation-viii/sword-shield/'
+    count = 0
+    for r in read_csv('types.csv'):
+        tid = int(r['id'])
+        if tid > 18:
+            continue
+        path = os.path.join(out, r['identifier'] + '.png')
+        if os.path.exists(path) and os.path.getsize(path) > 0:
+            count += 1
+            continue
+        with urllib.request.urlopen(base + f'{tid}.png', timeout=30) as resp:
+            data = resp.read()
+        with open(path, 'wb') as fh:
+            fh.write(data)
+        count += 1
+    print(f'{count} type plates')
+
+
 if __name__ == '__main__':
     main()
+    fetch_types()

@@ -24,7 +24,4 @@ private fun Soon(title: String, line: String) {
 }
 
 @Composable
-fun CollectionScreen(model: AppModel) = Soon("Pokémon", "Your party, PC and Pokédex are coming next.")
-
-@Composable
 fun MeScreen(model: AppModel) = Soon("Me", "Your trainer card and settings are coming next.")

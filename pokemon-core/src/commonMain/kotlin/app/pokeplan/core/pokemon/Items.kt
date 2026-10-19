@@ -51,7 +51,16 @@ object Items {
         "zinc" to ("Zinc" to ItemCategory.VITAMIN), "carbos" to ("Carbos" to ItemCategory.VITAMIN),
     )
 
-    private fun pretty(id: String) = id.split('-').joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
+    private fun pretty(id: String): String {
+        // "berry-sweet" reads "Sweet Berry"; "lure-fire" "Fire Lure"; "tera-shard-fire" "Fire Tera Shard".
+        val words = when {
+            id.startsWith("berry-") -> id.removePrefix("berry-") + "-berry"
+            id.startsWith("lure-") -> id.removePrefix("lure-") + "-lure"
+            id.startsWith("tera-shard-") -> id.removePrefix("tera-shard-") + "-tera-shard"
+            else -> id
+        }
+        return words.split('-').joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
+    }
 
     /** Evolution items taken from the evolution data (stones and the like). */
     val evolutionItems: List<String> by lazy {
