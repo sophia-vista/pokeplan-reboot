@@ -15,8 +15,9 @@ class CandyRates(val superAbove: Int, val rare: IntRange, val superCandy: IntRan
         require(!rare.isEmpty() && !superCandy.isEmpty()) { "candy ranges must not be empty" }
     }
 
-    fun roll(rng: Random): CandyReward =
-        if (rng.nextInt(1, 101) > superAbove) CandyReward(CandyType.SUPER, rng.nextInt(superCandy.first, superCandy.last + 1))
+    /** [superBonusPoints] lowers the Super Candy threshold (the Super Candy chance perk). */
+    fun roll(rng: Random, superBonusPoints: Int = 0): CandyReward =
+        if (rng.nextInt(1, 101) > superAbove - superBonusPoints.coerceAtLeast(0)) CandyReward(CandyType.SUPER, rng.nextInt(superCandy.first, superCandy.last + 1))
         else CandyReward(CandyType.RARE, rng.nextInt(rare.first, rare.last + 1))
 }
 
