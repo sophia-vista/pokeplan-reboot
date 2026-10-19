@@ -20,7 +20,17 @@ jobs:
         with:
           node-version: 22
       - name: Unit tests (JVM) and the web and JavaScript builds
-        run: ./gradlew jvmTest compileKotlinWasmJs jsProductionLibraryCompileSync --no-daemon
+        run: ./gradlew jvmTest compileKotlinWasmJs jsProductionLibraryCompileSync :composeApp:compileKotlinJvm --no-daemon
+      - name: Android debug app
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          ./gradlew :androidApp:assembleDebug --no-daemon
+      - name: Keep the APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokeplan-debug-apk
+          path: androidApp/build/outputs/apk/debug/androidApp-debug.apk
+          retention-days: 14
       - name: The compiled engine matches the JVM (Node)
         run: node tools/server/smoke.mjs pokemon-core/build/compileSync/js/main/productionLibrary/kotlin
       - name: The reward function's logic (Node)
