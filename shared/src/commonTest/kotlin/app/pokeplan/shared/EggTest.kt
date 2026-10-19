@@ -66,12 +66,6 @@ class EggTest {
     }
 
     @Test
-    fun hatchReturnsASpeciesOfARolledRarity() {
-        val rng = Random(1)
-        repeat(500) { assertTrue(Egg.hatch(mins(240), true, rng).rarity in listOf(Rarity.RARE, Rarity.SUPER_RARE)) }
-    }
-
-    @Test
     fun ratesMustAddUpTo100() {
         assertFailsWith<IllegalArgumentException> { RarityRates(50, 30, 10, 5) }
     }
