@@ -157,6 +157,24 @@ Not hatched from random eggs, which keeps them special and avoids a 4 hour Deep 
 - **Unlock by trainer rank** (below). The National Dex is the combination of all regions.
 - Mega / Gigantamax forms are available through the region where they were introduced (Kalos for Mega, Galar for G-Max, etc.) *(proposal)*.
 
+## Pacing and collection layers
+
+Collecting is **fast at the start and deep at the end.** The simulator tunes toward these targets (at roughly 5 eggs and 5 tasks a day):
+
+- **Basic dex of the Home Region (every species caught, including evolutions): about 2 months** *(tune)*. Each later region is about the same once unlocked.
+- **Region unlocks:** trainer rank opens a new region about every 3 to 4 weeks *(tune)*, so a player is usually collecting in more than one region.
+- **The long tail** (months to years) is made of layers, each with its own progress, badge and showcase:
+
+| Layer | Goal |
+|---|---|
+| Basic dex | one of each species caught |
+| Form dex | regional, gendered and Mega / G-Max forms; cosmetic forms are the side collection |
+| Shiny dex | a shiny of each species (1 in 128 per egg makes this the longest chase) |
+| Perfect dex | a "perfect build" of each species: 31 IVs, an EV spread of 252 / 252 / 6, a favourable nature, a chosen ability. Competitive-style building, and the endgame use for Nature Mints, Bottle Caps, Vitamins and Ability Capsules |
+| Ribbons | contest ribbons, legendary quests, mythical milestones |
+
+Perfect builds are shown on a Pokémon's page and in the Hall of Fame; they have no gameplay effect beyond perks and contests.
+
 ## Spin-off inspired features
 
 Planned, with build order to be set later.
@@ -195,6 +213,11 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 - Daily streak: kept alive by one paid task **or** one completed focus session that day, weekly goals, and a Pokédex with seen/caught, region completion rewards and a trainer card.
 - Badges for milestones (tasks finished, focus hours), shown as gym badges.
 - **First online release:** friends and profiles (view a friend's buddy, party and trainer card) and **weekly friends-only leaderboards** (focus minutes, tasks finished, resetting weekly). Trading and co-op focus come later.
+- **Daily gifts:** send each friend one berry or small item a day; they open it as a gift. No cheers, comments or activity feed.
+
+## Notifications
+
+Beyond task reminders: a **streak-at-risk reminder** in the evening if nothing has counted yet that day (on by default, easy to turn off); a **welcome-back gift** after 7 or more days away, with the streak simply starting fresh and no scolding; and a **weekly recap** on Sundays (tasks, focus time, category split). No buddy messages. All can be switched off in settings, and reminders are silenced during focus.
 
 ## Look and feel
 
@@ -209,7 +232,7 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 
 Navigation is five bottom tabs on the phone: **Home / Planner / Focus / Collection / Me**. Desktop and web have no Focus tab (four sections).
 
-- **Home:** the animated buddy with mood and a speech bubble; tap to pet (friendship, small daily cap). Streak flame, today's top tasks (tap to complete), a "Start focus" button at the default length, small candy and coin counters.
+- **Home:** a small pixel scene where the buddy wanders, idles and reacts to events, with a speech bubble. Tap the sprite to pet it (friendship, small daily cap); a berry button feeds it. There is no separate close-up screen. Streak flame, today's top tasks (tap to complete), a "Start focus" button at the default length, small candy and coin counters.
 - **Planner:** Inbox, Today, Upcoming, All and Calendar views (lists can show as a mission board; the calendar has drag-and-drop planning), category and list filters, search, quick-add sheet (title, difficulty, due, then "more" for category, recurrence, subtasks, reminder). Completing a task opens a reward sheet with the 10 second undo.
 - **Focus:** optional task to focus on, region picker, presets (15 / 25 / 45 / 60) plus custom, Deep Focus toggle, a short reminder of the strict rules, the egg during the session, the emergency pause button. On finish: hatch ceremony, then a summary card with actions (set as buddy, keep, transfer).
 - **Collection:** Party (6), PC boxes (30 each), Pokédex (National Dex, seen / caught, forms tab, cosmetic-forms collection), Bag. The Pokémon detail screen shows stats, nature, ability, an IV "judge" (qualitative, like the games), training plan, held item, and actions: feed Rare Candy, evolve, transfer, nickname, set as buddy.
@@ -249,7 +272,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 2. **Species data pipeline:** generate species, base stats, abilities, forms, evolutions, regional dex lists and rarity (by rule) for Gen 1 to 9 from a public dataset, plus the sprite fetch step. The 150 become the Home Region; National Dex numbers.
 3. **Pokémon depth:** IVs, EVs, natures with stats, gender, abilities, shiny, friendship, items, evolution triggers, transfer yields, perk calculation. Unit tested in `:shared`.
 4. **Planner core:** task model, difficulty ranks, Today / Inbox logic, recurrence expansion (time zones and daylight saving included), reminders schedule, the quick-add parser, task-focus link. Pure Kotlin in `:shared`, heavily unit tested.
-5. **Economy simulator:** a script in `:shared` that plays months of tasks and focus sessions to tune every *(tune)* value before the UI is built on them.
+5. **Economy simulator:** a script in `:shared` that plays months of tasks and focus sessions to tune every *(tune)* value against the pacing targets before the UI is built on them.
 6. **UI shell:** desktop and web companion screens (no focus timer; needs `dl.google.com` allowed in the environment).
 7. **Backend:** Supabase schema, RLS, reward functions, sync.
 8. **Android app and widgets** (needs the Android SDK).
