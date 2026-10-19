@@ -104,6 +104,16 @@ private val TaskIdKey = ActionParameters.Key<String>("taskId")
 
 private fun density(context: Context) = context.resources.displayMetrics.density
 
+/** The buddy's scene (its type, dimmed at dusk) as a [heightDp] strip for the other widgets, or null before there is a buddy. */
+private fun buddyScene(context: Context, store: GameStore, heightDp: Int, roundBottom: Boolean = true): Bitmap? {
+    val buddy = store.data.player.buddy ?: return null
+    val d = density(context)
+    return WidgetArt.scene(
+        context, BuddyScene.of(buddy.form.types), BuddyScene.darkness(store.now.hour, store.now.minute),
+        (420 * d).toInt(), (heightDp * d).toInt(), 20 * d, roundBottom,
+    )
+}
+
 /** The soft pill the names and counts sit on, so text stays readable over a wallpaper. */
 private fun GlanceModifier.pill(color: Color = panel) = background(color).cornerRadius(14.dp)
 
@@ -128,7 +138,8 @@ class TodayWidget : GlanceAppWidget() {
         val open = if (store.data.onboarded) store.todayTasks().filter { it.id !in pending && it.isOpen } else emptyList()
         val done = if (store.data.onboarded) store.doneToday() else 0
         val d = density(context)
-        val header = WidgetArt.wallpaper(context, "bw07", (420 * d).toInt(), (44 * d).toInt(), 20 * d, d, roundBottom = false)
+        val header = buddyScene(context, store, 44, roundBottom = false)
+            ?: WidgetArt.wallpaper(context, "bw07", (420 * d).toInt(), (44 * d).toInt(), 20 * d, d, roundBottom = false)
         val state = TodayState(open.take(8), done, done + open.size, store.data.trainerName)
         provideContent { TodayContent(context, state, header) }
     }
@@ -400,7 +411,8 @@ class FocusWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val store = widgetStore(context)
         val session = store.data.focus
-        val d = density(context)
+        val backdrop = buddyScene(context, store, 200)
+            ?: WidgetArt.wallpaper(context, "bw11", (420 * density(context)).toInt(), (200 * density(context)).toInt(), 20 * density(context), density(context))
         val state = if (session != null && !session.isFinished) {
             // The session ends this long after it started, plus time spent paused; shown as a clock time so it never goes stale.
             val end = session.startedAtMillis + session.durationMillis + session.pausedMillis
@@ -413,13 +425,13 @@ class FocusWidget : GlanceAppWidget() {
                     it.setChronometerCountDown(R.id.countdown, true)
                     it.setChronometer(R.id.countdown, SystemClock.elapsedRealtime() + (end - store.nowMillis).coerceAtLeast(0), null, true)
                 },
-                wallpaper = WidgetArt.wallpaper(context, "bw11", (420 * d).toInt(), (200 * d).toInt(), 20 * d, d),
+                wallpaper = backdrop,
                 egg = WidgetArt.item(context, "mystery-egg", 3),
             )
         } else {
             FocusState(
                 running = false, title = "Start focus", detail = "${store.data.settings.defaultFocusMinutes} min, hatch an egg",
-                wallpaper = WidgetArt.wallpaper(context, "bw11", (420 * d).toInt(), (200 * d).toInt(), 20 * d, d),
+                wallpaper = backdrop,
                 egg = WidgetArt.item(context, "mystery-egg", 3),
             )
         }
