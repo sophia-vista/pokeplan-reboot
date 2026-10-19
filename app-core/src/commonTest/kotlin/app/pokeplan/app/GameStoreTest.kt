@@ -11,6 +11,7 @@ import app.pokeplan.plan.Repeat
 import app.pokeplan.plan.TaskState
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlin.random.Random
 import kotlin.test.Test
@@ -238,5 +239,51 @@ class GameStoreTest {
         clock.advance(10_001)
         s.tick()
         assertEquals(1, s.streak.current)
+    }
+
+    @Test
+    fun aMilestonePaysASuperCandyOnceItIsADayOld() {
+        val (s, clock) = started()
+        val goal = s.addGoal("Learn guitar")
+        s.addMilestone(goal.id, "First chord")
+        val milestone = s.data.goals.single().milestones.single()
+        clock.advance(25 * 3_600_000L)
+        val result = s.completeMilestone(goal.id, milestone.id)
+        assertTrue(result.pays)
+        assertTrue(result.goalCompleted)
+        assertEquals(1, s.data.player.inventory[Items.SUPER_CANDY])
+        assertNotNull(s.data.goals.single().completedAtMillis)
+        assertTrue(s.data.rewardLog.last().rewards.size >= 2, "the goal bonus item comes with it")
+    }
+
+    @Test
+    fun aMilestoneTickedStraightAwayPaysNothing() {
+        val (s, _) = started()
+        val goal = s.addGoal("Learn guitar")
+        s.addMilestone(goal.id, "First chord")
+        val result = s.completeMilestone(goal.id, s.data.goals.single().milestones.single().id)
+        assertFalse(result.pays)
+        assertEquals(0, s.data.player.inventory[Items.SUPER_CANDY])
+    }
+
+    @Test
+    fun theWeeklyReviewPaysABerryOnceAndCarriesTasksForward() {
+        val (s, _) = started()
+        val open = s.addTask("Unfinished", Rank.C, planned = s.today)
+        assertTrue(s.canReview())
+        s.completeReview("Went fine", carryTo = s.today.plus(kotlinx.datetime.DatePeriod(days = 1)))
+        assertFalse(s.canReview())
+        assertEquals(1, s.data.reviews.size)
+        assertEquals(s.today.plus(kotlinx.datetime.DatePeriod(days = 1)), s.data.tasks.first { it.id == open.id }.planned)
+        assertTrue(s.data.rewardLog.last().rewards.single() is Reward.ItemDrop)
+    }
+
+    @Test
+    fun restDaysAreLimited() {
+        val (s, _) = started()
+        assertTrue(s.toggleRestDay(s.today))
+        assertTrue(s.today in s.data.restDays)
+        assertTrue(s.toggleRestDay(s.today))
+        assertFalse(s.today in s.data.restDays)
     }
 }

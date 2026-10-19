@@ -25,7 +25,13 @@ import app.pokeplan.plan.FocusEvent
 import app.pokeplan.plan.FocusRecord
 import app.pokeplan.plan.FocusRules
 import app.pokeplan.plan.FocusSession
+import app.pokeplan.plan.Goal
+import app.pokeplan.plan.Insights
+import app.pokeplan.plan.GoalRules
 import app.pokeplan.plan.Habit
+import app.pokeplan.plan.Milestone
+import app.pokeplan.plan.MilestoneResult
+import app.pokeplan.plan.Reviews
 import app.pokeplan.plan.HabitTarget
 import app.pokeplan.plan.Phase
 import app.pokeplan.plan.Rank
@@ -38,9 +44,12 @@ import app.pokeplan.plan.TaskRules
 import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.TaskViews
 import app.pokeplan.plan.toLocalDateTime
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
@@ -265,6 +274,90 @@ class GameStore(
 
     fun undoHabit(id: String, date: LocalDate = today) =
         update { d -> d.copy(habits = d.habits.map { if (it.id == id) it.undo(date) else it }) }
+
+    // --- goals --------------------------------------------------------------------------------------------------------
+
+    fun addGoal(title: String, category: Category = Category.PERSONAL, targetDate: LocalDate? = null): Goal {
+        val goal = Goal(newId(), title.trim(), category, targetDate, createdAtMillis = nowMillis)
+        update { it.copy(goals = it.goals + goal) }
+        return goal
+    }
+
+    fun addMilestone(goalId: String, title: String) = update { d ->
+        d.copy(goals = d.goals.map { g -> if (g.id == goalId) GoalRules.addMilestone(g, Milestone(newId(), title.trim(), nowMillis)) else g })
+    }
+
+    /** Ticks a milestone. It pays a Super Candy if it is old enough (and fewer than 3 paid today); finishing the goal gives a bonus item. */
+    fun completeMilestone(goalId: String, milestoneId: String): MilestoneResult {
+        val goal = data.goals.first { it.id == goalId }
+        val key = "milestones:$today"
+        val result = GoalRules.completeMilestone(goal, milestoneId, nowMillis, data.counters[key] ?: 0)
+        update { d ->
+            var next = d.copy(goals = d.goals.map { if (it.id == goalId) result.goal else it })
+            val gifts = buildList {
+                if (result.pays) add(Items.SUPER_CANDY to GoalRules.SUPER_CANDIES_PER_MILESTONE)
+                result.bonusItem?.let { add(it to 1) }
+            }
+            if (result.pays) next = next.copy(counters = next.counters + (key to ((next.counters[key] ?: 0) + 1)), activeDays = next.activeDays + today)
+            if (gifts.isNotEmpty()) {
+                var bag = next.player.inventory
+                var coins = next.player.coins
+                gifts.forEach { (item, n) -> bag.addCapped(item, n).let { (b, over) -> bag = b; coins += over } }
+                val rewards = gifts.map { (item, n) ->
+                    if (item == Items.SUPER_CANDY) Reward.Candies(app.pokeplan.core.model.CandyType.SUPER, n) else Reward.ItemDrop(item, n)
+                }
+                next = log("Goal: ${goal.title}", rewards, next.copy(player = next.player.copy(inventory = bag, coins = coins)))
+            }
+            next
+        }
+        return result
+    }
+
+    // --- weekly review and rest days ----------------------------------------------------------------------------------
+
+    val weekStart: LocalDate
+        get() = Streaks.weekStartOf(today, if (data.settings.weekStartsOnMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY)
+
+    fun reviewSummary(): Reviews.Summary = Reviews.summary(weekStart, data.tasks, data.focusHistory, data.habits, zone)
+
+    fun canReview(): Boolean = Reviews.canComplete(weekStart, today, data.reviews)
+
+    /** Finishes this week's review: optionally moves unfinished tasks to [carryTo], and pays a berry. */
+    fun completeReview(note: String?, carryTo: LocalDate? = null) {
+        check(canReview()) { "this week was already reviewed" }
+        val carried = if (carryTo != null) reviewSummary().unfinished.map { Reviews.carryForward(it, carryTo) } else emptyList()
+        val review = Reviews.complete(weekStart, nowMillis, note, carried, data.reviews)
+        val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
+        update { d ->
+            val byId = carried.associateBy { it.id }
+            val next = d.copy(
+                tasks = d.tasks.map { byId[it.id] ?: it }, reviews = d.reviews + review,
+                player = d.player.copy(inventory = d.player.inventory.add(berry, Reviews.REWARD_BERRIES)),
+            )
+            log("Weekly review", listOf(Reward.ItemDrop(berry, Reviews.REWARD_BERRIES)), next)
+        }
+    }
+
+    /** Marks or unmarks a rest day; a rest day does not break the streak. Returns false if too many rest days are set. */
+    fun toggleRestDay(date: LocalDate): Boolean {
+        val days = data.restDays
+        if (date in days) {
+            update { it.copy(restDays = days - date) }
+            return true
+        }
+        if (!Streaks.canAddRestDays(days, setOf(date))) return false
+        update { it.copy(restDays = days + date) }
+        return true
+    }
+
+    // --- growth -------------------------------------------------------------------------------------------------------
+
+    /** What the last [days] days went into, by category. */
+    fun wheel(days: Int = 7): Insights.Wheel =
+        Insights.balanceWheel(data.tasks, data.focusHistory, today.minus(DatePeriod(days = days - 1)), today, zone)
+
+    /** Focus minutes and finished tasks for each of the last [weeks] weeks, oldest first. */
+    fun trend(weeks: Int = 6): List<Insights.WeekPoint> = Insights.weeklyTrend(data.tasks, data.focusHistory, weeks, today, zone)
 
     // --- streak -------------------------------------------------------------------------------------------------------
 
