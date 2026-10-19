@@ -26,7 +26,9 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 
 ## Focus
 
-- Minimum session 5 minutes; Deep Focus (motion-based on phones) boosts egg odds by one band (see `Egg` in `:shared`).
+- Minimum session 5 minutes.
+- **Deep Focus:** the phone must stay still (accelerometer, as in the old app); picking it up or moving it fails the session. In exchange the egg odds go up one band (see `Egg` in `:shared`).
+- **Perks are locked when the session starts:** egg-luck and shiny perks use the buddy at the moment start is pressed, so swapping later does not change that egg. Task perks use the buddy at completion time.
 - **Strict mode, always on.** Leaving the app (switching to another app or the home screen) starts a **10 second grace period**. Returning in time keeps the session; otherwise the egg is lost, and a failed session does not count toward the streak. The only pauses are the daily emergency pause and phone calls (below).
 - **The focus timer is phone-only.** Desktop and web are companions (see Platforms).
 - **Locking the screen does not count as leaving.** The session continues with the screen off; unlocking and opening another app starts the grace period. Face-down on the desk is the intended way to focus.
@@ -248,6 +250,13 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 - **First online release:** friends and profiles (view a friend's buddy, party and trainer card) and **weekly friends-only leaderboards** (focus minutes, tasks finished, resetting weekly). Trading and co-op focus come later.
 - **Daily gifts:** send each friend one berry or small item a day; they open it as a gift. No cheers, comments or activity feed.
 
+## Loop crossover
+
+The two loops feed each other so task-only and focus-only players both progress.
+
+- **Focus sessions also give coins and a berry** (amounts by minutes *(tune)*), not just an egg.
+- **Paid tasks fill an Egg meter** (rank-weighted: E counts 1, A counts 5 *(tune)*). Every 10 points *(tune)* produces a **Task Egg** from the player's selected region, hatched instantly with a small ceremony. It rolls on the odds of a short (about 15 minute) focus session, so long focus sessions remain the way to the rarest hatches.
+
 ## Notifications
 
 Beyond task reminders: a **streak-at-risk reminder** in the evening if nothing has counted yet that day (on by default, easy to turn off); a **welcome-back gift** after 7 or more days away, with the streak simply starting fresh and no scolding; and a **weekly recap** on Sundays (tasks, focus time, category split). No buddy messages. All can be switched off in settings, and reminders are silenced during focus.
@@ -270,7 +279,7 @@ Navigation is five bottom tabs on the phone: **Home / Planner / Focus / Collecti
 - **Focus:** optional task to focus on, region picker, presets (15 / 25 / 45 / 60) plus custom, Deep Focus toggle, a short reminder of the strict rules, the egg during the session, the emergency pause button. On finish: hatch ceremony, then a summary card with actions (set as buddy, keep, transfer).
 - **Collection:** Party (6), PC boxes (30 each), Pokédex (National Dex, seen / caught, forms tab, cosmetic-forms collection), Bag. The Pokémon detail screen shows stats, nature, ability, an IV "judge" (qualitative, like the games), training plan, held item, and actions: feed Rare Candy, evolve, transfer, nickname, set as buddy.
 - **Me:** trainer card (badges, streak, totals), the Growth screen, weekly review history, shop, friends and leaderboards (once online), settings (reminders, sound, theme, account linking, data export).
-- **Onboarding:** title → start as guest → personality quiz suggests a starter (player can override) → name the trainer → create a first task (tutorial) → first focus session (tutorial).
+- **Onboarding:** title → start as guest → personality quiz suggests a starter (player can override) → name the trainer → a **1 minute tutorial focus session** that hatches a free egg → create a first task, which **pays immediately** despite the minimum age (tutorial exemptions). The first reward arrives within about two minutes of opening the app.
 - **Offline:** everything works offline. Because the server grants rewards, offline completions show as "pending" and resolve on sync; a focus session's start and end times are sent and validated for plausibility.
 
 ## Android widgets
