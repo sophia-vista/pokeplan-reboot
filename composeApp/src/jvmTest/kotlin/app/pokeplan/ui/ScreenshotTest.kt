@@ -80,4 +80,18 @@ class ScreenshotTest {
             PixelTheme { PixelBackground("bw07", Modifier.fillMaxSize()) { PlannerScreen(model) } }
         }
     }
+
+    @Test
+    fun focusSetup() {
+        val model = AppModel(started())
+        render("focus-setup") { PixelTheme { PixelBackground("bw11", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.FocusScreen(model) } } }
+    }
+
+    @Test
+    fun focusRunning() {
+        val store = started()
+        store.startFocus(25, deepFocus = true)
+        val model = AppModel(store)
+        render("focus-running") { PixelTheme { PixelBackground("bw11", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.FocusScreen(model) } } }
+    }
 }

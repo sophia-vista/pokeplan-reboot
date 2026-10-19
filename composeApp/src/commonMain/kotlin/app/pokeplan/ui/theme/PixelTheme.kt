@@ -1,9 +1,6 @@
 package app.pokeplan.ui.theme
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,19 +15,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pokeplan.composeapp.generated.resources.Res
@@ -40,26 +38,26 @@ import org.jetbrains.compose.resources.Font
 
 /** The palette: a DS-era handheld. Warm paper, dark navy outlines, saturated primaries. */
 object Pixel {
-    val Paper = Color(0xFFF4E9C8)
-    val PaperDot = Color(0xFFE9DCB4)
+    val Paper = Color(0xFFF3F5FA)
+    val PaperDot = Color(0xFFE7EAF2)
     val Panel = Color(0xFFFFFFFF)
-    val Ink = Color(0xFF181820)
-    val InkSoft = Color(0xFF68708C)
-    val Red = Color(0xFFE8483C)
-    val RedDark = Color(0xFFA82820)
-    val Blue = Color(0xFF3C78D8)
-    val BlueDark = Color(0xFF204C98)
-    val Green = Color(0xFF48B060)
-    val GreenDark = Color(0xFF207838)
-    val Yellow = Color(0xFFF8D038)
-    val YellowDark = Color(0xFFC09810)
-    val Shade = Color(0xFFD6C99A)
+    val Ink = Color(0xFF1C1F2B)
+    val InkSoft = Color(0xFF6A7088)
+    val Red = Color(0xFFE8412F)
+    val RedDark = Color(0xFFB62A1C)
+    val Blue = Color(0xFF3B82F6)
+    val BlueDark = Color(0xFF1F5BC4)
+    val Green = Color(0xFF2FBF71)
+    val GreenDark = Color(0xFF1B8A50)
+    val Yellow = Color(0xFFFFCB05)
+    val YellowDark = Color(0xFFC79A00)
+    val Shade = Color(0xFFDDE1EC)
     val Sky = Color(0xFF88C8F0)
     val SkyLight = Color(0xFFB8E4FA)
     val Grass = Color(0xFF70C050)
     val GrassDark = Color(0xFF489838)
-    val Gray = Color(0xFF9098A8)
-    val GrayDark = Color(0xFF606878)
+    val Gray = Color(0xFF9AA1B5)
+    val GrayDark = Color(0xFF626A82)
 }
 
 /** The Pokémon DS-era (Diamond and Pearl) font, from the pokemon-assets package, for all text. */
@@ -93,46 +91,26 @@ fun PixelTheme(content: @Composable () -> Unit) {
     ) { content() }
 }
 
-/** A rectangle with its four corners cut a pixel step, like the panels in the GBA and DS games. */
-class NotchShape(private val step: Float) : Shape {
-    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
-        val s = with(density) { step.dp.toPx() }
-        val w = size.width
-        val h = size.height
-        val path = Path().apply {
-            moveTo(s, 0f); lineTo(w - s, 0f); lineTo(w - s, s); lineTo(w, s)
-            lineTo(w, h - s); lineTo(w - s, h - s); lineTo(w - s, h); lineTo(s, h)
-            lineTo(s, h - s); lineTo(0f, h - s); lineTo(0f, s); lineTo(s, s); close()
-        }
-        return Outline.Generic(path)
-    }
-}
+/** Rounded corners; the old "step" argument is kept so callers read the same: a step is 5dp of radius. */
+fun NotchShape(step: Float): Shape = RoundedCornerShape((step * 5).dp)
 
-private val panelShape = NotchShape(3f)
-private val buttonShape = NotchShape(3f)
+private val panelShape = RoundedCornerShape(18.dp)
 
-/** A GBA text box: cream panel, navy outline, a coloured inner line and a hard drop shadow. */
+/** A white card with rounded corners and a soft shadow. [accent] draws a coloured strip along the left edge. */
 @Composable
-fun TextBox(modifier: Modifier = Modifier, accent: Color = Pixel.Shade, content: @Composable () -> Unit) {
+fun TextBox(modifier: Modifier = Modifier, accent: Color = Color.Transparent, content: @Composable () -> Unit) {
     Box(
-        modifier.padding(end = 3.dp, bottom = 3.dp).drawBehind {
-            val o = 3.dp.toPx()
-            drawRect(Pixel.Ink.copy(alpha = 0.22f), Offset(o, o), Size(size.width - o, size.height - o))
-        },
-    ) {
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .border(BorderStroke(3.dp, Pixel.Ink), panelShape)
-                .padding(3.dp)
-                .border(BorderStroke(2.dp, accent), panelShape)
-                .background(Pixel.Panel, panelShape)
-                .padding(horizontal = 14.dp, vertical = 12.dp),
-        ) { content() }
-    }
+        modifier
+            .fillMaxWidth()
+            .shadow(4.dp, panelShape, ambientColor = Pixel.Ink.copy(alpha = 0.25f), spotColor = Pixel.Ink.copy(alpha = 0.25f))
+            .background(Pixel.Panel, panelShape)
+            .clip(panelShape)
+            .drawBehind { if (accent != Color.Transparent) drawRect(accent, Offset.Zero, Size(6.dp.toPx(), size.height)) }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+    ) { content() }
 }
 
-/** A chunky key: coloured face, lighter top line, darker bottom edge, navy outline. */
+/** A pill-shaped key with a darker lower edge. */
 @Composable
 fun PixelButton(
     text: String,
@@ -142,42 +120,31 @@ fun PixelButton(
     enabled: Boolean = true,
     compact: Boolean = false,
 ) {
-    val face = if (enabled) color else Pixel.Gray
-    val edge = if (enabled) darker(color) else Pixel.GrayDark
+    val face = if (enabled) color else Pixel.Shade
+    val edge = if (enabled) darker(color) else Pixel.Gray
+    val shape = RoundedCornerShape(if (compact) 14.dp else 18.dp)
     Box(
         modifier
-            .border(BorderStroke(3.dp, Pixel.Ink), buttonShape)
-            .clip(buttonShape)
-            .background(face)
-            .drawBehind {
-                val line = 3.dp.toPx()
-                drawRect(edge, Offset(0f, size.height - line * 2), Size(size.width, line * 2))
-                drawRect(Color.White.copy(alpha = 0.35f), Offset(line, line), Size(size.width - line * 2, line / 2))
-            }
+            .padding(bottom = 3.dp)
+            .drawBehind { drawRoundRect(edge, Offset(0f, 3.dp.toPx()), Size(size.width, size.height), CornerRadius(if (compact) 14.dp.toPx() else 18.dp.toPx())) }
+            .background(face, shape)
+            .clip(shape)
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(if (compact) PaddingValues(horizontal = 12.dp, vertical = 6.dp) else PaddingValues(horizontal = 16.dp, vertical = 11.dp)),
+            .padding(if (compact) PaddingValues(horizontal = 14.dp, vertical = 6.dp) else PaddingValues(horizontal = 20.dp, vertical = 12.dp)),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, style = MaterialTheme.typography.labelLarge, color = Color.White)
+        Text(text, style = MaterialTheme.typography.labelLarge, color = if (enabled) Color.White else Pixel.InkSoft)
     }
 }
 
 fun darker(c: Color): Color = Color(c.red * 0.72f, c.green * 0.72f, c.blue * 0.72f, c.alpha)
 
-/** An HP-style bar: label on the left, a bordered track with a coloured fill. [fraction] is 0 to 1. */
+/** A rounded progress bar: [fraction] is 0 to 1. */
 @Composable
 fun PixelBar(fraction: Float, modifier: Modifier = Modifier, color: Color = Pixel.Green) {
-    Box(
-        modifier.fillMaxWidth().height(14.dp)
-            .border(BorderStroke(3.dp, Pixel.Ink), NotchShape(2f))
-            .background(Pixel.Panel, NotchShape(2f)),
-    ) {
-        Canvas(Modifier.fillMaxWidth().height(8.dp).padding(2.dp).align(Alignment.Center)) {
-            val f = fraction.coerceIn(0f, 1f)
-            if (f > 0f) {
-                drawRect(color, Offset.Zero, Size(size.width * f, size.height))
-                drawRect(Color.White.copy(alpha = 0.4f), Offset.Zero, Size(size.width * f, size.height / 3))
-            }
-        }
+    val shape = RoundedCornerShape(8.dp)
+    Box(modifier.fillMaxWidth().height(14.dp).clip(shape).background(Pixel.Shade, shape)) {
+        val f = fraction.coerceIn(0f, 1f)
+        if (f > 0f) Box(Modifier.fillMaxWidth(f).height(14.dp).background(color, shape))
     }
 }

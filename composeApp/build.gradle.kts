@@ -13,6 +13,7 @@ val composeAssets = tasks.register<Sync>("prepareComposeAssets") {
     into(layout.buildDirectory.dir("generated/composeAssets"))
     from(rootProject.file("assets/sprites")) { include("*.png"); into("files/sprites") }
     from(rootProject.file("assets/backgrounds")) { include("*.png"); into("files/backgrounds") }
+    from(rootProject.file("assets/npc")) { include("*.png"); into("files/npc") }
     from(rootProject.file("assets/items")) { include("*.png"); into("files/items") }
     from(rootProject.file("assets/fonts")) { include("*.ttf"); into("font") }
 }
