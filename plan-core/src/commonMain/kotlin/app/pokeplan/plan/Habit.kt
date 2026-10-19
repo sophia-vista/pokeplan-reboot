@@ -1,13 +1,19 @@
 package app.pokeplan.plan
 
+import kotlinx.serialization.Serializable
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 
 /** How often a habit is meant to happen. */
+@Serializable
 sealed interface HabitTarget {
+    @Serializable
     data object Daily : HabitTarget
+    @Serializable
     data class Weekdays(val days: Set<DayOfWeek>) : HabitTarget
+    @Serializable
     data class PerWeek(val times: Int) : HabitTarget
+    @Serializable
     data class PerMonth(val times: Int) : HabitTarget
 }
 
@@ -15,6 +21,7 @@ sealed interface HabitTarget {
  * A habit is a recurring-task type with a flexible target and its own forgiving streak. Completions pay like recurring
  * tasks, once per day per habit.
  */
+@Serializable
 data class Habit(
     val id: String,
     val title: String,

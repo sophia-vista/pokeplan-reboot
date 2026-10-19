@@ -1,18 +1,23 @@
 package app.pokeplan.plan
 
+import kotlinx.serialization.Serializable
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 
 /** When a reminder fires relative to its task's time. */
+@Serializable
 sealed interface ReminderOffset {
+    @Serializable
     data object AtTime : ReminderOffset
+    @Serializable
     data class Before(val minutes: Int) : ReminderOffset
 }
 
 enum class Snooze { TEN_MINUTES, ONE_HOUR, TOMORROW }
 
 /** Quiet hours may wrap past midnight (22:00 to 07:00). Reminders inside them wait for [end]. */
+@Serializable
 data class QuietHours(val start: LocalTime = LocalTime(22, 0), val end: LocalTime = LocalTime(7, 0)) {
     fun contains(t: LocalTime): Boolean = if (start <= end) t >= start && t < end else t >= start || t < end
 }

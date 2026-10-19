@@ -1,5 +1,6 @@
 package app.pokeplan.plan
 
+import kotlinx.serialization.Serializable
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -7,6 +8,7 @@ import kotlinx.datetime.daysUntil
 import kotlinx.datetime.plus
 
 /** The Sunday ritual. Notes are private; nothing here scores the person. */
+@Serializable
 data class WeeklyReview(
     val weekStart: LocalDate,
     val completedAtMillis: Long,

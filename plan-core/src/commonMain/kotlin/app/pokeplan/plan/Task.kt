@@ -1,5 +1,6 @@
 package app.pokeplan.plan
 
+import kotlinx.serialization.Serializable
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -31,6 +32,7 @@ enum class Category(val label: String) {
 
 enum class TaskState { OPEN, DONE, WONT_DO, DELETED }
 
+@Serializable
 data class Subtask(
     val id: String,
     val title: String,
@@ -44,6 +46,7 @@ data class Subtask(
  * A task. Dates and times are wall-clock ("floating") so they keep their local time when the time zone changes.
  * [seriesId] is set for instances of a recurring task, which pay without waiting for the minimum age.
  */
+@Serializable
 data class Task(
     val id: String,
     val title: String,
