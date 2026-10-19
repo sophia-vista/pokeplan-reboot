@@ -17,6 +17,7 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.describe
+import app.pokeplan.ui.theme.GameBox
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.TextBox
@@ -27,7 +28,7 @@ import kotlinx.datetime.LocalDate
 fun RewardBox(model: AppModel) {
     val fresh = model.data.rewardLog.filter { !it.seen }.takeLast(3)
     if (fresh.isEmpty()) return
-    TextBox(Modifier.fillMaxWidth()) {
+    GameBox(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             fresh.forEach { entry ->
                 Text(entry.source, style = MaterialTheme.typography.titleMedium)

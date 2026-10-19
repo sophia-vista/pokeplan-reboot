@@ -47,6 +47,7 @@ import app.pokeplan.plan.Task
 import app.pokeplan.plan.TaskRules
 import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.TaskViews
+import app.pokeplan.plan.toEpochMillis
 import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
@@ -150,6 +151,9 @@ class GameStore(
     val now: LocalDateTime get() = nowMillis.toLocalDateTime(zone)
     val today: LocalDate get() = now.date
     private val epochDay: Long get() = today.toEpochDays()
+
+    /** The first millisecond of today in the player's time zone. */
+    val startOfTodayMillis: Long get() = LocalDateTime(today, kotlinx.datetime.LocalTime(0, 0)).toEpochMillis(zone)
 
     private fun newId(): String = "${nowMillis.toString(36)}-${rng.nextInt(Int.MAX_VALUE).toString(36)}"
 

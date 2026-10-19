@@ -57,7 +57,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
     val current = section
     if (current == null) {
         Column(Modifier.fillMaxSize()) {
-            ScreenHeader("Me", subtitle = "${data.trainerName} · ${TrainerRank.nameFor(data.player.trainerPoints)}")
+            ScreenHeader("Me", subtitle = "${data.trainerName} · ${TrainerRank.nameFor(data.player.trainerPoints)}", icon = "member-card")
             Column(
                 Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -65,18 +65,18 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
                 TrainerCard(model)
                 MenuGrid(
                     (listOf(
-                        MenuEntry("GROWTH", "exp-share", "Growth", "your week"),
-                        MenuEntry("GOALS", "star-piece", "Goals", "${data.goals.size} goals"),
-                        MenuEntry("REVIEW", "journal", "Review", if (model.store.canReview()) "ready this week" else "done this week", badge = if (model.store.canReview()) 1 else 0),
-                    ) + (if (model.social != null) listOf(MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board")) else emptyList()) + listOf(
-                        MenuEntry("SETTINGS", "gb-sounds", "Settings", "name, region, sound"),
+                        MenuEntry("GROWTH", "exp-share", "Growth", "your week", tint = Pixel.Green),
+                        MenuEntry("GOALS", "star-piece", "Goals", "${data.goals.size} goals", tint = Pixel.Warning),
+                        MenuEntry("REVIEW", "journal", "Review", if (model.store.canReview()) "ready this week" else "done this week", badge = if (model.store.canReview()) 1 else 0, tint = Pixel.Blue),
+                    ) + (if (model.social != null) listOf(MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = androidx.compose.ui.graphics.Color(0xFFEC4899))) else emptyList()) + listOf(
+                        MenuEntry("SETTINGS", "gb-sounds", "Settings", "name, region, sound", tint = Pixel.InkSoft),
                     )),
                 ) { key -> section = MeSection.valueOf(key) }
             }
         }
         return
     }
-    SectionScaffold(current.label, null, onBack = { section = null }) {
+    SectionScaffold(current.label, null, onBack = { section = null }, icon = current.icon) {
         when (current) {
             MeSection.GROWTH -> GrowthView(model)
             MeSection.GOALS -> GoalsView(model)

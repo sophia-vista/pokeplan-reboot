@@ -22,7 +22,7 @@ private val cache = mutableMapOf<String, ImageBitmap?>()
 
 /** The real game icon of a bag item (Rare Candy, a berry, an evolution stone...). Draws nothing if there is no icon for [itemId]. */
 @Composable
-fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp) {
+fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp, description: String? = itemId) {
     val path = "files/items/$itemId.png"
     val bitmap by produceState(cache[path], path) {
         if (value == null) {
@@ -35,7 +35,7 @@ fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp) {
         }
     }
     Box(modifier.size(size)) {
-        bitmap?.let { Image(it, itemId, Modifier.size(size), contentScale = ContentScale.Fit, filterQuality = FilterQuality.None) }
+        bitmap?.let { Image(it, description, Modifier.size(size), contentScale = ContentScale.Fit, filterQuality = FilterQuality.None) }
     }
 }
 

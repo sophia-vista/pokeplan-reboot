@@ -42,6 +42,7 @@ import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
+import app.pokeplan.ui.Stage
 import app.pokeplan.ui.TypePlate
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.NamePlate
@@ -73,17 +74,17 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
     val current = section
     if (current == null) {
         Column(Modifier.fillMaxSize()) {
-            ScreenHeader("Pokémon", subtitle = "${player.pokemon.size} owned · ${player.caught.size} seen")
+            ScreenHeader("Pokémon", subtitle = "${player.pokemon.size} owned · ${player.caught.size} seen", icon = "poke-ball")
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp)) {
                 val ready = store.activeQuests.count { store.questReady(it) }
                 MenuGrid(
                     listOf(
-                        MenuEntry("PARTY", "poke-ball", "Party", "${player.party.size} of 6"),
-                        MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { !it.inParty && !Guardians.canBe(it) }} stored"),
-                        MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught"),
-                        MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items"),
-                        MenuEntry("GUARDIANS", "master-ball", "Guardians", if (store.guardianSlots == 0) "opens at rank ${TrainerRank.names[4]}" else "${player.guardians.size} of ${store.guardianSlots} slotted"),
-                        MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready),
+                        MenuEntry("PARTY", "poke-ball", "Party", "${player.party.size} of 6", tint = Pixel.Red),
+                        MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { !it.inParty && !Guardians.canBe(it) }} stored", tint = Pixel.Warning),
+                        MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught", tint = Pixel.Blue),
+                        MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.Green),
+                        MenuEntry("GUARDIANS", "master-ball", "Guardians", if (store.guardianSlots == 0) "opens at rank ${TrainerRank.names[4]}" else "${player.guardians.size} of ${store.guardianSlots} slotted", tint = androidx.compose.ui.graphics.Color(0xFF8B5CF6)),
+                        MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready, tint = Pixel.Warning),
                     ),
                 ) { key -> section = Section.valueOf(key) }
             }
@@ -91,7 +92,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
         return
     }
 
-    SectionScaffold(current.title, null, onBack = { section = null }) {
+    SectionScaffold(current.title, null, onBack = { section = null }, icon = current.icon) {
         when (current) {
             Section.PARTY -> {
                 if (player.party.isEmpty()) TextBox { Text("Your party is empty.", style = MaterialTheme.typography.bodyLarge) }
@@ -371,9 +372,12 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Sprite(p.form.id, p.isShiny, p.nickname, size = 192.dp)
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { p.form.types.forEach { TypePlate(it, width = 84.dp) } }
-            NamePlate(p.nickname, if (p.isShiny) "shiny" else "Lv. ${p.level}")
+            Stage("bw08", 252.dp) {
+                Sprite(p.form.id, p.isShiny, p.nickname, Modifier.align(Alignment.TopCenter).padding(top = 16.dp), size = 176.dp)
+                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    p.form.types.forEach { TypePlate(it, width = 84.dp) }
+                }
+            }
 
             TextBox {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {

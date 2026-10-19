@@ -1,12 +1,16 @@
 package app.pokeplan.ui.theme
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -17,59 +21,88 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.pokeplan.plan.Rank
 import app.pokeplan.ui.ItemIcon
 
-/** The colour of a difficulty rank: grey for the easiest up to red for the hardest. */
+/** What a difficulty rank means, in words. Harder tasks earn more; rank is how hard it feels, not how urgent it is. */
+val Rank.title: String
+    get() = when (this) {
+        Rank.E -> "Tiny"
+        Rank.D -> "Easy"
+        Rank.C -> "Medium"
+        Rank.B -> "Hard"
+        Rank.A -> "Very hard"
+    }
+
+/** "C, Medium": spoken by screen readers and shown where there is room. */
+val Rank.spoken: String get() = "difficulty $letter, $title"
+
+/** The colour of a difficulty rank, from quiet grey for the easiest to red for the hardest. */
 fun rankColor(rank: Rank): Color = when (rank) {
-    Rank.E -> Pixel.Gray
+    Rank.E -> Pixel.InkSoft
     Rank.D -> Pixel.Green
     Rank.C -> Pixel.Blue
-    Rank.B -> Color(0xFFF59E0B)
-    Rank.A -> Pixel.Red
+    Rank.B -> Pixel.Warning
+    Rank.A -> Pixel.Danger
 }
 
-/** A round badge with the rank letter. Unselected badges (in a picker) are pale. */
+/**
+ * A round badge with the rank letter. The meaning is in the accessible description and, in pickers, in the label under it;
+ * colour is never the only signal. A clickable badge has a 48 dp touch target.
+ */
 @Composable
 fun RankBadge(rank: Rank, modifier: Modifier = Modifier, selected: Boolean = true, onClick: (() -> Unit)? = null) {
+    val badge = Modifier
+        .size(36.dp)
+        .clip(CircleShape)
+        .background(if (selected) rankColor(rank) else Pixel.Shade)
     Box(
         modifier
-            .size(38.dp)
-            .clip(CircleShape)
-            .background(if (selected) rankColor(rank) else Pixel.Shade)
-            .let { if (onClick != null) it.clickable(onClick = onClick) else it },
+            .then(if (onClick != null) Modifier.defaultMinSize(Spacing.Target, Spacing.Target).clickable(role = Role.RadioButton, onClick = onClick) else Modifier)
+            .semantics { contentDescription = rank.spoken; if (onClick != null) this.selected = selected },
         contentAlignment = Alignment.Center,
     ) {
-        Text(rank.letter.toString(), style = MaterialTheme.typography.labelLarge, color = if (selected) Color.White else Pixel.InkSoft)
+        Box(badge, contentAlignment = Alignment.Center) {
+            Text(rank.letter.toString(), style = MaterialTheme.typography.labelLarge, color = if (selected) Color.White else Pixel.InkSoft)
+        }
     }
 }
 
-/** The bar across the top of a screen: Pokémon red, rounded at the bottom. */
+/**
+ * The bar across the top of a screen: slim Pokémon red with the page title in the pixel font, an item icon that says where
+ * you are, a line of context, and optional content at the right and underneath.
+ */
 @Composable
-fun ScreenHeader(title: String, modifier: Modifier = Modifier, subtitle: String? = null, trailing: @Composable () -> Unit = {}) {
-    val shape = RoundedCornerShape(bottomStart = 26.dp, bottomEnd = 26.dp)
-    Box(
-        modifier
-            .fillMaxWidth()
-            .shadow(6.dp, shape)
-            .clip(shape)
-            .background(Brush.verticalGradient(listOf(Color(0xFFF05A47), Pixel.Red)), shape),
-    ) {
+fun ScreenHeader(
+    title: String,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    icon: String? = null,
+    footer: (@Composable () -> Unit)? = null,
+    trailing: @Composable () -> Unit = {},
+) {
+    val shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
+    Column(modifier.fillMaxWidth().clip(shape).background(Pixel.Red, shape)) {
         Row(
-            Modifier.fillMaxWidth().padding(start = 20.dp, end = 14.dp, top = 14.dp, bottom = 18.dp),
+            Modifier.fillMaxWidth().padding(start = Spacing.Page, end = Spacing.L, top = Spacing.M, bottom = if (footer == null) Spacing.M else Spacing.XS),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
-            Column {
-                Text(title, style = MaterialTheme.typography.titleMedium, color = Color.White)
-                if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f))
+            if (icon != null) ItemIcon(icon, size = 36.dp, description = null)
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleLarge, color = Color.White, modifier = Modifier.semantics { heading() })
+                if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.9f))
             }
             trailing()
         }
+        if (footer != null) Box(Modifier.fillMaxWidth().padding(start = Spacing.Page, end = Spacing.Page, bottom = Spacing.M)) { footer() }
     }
 }
 
@@ -78,25 +111,24 @@ fun ScreenHeader(title: String, modifier: Modifier = Modifier, subtitle: String?
 fun NamePlate(name: String, detail: String, modifier: Modifier = Modifier) {
     Row(
         modifier
-            .shadow(3.dp, RoundedCornerShape(50))
             .background(Pixel.Panel, RoundedCornerShape(50))
-            .padding(horizontal = 18.dp, vertical = 6.dp),
+            .border(BorderStroke(1.dp, Pixel.Border), RoundedCornerShape(50))
+            .padding(horizontal = Spacing.L, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(name, style = MaterialTheme.typography.titleMedium)
-        Text(detail, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        Text(detail, style = MaterialTheme.typography.bodyMedium)
     }
 }
 
-/** A label for a section ("Today"): a dark pill. */
+/** A section title ("Today"): semibold, with space above it. */
 @Composable
-fun SectionLabel(text: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier
-            .background(Pixel.Ink, RoundedCornerShape(50))
-            .padding(horizontal = 14.dp, vertical = 4.dp),
-    ) { Text(text, style = MaterialTheme.typography.labelLarge, color = Color.White) }
+fun SectionLabel(text: String, modifier: Modifier = Modifier, icon: String? = null) {
+    Row(modifier.padding(top = Spacing.S), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        if (icon != null) ItemIcon(icon, size = 28.dp, description = null)
+        Text(text, style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+    }
 }
 
 /** A white capsule holding an icon and a number. */
@@ -104,7 +136,8 @@ fun SectionLabel(text: String, modifier: Modifier = Modifier) {
 fun StatChip(text: String, icon: @Composable () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier
-            .background(Color.White, RoundedCornerShape(50))
+            .background(Pixel.Panel, RoundedCornerShape(50))
+            .border(BorderStroke(1.dp, Pixel.Border), RoundedCornerShape(50))
             .padding(start = 6.dp, end = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -113,7 +146,7 @@ fun StatChip(text: String, icon: @Composable () -> Unit, modifier: Modifier = Mo
     }
 }
 
-/** A white card row for a list item: [lead] at the left, [content] in the middle, [trail] at the right. */
+/** A card row for a list item: [lead] at the left, [content] in the middle, [trail] at the right. */
 @Composable
 fun ListRow(
     modifier: Modifier = Modifier,
@@ -122,17 +155,18 @@ fun ListRow(
     onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
-    val shape = RoundedCornerShape(18.dp)
+    val shape = RoundedCornerShape(Spacing.CardRadius)
     Row(
         modifier
             .fillMaxWidth()
-            .shadow(4.dp, shape, ambientColor = Pixel.Ink.copy(alpha = 0.25f), spotColor = Pixel.Ink.copy(alpha = 0.25f))
             .background(Pixel.Panel, shape)
+            .border(BorderStroke(1.dp, Pixel.Border), shape)
             .clip(shape)
-            .let { if (onClick != null) it.clickable(onClick = onClick) else it }
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .let { if (onClick != null) it.clickable(role = Role.Button, onClick = onClick) else it }
+            .defaultMinSize(minHeight = 64.dp)
+            .padding(horizontal = Spacing.M, vertical = Spacing.M),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.M),
     ) {
         lead()
         Column(Modifier.weight(1f)) { content() }

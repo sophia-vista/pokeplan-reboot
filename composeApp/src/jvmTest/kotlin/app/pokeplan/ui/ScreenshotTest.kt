@@ -78,17 +78,17 @@ class ScreenshotTest {
         val model = AppModel(store)
         store.addSubtask(store.data.tasks.last().id, "Open the draft")
         render("planner") {
-            PixelTheme { PixelBackground("bw07", Modifier.fillMaxSize()) { PlannerScreen(model) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model) } }
         }
         render("planner-today") {
-            PixelTheme { PixelBackground("bw07", Modifier.fillMaxSize()) { PlannerScreen(model, startView = 0) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 0) } }
         }
     }
 
     @Test
     fun focusSetup() {
         val model = AppModel(started())
-        render("focus-setup") { PixelTheme { PixelBackground("bw11", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.FocusScreen(model) } } }
+        render("focus-setup") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.FocusScreen(model) } } }
     }
 
     @Test
@@ -96,7 +96,7 @@ class ScreenshotTest {
         val store = started()
         store.startFocus(25, deepFocus = true)
         val model = AppModel(store)
-        render("focus-running") { PixelTheme { PixelBackground("bw11", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.FocusScreen(model) } } }
+        render("focus-running") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.FocusScreen(model) } } }
     }
 
     private fun storeWithTeam(): GameStore {
@@ -118,7 +118,7 @@ class ScreenshotTest {
         val model = AppModel(store)
         render(name) {
             PixelTheme {
-                PixelBackground("bw15", Modifier.fillMaxSize()) {
+                Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
                     app.pokeplan.ui.screens.CollectionScreen(model, section, if (open) store.data.player.buddyId else null)
                 }
             }
@@ -150,7 +150,7 @@ class ScreenshotTest {
         store.tick()
         val model = AppModel(store)
         render(name) {
-            PixelTheme { PixelBackground("bw08", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.MeScreen(model, section) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.MeScreen(model, section) } }
         }
     }
 
@@ -177,7 +177,7 @@ class ScreenshotTest {
         store.slotGuardian(ids[0])
         val model = AppModel(store)
         render("collection-guardians") {
-            PixelTheme { PixelBackground("bw15", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.CollectionScreen(model, 4) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.CollectionScreen(model, 4) } }
         }
     }
 
@@ -193,7 +193,7 @@ class ScreenshotTest {
         store.acceptQuest("uxie")
         val model = AppModel(store)
         render("collection-quests") {
-            PixelTheme { PixelBackground("bw15", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.CollectionScreen(model, 5) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.CollectionScreen(model, 5) } }
         }
     }
 
@@ -221,7 +221,7 @@ class ScreenshotTest {
         val client = app.pokeplan.app.cloud.CloudClient(app.pokeplan.app.cloud.CloudConfig("https://x.supabase.co", "anon"), io.ktor.client.HttpClient(engine)) { clock.millis }
         val model = AppModel(store, null, app.pokeplan.app.cloud.SyncManager(store, client), app.pokeplan.app.cloud.SocialClient(client))
         render("friends") {
-            PixelTheme { PixelBackground("bw08", Modifier.fillMaxSize()) { app.pokeplan.ui.screens.SectionScaffold("Friends", null, {}) { app.pokeplan.ui.screens.FriendsView(model) } } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.SectionScaffold("Friends", null, {}) { app.pokeplan.ui.screens.FriendsView(model) } } }
         }
     }
 }
