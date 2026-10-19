@@ -26,13 +26,15 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 
 - Minimum session 5 minutes; Deep Focus (motion-based on phones) boosts egg odds by one band (see `Egg` in `:shared`).
 - **Strict mode, always on.** Leaving the app (backgrounding it on Android, losing window focus on desktop, hiding the tab on web) starts a **10 second grace period**. Returning in time keeps the session; otherwise the egg is lost and the streak is hit. No pause button.
-- Open risk: a phone call or a system dialog counts as leaving. Plan: treat an incoming call as a free pause. Decide before building.
+- **Phone calls pause the timer** (incoming or ongoing); it resumes when the call ends.
+- **One emergency pause per day**, up to 2 minutes, started by the player before leaving. Anything else that takes the player out of the app fails the egg after the grace period.
 - Sweet spot is built in: Super Rares per focus-hour peak at about 60 minutes.
 
 ## Tasks
 
 - Priority 1 to 5; **priority 5 pays the most**. Reward tables are already ported (`CandyRewards`).
-- **Minimum task age:** a task only pays when it has existed for at least *(tune: 15 minutes)* before being completed. Younger tasks complete without a reward. There is no daily cap, so many real tasks always pay.
+- **Minimum task age:** a one-off task only pays when it has existed for at least *(tune: 15 minutes)* before being completed, counted from creation. Younger tasks complete without a reward. There is no daily cap, so many real tasks always pay.
+- **Recurring tasks are exempt:** their instances are created ahead of time by the schedule, so they pay when their day comes.
 - On-time bonus: finishing before the due date adds a bonus *(tune)*.
 - Subtasks pay a small fixed amount each *(tune)*. Watch that splitting a task into many tiny subtasks does not become the new exploit; the minimum age applies to subtasks too.
 - **Categories** are for organising only and never change rewards. Six, replacing the old eight (School, Work, Hobby, Leisure, Chores, Health, Social, Others, where Hobby/Leisure overlapped and Others was a dumping ground):
@@ -113,7 +115,7 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 
 ## Retention
 
-- Daily streak (focus or a finished task), weekly goals, and a Pokédex with seen/caught, region completion rewards and a trainer card.
+- Daily streak: kept alive by one paid task **or** one completed focus session that day, weekly goals, and a Pokédex with seen/caught, region completion rewards and a trainer card.
 - Badges for milestones (tasks finished, focus hours), shown as gym badges.
 - Later: friends see your buddy and party; co-op focus sessions; trading.
 
@@ -141,6 +143,8 @@ Android (full, plus widgets), desktop and web (same game, no widgets). Focus enf
 
 ## Backend (Supabase)
 
+**Accounts:** players start as a guest on the device (Supabase anonymous sign-in) and can later link an email or Google account to sync and keep progress. No passwords are stored in the app.
+
 Server-authoritative for everything that grants value: hatching, candies, items, transfers, shiny rolls. Clients send intents ("finished task X", "hatch session Y") and the server validates and rolls. Row-level security so a user only reads and writes their own rows. Species, base stats, abilities and perk tables are data shipped with the app and mirrored on the server.
 
 ## Data to add
@@ -163,3 +167,12 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 - **Strict focus** can frustrate users with legitimate interruptions. Calls exempt; revisit after use.
 - **Balance:** perks, items and transfer yields compound. Simulate a few months of play before fixing numbers.
 - **Scope:** stats, items, perks and widgets are a lot. Milestone 2 should stay behind a clean interface so the UI work can start in parallel.
+
+## Open questions
+
+Being settled in rounds before any Pokémon-depth code is written. Done: focus interruptions, task age, streak, accounts.
+
+- **Tasks and calendar:** v1 planner features, overdue handling, subtask payouts, undo.
+- **Pokémon economy:** roster size, buddy rules, perk magnitudes, transfer rules, item sources, shiny rate.
+- **Online:** friends and co-op scope, what is public.
+- **Screens:** navigation, home layout, flows.
