@@ -1,6 +1,6 @@
 # PokéPlan design
 
-Product and game design for the multiplatform rewrite. Numbers marked *(tune)* are starting values to be settled by simulation before release. Everything not marked is decided.
+A fun productivity, growth and self-improvement app for Pokémon lovers: your Pokémon grow as you do. This is the product and game design for the multiplatform rewrite. Numbers marked *(tune)* are starting values to be settled by simulation before release. Everything not marked is decided.
 
 ## Pillars
 
@@ -9,6 +9,7 @@ Product and game design for the multiplatform rewrite. Numbers marked *(tune)* a
 3. **Your partner matters.** A well-raised older Pokémon stays worth using; new hatches never make it obsolete.
 4. **Nostalgic pixel.** Gen 3 to 5 look and feel (GBA/DS era), cute and readable.
 5. **Gentle by design.** It should quietly help people with ADHD without ever saying so: low friction to start and capture, instant rewards, no shame (see ADHD-friendly design). Strictness applies to distractions, never to the person.
+6. **Growth you can see.** Levelling and evolution mirror real progress: goals, habits and reviews feed the same loop as tasks and focus, and the app shows how you are growing.
 
 ## Core loop
 
@@ -67,9 +68,9 @@ The app never mentions ADHD; it just removes friction and shame.
 
 | Rank step | Appears |
 |---|---|
-| Start | tasks, planner, focus, buddy, Rare Candy, eggs |
-| 1 | Super Candy and evolution, Pokédex |
-| 2 | items, bag, shop, coins |
+| Start | tasks, habits, planner, focus, buddy, Rare Candy, eggs, the weekly review |
+| 1 | Super Candy and evolution, Pokédex, goals |
+| 2 | items, bag, shop, coins, the Growth screen |
 | 3 | training plans, natures and stats detail, IV judge, Tera |
 | 4 | other regions, legendary quests |
 | 5 | contests, perfect dex, Hall of Fame |
@@ -79,14 +80,21 @@ The app never mentions ADHD; it just removes friction and shame.
 - **Reminders that persist gently:** up to 3 repeats until acknowledged, then stop.
 - **Considered, not included for now:** routines (recurring checklists with timers) and a one-tap "reschedule all overdue". Both can be added later.
 
+## Growth: goals, habits, reviews, insights
+
+- **Goals with milestones.** A goal ("Learn guitar", "Run a 10k") has a category, an optional target date, ordered **milestones**, and linked tasks, habits, lists and focus time, with a progress bar. **Finishing a milestone grants a Super Candy** *(tune)*, so a real achievement evolves a Pokémon; finishing the goal grants a bonus item. Anti-farming: a milestone must exist for at least a day before it pays, and milestone rewards are capped per day *(tune: 3 Super Candies)*.
+- **Habits are a recurring-task type** with flexible targets: daily, chosen weekdays, or N times per week / month. Each habit has its own **forgiving streak** (counted in weeks for N-per-week habits) and a simple completion history. Completions pay like recurring tasks (once per day per habit). Habits appear in Today and in the widget.
+- **Weekly review.** A short Sunday ritual: what you finished, focus time, habit results, carry forward or reschedule unfinished tasks, and one optional line about how the week went. Completing it earns a small reward once a week *(tune: a berry)*. Notes are private. Not therapy, no diagnosis, no scores about the person.
+- **Growth screen** (under Me): a **balance wheel** across the six categories (tasks finished and focus time, last 7 / 30 / 90 days), trends for focus hours and tasks per week, estimate accuracy, goal progress, habit streaks, review history and collection layers.
+
 ## Planner (v1)
 
-In scope for v1: tasks with difficulty rank, category, planned date, due date/time, estimated duration and reminders; **recurring tasks** (daily, weekly, monthly, custom); **subtasks**; an **own calendar** (month, week, day and agenda views) with a **drag-and-drop day / week planner** (time-blocking), which also feeds the agenda widget; **user-created lists** (projects) alongside the six categories; and **read-only import of device calendar events** on Android (needs the calendar permission; shown on the calendar and agenda, never paid as tasks).
+In scope for v1: tasks with difficulty rank, category, planned date, due date/time, estimated duration and reminders; **recurring tasks** (daily, weekly, monthly, custom) and **habits**; **goals** with milestones; **subtasks**; an **own calendar** (month, week, day and agenda views) with a **drag-and-drop day / week planner** (time-blocking), which also feeds the agenda widget; **user-created lists** (projects) alongside the six categories; and **read-only import of device calendar events** on Android (needs the calendar permission; shown on the calendar and agenda, never paid as tasks).
 
 ### Task model, Today and focus link
 
 - **Fields:** title, notes, difficulty rank, category, optional list, **planned date** (when you intend to do it), **due date/time** (the deadline), estimated duration (optional), recurrence, reminders, subtasks.
-- **Views:** **Inbox** (no planned or due date; quick captures land here), **Today** (planned today + due today + overdue), **Upcoming**, **Calendar**, **All**.
+- **Views:** **Inbox** (no planned or due date; quick captures land here), **Today** (planned today + due today + overdue + today's habits), **Upcoming**, **Calendar**, **All**, **Goals**.
 - **Focus on this task:** a session can be started from a task. The minutes are logged on it, and it shows its total focused time. Finishing a task you focused on gives a small bonus *(tune: +10% candies)*. Egg odds are unchanged. Sessions can also be started without a task.
 
 ## Pokémon
@@ -261,13 +269,13 @@ Navigation is five bottom tabs on the phone: **Home / Planner / Focus / Collecti
 - **Planner:** Inbox, Today, Upcoming, All and Calendar views (lists can show as a mission board; the calendar has drag-and-drop planning), category and list filters, search, quick-add sheet (title, difficulty, due, then "more" for category, recurrence, subtasks, reminder). Completing a task opens a reward sheet with the 10 second undo.
 - **Focus:** optional task to focus on, region picker, presets (15 / 25 / 45 / 60) plus custom, Deep Focus toggle, a short reminder of the strict rules, the egg during the session, the emergency pause button. On finish: hatch ceremony, then a summary card with actions (set as buddy, keep, transfer).
 - **Collection:** Party (6), PC boxes (30 each), Pokédex (National Dex, seen / caught, forms tab, cosmetic-forms collection), Bag. The Pokémon detail screen shows stats, nature, ability, an IV "judge" (qualitative, like the games), training plan, held item, and actions: feed Rare Candy, evolve, transfer, nickname, set as buddy.
-- **Me:** trainer card (badges, streak, totals), shop, friends and leaderboards (once online), settings (reminders, sound, theme, account linking, data export).
+- **Me:** trainer card (badges, streak, totals), the Growth screen, weekly review history, shop, friends and leaderboards (once online), settings (reminders, sound, theme, account linking, data export).
 - **Onboarding:** title → start as guest → personality quiz suggests a starter (player can override) → name the trainer → create a first task (tutorial) → first focus session (tutorial).
 - **Offline:** everything works offline. Because the server grants rewards, offline completions show as "pending" and resolve on sync; a focus session's start and end times are sent and validated for plausibility.
 
 ## Android widgets
 
-1. **Today's tasks:** checklist, tap to complete.
+1. **Today's tasks and habits:** checklist, tap to complete.
 2. **Buddy + streak (2×2).**
 3. **Agenda:** upcoming tasks, optional read-only device calendar events.
 4. **Start focus:** one tap, starts a default session.
@@ -296,7 +304,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 1. **Shared core (done in #2):** eggs, candy, levels, evolution, Pokédex.
 2. **Species data pipeline:** generate species, base stats, abilities, forms, evolutions, regional dex lists and rarity (by rule) for Gen 1 to 9 from a public dataset, plus the sprite fetch step. The 150 become the Home Region; National Dex numbers.
 3. **Pokémon depth:** IVs, EVs, natures with stats, gender, abilities, shiny, friendship, items, evolution triggers, transfer yields, perk calculation. Unit tested in `:shared`.
-4. **Planner core:** task model, difficulty ranks, Today / Inbox logic, recurrence expansion (time zones and daylight saving included), reminders schedule, the quick-add parser, task-focus link. Pure Kotlin in `:shared`, heavily unit tested.
+4. **Planner core:** task model, difficulty ranks, Today / Inbox logic, recurrence expansion (time zones and daylight saving included), habits and their streaks, goals and milestone rewards, reminders schedule, the quick-add parser, task-focus link, review and insight calculations. Pure Kotlin in `:shared`, heavily unit tested.
 5. **Economy simulator:** a script in `:shared` that plays months of tasks and focus sessions to tune every *(tune)* value against the pacing targets before the UI is built on them.
 6. **UI shell:** desktop and web companion screens (no focus timer; needs `dl.google.com` allowed in the environment).
 7. **Backend:** Supabase schema, RLS, reward functions, sync.
