@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         val motion = AccelerometerMotion(this)
         // A widget can open the app on a tab ("FOCUS" for the Start focus widget).
         val tab = intent?.getStringExtra(EXTRA_TAB)?.let { name -> Tab.entries.firstOrNull { it.name == name } } ?: Tab.HOME
-        setContent { App(storage, focusTab = true, motion = motion, startTab = tab, externalChanges = resumes) }
+        setContent { App(storage, focusTab = true, motion = motion, startTab = tab, externalChanges = resumes, cries = AndroidCryPlayer(this)) }
     }
 
     override fun onResume() {

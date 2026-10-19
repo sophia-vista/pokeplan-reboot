@@ -48,6 +48,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
+import app.pokeplan.AndroidCryPlayer
 import app.pokeplan.MainActivity
 import app.pokeplan.app.BuddyLines
 import app.pokeplan.app.BuddyMood
@@ -230,6 +231,8 @@ class PetAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val store = widgetStore(context)
         store.pet()
+        // The callback stays alive for the speech bubble's few seconds (settleLater), long enough for the cry to play out.
+        store.data.player.buddy?.takeIf { store.data.settings.sound }?.let { AndroidCryPlayer(context).play(it.speciesId) }
         val full = (store.data.player.buddy?.friendship ?: 0) >= FriendshipRules.MAX
         BuddyTalk.say(context, if (full) BuddyLines.FRIENDSHIP_FULL else BuddyLines.pet(), petted = true)
         updateWidgets(context)

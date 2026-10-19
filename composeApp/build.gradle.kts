@@ -16,6 +16,8 @@ val composeAssets = tasks.register<Sync>("prepareComposeAssets") {
     from(rootProject.file("assets/npc")) { include("*.png"); into("files/npc") }
     from(rootProject.file("assets/types")) { include("*.png"); into("files/types") }
     from(rootProject.file("assets/items")) { include("*.png"); into("files/items") }
+    from(rootProject.file("assets/animated")) { include("*.png", "*.tsv"); into("files/animated") }
+    from(rootProject.file("assets/cries")) { include("*.ogg"); into("files/cries") }
     from(rootProject.file("assets/fonts")) { include("*.ttf"); into("font") }
 }
 

@@ -1,6 +1,7 @@
 package app.pokeplan.ui.screens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,6 +43,7 @@ import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
+import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.Stage
 import app.pokeplan.ui.TypePlate
 import app.pokeplan.ui.theme.ListRow
@@ -373,7 +375,11 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Stage("bw08", 252.dp) {
-                Sprite(p.form.id, p.isShiny, p.nickname, Modifier.align(Alignment.TopCenter).padding(top = 16.dp), size = 176.dp)
+                AnimatedSprite(
+                    p.form.id, p.isShiny, p.nickname,
+                    Modifier.align(Alignment.TopCenter).padding(top = 16.dp).clickable(onClickLabel = "Hear ${p.nickname}", role = Role.Button) { model.cry(p.speciesId) },
+                    size = 176.dp, animate = !model.data.settings.reduceMotion,
+                )
                 Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     p.form.types.forEach { TypePlate(it, width = 84.dp) }
                 }
