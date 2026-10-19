@@ -74,7 +74,7 @@ The app never mentions ADHD; it just removes friction and shame.
 | 1 | Super Candy and evolution, Pokédex, goals |
 | 1 | daily mini-quests |
 | 2 | items, bag, shop, coins, the Growth screen, Lures, spotlight days |
-| 3 | training plans, natures and stats detail, IV judge, Tera |
+| 3 | training plans, natures and stats detail, IV judge, Tera, bond styles, mood check-in |
 | 4 | other regions, legendary quests |
 | 5 | contests, perfect dex, Hall of Fame |
 
@@ -221,7 +221,7 @@ Planned, with build order to be set later.
 - **Personality quiz starter (Mystery Dungeon):** onboarding asks a short quiz, which suggests a starter and a nature; the player can override.
 - **Poké Assist perks (Pokémon Ranger):** the buddy's type and ability perks are presented as assists. No extra mechanics.
 - **Weekly contests (Contests / Pokéathlon):** a friends-only weekly event scored by a buddy's stats, nature and training, with ribbons. Comes with the online release and gives stats and natures a purpose.
-- **Secret Base and photo mode (Secret Base, Pokémon-Amie, Snap):** decorate the buddy's home scene and take snapshots of the buddy or a hatch. After v1.
+- **Secret Base and photo mode (Secret Base, Pokémon-Amie, Snap):** decorate the buddy's home scene (with a berry garden) and take snapshots of the buddy or a hatch. After v1.
 - **Focus view for v1 is the egg only** (calm and distraction-free). An expedition view was considered and left out.
 
 ## Buddy and perks
@@ -272,6 +272,11 @@ Studied: Forest and Tiimo (focus and planning), Finch and Pokémon Sleep (self-c
 - **Lures.** A type-specific Lure item (crafted from berries or bought) used before a session makes species of that type 3 times as likely in that egg's pool *(tune)*. It does not touch rarity or shiny odds. The lure is only used up if the egg hatches; a failed session refunds it. Rank step 2.
 - **Spotlight days.** Each day a featured type (rotating through all 18) has species weighted 2 times in hatches *(tune)*, announced the day before. Missing one costs nothing. Seasonal events and a featured species can be added later. Rank step 2.
 - **Party assists.** Non-buddy party members each add 25% of their type perk strength *(tune)*. Type perks only (no ability perks); the overall perk cap still applies, so the other five slots matter without breaking the economy.
+- **Bond styles (from Voidpet Garden).** A Pokémon's nature decides how it likes to bond. **Presence** (Attack and Speed natures): focus sessions with it as buddy give double friendship. **Comfort** (Defense and Sp. Def natures): petting gives double. **Gifts** (Sp. Atk natures): berries give double. The five neutral natures are **balanced** and get +50% from every source. The nature → style table is data *(tune)*. Other care always works; the matching style is just faster. Shown on the Pokémon page. Rank step 3.
+- **Weekly reflection prompt.** The weekly review asks one gentle question that rotates through a pool of about 50 ("What felt easier than expected?", "What are you proud of this week?", "What would make next week a little easier?"). Optional, private, no scoring and no analysis; answers are kept in the review history.
+- **Optional mood check-in.** A one-tap "how are you feeling?" (five faces) on Home. Never required, no reward, and off by default (a "Track mood" setting). The buddy answers with a line of text. If on, a simple mood trend appears on the Growth screen. Private; never shared with friends.
+- **Haptics.** Soft vibration when petting the buddy on Android (a setting turns it off). A **home garden** you grow from berries comes with the Secret Base scene after v1.
+- **Not a health product.** Voidpet is built with therapists; PokéPlan borrows the warmth, not the claims. No diagnosis, treatment or scores about the person, and copy never promises a mental-health benefit.
 - **Considered, not adopted:** body-double focus rooms (co-op focus stays a later release), a task breakdown helper, growth-profile evolution branching, expeditions.
 
 ## Notifications
@@ -341,6 +346,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 ## Risks
 
 - **IP:** names, sprites and cries are Nintendo / Game Freak / The Pokémon Company property. **Distribution is private: the owner and friends** (sideloaded APK, desktop builds, an invite-only web app), which keeps exposure low. A public release or store listing would likely be taken down; species stay data so an original-creature skin remains possible.
+- **Health claims:** the app must not present itself as therapy or a treatment. Mood tracking and reflection are optional and private.
 - **Strict focus** can frustrate users with legitimate interruptions. Calls exempt; revisit after use.
 - **Balance:** perks, items and transfer yields compound. Simulate a few months of play before fixing numbers.
 - **Launch scope:** all regions at launch means a large data set to generate and test, and every region needs its theme, music and badge. Region content is data, so the code does not grow with it, but QA does. If time runs short, the order to ship is Home, Kanto, Johto, then the rest.
@@ -374,7 +380,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 ### Pokémon defaults
 
 - **Gender:** stored per Pokémon, rolled at hatch from the species' ratio (genderless supported). Affects gendered forms and sprites and gender-dependent evolutions only.
-- **Friendship:** 0 to 255, starts at 70. Raised by petting (+2, up to +10 a day), a focus session with that buddy (+3), a paid task finished with that buddy as buddy (+1, up to +10 a day), a berry (+1) and each level gained (+1). Never lowered, no decay. Effects: perk strength scales from ×1.0 at 0 to ×1.2 at 255, friendship evolutions at 220, and the buddy's mood.
+- **Friendship:** 0 to 255, starts at 70. Raised by petting (+2, up to +10 a day), a focus session with that buddy (+3), a paid task finished with that buddy as buddy (+1, up to +10 a day), a berry (+1) and each level gained (+1). Never lowered, no decay. Effects: perk strength scales from ×1.0 at 0 to ×1.2 at 255, friendship evolutions at 220, and the buddy's mood. The amounts above are doubled (or +50%) when the care matches the Pokémon's **bond style** (see Ideas adopted).
 - **Contests (come with the online release):** five condition stats (Cool, Beautiful, Cute, Smart, Tough), 0 to 255 each, built from the species' base stats, training and nature, then raised by feeding berries (a berry liked by the nature gives double, a disliked one half; up to 5 a day). Each week one condition is judged; friends' buddies are ranked by it, plus ribbon bonuses. Prizes are coins and ribbons. Numbers *(tune)*.
 - **Abilities and perks:** about 40 curated abilities have a perk; every other ability falls back to the type perk only.
 - **Endgame:** a level 100 Pokémon takes no more candies. Candies still level other Pokémon. Coin sinks: Tera Shards, Mega Stones, form items, Secret Base decor. Candy holdings cap at 9,999; excess converts to coins at 1:1 *(tune)*. Contests, ribbons and a hall of fame give maxed Pokémon a purpose.
