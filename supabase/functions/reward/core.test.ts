@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { type Database, handleReward, RequestError } from "./core.ts";
+import { type Database, handleReward, handleSync, RequestError } from "./core.ts";
 
 const dir = resolve(process.argv[2] ?? "pokemon-core/build/compileSync/js/main/productionLibrary/kotlin");
 const lib = await import(pathToFileURL(join(dir, "pokeplan-pokemon-core.mjs")).href);
@@ -17,11 +17,14 @@ function fakeDb(overrides: Partial<Database> = {}) {
   let state = JSON.parse(engine.emptyState());
   let version = 0;
   let staleOnce = 0;
-  const db: Database & { ledger: typeof ledger; setState(s: unknown): void; failStale(n: number): void; loads: number } = {
+  let saved: unknown = null;
+  let pushError: Error | null = null;
+  const db: Database & { ledger: typeof ledger; setState(s: unknown): void; failStale(n: number): void; failPush(e: Error | null): void; loads: number } = {
     loads: 0,
     ledger,
     setState(s) { state = s; },
     failStale(n) { staleOnce = n; },
+    failPush(e) { pushError = e; },
     async loadState() { db.loads++; return { version, state: structuredClone(state) }; },
     async applyOutcome(a) {
       const id = `${a.app}/${a.key}`;
@@ -36,6 +39,13 @@ function fakeDb(overrides: Partial<Database> = {}) {
     async finishTask(_u, taskId) { return taskId === "young" ? null : 3; },
     async focusedMinutes(_u, taskId) { return taskId === "focused" ? 25 : 0; },
     rankFor: (p) => thresholds.filter((t) => p >= t).length - 1,
+    async pullSave() { return { version, data: saved }; },
+    async pushSave(_u, expected, data) {
+      if (pushError) throw pushError;
+      if (expected !== version) throw Object.assign(new Error("stale"), { code: "40001" });
+      saved = data;
+      return ++version;
+    },
     ...overrides,
   };
   return db;
@@ -115,6 +125,23 @@ const user = "u1";
   db.setState(state);
   const out = await handleReward(user, { kind: "effort", app: "plan", key: "k1", minutes: 25, region: "KANTO" }, engine, db, clock);
   assert.equal(out.applied, true);
+}
+
+// The cloud save: pull, push, a stale push is a 409 with the server's version, rules violations are 422.
+{
+  const db = fakeDb();
+  assert.deepEqual(await handleSync(user, { kind: "pull" }, db), { version: 0, data: null });
+  const doc = { onboarded: true, player: JSON.parse(engine.emptyState()), tasks: [] };
+  assert.deepEqual(await handleSync(user, { kind: "push", expectedVersion: 0, data: doc }, db), { version: 1 });
+  assert.deepEqual(await handleSync(user, { kind: "pull" }, db), { version: 1, data: doc });
+  const stale = async () => handleSync(user, { kind: "push", expectedVersion: 0, data: doc }, db);
+  await assert.rejects(stale(), (e: unknown) => e instanceof RequestError && e.status === 409 && (e.extra as { version: number }).version === 1);
+  db.failPush(Object.assign(new Error("trainer points cannot go down"), { code: "P0001" }));
+  await assert.rejects(handleSync(user, { kind: "push", expectedVersion: 1, data: doc }, db), (e: unknown) => e instanceof RequestError && e.status === 422);
+  db.failPush(null);
+  for (const bad of [{ kind: "push", expectedVersion: 1 }, { kind: "push", expectedVersion: 1, data: {} }, { kind: "push", expectedVersion: -1, data: doc }, { kind: "nope" }]) {
+    await assert.rejects(handleSync(user, bad as Record<string, unknown>, db), (e: unknown) => e instanceof RequestError && e.status === 400);
+  }
 }
 
 console.log("reward function: all good");

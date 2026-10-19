@@ -18,6 +18,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import app.pokeplan.app.cloud.SyncStatus
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -258,8 +262,79 @@ private fun SettingsView(model: AppModel) {
             }
         }
     }
+    AccountCard(model)
+}
+
+/** Sign in, sign out and the state of the cloud save. Without a configured project it says online features are not set up. */
+@Composable
+private fun AccountCard(model: AppModel) {
+    val sync = model.sync
+    val account = model.data.account
+    val scope = rememberCoroutineScope()
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var message by remember { mutableStateOf<String?>(null) }
+    var busy by remember { mutableStateOf(false) }
+
     TextBox(accent = Pixel.Yellow) {
-        Text("You are playing as a guest. Your progress is saved on this device only.", style = MaterialTheme.typography.bodyMedium)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Account", style = MaterialTheme.typography.titleMedium)
+            when {
+                sync == null -> Text(
+                    "Online features are not set up in this build. You are playing as a guest: progress is saved on this device only.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                account == null -> {
+                    Text("Sign in to keep your progress safe and use it on your other devices. You can keep playing as a guest.", style = MaterialTheme.typography.bodyMedium)
+                    OutlinedTextField(email, { email = it }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
+                        placeholder = { Text("Email", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) })
+                    OutlinedTextField(password, { password = it }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
+                        visualTransformation = PasswordVisualTransformation(),
+                        placeholder = { Text("Password", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) })
+                    message?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Red) }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        PixelButton("Sign in", {
+                            busy = true; message = null
+                            scope.launch { message = sync.signIn(email, password); busy = false }
+                        }, Modifier.weight(1f), Pixel.Blue, enabled = !busy && email.isNotBlank() && password.length >= 6, compact = true)
+                        PixelButton("Create account", {
+                            busy = true; message = null
+                            scope.launch {
+                                val result = sync.signUp(email, password)
+                                message = if (result == "confirm") "Check your email to confirm your account, then sign in." else result
+                                busy = false
+                            }
+                        }, Modifier.weight(1f), Pixel.Green, enabled = !busy && email.isNotBlank() && password.length >= 6, compact = true)
+                    }
+                }
+                else -> {
+                    Text("Signed in as ${account.email}", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        when (val st = model.syncStatus) {
+                            SyncStatus.Syncing -> "Syncing..."
+                            is SyncStatus.Offline -> "No connection. Your changes are kept and sent later."
+                            is SyncStatus.Refused -> st.message
+                            is SyncStatus.Conflict -> "This device and the cloud both have new progress."
+                            else -> if (account.unsynced) "Changes waiting to sync" else "Everything is saved to the cloud."
+                        },
+                        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                    )
+                    val status = model.syncStatus
+                    if (status is SyncStatus.Conflict) {
+                        Text("Which should win?", style = MaterialTheme.typography.bodyLarge)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            PixelButton("This device", { scope.launch { sync.resolve(keepThisDevice = true) } }, Modifier.weight(1f), Pixel.Blue, compact = true)
+                            PixelButton("The cloud", { scope.launch { sync.resolve(keepThisDevice = false) } }, Modifier.weight(1f), Pixel.Green, compact = true)
+                        }
+                    } else {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            PixelButton("Sync now", { scope.launch { sync.sync() } }, Modifier.weight(1f), Pixel.Blue, enabled = status != SyncStatus.Syncing, compact = true)
+                            PixelButton("Sign out", { sync.signOut() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

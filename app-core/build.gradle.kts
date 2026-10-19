@@ -17,9 +17,13 @@ kotlin {
         commonMain.dependencies {
             api(project(":pokemon-core"))
             api(project(":plan-core"))
+            api(libs.ktor.client.core)
+            api(libs.kotlinx.coroutines.core)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.ktor.client.mock)
+            implementation(libs.kotlinx.coroutines.test)
         }
     }
 }

@@ -4,7 +4,7 @@
 // Secrets (set by the platform): SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 import { RewardApi } from "./engine/pokeplan-pokemon-core.mjs";
-import { type Database, handleReward, RequestError } from "./core.ts";
+import { type Database, handleReward, handleSync, RequestError } from "./core.ts";
 
 const url = Deno.env.get("SUPABASE_URL")!;
 const service = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -39,24 +39,47 @@ const db: Database = {
     return data?.focused_minutes ?? 0;
   },
   rankFor,
+  async pullSave(user) {
+    const { data, error } = await service.schema("platform").rpc("pull_save", { p_user: user });
+    if (error) throw error;
+    return data;
+  },
+  async pushSave(user, expectedVersion, data) {
+    const { data: version, error } = await service.schema("platform").rpc("push_save", { p_user: user, p_expected_version: expectedVersion, p_data: data });
+    if (error) throw error;
+    return version;
+  },
 };
 
+// The web version calls this from the browser, so it answers cross-origin requests.
+const cors = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+const json = (body: unknown, status = 200) => Response.json(body, { status, headers: cors });
+
 Deno.serve(async (req) => {
-  if (req.method !== "POST") return new Response("POST only", { status: 405 });
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  if (req.method !== "POST") return new Response("POST only", { status: 405, headers: cors });
   try {
     const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer /i, "");
     const { data: { user } } = await service.auth.getUser(token);
     if (!user) throw new RequestError(401, "sign in first");
 
-    const result = await handleReward(user.id, await req.json(), api, db, {
-      nowMillis: () => Date.now(),
-      newId: () => crypto.randomUUID(),
-      seed: () => crypto.getRandomValues(new Int32Array(1))[0],
-    });
-    return Response.json(result);
+    const body = await req.json();
+    // "pull" and "push" are the cloud save; everything else earns rewards.
+    const result = body.kind === "pull" || body.kind === "push"
+      ? await handleSync(user.id, body, db)
+      : await handleReward(user.id, body, api, db, {
+        nowMillis: () => Date.now(),
+        newId: () => crypto.randomUUID(),
+        seed: () => crypto.getRandomValues(new Int32Array(1))[0],
+      });
+    return json(result);
   } catch (e) {
-    if (e instanceof RequestError) return Response.json({ error: e.message }, { status: e.status });
+    if (e instanceof RequestError) return json({ error: e.message, ...e.extra }, e.status);
     console.error(e);
-    return Response.json({ error: "something went wrong" }, { status: 500 });
+    return json({ error: "something went wrong" }, 500);
   }
 });

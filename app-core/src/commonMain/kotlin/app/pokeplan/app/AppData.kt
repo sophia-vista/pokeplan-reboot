@@ -40,6 +40,8 @@ data class AppData(
     val pending: List<PendingCompletion> = emptyList(),
     /** What recent rewards were, newest last; the UI shows the unseen ones. */
     val rewardLog: List<RewardEntry> = emptyList(),
+    /** The signed-in cloud account, if any. */
+    val account: Account? = null,
     /** Evolution trials already completed. */
     val completedTrials: Set<String> = emptySet(),
     /** Emergency pauses used on [emergencyPausesDay]. */
@@ -91,3 +93,19 @@ data class RewardEntry(
 /** The end of a focus session: finished (the egg hatched) or failed for [failReason]. */
 @Serializable
 data class FocusEnd(val atMillis: Long, val completed: Boolean, val failReason: FailReason? = null)
+
+/**
+ * A signed-in cloud account and where this device stands with it. [version] is the cloud save version this device last saw;
+ * [unsynced] is true while there are changes the cloud does not have yet.
+ */
+@Serializable
+data class Account(
+    val email: String,
+    val userId: String,
+    val accessToken: String,
+    val refreshToken: String,
+    val expiresAtMillis: Long,
+    val version: Int = 0,
+    val unsynced: Boolean = true,
+    val syncedAtMillis: Long = 0,
+)

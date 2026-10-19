@@ -26,6 +26,16 @@ They cannot set coins, levels, items, shininess or task completion: those column
 4. Build and deploy the function: `supabase/functions/reward/build.sh && supabase functions deploy reward`. `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided to functions automatically.
 5. In *Authentication → Providers* turn on email and Google.
 
+## Cloud save and sign-in
+
+Players can keep playing as a guest. Signing in (email and password) uploads the whole app document to `platform.cloud_saves` through the `reward` function (`kind: "pull"` and `"push"`), so phone, desktop and web share one save.
+
+- The game state part (Pokémon, bag, coins, rank, Guardians) is saved through `apply_outcome`, so the server's rules still apply (points never drop, the party and Guardian slots are checked) and a gift or a reward from another app is never lost: `pull_save` always reads that part from the shared tables.
+- Each save has a version. A device remembers the version it last saw; if the cloud moved on while it had changes of its own, the player chooses which to keep (Settings → Account).
+- To turn it on in the app, put the **Project URL** and the **anon (publishable) key** (Project Settings → API) into `composeApp/src/commonMain/kotlin/app/pokeplan/ui/CloudSettings.kt`. They are meant to be in the app. Until then Settings says online features are not set up.
+- In Supabase: Authentication → Providers → Email on. For a quick start turn **Confirm email** off (Authentication → Sign In / Providers → Email), or players must confirm by email before signing in.
+- The web build is served from another origin: the function already answers CORS.
+
 ## Known limits
 
 The function trusts the client for `hourOfDay`, `firstOfDay`, `onTime` and the length of a focus session (capped at 240
