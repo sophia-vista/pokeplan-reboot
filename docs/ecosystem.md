@@ -194,7 +194,7 @@ from Guardians). Nothing below changes them.
 
 ### Decided (owner)
 
-1. **Regions** stay purely geographic and module-agnostic: a region is a list of species to collect, not a theme owned by a module.
+1. **Regions are tied to modules, for flavour.** Each module gets a region whose theme, patron legendaries and egg type pool fit it (the lake trio are Sinnoh's, so **Plan is Sinnoh**; the other pairings are to be agreed module by module, and the Care one before Care v1 ships). It is flavour, not ownership: a region is still a list of species to collect on the platform, it holds no domain data, and *(proposed)* it is **not gated by using the module** (a region still opens through rank and the dex as designed, so nobody has to use a module they do not want to finish a dex). Where a species-pool bias applies, the rules-table limits (best two methods, caps) still apply.
 2. **Legendaries and mythicals count towards regional dex completion.** A region is complete only with its legendary-class and mythical species, which are earned through quests, not eggs. Consequences to handle when the completion rewards are built: the "completes the Home dex at about day 67" pacing in docs/design.md covers the hatchable species only, so completion also waits on the quests (rank-gated, long); the Dex should show those pages as "earned by quest" so they never read as missing eggs; and the economy simulation should report both "hatchable done" and "fully complete".
 3. **Plan arcs stay as built:** one quest per legendary. For future modules, arcs should add up to **one cohesive but small and quick story** (see below).
 4. **Darkrai is out.**
