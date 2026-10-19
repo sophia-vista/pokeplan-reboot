@@ -288,13 +288,15 @@ class GameStore(
     /** Passes something that happened (the app was left, a call, a pause) to the running session. */
     fun focusEvent(event: FocusEvent): FocusResult? {
         val session = data.focus ?: return null
-        update { it.copy(focus = session.apply(event, nowMillis)) }
+        val next = session.apply(event, nowMillis)
+        if (next != session) update { it.copy(focus = next) }
         return settleFocus()
     }
 
     fun tickFocus(): FocusResult? {
         val session = data.focus ?: return null
-        update { it.copy(focus = session.tick(nowMillis)) }
+        val next = session.tick(nowMillis)
+        if (next != session) update { it.copy(focus = next) }
         return settleFocus()
     }
 

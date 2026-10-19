@@ -7,16 +7,20 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
-// The sprites live in assets/sprites for the whole repo; they are copied into the shape Compose resources expect
-// (files/sprites/<formId>.png) so every target can load them with Res.readBytes.
-val spriteResources = tasks.register<Sync>("prepareSpriteResources") {
-    from(rootProject.file("assets/sprites")) { include("*.png") }
-    into(layout.buildDirectory.dir("generated/spriteResources/files/sprites"))
+// The sprites (assets/sprites) and the pixel font (assets/fonts) live outside the module; they are copied into the shape
+// Compose resources expect (files/sprites/<formId>.png, font/<name>.ttf) so every target can load them.
+val composeAssets = tasks.register<Sync>("prepareComposeAssets") {
+    into(layout.buildDirectory.dir("generated/composeAssets"))
+    from(rootProject.file("assets/sprites")) { include("*.png"); into("files/sprites") }
+    from(rootProject.file("assets/fonts")) { include("*.ttf"); into("font") }
 }
 
 compose.resources {
-    customDirectory("commonMain", spriteResources.map { layout.buildDirectory.dir("generated/spriteResources").get() })
+    customDirectory("commonMain", composeAssets.map { layout.buildDirectory.dir("generated/composeAssets").get() })
 }
+
+tasks.matching { it.name.startsWith("generateResourceAccessors") || it.name.startsWith("prepareComposeResources") || it.name.startsWith("convertXmlValueResources") }
+    .configureEach { dependsOn(composeAssets) }
 
 kotlin {
     androidLibrary {
@@ -33,8 +37,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(project(":pokemon-core"))
-            api(project(":plan-core"))
+            api(project(":app-core"))
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
