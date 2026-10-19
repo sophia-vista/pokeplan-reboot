@@ -184,11 +184,12 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 ## Milestones
 
 1. **Shared core (done in #2):** eggs, candy, levels, evolution, Pokédex.
-2. **Pokémon depth:** IVs, EVs, natures with stats, abilities, shiny, items, transfer yields, perk calculation. Unit tested in `:shared`.
-3. **UI shell:** desktop and web screens (needs `dl.google.com` allowed in the environment).
-4. **Backend:** Supabase schema, RLS, reward functions, sync.
-5. **Android app and widgets** (needs the Android SDK).
-6. **Online:** friends, co-op focus, trading.
+2. **Species data pipeline:** generate species, base stats, abilities, forms, evolutions and rarity (by rule) for Gen 1 to 9 from a public dataset, plus the sprite fetch step. Replaces the 150-species placeholder; National Dex numbers.
+3. **Pokémon depth:** IVs, EVs, natures with stats, abilities, shiny, items, transfer yields, perk calculation. Unit tested in `:shared`.
+4. **UI shell:** desktop and web screens (needs `dl.google.com` allowed in the environment).
+5. **Backend:** Supabase schema, RLS, reward functions, sync.
+6. **Android app and widgets** (needs the Android SDK).
+7. **Online:** friends and weekly leaderboards first; then trading and co-op focus.
 
 ## Risks
 
@@ -204,4 +205,3 @@ Being settled in rounds before any Pokémon-depth code is written. Decided: ever
 - **To confirm:** the Screens and flows proposal.
 - **To tune by simulation before release:** rarity rule parameters across ~1,025 species, coin amounts, transfer yields, perk magnitudes and cap, catch-up discount, minimum task age, Mega bonus.
 - **To check:** Showdown sprite terms and build-time availability, whether the build environment can reach the data sources, Android permission flow for calendar import.
-- **Pokémon economy:** roster size, buddy rules, perk magnitudes, transfer rules, item sources, shiny rate.
