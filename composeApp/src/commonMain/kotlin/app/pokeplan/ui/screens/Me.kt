@@ -58,7 +58,7 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.plus
 
 private enum class MeSection(val label: String, val icon: String) {
-    GROWTH("Growth", "exp-share"), GOALS("Goals", "star-piece"), REVIEW("Review", "journal"), FRIENDS("Friends", "friend-ball"), SETTINGS("Settings", "gb-sounds"),
+    GROWTH("Growth", "exp-share"), GOALS("Goals", "star-piece"), REVIEW("Review", "journal"), FRIENDS("Friends", "friend-ball"), SETTINGS("Settings", "gb-sounds"), HELP("Help", "town-map"),
 }
 
 @Composable
@@ -81,6 +81,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
                         MenuEntry("REVIEW", "journal", "Review", if (model.store.canReview()) "ready this week" else "done this week", badge = if (model.store.canReview()) 1 else 0, tint = Pixel.Blue),
                     ) + (if (model.social != null) listOf(MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = androidx.compose.ui.graphics.Color(0xFFEC4899))) else emptyList()) + listOf(
                         MenuEntry("SETTINGS", "gb-sounds", "Settings", "name, region, sound", tint = Pixel.InkSoft),
+                        MenuEntry("HELP", "town-map", "Help", "how it works", tint = Pixel.Blue),
                     )),
                 ) { key -> section = MeSection.valueOf(key) }
             }
@@ -94,6 +95,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
             MeSection.REVIEW -> ReviewView(model)
             MeSection.FRIENDS -> FriendsView(model)
             MeSection.SETTINGS -> SettingsView(model)
+            MeSection.HELP -> HelpView()
         }
     }
 }
