@@ -35,43 +35,62 @@ import app.pokeplan.ui.theme.RankBadge
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.TextBox
 
-private enum class View(val label: String) { TODAY("Today"), INBOX("Inbox"), UPCOMING("Soon"), HABITS("Habits"), DONE("Done") }
+private enum class View(val label: String, val icon: String) {
+    TODAY("Today", "oaks-parcel"), INBOX("Inbox", "seal-bag"), UPCOMING("Soon", "timer-ball"), HABITS("Habits", "heart-scale"), DONE("Done", "premier-ball"),
+}
 
 @Composable
-fun PlannerScreen(model: AppModel) {
-    var view by remember { mutableStateOf(View.TODAY) }
+fun PlannerScreen(model: AppModel, startView: Int = -1) {
+    var view by remember { mutableStateOf(View.entries.getOrNull(startView)) }
     var expanded by remember { mutableStateOf<String?>(null) }
     val store = model.store
+    val live = model.data.tasks.filter { it.state != TaskState.DELETED }
+    val pendingIds = model.data.pending.map { it.original.id }.toSet()
 
-    Column(Modifier.fillMaxSize()) {
-        ScreenHeader("Planner", subtitle = "${store.todayTasks().size} to do today")
-        Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                View.entries.forEach { v -> TabButton(v.label, v == view, { view = v }, Modifier.weight(1f)) }
-            }
-            RewardBox(model)
-            UndoRows(model)
+    fun tasksFor(v: View): List<Task> = when (v) {
+        View.TODAY -> store.todayTasks()
+        View.INBOX -> TaskViews.inbox(live)
+        View.UPCOMING -> TaskViews.upcoming(live, store.now)
+        View.DONE -> live.filter { it.state == TaskState.DONE }.sortedByDescending { it.completedAtMillis }.take(30)
+        View.HABITS -> emptyList()
+    }.filter { it.id !in pendingIds }
 
-            if (view == View.HABITS) HabitsView(model) else {
-                QuickAddBox(model, view)
-                val live = model.data.tasks.filter { it.state != TaskState.DELETED }
-                val tasks = when (view) {
-                    View.TODAY -> store.todayTasks()
-                    View.INBOX -> TaskViews.inbox(live)
-                    View.UPCOMING -> TaskViews.upcoming(live, store.now)
-                    View.DONE -> live.filter { it.state == TaskState.DONE }.sortedByDescending { it.completedAtMillis }.take(30)
-                    View.HABITS -> emptyList()
-                }
-                val pendingIds = model.data.pending.map { it.original.id }.toSet()
-                val shown = tasks.filter { it.id !in pendingIds }
-                if (shown.isEmpty()) {
-                    TextBox { Text(emptyLine(view), style = MaterialTheme.typography.bodyLarge) }
-                }
-                shown.forEach { t -> TaskCard(model, t, expanded == t.id, { expanded = if (expanded == t.id) null else t.id }) }
+    val current = view
+    if (current == null) {
+        Column(Modifier.fillMaxSize()) {
+            ScreenHeader("Planner", subtitle = "${tasksFor(View.TODAY).size} to do today")
+            Column(
+                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                RewardBox(model)
+                UndoRows(model)
+                QuickAddBox(model, View.INBOX)
+                MenuGrid(
+                    View.entries.map { v ->
+                        MenuEntry(
+                            v.name, v.icon, v.label,
+                            when (v) {
+                                View.HABITS -> "${model.data.habits.size} habits"
+                                View.DONE -> "finished tasks"
+                                else -> "${tasksFor(v).size} tasks"
+                            },
+                        )
+                    },
+                ) { key -> view = View.valueOf(key) }
             }
+        }
+        return
+    }
+
+    SectionScaffold(current.label, null, onBack = { view = null }) {
+        RewardBox(model)
+        UndoRows(model)
+        if (current == View.HABITS) HabitsView(model) else {
+            if (current == View.TODAY || current == View.INBOX) QuickAddBox(model, current)
+            val shown = tasksFor(current)
+            if (shown.isEmpty()) TextBox { Text(emptyLine(current), style = MaterialTheme.typography.bodyLarge) }
+            shown.forEach { t -> TaskCard(model, t, expanded == t.id, { expanded = if (expanded == t.id) null else t.id }) }
         }
     }
 }
