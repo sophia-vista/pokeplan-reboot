@@ -169,7 +169,7 @@ the parser matches the real format.
 5. **Care v1** (section 6), as a module in the same app with its own schema.
 6. **Charm pass:** hatch and evolution ceremonies, region themes, the Oak sprite, music.
 7. **Grow**, then **health integration** (the Huawei export importer first, see section 6), then **Home** modules.
-8. **PokéLife extras** (the owner's name for the whole family): Poketch-style utilities (section 4, "Ideas parked"), a live wallpaper with the buddy in its scene, then a Pokémon-themed launcher as the endgame.
+8. **PokéLife extras** (the owner's name for the whole family): Poketch-style utilities ("Ideas parked" below), a live wallpaper with the buddy in its scene, then a Pokémon-themed launcher as the endgame.
 9. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
 
 ### Ideas parked
