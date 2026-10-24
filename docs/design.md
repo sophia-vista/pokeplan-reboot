@@ -40,7 +40,7 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 
 ## Tasks
 
-- **Difficulty rank E, D, C, B, A** replaces the old priority 1 to 5 (E = old 1 … A = old 5). The player picks how hard a task is; **higher rank pays more, A the most**. Urgency comes from the due date, not the rank. Default rank is C. **S rank is not selectable**: it is reserved for special missions (legendary quest steps, weekly challenges). Reward tables are already ported (`CandyRewards`, indexed 1 to 5).
+- **Difficulty rank E, D, C, B, A** replaces the old priority 1 to 5 (E = old 1 … A = old 5). The player picks how hard a task is; **higher rank pays more, A the most**. Urgency comes from the due date, not the rank. Default rank is C. **S rank is not selectable**: it is reserved for special missions (legendary quest steps, weekly challenges). Reward tables are already ported (`CandyRewards`, indexed 1 to 5). **Every paid task gives Rare Candies** (E 3–5 up to A 7–20); a **Super Candy bonus** comes on top with a chance by rank (E 10%, D 15%, C 20%, B 30%, A 40%, raised by the Super Candy chance perk) *(tune)*. The original app paid one or the other.
 - **Minimum task age** scales with the difficulty rank *(tune)*: **E 2 minutes, D 5, C 10, B 15, A 20**, counted from creation. A one-off task only pays after that, so tiny tasks done right away still pay, but big ones cannot be created and instantly ticked. Younger tasks complete without a reward. There is no daily cap, so many real tasks always pay.
 - **Recurring tasks are exempt:** their instances are created ahead of time by the schedule, so they pay when their day comes.
 - On-time bonus: finishing before the due date adds a bonus *(tune)*. **Overdue tasks pay the normal reward**, just without the bonus, so old tasks get finished rather than abandoned.
@@ -207,7 +207,7 @@ Collecting is **fast at the start and deep at the end.** The simulator tunes tow
 
 - **Basic dex of the Home Region (every species caught, including evolutions): about 2 months** *(tune)*. Each later region is about the same once unlocked.
 - **Region unlocks:** trainer rank opens a new region about every 3 to 4 weeks *(tune)*, so a player is usually collecting in more than one region.
-- **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Home dex at a median of day 67, opens a region every 20 to 28 days, and earns enough Rare Candies to evolve the whole Home Region in 45 to 90 days and enough Super Candies in about 20.
+- **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Home dex at a median of day 62, opens a region every 20 to 28 days, and earns enough Rare Candies to evolve the whole Home Region in 40 to 80 days and enough Super Candies in about 20.
 - **The long tail** (months to years) is made of layers, each with its own progress, badge and showcase:
 
 | Layer | Goal |

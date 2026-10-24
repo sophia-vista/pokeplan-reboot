@@ -114,21 +114,30 @@ class RewardEngineTest {
     @Test
     fun finishedWorkPaysCandiesWithinTheTierRange() {
         val rng = Random(9)
+        var bonuses = 0
         repeat(300) {
             val out = RewardEngine.achievement(PlayerState(), achievement(3), rng)
-            val candies = out.rewards.filterIsInstance<Reward.Candies>().single()
+            val candies = out.rewards.filterIsInstance<Reward.Candies>()
             val rates = CandyRewards.rates(3)
-            val range = if (candies.type == CandyType.SUPER) rates.superCandy else rates.rare
-            assertTrue(candies.amount in range, "$candies")
-            val id = if (candies.type == CandyType.SUPER) Items.SUPER_CANDY else Items.RARE_CANDY
-            assertEquals(candies.amount, out.state.inventory[id])
+            val rare = candies.single { it.type == CandyType.RARE }
+            assertTrue(rare.amount in rates.rare, "$candies")
+            assertEquals(rare.amount, out.state.inventory[Items.RARE_CANDY])
+            val bonus = candies.singleOrNull { it.type == CandyType.SUPER }
+            if (bonus != null) {
+                bonuses++
+                assertTrue(bonus.amount in rates.superCandy, "$candies")
+            }
+            assertEquals(bonus?.amount ?: 0, out.state.inventory[Items.SUPER_CANDY])
         }
+        assertTrue(bonuses in 30..90, "Super Candy bonuses: $bonuses of 300")
     }
 
     @Test
     fun onTimeAndFocusedBonusesAddUp() {
-        val plain = (1..400).sumOf { i -> RewardEngine.achievement(PlayerState(), achievement(5), Random(i)).rewards.filterIsInstance<Reward.Candies>().single().amount }
-        val both = (1..400).sumOf { i -> RewardEngine.achievement(PlayerState(), achievement(5, onTime = true, focused = true), Random(i)).rewards.filterIsInstance<Reward.Candies>().single().amount }
+        fun rareCandies(e: AchievementEvent, seed: Int) =
+            RewardEngine.achievement(PlayerState(), e, Random(seed)).rewards.filterIsInstance<Reward.Candies>().single { it.type == CandyType.RARE }.amount
+        val plain = (1..400).sumOf { i -> rareCandies(achievement(5), i) }
+        val both = (1..400).sumOf { i -> rareCandies(achievement(5, onTime = true, focused = true), i) }
         assertTrue(both > plain * 1.1, "plain $plain, both $both")
     }
 
@@ -227,9 +236,9 @@ class RewardEngineTest {
     fun fullStacksOverflowIntoCoins() {
         val state = PlayerState(inventory = Inventory().add(Items.RARE_CANDY, 9_999).add(Items.SUPER_CANDY, 9_999))
         val out = RewardEngine.achievement(state, achievement(3), Random(1))
-        val candies = out.rewards.filterIsInstance<Reward.Candies>().single()
+        val candies = out.rewards.filterIsInstance<Reward.Candies>()
         assertEquals(9_999, out.state.inventory[Items.RARE_CANDY])
         assertEquals(9_999, out.state.inventory[Items.SUPER_CANDY])
-        assertEquals(3 * RewardEngine.COINS_PER_TIER + candies.amount, out.state.coins)
+        assertEquals(3 * RewardEngine.COINS_PER_TIER + candies.sumOf { it.amount }, out.state.coins)
     }
 }
