@@ -7,6 +7,12 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi
 
+# Runs in the background so the session starts at once; .claude/hooks/wait-for-setup.sh waits for it before a build.
+echo '{"async": true, "asyncTimeout": 600000}'
+STATUS="$HOME/.pokeplan-setup"
+rm -f "$STATUS.done" "$STATUS.failed"
+trap 'echo "failed at line $LINENO" > "$STATUS.failed"' ERR
+
 SDK="$HOME/android-sdk"
 REPO="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
@@ -53,3 +59,5 @@ fi
 
 # The Gradle distribution, so the first build does not wait for it.
 cd "$REPO" && ./gradlew --version > /dev/null 2>&1 || echo "Gradle warm-up skipped; the first build downloads it." >&2
+
+touch "$STATUS.done"
