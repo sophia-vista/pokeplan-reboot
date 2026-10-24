@@ -88,6 +88,8 @@ private val soft = Color(0xFF666B7E)
 private val shade = Color(0xFFE9E9EF)
 private val green = Color(0xFF218858)
 
+// Widget text uses two sizes: 15 sp for a widget's title and the tick, 13 sp for everything else (the 28 sp emoji is a picture).
+
 private fun rankColor(rank: Rank) = when (rank) {
     Rank.E -> Color(0xFF666B7E)
     Rank.D -> Color(0xFF218858)
@@ -200,12 +202,12 @@ private fun TodayContent(context: Context, state: TodayState, header: Bitmap?) {
                 Text(
                     "+ Add", GlanceModifier.pill().padding(horizontal = 10.dp, vertical = 4.dp).semantics { contentDescription = "Add a task" }
                         .clickable(rippleOverride = R.drawable.no_ripple, onClick = openApp(context, "PLANNER", addTask = true)),
-                    style = TextStyle(color = ColorProvider(green), fontSize = 12.sp, fontWeight = FontWeight.Bold),
+                    style = TextStyle(color = ColorProvider(green), fontSize = 13.sp, fontWeight = FontWeight.Bold),
                 )
                 Spacer(GlanceModifier.width(6.dp))
                 if (state.total > 0) Text(
                     "${state.done} of ${state.total} done", GlanceModifier.pill().padding(horizontal = 10.dp, vertical = 4.dp),
-                    style = TextStyle(color = ColorProvider(ink), fontSize = 12.sp, fontWeight = FontWeight.Medium),
+                    style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp, fontWeight = FontWeight.Medium),
                 )
             }
         }
@@ -222,11 +224,11 @@ private fun TodayContent(context: Context, state: TodayState, header: Bitmap?) {
                 Text(
                     when {
                         state.name.isEmpty() -> "Open PokéPlan to start"
-                        state.done > 0 -> "All done for today. Rest, or start a focus session."
-                        else -> "Nothing planned. Tap to add one small thing."
+                        state.done > 0 -> "All done for today"
+                        else -> "Nothing planned. Tap to add a task."
                     },
                     GlanceModifier.clickable(openApp(context, "PLANNER")),
-                    style = TextStyle(color = ColorProvider(soft), fontSize = 14.sp),
+                    style = TextStyle(color = ColorProvider(soft), fontSize = 13.sp),
                 )
             } else {
                 LazyColumn {
@@ -235,13 +237,13 @@ private fun TodayContent(context: Context, state: TodayState, header: Bitmap?) {
                             Box(GlanceModifier.size(26.dp).background(rankColor(t.rank)).cornerRadius(13.dp), contentAlignment = Alignment.Center) {
                                 Text(
                                     t.rank.letter.toString(),
-                                    style = TextStyle(color = ColorProvider(Color.White), fontSize = 12.sp, fontWeight = FontWeight.Bold),
+                                    style = TextStyle(color = ColorProvider(Color.White), fontSize = 13.sp, fontWeight = FontWeight.Bold),
                                 )
                             }
                             Spacer(GlanceModifier.width(10.dp))
                             Text(
                                 t.title, GlanceModifier.defaultWeight().clickable(openApp(context, "PLANNER")),
-                                style = TextStyle(color = ColorProvider(ink), fontSize = 14.sp), maxLines = 2,
+                                style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp), maxLines = 2,
                             )
                             Spacer(GlanceModifier.width(8.dp))
                             Box(
@@ -249,7 +251,7 @@ private fun TodayContent(context: Context, state: TodayState, header: Bitmap?) {
                                     .semantics { contentDescription = "Finish ${t.title}" }
                                     .clickable(actionRunCallback<CompleteTaskAction>(actionParametersOf(TaskIdKey to t.id))),
                                 contentAlignment = Alignment.Center,
-                            ) { Text("✓", style = TextStyle(color = ColorProvider(Color.White), fontSize = 16.sp, fontWeight = FontWeight.Bold)) }
+                            ) { Text("✓", style = TextStyle(color = ColorProvider(Color.White), fontSize = 15.sp, fontWeight = FontWeight.Bold)) }
                         }
                     }
                 }
@@ -397,7 +399,7 @@ private fun BuddyContent(context: Context, s: BuddyState) {
         else Box(GlanceModifier.fillMaxSize().background(Color(0xFF8FCB7F))) {}
         if (s.name == null) {
             Box(GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Open PokéPlan to start", GlanceModifier.pill().padding(horizontal = 12.dp, vertical = 8.dp), style = TextStyle(color = ColorProvider(ink), fontSize = 14.sp))
+                Text("Open PokéPlan to start", GlanceModifier.pill().padding(horizontal = 12.dp, vertical = 8.dp), style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp))
             }
             return@Box
         }
@@ -410,11 +412,11 @@ private fun BuddyContent(context: Context, s: BuddyState) {
         // Level and progress: small, bottom left.
         Box(GlanceModifier.fillMaxSize().padding(8.dp), contentAlignment = Alignment.BottomStart) {
             Column(
-                GlanceModifier.background(Color(0x66000000)).cornerRadius(10.dp).padding(horizontal = 8.dp, vertical = 5.dp)
+                GlanceModifier.background(Color(0x66000000)).cornerRadius(12.dp).padding(horizontal = 8.dp, vertical = 5.dp)
                     .clickable(rippleOverride = R.drawable.no_ripple, onClick = openApp(context, "COLLECTION", s.buddyId))
                     .semantics { contentDescription = "${s.name}, level ${s.level}, ${(s.progress * 100).toInt()} percent to the next level" },
             ) {
-                Text("${s.name}  Lv. ${s.level}", style = TextStyle(color = ColorProvider(Color.White), fontSize = 11.sp, fontWeight = FontWeight.Medium))
+                Text("${s.name}  Lv. ${s.level}", style = TextStyle(color = ColorProvider(Color.White), fontSize = 13.sp, fontWeight = FontWeight.Medium))
                 Spacer(GlanceModifier.height(3.dp))
                 LinearProgressIndicator(
                     progress = s.progress, modifier = GlanceModifier.width(72.dp).height(3.dp),
@@ -507,7 +509,7 @@ private fun FocusContent(context: Context, s: FocusState) {
                 if (s.countdown != null) AndroidRemoteViews(remoteViews = s.countdown, modifier = GlanceModifier.wrapContentSize())
                 Text(
                     s.detail, GlanceModifier.pill().padding(horizontal = 8.dp, vertical = 3.dp),
-                    style = TextStyle(color = ColorProvider(ink), fontSize = 11.sp), maxLines = 2,
+                    style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp), maxLines = 2,
                 )
             }
         }

@@ -5,9 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.defaultMinSize
@@ -33,7 +31,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.contentDescription
@@ -156,38 +153,34 @@ fun PixelTheme(dark: Boolean = false, content: @Composable () -> Unit) {
             )
         },
         typography = Typography(
-            // Pixel font: game headings, rank, stats, button labels. Everything meant to be read in bulk is Nunito.
-            headlineMedium = style(display, 30, 38, FontWeight.Bold),
+            // Four sizes only: 24 (screen titles, big numbers), 18 (section titles, buttons), 16 (body), 13 (secondary and
+            // labels). Hierarchy inside a size comes from the font, weight and colour. Pixel font for game headings, rank,
+            // stats and button labels; everything meant to be read in bulk is Nunito.
+            headlineMedium = style(display, 24, 32, FontWeight.Bold),
             titleLarge = style(display, 24, 32, FontWeight.Bold),
-            titleMedium = style(display, 20, 28, FontWeight.Bold),
-            titleSmall = style(display, 20, 26, FontWeight.Bold),
+            titleMedium = style(display, 18, 24, FontWeight.Bold),
+            titleSmall = style(display, 18, 24, FontWeight.Bold),
             bodyLarge = style(body, 16, 24),
-            bodyMedium = style(body, 14, 20, color = Pixel.InkSoft),
+            bodyMedium = style(body, 13, 18, color = Pixel.InkSoft),
             labelLarge = style(display, 18, 24, FontWeight.Bold),
-            labelMedium = style(body, 12, 16, FontWeight.Medium),
+            labelMedium = style(body, 13, 18, FontWeight.Medium),
         ),
     ) { content() }
 }
 
-/** Rounded corners; the old "step" argument is kept so callers read the same: a step is 5dp of radius. */
-fun NotchShape(step: Float): Shape = RoundedCornerShape((step * 5).dp)
-
 private val cardShape = RoundedCornerShape(Spacing.CardRadius)
 
-/** The basic card: white surface, 16 dp corners, a thin border, no shadow. [accent] puts a coloured strip on the left edge. */
+/** The basic card: white surface, 16 dp corners, a thin border, no shadow and no coloured edge. */
 @Composable
-fun TextBox(modifier: Modifier = Modifier, accent: Color = Color.Transparent, content: @Composable () -> Unit) {
-    Row(
+fun TextBox(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Box(
         modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min)
             .background(Pixel.Panel, cardShape)
             .border(BorderStroke(1.dp, Pixel.Border), cardShape)
-            .clip(cardShape),
-    ) {
-        if (accent != Color.Transparent) Box(Modifier.width(4.dp).fillMaxHeight().background(accent))
-        Box(Modifier.weight(1f).padding(Spacing.L)) { content() }
-    }
+            .clip(cardShape)
+            .padding(Spacing.L),
+    ) { content() }
 }
 
 /**
@@ -286,14 +279,16 @@ fun ExpBar(fraction: Float, label: String, modifier: Modifier = Modifier, tag: S
  */
 @Composable
 fun GameBox(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
-    val shape = NotchShape(3f)
+    // The inner frame sits 3 dp in, so its corners are 3 dp smaller: the two outlines stay concentric.
+    val outer = cardShape
+    val inner = RoundedCornerShape(Spacing.CardRadius - 3.dp)
     Box(
         modifier
             .fillMaxWidth()
-            .border(BorderStroke(3.dp, Pixel.Ink), shape)
+            .border(BorderStroke(3.dp, Pixel.Ink), outer)
             .padding(3.dp)
-            .border(BorderStroke(2.dp, Pixel.Border), shape)
-            .background(Pixel.Panel, shape)
+            .border(BorderStroke(2.dp, Pixel.Border), inner)
+            .background(Pixel.Panel, inner)
             .padding(horizontal = 14.dp, vertical = 12.dp),
     ) { content() }
 }

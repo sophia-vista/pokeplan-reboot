@@ -76,7 +76,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1) {
     @Composable
     fun DeletedNotice() {
         deleted?.let { t ->
-            TextBox(accent = Pixel.Warning) {
+            TextBox {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text("Deleted \"${t.title}\"", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 2)
                     PixelButton("Undo", { store.restoreTask(t.id); deleted = null }, color = Pixel.InkSoft, compact = true)
@@ -135,11 +135,11 @@ fun PlannerScreen(model: AppModel, startView: Int = -1) {
 
 /** What an empty list says, and what to do about it. */
 @Composable
-fun EmptyState(title: String, line: String) {
+fun EmptyState(title: String, line: String? = null) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             Text(title, style = MaterialTheme.typography.titleSmall)
-            Text(line, style = MaterialTheme.typography.bodyLarge)
+            if (line != null) Text(line, style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
@@ -153,10 +153,10 @@ private fun emptyTitle(view: View) = when (view) {
 }
 
 private fun emptyLine(view: View) = when (view) {
-    View.TODAY -> "Add something above, or enjoy the calm."
+    View.TODAY -> null
     View.INBOX -> "Quick thoughts without a date land here."
     View.UPCOMING -> "Tasks planned for the next 7 days show up here."
-    View.DONE -> "Finished tasks are kept here."
+    View.DONE -> null
     View.HABITS -> "Habits are small things you want to do often."
 }
 
@@ -247,7 +247,7 @@ private fun TaskCard(model: AppModel, task: Task, expanded: Boolean, toggle: () 
             Text(task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 4)
             val overdue = task.state == TaskState.OPEN && isOverdue(model, task)
             val meta = taskMeta(task)
-            val line = listOf(if (overdue) "Overdue" else "", meta).filter { it.isNotEmpty() }.joinToString("  ·  ")
+            val line = listOf(if (overdue) "Overdue" else "", meta).filter { it.isNotEmpty() }.joinToString(", ")
             if (line.isNotEmpty()) Text(line, style = MaterialTheme.typography.bodyMedium, color = if (overdue) Pixel.Danger else Pixel.InkSoft)
         }
         if (expanded) {
@@ -375,14 +375,14 @@ private fun isOverdue(model: AppModel, t: Task): Boolean {
     return if (due != null) due < now else t.planned != null && t.planned!! < now.date
 }
 
-/** "Mon 19 Oct  ·  45 min  ·  1/3 steps" */
+/** "Mon 19 Oct, 45 min, 1/3 steps" */
 fun taskMeta(t: Task): String = buildList {
     t.due?.let { add("due ${it.date.short()} ${clock(it.time)}") }
         ?: t.planned?.let { day -> add(listOfNotNull(day.short(), t.plannedTime?.let(::clock)).joinToString(" ")) }
     t.estimateMinutes?.let { add("$it min") }
     if (t.reminders.isNotEmpty() && t.isOpen) add("reminder")
     if (t.subtasks.isNotEmpty()) add("${t.subtasks.count { it.done }}/${t.subtasks.size} steps")
-}.joinToString("  ·  ")
+}.joinToString(", ")
 
 @Composable
 private fun HabitsView(model: AppModel) {

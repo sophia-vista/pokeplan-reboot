@@ -119,16 +119,11 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
                     onFocus = { model.focusTaskId = next.id; go(Tab.FOCUS) },
                     onChoose = if (open.size > 1) ({ chosen = PickForMe.choose(open.filter { it.id != next.id }, Random)?.task?.id }) else null,
                 )
-                doneToday > 0 -> TextBox(accent = Pixel.Green) {
-                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                        Text("All done for today", style = MaterialTheme.typography.titleSmall)
-                        Text("You finished $doneToday task${if (doneToday == 1) "" else "s"} today. Rest, or start a focus session.", style = MaterialTheme.typography.bodyLarge)
-                    }
-                }
+                // The progress card below already counts what was done, so this says only that the day is clear.
+                doneToday > 0 -> TextBox { Text("All done for today", style = MaterialTheme.typography.titleSmall) }
                 else -> TextBox {
                     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                         Text("Nothing planned for today", style = MaterialTheme.typography.titleSmall)
-                        Text("Add one small task to get going, or just start a focus session.", style = MaterialTheme.typography.bodyLarge)
                         PixelButton("Add a task", { go(Tab.PLANNER) }, Modifier.fillMaxWidth(), Pixel.Red)
                     }
                 }
@@ -151,7 +146,8 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth()) {
-                PixelButton("Planner", { go(Tab.PLANNER) }, Modifier.weight(1f), Pixel.InkSoft)
+                // With nothing planned, the empty card's "Add a task" already goes to the Planner.
+                if (total > 0) PixelButton("Planner", { go(Tab.PLANNER) }, Modifier.weight(1f), Pixel.InkSoft)
                 PixelButton("Start focus", { model.focusTaskId = null; go(Tab.FOCUS) }, Modifier.weight(1f), Pixel.InkSoft)
             }
         }
@@ -161,13 +157,13 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
 /** The one recommended task, with its two actions. Completing is its own button; the rest of the card is just information. */
 @Composable
 private fun NextUp(task: Task, onDone: () -> Unit, onFocus: () -> Unit, onChoose: (() -> Unit)?) {
-    TextBox(accent = Pixel.Red) {
+    TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Text("Next up", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
             Text(task.title, style = MaterialTheme.typography.titleSmall, maxLines = 3)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 RankBadge(task.rank)
-                Text(listOf(task.rank.title, taskMeta(task)).filter { it.isNotEmpty() }.joinToString("  ·  "), style = MaterialTheme.typography.bodyMedium)
+                Text(listOf(task.rank.title, taskMeta(task)).filter { it.isNotEmpty() }.joinToString(", "), style = MaterialTheme.typography.bodyMedium)
             }
             PixelButton("Done", onDone, Modifier.fillMaxWidth(), Pixel.Green)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth()) {
@@ -211,7 +207,7 @@ private fun WhatsNewCard(model: AppModel) {
     val version = AppVersion.NAME
     val lines = WhatsNew.forVersion(version) ?: return
     if (model.data.lastSeenVersion == version) return
-    TextBox(accent = Pixel.Yellow) {
+    TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("What's new in $version", style = MaterialTheme.typography.titleSmall)
             lines.forEach { Text("•  $it", style = MaterialTheme.typography.bodyLarge) }

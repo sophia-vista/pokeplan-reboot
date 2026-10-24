@@ -96,16 +96,14 @@ Use at most two font families:
 - **Display:** existing licensed pixel font for game headings, major stats, rank, and reward moments.
 - **Body:** legible sans-serif such as Roboto for task names, descriptions, dates, settings, forms, and longer content.
 
-Initial type scale:
-- Display: 28–32 sp.
-- Page title: 24 sp.
-- Section title: 18–20 sp, semibold.
-- Body: 16 sp.
-- Secondary: 14 sp.
-- Caption: 12 sp minimum.
-- Game stats: 20–28 sp.
+Type scale: four sizes, no more (three is better), and never below 12 sp. When a screen seems to need another size, use
+weight, colour and spacing instead.
+- 24 sp: page titles and big numbers (the focus clock, a friend code).
+- 18 sp: section titles and button labels (pixel font, bold).
+- 16 sp: body.
+- 13 sp: secondary lines, captions, chips and tab labels.
 
-These are starting sizes, not hard maximums. Respect system text scaling and test enlarged fonts and long labels. Verify the pixel font license before distribution.
+The widgets use two: 15 sp for a widget's title and 13 sp for the rest. Respect system text scaling and test enlarged fonts and long labels. Verify the pixel font license before distribution.
 
 ### Spacing and shape
 
@@ -127,6 +125,16 @@ Flutter dimensions are logical pixels, not physical screen pixels. Adapt to cons
 - Progress: neutral track and semantic fill; add a label when meaning is not obvious.
 - Shadows: reserve for floating elements, dialogs, and selected elevated controls.
 - Pixel borders and thick raised-button treatments: reserve for important game actions/reward moments, not every component.
+- No coloured strip on the left edge of a card; status shows in the words, an icon or the button.
+- Nested rounded shapes are concentric: an inner corner radius is the outer radius minus the inset (a 16 dp card with an
+  8 dp inset holds 8 dp corners). Two radii cover almost everything: 16 dp for cards, 12 dp for controls and tiles, plus
+  full pills and circles.
+
+### Copy
+- No middle dot (·) as a separator; use a comma or a new line.
+- No line that only repeats what the title, a button or the screen header already says, and no "tap here to..." hints.
+- Plain, friendly words for players of the games: not slangy, no made-up terms (say "Long-term", not "long road").
+- Ask the player to decide only where they already mean to choose; a setting that does nothing yet is not shown.
 
 ---
 
