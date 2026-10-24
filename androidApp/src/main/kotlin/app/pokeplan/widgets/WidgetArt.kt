@@ -100,7 +100,7 @@ object WidgetArt {
     private const val CANVAS = 192
 
     /** One square picture of the buddy standing on a soft shadow, bottom-centred; [sprite] is enlarged by [scale] without smoothing. */
-    private fun standing(sprite: Bitmap, scale: Int, lifted: Boolean): Bitmap {
+    private fun standing(sprite: Bitmap, scale: Int): Bitmap {
         val scaled = Bitmap.createScaledBitmap(sprite, sprite.width * scale, sprite.height * scale, false)
         val out = Bitmap.createBitmap(CANVAS, CANVAS, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(out)
@@ -113,17 +113,28 @@ object WidgetArt {
             val top = CANVAS - 6f - rowHeight * (rows.size - i)
             canvas.drawRect(CANVAS / 2f - width / 2, top, CANVAS / 2f + width / 2, top + rowHeight, shadow)
         }
-        val lift = if (lifted) 14f else 0f
-        canvas.drawBitmap(scaled, (CANVAS - scaled.width) / 2f, CANVAS - scaled.height - 12f - lift, Paint().apply { isFilterBitmap = false })
+        canvas.drawBitmap(scaled, (CANVAS - scaled.width) / 2f, CANVAS - scaled.height - 12f, Paint().apply { isFilterBitmap = false })
         return out
     }
 
     /** A still picture of the buddy from its regular sprite. */
-    fun still(context: Context, formId: Int, shiny: Boolean, lifted: Boolean = false): Bitmap? =
-        remember("still:$formId:$shiny:$lifted") {
+    fun still(context: Context, formId: Int, shiny: Boolean): Bitmap? =
+        remember("still:$formId:$shiny") {
             val sprite = asset(context, "sprites/${if (shiny) "$formId-shiny" else "$formId"}.png") ?: return@remember null
-            standing(sprite, 2, lifted)
+            standing(withoutEmptyRowsBelow(sprite), 2)
         }
+
+    /** The regular sprites have empty rows under the feet; without them the buddy stands on its shadow, as the animated frames do. */
+    private fun withoutEmptyRowsBelow(sprite: Bitmap): Bitmap {
+        val row = IntArray(sprite.width)
+        var bottom = sprite.height
+        while (bottom > 1) {
+            sprite.getPixels(row, 0, sprite.width, 0, bottom - 1, sprite.width, 1)
+            if (row.any { it ushr 24 != 0 }) break
+            bottom--
+        }
+        return if (bottom == sprite.height) sprite else Bitmap.createBitmap(sprite, 0, 0, sprite.width, bottom)
+    }
 
     private var animations: Map<Int, Triple<Int, Int, IntArray>>? = null
 
@@ -157,7 +168,7 @@ object WidgetArt {
             var index = 0
             var elapsed = 0
             while (index < times.size - 1 && elapsed + times[index] <= at) { elapsed += times[index]; index++ }
-            standing(Bitmap.createBitmap(sheet, index * w, 0, w, h), scale, false)
+            standing(Bitmap.createBitmap(sheet, index * w, 0, w, h), scale)
         }
     }
 
