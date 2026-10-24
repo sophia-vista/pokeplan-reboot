@@ -548,6 +548,20 @@ class GameStoreTest {
     }
 
     @Test
+    fun the_day_timeline_moves_a_task_to_its_day_and_hour() {
+        val (s, _) = started()
+        val late = s.addTask("Call the bank", planned = kotlinx.datetime.LocalDate(2026, 10, 17))
+        val tomorrow = kotlinx.datetime.LocalDate(2026, 10, 20)
+        s.scheduleTask(late.id, tomorrow, kotlinx.datetime.LocalTime(10, 0))
+        val moved = s.data.tasks.first { it.id == late.id }
+        assertEquals(tomorrow, moved.planned)
+        assertEquals(kotlinx.datetime.LocalTime(10, 0), moved.plannedTime)
+        s.completeTask(late.id)
+        s.scheduleTask(late.id, s.today, kotlinx.datetime.LocalTime(8, 0))
+        assertEquals(tomorrow, s.data.tasks.first { it.id == late.id }.planned, "a finished task stays where it was")
+    }
+
+    @Test
     fun the_export_has_everything_but_the_sign_in_and_erasing_starts_over() {
         val (s, _) = started()
         s.addTask("Buy milk")

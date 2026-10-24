@@ -52,7 +52,7 @@ import kotlinx.datetime.LocalTime
 import kotlinx.datetime.plus
 
 private enum class View(val label: String, val icon: String) {
-    TODAY("Today", "oaks-parcel"), INBOX("Inbox", "seal-bag"), UPCOMING("Soon", "timer-ball"), HABITS("Habits", "heart-scale"), DONE("Done", "premier-ball"),
+    TODAY("Today", "oaks-parcel"), DAY("Day", "town-map"), INBOX("Inbox", "seal-bag"), UPCOMING("Soon", "timer-ball"), HABITS("Habits", "heart-scale"), DONE("Done", "premier-ball"),
 }
 
 @Composable
@@ -69,7 +69,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1) {
         View.INBOX -> TaskViews.inbox(live)
         View.UPCOMING -> TaskViews.upcoming(live, store.now)
         View.DONE -> live.filter { it.state == TaskState.DONE }.sortedByDescending { it.completedAtMillis }.take(30)
-        View.HABITS -> emptyList()
+        View.HABITS, View.DAY -> emptyList()
     }.filter { it.id !in pendingIds }
 
     /** Shown after a delete: the task can be brought back. */
@@ -103,11 +103,12 @@ fun PlannerScreen(model: AppModel, startView: Int = -1) {
                             v.name, v.icon, v.label,
                             when (v) {
                                 View.HABITS -> "${model.data.habits.size} habits"
+                                View.DAY -> "plan the hours"
                                 View.DONE -> "finished tasks"
                                 else -> "${tasksFor(v).size} tasks"
                             },
                             tint = when (v) {
-                                View.TODAY -> Pixel.Red; View.INBOX -> Pixel.Blue; View.UPCOMING -> Pixel.Warning
+                                View.TODAY -> Pixel.Red; View.DAY -> androidx.compose.ui.graphics.Color(0xFF0D9488); View.INBOX -> Pixel.Blue; View.UPCOMING -> Pixel.Warning
                                 View.HABITS -> Pixel.Green; View.DONE -> androidx.compose.ui.graphics.Color(0xFF8B5CF6)
                             },
                         )
@@ -122,7 +123,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1) {
         RewardBox(model)
         UndoRows(model)
         DeletedNotice()
-        if (current == View.HABITS) HabitsView(model) else {
+        if (current == View.HABITS) HabitsView(model) else if (current == View.DAY) DayView(model, pendingIds) else {
             if (current == View.TODAY || current == View.INBOX) QuickAddBox(model, current)
             val shown = tasksFor(current)
             if (shown.isEmpty()) EmptyState(emptyTitle(current), emptyLine(current))
@@ -150,6 +151,7 @@ private fun emptyTitle(view: View) = when (view) {
     View.UPCOMING -> "Nothing coming up"
     View.DONE -> "Nothing finished yet"
     View.HABITS -> "No habits yet"
+    View.DAY -> ""
 }
 
 private fun emptyLine(view: View) = when (view) {
@@ -158,6 +160,7 @@ private fun emptyLine(view: View) = when (view) {
     View.UPCOMING -> "Tasks planned for the next 7 days show up here."
     View.DONE -> null
     View.HABITS -> "Habits are small things you want to do often."
+    View.DAY -> null
 }
 
 /** What the difficulty ranks mean. Harder tasks earn more; it is how hard it feels, not how urgent it is. */
@@ -334,10 +337,10 @@ private fun PlannedTime(model: AppModel, task: Task) {
 
 private val TIME_PRESETS = listOf(LocalTime(9, 0), LocalTime(12, 0), LocalTime(15, 0), LocalTime(19, 0))
 
-private fun clock(t: LocalTime) = "${t.hour}:${t.minute.toString().padStart(2, '0')}"
+internal fun clock(t: LocalTime) = "${t.hour}:${t.minute.toString().padStart(2, '0')}"
 
 /** Moves [t] by [minutes] within the same day (it stops at 0:00 and 23:45). */
-private fun shifted(t: LocalTime, minutes: Int): LocalTime {
+internal fun shifted(t: LocalTime, minutes: Int): LocalTime {
     val total = (t.hour * 60 + t.minute + minutes).coerceIn(0, 23 * 60 + 45)
     return LocalTime(total / 60, total % 60)
 }
