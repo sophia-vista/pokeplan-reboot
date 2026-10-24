@@ -203,7 +203,7 @@ Handy tools that live in the app and as widgets, each one a "Poketch app" the pl
 
 **Platform and privacy notes.**
 - Flashlight: on Android, the camera torch (`CameraManager.setTorchMode`, no camera permission needed); on web and desktop, a full-white screen.
-- Currency converter: needs exchange rates. Daily rates are fetched and cached; offline, the tool shows the last rates and their date. Only the rates are fetched; no user data is sent.
+- Currency converter: needs exchange rates. The app fetches daily rates from a free rates service and caches them; offline, the tool shows the last rates and their date. Only the rates are fetched; no user data is sent.
 - Picker: the list stays on the device and is never synced or sent anywhere.
 - Widgets: a flashlight toggle and a coin toss are the natural first ones.
 
@@ -211,9 +211,9 @@ Handy tools that live in the app and as widgets, each one a "Poketch app" the pl
 - `pokemon-core` has no moves today. The Dex generator would pull from PokeAPI only the species that learn the five moves above (not full learnsets), so the generated data stays small. Compatibility (signature line or move) is a Pokémon-side rule, so it goes in `pokemon-core`; the tools themselves belong to the app.
 - Helpers and loans are cosmetic, so they are client-side data in the save (like `AppData.favorites`), not part of the server's game state.
 
-**Open questions.**
-- A daily-capped friendship tick for using a tool with a helper? It would need the reward function and would be the tool's only payout.
-- The source of the exchange rates (a free rates API called from the app, or a daily cache in a Supabase function).
+**Decided (owner).**
+- No friendship tick for using a tool: helpers stay pure flavour, and no tool pays anything.
+- Exchange rates come from a free rates service called by the app (no Supabase function). Which service is picked when the tool is built.
 
 ## 9. Open questions
 
