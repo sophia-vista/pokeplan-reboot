@@ -304,7 +304,7 @@ Beyond task reminders: a **streak-at-risk reminder** in the evening if nothing h
 
 ## Look and feel
 
-- Gen 3 to 5 pixel art: GBA/DS-era text boxes, menus and sprites. Animated front/back sprites for the buddy.
+- Gen 3 to 5 pixel art: GBA/DS-era text boxes and menus. **Pokémon are drawn with the Pokémon Mystery Dungeon style sprites of the PMD SpriteCollab** *(owner's choice, 0.11.0)*: the idle animation facing the viewer everywhere a Pokémon appears, its first frame where it stands still, and the PokeAPI and Black/White sprites only for the few forms SpriteCollab lacks. Their licence (CC BY-NC 4.0) keeps the app non-commercial and asks for credit, shown on each Pokémon's page.
 - Hatch, level-up and evolution are full ceremonies (egg wobble, text box lines, cry, flash), skippable.
 - Crisp scaling: nearest-neighbour, integer scale, no blur.
 - Fonts: pixel font for headings only; body text stays a readable font.
