@@ -531,4 +531,19 @@ class GameStoreTest {
         s.completeTask(task.id)
         assertTrue(s.upcomingReminders().isEmpty(), "a finished task does not remind")
     }
+
+    @Test
+    fun a_planned_time_gives_the_task_a_day() {
+        val (s, _) = started()
+        val loose = s.addTask("Stretch")
+        s.setPlannedTime(loose.id, kotlinx.datetime.LocalTime(15, 0))
+        val planned = s.data.tasks.first { it.id == loose.id }
+        assertEquals(s.today, planned.planned, "no day yet: today")
+        assertEquals(kotlinx.datetime.LocalTime(15, 0), planned.plannedTime)
+        val due = s.addTask("Essay", due = LocalDateTime(2026, 10, 22, 17, 0))
+        s.setPlannedTime(due.id, kotlinx.datetime.LocalTime(9, 0))
+        assertEquals(kotlinx.datetime.LocalDate(2026, 10, 22), s.data.tasks.first { it.id == due.id }.planned, "the deadline's day")
+        s.setPlannedTime(loose.id, null)
+        assertNull(s.data.tasks.first { it.id == loose.id }.plannedTime)
+    }
 }

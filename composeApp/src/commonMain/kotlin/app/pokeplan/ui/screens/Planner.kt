@@ -48,6 +48,7 @@ import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.theme.title
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.plus
 
 private enum class View(val label: String, val icon: String) {
@@ -295,8 +296,9 @@ private fun TaskCard(model: AppModel, task: Task, expanded: Boolean, toggle: () 
                                 TabButton("Today", task.planned == today, { store.updateTask(task.copy(planned = today)) })
                                 TabButton("Tomorrow", task.planned == today.plus(DatePeriod(days = 1)), { store.updateTask(task.copy(planned = today.plus(DatePeriod(days = 1)))) })
                                 TabButton("Next week", task.planned == today.plus(DatePeriod(days = 7)), { store.updateTask(task.copy(planned = today.plus(DatePeriod(days = 7)))) })
-                                TabButton("No date", task.planned == null && task.due == null, { store.updateTask(task.copy(planned = null, due = null)) })
+                                TabButton("No date", task.planned == null && task.due == null, { store.updateTask(task.copy(planned = null, plannedTime = null, due = null)) })
                             }
+                            PlannedTime(model, task)
                             RemindMe(model, task)
                             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                                 PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -309,6 +311,35 @@ private fun TaskCard(model: AppModel, task: Task, expanded: Boolean, toggle: () 
             }
         }
     }
+}
+
+/** A few common times and a 15-minute nudge, rather than a clock dial. */
+@Composable
+private fun PlannedTime(model: AppModel, task: Task) {
+    val store = model.store
+    val time = task.plannedTime
+    Text("At", style = MaterialTheme.typography.bodyLarge)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        TabButton("Any time", time == null, { store.setPlannedTime(task.id, null) })
+        TIME_PRESETS.forEach { preset -> TabButton(clock(preset), time == preset, { store.setPlannedTime(task.id, preset) }) }
+    }
+    if (time != null) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelButton("-15", { store.setPlannedTime(task.id, shifted(time, -15)) }, color = Pixel.InkSoft, compact = true)
+            Text(clock(time), style = MaterialTheme.typography.bodyLarge)
+            PixelButton("+15", { store.setPlannedTime(task.id, shifted(time, 15)) }, color = Pixel.InkSoft, compact = true)
+        }
+    }
+}
+
+private val TIME_PRESETS = listOf(LocalTime(9, 0), LocalTime(12, 0), LocalTime(15, 0), LocalTime(19, 0))
+
+private fun clock(t: LocalTime) = "${t.hour}:${t.minute.toString().padStart(2, '0')}"
+
+/** Moves [t] by [minutes] within the same day (it stops at 0:00 and 23:45). */
+private fun shifted(t: LocalTime, minutes: Int): LocalTime {
+    val total = (t.hour * 60 + t.minute + minutes).coerceIn(0, 23 * 60 + 45)
+    return LocalTime(total / 60, total % 60)
 }
 
 /** Up to three reminders, counted from the planned time or the deadline; a task without a day has nothing to count from. */
@@ -329,7 +360,7 @@ private fun RemindMe(model: AppModel, task: Task) {
             })
         }
     }
-    val time = "${base.time.hour}:${base.time.minute.toString().padStart(2, '0')}"
+    val time = clock(base.time)
     val note = when {
         !model.store.data.settings.reminders -> "Reminders are off in Settings."
         task.reminders.size >= Reminders.MAX_PER_TASK -> "Up to ${Reminders.MAX_PER_TASK}. Counted from ${base.date.short()} $time."
@@ -346,9 +377,10 @@ private fun isOverdue(model: AppModel, t: Task): Boolean {
 
 /** "Mon 19 Oct  ·  45 min  ·  1/3 steps" */
 fun taskMeta(t: Task): String = buildList {
-    t.due?.let { add("due ${it.date.short()} ${it.time.hour}:${it.time.minute.toString().padStart(2, '0')}") }
-        ?: t.planned?.let { add(it.short()) }
+    t.due?.let { add("due ${it.date.short()} ${clock(it.time)}") }
+        ?: t.planned?.let { day -> add(listOfNotNull(day.short(), t.plannedTime?.let(::clock)).joinToString(" ")) }
     t.estimateMinutes?.let { add("$it min") }
+    if (t.reminders.isNotEmpty() && t.isOpen) add("reminder")
     if (t.subtasks.isNotEmpty()) add("${t.subtasks.count { it.done }}/${t.subtasks.size} steps")
 }.joinToString("  ·  ")
 
