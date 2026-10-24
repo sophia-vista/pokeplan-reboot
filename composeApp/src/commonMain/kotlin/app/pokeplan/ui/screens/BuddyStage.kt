@@ -131,9 +131,10 @@ fun BuddyStage(
 
         if (buddy.isShiny && !calm && !resting) ShinyGlints(Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp).size(144.dp))
 
-        // Level and progress: small, in the corner, readable on any scene.
+        // Level and progress: small, in the corner, readable on any scene. Its corners are the stage's minus the inset, so
+        // the two curves stay concentric.
         Column(
-            Modifier.align(Alignment.BottomStart).padding(Spacing.S).clip(RoundedCornerShape(10.dp)).background(Color(0x55000000))
+            Modifier.align(Alignment.BottomStart).padding(Spacing.S).clip(RoundedCornerShape(Spacing.CardRadius - Spacing.S)).background(Color(0x55000000))
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Open ${buddy.nickname}", role = Role.Button, onClick = onOpen)
                 .padding(horizontal = 8.dp, vertical = 5.dp)
                 .semantics(mergeDescendants = true) { contentDescription = "${buddy.nickname}, level ${buddy.level}, ${(progress * 100).toInt()} percent to the next level" },

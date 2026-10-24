@@ -82,7 +82,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
     val current = section
     if (current == null) {
         Column(Modifier.fillMaxSize()) {
-            ScreenHeader("Pokémon", subtitle = "${player.pokemon.size} owned · ${player.caught.size} seen", icon = "poke-ball")
+            ScreenHeader("Pokémon", subtitle = "${player.pokemon.size} owned, ${player.caught.size} seen", icon = "poke-ball")
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp)) {
                 val ready = store.activeQuests.count { store.questReady(it) }
                 MenuGrid(
@@ -139,7 +139,7 @@ private fun PokemonRow(p: OwnedPokemon, buddy: Boolean, favorite: Boolean, onCli
         },
     ) {
         Text(p.nickname, style = MaterialTheme.typography.titleMedium)
-        Text(if (p.isShiny) "Lv. ${p.level}  ·  ✨ Shiny" else "Lv. ${p.level}", style = MaterialTheme.typography.bodyMedium, color = if (p.isShiny) Pixel.Warning else Pixel.InkSoft)
+        Text(if (p.isShiny) "Lv. ${p.level}, ✨ Shiny" else "Lv. ${p.level}", style = MaterialTheme.typography.bodyMedium, color = if (p.isShiny) Pixel.Warning else Pixel.InkSoft)
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) { p.form.types.forEach { TypePlate(it, width = 56.dp) } }
     }
 }
@@ -185,7 +185,7 @@ private fun PcControls(view: PcView, change: (PcView) -> Unit, shown: Int, total
 @Composable
 private fun PcTile(p: OwnedPokemon, favorite: Boolean, onClick: () -> Unit) {
     Column(
-        Modifier.clip(RoundedCornerShape(14.dp)).background(Pixel.Panel).clickable(onClick = onClick).padding(6.dp),
+        Modifier.clip(RoundedCornerShape(12.dp)).background(Pixel.Panel).clickable(onClick = onClick).padding(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Sprite(p.form.id, p.isShiny, p.nickname, size = 64.dp)
@@ -237,7 +237,7 @@ private fun PokedexView(model: AppModel) {
         }
     }
     shown?.let { (number, id) ->
-        TextBox(accent = Pixel.Yellow) {
+        TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("#$number  ${Dex.species(id).name}", style = MaterialTheme.typography.titleMedium)
                 Text(Dex.entry(id), style = MaterialTheme.typography.bodyLarge)
@@ -259,8 +259,7 @@ private fun PokedexView(model: AppModel) {
         }
     }
     Text(
-        "Every egg has about a 1 in 128 chance of being shiny, a little better for longer sessions and with a Shiny hunter buddy. " +
-            "A ✨ marks species you have found as a shiny.",
+        "About 1 in 128 eggs is shiny. Longer sessions and a Shiny hunter buddy raise the odds.",
         style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
     )
 }
@@ -288,15 +287,13 @@ private fun GuardiansView(model: AppModel, open: (String) -> Unit) {
     val slotted = model.data.player.guardianPokemon
     val candidates = store.guardianCandidates
 
-    TextBox(accent = Pixel.Yellow) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("Guardians", style = MaterialTheme.typography.titleMedium)
-            Text(
-                if (slots == 0) "Legendary and mythical Pokémon watch over you from a Guardian slot, with big boosts. The first slot opens at rank ${TrainerRank.names[4]}."
-                else "Slot a legendary or mythical Pokémon for a big boost. Slots: ${slotted.size} of $slots. More open as your rank grows.",
-                style = MaterialTheme.typography.bodyLarge,
-            )
-        }
+    // The screen header already says "Guardians", so the card holds only the one line that matters now.
+    TextBox {
+        Text(
+            if (slots == 0) "A legendary or mythical Pokémon in a Guardian slot gives a big boost. The first slot opens at rank ${TrainerRank.names[4]}."
+            else "${slotted.size} of $slots slots used. More open as your rank grows.",
+            style = MaterialTheme.typography.bodyLarge,
+        )
     }
     repeat(slots) { i ->
         val g = slotted.getOrNull(i)
@@ -341,10 +338,10 @@ private fun QuestsView(model: AppModel) {
     val done = data.quests.count { it.value.completedAtMillis != null }
     val locked = Quests.all.filter { it.id !in data.quests && Quests.lockedReason(it, data) != null }.sortedBy { it.unlockRank }.take(3)
 
-    TextBox(accent = Pixel.Yellow) {
+    TextBox {
         Text(
-            "Every legendary and mythical Pokémon has a quest. Take one on, keep doing what you already do, and it fills in by itself. " +
-                "No deadlines. Up to ${Quests.MAX_ACTIVE} at a time.",
+            "Each legendary and mythical Pokémon has a quest that fills in as you keep doing what you already do. " +
+                "No deadlines, up to ${Quests.MAX_ACTIVE} at a time.",
             style = MaterialTheme.typography.bodyLarge,
         )
     }
@@ -373,7 +370,7 @@ private fun QuestCard(model: AppModel, quest: Quest) {
     val store = model.store
     val state = model.data.quests[quest.id]
     val ready = store.questReady(quest)
-    TextBox(accent = if (ready) Pixel.Green else Pixel.Blue) {
+    TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Sprite(Dex.defaultForm(quest.speciesId).id, false, Dex.species(quest.speciesId).name, size = 64.dp)
@@ -381,7 +378,7 @@ private fun QuestCard(model: AppModel, quest: Quest) {
                     Text(Dex.species(quest.speciesId).name, style = MaterialTheme.typography.titleMedium)
                     Text(quest.title, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
-                if (quest.longTerm) Text("long road", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+                if (quest.longTerm) Text("Long-term", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
             }
             Text(quest.story, style = MaterialTheme.typography.bodyMedium)
             store.questProgress(quest).forEach { (req, now) ->
@@ -468,7 +465,7 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
     val isBuddy = p.id == player.buddyId
 
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(p.nickname, subtitle = "${p.species.name} · Lv. ${p.level}") {
+        ScreenHeader(p.nickname, subtitle = if (p.nickname == p.species.name) "Lv. ${p.level}" else "${p.species.name}, Lv. ${p.level}") {
             PixelButton("Back", back, color = Pixel.Ink, compact = true)
         }
         Column(
@@ -511,11 +508,11 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
 
             val isGuardian = Guardians.canBe(p)
             if (isGuardian) {
-                TextBox(accent = Pixel.Yellow) {
+                TextBox {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text("Guardian", style = MaterialTheme.typography.titleMedium)
                         Text(perkText(p), style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
-                        Text("A Guardian is already at full power: no candies, no party. Slot it for its boost.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                        Text("Guardians are at full power and stay out of the party. Slot it for its boost.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                         val slotted = p.id in player.guardians
                         PixelButton(
                             if (slotted) "Remove from slot" else "Slot as Guardian",
@@ -551,7 +548,7 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
 
             val options = store.evolutionOptions(p.id)
             if (options.isNotEmpty()) {
-                TextBox(accent = Pixel.Green) {
+                TextBox {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Evolution", style = MaterialTheme.typography.titleMedium)
                         options.forEach { o ->
@@ -584,7 +581,7 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                     }
                     val starred = store.isFavorite(p.id)
                     if (!p.species.isSpecial) {
-                        PixelButton(if (starred) "★ Starred (tap to unstar)" else "☆ Star (keep safe)", { store.toggleFavorite(p.id) }, Modifier.fillMaxWidth(), if (starred) Pixel.Warning else Pixel.InkSoft, compact = true)
+                        PixelButton(if (starred) "★ Starred" else "☆ Star", { store.toggleFavorite(p.id) }, Modifier.fillMaxWidth(), if (starred) Pixel.Warning else Pixel.InkSoft, compact = true)
                     }
                     val block = store.transferBlock(p.id)
                     if (block != null) {

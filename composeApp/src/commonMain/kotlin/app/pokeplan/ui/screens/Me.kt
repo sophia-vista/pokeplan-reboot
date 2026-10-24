@@ -71,7 +71,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
     val current = section
     if (current == null) {
         Column(Modifier.fillMaxSize()) {
-            ScreenHeader("Me", subtitle = "${data.trainerName} · ${TrainerRank.nameFor(data.player.trainerPoints)}", icon = "member-card")
+            ScreenHeader("Me", subtitle = "Rank: ${TrainerRank.nameFor(data.player.trainerPoints)}", icon = "member-card")
             Column(
                 Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -80,7 +80,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
                 MenuGrid(
                     (listOf(
                         MenuEntry("GROWTH", "exp-share", "Growth", "your week", tint = Pixel.Green),
-                        MenuEntry("GOALS", "star-piece", "Goals", "${data.goals.size} goals", tint = Pixel.Warning),
+                        MenuEntry("GOALS", "star-piece", "Goals", if (data.goals.size == 1) "1 goal" else "${data.goals.size} goals", tint = Pixel.Warning),
                         MenuEntry("REVIEW", "journal", "Review", if (model.store.canReview()) "ready this week" else "done this week", badge = if (model.store.canReview()) 1 else 0, tint = Pixel.Blue),
                     ) + (if (model.social != null) listOf(MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = androidx.compose.ui.graphics.Color(0xFFEC4899))) else emptyList()) + listOf(
                         MenuEntry("SETTINGS", "gb-sounds", "Settings", "name, region, sound", tint = Pixel.InkSoft),
@@ -108,14 +108,14 @@ private fun TrainerCard(model: AppModel) {
     val data = model.data
     val buddy = data.player.buddy
     val streak = model.store.streak
-    TextBox(accent = Pixel.Red) {
+    TextBox {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             if (buddy != null) Sprite(buddy.form.id, buddy.isShiny, buddy.nickname, size = 96.dp)
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(data.trainerName, style = MaterialTheme.typography.titleMedium)
                 Text("${data.player.trainerPoints} trainer points", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                Text("${data.tasks.count { it.state == TaskState.DONE }.let { if (it == 1) "1 task" else "$it tasks" }} done · ${data.focusHistory.filter { it.completed }.sumOf { it.minutes }} min focused", style = MaterialTheme.typography.bodyMedium)
-                Text("Streak ${streak.current} (best ${streak.longest}) · ${data.player.caught.size} seen", style = MaterialTheme.typography.bodyMedium)
+                Text("${data.tasks.count { it.state == TaskState.DONE }.let { if (it == 1) "1 task" else "$it tasks" }} done, ${data.focusHistory.filter { it.completed }.sumOf { it.minutes }} min focused", style = MaterialTheme.typography.bodyMedium)
+                Text("Streak ${streak.current}, best ${streak.longest}", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
@@ -137,12 +137,11 @@ private fun GrowthView(model: AppModel) {
                     Text("${(wheel.share(c) * 100).toInt()}%", Modifier.width(44.dp), style = MaterialTheme.typography.bodyMedium)
                 }
             }
-            Text("A balanced week is nice, but not required.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Last 6 weeks", style = MaterialTheme.typography.titleMedium)
+            Text("Tasks finished, last 6 weeks", style = MaterialTheme.typography.titleMedium)
             val maxTasks = (trend.maxOfOrNull { it.tasksDone } ?: 0).coerceAtLeast(1)
             Row(Modifier.fillMaxWidth().height(110.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
                 trend.forEach { w ->
@@ -152,7 +151,6 @@ private fun GrowthView(model: AppModel) {
                     }
                 }
             }
-            Text("Tasks finished each week", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }
@@ -185,7 +183,7 @@ private fun GoalsView(model: AppModel) {
         TextBox { Text("Goals are bigger aims. Break one into small milestones and each finished one earns a Super Candy.", style = MaterialTheme.typography.bodyLarge) }
     }
     model.data.goals.forEach { g ->
-        TextBox(accent = if (g.completedAtMillis != null) Pixel.Green else Pixel.Blue) {
+        TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(g.title, style = MaterialTheme.typography.titleMedium)
                 PixelBar(GoalRules.progress(g, model.data.tasks).toFloat(), color = Pixel.Green)
@@ -215,7 +213,7 @@ private fun ReviewView(model: AppModel) {
     val store = model.store
     RewardBox(model)
     if (!store.canReview()) {
-        TextBox(accent = Pixel.Green) { Text("This week's review is done. See you next week!", style = MaterialTheme.typography.bodyLarge) }
+        TextBox { Text("This week's review is done. See you next week!", style = MaterialTheme.typography.bodyLarge) }
         return
     }
     val summary = store.reviewSummary()
@@ -232,7 +230,7 @@ private fun ReviewView(model: AppModel) {
             }
         }
     }
-    TextBox(accent = Pixel.Yellow) {
+    TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(Reviews.promptFor(store.weekStart), style = MaterialTheme.typography.bodyLarge)
             OutlinedTextField(
@@ -240,7 +238,7 @@ private fun ReviewView(model: AppModel) {
                 placeholder = { Text("Optional. Only you see this.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
             )
             if (summary.unfinished.isNotEmpty()) {
-                PixelButton(if (carry) "Carry unfinished to tomorrow: yes" else "Carry unfinished to tomorrow: no", { carry = !carry }, Modifier.fillMaxWidth(), if (carry) Pixel.Blue else Pixel.InkSoft, compact = true)
+                Toggle("Carry unfinished to tomorrow", carry) { carry = it }
             }
             PixelButton("Finish the review", {
                 store.completeReview(note, if (carry) store.today.plus(DatePeriod(days = 1)) else null)
@@ -281,8 +279,7 @@ private fun SettingsView(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Toggle("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
             VolumeRow("Sound effects and cries", settings.effectsVolume) { v -> store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }
-            VolumeRow("Music", settings.musicVolume, note = "Music comes with a later update.") { v -> store.changeSettings { s -> s.copy(musicVolume = v) } }
-            Toggle("Haptics (vibrate when you pet the buddy)", settings.haptics) { store.changeSettings { s -> s.copy(haptics = it) } }
+            Toggle("Vibration", settings.haptics) { store.changeSettings { s -> s.copy(haptics = it) } }
             SectionLabel("Colours")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 ThemeMode.entries.forEach { mode -> TabButton(mode.label, settings.theme == mode, { store.changeSettings { s -> s.copy(theme = mode) } }) }
@@ -341,7 +338,6 @@ private fun DataCard(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Your data", style = MaterialTheme.typography.titleMedium)
             model.files?.let { files ->
-                Text("A copy of everything PokéPlan keeps (tasks, habits, goals, Pokémon, bag), as a JSON file.", style = MaterialTheme.typography.bodyMedium)
                 PixelButton("Export my data", { note = files.save("pokeplan-export-${store.today}.json", store.exportJson()) }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
             }
             when (asking) {
@@ -379,9 +375,9 @@ private fun DataCard(model: AppModel) {
 /** A labelled volume slider, 0 to 100 in steps of 10. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun VolumeRow(label: String, value: Int, note: String? = null, onChange: (Int) -> Unit) {
+private fun VolumeRow(label: String, value: Int, onChange: (Int) -> Unit) {
     Column {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(label, style = MaterialTheme.typography.bodyLarge)
             Text("$value%", style = MaterialTheme.typography.bodyMedium)
         }
@@ -393,7 +389,6 @@ private fun VolumeRow(label: String, value: Int, note: String? = null, onChange:
             thumb = { SliderDefaults.Thumb(interaction, colors = colors, thumbSize = DpSize(24.dp, 24.dp)) },
             modifier = Modifier.semantics { contentDescription = "$label volume $value percent" },
         )
-        if (note != null) Text(note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     }
 }
 
@@ -423,16 +418,16 @@ private fun AccountCard(model: AppModel) {
     var message by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
 
-    TextBox(accent = Pixel.Yellow) {
+    TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Account", style = MaterialTheme.typography.titleMedium)
             when {
                 sync == null -> Text(
-                    "Online features are not set up in this build. You are playing as a guest: progress is saved on this device only.",
+                    "Online features are off in this build. Progress is saved on this device only.",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 account == null -> {
-                    Text("Sign in to keep your progress safe and use it on your other devices. You can keep playing as a guest.", style = MaterialTheme.typography.bodyMedium)
+                    Text("Sign in to back up your progress and use it on your other devices.", style = MaterialTheme.typography.bodyMedium)
                     OutlinedTextField(email, { email = it }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
                         placeholder = { Text("Email", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) })
                     OutlinedTextField(password, { password = it }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,

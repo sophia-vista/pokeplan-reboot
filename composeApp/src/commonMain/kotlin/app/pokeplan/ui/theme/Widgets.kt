@@ -95,7 +95,7 @@ fun ScreenHeader(
     footer: (@Composable () -> Unit)? = null,
     trailing: @Composable () -> Unit = {},
 ) {
-    val shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
+    val shape = RoundedCornerShape(bottomStart = Spacing.CardRadius, bottomEnd = Spacing.CardRadius)
     Column(modifier.fillMaxWidth().clip(shape).background(Pixel.Red, shape)) {
         Row(
             Modifier.fillMaxWidth().padding(start = Spacing.Page, end = Spacing.L, top = Spacing.M, bottom = if (footer == null) Spacing.M else Spacing.XS),

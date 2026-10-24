@@ -132,7 +132,7 @@ private fun StarterPicker(selected: Int, onSelect: (Int) -> Unit) {
                 ids.forEach { id ->
                     val chosen = id == selected
                     Box(
-                        Modifier.background(if (chosen) Pixel.Yellow else Pixel.Panel, RoundedCornerShape(14.dp))
+                        Modifier.background(if (chosen) Pixel.Yellow else Pixel.Panel, RoundedCornerShape(12.dp))
                             .clickable { onSelect(id) }
                             .padding(4.dp),
                     ) { Sprite(Dex.defaultForm(id).id, false, Dex.species(id).name, size = 56.dp) }

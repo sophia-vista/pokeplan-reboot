@@ -39,7 +39,7 @@ fun FriendsView(model: AppModel) {
     val sync = model.sync
     val social = model.social
     if (sync == null || social == null || model.data.account == null) {
-        TextBox(accent = Pixel.Yellow) { Text("Sign in under Settings to add friends, trade gifts and see the weekly board.", style = MaterialTheme.typography.bodyLarge) }
+        TextBox { Text("Sign in under Settings to add friends, trade gifts and see the weekly board.", style = MaterialTheme.typography.bodyLarge) }
         return
     }
     val scope = rememberCoroutineScope()
@@ -73,11 +73,10 @@ fun FriendsView(model: AppModel) {
 
     LaunchedEffect(Unit) { refresh() }
 
-    TextBox(accent = Pixel.Blue) {
+    TextBox {
         androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("Your friend code", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Text(code ?: "...", style = MaterialTheme.typography.headlineMedium)
-            Text("Share it with a friend; they type it below.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
     TextBox {
@@ -89,7 +88,7 @@ fun FriendsView(model: AppModel) {
             PixelButton("Add", { val c = friendCode; friendCode = ""; act("Request sent.") { social.addFriend(it, c) } }, enabled = friendCode.isNotBlank(), compact = true)
         }
     }
-    message?.let { TextBox(accent = Pixel.Yellow) { Text(it, style = MaterialTheme.typography.bodyLarge) } }
+    message?.let { TextBox { Text(it, style = MaterialTheme.typography.bodyLarge) } }
 
     if (gifts.isNotEmpty()) {
         SectionLabel("Gifts for you")
@@ -130,7 +129,7 @@ fun FriendsView(model: AppModel) {
 
     SectionLabel("Friends")
     val accepted = friends.filter { it.accepted }
-    if (accepted.isEmpty() && !loading) EmptyState("No friends yet", "Share your friend code, or add a friend with theirs, to see their buddy and the weekly board.")
+    if (accepted.isEmpty() && !loading) EmptyState("No friends yet", "Share your code or add a friend's to see their buddy and the weekly board.")
     accepted.forEach { f ->
         ListRow(
             lead = {
@@ -145,7 +144,7 @@ fun FriendsView(model: AppModel) {
             },
         ) {
             Text(f.trainerName, style = MaterialTheme.typography.bodyLarge)
-            Text(TrainerRank.names[f.rank.coerceIn(0, TrainerRank.names.lastIndex)] + (f.buddyLevel?.let { " · buddy Lv. $it" } ?: ""), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Text(TrainerRank.names[f.rank.coerceIn(0, TrainerRank.names.lastIndex)] + (f.buddyLevel?.let { ", buddy Lv. $it" } ?: ""), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 

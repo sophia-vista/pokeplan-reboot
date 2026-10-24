@@ -75,7 +75,7 @@ internal val helpTopics = listOf(
         listOf(
             HelpItem("Which widgets are there?", "Today shows your tasks for the day with a tick and a quick add. Buddy shows your buddy in its place: tap it to pet, or use the berry button. Focus starts a session and shows the countdown while one runs."),
             HelpItem("The widget did not update.", "Open the app once; it brings the widgets up to date. If a widget still looks stale, remove it and add it again."),
-            HelpItem("How do I turn sound, vibration or animations off?", "Me, then Settings: the sliders turn cries and effects down, Haptics turns off vibration, and Reduce motion stops the animations."),
+            HelpItem("How do I turn sound, vibration or animations off?", "Me, then Settings: the sliders turn cries and effects down, Vibration turns it off, and Reduce motion stops the animations."),
             HelpItem("Is my progress saved?", "Yes, on this phone. Sign in under Settings, Account to back it up and use it on another device. Sign-in is optional."),
         ),
     ),
@@ -83,7 +83,6 @@ internal val helpTopics = listOf(
 
 @Composable
 internal fun HelpView() {
-    Text("Tap a question to read the answer.", style = MaterialTheme.typography.bodyMedium)
     helpTopics.forEach { topic ->
         SectionLabel(topic.title)
         topic.items.forEach { HelpRow(it) }

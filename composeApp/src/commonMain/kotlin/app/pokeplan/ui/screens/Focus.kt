@@ -62,7 +62,7 @@ fun FocusScreen(model: AppModel) {
             val end = model.data.lastFocusEnd
             if (end != null && !end.completed) FailedBox(model, end.failReason)
             if (end != null && end.completed) {
-                TextBox(accent = Pixel.Green) { Text("Your egg hatched! Have a look at your Pokémon.", style = MaterialTheme.typography.bodyLarge) }
+                TextBox { Text("Your egg hatched! Have a look at your Pokémon.", style = MaterialTheme.typography.bodyLarge) }
                 PixelButton("OK", { model.store.dismissFocusEnd() }, color = Pixel.Green)
             }
             if (session == null) SetupView(model) else RunningView(model)
@@ -72,7 +72,7 @@ fun FocusScreen(model: AppModel) {
 
 @Composable
 private fun FailedBox(model: AppModel, reason: FailReason?) {
-    TextBox(accent = Pixel.Red) {
+    TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(FocusRules.FAILED_MESSAGE, style = MaterialTheme.typography.titleMedium)
             Text(
@@ -147,9 +147,9 @@ private fun SetupView(model: AppModel) {
         }
     }
 
-    TextBox(accent = Pixel.Yellow) {
+    TextBox {
         Text(
-            "Leave the app for more than 10 seconds and the egg goes cold. Two emergency pauses a day, 3 minutes each. Calls pause the timer.",
+            "Leave the app for over 10 seconds and the egg goes cold. You have two 3-minute pauses a day.",
             style = MaterialTheme.typography.bodyMedium,
         )
     }
