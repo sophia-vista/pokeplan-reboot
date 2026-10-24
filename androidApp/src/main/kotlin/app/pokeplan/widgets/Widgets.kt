@@ -6,10 +6,17 @@ import android.graphics.Bitmap
 import android.os.SystemClock
 import android.widget.RemoteViews
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
@@ -20,6 +27,7 @@ import androidx.glance.action.actionParametersOf
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.AndroidRemoteViews
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.LinearProgressIndicator
 import androidx.glance.appwidget.SizeMode
@@ -30,8 +38,11 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.lazy.items
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.state.getAppWidgetState
+import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.appwidget.updateAll
 import androidx.glance.background
+import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
@@ -95,9 +106,32 @@ private fun openApp(context: Context, tab: String? = null, pokemon: String? = nu
 
 /** Brings every widget up to date; called when the app is left and after a tap on a widget. */
 suspend fun updateWidgets(context: Context) {
-    TodayWidget().updateAll(context)
-    BuddyWidget().updateAll(context)
-    FocusWidget().updateAll(context)
+    for (widget in listOf(TodayWidget(), BuddyWidget(), FocusWidget())) {
+        val stamp = System.currentTimeMillis()
+        for (id in GlanceAppWidgetManager(context).getGlanceIds(widget.javaClass)) {
+            updateAppWidgetState(context, id) { it[RefreshKey] = stamp }
+        }
+        widget.updateAll(context)
+    }
+}
+
+private val RefreshKey = longPreferencesKey("refresh")
+
+/**
+ * Shows what [load] gives and loads it again on every [updateWidgets]. Glance runs provideGlance once per session (about
+ * 45 seconds); an update to a widget whose session is still open only recomposes. Values worked out in provideGlance then
+ * never change, which froze the buddy on its still picture after a pet. So [updateWidgets] stamps each widget's Glance
+ * state, and a new stamp loads the data again inside the composition.
+ */
+private suspend fun <T> GlanceAppWidget.provideFresh(context: Context, id: GlanceId, load: suspend () -> T, content: @Composable (T) -> Unit): Nothing {
+    val first = load()
+    val firstStamp = getAppWidgetState<Preferences>(context, id)[RefreshKey]
+    provideContent {
+        val stamp = currentState(RefreshKey)
+        var value by remember { mutableStateOf(first) }
+        LaunchedEffect(stamp) { if (stamp != firstStamp) value = load() }
+        content(value)
+    }
 }
 
 private val TaskIdKey = ActionParameters.Key<String>("taskId")
@@ -132,7 +166,10 @@ class CompleteTaskAction : ActionCallback {
 private data class TodayState(val tasks: List<Task>, val done: Int, val total: Int, val name: String)
 
 class TodayWidget : GlanceAppWidget() {
-    override suspend fun provideGlance(context: Context, id: GlanceId) {
+    override suspend fun provideGlance(context: Context, id: GlanceId) =
+        provideFresh(context, id, { load(context) }) { (state, header) -> TodayContent(context, state, header) }
+
+    private suspend fun load(context: Context): Pair<TodayState, Bitmap?> {
         val store = widgetStore(context)
         val pending = store.data.pending.map { it.original.id }.toSet()
         val open = if (store.data.onboarded) store.todayTasks().filter { it.id !in pending && it.isOpen } else emptyList()
@@ -140,8 +177,7 @@ class TodayWidget : GlanceAppWidget() {
         val d = density(context)
         val header = buddyScene(context, store, 44, roundBottom = false)
             ?: WidgetArt.wallpaper(context, "bw07", (420 * d).toInt(), (44 * d).toInt(), 20 * d, d, roundBottom = false)
-        val state = TodayState(open.take(8), done, done + open.size, store.data.trainerName)
-        provideContent { TodayContent(context, state, header) }
+        return TodayState(open.take(8), done, done + open.size, store.data.trainerName) to header
     }
 }
 
@@ -313,7 +349,10 @@ private data class BuddyState(
 class BuddyWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Responsive(setOf(DpSize(110.dp, 110.dp), DpSize(250.dp, 110.dp)))
 
-    override suspend fun provideGlance(context: Context, id: GlanceId) {
+    override suspend fun provideGlance(context: Context, id: GlanceId) =
+        provideFresh(context, id, { load(context) }) { BuddyContent(context, it) }
+
+    private suspend fun load(context: Context): BuddyState {
         val store = widgetStore(context)
         val buddy = store.data.player.buddy
         val moment = BuddyTalk.current(context)
@@ -333,14 +372,13 @@ class BuddyWidget : GlanceAppWidget() {
                 flipper.setContentDescription(R.id.sprite_flipper, "${buddy?.nickname}, level ${buddy?.level}")
             }
         }
-        val state = BuddyState(
+        return BuddyState(
             name = buddy?.nickname, buddyId = buddy?.id, level = buddy?.level ?: 1, progress = buddy?.let { store.levelProgress(it) } ?: 0f,
             reaction = moment, description = "${buddy?.nickname}, level ${buddy?.level}",
             scene = buddy?.let { WidgetArt.scene(context, BuddyScene.of(it.form.types), darkness, (420 * d).toInt(), (200 * d).toInt(), 20 * d) },
             still = if (idle == null) buddy?.let { WidgetArt.still(context, it.form.id, it.isShiny, lifted = moment != null) } else null,
             idle = idle, berryName = berry?.let { Items.get(it)?.name }, berryIcon = berry?.let { WidgetArt.item(context, it, 2) },
         )
-        provideContent { BuddyContent(context, state) }
     }
 }
 
@@ -408,12 +446,15 @@ private data class FocusState(
 class FocusWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Responsive(setOf(DpSize(110.dp, 55.dp), DpSize(110.dp, 110.dp), DpSize(250.dp, 110.dp)))
 
-    override suspend fun provideGlance(context: Context, id: GlanceId) {
+    override suspend fun provideGlance(context: Context, id: GlanceId) =
+        provideFresh(context, id, { load(context) }) { FocusContent(context, it) }
+
+    private suspend fun load(context: Context): FocusState {
         val store = widgetStore(context)
         val session = store.data.focus
         val backdrop = buddyScene(context, store, 200)
             ?: WidgetArt.wallpaper(context, "bw11", (420 * density(context)).toInt(), (200 * density(context)).toInt(), 20 * density(context), density(context))
-        val state = if (session != null && !session.isFinished) {
+        return if (session != null && !session.isFinished) {
             // The session ends this long after it started, plus time spent paused; shown as a clock time so it never goes stale.
             val end = session.startedAtMillis + session.durationMillis + session.pausedMillis
             val paused = session.phase is Phase.Paused
@@ -435,7 +476,6 @@ class FocusWidget : GlanceAppWidget() {
                 egg = WidgetArt.item(context, "mystery-egg", 3),
             )
         }
-        provideContent { FocusContent(context, state) }
     }
 
     private fun clock(millis: Long): String =
