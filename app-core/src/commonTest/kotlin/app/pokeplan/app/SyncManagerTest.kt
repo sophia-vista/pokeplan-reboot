@@ -17,6 +17,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
@@ -38,6 +39,9 @@ class SyncManagerTest {
         var refuseSignIn = false
         var deleted = false
         val requests = mutableListOf<Pair<String, String>>()
+        val ticketReports = mutableListOf<List<String>>()
+        val ticketDevices = mutableListOf<String>()
+        val spentTickets = mutableSetOf<String>()
 
         fun engine() = MockEngine { request ->
             val path = request.url.encodedPath + (request.url.encodedQuery.takeIf { it.isNotEmpty() }?.let { "?$it" } ?: "")
@@ -55,6 +59,15 @@ class SyncManagerTest {
                     "pull" -> respond(
                         """{"version":$version,"data":${saved?.toString() ?: "null"}}""", headers = json,
                     )
+                    "tickets" -> {
+                        ticketDevices += body["device"]!!.jsonPrimitive.content
+                        val spent = body["spent"]!!.jsonArray.map { it.jsonObject["id"]!!.jsonPrimitive.content }
+                        ticketReports += spent
+                        spentTickets += spent
+                        val stock = listOf("s1", "s2", "s3").filter { it !in spentTickets }
+                            .joinToString(",", "[", "]") { "{\"id\":\"$it\",\"seed\":${it.drop(1)},\"issuedAtMillis\":0}" }
+                        respond("{\"tickets\":$stock,\"refused\":[]}", headers = json)
+                    }
                     "delete-account" -> {
                         deleted = body["confirm"]!!.jsonPrimitive.content == "DELETE"
                         saved = null
@@ -113,6 +126,31 @@ class SyncManagerTest {
         d.sync.sync()
         assertEquals(2, server.version)
         assertFalse(d.store.data.account!!.unsynced)
+    }
+
+    @Test
+    fun syncFillsTheEggTicketsAndReportsTheSpentOnes() = runTest {
+        val server = Server()
+        val d = Device(server)
+        d.store.start("Sophia", 25)
+        d.sync.signIn("a@b.c", "pw")
+        assertEquals(listOf("s1", "s2", "s3"), d.store.data.eggTickets.stock.map { it.id })
+        assertEquals(listOf(emptyList<String>()), server.ticketReports)
+
+        d.store.startFocus(25, deepFocus = false)
+        d.clock.millis += 25 * 60_000L + 1
+        d.store.tickFocus()
+        assertEquals(listOf("s1"), d.store.data.eggTickets.spent.map { it.id })
+        d.sync.sync()
+        assertEquals(listOf("s1"), server.ticketReports.last(), "the spent ticket is reported")
+        assertTrue(d.store.data.eggTickets.spent.isEmpty(), "and forgotten once the server has it")
+        assertEquals(listOf("s2", "s3"), d.store.data.eggTickets.stock.map { it.id })
+        assertEquals(1, server.ticketDevices.toSet().size, "the device keeps its id")
+
+        server.offline = true
+        d.sync.sync()
+        assertIs<SyncStatus.Offline>(d.sync.status.value)
+        assertEquals(listOf("s2", "s3"), d.store.data.eggTickets.stock.map { it.id }, "offline, the stock stays as it was")
     }
 
     @Test

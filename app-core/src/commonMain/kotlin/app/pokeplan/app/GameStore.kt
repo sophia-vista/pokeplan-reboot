@@ -127,9 +127,9 @@ class GameStore(
     private fun update(change: (AppData) -> AppData) {
         val before = data
         var after = change(before)
-        // Anything but the account itself changing means the cloud copy is out of date.
+        // Anything but the account itself (and the egg tickets, which stay on the device) changing means the cloud copy is out of date.
         val account = after.account
-        if (account != null && account == before.account && after.copy(account = null) != before.copy(account = null)) {
+        if (account != null && account == before.account && after.cloudPart() != before.cloudPart()) {
             after = after.copy(account = account.copy(unsynced = true))
         }
         // A shiny stays in the Shiny Dex even if it is transferred later.
@@ -151,8 +151,11 @@ class GameStore(
     fun refreshedSession(accessToken: String, refreshToken: String, expiresAtMillis: Long) =
         update { d -> d.copy(account = d.account?.copy(accessToken = accessToken, refreshToken = refreshToken, expiresAtMillis = expiresAtMillis)) }
 
-    /** Signs out. The progress on this device stays; it just stops syncing. */
-    fun signOut() = update { it.copy(account = null) }
+    /**
+     * Signs out. The progress on this device stays; it just stops syncing. The egg tickets were issued to the account, so
+     * they go (the device id stays).
+     */
+    fun signOut() = update { it.copy(account = null, eggTickets = EggTickets(device = it.eggTickets.device)) }
 
     /** Everything PokéPlan keeps on this device, as readable JSON, without the sign-in tokens. */
     fun exportJson(): String {
@@ -166,11 +169,13 @@ class GameStore(
         update { AppData() }
     }
 
-    /** This device's save as the document the cloud stores (everything but the account). */
+    /** This device's save as the document the cloud stores (everything but the account and the egg tickets). */
     fun cloudDocument(): JsonObject {
-        val full = json.encodeToJsonElement(AppData.serializer(), data.copy(account = null)) as JsonObject
-        return JsonObject(full.filterKeys { it != "account" })
+        val full = json.encodeToJsonElement(AppData.serializer(), data.cloudPart()) as JsonObject
+        return JsonObject(full.filterKeys { it != "account" && it != "eggTickets" })
     }
+
+    private fun AppData.cloudPart(): AppData = copy(account = null, eggTickets = EggTickets())
 
     /** The cloud accepted the document at [version]. */
     fun markSynced(version: Int) = update { d -> d.copy(account = d.account?.copy(version = version, unsynced = false, syncedAtMillis = nowMillis)) }
@@ -178,7 +183,29 @@ class GameStore(
     /** Replaces this device's progress with the cloud's. The account stays. */
     fun adoptCloud(document: JsonObject, version: Int) {
         val incoming = json.decodeFromJsonElement(AppData.serializer(), document)
-        update { d -> incoming.copy(account = d.account?.copy(version = version, unsynced = false, syncedAtMillis = nowMillis)) }
+        update { d ->
+            incoming.copy(account = d.account?.copy(version = version, unsynced = false, syncedAtMillis = nowMillis), eggTickets = d.eggTickets)
+        }
+    }
+
+    // --- egg tickets --------------------------------------------------------------------------------------------------
+
+    /** This device's id and the spent tickets to report on the next sync. Makes the device id the first time. */
+    fun ticketReport(): Pair<String, List<SpentTicket>> {
+        if (data.eggTickets.device == null) update { d -> d.copy(eggTickets = d.eggTickets.copy(device = newId())) }
+        return data.eggTickets.device!! to data.eggTickets.spent
+    }
+
+    /**
+     * The server took the [reported] spends (accepted or refused, either way they are done) and sent the unspent [stock].
+     * A ticket spent while the call was out stays spent.
+     */
+    fun receivedTickets(stock: List<EggTicket>, reported: List<SpentTicket>) = update { d ->
+        val t = d.eggTickets
+        val reportedIds = reported.map { it.id }.toSet()
+        val spent = t.spent.filter { it.id !in reportedIds }
+        val used = spent.map { it.id }.toSet() + reportedIds + listOfNotNull(t.inSession?.id)
+        d.copy(eggTickets = t.copy(stock = stock.filter { it.id !in used }, spent = spent))
     }
 
     // --- time and ids -------------------------------------------------------------------------------------------------
@@ -514,7 +541,11 @@ class GameStore(
             id = newId(), durationMinutes = minutes, nowMillis = nowMillis, deepFocus = deepFocus, region = data.settings.region,
             buddyIdAtStart = data.player.buddyId, taskId = taskId, lure = lure, emergencyPausesUsedToday = emergencyPausesToday(),
         )
-        update { it.copy(focus = session) }
+        // The oldest egg ticket fixes the egg's dice now, like the perks; without one the egg rolls on the device.
+        update { d ->
+            val t = d.eggTickets
+            d.copy(focus = session, eggTickets = t.copy(stock = t.stock.drop(1), inSession = t.stock.firstOrNull()))
+        }
         return session
     }
 
@@ -545,9 +576,13 @@ class GameStore(
                 val event: EffortEvent = session.toEffortEvent(newId(), nowMillis, epochDay)
                 // The perks that count are the ones of the buddy when the session started.
                 val player = data.player
-                val outcome = RewardEngine.effort(if (player.buddyId == session.buddyIdAtStart) player else player, event, rng)
+                val ticket = data.eggTickets.inSession
+                val outcome = RewardEngine.effort(
+                    if (player.buddyId == session.buddyIdAtStart) player else player, event, ticket?.let { Random(it.seed) } ?: rng,
+                )
                 update { d ->
                     log("Focus: $minutes min", outcome.rewards, d.copy(
+                        eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
                         player = outcome.state, focus = null, activeDays = d.activeDays + today, lastFocusEnd = FocusEnd(nowMillis, true),
                         focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, true, session.taskId, session.deepFocus),
                         tasks = d.tasks.map { if (it.id == session.taskId) it.copy(focusedMinutes = it.focusedMinutes + minutes) else it },
@@ -559,6 +594,7 @@ class GameStore(
                 val minutes = (session.focusedMillis(phase.at) / 60_000L).toInt()
                 update { d ->
                     d.copy(
+                        eggTickets = d.eggTickets.spend(d.eggTickets.inSession, session.startedAtMillis, null),
                         focus = null, lastFocusEnd = FocusEnd(nowMillis, false, phase.reason),
                         focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, false, session.taskId, session.deepFocus),
                     )
@@ -568,6 +604,10 @@ class GameStore(
             else -> null
         }
     }
+
+    /** A failed session spends its ticket too, so failing never rerolls an egg. */
+    private fun EggTickets.spend(ticket: EggTicket?, startedAtMillis: Long, pokemonId: String?): EggTickets =
+        if (ticket == null) copy(inSession = null) else copy(inSession = null, spent = spent + SpentTicket(ticket.id, startedAtMillis, pokemonId))
 
     fun dismissFocusEnd() = update { it.copy(lastFocusEnd = null) }
 

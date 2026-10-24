@@ -85,6 +85,14 @@ class SyncManager(private val store: GameStore, private val cloud: CloudClient) 
             !localChanged -> { adoptCloud(pulled.data, pulled.version); state.value = SyncStatus.Idle }
             else -> state.value = SyncStatus.Conflict(pulled.version)
         }
+        refillTickets(session)
+    }
+
+    /** Reports the spent egg tickets and tops the stock up. A failure waits for the next sync: no egg ever waits on it. */
+    private suspend fun refillTickets(session: Session) {
+        val (device, spent) = store.ticketReport()
+        val r = cloud.tickets(session, device, spent)
+        if (r is CloudResult.Ok) store.receivedTickets(r.value, spent)
     }
 
     /** After a [SyncStatus.Conflict]: keep this device's progress (uploading it) or take the cloud's. */

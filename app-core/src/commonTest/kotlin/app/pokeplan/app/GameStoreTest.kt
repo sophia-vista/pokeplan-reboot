@@ -158,6 +158,64 @@ class GameStoreTest {
     }
 
     @Test
+    fun anEggTicketFixesTheEggWhicheverDeviceRollsIt() {
+        val tickets = listOf(EggTicket("t1", 4242, 0), EggTicket("t2", 99, 0))
+        fun hatchWithTicket(extraRolls: Boolean): app.pokeplan.core.pokemon.OwnedPokemon {
+            val (s, clock) = started()
+            s.receivedTickets(tickets, emptyList())
+            if (extraRolls) repeat(3) { s.addTask("Use up some of the device's dice") }
+            s.startFocus(25, deepFocus = false)
+            assertEquals("t1", s.data.eggTickets.inSession?.id, "the oldest ticket is spent when the session starts")
+            assertEquals(listOf("t2"), s.data.eggTickets.stock.map { it.id })
+            clock.advance(25 * 60_000L + 1)
+            val hatched = (s.tickFocus() as FocusResult.Hatched).rewards.filterIsInstance<Reward.Hatched>().single().pokemon
+            assertNull(s.data.eggTickets.inSession)
+            assertEquals(listOf(SpentTicket("t1", start, hatched.id)), s.data.eggTickets.spent)
+            return hatched
+        }
+        val a = hatchWithTicket(extraRolls = false)
+        val b = hatchWithTicket(extraRolls = true)
+        assertEquals(a.copy(id = ""), b.copy(id = ""), "the same ticket hatches the same egg")
+    }
+
+    @Test
+    fun aFailedSessionSpendsItsTicketAndNoTicketStillHatches() {
+        val (s, clock) = started()
+        s.receivedTickets(listOf(EggTicket("t1", 1, 0)), emptyList())
+        s.startFocus(25, deepFocus = false)
+        s.focusEvent(FocusEvent.Left)
+        clock.advance(11_000)
+        assertIs<FocusResult.Failed>(s.tickFocus())
+        assertEquals(listOf(SpentTicket("t1", start, null)), s.data.eggTickets.spent)
+        assertTrue(s.data.eggTickets.stock.isEmpty())
+
+        val before = s.data.player.pokemon.size
+        hatchOne(s, clock)
+        assertEquals(before + 1, s.data.player.pokemon.size, "out of tickets, the egg rolls on the device")
+        assertEquals(1, s.data.eggTickets.spent.size)
+    }
+
+    @Test
+    fun ticketsStayOnTheDevice() {
+        val (s, _) = started()
+        s.signedIn("a@b.c", "u1", "tok", "ref", Long.MAX_VALUE)
+        s.markSynced(1)
+        s.receivedTickets(listOf(EggTicket("t1", 1, 0)), emptyList())
+        assertFalse(s.data.account!!.unsynced, "new tickets are not a change to upload")
+        assertFalse("eggTickets" in s.cloudDocument())
+        s.adoptCloud(s.cloudDocument(), 2)
+        assertEquals(listOf("t1"), s.data.eggTickets.stock.map { it.id }, "adopting the cloud save keeps this device's tickets")
+
+        // A ticket spent while the call was out stays spent.
+        s.startFocus(25, deepFocus = false)
+        s.receivedTickets(listOf(EggTicket("t1", 1, 0), EggTicket("t3", 3, 0)), emptyList())
+        assertEquals(listOf("t3"), s.data.eggTickets.stock.map { it.id })
+
+        s.signOut()
+        assertTrue(s.data.eggTickets.stock.isEmpty() && s.data.eggTickets.inSession == null, "tickets belong to the account")
+    }
+
+    @Test
     fun leavingTheAppForTooLongFailsTheSession() {
         val (s, clock) = started()
         s.startFocus(25, deepFocus = false)

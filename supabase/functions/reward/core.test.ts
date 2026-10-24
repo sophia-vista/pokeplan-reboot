@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { type Database, handleDeleteAccount, handleReward, handleSync, RequestError } from "./core.ts";
+import { type Database, handleDeleteAccount, handleReward, handleSync, handleTickets, RequestError } from "./core.ts";
 
 const dir = resolve(process.argv[2] ?? "pokemon-core/build/compileSync/js/main/productionLibrary/kotlin");
 const lib = await import(pathToFileURL(join(dir, "pokeplan-pokemon-core.mjs")).href);
@@ -19,7 +19,7 @@ function fakeDb(overrides: Partial<Database> = {}) {
   let staleOnce = 0;
   let saved: unknown = null;
   let pushError: Error | null = null;
-  const db: Database & { deleted: string[]; ledger: typeof ledger; setState(s: unknown): void; failStale(n: number): void; failPush(e: Error | null): void; loads: number } = {
+  const db: Database & { deleted: string[]; ticketCalls: unknown[]; ledger: typeof ledger; setState(s: unknown): void; failStale(n: number): void; failPush(e: Error | null): void; loads: number } = {
     loads: 0,
     ledger,
     setState(s) { state = s; },
@@ -45,6 +45,11 @@ function fakeDb(overrides: Partial<Database> = {}) {
       if (expected !== version) throw Object.assign(new Error("stale"), { code: "40001" });
       saved = data;
       return ++version;
+    },
+    ticketCalls: [] as unknown[],
+    async eggTickets(_u, device, spent, stock) {
+      db.ticketCalls.push({ device, spent, stock });
+      return { tickets: [{ id: "t", seed: 7, issuedAtMillis: 0 }], refused: spent.filter((t) => t.pokemonId === "dupe").map((t) => t.id) };
     },
     deleted: [] as string[],
     async deleteUser(u) { db.deleted.push(u); },
@@ -153,6 +158,21 @@ const user = "u1";
   db.failPush(null);
   for (const bad of [{ kind: "push", expectedVersion: 1 }, { kind: "push", expectedVersion: 1, data: {} }, { kind: "push", expectedVersion: -1, data: doc }, { kind: "nope" }]) {
     await assert.rejects(handleSync(user, bad as Record<string, unknown>, db), (e: unknown) => e instanceof RequestError && e.status === 400);
+  }
+}
+
+// Egg tickets: well-formed spends go to the database, malformed ones are refused on their own, the stock is asked for.
+{
+  const db = fakeDb();
+  const good = { id: "0b5f8a52-3c1e-4d7a-9f00-1234567890ab", startedAtMillis: 1_700_000_000_000, pokemonId: "p1" };
+  const failed = { id: "1b5f8a52-3c1e-4d7a-9f00-1234567890ab", startedAtMillis: 1_700_000_000_000, pokemonId: null };
+  const dupe = { id: "2b5f8a52-3c1e-4d7a-9f00-1234567890ab", startedAtMillis: 1_700_000_000_000, pokemonId: "dupe" };
+  const result = await handleTickets(user, { kind: "tickets", device: "phone", spent: [good, failed, dupe, { id: "not-a-uuid", startedAtMillis: 1 }, { id: good.id }] }, db);
+  assert.deepEqual(result, { tickets: [{ id: "t", seed: 7, issuedAtMillis: 0 }], refused: ["not-a-uuid", good.id, dupe.id] });
+  assert.deepEqual(db.ticketCalls, [{ device: "phone", spent: [good, failed, dupe], stock: 20 }]);
+  assert.deepEqual((await handleTickets(user, { kind: "tickets", device: "phone" }, db)).refused, []);
+  for (const bad of [{ kind: "tickets" }, { kind: "tickets", device: "phone", spent: "x" }, { kind: "tickets", device: "phone", spent: new Array(201).fill(good) }]) {
+    await assert.rejects(handleTickets(user, bad as Record<string, unknown>, db), (e: unknown) => e instanceof RequestError && e.status === 400);
   }
 }
 

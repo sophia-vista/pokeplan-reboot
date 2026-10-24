@@ -5,7 +5,7 @@ One Supabase project serves every Pokémon app (see "Platform and apps" in `docs
 
 | Path | What |
 |---|---|
-| `migrations/` | The database, in order. `…01_platform` (profiles, Pokémon, bag, ledger), `…02_plan` (planner tables), `…03_state_functions` (`load_state`, `apply_outcome`), `…04_social` (friends, leaderboard, gifts) |
+| `migrations/` | The database, in order. `…01_platform` (profiles, Pokémon, bag, ledger), `…02_plan` (planner tables), `…03_state_functions` (`load_state`, `apply_outcome`), `…04_social` (friends, leaderboard, gifts), `…05_guardians`, `…06_cloud_save`, `…07_egg_tickets` (offline hatching) |
 | `tests/` | SQL tests, run by `tests/run.sh` on a throwaway PostgreSQL 16 (no Supabase needed) |
 | `functions/reward/` | The Edge Function that grants rewards by running the Kotlin engine compiled to JavaScript |
 
@@ -37,7 +37,15 @@ Players can keep playing as a guest. Signing in (email and password) uploads the
 - In Supabase: Authentication → Providers → Email on. For a quick start turn **Confirm email** off (Authentication → Sign In / Providers → Email), or players must confirm by email before signing in.
 - The web build is served from another origin: the function already answers CORS.
 
+## Egg tickets
+
+A signed-in phone asks for egg tickets on every sync (`{"kind": "tickets", "device", "spent"}`): `platform.egg_tickets` records the
+tickets it spent and returns its unspent stock, topped up to 20. Each ticket is a random seed issued to one device; the phone rolls
+one focus egg from it, offline or not. A spent ticket is accepted once, from its device, for a session that started after it was
+issued; anything else comes back in `refused` and the phone forgets it. The rule is under "Focus" in `docs/design.md`.
+
 ## Known limits
 
 The function trusts the client for `hourOfDay`, `firstOfDay`, `onTime` and the length of a focus session (capped at 240
-minutes). That is fine for private use with friends; tighten it (record sessions server-side, check the clock) before a public release.
+minutes), and an egg ticket's report is checked (issued to that device, used once, older than the session) but the egg is not
+replayed from its seed. That is fine for private use with friends; tighten it (record sessions server-side, check the clock) before a public release.

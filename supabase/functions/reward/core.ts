@@ -22,8 +22,17 @@ export interface Database {
   pullSave(user: string): Promise<{ version: number; data: unknown }>;
   /** platform.push_save: the new version. Throws an error with code "40001" when the version is stale. */
   pushSave(user: string, expectedVersion: number, data: unknown): Promise<number>;
+  /** platform.egg_tickets: records the spent tickets and returns the device's unspent stock topped up to `stock`. */
+  eggTickets(user: string, device: string, spent: SpentTicket[], stock: number): Promise<{ tickets: unknown[]; refused: string[] }>;
   /** Deletes the sign-in; every table cascades from it, so nothing of the player is left. */
   deleteUser(user: string): Promise<void>;
+}
+
+/** A ticket the device spent: the session's start, and the Pokémon it hatched (null if the session failed). */
+export interface SpentTicket {
+  id: string;
+  startedAtMillis: number;
+  pokemonId: string | null;
 }
 
 export interface Clock {
@@ -49,6 +58,10 @@ const REGIONS = ["HOME", "KANTO", "JOHTO", "HOENN", "SINNOH", "UNOVA", "KALOS", 
 const MAX_MINUTES = 240;
 const MAX_RETRIES = 3;
 const DAY_MILLIS = 86_400_000;
+// Egg tickets a device holds (see "Focus" in docs/design.md). (tune)
+const TICKET_STOCK = 20;
+const MAX_SPENT = 200;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type Body = Record<string, unknown>;
 
@@ -170,6 +183,35 @@ export async function handleSync(user: string, body: Body, db: Database) {
     if (code === "P0001" || code === "23514" || code === "23503") throw new RequestError(422, (e as Error).message);
     throw e;
   }
+}
+
+/**
+ * Egg tickets for offline hatching: {"kind": "tickets", "device": "...", "spent": [{"id", "startedAtMillis", "pokemonId"}]}
+ * reports the tickets this device spent and returns {tickets: [{id, seed, issuedAtMillis}], refused: [ids]}, the unspent
+ * stock topped up to TICKET_STOCK. A refused ticket was never issued to this device, was spent already, or is older than the
+ * session; the device just forgets it.
+ */
+export async function handleTickets(user: string, body: Body, db: Database) {
+  const device = text(body, "device");
+  const raw = body.spent ?? [];
+  if (!Array.isArray(raw) || raw.length > MAX_SPENT) throw new RequestError(400, `spent must be a list of at most ${MAX_SPENT}`);
+  const spent: SpentTicket[] = [];
+  const refused: string[] = [];
+  for (const entry of raw) {
+    const e = (typeof entry === "object" && entry !== null ? entry : {}) as Body;
+    const id = typeof e.id === "string" ? e.id : "";
+    const started = e.startedAtMillis;
+    const pokemonId = e.pokemonId ?? null;
+    // A malformed entry is refused on its own, so one bad ticket never blocks the rest.
+    if (!UUID.test(id) || typeof started !== "number" || !Number.isSafeInteger(started) || started < 0 ||
+      (pokemonId !== null && (typeof pokemonId !== "string" || pokemonId.length > 200))) {
+      refused.push(id);
+      continue;
+    }
+    spent.push({ id, startedAtMillis: started, pokemonId });
+  }
+  const result = await db.eggTickets(user, device, spent, TICKET_STOCK);
+  return { tickets: result.tickets, refused: [...refused, ...result.refused] };
 }
 
 /**

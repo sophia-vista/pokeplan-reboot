@@ -61,6 +61,8 @@ data class AppData(
     val shinySpecies: Set<Int> = emptySet(),
     /** Rare Candy rewards from subtasks and the like are counted per day here when a cap needs them. */
     val counters: Map<String, Int> = emptyMap(),
+    /** Egg tickets for hatching offline; kept on this device only. */
+    val eggTickets: EggTickets = EggTickets(),
 ) {
     companion object {
         const val SCHEMA = 1

@@ -1,5 +1,7 @@
 package app.pokeplan.app.cloud
 
+import app.pokeplan.app.EggTicket
+import app.pokeplan.app.SpentTicket
 import io.ktor.client.HttpClient
 import io.ktor.client.request.header
 import io.ktor.client.request.request
@@ -9,6 +11,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -73,6 +76,17 @@ class CloudClient(private val config: CloudConfig, private val http: HttpClient,
             buildJsonObject { put("kind", "push"); put("expectedVersion", expectedVersion); put("data", document) },
             session.accessToken,
         ) { it["version"]!!.jsonPrimitive.int }
+
+    /** Reports the egg tickets this device spent and gets its unspent stock back, topped up. */
+    suspend fun tickets(session: Session, device: String, spent: List<SpentTicket>): CloudResult<List<EggTicket>> =
+        call(
+            "/functions/v1/reward",
+            buildJsonObject {
+                put("kind", "tickets"); put("device", device)
+                put("spent", json.encodeToJsonElement(ListSerializer(SpentTicket.serializer()), spent))
+            },
+            session.accessToken,
+        ) { json.decodeFromJsonElement(ListSerializer(EggTicket.serializer()), it["tickets"]!!) }
 
     /** Deletes the account and everything stored for it on the server. */
     suspend fun deleteAccount(session: Session): CloudResult<Unit> =
