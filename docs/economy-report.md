@@ -14,7 +14,7 @@ Plays 180 days for 60 simulated players per profile through the real reward engi
 
 - Basic Home dex (59 hatchable species) in about 60 days for a typical player.
 - A new region about every 21 to 28 days.
-- Evolving everything in the Home Region once needs 85 evolutions: 71 Super Candies, 3380 to 6760 Rare Candies (with and without the catch-up discount), 13 stones, 1 Link Cords, 3 trials.
+- Evolving everything in the Home Region once needs 85 evolutions: 71 Super Candies, 3886 to 7314 Rare Candies (with and without the catch-up discount), 13 stones, 1 Link Cords, 3 trials.
 
 ## Light
 
@@ -36,11 +36,11 @@ Plays 180 days for 60 simulated players per profile through the real reward engi
 | Super Candies earned in 60 days | 61.0 (40.0 to 85.0) |
 | Coins after 60 days | 1607 (1340 to 1806) |
 | Item drops in 60 days | 33.0 (26.0 to 39.0) |
-| Buddy level after 60 days | 100 (100 to 100) |
+| Buddy level after 60 days | 79.0 (75.0 to 83.0) |
 | Shinies in 180 days | 1.0 (0.0 to 2.0) |
 | Species owned after 90 days | 41.0 (38.0 to 45.0) |
 
-Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (61.0) that is about 69.8 days. Rare Candies: 3380 to 6760 needed, 1229 earned in 60 days (about 165 to 330 days).
+Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (61.0) that is about 69.8 days. Rare Candies: 3886 to 7314 needed, 1229 earned in 60 days (about 190 to 357 days).
 
 ## Typical
 
@@ -66,7 +66,7 @@ Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (61.0)
 | Shinies in 180 days | 5.0 (1.0 to 8.0) |
 | Species owned after 90 days | 119 (59.0 to 153) |
 
-Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (213) that is about 20.0 days. Rare Candies: 3380 to 6760 needed, 5125 earned in 60 days (about 39.6 to 79.1 days).
+Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (213) that is about 20.0 days. Rare Candies: 3886 to 7314 needed, 5125 earned in 60 days (about 45.5 to 85.6 days).
 
 ## Heavy
 
@@ -86,11 +86,11 @@ Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (213) 
 | Task Eggs after 60 days | 167 (157 to 177) |
 | Rare Candies earned in 60 days (incl. transfers) | 11504 (10976 to 12196) |
 | Super Candies earned in 60 days | 591 (519 to 663) |
-| Coins after 60 days | 18442 (17211 to 19865) |
+| Coins after 60 days | 18288 (17211 to 19393) |
 | Item drops in 60 days | 271 (255 to 286) |
 | Buddy level after 60 days | 100 (100 to 100) |
 | Shinies in 180 days | 10.0 (6.0 to 17.0) |
 | Species owned after 90 days | 277 (256 to 296) |
 
-Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (591) that is about 7.2 days. Rare Candies: 3380 to 6760 needed, 11504 earned in 60 days (about 17.6 to 35.3 days).
+Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (591) that is about 7.2 days. Rare Candies: 3886 to 7314 needed, 11504 earned in 60 days (about 20.3 to 38.1 days).
 

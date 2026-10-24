@@ -111,8 +111,8 @@ Each owned Pokémon has: species, level 1 to 100, nature, ability, 6 IVs, 6 EVs,
 - **Natures:** the existing 25. Each raises one stat and lowers another (five are neutral).
 - **Abilities:** each species has one or two; one is rolled at hatch. Abilities give buddy perks (below).
 - **Shiny:** rolled at hatch, base chance **1 in 128** per egg (about a month at ~5 eggs a day), with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation.
-- **Levelling:** 10 Rare Candies per level (as now). A Pokémon more than 5 levels below your partner needs half the candies *(tune)*, so new hatches catch up without outshining the partner.
-- **Evolution:** Super Candy at half the species' game evolution level. Evolution stones for the species that use them.
+- **Levelling:** Rare Candies per level grow with the level, the shape of the games' Medium Fast experience group: **2 + level² / 150**, rounded down *(tune)* (2 a level up to level 12, 8 at 30, 18 at 50, 67 at 99; 33 candies from level 1 to 16, 154 to 36, 2,341 to 100). A Pokémon more than 5 levels below your partner needs half the candies, rounded up *(tune)*, so new hatches catch up without outshining the partner.
+- **Evolution:** Super Candy at the species' game evolution level (Charmander at 16). Evolution stones for the species that use them.
 
 ### Evolution
 
@@ -120,7 +120,7 @@ Every evolution is reachable solo. Each game trigger maps to an in-app one:
 
 | Game trigger | In the app |
 |---|---|
-| Level | Super Candy once the Pokémon reaches **half the species' game level** (rounded up, at least 2) *(tune)*; there are no battles, so levels only pace progress |
+| Level | Super Candy once the Pokémon reaches **the species' game level** (Charmander at 16, Charmeleon at 36); there are no battles, so levels only pace progress, and the level curve above keeps that pace |
 | Stone / item | the evolution item |
 | Trade, trade with an item | a **Link Cord** item (holding the item where the game needs one); a real friend trade also works once trading exists |
 | Friendship (with or without day / night) | friendship at 220 or more, then a Super Candy, at the right time of day where it matters |
@@ -207,7 +207,7 @@ Collecting is **fast at the start and deep at the end.** The simulator tunes tow
 
 - **Basic dex of the Home Region (every species caught, including evolutions): about 2 months** *(tune)*. Each later region is about the same once unlocked.
 - **Region unlocks:** trainer rank opens a new region about every 3 to 4 weeks *(tune)*, so a player is usually collecting in more than one region.
-- **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Home dex at a median of day 62, opens a region every 20 to 28 days, and earns enough Rare Candies to evolve the whole Home Region in 40 to 80 days and enough Super Candies in about 20.
+- **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Home dex at a median of day 62, opens a region every 20 to 28 days, and earns enough Rare Candies to evolve the whole Home Region in 45 to 86 days and enough Super Candies in about 20.
 - **The long tail** (months to years) is made of layers, each with its own progress, badge and showcase:
 
 | Layer | Goal |
