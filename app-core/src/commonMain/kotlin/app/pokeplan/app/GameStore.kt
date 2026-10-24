@@ -127,7 +127,7 @@ class GameStore(
     private fun update(change: (AppData) -> AppData) {
         val before = data
         var after = change(before)
-        // Anything but the account itself (and the egg tickets, which stay on the device) changing means the cloud copy is out of date.
+        // Anything but the account itself (and what stays on the device) changing means the cloud copy is out of date.
         val account = after.account
         if (account != null && account == before.account && after.cloudPart() != before.cloudPart()) {
             after = after.copy(account = account.copy(unsynced = true))
@@ -169,13 +169,16 @@ class GameStore(
         update { AppData() }
     }
 
-    /** This device's save as the document the cloud stores (everything but the account and the egg tickets). */
+    /** This device's save as the document the cloud stores (everything but the account and what stays on the device). */
     fun cloudDocument(): JsonObject {
         val full = json.encodeToJsonElement(AppData.serializer(), data.cloudPart()) as JsonObject
-        return JsonObject(full.filterKeys { it != "account" && it != "eggTickets" })
+        return JsonObject(full.filterKeys { it !in DEVICE_ONLY })
     }
 
-    private fun AppData.cloudPart(): AppData = copy(account = null, eggTickets = EggTickets())
+    private fun AppData.cloudPart(): AppData = copy(account = null, eggTickets = EggTickets(), shownCalendars = emptySet())
+
+    /** Shows or hides calendar events from this phone's calendars on the day timeline. */
+    fun setShownCalendars(ids: Set<Long>) = update { it.copy(shownCalendars = ids) }
 
     /** The cloud accepted the document at [version]. */
     fun markSynced(version: Int) = update { d -> d.copy(account = d.account?.copy(version = version, unsynced = false, syncedAtMillis = nowMillis)) }
@@ -184,7 +187,10 @@ class GameStore(
     fun adoptCloud(document: JsonObject, version: Int) {
         val incoming = json.decodeFromJsonElement(AppData.serializer(), document)
         update { d ->
-            incoming.copy(account = d.account?.copy(version = version, unsynced = false, syncedAtMillis = nowMillis), eggTickets = d.eggTickets)
+            incoming.copy(
+                account = d.account?.copy(version = version, unsynced = false, syncedAtMillis = nowMillis),
+                eggTickets = d.eggTickets, shownCalendars = d.shownCalendars,
+            )
         }
     }
 
@@ -810,6 +816,9 @@ class GameStore(
         /** Friendship a day that petting can give. */
         const val PET_DAILY_CAP = 10
         const val LOG_SIZE = 50
+
+        /** Parts of the save that stay on this device: never uploaded, kept when the cloud save is adopted. */
+        private val DEVICE_ONLY = setOf("account", "eggTickets", "shownCalendars")
 
         // "kind" because the rewards have a field called "type" (the same setting the reward engine uses over JSON).
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true; classDiscriminator = "kind" }

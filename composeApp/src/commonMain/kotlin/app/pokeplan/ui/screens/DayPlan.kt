@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,8 +32,11 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.pokeplan.plan.CalendarEvent
 import app.pokeplan.plan.Category
 import app.pokeplan.plan.DayLoad
 import app.pokeplan.plan.DayTimeline
@@ -46,6 +50,8 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalTime
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.plus
 
 private val HourHeight = 64.dp
@@ -81,9 +87,13 @@ private fun duration(minutes: Int): String = when {
     else -> "${minutes / 60} h ${minutes % 60} min"
 }
 
+/** A calendar event's own colour, or grey. */
+private fun eventColor(e: CalendarEvent): Color = e.color?.let { Color(it or 0xFF000000L) } ?: Pixel.Gray
+
 /**
  * The day timeline: the day's tasks with a time sit on the hours, the rest wait in a tray. Tap a task (in the tray or
- * on the hours), then tap an hour to plan it there; the 15-minute buttons fine-tune it.
+ * on the hours), then tap an hour to plan it there; the 15-minute buttons fine-tune it. Events from the calendars shown
+ * in Settings sit on the hours too, read-only.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -93,7 +103,14 @@ internal fun DayView(model: AppModel, hidden: Set<String>) {
     var picked by remember { mutableStateOf<String?>(null) }
     val day = store.today.plus(DatePeriod(days = offset))
     val tasks = model.data.tasks.filter { it.id !in hidden }
-    val plan = DayTimeline.build(tasks, day, store.now)
+    val source = model.calendars
+    val shown = model.data.shownCalendars
+    var events by remember { mutableStateOf<List<CalendarEvent>>(emptyList()) }
+    LaunchedEffect(source, shown, day) {
+        events = if (source == null || shown.isEmpty()) emptyList()
+        else withContext(Dispatchers.Default) { source.events(shown, day, day) }
+    }
+    val plan = DayTimeline.build(tasks, day, store.now, events = events)
     val chosen = tasks.firstOrNull { it.id == picked && it.isOpen }
     val pick = { t: Task -> picked = if (picked == t.id) null else t.id }
 
@@ -106,12 +123,19 @@ internal fun DayView(model: AppModel, hidden: Set<String>) {
         PixelButton("Later", { offset += 1 }, color = Pixel.InkSoft, enabled = offset < DAYS_AHEAD, compact = true)
     }
 
-    val load = DayLoad.compute(plan.blocks.map { it.task }.filter { it.isOpen } + plan.tray)
+    val load = DayLoad.compute(plan.blocks.map { it.task }.filter { it.isOpen } + plan.tray, busyMinutes = plan.busyMinutes)
     Text(
         "${duration(load.plannedMinutes)} planned, ${duration(load.freeMinutes)} awake." +
             if (load.level == DayLoad.Level.OVER) " That's a lot, move something?" else "",
         style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
     )
+
+    if (plan.allDay.isNotEmpty()) {
+        SectionLabel("All day")
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            plan.allDay.forEach { e -> EventChip(e) }
+        }
+    }
 
     if (chosen != null) PickedPanel(model, chosen, day) { picked = null }
 
@@ -199,6 +223,18 @@ private fun Hours(model: AppModel, plan: DayTimeline.Plan, picked: String?, pick
                         .padding(end = 2.dp, bottom = 2.dp),
                 )
             }
+            plan.events.forEach { b ->
+                val laneWidth = maxWidth / b.lanes
+                val height = (HourHeight * ((b.endMinute - b.startMinute) / 60f)).coerceAtLeast(28.dp)
+                EventBlock(
+                    b,
+                    Modifier
+                        .offset(x = laneWidth * b.lane, y = HourHeight * ((b.startMinute - origin) / 60f))
+                        .width(laneWidth)
+                        .height(height)
+                        .padding(end = 2.dp, bottom = 2.dp),
+                )
+            }
             if (plan.day == model.store.today) {
                 val now = model.store.now.time.let { it.hour * 60 + it.minute }
                 if (now >= origin && now < plan.endHour * 60) {
@@ -232,4 +268,48 @@ private fun TimelineBlock(block: DayTimeline.Block, selected: Boolean, onClick: 
             overflow = TextOverflow.Ellipsis,
         )
     }
+}
+
+/** A calendar event on the hours: read-only, in its calendar's colour, with no icon (it is not a task). */
+@Composable
+private fun EventBlock(block: DayTimeline.EventBlock, modifier: Modifier) {
+    val e = block.event
+    val color = eventColor(e)
+    val start = LocalTime(block.startMinute / 60, block.startMinute % 60)
+    val end = if (block.endMinute >= 24 * 60) LocalTime(0, 0) else LocalTime(block.endMinute / 60, block.endMinute % 60)
+    Box(
+        modifier
+            .clip(blockShape)
+            .background(color.copy(alpha = 0.10f), blockShape)
+            .border(1.dp, color.copy(alpha = 0.6f), blockShape)
+            .semantics(mergeDescendants = true) { contentDescription = "Calendar: ${e.title}, ${clock(start)} to ${clock(end)}" }
+            .padding(horizontal = Spacing.S, vertical = 2.dp),
+    ) {
+        Text(
+            "${clock(start)} ${e.title}",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Pixel.InkSoft,
+            maxLines = if (block.endMinute - block.startMinute >= 45) 2 else 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+/** An all-day calendar event, above the hours. */
+@Composable
+private fun EventChip(e: CalendarEvent) {
+    val color = eventColor(e)
+    val title = if (e.title.length > 24) e.title.take(23).trimEnd() + "…" else e.title
+    Text(
+        title,
+        Modifier
+            .clip(blockShape)
+            .background(color.copy(alpha = 0.10f), blockShape)
+            .border(1.dp, color.copy(alpha = 0.6f), blockShape)
+            .semantics { contentDescription = "Calendar, all day: ${e.title}" }
+            .padding(horizontal = Spacing.S, vertical = Spacing.XS),
+        style = MaterialTheme.typography.bodyMedium,
+        color = Pixel.InkSoft,
+        maxLines = 1,
+    )
 }

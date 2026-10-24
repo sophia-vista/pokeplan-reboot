@@ -72,4 +72,39 @@ class DayTimelineTest {
         assertEquals(6 to 24, early.firstHour to early.endHour)
         assertEquals(24 * 60, early.blocks.last().endMinute, "a block stops at midnight")
     }
+
+    private fun e(id: String, start: LocalDateTime, end: LocalDateTime, allDay: Boolean = false) =
+        CalendarEvent(id, calendarId = 1, title = id, start = start, end = end, allDay = allDay)
+
+    @Test
+    fun calendar_events_share_the_hours_and_take_awake_time() {
+        val plan = DayTimeline.build(
+            listOf(t("report", today, LocalTime(9, 0), 60)),
+            today, now,
+            events = listOf(
+                e("standup", LocalDateTime(today, LocalTime(9, 30)), LocalDateTime(today, LocalTime(10, 0))),
+                e("lunch", LocalDateTime(today, LocalTime(12, 0)), LocalDateTime(today, LocalTime(13, 0))),
+                e("overlap", LocalDateTime(today, LocalTime(12, 30)), LocalDateTime(today, LocalTime(13, 30))),
+                e("tomorrow", LocalDateTime(tomorrow, LocalTime(9, 0)), LocalDateTime(tomorrow, LocalTime(10, 0))),
+                e("holiday", LocalDateTime(today, LocalTime(0, 0)), LocalDateTime(tomorrow, LocalTime(0, 0)), allDay = true),
+            ),
+        )
+        assertEquals(listOf("standup", "lunch", "overlap"), plan.events.map { it.event.id })
+        assertEquals(1 to 2, plan.events.first().let { it.lane to it.lanes }, "the event sits beside the task it overlaps")
+        assertEquals(0 to 2, plan.blocks.single().let { it.lane to it.lanes })
+        assertEquals(listOf("holiday"), plan.allDay.map { it.id })
+        assertEquals(30 + 90, plan.busyMinutes, "overlapping events count once")
+    }
+
+    @Test
+    fun events_crossing_midnight_are_cut_to_the_day() {
+        val night = e("flight", LocalDateTime(today, LocalTime(22, 0)), LocalDateTime(tomorrow, LocalTime(6, 0)))
+        assertEquals(22 * 60 until 24 * 60, night.span(today))
+        assertEquals(0 until 6 * 60, night.span(tomorrow))
+        val next = DayTimeline.build(emptyList(), tomorrow, now, events = listOf(night))
+        assertEquals(0, next.firstHour, "the hours stretch to show it")
+        assertEquals(0, next.busyMinutes, "before waking time is not busy")
+        val trip = e("trip", LocalDateTime(today, LocalTime(0, 0)), LocalDateTime(today.plus(DatePeriod(days = 3)), LocalTime(0, 0)), allDay = true)
+        assertEquals(listOf(true, true, true, false), (0..3).map { trip.isOn(today.plus(DatePeriod(days = it))) })
+    }
 }

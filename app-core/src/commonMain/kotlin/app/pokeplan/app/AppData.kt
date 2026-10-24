@@ -63,6 +63,8 @@ data class AppData(
     val counters: Map<String, Int> = emptyMap(),
     /** Egg tickets for hatching offline; kept on this device only. */
     val eggTickets: EggTickets = EggTickets(),
+    /** Which of this phone's calendars show on the day timeline (calendar ids differ per device, so this stays here). */
+    val shownCalendars: Set<Long> = emptySet(),
 ) {
     companion object {
         const val SCHEMA = 1

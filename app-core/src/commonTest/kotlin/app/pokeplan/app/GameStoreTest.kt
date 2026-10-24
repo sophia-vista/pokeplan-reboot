@@ -216,6 +216,18 @@ class GameStoreTest {
     }
 
     @Test
+    fun theChosenCalendarsStayOnThePhone() {
+        val (s, _) = started()
+        s.signedIn("a@b.c", "u1", "tok", "ref", Long.MAX_VALUE)
+        s.markSynced(1)
+        s.setShownCalendars(setOf(3L, 7L))
+        assertFalse(s.data.account!!.unsynced, "calendar ids differ per phone, so they are not a change to upload")
+        assertFalse("shownCalendars" in s.cloudDocument())
+        s.adoptCloud(s.cloudDocument(), 2)
+        assertEquals(setOf(3L, 7L), s.data.shownCalendars)
+    }
+
+    @Test
     fun leavingTheAppForTooLongFailsTheSession() {
         val (s, clock) = started()
         s.startFocus(25, deepFocus = false)
