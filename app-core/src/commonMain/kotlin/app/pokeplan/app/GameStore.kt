@@ -264,6 +264,11 @@ class GameStore(
         })
     }
 
+    /** Plans a task on [day] at [time], as the day timeline does when a task is put on an hour. */
+    fun scheduleTask(taskId: String, day: LocalDate, time: LocalTime) = update { d ->
+        d.copy(tasks = d.tasks.map { if (it.id == taskId && it.isOpen) it.copy(planned = day, plannedTime = time) else it })
+    }
+
     /** Sets a task's reminders (at most [Reminders.MAX_PER_TASK]). */
     fun setReminders(taskId: String, reminders: List<ReminderOffset>) =
         update { d -> d.copy(tasks = d.tasks.map { if (it.id == taskId) it.copy(reminders = reminders.distinct().take(Reminders.MAX_PER_TASK)) else it }) }

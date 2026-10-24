@@ -129,6 +129,23 @@ class ScreenshotTest {
     }
 
     @Test
+    fun plannerDay() {
+        val store = started()
+        val report = store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 90, category = app.pokeplan.plan.Category.WORK)
+        store.setPlannedTime(report.id, kotlinx.datetime.LocalTime(9, 0))
+        val call = store.addTask("Call the dentist", Rank.E, planned = store.today, category = app.pokeplan.plan.Category.HEALTH)
+        store.setPlannedTime(call.id, kotlinx.datetime.LocalTime(10, 0))
+        val run = store.addTask("Evening run", Rank.C, planned = store.today, estimateMinutes = 45, category = app.pokeplan.plan.Category.HEALTH)
+        store.setPlannedTime(run.id, kotlinx.datetime.LocalTime(18, 30))
+        store.addTask("Reply to mail", Rank.E, planned = store.today)
+        store.addTask("Buy a birthday card", Rank.E)
+        val model = AppModel(store)
+        render("planner-day") {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 1) } }
+        }
+    }
+
+    @Test
     fun focusSetup() {
         val model = AppModel(started())
         render("focus-setup") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.FocusScreen(model) } } }

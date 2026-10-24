@@ -155,15 +155,6 @@ private fun GrowthView(model: AppModel) {
     }
 }
 
-private fun categoryColor(c: Category) = when (c) {
-    Category.WORK -> Pixel.Blue
-    Category.SCHOOL -> androidx.compose.ui.graphics.Color(0xFF8B5CF6)
-    Category.HOME -> androidx.compose.ui.graphics.Color(0xFFF59E0B)
-    Category.HEALTH -> Pixel.Green
-    Category.SOCIAL -> androidx.compose.ui.graphics.Color(0xFFEC4899)
-    Category.PERSONAL -> Pixel.Gray
-}
-
 // ----- Goals ----------------------------------------------------------------------------------------------------------
 
 @Composable
