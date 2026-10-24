@@ -109,17 +109,42 @@ and leaderboards. Export and delete cover it.
 
 ### Health integration (after v1, optional)
 
-The owner uses a **Huawei Watch 4 Pro** with Huawei Health. What I could find, and what is **unverified**:
-- No confirmed direct route from Huawei Health into Android's Health Connect; community guides describe a bridge app such
-  as Health Sync, with partial sleep coverage ([FitMesh](https://www.fitmesh.fit/en/blog/huawei-health-health-connect-sync)).
-- Huawei's own Health Kit needs a Huawei Developer project and an access application that may ask for company and privacy
-  details ([Thryve's summary](https://www.thryve.health/huawei-health-kit-api-integration)); heavy for a private project.
-- Huawei Health's own data export (CSV or JSON) exists per several guides but its menu paths disagree.
+The owner uses a **Huawei Watch 4 Pro** with Huawei Health on a **Samsung Galaxy S26 Ultra**, and wants **historical**
+data at **no cost**. Researched October 2026:
 
-Plan: first check on the phone whether Health Connect lists Huawei Health or a bridge as a data source. If so, read-only
-steps and sleep **summaries** stay on the device, and the game only rewards optional movement or rest milestones
-("a calm night" as a cosmetic Sleep-style collectible), never the data itself, never shaming low numbers.
-Otherwise stay with manual check-ins.
+| Route | Free | History | Effort | Verdict |
+|---|---|---|---|---|
+| **Huawei data export** (HUAWEI ID → Privacy Centre → Request your data → Health) | yes | **all of it** | M | **Use first** |
+| Health Connect via the Health Sync bridge app | no (one-time fee, about £2.69) | only after paying | S | optional, ongoing sync |
+| Health Connect with the phone's own Samsung Health steps | yes | 30 days, more with the history permission | S | phone steps only, not the watch |
+| Huawei Health Kit (developer API) | account and approval needed | at most 1 year before authorisation | L | skip |
+| Gadgetbridge (open source) | yes | from pairing on | M | skip: replaces Huawei Health on the watch |
+
+- **Huawei data export.** Huawei verifies the account, prepares a password-protected zip and emails a link that stays valid
+  21 days (reports range from minutes to a week); the request asks for a file-size split and a password
+  ([Huawei help](https://consumer.huawei.com/en/support/content/en-us00746223/),
+  [Android Authority](https://www.androidauthority.com/how-to-sync-huawei-health-with-strava-3182027/)). Users report
+  JSON files with steps, sleep and heart rate plus spreadsheets describing the fields
+  ([GitHub issue](https://github.com/aricooperdavis/Huawei-TCX-Converter/issues/19)); the format is not documented, so
+  the importer needs a real export to build against.
+- **No official Huawei Health → Health Connect sync** exists ([FitMesh, 2026](https://www.fitmesh.fit/en/blog/huawei-health-health-connect-sync)).
+  [Health Sync](https://healthsync.app/f-a-q/) bridges it (needs HMS Core on a non-Huawei phone, about a week's trial, then a small
+  one-time or six-monthly fee; data from before install syncs only once paid).
+- **Health Connect** reads only the 30 days before the app's first permission unless the user grants
+  `PERMISSION_READ_HEALTH_DATA_HISTORY` (device-dependent, check `FEATURE_READ_HEALTH_DATA_HISTORY`)
+  ([Android docs](https://developer.android.com/health-and-fitness/health-connect/read-data)).
+- **Health Kit** needs a Huawei developer project, an approval per app, and a separate scope to read data from before
+  authorisation, capped at one year ([Huawei docs](https://developer.huawei.com/consumer/en/doc/development/HMSCore-Guides/historydata-open-0000001209921350)).
+- **Gadgetbridge** supports the Watch 4 Pro since 0.81.0 ([release notes](https://gadgetbridge.org/blog/release-0_81_0/)), but the
+  watch then pairs with Gadgetbridge instead of Huawei Health, so Huawei's own features and cloud history are lost.
+
+**Plan.** (1) An **"Import Huawei Health export"** screen: pick the zip, enter its password, parse daily step totals and
+sleep summaries **on the device**; re-import any time to top up (imports are idempotent by day). (2) Later and optional, a
+Health Connect reader for anything else on the phone (Samsung Health steps, or Huawei data if the owner buys Health
+Sync). The rules from section 6 hold: the data never leaves the device or reaches friends and leaderboards, the game
+rewards only movement or rest milestones ("a calm night" as a cosmetic Sleep-style collectible), never the values, and
+never shames low numbers. **Needed from the owner:** request the export and share the zip's file list (names only) so
+the parser matches the real format.
 
 ## 7. Reconciling the first draft with what exists
 
@@ -155,7 +180,6 @@ Otherwise stay with manual check-ins.
 - Per-module daily rank caps, or one shared cap?
 - Is the failed-focus egg loss acceptable, or should it soften?
 - Do you want Care's cloud sync at all, or strictly on-device?
-- What does Health Connect show on your phone? (Settings → Health Connect → App permissions / Data sources.)
 
 ## 10. Game layer
 
