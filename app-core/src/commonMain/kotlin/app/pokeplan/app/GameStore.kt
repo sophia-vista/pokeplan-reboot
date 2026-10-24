@@ -57,6 +57,7 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
@@ -241,6 +242,15 @@ class GameStore(
     }
 
     fun updateTask(task: Task) = update { d -> d.copy(tasks = d.tasks.map { if (it.id == task.id) task else it }) }
+
+    /** Plans a task at [time] (null clears it). A task without a day gets its deadline's day, or today. */
+    fun setPlannedTime(taskId: String, time: LocalTime?) = update { d ->
+        d.copy(tasks = d.tasks.map { t ->
+            if (t.id != taskId) t
+            else if (time == null) t.copy(plannedTime = null)
+            else t.copy(planned = t.planned ?: t.due?.date ?: today, plannedTime = time)
+        })
+    }
 
     /** Sets a task's reminders (at most [Reminders.MAX_PER_TASK]). */
     fun setReminders(taskId: String, reminders: List<ReminderOffset>) =

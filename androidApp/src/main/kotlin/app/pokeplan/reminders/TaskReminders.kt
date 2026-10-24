@@ -13,7 +13,10 @@ import android.os.Build
 import app.pokeplan.MainActivity
 import app.pokeplan.app.upcomingReminders
 import app.pokeplan.plan.DueReminder
+import app.pokeplan.plan.Reminders
+import app.pokeplan.plan.Snooze
 import app.pokeplan.plan.Task
+import app.pokeplan.plan.toEpochMillis
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.screens.short
 import app.pokeplan.widgetStore
@@ -37,6 +40,7 @@ object TaskReminders {
     const val ACTION_FIRE = "app.pokeplan.reminders.FIRE"
     const val ACTION_DONE = "app.pokeplan.reminders.DONE"
     const val ACTION_SNOOZE = "app.pokeplan.reminders.SNOOZE"
+    const val ACTION_TOMORROW = "app.pokeplan.reminders.TOMORROW"
     const val EXTRA_TASK = "task"
     const val EXTRA_SNOOZED = "snoozed"
 
@@ -109,6 +113,7 @@ object TaskReminders {
             .setAutoCancel(true)
             .addAction(Notification.Action.Builder(null, "Done", action(ACTION_DONE)).build())
             .addAction(Notification.Action.Builder(null, "Snooze 1 hour", action(ACTION_SNOOZE)).build())
+            .addAction(Notification.Action.Builder(null, "Tomorrow", action(ACTION_TOMORROW)).build())
             .build()
         try {
             manager.notify(id, notification)
@@ -165,8 +170,12 @@ class ReminderReceiver : BroadcastReceiver() {
                 context.getSystemService(android.app.NotificationManager::class.java)?.cancel(TaskReminders.notificationId(taskId))
                 updateWidgets(context)
             }
-            TaskReminders.ACTION_SNOOZE -> {
-                TaskReminders.remindAgain(context, taskId)
+            TaskReminders.ACTION_SNOOZE, TaskReminders.ACTION_TOMORROW -> {
+                if (action == TaskReminders.ACTION_SNOOZE) TaskReminders.remindAgain(context, taskId)
+                else {
+                    val zone = TimeZone.currentSystemDefault()
+                    TaskReminders.remindAgain(context, taskId, Reminders.snoozedTo(store.now, Snooze.TOMORROW, zone).toEpochMillis(zone))
+                }
                 context.getSystemService(android.app.NotificationManager::class.java)?.cancel(TaskReminders.notificationId(taskId))
             }
         }
