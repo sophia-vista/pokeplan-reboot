@@ -70,6 +70,8 @@ class AppModel(
     val store: GameStore, val motion: MotionSource? = null, val sync: SyncManager? = null, val social: SocialClient? = null,
     private val cries: CryPlayer? = null,
     private val haptics: HapticPlayer? = null,
+    /** Where the data export goes; null where the platform has no way to hand over a file. */
+    val files: FileSaver? = null,
 ) {
     /** A light vibration, if the platform can and Haptics is on in Settings. */
     fun haptic() {
@@ -137,6 +139,7 @@ fun App(
     externalChanges: Flow<Unit>? = null,
     cries: CryPlayer? = null,
     haptics: HapticPlayer? = null,
+    files: FileSaver? = null,
     /** Called after every change to the saved data (the Android app uses it to keep its widgets up to date). */
     onDataChanged: ((AppData) -> Unit)? = null,
     /** Called when the app switches between the light and dark colours, so the host can match the system bar icons. */
@@ -146,7 +149,7 @@ fun App(
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
         val client = if (cloud.enabled) CloudClient(cloud, HttpClient()) { clock.nowMillis() } else null
-        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries, haptics).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask }
+        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries, haptics, files).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask }
     }
     val store = model.store
     if (onDataChanged != null) DisposableEffect(store) {

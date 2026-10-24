@@ -74,6 +74,10 @@ class CloudClient(private val config: CloudConfig, private val http: HttpClient,
             session.accessToken,
         ) { it["version"]!!.jsonPrimitive.int }
 
+    /** Deletes the account and everything stored for it on the server. */
+    suspend fun deleteAccount(session: Session): CloudResult<Unit> =
+        call("/functions/v1/reward", buildJsonObject { put("kind", "delete-account"); put("confirm", "DELETE") }, session.accessToken) { }
+
     private fun credentials(email: String, password: String) = buildJsonObject { put("email", email.trim()); put("password", password) }
 
     private fun session(body: JsonObject): Session {

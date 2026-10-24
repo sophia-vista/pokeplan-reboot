@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { type Database, handleReward, handleSync, RequestError } from "./core.ts";
+import { type Database, handleDeleteAccount, handleReward, handleSync, RequestError } from "./core.ts";
 
 const dir = resolve(process.argv[2] ?? "pokemon-core/build/compileSync/js/main/productionLibrary/kotlin");
 const lib = await import(pathToFileURL(join(dir, "pokeplan-pokemon-core.mjs")).href);
@@ -19,7 +19,7 @@ function fakeDb(overrides: Partial<Database> = {}) {
   let staleOnce = 0;
   let saved: unknown = null;
   let pushError: Error | null = null;
-  const db: Database & { ledger: typeof ledger; setState(s: unknown): void; failStale(n: number): void; failPush(e: Error | null): void; loads: number } = {
+  const db: Database & { deleted: string[]; ledger: typeof ledger; setState(s: unknown): void; failStale(n: number): void; failPush(e: Error | null): void; loads: number } = {
     loads: 0,
     ledger,
     setState(s) { state = s; },
@@ -46,6 +46,8 @@ function fakeDb(overrides: Partial<Database> = {}) {
       saved = data;
       return ++version;
     },
+    deleted: [] as string[],
+    async deleteUser(u) { db.deleted.push(u); },
     ...overrides,
   };
   return db;
@@ -125,6 +127,16 @@ const user = "u1";
   db.setState(state);
   const out = await handleReward(user, { kind: "effort", app: "plan", key: "k1", minutes: 25, region: "KANTO" }, engine, db, clock);
   assert.equal(out.applied, true);
+}
+
+// Deleting the account needs the confirmation word.
+{
+  const db = fakeDb();
+  await assert.rejects(handleDeleteAccount(user, { kind: "delete-account" }, db), (e: unknown) => e instanceof RequestError && e.status === 400);
+  await assert.rejects(handleDeleteAccount(user, { kind: "delete-account", confirm: "yes" }, db), (e: unknown) => e instanceof RequestError && e.status === 400);
+  assert.deepEqual(db.deleted, []);
+  assert.deepEqual(await handleDeleteAccount(user, { kind: "delete-account", confirm: "DELETE" }, db), { deleted: true });
+  assert.deepEqual(db.deleted, [user]);
 }
 
 // The cloud save: pull, push, a stale push is a 409 with the server's version, rules violations are 422.

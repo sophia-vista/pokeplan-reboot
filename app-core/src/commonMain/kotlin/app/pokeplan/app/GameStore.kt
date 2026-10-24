@@ -154,6 +154,18 @@ class GameStore(
     /** Signs out. The progress on this device stays; it just stops syncing. */
     fun signOut() = update { it.copy(account = null) }
 
+    /** Everything PokéPlan keeps on this device, as readable JSON, without the sign-in tokens. */
+    fun exportJson(): String {
+        val pretty = Json(json) { prettyPrint = true }
+        return pretty.encodeToString(JsonObject.serializer(), cloudDocument())
+    }
+
+    /** Erases this device's save: back to the welcome screen. A signed-in account must be signed out or deleted first. */
+    fun eraseDevice() {
+        check(data.account == null) { "sign out first" }
+        update { AppData() }
+    }
+
     /** This device's save as the document the cloud stores (everything but the account). */
     fun cloudDocument(): JsonObject {
         val full = json.encodeToJsonElement(AppData.serializer(), data.copy(account = null)) as JsonObject

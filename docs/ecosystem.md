@@ -157,7 +157,7 @@ the parser matches the real format.
 | No punishment | A failed focus session loses its egg | Keep as the one explained exception *(proposed)* |
 | Module data stays in its module | `platform.cloud_saves` holds the **whole** Plan document, task titles included | **Move it to a Plan-owned save** (`plan.saves`) *(proposed)*; `platform` keeps game state only |
 | Versioned reward rules and idempotency | Reward engine, `apply_outcome` with idempotency key | Add a version number to the rules table and the reward ledger |
-| Export and delete span everything | Planned for v1 | Define per schema before Care ships |
+| Export and delete span everything | Settings → Your data: export the whole save as JSON; delete the account (the reward function deletes the auth user and every table cascades from it, checked by `supabase/tests/account.test.sql` across all uuid columns) | Done for `platform` and `plan`; a new schema must reference `platform.profiles` with `on delete cascade` or the SQL test fails |
 | No paid randomization | Eggs are free and earned | Keep; no gacha, no paid currency |
 
 ## 8. Roadmap (revisited)
