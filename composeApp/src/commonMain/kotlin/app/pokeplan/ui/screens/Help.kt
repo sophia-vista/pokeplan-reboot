@@ -56,7 +56,7 @@ internal val helpTopics = listOf(
             HelpItem("What do the ranks E to A mean?", "How hard you find the task. You choose it. A harder rank pays more, and A pays the most. Urgency comes from the date, not the rank."),
             HelpItem("Why did my task not pay?", "A task has to exist for a short while before it pays, longer for harder ranks, so a big task cannot be added and ticked in the same second. Finishing it sooner still completes it, just without a reward."),
             HelpItem("Can I undo a task?", "For 10 seconds after you finish it. After that the reward is paid and it is final. A task finished from a widget is paid the next time you open the app."),
-            HelpItem("What are Rare Candies and Super Candies?", "A Rare Candy levels a Pokémon up. A Super Candy evolves it once it is ready; some Pokémon need a stone, a happy buddy or a time of day instead."),
+            HelpItem("What are Rare Candies and Super Candies?", "Every finished task gives Rare Candies, and sometimes a Super Candy on top. Rare Candies level a Pokémon up; higher levels need more of them, as in the games. A Super Candy evolves it once it reaches its evolution level from the games (Charmander at 16); some Pokémon need a stone, a happy buddy or a time of day instead."),
         ),
     ),
     HelpTopic(

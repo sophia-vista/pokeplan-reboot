@@ -6,6 +6,7 @@ import app.pokeplan.core.dex.HatchOption
 import app.pokeplan.core.dex.HatchRules
 import app.pokeplan.core.dex.Region
 import app.pokeplan.core.model.Rarity
+import app.pokeplan.core.pokemon.CandyRules
 import app.pokeplan.core.pokemon.EvolutionRules
 import app.pokeplan.core.pokemon.Hatching
 import app.pokeplan.core.pokemon.Items
@@ -71,8 +72,9 @@ fun evolutionDemand(region: Region): Demand {
         val root = Dex.lineRoot(s.id)
         maxLevelByLine[root] = maxOf(maxLevelByLine[root] ?: 0, level)
     }
-    val levels = maxLevelByLine.values.sumOf { maxOf(it - 1, 0) }
-    return Demand(evolutions, supers, levels * 5, levels * 10, stones, cords, trials)
+    val low = maxLevelByLine.values.sumOf { CandyRules.candiesBetween(1, maxOf(it, 1), catchUp = true) }
+    val high = maxLevelByLine.values.sumOf { CandyRules.candiesBetween(1, maxOf(it, 1)) }
+    return Demand(evolutions, supers, low, high, stones, cords, trials)
 }
 
 private class Run(val profile: Profile, val seed: Int, val days: Int) {

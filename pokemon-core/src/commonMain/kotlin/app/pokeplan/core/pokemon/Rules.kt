@@ -5,13 +5,25 @@ import kotlin.random.Random
 /** Rare Candy levelling. */
 object CandyRules {
     const val MAX_LEVEL = 100
-    const val PER_LEVEL = 10
 
-    /** A Pokémon more than this many levels below your partner levels up on half the candies. *(tune)* */
+    /**
+     * Rare Candies for one level: [BASE] plus level² / [CURVE], rounded down, the shape of the games' Medium Fast experience
+     * group (each level needs more the higher it is): 2 candies up to level 12, 8 at 30, 18 at 50, 67 at 99. *(tune)*
+     */
+    const val BASE = 2
+    const val CURVE = 150
+
+    /** A Pokémon more than this many levels below your partner levels up on half the candies (rounded up). *(tune)* */
     const val CATCH_UP_GAP = 5
 
-    fun candiesNeeded(level: Int, partnerLevel: Int): Int =
-        if (partnerLevel - level > CATCH_UP_GAP) PER_LEVEL / 2 else PER_LEVEL
+    fun candiesNeeded(level: Int, partnerLevel: Int): Int {
+        val full = BASE + level * level / CURVE
+        return if (partnerLevel - level > CATCH_UP_GAP) (full + 1) / 2 else full
+    }
+
+    /** Rare Candies to go from level [from] to level [to], with or without the catch-up discount. */
+    fun candiesBetween(from: Int, to: Int, catchUp: Boolean = false): Int =
+        (from until to).sumOf { level -> candiesNeeded(level, if (catchUp) level + CATCH_UP_GAP + 1 else level) }
 }
 
 /** Where friendship comes from, and what it does. Daily caps are applied by the caller. */
