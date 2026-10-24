@@ -29,14 +29,8 @@ object EvolutionRules {
     const val SUPER_CANDY = "super-candy"
     const val LINK_CORD = "link-cord"
 
-    /**
-     * In-app evolution levels are this fraction of the games' levels (rounded up, at least 2). There are no battles, so
-     * levels only pace progress, and the full game levels made evolving a whole region take months longer than the
-     * pacing target. *(tune)*
-     */
-    const val LEVEL_SCALE = 0.5
-
-    fun requiredLevel(e: Evolution): Int? = e.level?.let { maxOf(2, kotlin.math.ceil(it * LEVEL_SCALE).toInt()) }
+    /** The level a level-up evolution needs: the species' game level (Charmander at 16), at least 2. */
+    fun requiredLevel(e: Evolution): Int? = e.level?.let { maxOf(2, it) }
 
     fun timeOfDay(hour: Int): TimeOfDay = when (hour) {
         in 6..16 -> TimeOfDay.DAY

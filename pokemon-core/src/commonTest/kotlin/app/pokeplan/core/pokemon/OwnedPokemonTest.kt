@@ -13,23 +13,36 @@ class OwnedPokemonTest {
         (1..times).fold(p) { acc, _ -> acc.feedRareCandy(partner) }
 
     @Test
-    fun tenCandiesMakeOneLevelAndAddFriendship() {
-        val p = feed(pokemon(Ids.BULBASAUR, nature = Nature.ADAMANT), 9)
-        assertEquals(1, p.level)
-        assertEquals(9, p.candyProgress)
+    fun enoughCandiesMakeOneLevelAndAddFriendship() {
+        val p = feed(pokemon(Ids.BULBASAUR, level = 30, nature = Nature.ADAMANT), 7)
+        assertEquals(30, p.level)
+        assertEquals(7, p.candyProgress)
         val up = p.feedRareCandy()
-        assertEquals(2, up.level)
+        assertEquals(31, up.level)
         assertEquals(0, up.candyProgress)
-        assertEquals(10, up.totalCandies)
+        assertEquals(8, up.totalCandies)
         assertEquals(FriendshipRules.START + 1, up.friendship)
     }
 
     @Test
+    fun higherLevelsCostMoreCandies() {
+        assertEquals(2, CandyRules.candiesNeeded(1, 1))
+        assertEquals(2, CandyRules.candiesNeeded(12, 12))
+        assertEquals(8, CandyRules.candiesNeeded(30, 30))
+        assertEquals(18, CandyRules.candiesNeeded(50, 50))
+        assertEquals(67, CandyRules.candiesNeeded(99, 99))
+        assertEquals(33, CandyRules.candiesBetween(1, 16), "Charmander to its level 16 evolution")
+        assertEquals(154, CandyRules.candiesBetween(1, 36), "Charmeleon's level 36")
+        assertEquals(2_341, CandyRules.candiesBetween(1, 100))
+    }
+
+    @Test
     fun aLaggingPokemonNeedsHalfTheCandies() {
-        val p = feed(pokemon(Ids.BULBASAUR), 5, partner = 40)
-        assertEquals(2, p.level)
-        val close = feed(pokemon(Ids.BULBASAUR), 5, partner = 6)
-        assertEquals(1, close.level, "within 5 levels: no discount")
+        assertEquals(8, CandyRules.candiesNeeded(45, 60), "15 halved, rounded up")
+        val p = feed(pokemon(Ids.BULBASAUR, level = 45), 8, partner = 60)
+        assertEquals(46, p.level)
+        val close = feed(pokemon(Ids.BULBASAUR, level = 45), 8, partner = 50)
+        assertEquals(45, close.level, "within 5 levels: no discount")
     }
 
     @Test

@@ -439,9 +439,11 @@ class GameStoreTest {
         val (s, _) = started()
         val buddy = s.data.player.buddy!!
         assertEquals(0f, s.levelProgress(buddy))
-        s.grant("rare-candy", 4)
-        s.feedRareCandy(buddy.id, 4)
-        assertEquals(0.4f, s.levelProgress(s.data.player.buddy!!), 0.001f)
+        val toThirty = app.pokeplan.core.pokemon.CandyRules.candiesBetween(buddy.level, 30)
+        s.grant("rare-candy", toThirty + 3)
+        s.feedRareCandy(buddy.id, toThirty + 3)
+        assertEquals(30, s.data.player.buddy!!.level)
+        assertEquals(3f / 8, s.levelProgress(s.data.player.buddy!!), 0.001f, "8 candies a level at 30")
     }
 
     @Test
