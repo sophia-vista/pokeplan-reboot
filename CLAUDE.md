@@ -82,6 +82,7 @@ Single-activity-per-flow app, with all backend access funnelled through one clas
 ## Notes
 - `.idea/` project files are committed (only caches, workspace and a few others are ignored).
 - The README screenshots are hosted on GitHub's `user-images` CDN, not in the repo.
+- Before designing or restyling a screen, menu, empty state, reward moment or micro-interaction, load the `design-references` skill (`.claude/skills/design-references/SKILL.md`): ideas from 16 reference sites, filtered through these rules.
 
 ## Branches and pull requests
 Adapted from the Balai Yllana website repo's workflow.
