@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,6 +49,7 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.AnimatedSprite
+import app.pokeplan.ui.spriteCredit
 import app.pokeplan.ui.Stage
 import app.pokeplan.ui.TypePlate
 import app.pokeplan.ui.theme.ListRow
@@ -482,6 +484,11 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                 Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     p.form.types.forEach { TypePlate(it, width = 84.dp) }
                 }
+            }
+            // The SpriteCollab licence (CC BY-NC 4.0) asks for credit to the sprite's artists.
+            val credit by produceState<String?>(null, p.form.id) { value = spriteCredit(p.form.id) }
+            credit?.let {
+                Text("Sprite by $it, PMD SpriteCollab (CC BY-NC 4.0)", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
 
             TextBox {

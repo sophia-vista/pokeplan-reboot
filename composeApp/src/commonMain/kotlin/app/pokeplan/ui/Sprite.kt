@@ -1,5 +1,6 @@
 package app.pokeplan.ui
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -13,10 +14,15 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import pokeplan.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.decodeToImageBitmap
+import kotlin.math.min
 
 private val cache = mutableMapOf<String, ImageBitmap?>()
 
@@ -39,9 +45,33 @@ fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp, de
     }
 }
 
-/** A Pokémon sprite by form number, scaled without blur so the pixels stay crisp. */
+/**
+ * A Pokémon sprite by form number, scaled without blur so the pixels stay crisp: the first frame of its Mystery Dungeon
+ * style sprite (SpriteCollab) where there is one, else its still sprite.
+ */
 @Composable
 fun Sprite(formId: Int, shiny: Boolean, description: String, modifier: Modifier = Modifier, size: Dp = 96.dp, silhouette: Color? = null) {
+    // Seeded from the caches, so a list being scrolled does not flash the still sprite first.
+    val pmd by produceState(loadedAnimations()?.get(formId)?.takeIf { it.dir == "pmd" }, formId) {
+        value = animations()[formId]?.takeIf { it.dir == "pmd" }
+    }
+    val a = pmd
+    val pmdSheet by produceState(a?.let { loadedSheet(it.sheetName(formId, shiny)) }, a, shiny) { value = a?.let { sheet(it.sheetName(formId, shiny)) } }
+    val frame = pmdSheet
+    if (a != null && frame != null) {
+        Canvas(modifier.size(size).semantics { contentDescription = description }) {
+            // A whole-number scale shared by all Mystery Dungeon sprites, centred in the box like the still sprites.
+            val scale = pixelScale(min(this.size.width, this.size.height), a)
+            val w = a.width * scale
+            val h = a.height * scale
+            drawImage(
+                frame, srcOffset = IntOffset.Zero, srcSize = IntSize(a.width, a.height),
+                dstOffset = IntOffset(((this.size.width - w) / 2).toInt(), ((this.size.height - h) / 2).toInt()), dstSize = IntSize(w, h),
+                filterQuality = FilterQuality.None, colorFilter = silhouette?.let { c -> ColorFilter.tint(c, BlendMode.SrcIn) },
+            )
+        }
+        return
+    }
     val name = if (shiny) "$formId-shiny" else "$formId"
     val bitmap by produceState(cache[name], name) {
         if (value == null) {
