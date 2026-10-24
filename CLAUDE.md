@@ -57,6 +57,11 @@ Project skills in `.claude/skills/` hold the detail for one area each, so this f
 - Send broad searches (where is X used, which screens show Y) to an Explore or Haiku agent. Leave `legacy-android/` alone unless the task is about it.
 - Keep replies short and skip restating the diff.
 
+## Sessions and handoff
+- One session per topic (a roadmap item, or a batch of fixes from phone testing). Start a new session rather than continuing a long one: every turn resends the whole conversation, so a long session costs more for each step.
+- When the topic is done (its PRs merged, or open and green), Claude ends with a **handoff prompt** the owner pastes into the next session: what shipped (PR numbers), what is still open and its state, decisions waiting on the owner (deploys, merges), and the next item with where its spec lives. It does not repeat what this file, the skills or the docs already say.
+- The roadmap (`docs/ecosystem.md`, section 8) and `CHANGELOG.md` are the record of progress: keep them current, so a new session needs nothing else.
+
 ## Notes
 - `.idea/` project files are committed (only caches, workspace and a few others are ignored).
 - The README screenshots are hosted on GitHub's `user-images` CDN, not in the repo.

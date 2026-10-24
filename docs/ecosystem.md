@@ -162,14 +162,15 @@ the parser matches the real format.
 
 ## 8. Roadmap (revisited)
 
-1. **Validate on a phone** (now): the build, sign-in and sync, widgets, cries.
-2. **Parked todos:** nav bar colour, sound and music sliders, wider emoji reactions by type and nature, widget refresh when the buddy changes.
-3. **Finish Plan:** timeline and time-blocking, Google Calendar import, Android notifications, the brief follow-ups (Focus rules, Dex seen and owned, bag grouping, Me metrics, help, accessibility), account export and delete, egg tickets for offline hatching.
+1. **Validate on a phone** (ongoing): fixes so far are the widget freeze and pet animation (0.3.1, 0.6.1), Rare Candy on every task with a Super Candy bonus (0.4.0), and real evolution levels with a Medium Fast style level curve (0.5.0).
+2. ~~Parked todos~~ (done in 0.2.0).
+3. **Finish Plan.** Done: reminders as notifications with quiet hours, focus and rest days (0.6.0); a time on tasks and snooze until tomorrow (0.7.0); export, delete account, erase device (0.8.0). **Next:** the day timeline with time-blocking (tap a tray task, tap an hour; drag later), then egg tickets for offline hatching, Google Calendar import, and the brief follow-ups (Focus rules, Dex seen and owned, Me metrics, accessibility).
 4. **Platform tidy before a second module:** move the cloud save to `plan.saves`, version the reward rules, document sources, sinks and caps.
 5. **Care v1** (section 6), as a module in the same app with its own schema.
 6. **Charm pass:** hatch and evolution ceremonies, region themes, the Oak sprite, music.
-7. **Grow**, then **health integration**, then **Home** modules.
-8. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
+7. **Grow**, then **health integration** (the Huawei export importer first, see section 6), then **Home** modules.
+8. **PokéLife extras** (the owner's name for the whole family): Poketch-style utilities ("Ideas parked" below), a live wallpaper with the buddy in its scene, then a Pokémon-themed launcher as the endgame.
+9. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
 
 ### Ideas parked
 
