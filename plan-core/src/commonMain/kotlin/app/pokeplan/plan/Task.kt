@@ -73,10 +73,13 @@ data class Task(
     val focusedMinutes: Int = 0,
     /** The completion reward has been given; reopening and finishing again never pays twice. */
     val paid: Boolean = false,
+    /** When to be reminded, relative to the planned time or the deadline ([Reminders.baseTime]). */
+    val reminders: List<ReminderOffset> = emptyList(),
 ) {
     init {
         require(title.isNotBlank()) { "a task needs a title" }
         require(estimateMinutes == null || estimateMinutes > 0) { "estimate must be positive" }
+        require(reminders.size <= Reminders.MAX_PER_TASK) { "at most ${Reminders.MAX_PER_TASK} reminders per task" }
     }
 
     val isOpen: Boolean get() = state == TaskState.OPEN

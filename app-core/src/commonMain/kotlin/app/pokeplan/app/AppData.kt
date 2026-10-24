@@ -8,10 +8,14 @@ import app.pokeplan.plan.FocusRecord
 import app.pokeplan.plan.FocusSession
 import app.pokeplan.plan.Goal
 import app.pokeplan.plan.Habit
+import app.pokeplan.plan.QuietHours
+import app.pokeplan.plan.DueReminder
+import app.pokeplan.plan.Reminders
 import app.pokeplan.plan.Recurrence
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.WeeklyReview
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
 import kotlinx.serialization.Serializable
 
 /** Everything the app saves on the device. The whole object is stored as one JSON document. */
@@ -83,6 +87,10 @@ data class Settings(
     val haptics: Boolean = true,
     val weekStartsOnMonday: Boolean = true,
     val theme: ThemeMode = ThemeMode.SYSTEM,
+    /** Task reminders as notifications (Android). */
+    val reminders: Boolean = true,
+    /** Reminders that fall in these hours wait for their end. */
+    val quietHours: QuietHours = QuietHours(),
 ) {
     /** How loud cries and effects play, 0 to 1 (0 when Sound was switched off). */
     val effectsLevel: Float get() = if (sound) effectsVolume.coerceIn(0, 100) / 100f else 0f
@@ -136,3 +144,10 @@ data class Account(
 /** A quest the player has taken on. Progress is counted from [acceptedAtMillis]; [completedAtMillis] is set when the reward is claimed. */
 @Serializable
 data class QuestState(val acceptedAtMillis: Long, val completedAtMillis: Long? = null)
+
+/** Every reminder still to come after [nowMillis], earliest first; none when reminders are switched off. */
+fun AppData.upcomingReminders(nowMillis: Long, zone: TimeZone): List<DueReminder> {
+    if (!settings.reminders) return emptyList()
+    val focusEnd = focus?.takeIf { !it.isFinished }?.let { it.startedAtMillis + it.durationMillis + it.pausedMillis }
+    return Reminders.upcoming(tasks, nowMillis, zone, settings.quietHours, restDays, focusEnd)
+}

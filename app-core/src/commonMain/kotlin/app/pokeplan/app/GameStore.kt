@@ -41,6 +41,9 @@ import app.pokeplan.plan.HabitTarget
 import app.pokeplan.plan.Phase
 import app.pokeplan.plan.Rank
 import app.pokeplan.plan.Recurrence
+import app.pokeplan.plan.DueReminder
+import app.pokeplan.plan.ReminderOffset
+import app.pokeplan.plan.Reminders
 import app.pokeplan.plan.RecurringTasks
 import app.pokeplan.plan.Streaks
 import app.pokeplan.plan.Subtask
@@ -238,6 +241,13 @@ class GameStore(
     }
 
     fun updateTask(task: Task) = update { d -> d.copy(tasks = d.tasks.map { if (it.id == task.id) task else it }) }
+
+    /** Sets a task's reminders (at most [Reminders.MAX_PER_TASK]). */
+    fun setReminders(taskId: String, reminders: List<ReminderOffset>) =
+        update { d -> d.copy(tasks = d.tasks.map { if (it.id == taskId) it.copy(reminders = reminders.distinct().take(Reminders.MAX_PER_TASK)) else it }) }
+
+    /** Every reminder still to come, earliest first; none when reminders are switched off. */
+    fun upcomingReminders(): List<DueReminder> = data.upcomingReminders(nowMillis, zone)
 
     fun deleteTask(id: String) = update { d -> d.copy(tasks = d.tasks.map { if (it.id == id) TaskRules.delete(it, nowMillis) else it }) }
 
