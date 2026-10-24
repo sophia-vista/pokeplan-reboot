@@ -4,7 +4,7 @@
 // Secrets (set by the platform): SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 import { RewardApi } from "./engine/pokeplan-pokemon-core.mjs";
-import { type Database, handleDeleteAccount, handleReward, handleSync, RequestError } from "./core.ts";
+import { type Database, handleDeleteAccount, handleReward, handleSync, handleTickets, RequestError } from "./core.ts";
 // Written by build.sh from the VERSION file and the commit being deployed.
 import { COMMIT, VERSION } from "./version.ts";
 
@@ -51,6 +51,11 @@ const db: Database = {
     if (error) throw error;
     return version;
   },
+  async eggTickets(user, device, spent, stock) {
+    const { data, error } = await service.schema("platform").rpc("egg_tickets", { p_user: user, p_device: device, p_spent: spent, p_stock: stock });
+    if (error) throw error;
+    return data;
+  },
   async deleteUser(user) {
     const { error } = await service.auth.admin.deleteUser(user);
     if (error) throw error;
@@ -78,9 +83,12 @@ Deno.serve(async (req) => {
     if (!user) throw new RequestError(401, "sign in first");
 
     const body = await req.json();
-    // "pull" and "push" are the cloud save, "delete-account" removes the account; everything else earns rewards.
+    // "pull" and "push" are the cloud save, "tickets" the egg tickets, "delete-account" removes the account; everything
+    // else earns rewards.
     const result = body.kind === "pull" || body.kind === "push"
       ? await handleSync(user.id, body, db)
+      : body.kind === "tickets"
+      ? await handleTickets(user.id, body, db)
       : body.kind === "delete-account"
       ? await handleDeleteAccount(user.id, body, db)
       : await handleReward(user.id, body, api, db, {

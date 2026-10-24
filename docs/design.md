@@ -37,6 +37,7 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 - **Two emergency pauses per day**, up to 3 minutes each, started by the player before leaving. Anything else that takes the player out of the app fails the egg after the grace period.
 - **No-blame recovery:** a failed session shows a neutral screen ("That egg went cold. Try again?") with a one-tap 5 minute retry. No red, no scolding.
 - Sweet spot is built in: Super Rares per focus-hour peak at about 60 minutes.
+- **Egg tickets (offline hatching, shipped 0.10.0):** a signed-in phone keeps a stock of **20** *(tune)* egg tickets, each a random seed the server issued to that device. Starting a session spends the oldest ticket, so the dice are fixed before the egg is laid (like the perks) and failing or abandoning a session never rerolls anything; the egg is rolled from that seed when the session finishes, online or not. Every sync reports the spent tickets (with the session start and the hatched Pokémon) and tops the stock back up. The server accepts a spent ticket only once and only if it issued it to that device before the session started; it refuses anything else. **The egg never waits on a ticket:** a guest, or a phone that ran out offline, hatches with a seed of its own, and a refused ticket takes nothing away from the player. Tickets stay on the device (they are not part of the cloud save) and change no odds, so egg pacing is unchanged. Task Eggs and task rewards keep rolling on the device until the server pays tasks.
 
 ## Tasks
 
@@ -393,7 +394,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 - Reminders are silenced during a focus session.
 - Settings include account deletion and a data export.
 - Cheating: server sanity checks only (plausible durations, one session at a time); friends-only leaderboards make stronger anti-cheat unnecessary.
-- Offline hatching uses server-issued "egg tickets" (random seeds spent by the client, verified later) so an egg still hatches without a connection.
+- Offline hatching uses server-issued "egg tickets" (random seeds spent by the client, verified on the next sync) so an egg still hatches without a connection; the rule is under Focus.
 - Game rules run on the server by compiling the shared Kotlin module to JS; a spike confirms this before the backend milestone.
 
 ### Planner defaults
