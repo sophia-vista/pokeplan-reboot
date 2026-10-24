@@ -169,12 +169,51 @@ the parser matches the real format.
 5. **Care v1** (section 6), as a module in the same app with its own schema.
 6. **Charm pass:** hatch and evolution ceremonies, region themes, the Oak sprite, music.
 7. **Grow**, then **health integration** (the Huawei export importer first, see section 6), then **Home** modules.
-8. **PokéLife extras** (the owner's name for the whole family): Poketch-style utilities ("Ideas parked" below), a live wallpaper with the buddy in its scene, then a Pokémon-themed launcher as the endgame.
+8. **PokéLife extras** (the owner's name for the whole family): Poketch-style utilities with helper Pokémon ("Poketch utilities and helper Pokémon" below), a live wallpaper with the buddy in its scene, then a Pokémon-themed launcher as the endgame.
 9. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
 
 ### Ideas parked
 
-- **Poketch-style utilities** *(owner's idea, from Diamond and Pearl)*: a small set of handy tools that live in the app and as widgets, each one a "Poketch app" the player switches between with a button, like the watch in the games. Candidates that fit the product: a digital clock and calendar, a counter, a stopwatch and a countdown (tied to Focus), a step or water-intake counter (a Care module hook), a memo pad, a calculator, a day-care or "buddy check" screen and a coin toss for undecided moments. It stays plain utility: no text from the buddy, real game assets for icons, and any effort it records goes through the normal effort events.
+- **More Poketch-style utilities** *(owner's idea, from Diamond and Pearl)*: after the v1 tools below, other candidates are a digital clock and calendar, a counter, a stopwatch and a countdown (tied to Focus), a step or water-intake counter (a Care module hook), a memo pad, a day-care or "buddy check" screen. Each one gets a helper the same way as below.
+
+### Poketch utilities and helper Pokémon *(proposed, owner's idea)*
+
+Handy tools that live in the app and as widgets, each one a "Poketch app" the player switches between with a button, like the watch in Diamond and Pearl. Each tool has **helper Pokémon** known for that skill (Ampharos for the flashlight). It stays plain utility: no text from the buddy, real game assets for icons, and nothing a tool records is read by any other module.
+
+**v1 tools and their helpers.** A Pokémon is compatible with a tool if it is in the tool's **signature line OR it learns the tool's move** (in any game, by any method). There is no type fallback.
+
+| Tool | Signature line | Move |
+|---|---|---|
+| Flashlight | Mareep, Flaaffy, Ampharos (the Olivine lighthouse) | Flash |
+| Calculator and unit converter (one tool, two pages) | Porygon, Porygon2, Porygon-Z | Conversion |
+| Currency converter | Meowth, Persian, Perrserker (all regional forms) | Pay Day |
+| Picker (pick one from a short list you type) | Cleffa, Clefairy, Clefable | Metronome |
+| Coin toss | Gimmighoul (both forms), Gholdengo | Make It Rain |
+
+**The tool always works; only the helper is locked.** Every tool works from the first day with no helper (it shows a real item icon instead), because a tool you need right now, like a flashlight at night, must never sit behind a game. A helper is flavour: its sprite in the tool and its widget, and one emoji reaction when the tool is used. Using a tool pays nothing (no candies, items, eggs, rank points or effort events), because taps on a flashlight or a coin would be farmed.
+
+**Assigning.** Any owned Pokémon that is compatible, in the party or the PC, can be a tool's helper; one Pokémon may help several tools. Guardians are not helpers (their role stays separate). If a helper is transferred, the tool goes back to its loaner or to no helper.
+
+**Ranger request, when you own no compatible Pokémon.** A Pokémon Ranger-style capture minigame lends the tool a helper:
+- Capture Styler loops: draw circles around the moving sprite (a mouse drag on desktop and web). The loaner is the signature line's iconic member (Ampharos, Porygon, Meowth, Clefairy, Gimmighoul). Its base Speed sets how fast it moves and its rarity sets the number of loops, 2 to 4 *(tune)*.
+- Gentle by design: failing just means trying again, with no cooldown or cost. With Reduce motion, the sprite moves slowly, or the player can tap in rhythm instead of drawing loops.
+- The loop line is UI chrome drawn in code and the Pokémon is its real sprite, so the art rule holds. It is not a battle.
+- **A loan, not a catch.** The loaner helps that one tool only. It never enters the party, the PC or the Dex and changes no seen or caught state, so it cannot become a free egg that skips the Dex pacing.
+- **The loan lasts until you own a compatible Pokémon** (hatched, evolved or already owned). Then that Pokémon takes over the tool (signature line first, then the highest friendship), and the loaner goes home with one goodbye emote. The player can change the helper afterwards.
+
+**Platform and privacy notes.**
+- Flashlight: on Android, the camera torch (`CameraManager.setTorchMode`, no camera permission needed); on web and desktop, a full-white screen.
+- Currency converter: needs exchange rates. Daily rates are fetched and cached; offline, the tool shows the last rates and their date. Only the rates are fetched; no user data is sent.
+- Picker: the list stays on the device and is never synced or sent anywhere.
+- Widgets: a flashlight toggle and a coin toss are the natural first ones.
+
+**Data and where it lives.**
+- `pokemon-core` has no moves today. The Dex generator would pull from PokeAPI only the species that learn the five moves above (not full learnsets), so the generated data stays small. Compatibility (signature line or move) is a Pokémon-side rule, so it goes in `pokemon-core`; the tools themselves belong to the app.
+- Helpers and loans are cosmetic, so they are client-side data in the save (like `AppData.favorites`), not part of the server's game state.
+
+**Open questions.**
+- A daily-capped friendship tick for using a tool with a helper? It would need the reward function and would be the tool's only payout.
+- The source of the exchange rates (a free rates API called from the app, or a daily cache in a Supabase function).
 
 ## 9. Open questions
 
