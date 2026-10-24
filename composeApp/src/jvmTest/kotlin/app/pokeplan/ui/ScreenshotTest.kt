@@ -19,6 +19,7 @@ import io.ktor.client.engine.mock.respond
 import org.jetbrains.skia.EncodedImageFormat
 import java.io.File
 import kotlin.test.Test
+import kotlinx.datetime.plus
 import kotlin.test.assertTrue
 
 /**
@@ -139,7 +140,21 @@ class ScreenshotTest {
         store.setPlannedTime(run.id, kotlinx.datetime.LocalTime(18, 30))
         store.addTask("Reply to mail", Rank.E, planned = store.today)
         store.addTask("Buy a birthday card", Rank.E)
-        val model = AppModel(store)
+        // Two calendar events from the phone (one beside the report) and an all-day one.
+        store.setShownCalendars(setOf(1L))
+        val day = store.today
+        fun at(h: Int, m: Int) = kotlinx.datetime.LocalDateTime(day, kotlinx.datetime.LocalTime(h, m))
+        val calendars = object : CalendarSource {
+            override fun permitted() = true
+            override fun requestPermission(done: (Boolean) -> Unit) = done(true)
+            override fun calendars() = listOf(app.pokeplan.plan.DeviceCalendar(1, "Work", "sophia@example.com"))
+            override fun events(calendarIds: Set<Long>, from: kotlinx.datetime.LocalDate, to: kotlinx.datetime.LocalDate) = listOf(
+                app.pokeplan.plan.CalendarEvent("standup", 1, "Team standup", at(9, 30), at(10, 0), color = 0xFF3F51B5),
+                app.pokeplan.plan.CalendarEvent("lunch", 1, "Lunch with Sam", at(12, 0), at(13, 0), color = 0xFF0B8043),
+                app.pokeplan.plan.CalendarEvent("bday", 1, "Mum's birthday", at(0, 0), kotlinx.datetime.LocalDateTime(day.plus(kotlinx.datetime.DatePeriod(days = 1)), kotlinx.datetime.LocalTime(0, 0)), allDay = true),
+            )
+        }
+        val model = AppModel(store, calendars = calendars)
         render("planner-day") {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 1) } }
         }

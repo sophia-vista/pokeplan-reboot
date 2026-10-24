@@ -1,5 +1,7 @@
 package app.pokeplan.ui.screens
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalTime
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +32,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import app.pokeplan.app.cloud.SyncStatus
@@ -43,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.Category
+import app.pokeplan.plan.DeviceCalendar
 import app.pokeplan.plan.GoalRules
 import app.pokeplan.plan.Reviews
 import app.pokeplan.plan.TaskState
@@ -309,9 +313,40 @@ private fun SettingsView(model: AppModel) {
             }
         }
     }
+    CalendarsCard(model)
     AccountCard(model)
     DataCard(model)
     AboutCard()
+}
+
+/** Which of the phone's calendars show on Planner → Day. Only where the platform can read them (Android). */
+@Composable
+private fun CalendarsCard(model: AppModel) {
+    val source = model.calendars ?: return
+    var permitted by remember { mutableStateOf(source.permitted()) }
+    var calendars by remember { mutableStateOf<List<DeviceCalendar>?>(null) }
+    LaunchedEffect(permitted) { if (permitted) calendars = withContext(Dispatchers.Default) { source.calendars() } }
+    val shown = model.data.shownCalendars
+
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Calendars", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Show events from this phone's calendars, Google Calendar included, on Planner → Day. They're read-only and never pay.",
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            )
+            val list = calendars
+            when {
+                !permitted -> PixelButton("Choose calendars", { source.requestPermission { permitted = it } }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+                list == null -> Unit
+                list.isEmpty() -> Text("No calendars on this phone yet.", style = MaterialTheme.typography.bodyMedium)
+                else -> list.forEach { c ->
+                    val label = if (c.account.isBlank() || c.account == c.name) c.name else "${c.name}, ${c.account}"
+                    Toggle(label, c.id in shown) { on -> model.store.setShownCalendars(if (on) shown + c.id else shown - c.id) }
+                }
+            }
+        }
+    }
 }
 
 /** The player's data: a copy to keep, deleting the account, starting over on this device. Each destructive step asks twice. */

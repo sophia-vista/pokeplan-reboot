@@ -51,13 +51,14 @@ class MainActivity : ComponentActivity() {
         window.isNavigationBarContrastEnforced = false
         val storage = saveStorage(this)
         val motion = AccelerometerMotion(this)
+        val calendars = AndroidCalendars(this)
         // A widget can open the app on a tab ("FOCUS" for the Start focus widget).
         val first = launchFrom(intent)
         val tab = first.tab ?: Tab.HOME
         setContent {
             App(
                 storage, focusTab = true, motion = motion, startTab = tab, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), onDataChanged = ::keepWidgetsCurrent, onDark = ::matchSystemBars,
+                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, onDataChanged = ::keepWidgetsCurrent, onDark = ::matchSystemBars,
             )
         }
     }

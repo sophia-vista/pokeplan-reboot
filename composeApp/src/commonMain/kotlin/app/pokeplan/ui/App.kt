@@ -72,6 +72,8 @@ class AppModel(
     private val haptics: HapticPlayer? = null,
     /** Where the data export goes; null where the platform has no way to hand over a file. */
     val files: FileSaver? = null,
+    /** The phone's calendars, read-only; null where there are none to read (desktop, web). */
+    val calendars: CalendarSource? = null,
 ) {
     /** A light vibration, if the platform can and Haptics is on in Settings. */
     fun haptic() {
@@ -140,6 +142,7 @@ fun App(
     cries: CryPlayer? = null,
     haptics: HapticPlayer? = null,
     files: FileSaver? = null,
+    calendars: CalendarSource? = null,
     /** Called after every change to the saved data (the Android app uses it to keep its widgets up to date). */
     onDataChanged: ((AppData) -> Unit)? = null,
     /** Called when the app switches between the light and dark colours, so the host can match the system bar icons. */
@@ -149,7 +152,7 @@ fun App(
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
         val client = if (cloud.enabled) CloudClient(cloud, HttpClient()) { clock.nowMillis() } else null
-        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries, haptics, files).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask }
+        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries, haptics, files, calendars).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask }
     }
     val store = model.store
     if (onDataChanged != null) DisposableEffect(store) {

@@ -164,7 +164,7 @@ the parser matches the real format.
 
 1. **Validate on a phone** (ongoing): fixes so far are the widget freeze and pet animation (0.3.1, 0.6.1), Rare Candy on every task with a Super Candy bonus (0.4.0), and real evolution levels with a Medium Fast style level curve (0.5.0).
 2. ~~Parked todos~~ (done in 0.2.0).
-3. **Finish Plan.** Done: reminders as notifications with quiet hours, focus and rest days (0.6.0); a time on tasks and snooze until tomorrow (0.7.0); export, delete account, erase device (0.8.0). The day timeline with tap-to-place time-blocking (0.9.0). Egg tickets for offline hatching (0.10.0). **Next:** Google Calendar import, dragging and resizing blocks on the timeline (and a week timeline), and the brief follow-ups (Focus rules, Dex seen and owned, Me metrics, accessibility).
+3. **Finish Plan.** Done: reminders as notifications with quiet hours, focus and rest days (0.6.0); a time on tasks and snooze until tomorrow (0.7.0); export, delete account, erase device (0.8.0). The day timeline with tap-to-place time-blocking (0.9.0). Egg tickets for offline hatching (0.10.0). PMD SpriteCollab sprites (0.11.0, owner's priority). Calendar events on the day timeline, Google Calendar through the phone's calendars (0.12.0). **Next:** dragging and resizing blocks on the timeline (and a week timeline), and the brief follow-ups (Focus rules, Dex seen and owned, Me metrics, accessibility).
 4. **Platform tidy before a second module:** move the cloud save to `plan.saves`, version the reward rules, document sources, sinks and caps.
 5. **Care v1** (section 6), as a module in the same app with its own schema.
 6. **Charm pass:** hatch and evolution ceremonies, region themes, the Oak sprite, music.
