@@ -1,7 +1,10 @@
 package app.pokeplan
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -10,17 +13,20 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
 import app.pokeplan.app.AppData
+import app.pokeplan.app.upcomingReminders
 import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.ui.App
 import app.pokeplan.ui.AppLaunch
 import app.pokeplan.ui.Tab
+import app.pokeplan.reminders.TaskReminders
 import app.pokeplan.widgets.announceBuddyEvent
 import app.pokeplan.widgets.updateWidgets
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
 
 class MainActivity : ComponentActivity() {
     /** Fires when the app comes back to the front: a widget may have changed the save meanwhile. */
@@ -32,6 +38,8 @@ class MainActivity : ComponentActivity() {
 
     private var widgetSignature: Int? = null
     private var widgetRefresh: Job? = null
+    private var reminderSignature: Int? = null
+    private var reminderRefresh: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +73,7 @@ class MainActivity : ComponentActivity() {
      */
     private fun keepWidgetsCurrent(data: AppData) {
         keepScreenOn(data.focus != null)
+        keepRemindersCurrent(data)
         val buddy = data.player.buddy
         val signature = listOf(
             buddy?.id, buddy?.form?.id, buddy?.isShiny, buddy?.nickname, buddy?.level, buddy?.candyProgress,
@@ -83,6 +92,30 @@ class MainActivity : ComponentActivity() {
             delay(800)
             updateWidgets(applicationContext)
         }
+    }
+
+    /** Sets the reminder alarms again when the reminders to come change, a moment after the last change. */
+    private fun keepRemindersCurrent(data: AppData) {
+        val upcoming = data.upcomingReminders(System.currentTimeMillis(), TimeZone.currentSystemDefault())
+        if (upcoming.isNotEmpty()) askForNotifications()
+        val signature = upcoming.map { it.taskId to it.atMillis }.hashCode()
+        if (signature == reminderSignature) return
+        reminderSignature = signature
+        reminderRefresh?.cancel()
+        reminderRefresh = lifecycleScope.launch {
+            delay(800)
+            TaskReminders.reschedule(applicationContext, upcoming)
+        }
+    }
+
+    /** Android 13 and later ask before an app may notify: asked once, the first time a reminder is set. */
+    private fun askForNotifications() {
+        if (Build.VERSION.SDK_INT < 33) return
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) return
+        val prefs = getSharedPreferences("task_reminders", MODE_PRIVATE)
+        if (prefs.getBoolean("asked", false)) return
+        prefs.edit().putBoolean("asked", true).apply()
+        runOnUiThread { requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1) }
     }
 
     /** The screen stays on while a focus session runs, so the timer stays visible. */

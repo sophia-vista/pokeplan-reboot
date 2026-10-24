@@ -7,6 +7,7 @@ import app.pokeplan.plan.FocusEvent
 import app.pokeplan.plan.HabitTarget
 import app.pokeplan.plan.Rank
 import app.pokeplan.plan.Recurrence
+import app.pokeplan.plan.ReminderOffset
 import app.pokeplan.plan.Repeat
 import app.pokeplan.plan.TaskState
 import kotlinx.datetime.LocalDateTime
@@ -511,5 +512,23 @@ class GameStoreTest {
         assertEquals("0.1.0", s.data.lastSeenVersion)
         s.markVersionSeen("0.2.0")
         assertEquals("0.2.0", s.data.lastSeenVersion)
+    }
+
+    @Test
+    fun reminders_are_saved_listed_and_switched_off() {
+        val storage = MemoryStorage()
+        val (s, clock) = store(storage)
+        s.start("Sophia", 25)
+        val task = s.addTask("Hand in essay", due = LocalDateTime(2026, 10, 19, 17, 0))
+        s.setReminders(task.id, listOf(ReminderOffset.Before(60), ReminderOffset.AtTime, ReminderOffset.AtTime, ReminderOffset.Before(10), ReminderOffset.Before(24 * 60)))
+        assertEquals(listOf(ReminderOffset.Before(60), ReminderOffset.AtTime, ReminderOffset.Before(10)), s.data.tasks.first { it.id == task.id }.reminders, "no repeats, at most three")
+        assertEquals(s.data, GameStore(storage, clock, utc).data, "reminders survive a restart")
+        val times = s.upcomingReminders().map { it.atMillis }
+        assertEquals(listOf(16, 16, 17).zip(listOf(0, 50, 0)).map { (h, m) -> LocalDateTime(2026, 10, 19, h, m).toInstant(utc).toEpochMilliseconds() }, times)
+        s.changeSettings { it.copy(reminders = false) }
+        assertTrue(s.upcomingReminders().isEmpty())
+        s.changeSettings { it.copy(reminders = true) }
+        s.completeTask(task.id)
+        assertTrue(s.upcomingReminders().isEmpty(), "a finished task does not remind")
     }
 }

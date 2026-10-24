@@ -1,6 +1,7 @@
 package app.pokeplan.plan
 
 import kotlinx.serialization.Serializable
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
@@ -12,7 +13,24 @@ sealed interface ReminderOffset {
     data object AtTime : ReminderOffset
     @Serializable
     data class Before(val minutes: Int) : ReminderOffset
+
+    val label: String get() = when (this) {
+        AtTime -> "At the time"
+        is Before -> when {
+            minutes % (24 * 60) == 0 -> "${minutes / (24 * 60)} day${if (minutes == 24 * 60) "" else "s"} before"
+            minutes % 60 == 0 -> "${minutes / 60} hour${if (minutes == 60) "" else "s"} before"
+            else -> "$minutes min before"
+        }
+    }
+
+    companion object {
+        /** The choices the task card offers. */
+        val PRESETS: List<ReminderOffset> = listOf(AtTime, Before(10), Before(60), Before(24 * 60))
+    }
 }
+
+/** One reminder to show: [task] at [atMillis]. */
+data class DueReminder(val taskId: String, val title: String, val atMillis: Long)
 
 enum class Snooze { TEN_MINUTES, ONE_HOUR, TOMORROW }
 
@@ -65,6 +83,32 @@ object Reminders {
         Snooze.ONE_HOUR -> minus(now, -60, zone)
         Snooze.TOMORROW -> LocalDateTime(now.date.plusDays(1), TOMORROW_TIME)
     }
+
+    /**
+     * Every reminder of the open [tasks] still to come after [nowMillis], earliest first: quiet hours applied, nothing on
+     * a [restDays] day, and anything due while a focus session runs (until [focusEndMillis]) moved to its end.
+     */
+    fun upcoming(
+        tasks: List<Task>,
+        nowMillis: Long,
+        zone: TimeZone,
+        quiet: QuietHours = QuietHours(),
+        restDays: Set<LocalDate> = emptySet(),
+        focusEndMillis: Long? = null,
+    ): List<DueReminder> = tasks.asSequence()
+        .filter { it.isOpen && it.reminders.isNotEmpty() }
+        .flatMap { task ->
+            fireTimes(task, task.reminders, zone, quiet).asSequence()
+                .filter { it.date !in restDays }
+                .map { at ->
+                    val millis = at.toEpochMillis(zone)
+                    DueReminder(task.id, task.title, if (focusEndMillis != null && millis in nowMillis until focusEndMillis) focusEndMillis else millis)
+                }
+                .distinctBy { it.atMillis }
+        }
+        .filter { it.atMillis > nowMillis }
+        .sortedWith(compareBy({ it.atMillis }, { it.taskId }))
+        .toList()
 
     /** Reminders that would fire during a focus session wait until it ends. */
     fun delayedByFocus(fireAt: LocalDateTime, focusStart: LocalDateTime, focusEnd: LocalDateTime): LocalDateTime =
