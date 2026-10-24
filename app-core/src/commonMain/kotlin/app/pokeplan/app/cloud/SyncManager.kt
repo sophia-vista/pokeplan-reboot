@@ -48,6 +48,18 @@ class SyncManager(private val store: GameStore, private val cloud: CloudClient) 
         state.value = SyncStatus.SignedOut
     }
 
+    /**
+     * Deletes the account and all its data on the server, then signs out; this device keeps its progress as a guest.
+     * Returns an error message, or null when it is done.
+     */
+    suspend fun deleteAccount(): String? {
+        val session = freshSession() ?: return "Sign in again first."
+        return when (val r = cloud.deleteAccount(session)) {
+            is CloudResult.Ok -> { signOut(); null }
+            is CloudResult.Failure -> r.message
+        }
+    }
+
     private fun adopt(s: Session) {
         store.signedIn(s.email, s.userId, s.accessToken, s.refreshToken, s.expiresAtMillis)
         state.value = SyncStatus.Idle

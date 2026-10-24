@@ -546,4 +546,20 @@ class GameStoreTest {
         s.setPlannedTime(loose.id, null)
         assertNull(s.data.tasks.first { it.id == loose.id }.plannedTime)
     }
+
+    @Test
+    fun the_export_has_everything_but_the_sign_in_and_erasing_starts_over() {
+        val (s, _) = started()
+        s.addTask("Buy milk")
+        s.signedIn("a@b.c", "u1", "secret-token", "secret-refresh", 0L)
+        val export = s.exportJson()
+        assertTrue("Buy milk" in export && "Sophia" in export)
+        assertFalse("secret" in export, "no tokens in the export")
+        assertFalse("\"account\"" in export)
+        kotlin.test.assertFailsWith<IllegalStateException> { s.eraseDevice() }
+        s.signOut()
+        s.eraseDevice()
+        assertFalse(s.data.onboarded)
+        assertTrue(s.data.tasks.isEmpty())
+    }
 }

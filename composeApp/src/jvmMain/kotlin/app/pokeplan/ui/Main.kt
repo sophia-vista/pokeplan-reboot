@@ -14,8 +14,20 @@ class FileStorage(private val file: File) : Storage {
     }
 }
 
+/** Writes the data export to the Downloads folder (the home folder if there is none). */
+class DownloadsFileSaver : FileSaver {
+    override fun save(name: String, text: String): String = try {
+        val home = File(System.getProperty("user.home"))
+        val folder = File(home, "Downloads").takeIf { it.isDirectory } ?: home
+        val file = File(folder, name).apply { writeText(text) }
+        "Saved to ${file.path}"
+    } catch (e: Exception) {
+        "Could not export: ${e.message}"
+    }
+}
+
 fun main() = application {
     Window(onCloseRequest = ::exitApplication, title = "PokéPlan") {
-        App(FileStorage(File(System.getProperty("user.home"), ".pokeplan/save.json")), focusTab = false)
+        App(FileStorage(File(System.getProperty("user.home"), ".pokeplan/save.json")), focusTab = false, files = DownloadsFileSaver())
     }
 }

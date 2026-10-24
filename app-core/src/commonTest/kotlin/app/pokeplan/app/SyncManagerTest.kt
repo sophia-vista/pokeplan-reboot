@@ -36,6 +36,7 @@ class SyncManagerTest {
         var saved: JsonObject? = null
         var offline = false
         var refuseSignIn = false
+        var deleted = false
         val requests = mutableListOf<Pair<String, String>>()
 
         fun engine() = MockEngine { request ->
@@ -54,6 +55,11 @@ class SyncManagerTest {
                     "pull" -> respond(
                         """{"version":$version,"data":${saved?.toString() ?: "null"}}""", headers = json,
                     )
+                    "delete-account" -> {
+                        deleted = body["confirm"]!!.jsonPrimitive.content == "DELETE"
+                        saved = null
+                        respond("""{"deleted":true}""", headers = json)
+                    }
                     else -> {
                         val expected = body["expectedVersion"]!!.jsonPrimitive.content.toInt()
                         if (expected != version) respond("""{"error":"the save changed somewhere else","version":$version}""", HttpStatusCode.Conflict, json)
@@ -226,5 +232,20 @@ class SyncManagerTest {
         assertNull(d.store.data.account)
         assertEquals("Sophia", d.store.data.trainerName)
         assertEquals(SyncStatus.SignedOut, d.sync.status.value)
+    }
+
+    @Test
+    fun deletingTheAccountClearsTheServerAndKeepsThisDeviceAsAGuest() = runTest {
+        val server = Server()
+        val d = Device(server)
+        d.store.start("Sophia", 25)
+        d.sync.signIn("a@b.c", "pw")
+        assertNotNull(server.saved)
+        assertNull(d.sync.deleteAccount())
+        assertTrue(server.deleted)
+        assertNull(server.saved)
+        assertNull(d.store.data.account)
+        assertEquals(SyncStatus.SignedOut, d.sync.status.value)
+        assertEquals("Sophia", d.store.data.trainerName, "the device keeps its progress")
     }
 }

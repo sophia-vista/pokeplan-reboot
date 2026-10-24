@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             App(
                 storage, focusTab = true, motion = motion, startTab = tab, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), onDataChanged = ::keepWidgetsCurrent, onDark = ::matchSystemBars,
+                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), onDataChanged = ::keepWidgetsCurrent, onDark = ::matchSystemBars,
             )
         }
     }

@@ -322,7 +322,58 @@ private fun SettingsView(model: AppModel) {
         }
     }
     AccountCard(model)
+    DataCard(model)
     AboutCard()
+}
+
+/** The player's data: a copy to keep, deleting the account, starting over on this device. Each destructive step asks twice. */
+@Composable
+private fun DataCard(model: AppModel) {
+    val store = model.store
+    val sync = model.sync
+    val signedIn = model.data.account != null
+    val scope = rememberCoroutineScope()
+    var note by remember { mutableStateOf<String?>(null) }
+    var asking by remember { mutableStateOf<String?>(null) }
+    var busy by remember { mutableStateOf(false) }
+
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Your data", style = MaterialTheme.typography.titleMedium)
+            model.files?.let { files ->
+                Text("A copy of everything PokéPlan keeps (tasks, habits, goals, Pokémon, bag), as a JSON file.", style = MaterialTheme.typography.bodyMedium)
+                PixelButton("Export my data", { note = files.save("pokeplan-export-${store.today}.json", store.exportJson()) }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+            }
+            when (asking) {
+                "account" -> {
+                    Text("Delete your account? Your cloud save, friends and gifts are removed for good. This device keeps its progress as a guest.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        PixelButton("Delete for good", {
+                            busy = true
+                            scope.launch {
+                                note = sync?.deleteAccount() ?: "Your account was deleted."
+                                busy = false
+                                asking = null
+                            }
+                        }, Modifier.weight(1f), Pixel.Danger, enabled = !busy, compact = true)
+                        PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    }
+                }
+                "device" -> {
+                    Text("Erase this device? Every task, Pokémon and setting here is removed and the app starts over. This cannot be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        PixelButton("Erase", { store.eraseDevice(); asking = null }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                        PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    }
+                }
+                else -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (signedIn && sync != null) PixelButton("Delete account", { asking = "account"; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    else PixelButton("Erase this device", { asking = "device"; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                }
+            }
+            note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
+        }
+    }
 }
 
 /** A labelled volume slider, 0 to 100 in steps of 10. */

@@ -22,6 +22,8 @@ export interface Database {
   pullSave(user: string): Promise<{ version: number; data: unknown }>;
   /** platform.push_save: the new version. Throws an error with code "40001" when the version is stale. */
   pushSave(user: string, expectedVersion: number, data: unknown): Promise<number>;
+  /** Deletes the sign-in; every table cascades from it, so nothing of the player is left. */
+  deleteUser(user: string): Promise<void>;
 }
 
 export interface Clock {
@@ -168,4 +170,14 @@ export async function handleSync(user: string, body: Body, db: Database) {
     if (code === "P0001" || code === "23514" || code === "23503") throw new RequestError(422, (e as Error).message);
     throw e;
   }
+}
+
+/**
+ * Deletes the account and everything stored for it: {"kind": "delete-account", "confirm": "DELETE"}. The confirmation
+ * guards against a stray request; the client asks the player twice before sending it.
+ */
+export async function handleDeleteAccount(user: string, body: Body, db: Database) {
+  if (body.confirm !== "DELETE") throw new RequestError(400, 'confirm must be "DELETE"');
+  await db.deleteUser(user);
+  return { deleted: true };
 }
