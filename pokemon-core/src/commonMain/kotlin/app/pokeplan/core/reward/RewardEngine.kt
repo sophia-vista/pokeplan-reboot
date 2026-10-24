@@ -205,17 +205,20 @@ object RewardEngine {
         var inventory = state.inventory
         var coins = state.coins
 
-        // Candies
-        val roll = CandyRewards.rates(tier).roll(rng, perks[PerkBucket.SUPER_CANDY_CHANCE].roundToInt())
+        // Candies: always Rare Candies, sometimes Super Candies on top
         var multiplier = perks.multiplier(PerkBucket.CANDY_YIELD)
         if (e.onTime) multiplier *= ON_TIME_BONUS
         if (e.focusedOnIt) multiplier *= FOCUSED_BONUS
-        val amount = scaled(roll.amount, multiplier)
-        val candyId = if (roll.type == CandyType.SUPER) Items.SUPER_CANDY else Items.RARE_CANDY
-        val (afterCandy, overflow) = inventory.addCapped(candyId, amount)
-        inventory = afterCandy
+        var overflow = 0
+        for (roll in CandyRewards.rates(tier).roll(rng, perks[PerkBucket.SUPER_CANDY_CHANCE].roundToInt())) {
+            val amount = scaled(roll.amount, multiplier)
+            val candyId = if (roll.type == CandyType.SUPER) Items.SUPER_CANDY else Items.RARE_CANDY
+            val (afterCandy, extra) = inventory.addCapped(candyId, amount)
+            inventory = afterCandy
+            overflow += extra
+            rewards += Reward.Candies(roll.type, amount)
+        }
         coins += overflow
-        rewards += Reward.Candies(roll.type, amount)
 
         // Coins
         val earned = scaled(tier * COINS_PER_TIER, perks.multiplier(PerkBucket.COINS))

@@ -8,17 +8,23 @@ data class CandyReward(val type: CandyType, val amount: Int)
 
 /**
  * Candies earned for finishing a task. Higher [priority] (1..5) pays more, as in the original app.
- * A roll above [superAbove] (out of 100) pays Super Candies, otherwise Rare Candies.
+ * Every task pays Rare Candies from [rare]; a roll above [superAbove] (out of 100) adds Super Candies from [superCandy]
+ * on top, as a bonus.
  */
 class CandyRates(val superAbove: Int, val rare: IntRange, val superCandy: IntRange) {
     init {
         require(!rare.isEmpty() && !superCandy.isEmpty()) { "candy ranges must not be empty" }
     }
 
-    /** [superBonusPoints] lowers the Super Candy threshold (the Super Candy chance perk). */
-    fun roll(rng: Random, superBonusPoints: Int = 0): CandyReward =
-        if (rng.nextInt(1, 101) > superAbove - superBonusPoints.coerceAtLeast(0)) CandyReward(CandyType.SUPER, rng.nextInt(superCandy.first, superCandy.last + 1))
-        else CandyReward(CandyType.RARE, rng.nextInt(rare.first, rare.last + 1))
+    /**
+     * The Rare Candies, then the Super Candy bonus if it was rolled. [superBonusPoints] lowers the Super Candy threshold
+     * (the Super Candy chance perk).
+     */
+    fun roll(rng: Random, superBonusPoints: Int = 0): List<CandyReward> {
+        val rareCandies = CandyReward(CandyType.RARE, rng.nextInt(rare.first, rare.last + 1))
+        if (rng.nextInt(1, 101) <= superAbove - superBonusPoints.coerceAtLeast(0)) return listOf(rareCandies)
+        return listOf(rareCandies, CandyReward(CandyType.SUPER, rng.nextInt(superCandy.first, superCandy.last + 1)))
+    }
 }
 
 object CandyRewards {
@@ -39,5 +45,5 @@ object CandyRewards {
         return tables[priority - 1]
     }
 
-    fun reward(priority: Int, rng: Random = Random): CandyReward = rates(priority).roll(rng)
+    fun reward(priority: Int, rng: Random = Random): List<CandyReward> = rates(priority).roll(rng)
 }
