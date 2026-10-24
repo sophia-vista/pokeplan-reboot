@@ -43,6 +43,7 @@ A fun productivity, growth and self-improvement app for Pokémon lovers: finishi
 ## Skills
 Project skills in `.claude/skills/` hold the detail for one area each, so this file stays short. Load the skill before touching its area; don't read its file again once it is loaded.
 - `backend`: Supabase (migrations, SQL tests, the reward Edge Function and its deploy), the server build of the engine and the golden vector, cloud sync in `app-core/cloud`.
+- `design-references`: ideas from 16 design-reference sites, translated to app screens and filtered through PokéPlan's rules, with an avoid list. Load it before designing or restyling a screen, menu, empty state, reward moment or micro-interaction.
 - `game-assets`: the Dex data generator, every folder in `assets/` and its fetch script, the Home Region curation kit.
 - `legacy-android`: the original Java app (commands, Firebase, architecture, the old rules).
 
@@ -59,7 +60,6 @@ Project skills in `.claude/skills/` hold the detail for one area each, so this f
 ## Notes
 - `.idea/` project files are committed (only caches, workspace and a few others are ignored).
 - The README screenshots are hosted on GitHub's `user-images` CDN, not in the repo.
-- Before designing or restyling a screen, menu, empty state, reward moment or micro-interaction, load the `design-references` skill (`.claude/skills/design-references/SKILL.md`): ideas from 16 reference sites, filtered through these rules.
 
 ## Branches and pull requests
 Adapted from the Balai Yllana website repo's workflow.
