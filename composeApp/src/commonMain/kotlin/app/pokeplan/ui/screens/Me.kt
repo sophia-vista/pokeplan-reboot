@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import kotlinx.datetime.LocalTime
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -288,6 +289,28 @@ private fun SettingsView(model: AppModel) {
             }
             Toggle("Reduce motion", settings.reduceMotion) { store.changeSettings { s -> s.copy(reduceMotion = it) } }
             Toggle("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
+            Toggle("Task reminders", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }
+            if (settings.reminders) {
+                fun hour(t: LocalTime) = "${t.hour.toString().padStart(2, '0')}:00"
+                fun shift(t: LocalTime, by: Int) = LocalTime((t.hour + by + 24) % 24, 0)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("Quiet from", style = MaterialTheme.typography.bodyLarge)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        PixelButton("-1", { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = shift(s.quietHours.start, -1))) } }, color = Pixel.InkSoft, compact = true)
+                        Text(hour(settings.quietHours.start), style = MaterialTheme.typography.bodyLarge)
+                        PixelButton("+1", { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = shift(s.quietHours.start, 1))) } }, color = Pixel.InkSoft, compact = true)
+                    }
+                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("until", style = MaterialTheme.typography.bodyLarge)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        PixelButton("-1", { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = shift(s.quietHours.end, -1))) } }, color = Pixel.InkSoft, compact = true)
+                        Text(hour(settings.quietHours.end), style = MaterialTheme.typography.bodyLarge)
+                        PixelButton("+1", { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = shift(s.quietHours.end, 1))) } }, color = Pixel.InkSoft, compact = true)
+                    }
+                }
+                Text("Reminders wait during quiet hours, a focus session and rest days.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text("Usual focus length", style = MaterialTheme.typography.bodyLarge)
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

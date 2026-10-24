@@ -64,4 +64,34 @@ class RemindersTest {
         assertEquals(at(15), Reminders.delayedByFocus(at(14, 30), at(14), at(15)))
         assertEquals(at(16), Reminders.delayedByFocus(at(16), at(14), at(15)))
     }
+
+    private fun ms(t: LocalDateTime) = t.toEpochMillis(zone)
+
+    @Test
+    fun upcomingListsOpenTasksRemindersInOrder() {
+        val a = task(time = LocalTime(15, 0)).copy(id = "a", title = "Essay", reminders = listOf(ReminderOffset.AtTime, ReminderOffset.Before(60)))
+        val b = task(time = LocalTime(14, 30)).copy(id = "b", title = "Call", reminders = listOf(ReminderOffset.Before(10)))
+        val done = task(time = LocalTime(16, 0)).copy(id = "c", reminders = listOf(ReminderOffset.AtTime), state = TaskState.DONE)
+        val none = task(time = LocalTime(16, 0)).copy(id = "d")
+        val got = Reminders.upcoming(listOf(a, b, done, none), ms(at(13, 0)), zone)
+        assertEquals(listOf("a" to at(14), "b" to at(14, 20), "a" to at(15)), got.map { it.taskId to it.atMillis.toLocalDateTime(zone) })
+        assertEquals("Essay", got.first().title)
+        assertEquals(listOf("b", "a"), Reminders.upcoming(listOf(a, b), ms(at(14, 0)), zone).map { it.taskId }, "past ones are left out")
+    }
+
+    @Test
+    fun upcomingSkipsRestDaysAndWaitsForFocus() {
+        val a = task(time = LocalTime(15, 0)).copy(reminders = listOf(ReminderOffset.AtTime))
+        assertEquals(emptyList(), Reminders.upcoming(listOf(a), ms(at(9)), zone, restDays = setOf(day)))
+        val during = Reminders.upcoming(listOf(a), ms(at(14, 50)), zone, focusEndMillis = ms(at(15, 25)))
+        assertEquals(listOf(ms(at(15, 25))), during.map { it.atMillis })
+        val after = Reminders.upcoming(listOf(a), ms(at(14, 50)), zone, focusEndMillis = ms(at(14, 55)))
+        assertEquals(listOf(ms(at(15))), after.map { it.atMillis })
+    }
+
+    @Test
+    fun labelsAndTheLimitOnATask() {
+        assertEquals(listOf("At the time", "10 min before", "1 hour before", "1 day before"), ReminderOffset.PRESETS.map { it.label })
+        assertFailsWith<IllegalArgumentException> { task().copy(reminders = List(4) { ReminderOffset.Before(it + 1) }) }
+    }
 }

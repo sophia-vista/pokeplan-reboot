@@ -31,6 +31,8 @@ import app.pokeplan.plan.Category
 import app.pokeplan.plan.HabitTarget
 import app.pokeplan.plan.QuickAdd
 import app.pokeplan.plan.Rank
+import app.pokeplan.plan.ReminderOffset
+import app.pokeplan.plan.Reminders
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.TaskViews
@@ -295,6 +297,7 @@ private fun TaskCard(model: AppModel, task: Task, expanded: Boolean, toggle: () 
                                 TabButton("Next week", task.planned == today.plus(DatePeriod(days = 7)), { store.updateTask(task.copy(planned = today.plus(DatePeriod(days = 7)))) })
                                 TabButton("No date", task.planned == null && task.due == null, { store.updateTask(task.copy(planned = null, due = null)) })
                             }
+                            RemindMe(model, task)
                             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                                 PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                                 PixelButton("Won't do", { store.wontDo(task.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -306,6 +309,33 @@ private fun TaskCard(model: AppModel, task: Task, expanded: Boolean, toggle: () 
             }
         }
     }
+}
+
+/** Up to three reminders, counted from the planned time or the deadline; a task without a day has nothing to count from. */
+@Composable
+private fun RemindMe(model: AppModel, task: Task) {
+    Text("Remind me", style = MaterialTheme.typography.bodyLarge)
+    val base = Reminders.baseTime(task)
+    if (base == null) {
+        Text("Give it a day first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        return
+    }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        ReminderOffset.PRESETS.forEach { offset ->
+            val on = offset in task.reminders
+            TabButton(offset.label, on, {
+                if (on) model.store.setReminders(task.id, task.reminders - offset)
+                else if (task.reminders.size < Reminders.MAX_PER_TASK) model.store.setReminders(task.id, task.reminders + offset)
+            })
+        }
+    }
+    val time = "${base.time.hour}:${base.time.minute.toString().padStart(2, '0')}"
+    val note = when {
+        !model.store.data.settings.reminders -> "Reminders are off in Settings."
+        task.reminders.size >= Reminders.MAX_PER_TASK -> "Up to ${Reminders.MAX_PER_TASK}. Counted from ${base.date.short()} $time."
+        else -> "Counted from ${base.date.short()} $time."
+    }
+    Text(note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
 private fun isOverdue(model: AppModel, t: Task): Boolean {
