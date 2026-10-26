@@ -126,6 +126,7 @@ object DropTable {
             Items.flavors.values.forEach { put(Items.berry(it), 4.0) }
             PokemonType.entries.forEach { put(Items.lure(it), 1.0) }
             Items.evolutionItems.forEach { put(it, 1.0) }
+            Items.tradeItems.forEach { put(it, 1.0) }
             put(Items.LINK_CORD, 2.0)
             put("lucky-egg", 1.0); put("oval-charm", 1.0); put("star-piece", 1.0); put("scope-lens", 1.0)
             put("shiny-charm", 0.5); put("leftovers", 1.0); put("amulet-coin", 1.0)

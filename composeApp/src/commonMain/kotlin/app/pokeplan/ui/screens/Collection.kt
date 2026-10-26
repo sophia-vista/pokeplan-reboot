@@ -57,7 +57,10 @@ import app.pokeplan.core.pokemon.Guardians
 import app.pokeplan.core.pokemon.PerkBucket
 import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.Items
+import app.pokeplan.core.pokemon.Nature
 import app.pokeplan.core.pokemon.OwnedPokemon
+import app.pokeplan.core.pokemon.Stat
+import app.pokeplan.core.pokemon.StatCalculator
 import app.pokeplan.core.pokemon.Transfer
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.ui.AppModel
@@ -134,6 +137,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
         when (current) {
             Section.PARTY -> {
                 if (player.party.isEmpty()) EmptyState("Your party is empty", "Hatch an egg with a focus session, or move a Pokémon here from the PC.", icon = "poke-ball")
+                else PartyPerksCard(model)
                 player.party.forEach { p -> PokemonRow(p, p.id == player.buddyId, store.isFavorite(p.id)) { selected = p.id } }
             }
             Section.PC -> {
@@ -539,16 +543,6 @@ private fun CreditLine(credit: String) {
 
 // ----- Guardians -----------------------------------------------------------------------------------------------------
 
-private fun PerkBucket.label() = when (this) {
-    PerkBucket.EGG_LUCK -> "Egg luck"
-    PerkBucket.CANDY_YIELD -> "Candy yield"
-    PerkBucket.SUPER_CANDY_CHANCE -> "Super Candy chance"
-    PerkBucket.ITEM_FINDER -> "Item finder"
-    PerkBucket.SHINY_HUNTER -> "Shiny hunter"
-    PerkBucket.STREAK_KEEPER -> "Streak keeper"
-    PerkBucket.COINS -> "Coins"
-}
-
 /** "+10% Super Candy chance" for a Guardian's signature perk(s). */
 private fun perkText(p: OwnedPokemon): String =
     Guardians.signature(p).entries.joinToString(", ") { (b, v) -> "+${v.toInt()}% ${b.label()}" }
@@ -683,7 +677,8 @@ private fun BagView(model: AppModel) {
     items.groupBy { Items.category(it.key) }.forEach { (category, group) ->
         SectionLabel(category.bagLabel())
         group.forEach { (id, n) ->
-            val usable = id in Items.vitamins || Items.category(id) == ItemCategory.BERRY
+            val holdable = Items.holdable(id)
+            val usable = holdable || player.party.any { store.canUse(id, it) }
             val toggle = { open = if (open == id) null else id }
             // A usable item says so with its own Use button, so it does not look the same as one that only sits in the bag.
             ListRow(
@@ -693,17 +688,61 @@ private fun BagView(model: AppModel) {
                 trail = {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
                         Text("x$n", style = MaterialTheme.typography.titleMedium)
-                        if (usable) PixelButton(if (open == id) "Close" else "Use", toggle, color = Pixel.InkSoft, compact = true)
+                        if (usable) PixelButton(if (open == id) "Close" else if (holdable) "Give" else "Use", toggle, color = Pixel.InkSoft, compact = true)
                     }
                 },
             ) { Text(Items.name(id), style = MaterialTheme.typography.bodyLarge) }
-            if (open == id) {
-                TextBox {
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("Use on:", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                        player.party.forEach { p ->
-                            PixelButton(p.nickname, { if (store.useItem(id, p.id)) model.effect(Sfx.HEAL); if (!store.data.player.inventory.has(id)) open = null }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+            if (open == id) UseItemBox(model, id, holdable) { open = null }
+        }
+    }
+}
+
+/**
+ * Using one bag item: who gets it, and for a Bottle Cap or Nature Mint which stat or nature. Held items are given to
+ * hold (what the Pokémon held before goes back to the bag).
+ */
+@Composable
+private fun UseItemBox(model: AppModel, id: String, holdable: Boolean, close: () -> Unit) {
+    val store = model.store
+    val party = model.data.player.party
+    var target by remember(id) { mutableStateOf<OwnedPokemon?>(null) }
+    fun done(ok: Boolean) {
+        if (ok) model.effect(Sfx.HEAL)
+        target = null
+        if (!store.data.player.inventory.has(id)) close()
+    }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            val who = target
+            when {
+                who != null && id == Items.BOTTLE_CAP -> {
+                    Text("Which stat should ${who.nickname} max out?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Stat.entries.filter { who.ivs[it] < StatCalculator.MAX_IV }.forEach { st ->
+                            PixelButton(st.label, { done(store.useItem(id, who.id, st)) }, color = Pixel.Blue, compact = true)
                         }
+                    }
+                }
+                who != null && id == Items.NATURE_MINT -> {
+                    Text("Which nature for ${who.nickname}?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Nature.entries.filter { it != who.nature }.forEach { n ->
+                            val detail = if (n.raised == null) "" else " (+${n.raised!!.label} -${n.lowered!!.label})"
+                            PixelButton(n.name.lowercase().replaceFirstChar { it.uppercase() } + detail, { done(store.useItem(id, who.id, n)) }, color = Pixel.Blue, compact = true)
+                        }
+                    }
+                }
+                else -> {
+                    Text(if (holdable) "Give to hold:" else "Use on:", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    party.filter { holdable || store.canUse(id, it) }.forEach { p ->
+                        val label = if (holdable && p.heldItem != null) "${p.nickname} (holds ${Items.name(p.heldItem!!)})" else p.nickname
+                        PixelButton(label, {
+                            when {
+                                holdable -> done(store.holdItem(p.id, id))
+                                id == Items.BOTTLE_CAP || id == Items.NATURE_MINT -> target = p
+                                else -> done(store.useItem(id, p.id))
+                            }
+                        }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
                     }
                 }
             }
@@ -831,6 +870,8 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                     }
                 }
             }
+
+            if (!isGuardian) PokemonPerksBox(model, p)
 
             val options = store.evolutionOptions(p.id)
             if (options.isNotEmpty()) {

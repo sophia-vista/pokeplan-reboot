@@ -210,6 +210,39 @@ object Perks {
         val combined = (ordinary.keys + guardian.keys).associateWith { (ordinary[it] ?: 0.0) + (guardian[it] ?: 0.0) }
         return PerkBonuses(combined, evGain, keeps)
     }
+
+    /**
+     * Where each perk comes from, for showing the player: the same parts [total] adds up, before the cap. Ability perks
+     * that only apply sometimes are listed with their [PerkSource.condition].
+     */
+    fun sources(
+        buddy: OwnedPokemon?,
+        party: List<OwnedPokemon> = emptyList(),
+        guardians: List<OwnedPokemon> = emptyList(),
+    ): List<PerkSource> = buildList {
+        if (buddy != null) {
+            typePerks(buddy).forEach { (b, v) -> add(PerkSource(buddy.nickname, PerkSource.Kind.BUDDY_TYPE, b, v)) }
+            AbilityPerks.table[buddy.ability]?.let { perk ->
+                perk.bucket?.let { add(PerkSource(buddy.ability, PerkSource.Kind.ABILITY, it, perk.percent * FriendshipRules.perkMultiplier(buddy.friendship), perk.condition)) }
+            }
+            buddy.heldItem?.let { item -> HeldItems.perks[item]?.let { add(PerkSource(Items.name(item), PerkSource.Kind.HELD_ITEM, it.bucket, it.percent)) } }
+            party.filter { it.inParty && it.id != buddy.id }.take(MAX_ASSISTS).forEach { assist ->
+                typePerks(assist).forEach { (b, v) -> add(PerkSource(assist.nickname, PerkSource.Kind.ASSIST, b, v * ASSIST_SHARE)) }
+            }
+        }
+        guardians.forEach { g -> Guardians.signature(g).forEach { (b, v) -> add(PerkSource(g.nickname, PerkSource.Kind.GUARDIAN, b, v)) } }
+    }
+}
+
+/** One part of the perk total: who or what gives it, to which bucket, and how much (in percent). */
+data class PerkSource(
+    val from: String,
+    val kind: Kind,
+    val bucket: PerkBucket,
+    val percent: Double,
+    val condition: PerkCondition = PerkCondition.ALWAYS,
+) {
+    enum class Kind { BUDDY_TYPE, ABILITY, HELD_ITEM, ASSIST, GUARDIAN }
 }
 
 /**

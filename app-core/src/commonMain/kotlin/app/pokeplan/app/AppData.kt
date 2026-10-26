@@ -137,9 +137,15 @@ data class RewardEntry(
     val seen: Boolean = false,
 )
 
-/** The end of a focus session: finished (the egg hatched) or failed for [failReason]. */
+/** The end of a focus session: finished (the egg hatched) or failed for [failReason]; or both, see [guarded]. */
 @Serializable
-data class FocusEnd(val atMillis: Long, val completed: Boolean, val failReason: FailReason? = null)
+data class FocusEnd(
+    val atMillis: Long,
+    val completed: Boolean,
+    val failReason: FailReason? = null,
+    /** The session failed, but the buddy's Magic Guard kept its egg (so [completed] is true and [failReason] says why). */
+    val guarded: Boolean = false,
+)
 
 /**
  * A signed-in cloud account and where this device stands with it. [version] is the cloud save version this device last saw;

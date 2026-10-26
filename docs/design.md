@@ -256,6 +256,8 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 - **Ability perk:** one extra, from the buddy's ability. Real abilities as flavour, data driven. Examples: Pickup (extra item chance), Early Bird (bonus for the first task before 9am), Technician (bonus for 5 to 20 minute sessions), Magic Guard (one failed session a week keeps its egg), Guts (bonus on A-rank tasks), Synchronize (+25% EV gain in the buddy's focus stats).
 - **Stats matter:** perk strength scales with the relevant stat (e.g. Attack for candy yield) and nature, so raising and training a partner pays.
 - **Caps:** total bonus from perks, held item and party assists stays below +25% *(tune)* so no single buddy breaks the economy.
+- **Shown, not hidden:** the Party screen has a **Party perks** card (each bucket's total, and opened, every part of it: the buddy's types, its ability, its held item, each assist and each Guardian, with when a conditional ability applies). Each Pokémon's page shows what it gives as the buddy and as an assist, and its held item with Give, Swap and Take. Items are also given from the Bag; the Bottle Cap and Nature Mint ask which stat or nature *(0.26.0)*.
+- **Magic Guard** hatches the egg of a failed session of 5 minutes or more, once a week, paid as a session of the minutes focused; the session still counts as failed. **Streak keeper** at +10% forgives a second missed day a week, for the daily streak and habit streaks *(0.26.0)*.
 
 ## Guardians (legendaries and mythicals)
 

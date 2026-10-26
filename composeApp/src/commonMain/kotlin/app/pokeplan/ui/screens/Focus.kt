@@ -83,7 +83,8 @@ private fun Ends(model: AppModel, openPokemon: ((String) -> Unit)?) {
         // The hatch is the peak of the loop, so its end leads straight to the new Pokémon rather than to a bare OK.
         val hatched = model.data.rewardLog.asReversed().firstNotNullOfOrNull { e -> e.rewards.filterIsInstance<Reward.Hatched>().lastOrNull() }?.pokemon
         val owned = hatched?.takeIf { h -> model.data.player.pokemon.any { it.id == h.id } }
-        SpeakerBox(model, Emotion.JOYOUS) { Text("Your egg hatched! Have a look at your Pokémon.", style = MaterialTheme.typography.bodyLarge) }
+        val line = if (end.guarded) "The session ended early, but Magic Guard kept your egg safe, and it hatched! (Once a week.)" else "Your egg hatched! Have a look at your Pokémon."
+        SpeakerBox(model, Emotion.JOYOUS) { Text(line, style = MaterialTheme.typography.bodyLarge) }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             if (owned != null && openPokemon != null) {
                 PixelButton("Meet ${owned.nickname}", { model.store.dismissFocusEnd(); openPokemon(owned.id) }, Modifier.weight(1f), Pixel.Green)

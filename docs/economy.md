@@ -1,6 +1,6 @@
 # The economy: sources, sinks and caps
 
-Every reward source, every use and every cap, as the code has them under **rules version 2** (`RewardRules.VERSION` in
+Every reward source, every use and every cap, as the code has them under **rules version 3** (`RewardRules.VERSION` in
 `pokemon-core`). This is principle 6 of `docs/ecosystem.md` ("every reward source, cap and use is written down"). The
 reasons and pacing targets are in `docs/design.md`; the simulated pacing is in `docs/economy-report.md`.
 
@@ -12,7 +12,7 @@ Where the rules live: `RewardEngine`, `TrainerRank`, `CandyRewards` and `Egg` (t
 server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`, `Shiny`), `EvolutionRules` in
 `pokemon-core`; `TaskRules`, `Goal`, `Review`, `Streak`, `FocusSession` in `plan-core`; `CareRules` in `care-core`; `GameStore`, `CareStore` and `Quests` in `app-core`.
 
-**Version history.** 1: everything before Care. 2: the Care events (`RewardEngine.care`) and the friendship sources Routine and Calm break; nothing that version 1 paid changed.
+**Version history.** 1: everything before Care. 2: the Care events (`RewardEngine.care`) and the friendship sources Routine and Calm break; nothing that version 1 paid changed. 3: trade-evolution items (Metal Coat, King's Rock...) join the drop table; Magic Guard hatches a failed session's egg once a week; the Streak keeper perk forgives a second missed day.
 
 ## 1. Sources
 
@@ -80,7 +80,7 @@ The Super Candy chance perk adds percentage points.
 | 6 vitamins (HP Up, Protein, Iron, Calcium, Zinc, Carbos) | 8 |
 | 5 berries | 4 |
 | Link Cord | 2 |
-| 18 type Lures, each evolution stone and gender-evolution item | 1 |
+| 18 type Lures, each evolution stone, gender-evolution item and trade-evolution item (`Items.tradeItems`) | 1 |
 | Lucky Egg, Oval Charm, Star Piece, Scope Lens, Leftovers, Amulet Coin | 1 |
 | Shiny Charm, Bottle Cap, Nature Mint, Ability Capsule | 0.5 |
 | 18 Tera Shards | 0.1 |
@@ -108,6 +108,15 @@ Perk buckets: egg luck, candy yield, Super Candy chance, item finder, shiny hunt
 give up to 15 each (× power, friendship up to × 1.2, nature × 1.1 or 0.9; a second type half), party members assist at a
 quarter, a held item +4 (Amulet Coin +10 coins), abilities +3 to +10 under their condition. A Guardian adds its
 signature perk (10, +5 for a second type). Caps in section 3.
+
+- **Held items** are given from the Bag or the Pokémon's page (`GameStore.holdItem`, `takeItem`); what it held before goes
+  back to the bag. Perk items, Mega Stones and trade-evolution items can be held; Guardians hold nothing.
+- **Streak keeper** at 10 or more (`STREAK_KEEPER_THRESHOLD`) forgives a second missed day a week, for the daily streak and
+  for habit streaks (`PerkBonuses.extraForgivenDays`).
+- **Magic Guard** (the buddy's ability when the session started): once a week, a failed session of 5 minutes or more
+  still hatches its egg, paid as a session of the minutes focused, never as Deep Focus. It stays a failed session in the
+  history and does not count as an active day (`GameStore.magicGuard`, counter `magic-guard-<week>`).
+- The perks that count for a session are the buddy's when it started (`FocusSession.buddyIdAtStart`).
 
 ## 2. Sinks (uses)
 
@@ -156,7 +165,7 @@ design.md's "daily reward limit per app" *(tune)* is not built. It matters once 
 
 ## 4. What can be lost
 
-- **A failed focus session** (left the app for over 10 seconds, moved the phone in Deep Focus, gave up) pays nothing; its egg ticket is spent so the egg can't be rerolled, and a Lure is kept. This is the one deliberate exception (ecosystem.md, principle 4).
+- **A failed focus session** (left the app for over 10 seconds, moved the phone in Deep Focus, gave up) pays nothing (except once a week with Magic Guard, section 1); its egg ticket is spent so the egg can't be rerolled, and a Lure is kept. This is the one deliberate exception (ecosystem.md, principle 4).
 - **A transferred Pokémon** is gone; its species, shiny and forms stay in the Pokédex.
 - **Evolution** uses its Super Candy, stone or Link Cord.
 - **A task reward** can be undone for 10 seconds (`UNDO_WINDOW_MILLIS`).
@@ -167,8 +176,7 @@ design.md's "daily reward limit per app" *(tune)* is not built. It matters once 
 Found while writing this down; each is its own change, none is in this rules version.
 
 - **Coins have no use.** design.md plans a shop (rank step 2) and Lures bought or crafted from berries; neither exists, so coins only pile up.
-- **Earned items with no use yet:** Lures (Focus never passes one), held items (no way to equip, so their perks never apply), Nature Mint, Ability Capsule, Bottle Cap, Tera Shards (`ItemEffects` exists, not called).
-- **Perks not wired:** Magic Guard (`keepsFailedEgg`) and the streak keeper bucket are computed and never read.
+- **Earned items with no use yet:** Lures (Focus never passes one). Mega Stones can be held but never drop.
 - **Trial evolutions** can never happen: nothing records a completed trial.
 - **Stack caps are uneven:** transfers, the focus berry and the weekly review berry add without the cap; the server's gift caps every item at 9,999, the app caps non-candies at 999.
 - **Who decides.** The app computes every reward itself and the server checks the snapshot on sync (points never drop, the party and Guardians fit, column ranges). The server's `effort`, `task` and `achievement` kinds exist and are tested but no app calls them yet. Moving rewards to them (and adding the daily caps) is the step before a public release (`supabase/README.md`, Known limits).
