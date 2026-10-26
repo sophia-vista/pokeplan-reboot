@@ -65,6 +65,10 @@ data class AppData(
     val favorites: Set<String> = emptySet(),
     /** Species the player has ever owned as a shiny, kept even after the shiny is transferred. */
     val shinySpecies: Set<Int> = emptySet(),
+    /** Form ids the player has ever had (see [FormDex]), kept after the Pokémon is transferred. */
+    val caughtForms: Set<Int> = emptySet(),
+    /** Form ids the player has ever had as a shiny. */
+    val shinyForms: Set<Int> = emptySet(),
     /** Species seen but maybe never caught: a friend's buddy or a quest's Pokémon. Kept once seen, like caught. */
     val seenSpecies: Set<Int> = emptySet(),
     /** Rare Candy rewards from subtasks and the like are counted per day here when a cap needs them. */

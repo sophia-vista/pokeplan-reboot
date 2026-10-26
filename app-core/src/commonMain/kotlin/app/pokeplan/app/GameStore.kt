@@ -134,9 +134,10 @@ class GameStore(
         if (account != null && account == before.account && after.cloudPart() != before.cloudPart()) {
             after = after.copy(account = account.copy(unsynced = true))
         }
-        // A shiny stays in the Shiny Dex even if it is transferred later.
+        // A shiny stays in the Shiny Dex, and a form in the form dex, even if the Pokémon is transferred later.
         val shinyNow = after.player.pokemon.filter { it.isShiny }.map { it.speciesId }.toSet()
         if (!after.shinySpecies.containsAll(shinyNow)) after = after.copy(shinySpecies = after.shinySpecies + shinyNow)
+        after = FormDex.record(after)
         data = after
         storage.save(json.encodeToString(AppData.serializer(), data))
         listeners.toList().forEach { it(data) }

@@ -6,6 +6,9 @@ object WhatsNew {
         "0.21.0" to listOf(
             "Lists in the Planner, like TickTick: make one for each part of your life. The Inbox now holds every task that isn't in a list.",
         ),
+        "0.20.0" to listOf(
+            "The Pokédex now tracks forms and shinies: each entry shows every form, the ones you are missing as black shapes. Tap a form you have to see it.",
+        ),
         "0.19.5" to listOf(
             "Pokédex entries show each Pokémon in a scene for its type: the beach for Water, the forest for Grass and Bug, and more.",
         ),
