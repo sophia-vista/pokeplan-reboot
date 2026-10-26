@@ -7,6 +7,10 @@ object WhatsNew {
             "Easier to use: Back is at the top left, settings are switches in small groups, and Undo sits just above the tabs.",
             "Focus keeps Start at the bottom of the screen, and the keyboard's Done key adds a task.",
         ),
+        "0.18.0" to listOf(
+            "Eggs hatch and Pokémon evolve with a scene like in the games, and shinies flash gold.",
+            "Every Pokédex species has its own page: category, size, abilities, base stats and its evolution line.",
+        ),
         "0.17.0" to listOf(
             "Me, Growth: pick 7, 30 or 90 days, see tasks and focus minutes for each area, and your goals' progress on their own.",
         ),

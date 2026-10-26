@@ -30,6 +30,9 @@ internal object DexParser {
             isLegendary = f[7] == "1",
             isMythical = f[8] == "1",
             cosmeticForms = list(f[9]),
+            genus = f[10].orNull() ?: "",
+            heightDm = f[11].toInt(),
+            weightHg = f[12].toInt(),
         )
     }
 

@@ -44,6 +44,8 @@ import app.pokeplan.app.cloud.SyncManager
 import app.pokeplan.app.cloud.SyncStatus
 import io.ktor.client.HttpClient
 import app.pokeplan.ui.screens.CollectionScreen
+import app.pokeplan.ui.screens.Cutscene
+import app.pokeplan.ui.screens.CutsceneHost
 import app.pokeplan.ui.screens.FocusScreen
 import app.pokeplan.ui.screens.FocusWatch
 import app.pokeplan.ui.screens.HomeScreen
@@ -110,6 +112,12 @@ class AppModel(
 
     /** A Pokémon the Pokémon tab should open on (the buddy's level chip on Home, the widget's chip). Used once. */
     var openPokemonId: String? by mutableStateOf(null)
+
+    /** The hatch or evolution playing over the whole app, if any. */
+    var cutscene: Cutscene? by mutableStateOf(null)
+
+    /** Hatched Pokémon (by id) whose hatch already played in this run, so one still waiting for its OK plays once. */
+    val playedHatches = mutableSetOf<String>()
 
     /** When the buddy last celebrated an event, so opening Home again does not repeat it. */
     var celebratedAt: Long by mutableStateOf(0L)
@@ -274,4 +282,5 @@ private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab, launche
             Spacer(Modifier.fillMaxWidth().windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
     }
+    CutsceneHost(model)
 }
