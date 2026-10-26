@@ -51,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import app.pokeplan.core.reward.Feature
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.Category
 import app.pokeplan.plan.Insights
@@ -90,9 +91,9 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
             ) {
                 TrainerCard(model)
                 MenuGrid(
-                    (listOf(
-                        MenuEntry("GROWTH", "exp-share", "Growth", "effort and trends", tint = Pixel.Green),
-                        MenuEntry("GOALS", "star-piece", "Goals", if (data.goals.size == 1) "1 goal" else "${data.goals.size} goals", tint = Pixel.Warning),
+                    (listOfNotNull(
+                        if (model.store.sees(Feature.GROWTH_SCREEN)) MenuEntry("GROWTH", "exp-share", "Growth", "effort and trends", tint = Pixel.Green) else null,
+                        if (!model.store.sees(Feature.GOALS)) null else MenuEntry("GOALS", "star-piece", "Goals", if (data.goals.size == 1) "1 goal" else "${data.goals.size} goals", tint = Pixel.Warning),
                         MenuEntry("REVIEW", "journal", "Review", if (model.store.canReview()) "ready this week" else "done this week", badge = if (model.store.canReview()) 1 else 0, tint = Pixel.Blue),
                     ) + (if (model.social != null) listOf(MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = androidx.compose.ui.graphics.Color(0xFFEC4899))) else emptyList()) + listOf(
                         MenuEntry("SETTINGS", "gb-sounds", "Settings", "name, region, sound", tint = Pixel.InkSoft),
@@ -369,7 +370,7 @@ private fun SettingsView(model: AppModel) {
             }
         }
     }
-    TextBox {
+    if (store.sees(Feature.REGION_PICKER)) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Hatching region", style = MaterialTheme.typography.titleMedium)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {

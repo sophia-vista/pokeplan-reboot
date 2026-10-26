@@ -2,6 +2,7 @@ package app.pokeplan.app
 
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.reward.Reward
+import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.FailReason
 import app.pokeplan.plan.FocusEvent
 import app.pokeplan.plan.HabitTarget
@@ -387,12 +388,12 @@ class GameStoreTest {
     @Test
     fun guardiansNeedASlotAndSlotsOpenWithRank() {
         val (s0, _) = started()
-        val low = s0.withPoints(700)
+        val low = s0.withPoints(TrainerRank.thresholds[1])
         val mew = low.grantPokemon(mewSpecies, "Quest")
         assertEquals(0, low.guardianSlots)
         assertFalse(low.slotGuardian(mew.id))
 
-        val s = s0.withPoints(3_300) // rank 4: one slot
+        val s = s0.withPoints(TrainerRank.thresholds[4]) // rank 4: one slot
         val m = s.grantPokemon(mewSpecies, "Quest")
         val u = s.grantPokemon(uxieSpecies, "Quest")
         assertEquals(1, s.guardianSlots)
@@ -408,7 +409,7 @@ class GameStoreTest {
     @Test
     fun aSlottedGuardianBoostsRewards() {
         val (s0, clock) = started()
-        val s = s0.withPoints(3_300)
+        val s = s0.withPoints(TrainerRank.thresholds[4])
         val u = s.grantPokemon(uxieSpecies, "Quest")
         s.slotGuardian(u.id)
         val perks = app.pokeplan.core.pokemon.Perks.total(s.data.player.buddy, s.data.player.party, guardians = s.data.player.guardianPokemon)
@@ -431,7 +432,7 @@ class GameStoreTest {
     @Test
     fun aQuestIsAcceptedProgressesAndPaysItsGuardianWhenClaimed() {
         val (s0, clock) = started()
-        val s = s0.withPoints(3_300) // rank 4
+        val s = s0.withPoints(TrainerRank.thresholds[4]) // rank 4
         val azelf = app.pokeplan.app.quest.Quests.get("azelf")!!
         assertTrue(s.availableQuests.any { it.id == "azelf" })
         assertTrue(s.acceptQuest("azelf"))

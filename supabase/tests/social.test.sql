@@ -10,7 +10,7 @@ update platform.profiles set trainer_name = 'Carol' where user_id = '00000000-00
 -- Alice has a buddy and some points this week and last week.
 insert into platform.pokemon (user_id, id, species_id, form_identifier, nickname, nature, ability, ivs, caught_at, level, is_shiny)
   values ('00000000-0000-0000-0000-0000000000d1', 'a1', 25, 'pikachu', 'Pika', 'HARDY', 'Static', '{1,2,3,4,5,6}', 0, 12, true);
-update platform.profiles set buddy_id = 'a1', trainer_points = 700 where user_id = '00000000-0000-0000-0000-0000000000d1';
+update platform.profiles set buddy_id = 'a1', trainer_points = 100 where user_id = '00000000-0000-0000-0000-0000000000d1';
 insert into platform.reward_ledger (user_id, app, source, idempotency_key, seed, event, rewards, points_delta, state_version, created_at) values
   ('00000000-0000-0000-0000-0000000000d1', 'plan', 't', 'now', 0, '{}', '[]', 40, 1, now()),
   ('00000000-0000-0000-0000-0000000000d1', 'plan', 't', 'old', 0, '{}', '[]', 500, 1, now() - interval '20 days'),

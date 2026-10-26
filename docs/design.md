@@ -69,17 +69,17 @@ The app never mentions ADHD; it just removes friction and shame.
 - **Low friction to start:** one-tap capture into the Inbox (widget, share sheet, quick-add), a **"Just 5 minutes"** button on any task that starts a minimum-length focus session on it, short sessions always welcome.
 - **Pick for me:** a button on Today that picks a random task from the list (a small bonus for taking it *(tune)*), for when choosing is the hard part.
 - **Time awareness:** after finishing a task you focused on, show **estimate vs actual** time, so over time guesses calibrate.
-- **Gradual reveal:** day one is tasks, focus and the buddy only. Other systems appear as the trainer rank rises *(proposal, tune)*:
+- **Gradual reveal:** day one is tasks, focus, the buddy and the collection only. Other systems appear as the trainer rank rises, and the early ranks come within days (`Feature` in `TrainerRank.kt`; a "Rank up" card on Home lists what each rank opened, once). Only features that exist are listed *(0.28.0)*:
 
-| Rank step | Appears |
-|---|---|
-| Start | tasks, habits, planner, focus, buddy, Rare Candy, eggs, the weekly review |
-| 1 | Super Candy and evolution, Pokédex, goals, daily mini-quests, the region picker (Kanto opens) |
-| 1 | daily mini-quests |
-| 2 | items, bag, shop, coins, the Growth screen, Lures, spotlight days |
-| 3 | natures and stats detail, IV judge, Tera, bond styles, mood check-in |
-| 4 | legendary quests (regions keep opening, one per rank) |
-| 5 | contests, perfect dex, Hall of Fame |
+| Rank | Typical day | Appears |
+|---|---|---|
+| Rookie (start) | 1 | tasks, habits, planner, focus and eggs, buddy, party and PC, Pokédex, Rare Candy, the weekly review |
+| Apprentice | 2 | Super Candy and evolution, the Bag, goals, the region picker (Kanto opens) |
+| Trainer | 5 | held items, party perks, the Growth screen, coins |
+| Ace | 11 | Nature Mints, Bottle Caps, Ability Capsules and Tera Shards; stats and the IV judge |
+| Veteran | 22 | Guardians and legendary quests (regions keep opening, one per rank) |
+
+  Items still drop from the first day; the Bag shows them from Apprentice. Shop, Lures, contests, perfect dex and Hall of Fame join this table when they are built.
 
 - **No shame:** warm, neutral copy; overdue is shown calmly (no red alarm styling); streaks forgive (see Retention); failing a focus session is recoverable in one tap.
 - **Few choices:** every form has sensible defaults (rank C, category Personal, 25 minute session) so the first screen asks for as little as possible.
@@ -204,7 +204,7 @@ Not hatched from random eggs, which keeps them special and avoids a 4 hour Deep 
 Collecting is **fast at the start and deep at the end.** The simulator tunes toward these targets (at roughly 5 eggs and 5 tasks a day):
 
 - **Basic dex of the Home Region (every species caught, including evolutions): about 2 months** *(tune)*. Each later region is about the same once unlocked.
-- **Region unlocks:** trainer rank opens a new region about every 3 to 4 weeks *(tune)*, so a player is usually collecting in more than one region.
+- **Region unlocks:** trainer rank opens a new region with each rank: the first few within the first weeks, then every month or two *(tune)*, so a player is usually collecting in more than one region.
 - **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Home dex at a median of day 62, opens a region every 20 to 28 days, and earns enough Rare Candies to evolve the whole Home Region in 45 to 86 days and enough Super Candies in about 20.
 - **The long tail** (months to years) is made of layers, each with its own progress, badge and showcase:
 
@@ -223,7 +223,7 @@ Perfect builds are shown on a Pokémon's page and in the Hall of Fame; they have
 Planned, with build order to be set later.
 
 - **Mission board (Mystery Dungeon):** tasks are shown as a job board using their difficulty rank. Presentation only; rewards stay as designed.
-- **Trainer rank (Mystery Dungeon guild ranks):** one rank for the whole account, earned in every app: 2 points per tier of finished work (so 2 for an E task up to 10 for an A task) and 1 point per 5 minutes of effort. Ten ranks (Rookie, Apprentice, Trainer, Ace, Veteran, Expert, Elite, Champion, Master, Legend) at 0, 625, 1,375, 2,250, 3,250, 4,375, 5,625, 7,125, 8,750 and 10,625 points. Each rank opens the next region in order (Home, Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea) and reveals features (see the table above). Names and thresholds are *(tune)*, aimed at a new region every 3 to 4 weeks.
+- **Trainer rank (Mystery Dungeon guild ranks):** one rank for the whole account, earned in every app: 2 points per tier of finished work (so 2 for an E task up to 10 for an A task) and 1 point per 5 minutes of effort. Ten ranks (Rookie, Apprentice, Trainer, Ace, Veteran, Expert, Elite, Champion, Master, Legend) at 0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000 and 9,000 points: **quick at first, slower after** (0.28.0, owner's direction; it was 625 for the first rank, which a typical player reached on day 17). Each rank takes longer than the one before. Each rank opens the next region in order (Home, Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea) and reveals features (see "Gradual reveal"). Names and thresholds are *(tune)*; see `docs/economy-report.md` for the days.
 - **Personality quiz starter (Mystery Dungeon):** onboarding asks a short quiz, which suggests a starter and a nature; the player can override.
 - **Poké Assist perks (Pokémon Ranger):** the buddy's type and ability perks are presented as assists. No extra mechanics.
 - **Weekly contests (Contests / Pokéathlon):** a friends-only weekly event scored by a buddy's stats, nature and training, with ribbons. Comes with the online release and gives stats and natures a purpose.

@@ -59,6 +59,8 @@ data class AppData(
     /** Emergency pauses used on [emergencyPausesDay]. */
     val emergencyPausesDay: LocalDate? = null,
     val emergencyPausesUsed: Int = 0,
+    /** The highest trainer rank whose "Rank up" card the player has seen. */
+    val seenRank: Int = 0,
     /** The app version whose "What's new" the player has seen. Saves from before this existed count as 0.1.0. */
     val lastSeenVersion: String = "0.1.0",
     /** Pokémon the player starred: they cannot be transferred by accident. Stays on this device's save. */
