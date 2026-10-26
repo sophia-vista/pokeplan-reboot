@@ -3,6 +3,9 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.16.1" to listOf(
+            "Locking the screen or taking a call during Focus no longer loses your egg. The Focus screen now lists the rules.",
+        ),
         "0.16.0" to listOf(
             "The Pokédex now shows which Pokémon you own, which you caught before, and which you have only seen on a friend's buddy or a quest.",
         ),
