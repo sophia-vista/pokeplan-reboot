@@ -4,8 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.runtime.remember
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Switch
@@ -163,6 +161,13 @@ fun StatChip(text: String, icon: @Composable () -> Unit, modifier: Modifier = Mo
     }
 }
 
+/**
+ * A tap with no ripple, for a Pokémon or a tile whose answer is plain to see (a page opens, a cry plays): a ripple there
+ * reads as a grey box stuck on the sprite.
+ */
+fun Modifier.quietClickable(enabled: Boolean = true, onClickLabel: String? = null, onClick: () -> Unit): Modifier =
+    clickable(interactionSource = null, indication = null, enabled = enabled, onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
+
 /** A card row for a list item: [lead] at the left, [content] in the middle, [trail] at the right. */
 @Composable
 fun ListRow(
@@ -187,7 +192,7 @@ fun ListRow(
                 when {
                     onClick == null -> it
                     highlight -> it.clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
-                    else -> it.clickable(remember { MutableInteractionSource() }, indication = null, onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
+                    else -> it.quietClickable(onClickLabel = onClickLabel, onClick = onClick)
                 }
             }
             .defaultMinSize(minHeight = 64.dp)

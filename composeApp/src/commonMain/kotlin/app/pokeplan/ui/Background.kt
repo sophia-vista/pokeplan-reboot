@@ -36,11 +36,7 @@ private val cache = mutableMapOf<String, ImageBitmap?>()
 fun PixelBackground(name: String, modifier: Modifier = Modifier, scale: Int = 3, content: @Composable BoxScope.() -> Unit) {
     val bitmap by produceState(cache[name], name) {
         if (value == null) {
-            value = try {
-                Res.readBytes("files/backgrounds/$name.png").decodeToImageBitmap()
-            } catch (e: Exception) {
-                null
-            }
+            value = orNull { Res.readBytes("files/backgrounds/$name.png").decodeToImageBitmap() }
             cache[name] = value
         }
     }
