@@ -3,6 +3,9 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.20.0" to listOf(
+            "The Pokédex now tracks forms and shinies: each entry shows every form, the ones you are missing as black shapes. Tap a form you have to see it.",
+        ),
         "0.19.5" to listOf(
             "Pokédex entries show each Pokémon in a scene for its type: the beach for Water, the forest for Grass and Bug, and more.",
         ),
