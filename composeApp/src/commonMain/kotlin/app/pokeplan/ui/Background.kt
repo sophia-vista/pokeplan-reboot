@@ -81,4 +81,14 @@ fun Stage(name: String, height: Dp, modifier: Modifier = Modifier, content: @Com
     PixelBackground(name, modifier.fillMaxWidth().height(height).clip(shape).border(1.dp, Pixel.Border, shape), content = content)
 }
 
+/** A rounded scene banner, like [Stage] but with a real battle scene ([SceneImage]) where the Pokémon stands. */
+@Composable
+fun SceneStage(scene: String, height: Dp, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
+    val shape = RoundedCornerShape(Spacing.CardRadius)
+    Box(modifier.fillMaxWidth().height(height).clip(shape).border(1.dp, Pixel.Border, shape)) {
+        SceneImage(scene, Modifier.matchParentSize())
+        content()
+    }
+}
+
 private const val FRAME = 2
