@@ -194,7 +194,7 @@ private fun PcControls(view: PcView, change: (PcView) -> Unit, shown: Int, total
 @Composable
 private fun PcTile(p: OwnedPokemon, favorite: Boolean, onClick: () -> Unit) {
     Column(
-        Modifier.clip(RoundedCornerShape(12.dp)).background(Pixel.Panel).clickable(onClick = onClick).padding(6.dp),
+        Modifier.clip(RoundedCornerShape(12.dp)).background(Pixel.Panel).clickable(onClickLabel = "Open ${p.nickname}", role = Role.Button, onClick = onClick).padding(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Sprite(p.form.id, p.isShiny, p.nickname, size = 64.dp)
