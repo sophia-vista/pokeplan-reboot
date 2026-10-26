@@ -273,6 +273,8 @@ class ScreenshotTest {
         store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 45)
         store.addTask("Reply to mail", Rank.E, planned = store.today)
         store.changeSettings { it.copy(theme = app.pokeplan.app.ThemeMode.DARK) }
+        // Unseen hatches would play their scene over the screen.
+        store.markRewardsSeen()
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
         render(name) { App(storage, focusTab = true, startTab = tab) }
     }
