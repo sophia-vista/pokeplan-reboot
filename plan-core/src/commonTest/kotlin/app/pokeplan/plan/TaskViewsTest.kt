@@ -31,8 +31,27 @@ class TaskViewsTest {
     )
 
     @Test
-    fun inboxHoldsOnlyUnscheduledOpenTasks() {
-        assertEquals(listOf("inbox"), TaskViews.inbox(tasks).map { it.id })
+    fun undatedHoldsOnlyUnscheduledOpenTasks() {
+        assertEquals(listOf("inbox"), TaskViews.undated(tasks).map { it.id })
+    }
+
+    @Test
+    fun theInboxHoldsOpenTasksInNoListWhateverTheirDate() {
+        val filed = tasks.map { if (it.id == "today" || it.id == "inbox") it.copy(listId = "l1") else it }
+        val inbox = TaskViews.inbox(filed).map { it.id }
+        assertTrue("today" !in inbox && "inbox" !in inbox && "done" !in inbox && "farAway" in inbox)
+        assertEquals(setOf("today", "inbox"), TaskViews.inList(filed, "l1").map { it.id }.toSet())
+    }
+
+    @Test
+    fun aListGroupsItsTasksByWhenTheyAre() {
+        val groups = TaskViews.byWhen(tasks, now).associate { (w, ts) -> w to ts.map { it.id } }
+        assertEquals(TaskViews.When.entries.toList(), groups.keys.toList())
+        assertEquals(setOf("lateDue", "oldPlan"), groups.getValue(TaskViews.When.BEFORE).toSet())
+        assertEquals(listOf("tomorrow"), groups.getValue(TaskViews.When.TOMORROW))
+        assertEquals(listOf("nextWeek"), groups.getValue(TaskViews.When.WEEK))
+        assertEquals(listOf("farAway"), groups.getValue(TaskViews.When.LATER))
+        assertEquals(listOf("inbox"), groups.getValue(TaskViews.When.NO_DATE))
     }
 
     @Test

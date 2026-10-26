@@ -3,6 +3,9 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.21.0" to listOf(
+            "Lists in the Planner, like TickTick: make one for each part of your life. The Inbox now holds every task that isn't in a list.",
+        ),
         "0.19.5" to listOf(
             "Pokédex entries show each Pokémon in a scene for its type: the beach for Water, the forest for Grass and Bug, and more.",
         ),

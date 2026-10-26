@@ -12,8 +12,40 @@ object TaskViews {
 
     private fun open(tasks: List<Task>) = tasks.filter { it.isOpen }
 
-    /** Quick captures: open tasks with neither a planned date nor a due date. */
-    fun inbox(tasks: List<Task>): List<Task> = open(tasks).filter { it.planned == null && it.due == null }
+    /** Open tasks with neither a planned date nor a due date (the Calendar's "No date" chips). */
+    fun undated(tasks: List<Task>): List<Task> = open(tasks).filter { it.planned == null && it.due == null }
+
+    /** The Inbox, as in TickTick: open tasks not filed in a list, whatever their date. */
+    fun inbox(tasks: List<Task>): List<Task> = open(tasks).filter { it.listId == null }
+
+    /** Open tasks filed in the list [listId]. */
+    fun inList(tasks: List<Task>, listId: String): List<Task> = open(tasks).filter { it.listId == listId }
+
+    /** Where a task falls in a list's view, soonest first. */
+    enum class When(val label: String) { BEFORE("From before"), TODAY("Today"), TOMORROW("Tomorrow"), WEEK("Next 7 days"), LATER("Later"), NO_DATE("No date") }
+
+    /**
+     * A list's tasks grouped by when they are planned or due, as TickTick groups a list: from before, today, tomorrow,
+     * the next 7 days, later, then those with no date. Empty groups are left out.
+     */
+    fun byWhen(tasks: List<Task>, now: LocalDateTime): List<Pair<When, List<Task>>> {
+        val today = now.date
+        val late = overdue(tasks, now).toSet()
+        fun group(t: Task): When {
+            val day = t.planned ?: t.due?.date ?: return When.NO_DATE
+            return when {
+                t in late -> When.BEFORE
+                day <= today -> When.TODAY
+                day == today.plus(DatePeriod(days = 1)) -> When.TOMORROW
+                day <= today.plus(DatePeriod(days = 7)) -> When.WEEK
+                else -> When.LATER
+            }
+        }
+        val dated = compareBy<Task>({ it.planned ?: it.due?.date }, { timeOf(it) ?: LocalTime(23, 59) }, { -it.rank.tier })
+        return open(tasks).groupBy(::group).entries.sortedBy { it.key.ordinal }.map { (w, ts) ->
+            w to if (w == When.NO_DATE) ts.sortedByDescending { it.createdAtMillis } else ts.sortedWith(dated)
+        }
+    }
 
     /** Past due, or planned for an earlier day and not finished. */
     fun overdue(tasks: List<Task>, now: LocalDateTime): List<Task> = open(tasks).filter {

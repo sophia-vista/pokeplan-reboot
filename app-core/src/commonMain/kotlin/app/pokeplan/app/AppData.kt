@@ -14,6 +14,7 @@ import app.pokeplan.plan.Reminders
 import app.pokeplan.plan.Recurrence
 import app.pokeplan.plan.PlanEvent
 import app.pokeplan.plan.Task
+import app.pokeplan.plan.TaskList
 import app.pokeplan.plan.WeeklyReview
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -29,6 +30,8 @@ data class AppData(
     val player: PlayerState = PlayerState(),
     val settings: Settings = Settings(),
     val tasks: List<Task> = emptyList(),
+    /** The player's own task lists (TickTick's lists); a task in none is in the Inbox. */
+    val lists: List<TaskList> = emptyList(),
     /** Events on PokéPlan's own calendar: never paid, synced with the rest of the save. */
     val events: List<PlanEvent> = emptyList(),
     val series: List<TaskSeries> = emptyList(),

@@ -34,7 +34,7 @@ class DayTimelineTest {
         assertEquals(9 * 60 + 45, plan.blocks.last().endMinute)
         assertEquals(8 * 60 + 30, plan.blocks.first().endMinute, "no estimate: 30 minutes")
         assertEquals(setOf("mail", "late"), plan.tray.map { it.id }.toSet(), "today's tray has the overdue tasks too")
-        assertEquals(listOf("idea"), plan.inbox.map { it.id })
+        assertEquals(listOf("idea"), plan.undated.map { it.id })
     }
 
     @Test
@@ -141,6 +141,6 @@ class DayTimelineTest {
         assertEquals(listOf("early"), week.days[1].blocks.map { it.task.id })
         assertEquals(6, week.firstHour, "every day starts at the earliest block of the week")
         assertEquals(setOf("mail", "card"), week.tray.map { it.id }.toSet())
-        assertEquals(listOf("idea"), week.inbox.map { it.id })
+        assertEquals(listOf("idea"), week.undated.map { it.id })
     }
 }
