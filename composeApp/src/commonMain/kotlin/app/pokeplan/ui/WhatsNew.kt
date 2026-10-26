@@ -3,6 +3,10 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.31.0" to listOf(
+            "Pick for me: let PokéPlan choose today's task, for 10% more candies.",
+            "Daily mini-quests, Just 5 minutes, rest days and a welcome-back gift.",
+        ),
         "0.28.0" to listOf(
             "Trainer ranks now come quickly at first, and each one opens something new. Look out for the Rank up card.",
         ),

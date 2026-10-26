@@ -59,6 +59,8 @@ data class AppData(
     /** Emergency pauses used on [emergencyPausesDay]. */
     val emergencyPausesDay: LocalDate? = null,
     val emergencyPausesUsed: Int = 0,
+    /** The task "Pick for me" chose; finishing it pays a small bonus. */
+    val pickedTaskId: String? = null,
     /** The highest trainer rank whose "Rank up" card the player has seen. */
     val seenRank: Int = 0,
     /** The app version whose "What's new" the player has seen. Saves from before this existed count as 0.1.0. */

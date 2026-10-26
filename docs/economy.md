@@ -1,6 +1,6 @@
 # The economy: sources, sinks and caps
 
-Every reward source, every use and every cap, as the code has them under **rules version 5** (`RewardRules.VERSION` in
+Every reward source, every use and every cap, as the code has them under **rules version 6** (`RewardRules.VERSION` in
 `pokemon-core`). This is principle 6 of `docs/ecosystem.md` ("every reward source, cap and use is written down"). The
 reasons and pacing targets are in `docs/design.md`; the simulated pacing is in `docs/economy-report.md`.
 
@@ -12,7 +12,7 @@ Where the rules live: `RewardEngine`, `TrainerRank`, `CandyRewards` and `Egg` (t
 server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`, `Shiny`), `EvolutionRules` in
 `pokemon-core`; `TaskRules`, `Goal`, `Review`, `Streak`, `FocusSession` in `plan-core`; `CareRules` in `care-core`; `GameStore`, `CareStore` and `Quests` in `app-core`.
 
-**Version history.** 1: everything before Care. 2: the Care events (`RewardEngine.care`) and the friendship sources Routine and Calm break; nothing that version 1 paid changed. 3: trade-evolution items (Metal Coat, King's Rock...) join the drop table; Magic Guard hatches a failed session's egg once a week; the Streak keeper perk forgives a second missed day. 4: training plans are gone, so tasks pay no EVs; Synchronize gives +3 Super Candy chance instead of +25% EVs. 5: a new trainer rank curve, quick at first and slower after (0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000, 9,000; it was 0, 625 ... 10,625).
+**Version history.** 1: everything before Care. 2: the Care events (`RewardEngine.care`) and the friendship sources Routine and Calm break; nothing that version 1 paid changed. 3: trade-evolution items (Metal Coat, King's Rock...) join the drop table; Magic Guard hatches a failed session's egg once a week; the Streak keeper perk forgives a second missed day. 4: training plans are gone, so tasks pay no EVs; Synchronize gives +3 Super Candy chance instead of +25% EVs. 5: a new trainer rank curve, quick at first and slower after (0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000, 9,000; it was 0, 625 ... 10,625). 6: the Pick-for-me bonus (candies × 1.10), task friendship capped at 10 a day, and the streak day rolls over at 4am.
 
 ## 1. Sources
 
@@ -27,6 +27,8 @@ server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`,
 | **Goal milestone done** (24 hours old or more) | 1 Super Candy, at most 3 a day; an active day | `SUPER_CANDIES_PER_MILESTONE`, `MILESTONE_MIN_AGE_MILLIS`, `MAX_MILESTONE_REWARDS_PER_DAY` |
 | **Every milestone of a goal done** | 1 Nature Mint, once per goal | `Goal.bonusGiven` |
 | **Weekly review** | 1 berry, once a week | `Review.REWARD_BERRIES` |
+| **Mini-quest** ticked (honour system, 3 a day, one reroll before any is done) | 1 random berry each, 1 more for the third; no active day | `MiniQuests.ALL_THREE_BONUS_BERRIES`, `GameStore.completeMiniQuest` |
+| **Welcome back** after 7 or more days away (once per absence) | 5 Rare Candies and 2 berries of one flavour | `WELCOME_BACK_RARE_CANDIES`, `WELCOME_BACK_BERRIES` |
 | **Transfer** a Pokémon | Rare Candies (Common 8, Uncommon 12, Rare 22, Super Rare 60, plus a fifth of the candies it was fed), coins twice the base candies (16 / 24 / 44 / 120), its held item back | `Transfer.candiesByRarity`, `COIN_FACTOR`, `REFUND_DIVISOR` |
 | **Legendary or mythical quest** claimed | That Pokémon (out of the party; it can be shiny) | `Quests` |
 | **Friend's gift** opened | 3 Rare Candies (one gift per friend a day) | `platform.send_gift` |
@@ -38,7 +40,7 @@ server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`,
 | **Care: mood check-in, note, reflection** | Nothing, ever: entering sensitive information never earns (ecosystem.md, section 6) | |
 | **A bag stack is full** | 1 coin per candy or item that did not fit | `Inventory.addCapped` |
 
-Task perks: candies × 1.10 when finished on time (by its due date) and × 1.10 when it had focus minutes, then the buddy's
+Task perks: candies × 1.10 when finished on time (by its due date), × 1.10 when it had focus minutes and × 1.10 when it was the task "Pick for me" chose (`PICKED_BONUS`, once per pick), then the buddy's
 perks. A perk bonus rounds to the nearest whole number and never pays less than the base (`RewardEngine.scaled`), so small
 bonuses on small rewards round away.
 
@@ -93,7 +95,7 @@ Never dropped: Ability Patch, Mega Stones, the Dynamax Band. Focus sessions neve
 |---|---|---|
 | Pet | 2 | the buddy, up to 10 a day |
 | Focus session | 3 | the buddy |
-| Task or habit | 1 | the buddy |
+| Task or habit | 1 | the buddy, the first 10 pieces of paid work a day (`TASK_FRIENDSHIP_DAILY_CAP`) |
 | Berry | 1 | the Pokémon fed |
 | Level up | 1 | the Pokémon |
 | Care routine | 1 | the buddy, up to 5 routines a day |

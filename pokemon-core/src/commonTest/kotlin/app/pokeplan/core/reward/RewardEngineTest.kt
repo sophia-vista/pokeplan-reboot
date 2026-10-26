@@ -156,6 +156,23 @@ class RewardEngineTest {
     }
 
     @Test
+    fun thePickedTaskPaysABitMore() {
+        fun candies(picked: Boolean) = (1..300).sumOf { seed ->
+            RewardEngine.achievement(PlayerState(), achievement(5).copy(picked = picked), Random(seed)).rewards.filterIsInstance<Reward.Candies>().sumOf { it.amount }
+        }
+        assertTrue(candies(true) > candies(false))
+    }
+
+    @Test
+    fun taskFriendshipStopsAtTheDailyCap() {
+        val before = stateWithBuddy(friendship = 100)
+        val capped = RewardEngine.achievement(before, achievement(2).copy(friendshipTasksToday = RewardEngine.TASK_FRIENDSHIP_DAILY_CAP), Random(3)).state.buddy!!
+        assertEquals(100, capped.friendship)
+        val warm = RewardEngine.achievement(before, achievement(2).copy(friendshipTasksToday = RewardEngine.TASK_FRIENDSHIP_DAILY_CAP - 1), Random(3)).state.buddy!!
+        assertTrue(warm.friendship > 100)
+    }
+
+    @Test
     fun finishingWorkWarmsTheBuddy() {
         val before = stateWithBuddy(friendship = 100, nature = Nature.ADAMANT)
         val after = RewardEngine.achievement(before, achievement(2), Random(3)).state.buddy!!

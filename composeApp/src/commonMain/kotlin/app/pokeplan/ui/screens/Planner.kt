@@ -656,7 +656,12 @@ private fun RemindMe(model: AppModel, task: Task) {
 fun taskMeta(t: Task, day: LocalDate? = null, repeats: String? = null): String = buildList {
     t.due?.let { add(listOfNotNull("due", it.date.takeIf { d -> d != day }?.short(), clock(it.time)).joinToString(" ")) }
         ?: t.planned?.let { p -> listOfNotNull(p.takeIf { it != day }?.short(), t.plannedTime?.let(::clock)).joinToString(" ").takeIf { it.isNotEmpty() }?.let(::add) }
-    t.estimateMinutes?.let { add("$it min") }
+    // Estimate versus actual once it has been focused on, so guesses calibrate over time.
+    when {
+        t.focusedMinutes > 0 && t.estimateMinutes != null -> add("focused ${t.focusedMinutes} of ${t.estimateMinutes} min")
+        t.focusedMinutes > 0 -> add("focused ${t.focusedMinutes} min")
+        else -> t.estimateMinutes?.let { add("$it min") }
+    }
     if (t.reminders.isNotEmpty() && t.isOpen) add("reminder")
     if (t.subtasks.isNotEmpty()) add("${t.subtasks.count { it.done }}/${t.subtasks.size} steps")
     if (repeats != null) add(repeats)

@@ -39,7 +39,8 @@ import app.pokeplan.app.BuddyScene
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.reward.Feature
 import app.pokeplan.core.reward.TrainerRank
-import app.pokeplan.plan.PickForMe
+import app.pokeplan.plan.FocusRules
+import app.pokeplan.plan.MiniQuest
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.TaskState
 import app.pokeplan.ui.AppModel
@@ -58,7 +59,6 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.StatChip
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.theme.title
-import kotlin.random.Random
 
 /**
  * Home helps decide what to do next: a slim header with the rank, the buddy, one recommended task with its actions, how
@@ -70,11 +70,10 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
     val data = model.data
     val buddy = data.player.buddy
     val points = data.player.trainerPoints
-    var chosen by remember { mutableStateOf<String?>(null) }
 
     val pendingIds = data.pending.map { it.original.id }.toSet()
     val open = store.todayTasks().filter { it.id !in pendingIds }
-    val next = open.firstOrNull { it.id == chosen } ?: open.firstOrNull()
+    val next = open.firstOrNull { it.id == data.pickedTaskId } ?: open.firstOrNull()
     val doneToday = data.tasks.count { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
     val total = doneToday + open.size
 
@@ -99,6 +98,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
         ) {
             WhatsNewCard(model)
             RankUpCard(model)
+            WelcomeBackCard(model)
             RewardBox(model)
 
             if (buddy != null) {
@@ -119,7 +119,8 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
                     task = next,
                     onDone = { model.completeTask(next.id) },
                     onFocus = { model.focusTaskId = next.id; go(Tab.FOCUS) },
-                    onChoose = if (open.size > 1) ({ chosen = PickForMe.choose(open.filter { it.id != next.id }, Random)?.task?.id }) else null,
+                    onChoose = if (open.size > 1 || data.pickedTaskId != next.id) ({ store.pickForMe() }) else null,
+                    picked = next.id == data.pickedTaskId,
                 )
                 // The progress card below already counts what was done, so this says only that the day is clear.
                 doneToday > 0 -> TextBox { Text("All done for today", style = MaterialTheme.typography.titleSmall) }
@@ -138,8 +139,10 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
                     PixelBar(doneToday.toFloat() / total, color = Pixel.Green, label = label)
                     val streak = store.streak.current
                     Text(if (streak == 0) "Do one thing today to start a streak." else "Streak: $streak day${if (streak == 1) "" else "s"}", style = MaterialTheme.typography.bodyMedium)
+                    RestDayRow(model)
                 }
             }
+            if (store.sees(Feature.MINI_QUESTS)) MiniQuestsCard(model, go)
 
             val more = open.filter { it.id != next?.id }.take(4)
             if (more.isNotEmpty()) {
@@ -158,10 +161,10 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
 
 /** The one recommended task, with its two actions. Completing is its own button; the rest of the card is just information. */
 @Composable
-private fun NextUp(task: Task, onDone: () -> Unit, onFocus: () -> Unit, onChoose: (() -> Unit)?) {
+private fun NextUp(task: Task, onDone: () -> Unit, onFocus: () -> Unit, onChoose: (() -> Unit)?, picked: Boolean = false) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            Text("Next up", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+            Text(if (picked) "Picked for you: +10% candies" else "Next up", style = MaterialTheme.typography.labelMedium, color = if (picked) Pixel.Green else Pixel.InkSoft)
             Text(task.title, style = MaterialTheme.typography.titleSmall, maxLines = 3)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 RankBadge(task.rank)
@@ -170,7 +173,7 @@ private fun NextUp(task: Task, onDone: () -> Unit, onFocus: () -> Unit, onChoose
             PixelButton("Done", onDone, Modifier.fillMaxWidth(), Pixel.Green)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth()) {
                 PixelButton("Focus on this", onFocus, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                if (onChoose != null) PixelButton("Pick another", onChoose, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                if (onChoose != null) PixelButton(if (picked) "Pick another" else "Pick for me", onChoose, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
         }
     }
@@ -200,6 +203,67 @@ private fun RankProgress(points: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         ExpBar(if (high == null) 1f else (points - low).toFloat() / (high - low), label, color = Pixel.Yellow)
         Text(label, style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.9f))
+    }
+}
+
+/** A rest day pauses the streak without using the week's free miss; a day that already counted needs none. */
+@Composable
+private fun RestDayRow(model: AppModel) {
+    val store = model.store
+    val day = store.streakDay
+    if (day in model.data.activeDays) return
+    val resting = day in model.data.restDays
+    var refused by remember { mutableStateOf(false) }
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        Text(
+            if (resting) "Today is a rest day. Rest well." else if (refused) "No rest days left this month." else "Need a break? Rest days keep your streak.",
+            Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+        )
+        PixelButton(if (resting) "Undo" else "Rest today", { refused = !store.toggleRestDay(day) }, color = Pixel.InkSoft, compact = true)
+    }
+}
+
+/** Three small actions a day, each a berry (honour system). "Open the task you've been avoiding" starts 5 minutes on it. */
+@Composable
+private fun MiniQuestsCard(model: AppModel, go: (Tab) -> Unit) {
+    val store = model.store
+    val quests = store.miniQuests()
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("Mini-quests", style = MaterialTheme.typography.titleSmall)
+            quests.forEach { q ->
+                val done = store.miniQuestDone(q.id)
+                val avoided = q.kind == MiniQuest.Kind.AVOIDED_TASK
+                val oldest = if (avoided) store.oldestOpenTask() else null
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Text(q.text, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (done) Pixel.InkSoft else Color.Unspecified)
+                    when {
+                        done -> Text("Done", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+                        avoided && oldest != null && model.data.focus == null -> PixelButton("Start 5 min", {
+                            store.completeMiniQuest(q.id)
+                            store.startFocus(FocusRules.justFiveMinutes().minutesRoundedUp, deepFocus = false, taskId = oldest.id)
+                            go(Tab.FOCUS)
+                        }, color = Pixel.Blue, compact = true)
+                        else -> PixelButton("Done", { if (store.completeMiniQuest(q.id)) model.effect(Sfx.HEAL) }, color = Pixel.Green, compact = true)
+                    }
+                }
+            }
+            Text("A berry each, and one more for all three.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            if (store.canRerollMiniQuests()) PixelButton("Different ones", { store.rerollMiniQuests() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+        }
+    }
+}
+
+/** After a week or more away: a gift and a fresh start, never a scolding. */
+@Composable
+private fun WelcomeBackCard(model: AppModel) {
+    if (!model.store.welcomeBackDue()) return
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("Welcome back!", style = MaterialTheme.typography.titleSmall)
+            Text("It's good to see you. Here's a little something to start again with.", style = MaterialTheme.typography.bodyLarge)
+            PixelButton("Open the gift", { model.store.claimWelcomeBack(); model.effect(Sfx.HEAL) }, Modifier.fillMaxWidth(), Pixel.Green)
+        }
     }
 }
 

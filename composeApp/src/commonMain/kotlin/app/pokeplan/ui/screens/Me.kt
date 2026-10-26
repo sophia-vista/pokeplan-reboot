@@ -164,6 +164,23 @@ private fun GrowthView(model: AppModel) {
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         growthRanges.forEach { d -> TabButton("$d days", d == days, { days = d }, Modifier.weight(1f)) }
     }
+    Insights.estimateAccuracy(model.data.tasks)?.let { acc ->
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("Your estimates", style = MaterialTheme.typography.titleMedium)
+                val pct = (acc.averageRatio * 100).roundToInt()
+                Text(
+                    when (acc.bias) {
+                        Insights.Bias.UNDERESTIMATES -> "Tasks take about $pct% of what you guess. Adding a little time to estimates may help."
+                        Insights.Bias.OVERESTIMATES -> "Tasks take about $pct% of what you guess: you're quicker than you think."
+                        Insights.Bias.ABOUT_RIGHT -> "Your guesses are about right ($pct% of the estimate)."
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                Text("From ${acc.samples} finished tasks with an estimate and focus time, all time.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+        }
+    }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Where your effort went", style = MaterialTheme.typography.titleMedium)
