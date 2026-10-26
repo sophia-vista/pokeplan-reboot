@@ -47,6 +47,10 @@ class FocusSessionTest {
         val s = start().apply(FocusEvent.ScreenLocked, 5 * minute)
         assertIs<Phase.Running>(s.phase)
         assertEquals(Phase.Completed(25 * minute), s.tick(26 * minute).phase)
+        // The app pauses as the screen goes off, so the lock can arrive a moment after the leave.
+        val late = start().apply(FocusEvent.Left, 5 * minute).apply(FocusEvent.ScreenLocked, 5 * minute + 200)
+        assertIs<Phase.Running>(late.tick(10 * minute).phase)
+        assertEquals(10 * minute, late.focusedMillis(10 * minute), "time with the screen off counts")
     }
 
     @Test

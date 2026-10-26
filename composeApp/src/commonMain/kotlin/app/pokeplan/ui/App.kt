@@ -45,6 +45,7 @@ import app.pokeplan.app.cloud.SyncStatus
 import io.ktor.client.HttpClient
 import app.pokeplan.ui.screens.CollectionScreen
 import app.pokeplan.ui.screens.FocusScreen
+import app.pokeplan.ui.screens.FocusWatch
 import app.pokeplan.ui.screens.HomeScreen
 import app.pokeplan.ui.screens.MeScreen
 import app.pokeplan.ui.screens.OnboardingScreen
@@ -74,6 +75,8 @@ class AppModel(
     val files: FileSaver? = null,
     /** The phone's calendars, read-only; null where there are none to read (desktop, web). */
     val calendars: CalendarSource? = null,
+    /** Whether the screen is off or a call is on, for focus sessions; null where the platform cannot tell. */
+    val phone: PhoneState? = null,
 ) {
     /** A light vibration, if the platform can and Haptics is on in Settings. */
     fun haptic() {
@@ -143,6 +146,7 @@ fun App(
     haptics: HapticPlayer? = null,
     files: FileSaver? = null,
     calendars: CalendarSource? = null,
+    phone: PhoneState? = null,
     /** Called after every change to the saved data (the Android app uses it to keep its widgets up to date). */
     onDataChanged: ((AppData) -> Unit)? = null,
     /** Called when the app switches between the light and dark colours, so the host can match the system bar icons. */
@@ -152,7 +156,7 @@ fun App(
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
         val client = if (cloud.enabled) CloudClient(cloud, HttpClient()) { clock.nowMillis() } else null
-        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries, haptics, files, calendars).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask }
+        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries, haptics, files, calendars, phone).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask }
     }
     val store = model.store
     if (onDataChanged != null) DisposableEffect(store) {
@@ -226,6 +230,8 @@ private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab, launche
             launch.tab?.let { selected = it.name }
         }
     }
+
+    if (focusTab) FocusWatch(model)
 
     // The red header colour continues under the status bar and the white tab bar under the system navigation bar, so the
     // system bars match the app instead of showing the cream page colour. The keyboard lifts the whole column.
