@@ -1,11 +1,11 @@
 # Supabase backend
 
 One Supabase project serves every Pokémon app (see "Platform and apps" in `docs/design.md`). The shared game lives in the
-`platform` schema, each app has its own schema (`plan` now, `health` later).
+`platform` schema, each app has its own schema (`plan`, `care`; `health` later).
 
 | Path | What |
 |---|---|
-| `migrations/` | The database, in order. `…01_platform` (profiles, Pokémon, bag, ledger), `…02_plan` (planner tables), `…03_state_functions` (`load_state`, `apply_outcome`), `…04_social` (friends, leaderboard, gifts), `…05_guardians`, `…06_cloud_save`, `…07_egg_tickets` (offline hatching), `…08_plan_saves` (the cloud save moves to `plan.saves`; the rules version on the ledger) |
+| `migrations/` | The database, in order. `…01_platform` (profiles, Pokémon, bag, ledger), `…02_plan` (planner tables), `…03_state_functions` (`load_state`, `apply_outcome`), `…04_social` (friends, leaderboard, gifts), `…05_guardians`, `…06_cloud_save`, `…07_egg_tickets` (offline hatching), `…08_plan_saves` (the cloud save moves to `plan.saves`; the rules version on the ledger), `…09_care` (Care's opt-in cloud copy, `care.saves`: its own version, readable and deletable only by its player, never game state) |
 | `tests/` | SQL tests, run by `tests/run.sh` on a throwaway PostgreSQL 16 (no Supabase needed) |
 | `functions/reward/` | The Edge Function that grants rewards by running the Kotlin engine compiled to JavaScript |
 

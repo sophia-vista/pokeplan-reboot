@@ -21,6 +21,8 @@ import app.pokeplan.core.pokemon.Stat
 import app.pokeplan.core.pokemon.Transfer
 import app.pokeplan.core.pokemon.TransferBlock
 import app.pokeplan.core.reward.AchievementEvent
+import app.pokeplan.core.reward.CareEvent
+import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.EffortEvent
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.core.reward.RewardEngine
@@ -90,7 +92,7 @@ class GameStore(
     private val clock: Clock,
     private val zone: TimeZone = TimeZone.currentSystemDefault(),
     private val rng: Random = Random,
-) {
+) : World {
     var data: AppData = load()
         private set
 
@@ -273,6 +275,25 @@ class GameStore(
         )
         val outcome = RewardEngine.achievement(d.player, event, rng)
         return log(source, outcome.rewards, d.copy(player = outcome.state, activeDays = d.activeDays + today))
+    }
+
+    /**
+     * Pays a Care moment into the shared world, at most [CARE_DAILY_CAP] of each kind a day whatever the Care module asks
+     * (ecosystem.md, section 5: each module's share is capped). Returns null when nothing was paid (not started, or capped).
+     * The log says only "Care" and the kind, never what the routine was.
+     */
+    override fun care(event: CareEvent): List<Reward>? {
+        if (!data.onboarded) return null
+        val key = "care-${event.kind.name}-$today"
+        val paidToday = data.counters[key] ?: 0
+        if (paidToday >= CARE_DAILY_CAP.getValue(event.kind)) return null
+        val outcome = RewardEngine.care(data.player, event, rng)
+        update { d ->
+            // Only today's counters are kept.
+            val counters = d.counters.filterKeys { !it.startsWith("care-") || it.endsWith("-$today") } + (key to paidToday + 1)
+            log(CARE_SOURCES.getValue(event.kind), outcome.rewards, d.copy(player = outcome.state, counters = counters))
+        }
+        return outcome.rewards
     }
 
     // --- tasks --------------------------------------------------------------------------------------------------------
@@ -999,6 +1020,12 @@ class GameStore(
         /** Friendship a day that petting can give. */
         const val PET_DAILY_CAP = 10
         const val LOG_SIZE = 50
+
+        /** The most of each Care kind the world pays a day *(tune)*, a backstop to the same limits in CareRules. */
+        val CARE_DAILY_CAP: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 5, CareKind.CALM_BREAK to 3, CareKind.WEEKLY_RHYTHM to 1)
+        private val CARE_SOURCES = mapOf(
+            CareKind.ROUTINE to "Care: a routine", CareKind.CALM_BREAK to "Care: a calm break", CareKind.WEEKLY_RHYTHM to "Care: kept a rhythm",
+        )
 
         /** Parts of the save that stay on this device: never uploaded, kept when the cloud save is adopted. */
         private val DEVICE_ONLY = setOf("account", "eggTickets", "shownCalendars")

@@ -29,6 +29,7 @@ dependencyResolutionManagement {
 
 include(":pokemon-core")
 include(":plan-core")
+include(":care-core")
 include(":app-core")
 include(":composeApp")
 include(":androidApp")

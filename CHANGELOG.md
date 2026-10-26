@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.25.0
+
+- Behind the scenes, the Care module's first part (no screens yet): self-care routines, 1 to 2 minute calm breaks, private mood check-ins with an optional note and tags, gratitude and reflection prompts, and rolling trends with personal bests instead of streaks. Care keeps its own save, apart from Plan's. Doing earns: a routine grows your buddy's friendship, a calm break adds a berry, and care on 4 days of a week ("kept a rhythm") gives 3 berries, each with a little trainer rank, capped each day. A mood, a note or a reflection never earns anything. Reward rules version 2. Online, Care's copy is opt-in and only yours (`care.saves`); push the new migration to add it.
+
 ## 0.24.2
 
 - Fix: undoing a habit and ticking it again the same day no longer pays twice. A habit now remembers the last day it paid, apart from the days it was done.

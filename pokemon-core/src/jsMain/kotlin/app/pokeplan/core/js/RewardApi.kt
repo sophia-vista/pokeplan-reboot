@@ -22,4 +22,6 @@ object RewardApi {
     fun effort(stateJson: String, eventJson: String, seed: Int): String = RewardJson.effort(stateJson, eventJson, seed)
 
     fun achievement(stateJson: String, eventJson: String, seed: Int): String = RewardJson.achievement(stateJson, eventJson, seed)
+
+    fun care(stateJson: String, eventJson: String, seed: Int): String = RewardJson.care(stateJson, eventJson, seed)
 }

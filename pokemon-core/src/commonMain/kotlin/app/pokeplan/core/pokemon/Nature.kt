@@ -4,10 +4,10 @@ import kotlin.random.Random
 
 /** How a Pokémon likes to bond; set by its nature. See "Bond styles" in docs/design.md. */
 enum class BondStyle {
-    /** Focus sessions with it as buddy give double friendship. */
+    /** Focus sessions and calm breaks with it as buddy give double friendship. */
     PRESENCE,
 
-    /** Petting gives double friendship. */
+    /** Petting and Care routines give double friendship. */
     COMFORT,
 
     /** Berries give double friendship. */

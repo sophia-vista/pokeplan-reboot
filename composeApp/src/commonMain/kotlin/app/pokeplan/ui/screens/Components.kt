@@ -125,5 +125,6 @@ fun Reward.iconItem(): String? = when (this) {
     is Reward.Coins -> "amulet-coin"
     is Reward.ItemDrop -> itemId
     is Reward.Evs -> "protein"
+    is Reward.Friendship -> "friend-ball"
     is Reward.Hatched -> null
 }

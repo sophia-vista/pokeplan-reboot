@@ -1,6 +1,6 @@
 # The economy: sources, sinks and caps
 
-Every reward source, every use and every cap, as the code has them under **rules version 1** (`RewardRules.VERSION` in
+Every reward source, every use and every cap, as the code has them under **rules version 2** (`RewardRules.VERSION` in
 `pokemon-core`). This is principle 6 of `docs/ecosystem.md` ("every reward source, cap and use is written down"). The
 reasons and pacing targets are in `docs/design.md`; the simulated pacing is in `docs/economy-report.md`.
 
@@ -10,7 +10,9 @@ version). Re-run `./gradlew :plan-core:simulateEconomy` after it. Names in `code
 
 Where the rules live: `RewardEngine`, `TrainerRank`, `CandyRewards` and `Egg` (the rules versioned above, also run by the
 server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`, `Shiny`), `EvolutionRules` in
-`pokemon-core`; `TaskRules`, `Goal`, `Review`, `Streak`, `FocusSession` in `plan-core`; `GameStore` and `Quests` in `app-core`.
+`pokemon-core`; `TaskRules`, `Goal`, `Review`, `Streak`, `FocusSession` in `plan-core`; `CareRules` in `care-core`; `GameStore`, `CareStore` and `Quests` in `app-core`.
+
+**Version history.** 1: everything before Care. 2: the Care events (`RewardEngine.care`) and the friendship sources Routine and Calm break; nothing that version 1 paid changed.
 
 ## 1. Sources
 
@@ -30,6 +32,10 @@ server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`,
 | **Friend's gift** opened | 3 Rare Candies (one gift per friend a day) | `platform.send_gift` |
 | **Starter** | The starter (never shiny) and a tutorial task that pays at once | `GameStore.start` |
 | **Petting the buddy** | Friendship (pet), up to 10 a day | `PET_DAILY_CAP` |
+| **Care: routine done** (first tick of the day for that routine) | Buddy friendship (routine) · 1 trainer point. At most 5 routines a day | `CARE_POINTS`, `CareRules.ROUTINES_PAID_PER_DAY` |
+| **Care: calm break** (1 to 2 minutes; under a minute is kept but pays nothing) | Buddy friendship (calm break) · 1 random berry · 1 trainer point. At most 3 a day | `CareRules.BREAKS_PAID_PER_DAY`, `BREAK_MIN_SECONDS` |
+| **Care: kept a rhythm** (care done on 4 days of a week) | 3 random berries · 5 trainer points, once a week | `RHYTHM_BERRIES`, `RHYTHM_POINTS`, `CareRules.RHYTHM_DAYS` |
+| **Care: mood check-in, note, reflection** | Nothing, ever: entering sensitive information never earns (ecosystem.md, section 6) | |
 | **A bag stack is full** | 1 coin per candy or item that did not fit | `Inventory.addCapped` |
 
 Task perks: candies × 1.10 when finished on time (by its due date) and × 1.10 when it had focus minutes, then the buddy's
@@ -90,8 +96,10 @@ Never dropped: Ability Patch, Mega Stones, the Dynamax Band. Focus sessions neve
 | Task or habit | 1 | the buddy |
 | Berry | 1 | the Pokémon fed |
 | Level up | 1 | the Pokémon |
+| Care routine | 1 | the buddy, up to 5 routines a day |
+| Calm break | 1 | the buddy, up to 3 a day |
 
-Bond styles (from the nature) double their matching source (Comfort: pet, Presence: focus, Gifts: berry); Balanced gets
+Bond styles (from the nature) double their matching source (Comfort: pet and routine, Presence: focus and calm break, Gifts: berry); Balanced gets
 1.5 × on every source, rounded up. Friendship never goes down.
 
 ### Perks (`Perks`)
@@ -125,6 +133,7 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Level | 100; legendaries and mythicals are not fed | `CandyRules.MAX_LEVEL` |
 | Friendship | 255; friendship evolutions at 220 | `FriendshipRules.MAX`, `EVOLVE_AT` |
 | Pet friendship | 10 a day | `PET_DAILY_CAP` |
+| Care | 5 routines, 3 calm breaks and 1 rhythm a day (the world checks again: `GameStore.CARE_DAILY_CAP`), at most 8 trainer points a day, plus 5 on a rhythm day | `CareRules`, `CARE_DAILY_CAP` |
 | EVs | 252 a stat, 510 in all | `StatCalculator` |
 | Training plan | 2 stats | `OwnedPokemon` |
 | Party | 6 | `OwnedPokemon.PARTY_SIZE` |
@@ -142,7 +151,7 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Friend gifts | 1 per friend a day | `platform.send_gift` |
 | Trainer points, coins | no cap; points never go down (the server refuses it) | `apply_outcome` |
 
-There is no daily cap on tasks, habits or focus sessions yet: `RewardEngine` leaves daily limits to the caller, and
+Care is the first module with a per-module daily cap on the world's side (`CARE_DAILY_CAP`). There is no daily cap on tasks, habits or focus sessions yet: `RewardEngine` leaves daily limits to the caller, and
 design.md's "daily reward limit per app" *(tune)* is not built. It matters once a second module earns through the same door.
 
 ## 4. What can be lost
