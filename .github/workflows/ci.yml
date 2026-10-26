@@ -29,6 +29,8 @@ jobs:
           ./gradlew :androidApp:assembleDebug --no-daemon
       - name: Keep the APK
         uses: actions/upload-artifact@v4
+        # A convenience, not a check: a full artifact storage quota must not fail the PR or skip the checks below.
+        continue-on-error: true
         with:
           name: pokeplan-debug-apk
           path: androidApp/build/outputs/apk/debug/androidApp-debug.apk
