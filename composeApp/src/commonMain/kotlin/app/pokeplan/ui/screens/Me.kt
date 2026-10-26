@@ -46,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.Category
+import app.pokeplan.plan.Insights
 import app.pokeplan.plan.DeviceCalendar
 import app.pokeplan.plan.GoalRules
 import app.pokeplan.plan.Reviews
@@ -83,7 +84,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
                 TrainerCard(model)
                 MenuGrid(
                     (listOf(
-                        MenuEntry("GROWTH", "exp-share", "Growth", "your week", tint = Pixel.Green),
+                        MenuEntry("GROWTH", "exp-share", "Growth", "effort and trends", tint = Pixel.Green),
                         MenuEntry("GOALS", "star-piece", "Goals", if (data.goals.size == 1) "1 goal" else "${data.goals.size} goals", tint = Pixel.Warning),
                         MenuEntry("REVIEW", "journal", "Review", if (model.store.canReview()) "ready this week" else "done this week", badge = if (model.store.canReview()) 1 else 0, tint = Pixel.Blue),
                     ) + (if (model.social != null) listOf(MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = androidx.compose.ui.graphics.Color(0xFFEC4899))) else emptyList()) + listOf(
@@ -112,47 +113,136 @@ private fun TrainerCard(model: AppModel) {
     val data = model.data
     val buddy = data.player.buddy
     val streak = model.store.streak
+    val rank = TrainerRank.rankFor(data.player.trainerPoints)
     TextBox {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (buddy != null) Sprite(buddy.form.id, buddy.isShiny, buddy.nickname, size = 96.dp)
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(data.trainerName, style = MaterialTheme.typography.titleMedium)
-                Text("${data.player.trainerPoints} trainer points", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                Text("${data.tasks.count { it.state == TaskState.DONE }.let { if (it == 1) "1 task" else "$it tasks" }} done, ${data.focusHistory.filter { it.completed }.sumOf { it.minutes }} min focused", style = MaterialTheme.typography.bodyMedium)
-                Text("Streak ${streak.current}, best ${streak.longest}", style = MaterialTheme.typography.bodyMedium)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                if (buddy != null) Sprite(buddy.form.id, buddy.isShiny, buddy.nickname, size = 96.dp)
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(data.trainerName, style = MaterialTheme.typography.titleMedium)
+                    Text("${TrainerRank.names[rank.coerceIn(0, TrainerRank.names.lastIndex)]}, ${data.player.trainerPoints} trainer points", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    if (buddy != null) Text("Buddy: ${buddy.nickname}, Lv. ${buddy.level}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                }
+            }
+            // Each number says what it counts and over what time, so none is mistaken for another.
+            Text("All time: ${plural(data.tasks.count { it.state == TaskState.DONE }, "task")} finished, ${data.focusHistory.filter { it.completed }.sumOf { it.minutes }} min focused", style = MaterialTheme.typography.bodyMedium)
+            Text("Streak: ${plural(streak.current, "day")} in a row (best ${streak.longest})", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                "A day counts with a paid task or a finished focus session. One missed day a week is free, and rest days don't count against you.",
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            )
+        }
+    }
+}
+
+private fun plural(n: Int, word: String) = if (n == 1) "1 $word" else "$n ${word}s"
+
+// ----- Growth ---------------------------------------------------------------------------------------------------------
+
+/** The ranges the balance wheel can show (design.md, Growth). */
+private val growthRanges = listOf(7, 30, 90)
+
+@Composable
+private fun GrowthView(model: AppModel) {
+    var days by remember { mutableStateOf(7) }
+    val wheel = model.store.wheel(days)
+    val trend = model.store.trend(6)
+    val weekStart = if (model.data.settings.weekStartsOnMonday) "Monday" else "Sunday"
+
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        growthRanges.forEach { d -> TabButton("$d days", d == days, { days = d }, Modifier.weight(1f)) }
+    }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Where your effort went", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "The last $days days, today included: tasks finished and minutes focused in each area. The share counts " +
+                    "${Insights.MINUTES_PER_TASK_POINT} minutes of focus as one task; focus without a task counts as Personal.",
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            )
+            // Only the areas with something in them get a row; the quiet ones are named on one line.
+            val (busy, quiet) = Category.entries.partition { wheel.score(it) > 0 }
+            if (busy.isEmpty()) Text("Nothing finished in the last $days days yet.", style = MaterialTheme.typography.bodyLarge)
+            busy.forEach { c ->
+                val tasks = wheel.tasksDone[c] ?: 0
+                val minutes = wheel.focusMinutes[c] ?: 0
+                val share = (wheel.share(c) * 100).roundToInt()
+                Column(Modifier.semantics(mergeDescendants = true) {
+                    contentDescription = "${c.label}: ${plural(tasks, "task")}, $minutes minutes focused, $share percent of your effort"
+                }) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(c.label, Modifier.width(84.dp), style = MaterialTheme.typography.bodyMedium)
+                        Box(Modifier.weight(1f)) { PixelBar(wheel.share(c).toFloat(), color = categoryColor(c)) }
+                        Text("$share%", Modifier.width(44.dp), style = MaterialTheme.typography.bodyMedium)
+                    }
+                    Text("${plural(tasks, "task")}, $minutes min", Modifier.padding(start = 92.dp), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+                }
+            }
+            if (busy.isNotEmpty() && quiet.isNotEmpty()) {
+                Text("Nothing yet in ${quiet.joinToString { it.label }}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+        }
+    }
+    WeekBars(
+        "Tasks finished per week", "Tasks ticked off in each of the last 6 weeks (weeks start on $weekStart).",
+        trend, { it.tasksDone }, { it.toString() }, Pixel.Blue,
+    )
+    WeekBars(
+        "Focus per week", "Minutes from finished sessions only; a session that went cold doesn't count.",
+        trend, { it.focusMinutes }, { if (it >= 60) "${it / 60}h ${it % 60}m" else "${it}m" }, Pixel.Green,
+    )
+    GoalsSummary(model)
+}
+
+/** A small bar chart of the last weeks, with the number above each bar and the week's first day below it. */
+@Composable
+private fun WeekBars(
+    title: String, note: String, weeks: List<Insights.WeekPoint>, value: (Insights.WeekPoint) -> Int, label: (Int) -> String, color: Color,
+) {
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            val max = (weeks.maxOfOrNull(value) ?: 0).coerceAtLeast(1)
+            Row(Modifier.fillMaxWidth().height(130.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Bottom) {
+                weeks.forEachIndexed { i, w ->
+                    val v = value(w)
+                    val week = if (i == weeks.lastIndex) "this week" else "week of ${w.weekStart.dayMonth()}"
+                    Column(
+                        Modifier.weight(1f).semantics(mergeDescendants = true) { contentDescription = "$title, $week: ${label(v)}" },
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(label(v), style = MaterialTheme.typography.labelMedium, maxLines = 1)
+                        Box(Modifier.fillMaxWidth().height((80 * v / max + 4).dp).background(color, RoundedCornerShape(6.dp)))
+                        Text(if (i == weeks.lastIndex) "now" else w.weekStart.dayMonth(), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, maxLines = 1)
+                    }
+                }
             }
         }
     }
 }
 
-// ----- Growth ---------------------------------------------------------------------------------------------------------
-
+/** Goal progress, kept apart from tasks and time: a goal moves only when its milestones (or linked tasks) are done. */
 @Composable
-private fun GrowthView(model: AppModel) {
-    val wheel = model.store.wheel(7)
-    val trend = model.store.trend(6)
+private fun GoalsSummary(model: AppModel) {
+    val goals = model.data.goals
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("This week by area", style = MaterialTheme.typography.titleMedium)
-            Category.entries.forEach { c ->
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(c.label, Modifier.width(84.dp), style = MaterialTheme.typography.bodyMedium)
-                    Box(Modifier.weight(1f)) { PixelBar(wheel.share(c).toFloat(), color = categoryColor(c)) }
-                    Text("${(wheel.share(c) * 100).toInt()}%", Modifier.width(44.dp), style = MaterialTheme.typography.bodyMedium)
-                }
+            Text("Goal progress", style = MaterialTheme.typography.titleMedium)
+            if (goals.isEmpty()) {
+                Text("No goals yet. Add one under Me, Goals.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                return@Column
             }
-        }
-    }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Tasks finished, last 6 weeks", style = MaterialTheme.typography.titleMedium)
-            val maxTasks = (trend.maxOfOrNull { it.tasksDone } ?: 0).coerceAtLeast(1)
-            Row(Modifier.fillMaxWidth().height(110.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Bottom) {
-                trend.forEach { w ->
-                    Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("${w.tasksDone}", style = MaterialTheme.typography.labelMedium)
-                        Box(Modifier.fillMaxWidth().height((80 * w.tasksDone / maxTasks + 4).dp).background(Pixel.Blue, RoundedCornerShape(6.dp)))
-                    }
+            Text(
+                "${goals.count { it.completedAtMillis != null }} of ${plural(goals.size, "goal")} reached. Progress is milestones done (or linked tasks, for a goal without milestones).",
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            )
+            goals.filter { it.completedAtMillis == null }.take(5).forEach { g ->
+                val pct = (GoalRules.progress(g, model.data.tasks) * 100).roundToInt()
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(g.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                    Box(Modifier.width(96.dp)) { PixelBar(pct / 100f, color = Pixel.Warning) }
+                    Text("$pct%", Modifier.width(44.dp), style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }
