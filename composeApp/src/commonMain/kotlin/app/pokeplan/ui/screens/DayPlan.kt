@@ -25,6 +25,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -69,7 +83,6 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
-import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.coroutines.Dispatchers
@@ -276,9 +289,29 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
 
     Box(Modifier.fillMaxWidth().onGloballyPositioned { grid.page = it }) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            // Like Fantastical and Google Calendar: what is shown and the arrows on one line, the view switch and the one
+            // action under it, then (for a day) a strip of the week's days to jump between, then straight to the hours.
+            val away = if (week) weekOffset > 0 else offset > 0
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f).semantics(mergeDescendants = true) { heading() }) {
+                    Text(
+                        if (week) "${days.first().dayMonth()} – ${days.last().dayMonth()}"
+                        else when (offset) { 0 -> "Today"; 1 -> "Tomorrow"; else -> dayNames[days.first().dayOfWeek.ordinal] },
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Text(
+                        if (week) (if (weekOffset == 0) "Next 7 days" else "The week after") else days.first().short(),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                ArrowButton("‹", if (week) "Earlier week" else "Day before", enabled = away) { if (week) weekOffset = 0 else offset -= 1 }
+                ArrowButton("›", if (week) "Later week" else "Next day", enabled = if (week) weekOffset < 1 else offset < DAYS_AHEAD) {
+                    if (week) weekOffset = 1 else offset += 1
+                }
+            }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                TabButton("Day", !week, { week = false })
-                TabButton("Week", week, { week = true })
+                Segmented(listOf("Day", "Week"), if (week) 1 else 0) { week = it == 1 }
+                if (away) PixelButton("Today", { offset = 0; weekOffset = 0 }, color = Pixel.InkSoft, compact = true)
                 Spacer(Modifier.weight(1f))
                 PixelButton("New event", {
                     val day = days.first()
@@ -287,61 +320,44 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
                     picked = null
                 }, color = OwnEventColor, compact = true)
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                if (week) {
-                    PixelButton("Earlier", { weekOffset = 0 }, color = Pixel.InkSoft, enabled = weekOffset > 0, compact = true)
-                    Text(if (weekOffset == 0) "Next 7 days" else "The week after", style = MaterialTheme.typography.titleSmall)
-                    PixelButton("Later", { weekOffset = 1 }, color = Pixel.InkSoft, enabled = weekOffset < 1, compact = true)
-                } else {
-                    PixelButton("Earlier", { offset -= 1 }, color = Pixel.InkSoft, enabled = offset > 0, compact = true)
-                    Text(
-                        when (offset) { 0 -> "Today"; 1 -> "Tomorrow"; else -> days.first().short() },
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    PixelButton("Later", { offset += 1 }, color = Pixel.InkSoft, enabled = offset < DAYS_AHEAD, compact = true)
-                }
-            }
 
             if (!week) {
+                DayStrip(store.today, offset, busy = { day -> tasks.any { it.isOpen && it.planned == day } || own.any { it.day == day } }) { offset = it }
                 val plan = plans.single()
                 val load = DayLoad.compute(plan.blocks.map { it.task }.filter { it.isOpen } + plan.tray, busyMinutes = plan.busyMinutes)
                 Text(
-                    "${duration(load.plannedMinutes)} planned, ${duration(load.freeMinutes)} awake." +
-                        if (load.level == DayLoad.Level.OVER) " That's a lot, move something?" else "",
+                    "${duration(load.plannedMinutes)} planned · ${duration(load.freeMinutes)} awake" +
+                        if (load.level == DayLoad.Level.OVER) ". That's a lot, move something?" else "",
                     style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
                 )
-            }
-
-            val allDay = plans.flatMap { p -> p.allDay.map { p.day to it } }
-            if (allDay.isNotEmpty()) {
-                SectionLabel("All day")
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    allDay.forEach { (day, e) -> EventChip(e, if (week) dayNames[day.dayOfWeek.ordinal] else null) }
-                }
             }
 
             draft?.let { d -> NewEventPanel(d, days.size > 1, { draft = it }, { store.addEvent(d.title, d.day, LocalTime(d.start / 60, d.start % 60), d.minutes); draft = null }) { draft = null } }
             if (chosen != null) PickedPanel(model, chosen, days) { picked = null }
             if (chosenEvent != null) EventPanel(model, chosenEvent, days.size > 1) { picked = null }
 
-            TrayChips("No time yet", tray, picked, pick, grid, ::drop)
-            TrayChips("From the inbox", inbox, picked, pick, grid, ::drop)
-            if (chosen == null && chosenEvent == null && draft == null) {
-                Text(
-                    "Hold a task and drag it to an hour, or tap it, then an hour. Drag a block's lower edge to change how long it takes.",
-                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                )
-            }
+            Tray(tray, inbox, picked, hint = chosen == null && chosenEvent == null && draft == null, pick, grid, ::drop)
 
-            if (week) WeekHeader(days, store.today) { day -> offset = store.today.daysUntil(day); week = false }
-            val drafted = draft?.let { Target(it.day, it.start, it.minutes) }
-            Hours(model, plans, firstHour, endHour, compact = week, picked, pick, own.associateBy { it.id }, drafted, grid, ::drop) { day, hour ->
-                val d = draft
-                if (d != null) draft = d.copy(day = day, start = hour * 60, minutes = PlanEvent.fit(hour * 60, d.minutes))
-                else {
-                    chosen?.let { store.scheduleTask(it.id, day, LocalTime(hour, 0)) }
-                    chosenEvent?.let { store.updateEvent(it.id, day = day, start = LocalTime(hour, 0)) }
-                    picked = null
+            // The calendar itself, on one panel: the days (in a week), the all-day row, then the hours.
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Pixel.Panel, panelShape)
+                    .border(1.dp, Pixel.Border, panelShape)
+                    .padding(start = Spacing.XS, end = Spacing.S, top = Spacing.S, bottom = Spacing.M),
+                verticalArrangement = Arrangement.spacedBy(Spacing.S),
+            ) {
+                if (week) WeekHeader(days, store.today) { day -> offset = store.today.daysUntil(day); week = false }
+                AllDayRow(plans)
+                val drafted = draft?.let { Target(it.day, it.start, it.minutes) }
+                Hours(model, plans, firstHour, endHour, compact = week, picked, pick, own.associateBy { it.id }, drafted, grid, ::drop) { day, hour ->
+                    val d = draft
+                    if (d != null) draft = d.copy(day = day, start = hour * 60, minutes = PlanEvent.fit(hour * 60, d.minutes))
+                    else {
+                        chosen?.let { store.scheduleTask(it.id, day, LocalTime(hour, 0)) }
+                        chosenEvent?.let { store.updateEvent(it.id, day = day, start = LocalTime(hour, 0)) }
+                        picked = null
+                    }
                 }
             }
         }
@@ -374,24 +390,132 @@ private fun Carried(d: Drag, grid: Grid) {
     )
 }
 
-/** The week's day names over their columns; tapping one opens that day. */
+/** A round ‹ or › button that steps a day or a week. */
+@Composable
+private fun ArrowButton(symbol: String, label: String, enabled: Boolean, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .size(Spacing.Target)
+            .clip(CircleShape)
+            .clickable(enabled = enabled, role = Role.Button, onClickLabel = label, onClick = onClick)
+            .semantics { contentDescription = label },
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(symbol, style = MaterialTheme.typography.titleMedium, color = if (enabled) Pixel.Ink else Pixel.Border)
+    }
+}
+
+/** A segmented control: one rounded track, the chosen segment raised on it (iOS and Material 3 style). */
+@Composable
+private fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
+    val track = RoundedCornerShape(12.dp)
+    val thumb = RoundedCornerShape(10.dp)
+    Row(Modifier.height(44.dp).background(Pixel.Shade, track).padding(3.dp)) {
+        options.forEachIndexed { i, label ->
+            val on = i == selected
+            Box(
+                Modifier
+                    .fillMaxHeight()
+                    .clip(thumb)
+                    .background(if (on) Pixel.Panel else Color.Transparent, thumb)
+                    .border(1.dp, if (on) Pixel.Border else Color.Transparent, thumb)
+                    .clickable(role = Role.Tab) { onSelect(i) }
+                    .semantics { this.selected = on }
+                    .padding(horizontal = Spacing.L),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    label, style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (on) FontWeight.Bold else FontWeight.Medium),
+                    color = if (on) Pixel.Ink else Pixel.InkSoft,
+                )
+            }
+        }
+    }
+}
+
+/** One day in a strip of days: its short name over its date, the date in a filled circle when chosen, red when today. */
+@Composable
+private fun DayCell(day: LocalDate, today: LocalDate, chosen: Boolean, busy: Boolean, enabled: Boolean, label: String, onClick: () -> Unit, modifier: Modifier) {
+    val isToday = day == today
+    Column(
+        modifier
+            .alpha(if (enabled) 1f else 0.35f)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(enabled = enabled, role = Role.Button, onClickLabel = label, onClick = onClick)
+            .semantics(mergeDescendants = true) {
+                contentDescription = (if (isToday) "Today, " else "") + day.short() + if (busy) ", has plans" else ""
+                selected = chosen
+            }
+            .padding(vertical = 2.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(dayNames[day.dayOfWeek.ordinal].take(2), style = MaterialTheme.typography.bodyMedium, color = if (isToday) Pixel.Red else Pixel.InkSoft)
+        Box(
+            Modifier
+                .size(32.dp)
+                .background(
+                    when { chosen && isToday -> Pixel.Red; chosen -> Pixel.Ink; else -> Color.Transparent },
+                    CircleShape,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                "${day.day}", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                color = when { chosen -> if (isToday) Color.White else Pixel.OnInk; isToday -> Pixel.Red; else -> Pixel.Ink },
+            )
+        }
+        Box(Modifier.size(5.dp).background(if (busy) Pixel.InkSoft else Color.Transparent, CircleShape))
+    }
+}
+
+/**
+ * The seven days around the one shown, like Fantastical's day ticker and Apple Calendar's week row: tap a day to open it;
+ * a dot marks a day that has something planned. Days past how far the planner looks ahead are greyed out.
+ */
+@Composable
+private fun DayStrip(today: LocalDate, offset: Int, busy: (LocalDate) -> Boolean, open: (Int) -> Unit) {
+    val first = offset / 7 * 7
+    Row(Modifier.fillMaxWidth()) {
+        (first until first + 7).forEach { i ->
+            val day = today.plus(DatePeriod(days = i))
+            DayCell(day, today, chosen = i == offset, busy = busy(day), enabled = i <= DAYS_AHEAD, "Open the day", { open(i) }, Modifier.weight(1f))
+        }
+    }
+}
+
+/** The week's days over their columns, lined up with the hours; tapping one opens that day. */
 @Composable
 private fun WeekHeader(days: List<LocalDate>, today: LocalDate, open: (LocalDate) -> Unit) {
     Row(Modifier.fillMaxWidth().padding(start = LabelWidth)) {
         days.forEach { day ->
-            val isToday = day == today
-            Column(
-                Modifier
-                    .weight(1f)
-                    .clip(blockShape)
-                    .background(if (isToday) Pixel.Red.copy(alpha = 0.12f) else Color.Transparent, blockShape)
-                    .clickable(role = Role.Button, onClickLabel = "Open the day") { open(day) }
-                    .semantics(mergeDescendants = true) { contentDescription = day.short() }
-                    .padding(vertical = Spacing.XS),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(dayNames[day.dayOfWeek.ordinal].take(2), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                Text("${day.day}", style = MaterialTheme.typography.titleSmall, color = if (isToday) Pixel.Red else Pixel.Ink)
+            DayCell(day, today, chosen = day == today, busy = false, enabled = true, "Open the day", { open(day) }, Modifier.weight(1f))
+        }
+    }
+}
+
+/**
+ * All-day calendar events in a band above the hours, as in Google Calendar: in a week each sits in its own day's column,
+ * in a day they wrap beside the "all day" label.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun AllDayRow(plans: List<DayTimeline.Plan>) {
+    if (plans.none { it.allDay.isNotEmpty() }) return
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+        Text(
+            "all day", Modifier.width(LabelWidth).padding(top = Spacing.XS, end = Spacing.S),
+            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, textAlign = TextAlign.End, maxLines = 2,
+        )
+        if (plans.size == 1) {
+            FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                plans.single().allDay.forEach { EventChip(it) }
+            }
+        } else {
+            plans.forEach { p ->
+                Column(Modifier.weight(1f).padding(end = 2.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    p.allDay.forEach { EventChip(it, Modifier.fillMaxWidth()) }
+                }
             }
         }
     }
@@ -427,17 +551,36 @@ private fun PickedPanel(model: AppModel, task: Task, days: List<LocalDate>, clos
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+/**
+ * The tasks still waiting for an hour, on one panel like Structured's inbox and Sunsama's backlog: those planned for the
+ * day without a time, then those from the inbox, each a chip with its category's colour. [hint] says how to plan one.
+ */
 @Composable
-private fun TrayChips(label: String, tasks: List<Task>, picked: String?, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit) {
+private fun Tray(tray: List<Task>, inbox: List<Task>, picked: String?, hint: Boolean, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit) {
+    if (tray.isEmpty() && inbox.isEmpty()) return
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Text("To plan", style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+                Text("${tray.size + inbox.size}", style = MaterialTheme.typography.bodyMedium)
+            }
+            TrayGroup(if (inbox.isEmpty()) null else "No time yet", tray, picked, pick, grid, drop)
+            TrayGroup("From the inbox", inbox, picked, pick, grid, drop)
+            if (hint) Text("Hold one and drag it to an hour, or tap it, then an hour.", style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+@Composable
+private fun TrayGroup(label: String?, tasks: List<Task>, picked: String?, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit) {
     if (tasks.isEmpty()) return
-    SectionLabel(label)
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+    if (label != null) Text(label, style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+    // One row that scrolls sideways, so a long inbox never pushes the hours off the screen.
+    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         tasks.forEach { t -> key(t.id) {
-            val title = if (t.title.length > 24) t.title.take(23).trimEnd() + "…" else t.title
             val anchor = remember { Anchor() }
-            TabButton(
-                title, picked == t.id, { pick(t.id) },
+            TrayChip(
+                t, picked == t.id, { pick(t.id) },
                 Modifier
                     .alpha(if (grid.drag?.item?.id == t.id) 0.4f else 1f)
                     .dragToPlan(
@@ -448,6 +591,32 @@ private fun TrayChips(label: String, tasks: List<Task>, picked: String?, pick: (
                     ),
             )
         } }
+    }
+}
+
+/** A task waiting for an hour: its real item icon and title on a soft chip, filled dark while picked. */
+@Composable
+private fun TrayChip(t: Task, selected: Boolean, onClick: () -> Unit, modifier: Modifier) {
+    val shape = RoundedCornerShape(12.dp)
+    val color = categoryColor(t.category)
+    Row(
+        modifier
+            .defaultMinSize(minHeight = 44.dp)
+            .widthIn(max = 260.dp)
+            .clip(shape)
+            .background(if (selected) Pixel.Ink else color.copy(alpha = 0.12f), shape)
+            .border(1.dp, if (selected) Pixel.Ink else color.copy(alpha = 0.45f), shape)
+            .clickable(role = Role.Button, onClickLabel = "Pick", onClick = onClick)
+            .semantics { this.selected = selected }
+            .padding(start = Spacing.S, end = Spacing.M),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
+    ) {
+        ItemIcon(taskIcon(t), size = 24.dp, description = null)
+        Text(
+            t.title, style = MaterialTheme.typography.labelMedium, color = if (selected) Pixel.OnInk else Pixel.Ink,
+            maxLines = 1, overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -486,17 +655,32 @@ private fun Hours(
             withFrameNanos { }
         }
     }
-    Box(Modifier.fillMaxWidth().height(HourHeight * hours.size)) {
+    val half = Pixel.Border.copy(alpha = 0.6f)
+    // Hour labels sit on their line in a narrow gutter, the lines run only across the days, and a faint dashed line marks
+    // each half hour (Google Calendar, Apple Calendar).
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = LabelLift)
+            .height(HourHeight * hours.size)
+            .drawBehind {
+                val left = LabelWidth.toPx()
+                val hourPx = HourHeight.toPx()
+                val dash = PathEffect.dashPathEffect(floatArrayOf(4.dp.toPx(), 4.dp.toPx()))
+                hours.indices.forEach { i ->
+                    val y = hourPx * i
+                    drawLine(line, Offset(left - Spacing.XS.toPx(), y), Offset(size.width, y), 1.dp.toPx())
+                    drawLine(half, Offset(left, y + hourPx / 2), Offset(size.width, y + hourPx / 2), 1.dp.toPx(), pathEffect = dash)
+                }
+                drawLine(line, Offset(left, size.height), Offset(size.width, size.height), 1.dp.toPx())
+            },
+    ) {
         hours.forEachIndexed { i, h ->
-            Box(
-                Modifier
-                    .offset(y = HourHeight * i)
-                    .fillMaxWidth()
-                    .height(HourHeight)
-                    .drawBehind { drawLine(line, Offset.Zero, Offset(size.width, 0f), 1.dp.toPx()) },
-            ) {
-                Text(clock(LocalTime(h, 0)), Modifier.padding(top = Spacing.XS), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            }
+            Text(
+                clock(LocalTime(h, 0)),
+                Modifier.offset(y = HourHeight * i - LabelLift).width(LabelWidth - Spacing.S),
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, textAlign = TextAlign.End, maxLines = 1,
+            )
         }
         BoxWithConstraints(
             Modifier
@@ -508,7 +692,7 @@ private fun Hours(
             val columnWidth = maxWidth / plans.size
             plans.forEachIndexed { column, plan ->
                 val x = columnWidth * column
-                if (column > 0) Box(Modifier.offset(x = x).width(1.dp).fillMaxHeight().background(line))
+                Box(Modifier.offset(x = x).width(1.dp).fillMaxHeight().background(line))
                 if (picking) {
                     hours.forEachIndexed { i, h ->
                         val label = (if (plans.size > 1) plan.day.short() + " " else "") + clock(LocalTime(h, 0))
@@ -527,7 +711,7 @@ private fun Hours(
                     val laneWidth = columnWidth / b.lanes
                     val height = (HourHeight * ((b.endMinute - b.startMinute) / 60f)).coerceAtLeast(28.dp)
                     TimelineBlock(
-                        b, picked == b.task.id, compact, grid.drag?.item?.id == b.task.id, { pick(b.task.id) }, grid, drop,
+                        b, picked == b.task.id, compact, laneWidth >= MinTitleWidth, grid.drag?.item?.id == b.task.id, { pick(b.task.id) }, grid, drop,
                         Modifier
                             .offset(x = x + laneWidth * b.lane, y = HourHeight * ((b.startMinute - origin) / 60f))
                             .width(laneWidth)
@@ -540,7 +724,7 @@ private fun Hours(
                     val height = (HourHeight * ((b.endMinute - b.startMinute) / 60f)).coerceAtLeast(28.dp)
                     val mine = own[b.event.id]?.takeIf { b.event.isOwn }
                     EventBlock(
-                        b, compact, mine, picked == b.event.id, grid.drag?.item?.id == b.event.id, { pick(b.event.id) }, grid, drop,
+                        b, compact, laneWidth >= MinTitleWidth, mine, picked == b.event.id, grid.drag?.item?.id == b.event.id, { pick(b.event.id) }, grid, drop,
                         Modifier
                             .offset(x = x + laneWidth * b.lane, y = HourHeight * ((b.startMinute - origin) / 60f))
                             .width(laneWidth)
@@ -551,7 +735,9 @@ private fun Hours(
                 if (plan.day == model.store.today) {
                     val now = model.store.now.time.let { it.hour * 60 + it.minute }
                     if (now >= origin && now < endHour * 60) {
-                        Box(Modifier.offset(x = x, y = HourHeight * ((now - origin) / 60f)).width(columnWidth).height(2.dp).background(Pixel.Red))
+                        val y = HourHeight * ((now - origin) / 60f)
+                        Box(Modifier.offset(x = x, y = y - 1.dp).width(columnWidth).height(2.dp).background(Pixel.Red))
+                        Box(Modifier.offset(x = x - 5.dp, y = y - 5.dp).size(10.dp).background(Pixel.Red, CircleShape))
                     }
                 }
             }
@@ -572,6 +758,9 @@ private fun Hours(
     }
 }
 
+/** How wide a block in a week must be to show its title; a narrower one shows only its icon. */
+private val MinTitleWidth = 36.dp
+
 /** The lower edge of a block that resizes it when dragged. */
 private val ResizeEdge = 12.dp
 
@@ -580,6 +769,7 @@ private fun TimelineBlock(
     block: DayTimeline.Block,
     selected: Boolean,
     compact: Boolean,
+    wide: Boolean,
     lifted: Boolean,
     onClick: () -> Unit,
     grid: Grid,
@@ -594,9 +784,7 @@ private fun TimelineBlock(
     Box(
         modifier
             .alpha(if (lifted) 0.4f else 1f)
-            .clip(blockShape)
-            .background(color.copy(alpha = if (t.isOpen) 0.18f else 0.08f), blockShape)
-            .border(if (selected) 2.dp else 1.dp, if (selected) Pixel.Ink else color.copy(alpha = if (t.isOpen) 0.8f else 0.4f), blockShape)
+            .blockLook(color, fill = if (t.isOpen) 0.2f else 0.08f, accent = if (t.isOpen) 1f else 0.4f, selected)
             .semantics(mergeDescendants = true) {
                 contentDescription = "${clock(start)} ${t.title}, ${duration(block.endMinute - block.startMinute)}" + if (t.isOpen) "" else ", done"
             }
@@ -615,20 +803,22 @@ private fun TimelineBlock(
                     onEnd = { dropped -> grid.drag?.let { if (dropped) drop(it) }; grid.drag = null },
                 )
             }
-            .padding(horizontal = if (compact) 0.dp else Spacing.S, vertical = 2.dp),
+            .padding(start = AccentWidth + if (compact) 2.dp else Spacing.XS, end = if (compact) 1.dp else Spacing.XS, top = 2.dp, bottom = 2.dp),
     ) {
+        val minutes = block.endMinute - block.startMinute
+        val strike = if (t.isOpen) TextDecoration.None else TextDecoration.LineThrough
         if (compact) {
-            ItemIcon(taskIcon(t), Modifier.align(Alignment.TopCenter), size = 20.dp, description = null)
+            Column {
+                ItemIcon(taskIcon(t), size = 18.dp, description = null)
+                if (minutes >= 45 && wide) BlockTitle(t.title, if (t.isOpen) Pixel.Ink else Pixel.InkSoft, lines = 1, strike, small = true)
+            }
         } else {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 ItemIcon(taskIcon(t), size = 24.dp, description = null)
-                Text(
-                    "${clock(start)} ${t.title}" + if (t.isOpen) "" else ", done",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (t.isOpen) Pixel.Ink else Pixel.InkSoft,
-                    maxLines = if (block.endMinute - block.startMinute >= 45) 2 else 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Column {
+                    BlockTitle(t.title, if (t.isOpen) Pixel.Ink else Pixel.InkSoft, lines = if (minutes >= 60) 2 else 1, strike)
+                    if (minutes >= 45) BlockTime(start, block.endMinute)
+                }
             }
         }
         if (selected && t.isOpen) {
@@ -645,6 +835,7 @@ private fun TimelineBlock(
 private fun EventBlock(
     block: DayTimeline.EventBlock,
     compact: Boolean,
+    wide: Boolean,
     own: PlanEvent?,
     selected: Boolean,
     lifted: Boolean,
@@ -662,9 +853,7 @@ private fun EventBlock(
     Box(
         modifier
             .alpha(if (lifted) 0.4f else 1f)
-            .clip(blockShape)
-            .background(color.copy(alpha = if (own != null) 0.16f else 0.10f), blockShape)
-            .border(if (selected) 2.dp else 1.dp, if (selected) Pixel.Ink else color.copy(alpha = 0.6f), blockShape)
+            .blockLook(color, fill = if (own != null) 0.18f else 0.12f, accent = if (own != null) 1f else 0.7f, selected)
             .semantics(mergeDescendants = true) {
                 contentDescription = "${if (own != null) "Event" else "Calendar"}: ${e.title}, ${clock(start)} to ${clock(end)}"
             }
@@ -682,15 +871,18 @@ private fun EventBlock(
                     onEnd = { dropped -> grid.drag?.let { if (dropped) drop(it) }; grid.drag = null },
                 )
             }
-            .padding(horizontal = if (compact) 0.dp else Spacing.S, vertical = 2.dp),
+            .padding(start = AccentWidth + if (compact) 2.dp else Spacing.S, end = if (compact) 1.dp else Spacing.XS, top = 2.dp, bottom = 2.dp),
     ) {
-        if (!compact) Text(
-            "${clock(start)} ${e.title}",
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (own != null) Pixel.Ink else Pixel.InkSoft,
-            maxLines = if (block.endMinute - block.startMinute >= 45) 2 else 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        val minutes = block.endMinute - block.startMinute
+        val ink = if (own != null) Pixel.Ink else Pixel.InkSoft
+        if (compact) {
+            if (minutes >= 30 && wide) BlockTitle(e.title, ink, lines = 1, TextDecoration.None, small = true)
+        } else {
+            Column {
+                BlockTitle(e.title, ink, lines = if (minutes >= 60) 2 else 1, TextDecoration.None)
+                if (minutes >= 45) BlockTime(start, block.endMinute)
+            }
+        }
         if (selected) {
             Box(Modifier.align(Alignment.BottomCenter).width(16.dp).height(3.dp).background(Pixel.Ink, RoundedCornerShape(2.dp)))
         }
@@ -753,21 +945,57 @@ private fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, close: 
     }
 }
 
-/** An all-day calendar event, above the hours. */
+/** An all-day calendar event, in the band above the hours. */
 @Composable
-private fun EventChip(e: CalendarEvent, day: String? = null) {
-    val color = eventColor(e)
-    val title = (if (day != null) "$day: " else "") + if (e.title.length > 24) e.title.take(23).trimEnd() + "…" else e.title
+private fun EventChip(e: CalendarEvent, modifier: Modifier = Modifier) {
+    Text(
+        e.title,
+        modifier
+            .widthIn(max = 220.dp)
+            .blockLook(eventColor(e), fill = 0.14f, accent = 0.8f, selected = false)
+            .semantics { contentDescription = "Calendar, all day: ${e.title}" }
+            .padding(start = AccentWidth + Spacing.XS, end = Spacing.XS, top = 2.dp, bottom = 2.dp),
+        style = MaterialTheme.typography.bodyMedium,
+        color = Pixel.Ink,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+
+/** The solid strip on a block's left edge, in its colour (Google Calendar, Notion Calendar). */
+private val AccentWidth = 4.dp
+
+/** How far an hour label reaches above its line (half its height), so it sits centred on the line. */
+private val LabelLift = 9.dp
+
+private val panelShape = RoundedCornerShape(Spacing.CardRadius)
+
+/** A block's look: a soft tint of [color] with a solid accent strip on the left; a dark outline while [selected]. */
+private fun Modifier.blockLook(color: Color, fill: Float, accent: Float, selected: Boolean): Modifier = this
+    .clip(blockShape)
+    .background(color.copy(alpha = fill), blockShape)
+    .drawBehind { drawRect(color.copy(alpha = accent), size = Size(AccentWidth.toPx(), size.height)) }
+    .let { if (selected) it.border(2.dp, Pixel.Ink, blockShape) else it }
+
+/** A block's title: bold enough to read at a glance; [small] for the narrow columns of a week. */
+@Composable
+private fun BlockTitle(title: String, color: Color, lines: Int, decoration: TextDecoration, small: Boolean = false) {
     Text(
         title,
-        Modifier
-            .clip(blockShape)
-            .background(color.copy(alpha = 0.10f), blockShape)
-            .border(1.dp, color.copy(alpha = 0.6f), blockShape)
-            .semantics { contentDescription = "Calendar, all day: ${e.title}" }
-            .padding(horizontal = Spacing.S, vertical = Spacing.XS),
-        style = MaterialTheme.typography.bodyMedium,
-        color = Pixel.InkSoft,
-        maxLines = 1,
+        style = MaterialTheme.typography.labelMedium.copy(
+            fontWeight = FontWeight.SemiBold, textDecoration = decoration, lineHeight = if (small) 15.sp else 18.sp,
+        ),
+        color = color,
+        maxLines = lines.coerceAtLeast(1),
+        // In a week's narrow columns one line is cut off rather than broken letter by letter (Google Calendar's way).
+        softWrap = !small,
+        overflow = if (small) TextOverflow.Clip else TextOverflow.Ellipsis,
     )
+}
+
+/** "9:00 – 10:30" under a block's title. */
+@Composable
+private fun BlockTime(start: LocalTime, endMinute: Int) {
+    val end = if (endMinute >= 24 * 60) LocalTime(0, 0) else LocalTime(endMinute / 60, endMinute % 60)
+    Text("${clock(start)} – ${clock(end)}", style = MaterialTheme.typography.bodyMedium, maxLines = 1)
 }

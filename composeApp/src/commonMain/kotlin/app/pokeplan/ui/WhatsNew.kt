@@ -3,6 +3,9 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.19.1" to listOf(
+            "A cleaner Calendar: a strip of days to jump between, one card of tasks to plan, and easier-to-read blocks on the hours.",
+        ),
         "0.19.0" to listOf(
             "Easier to use: Back is at the top left, settings are switches in small groups, and Undo sits just above the tabs.",
             "Focus keeps Start at the bottom of the screen, and the keyboard's Done key adds a task.",
