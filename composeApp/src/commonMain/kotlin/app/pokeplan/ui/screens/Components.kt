@@ -116,6 +116,9 @@ private const val UNDO_SHOWN_MILLIS = 10_000L
 internal val dayNames = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 private val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
+/** "19 Oct" */
+fun LocalDate.dayMonth(): String = "$dayOfMonth ${monthNames[monthNumber - 1]}"
+
 /** "Mon 19 Oct" */
 fun LocalDate.short(): String = "${dayNames[dayOfWeek.ordinal]} $dayOfMonth ${monthNames[monthNumber - 1]}"
 

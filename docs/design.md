@@ -31,9 +31,11 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 - **Perks are locked when the session starts:** egg-luck and shiny perks use the buddy at the moment start is pressed, so swapping later does not change that egg. Task perks use the buddy at completion time.
 - **Strict mode, always on.** Leaving the app (switching to another app or the home screen) starts a **10 second grace period**. Returning in time keeps the session; otherwise the egg is lost, and a failed session does not count toward the streak. The only pauses are the daily emergency pause and phone calls (below).
 - **The focus timer is phone-only.** Desktop and web are companions (see Platforms).
-- **Locking the screen does not count as leaving.** The session continues with the screen off; unlocking and opening another app starts the grace period. Face-down on the desk is the intended way to focus.
+- **Locking the screen does not count as leaving.** The session continues with the screen off; unlocking and opening another app starts the grace period. Face-down on the desk is the intended way to focus. *(Wired up on Android in 0.16.1: when the app goes to the background it checks whether the screen is off or locked; a lock reported just after the leave cancels the grace period.)*
 - **A failed session costs only the egg** (plus the streak rules). The buddy's friendship is never reduced.
-- **Phone calls pause the timer** (incoming or ongoing); it resumes when the call ends.
+- **Phone calls pause the timer** (incoming or ongoing); it resumes when the call ends. Android reads this from the audio mode (ringing, in a call, call screening), which needs no permission; app voice chats do not count.
+- **The session is watched on every tab**, not only on Focus: leaving the app or moving the phone in Deep Focus counts wherever the player is.
+- **Focused time is what counts:** the running timer shows focused minutes, and paused minutes apart from them. The setup screen lists these rules in plain words.
 - **Two emergency pauses per day**, up to 3 minutes each, started by the player before leaving. Anything else that takes the player out of the app fails the egg after the grace period.
 - **No-blame recovery:** a failed session shows a neutral screen ("That egg went cold. Try again?") with a one-tap 5 minute retry. No red, no scolding.
 - Sweet spot is built in: Super Rares per focus-hour peak at about 60 minutes.
@@ -89,7 +91,7 @@ The app never mentions ADHD; it just removes friction and shame.
 - **Goals with milestones.** A goal ("Learn guitar", "Run a 10k") has a category, an optional target date, ordered **milestones**, and linked tasks, habits, lists and focus time, with a progress bar. **Finishing a milestone grants a Super Candy** *(tune)*, so a real achievement evolves a Pokémon; finishing the goal grants a bonus item. Anti-farming: a milestone must exist for at least a day before it pays, and milestone rewards are capped per day *(tune: 3 Super Candies)*.
 - **Habits are a recurring-task type** with flexible targets: daily, chosen weekdays, or N times per week / month. Each habit has its own **forgiving streak** (counted in weeks for N-per-week habits) and a simple completion history. Completions pay like recurring tasks (once per day per habit). Habits appear in Today and in the widget.
 - **Weekly review.** A short Sunday ritual: what you finished, focus time, habit results, carry forward or reschedule unfinished tasks, and one optional line about how the week went. Completing it earns a small reward once a week *(tune: a berry)*. Notes are private. Not therapy, no diagnosis, no scores about the person.
-- **Growth screen** (under Me): a **balance wheel** across the six categories (tasks finished and focus time, last 7 / 30 / 90 days), trends for focus hours and tasks per week, estimate accuracy, goal progress, habit streaks, review history and collection layers.
+- **Growth screen** (under Me): a **balance wheel** across the six categories (tasks finished and focus time, last 7 / 30 / 90 days), trends for focus hours and tasks per week, estimate accuracy, goal progress, habit streaks, review history and collection layers. *(0.17.0: the wheel with 7 / 30 / 90 days, each area's tasks and minutes beside its share and only active areas listed; tasks and focus per week with week labels; goal progress apart from tasks and time. Every metric states what it counts and over which days, and the trainer card says "all time" and how the streak counts.)*
 
 ## Planner (v1)
 
@@ -309,7 +311,7 @@ Beyond task reminders: a **streak-at-risk reminder** in the evening if nothing h
 - Crisp scaling: nearest-neighbour, integer scale, no blur.
 - Fonts: pixel font for headings only; body text stays a readable font.
 - Sound: cries, short jingles; a mute toggle.
-- Interface rules from the Laws of UX review (0.17.0, `docs/laws-of-ux-review.md`): Back sits at the start of every header; on/off settings are switches whose whole row is the target; a choice is a radio row, never an action button; each screen has one solid primary action and the risky ones (Give up, Transfer, Remove) stay quiet until confirmed; Undo lives in one bar floating above the tabs; Focus keeps Start pinned at the bottom; text fields submit from the keyboard's Done key.
+- Interface rules from the Laws of UX review (0.19.0, `docs/laws-of-ux-review.md`): Back sits at the start of every header; on/off settings are switches whose whole row is the target; a choice is a radio row, never an action button; each screen has one solid primary action and the risky ones (Give up, Transfer, Remove) stay quiet until confirmed; Undo lives in one bar floating above the tabs; Focus keeps Start pinned at the bottom; text fields submit from the keyboard's Done key.
 - Accessibility: content descriptions on all images, text scaling, colour-blind safe type chips, a reduce-motion option, a dyslexia-friendly font option, and every ceremony skippable.
 
 ## Screens and flows (proposal, to confirm)

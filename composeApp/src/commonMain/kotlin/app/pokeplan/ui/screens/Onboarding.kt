@@ -167,7 +167,7 @@ private fun Dialogue(text: String, onNext: () -> Unit) {
         }
     }
     val blink = rememberInfiniteTransition().animateFloat(0.2f, 1f, infiniteRepeatable(tween(500), RepeatMode.Reverse)).value
-    GameBox(Modifier.clickable { if (!done) shown = text.length else onNext() }) {
+    GameBox(Modifier.clickable(onClickLabel = if (done) "Next" else "Show all", role = Role.Button) { if (!done) shown = text.length else onNext() }) {
         Box(Modifier.fillMaxWidth().padding(bottom = 4.dp)) {
             Text(text.take(shown), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().padding(end = 28.dp, bottom = 12.dp))
             if (done) ItemIcon("poke-ball", Modifier.align(Alignment.BottomEnd).alpha(blink), size = 24.dp)
