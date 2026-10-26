@@ -46,6 +46,26 @@ object Dex {
         while (true) current = current.evolvesFrom?.let { species(it) } ?: return current.id
     }
 
+    /**
+     * Every evolution in [speciesId]'s line, from its first stage down, one per pair of species (rows that differ only by
+     * form, like Pikachu into Raichu and Alolan Raichu, count once).
+     */
+    fun lineEvolutions(speciesId: Int): List<Evolution> {
+        val out = mutableListOf<Evolution>()
+        val queue = ArrayDeque(listOf(lineRoot(speciesId)))
+        while (queue.isNotEmpty()) {
+            val from = queue.removeFirst()
+            // A row for the default forms wins over a regional form's own row.
+            evolutionsFrom(from).sortedBy { it.requiredForm != null || it.evolvedForm != null }.distinctBy { it.to }.sortedBy { it.to }.forEach { e ->
+                if (out.none { it.to == e.to }) {
+                    out += e
+                    queue += e.to
+                }
+            }
+        }
+        return out
+    }
+
     private val lineStrengthByRoot: Map<Int, Int> by lazy {
         species.groupBy { lineRoot(it.id) }.mapValues { (_, members) -> members.maxOf { defaultForm(it.id).stats.total } }
     }

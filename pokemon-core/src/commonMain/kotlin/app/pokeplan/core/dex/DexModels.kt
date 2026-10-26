@@ -26,6 +26,8 @@ enum class Gender { MALE, FEMALE }
  * Species-level facts. [id] is the National Dex number.
  * [femaleEighths] is the chance of female in eighths (0 to 8), or null when genderless.
  * [cosmeticForms] are purely visual variants (Unown letters, Vivillon patterns, ...).
+ * [genus] is the Pokédex category ("Seed Pokémon"); [heightDm] and [weightHg] are the default form's height in decimetres
+ * and weight in hectograms, as the games store them.
  */
 data class SpeciesInfo(
     val id: Int,
@@ -38,6 +40,9 @@ data class SpeciesInfo(
     val isLegendary: Boolean,
     val isMythical: Boolean,
     val cosmeticForms: List<String>,
+    val genus: String,
+    val heightDm: Int,
+    val weightHg: Int,
 ) {
     /** Legendary-class species that never hatch from eggs: legendaries, Ultra Beasts and Paradox Pokémon. */
     val isLegendaryClass: Boolean get() = isLegendary || identifier in SpecialSpecies.legendaryClass

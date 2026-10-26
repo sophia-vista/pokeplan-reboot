@@ -4,6 +4,7 @@ import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.Evolution
 import app.pokeplan.core.dex.EvolutionKind
 import app.pokeplan.core.dex.FormInfo
+import app.pokeplan.core.dex.Gender
 import app.pokeplan.core.dex.TimeOfDay
 
 /** What the player has on hand when evolving. [items] maps item id to count. */
@@ -115,6 +116,27 @@ object EvolutionRules {
             }
         }
         return missing
+    }
+
+    /**
+     * How an evolution works in the app, in a few words for the Pokédex: "Lv. 16, Super Candy", "Fire Stone",
+     * "Link Cord, holding Metal Coat", "Friendship, Super Candy, at night".
+     */
+    fun howTo(e: Evolution): String {
+        val level = requiredLevel(e)?.let { "Lv. $it" }
+        val time = e.timeOfDay?.let { if (it == TimeOfDay.DAY) "in the day" else "at ${it.name.lowercase()}" }
+        val gender = e.gender?.let { if (it == Gender.FEMALE) "female" else "male" }
+        val parts = when (e.kind) {
+            EvolutionKind.LEVEL -> listOf(level, "Super Candy")
+            EvolutionKind.RANDOM -> listOf(level, "Super Candy", "decided at hatch")
+            EvolutionKind.STONE -> listOf(e.item?.let { Items.name(it) })
+            EvolutionKind.TRADE -> listOf("Link Cord", e.heldItem?.let { "holding ${Items.name(it)}" })
+            EvolutionKind.FRIENDSHIP -> listOf("Friendship", "Super Candy", time)
+            EvolutionKind.LEVEL_TIME -> listOf(level, "Super Candy", time)
+            EvolutionKind.GENDER -> listOf(e.item?.let { Items.name(it) } ?: level, if (e.item == null) "Super Candy" else null, gender)
+            EvolutionKind.TRIAL -> listOf(level, "Evolution Trial")
+        }
+        return parts.filterNotNull().joinToString(", ")
     }
 
     /** What an evolution of this kind uses up. */

@@ -83,4 +83,24 @@ class DexDataTest {
         assertEquals(8, Dex.species(115).femaleEighths, "Kangaskhan is female only")
         assertEquals(4, Dex.species(25).femaleEighths)
     }
+
+    @Test
+    fun speciesHaveTheirPokedexCategoryHeightAndWeight() {
+        val bulbasaur = Dex.species(1)
+        assertEquals("Seed Pokémon", bulbasaur.genus)
+        assertEquals(7, bulbasaur.heightDm)
+        assertEquals(69, bulbasaur.weightHg)
+        for (s in Dex.species) {
+            assertTrue(s.genus.endsWith("Pokémon"), "${s.name} genus ${s.genus}")
+            assertTrue(s.heightDm > 0 && s.weightHg > 0, "${s.name} size")
+        }
+    }
+
+    @Test
+    fun anEvolutionLineIsListedFromItsFirstStage() {
+        assertEquals(listOf(1 to 2, 2 to 3), Dex.lineEvolutions(3).map { it.from to it.to })
+        assertEquals(listOf(172 to 25, 25 to 26), Dex.lineEvolutions(25).map { it.from to it.to }, "Raichu's two forms count once")
+        assertEquals(8, Dex.lineEvolutions(133).size, "Eevee")
+        assertEquals(emptyList(), Dex.lineEvolutions(128), "Tauros")
+    }
 }
