@@ -445,7 +445,7 @@ private fun SettingsView(model: AppModel) {
         }
         ToggleRow("Reduce motion", settings.reduceMotion, detail = "Sprites stand still and nothing wobbles.") { store.changeSettings { s -> s.copy(reduceMotion = it) } }
     }
-    SettingsGroup("Reminders and week") {
+    SettingsGroup("Notifications and week") {
         ToggleRow("Task reminders", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }
         if (settings.reminders) {
             fun hour(t: LocalTime) = "${t.hour.toString().padStart(2, '0')}:00"
@@ -456,8 +456,18 @@ private fun SettingsView(model: AppModel) {
             Stepper("Quiet until", hour(settings.quietHours.end), 1) { by ->
                 store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = shift(s.quietHours.end, by))) }
             }
+            ToggleRow("Repeat until answered", settings.repeatReminders, detail = "An unanswered reminder comes back up to 3 times, 10 minutes apart.") { store.changeSettings { s -> s.copy(repeatReminders = it) } }
             Text("Reminders wait during quiet hours, a focus session and rest days.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
+        ToggleRow("Focus halfway alert", settings.focusHalfway, detail = "A quiet note halfway through sessions of 15 minutes or more.") { store.changeSettings { s -> s.copy(focusHalfway = it) } }
+        ToggleRow("Focus end alert", settings.focusEnd, detail = "When a session's time is up. These two are the only notifications during focus.") { store.changeSettings { s -> s.copy(focusEnd = it) } }
+        ToggleRow("Streak reminder", settings.streakReminder, detail = "In the evening, if nothing has counted yet today and you have a streak going.") { store.changeSettings { s -> s.copy(streakReminder = it) } }
+        if (settings.streakReminder) {
+            Stepper("Streak reminder at", "${settings.streakReminderHour.toString().padStart(2, '0')}:00", 1) { by ->
+                store.changeSettings { s -> s.copy(streakReminderHour = (s.streakReminderHour + by + 24) % 24) }
+            }
+        }
+        ToggleRow("Weekly recap", settings.weeklyRecap, detail = "Sunday evening: tasks finished, focus time and your top category. Skipped after an empty week.") { store.changeSettings { s -> s.copy(weeklyRecap = it) } }
         ToggleRow("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
     }
     CalendarsCard(model)

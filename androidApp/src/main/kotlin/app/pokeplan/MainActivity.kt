@@ -19,6 +19,7 @@ import app.pokeplan.core.pokemon.Items
 import app.pokeplan.ui.App
 import app.pokeplan.ui.AppLaunch
 import app.pokeplan.ui.Tab
+import app.pokeplan.reminders.AppAlerts
 import app.pokeplan.reminders.TaskReminders
 import app.pokeplan.widgets.announceBuddyEvent
 import app.pokeplan.widgets.updateWidgets
@@ -95,17 +96,24 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /** Sets the reminder alarms again when the reminders to come change, a moment after the last change. */
+    /**
+     * Sets the reminder alarms again when the reminders to come change, a moment after the last change: task reminders,
+     * the halfway and end alerts of a running focus session, the streak reminder and the weekly recap.
+     */
     private fun keepRemindersCurrent(data: AppData) {
-        val upcoming = data.upcomingReminders(System.currentTimeMillis(), TimeZone.currentSystemDefault())
-        if (upcoming.isNotEmpty()) askForNotifications()
-        val signature = upcoming.map { it.taskId to it.atMillis }.hashCode()
+        val now = System.currentTimeMillis()
+        val zone = TimeZone.currentSystemDefault()
+        val upcoming = data.upcomingReminders(now, zone)
+        val alerts = AppAlerts.plan(data, now, zone)
+        if (upcoming.isNotEmpty() || alerts.sessionId != null || data.activeDays.isNotEmpty()) askForNotifications()
+        val signature = listOf(upcoming.map { it.taskId to it.atMillis }, alerts).hashCode()
         if (signature == reminderSignature) return
         reminderSignature = signature
         reminderRefresh?.cancel()
         reminderRefresh = lifecycleScope.launch {
             delay(800)
             TaskReminders.reschedule(applicationContext, upcoming)
+            AppAlerts.schedule(applicationContext, alerts)
         }
     }
 
