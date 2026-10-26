@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.app.BuddyReaction
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.core.pokemon.Items
+import app.pokeplan.core.reward.Feature
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.PickForMe
 import app.pokeplan.plan.Task
@@ -86,7 +87,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
             trailing = {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     SyncChip(model) { go(Tab.ME) }
-                    StatChip("${data.player.coins}", { ItemIcon("amulet-coin", size = 28.dp, description = "Coins") })
+                    if (store.sees(Feature.COINS)) StatChip("${data.player.coins}", { ItemIcon("amulet-coin", size = 28.dp, description = "Coins") })
                     StatChip("${data.player.inventory[Items.RARE_CANDY]}", { ItemIcon("rare-candy", size = 28.dp, description = "Rare Candies") })
                 }
             },
@@ -97,6 +98,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
             verticalArrangement = Arrangement.spacedBy(Spacing.L),
         ) {
             WhatsNewCard(model)
+            RankUpCard(model)
             RewardBox(model)
 
             if (buddy != null) {
@@ -198,6 +200,21 @@ private fun RankProgress(points: Int) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         ExpBar(if (high == null) 1f else (points - low).toFloat() / (high - low), label, color = Pixel.Yellow)
         Text(label, style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.9f))
+    }
+}
+
+/** After a rank up: the new rank and what it opened, once. Nothing when there is nothing new. */
+@Composable
+private fun RankUpCard(model: AppModel) {
+    val opened = model.store.newlyOpened()
+    if (opened.isEmpty()) return
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("Rank up: ${TrainerRank.nameFor(model.data.player.trainerPoints)}!", style = MaterialTheme.typography.titleSmall)
+            Text("New for you:", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            opened.forEach { Text("•  ${it.label}", style = MaterialTheme.typography.bodyLarge) }
+            PixelButton("Got it", { model.store.markRankSeen() }, Modifier.fillMaxWidth(), Pixel.Green)
+        }
     }
 }
 

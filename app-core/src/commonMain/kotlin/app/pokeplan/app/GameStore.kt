@@ -29,6 +29,8 @@ import app.pokeplan.core.reward.AchievementEvent
 import app.pokeplan.core.reward.CareEvent
 import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.EffortEvent
+import app.pokeplan.core.reward.Feature
+import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.core.reward.RewardEngine
 import app.pokeplan.plan.Category
@@ -948,6 +950,14 @@ class GameStore(
 
     fun transferBlock(id: String): TransferBlock? =
         Transfer.block(pokemon(id), id == data.player.buddyId, data.player.party.size)
+
+    /** Whether [feature] has appeared yet at the player's trainer rank (the gradual reveal). */
+    fun sees(feature: Feature): Boolean = TrainerRank.isVisible(feature, data.player.trainerPoints)
+
+    /** Features opened by ranks the player reached but has not seen the "Rank up" card for, oldest first. */
+    fun newlyOpened(): List<Feature> = ((data.seenRank + 1)..data.player.rank).flatMap { Feature.at(it) }
+
+    fun markRankSeen() = update { it.copy(seenRank = maxOf(it.seenRank, it.player.rank)) }
 
     /** Remembers that the player has seen what is new in [version]. */
     fun markVersionSeen(version: String) = update { it.copy(lastSeenVersion = version) }

@@ -62,6 +62,7 @@ import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.Stat
 import app.pokeplan.core.pokemon.StatCalculator
 import app.pokeplan.core.pokemon.Transfer
+import app.pokeplan.core.reward.Feature
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Sfx
@@ -119,13 +120,13 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp)) {
                 val ready = store.activeQuests.count { store.questReady(it) }
                 MenuGrid(
-                    listOf(
+                    listOfNotNull(
                         MenuEntry("PARTY", "poke-ball", "Party", "${player.party.size} of 6", tint = Pixel.Red),
                         MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { !it.inParty && !Guardians.canBe(it) }} stored", tint = Pixel.Warning),
                         MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught", tint = Pixel.Blue),
-                        MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.Green),
-                        MenuEntry("GUARDIANS", "master-ball", "Guardians", if (store.guardianSlots == 0) "opens at rank ${TrainerRank.names[4]}" else "${player.guardians.size} of ${store.guardianSlots} slotted", tint = androidx.compose.ui.graphics.Color(0xFF8B5CF6)),
-                        MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready, tint = Pixel.Warning),
+                        if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.Green) else null,
+                        if (!store.sees(Feature.GUARDIANS)) null else MenuEntry("GUARDIANS", "master-ball", "Guardians", if (store.guardianSlots == 0) "opens at rank ${TrainerRank.names[4]}" else "${player.guardians.size} of ${store.guardianSlots} slotted", tint = androidx.compose.ui.graphics.Color(0xFF8B5CF6)),
+                        if (!store.sees(Feature.LEGENDARY_QUESTS)) null else MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready, tint = Pixel.Warning),
                     ),
                 ) { key -> section = Section.valueOf(key) }
             }
@@ -137,7 +138,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
         when (current) {
             Section.PARTY -> {
                 if (player.party.isEmpty()) EmptyState("Your party is empty", "Hatch an egg with a focus session, or move a Pokémon here from the PC.", icon = "poke-ball")
-                else PartyPerksCard(model)
+                else if (store.sees(Feature.PERKS)) PartyPerksCard(model)
                 player.party.forEach { p -> PokemonRow(p, p.id == player.buddyId, store.isFavorite(p.id)) { selected = p.id } }
             }
             Section.PC -> {
@@ -672,13 +673,14 @@ private fun BagView(model: AppModel) {
     val player = model.data.player
     var open by remember { mutableStateOf<String?>(null) }
     val items = player.inventory.counts.entries.filter { it.value > 0 }.sortedWith(compareBy({ Items.category(it.key)?.ordinal ?: 99 }, { it.key }))
-    TextBox { Text("${player.coins} coins", style = MaterialTheme.typography.titleMedium) }
+    if (store.sees(Feature.COINS)) TextBox { Text("${player.coins} coins", style = MaterialTheme.typography.titleMedium) }
     if (items.isEmpty()) EmptyState("The bag is empty", "Finish tasks and focus sessions to find candies, berries and more.", icon = "seal-bag")
     items.groupBy { Items.category(it.key) }.forEach { (category, group) ->
         SectionLabel(category.bagLabel())
         group.forEach { (id, n) ->
-            val holdable = Items.holdable(id)
-            val usable = holdable || player.party.any { store.canUse(id, it) }
+            val holdable = Items.holdable(id) && store.sees(Feature.HELD_ITEMS)
+            val training = Items.category(id) == ItemCategory.TRAINING || Items.category(id) == ItemCategory.TERA
+            val usable = holdable || ((!training || store.sees(Feature.TRAINING_ITEMS)) && player.party.any { store.canUse(id, it) })
             val toggle = { open = if (open == id) null else id }
             // A usable item says so with its own Use button, so it does not look the same as one that only sits in the bag.
             ListRow(
@@ -812,12 +814,12 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                         Text("Nature: ${p.nature.name.lowercase().replaceFirstChar { it.uppercase() }}", style = MaterialTheme.typography.bodyLarge)
                         Text("Ability: ${p.ability}", style = MaterialTheme.typography.bodyLarge)
                         p.gender?.let { Text("Gender: ${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }}", style = MaterialTheme.typography.bodyLarge) }
-                        Text("Judge: ${judge(p.ivs.values.sum())}", style = MaterialTheme.typography.bodyLarge)
+                        if (store.sees(Feature.STATS_DETAIL)) Text("Judge: ${judge(p.ivs.values.sum())}", style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             }
 
-            TextBox {
+            if (store.sees(Feature.STATS_DETAIL)) TextBox {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     val values = p.stats.values
                     statNames.forEachIndexed { i, label ->
@@ -871,9 +873,9 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                 }
             }
 
-            if (!isGuardian) PokemonPerksBox(model, p)
+            if (!isGuardian && store.sees(Feature.HELD_ITEMS)) PokemonPerksBox(model, p)
 
-            val options = store.evolutionOptions(p.id)
+            val options = if (store.sees(Feature.EVOLUTION)) store.evolutionOptions(p.id) else emptyList()
             if (options.isNotEmpty()) {
                 TextBox {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

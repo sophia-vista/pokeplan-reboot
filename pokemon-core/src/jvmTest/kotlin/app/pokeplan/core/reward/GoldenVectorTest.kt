@@ -25,7 +25,7 @@ class GoldenVectorTest {
 
     private fun build(): JsonObject {
         val buddy = pokemon(Ids.PIKACHU, level = 40).withHeldItem("lucky-egg")
-        val state = PlayerState(listOf(buddy), buddy.id, Inventory().add("rare-candy", 12).add("lure-fire", 1), coins = 50, eggMeter = 4, trainerPoints = 700, caught = setOf(25, 4))
+        val state = PlayerState(listOf(buddy), buddy.id, Inventory().add("rare-candy", 12).add("lure-fire", 1), coins = 50, eggMeter = 4, trainerPoints = 100, caught = setOf(25, 4))
         val stateJson = json.encodeToString(PlayerState.serializer(), state)
         val effort = json.encodeToString(EffortEvent.serializer(), EffortEvent(30, true, Region.KANTO, epochDay = 11, newPokemonId = "new-1", nowMillis = 1_700_000_000_000))
         val work = json.encodeToString(AchievementEvent.serializer(), AchievementEvent(4, Region.JOHTO, hourOfDay = 7, firstOfDay = true, onTime = true, newPokemonId = "new-2", nowMillis = 1_700_000_000_000))
