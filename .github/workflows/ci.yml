@@ -27,10 +27,7 @@ jobs:
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
           ./gradlew :androidApp:assembleDebug --no-daemon
-      # A convenience copy only: when the account's artifact storage is full, the upload fails, and that must not fail
-      # the PR or skip the checks after it.
       - name: Keep the APK
-        continue-on-error: true
         uses: actions/upload-artifact@v4
         # A convenience, not a check: a full artifact storage quota must not fail the PR or skip the checks below.
         continue-on-error: true
