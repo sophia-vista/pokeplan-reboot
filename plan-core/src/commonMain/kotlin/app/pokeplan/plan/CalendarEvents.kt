@@ -1,7 +1,9 @@
 package app.pokeplan.plan
 
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.minus
 
 /** One of the phone's calendars (Google Calendar's among them, once its account syncs on the phone). */
 data class DeviceCalendar(val id: Long, val name: String, val account: String, val color: Long? = null)
@@ -34,6 +36,9 @@ data class CalendarEvent(
         val to = if (end.date > day) DAY_MINUTES else if (end.date == day) end.minuteOfDay() else return null
         return if (to > from) from until to else if (to == from && start == end && start.date == day) from until from + 1 else null
     }
+
+    /** The last day the event is on: an all-day event ends the morning after its last day; a timed one counts its first day. */
+    val lastDay: LocalDate get() = if (allDay && end.date > start.date) end.date.minus(DatePeriod(days = 1)) else start.date
 
     /** How the event reads where privacy matters (widgets). */
     val shownTitle: String get() = if (private) "Busy" else title

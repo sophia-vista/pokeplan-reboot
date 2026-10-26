@@ -36,4 +36,17 @@ class PlanEventTest {
         assertEquals(15, PlanEvent.fit(9 * 60, 0), "at least 15 minutes")
         assertFalse(CalendarEvent("x", 3, "Phone", now, now).isOwn)
     }
+
+    @Test
+    fun an_all_day_event_covers_its_days_in_the_band_and_is_never_busy() {
+        val home = PlanEvent("home", "Home", day, LocalTime(0, 0), allDay = true, lastDay = day.plus(DatePeriod(days = 2)), color = TaskList.COLORS[0])
+        val e = home.toCalendarEvent()
+        assertTrue(e.allDay && e.isOwn)
+        assertTrue((0..2).all { e.isOn(day.plus(DatePeriod(days = it))) })
+        assertFalse(e.isOn(day.plus(DatePeriod(days = 3))))
+        assertTrue(home.isOn(day.plus(DatePeriod(days = 2))) && !home.isOn(day.plus(DatePeriod(days = 3))))
+        val plan = DayTimeline.build(emptyList(), day.plus(DatePeriod(days = 1)), now, events = listOf(e))
+        assertEquals(listOf("home"), plan.allDay.map { it.id })
+        assertEquals(0, plan.busyMinutes)
+    }
 }

@@ -73,6 +73,11 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import app.pokeplan.plan.CalendarEvent
+import kotlinx.datetime.minus
+import androidx.compose.foundation.selection.selectable
+import app.pokeplan.plan.TaskList
+import app.pokeplan.plan.SpanLayout
+import app.pokeplan.plan.DaySpan
 import app.pokeplan.plan.Category
 import app.pokeplan.plan.DayLoad
 import app.pokeplan.plan.DayTimeline
@@ -128,10 +133,10 @@ private fun duration(minutes: Int): String = when {
 }
 
 /** A calendar event's own colour, or grey. */
-private fun eventColor(e: CalendarEvent): Color = e.color?.let { Color(it or 0xFF000000L) } ?: Pixel.Gray
+internal fun eventColor(e: CalendarEvent): Color = e.color?.let { Color(it or 0xFF000000L) } ?: if (e.isOwn) OwnEventColor else Pixel.Gray
 
 /** The colour of PokéPlan's own events on the hours. */
-private val OwnEventColor = Color(0xFF0D9488)
+internal val OwnEventColor = Color(0xFF0D9488)
 
 /**
  * What a drag carries: a task, or one of PokéPlan's own events ([event]), with when it is now: [day] and [start]
@@ -149,7 +154,19 @@ private class Drag(val item: Item, val resize: Boolean, val grabMinutes: Int, po
 }
 
 /** A new event being set up: its title so far, and when. */
-private data class Draft(val title: String, val day: LocalDate, val start: Int, val minutes: Int)
+internal data class Draft(
+    val title: String, val day: LocalDate, val start: Int, val minutes: Int,
+    val allDay: Boolean = false, val lastDay: LocalDate = day, val color: Long? = null,
+) {
+    /** The same draft starting on [first], an all-day one keeping its length. */
+    fun movedTo(first: LocalDate): Draft = copy(day = first, lastDay = first.plus(DatePeriod(days = day.daysUntil(lastDay))))
+
+    /** Adds it to PokéPlan's own calendar. */
+    fun addTo(store: app.pokeplan.app.GameStore) {
+        if (allDay) store.addAllDayEvent(title, day, lastDay, color)
+        else store.addEvent(title, day, LocalTime(start / 60, start % 60), minutes, color)
+    }
+}
 
 /** Where a drop lands: [day] at [start] minutes after midnight, lasting [minutes]. */
 private data class Target(val day: LocalDate, val start: Int, val minutes: Int)
@@ -236,22 +253,28 @@ private fun Modifier.dragToPlan(
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = false) {
+internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = false, startMode: Int = if (startWeek) 1 else 0) {
     val store = model.store
-    var week by remember { mutableStateOf(startWeek) }
+    // Day, Week or Month, as in TickTick and Google Calendar.
+    var mode by remember { mutableStateOf(startMode) }
+    val week = mode == 1
     var offset by remember { mutableStateOf(0) }
     var weekOffset by remember { mutableStateOf(0) }
     var picked by remember { mutableStateOf<String?>(null) }
     var draft by remember { mutableStateOf<Draft?>(null) }
+    var monthOffset by remember { mutableStateOf(0) }
+    val month = monthGrid(store.today, monthOffset, model.data.settings.weekStartsOnMonday)
     val days = if (week) (0 until 7).map { store.today.plus(DatePeriod(days = weekOffset * 7 + it)) }
     else listOf(store.today.plus(DatePeriod(days = offset)))
+    // The days whose phone events are read: the grid's in a month.
+    val range = if (mode == 2) month.days else days
     val tasks = model.data.tasks.filter { it.id !in hidden }
     val source = model.calendars
     val shown = model.data.shownCalendars
     var events by remember { mutableStateOf<List<CalendarEvent>>(emptyList()) }
-    LaunchedEffect(source, shown, days.first(), days.size) {
+    LaunchedEffect(source, shown, range.first(), range.size) {
         events = if (source == null || shown.isEmpty()) emptyList()
-        else withContext(Dispatchers.Default) { source.events(shown, days.first(), days.last()) }
+        else withContext(Dispatchers.Default) { source.events(shown, range.first(), range.last()) }
     }
     val own = model.data.events
     val shownEvents = events + own.map { it.toCalendarEvent() }
@@ -287,6 +310,15 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
         picked = null
     }
 
+    if (mode == 2) {
+        MonthView(
+            model, month, tasks, events + own.map { it.toCalendarEvent() }, monthOffset, { monthOffset = it }, mode, { mode = it },
+            openDay = { day -> offset = store.today.daysUntil(day).coerceIn(0, DAYS_AHEAD); mode = 0 },
+            canOpen = { day -> store.today.daysUntil(day) in 0..DAYS_AHEAD },
+        )
+        return
+    }
+
     Box(Modifier.fillMaxWidth().onGloballyPositioned { grid.page = it }) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             // Like Fantastical and Google Calendar: what is shown and the arrows on one line, the view switch and the one
@@ -310,7 +342,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
                 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                Segmented(listOf("Day", "Week"), if (week) 1 else 0) { week = it == 1 }
+                Segmented(listOf("Day", "Week", "Month"), mode) { mode = it }
                 if (away) PixelButton("Today", { offset = 0; weekOffset = 0 }, color = Pixel.InkSoft, compact = true)
                 Spacer(Modifier.weight(1f))
                 PixelButton("New event", {
@@ -322,7 +354,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
             }
 
             if (!week) {
-                DayStrip(store.today, offset, busy = { day -> tasks.any { it.isOpen && it.planned == day } || own.any { it.day == day } }) { offset = it }
+                DayStrip(store.today, offset, busy = { day -> tasks.any { it.isOpen && it.planned == day } || own.any { it.isOn(day) } }) { offset = it }
                 val plan = plans.single()
                 val load = DayLoad.compute(plan.blocks.map { it.task }.filter { it.isOpen } + plan.tray, busyMinutes = plan.busyMinutes)
                 Text(
@@ -332,7 +364,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
                 )
             }
 
-            draft?.let { d -> NewEventPanel(d, days.size > 1, { draft = it }, { store.addEvent(d.title, d.day, LocalTime(d.start / 60, d.start % 60), d.minutes); draft = null }) { draft = null } }
+            draft?.let { d -> NewEventPanel(d, days.size > 1, { draft = it }, { d.addTo(store); draft = null }) { draft = null } }
             if (chosen != null) PickedPanel(model, chosen, days) { picked = null }
             if (chosenEvent != null) EventPanel(model, chosenEvent, days.size > 1) { picked = null }
 
@@ -347,12 +379,12 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
                     .padding(start = Spacing.XS, end = Spacing.S, top = Spacing.S, bottom = Spacing.M),
                 verticalArrangement = Arrangement.spacedBy(Spacing.S),
             ) {
-                if (week) WeekHeader(days, store.today) { day -> offset = store.today.daysUntil(day); week = false }
-                AllDayRow(plans)
+                if (week) WeekHeader(days, store.today) { day -> offset = store.today.daysUntil(day); mode = 0 }
+                AllDayRow(plans, picked, pick)
                 val drafted = draft?.let { Target(it.day, it.start, it.minutes) }
                 Hours(model, plans, firstHour, endHour, compact = week, picked, pick, own.associateBy { it.id }, drafted, grid, ::drop) { day, hour ->
                     val d = draft
-                    if (d != null) draft = d.copy(day = day, start = hour * 60, minutes = PlanEvent.fit(hour * 60, d.minutes))
+                    if (d != null) draft = if (d.allDay) d.movedTo(day) else d.copy(day = day, start = hour * 60, minutes = PlanEvent.fit(hour * 60, d.minutes))
                     else {
                         chosen?.let { store.scheduleTask(it.id, day, LocalTime(hour, 0)) }
                         chosenEvent?.let { store.updateEvent(it.id, day = day, start = LocalTime(hour, 0)) }
@@ -392,7 +424,7 @@ private fun Carried(d: Drag, grid: Grid) {
 
 /** A round ‹ or › button that steps a day or a week. */
 @Composable
-private fun ArrowButton(symbol: String, label: String, enabled: Boolean, onClick: () -> Unit) {
+internal fun ArrowButton(symbol: String, label: String, enabled: Boolean, onClick: () -> Unit) {
     Box(
         Modifier
             .size(Spacing.Target)
@@ -407,7 +439,7 @@ private fun ArrowButton(symbol: String, label: String, enabled: Boolean, onClick
 
 /** A segmented control: one rounded track, the chosen segment raised on it (iOS and Material 3 style). */
 @Composable
-private fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
+internal fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
     val track = RoundedCornerShape(12.dp)
     val thumb = RoundedCornerShape(10.dp)
     Row(Modifier.height(44.dp).background(Pixel.Shade, track).padding(3.dp)) {
@@ -495,12 +527,13 @@ private fun WeekHeader(days: List<LocalDate>, today: LocalDate, open: (LocalDate
 }
 
 /**
- * All-day calendar events in a band above the hours, as in Google Calendar: in a week each sits in its own day's column,
- * in a day they wrap beside the "all day" label.
+ * All-day calendar events in a band above the hours, as in Google Calendar: in a week an event over several days is one
+ * bar across their columns (stacked in lanes when they overlap), in a day they wrap beside the "all day" label. Tapping
+ * one of PokéPlan's own events picks it, to edit it.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun AllDayRow(plans: List<DayTimeline.Plan>) {
+private fun AllDayRow(plans: List<DayTimeline.Plan>, picked: String?, pick: (String) -> Unit) {
     if (plans.none { it.allDay.isNotEmpty() }) return
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
         Text(
@@ -509,16 +542,51 @@ private fun AllDayRow(plans: List<DayTimeline.Plan>) {
         )
         if (plans.size == 1) {
             FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                plans.single().allDay.forEach { EventChip(it) }
+                plans.single().allDay.forEach { e -> AllDayBar(e, e.id == picked, pick, Modifier.widthIn(max = 220.dp)) }
             }
         } else {
-            plans.forEach { p ->
-                Column(Modifier.weight(1f).padding(end = 2.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    p.allDay.forEach { EventChip(it, Modifier.fillMaxWidth()) }
+            val spans = plans.flatMap { it.allDay }.distinctBy { it.id }.map { DaySpan(it, it.start.date, it.lastDay) }
+            val bars = SpanLayout.lay(spans, plans.map { it.day })
+            val lanes = (bars.maxOfOrNull { it.lane } ?: -1) + 1
+            BoxWithConstraints(Modifier.weight(1f).height(BarHeight * lanes + BarGap * (lanes - 1))) {
+                val column = maxWidth / plans.size
+                bars.forEach { b ->
+                    AllDayBar(
+                        b.item, b.item.id == picked, pick,
+                        Modifier.offset(x = column * b.from, y = (BarHeight + BarGap) * b.lane).width(column * (b.to - b.from + 1) - 2.dp),
+                    )
                 }
             }
         }
     }
+}
+
+internal val BarHeight = 22.dp
+internal val BarGap = 2.dp
+
+/**
+ * An all-day event as a solid bar in its colour with its title in white, as Google Calendar and TickTick draw them; a
+ * PokéPlan event can be tapped to edit it.
+ */
+@Composable
+internal fun AllDayBar(e: CalendarEvent, selected: Boolean, pick: (String) -> Unit, modifier: Modifier = Modifier, small: Boolean = false) {
+    val shape = RoundedCornerShape(6.dp)
+    Text(
+        e.title,
+        modifier
+            .height(if (small) MonthBarHeight else BarHeight)
+            .clip(shape)
+            .background(eventColor(e), shape)
+            .border(if (selected) 2.dp else 0.dp, if (selected) Pixel.Ink else Color.Transparent, shape)
+            .then(if (e.isOwn) Modifier.clickable(role = Role.Button, onClickLabel = "Edit ${e.title}") { pick(e.id) } else Modifier)
+            .semantics { contentDescription = "All day: ${e.title}" }
+            .padding(horizontal = if (small) 3.dp else Spacing.XS, vertical = if (small) 0.dp else 2.dp),
+        style = if (small) MonthTextStyle else MaterialTheme.typography.bodyMedium,
+        color = Color.White,
+        maxLines = 1,
+        softWrap = false,
+        overflow = TextOverflow.Clip,
+    )
 }
 
 /** What to do with the picked task: put it on an hour, nudge it or its length by 15 minutes, or take its time away. */
@@ -845,7 +913,7 @@ private fun EventBlock(
     modifier: Modifier,
 ) {
     val e = block.event
-    val color = if (own != null) OwnEventColor else eventColor(e)
+    val color = eventColor(e)
     val start = LocalTime(block.startMinute / 60, block.startMinute % 60)
     val end = if (block.endMinute >= 24 * 60) LocalTime(0, 0) else LocalTime(block.endMinute / 60, block.endMinute % 60)
     val anchor = remember { Anchor() }
@@ -889,10 +957,10 @@ private fun EventBlock(
     }
 }
 
-/** Setting up a new event: its title, then when (tap an hour, or nudge it), then Add. */
+/** Setting up a new event: its title, all day or at a time, its colour, then when (its days, or tap an hour and nudge it), then Add. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit, add: () -> Unit, cancel: () -> Unit) {
+internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit, add: () -> Unit, hours: Boolean = true, cancel: () -> Unit) {
     val at = LocalTime(draft.start / 60, draft.start % 60)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -901,8 +969,19 @@ private fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit, 
                 draft.title, { change(draft.copy(title = it)) }, Modifier.fillMaxWidth(), singleLine = true,
                 textStyle = MaterialTheme.typography.bodyLarge, label = { Text("What") },
             )
+            Segmented(listOf("At a time", "All day"), if (draft.allDay) 1 else 0) { change(draft.copy(allDay = it == 1, lastDay = draft.day)) }
+            EventColors(draft.color) { change(draft.copy(color = it)) }
+            if (draft.allDay) {
+                DaySpanPicker(draft.day, draft.lastDay, { change(draft.movedTo(it)) }) { change(draft.copy(lastDay = it)) }
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelButton("Add", add, color = Pixel.Green, enabled = draft.title.isNotBlank(), compact = true)
+                    PixelButton("Cancel", cancel, color = Pixel.InkSoft, compact = true)
+                }
+                return@Column
+            }
             Text(
-                "${draft.day.short()}, ${clock(at)} for ${duration(draft.minutes)}. Tap ${if (week) "a day's hour" else "an hour"} to change it. Events never pay.",
+                "${draft.day.short()}, ${clock(at)} for ${duration(draft.minutes)}." +
+                    (if (hours) " Tap ${if (week) "a day's hour" else "an hour"} to change it." else "") + " Events never pay.",
                 style = MaterialTheme.typography.bodyMedium,
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -920,7 +999,7 @@ private fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit, 
 /** What to do with a picked event of PokéPlan's own: rename it, nudge it or its length, or delete it. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, close: () -> Unit) {
+internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, close: () -> Unit) {
     val store = model.store
     var title by remember(event.id) { mutableStateOf(event.title) }
     TextBox {
@@ -929,6 +1008,16 @@ private fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, close: 
                 title, { title = it }, Modifier.fillMaxWidth(), singleLine = true,
                 textStyle = MaterialTheme.typography.bodyLarge, label = { Text("Event") },
             )
+            EventColors(event.color) { store.updateEvent(event.id, color = it) }
+            if (event.allDay) {
+                DaySpanPicker(event.day, event.endDay, { store.updateEvent(event.id, day = it) }) { store.updateEvent(event.id, lastDay = it) }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelButton("At a time", { store.updateEvent(event.id, allDay = false); close() }, color = Pixel.InkSoft, compact = true)
+                    PixelButton("Delete", { store.deleteEvent(event.id); close() }, color = Pixel.Red, compact = true)
+                    PixelButton("Done", { store.updateEvent(event.id, title = title); close() }, color = Pixel.Green, compact = true)
+                }
+                return@Column
+            }
             Text(
                 "${if (week) event.day.short() + ", " else "At "}${clock(event.start)} for ${duration(event.minutes)}. Tap another hour to move it.",
                 style = MaterialTheme.typography.bodyMedium,
@@ -938,6 +1027,7 @@ private fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, close: 
                 PixelButton("+15", { store.updateEvent(event.id, start = shifted(event.start, 15)) }, color = Pixel.InkSoft, compact = true)
                 PixelButton("Shorter", { store.updateEvent(event.id, minutes = event.minutes - DayTimeline.SNAP_MINUTES) }, color = Pixel.InkSoft, enabled = event.minutes > DayTimeline.SNAP_MINUTES, compact = true)
                 PixelButton("Longer", { store.updateEvent(event.id, minutes = event.minutes + DayTimeline.SNAP_MINUTES) }, color = Pixel.InkSoft, compact = true)
+                PixelButton("All day", { store.updateEvent(event.id, allDay = true) }, color = Pixel.InkSoft, compact = true)
                 PixelButton("Delete", { store.deleteEvent(event.id); close() }, color = Pixel.Red, compact = true)
                 PixelButton("Done", { store.updateEvent(event.id, title = title); close() }, color = Pixel.Green, compact = true)
             }
@@ -945,21 +1035,40 @@ private fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, close: 
     }
 }
 
-/** An all-day calendar event, in the band above the hours. */
+/** The colour names, for screen readers, in the order of [TaskList.COLORS]. */
+private val eventColorNames = listOf("Red", "Blue", "Green", "Amber", "Teal", "Purple", "Pink", "Slate")
+
+/** An event's colour: the eight list colours as swatches (teal is the own events' usual colour). */
 @Composable
-private fun EventChip(e: CalendarEvent, modifier: Modifier = Modifier) {
-    Text(
-        e.title,
-        modifier
-            .widthIn(max = 220.dp)
-            .blockLook(eventColor(e), fill = 0.14f, accent = 0.8f, selected = false)
-            .semantics { contentDescription = "Calendar, all day: ${e.title}" }
-            .padding(start = AccentWidth + Spacing.XS, end = Spacing.XS, top = 2.dp, bottom = 2.dp),
-        style = MaterialTheme.typography.bodyMedium,
-        color = Pixel.Ink,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-    )
+private fun EventColors(selected: Long?, pick: (Long) -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.CenterVertically) {
+        TaskList.COLORS.forEachIndexed { i, c ->
+            val on = c == (selected ?: TaskList.COLORS[4])
+            Box(
+                Modifier.size(36.dp).clip(CircleShape).selectable(on, role = Role.RadioButton) { pick(c) }
+                    .semantics { contentDescription = eventColorNames[i] },
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(Modifier.size(26.dp).background(Color(c), CircleShape).border(if (on) 3.dp else 0.dp, if (on) Pixel.Ink else Color.Transparent, CircleShape))
+            }
+        }
+    }
+}
+
+/** The first and last day of an all-day event, each with ‹ › to move it a day; the last never comes before the first. */
+@Composable
+private fun DaySpanPicker(first: LocalDate, last: LocalDate, setFirst: (LocalDate) -> Unit, setLast: (LocalDate) -> Unit) {
+    val days = first.daysUntil(last) + 1
+    Text("${first.short()}${if (days > 1) " to ${last.short()}, $days days" else ", one day"}. Events never pay.", style = MaterialTheme.typography.bodyMedium)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text("Starts", Modifier.width(56.dp), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        ArrowButton("‹", "Start a day earlier", enabled = true) { setFirst(first.minus(DatePeriod(days = 1))) }
+        ArrowButton("›", "Start a day later", enabled = true) { setFirst(first.plus(DatePeriod(days = 1))) }
+        Spacer(Modifier.width(Spacing.M))
+        Text("Ends", Modifier.width(44.dp), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        ArrowButton("‹", "End a day earlier", enabled = last > first) { setLast(last.minus(DatePeriod(days = 1))) }
+        ArrowButton("›", "End a day later", enabled = true) { setLast(last.plus(DatePeriod(days = 1))) }
+    }
 }
 
 /** The solid strip on a block's left edge, in its colour (Google Calendar, Notion Calendar). */

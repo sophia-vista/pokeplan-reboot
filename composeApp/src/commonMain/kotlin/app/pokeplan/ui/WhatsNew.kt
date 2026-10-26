@@ -3,6 +3,10 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.22.0" to listOf(
+            "A Month view in the Calendar, with events over several days as one bar across them.",
+            "Your own events can be all day, over one day or several, in a colour you pick.",
+        ),
         "0.21.0" to listOf(
             "Lists in the Planner, like TickTick: make one for each part of your life. The Inbox now holds every task that isn't in a list.",
         ),

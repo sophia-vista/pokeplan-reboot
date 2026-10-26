@@ -62,6 +62,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
@@ -346,23 +347,49 @@ class GameStore(
     }
 
     /** Puts an event on PokéPlan's own calendar. It never pays. */
-    fun addEvent(title: String, day: LocalDate, start: LocalTime, minutes: Int = PlanEvent.DEFAULT_MINUTES): PlanEvent {
-        val event = PlanEvent(newId(), title.trim(), day, start, PlanEvent.fit(start.hour * 60 + start.minute, minutes))
+    fun addEvent(title: String, day: LocalDate, start: LocalTime, minutes: Int = PlanEvent.DEFAULT_MINUTES, color: Long? = null): PlanEvent {
+        val event = PlanEvent(newId(), title.trim(), day, start, PlanEvent.fit(start.hour * 60 + start.minute, minutes), color = color)
         update { it.copy(events = it.events + event) }
         return event
     }
 
-    /** Changes an event's title, day, start or length; the length is kept inside the day. A blank title keeps the old one. */
-    fun updateEvent(id: String, title: String? = null, day: LocalDate? = null, start: LocalTime? = null, minutes: Int? = null) = update { d ->
+    /** Puts an all-day event on PokéPlan's own calendar, from [first] through [last] ("Home" for a weekend, "WFH" for a day). */
+    fun addAllDayEvent(title: String, first: LocalDate, last: LocalDate = first, color: Long? = null): PlanEvent {
+        val event = PlanEvent(
+            newId(), title.trim(), first, LocalTime(0, 0), allDay = true,
+            lastDay = maxOf(first, last).takeIf { it > first }, color = color,
+        )
+        update { it.copy(events = it.events + event) }
+        return event
+    }
+
+    /**
+     * Changes an event's title, day, start, length, last day (all-day), colour, or whether it is all-day; the length is kept
+     * inside the day. A blank title keeps the old one. Moving an all-day event's first day moves its last day with it.
+     */
+    fun updateEvent(
+        id: String, title: String? = null, day: LocalDate? = null, start: LocalTime? = null, minutes: Int? = null,
+        lastDay: LocalDate? = null, color: Long? = null, allDay: Boolean? = null,
+    ) = update { d ->
         d.copy(events = d.events.map { e ->
             if (e.id != id) e
             else {
                 val s = start ?: e.start
+                val first = day ?: e.day
+                val whole = allDay ?: e.allDay
+                val last = when {
+                    !whole -> null
+                    lastDay != null -> lastDay
+                    else -> e.lastDay?.plus(DatePeriod(days = (first.toEpochDays() - e.day.toEpochDays()).toInt()))
+                }
                 e.copy(
                     title = title?.trim()?.ifEmpty { null } ?: e.title,
-                    day = day ?: e.day,
+                    day = first,
                     start = s,
                     minutes = PlanEvent.fit(s.hour * 60 + s.minute, minutes ?: e.minutes),
+                    allDay = whole,
+                    lastDay = last?.takeIf { it > first },
+                    color = color ?: e.color,
                 )
             }
         })
