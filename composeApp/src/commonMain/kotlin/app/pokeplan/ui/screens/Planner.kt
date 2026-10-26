@@ -57,6 +57,24 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.plus
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
+import kotlinx.datetime.minus
 
 private enum class View(val label: String, val icon: String) {
     TODAY("Today", "oaks-parcel"), DAY("Calendar", "town-map"), INBOX("Inbox", "seal-bag"), UPCOMING("Soon", "timer-ball"), HABITS("Habits", "heart-scale"), DONE("Done", "premier-ball"),
@@ -80,31 +98,31 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
 
     val current = view
     if (current == null) {
+        val today = tasksFor(View.TODAY)
+        val overdue = TaskViews.overdue(today, store.now).size
+        val doneToday = store.doneToday()
         Column(Modifier.fillMaxSize()) {
-            ScreenHeader("Planner", subtitle = "${tasksFor(View.TODAY).size} to do today", icon = "journal")
+            ScreenHeader("Planner", subtitle = if (today.isEmpty()) "Nothing left for today" else "${today.size} to do today", icon = "journal")
             Column(
                 Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
                 verticalArrangement = Arrangement.spacedBy(Spacing.L),
             ) {
                 RewardBox(model)
                 QuickAddBox(model, View.INBOX)
-                MenuGrid(
+                // Smart lists, after Apple Reminders and Things: each tile says how many it holds, so the menu is also a glance at the day.
+                ListTiles(
                     View.entries.map { v ->
-                        MenuEntry(
-                            v.name, v.icon, v.label,
-                            when (v) {
-                                View.HABITS -> "${model.data.habits.size} habits"
-                                View.DAY -> "plan the hours"
-                                View.DONE -> "finished tasks"
-                                else -> "${tasksFor(v).size} tasks"
-                            },
-                            tint = when (v) {
-                                View.TODAY -> Pixel.Red; View.DAY -> androidx.compose.ui.graphics.Color(0xFF0D9488); View.INBOX -> Pixel.Blue; View.UPCOMING -> Pixel.Warning
-                                View.HABITS -> Pixel.Green; View.DONE -> androidx.compose.ui.graphics.Color(0xFF8B5CF6)
-                            },
-                        )
+                        val (count, detail) = when (v) {
+                            View.TODAY -> "${today.size}" to if (overdue > 0) "$overdue from before" else "to do"
+                            View.DAY -> null to "plan the hours"
+                            View.INBOX -> "${tasksFor(v).size}" to "no date yet"
+                            View.UPCOMING -> "${tasksFor(v).size}" to "next 7 days"
+                            View.HABITS -> model.data.habits.let { hs -> if (hs.isEmpty()) null to "small things, often" else "${hs.count { store.today in it.completions }}/${hs.size}" to "done today" }
+                            View.DONE -> "$doneToday" to "finished today"
+                        }
+                        ListTile(v, count, detail)
                     },
-                ) { key -> view = View.valueOf(key) }
+                ) { view = it }
             }
         }
         return
@@ -112,12 +130,137 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
 
     SectionScaffold(current.label, "Planner", onBack = { view = null }, icon = current.icon) {
         RewardBox(model)
-        if (current == View.HABITS) HabitsView(model) else if (current == View.DAY) DayView(model, pendingIds, startWeek) else {
-            if (current == View.TODAY || current == View.INBOX) QuickAddBox(model, current)
-            val shown = tasksFor(current)
-            if (shown.isEmpty()) EmptyState(emptyTitle(current), emptyLine(current), icon = current.icon)
-            shown.forEach { t ->
-                TaskCard(model, t, expanded == t.id, { expanded = if (expanded == t.id) null else t.id }, onDeleted = { model.deletedTask = t; expanded = null })
+        when (current) {
+            View.HABITS -> HabitsView(model)
+            View.DAY -> DayView(model, pendingIds, startWeek)
+            else -> {
+                if (current == View.TODAY || current == View.INBOX) QuickAddBox(model, current)
+                val shown = tasksFor(current)
+                val card: @Composable (Task, LocalDate?) -> Unit = { t, day ->
+                    TaskCard(model, t, day, expanded == t.id, { expanded = if (expanded == t.id) null else t.id }, onDeleted = { model.deletedTask = t; expanded = null })
+                }
+                when (current) {
+                    View.TODAY -> TodayList(model, shown, card)
+                    // Soon by the day each task is on, Done by the day it was finished (Todoist's Upcoming, Things' Logbook).
+                    View.UPCOMING -> shown.groupBy { it.planned ?: it.due!!.date }.forEach { (day, ts) -> TaskGroup(dayName(model, day), ts, dayOf = day, card = card) }
+                    View.DONE -> shown.groupBy { store.dayOf(it.completedAtMillis ?: 0L) }.forEach { (day, ts) -> TaskGroup(dayName(model, day), ts, card = card) }
+                    else -> if (shown.isNotEmpty()) TaskGroup(null, shown, card = card)
+                }
+                if (shown.isEmpty() && current != View.TODAY) EmptyState(emptyTitle(current), emptyLine(current), icon = current.icon)
+            }
+        }
+    }
+}
+
+private class ListTile(val view: View, val count: String?, val detail: String)
+
+/** The list tint, the same on the menu tile and nowhere else (the lists themselves stay calm). */
+private fun View.tint(): Color = when (this) {
+    View.TODAY -> Pixel.Red; View.DAY -> Color(0xFF0D9488); View.INBOX -> Pixel.Blue; View.UPCOMING -> Pixel.Warning
+    View.HABITS -> Pixel.Green; View.DONE -> Color(0xFF8B5CF6)
+}
+
+/** Two tiles to a row: the item icon and the count on top, the name and one quiet line below. */
+@Composable
+private fun ListTiles(tiles: List<ListTile>, onOpen: (View) -> Unit) {
+    val shape = RoundedCornerShape(Spacing.CardRadius)
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        tiles.chunked(2).forEach { row ->
+            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                row.forEach { tile ->
+                    Column(
+                        Modifier.weight(1f).fillMaxHeight()
+                            .background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)
+                            .clickable(role = Role.Button, onClickLabel = "Open ${tile.view.label}") { onOpen(tile.view) }
+                            .padding(Spacing.M),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.XS),
+                    ) {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Box(Modifier.size(48.dp).background(tile.view.tint().copy(alpha = 0.14f), CircleShape), contentAlignment = Alignment.Center) {
+                                ItemIcon(tile.view.icon, size = 40.dp, description = null)
+                            }
+                            Spacer(Modifier.weight(1f))
+                            if (tile.count != null) Text(tile.count, style = MaterialTheme.typography.headlineMedium)
+                        }
+                        Text(tile.view.label, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(tile.detail, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 2)
+                    }
+                }
+                if (row.size == 1) Spacer(Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+/** "Today", "Tomorrow", "Yesterday" or "Wed 28 Oct". */
+private fun dayName(model: AppModel, day: LocalDate): String {
+    val today = model.store.today
+    return when (day) {
+        today -> "Today"
+        today.plus(DatePeriod(days = 1)) -> "Tomorrow"
+        today.minus(DatePeriod(days = 1)) -> "Yesterday"
+        else -> day.short()
+    }
+}
+
+/**
+ * Today, after Things and Todoist: how the day is going, then the tasks from before (with one button to bring them to
+ * today), then today's, then "This evening". Every group sits in one panel, rows split by lines.
+ */
+@Composable
+private fun TodayList(model: AppModel, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit) {
+    val store = model.store
+    val done = store.doneToday()
+    if (tasks.isNotEmpty() || done > 0) {
+        val total = tasks.size + done
+        Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            Text("$done of $total done", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Box(Modifier.weight(1f).height(8.dp).clip(CircleShape).background(Pixel.Shade)) {
+                if (done > 0) Box(Modifier.fillMaxWidth(done.toFloat() / total).fillMaxHeight().clip(CircleShape).background(Pixel.Green))
+            }
+        }
+    }
+    if (tasks.isEmpty()) {
+        if (done > 0) EmptyState("All clear for today", "$done finished. The rest can wait for tomorrow.", icon = View.TODAY.icon)
+        else EmptyState(emptyTitle(View.TODAY), emptyLine(View.TODAY), icon = View.TODAY.icon)
+        return
+    }
+    val before = TaskViews.overdue(tasks, store.now).toSet()
+    val (day, evening) = tasks.filter { it !in before }.partition { !TaskViews.isEvening(it) }
+    // Planned for an earlier day can move to today; a deadline that has passed stays as it is (moving the plan would not change it).
+    val movable = before.filter { it.due == null }
+    if (before.isNotEmpty()) TaskGroup(
+        "From before", before.toList(), color = Pixel.Warning,
+        action = if (movable.isEmpty()) null else "Move to today" to { movable.forEach { store.updateTask(it.copy(planned = store.today)) } },
+        card = card,
+    )
+    if (day.isNotEmpty()) TaskGroup(if (before.isEmpty() && evening.isEmpty()) null else "Today", day, dayOf = store.today, card = card)
+    if (evening.isNotEmpty()) TaskGroup("This evening", evening, dayOf = store.today, card = card)
+}
+
+/**
+ * A heading with its count and an optional quiet action, then the tasks in one panel. [dayOf] is the day the whole
+ * group is on, so the rows leave it out and show only their time.
+ */
+@Composable
+private fun TaskGroup(
+    title: String?, tasks: List<Task>, color: Color = Pixel.Ink, dayOf: LocalDate? = null,
+    action: Pair<String, () -> Unit>? = null, card: @Composable (Task, LocalDate?) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        if (title != null) {
+            Row(Modifier.fillMaxWidth().padding(top = Spacing.S), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Text(title, style = MaterialTheme.typography.titleSmall, color = color, modifier = Modifier.semantics { heading() })
+                Text("${tasks.size}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                Spacer(Modifier.weight(1f))
+                if (action != null) PixelButton(action.first, action.second, color = Pixel.InkSoft, compact = true)
+            }
+        }
+        val shape = RoundedCornerShape(Spacing.CardRadius)
+        Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)) {
+            tasks.forEachIndexed { i, t ->
+                if (i > 0) HorizontalDivider(Modifier.padding(start = Spacing.M), color = Pixel.Border)
+                card(t, dayOf)
             }
         }
     }
@@ -222,6 +365,8 @@ private fun QuickAddBox(model: AppModel, view: View) {
                 )
                 PixelButton("Add", ::add, color = Pixel.Red, enabled = text.isNotBlank())
             }
+            // The rest waits until there is something to add, so the box is one field and one button (cta.gallery, plnty).
+            if (text.isBlank() && !more) return@Column
             // When: tap a chip to choose a day, tap it again to go back to what the text says ("tomorrow 5pm") or the view's default.
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 listOf("Today" to 0, "Tomorrow" to 1, "Weekend" to WEEKEND, "No date" to NO_DATE).forEach { (label, value) ->
@@ -235,28 +380,31 @@ private fun QuickAddBox(model: AppModel, view: View) {
 }
 
 @Composable
-private fun TaskCard(model: AppModel, task: Task, expanded: Boolean, toggle: () -> Unit, onDeleted: () -> Unit) {
+private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boolean, toggle: () -> Unit, onDeleted: () -> Unit) {
     val store = model.store
     var editing by remember(task.id) { mutableStateOf(false) }
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        ListRow(
-            lead = { RankBadge(task.rank) },
-            onClick = toggle,
-            onClickLabel = if (expanded) "Hide options" else "Show options",
-            trail = {
-                if (task.state == TaskState.OPEN) PixelButton("Done", { store.completeTask(task.id) }, color = Pixel.Green, compact = true)
-                else PixelButton("Reopen", { store.reopen(task.id) }, color = Pixel.InkSoft, compact = true)
-            },
+    Column {
+        Row(
+            Modifier.fillMaxWidth()
+                .clickable(onClickLabel = if (expanded) "Hide options" else "Show options", role = Role.Button, onClick = toggle)
+                .defaultMinSize(minHeight = 64.dp)
+                .padding(Spacing.M),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
-            Text(task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 4)
-            val overdue = task.state == TaskState.OPEN && isOverdue(model, task)
-            val meta = taskMeta(task)
-            val line = listOf(if (overdue) "Overdue" else "", meta).filter { it.isNotEmpty() }.joinToString(", ")
-            // Overdue is said calmly: the word in amber, never an alarm red (docs/design.md, No shame).
-            if (line.isNotEmpty()) Text(line, style = MaterialTheme.typography.bodyMedium, color = if (overdue) Pixel.Warning else Pixel.InkSoft)
+            RankBadge(task.rank)
+            Column(Modifier.weight(1f)) {
+                Text(task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 4, overflow = TextOverflow.Ellipsis, color = if (task.isOpen) Pixel.Ink else Pixel.InkSoft)
+                // Overdue tasks sit under Today's calm "From before" heading, so the row needs no alarm of its own (docs/design.md, No shame).
+                // A finished task's plan no longer matters: the Done list is grouped by the day it was finished.
+                val line = if (task.isOpen) taskMeta(task, day) else ""
+                if (line.isNotEmpty()) Text(line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+            if (task.state == TaskState.OPEN) PixelButton("Done", { store.completeTask(task.id) }, color = Pixel.Green, compact = true)
+            else PixelButton("Reopen", { store.reopen(task.id) }, color = Pixel.InkSoft, compact = true)
         }
         if (expanded) {
-            TextBox {
+            Box(Modifier.fillMaxWidth().background(Pixel.Shade.copy(alpha = 0.5f)).padding(Spacing.M)) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                     Text("${task.rank.letter}: ${task.rank.title}", style = MaterialTheme.typography.bodyMedium)
                     if (editing) {
@@ -377,16 +525,10 @@ private fun RemindMe(model: AppModel, task: Task) {
     Text(note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
-private fun isOverdue(model: AppModel, t: Task): Boolean {
-    val now = model.store.now
-    val due = t.due
-    return if (due != null) due < now else t.planned != null && t.planned!! < now.date
-}
-
-/** "Mon 19 Oct, 45 min, 1/3 steps" */
-fun taskMeta(t: Task): String = buildList {
-    t.due?.let { add("due ${it.date.short()} ${clock(it.time)}") }
-        ?: t.planned?.let { day -> add(listOfNotNull(day.short(), t.plannedTime?.let(::clock)).joinToString(" ")) }
+/** "Mon 19 Oct, 45 min, 1/3 steps"; the date is left out when it is [day] (the day the list is grouped on). */
+fun taskMeta(t: Task, day: LocalDate? = null): String = buildList {
+    t.due?.let { add(listOfNotNull("due", it.date.takeIf { d -> d != day }?.short(), clock(it.time)).joinToString(" ")) }
+        ?: t.planned?.let { p -> listOfNotNull(p.takeIf { it != day }?.short(), t.plannedTime?.let(::clock)).joinToString(" ").takeIf { it.isNotEmpty() }?.let(::add) }
     t.estimateMinutes?.let { add("$it min") }
     if (t.reminders.isNotEmpty() && t.isOpen) add("reminder")
     if (t.subtasks.isNotEmpty()) add("${t.subtasks.count { it.done }}/${t.subtasks.size} steps")

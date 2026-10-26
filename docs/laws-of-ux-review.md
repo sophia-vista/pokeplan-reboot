@@ -28,6 +28,7 @@ change, with the reason.
 | Law of Similarity, Paradox of the Active User | In the Bag, usable items looked exactly like items that only sit there. Tapping a task row opened its options with no hint. | **Fixed:** usable items get a Use button; task rows say "Show options" / "Hide options" to screen readers. |
 | Aesthetic-Usability, Paradox of the Active User | Empty lists were a bare title and line. | **Fixed:** `EmptyState` takes a real item icon (and at most one action), in the shape the design-references skill asks for. |
 | Accessibility (Law of Similarity's "not colour alone") | The starter picker and PC tiles were clickable boxes with no role. | **Fixed:** starters are radio buttons with a selected state; PC tiles say "Open <name>". |
+| Hick's Law, Law of Common Region, Chunking | (0.19.2) The Planner menu needed scrolling to see all its lists, the quick-add showed every choice before anything was typed, and the lists were one long column of separate cards. | **Fixed:** six smaller tiles with counts fit on one screen, the quick-add's day chips wait until there is text, and each list is grouped under headings with counts, one panel per group. |
 
 ## Already followed (kept)
 

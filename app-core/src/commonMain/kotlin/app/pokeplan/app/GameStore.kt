@@ -225,6 +225,9 @@ class GameStore(
     /** The first millisecond of today in the player's time zone. */
     val startOfTodayMillis: Long get() = LocalDateTime(today, kotlinx.datetime.LocalTime(0, 0)).toEpochMillis(zone)
 
+    /** The local day [millis] falls on (a finished task's day in the Done list). */
+    fun dayOf(millis: Long): LocalDate = millis.toLocalDateTime(zone).date
+
     private fun newId(): String = "${nowMillis.toString(36)}-${rng.nextInt(Int.MAX_VALUE).toString(36)}"
 
     // --- onboarding ---------------------------------------------------------------------------------------------------

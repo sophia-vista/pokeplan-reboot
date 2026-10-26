@@ -20,6 +20,7 @@ import org.jetbrains.skia.EncodedImageFormat
 import java.io.File
 import kotlin.test.Test
 import kotlinx.datetime.plus
+import kotlinx.datetime.minus
 import kotlin.test.assertTrue
 
 /**
@@ -136,13 +137,29 @@ class ScreenshotTest {
         val store = started()
         store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 45)
         store.addTask("Reply to mail", Rank.E, planned = store.today)
-        val model = AppModel(store)
         store.addSubtask(store.data.tasks.last().id, "Open the draft")
+        store.addTask("Water the plants", Rank.D, planned = store.today.minus(kotlinx.datetime.DatePeriod(days = 2)))
+        store.addTask("Read a chapter", Rank.D, planned = store.today)
+        store.setPlannedTime(store.data.tasks.last().id, kotlinx.datetime.LocalTime(21, 0))
+        store.addTask("Book the dentist", Rank.C, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 1)), estimateMinutes = 15)
+        store.addTask("Pay the rent", Rank.B, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 3)))
+        store.addTask("Buy stamps", Rank.E, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 3)))
+        store.completeTask(store.data.tasks.first().id)
+        clock.millis += 11_000
+        store.tick()
+        store.markRewardsSeen()
+        val model = AppModel(store)
         render("planner") {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model) } }
         }
         render("planner-today") {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 0) } }
+        }
+        render("planner-soon") {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 3) } }
+        }
+        render("planner-done") {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 5) } }
         }
     }
 
