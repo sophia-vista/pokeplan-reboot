@@ -60,6 +60,15 @@ class ScreenshotTest {
         render("home") { App(storage, focusTab = true) }
     }
 
+    /** A task just ticked off: the undo bar floats above the tabs, where the thumb is. */
+    @Test
+    fun homeUndo() {
+        val store = started()
+        store.completeTask(store.data.tasks.single().id)
+        val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
+        render("home-undo") { App(storage, focusTab = true) }
+    }
+
     @Test
     fun homeWithRewards() {
         val store = started()

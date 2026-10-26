@@ -7,7 +7,11 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -87,6 +91,8 @@ fun OnboardingScreen(store: GameStore, startStep: Int = 0) {
                             name, { name = it.take(24) }, Modifier.weight(1f), singleLine = true,
                             textStyle = MaterialTheme.typography.bodyLarge,
                             placeholder = { Text("Your name", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
+                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(onDone = { if (name.isNotBlank()) step = Step.CONFIRM_NAME }),
                         )
                         PixelButton("OK", { step = Step.CONFIRM_NAME }, color = Pixel.Green, enabled = name.isNotBlank())
                     }
@@ -135,7 +141,7 @@ private fun StarterPicker(selected: Int, onSelect: (Int) -> Unit) {
                     val chosen = id == selected
                     Box(
                         Modifier.background(if (chosen) Pixel.Yellow else Pixel.Panel, RoundedCornerShape(12.dp))
-                            .selectable(chosen, role = Role.RadioButton, onClick = { onSelect(id) })
+                            .selectable(selected = chosen, role = Role.RadioButton) { onSelect(id) }
                             .padding(4.dp),
                     ) { Sprite(Dex.defaultForm(id).id, false, Dex.species(id).name, size = 56.dp) }
                 }

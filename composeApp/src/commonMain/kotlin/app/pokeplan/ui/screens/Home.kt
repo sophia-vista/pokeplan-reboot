@@ -97,7 +97,6 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
         ) {
             WhatsNewCard(model)
             RewardBox(model)
-            UndoRows(model)
 
             if (buddy != null) {
                 val berry = data.player.inventory.counts.keys.firstOrNull { Items.category(it) == ItemCategory.BERRY && data.player.inventory.has(it) }

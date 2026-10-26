@@ -10,6 +10,9 @@ from each site's home page only. The galleries change daily, so a named example 
 so you can look the pattern up again. They are websites and PokéPlan is an app, so every idea below is already
 translated to a screen, a tab or a moment in the app.
 
+**Laws of UX:** `docs/laws-of-ux-review.md` checks every screen against lawsofux.com and lists what was fixed, what
+already held and what is left; read it with this file, and keep it current when a screen changes.
+
 **Order of authority:** `CLAUDE.md`, `docs/design.md` (game rules, Look and feel, ADHD-friendly design, Ideas adopted
 from other apps) and `docs/ui-ux-brief.md` (tokens, component states, accessibility) always win. This file only gives
 ideas. Nothing here changes a game rule, a reward or a number. If an idea needs a new dependency or a new kind of

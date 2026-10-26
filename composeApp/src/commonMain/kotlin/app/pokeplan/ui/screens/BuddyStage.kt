@@ -17,6 +17,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -150,7 +151,9 @@ fun BuddyStage(
         Column(
             Modifier.align(Alignment.BottomStart).padding(Spacing.S).clip(RoundedCornerShape(Spacing.CardRadius - Spacing.S)).background(Color(0x55000000))
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Open ${buddy.nickname}", role = Role.Button, onClick = onOpen)
-                .padding(horizontal = 8.dp, vertical = 5.dp)
+                // Small to look at, but a full touch target to hit.
+                .defaultMinSize(minHeight = 40.dp)
+                .padding(horizontal = 10.dp, vertical = 7.dp)
                 .semantics(mergeDescendants = true) { contentDescription = "${buddy.nickname}, level ${buddy.level}, ${(progress * 100).toInt()} percent to the next level" },
         ) {
             Text("${buddy.nickname}  Lv. ${buddy.level}", style = MaterialTheme.typography.labelMedium, color = Color.White)
@@ -171,7 +174,7 @@ fun BuddyStage(
         }
 
         if (berry != null) Box(
-            Modifier.align(Alignment.BottomEnd).padding(Spacing.S).size(40.dp).background(Color(0xCCFFFFFF), CircleShape)
+            Modifier.align(Alignment.BottomEnd).padding(Spacing.S).size(Spacing.Target).background(Color(0xCCFFFFFF), CircleShape)
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Give ${buddy.nickname} a ${Items.get(berry)?.name ?: berry}", role = Role.Button) {
                     onHaptic()
                     react(onFeed(lastReaction), SpriteAction.EAT)

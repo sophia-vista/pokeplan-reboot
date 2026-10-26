@@ -53,6 +53,9 @@ import app.pokeplan.ui.screens.MeScreen
 import app.pokeplan.ui.screens.OnboardingScreen
 import app.pokeplan.ui.screens.PlannerScreen
 import app.pokeplan.ui.screens.NavButton
+import app.pokeplan.ui.screens.UndoBar
+import app.pokeplan.plan.Task
+import androidx.compose.ui.Alignment
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelTheme
 import kotlinx.coroutines.delay
@@ -97,6 +100,9 @@ class AppModel(
 
     var data: AppData by mutableStateOf(store.data)
         private set
+
+    /** A task just deleted, which the undo bar can bring back for a few seconds. */
+    var deletedTask: Task? by mutableStateOf(null)
 
     /** A task picked on Home or in the Planner to focus on; the Focus screen offers it when it opens. */
     var focusTaskId: String? by mutableStateOf(null)
@@ -249,7 +255,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab, launche
             when (tab) {
                 Tab.HOME -> HomeScreen(model, go)
                 Tab.PLANNER -> PlannerScreen(model, startView = if (model.addTaskRequested) 0 else -1)
-                Tab.FOCUS -> FocusScreen(model)
+                Tab.FOCUS -> FocusScreen(model) { id -> model.openPokemonId = id; go(Tab.COLLECTION) }
                 Tab.COLLECTION -> {
                     val open = remember { model.openPokemonId }
                     LaunchedEffect(Unit) { model.openPokemonId = null }
@@ -257,6 +263,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab, launche
                 }
                 Tab.ME -> MeScreen(model)
             }
+            UndoBar(model, Modifier.align(Alignment.BottomCenter))
         }
         Column(Modifier.fillMaxWidth().background(Pixel.Panel).border(1.dp, Pixel.Border)) {
             // Five labels in one row cannot grow with the system text size without being cut off, so the tab bar's text

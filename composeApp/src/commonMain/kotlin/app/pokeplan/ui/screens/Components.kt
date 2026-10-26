@@ -9,6 +9,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
+import app.pokeplan.ui.theme.Spacing
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -65,18 +74,41 @@ fun SpeakerBox(model: AppModel, emotion: Emotion, modifier: Modifier = Modifier,
     }
 }
 
-/** Tasks just ticked off, still inside the 10 second window where Undo cancels the reward. */
+/**
+ * Tasks just ticked off, still inside the 10 second window where Undo cancels the reward, and a task just deleted. Shown in
+ * one bar pinned above the tabs, near the thumb that tapped Done, on every tab; it floats over the page, so nothing on the
+ * page moves when it comes and goes.
+ */
 @Composable
-fun UndoRows(model: AppModel) {
-    model.data.pending.forEach { p ->
-        TextBox(Modifier.fillMaxWidth()) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("Done: ${p.done.title}", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                PixelButton("Undo", { model.store.undoCompletion(p.original.id) }, color = Pixel.Red)
+fun UndoBar(model: AppModel, modifier: Modifier = Modifier) {
+    val deleted = model.deletedTask
+    // A deleted task can be brought back for as long as a finished one can be undone.
+    LaunchedEffect(deleted?.id) {
+        if (deleted != null) {
+            delay(UNDO_SHOWN_MILLIS)
+            model.deletedTask = null
+        }
+    }
+    val rows: List<Pair<String, () -> Unit>> =
+        model.data.pending.takeLast(2).map { p -> "Done: ${p.done.title}" to { model.store.undoCompletion(p.original.id); Unit } } +
+            listOfNotNull(deleted?.let { t -> "Deleted: ${t.title}" to { model.store.restoreTask(t.id); model.deletedTask = null } })
+    if (rows.isEmpty()) return
+    Column(
+        modifier.fillMaxWidth().padding(horizontal = Spacing.M, vertical = Spacing.S)
+            .background(Pixel.Ink, RoundedCornerShape(Spacing.CardRadius))
+            .padding(horizontal = Spacing.L, vertical = Spacing.XS)
+            .semantics { liveRegion = LiveRegionMode.Polite },
+    ) {
+        rows.forEach { (label, undo) ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
+                Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = Pixel.OnInk, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                PixelButton("Undo", undo, Modifier.padding(vertical = Spacing.XS), Pixel.Blue, compact = true)
             }
         }
     }
 }
+
+private const val UNDO_SHOWN_MILLIS = 10_000L
 
 internal val dayNames = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 private val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")

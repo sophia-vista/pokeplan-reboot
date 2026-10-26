@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import app.pokeplan.app.ThemeMode
-import app.pokeplan.ui.theme.SectionLabel
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +19,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.semantics.heading
+import app.pokeplan.ui.theme.ToggleRow
+import app.pokeplan.ui.theme.Spacing
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -96,7 +103,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
         }
         return
     }
-    SectionScaffold(current.label, null, onBack = { section = null }, icon = current.icon) {
+    SectionScaffold(current.label, "Me", onBack = { section = null }, icon = current.icon) {
         when (current) {
             MeSection.GROWTH -> GrowthView(model)
             MeSection.GOALS -> GoalsView(model)
@@ -260,6 +267,8 @@ private fun GoalsView(model: AppModel) {
             OutlinedTextField(
                 title, { title = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
                 placeholder = { Text("A goal, e.g. Learn guitar", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { if (title.isNotBlank()) { store.addGoal(title); title = "" } }),
             )
             PixelButton("Add", { store.addGoal(title); title = "" }, enabled = title.isNotBlank())
         }
@@ -271,7 +280,11 @@ private fun GoalsView(model: AppModel) {
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(g.title, style = MaterialTheme.typography.titleMedium)
-                PixelBar(GoalRules.progress(g, model.data.tasks).toFloat(), color = Pixel.Green)
+                // The words beside the bar say how close the goal is; the nearer it looks, the likelier it gets finished.
+                val done = g.milestones.count { it.isDone }
+                val progress = "$done of ${g.milestones.size} milestones"
+                PixelBar(GoalRules.progress(g, model.data.tasks).toFloat(), color = Pixel.Green, label = progress)
+                if (g.milestones.isNotEmpty()) Text(progress, style = MaterialTheme.typography.bodyMedium)
                 g.milestones.forEach { m ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Text(m.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (m.isDone) Pixel.InkSoft else Pixel.Ink)
@@ -283,6 +296,8 @@ private fun GoalsView(model: AppModel) {
                     OutlinedTextField(
                         step, { step = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
                         placeholder = { Text("Add a milestone", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { if (step.isNotBlank()) { store.addMilestone(g.id, step); step = "" } }),
                     )
                     PixelButton("Add", { store.addMilestone(g.id, step); step = "" }, enabled = step.isNotBlank(), compact = true)
                 }
@@ -323,7 +338,7 @@ private fun ReviewView(model: AppModel) {
                 placeholder = { Text("Optional. Only you see this.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
             )
             if (summary.unfinished.isNotEmpty()) {
-                Toggle("Carry unfinished to tomorrow", carry) { carry = it }
+                ToggleRow("Carry unfinished to tomorrow", carry) { carry = it }
             }
             PixelButton("Finish the review", {
                 store.completeReview(note, if (carry) store.today.plus(DatePeriod(days = 1)) else null)
@@ -344,7 +359,12 @@ private fun SettingsView(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Trainer name", style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(name, { name = it.take(24) }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge)
+                val changed = name.isNotBlank() && name.trim() != model.data.trainerName
+                OutlinedTextField(
+                    name, { name = it.take(24) }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { if (changed) store.rename(name) }),
+                )
                 PixelButton("Save", { store.rename(name) }, color = Pixel.Green, enabled = name.isNotBlank() && name.trim() != model.data.trainerName, compact = true)
             }
         }
@@ -360,48 +380,37 @@ private fun SettingsView(model: AppModel) {
             Text("A new region opens with each trainer rank.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Toggle("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
-            VolumeRow("Sound effects and cries", settings.effectsVolume) { v -> store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }
-            Toggle("Vibration", settings.haptics) { store.changeSettings { s -> s.copy(haptics = it) } }
-            SectionLabel("Colours")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                ThemeMode.entries.forEach { mode -> TabButton(mode.label, settings.theme == mode, { store.changeSettings { s -> s.copy(theme = mode) } }) }
-            }
-            Toggle("Reduce motion", settings.reduceMotion) { store.changeSettings { s -> s.copy(reduceMotion = it) } }
-            Toggle("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
-            Toggle("Task reminders", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }
-            if (settings.reminders) {
-                fun hour(t: LocalTime) = "${t.hour.toString().padStart(2, '0')}:00"
-                fun shift(t: LocalTime, by: Int) = LocalTime((t.hour + by + 24) % 24, 0)
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Quiet from", style = MaterialTheme.typography.bodyLarge)
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PixelButton("-1", { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = shift(s.quietHours.start, -1))) } }, color = Pixel.InkSoft, compact = true)
-                        Text(hour(settings.quietHours.start), style = MaterialTheme.typography.bodyLarge)
-                        PixelButton("+1", { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = shift(s.quietHours.start, 1))) } }, color = Pixel.InkSoft, compact = true)
-                    }
-                }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("until", style = MaterialTheme.typography.bodyLarge)
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PixelButton("-1", { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = shift(s.quietHours.end, -1))) } }, color = Pixel.InkSoft, compact = true)
-                        Text(hour(settings.quietHours.end), style = MaterialTheme.typography.bodyLarge)
-                        PixelButton("+1", { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = shift(s.quietHours.end, 1))) } }, color = Pixel.InkSoft, compact = true)
-                    }
-                }
-                Text("Reminders wait during quiet hours, a focus session and rest days.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("Usual focus length", style = MaterialTheme.typography.bodyLarge)
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PixelButton("-5", { store.changeSettings { s -> s.copy(defaultFocusMinutes = (s.defaultFocusMinutes - 5).coerceAtLeast(5)) } }, color = Pixel.InkSoft, compact = true)
-                    Text("${settings.defaultFocusMinutes} min", style = MaterialTheme.typography.bodyLarge)
-                    PixelButton("+5", { store.changeSettings { s -> s.copy(defaultFocusMinutes = (s.defaultFocusMinutes + 5).coerceAtMost(180)) } }, color = Pixel.InkSoft, compact = true)
-                }
-            }
+    // Settings come in small groups, one card each, so a setting is found by its group rather than by reading a long list.
+    SettingsGroup("Focus") {
+        ToggleRow("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
+        Stepper("Usual focus length", "${settings.defaultFocusMinutes} min", 5) { by ->
+            store.changeSettings { s -> s.copy(defaultFocusMinutes = (s.defaultFocusMinutes + by).coerceIn(5, 180)) }
         }
+    }
+    SettingsGroup("Sound and touch") {
+        VolumeRow("Sound effects and cries", settings.effectsVolume) { v -> store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }
+        ToggleRow("Vibration", settings.haptics) { store.changeSettings { s -> s.copy(haptics = it) } }
+    }
+    SettingsGroup("Look") {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            ThemeMode.entries.forEach { mode -> TabButton(mode.label, settings.theme == mode, { store.changeSettings { s -> s.copy(theme = mode) } }) }
+        }
+        ToggleRow("Reduce motion", settings.reduceMotion, detail = "Sprites stand still and nothing wobbles.") { store.changeSettings { s -> s.copy(reduceMotion = it) } }
+    }
+    SettingsGroup("Reminders and week") {
+        ToggleRow("Task reminders", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }
+        if (settings.reminders) {
+            fun hour(t: LocalTime) = "${t.hour.toString().padStart(2, '0')}:00"
+            fun shift(t: LocalTime, by: Int) = LocalTime((t.hour + by + 24) % 24, 0)
+            Stepper("Quiet from", hour(settings.quietHours.start), 1) { by ->
+                store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = shift(s.quietHours.start, by))) }
+            }
+            Stepper("Quiet until", hour(settings.quietHours.end), 1) { by ->
+                store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = shift(s.quietHours.end, by))) }
+            }
+            Text("Reminders wait during quiet hours, a focus session and rest days.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        }
+        ToggleRow("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
     }
     CalendarsCard(model)
     AccountCard(model)
@@ -432,7 +441,7 @@ private fun CalendarsCard(model: AppModel) {
                 list.isEmpty() -> Text("No calendars on this phone yet.", style = MaterialTheme.typography.bodyMedium)
                 else -> list.forEach { c ->
                     val label = if (c.account.isBlank() || c.account == c.name) c.name else "${c.name}, ${c.account}"
-                    Toggle(label, c.id in shown) { on -> model.store.setShownCalendars(if (on) shown + c.id else shown - c.id) }
+                    ToggleRow(label, c.id in shown) { on -> model.store.setShownCalendars(if (on) shown + c.id else shown - c.id) }
                 }
             }
         }
@@ -545,20 +554,24 @@ private fun AccountCard(model: AppModel) {
                 account == null -> {
                     Text("Sign in to back up your progress and use it on your other devices.", style = MaterialTheme.typography.bodyMedium)
                     OutlinedTextField(email, { email = it }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                        placeholder = { Text("Email", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) })
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next, autoCorrectEnabled = false),
+                        label = { Text("Email") })
                     OutlinedTextField(password, { password = it }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
                         visualTransformation = PasswordVisualTransformation(),
-                        placeholder = { Text("Password", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) })
-                    message?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Red) }
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done, autoCorrectEnabled = false),
+                        label = { Text("Password") },
+                        // Say the rule up front instead of leaving the buttons grey without a reason.
+                        supportingText = { Text("At least 6 characters", style = MaterialTheme.typography.bodyMedium) })
+                    message?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         PixelButton("Sign in", {
                             busy = true; message = null
-                            scope.launch { message = sync.signIn(email, password); busy = false }
+                            scope.launch { message = sync.signIn(email.trim(), password); busy = false }
                         }, Modifier.weight(1f), Pixel.Blue, enabled = !busy && email.isNotBlank() && password.length >= 6, compact = true)
                         PixelButton("Create account", {
                             busy = true; message = null
                             scope.launch {
-                                val result = sync.signUp(email, password)
+                                val result = sync.signUp(email.trim(), password)
                                 message = if (result == "confirm") "Check your email to confirm your account, then sign in." else result
                                 busy = false
                             }
@@ -596,10 +609,26 @@ private fun AccountCard(model: AppModel) {
     }
 }
 
+/** One group of settings in its own card, under a small heading. */
 @Composable
-private fun Toggle(label: String, on: Boolean, onChange: (Boolean) -> Unit) {
+private fun SettingsGroup(title: String, content: @Composable () -> Unit) {
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+            content()
+        }
+    }
+}
+
+/** A value nudged down and up by [step] ("-5", "+5"), with its label at the start of the row. */
+@Composable
+private fun Stepper(label: String, value: String, step: Int, change: (Int) -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-        PixelButton(if (on) "On" else "Off", { onChange(!on) }, color = if (on) Pixel.Green else Pixel.InkSoft, compact = true)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            PixelButton("-$step", { change(-step) }, color = Pixel.InkSoft, compact = true)
+            Text(value, style = MaterialTheme.typography.bodyLarge)
+            PixelButton("+$step", { change(step) }, color = Pixel.InkSoft, compact = true)
+        }
     }
 }

@@ -311,6 +311,7 @@ Beyond task reminders: a **streak-at-risk reminder** in the evening if nothing h
 - Crisp scaling: nearest-neighbour, integer scale, no blur.
 - Fonts: pixel font for headings only; body text stays a readable font.
 - Sound: cries, short jingles; a mute toggle.
+- Interface rules from the Laws of UX review (0.19.0, `docs/laws-of-ux-review.md`): Back sits at the start of every header; on/off settings are switches whose whole row is the target; a choice is a radio row, never an action button; each screen has one solid primary action and the risky ones (Give up, Transfer, Remove) stay quiet until confirmed; Undo lives in one bar floating above the tabs; Focus keeps Start pinned at the bottom; text fields submit from the keyboard's Done key.
 - Accessibility: content descriptions on all images, text scaling, colour-blind safe type chips, a reduce-motion option, a dyslexia-friendly font option, and every ceremony skippable.
 
 ## Screens and flows (proposal, to confirm)

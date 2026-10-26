@@ -10,6 +10,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.text.style.TextOverflow
+import app.pokeplan.core.reward.Reward
+import app.pokeplan.ui.theme.ChoiceRow
+import app.pokeplan.ui.theme.ToggleRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,24 +55,42 @@ import app.pokeplan.ui.theme.RankBadge
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.TextBox
 
+/** [openPokemon] shows a Pokémon on the Pokémon tab: the one that just hatched. */
 @Composable
-fun FocusScreen(model: AppModel) {
+fun FocusScreen(model: AppModel, openPokemon: ((String) -> Unit)? = null) {
     val session = model.data.focus
     Column(Modifier.fillMaxSize()) {
         ScreenHeader("Focus", subtitle = if (session == null) "Hatch an egg" else if (session.deepFocus) "Deep Focus" else "Egg incubating", icon = "mystery-egg")
-        Column(
+        if (session == null) SetupView(model) { Ends(model, openPokemon) }
+        else Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            RewardBox(model)
-            val end = model.data.lastFocusEnd
-            if (end != null && !end.completed) FailedBox(model, end.failReason)
-            if (end != null && end.completed) {
-                SpeakerBox(model, Emotion.JOYOUS) { Text("Your egg hatched! Have a look at your Pokémon.", style = MaterialTheme.typography.bodyLarge) }
-                PixelButton("OK", { model.store.dismissFocusEnd() }, color = Pixel.Green)
+            Ends(model, openPokemon)
+            RunningView(model)
+        }
+    }
+}
+
+/** How the last session ended: the rewards, then a way back in after a cold egg, or a way to meet the one that hatched. */
+@Composable
+private fun Ends(model: AppModel, openPokemon: ((String) -> Unit)?) {
+    RewardBox(model)
+    val end = model.data.lastFocusEnd
+    if (end != null && !end.completed) FailedBox(model, end.failReason)
+    if (end != null && end.completed) {
+        // The hatch is the peak of the loop, so its end leads straight to the new Pokémon rather than to a bare OK.
+        val hatched = model.data.rewardLog.asReversed().firstNotNullOfOrNull { e -> e.rewards.filterIsInstance<Reward.Hatched>().lastOrNull() }?.pokemon
+        val owned = hatched?.takeIf { h -> model.data.player.pokemon.any { it.id == h.id } }
+        SpeakerBox(model, Emotion.JOYOUS) { Text("Your egg hatched! Have a look at your Pokémon.", style = MaterialTheme.typography.bodyLarge) }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            if (owned != null && openPokemon != null) {
+                PixelButton("Meet ${owned.nickname}", { model.store.dismissFocusEnd(); openPokemon(owned.id) }, Modifier.weight(1f), Pixel.Green)
+                PixelButton("OK", { model.store.dismissFocusEnd() }, Modifier.weight(1f), Pixel.InkSoft)
+            } else {
+                PixelButton("OK", { model.store.dismissFocusEnd() }, Modifier.fillMaxWidth(), Pixel.Green)
             }
-            if (session == null) SetupView(model) else RunningView(model)
         }
     }
 }
@@ -95,8 +119,12 @@ private fun FailedBox(model: AppModel, reason: FailReason?) {
     }
 }
 
+/**
+ * Choosing a session. The settings scroll; Start stays pinned at the bottom, big and near the thumb, so it never has to be
+ * looked for below the fold.
+ */
 @Composable
-private fun SetupView(model: AppModel) {
+private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) {
     val store = model.store
     val settings = model.data.settings
     var minutes by remember { mutableStateOf(settings.defaultFocusMinutes) }
@@ -107,78 +135,73 @@ private fun SetupView(model: AppModel) {
     // A slow, small wobble so the egg feels alive while you set up (still when Reduce motion is on).
     val idle = rememberInfiniteTransition()
     val tilt by idle.animateFloat(-2.5f, 2.5f, infiniteRepeatable(tween(1_800, easing = FastOutSlowInEasing), RepeatMode.Reverse))
-    Stage("bw11", 168.dp) {
-        ItemIcon("mystery-egg", size = 128.dp, modifier = Modifier.align(Alignment.Center).rotate(if (model.data.settings.reduceMotion) 0f else tilt))
-    }
-
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("How long?", style = MaterialTheme.typography.titleMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                listOf(15, 25, 45, 60).forEach { m -> TabButton("$m min", m == minutes, { minutes = m }, Modifier.weight(1f)) }
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                PixelButton("-5", { minutes = (minutes - 5).coerceAtLeast(FocusRules.RETRY_MINUTES) }, color = Pixel.InkSoft, compact = true)
-                Text("$minutes minutes", style = MaterialTheme.typography.titleMedium)
-                PixelButton("+5", { minutes = (minutes + 5).coerceAtMost(180) }, color = Pixel.InkSoft, compact = true)
-            }
+    Column(
+        Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        top()
+        Stage("bw11", 168.dp) {
+            ItemIcon("mystery-egg", size = 128.dp, modifier = Modifier.align(Alignment.Center).rotate(if (model.data.settings.reduceMotion) 0f else tilt))
         }
-    }
 
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text("Deep Focus", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        if (deep) "Better eggs, one rarity band up. Picking up or moving the phone ends the session, so lay it flat."
-                        else "Better eggs if the phone stays still. Off, the timer works as usual and the phone can move.",
-                        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                    )
-                }
-                PixelButton(if (deep) "On" else "Off", { deep = !deep }, color = if (deep) Pixel.Green else Pixel.InkSoft, compact = true)
-            }
-            Text("Hatching in: ${regionName(settings.region)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        }
-    }
-
-    if (tasks.isNotEmpty()) {
         TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Working on", style = MaterialTheme.typography.titleMedium)
-                TaskChoice("Nothing in particular", null, taskId == null) { taskId = null }
-                tasks.take(4).forEach { t -> TaskChoice(t.title, t.rank, taskId == t.id) { taskId = t.id } }
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("How long?", style = MaterialTheme.typography.titleMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    listOf(15, 25, 45, 60).forEach { m -> TabButton("$m min", m == minutes, { minutes = m }, Modifier.weight(1f)) }
+                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    PixelButton("-5", { minutes = (minutes - 5).coerceAtLeast(FocusRules.RETRY_MINUTES) }, color = Pixel.InkSoft, compact = true)
+                    Text("$minutes minutes", style = MaterialTheme.typography.titleMedium)
+                    PixelButton("+5", { minutes = (minutes + 5).coerceAtMost(180) }, color = Pixel.InkSoft, compact = true)
+                }
+            }
+        }
+
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                ToggleRow("Deep Focus", deep, detail = if (deep) "Better eggs, one rarity band up. Picking up or moving the phone ends the session, so lay it flat."
+                    else "Better eggs if the phone stays still. Off, the timer works as usual and the phone can move.") { deep = it }
+                Text("Hatching in: ${regionName(settings.region)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+        }
+
+        if (tasks.isNotEmpty()) {
+            TextBox {
+                Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("Working on", style = MaterialTheme.typography.titleMedium)
+                    TaskChoice("Nothing in particular", null, taskId == null) { taskId = null }
+                    tasks.take(4).forEach { t -> TaskChoice(t.title, t.rank, taskId == t.id) { taskId = t.id } }
+                }
+            }
+        }
+
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("How it works", style = MaterialTheme.typography.titleMedium)
+                val grace = FocusRules.GRACE_MILLIS / 1000
+                val pause = FocusRules.EMERGENCY_PAUSE_MILLIS / 60_000
+                listOf(
+                    "The egg hatches when the timer reaches zero.",
+                    "Leaving PokéPlan for more than $grace seconds makes the egg go cold.",
+                    "Locking the screen is fine: the timer keeps going with the phone face down.",
+                    "A phone call pauses the timer until you come back.",
+                    "${FocusRules.EMERGENCY_PAUSES_PER_DAY} pauses of up to $pause minutes a day; paused time doesn't count. Give up stops at any time.",
+                ).forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
             }
         }
     }
-
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("How it works", style = MaterialTheme.typography.titleMedium)
-            val grace = FocusRules.GRACE_MILLIS / 1000
-            val pause = FocusRules.EMERGENCY_PAUSE_MILLIS / 60_000
-            listOf(
-                "The egg hatches when the timer reaches zero.",
-                "Leaving PokéPlan for more than $grace seconds makes the egg go cold.",
-                "Locking the screen is fine: the timer keeps going with the phone face down.",
-                "A phone call pauses the timer until you come back.",
-                "${FocusRules.EMERGENCY_PAUSES_PER_DAY} pauses of up to $pause minutes a day; paused time doesn't count. Give up stops at any time.",
-            ).forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
-        }
+    Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
+        PixelButton("Start $minutes min", { store.startFocus(minutes, deep, taskId); store.dismissFocusEnd() }, Modifier.fillMaxWidth(), Pixel.Red)
     }
-
-    PixelButton("Start", { store.startFocus(minutes, deep, taskId); store.dismissFocusEnd() }, Modifier.fillMaxWidth(), Pixel.Red)
 }
 
+/** One of the tasks the session can be for: a radio row, so a choice never looks like an action button. */
 @Composable
 private fun TaskChoice(title: String, rank: app.pokeplan.plan.Rank?, selected: Boolean, onClick: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().let { it }.padding(vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        if (rank != null) RankBadge(rank, selected = selected, onClick = onClick)
-        PixelButton(title, onClick, Modifier.weight(1f), if (selected) Pixel.Blue else Pixel.InkSoft, compact = true)
+    ChoiceRow(selected, onClick, lead = { if (rank != null) RankBadge(rank) }) {
+        Text(title, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -246,7 +269,8 @@ private fun RunningView(model: AppModel) {
                 clock(remaining), style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
-            PixelBar(1f - remaining.toFloat() / total, color = Pixel.Green)
+            val elapsed = 1f - remaining.toFloat() / total
+            PixelBar(elapsed, color = Pixel.Green, label = "${(elapsed * 100).toInt()} percent of the session done")
             // Focused time is what counts; pauses stop the clock and are shown apart so the two are never mixed up.
             val pausedNow = session.pausedMillis + ((session.phase as? Phase.Paused)?.let { now - it.since } ?: 0)
             Text(
@@ -275,7 +299,8 @@ private fun RunningView(model: AppModel) {
         } else {
             PixelButton("Pause ($pausesLeft)", { store.focusEvent(FocusEvent.EmergencyPauseStarted) }, Modifier.weight(1f), Pixel.Blue, enabled = pausesLeft > 0 && !paused)
         }
-        PixelButton("Give up", { store.focusEvent(FocusEvent.GaveUp) }, Modifier.weight(1f), Pixel.Red)
+        // Giving up is the way out, not the thing to do, so it stays the quiet button.
+        PixelButton("Give up", { store.focusEvent(FocusEvent.GaveUp) }, Modifier.weight(1f), Pixel.InkSoft)
     }
 }
 

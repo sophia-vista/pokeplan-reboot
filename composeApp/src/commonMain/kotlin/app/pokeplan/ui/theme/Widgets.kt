@@ -4,6 +4,11 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -93,6 +98,8 @@ fun ScreenHeader(
     subtitle: String? = null,
     icon: String? = null,
     footer: (@Composable () -> Unit)? = null,
+    /** Shows Back at the start of the bar, where every phone app puts it; it takes the icon's place. */
+    onBack: (() -> Unit)? = null,
     trailing: @Composable () -> Unit = {},
 ) {
     val shape = RoundedCornerShape(bottomStart = Spacing.CardRadius, bottomEnd = Spacing.CardRadius)
@@ -102,7 +109,8 @@ fun ScreenHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
-            if (icon != null) ItemIcon(icon, size = 36.dp, description = null)
+            if (onBack != null) PixelButton("‹ Back", onBack, color = Pixel.InkSoft, compact = true)
+            else if (icon != null) ItemIcon(icon, size = 36.dp, description = null)
             Column(Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleLarge, color = Color.White, modifier = Modifier.semantics { heading() })
                 if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.9f))
@@ -160,6 +168,8 @@ fun ListRow(
     lead: @Composable () -> Unit = {},
     trail: @Composable () -> Unit = {},
     onClick: (() -> Unit)? = null,
+    /** What tapping the row does, for screen readers ("Show options"). */
+    onClickLabel: String? = null,
     content: @Composable () -> Unit,
 ) {
     val shape = RoundedCornerShape(Spacing.CardRadius)
@@ -169,7 +179,7 @@ fun ListRow(
             .background(Pixel.Panel, shape)
             .border(BorderStroke(1.dp, Pixel.Border), shape)
             .clip(shape)
-            .let { if (onClick != null) it.clickable(role = Role.Button, onClick = onClick) else it }
+            .let { if (onClick != null) it.clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick) else it }
             .defaultMinSize(minHeight = 64.dp)
             .padding(horizontal = Spacing.M, vertical = Spacing.M),
         verticalAlignment = Alignment.CenterVertically,
@@ -179,4 +189,67 @@ fun ListRow(
         Column(Modifier.weight(1f)) { content() }
         trail()
     }
+}
+
+/**
+ * A setting that is on or off: the label, a line of detail, and a switch, the control every phone uses for this. The whole
+ * row is the touch target, not just the switch.
+ */
+@Composable
+fun ToggleRow(label: String, on: Boolean, modifier: Modifier = Modifier, detail: String? = null, onChange: (Boolean) -> Unit) {
+    Row(
+        modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = Spacing.Target)
+            .clip(RoundedCornerShape(Spacing.S))
+            .toggleable(value = on, role = Role.Switch, onValueChange = onChange),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.M),
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(label, style = MaterialTheme.typography.bodyLarge)
+            if (detail != null) Text(detail, style = MaterialTheme.typography.bodyMedium)
+        }
+        // The row handles the tap and speaks the state, so the switch itself is only a picture of it.
+        Switch(
+            checked = on, onCheckedChange = null,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White, checkedTrackColor = Pixel.Green, checkedBorderColor = Pixel.Green,
+                uncheckedThumbColor = Pixel.InkSoft, uncheckedTrackColor = Pixel.Shade, uncheckedBorderColor = Pixel.Border,
+            ),
+        )
+    }
+}
+
+/**
+ * One choice out of a few, as a full-width row with a radio dot: the dot is filled and the border darker on the chosen
+ * one, so the choice does not rest on colour, and choices never look like action buttons.
+ */
+@Composable
+fun ChoiceRow(selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, lead: @Composable () -> Unit = {}, content: @Composable () -> Unit) {
+    val shape = RoundedCornerShape(12.dp)
+    Row(
+        modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = Spacing.Target)
+            .clip(shape)
+            .background(if (selected) Pixel.Blue.copy(alpha = 0.10f) else Pixel.Panel, shape)
+            .border(BorderStroke(if (selected) 2.dp else 1.dp, if (selected) Pixel.Blue else Pixel.Border), shape)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .padding(horizontal = Spacing.M, vertical = Spacing.XS),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.M),
+    ) {
+        Box(Modifier.size(20.dp).border(BorderStroke(2.dp, if (selected) Pixel.Blue else Pixel.InkSoft), CircleShape), contentAlignment = Alignment.Center) {
+            if (selected) Box(Modifier.size(10.dp).background(Pixel.Blue, CircleShape))
+        }
+        lead()
+        Box(Modifier.weight(1f)) { content() }
+    }
+}
+
+/** The small name over a group of controls inside a card ("Move to", "Remind me"), so each group reads as one chunk. */
+@Composable
+fun FieldLabel(text: String, modifier: Modifier = Modifier) {
+    Text(text, modifier.padding(top = Spacing.XS), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = Pixel.InkSoft)
 }
