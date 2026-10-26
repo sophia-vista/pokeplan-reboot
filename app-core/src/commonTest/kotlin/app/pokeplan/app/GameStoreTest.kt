@@ -141,6 +141,10 @@ class GameStoreTest {
         s.completeHabit(habit.id)
         assertEquals(1, s.data.rewardLog.size, "the second tick the same day pays nothing")
         assertEquals(setOf(s.today), s.data.habits.single().completions)
+        s.undoHabit(habit.id)
+        assertEquals(emptySet(), s.data.habits.single().completions)
+        s.completeHabit(habit.id)
+        assertEquals(1, s.data.rewardLog.size, "undoing and ticking again the same day pays nothing")
     }
 
     @Test

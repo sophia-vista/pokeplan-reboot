@@ -579,7 +579,7 @@ class GameStore(
         val habit = data.habits.first { it.id == id }
         val pays = habit.paysOn(date) && date == today
         update { d ->
-            val next = d.copy(habits = d.habits.map { if (it.id == id) it.complete(date) else it })
+            val next = d.copy(habits = d.habits.map { if (it.id == id) it.complete(date).let { h -> if (pays) h.paid(date) else h } else it })
             if (pays) achieve(next, habit.rank.tier, "Habit: ${habit.title}") else next
         }
     }

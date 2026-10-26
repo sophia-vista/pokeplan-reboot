@@ -135,7 +135,7 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Paid subtasks | 5 a task | `MAX_PAID_SUBTASKS` |
 | Milestone Super Candies | 3 a day | `MAX_MILESTONE_REWARDS_PER_DAY` |
 | Weekly review berry | 1 a week | `Review` |
-| Habit | pays once a day | `Habit.paysOn` |
+| Habit | pays once a day, even after an undo | `Habit.paysOn`, `paidOn` |
 | Task | pays once, after its rank's minimum age (2, 5, 10, 15, 20 minutes for E to A) | `Rank.minAgeMinutes`, `plan.finish_task` |
 | Focus session | 5 minutes at least; 180 in the app; 240 on the server (the shiny bonus stops at 240) | `Egg.MIN_MINUTES`, `MAX_MINUTES` |
 | Egg tickets | 20 a device; 200 reported per sync | `TICKET_STOCK`, `MAX_SPENT` |
@@ -157,7 +157,6 @@ design.md's "daily reward limit per app" *(tune)* is not built. It matters once 
 
 Found while writing this down; each is its own change, none is in this rules version.
 
-- **Habit undo pays twice.** Undoing a habit and ticking it again the same day pays again (`undoHabit` removes the day, `paysOn` sees it unpaid). Fix: remember paid days apart from completions.
 - **Coins have no use.** design.md plans a shop (rank step 2) and Lures bought or crafted from berries; neither exists, so coins only pile up.
 - **Earned items with no use yet:** Lures (Focus never passes one), held items (no way to equip, so their perks never apply), Nature Mint, Ability Capsule, Bottle Cap, Tera Shards (`ItemEffects` exists, not called).
 - **Perks not wired:** Magic Guard (`keepsFailedEgg`) and the streak keeper bucket are computed and never read.
