@@ -121,7 +121,7 @@ fun FriendsView(model: AppModel) {
             ListRow(trail = {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     PixelButton("Accept", { act { social.respond(it, f.userId, true) } }, color = Pixel.Green, compact = true)
-                    PixelButton("No", { act { social.respond(it, f.userId, false) } }, color = Pixel.InkSoft, compact = true)
+                    PixelButton("Decline", { act { social.respond(it, f.userId, false) } }, color = Pixel.InkSoft, compact = true)
                 }
             }) { Text(f.trainerName, style = MaterialTheme.typography.bodyLarge); Text("wants to be friends", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
         }
@@ -130,6 +130,8 @@ fun FriendsView(model: AppModel) {
     SectionLabel("Friends")
     val accepted = friends.filter { it.accepted }
     if (accepted.isEmpty() && !loading) EmptyState("No friends yet", "Share your code or add a friend's to see their buddy and the weekly board.")
+    // Removing a friend asks once, in place: it sat right beside Gift, where a slip of the thumb is easy.
+    var removing by remember { mutableStateOf<String?>(null) }
     accepted.forEach { f ->
         ListRow(
             lead = {
@@ -138,8 +140,13 @@ fun FriendsView(model: AppModel) {
             },
             trail = {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    PixelButton("Gift", { act("Gift sent!") { social.sendGift(it, f.userId) } }, color = Pixel.Blue, compact = true)
-                    PixelButton("X", { act { social.removeFriend(it, f.userId) } }, color = Pixel.InkSoft, compact = true)
+                    if (removing == f.userId) {
+                        PixelButton("Remove", { removing = null; act { social.removeFriend(it, f.userId) } }, color = Pixel.Danger, compact = true)
+                        PixelButton("Keep", { removing = null }, color = Pixel.InkSoft, compact = true)
+                    } else {
+                        PixelButton("Gift", { act("Gift sent!") { social.sendGift(it, f.userId) } }, color = Pixel.Blue, compact = true)
+                        PixelButton("Remove", { removing = f.userId }, color = Pixel.InkSoft, compact = true)
+                    }
                 }
             },
         ) {

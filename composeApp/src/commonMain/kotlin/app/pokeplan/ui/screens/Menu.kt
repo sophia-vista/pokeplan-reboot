@@ -29,7 +29,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.Pixel
-import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.Spacing
 
@@ -76,13 +75,16 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, onClick: () -> Unit) 
     }
 }
 
-/** A screen reached from a menu: the header with a Back button, and scrolling content. The system back gesture also goes back. */
+/**
+ * A screen reached from a menu: the header with Back at its start, and scrolling content. The system back gesture also
+ * goes back. [subtitle] is where the section sits ("Planner"), so the way back is never something to remember.
+ */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SectionScaffold(title: String, subtitle: String?, onBack: () -> Unit, icon: String? = null, content: @Composable () -> Unit) {
     BackHandler(enabled = true, onBack = onBack)
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(title, subtitle = subtitle, icon = icon) { PixelButton("Back", onBack, color = Pixel.InkSoft, compact = true) }
+        ScreenHeader(title, subtitle = subtitle, icon = icon, onBack = onBack, trailing = { if (icon != null) ItemIcon(icon, size = 36.dp, description = null) })
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),

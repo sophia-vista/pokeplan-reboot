@@ -61,6 +61,7 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.ScreenHeader
+import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.TextBox
 
@@ -105,15 +106,15 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
         return
     }
 
-    SectionScaffold(current.title, null, onBack = { section = null }, icon = current.icon) {
+    SectionScaffold(current.title, "Pokémon", onBack = { section = null }, icon = current.icon) {
         when (current) {
             Section.PARTY -> {
-                if (player.party.isEmpty()) EmptyState("Your party is empty", "Hatch an egg with a focus session, or move a Pokémon here from the PC.")
+                if (player.party.isEmpty()) EmptyState("Your party is empty", "Hatch an egg with a focus session, or move a Pokémon here from the PC.", icon = "poke-ball")
                 player.party.forEach { p -> PokemonRow(p, p.id == player.buddyId, store.isFavorite(p.id)) { selected = p.id } }
             }
             Section.PC -> {
                 val box = player.pokemon.filter { !it.inParty && !Guardians.canBe(it) }
-                if (box.isEmpty()) EmptyState("The PC is empty", "New eggs go to your party first, then here once it is full.")
+                if (box.isEmpty()) EmptyState("The PC is empty", "New eggs go to your party first, then here once it is full.", icon = "storage-key")
                 else {
                     val shown = pcView.apply(box) { store.isFavorite(it) }
                     PcControls(pcView, { pcView = it }, shown.size, box.size)
@@ -190,7 +191,7 @@ private fun PcControls(view: PcView, change: (PcView) -> Unit, shown: Int, total
 @Composable
 private fun PcTile(p: OwnedPokemon, favorite: Boolean, onClick: () -> Unit) {
     Column(
-        Modifier.clip(RoundedCornerShape(12.dp)).background(Pixel.Panel).clickable(onClick = onClick).padding(6.dp),
+        Modifier.clip(RoundedCornerShape(12.dp)).background(Pixel.Panel).clickable(onClickLabel = "Open ${p.nickname}", role = Role.Button, onClick = onClick).padding(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Sprite(p.form.id, p.isShiny, p.nickname, size = 64.dp)
@@ -339,7 +340,7 @@ private fun GuardiansView(model: AppModel, open: (String) -> Unit) {
         }
     }
     if (candidates.isEmpty()) {
-        EmptyState("No Guardians yet", "Legendary and mythical Pokémon come from quests, never from eggs.")
+        EmptyState("No Guardians yet", "Legendary and mythical Pokémon come from quests, never from eggs.", icon = "master-ball")
     }
     candidates.filter { c -> slotted.none { it.id == c.id } }.forEach { g ->
         ListRow(
@@ -372,7 +373,7 @@ private fun QuestsView(model: AppModel) {
         )
     }
     if (active.isEmpty() && available.isEmpty()) {
-        EmptyState("No quests yet", "Quests open as your trainer rank grows.")
+        EmptyState("No quests yet", "Quests open as your trainer rank grows.", icon = "oaks-letter")
     }
     if (active.isNotEmpty()) SectionLabel("In progress")
     active.forEach { q -> QuestCard(model, q) }
@@ -410,7 +411,7 @@ private fun QuestCard(model: AppModel, quest: Quest) {
             store.questProgress(quest).forEach { (req, now) ->
                 val shown = now.coerceAtMost(req.target)
                 Text("${req.text}: $shown of ${req.target}", style = MaterialTheme.typography.bodyMedium)
-                PixelBar(shown.toFloat() / req.target, color = if (shown >= req.target) Pixel.Green else Pixel.Blue)
+                PixelBar(shown.toFloat() / req.target, color = if (shown >= req.target) Pixel.Green else Pixel.Blue, label = "${req.text}: $shown of ${req.target}")
             }
             when {
                 state == null -> PixelButton("Take on this quest", { store.acceptQuest(quest.id) }, Modifier.fillMaxWidth(), Pixel.Blue, enabled = store.activeQuests.size < Quests.MAX_ACTIVE, compact = true)
@@ -429,15 +430,23 @@ private fun BagView(model: AppModel) {
     var open by remember { mutableStateOf<String?>(null) }
     val items = player.inventory.counts.entries.filter { it.value > 0 }.sortedWith(compareBy({ Items.category(it.key)?.ordinal ?: 99 }, { it.key }))
     TextBox { Text("${player.coins} coins", style = MaterialTheme.typography.titleMedium) }
-    if (items.isEmpty()) EmptyState("The bag is empty", "Finish tasks and focus sessions to find candies, berries and more.")
+    if (items.isEmpty()) EmptyState("The bag is empty", "Finish tasks and focus sessions to find candies, berries and more.", icon = "seal-bag")
     items.groupBy { Items.category(it.key) }.forEach { (category, group) ->
         SectionLabel(category.bagLabel())
         group.forEach { (id, n) ->
             val usable = id in Items.vitamins || Items.category(id) == ItemCategory.BERRY
+            val toggle = { open = if (open == id) null else id }
+            // A usable item says so with its own Use button, so it does not look the same as one that only sits in the bag.
             ListRow(
                 lead = { ItemIcon(id, size = 40.dp) },
-                onClick = if (usable) ({ open = if (open == id) null else id }) else null,
-                trail = { Text("x$n", style = MaterialTheme.typography.titleMedium) },
+                onClick = if (usable) toggle else null,
+                onClickLabel = "Use ${Items.name(id)}",
+                trail = {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                        Text("x$n", style = MaterialTheme.typography.titleMedium)
+                        if (usable) PixelButton(if (open == id) "Close" else "Use", toggle, color = Pixel.InkSoft, compact = true)
+                    }
+                },
             ) { Text(Items.name(id), style = MaterialTheme.typography.bodyLarge) }
             if (open == id) {
                 TextBox {
@@ -491,9 +500,7 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
     val isBuddy = p.id == player.buddyId
 
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(p.nickname, subtitle = if (p.nickname == p.species.name) "Lv. ${p.level}" else "${p.species.name}, Lv. ${p.level}") {
-            PixelButton("Back", back, color = Pixel.Ink, compact = true)
-        }
+        ScreenHeader(p.nickname, subtitle = if (p.nickname == p.species.name) "Lv. ${p.level}" else "${p.species.name}, Lv. ${p.level}", onBack = back)
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -557,11 +564,12 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     val partner = player.party.maxOfOrNull { it.level } ?: p.level
                     val need = CandyRules.candiesNeeded(p.level, partner)
-                    Text("Friendship", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    PixelBar(p.friendship / 255f, color = Pixel.Red)
+                    val friendship = "Friendship ${p.friendship * 100 / 255}%"
+                    Text(friendship, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    PixelBar(p.friendship / 255f, color = Pixel.Red, label = friendship)
                     if (p.canFeed) {
                         Text("Next level: ${p.candyProgress} of $need Rare Candies", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                        PixelBar(p.candyProgress.toFloat() / need, color = Pixel.Yellow)
+                        PixelBar(p.candyProgress.toFloat() / need, color = Pixel.Yellow, label = "${p.candyProgress} of $need Rare Candies to the next level")
                         val have = player.inventory[Items.RARE_CANDY]
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                             ItemIcon("rare-candy", size = 32.dp)
@@ -598,7 +606,7 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (!isGuardian) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                         PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = !isBuddy, compact = true)
-                        PixelButton(if (p.inParty) "To PC" else "To party", { store.setInParty(p.id, !p.inParty) }, Modifier.weight(1f), Pixel.Blue, compact = true)
+                        PixelButton(if (p.inParty) "To PC" else "To party", { store.setInParty(p.id, !p.inParty) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                     if (renaming) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -618,14 +626,15 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                     } else if (starred) {
                         Text("Starred Pokémon cannot be transferred. Unstar it first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     } else if (!confirmTransfer) {
-                        PixelButton("Transfer", { confirmTransfer = true }, Modifier.fillMaxWidth(), Pixel.Red, compact = true)
+                        // The one step that cannot be undone stays quiet until it is confirmed, so it never draws the eye first.
+                        PixelButton("Transfer", { confirmTransfer = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     } else {
                         val quote = Transfer.quote(p)
                         Text("Send ${p.nickname} away for ${quote.rareCandies} Rare Candies and ${quote.coins} coins?", style = MaterialTheme.typography.bodyLarge)
                         quote.warnings.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Red) }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            PixelButton("Yes", { if (store.transfer(p.id)) back() }, Modifier.weight(1f), Pixel.Red, compact = true)
-                            PixelButton("No", { confirmTransfer = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                            PixelButton("Transfer", { if (store.transfer(p.id)) back() }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                            PixelButton("Keep ${p.nickname}", { confirmTransfer = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         }
                     }
                 }

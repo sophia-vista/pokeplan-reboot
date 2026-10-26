@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import kotlinx.datetime.isoDayNumber
 import androidx.compose.ui.focus.focusRequester
@@ -38,6 +39,12 @@ import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.TaskViews
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.theme.ListRow
+import app.pokeplan.ui.ItemIcon
+import app.pokeplan.ui.theme.FieldLabel
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.RankBadge
@@ -59,7 +66,6 @@ private enum class View(val label: String, val icon: String) {
 fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = false) {
     var view by remember { mutableStateOf(View.entries.getOrNull(startView)) }
     var expanded by remember { mutableStateOf<String?>(null) }
-    var deleted by remember { mutableStateOf<Task?>(null) }
     val store = model.store
     val live = model.data.tasks.filter { it.state != TaskState.DELETED }
     val pendingIds = model.data.pending.map { it.original.id }.toSet()
@@ -72,19 +78,6 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
         View.HABITS, View.DAY -> emptyList()
     }.filter { it.id !in pendingIds }
 
-    /** Shown after a delete: the task can be brought back. */
-    @Composable
-    fun DeletedNotice() {
-        deleted?.let { t ->
-            TextBox {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Deleted \"${t.title}\"", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 2)
-                    PixelButton("Undo", { store.restoreTask(t.id); deleted = null }, color = Pixel.InkSoft, compact = true)
-                }
-            }
-        }
-    }
-
     val current = view
     if (current == null) {
         Column(Modifier.fillMaxSize()) {
@@ -94,8 +87,6 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
                 verticalArrangement = Arrangement.spacedBy(Spacing.L),
             ) {
                 RewardBox(model)
-                UndoRows(model)
-                DeletedNotice()
                 QuickAddBox(model, View.INBOX)
                 MenuGrid(
                     View.entries.map { v ->
@@ -119,28 +110,33 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
         return
     }
 
-    SectionScaffold(current.label, null, onBack = { view = null }, icon = current.icon) {
+    SectionScaffold(current.label, "Planner", onBack = { view = null }, icon = current.icon) {
         RewardBox(model)
-        UndoRows(model)
-        DeletedNotice()
         if (current == View.HABITS) HabitsView(model) else if (current == View.DAY) DayView(model, pendingIds, startWeek) else {
             if (current == View.TODAY || current == View.INBOX) QuickAddBox(model, current)
             val shown = tasksFor(current)
-            if (shown.isEmpty()) EmptyState(emptyTitle(current), emptyLine(current))
+            if (shown.isEmpty()) EmptyState(emptyTitle(current), emptyLine(current), icon = current.icon)
             shown.forEach { t ->
-                TaskCard(model, t, expanded == t.id, { expanded = if (expanded == t.id) null else t.id }, onDeleted = { deleted = t; expanded = null })
+                TaskCard(model, t, expanded == t.id, { expanded = if (expanded == t.id) null else t.id }, onDeleted = { model.deletedTask = t; expanded = null })
             }
         }
     }
 }
 
-/** What an empty list says, and what to do about it. */
+/**
+ * What an empty list says, and what to do about it: a small real item icon, a short title, one line, and at most one
+ * action, in the game's own words.
+ */
 @Composable
-fun EmptyState(title: String, line: String? = null) {
+fun EmptyState(title: String, line: String? = null, icon: String? = null, action: Pair<String, () -> Unit>? = null) {
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-            Text(title, style = MaterialTheme.typography.titleSmall)
-            if (line != null) Text(line, style = MaterialTheme.typography.bodyLarge)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            if (icon != null) ItemIcon(icon, size = 40.dp, description = null)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                Text(title, style = MaterialTheme.typography.titleSmall)
+                if (line != null) Text(line, style = MaterialTheme.typography.bodyLarge)
+                if (action != null) PixelButton(action.first, action.second, Modifier.padding(top = Spacing.XS), Pixel.InkSoft, compact = true)
+            }
         }
     }
 }
@@ -196,31 +192,35 @@ private fun QuickAddBox(model: AppModel, view: View) {
         }
     }
     var more by remember { mutableStateOf(false) }
+    fun add() {
+        if (text.isNotBlank()) {
+            val parsed = QuickAdd.parse(text, model.store.today)
+            val picked = day
+            val planned: LocalDate? = when {
+                picked == NO_DATE -> null
+                picked == WEEKEND -> model.store.today.plus(DatePeriod(days = daysToWeekend(model.store.today)))
+                picked != null -> model.store.today.plus(DatePeriod(days = picked))
+                else -> parsed.planned ?: if (parsed.due == null && view == View.TODAY) model.store.today else null
+            }
+            model.store.addTask(
+                title = parsed.title.ifBlank { text.trim() }, rank = parsed.rank ?: rank,
+                category = parsed.category ?: Category.PERSONAL,
+                planned = planned, due = parsed.due, estimateMinutes = parsed.estimateMinutes,
+            )
+            text = ""; day = null; more = false
+        }
+    }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
                     text, { text = it }, Modifier.weight(1f).focusRequester(focus), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
                     placeholder = { Text("Add a task", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
+                    // The keyboard's own key adds the task, so the thumb need not travel to the button.
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { add() }),
                 )
-                PixelButton("Add", {
-                    if (text.isNotBlank()) {
-                        val parsed = QuickAdd.parse(text, model.store.today)
-                        val picked = day
-                        val planned: LocalDate? = when {
-                            picked == NO_DATE -> null
-                            picked == WEEKEND -> model.store.today.plus(DatePeriod(days = daysToWeekend(model.store.today)))
-                            picked != null -> model.store.today.plus(DatePeriod(days = picked))
-                            else -> parsed.planned ?: if (parsed.due == null && view == View.TODAY) model.store.today else null
-                        }
-                        model.store.addTask(
-                            title = parsed.title.ifBlank { text.trim() }, rank = parsed.rank ?: rank,
-                            category = parsed.category ?: Category.PERSONAL,
-                            planned = planned, due = parsed.due, estimateMinutes = parsed.estimateMinutes,
-                        )
-                        text = ""; day = null; more = false
-                    }
-                }, color = Pixel.Red, enabled = text.isNotBlank())
+                PixelButton("Add", ::add, color = Pixel.Red, enabled = text.isNotBlank())
             }
             // When: tap a chip to choose a day, tap it again to go back to what the text says ("tomorrow 5pm") or the view's default.
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -242,6 +242,7 @@ private fun TaskCard(model: AppModel, task: Task, expanded: Boolean, toggle: () 
         ListRow(
             lead = { RankBadge(task.rank) },
             onClick = toggle,
+            onClickLabel = if (expanded) "Hide options" else "Show options",
             trail = {
                 if (task.state == TaskState.OPEN) PixelButton("Done", { store.completeTask(task.id) }, color = Pixel.Green, compact = true)
                 else PixelButton("Reopen", { store.reopen(task.id) }, color = Pixel.InkSoft, compact = true)
@@ -251,7 +252,8 @@ private fun TaskCard(model: AppModel, task: Task, expanded: Boolean, toggle: () 
             val overdue = task.state == TaskState.OPEN && isOverdue(model, task)
             val meta = taskMeta(task)
             val line = listOf(if (overdue) "Overdue" else "", meta).filter { it.isNotEmpty() }.joinToString(", ")
-            if (line.isNotEmpty()) Text(line, style = MaterialTheme.typography.bodyMedium, color = if (overdue) Pixel.Danger else Pixel.InkSoft)
+            // Overdue is said calmly: the word in amber, never an alarm red (docs/design.md, No shame).
+            if (line.isNotEmpty()) Text(line, style = MaterialTheme.typography.bodyMedium, color = if (overdue) Pixel.Warning else Pixel.InkSoft)
         }
         if (expanded) {
             TextBox {
@@ -289,11 +291,13 @@ private fun TaskCard(model: AppModel, task: Task, expanded: Boolean, toggle: () 
                                     OutlinedTextField(
                                         step, { step = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
                                         placeholder = { Text("Add a small step", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
+                                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                                        keyboardActions = KeyboardActions(onDone = { if (step.isNotBlank()) { store.addSubtask(task.id, step); step = "" } }),
                                     )
                                     PixelButton("Add", { store.addSubtask(task.id, step); step = "" }, enabled = step.isNotBlank(), compact = true)
                                 }
                             }
-                            Text("Move to", style = MaterialTheme.typography.bodyLarge)
+                            FieldLabel("Move to")
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                                 val today = store.today
                                 TabButton("Today", task.planned == today, { store.updateTask(task.copy(planned = today)) })
@@ -303,6 +307,7 @@ private fun TaskCard(model: AppModel, task: Task, expanded: Boolean, toggle: () 
                             }
                             PlannedTime(model, task)
                             RemindMe(model, task)
+                            HorizontalDivider(color = Pixel.Border)
                             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                                 PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                                 PixelButton("Won't do", { store.wontDo(task.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -321,7 +326,7 @@ private fun TaskCard(model: AppModel, task: Task, expanded: Boolean, toggle: () 
 private fun PlannedTime(model: AppModel, task: Task) {
     val store = model.store
     val time = task.plannedTime
-    Text("At", style = MaterialTheme.typography.bodyLarge)
+    FieldLabel("At")
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         TabButton("Any time", time == null, { store.setPlannedTime(task.id, null) })
         TIME_PRESETS.forEach { preset -> TabButton(clock(preset), time == preset, { store.setPlannedTime(task.id, preset) }) }
@@ -348,7 +353,7 @@ internal fun shifted(t: LocalTime, minutes: Int): LocalTime {
 /** Up to three reminders, counted from the planned time or the deadline; a task without a day has nothing to count from. */
 @Composable
 private fun RemindMe(model: AppModel, task: Task) {
-    Text("Remind me", style = MaterialTheme.typography.bodyLarge)
+    FieldLabel("Remind me")
     val base = Reminders.baseTime(task)
     if (base == null) {
         Text("Give it a day first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -396,11 +401,13 @@ private fun HabitsView(model: AppModel) {
             OutlinedTextField(
                 title, { title = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
                 placeholder = { Text("New daily habit", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { if (title.isNotBlank()) { store.addHabit(title, HabitTarget.Daily); title = "" } }),
             )
             PixelButton("Add", { store.addHabit(title, HabitTarget.Daily); title = "" }, color = Pixel.Red, enabled = title.isNotBlank())
         }
     }
-    if (model.data.habits.isEmpty()) EmptyState(emptyTitle(View.HABITS), emptyLine(View.HABITS))
+    if (model.data.habits.isEmpty()) EmptyState(emptyTitle(View.HABITS), emptyLine(View.HABITS), icon = View.HABITS.icon)
     model.data.habits.forEach { h ->
         val doneToday = store.today in h.completions
         ListRow(

@@ -3,6 +3,10 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.16.0" to listOf(
+            "Easier to use: Back is at the top left, settings are switches in small groups, and Undo sits just above the tabs.",
+            "Focus keeps Start at the bottom of the screen, and the keyboard's Done key adds a task.",
+        ),
         "0.15.0" to listOf(
             "Your own events: Planner, Calendar, New event. Lessons, lunch and other things that aren't tasks sit on your hours, drag like tasks and never pay.",
         ),
