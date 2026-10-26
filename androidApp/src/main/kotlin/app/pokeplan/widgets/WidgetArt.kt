@@ -140,7 +140,7 @@ object WidgetArt {
         return if (bottom == sprite.height) sprite else Bitmap.createBitmap(sprite, 0, 0, sprite.width, bottom)
     }
 
-    private class Sheet(val dir: String, val width: Int, val height: Int, val times: IntArray)
+    private class Sheet(val dir: String, val width: Int, val height: Int, val times: IntArray, val hasShiny: Boolean)
 
     private var animations: Map<Int, Sheet>? = null
 
@@ -148,7 +148,7 @@ object WidgetArt {
     private fun table(context: Context, dir: String, file: String): Map<Int, Sheet> = try {
         context.assets.open("$RESOURCES/$dir/$file").bufferedReader().readLines().filter { it.isNotBlank() }.associate { line ->
             val c = line.split('\t')
-            c[0].toInt() to Sheet(dir, c[2].toInt(), c[3].toInt(), c[4].split(',').map { it.toInt() }.toIntArray())
+            c[0].toInt() to Sheet(dir, c[2].toInt(), c[3].toInt(), c[4].split(',').map { it.toInt() }.toIntArray(), c[5] == "1")
         }
     } catch (e: Exception) {
         emptyMap()
@@ -164,15 +164,29 @@ object WidgetArt {
      * The buddy's real animation as at most [MAX_FRAMES] pictures spread evenly over one loop, each [FLIP_MILLIS] long
      * when played by the widget's flipper, or null for a form without an animation.
      */
-    fun idleFrames(context: Context, formId: Int, shiny: Boolean): List<Bitmap>? {
-        val a = animation(context, formId) ?: return null
+    fun idleFrames(context: Context, formId: Int, shiny: Boolean): List<Bitmap>? = frames(context, formId, shiny, animation(context, formId))
+
+    private var sleeping: Map<Int, Sheet>? = null
+
+    /**
+     * The buddy asleep, as [idleFrames] does it, from its SpriteCollab Sleep animation (assets/pmd/sleep); null for a form
+     * without one, or a shiny without its recolour.
+     */
+    fun sleepFrames(context: Context, formId: Int, shiny: Boolean): List<Bitmap>? {
+        if (sleeping == null) sleeping = table(context, "pmd/sleep", "sleep.tsv")
+        val a = sleeping?.get(formId)?.takeIf { !shiny || it.hasShiny } ?: return null
+        return frames(context, formId, shiny, a)
+    }
+
+    private fun frames(context: Context, formId: Int, shiny: Boolean, sheetInfo: Sheet?): List<Bitmap>? {
+        val a = sheetInfo ?: return null
         val (w, h, times) = Triple(a.width, a.height, a.times)
         val sheet = asset(context, "${a.dir}/${if (shiny) "$formId-shiny" else "$formId"}.png") ?: asset(context, "${a.dir}/$formId.png") ?: return null
         val total = times.sum()
         val count = minOf(MAX_FRAMES, (total + FLIP_MILLIS - 1) / FLIP_MILLIS).coerceAtLeast(1)
         // Mystery Dungeon sprites share one pixel size (a 32 pixel frame fills the canvas), as in the app.
         val fit = (CANVAS - 12) / maxOf(w, h)
-        val scale = (if (a.dir == "pmd") minOf(fit, (CANVAS - 12) / 32) else fit).coerceAtLeast(1)
+        val scale = (if (a.dir.startsWith("pmd")) minOf(fit, (CANVAS - 12) / 32) else fit).coerceAtLeast(1)
         return (0 until count).map { j ->
             val at = (j.toLong() * total / count).toInt()
             var index = 0
