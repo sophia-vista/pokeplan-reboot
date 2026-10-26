@@ -27,4 +27,10 @@ object RewardJson {
         val event = json.decodeFromString(AchievementEvent.serializer(), eventJson)
         return json.encodeToString(Outcome.serializer(), RewardEngine.achievement(state, event, Random(seed)))
     }
+
+    fun care(stateJson: String, eventJson: String, seed: Int): String {
+        val state = json.decodeFromString(PlayerState.serializer(), stateJson)
+        val event = json.decodeFromString(CareEvent.serializer(), eventJson)
+        return json.encodeToString(Outcome.serializer(), RewardEngine.care(state, event, Random(seed)))
+    }
 }

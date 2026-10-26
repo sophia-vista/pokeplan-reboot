@@ -62,6 +62,9 @@ sealed interface Reward {
     @Serializable
     @SerialName("evs")
     data class Evs(val points: Int) : Reward
+    @Serializable
+    @SerialName("friendship")
+    data class Friendship(val amount: Int) : Reward
 }
 
 @Serializable
@@ -92,6 +95,21 @@ data class AchievementEvent(
     val focusedOnIt: Boolean = false,
     /** Id for a Task Egg if this achievement fills the Egg meter. */
     val newPokemonId: String,
+    val nowMillis: Long,
+)
+
+/** What a Care moment was (docs/ecosystem.md, section 6). Mood, notes and reflections are never events: they earn nothing. */
+@Serializable
+enum class CareKind {
+    @SerialName("routine_completed") ROUTINE,
+    @SerialName("calm_break_completed") CALM_BREAK,
+    @SerialName("weekly_rhythm") WEEKLY_RHYTHM,
+}
+
+/** A Care moment, with no other field: no titles, no mood, no health values. Daily caps are the caller's job. */
+@Serializable
+data class CareEvent(
+    val kind: CareKind,
     val nowMillis: Long,
 )
 
@@ -153,6 +171,11 @@ object RewardEngine {
 
     const val ON_TIME_BONUS = 1.10
     const val FOCUSED_BONUS = 1.10
+
+    /** Care pays bond, berries and a small share of trainer rank; never candies or eggs. *(tune)* */
+    const val CARE_POINTS = 1
+    const val RHYTHM_POINTS = 5
+    const val RHYTHM_BERRIES = 3
 
     private fun scaled(base: Int, multiplier: Double): Int = maxOf(base, (base * multiplier).roundToInt())
 
@@ -267,5 +290,41 @@ object RewardEngine {
             ),
             rewards,
         )
+    }
+
+    /**
+     * A Care moment: a routine gives the buddy friendship, a calm break friendship and a berry, a weekly rhythm
+     * [RHYTHM_BERRIES] berries; each adds a little trainer rank. Perks don't apply: Care is about the bond, not the haul.
+     */
+    fun care(state: PlayerState, e: CareEvent, rng: Random): Outcome {
+        val rewards = mutableListOf<Reward>()
+        var pokemon = state.pokemon
+        val buddy = state.buddy
+        val source = when (e.kind) {
+            CareKind.ROUTINE -> FriendshipRules.Source.ROUTINE
+            CareKind.CALM_BREAK -> FriendshipRules.Source.CALM_BREAK
+            CareKind.WEEKLY_RHYTHM -> null
+        }
+        if (buddy != null && source != null) {
+            val grown = buddy.gainFriendship(source)
+            pokemon = pokemon.map { if (it.id == buddy.id) grown else it }
+            if (grown.friendship > buddy.friendship) rewards += Reward.Friendship(grown.friendship - buddy.friendship)
+        }
+        val berries = when (e.kind) {
+            CareKind.ROUTINE -> 0
+            CareKind.CALM_BREAK -> 1
+            CareKind.WEEKLY_RHYTHM -> RHYTHM_BERRIES
+        }
+        var inventory = state.inventory
+        var coins = state.coins
+        repeat(berries) {
+            val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
+            val (bag, extra) = inventory.addCapped(berry, 1)
+            inventory = bag
+            coins += extra
+            rewards += Reward.ItemDrop(berry, 1)
+        }
+        val points = if (e.kind == CareKind.WEEKLY_RHYTHM) RHYTHM_POINTS else CARE_POINTS
+        return Outcome(state.copy(pokemon = pokemon, inventory = inventory, coins = coins, trainerPoints = state.trainerPoints + points), rewards)
     }
 }

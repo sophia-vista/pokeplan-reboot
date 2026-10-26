@@ -39,13 +39,14 @@ object FriendshipRules {
         BERRY(1),
         LEVEL_UP(1),
         CALM_BREAK(1),
+        ROUTINE(1),
     }
 
     /** Friendship gained from [source]: doubled when it matches the bond style, +50% (rounded up) for balanced natures. */
     fun amount(source: Source, style: BondStyle): Int {
         val matches = when (style) {
-            BondStyle.COMFORT -> source == Source.PET
-            BondStyle.PRESENCE -> source == Source.FOCUS_SESSION
+            BondStyle.COMFORT -> source == Source.PET || source == Source.ROUTINE
+            BondStyle.PRESENCE -> source == Source.FOCUS_SESSION || source == Source.CALM_BREAK
             BondStyle.GIFTS -> source == Source.BERRY
             BondStyle.BALANCED -> false
         }

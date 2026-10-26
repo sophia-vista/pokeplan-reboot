@@ -19,4 +19,5 @@ fun Reward.describe(): String = when (this) {
     is Reward.Coins -> "$amount coins"
     is Reward.ItemDrop -> "${Items.name(itemId)}" + if (amount > 1) " x$amount" else ""
     is Reward.Evs -> "Training: +$points"
+    is Reward.Friendship -> "Friendship +$amount"
 }

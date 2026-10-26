@@ -30,6 +30,7 @@ class GoldenVectorTest {
         val stateJson = json.encodeToString(PlayerState.serializer(), state)
         val effort = json.encodeToString(EffortEvent.serializer(), EffortEvent(30, true, Region.KANTO, epochDay = 11, newPokemonId = "new-1", nowMillis = 1_700_000_000_000))
         val work = json.encodeToString(AchievementEvent.serializer(), AchievementEvent(4, Region.JOHTO, hourOfDay = 7, firstOfDay = true, onTime = true, newPokemonId = "new-2", nowMillis = 1_700_000_000_000))
+        val care = json.encodeToString(CareEvent.serializer(), CareEvent(CareKind.CALM_BREAK, nowMillis = 1_700_000_000_000))
         return buildJsonObject {
             put("rulesVersion", RewardRules.VERSION)
             put("state", stateJson)
@@ -39,6 +40,9 @@ class GoldenVectorTest {
             put("achievementEvent", work)
             put("achievementSeed", 7)
             put("achievementOutcome", RewardJson.achievement(stateJson, work, 7))
+            put("careEvent", care)
+            put("careSeed", 3)
+            put("careOutcome", RewardJson.care(stateJson, care, 3))
         }
     }
 
@@ -47,7 +51,7 @@ class GoldenVectorTest {
         val actual = build()
         if (System.getenv("UPDATE_GOLDEN") != null) {
             val old = if (file.exists()) json.parseToJsonElement(file.readText()) as JsonObject else null
-            val outcomesChanged = old != null && listOf("effortOutcome", "achievementOutcome").any { old[it] != actual[it] }
+            val outcomesChanged = old != null && listOf("effortOutcome", "achievementOutcome", "careOutcome").any { it in old && old[it] != actual[it] }
             check(!outcomesChanged || old!!["rulesVersion"] != actual["rulesVersion"]) {
                 "the outcomes changed: bump RewardRules.VERSION (now ${RewardRules.VERSION}) before regenerating tools/server/golden.json"
             }
