@@ -4,6 +4,7 @@ import app.pokeplan.app.cloud.CloudClient
 import app.pokeplan.app.cloud.CloudConfig
 import app.pokeplan.app.cloud.SyncManager
 import app.pokeplan.app.cloud.SyncStatus
+import app.pokeplan.core.reward.RewardRules
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
@@ -35,6 +36,7 @@ class SyncManagerTest {
     private class Server {
         var version = 0
         var saved: JsonObject? = null
+        var pushedRules: String? = null
         var offline = false
         var refuseSignIn = false
         var deleted = false
@@ -78,6 +80,7 @@ class SyncManagerTest {
                         if (expected != version) respond("""{"error":"the save changed somewhere else","version":$version}""", HttpStatusCode.Conflict, json)
                         else {
                             saved = body["data"]!!.jsonObject
+                            pushedRules = body["rulesVersion"]?.jsonPrimitive?.content
                             version++
                             respond("""{"version":$version}""", headers = json)
                         }
@@ -113,6 +116,7 @@ class SyncManagerTest {
         assertFalse(d.store.data.account!!.unsynced)
         assertEquals(SyncStatus.Idle, d.sync.status.value)
         assertFalse("account" in server.saved!!, "the account never leaves the device")
+        assertEquals(RewardRules.VERSION.toString(), server.pushedRules, "the push says which rules the app ran")
     }
 
     @Test

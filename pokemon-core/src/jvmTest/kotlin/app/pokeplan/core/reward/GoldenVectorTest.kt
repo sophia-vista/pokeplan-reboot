@@ -18,6 +18,7 @@ import kotlin.test.assertEquals
  * One fixed input and the exact JSON the engine must give for it. The same file is checked on JavaScript by
  * `tools/server/smoke.mjs`, so the app (JVM / web) and the server (JS) can never drift apart.
  * Regenerate after a deliberate rule change: `UPDATE_GOLDEN=1 ./gradlew :pokemon-core:jvmTest --tests "*GoldenVectorTest*"`.
+ * New outcomes need a new [RewardRules.VERSION]: regenerating refuses to write them under the version already in the file.
  */
 class GoldenVectorTest {
     private val file = File("../tools/server/golden.json")
@@ -30,6 +31,7 @@ class GoldenVectorTest {
         val effort = json.encodeToString(EffortEvent.serializer(), EffortEvent(30, true, Region.KANTO, epochDay = 11, newPokemonId = "new-1", nowMillis = 1_700_000_000_000))
         val work = json.encodeToString(AchievementEvent.serializer(), AchievementEvent(4, Region.JOHTO, hourOfDay = 7, firstOfDay = true, onTime = true, newPokemonId = "new-2", nowMillis = 1_700_000_000_000))
         return buildJsonObject {
+            put("rulesVersion", RewardRules.VERSION)
             put("state", stateJson)
             put("effortEvent", effort)
             put("effortSeed", 42)
@@ -44,6 +46,11 @@ class GoldenVectorTest {
     fun theEngineMatchesTheGoldenFile() {
         val actual = build()
         if (System.getenv("UPDATE_GOLDEN") != null) {
+            val old = if (file.exists()) json.parseToJsonElement(file.readText()) as JsonObject else null
+            val outcomesChanged = old != null && listOf("effortOutcome", "achievementOutcome").any { old[it] != actual[it] }
+            check(!outcomesChanged || old!!["rulesVersion"] != actual["rulesVersion"]) {
+                "the outcomes changed: bump RewardRules.VERSION (now ${RewardRules.VERSION}) before regenerating tools/server/golden.json"
+            }
             file.parentFile.mkdirs()
             file.writeText(Json { prettyPrint = true }.encodeToString(JsonObject.serializer(), actual) + "\n")
         }
