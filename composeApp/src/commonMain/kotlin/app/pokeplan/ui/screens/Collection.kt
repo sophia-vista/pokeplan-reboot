@@ -61,6 +61,7 @@ import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.Transfer
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.AnimatedSprite
@@ -701,7 +702,7 @@ private fun BagView(model: AppModel) {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text("Use on:", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                         player.party.forEach { p ->
-                            PixelButton(p.nickname, { store.useItem(id, p.id); if (!store.data.player.inventory.has(id)) open = null }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+                            PixelButton(p.nickname, { if (store.useItem(id, p.id)) model.effect(Sfx.HEAL); if (!store.data.player.inventory.has(id)) open = null }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
                         }
                     }
                 }
@@ -856,7 +857,7 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
             TextBox {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (!isGuardian) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                        PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = !isBuddy, compact = true)
+                        PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p.speciesId) }, Modifier.weight(1f), Pixel.Red, enabled = !isBuddy, compact = true)
                         PixelButton(if (p.inParty) "To PC" else "To party", { store.setInParty(p.id, !p.inParty) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                     if (renaming) {
@@ -884,7 +885,7 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                         Text("Send ${p.nickname} away for ${quote.rareCandies} Rare Candies and ${quote.coins} coins?", style = MaterialTheme.typography.bodyLarge)
                         quote.warnings.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Red) }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            PixelButton("Transfer", { if (store.transfer(p.id)) back() }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                            PixelButton("Transfer", { if (store.transfer(p.id)) { model.effect(Sfx.ESCAPE); back() } }, Modifier.weight(1f), Pixel.Danger, compact = true)
                             PixelButton("Keep ${p.nickname}", { confirmTransfer = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         }
                     }

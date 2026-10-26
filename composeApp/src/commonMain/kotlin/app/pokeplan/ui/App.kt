@@ -55,6 +55,7 @@ import app.pokeplan.ui.screens.PlannerScreen
 import app.pokeplan.ui.screens.NavButton
 import app.pokeplan.ui.screens.UndoBar
 import app.pokeplan.plan.Task
+import app.pokeplan.plan.TaskState
 import androidx.compose.ui.Alignment
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelTheme
@@ -92,6 +93,18 @@ class AppModel(
     fun cry(speciesId: Int) {
         val volume = data.settings.effectsLevel
         if (volume > 0f) cries?.play(speciesId, volume)
+    }
+
+    /** Plays one of the real game sound effects if the platform can and Sound is on. */
+    fun effect(sound: Sfx) {
+        val volume = data.settings.effectsLevel
+        if (volume > 0f) cries?.effect(sound, volume)
+    }
+
+    /** Ticks off a task, with the select blip when it really was open. */
+    fun completeTask(id: String) {
+        if (store.data.tasks.any { it.id == id && it.state == TaskState.OPEN }) effect(Sfx.SELECT)
+        store.completeTask(id)
     }
 
     /** Where the cloud sync stands, for Settings. */
