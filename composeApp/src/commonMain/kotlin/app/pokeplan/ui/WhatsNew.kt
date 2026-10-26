@@ -3,6 +3,9 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.19.4" to listOf(
+            "Paging through the Pokédex with Next keeps every Pokémon animated, and tapping a Pokémon no longer flashes a grey box over it.",
+        ),
         "0.19.2" to listOf(
             "Your buddy keeps its size when it hops or eats, and party rows no longer flash when tapped.",
         ),

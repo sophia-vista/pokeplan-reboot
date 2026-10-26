@@ -1,6 +1,7 @@
 package app.pokeplan.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,14 +50,12 @@ private var animations: Map<Int, Animation>? = null
 private val sheets = mutableMapOf<String, ImageBitmap?>()
 
 /** A sheet table: `id, frames, width, height, comma separated frame times, shiny`. */
-private suspend fun table(dir: String, file: String): Map<Int, Animation> = try {
+private suspend fun table(dir: String, file: String): Map<Int, Animation> = orNull {
     Res.readBytes("files/$dir/$file").decodeToString().lines().filter { it.isNotBlank() }.associate { line ->
         val c = line.split('\t')
         c[0].toInt() to Animation(dir, c[1].toInt(), c[2].toInt(), c[3].toInt(), c[4].split(',').map { it.toInt() }.toIntArray(), c[5] == "1")
     }
-} catch (e: Exception) {
-    emptyMap()
-}
+} ?: emptyMap()
 
 /**
  * Every form's animation, read once: the Mystery Dungeon style sprite (assets/pmd) where SpriteCollab has one, else the
@@ -73,13 +72,13 @@ private var credits: Map<Int, String>? = null
 
 /** Who made a form's SpriteCollab sprite (assets/pmd/credits.tsv), for the credit its licence asks for; null if it has none. */
 suspend fun spriteCredit(formId: Int): String? {
-    val all = credits ?: try {
-        Res.readBytes("files/pmd/credits.tsv").decodeToString().lines().filter { '\t' in it }.associate { line ->
-            line.substringBefore('\t').toInt() to line.substringAfter('\t')
-        }
-    } catch (e: Exception) {
-        emptyMap()
-    }.also { credits = it }
+    val all = credits ?: (
+        orNull {
+            Res.readBytes("files/pmd/credits.tsv").decodeToString().lines().filter { '\t' in it }.associate { line ->
+                line.substringBefore('\t').toInt() to line.substringAfter('\t')
+            }
+        } ?: emptyMap()
+    ).also { credits = it }
     return all[formId]
 }
 
@@ -114,11 +113,7 @@ internal fun loadedSheet(name: String): ImageBitmap? = sheets[name]
 /** A sheet by [Animation.sheetName], decoded once. */
 internal suspend fun sheet(name: String): ImageBitmap? {
     if (name in sheets) return sheets[name]
-    val image = try {
-        Res.readBytes("files/$name.png").decodeToImageBitmap()
-    } catch (e: Exception) {
-        null
-    }
+    val image = orNull { Res.readBytes("files/$name.png").decodeToImageBitmap() }
     sheets[name] = image
     return image
 }
@@ -145,10 +140,12 @@ fun AnimatedSprite(
     val animation by produceState(loadedAnimations()?.get(formId), formId) { value = animations()[formId] }
     val idle = animation
     val name = idle?.sheetName(formId, shiny)
-    val sheet by produceState(name?.let { sheets[it] }, name) {
-        if (value == null && name != null) value = sheet(name)
+    // Paired with its name, so a sheet still being read can be told from one that is missing.
+    val sheet by produceState<Pair<String, ImageBitmap?>?>(name?.let { n -> sheets[n]?.let { n to it } }, name) {
+        if (value == null && name != null) value = name to sheet(name)
     }
-    val idleImage = sheet
+    val loaded = sheet?.takeIf { it.first == name }
+    val idleImage = loaded?.second
     val picked by produceState<Picked?>(null, formId, shiny, action) {
         val a = actionAnimation(formId, shiny, action)
         value = Picked(formId, shiny, action, a, a?.let { sheet(it.sheetName(formId, shiny)) })
@@ -161,6 +158,11 @@ fun AnimatedSprite(
         if (current != null && special == null && action.plays > 0) done()
     }
 
+    if (idle != null && loaded == null) {
+        // A moment of empty space while the sheet is read: the still sprite would flash in another art style first.
+        Box(modifier.size(size).semantics { contentDescription = description })
+        return
+    }
     if (idle == null || idleImage == null) {
         Sprite(formId, shiny, description, modifier, size)
         return

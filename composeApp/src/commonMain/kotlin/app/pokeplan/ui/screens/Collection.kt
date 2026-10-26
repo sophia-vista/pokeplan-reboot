@@ -69,6 +69,7 @@ import app.pokeplan.ui.theme.NamePlate
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.quietClickable
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.SectionLabel
@@ -209,7 +210,7 @@ private fun PcControls(view: PcView, change: (PcView) -> Unit, shown: Int, total
 @Composable
 private fun PcTile(p: OwnedPokemon, favorite: Boolean, onClick: () -> Unit) {
     Column(
-        Modifier.clip(RoundedCornerShape(12.dp)).background(Pixel.Panel).clickable(onClickLabel = "Open ${p.nickname}", role = Role.Button, onClick = onClick).padding(6.dp),
+        Modifier.clip(RoundedCornerShape(12.dp)).background(Pixel.Panel).quietClickable(onClickLabel = "Open ${p.nickname}", onClick = onClick).padding(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Sprite(p.form.id, p.isShiny, p.nickname, size = 64.dp)
@@ -287,7 +288,7 @@ private fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Uni
             val name = if (state == DexState.UNKNOWN) "Unknown" else s.name
             Column(
                 Modifier.size(width = 76.dp, height = 104.dp).clip(RoundedCornerShape(12.dp)).background(Pixel.Panel)
-                    .clickable(enabled = state != DexState.UNKNOWN, onClickLabel = "Open entry", role = Role.Button) { open(s.id) }
+                    .quietClickable(enabled = state != DexState.UNKNOWN, onClickLabel = "Open entry") { open(s.id) }
                     .semantics(mergeDescendants = true) { contentDescription = "Number $number, $name, ${state.label}" },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -346,7 +347,7 @@ internal fun DexEntryScreen(model: AppModel, rows: List<Pair<Int, SpeciesInfo>>,
                 if (state.caught) {
                     AnimatedSprite(
                         form.id, false, s.name,
-                        Modifier.align(Alignment.TopCenter).padding(top = 12.dp).clickable(onClickLabel = "Hear its cry", role = Role.Button) { model.cry(id) },
+                        Modifier.align(Alignment.TopCenter).padding(top = 12.dp).quietClickable(onClickLabel = "Hear its cry") { model.cry(id) },
                         size = 160.dp, animate = !model.data.settings.reduceMotion,
                     )
                     Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -440,7 +441,7 @@ private fun LineMember(model: AppModel, speciesId: Int, current: Boolean, open: 
     Column(
         Modifier.size(width = 92.dp, height = 76.dp).clip(RoundedCornerShape(12.dp))
             .background(if (current) Pixel.Shade else Pixel.Panel)
-            .clickable(enabled = !current && state != DexState.UNKNOWN, onClickLabel = "Open entry", role = Role.Button) { open(speciesId) }
+            .quietClickable(enabled = !current && state != DexState.UNKNOWN, onClickLabel = "Open entry") { open(speciesId) }
             .semantics(mergeDescendants = true) { contentDescription = name },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -680,7 +681,7 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
             Stage("bw08", 252.dp) {
                 AnimatedSprite(
                     p.form.id, p.isShiny, p.nickname,
-                    Modifier.align(Alignment.TopCenter).padding(top = 16.dp).clickable(onClickLabel = "Hear ${p.nickname}", role = Role.Button) { model.cry(p.speciesId) },
+                    Modifier.align(Alignment.TopCenter).padding(top = 16.dp).quietClickable(onClickLabel = "Hear ${p.nickname}") { model.cry(p.speciesId) },
                     size = 176.dp, animate = !model.data.settings.reduceMotion,
                 )
                 Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {

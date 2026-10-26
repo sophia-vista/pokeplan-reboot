@@ -31,14 +31,14 @@ private class Faces(val emotions: List<String>, val hasShiny: Boolean, val artis
 private const val PORTRAIT_PIXELS = 40
 private var faces: Map<Int, Faces>? = null
 
-private suspend fun faces(): Map<Int, Faces> = faces ?: try {
-    Res.readBytes("files/pmd/portraits/portraits.tsv").decodeToString().lines().filter { '\t' in it }.associate { line ->
-        val c = line.split('\t')
-        c[0].toInt() to Faces(c[1].split(','), c[2] == "1", c.getOrElse(3) { "" })
-    }
-} catch (e: Exception) {
-    emptyMap()
-}.also { faces = it }
+private suspend fun faces(): Map<Int, Faces> = faces ?: (
+    orNull {
+        Res.readBytes("files/pmd/portraits/portraits.tsv").decodeToString().lines().filter { '\t' in it }.associate { line ->
+            val c = line.split('\t')
+            c[0].toInt() to Faces(c[1].split(','), c[2] == "1", c.getOrElse(3) { "" })
+        }
+    } ?: emptyMap()
+).also { faces = it }
 
 /** Who drew a form's SpriteCollab portraits, for the credit their licence asks for; null if it has none. */
 suspend fun portraitCredit(formId: Int): String? = faces()[formId]?.artists?.takeIf { it.isNotBlank() }

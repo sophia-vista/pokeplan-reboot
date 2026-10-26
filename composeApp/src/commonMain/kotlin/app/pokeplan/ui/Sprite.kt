@@ -22,9 +22,22 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import pokeplan.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.decodeToImageBitmap
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.min
 
 private val cache = mutableMapOf<String, ImageBitmap?>()
+
+/**
+ * [block]'s result, or null when it fails (a missing or broken file). A cancelled load is not a failure and is passed on:
+ * caught here, a page left before its sprite was read (Next in the Pokédex) would cache that sprite as missing for good.
+ */
+internal inline fun <T> orNull(block: () -> T): T? = try {
+    block()
+} catch (e: CancellationException) {
+    throw e
+} catch (e: Exception) {
+    null
+}
 
 /** The real game icon of a bag item (Rare Candy, a berry, an evolution stone...). Draws nothing if there is no icon for [itemId]. */
 @Composable
@@ -32,11 +45,7 @@ fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp, de
     val path = "files/items/$itemId.png"
     val bitmap by produceState(cache[path], path) {
         if (value == null) {
-            value = try {
-                Res.readBytes(path).decodeToImageBitmap()
-            } catch (e: Exception) {
-                null
-            }
+            value = orNull { Res.readBytes(path).decodeToImageBitmap() }
             cache[path] = value
         }
     }
@@ -75,11 +84,7 @@ fun Sprite(formId: Int, shiny: Boolean, description: String, modifier: Modifier 
     val name = if (shiny) "$formId-shiny" else "$formId"
     val bitmap by produceState(cache[name], name) {
         if (value == null) {
-            value = try {
-                Res.readBytes("files/sprites/$name.png").decodeToImageBitmap()
-            } catch (e: Exception) {
-                null
-            }
+            value = orNull { Res.readBytes("files/sprites/$name.png").decodeToImageBitmap() }
             cache[name] = value
         }
     }
@@ -99,11 +104,7 @@ fun NpcPortrait(name: String, modifier: Modifier = Modifier, size: Dp = 200.dp) 
     val path = "files/npc/$name.png"
     val bitmap by produceState(cache[path], path) {
         if (value == null) {
-            value = try {
-                Res.readBytes(path).decodeToImageBitmap()
-            } catch (e: Exception) {
-                null
-            }
+            value = orNull { Res.readBytes(path).decodeToImageBitmap() }
             cache[path] = value
         }
     }
@@ -118,11 +119,7 @@ fun TypePlate(type: app.pokeplan.core.model.PokemonType, modifier: Modifier = Mo
     val path = "files/types/${type.name.lowercase()}.png"
     val bitmap by produceState(cache[path], path) {
         if (value == null) {
-            value = try {
-                Res.readBytes(path).decodeToImageBitmap()
-            } catch (e: Exception) {
-                null
-            }
+            value = orNull { Res.readBytes(path).decodeToImageBitmap() }
             cache[path] = value
         }
     }

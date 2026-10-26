@@ -26,11 +26,7 @@ private val scenes = mutableMapOf<String, ImageBitmap?>()
 fun SceneImage(name: String, modifier: Modifier = Modifier, darkness: Float = 0f) {
     val image by produceState(scenes[name], name) {
         if (value == null) {
-            value = try {
-                Res.readBytes("files/scenes/$name.png").decodeToImageBitmap()
-            } catch (e: Exception) {
-                null
-            }
+            value = orNull { Res.readBytes("files/scenes/$name.png").decodeToImageBitmap() }
             scenes[name] = value
         }
     }
