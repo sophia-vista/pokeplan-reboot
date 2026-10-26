@@ -746,6 +746,12 @@ class GameStore(
     /** Remembers that the player has seen what is new in [version]. */
     fun markVersionSeen(version: String) = update { it.copy(lastSeenVersion = version) }
 
+    /** Marks species as seen in the Pokédex (a friend's buddy, a quest's Pokémon). Saves nothing when none are new. */
+    fun markSeen(speciesIds: Collection<Int>) {
+        if (data.seenSpecies.containsAll(speciesIds)) return
+        update { it.copy(seenSpecies = it.seenSpecies + speciesIds) }
+    }
+
     fun isFavorite(id: String): Boolean = id in data.favorites
 
     /** Stars or unstars a Pokémon; a starred one cannot be transferred. */
