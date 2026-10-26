@@ -215,8 +215,8 @@ class ScreenshotTest {
         return store
     }
 
-    private fun collection(name: String, section: Int, open: Boolean = false, hatched: Int = 4) {
-        val store = storeWithTeam(hatched)
+    private fun collection(name: String, section: Int, open: Boolean = false, hatched: Int = 4, setup: (GameStore) -> Unit = {}) {
+        val store = storeWithTeam(hatched).also(setup)
         val model = AppModel(store)
         render(name) {
             PixelTheme {
@@ -258,7 +258,9 @@ class ScreenshotTest {
     fun collectionPc() = collection("collection-pc", 1, hatched = 14)
 
     @Test
-    fun collectionDex() = collection("collection-dex", 2)
+    fun collectionDex() = collection("collection-dex", 2) { s ->
+        s.markSeen(app.pokeplan.core.dex.Dex.regionDex(app.pokeplan.core.dex.Region.HOME).take(2).map { it.id })
+    }
 
     @Test
     fun collectionBag() = collection("collection-bag", 3)

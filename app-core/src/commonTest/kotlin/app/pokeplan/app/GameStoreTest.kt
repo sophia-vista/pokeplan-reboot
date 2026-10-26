@@ -566,6 +566,25 @@ class GameStoreTest {
     }
 
     @Test
+    fun the_dex_tells_owned_caught_seen_and_unknown_apart() {
+        val (s, _) = started()
+        val extra = s.grantPokemon(16, "Test")
+        s.markSeen(listOf(150, 25))
+        assertEquals(DexState.OWNED, DexState.of(s.data, 25))
+        assertEquals(DexState.OWNED, DexState.of(s.data, 16))
+        assertEquals(DexState.SEEN, DexState.of(s.data, 150))
+        assertEquals(DexState.UNKNOWN, DexState.of(s.data, 151))
+        assertTrue(s.transfer(extra.id))
+        assertEquals(DexState.CAUGHT, DexState.of(s.data, 16))
+        assertTrue(DexState.CAUGHT.caught && !DexState.SEEN.caught)
+        // Seen once is seen for good, and marking it again saves nothing new.
+        val before = s.data
+        s.markSeen(listOf(150))
+        assertTrue(before === s.data)
+        assertTrue("seenSpecies" in s.cloudDocument())
+    }
+
+    @Test
     fun a_shiny_stays_in_the_shiny_dex_after_it_is_transferred() {
         val base = started().first
         val shiny = base.data.player.pokemon.first().copy(isShiny = true)
