@@ -149,7 +149,7 @@ class ScreenshotTest {
     @Test
     fun plannerDay() {
         val model = plannerDayModel()
-        render("planner-day") {
+        render("planner-day", height = 2400) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 1) } }
         }
     }
