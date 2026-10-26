@@ -6,3 +6,15 @@ interface MotionSource {
     fun start(onMoved: () -> Unit)
     fun stop()
 }
+
+/**
+ * Why the app went to the background, so a focus session can tell leaving from a locked screen or a phone call
+ * (design.md, Focus: neither counts as leaving). Only the Android app provides one.
+ */
+interface PhoneState {
+    /** True when the screen is off or locked. */
+    val screenOff: Boolean
+
+    /** True while a call rings or is in progress. */
+    val inCall: Boolean
+}
