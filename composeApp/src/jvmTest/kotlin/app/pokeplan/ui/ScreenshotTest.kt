@@ -8,6 +8,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.padding
 import app.pokeplan.app.Clock
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.MemoryStorage
@@ -187,8 +189,35 @@ class ScreenshotTest {
         store.setPlannedTime(gym.id, kotlinx.datetime.LocalTime(17, 0))
         val study = store.addTask("Study for the quiz", Rank.B, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 4)), estimateMinutes = 120, category = app.pokeplan.plan.Category.SCHOOL)
         store.setPlannedTime(study.id, kotlinx.datetime.LocalTime(14, 0))
+        val colors = app.pokeplan.plan.TaskList.COLORS
+        store.addAllDayEvent("Condo", store.today.plus(kotlinx.datetime.DatePeriod(days = 1)), store.today.plus(kotlinx.datetime.DatePeriod(days = 5)), colors[0])
+        store.addAllDayEvent("RTO", store.today.plus(kotlinx.datetime.DatePeriod(days = 2)), color = colors[3])
         render("planner-week", height = 2400) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 1, startWeek = true) } }
+        }
+    }
+
+    @Test
+    fun plannerMonth() {
+        val store = started()
+        val colors = app.pokeplan.plan.TaskList.COLORS
+        val start = store.today
+        fun day(n: Int) = start.plus(kotlinx.datetime.DatePeriod(days = n))
+        store.addAllDayEvent("Home", day(-3), day(-1), colors[0])
+        store.addAllDayEvent("Condo", day(0), day(4), colors[0])
+        store.addAllDayEvent("Home", day(5), day(9), colors[0])
+        listOf(0, 1, 2, 3).forEach { store.addAllDayEvent("RTO", day(it), color = colors[3]) }
+        listOf(8, 9, 10).forEach { store.addAllDayEvent("WFH", day(it), color = colors[3]) }
+        store.addEvent("The Odyssey", day(4), kotlinx.datetime.LocalTime(19, 0), 150, colors[1])
+        store.addTask("Pay the rent", Rank.B, planned = day(2))
+        store.addTask("Book the dentist", Rank.C, planned = day(0))
+        val model = AppModel(store)
+        render("planner-month", height = 1700) {
+            PixelTheme {
+                Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                    androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) { app.pokeplan.ui.screens.DayView(model, emptySet(), startMode = 2) }
+                }
+            }
         }
     }
 
