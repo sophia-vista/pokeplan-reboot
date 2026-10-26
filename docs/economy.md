@@ -1,6 +1,6 @@
 # The economy: sources, sinks and caps
 
-Every reward source, every use and every cap, as the code has them under **rules version 2** (`RewardRules.VERSION` in
+Every reward source, every use and every cap, as the code has them under **rules version 5** (`RewardRules.VERSION` in
 `pokemon-core`). This is principle 6 of `docs/ecosystem.md` ("every reward source, cap and use is written down"). The
 reasons and pacing targets are in `docs/design.md`; the simulated pacing is in `docs/economy-report.md`.
 
@@ -12,7 +12,7 @@ Where the rules live: `RewardEngine`, `TrainerRank`, `CandyRewards` and `Egg` (t
 server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`, `Shiny`), `EvolutionRules` in
 `pokemon-core`; `TaskRules`, `Goal`, `Review`, `Streak`, `FocusSession` in `plan-core`; `CareRules` in `care-core`; `GameStore`, `CareStore` and `Quests` in `app-core`.
 
-**Version history.** 1: everything before Care. 2: the Care events (`RewardEngine.care`) and the friendship sources Routine and Calm break; nothing that version 1 paid changed.
+**Version history.** 1: everything before Care. 2: the Care events (`RewardEngine.care`) and the friendship sources Routine and Calm break; nothing that version 1 paid changed. 3: trade-evolution items (Metal Coat, King's Rock...) join the drop table; Magic Guard hatches a failed session's egg once a week; the Streak keeper perk forgives a second missed day. 4: training plans are gone, so tasks pay no EVs; Synchronize gives +3 Super Candy chance instead of +25% EVs. 5: a new trainer rank curve, quick at first and slower after (0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000, 9,000; it was 0, 625 ... 10,625).
 
 ## 1. Sources
 
@@ -21,7 +21,7 @@ server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`,
 | Event | Pays | Constant |
 |---|---|---|
 | **Focus session completed** (5 minutes or more) | One egg, hatched at once (rarity from the length, section 1.3) · coins `minutes / 5` · trainer points `minutes / 5` · 1 random berry · buddy friendship (focus session) · an active day | `COINS_PER_FIVE_MINUTES`, `TrainerRank.pointsForEffort`, `Egg.MIN_MINUTES` |
-| **Task or habit completed** (tier 1 to 5 = rank E to A) | Rare Candies (table below), maybe Super Candies · coins `tier × 2` · trainer points `tier × 2` · an item drop chance `8 + 2 × tier` % · EVs `tier` to the buddy's training plan, `tier / 2` to each other party member · buddy friendship (task) · `tier` points on the Egg meter · an active day | `COINS_PER_TIER`, `pointsForAchievement`, `DROP_BASE_PERCENT`, `DROP_PER_TIER_PERCENT` |
+| **Task or habit completed** (tier 1 to 5 = rank E to A) | Rare Candies (table below), maybe Super Candies · coins `tier × 2` · trainer points `tier × 2` · an item drop chance `8 + 2 × tier` % · buddy friendship (task) · `tier` points on the Egg meter · an active day | `COINS_PER_TIER`, `pointsForAchievement`, `DROP_BASE_PERCENT`, `DROP_PER_TIER_PERCENT` |
 | **Egg meter full** (10 points) | A Task Egg, rolled as a 15 minute session (no lure, no spotlight); the rest carries over | `EGG_METER_SIZE`, `TASK_EGG_MINUTES` |
 | **Subtask done** | 1 Rare Candy, once per subtask, at most 5 paid per task, after the task rank's minimum age | `SUBTASK_RARE_CANDIES`, `MAX_PAID_SUBTASKS` |
 | **Goal milestone done** (24 hours old or more) | 1 Super Candy, at most 3 a day; an active day | `SUPER_CANDIES_PER_MILESTONE`, `MILESTONE_MIN_AGE_MILLIS`, `MAX_MILESTONE_REWARDS_PER_DAY` |
@@ -80,7 +80,7 @@ The Super Candy chance perk adds percentage points.
 | 6 vitamins (HP Up, Protein, Iron, Calcium, Zinc, Carbos) | 8 |
 | 5 berries | 4 |
 | Link Cord | 2 |
-| 18 type Lures, each evolution stone and gender-evolution item | 1 |
+| 18 type Lures, each evolution stone, gender-evolution item and trade-evolution item (`Items.tradeItems`) | 1 |
 | Lucky Egg, Oval Charm, Star Piece, Scope Lens, Leftovers, Amulet Coin | 1 |
 | Shiny Charm, Bottle Cap, Nature Mint, Ability Capsule | 0.5 |
 | 18 Tera Shards | 0.1 |
@@ -109,6 +109,15 @@ give up to 15 each (× power, friendship up to × 1.2, nature × 1.1 or 0.9; a s
 quarter, a held item +4 (Amulet Coin +10 coins), abilities +3 to +10 under their condition. A Guardian adds its
 signature perk (10, +5 for a second type). Caps in section 3.
 
+- **Held items** are given from the Bag or the Pokémon's page (`GameStore.holdItem`, `takeItem`); what it held before goes
+  back to the bag. Perk items, Mega Stones and trade-evolution items can be held; Guardians hold nothing.
+- **Streak keeper** at 10 or more (`STREAK_KEEPER_THRESHOLD`) forgives a second missed day a week, for the daily streak and
+  for habit streaks (`PerkBonuses.extraForgivenDays`).
+- **Magic Guard** (the buddy's ability when the session started): once a week, a failed session of 5 minutes or more
+  still hatches its egg, paid as a session of the minutes focused, never as Deep Focus. It stays a failed session in the
+  history and does not count as an active day (`GameStore.magicGuard`, counter `magic-guard-<week>`).
+- The perks that count for a session are the buddy's when it started (`FocusSession.buddyIdAtStart`).
+
 ## 2. Sinks (uses)
 
 | Resource | Spent on | Constant |
@@ -121,7 +130,7 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Berry | +1 friendship (more with the Gifts or Balanced style) | `GameStore.useItem` |
 | Lure | Used up when its session hatches; kept when the session fails | `RewardEngine.effort` |
 | Pokémon | Transferred for candy and coins (never the buddy, the last party member, a starred one, or a legendary or mythical) | `Transfer.block` |
-| Trainer points | Never spent; they open regions, features, Guardian slots and quests | `TrainerRank` |
+| Trainer points | Never spent; they open regions, features, Guardian slots and quests. Ranks at 0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000 and 9,000 | `TrainerRank` |
 | Coins | **Nothing yet** (section 5) | |
 
 ## 3. Caps
@@ -135,7 +144,6 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Pet friendship | 10 a day | `PET_DAILY_CAP` |
 | Care | 5 routines, 3 calm breaks and 1 rhythm a day (the world checks again: `GameStore.CARE_DAILY_CAP`), at most 8 trainer points a day, plus 5 on a rhythm day | `CareRules`, `CARE_DAILY_CAP` |
 | EVs | 252 a stat, 510 in all | `StatCalculator` |
-| Training plan | 2 stats | `OwnedPokemon` |
 | Party | 6 | `OwnedPokemon.PARTY_SIZE` |
 | Perk bucket | 25; Guardians add up to 15 on top | `BUCKET_CAP`, `Guardians` |
 | Guardian slots | 0, then 1 at rank 4, 2 at rank 6, 3 at rank 9 | `Guardians.slots` |
@@ -145,7 +153,7 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Milestone Super Candies | 3 a day | `MAX_MILESTONE_REWARDS_PER_DAY` |
 | Weekly review berry | 1 a week | `Review` |
 | Habit | pays once a day, even after an undo | `Habit.paysOn`, `paidOn` |
-| Task | pays once, after its rank's minimum age (2, 5, 10, 15, 20 minutes for E to A) | `Rank.minAgeMinutes`, `plan.finish_task` |
+| Task | pays once, after its rank's minimum age (2, 5, 10, 15, 20 minutes for E to A); a repeating task's instance pays from its own day, never ahead | `Rank.minAgeMinutes`, `TaskRules.paysOnCompletion`, `plan.finish_task` |
 | Focus session | 5 minutes at least; 180 in the app; 240 on the server (the shiny bonus stops at 240) | `Egg.MIN_MINUTES`, `MAX_MINUTES` |
 | Egg tickets | 20 a device; 200 reported per sync | `TICKET_STOCK`, `MAX_SPENT` |
 | Friend gifts | 1 per friend a day | `platform.send_gift` |
@@ -156,7 +164,7 @@ design.md's "daily reward limit per app" *(tune)* is not built. It matters once 
 
 ## 4. What can be lost
 
-- **A failed focus session** (left the app for over 10 seconds, moved the phone in Deep Focus, gave up) pays nothing; its egg ticket is spent so the egg can't be rerolled, and a Lure is kept. This is the one deliberate exception (ecosystem.md, principle 4).
+- **A failed focus session** (left the app for over 10 seconds, moved the phone in Deep Focus, gave up) pays nothing (except once a week with Magic Guard, section 1); its egg ticket is spent so the egg can't be rerolled, and a Lure is kept. This is the one deliberate exception (ecosystem.md, principle 4).
 - **A transferred Pokémon** is gone; its species, shiny and forms stay in the Pokédex.
 - **Evolution** uses its Super Candy, stone or Link Cord.
 - **A task reward** can be undone for 10 seconds (`UNDO_WINDOW_MILLIS`).
@@ -167,8 +175,7 @@ design.md's "daily reward limit per app" *(tune)* is not built. It matters once 
 Found while writing this down; each is its own change, none is in this rules version.
 
 - **Coins have no use.** design.md plans a shop (rank step 2) and Lures bought or crafted from berries; neither exists, so coins only pile up.
-- **Earned items with no use yet:** Lures (Focus never passes one), held items (no way to equip, so their perks never apply), Nature Mint, Ability Capsule, Bottle Cap, Tera Shards (`ItemEffects` exists, not called).
-- **Perks not wired:** Magic Guard (`keepsFailedEgg`) and the streak keeper bucket are computed and never read.
+- **Earned items with no use yet:** Lures (Focus never passes one). Mega Stones can be held but never drop.
 - **Trial evolutions** can never happen: nothing records a completed trial.
 - **Stack caps are uneven:** transfers, the focus berry and the weekly review berry add without the cap; the server's gift caps every item at 9,999, the app caps non-candies at 999.
 - **Who decides.** The app computes every reward itself and the server checks the snapshot on sync (points never drop, the party and Guardians fit, column ranges). The server's `effort`, `task` and `achievement` kinds exist and are tested but no app calls them yet. Moving rewards to them (and adding the daily caps) is the step before a public release (`supabase/README.md`, Known limits).

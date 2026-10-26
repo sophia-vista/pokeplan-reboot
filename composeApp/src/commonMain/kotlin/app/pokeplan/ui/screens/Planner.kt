@@ -904,7 +904,10 @@ private fun HabitsView(model: AppModel) {
         ) {
             Text(h.title, style = MaterialTheme.typography.bodyLarge)
             Text(
-                listOf(if (doneToday) "Done today" else "Streak ${h.streak(store.today, model.data.restDays)}${streakUnit(h.target)}", habitTargetLabel(h.target), h.category.label).joinToString(", "),
+                listOf(
+                    if (doneToday) "Done today" else "Streak ${h.streak(store.today, model.data.restDays, store.perks.extraForgivenDays, store.firstDayOfWeek)}${streakUnit(h.target)}",
+                    habitTargetLabel(h.target), h.category.label,
+                ).joinToString(", "),
                 style = MaterialTheme.typography.bodyMedium,
             )
         }

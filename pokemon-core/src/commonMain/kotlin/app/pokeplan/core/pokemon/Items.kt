@@ -68,6 +68,14 @@ object Items {
             .mapNotNull { it.item }.distinct().sorted()
     }
 
+    /** Items a Pokémon holds to evolve when traded (a Metal Coat, a King's Rock...), taken from the evolution data. */
+    val tradeItems: List<String> by lazy {
+        Dex.evolutions.filter { it.kind == EvolutionKind.TRADE }.mapNotNull { it.heldItem }.distinct().sorted()
+    }
+
+    /** Whether a Pokémon can hold [id]: a perk item, a Mega Stone, or an item it needs to hold for a trade evolution. */
+    fun holdable(id: String): Boolean = id in HeldItems.perks || id.startsWith("mega-stone-") || id in tradeItems
+
     fun category(id: String): ItemCategory? = when {
         id in special -> special.getValue(id).second
         id.startsWith("berry-") -> ItemCategory.BERRY
@@ -75,7 +83,7 @@ object Items {
         id.startsWith("tera-shard-") -> ItemCategory.TERA
         id.startsWith("mega-stone-") -> ItemCategory.FORM
         id in HeldItems.perks -> ItemCategory.HELD
-        id in evolutionItems -> ItemCategory.EVOLUTION
+        id in evolutionItems || id in tradeItems -> ItemCategory.EVOLUTION
         else -> null
     }
 

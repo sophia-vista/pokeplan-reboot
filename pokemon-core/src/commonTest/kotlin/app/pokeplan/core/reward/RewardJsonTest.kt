@@ -3,7 +3,6 @@ package app.pokeplan.core.reward
 import app.pokeplan.core.dex.Region
 import app.pokeplan.core.pokemon.Ids
 import app.pokeplan.core.pokemon.Inventory
-import app.pokeplan.core.pokemon.Stat
 import app.pokeplan.core.pokemon.pokemon
 import kotlin.random.Random
 import kotlin.test.Test
@@ -13,8 +12,8 @@ import kotlin.test.assertTrue
 
 class RewardJsonTest {
     private val json = RewardJson.json
-    private val buddy = pokemon(Ids.PIKACHU, level = 40).withTrainingPlan(listOf(Stat.SPEED)).withHeldItem("lucky-egg")
-    private val state = PlayerState(listOf(buddy), buddy.id, Inventory().add("rare-candy", 12).add("lure-fire", 1), coins = 50, eggMeter = 4, trainerPoints = 700, caught = setOf(25, 4))
+    private val buddy = pokemon(Ids.PIKACHU, level = 40).withHeldItem("lucky-egg")
+    private val state = PlayerState(listOf(buddy), buddy.id, Inventory().add("rare-candy", 12).add("lure-fire", 1), coins = 50, eggMeter = 4, trainerPoints = 100, caught = setOf(25, 4))
     private val effort = EffortEvent(30, true, Region.KANTO, newPokemonId = "new-1", nowMillis = 1_700_000_000_000)
     private val achievement = AchievementEvent(4, Region.JOHTO, hourOfDay = 7, firstOfDay = true, onTime = true, newPokemonId = "new-2", nowMillis = 1_700_000_000_000)
 

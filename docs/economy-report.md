@@ -13,7 +13,7 @@ Plays 180 days for 60 simulated players per profile through the real reward engi
 ## Targets
 
 - Basic Home dex (59 hatchable species) in about 60 days for a typical player.
-- A new region about every 21 to 28 days.
+- Ranks quick at first, slower after: Apprentice (Kanto) within about 2 days and Ace within about 2 weeks for a typical player; each rank takes longer than the one before.
 - Evolving everything in the Home Region once needs 85 evolutions: 71 Super Candies, 3886 to 7314 Rare Candies (with and without the catch-up discount), 13 stones, 1 Link Cords, 3 trials.
 
 ## Light
@@ -21,15 +21,15 @@ Plays 180 days for 60 simulated players per profile through the real reward engi
 | Measure | Value |
 |---|---|
 | Day the basic Home dex is complete (181 = not within 180) | 181 (181 to 181) |
-| Day Kanto unlocks | 71.0 (63.0 to 84.0) |
-| Day Johto unlocks | 155 (145 to 172) |
-| Day Hoenn unlocks | 181 (181 to 181) |
-| Day Sinnoh unlocks | 181 (181 to 181) |
-| Rank after 30 days | 0.0 (0.0 to 0.0) |
+| Day Kanto unlocks | 6.0 (3.0 to 9.0) |
+| Day Johto unlocks | 18.0 (14.0 to 23.0) |
+| Day Hoenn unlocks | 38.0 (32.0 to 44.0) |
+| Day Sinnoh unlocks | 74.0 (65.0 to 88.0) |
+| Rank after 30 days | 2.0 (2.0 to 2.0) |
 | Eggs after 30 days (incl. Task Eggs) | 21.0 (15.0 to 24.0) |
-| Rank after 60 days | 0.0 (0.0 to 0.0) |
+| Rank after 60 days | 3.0 (3.0 to 3.0) |
 | Eggs after 60 days (incl. Task Eggs) | 42.0 (35.0 to 47.0) |
-| Rank after 90 days | 1.0 (1.0 to 1.0) |
+| Rank after 90 days | 4.0 (4.0 to 4.0) |
 | Eggs after 90 days (incl. Task Eggs) | 62.0 (53.0 to 71.0) |
 | Task Eggs after 60 days | 20.0 (17.0 to 23.0) |
 | Rare Candies earned in 60 days (incl. transfers) | 1229 (1047 to 1387) |
@@ -47,50 +47,50 @@ Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (61.0)
 | Measure | Value |
 |---|---|
 | Day the basic Home dex is complete (181 = not within 180) | 62.0 (43.0 to 95.0) |
-| Day Kanto unlocks | 17.0 (14.0 to 20.0) |
-| Day Johto unlocks | 37.0 (34.0 to 41.0) |
-| Day Hoenn unlocks | 59.0 (56.0 to 66.0) |
-| Day Sinnoh unlocks | 86.0 (82.0 to 93.0) |
-| Rank after 30 days | 1.0 (1.0 to 1.0) |
+| Day Kanto unlocks | 2.0 (1.0 to 3.0) |
+| Day Johto unlocks | 4.0 (3.0 to 6.0) |
+| Day Hoenn unlocks | 9.0 (7.0 to 11.0) |
+| Day Sinnoh unlocks | 18.0 (15.0 to 21.0) |
+| Rank after 30 days | 4.0 (4.0 to 5.0) |
 | Eggs after 30 days (incl. Task Eggs) | 88.0 (76.0 to 98.0) |
-| Rank after 60 days | 3.0 (2.0 to 3.0) |
-| Eggs after 60 days (incl. Task Eggs) | 176 (160 to 186) |
-| Rank after 90 days | 4.0 (3.0 to 4.0) |
-| Eggs after 90 days (incl. Task Eggs) | 262 (243 to 280) |
-| Task Eggs after 60 days | 71.0 (64.0 to 76.0) |
-| Rare Candies earned in 60 days (incl. transfers) | 5125 (4709 to 5506) |
-| Super Candies earned in 60 days | 213 (184 to 252) |
-| Coins after 60 days | 7859 (7249 to 8567) |
-| Item drops in 60 days | 139 (124 to 151) |
+| Rank after 60 days | 6.0 (6.0 to 6.0) |
+| Eggs after 60 days (incl. Task Eggs) | 175 (160 to 188) |
+| Rank after 90 days | 7.0 (7.0 to 7.0) |
+| Eggs after 90 days (incl. Task Eggs) | 258 (242 to 279) |
+| Task Eggs after 60 days | 70.0 (64.0 to 76.0) |
+| Rare Candies earned in 60 days (incl. transfers) | 5100 (4716 to 5546) |
+| Super Candies earned in 60 days | 214 (183 to 251) |
+| Coins after 60 days | 7846 (7281 to 8585) |
+| Item drops in 60 days | 139 (125 to 151) |
 | Buddy level after 60 days | 100 (100 to 100) |
-| Shinies in 180 days | 5.0 (1.0 to 8.0) |
-| Species owned after 90 days | 119 (59.0 to 153) |
+| Shinies in 180 days | 5.0 (3.0 to 9.0) |
+| Species owned after 90 days | 126 (59.0 to 158) |
 
-Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (213) that is about 20.0 days. Rare Candies: 3886 to 7314 needed, 5125 earned in 60 days (about 45.5 to 85.6 days).
+Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (214) that is about 19.9 days. Rare Candies: 3886 to 7314 needed, 5100 earned in 60 days (about 45.7 to 86.0 days).
 
 ## Heavy
 
 | Measure | Value |
 |---|---|
 | Day the basic Home dex is complete (181 = not within 180) | 27.0 (20.0 to 38.0) |
-| Day Kanto unlocks | 7.0 (6.0 to 8.0) |
-| Day Johto unlocks | 15.0 (14.0 to 17.0) |
-| Day Hoenn unlocks | 24.0 (22.0 to 26.0) |
-| Day Sinnoh unlocks | 34.0 (32.0 to 37.0) |
-| Rank after 30 days | 3.0 (3.0 to 3.0) |
-| Eggs after 30 days (incl. Task Eggs) | 185 (173 to 196) |
-| Rank after 60 days | 6.0 (5.0 to 6.0) |
-| Eggs after 60 days (incl. Task Eggs) | 366 (347 to 380) |
-| Rank after 90 days | 7.0 (7.0 to 8.0) |
-| Eggs after 90 days (incl. Task Eggs) | 547 (527 to 570) |
-| Task Eggs after 60 days | 167 (157 to 177) |
-| Rare Candies earned in 60 days (incl. transfers) | 11504 (10976 to 12196) |
-| Super Candies earned in 60 days | 591 (519 to 663) |
-| Coins after 60 days | 18288 (17211 to 19393) |
-| Item drops in 60 days | 271 (255 to 286) |
+| Day Kanto unlocks | 1.0 (1.0 to 1.0) |
+| Day Johto unlocks | 2.0 (2.0 to 3.0) |
+| Day Hoenn unlocks | 4.0 (3.0 to 5.0) |
+| Day Sinnoh unlocks | 7.0 (7.0 to 8.0) |
+| Rank after 30 days | 6.0 (6.0 to 7.0) |
+| Eggs after 30 days (incl. Task Eggs) | 184 (173 to 195) |
+| Rank after 60 days | 8.0 (8.0 to 8.0) |
+| Eggs after 60 days (incl. Task Eggs) | 367 (349 to 385) |
+| Rank after 90 days | 8.0 (8.0 to 8.0) |
+| Eggs after 90 days (incl. Task Eggs) | 554 (534 to 570) |
+| Task Eggs after 60 days | 168 (158 to 175) |
+| Rare Candies earned in 60 days (incl. transfers) | 11678 (11014 to 12244) |
+| Super Candies earned in 60 days | 581 (512 to 661) |
+| Coins after 60 days | 18578 (17379 to 19444) |
+| Item drops in 60 days | 276 (257 to 292) |
 | Buddy level after 60 days | 100 (100 to 100) |
-| Shinies in 180 days | 10.0 (6.0 to 17.0) |
-| Species owned after 90 days | 277 (256 to 296) |
+| Shinies in 180 days | 11.0 (7.0 to 15.0) |
+| Species owned after 90 days | 283 (250 to 301) |
 
-Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (591) that is about 7.2 days. Rare Candies: 3886 to 7314 needed, 11504 earned in 60 days (about 20.3 to 38.1 days).
+Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (581) that is about 7.3 days. Rare Candies: 3886 to 7314 needed, 11678 earned in 60 days (about 20.0 to 37.6 days).
 

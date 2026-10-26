@@ -28,13 +28,20 @@ object TaskRules {
 
     fun minAgeMillis(rank: Rank): Long = rank.minAgeMinutes * 60_000L
 
-    /** One-off tasks pay once they are old enough; recurring instances and tutorial tasks pay straight away. */
-    fun paysOnCompletion(task: Task, nowMillis: Long): Boolean =
-        !task.paid && (task.tutorial || task.seriesId != null || nowMillis - task.createdAtMillis >= minAgeMillis(task.rank))
+    /**
+     * One-off tasks pay once they are old enough; tutorial tasks pay straight away, and so do recurring instances, but only
+     * from their own day: ticking off next week's instances today pays nothing, so a repeat can't be farmed ahead.
+     */
+    fun paysOnCompletion(task: Task, nowMillis: Long, zone: TimeZone = TimeZone.UTC): Boolean {
+        if (task.paid) return false
+        if (task.tutorial) return true
+        if (task.seriesId != null) return task.planned == null || task.planned <= nowMillis.toLocalDateTime(zone).date
+        return nowMillis - task.createdAtMillis >= minAgeMillis(task.rank)
+    }
 
     fun complete(task: Task, nowMillis: Long, zone: TimeZone): Completion {
         check(task.state == TaskState.OPEN) { "only open tasks can be completed" }
-        val pays = paysOnCompletion(task, nowMillis)
+        val pays = paysOnCompletion(task, nowMillis, zone)
         val onTime = task.due?.let { nowMillis.toLocalDateTime(zone) <= it } ?: false
         val done = task.copy(state = TaskState.DONE, completedAtMillis = nowMillis, paid = task.paid || pays)
         return Completion(done, pays, task.rank.tier, onTime, task.focusedMinutes > 0, nowMillis + UNDO_WINDOW_MILLIS)

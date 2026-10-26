@@ -94,7 +94,7 @@ class PerksTest {
 
     @Test
     fun synchronizeAndMagicGuardAreSpecial() {
-        assertEquals(25.0, Perks.total(strong(Ids.PIKACHU).withAbility("Synchronize")).evGainPercent)
+        assertTrue(Perks.total(strong(Ids.PIKACHU).withAbility("Synchronize"))[PerkBucket.SUPER_CANDY_CHANCE] >= 3.0)
         assertTrue(Perks.total(strong(Ids.PIKACHU).withAbility("Magic Guard")).keepsFailedEgg)
         assertFalse(Perks.total(strong(Ids.PIKACHU)).keepsFailedEgg)
     }

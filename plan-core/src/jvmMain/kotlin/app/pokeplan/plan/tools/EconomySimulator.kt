@@ -212,7 +212,7 @@ fun simulateReport(runsPerProfile: Int = 60, days: Int = 180): String {
     sb.appendLine("## Targets")
     sb.appendLine()
     sb.appendLine("- Basic Home dex ($home hatchable species) in about 60 days for a typical player.")
-    sb.appendLine("- A new region about every 21 to 28 days.")
+    sb.appendLine("- Ranks quick at first, slower after: Apprentice (Kanto) within about 2 days and Ace within about 2 weeks for a typical player; each rank takes longer than the one before.")
     sb.appendLine("- Evolving everything in the Home Region once needs ${demand.evolutions} evolutions: ${demand.superCandies} Super Candies, ${demand.rareCandiesLow} to ${demand.rareCandiesHigh} Rare Candies (with and without the catch-up discount), ${demand.stones} stones, ${demand.linkCords} Link Cords, ${demand.trials} trials.")
     sb.appendLine()
     for (p in profiles) {

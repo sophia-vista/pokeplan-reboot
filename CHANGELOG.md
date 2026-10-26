@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## Unreleased
+## 0.29.0
 
 - Editing a task now also sets its category, its notes and its deadline (a day, with Today, Tomorrow, Next week and a day-by-day nudge, or none).
 - A task can repeat: daily, on weekdays, weekly or monthly. Pick Repeat in a task's options, or in More options when you add one. Repeating tasks say so in their line, and Never stops the repeat.
@@ -13,6 +13,23 @@ release always has the newest merge).
 - New habits can be on chosen days, a number of times a week or a number of times a month (not only every day), and have a category.
 - New goals can have a category and a target date, both shown on the goal.
 - The weekly review shows where the week's finished tasks went, by category.
+- Fix: a repeating task's later days pay only once their day comes, so ticking ahead earns nothing extra.
+
+## 0.28.0
+
+- Trainer ranks come quickly at first and slow down later: Apprentice after a day or two of play (it took over two weeks), Ace in under two weeks, and each rank after that takes longer than the last. Nobody loses a rank.
+- Each rank now opens something, shown once on Home in a "Rank up" card: evolution, the Bag and goals at Apprentice; held items, party perks, Growth and coins at Trainer; training items and stats at Ace; Guardians and legendary quests at Veteran. Day one stays simple: tasks, focus, your buddy and your collection. Reward rules version 5. Online: push the new migration (`rank_curve`) and redeploy the reward function.
+
+## 0.27.0
+
+- Training plans are gone: no more choosing focus stats. Finished tasks no longer add EVs; Vitamins from the Bag are how a Pokémon's stats (and the perks they power) grow. Synchronize now gives a little Super Candy chance. Reward rules version 4. Online: push the new migration (`no_training_plans`) and redeploy the reward function.
+
+## 0.26.0
+
+- Party perks you can see: the Party screen shows each perk's total and, opened, where every part comes from (your buddy's types and ability, its held item, the rest of the party, Guardians). Each Pokémon's page says what it gives as your buddy and in the party.
+- Held items work: give one from the Bag or a Pokémon's page, swap or take it back. Its perk applies while your buddy holds it, and items like a Metal Coat (now found from tasks) let trade evolutions happen.
+- Nature Mint, Bottle Cap, Ability Capsule and Tera Shards can be used from the Bag.
+- Magic Guard now keeps its promise: once a week, a failed focus session of 5 minutes or more still hatches its egg. A strong Streak keeper perk forgives a second missed day a week. Reward rules version 3.
 
 ## 0.25.0
 

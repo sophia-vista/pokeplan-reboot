@@ -57,8 +57,12 @@ import app.pokeplan.core.pokemon.Guardians
 import app.pokeplan.core.pokemon.PerkBucket
 import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.Items
+import app.pokeplan.core.pokemon.Nature
 import app.pokeplan.core.pokemon.OwnedPokemon
+import app.pokeplan.core.pokemon.Stat
+import app.pokeplan.core.pokemon.StatCalculator
 import app.pokeplan.core.pokemon.Transfer
+import app.pokeplan.core.reward.Feature
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Sfx
@@ -116,13 +120,13 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp)) {
                 val ready = store.activeQuests.count { store.questReady(it) }
                 MenuGrid(
-                    listOf(
+                    listOfNotNull(
                         MenuEntry("PARTY", "poke-ball", "Party", "${player.party.size} of 6", tint = Pixel.Red),
                         MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { !it.inParty && !Guardians.canBe(it) }} stored", tint = Pixel.Warning),
                         MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught", tint = Pixel.Blue),
-                        MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.Green),
-                        MenuEntry("GUARDIANS", "master-ball", "Guardians", if (store.guardianSlots == 0) "opens at rank ${TrainerRank.names[4]}" else "${player.guardians.size} of ${store.guardianSlots} slotted", tint = androidx.compose.ui.graphics.Color(0xFF8B5CF6)),
-                        MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready, tint = Pixel.Warning),
+                        if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.Green) else null,
+                        if (!store.sees(Feature.GUARDIANS)) null else MenuEntry("GUARDIANS", "master-ball", "Guardians", if (store.guardianSlots == 0) "opens at rank ${TrainerRank.names[4]}" else "${player.guardians.size} of ${store.guardianSlots} slotted", tint = androidx.compose.ui.graphics.Color(0xFF8B5CF6)),
+                        if (!store.sees(Feature.LEGENDARY_QUESTS)) null else MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready, tint = Pixel.Warning),
                     ),
                 ) { key -> section = Section.valueOf(key) }
             }
@@ -134,6 +138,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
         when (current) {
             Section.PARTY -> {
                 if (player.party.isEmpty()) EmptyState("Your party is empty", "Hatch an egg with a focus session, or move a Pokémon here from the PC.", icon = "poke-ball")
+                else if (store.sees(Feature.PERKS)) PartyPerksCard(model)
                 player.party.forEach { p -> PokemonRow(p, p.id == player.buddyId, store.isFavorite(p.id)) { selected = p.id } }
             }
             Section.PC -> {
@@ -539,16 +544,6 @@ private fun CreditLine(credit: String) {
 
 // ----- Guardians -----------------------------------------------------------------------------------------------------
 
-private fun PerkBucket.label() = when (this) {
-    PerkBucket.EGG_LUCK -> "Egg luck"
-    PerkBucket.CANDY_YIELD -> "Candy yield"
-    PerkBucket.SUPER_CANDY_CHANCE -> "Super Candy chance"
-    PerkBucket.ITEM_FINDER -> "Item finder"
-    PerkBucket.SHINY_HUNTER -> "Shiny hunter"
-    PerkBucket.STREAK_KEEPER -> "Streak keeper"
-    PerkBucket.COINS -> "Coins"
-}
-
 /** "+10% Super Candy chance" for a Guardian's signature perk(s). */
 private fun perkText(p: OwnedPokemon): String =
     Guardians.signature(p).entries.joinToString(", ") { (b, v) -> "+${v.toInt()}% ${b.label()}" }
@@ -678,12 +673,14 @@ private fun BagView(model: AppModel) {
     val player = model.data.player
     var open by remember { mutableStateOf<String?>(null) }
     val items = player.inventory.counts.entries.filter { it.value > 0 }.sortedWith(compareBy({ Items.category(it.key)?.ordinal ?: 99 }, { it.key }))
-    TextBox { Text("${player.coins} coins", style = MaterialTheme.typography.titleMedium) }
+    if (store.sees(Feature.COINS)) TextBox { Text("${player.coins} coins", style = MaterialTheme.typography.titleMedium) }
     if (items.isEmpty()) EmptyState("The bag is empty", "Finish tasks and focus sessions to find candies, berries and more.", icon = "seal-bag")
     items.groupBy { Items.category(it.key) }.forEach { (category, group) ->
         SectionLabel(category.bagLabel())
         group.forEach { (id, n) ->
-            val usable = id in Items.vitamins || Items.category(id) == ItemCategory.BERRY
+            val holdable = Items.holdable(id) && store.sees(Feature.HELD_ITEMS)
+            val training = Items.category(id) == ItemCategory.TRAINING || Items.category(id) == ItemCategory.TERA
+            val usable = holdable || ((!training || store.sees(Feature.TRAINING_ITEMS)) && player.party.any { store.canUse(id, it) })
             val toggle = { open = if (open == id) null else id }
             // A usable item says so with its own Use button, so it does not look the same as one that only sits in the bag.
             ListRow(
@@ -693,17 +690,61 @@ private fun BagView(model: AppModel) {
                 trail = {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
                         Text("x$n", style = MaterialTheme.typography.titleMedium)
-                        if (usable) PixelButton(if (open == id) "Close" else "Use", toggle, color = Pixel.InkSoft, compact = true)
+                        if (usable) PixelButton(if (open == id) "Close" else if (holdable) "Give" else "Use", toggle, color = Pixel.InkSoft, compact = true)
                     }
                 },
             ) { Text(Items.name(id), style = MaterialTheme.typography.bodyLarge) }
-            if (open == id) {
-                TextBox {
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("Use on:", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                        player.party.forEach { p ->
-                            PixelButton(p.nickname, { if (store.useItem(id, p.id)) model.effect(Sfx.HEAL); if (!store.data.player.inventory.has(id)) open = null }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+            if (open == id) UseItemBox(model, id, holdable) { open = null }
+        }
+    }
+}
+
+/**
+ * Using one bag item: who gets it, and for a Bottle Cap or Nature Mint which stat or nature. Held items are given to
+ * hold (what the Pokémon held before goes back to the bag).
+ */
+@Composable
+private fun UseItemBox(model: AppModel, id: String, holdable: Boolean, close: () -> Unit) {
+    val store = model.store
+    val party = model.data.player.party
+    var target by remember(id) { mutableStateOf<OwnedPokemon?>(null) }
+    fun done(ok: Boolean) {
+        if (ok) model.effect(Sfx.HEAL)
+        target = null
+        if (!store.data.player.inventory.has(id)) close()
+    }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            val who = target
+            when {
+                who != null && id == Items.BOTTLE_CAP -> {
+                    Text("Which stat should ${who.nickname} max out?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Stat.entries.filter { who.ivs[it] < StatCalculator.MAX_IV }.forEach { st ->
+                            PixelButton(st.label, { done(store.useItem(id, who.id, st)) }, color = Pixel.Blue, compact = true)
                         }
+                    }
+                }
+                who != null && id == Items.NATURE_MINT -> {
+                    Text("Which nature for ${who.nickname}?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Nature.entries.filter { it != who.nature }.forEach { n ->
+                            val detail = if (n.raised == null) "" else " (+${n.raised!!.label} -${n.lowered!!.label})"
+                            PixelButton(n.name.lowercase().replaceFirstChar { it.uppercase() } + detail, { done(store.useItem(id, who.id, n)) }, color = Pixel.Blue, compact = true)
+                        }
+                    }
+                }
+                else -> {
+                    Text(if (holdable) "Give to hold:" else "Use on:", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    party.filter { holdable || store.canUse(id, it) }.forEach { p ->
+                        val label = if (holdable && p.heldItem != null) "${p.nickname} (holds ${Items.name(p.heldItem!!)})" else p.nickname
+                        PixelButton(label, {
+                            when {
+                                holdable -> done(store.holdItem(p.id, id))
+                                id == Items.BOTTLE_CAP || id == Items.NATURE_MINT -> target = p
+                                else -> done(store.useItem(id, p.id))
+                            }
+                        }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
                     }
                 }
             }
@@ -773,12 +814,12 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                         Text("Nature: ${p.nature.name.lowercase().replaceFirstChar { it.uppercase() }}", style = MaterialTheme.typography.bodyLarge)
                         Text("Ability: ${p.ability}", style = MaterialTheme.typography.bodyLarge)
                         p.gender?.let { Text("Gender: ${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }}", style = MaterialTheme.typography.bodyLarge) }
-                        Text("Judge: ${judge(p.ivs.values.sum())}", style = MaterialTheme.typography.bodyLarge)
+                        if (store.sees(Feature.STATS_DETAIL)) Text("Judge: ${judge(p.ivs.values.sum())}", style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             }
 
-            TextBox {
+            if (store.sees(Feature.STATS_DETAIL)) TextBox {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     val values = p.stats.values
                     statNames.forEachIndexed { i, label ->
@@ -832,7 +873,9 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                 }
             }
 
-            val options = store.evolutionOptions(p.id)
+            if (!isGuardian && store.sees(Feature.HELD_ITEMS)) PokemonPerksBox(model, p)
+
+            val options = if (store.sees(Feature.EVOLUTION)) store.evolutionOptions(p.id) else emptyList()
             if (options.isNotEmpty()) {
                 TextBox {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
