@@ -97,6 +97,10 @@ data class AchievementEvent(
     /** Id for a Task Egg if this achievement fills the Egg meter. */
     val newPokemonId: String,
     val nowMillis: Long,
+    /** The task was the one "Pick for me" chose. */
+    val picked: Boolean = false,
+    /** Paid work that already warmed the buddy today; past [RewardEngine.TASK_FRIENDSHIP_DAILY_CAP] it adds no friendship. */
+    val friendshipTasksToday: Int = 0,
 )
 
 /** What a Care moment was (docs/ecosystem.md, section 6). Mood, notes and reflections are never events: they earn nothing. */
@@ -174,6 +178,12 @@ object RewardEngine {
     const val ON_TIME_BONUS = 1.10
     const val FOCUSED_BONUS = 1.10
 
+    /** Taking the task "Pick for me" chose: candies × this. *(tune)* */
+    const val PICKED_BONUS = 1.10
+
+    /** Finished work raises the buddy's friendship this many times a day at most. *(tune)* */
+    const val TASK_FRIENDSHIP_DAILY_CAP = 10
+
     /** Care pays bond, berries and a small share of trainer rank; never candies or eggs. *(tune)* */
     const val CARE_POINTS = 1
     const val RHYTHM_POINTS = 5
@@ -234,6 +244,7 @@ object RewardEngine {
         var multiplier = perks.multiplier(PerkBucket.CANDY_YIELD)
         if (e.onTime) multiplier *= ON_TIME_BONUS
         if (e.focusedOnIt) multiplier *= FOCUSED_BONUS
+        if (e.picked) multiplier *= PICKED_BONUS
         var overflow = 0
         for (roll in CandyRewards.rates(tier).roll(rng, perks[PerkBucket.SUPER_CANDY_CHANCE].roundToInt())) {
             val amount = scaled(roll.amount, multiplier)
@@ -260,7 +271,8 @@ object RewardEngine {
             rewards += Reward.ItemDrop(drop, 1)
         }
 
-        var pokemon = state.pokemon.map { p -> if (p.id == buddy?.id) p.gainFriendship(FriendshipRules.Source.TASK) else p }
+        val warms = e.friendshipTasksToday < TASK_FRIENDSHIP_DAILY_CAP
+        var pokemon = state.pokemon.map { p -> if (warms && p.id == buddy?.id) p.gainFriendship(FriendshipRules.Source.TASK) else p }
 
         // Egg meter
         var meter = state.eggMeter + tier

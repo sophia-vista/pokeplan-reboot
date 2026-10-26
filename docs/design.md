@@ -67,8 +67,8 @@ Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy
 The app never mentions ADHD; it just removes friction and shame.
 
 - **Low friction to start:** one-tap capture into the Inbox (widget, share sheet, quick-add), a **"Just 5 minutes"** button on any task that starts a minimum-length focus session on it, short sessions always welcome.
-- **Pick for me:** a button on Today that picks a random task from the list (a small bonus for taking it *(tune)*), for when choosing is the hard part.
-- **Time awareness:** after finishing a task you focused on, show **estimate vs actual** time, so over time guesses calibrate.
+- **Pick for me:** a button on Home's Next up card that picks a random task from today's list; finishing that task pays candies × 1.10 *(tune)*, for when choosing is the hard part *(0.31.0)*.
+- **Time awareness:** a task you focused on shows **estimate vs actual** time in its line ("focused 35 of 30 min"), and Growth says how your estimates run once 3 tasks have both *(0.31.0)*.
 - **Gradual reveal:** day one is tasks, focus, the buddy and the collection only. Other systems appear as the trainer rank rises, and the early ranks come within days (`Feature` in `TrainerRank.kt`; a "Rank up" card on Home lists what each rank opened, once). Only features that exist are listed *(0.28.0)*:
 
 | Rank | Typical day | Appears |
@@ -283,8 +283,8 @@ Studied: Forest and Tiimo (focus and planning), Finch and Pokémon Sleep (self-c
 
 - **Day-load meter and "This evening".** Today shows planned minutes (estimated durations of today's tasks; tasks without an estimate count as 30 minutes *(tune)*) against free time (waking hours default 08:00 to 22:00, minus imported events). It is a calm bar; going over shows a gentle "That's a lot, move something?" and never a red alarm. Tasks planned for 18:00 or later, or flagged evening, sit under a separate **This evening** header.
 - **Icon timeline.** The day view shows colour-coded blocks with an icon per task (defaults from the category, changeable). Focus sessions of 15 minutes or more give a quiet **halfway notification** (on by default), and always an end alert, to ease transitions. Both come from the app itself and never count as leaving it (they are plain notifications, never a full-screen intent), and both are cancelled if the session fails or is given up. *(shipped, Android; each can be switched off in Settings)*
-- **Daily mini-quests.** Three one-minute actions a day from a pool of about 30 system-defined ones (drink water, stand up and stretch, tidy for 2 minutes, text a friend, "open the task you've been avoiding", which starts a Just 5 minutes on your oldest unfinished task). Each is a berry *(tune)*, completing all three adds a small bonus *(tune)*. Honour system: tap when done. One re-roll a day. No streak on mini-quests. Appears at rank step 1.
-- **Rest days.** The player marks a day or a range as rest (sick, holiday, burnout), up to 14 days a month *(tune)*. The streak pauses without using up the free missed day, habits skip, reminders are silenced, and the welcome-back gift still applies. No penalty and no reward.
+- **Daily mini-quests.** Three one-minute actions a day from a pool of about 30 system-defined ones (drink water, stand up and stretch, tidy for 2 minutes, text a friend, "open the task you've been avoiding", which starts a Just 5 minutes on your oldest unfinished task). Each is a berry *(tune)*, completing all three adds a small bonus *(tune)*. Honour system: tap when done. One re-roll a day. No streak on mini-quests. Appears at rank step 1. *(0.31.0: on Home; the avoided-task quest starts 5 minutes of focus on the oldest open task.)*
+- **Rest days.** The player marks a day or a range as rest (sick, holiday, burnout), up to 14 days a month *(tune)*. The streak pauses without using up the free missed day, habits skip, reminders are silenced, and the welcome-back gift still applies. No penalty and no reward. *(0.31.0: "Rest today" on Home's progress card, one day at a time.)*
 - **Calm break after sessions.** After a completed session of 25 minutes or more, an optional 1 to 2 minute breathing moment with the buddy resting beside you, over a short original ambient loop. Skippable. Built as Care's calm break (`care-core`): friendship and a berry, up to 3 a day *(tune)*; see docs/economy.md.
 - **Sleep and steps tie-in (after v1).** On Android, with permission, Health Connect sleep and step data can complete Health habits and goals automatically (for example a 7 hour sleep habit). Off by default, never required, no extra rewards beyond the habit's normal ones; only the result ("habit done") leaves the device.
 - **Lures.** A type-specific Lure item (crafted from berries or bought) used before a session makes species of that type 3 times as likely in that egg's pool *(tune)*. It does not touch rarity or shiny odds. The lure is only used up if the egg hatches; a failed session refunds it. Rank step 2.
@@ -391,7 +391,7 @@ The cloud save is Plan's own data (`plan.saves`, without the game state). Every 
 
 ## Defaults (proposal, change if you disagree)
 
-- Streak day rolls over at 4am local time.
+- Streak day rolls over at 4am local time (`Streaks.streakDay`, 0.31.0).
 - A recurring task pays at most once per day, and recurrence is never more frequent than daily.
 - Linking a guest to an account that already has data asks which to keep; no merging.
 - Completing a task from the widget uses the same 10 second hold; the app shows a notification with Undo.

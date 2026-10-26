@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.31.0
+
+- Pick for me on Home's Next up card: it picks one of today's tasks for you, and finishing that one pays 10% more candies.
+- Daily mini-quests on Home (from Apprentice): three small things a day, like a glass of water or a stretch. A berry each, one more for all three, and one reroll. "Open the task you've been avoiding" starts 5 minutes of focus on your oldest task.
+- Just 5 minutes on the Focus screen, for when starting is the hard part.
+- Tasks you focused on show how long they took against your estimate, and Growth tells you how your estimates run.
+- Rest today: mark a rest day from Home's progress card; your streak waits for you.
+- Welcome back: after a week or more away, a gift of Rare Candies and berries, and no scolding.
+- The streak day now ends at 4am, so a late night still counts for the day before. Finished work warms your buddy's friendship up to 10 times a day. Reward rules version 6.
+
 ## 0.30.0
 
 - Notifications on Android that the design promised. Focus sessions of 15 minutes or more send a quiet "halfway there" note, and every session sends a "time is up" note; neither counts as leaving the app, and both are cancelled if the session fails or is given up. In the evening (20:00 by default) a gentle streak reminder appears if nothing has counted yet today and you have a streak going. On Sunday evening a weekly recap lists tasks finished, focus time and your top category. A task reminder you do not answer comes back up to 3 times, 10 minutes apart, then stops, and reminders now offer a 10 minute snooze (Done, 10 min and 1 hour: Android shows three buttons, so "Tomorrow" left the notification). Each one can be switched off under Settings, Notifications and week.

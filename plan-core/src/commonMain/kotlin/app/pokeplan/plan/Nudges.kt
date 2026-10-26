@@ -5,7 +5,7 @@ import kotlin.random.Random
 
 /** "Pick for me": a random task from today's list, for when choosing is the hard part. */
 object PickForMe {
-    /** Taking the pick earns a small bonus on the task's candies. *(tune)* */
+    /** Taking the pick earns a small bonus on the task's candies (the engine's `RewardEngine.PICKED_BONUS`). *(tune)* */
     const val BONUS_MULTIPLIER = 1.10
 
     data class Pick(val task: Task, val bonusMultiplier: Double)

@@ -15,6 +15,12 @@ object Streaks {
     /** Rest days are capped per month so they stay a pause, not a way to hold a streak forever. *(tune)* */
     const val MAX_REST_DAYS_PER_MONTH = 14
 
+    /** The streak day rolls over at this hour: work done at 1am still counts for the day before. */
+    const val ROLLOVER_HOUR = 4
+
+    /** The streak day [at] falls on (before [ROLLOVER_HOUR] it is still the previous day). */
+    fun streakDay(at: kotlinx.datetime.LocalDateTime): LocalDate = if (at.hour < ROLLOVER_HOUR) at.date.plusDays(-1) else at.date
+
     /** Days away after which the welcome-back gift is offered. */
     const val WELCOME_BACK_DAYS = 7
 

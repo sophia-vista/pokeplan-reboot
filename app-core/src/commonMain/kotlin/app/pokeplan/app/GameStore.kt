@@ -46,6 +46,9 @@ import app.pokeplan.plan.Habit
 import app.pokeplan.plan.EventRepeat
 import app.pokeplan.plan.PlanEvent
 import app.pokeplan.plan.Milestone
+import app.pokeplan.plan.MiniQuest
+import app.pokeplan.plan.MiniQuests
+import app.pokeplan.plan.PickForMe
 import app.pokeplan.plan.MilestoneResult
 import app.pokeplan.plan.Reviews
 import app.pokeplan.plan.HabitTarget
@@ -275,15 +278,22 @@ class GameStore(
 
     fun markRewardsSeen() = update { d -> d.copy(rewardLog = d.rewardLog.map { it.copy(seen = true) }) }
 
-    private fun achieve(d: AppData, tier: Int, source: String, onTime: Boolean = false, focusedOnIt: Boolean = false): AppData {
-        val firstOfDay = today !in d.activeDays
+    private fun achieve(d: AppData, tier: Int, source: String, onTime: Boolean = false, focusedOnIt: Boolean = false, picked: Boolean = false): AppData {
+        val firstOfDay = streakDay !in d.activeDays
+        val warmKey = "warm-$streakDay"
+        val warmed = d.counters[warmKey] ?: 0
         val event = AchievementEvent(
             tier = tier, region = d.settings.region, hourOfDay = now.hour, firstOfDay = firstOfDay, onTime = onTime,
-            focusedOnIt = focusedOnIt, newPokemonId = newId(), nowMillis = nowMillis,
+            focusedOnIt = focusedOnIt, picked = picked, friendshipTasksToday = warmed, newPokemonId = newId(), nowMillis = nowMillis,
         )
         val outcome = RewardEngine.achievement(d.player, event, rng)
-        return log(source, outcome.rewards, d.copy(player = outcome.state, activeDays = d.activeDays + today))
+        // Only today's count of friendship-warming work is kept.
+        val counters = d.counters.filterKeys { !it.startsWith("warm-") } + (warmKey to warmed + 1)
+        return log(source, outcome.rewards, d.copy(player = outcome.state, activeDays = d.activeDays + streakDay, counters = counters))
     }
+
+    /** The day work counts for in streaks: it rolls over at 4am, so a late night still counts for the day before. */
+    val streakDay: LocalDate get() = Streaks.streakDay(now)
 
     /**
      * Pays a Care moment into the shared world, at most [CARE_DAILY_CAP] of each kind a day whatever the Care module asks
@@ -639,8 +649,9 @@ class GameStore(
         update { d ->
             var next = d.copy(pending = d.pending - due.toSet())
             for (p in due) {
-                if (p.pays) next = achieve(next, p.tier, "Task: ${p.done.title}", p.onTime, p.focusedOnIt)
-                else next = next.copy(activeDays = next.activeDays)
+                val picked = p.done.id == next.pickedTaskId
+                if (p.pays) next = achieve(next, p.tier, "Task: ${p.done.title}", p.onTime, p.focusedOnIt, picked)
+                if (picked) next = next.copy(pickedTaskId = null)
             }
             next
         }
@@ -690,7 +701,7 @@ class GameStore(
                 if (result.pays) add(Items.SUPER_CANDY to GoalRules.SUPER_CANDIES_PER_MILESTONE)
                 result.bonusItem?.let { add(it to 1) }
             }
-            if (result.pays) next = next.copy(counters = next.counters + (key to ((next.counters[key] ?: 0) + 1)), activeDays = next.activeDays + today)
+            if (result.pays) next = next.copy(counters = next.counters + (key to ((next.counters[key] ?: 0) + 1)), activeDays = next.activeDays + streakDay)
             if (gifts.isNotEmpty()) {
                 var bag = next.player.inventory
                 var coins = next.player.coins
@@ -731,6 +742,82 @@ class GameStore(
     }
 
     /** Marks or unmarks a rest day; a rest day does not break the streak. Returns false if too many rest days are set. */
+    // --- nudges: Pick for me, mini-quests, welcome back ---------------------------------------------------------------
+
+    /**
+     * "Pick for me": chooses one of today's open tasks at random (another one than the current pick when there is a choice)
+     * and remembers it, so finishing it pays [RewardEngine.PICKED_BONUS] on its candies. Returns null when nothing is open.
+     */
+    fun pickForMe(): Task? {
+        val open = todayTasks().filter { it.isOpen && it.id !in data.pending.map { p -> p.original.id } }
+        val pick = PickForMe.choose(open.filter { it.id != data.pickedTaskId }.ifEmpty { open }, rng)?.task ?: return null
+        update { it.copy(pickedTaskId = pick.id) }
+        return pick
+    }
+
+    /** Today's three mini-quests (the same for everyone on a date, until rerolled). */
+    fun miniQuests(): List<MiniQuest> = MiniQuests.forDay(today, rerolled = "mq-reroll-$today" in data.counters)
+
+    fun miniQuestDone(id: String): Boolean = "mq-$today-$id" in data.counters
+
+    /** One reroll a day, before any of the day's quests is done. */
+    fun canRerollMiniQuests(): Boolean = "mq-reroll-$today" !in data.counters && miniQuests().none { miniQuestDone(it.id) }
+
+    fun rerollMiniQuests() {
+        if (!canRerollMiniQuests()) return
+        update { d -> d.copy(counters = d.counters.filterKeys { !it.startsWith("mq-") } + ("mq-reroll-$today" to 1)) }
+    }
+
+    /**
+     * Ticks off one of today's mini-quests (honour system): a berry, and [MiniQuests.ALL_THREE_BONUS_BERRIES] more for the
+     * third. No streak and no active day: they are small kindnesses, not work. Returns false if it is not today's or done.
+     */
+    fun completeMiniQuest(id: String): Boolean {
+        val quests = miniQuests()
+        if (quests.none { it.id == id } || miniQuestDone(id)) return false
+        val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
+        val allDone = quests.all { it.id == id || miniQuestDone(it.id) }
+        val berries = 1 + if (allDone) MiniQuests.ALL_THREE_BONUS_BERRIES else 0
+        update { d ->
+            // Only today's mini-quest marks are kept.
+            val counters = d.counters.filterKeys { !it.startsWith("mq-") || it.contains("-$today") } + ("mq-$today-$id" to 1)
+            val (bag, overflow) = d.player.inventory.addCapped(berry, berries)
+            log("Mini-quest", listOf(Reward.ItemDrop(berry, berries)), d.copy(
+                counters = counters, player = d.player.copy(inventory = bag, coins = d.player.coins + overflow),
+            ))
+        }
+        return true
+    }
+
+    /** The oldest open task: what "open the task you've been avoiding" starts 5 minutes of focus on. */
+    fun oldestOpenTask(): Task? = data.tasks.filter { it.isOpen && it.seriesId == null }.minByOrNull { it.createdAtMillis }
+
+    private val lastActive: LocalDate? get() = data.activeDays.maxOrNull()
+
+    /** True after [Streaks.WELCOME_BACK_DAYS] or more days away, until the gift is taken (once per absence). */
+    fun welcomeBackDue(): Boolean {
+        val last = lastActive ?: return false
+        return Streaks.welcomeBack(last, streakDay) && "welcome-$last" !in data.counters
+    }
+
+    /** Takes the welcome-back gift: [WELCOME_BACK_RARE_CANDIES] Rare Candies and [WELCOME_BACK_BERRIES] berries, no scolding. */
+    fun claimWelcomeBack(): List<Reward> {
+        if (!welcomeBackDue()) return emptyList()
+        val last = lastActive!!
+        val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
+        val rewards = listOf(Reward.ItemDrop(Items.RARE_CANDY, WELCOME_BACK_RARE_CANDIES), Reward.ItemDrop(berry, WELCOME_BACK_BERRIES))
+        update { d ->
+            var bag = d.player.inventory
+            var coins = d.player.coins
+            listOf(Items.RARE_CANDY to WELCOME_BACK_RARE_CANDIES, berry to WELCOME_BACK_BERRIES).forEach { (item, n) ->
+                bag.addCapped(item, n).let { (b, over) -> bag = b; coins += over }
+            }
+            val counters = d.counters.filterKeys { !it.startsWith("welcome-") } + ("welcome-$last" to 1)
+            log("Welcome back", rewards, d.copy(counters = counters, player = d.player.copy(inventory = bag, coins = coins)))
+        }
+        return rewards
+    }
+
     fun toggleRestDay(date: LocalDate): Boolean {
         val days = data.restDays
         if (date in days) {
@@ -793,7 +880,7 @@ class GameStore(
 
     // --- streak -------------------------------------------------------------------------------------------------------
 
-    val streak: Streaks.Result get() = Streaks.daily(data.activeDays, data.restDays, today, perks.extraForgivenDays, firstDayOfWeek)
+    val streak: Streaks.Result get() = Streaks.daily(data.activeDays, data.restDays, streakDay, perks.extraForgivenDays, firstDayOfWeek)
 
     val firstDayOfWeek: DayOfWeek get() = if (data.settings.weekStartsOnMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY
 
@@ -852,7 +939,7 @@ class GameStore(
                 update { d ->
                     log("Focus: $minutes min", outcome.rewards, d.copy(
                         eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
-                        player = outcome.state.copy(buddyId = d.player.buddyId), focus = null, activeDays = d.activeDays + today, lastFocusEnd = FocusEnd(nowMillis, true),
+                        player = outcome.state.copy(buddyId = d.player.buddyId), focus = null, activeDays = d.activeDays + streakDay, lastFocusEnd = FocusEnd(nowMillis, true),
                         focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, true, session.taskId, session.deepFocus),
                         tasks = d.tasks.map { if (it.id == session.taskId) it.copy(focusedMinutes = it.focusedMinutes + minutes) else it },
                     ))
@@ -1164,6 +1251,10 @@ class GameStore(
     fun todayTasks(): List<Task> = TaskViews.today(data.tasks.filter { it.state != TaskState.DELETED }, now)
 
     companion object {
+        /** The welcome-back gift after a week or more away. *(tune)* */
+        const val WELCOME_BACK_RARE_CANDIES = 5
+        const val WELCOME_BACK_BERRIES = 2
+
         const val MAX_SUBTASKS = 5
 
         /** How long a reward counts as "just happened" for the buddy. */
