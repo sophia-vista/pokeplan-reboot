@@ -4,6 +4,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Switch
@@ -170,6 +172,8 @@ fun ListRow(
     onClick: (() -> Unit)? = null,
     /** What tapping the row does, for screen readers ("Show options"). */
     onClickLabel: String? = null,
+    /** False for no ripple highlight when tapped (party rows: the page opening is answer enough). */
+    highlight: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val shape = RoundedCornerShape(Spacing.CardRadius)
@@ -179,7 +183,13 @@ fun ListRow(
             .background(Pixel.Panel, shape)
             .border(BorderStroke(1.dp, Pixel.Border), shape)
             .clip(shape)
-            .let { if (onClick != null) it.clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick) else it }
+            .let {
+                when {
+                    onClick == null -> it
+                    highlight -> it.clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
+                    else -> it.clickable(remember { MutableInteractionSource() }, indication = null, onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
+                }
+            }
             .defaultMinSize(minHeight = 64.dp)
             .padding(horizontal = Spacing.M, vertical = Spacing.M),
         verticalAlignment = Alignment.CenterVertically,
