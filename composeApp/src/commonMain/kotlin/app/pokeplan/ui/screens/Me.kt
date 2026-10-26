@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import app.pokeplan.app.ThemeMode
 import androidx.compose.foundation.layout.Row
+import app.pokeplan.ui.theme.FieldLabel
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -70,6 +73,7 @@ import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 
 private enum class MeSection(val label: String, val icon: String) {
@@ -262,15 +266,35 @@ private fun GoalsSummary(model: AppModel) {
 private fun GoalsView(model: AppModel) {
     val store = model.store
     var title by remember { mutableStateOf("") }
+    var more by remember { mutableStateOf(false) }
+    var category by remember { mutableStateOf(Category.PERSONAL) }
+    var targetDate by remember { mutableStateOf<LocalDate?>(null) }
+    fun add() {
+        if (title.isBlank()) return
+        store.addGoal(title, category, targetDate)
+        title = ""; more = false; category = Category.PERSONAL; targetDate = null
+    }
     TextBox {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
-                title, { title = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                placeholder = { Text("A goal, e.g. Learn guitar", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { if (title.isNotBlank()) { store.addGoal(title); title = "" } }),
-            )
-            PixelButton("Add", { store.addGoal(title); title = "" }, enabled = title.isNotBlank())
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                OutlinedTextField(
+                    title, { title = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
+                    placeholder = { Text("A goal, e.g. Learn guitar", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { add() }),
+                )
+                PixelButton("Add", ::add, enabled = title.isNotBlank())
+            }
+            PixelButton(if (more) "Fewer options" else "Category and target date", { more = !more }, color = Pixel.InkSoft, compact = true)
+            if (more) {
+                FieldLabel("Category")
+                CategoryChips(category) { category = it ?: category }
+                // Optional, and only a date to aim for: nothing happens when it passes.
+                DayPicker(
+                    "Target date", targetDate, store.today, listOf("In a month" to 30, "In 3 months" to 91, "In 6 months" to 182),
+                    noneLabel = "No date", step = 7, onChange = { targetDate = it },
+                )
+            }
         }
     }
     if (model.data.goals.isEmpty()) {
@@ -280,6 +304,13 @@ private fun GoalsView(model: AppModel) {
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(g.title, style = MaterialTheme.typography.titleMedium)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Box(Modifier.size(10.dp).background(categoryColor(g.category), CircleShape))
+                    Text(
+                        listOfNotNull(g.category.label, g.targetDate?.let { "aiming for ${it.short()}" }).joinToString(", "),
+                        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                    )
+                }
                 // The words beside the bar say how close the goal is; the nearer it looks, the likelier it gets finished.
                 val done = g.milestones.count { it.isDone }
                 val progress = "$done of ${g.milestones.size} milestones"
@@ -325,6 +356,22 @@ private fun ReviewView(model: AppModel) {
             Text("${summary.tasksDone} tasks finished", style = MaterialTheme.typography.bodyLarge)
             Text("${summary.focusMinutes} minutes focused in ${summary.sessionsCompleted} sessions", style = MaterialTheme.typography.bodyLarge)
             summary.habits.filter { it.completions > 0 }.forEach { Text("${it.title}: ${it.completions} days", style = MaterialTheme.typography.bodyMedium) }
+            // Where the finished tasks were, biggest first; a bar for each area that had any.
+            val split = summary.categorySplit.filterValues { it > 0 }.entries.sortedByDescending { it.value }
+            if (split.isNotEmpty()) {
+                Text("Where it went", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 6.dp))
+                val most = split.first().value
+                split.forEach { (c, n) ->
+                    Row(
+                        Modifier.semantics(mergeDescendants = true) { contentDescription = "${c.label}: ${plural(n, "task")}" },
+                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(c.label, Modifier.width(84.dp), style = MaterialTheme.typography.bodyMedium)
+                        Box(Modifier.weight(1f)) { PixelBar(n.toFloat() / most, color = categoryColor(c)) }
+                        Text("$n", Modifier.width(32.dp), style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
             if (summary.unfinished.isNotEmpty()) {
                 Text("${summary.unfinished.size} not finished yet", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft)
             }

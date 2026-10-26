@@ -308,6 +308,69 @@ class GameStoreTest {
     }
 
     @Test
+    fun aTaskCanBeMadeToRepeatAndKeepsItsOwnDay() {
+        val (s, _) = started()
+        val task = s.addTask("Water plants", Rank.E)
+        assertTrue(s.makeRepeating(task.id, Repeat.Daily()))
+        // It had no day, so it is now planned for today; the repeat starts after it, with no second task on the same day.
+        val own = s.data.tasks.first { it.id == task.id }
+        assertEquals(s.today, own.planned)
+        assertNull(own.seriesId)
+        assertNotNull(s.seriesOf(own))
+        val later = s.data.tasks.filter { it.seriesId != null }
+        assertTrue(later.size >= 13)
+        assertTrue(later.all { it.planned!! > s.today })
+        assertEquals(1, s.data.tasks.count { it.title == "Water plants" && it.planned == s.today })
+        s.refresh()
+        assertEquals(later.size, s.data.tasks.count { it.seriesId != null })
+    }
+
+    @Test
+    fun aTaskThatRepeatsStillWaitsForItsMinimumAge() {
+        val (s, _) = started()
+        val task = s.addTask("Water plants", Rank.C)
+        s.makeRepeating(task.id, Repeat.Daily())
+        val pending = s.completeTask(task.id)
+        assertFalse(pending.pays)
+    }
+
+    @Test
+    fun changingARepeatMakesTheLaterOnesAgainOnTheNewSchedule() {
+        val (s, _) = started()
+        val task = s.addTask("Bins out", Rank.E)
+        s.makeRepeating(task.id, Repeat.Daily())
+        s.makeRepeating(task.id, Repeat.Weekly())
+        val later = s.data.tasks.filter { it.seriesId != null }
+        assertEquals(2, later.size)
+        assertTrue(later.all { it.planned!!.dayOfWeek == s.today.dayOfWeek })
+    }
+
+    @Test
+    fun stoppingARepeatRemovesTheUntouchedLaterOnesAndKeepsTheTask() {
+        val (s, _) = started()
+        val task = s.addTask("Water plants", Rank.E)
+        s.makeRepeating(task.id, Repeat.Daily())
+        assertTrue(s.data.tasks.any { it.seriesId != null })
+        s.stopRepeating(task.id)
+        assertTrue(s.data.series.isEmpty())
+        assertTrue(s.data.tasks.none { it.seriesId != null })
+        assertNotNull(s.data.tasks.firstOrNull { it.id == task.id })
+        assertNull(s.seriesOf(s.data.tasks.first { it.id == task.id }))
+    }
+
+    @Test
+    fun anInstanceThatWasWorkedOnIsKeptWhenARepeatStops() {
+        val (s, _) = started()
+        val task = s.addTask("Water plants", Rank.E)
+        s.makeRepeating(task.id, Repeat.Daily())
+        val tomorrow = s.data.tasks.first { it.seriesId != null }
+        s.addSubtask(tomorrow.id, "Fill the can")
+        s.completeSubtask(tomorrow.id, s.data.tasks.first { it.id == tomorrow.id }.subtasks.single().id)
+        s.stopRepeating(tomorrow.id)
+        assertEquals(listOf(tomorrow.id), s.data.tasks.filter { it.seriesId != null }.map { it.id })
+    }
+
+    @Test
     fun streakCountsActiveDays() {
         val (s, clock) = started()
         s.completeTask(s.data.tasks.single().id)
