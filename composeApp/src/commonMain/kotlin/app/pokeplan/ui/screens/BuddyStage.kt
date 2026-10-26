@@ -122,7 +122,8 @@ fun BuddyStage(
     val bob = if (calm || resting) 0f else -3f * drift
 
     val shape = RoundedCornerShape(Spacing.CardRadius)
-    Box(modifier.fillMaxWidth().height(216.dp).clip(shape).border(1.dp, Pixel.Border, shape)) {
+    // Tall enough for a whole hop: its frames hold the jump and draw at the idle scale, about 200 dp high at the peak.
+    Box(modifier.fillMaxWidth().height(248.dp).clip(shape).border(1.dp, Pixel.Border, shape)) {
         SceneImage(scene, Modifier.matchParentSize(), darkness)
         // A small shadow made of a few flat rows, so it matches the pixels of the sprite.
         Canvas(Modifier.align(Alignment.BottomCenter).padding(bottom = 40.dp).size(72.dp, 12.dp)) {
