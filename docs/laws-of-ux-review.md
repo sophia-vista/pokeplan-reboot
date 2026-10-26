@@ -1,9 +1,9 @@
-# Laws of UX review (0.16.0)
+# Laws of UX review (0.17.0)
 
 Every screen of the Compose app (`composeApp/`) checked against the 30 laws on [lawsofux.com](https://lawsofux.com/),
 read on 26 October 2026. Each law is filtered through the project's own rules first: `CLAUDE.md`, `docs/design.md` (No
 shame, the buddy never chats, real assets only) and the `design-references` skill win where they disagree. **Fixed**
-items shipped in 0.16.0; **Kept** means the screen already follows the law; **Later** is a finding left for another
+items shipped in 0.17.0; **Kept** means the screen already follows the law; **Later** is a finding left for another
 change, with the reason.
 
 ## What changed, by law

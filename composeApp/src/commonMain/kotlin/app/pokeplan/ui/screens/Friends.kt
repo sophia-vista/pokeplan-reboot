@@ -57,6 +57,8 @@ fun FriendsView(model: AppModel) {
         if (session == null) { message = "Please sign in again."; loading = false; return }
         (social.myFriendCode(session) as? CloudResult.Ok)?.let { code = it.value }
         when (val r = social.friends(session)) { is CloudResult.Ok -> friends = r.value; is CloudResult.Failure -> message = r.message }
+        // A friend's buddy counts as seen in the Pokédex.
+        model.store.markSeen(friends.filter { it.accepted }.mapNotNull { f -> f.buddyForm?.let { Dex.form(it)?.speciesId } })
         (social.leaderboard(session) as? CloudResult.Ok)?.let { board = it.value }
         (social.gifts(session) as? CloudResult.Ok)?.let { gifts = it.value }
         loading = false

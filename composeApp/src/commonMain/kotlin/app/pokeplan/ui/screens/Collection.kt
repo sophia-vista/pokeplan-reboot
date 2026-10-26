@@ -2,6 +2,8 @@ package app.pokeplan.ui.screens
 
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -31,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
+import app.pokeplan.app.DexState
 import app.pokeplan.app.PcSort
 import app.pokeplan.app.PcView
 import app.pokeplan.app.quest.Quest
@@ -225,7 +229,9 @@ private fun PokedexView(model: AppModel) {
         if (national) Dex.species.filter { it.id in generations[generation].second }.map { it.id to it }
         else Dex.regionDex(region).mapIndexed { i, s -> (i + 1) to s }
     }
-    val caught = rows.count { (_, s) -> s.id in player.caught }
+    val states = rows.associate { (_, s) -> s.id to DexState.of(model.data, s.id) }
+    val caught = states.values.count { it.caught }
+    val seen = states.values.count { it == DexState.SEEN }
     val shiny = rows.count { (_, sp) -> sp.id in model.data.shinySpecies }
 
     FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -239,6 +245,7 @@ private fun PokedexView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text("$title: $caught of ${rows.size} caught", style = MaterialTheme.typography.titleMedium)
+            if (seen > 0) Text("$seen more seen on a friend's buddy or in a quest", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Text("✨ $shiny shiny found", style = MaterialTheme.typography.bodyMedium, color = if (shiny > 0) Pixel.Warning else Pixel.InkSoft)
         }
     }
@@ -253,28 +260,49 @@ private fun PokedexView(model: AppModel) {
                 else -> listOfNotNull(sprite?.let { "Sprite by $it" }, portrait?.let { "portrait by $it" }).joinToString(", ").ifEmpty { null }?.replaceFirstChar { it.uppercase() }
             }
         }
+        val state = DexState.of(model.data, id)
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("#$number  ${Dex.species(id).name}", style = MaterialTheme.typography.titleMedium)
-                Text(Dex.entry(id), style = MaterialTheme.typography.bodyLarge)
-                credit?.let { CreditLine(it) }
+                when (state) {
+                    DexState.OWNED -> {}
+                    DexState.CAUGHT -> Text("Caught before; none in your party or PC now.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    else -> Text("Seen, not caught yet. Its entry opens when one is yours.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                }
+                if (state.caught) Text(Dex.entry(id), style = MaterialTheme.typography.bodyLarge)
+                if (state.caught) credit?.let { CreditLine(it) }
             }
         }
     }
     FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         rows.forEach { (number, s) ->
-            val have = s.id in player.caught
+            val state = states.getValue(s.id)
+            // A seen species is named; one not found yet stays a mystery, so its name would give it away.
+            val name = if (state == DexState.UNKNOWN) "Unknown" else s.name
             Column(
-                Modifier.size(width = 76.dp, height = 88.dp).clip(RoundedCornerShape(12.dp)).background(Pixel.Panel)
-                    .clickable(enabled = have) { shown = number to s.id },
+                Modifier.size(width = 76.dp, height = 104.dp).clip(RoundedCornerShape(12.dp)).background(Pixel.Panel)
+                    .clickable(enabled = state != DexState.UNKNOWN, onClickLabel = "Open entry", role = Role.Button) { shown = number to s.id }
+                    .semantics(mergeDescendants = true) { contentDescription = "Number $number, $name, ${state.label}" },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                // Species you do not have yet show as a grey shape: the real sprite, tinted.
-                Sprite(Dex.defaultForm(s.id).id, false, if (have) s.name else "Not caught yet", size = 64.dp, silhouette = if (have) null else Pixel.Shade)
+                Box {
+                    // Species not caught yet show as a grey shape: the real sprite, tinted.
+                    Sprite(Dex.defaultForm(s.id).id, false, name, size = 64.dp, silhouette = if (state.caught) null else Pixel.Shade)
+                    if (state == DexState.OWNED) ItemIcon("poke-ball", Modifier.align(Alignment.TopEnd), size = 20.dp, description = null)
+                }
                 Text("#$number" + if (s.id in model.data.shinySpecies) " ✨" else "", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+                // Words, not just the sprite's colour, tell the states apart.
+                Text(
+                    if (state == DexState.UNKNOWN) "???" else state.label, style = MaterialTheme.typography.labelMedium,
+                    color = if (state.caught) Pixel.Ink else Pixel.InkSoft, maxLines = 1,
+                )
             }
         }
     }
+    Text(
+        "A Poké Ball marks the Pokémon in your party or PC now. Seen ones are named; tap one to see where it stands.",
+        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+    )
     Text(
         "About 1 in 128 eggs is shiny. Longer sessions and a Shiny hunter buddy raise the odds.",
         style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
@@ -364,6 +392,9 @@ private fun QuestsView(model: AppModel) {
     val available = store.availableQuests
     val done = data.quests.count { it.value.completedAtMillis != null }
     val locked = Quests.all.filter { it.id !in data.quests && Quests.lockedReason(it, data) != null }.sortedBy { it.unlockRank }.take(3)
+    // A quest shows its Pokémon, so the Pokédex counts it as seen (locked ones stay grey shapes).
+    val questSpecies = (active + available.take(12)).map { it.speciesId }
+    LaunchedEffect(questSpecies) { store.markSeen(questSpecies) }
 
     TextBox {
         Text(

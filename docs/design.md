@@ -309,7 +309,7 @@ Beyond task reminders: a **streak-at-risk reminder** in the evening if nothing h
 - Crisp scaling: nearest-neighbour, integer scale, no blur.
 - Fonts: pixel font for headings only; body text stays a readable font.
 - Sound: cries, short jingles; a mute toggle.
-- Interface rules from the Laws of UX review (0.16.0, `docs/laws-of-ux-review.md`): Back sits at the start of every header; on/off settings are switches whose whole row is the target; a choice is a radio row, never an action button; each screen has one solid primary action and the risky ones (Give up, Transfer, Remove) stay quiet until confirmed; Undo lives in one bar floating above the tabs; Focus keeps Start pinned at the bottom; text fields submit from the keyboard's Done key.
+- Interface rules from the Laws of UX review (0.17.0, `docs/laws-of-ux-review.md`): Back sits at the start of every header; on/off settings are switches whose whole row is the target; a choice is a radio row, never an action button; each screen has one solid primary action and the risky ones (Give up, Transfer, Remove) stay quiet until confirmed; Undo lives in one bar floating above the tabs; Focus keeps Start pinned at the bottom; text fields submit from the keyboard's Done key.
 - Accessibility: content descriptions on all images, text scaling, colour-blind safe type chips, a reduce-motion option, a dyslexia-friendly font option, and every ceremony skippable.
 
 ## Screens and flows (proposal, to confirm)
@@ -419,7 +419,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 - **Contests (come with the online release):** five condition stats (Cool, Beautiful, Cute, Smart, Tough), 0 to 255 each, built from the species' base stats, training and nature, then raised by feeding berries (a berry liked by the nature gives double, a disliked one half; up to 5 a day). Each week one condition is judged; friends' buddies are ranked by it, plus ribbon bonuses. Prizes are coins and ribbons. Numbers *(tune)*.
 - **Abilities and perks:** about 40 curated abilities have a perk; every other ability falls back to the type perk only.
 - **Endgame:** a level 100 Pokémon takes no more candies. Candies still level other Pokémon. Coin sinks: Tera Shards, Mega Stones, form items, Secret Base decor. Candy holdings cap at 9,999; excess converts to coins at 1:1 *(tune)*. Contests, ribbons and a hall of fame give maxed Pokémon a purpose.
-- **Pokédex text:** the latest English entry from the public dataset. **Seen** = appeared on a friend's profile or in a quest; **caught** = ever owned; otherwise a silhouette.
+- **Pokédex text:** the latest English entry from the public dataset. **Seen** = appeared on a friend's buddy or on an open quest (`AppData.seenSpecies`, client-side, kept for good); **caught** = ever owned; **owned** = in the party or PC now (`DexState`). Caught species show their sprite and entry, with a Poké Ball on the owned ones; seen ones stay a silhouette but are named when tapped; the rest are a silhouette marked ???. Every tile names its state in words *(0.16.0)*.
 - **PC and bag:** unlimited PC boxes of 30; bag stacks to 999.
 
 ### Platform and operations defaults

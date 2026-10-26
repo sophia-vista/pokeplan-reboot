@@ -62,6 +62,8 @@ data class AppData(
     val favorites: Set<String> = emptySet(),
     /** Species the player has ever owned as a shiny, kept even after the shiny is transferred. */
     val shinySpecies: Set<Int> = emptySet(),
+    /** Species seen but maybe never caught: a friend's buddy or a quest's Pokémon. Kept once seen, like caught. */
+    val seenSpecies: Set<Int> = emptySet(),
     /** Rare Candy rewards from subtasks and the like are counted per day here when a cap needs them. */
     val counters: Map<String, Int> = emptyMap(),
     /** Egg tickets for hatching offline; kept on this device only. */
@@ -157,4 +159,27 @@ fun AppData.upcomingReminders(nowMillis: Long, zone: TimeZone): List<DueReminder
     if (!settings.reminders) return emptyList()
     val focusEnd = focus?.takeIf { !it.isFinished }?.let { it.startedAtMillis + it.durationMillis + it.pausedMillis }
     return Reminders.upcoming(tasks, nowMillis, zone, settings.quietHours, restDays, focusEnd)
+}
+
+/** Where a species stands in the Pokédex, from the strongest claim down. */
+enum class DexState(val label: String) {
+    /** In the party or the PC now. */
+    OWNED("Owned"),
+    /** Caught once and since transferred: caught is permanent. */
+    CAUGHT("Caught"),
+    /** Seen on a friend's buddy or in a quest, never caught. */
+    SEEN("Seen"),
+    UNKNOWN("Not found yet");
+
+    /** True when the species has ever been caught, so its entry can be read. */
+    val caught: Boolean get() = this == OWNED || this == CAUGHT
+
+    companion object {
+        fun of(data: AppData, speciesId: Int): DexState = when {
+            data.player.pokemon.any { it.speciesId == speciesId } -> OWNED
+            speciesId in data.player.caught -> CAUGHT
+            speciesId in data.seenSpecies -> SEEN
+            else -> UNKNOWN
+        }
+    }
 }
