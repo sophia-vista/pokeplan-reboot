@@ -57,7 +57,7 @@ tactical RPG with 1000+ levels and 200+ creatures, so the "idle" version would b
 
 | Module | Real-world job | What it owns | What it grows in the world |
 |---|---|---|---|
-| **Plan** (built) | Time and tasks: calendar, tasks, habits, focus, review | `plan.*` | Eggs (focus), Rare Candies and EVs (levels), rank |
+| **Plan** (built) | Time and tasks: calendar, tasks, habits, focus, review | `plan.*` | Eggs (focus), Rare Candies (levels), items, rank |
 | **Care** (next) | Body and mind: self-care routines, calm breaks, mood check-ins; later health summaries | `care.*`, on-device first | Bond (friendship), berries, camp comfort (cosmetic) |
 | **Grow** | Learning: goals, practice, journal, reflection | `grow.*` | Dex discoveries, evolution trials, forms |
 | **Home** | Household: recipes, meal plan, grocery list, closet | `home.*` | Berries or curry (cosmetic); mostly creates Plan tasks |
@@ -168,7 +168,7 @@ the parser matches the real format.
 
 ## 8. Roadmap (revisited)
 
-1. **Validate on a phone** (ongoing): fixes so far are the widget freeze and pet animation (0.3.1, 0.6.1), Rare Candy on every task with a Super Candy bonus (0.4.0), real evolution levels with a Medium Fast style level curve (0.5.0), and Pokédex sprites that keep loading through Next and no grey flash on tapping a Pokémon (0.19.4). From the same round: entries in a scene for their type (0.19.5) and a form dex with shinies (0.20.0).
+1. **Validate on a phone** (ongoing): fixes so far are the widget freeze and pet animation (0.3.1, 0.6.1), Rare Candy on every task with a Super Candy bonus (0.4.0), real evolution levels with a Medium Fast style level curve (0.5.0), and Pokédex sprites that keep loading through Next and no grey flash on tapping a Pokémon (0.19.4). From the same round: entries in a scene for their type (0.19.5) and a form dex with shinies (0.20.0). Gaps found in an audit (October 2026) and closed: party perks shown and all applied, held items, item uses, training plans dropped, a quick-then-slow rank curve with a real feature reveal (0.26.0 to 0.28.0); task categories, notes, deadlines, repeats, search and filters (0.29.0); Android notifications (0.30.0); Pick for me, mini-quests, Just 5 minutes, rest days, welcome back (0.31.0). Still open from it: shop and Lures (coins have no use), Mega Stone and Ability Patch sources, a Legendary Egg hatch, the agenda widget, the mission board, contests, perfect dex and Hall of Fame, date-range filter and custom repeats, the Care screens.
 2. ~~Parked todos~~ (done in 0.2.0).
 3. **Finish Plan.** Done: reminders as notifications with quiet hours, focus and rest days (0.6.0); a time on tasks and snooze until tomorrow (0.7.0); export, delete account, erase device (0.8.0). The day timeline with tap-to-place time-blocking (0.9.0). Egg tickets for offline hatching (0.10.0). PMD SpriteCollab sprites (0.11.0, owner's priority). Calendar events on the day timeline, Google Calendar through the phone's calendars (0.12.0). Dragging and resizing blocks, and a week timeline (0.14.0). PokéPlan's own events on the calendar, never paid (0.15.0). Seen, caught and owned in the Pokédex (0.16.0). Focus rules: a locked screen and calls handled on Android, the rules on screen, focused and paused time apart (0.16.1). Me metrics defined, with 7 / 30 / 90 day ranges and goal progress apart (0.17.0). Accessibility pass: contrast, 48 dp targets, roles and labels (0.17.1). Desktop and web are deprioritised (they keep compiling; no features only for them, see Platforms in design.md). Lists after TickTick, the Inbox being the tasks in no list (0.21.0); a Month view, multi-day bars in the Week and all-day own events in colours (0.22.0); recurring own events, edited as a series and moved or deleted one at a time (0.24.0). **Next:** check the brief's accessibility checklist on a phone (TalkBack, large text; ui-ux-brief.md section 9, the owner's to do on a device); then item 5.
 4. ~~**Platform tidy before a second module**~~ (done in 0.24.1): the cloud save is in `plan.saves`, the reward rules are versioned, and `docs/economy.md` lists every source, sink and cap. To do by the owner: `supabase db push`, then run the Deploy the reward function workflow.
@@ -179,6 +179,8 @@ the parser matches the real format.
 9. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
 
 ### Ideas parked
+
+- **Personality quiz** *(owner, 0.31.0)*: dropped from PokéPlan's onboarding (a starter picker is enough there). It may suit another module, for example Care (a gentle "how are you, really" check that suggests a buddy or a routine) or the standalone dungeon game, where the Mystery Dungeon quiz is at home.
 
 - **More Poketch-style utilities** *(owner's idea, from Diamond and Pearl)*: after the v1 tools below, other candidates are a digital clock and calendar, a counter, a stopwatch and a countdown (tied to Focus), a step or water-intake counter (a Care module hook), a memo pad, a day-care or "buddy check" screen. Each one gets a helper the same way as below.
 
