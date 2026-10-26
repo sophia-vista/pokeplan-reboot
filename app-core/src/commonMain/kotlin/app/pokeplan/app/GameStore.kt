@@ -912,8 +912,6 @@ class GameStore(
         return p
     }
 
-    fun setTrainingPlan(id: String, plan: List<Stat>) = replace(pokemon(id).copy(trainingPlan = plan.distinct().take(2)))
-
     /** Feeds up to [count] Rare Candies. Returns how many were used. */
     fun feedRareCandy(id: String, count: Int = 1): Int {
         var p = pokemon(id)

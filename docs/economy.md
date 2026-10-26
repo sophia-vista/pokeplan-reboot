@@ -1,6 +1,6 @@
 # The economy: sources, sinks and caps
 
-Every reward source, every use and every cap, as the code has them under **rules version 3** (`RewardRules.VERSION` in
+Every reward source, every use and every cap, as the code has them under **rules version 4** (`RewardRules.VERSION` in
 `pokemon-core`). This is principle 6 of `docs/ecosystem.md` ("every reward source, cap and use is written down"). The
 reasons and pacing targets are in `docs/design.md`; the simulated pacing is in `docs/economy-report.md`.
 
@@ -12,7 +12,7 @@ Where the rules live: `RewardEngine`, `TrainerRank`, `CandyRewards` and `Egg` (t
 server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`, `Shiny`), `EvolutionRules` in
 `pokemon-core`; `TaskRules`, `Goal`, `Review`, `Streak`, `FocusSession` in `plan-core`; `CareRules` in `care-core`; `GameStore`, `CareStore` and `Quests` in `app-core`.
 
-**Version history.** 1: everything before Care. 2: the Care events (`RewardEngine.care`) and the friendship sources Routine and Calm break; nothing that version 1 paid changed. 3: trade-evolution items (Metal Coat, King's Rock...) join the drop table; Magic Guard hatches a failed session's egg once a week; the Streak keeper perk forgives a second missed day.
+**Version history.** 1: everything before Care. 2: the Care events (`RewardEngine.care`) and the friendship sources Routine and Calm break; nothing that version 1 paid changed. 3: trade-evolution items (Metal Coat, King's Rock...) join the drop table; Magic Guard hatches a failed session's egg once a week; the Streak keeper perk forgives a second missed day. 4: training plans are gone, so tasks pay no EVs; Synchronize gives +3 Super Candy chance instead of +25% EVs.
 
 ## 1. Sources
 
@@ -21,7 +21,7 @@ server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`,
 | Event | Pays | Constant |
 |---|---|---|
 | **Focus session completed** (5 minutes or more) | One egg, hatched at once (rarity from the length, section 1.3) · coins `minutes / 5` · trainer points `minutes / 5` · 1 random berry · buddy friendship (focus session) · an active day | `COINS_PER_FIVE_MINUTES`, `TrainerRank.pointsForEffort`, `Egg.MIN_MINUTES` |
-| **Task or habit completed** (tier 1 to 5 = rank E to A) | Rare Candies (table below), maybe Super Candies · coins `tier × 2` · trainer points `tier × 2` · an item drop chance `8 + 2 × tier` % · EVs `tier` to the buddy's training plan, `tier / 2` to each other party member · buddy friendship (task) · `tier` points on the Egg meter · an active day | `COINS_PER_TIER`, `pointsForAchievement`, `DROP_BASE_PERCENT`, `DROP_PER_TIER_PERCENT` |
+| **Task or habit completed** (tier 1 to 5 = rank E to A) | Rare Candies (table below), maybe Super Candies · coins `tier × 2` · trainer points `tier × 2` · an item drop chance `8 + 2 × tier` % · buddy friendship (task) · `tier` points on the Egg meter · an active day | `COINS_PER_TIER`, `pointsForAchievement`, `DROP_BASE_PERCENT`, `DROP_PER_TIER_PERCENT` |
 | **Egg meter full** (10 points) | A Task Egg, rolled as a 15 minute session (no lure, no spotlight); the rest carries over | `EGG_METER_SIZE`, `TASK_EGG_MINUTES` |
 | **Subtask done** | 1 Rare Candy, once per subtask, at most 5 paid per task, after the task rank's minimum age | `SUBTASK_RARE_CANDIES`, `MAX_PAID_SUBTASKS` |
 | **Goal milestone done** (24 hours old or more) | 1 Super Candy, at most 3 a day; an active day | `SUPER_CANDIES_PER_MILESTONE`, `MILESTONE_MIN_AGE_MILLIS`, `MAX_MILESTONE_REWARDS_PER_DAY` |
@@ -144,7 +144,6 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Pet friendship | 10 a day | `PET_DAILY_CAP` |
 | Care | 5 routines, 3 calm breaks and 1 rhythm a day (the world checks again: `GameStore.CARE_DAILY_CAP`), at most 8 trainer points a day, plus 5 on a rhythm day | `CareRules`, `CARE_DAILY_CAP` |
 | EVs | 252 a stat, 510 in all | `StatCalculator` |
-| Training plan | 2 stats | `OwnedPokemon` |
 | Party | 6 | `OwnedPokemon.PARTY_SIZE` |
 | Perk bucket | 25; Guardians add up to 15 on top | `BUCKET_CAP`, `Guardians` |
 | Guardian slots | 0, then 1 at rank 4, 2 at rank 6, 3 at rank 9 | `Guardians.slots` |

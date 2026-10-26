@@ -32,7 +32,6 @@ data class OwnedPokemon(
     val heldItem: String? = null,
     val teraType: PokemonType? = null,
     val cosmeticForm: String? = null,
-    val trainingPlan: List<Stat> = emptyList(),
     val personality: Int = 0,
     val inParty: Boolean,
     val caughtAtMillis: Long,
@@ -42,7 +41,6 @@ data class OwnedPokemon(
         require(ivs.values.all { it in 0..StatCalculator.MAX_IV }) { "IVs $ivs" }
         require(evs.values.all { it in 0..StatCalculator.MAX_EV_PER_STAT } && evs.total <= StatCalculator.MAX_EV_TOTAL) { "EVs $evs" }
         require(friendship in 0..FriendshipRules.MAX) { "friendship $friendship" }
-        require(trainingPlan.size <= 2 && trainingPlan.toSet().size == trainingPlan.size) { "training plan $trainingPlan" }
     }
 
     val species: SpeciesInfo get() = Dex.species(speciesId)
@@ -77,26 +75,6 @@ data class OwnedPokemon(
 
     fun gainFriendship(source: FriendshipRules.Source): OwnedPokemon =
         copy(friendship = (friendship + FriendshipRules.amount(source, bondStyle)).coerceAtMost(FriendshipRules.MAX))
-
-    /** Chooses up to two stats to train; finished tasks then add EVs to them. */
-    fun withTrainingPlan(stats: List<Stat>): OwnedPokemon = copy(trainingPlan = stats)
-
-    /**
-     * Adds [points] EVs, split evenly across the training plan (any remainder goes to the first stat), respecting
-     * the 252 per stat and 510 total caps. Without a plan nothing changes.
-     */
-    fun gainEvs(points: Int): OwnedPokemon {
-        if (trainingPlan.isEmpty() || points <= 0) return this
-        var next = evs
-        val share = points / trainingPlan.size
-        val remainder = points % trainingPlan.size
-        for ((index, stat) in trainingPlan.withIndex()) {
-            val want = share + if (index == 0) remainder else 0
-            val room = minOf(StatCalculator.MAX_EV_PER_STAT - next[stat], StatCalculator.MAX_EV_TOTAL - next.total)
-            next = next.with(stat, next[stat] + want.coerceIn(0, maxOf(room, 0)))
-        }
-        return copy(evs = next)
-    }
 
     /** Adds up to [points] EVs to one [stat] (a Vitamin), respecting the caps. */
     fun gainEv(stat: Stat, points: Int): OwnedPokemon {
