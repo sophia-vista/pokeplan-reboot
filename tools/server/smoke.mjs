@@ -51,4 +51,5 @@ check(refused, "a malformed event is refused");
 const golden = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "golden.json"), "utf8"));
 check(api.effort(golden.state, golden.effortEvent, golden.effortSeed) === golden.effortOutcome, "JS effort outcome is identical to the JVM's");
 check(api.achievement(golden.state, golden.achievementEvent, golden.achievementSeed) === golden.achievementOutcome, "JS achievement outcome is identical to the JVM's");
+check(api.rulesVersion() === golden.rulesVersion, `the rules version is ${golden.rulesVersion}, as in the golden file`);
 console.log("all good");

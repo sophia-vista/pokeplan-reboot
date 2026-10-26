@@ -26,7 +26,7 @@ const db: Database = {
   async applyOutcome(a) {
     const { data, error } = await service.schema("platform").rpc("apply_outcome", {
       p_user: a.user, p_expected_version: a.expectedVersion, p_app: a.app, p_source: a.source, p_key: a.key,
-      p_seed: a.seed, p_event: a.event, p_outcome: a.outcome,
+      p_seed: a.seed, p_event: a.event, p_outcome: a.outcome, p_rules_version: a.rulesVersion,
     });
     if (error) throw error;
     return data;
@@ -42,12 +42,14 @@ const db: Database = {
   },
   rankFor,
   async pullSave(user) {
-    const { data, error } = await service.schema("platform").rpc("pull_save", { p_user: user });
+    const { data, error } = await service.schema("plan").rpc("pull_save", { p_user: user });
     if (error) throw error;
     return data;
   },
-  async pushSave(user, expectedVersion, data) {
-    const { data: version, error } = await service.schema("platform").rpc("push_save", { p_user: user, p_expected_version: expectedVersion, p_data: data });
+  async pushSave(user, expectedVersion, data, rulesVersion) {
+    const { data: version, error } = await service.schema("plan").rpc("push_save", {
+      p_user: user, p_expected_version: expectedVersion, p_data: data, p_rules_version: rulesVersion,
+    });
     if (error) throw error;
     return version;
   },
@@ -74,8 +76,8 @@ const json = (body: unknown, status = 200) => Response.json(body, { status, head
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
-  // A plain GET says which version is deployed.
-  if (req.method === "GET") return json({ function: "reward", version: VERSION, commit: COMMIT });
+  // A plain GET says which version, and which reward rules, are deployed.
+  if (req.method === "GET") return json({ function: "reward", version: VERSION, commit: COMMIT, rulesVersion: api.rulesVersion() });
   if (req.method !== "POST") return new Response("POST only", { status: 405, headers: cors });
   try {
     const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer /i, "");

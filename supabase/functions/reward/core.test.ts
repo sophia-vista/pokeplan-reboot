@@ -19,9 +19,10 @@ function fakeDb(overrides: Partial<Database> = {}) {
   let staleOnce = 0;
   let saved: unknown = null;
   let pushError: Error | null = null;
-  const db: Database & { deleted: string[]; ticketCalls: unknown[]; ledger: typeof ledger; setState(s: unknown): void; failStale(n: number): void; failPush(e: Error | null): void; loads: number } = {
+  const db: Database & { rules: number[]; deleted: string[]; ticketCalls: unknown[]; ledger: typeof ledger; setState(s: unknown): void; failStale(n: number): void; failPush(e: Error | null): void; loads: number } = {
     loads: 0,
     ledger,
+    rules: [] as number[],
     setState(s) { state = s; },
     failStale(n) { staleOnce = n; },
     failPush(e) { pushError = e; },
@@ -31,6 +32,7 @@ function fakeDb(overrides: Partial<Database> = {}) {
       if (ledger.has(id)) return { applied: false, version, rewards: ledger.get(id)! };
       if (staleOnce > 0) { staleOnce--; version++; throw Object.assign(new Error("stale"), { code: "40001" }); }
       assert.equal(a.expectedVersion, version);
+      db.rules.push(a.rulesVersion);
       state = (a.outcome as { state: unknown }).state;
       version++;
       ledger.set(id, (a.outcome as { rewards: unknown[] }).rewards);
@@ -40,8 +42,9 @@ function fakeDb(overrides: Partial<Database> = {}) {
     async focusedMinutes(_u, taskId) { return taskId === "focused" ? 25 : 0; },
     rankFor: (p) => thresholds.filter((t) => p >= t).length - 1,
     async pullSave() { return { version, data: saved }; },
-    async pushSave(_u, expected, data) {
+    async pushSave(_u, expected, data, rules) {
       if (pushError) throw pushError;
+      db.rules.push(rules);
       if (expected !== version) throw Object.assign(new Error("stale"), { code: "40001" });
       saved = data;
       return ++version;
@@ -73,6 +76,9 @@ const user = "u1";
   const again = await handleReward(user, { kind: "effort", app: "plan", key: "s1", minutes: 25, region: "HOME" }, engine, db, clock);
   assert.equal(again.applied, false);
   assert.deepEqual(again.rewards, out.rewards);
+  // The ledger row records the rules that made it.
+  assert.ok(engine.rulesVersion() >= 1);
+  assert.deepEqual(db.rules, [engine.rulesVersion()]);
 }
 
 // A task pays its tier from the database; one that pays nothing is not an error.
@@ -151,14 +157,18 @@ const user = "u1";
   const doc = { onboarded: true, player: JSON.parse(engine.emptyState()), tasks: [] };
   assert.deepEqual(await handleSync(user, { kind: "push", expectedVersion: 0, data: doc }, db), { version: 1 });
   assert.deepEqual(await handleSync(user, { kind: "pull" }, db), { version: 1, data: doc });
+  // A client that does not say which rules it ran is recorded as 0.
+  assert.deepEqual(db.rules, [0]);
   const stale = async () => handleSync(user, { kind: "push", expectedVersion: 0, data: doc }, db);
   await assert.rejects(stale(), (e: unknown) => e instanceof RequestError && e.status === 409 && (e.extra as { version: number }).version === 1);
   db.failPush(Object.assign(new Error("trainer points cannot go down"), { code: "P0001" }));
   await assert.rejects(handleSync(user, { kind: "push", expectedVersion: 1, data: doc }, db), (e: unknown) => e instanceof RequestError && e.status === 422);
   db.failPush(null);
-  for (const bad of [{ kind: "push", expectedVersion: 1 }, { kind: "push", expectedVersion: 1, data: {} }, { kind: "push", expectedVersion: -1, data: doc }, { kind: "nope" }]) {
+  for (const bad of [{ kind: "push", expectedVersion: 1 }, { kind: "push", expectedVersion: 1, data: {} }, { kind: "push", expectedVersion: -1, data: doc }, { kind: "push", expectedVersion: 1, data: doc, rulesVersion: -1 }, { kind: "nope" }]) {
     await assert.rejects(handleSync(user, bad as Record<string, unknown>, db), (e: unknown) => e instanceof RequestError && e.status === 400);
   }
+  assert.deepEqual(await handleSync(user, { kind: "push", expectedVersion: 1, data: doc, rulesVersion: 3 }, db), { version: 2 });
+  assert.equal(db.rules.at(-1), 3);
 }
 
 // Egg tickets: well-formed spends go to the database, malformed ones are refused on their own, the stock is asked for.

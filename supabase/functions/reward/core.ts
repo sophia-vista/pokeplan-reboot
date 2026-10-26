@@ -4,6 +4,8 @@
 export interface Engine {
   effort(stateJson: string, eventJson: string, seed: number): string;
   achievement(stateJson: string, eventJson: string, seed: number): string;
+  /** RewardRules.VERSION: recorded on every ledger row the engine's outcomes make. */
+  rulesVersion(): number;
 }
 
 export interface Database {
@@ -12,16 +14,20 @@ export interface Database {
   /** platform.apply_outcome. Throws an error with code "40001" when the version is stale. */
   applyOutcome(args: {
     user: string; expectedVersion: number; app: string; source: string; key: string; seed: number; event: unknown; outcome: unknown;
+    rulesVersion: number;
   }): Promise<{ applied: boolean; version: number; rewards: unknown[] }>;
   /** plan.finish_task: the tier to pay, or null if the task pays nothing. */
   finishTask(user: string, taskId: string): Promise<number | null>;
   /** The task's focused minutes, for the "focused on it" bonus. */
   focusedMinutes(user: string, taskId: string): Promise<number>;
   rankFor(points: number): number;
-  /** platform.pull_save: {version, data} where data is null if nothing was uploaded yet. */
+  /** plan.pull_save: {version, data} where data is null if nothing was uploaded yet. */
   pullSave(user: string): Promise<{ version: number; data: unknown }>;
-  /** platform.push_save: the new version. Throws an error with code "40001" when the version is stale. */
-  pushSave(user: string, expectedVersion: number, data: unknown): Promise<number>;
+  /**
+   * plan.push_save: the new version. `rulesVersion` is the rules the client's engine ran (0 if it did not say). Throws an
+   * error with code "40001" when the version is stale.
+   */
+  pushSave(user: string, expectedVersion: number, data: unknown, rulesVersion: number): Promise<number>;
   /** platform.egg_tickets: records the spent tickets and returns the device's unspent stock topped up to `stock`. */
   eggTickets(user: string, device: string, spent: SpentTicket[], stock: number): Promise<{ tickets: unknown[]; refused: string[] }>;
   /** Deletes the sign-in; every table cascades from it, so nothing of the player is left. */
@@ -147,6 +153,7 @@ export async function handleReward(user: string, body: Body, engine: Engine, db:
     try {
       return await db.applyOutcome({
         user, expectedVersion: version, app, source, key, seed, event, outcome: JSON.parse(outcomeJson),
+        rulesVersion: engine.rulesVersion(),
       });
     } catch (e) {
       // Someone else changed the state in between: load it again and rerun the engine.
@@ -157,8 +164,8 @@ export async function handleReward(user: string, body: Body, engine: Engine, db:
 }
 
 /**
- * The cloud save: {"kind": "pull"} returns {version, data}; {"kind": "push", "expectedVersion": n, "data": {...}} saves the
- * document and returns {version}. A stale version is a 409 carrying the version on the server; a document the rules refuse
+ * The cloud save: {"kind": "pull"} returns {version, data}; {"kind": "push", "expectedVersion": n, "data": {...},
+ * "rulesVersion": n} saves the document and returns {version}. `rulesVersion` (optional) is the client's RewardRules.VERSION. A stale version is a 409 carrying the version on the server; a document the rules refuse
  * (points that went down, a party that is too big) is a 422.
  */
 export async function handleSync(user: string, body: Body, db: Database) {
@@ -167,13 +174,14 @@ export async function handleSync(user: string, body: Body, db: Database) {
   if (kind !== "push") throw new RequestError(400, `unknown kind ${kind}`);
 
   const expected = int(body, "expectedVersion", 0, 2_000_000_000);
+  const rulesVersion = int(body, "rulesVersion", 0, 1_000_000, 0);
   const data = body.data;
   if (typeof data !== "object" || data === null || Array.isArray(data)) throw new RequestError(400, "data must be an object");
   if (typeof (data as { player?: unknown }).player !== "object" || (data as { player?: unknown }).player === null) {
     throw new RequestError(400, "data.player is required");
   }
   try {
-    return { version: await db.pushSave(user, expected, data) };
+    return { version: await db.pushSave(user, expected, data, rulesVersion) };
   } catch (e) {
     const code = (e as { code?: string }).code;
     if (code === "40001") {

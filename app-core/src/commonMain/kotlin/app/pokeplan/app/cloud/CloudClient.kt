@@ -2,6 +2,7 @@ package app.pokeplan.app.cloud
 
 import app.pokeplan.app.EggTicket
 import app.pokeplan.app.SpentTicket
+import app.pokeplan.core.reward.RewardRules
 import io.ktor.client.HttpClient
 import io.ktor.client.request.header
 import io.ktor.client.request.request
@@ -73,7 +74,11 @@ class CloudClient(private val config: CloudConfig, private val http: HttpClient,
     suspend fun push(session: Session, expectedVersion: Int, document: JsonObject): CloudResult<Int> =
         call(
             "/functions/v1/reward",
-            buildJsonObject { put("kind", "push"); put("expectedVersion", expectedVersion); put("data", document) },
+            buildJsonObject {
+                put("kind", "push"); put("expectedVersion", expectedVersion); put("data", document)
+                // The rules this app's engine ran, recorded with the snapshot on the server's ledger.
+                put("rulesVersion", RewardRules.VERSION)
+            },
             session.accessToken,
         ) { it["version"]!!.jsonPrimitive.int }
 
