@@ -230,6 +230,44 @@ class ScreenshotTest {
     @Test
     fun collectionParty() = collection("collection-party", 0)
 
+    @Test
+    fun pokedexEntry() {
+        val store = storeWithTeam()
+        store.grantPokemon(5, "test")
+        val model = AppModel(store)
+        val rows = app.pokeplan.core.dex.Dex.regionDex(app.pokeplan.core.dex.Region.KANTO).mapIndexed { i, s -> (i + 1) to s }
+        render("pokedex-entry", height = 2200) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.DexEntryScreen(model, rows, 5, {}, {}) } }
+        }
+    }
+
+    private fun cutscene(name: String, frames: Int, still: Boolean, scene: (GameStore) -> app.pokeplan.ui.screens.Cutscene) {
+        val store = storeWithTeam(hatched = 1)
+        store.changeSettings { it.copy(reduceMotion = still) }
+        store.markRewardsSeen()
+        val model = AppModel(store)
+        model.cutscene = scene(store)
+        render(name, frames = frames) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.CutsceneHost(model) } }
+        }
+    }
+
+    @Test
+    fun hatchEgg() = cutscene("hatch-egg", frames = 3, still = false) {
+        app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last(), fromTask = false)
+    }
+
+    @Test
+    fun hatchShiny() = cutscene("hatch-shiny", frames = 30, still = true) {
+        app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last().copy(isShiny = true), fromTask = true)
+    }
+
+    @Test
+    fun evolution() = cutscene("evolution", frames = 30, still = true) {
+        val before = it.grantPokemon(4, "test")
+        app.pokeplan.ui.screens.Cutscene.Evolve(before, before.evolvedInto(5, "charmeleon"))
+    }
+
     private fun dark(name: String, tab: Tab) {
         val store = storeWithTeam()
         store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 45)

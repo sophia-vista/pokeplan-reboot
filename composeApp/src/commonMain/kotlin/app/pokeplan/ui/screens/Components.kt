@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -33,9 +32,6 @@ import kotlinx.datetime.LocalDate
 fun RewardBox(model: AppModel) {
     val fresh = model.data.rewardLog.filter { !it.seen }.takeLast(3)
     if (fresh.isEmpty()) return
-    // A hatched Pokémon calls out once, when its box first shows.
-    val hatched = fresh.flatMap { e -> e.rewards.filterIsInstance<Reward.Hatched>().map { e.atMillis to it.pokemon.speciesId } }.lastOrNull()
-    LaunchedEffect(hatched?.first) { hatched?.let { model.cry(it.second) } }
     GameBox(Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             fresh.forEach { entry ->
