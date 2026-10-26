@@ -319,7 +319,7 @@ private fun SettingsView(model: AppModel) {
     AboutCard()
 }
 
-/** Which of the phone's calendars show on Planner → Day. Only where the platform can read them (Android). */
+/** Which of the phone's calendars show on Planner → Calendar. Only where the platform can read them (Android). */
 @Composable
 private fun CalendarsCard(model: AppModel) {
     val source = model.calendars ?: return
@@ -332,7 +332,7 @@ private fun CalendarsCard(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Calendars", style = MaterialTheme.typography.titleMedium)
             Text(
-                "Show events from this phone's calendars, Google Calendar included, on Planner → Day. They're read-only and never pay.",
+                "Show events from this phone's calendars, Google Calendar included, on Planner → Calendar. They're read-only and never pay.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
             val list = calendars

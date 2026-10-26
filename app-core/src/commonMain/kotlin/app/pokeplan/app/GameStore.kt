@@ -302,6 +302,11 @@ class GameStore(
         d.copy(tasks = d.tasks.map { if (it.id == taskId && it.isOpen) it.copy(planned = day, plannedTime = time) else it })
     }
 
+    /** Sets how long an open task is expected to take, as resizing its block on the timeline does (null clears it). */
+    fun setEstimate(taskId: String, minutes: Int?) = update { d ->
+        d.copy(tasks = d.tasks.map { if (it.id == taskId && it.isOpen) it.copy(estimateMinutes = minutes?.takeIf { m -> m > 0 }) else it })
+    }
+
     /** Sets a task's reminders (at most [Reminders.MAX_PER_TASK]). */
     fun setReminders(taskId: String, reminders: List<ReminderOffset>) =
         update { d -> d.copy(tasks = d.tasks.map { if (it.id == taskId) it.copy(reminders = reminders.distinct().take(Reminders.MAX_PER_TASK)) else it }) }

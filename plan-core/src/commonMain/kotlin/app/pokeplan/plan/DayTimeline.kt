@@ -1,13 +1,16 @@
 package app.pokeplan.plan
 
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.plus
 
 /**
  * The day view: tasks with a time on that day are blocks on the hours, and the day's tasks without one wait in a tray
- * to be given an hour. Tapping a tray task and then an hour plans it (dragging comes later). Events from the phone's
- * calendars sit on the same hours, read-only; all-day ones sit above them.
+ * to be given an hour. Tapping a tray task and then an hour plans it, or it is dragged there; dragging a block moves it
+ * and dragging its bottom edge sets its estimate, both in [SNAP_MINUTES] steps. Events from the phone's calendars sit on
+ * the same hours, read-only; all-day ones sit above them. The week view is seven of these side by side ([week]).
  */
 object DayTimeline {
     /** A task on the hours, from [startMinute] to [endMinute] after midnight. Overlapping blocks sit side by side: this one is [lane] of [lanes]. */
@@ -32,7 +35,31 @@ object DayTimeline {
         val busyMinutes: Int = 0,
     )
 
+    /**
+     * The week view: [days] from the first day on, sharing the same hours ([firstHour] to [endHour]). The [tray] holds
+     * every day's tasks without a time (on today also the overdue ones), [inbox] the tasks with no day at all.
+     */
+    data class Week(val days: List<Plan>, val tray: List<Task>, val inbox: List<Task>, val firstHour: Int, val endHour: Int)
+
     private const val DAY_END = 24 * 60
+
+    /** The step a dragged or resized block snaps to. */
+    const val SNAP_MINUTES = 15
+
+    /** The latest a block can start: the last step before midnight. */
+    const val LAST_START = DAY_END - SNAP_MINUTES
+
+    /** Rounds [minute] after midnight to the nearest [SNAP_MINUTES] step, from 0:00 to [LAST_START]. */
+    fun snap(minute: Int): Int = ((minute + SNAP_MINUTES / 2).floorDiv(SNAP_MINUTES) * SNAP_MINUTES).coerceIn(0, LAST_START)
+
+    /**
+     * The estimate a block starting at [startMinute] gets when its bottom edge is dragged to [endMinute]: whole
+     * [SNAP_MINUTES] steps, at least one, and never past midnight.
+     */
+    fun resized(startMinute: Int, endMinute: Int): Int {
+        val end = (endMinute + SNAP_MINUTES / 2).floorDiv(SNAP_MINUTES) * SNAP_MINUTES
+        return (end - startMinute).coerceIn(SNAP_MINUTES, (DAY_END - startMinute).coerceAtLeast(SNAP_MINUTES))
+    }
 
     /** How long a block lasts: its estimate, or [DayLoad.DEFAULT_ESTIMATE_MINUTES]; it stops at midnight. */
     fun minutes(t: Task): Int = t.estimateMinutes ?: DayLoad.DEFAULT_ESTIMATE_MINUTES
@@ -70,6 +97,23 @@ object DayTimeline {
             events = eventBlocks,
             allDay = events.filter { it.allDay && it.isOn(day) }.sortedBy { it.title },
             busyMinutes = eventBlocks.flatMap { (it.startMinute until it.endMinute).filter { m -> m in wake } }.toSet().size,
+        )
+    }
+
+    /** The week from [from]: [days] day plans side by side, on the same hours so the columns line up. */
+    fun week(
+        tasks: List<Task>,
+        from: LocalDate,
+        now: LocalDateTime,
+        days: Int = 7,
+        wakeStart: LocalTime = LocalTime(8, 0),
+        wakeEnd: LocalTime = LocalTime(22, 0),
+        events: List<CalendarEvent> = emptyList(),
+    ): Week {
+        val plans = (0 until days).map { build(tasks, from.plus(DatePeriod(days = it)), now, wakeStart, wakeEnd, events) }
+        return Week(
+            plans, plans.flatMap { it.tray }.distinctBy { it.id }, TaskViews.inbox(tasks),
+            plans.minOf { it.firstHour }, plans.maxOf { it.endHour },
         )
     }
 

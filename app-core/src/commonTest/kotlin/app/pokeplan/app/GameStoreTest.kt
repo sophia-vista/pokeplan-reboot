@@ -632,6 +632,19 @@ class GameStoreTest {
     }
 
     @Test
+    fun resizing_a_block_sets_the_estimate_of_an_open_task_only() {
+        val (s, _) = started()
+        val task = s.addTask("Write the report", estimateMinutes = 30)
+        s.setEstimate(task.id, 75)
+        assertEquals(75, s.data.tasks.first { it.id == task.id }.estimateMinutes)
+        s.setEstimate(task.id, 0)
+        assertNull(s.data.tasks.first { it.id == task.id }.estimateMinutes, "zero clears it")
+        s.completeTask(task.id)
+        s.setEstimate(task.id, 45)
+        assertNull(s.data.tasks.first { it.id == task.id }.estimateMinutes, "a finished task keeps its estimate")
+    }
+
+    @Test
     fun the_export_has_everything_but_the_sign_in_and_erasing_starts_over() {
         val (s, _) = started()
         s.addTask("Buy milk")

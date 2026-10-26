@@ -52,11 +52,11 @@ import kotlinx.datetime.LocalTime
 import kotlinx.datetime.plus
 
 private enum class View(val label: String, val icon: String) {
-    TODAY("Today", "oaks-parcel"), DAY("Day", "town-map"), INBOX("Inbox", "seal-bag"), UPCOMING("Soon", "timer-ball"), HABITS("Habits", "heart-scale"), DONE("Done", "premier-ball"),
+    TODAY("Today", "oaks-parcel"), DAY("Calendar", "town-map"), INBOX("Inbox", "seal-bag"), UPCOMING("Soon", "timer-ball"), HABITS("Habits", "heart-scale"), DONE("Done", "premier-ball"),
 }
 
 @Composable
-fun PlannerScreen(model: AppModel, startView: Int = -1) {
+fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = false) {
     var view by remember { mutableStateOf(View.entries.getOrNull(startView)) }
     var expanded by remember { mutableStateOf<String?>(null) }
     var deleted by remember { mutableStateOf<Task?>(null) }
@@ -123,7 +123,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1) {
         RewardBox(model)
         UndoRows(model)
         DeletedNotice()
-        if (current == View.HABITS) HabitsView(model) else if (current == View.DAY) DayView(model, pendingIds) else {
+        if (current == View.HABITS) HabitsView(model) else if (current == View.DAY) DayView(model, pendingIds, startWeek) else {
             if (current == View.TODAY || current == View.INBOX) QuickAddBox(model, current)
             val shown = tasksFor(current)
             if (shown.isEmpty()) EmptyState(emptyTitle(current), emptyLine(current))
