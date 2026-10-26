@@ -28,8 +28,8 @@ import kotlin.test.assertTrue
  */
 @OptIn(ExperimentalComposeUiApi::class)
 class ScreenshotTest {
-    private fun render(name: String, frames: Int = 60, fontScale: Float = 1f, content: @Composable () -> Unit) {
-        val scene = ImageComposeScene(width = 540, height = 1080, density = Density(1.5f, fontScale)) { content() }
+    private fun render(name: String, frames: Int = 60, fontScale: Float = 1f, height: Int = 1080, content: @Composable () -> Unit) {
+        val scene = ImageComposeScene(width = 540, height = height, density = Density(1.5f, fontScale)) { content() }
         var nanos = 0L
         // Sprites load asynchronously, so draw a few frames with a short wait between them.
         repeat(frames) {
@@ -131,6 +131,27 @@ class ScreenshotTest {
 
     @Test
     fun plannerDay() {
+        val model = plannerDayModel()
+        render("planner-day") {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 1) } }
+        }
+    }
+
+    @Test
+    fun plannerWeek() {
+        val model = plannerDayModel()
+        val store = model.store
+        val gym = store.addTask("Gym", Rank.C, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 2)), estimateMinutes = 60, category = app.pokeplan.plan.Category.HEALTH)
+        store.setPlannedTime(gym.id, kotlinx.datetime.LocalTime(17, 0))
+        val study = store.addTask("Study for the quiz", Rank.B, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 4)), estimateMinutes = 120, category = app.pokeplan.plan.Category.SCHOOL)
+        store.setPlannedTime(study.id, kotlinx.datetime.LocalTime(14, 0))
+        render("planner-week", height = 2400) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 1, startWeek = true) } }
+        }
+    }
+
+    /** A day with timed tasks, one beside a calendar event, an untimed one, an inbox one and an all-day event. */
+    private fun plannerDayModel(): AppModel {
         val store = started()
         val report = store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 90, category = app.pokeplan.plan.Category.WORK)
         store.setPlannedTime(report.id, kotlinx.datetime.LocalTime(9, 0))
@@ -154,10 +175,7 @@ class ScreenshotTest {
                 app.pokeplan.plan.CalendarEvent("bday", 1, "Mum's birthday", at(0, 0), kotlinx.datetime.LocalDateTime(day.plus(kotlinx.datetime.DatePeriod(days = 1)), kotlinx.datetime.LocalTime(0, 0)), allDay = true),
             )
         }
-        val model = AppModel(store, calendars = calendars)
-        render("planner-day") {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 1) } }
-        }
+        return AppModel(store, calendars = calendars)
     }
 
     @Test

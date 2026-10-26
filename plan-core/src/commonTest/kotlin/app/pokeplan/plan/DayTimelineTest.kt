@@ -107,4 +107,40 @@ class DayTimelineTest {
         val trip = e("trip", LocalDateTime(today, LocalTime(0, 0)), LocalDateTime(today.plus(DatePeriod(days = 3)), LocalTime(0, 0)), allDay = true)
         assertEquals(listOf(true, true, true, false), (0..3).map { trip.isOn(today.plus(DatePeriod(days = it))) })
     }
+
+    @Test
+    fun drags_snap_to_fifteen_minutes_inside_the_day() {
+        assertEquals(9 * 60, DayTimeline.snap(9 * 60 + 7))
+        assertEquals(9 * 60 + 15, DayTimeline.snap(9 * 60 + 8))
+        assertEquals(0, DayTimeline.snap(-40), "no earlier than midnight")
+        assertEquals(23 * 60 + 45, DayTimeline.snap(24 * 60 + 30), "the last start is 23:45")
+    }
+
+    @Test
+    fun resizing_sets_whole_steps_of_at_least_fifteen_minutes() {
+        assertEquals(45, DayTimeline.resized(9 * 60, 9 * 60 + 50))
+        assertEquals(15, DayTimeline.resized(9 * 60, 9 * 60 - 30), "never shorter than one step")
+        assertEquals(15, DayTimeline.resized(23 * 60 + 45, 25 * 60), "never past midnight")
+        assertEquals(120, DayTimeline.resized(22 * 60, 24 * 60))
+    }
+
+    @Test
+    fun the_week_shares_its_hours_and_collects_every_tray() {
+        val week = DayTimeline.week(
+            listOf(
+                t("early", tomorrow, LocalTime(6, 0)),
+                t("mail", today),
+                t("card", today.plus(DatePeriod(days = 3))),
+                t("far", today.plus(DatePeriod(days = 8))),
+                t("idea"),
+            ),
+            today, now,
+        )
+        assertEquals(7, week.days.size)
+        assertEquals(tomorrow, week.days[1].day)
+        assertEquals(listOf("early"), week.days[1].blocks.map { it.task.id })
+        assertEquals(6, week.firstHour, "every day starts at the earliest block of the week")
+        assertEquals(setOf("mail", "card"), week.tray.map { it.id }.toSet())
+        assertEquals(listOf("idea"), week.inbox.map { it.id })
+    }
 }
