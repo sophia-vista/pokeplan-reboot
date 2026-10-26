@@ -89,7 +89,10 @@ class StreakAndHabitTest {
         assertTrue(h.paysOn(today))
         val done = h.complete(today)
         assertFalse(done.paysOn(today))
-        assertTrue(done.undo(today).paysOn(today))
+        assertTrue(done.undo(today).paysOn(today), "an unpaid completion undone can still pay")
+        val paid = h.complete(today).paid(today)
+        assertFalse(paid.undo(today).paysOn(today), "a paid day never pays again after an undo")
+        assertTrue(paid.paysOn(today.plusDays(1)))
     }
 
     @Test

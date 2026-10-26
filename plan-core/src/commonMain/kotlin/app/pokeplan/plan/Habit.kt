@@ -30,6 +30,8 @@ data class Habit(
     val target: HabitTarget,
     val createdOn: LocalDate,
     val completions: Set<LocalDate> = emptySet(),
+    /** The last day a completion paid, kept apart from [completions] so undoing and ticking again never pays twice. */
+    val paidOn: LocalDate? = null,
 ) {
     init {
         when (target) {
@@ -40,10 +42,13 @@ data class Habit(
         }
     }
 
-    /** Whether a completion on [date] earns a reward: only the first one each day. */
-    fun paysOn(date: LocalDate): Boolean = date !in completions
+    /** Whether a completion on [date] earns a reward: only the first one each day, even after an undo. */
+    fun paysOn(date: LocalDate): Boolean = date !in completions && date != paidOn
 
     fun complete(date: LocalDate): Habit = copy(completions = completions + date)
+
+    /** Marks [date] as paid; call it with the completion that earned the reward. */
+    fun paid(date: LocalDate): Habit = copy(paidOn = date)
 
     fun undo(date: LocalDate): Habit = copy(completions = completions - date)
 
