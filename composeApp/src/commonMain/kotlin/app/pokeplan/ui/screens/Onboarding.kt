@@ -6,6 +6,8 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -133,7 +135,7 @@ private fun StarterPicker(selected: Int, onSelect: (Int) -> Unit) {
                     val chosen = id == selected
                     Box(
                         Modifier.background(if (chosen) Pixel.Yellow else Pixel.Panel, RoundedCornerShape(12.dp))
-                            .clickable { onSelect(id) }
+                            .selectable(chosen, role = Role.RadioButton, onClick = { onSelect(id) })
                             .padding(4.dp),
                     ) { Sprite(Dex.defaultForm(id).id, false, Dex.species(id).name, size = 56.dp) }
                 }
@@ -159,7 +161,7 @@ private fun Dialogue(text: String, onNext: () -> Unit) {
         }
     }
     val blink = rememberInfiniteTransition().animateFloat(0.2f, 1f, infiniteRepeatable(tween(500), RepeatMode.Reverse)).value
-    GameBox(Modifier.clickable { if (!done) shown = text.length else onNext() }) {
+    GameBox(Modifier.clickable(onClickLabel = if (done) "Next" else "Show all", role = Role.Button) { if (!done) shown = text.length else onNext() }) {
         Box(Modifier.fillMaxWidth().padding(bottom = 4.dp)) {
             Text(text.take(shown), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().padding(end = 28.dp, bottom = 12.dp))
             if (done) ItemIcon("poke-ball", Modifier.align(Alignment.BottomEnd).alpha(blink), size = 24.dp)

@@ -78,13 +78,13 @@ object Pixel {
     val Red: Color get() = if (dark) Color(0xFFEC4C3E) else Color(0xFFE84436)
     val RedDark = Color(0xFFB62A1C)
     /** `info` */
-    val Blue: Color get() = if (dark) Color(0xFF4A89E8) else Color(0xFF3478DB)
+    val Blue: Color get() = if (dark) Color(0xFF4A89E8) else Color(0xFF2C6CCC)
     /** `success` */
-    val Green: Color get() = if (dark) Color(0xFF2A9966) else Color(0xFF218858)
+    val Green: Color get() = if (dark) Color(0xFF2E9E6A) else Color(0xFF1E7F52)
     /** `warning` */
     val Warning: Color get() = if (dark) Color(0xFFD99A1E) else Color(0xFF946000)
     /** `danger` */
-    val Danger: Color get() = if (dark) Color(0xFFE5525F) else Color(0xFFB42332)
+    val Danger: Color get() = if (dark) Color(0xFFEC6A75) else Color(0xFFB42332)
     /** A highlight for selected items and rewards. */
     val Yellow = Color(0xFFFFCB05)
     val Gray = Color(0xFF9AA1B5)
@@ -213,7 +213,7 @@ fun PixelButton(
     val corner = if (compact) 12.dp else 16.dp
     Box(
         modifier
-            .defaultMinSize(minWidth = Spacing.Target, minHeight = if (compact) 44.dp else Spacing.Target)
+            .defaultMinSize(minWidth = Spacing.Target, minHeight = Spacing.Target)
             // A solid action key has a darker lower edge, like the buttons in the games; quiet buttons stay flat.
             .drawBehind { if (raised) drawRoundRect(edge, Offset(0f, 3.dp.toPx()), Size(size.width, size.height), CornerRadius(corner.toPx())) }
             .padding(bottom = if (raised) 3.dp else 0.dp)
