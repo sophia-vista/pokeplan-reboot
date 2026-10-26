@@ -86,14 +86,14 @@ private val panel = Color(0xFFFFFFFF)
 private val ink = Color(0xFF252637)
 private val soft = Color(0xFF666B7E)
 private val shade = Color(0xFFE9E9EF)
-private val green = Color(0xFF218858)
+private val green = Color(0xFF1E7F52)
 
 // Widget text uses two sizes: 15 sp for a widget's title and the tick, 13 sp for everything else (the 28 sp emoji is a picture).
 
 private fun rankColor(rank: Rank) = when (rank) {
     Rank.E -> Color(0xFF666B7E)
-    Rank.D -> Color(0xFF218858)
-    Rank.C -> Color(0xFF3478DB)
+    Rank.D -> Color(0xFF1E7F52)
+    Rank.C -> Color(0xFF2C6CCC)
     Rank.B -> Color(0xFF946000)
     Rank.A -> Color(0xFFB42332)
 }

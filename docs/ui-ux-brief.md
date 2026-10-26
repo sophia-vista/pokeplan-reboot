@@ -82,8 +82,8 @@ Treat these as **version 0.1 starting values**. Validate with actual Flutter scr
 | `surfaceMuted` | `#ECECF2` | Secondary surfaces |
 | `textPrimary` | `#252637` | Main content |
 | `textSecondary` | `#666B7E` | Metadata and descriptions |
-| `success` | `#218858` | Completion and positive feedback |
-| `info` | `#3478DB` | Informational and secondary actions |
+| `success` | `#1E7F52` | Completion and positive feedback (was `#218858`, darkened to pass 4.5:1 as text on cards) |
+| `info` | `#2C6CCC` | Informational and secondary actions (was `#3478DB`, same reason) |
 | `warning` | `#946000` | Attention and caution |
 | `danger` | `#B42332` | Destructive actions and errors |
 | `border` | `#E1E1E8` | Dividers, outlines, card boundaries |
@@ -325,6 +325,8 @@ Principles:
 ## 9. Accessibility and QA Checklist
 
 Validate in the actual app; do not infer success from screenshots alone.
+
+**Status in the Compose app (0.17.x, checked in code; still to confirm on a phone with TalkBack and large text):** text tokens pass 4.5:1 on cards and the page in both themes (`success`, `info` and dark `danger` were darkened or lightened for it) and button labels, which are large bold text, pass 3:1; every button, compact ones included, is at least 48 dp tall; clickable tiles (Pokédex, PC, starters, the dialogue box) have a role and a spoken label; Pokédex states, Growth numbers and focus time are written in words beside any colour or bar; long animations respect Reduce motion. The `large-text-*` screenshots cover enlarged text. Open: the SpriteCollab credit line is deliberately faint (owner's choice, 0.13.0) and below 4.5:1.
 
 - [ ] Text contrast meets WCAG 2.2 AA where applicable: typically 4.5:1 for normal text and 3:1 for large text.
 - [ ] Body text remains readable without the pixel font.
