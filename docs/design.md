@@ -418,7 +418,7 @@ Server-authoritative for everything that grants value: hatching, candies, items,
 - **Contests (come with the online release):** five condition stats (Cool, Beautiful, Cute, Smart, Tough), 0 to 255 each, built from the species' base stats, training and nature, then raised by feeding berries (a berry liked by the nature gives double, a disliked one half; up to 5 a day). Each week one condition is judged; friends' buddies are ranked by it, plus ribbon bonuses. Prizes are coins and ribbons. Numbers *(tune)*.
 - **Abilities and perks:** about 40 curated abilities have a perk; every other ability falls back to the type perk only.
 - **Endgame:** a level 100 Pokémon takes no more candies. Candies still level other Pokémon. Coin sinks: Tera Shards, Mega Stones, form items, Secret Base decor. Candy holdings cap at 9,999; excess converts to coins at 1:1 *(tune)*. Contests, ribbons and a hall of fame give maxed Pokémon a purpose.
-- **Pokédex text:** the latest English entry from the public dataset. **Seen** = appeared on a friend's profile or in a quest; **caught** = ever owned; otherwise a silhouette.
+- **Pokédex text:** the latest English entry from the public dataset. **Seen** = appeared on a friend's buddy or on an open quest (`AppData.seenSpecies`, client-side, kept for good); **caught** = ever owned; **owned** = in the party or PC now (`DexState`). Caught species show their sprite and entry, with a Poké Ball on the owned ones; seen ones stay a silhouette but are named when tapped; the rest are a silhouette marked ???. Every tile names its state in words *(0.16.0)*.
 - **PC and bag:** unlimited PC boxes of 30; bag stacks to 999.
 
 ### Platform and operations defaults
