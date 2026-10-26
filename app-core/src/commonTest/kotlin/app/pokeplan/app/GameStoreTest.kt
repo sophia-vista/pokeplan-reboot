@@ -632,6 +632,27 @@ class GameStoreTest {
     }
 
     @Test
+    fun own_events_are_added_moved_resized_and_deleted_and_never_pay() {
+        val storage = MemoryStorage()
+        val (s, clock) = store(storage)
+        s.start("Sophia", 25)
+        val coinsBefore = s.data.player.coins
+        val day = kotlinx.datetime.LocalDate(2026, 10, 20)
+        val e = s.addEvent("  Dentist ", day, kotlinx.datetime.LocalTime(23, 0), 120)
+        assertEquals("Dentist", e.title)
+        assertEquals(60, e.minutes, "kept inside the day")
+        s.updateEvent(e.id, start = kotlinx.datetime.LocalTime(9, 30), minutes = 45, title = " ")
+        val moved = s.data.events.single()
+        assertEquals(kotlinx.datetime.LocalTime(9, 30), moved.start)
+        assertEquals(45, moved.minutes)
+        assertEquals("Dentist", moved.title, "a blank title keeps the old one")
+        assertEquals(coinsBefore, s.data.player.coins)
+        assertEquals(listOf(moved), GameStore(storage, clock, utc).data.events, "saved with the rest")
+        s.deleteEvent(e.id)
+        assertTrue(s.data.events.isEmpty())
+    }
+
+    @Test
     fun resizing_a_block_sets_the_estimate_of_an_open_task_only() {
         val (s, _) = started()
         val task = s.addTask("Write the report", estimateMinutes = 30)

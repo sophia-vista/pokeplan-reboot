@@ -34,6 +34,7 @@ import app.pokeplan.plan.Goal
 import app.pokeplan.plan.Insights
 import app.pokeplan.plan.GoalRules
 import app.pokeplan.plan.Habit
+import app.pokeplan.plan.PlanEvent
 import app.pokeplan.plan.Milestone
 import app.pokeplan.plan.MilestoneResult
 import app.pokeplan.plan.Reviews
@@ -306,6 +307,31 @@ class GameStore(
     fun setEstimate(taskId: String, minutes: Int?) = update { d ->
         d.copy(tasks = d.tasks.map { if (it.id == taskId && it.isOpen) it.copy(estimateMinutes = minutes?.takeIf { m -> m > 0 }) else it })
     }
+
+    /** Puts an event on PokéPlan's own calendar. It never pays. */
+    fun addEvent(title: String, day: LocalDate, start: LocalTime, minutes: Int = PlanEvent.DEFAULT_MINUTES): PlanEvent {
+        val event = PlanEvent(newId(), title.trim(), day, start, PlanEvent.fit(start.hour * 60 + start.minute, minutes))
+        update { it.copy(events = it.events + event) }
+        return event
+    }
+
+    /** Changes an event's title, day, start or length; the length is kept inside the day. A blank title keeps the old one. */
+    fun updateEvent(id: String, title: String? = null, day: LocalDate? = null, start: LocalTime? = null, minutes: Int? = null) = update { d ->
+        d.copy(events = d.events.map { e ->
+            if (e.id != id) e
+            else {
+                val s = start ?: e.start
+                e.copy(
+                    title = title?.trim()?.ifEmpty { null } ?: e.title,
+                    day = day ?: e.day,
+                    start = s,
+                    minutes = PlanEvent.fit(s.hour * 60 + s.minute, minutes ?: e.minutes),
+                )
+            }
+        })
+    }
+
+    fun deleteEvent(id: String) = update { d -> d.copy(events = d.events.filterNot { it.id == id }) }
 
     /** Sets a task's reminders (at most [Reminders.MAX_PER_TASK]). */
     fun setReminders(taskId: String, reminders: List<ReminderOffset>) =

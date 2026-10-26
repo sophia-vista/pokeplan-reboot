@@ -169,6 +169,7 @@ class ScreenshotTest {
         store.setPlannedTime(run.id, kotlinx.datetime.LocalTime(18, 30))
         store.addTask("Reply to mail", Rank.E, planned = store.today)
         store.addTask("Buy a birthday card", Rank.E)
+        store.addEvent("Piano lesson", store.today, kotlinx.datetime.LocalTime(16, 0), 45)
         // Two calendar events from the phone (one beside the report) and an all-day one.
         store.setShownCalendars(setOf(1L))
         val day = store.today
