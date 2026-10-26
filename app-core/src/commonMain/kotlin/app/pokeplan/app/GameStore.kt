@@ -5,6 +5,7 @@ import app.pokeplan.app.quest.Quests
 import app.pokeplan.app.quest.Requirement
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.HatchOption
+import app.pokeplan.core.model.Egg
 import app.pokeplan.core.model.PokemonType
 import app.pokeplan.core.pokemon.CandyRules
 import app.pokeplan.core.pokemon.EvolutionContext
@@ -16,7 +17,11 @@ import app.pokeplan.core.pokemon.Hatching
 import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.ItemEffects
 import app.pokeplan.core.pokemon.Items
+import app.pokeplan.core.pokemon.Nature
 import app.pokeplan.core.pokemon.OwnedPokemon
+import app.pokeplan.core.pokemon.PerkBonuses
+import app.pokeplan.core.pokemon.PerkSource
+import app.pokeplan.core.pokemon.Perks
 import app.pokeplan.core.pokemon.Stat
 import app.pokeplan.core.pokemon.Transfer
 import app.pokeplan.core.pokemon.TransferBlock
@@ -734,7 +739,15 @@ class GameStore(
 
     // --- streak -------------------------------------------------------------------------------------------------------
 
-    val streak: Streaks.Result get() = Streaks.daily(data.activeDays, data.restDays, today)
+    val streak: Streaks.Result get() = Streaks.daily(data.activeDays, data.restDays, today, perks.extraForgivenDays, firstDayOfWeek)
+
+    val firstDayOfWeek: DayOfWeek get() = if (data.settings.weekStartsOnMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY
+
+    /** The perks of the buddy, its party and the slotted Guardians as they stand now (no task or session in view). */
+    val perks: PerkBonuses get() = data.player.let { Perks.total(it.buddy, it.party, guardians = it.guardianPokemon) }
+
+    /** Where [perks] come from, part by part, for the perks panel. */
+    val perkSources: List<PerkSource> get() = data.player.let { Perks.sources(it.buddy, it.party, it.guardianPokemon) }
 
     // --- focus --------------------------------------------------------------------------------------------------------
 
@@ -781,13 +794,11 @@ class GameStore(
                 // The perks that count are the ones of the buddy when the session started.
                 val player = data.player
                 val ticket = data.eggTickets.inSession
-                val outcome = RewardEngine.effort(
-                    if (player.buddyId == session.buddyIdAtStart) player else player, event, ticket?.let { Random(it.seed) } ?: rng,
-                )
+                val outcome = RewardEngine.effort(player.atStartOf(session), event, ticket?.let { Random(it.seed) } ?: rng)
                 update { d ->
                     log("Focus: $minutes min", outcome.rewards, d.copy(
                         eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
-                        player = outcome.state, focus = null, activeDays = d.activeDays + today, lastFocusEnd = FocusEnd(nowMillis, true),
+                        player = outcome.state.copy(buddyId = d.player.buddyId), focus = null, activeDays = d.activeDays + today, lastFocusEnd = FocusEnd(nowMillis, true),
                         focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, true, session.taskId, session.deepFocus),
                         tasks = d.tasks.map { if (it.id == session.taskId) it.copy(focusedMinutes = it.focusedMinutes + minutes) else it },
                     ))
@@ -796,6 +807,7 @@ class GameStore(
             }
             is Phase.Failed -> {
                 val minutes = (session.focusedMillis(phase.at) / 60_000L).toInt()
+                magicGuard(session, phase.reason, minutes)?.let { return it }
                 update { d ->
                     d.copy(
                         eggTickets = d.eggTickets.spend(d.eggTickets.inSession, session.startedAtMillis, null),
@@ -808,6 +820,35 @@ class GameStore(
             else -> null
         }
     }
+
+    /**
+     * Magic Guard: once a week, a failed session of at least [Egg.MIN_MINUTES] focused minutes still hatches its egg, as a
+     * session of the minutes focused (never a Deep Focus one). The session still counts as failed in the history and for
+     * the streak. Returns null when the buddy at the start had no Magic Guard, this week's is used, or too little was done.
+     */
+    private fun magicGuard(session: FocusSession, reason: FailReason, minutes: Int): FocusResult? {
+        val player = data.player.atStartOf(session)
+        val key = "magic-guard-$weekStart"
+        if (minutes < Egg.MIN_MINUTES || key in data.counters) return null
+        if (!Perks.total(player.buddy, player.party, guardians = player.guardianPokemon).keepsFailedEgg) return null
+        val ticket = data.eggTickets.inSession
+        val event = EffortEvent(minutes, false, session.region, session.lure, epochDay, newId(), nowMillis)
+        val outcome = RewardEngine.effort(player, event, ticket?.let { Random(it.seed) } ?: rng)
+        update { d ->
+            log("Magic Guard: $minutes min", outcome.rewards, d.copy(
+                eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
+                player = outcome.state.copy(buddyId = d.player.buddyId), focus = null,
+                lastFocusEnd = FocusEnd(nowMillis, true, reason, guarded = true),
+                focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, false, session.taskId, session.deepFocus),
+                counters = d.counters.filterKeys { !it.startsWith("magic-guard-") } + (key to 1),
+            ))
+        }
+        return FocusResult.Hatched(outcome.rewards)
+    }
+
+    /** The perks that count for a session are the ones of the buddy when it started, if that Pokémon is still here. */
+    private fun app.pokeplan.core.reward.PlayerState.atStartOf(session: FocusSession) =
+        if (session.buddyIdAtStart != null && pokemon.any { it.id == session.buddyIdAtStart }) copy(buddyId = session.buddyIdAtStart) else this
 
     /** A failed session spends its ticket too, so failing never rerolls an egg. */
     private fun EggTickets.spend(ticket: EggTicket?, startedAtMillis: Long, pokemonId: String?): EggTickets =
@@ -984,15 +1025,66 @@ class GameStore(
         return gained
     }
 
-    /** Uses a bag item on a Pokémon (vitamins, berries). Returns false if there is none or it does nothing. */
-    fun useItem(itemId: String, pokemonId: String): Boolean {
+    /**
+     * Gives [pokemonId] an item from the bag to hold. Whatever it held before goes back to the bag. Returns false if the bag
+     * has none, the item cannot be held, or the Pokémon is a Guardian (they are at full power and hold nothing).
+     */
+    fun holdItem(pokemonId: String, itemId: String): Boolean {
+        val p = pokemon(pokemonId)
+        if (!data.player.inventory.has(itemId) || !Items.holdable(itemId) || Guardians.canBe(p) || p.heldItem == itemId) return false
+        update { d ->
+            var bag = d.player.inventory.remove(itemId)
+            p.heldItem?.let { bag = bag.add(it) }
+            d.copy(player = d.player.copy(inventory = bag, pokemon = d.player.pokemon.map { if (it.id == pokemonId) p.withHeldItem(itemId) else it }))
+        }
+        return true
+    }
+
+    /** Puts [pokemonId]'s held item back in the bag. */
+    fun takeItem(pokemonId: String) {
+        val p = pokemon(pokemonId)
+        val item = p.heldItem ?: return
+        update { d ->
+            d.copy(player = d.player.copy(
+                inventory = d.player.inventory.add(item), pokemon = d.player.pokemon.map { if (it.id == pokemonId) p.withHeldItem(null) else it },
+            ))
+        }
+    }
+
+    /** Whether [itemId] would do anything if used on [p] now (an Ability Capsule on a Pokémon with one ability does not). */
+    fun canUse(itemId: String, p: OwnedPokemon): Boolean = when {
+        itemId in Items.vitamins || Items.category(itemId) == ItemCategory.BERRY -> true
+        itemId == Items.ABILITY_CAPSULE -> p.form.abilities.size == 2 && p.ability in p.form.abilities
+        itemId == Items.ABILITY_PATCH -> p.form.hiddenAbility != null && p.ability != p.form.hiddenAbility
+        itemId == Items.BOTTLE_CAP -> p.ivs.values.any { it < app.pokeplan.core.pokemon.StatCalculator.MAX_IV }
+        itemId == Items.NATURE_MINT || itemId.startsWith("tera-shard-") -> true
+        else -> false
+    }
+
+    /**
+     * Uses a bag item on a Pokémon: vitamins, berries, the Ability Capsule and Patch, and with a [choice] the Bottle Cap
+     * (a [Stat]), the Nature Mint (a [Nature]). A Tera Shard sets its own type. Returns false if there is none or it does
+     * nothing.
+     */
+    fun useItem(itemId: String, pokemonId: String, choice: Any? = null): Boolean {
         if (!data.player.inventory.has(itemId)) return false
         val p = pokemon(pokemonId)
-        val changed = when {
-            itemId in Items.vitamins -> ItemEffects.useVitamin(p, itemId)
-            Items.category(itemId) == ItemCategory.BERRY -> ItemEffects.feedBerry(p)
-            else -> return false
-        }
+        if (!canUse(itemId, p)) return false
+        val changed = runCatching {
+            when {
+                itemId in Items.vitamins -> ItemEffects.useVitamin(p, itemId)
+                Items.category(itemId) == ItemCategory.BERRY -> ItemEffects.feedBerry(p)
+                itemId == Items.ABILITY_CAPSULE -> ItemEffects.useAbilityCapsule(p)
+                itemId == Items.ABILITY_PATCH -> ItemEffects.useAbilityPatch(p)
+                itemId == Items.BOTTLE_CAP -> ItemEffects.useBottleCap(p, choice as? Stat ?: return false)
+                itemId == Items.NATURE_MINT -> ItemEffects.useNatureMint(p, choice as? Nature ?: return false)
+                itemId.startsWith("tera-shard-") -> {
+                    val type = PokemonType.entries.first { Items.teraShard(it) == itemId }
+                    ItemEffects.useTeraShard(p, type)
+                }
+                else -> return false
+            }
+        }.getOrElse { return false }
         update { d ->
             d.copy(player = d.player.copy(
                 inventory = d.player.inventory.remove(itemId), pokemon = d.player.pokemon.map { if (it.id == pokemonId) changed else it },

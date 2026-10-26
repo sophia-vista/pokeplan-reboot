@@ -3,6 +3,10 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.26.0" to listOf(
+            "See your party's perks: open Party for each perk and where it comes from.",
+            "Give your Pokémon items to hold, from the Bag or its page. Nature Mints, Bottle Caps, Ability Capsules and Tera Shards now work too.",
+        ),
         "0.23.0" to listOf(
             "More Pokémon sounds: your buddy calls out for good news and when it becomes your buddy, and real game sounds play when you finish a task, give a berry, hatch an egg, evolve or transfer a Pokémon.",
         ),
