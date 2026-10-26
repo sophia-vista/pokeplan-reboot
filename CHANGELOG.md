@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.21.0
+
+- Lists in the Planner, after TickTick. Make a list for each part of your life (a name, a colour and a real item icon) from the new Lists section under the menu's tiles. The Inbox is now every task that isn't in a list, whatever its date. A list and the Inbox group their tasks by when they are: From before, Today, Tomorrow, Next 7 days, Later and No date. Add straight into a list, type `#Groceries` in any quick-add, or move a task from its options. In Today and Next 7 days (was Soon), each task shows its list's colour and name. Lists can be renamed, recoloured, archived or deleted (their tasks go back to the Inbox). The Calendar's "To plan" card now calls tasks with no date "No date".
+
 ## 0.20.0
 
 - The Pokédex tracks forms. Each caught Pokémon's entry lists all its forms (regional variants, female forms, Megas, Gigantamax and more) with a Regular / ✨ Shiny switch. Forms you have had are in colour, the rest are black shapes. Tap one you have had to see it in the scene with its own types, abilities and stats. A form counts once you have had a Pokémon in it (a Mega while it holds its Mega Stone, a female form for a female) and stays counted after a transfer. Gigantamax and other special forms can't be found yet, so they are faded and don't count. Each region's list shows how many of its forms you have.

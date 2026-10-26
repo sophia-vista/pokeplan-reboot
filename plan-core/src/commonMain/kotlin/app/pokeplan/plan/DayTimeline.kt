@@ -20,14 +20,14 @@ object DayTimeline {
     data class EventBlock(val event: CalendarEvent, val startMinute: Int, val endMinute: Int, val lane: Int, val lanes: Int)
 
     /**
-     * The hours shown are [firstHour] up to (not including) [endHour]. [inbox] holds the tasks with no day at all.
+     * The hours shown are [firstHour] up to (not including) [endHour]. [undated] holds the tasks with no day at all.
      * [busyMinutes] is how much of the waking window the timed events take (overlaps counted once).
      */
     data class Plan(
         val day: LocalDate,
         val blocks: List<Block>,
         val tray: List<Task>,
-        val inbox: List<Task>,
+        val undated: List<Task>,
         val firstHour: Int,
         val endHour: Int,
         val events: List<EventBlock> = emptyList(),
@@ -37,9 +37,9 @@ object DayTimeline {
 
     /**
      * The week view: [days] from the first day on, sharing the same hours ([firstHour] to [endHour]). The [tray] holds
-     * every day's tasks without a time (on today also the overdue ones), [inbox] the tasks with no day at all.
+     * every day's tasks without a time (on today also the overdue ones), [undated] the tasks with no day at all.
      */
-    data class Week(val days: List<Plan>, val tray: List<Task>, val inbox: List<Task>, val firstHour: Int, val endHour: Int)
+    data class Week(val days: List<Plan>, val tray: List<Task>, val undated: List<Task>, val firstHour: Int, val endHour: Int)
 
     private const val DAY_END = 24 * 60
 
@@ -93,7 +93,7 @@ object DayTimeline {
         val end = maxOf(wakeEnd.hour + if (wakeEnd.minute > 0) 1 else 0, spans.maxOfOrNull { (it.end + 59) / 60 } ?: 0)
         val wake = (wakeStart.hour * 60 + wakeStart.minute) until (wakeEnd.hour * 60 + wakeEnd.minute)
         return Plan(
-            day, blocks, tray, TaskViews.inbox(tasks), first, end.coerceAtMost(24),
+            day, blocks, tray, TaskViews.undated(tasks), first, end.coerceAtMost(24),
             events = eventBlocks,
             allDay = events.filter { it.allDay && it.isOn(day) }.sortedBy { it.title },
             busyMinutes = eventBlocks.flatMap { (it.startMinute until it.endMinute).filter { m -> m in wake } }.toSet().size,
@@ -112,7 +112,7 @@ object DayTimeline {
     ): Week {
         val plans = (0 until days).map { build(tasks, from.plus(DatePeriod(days = it)), now, wakeStart, wakeEnd, events) }
         return Week(
-            plans, plans.flatMap { it.tray }.distinctBy { it.id }, TaskViews.inbox(tasks),
+            plans, plans.flatMap { it.tray }.distinctBy { it.id }, TaskViews.undated(tasks),
             plans.minOf { it.firstHour }, plans.maxOf { it.endHour },
         )
     }

@@ -257,15 +257,15 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     val shownEvents = events + own.map { it.toCalendarEvent() }
     val plans: List<DayTimeline.Plan>
     val tray: List<Task>
-    val inbox: List<Task>
+    val undated: List<Task>
     val firstHour: Int
     val endHour: Int
     if (week) {
         val w = DayTimeline.week(tasks, days.first(), store.now, events = shownEvents)
-        plans = w.days; tray = w.tray; inbox = w.inbox; firstHour = w.firstHour; endHour = w.endHour
+        plans = w.days; tray = w.tray; undated = w.undated; firstHour = w.firstHour; endHour = w.endHour
     } else {
         val p = DayTimeline.build(tasks, days.first(), store.now, events = shownEvents)
-        plans = listOf(p); tray = p.tray; inbox = p.inbox; firstHour = p.firstHour; endHour = p.endHour
+        plans = listOf(p); tray = p.tray; undated = p.undated; firstHour = p.firstHour; endHour = p.endHour
     }
     val chosen = tasks.firstOrNull { it.id == picked && it.isOpen }
     val chosenEvent = own.firstOrNull { it.id == picked }
@@ -336,7 +336,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
             if (chosen != null) PickedPanel(model, chosen, days) { picked = null }
             if (chosenEvent != null) EventPanel(model, chosenEvent, days.size > 1) { picked = null }
 
-            Tray(tray, inbox, picked, hint = chosen == null && chosenEvent == null && draft == null, pick, grid, ::drop)
+            Tray(tray, undated, picked, hint = chosen == null && chosenEvent == null && draft == null, pick, grid, ::drop)
 
             // The calendar itself, on one panel: the days (in a week), the all-day row, then the hours.
             Column(
@@ -553,19 +553,19 @@ private fun PickedPanel(model: AppModel, task: Task, days: List<LocalDate>, clos
 
 /**
  * The tasks still waiting for an hour, on one panel like Structured's inbox and Sunsama's backlog: those planned for the
- * day without a time, then those from the inbox, each a chip with its category's colour. [hint] says how to plan one.
+ * day without a time, then those with no date at all, each a chip with its category's colour. [hint] says how to plan one.
  */
 @Composable
-private fun Tray(tray: List<Task>, inbox: List<Task>, picked: String?, hint: Boolean, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit) {
-    if (tray.isEmpty() && inbox.isEmpty()) return
+private fun Tray(tray: List<Task>, undated: List<Task>, picked: String?, hint: Boolean, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit) {
+    if (tray.isEmpty() && undated.isEmpty()) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text("To plan", style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
-                Text("${tray.size + inbox.size}", style = MaterialTheme.typography.bodyMedium)
+                Text("${tray.size + undated.size}", style = MaterialTheme.typography.bodyMedium)
             }
-            TrayGroup(if (inbox.isEmpty()) null else "No time yet", tray, picked, pick, grid, drop)
-            TrayGroup("From the inbox", inbox, picked, pick, grid, drop)
+            TrayGroup(if (undated.isEmpty()) null else "No time yet", tray, picked, pick, grid, drop)
+            TrayGroup("No date", undated, picked, pick, grid, drop)
             if (hint) Text("Hold one and drag it to an hour, or tap it, then an hour.", style = MaterialTheme.typography.bodyMedium)
         }
     }
@@ -575,7 +575,7 @@ private fun Tray(tray: List<Task>, inbox: List<Task>, picked: String?, hint: Boo
 private fun TrayGroup(label: String?, tasks: List<Task>, picked: String?, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit) {
     if (tasks.isEmpty()) return
     if (label != null) Text(label, style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
-    // One row that scrolls sideways, so a long inbox never pushes the hours off the screen.
+    // One row that scrolls sideways, so a long tray never pushes the hours off the screen.
     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         tasks.forEach { t -> key(t.id) {
             val anchor = remember { Anchor() }

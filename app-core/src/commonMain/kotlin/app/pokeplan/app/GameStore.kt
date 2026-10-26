@@ -49,6 +49,7 @@ import app.pokeplan.plan.RecurringTasks
 import app.pokeplan.plan.Streaks
 import app.pokeplan.plan.Subtask
 import app.pokeplan.plan.Task
+import app.pokeplan.plan.TaskList
 import app.pokeplan.plan.TaskRules
 import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.TaskViews
@@ -282,16 +283,48 @@ class GameStore(
         due: LocalDateTime? = null,
         estimateMinutes: Int? = null,
         notes: String = "",
+        listId: String? = null,
     ): Task {
         val task = Task(
             id = newId(), title = title.trim(), notes = notes, rank = rank, category = category, planned = planned, due = due,
-            estimateMinutes = estimateMinutes, createdAtMillis = nowMillis,
+            estimateMinutes = estimateMinutes, createdAtMillis = nowMillis, listId = listId?.takeIf { id -> data.lists.any { it.id == id } },
         )
         update { it.copy(tasks = it.tasks + task) }
         return task
     }
 
     fun updateTask(task: Task) = update { d -> d.copy(tasks = d.tasks.map { if (it.id == task.id) task else it }) }
+
+    // --- lists --------------------------------------------------------------------------------------------------------
+
+    /** The lists shown in the menu: not archived, in the order they were made. */
+    val activeLists: List<TaskList> get() = data.lists.filter { !it.archived }
+
+    /** The list named [name] (any case), for "#Groceries" in quick-add; null if there is none. */
+    fun listNamed(name: String): TaskList? = activeLists.firstOrNull { it.name.equals(name.trim(), ignoreCase = true) }
+
+    /** Makes a list. A blank name is not a list. */
+    fun addList(name: String, color: Long = TaskList.COLORS.first(), icon: String = TaskList.ICONS.first()): TaskList? {
+        val clean = name.trim().take(TaskList.MAX_NAME).ifEmpty { return null }
+        val list = TaskList(newId(), clean, color, icon)
+        update { it.copy(lists = it.lists + list) }
+        return list
+    }
+
+    /** Renames, recolours, re-icons or archives a list. */
+    fun updateList(list: TaskList) = update { d ->
+        d.copy(lists = d.lists.map { if (it.id == list.id) list.copy(name = list.name.trim().take(TaskList.MAX_NAME).ifEmpty { it.name }) else it })
+    }
+
+    /** Deletes a list; its tasks go back to the Inbox, nothing is lost. */
+    fun deleteList(id: String) = update { d ->
+        d.copy(lists = d.lists.filter { it.id != id }, tasks = d.tasks.map { if (it.listId == id) it.copy(listId = null) else it })
+    }
+
+    /** Files a task in a list, or back in the Inbox with null. */
+    fun moveToList(taskId: String, listId: String?) = update { d ->
+        d.copy(tasks = d.tasks.map { if (it.id == taskId) it.copy(listId = listId?.takeIf { id -> d.lists.any { l -> l.id == id } }) else it })
+    }
 
     /** Plans a task at [time] (null clears it). A task without a day gets its deadline's day, or today. */
     fun setPlannedTime(taskId: String, time: LocalTime?) = update { d ->

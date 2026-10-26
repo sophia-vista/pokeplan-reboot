@@ -585,6 +585,25 @@ class GameStoreTest {
     }
 
     @Test
+    fun lists_file_tasks_and_deleting_a_list_sends_its_tasks_to_the_inbox() {
+        val (s, _) = started()
+        assertNull(s.addList("   "))
+        val groceries = s.addList("Groceries")!!
+        assertEquals(groceries, s.listNamed("groceries"))
+        val milk = s.addTask("Milk", listId = groceries.id)
+        val stray = s.addTask("Stray", listId = "no-such-list")
+        assertEquals(groceries.id, s.data.tasks.first { it.id == milk.id }.listId)
+        assertNull(s.data.tasks.first { it.id == stray.id }.listId)
+        s.moveToList(stray.id, groceries.id)
+        assertEquals(2, app.pokeplan.plan.TaskViews.inList(s.data.tasks, groceries.id).size)
+        s.updateList(groceries.copy(archived = true))
+        assertTrue(s.activeLists.isEmpty())
+        s.deleteList(groceries.id)
+        assertTrue(s.data.lists.isEmpty())
+        assertTrue(s.data.tasks.none { it.listId != null })
+    }
+
+    @Test
     fun a_shiny_stays_in_the_shiny_dex_after_it_is_transferred() {
         val base = started().first
         val shiny = base.data.player.pokemon.first().copy(isShiny = true)

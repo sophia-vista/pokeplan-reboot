@@ -35,6 +35,7 @@ import app.pokeplan.plan.Rank
 import app.pokeplan.plan.ReminderOffset
 import app.pokeplan.plan.Reminders
 import app.pokeplan.plan.Task
+import app.pokeplan.plan.TaskList
 import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.TaskViews
 import app.pokeplan.ui.AppModel
@@ -72,18 +73,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.datetime.minus
 
 private enum class View(val label: String, val icon: String) {
-    TODAY("Today", "oaks-parcel"), DAY("Calendar", "town-map"), INBOX("Inbox", "seal-bag"), UPCOMING("Soon", "timer-ball"), HABITS("Habits", "heart-scale"), DONE("Done", "premier-ball"),
+    TODAY("Today", "oaks-parcel"), DAY("Calendar", "town-map"), INBOX("Inbox", "seal-bag"), UPCOMING("Next 7 days", "timer-ball"), HABITS("Habits", "heart-scale"), DONE("Done", "premier-ball"),
 }
 
 @Composable
 fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = false) {
     var view by remember { mutableStateOf(View.entries.getOrNull(startView)) }
     var expanded by remember { mutableStateOf<String?>(null) }
+    // A list opened from the menu's Lists section (TickTick's lists); null shows the menu or the smart list in [view].
+    var openList by remember { mutableStateOf<String?>(null) }
     val store = model.store
     val live = model.data.tasks.filter { it.state != TaskState.DELETED }
     val pendingIds = model.data.pending.map { it.original.id }.toSet()
@@ -95,6 +100,16 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
         View.DONE -> live.filter { it.state == TaskState.DONE }.sortedByDescending { it.completedAtMillis }.take(30)
         View.HABITS, View.DAY -> emptyList()
     }.filter { it.id !in pendingIds }
+
+    fun card(showList: Boolean): @Composable (Task, LocalDate?) -> Unit = { t, day ->
+        TaskCard(model, t, day, expanded == t.id, { expanded = if (expanded == t.id) null else t.id }, onDeleted = { model.deletedTask = t; expanded = null }, showList = showList)
+    }
+
+    val list = openList?.let { id -> model.data.lists.firstOrNull { it.id == id } }
+    if (list != null) {
+        ListScreen(model, list, TaskViews.inList(live, list.id).filter { it.id !in pendingIds }, card(showList = false)) { openList = null }
+        return
+    }
 
     val current = view
     if (current == null) {
@@ -115,14 +130,15 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
                         val (count, detail) = when (v) {
                             View.TODAY -> "${today.size}" to if (overdue > 0) "$overdue from before" else "to do"
                             View.DAY -> null to "plan the hours"
-                            View.INBOX -> "${tasksFor(v).size}" to "no date yet"
-                            View.UPCOMING -> "${tasksFor(v).size}" to "next 7 days"
+                            View.INBOX -> "${tasksFor(v).size}" to "in no list"
+                            View.UPCOMING -> "${tasksFor(v).size}" to "after today"
                             View.HABITS -> model.data.habits.let { hs -> if (hs.isEmpty()) null to "small things, often" else "${hs.count { store.today in it.completions }}/${hs.size}" to "done today" }
                             View.DONE -> "$doneToday" to "finished today"
                         }
                         ListTile(v, count, detail)
                     },
                 ) { view = it }
+                ListsSection(model, live) { openList = it }
             }
         }
         return
@@ -136,14 +152,13 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
             else -> {
                 if (current == View.TODAY || current == View.INBOX) QuickAddBox(model, current)
                 val shown = tasksFor(current)
-                val card: @Composable (Task, LocalDate?) -> Unit = { t, day ->
-                    TaskCard(model, t, day, expanded == t.id, { expanded = if (expanded == t.id) null else t.id }, onDeleted = { model.deletedTask = t; expanded = null })
-                }
+                val card = card(showList = true)
                 when (current) {
                     View.TODAY -> TodayList(model, shown, card)
                     // Soon by the day each task is on, Done by the day it was finished (Todoist's Upcoming, Things' Logbook).
                     View.UPCOMING -> shown.groupBy { it.planned ?: it.due!!.date }.forEach { (day, ts) -> TaskGroup(dayName(model, day), ts, dayOf = day, card = card) }
                     View.DONE -> shown.groupBy { store.dayOf(it.completedAtMillis ?: 0L) }.forEach { (day, ts) -> TaskGroup(dayName(model, day), ts, card = card) }
+                    View.INBOX -> WhenGroups(model, shown, card)
                     else -> if (shown.isNotEmpty()) TaskGroup(null, shown, card = card)
                 }
                 if (shown.isEmpty() && current != View.TODAY) EmptyState(emptyTitle(current), emptyLine(current), icon = current.icon)
@@ -295,7 +310,7 @@ private fun emptyTitle(view: View) = when (view) {
 
 private fun emptyLine(view: View) = when (view) {
     View.TODAY -> null
-    View.INBOX -> "Quick thoughts without a date land here."
+    View.INBOX -> "Tasks you add outside a list land here. File them in a list from a task's options."
     View.UPCOMING -> "Tasks planned for the next 7 days show up here."
     View.DONE -> null
     View.HABITS -> "Habits are small things you want to do often."
@@ -322,7 +337,7 @@ private fun daysToWeekend(today: LocalDate): Int = today.dayOfWeek.isoDayNumber.
 
 /** Add a task with just a title; the chips pick a day and "More options" adds difficulty. "Call mum tomorrow 5pm 30m" is understood too. */
 @Composable
-private fun QuickAddBox(model: AppModel, view: View) {
+private fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
     var text by remember { mutableStateOf("") }
     var rank by remember { mutableStateOf(Rank.C) }
     var day by remember { mutableStateOf<Int?>(null) } // null: as typed / the view's default; 0 today; 1 tomorrow; WEEKEND; NO_DATE
@@ -349,6 +364,8 @@ private fun QuickAddBox(model: AppModel, view: View) {
                 title = parsed.title.ifBlank { text.trim() }, rank = parsed.rank ?: rank,
                 category = parsed.category ?: Category.PERSONAL,
                 planned = planned, due = parsed.due, estimateMinutes = parsed.estimateMinutes,
+                // "#Groceries" files it in that list; inside a list, the list itself.
+                listId = listId ?: parsed.listName?.let { model.store.listNamed(it)?.id },
             )
             text = ""; day = null; more = false
         }
@@ -380,8 +397,9 @@ private fun QuickAddBox(model: AppModel, view: View) {
 }
 
 @Composable
-private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boolean, toggle: () -> Unit, onDeleted: () -> Unit) {
+private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boolean, toggle: () -> Unit, onDeleted: () -> Unit, showList: Boolean = true) {
     val store = model.store
+    val list = task.listId?.let { id -> model.data.lists.firstOrNull { it.id == id } }
     var editing by remember(task.id) { mutableStateOf(false) }
     Column {
         Row(
@@ -398,7 +416,15 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                 // Overdue tasks sit under Today's calm "From before" heading, so the row needs no alarm of its own (docs/design.md, No shame).
                 // A finished task's plan no longer matters: the Done list is grouped by the day it was finished.
                 val line = if (task.isOpen) taskMeta(task, day) else ""
-                if (line.isNotEmpty()) Text(line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                // Its list, by name and colour, as TickTick shows it in the smart lists (not inside the list itself).
+                val shownList = list?.takeIf { showList }
+                if (line.isNotEmpty() || shownList != null) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    if (shownList != null) {
+                        Box(Modifier.size(8.dp).background(Color(shownList.color), CircleShape))
+                        Text(shownList.name, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                    if (line.isNotEmpty()) Text(if (shownList != null) "· $line" else line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                }
             }
             if (task.state == TaskState.OPEN) PixelButton("Done", { store.completeTask(task.id) }, color = Pixel.Green, compact = true)
             else PixelButton("Reopen", { store.reopen(task.id) }, color = Pixel.InkSoft, compact = true)
@@ -452,6 +478,13 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                                 TabButton("Tomorrow", task.planned == today.plus(DatePeriod(days = 1)), { store.updateTask(task.copy(planned = today.plus(DatePeriod(days = 1)))) })
                                 TabButton("Next week", task.planned == today.plus(DatePeriod(days = 7)), { store.updateTask(task.copy(planned = today.plus(DatePeriod(days = 7)))) })
                                 TabButton("No date", task.planned == null && task.due == null, { store.updateTask(task.copy(planned = null, plannedTime = null, due = null)) })
+                            }
+                            if (store.activeLists.isNotEmpty()) {
+                                FieldLabel("List")
+                                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                                    TabButton("Inbox", task.listId == null, { store.moveToList(task.id, null) })
+                                    store.activeLists.forEach { l -> TabButton(l.name, task.listId == l.id, { store.moveToList(task.id, l.id) }) }
+                                }
                             }
                             PlannedTime(model, task)
                             RemindMe(model, task)
@@ -533,6 +566,151 @@ fun taskMeta(t: Task, day: LocalDate? = null): String = buildList {
     if (t.reminders.isNotEmpty() && t.isOpen) add("reminder")
     if (t.subtasks.isNotEmpty()) add("${t.subtasks.count { it.done }}/${t.subtasks.size} steps")
 }.joinToString(", ")
+
+/** A list's tasks (or the Inbox's) grouped by when they are, as TickTick shows a list: from before, today, tomorrow... */
+@Composable
+private fun WhenGroups(model: AppModel, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit) {
+    val today = model.store.today
+    TaskViews.byWhen(tasks, model.store.now).forEach { (w, ts) ->
+        TaskGroup(
+            w.label, ts, color = if (w == TaskViews.When.BEFORE) Pixel.Warning else Pixel.Ink,
+            dayOf = when (w) {
+                TaskViews.When.TODAY -> today
+                TaskViews.When.TOMORROW -> today.plus(DatePeriod(days = 1))
+                else -> null
+            },
+            card = card,
+        )
+    }
+}
+
+/** The colour names, for screen readers, in the order of [TaskList.COLORS]. */
+private val listColorNames = listOf("Red", "Blue", "Green", "Amber", "Teal", "Purple", "Pink", "Slate")
+
+/** The menu's Lists: one row per list with its icon and count, "New list", and the archived ones folded away. */
+@Composable
+private fun ListsSection(model: AppModel, tasks: List<Task>, open: (String) -> Unit) {
+    val store = model.store
+    var creating by remember { mutableStateOf(false) }
+    var showArchived by remember { mutableStateOf(false) }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text("Lists", Modifier.weight(1f).semantics { heading() }, style = MaterialTheme.typography.titleSmall)
+            if (!creating) PixelButton("New list", { creating = true }, color = Pixel.InkSoft, compact = true)
+        }
+        if (creating) ListEditor(model, null) { made -> creating = false; made?.let(open) }
+        val lists = store.activeLists
+        if (lists.isEmpty() && !creating) Text(
+            "Make a list for each part of your life (Groceries, Thesis, Home). Tasks in no list stay in the Inbox.",
+            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+        )
+        ListRows(lists, tasks, open)
+        val archived = model.data.lists.filter { it.archived }
+        if (archived.isNotEmpty()) {
+            PixelButton(if (showArchived) "Hide archived" else "Archived (${archived.size})", { showArchived = !showArchived }, color = Pixel.InkSoft, compact = true)
+            if (showArchived) ListRows(archived, tasks, open)
+        }
+    }
+}
+
+@Composable
+private fun ListRows(lists: List<TaskList>, tasks: List<Task>, open: (String) -> Unit) {
+    if (lists.isEmpty()) return
+    val shape = RoundedCornerShape(Spacing.CardRadius)
+    Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)) {
+        lists.forEachIndexed { i, l ->
+            if (i > 0) HorizontalDivider(Modifier.padding(start = Spacing.M), color = Pixel.Border)
+            val count = tasks.count { it.isOpen && it.listId == l.id }
+            Row(
+                Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Open ${l.name}") { open(l.id) }
+                    .defaultMinSize(minHeight = 56.dp).padding(horizontal = Spacing.M, vertical = Spacing.S),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
+            ) {
+                Box(Modifier.size(40.dp).background(Color(l.color).copy(alpha = 0.16f), CircleShape), contentAlignment = Alignment.Center) {
+                    ItemIcon(l.icon, size = 32.dp, description = null)
+                }
+                Text(l.name, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (count > 0) Text("$count", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft)
+            }
+        }
+    }
+}
+
+/** One list: add straight into it, its tasks grouped by when they are, and Edit for its name, colour, icon and archive. */
+@Composable
+private fun ListScreen(model: AppModel, list: TaskList, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit, back: () -> Unit) {
+    var editing by remember(list.id) { mutableStateOf(false) }
+    SectionScaffold(list.name, if (list.archived) "Archived list" else "Planner", onBack = back, icon = list.icon) {
+        RewardBox(model)
+        if (editing) ListEditor(model, list) { kept -> editing = false; if (kept == null) back() }
+        else PixelButton("Edit list", { editing = true }, color = Pixel.InkSoft, compact = true)
+        if (!list.archived) QuickAddBox(model, View.INBOX, listId = list.id)
+        WhenGroups(model, tasks, card)
+        if (tasks.isEmpty()) EmptyState("Nothing in ${list.name}", "Add a task above, or file one here from its options.", icon = list.icon)
+    }
+}
+
+/**
+ * Makes a list ([list] null) or edits one: its name, one of eight colours and a real item icon; an existing list can also
+ * be archived (hidden from the menu, tasks kept) or deleted (its tasks go back to the Inbox). [done] gets the list's id,
+ * or null when it was deleted or nothing was made.
+ */
+@Composable
+private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit) {
+    val store = model.store
+    var name by remember { mutableStateOf(list?.name ?: "") }
+    var color by remember { mutableStateOf(list?.color ?: TaskList.COLORS.first()) }
+    var icon by remember { mutableStateOf(list?.icon ?: TaskList.ICONS.first()) }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            OutlinedTextField(
+                name, { name = it.take(TaskList.MAX_NAME) }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
+                label = { Text("List name") },
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+            )
+            FieldLabel("Colour")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                TaskList.COLORS.forEachIndexed { i, c ->
+                    val on = c == color
+                    Box(
+                        Modifier.size(Spacing.Target).clip(CircleShape)
+                            .selectable(on, role = Role.RadioButton) { color = c }
+                            .semantics { contentDescription = listColorNames[i] },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Box(Modifier.size(32.dp).background(Color(c), CircleShape).border(if (on) 3.dp else 0.dp, if (on) Pixel.Ink else Color.Transparent, CircleShape))
+                    }
+                }
+            }
+            FieldLabel("Icon")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                TaskList.ICONS.forEach { id ->
+                    val on = id == icon
+                    Box(
+                        Modifier.size(Spacing.Target).clip(RoundedCornerShape(12.dp))
+                            .background(if (on) Color(color).copy(alpha = 0.2f) else Color.Transparent)
+                            .border(if (on) 2.dp else 0.dp, if (on) Color(color) else Color.Transparent, RoundedCornerShape(12.dp))
+                            .selectable(on, role = Role.RadioButton) { icon = id }
+                            .semantics { contentDescription = id.replace('-', ' ') },
+                        contentAlignment = Alignment.Center,
+                    ) { ItemIcon(id, size = 36.dp, description = null) }
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelButton(if (list == null) "Make list" else "Save", {
+                    if (list == null) done(store.addList(name, color, icon)?.id)
+                    else { store.updateList(list.copy(name = name, color = color, icon = icon)); done(list.id) }
+                }, Modifier.weight(1f), Pixel.Green, enabled = name.isNotBlank(), compact = true)
+                PixelButton("Cancel", { done(list?.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            }
+            if (list != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelButton(if (list.archived) "Unarchive" else "Archive", { store.updateList(list.copy(archived = !list.archived)); done(list.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                PixelButton("Delete", { store.deleteList(list.id); done(null) }, Modifier.weight(1f), Pixel.Danger, compact = true)
+            }
+            if (list != null) Text("Deleting a list moves its tasks to the Inbox.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        }
+    }
+}
 
 @Composable
 private fun HabitsView(model: AppModel) {

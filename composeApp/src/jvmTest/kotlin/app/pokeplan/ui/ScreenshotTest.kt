@@ -144,12 +144,17 @@ class ScreenshotTest {
         store.addTask("Book the dentist", Rank.C, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 1)), estimateMinutes = 15)
         store.addTask("Pay the rent", Rank.B, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 3)))
         store.addTask("Buy stamps", Rank.E, planned = store.today.plus(kotlinx.datetime.DatePeriod(days = 3)))
+        val groceries = store.addList("Groceries", app.pokeplan.plan.TaskList.COLORS[2], "sweet-apple")!!
+        store.addList("Thesis", app.pokeplan.plan.TaskList.COLORS[5], "journal")
+        store.addTask("Oat milk", Rank.E, listId = groceries.id)
+        store.moveToList(store.data.tasks.first { it.title == "Buy stamps" }.id, groceries.id)
+        store.addTask("Call the bank", Rank.C)
         store.completeTask(store.data.tasks.first().id)
         clock.millis += 11_000
         store.tick()
         store.markRewardsSeen()
         val model = AppModel(store)
-        render("planner") {
+        render("planner", height = 1500) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model) } }
         }
         render("planner-today") {
@@ -157,6 +162,9 @@ class ScreenshotTest {
         }
         render("planner-soon") {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 3) } }
+        }
+        render("planner-inbox") {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 2) } }
         }
         render("planner-done") {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 5) } }
