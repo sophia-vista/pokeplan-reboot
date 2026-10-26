@@ -243,17 +243,20 @@ private fun PokedexView(model: AppModel) {
     }
     shown?.let { (number, id) ->
         val form = Dex.defaultForm(id).id
-        // The licence of SpriteCollab's portraits (CC BY-NC 4.0) asks for credit to their artists.
-        val credit by produceState<String?>(null, form) { value = portraitCredit(form) }
+        // The SpriteCollab licence (CC BY-NC 4.0) asks for credit to the artists of the sprite and the portrait.
+        val credit by produceState<String?>(null, form) {
+            val sprite = spriteCredit(form)
+            val portrait = portraitCredit(form)
+            value = when {
+                sprite != null && sprite == portrait -> "Sprite and portrait by $sprite"
+                else -> listOfNotNull(sprite?.let { "Sprite by $it" }, portrait?.let { "portrait by $it" }).joinToString(", ").ifEmpty { null }?.replaceFirstChar { it.uppercase() }
+            }
+        }
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("#$number  ${Dex.species(id).name}", style = MaterialTheme.typography.titleMedium)
-                // Its face beside its entry, the way the Mystery Dungeon games put a portrait beside a line of text.
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-                    Portrait(form, false, "${Dex.species(id).name}'s portrait", size = 72.dp)
-                    Text(Dex.entry(id), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                }
-                credit?.let { CreditLine("Portrait by $it") }
+                Text(Dex.entry(id), style = MaterialTheme.typography.bodyLarge)
+                credit?.let { CreditLine(it) }
             }
         }
     }
@@ -506,16 +509,16 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                     p.form.types.forEach { TypePlate(it, width = 84.dp) }
                 }
             }
-            // The SpriteCollab licence (CC BY-NC 4.0) asks for credit to the sprite's artists.
-            val credit by produceState<String?>(null, p.form.id) { value = spriteCredit(p.form.id) }
-            credit?.let { CreditLine("Sprite by $it") }
-
             TextBox {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("Nature: ${p.nature.name.lowercase().replaceFirstChar { it.uppercase() }}", style = MaterialTheme.typography.bodyLarge)
-                    Text("Ability: ${p.ability}", style = MaterialTheme.typography.bodyLarge)
-                    p.gender?.let { Text("Gender: ${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }}", style = MaterialTheme.typography.bodyLarge) }
-                    Text("Judge: ${judge(p.ivs.values.sum())}", style = MaterialTheme.typography.bodyLarge)
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    // Its face, the way a Mystery Dungeon team menu shows each member.
+                    Portrait(p.form.id, p.isShiny, "${p.nickname}'s portrait", size = 72.dp)
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("Nature: ${p.nature.name.lowercase().replaceFirstChar { it.uppercase() }}", style = MaterialTheme.typography.bodyLarge)
+                        Text("Ability: ${p.ability}", style = MaterialTheme.typography.bodyLarge)
+                        p.gender?.let { Text("Gender: ${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }}", style = MaterialTheme.typography.bodyLarge) }
+                        Text("Judge: ${judge(p.ivs.values.sum())}", style = MaterialTheme.typography.bodyLarge)
+                    }
                 }
             }
 
