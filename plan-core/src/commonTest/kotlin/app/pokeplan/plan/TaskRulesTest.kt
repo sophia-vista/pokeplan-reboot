@@ -29,6 +29,9 @@ class TaskRulesTest {
     @Test
     fun recurringAndTutorialTasksPayStraightAway() {
         assertTrue(TaskRules.paysOnCompletion(task { it.copy(seriesId = "daily") }, 0))
+        // 1970-01-01 at epoch 0: an instance planned on that day pays, one planned the next day does not yet.
+        assertTrue(TaskRules.paysOnCompletion(task { it.copy(seriesId = "daily", planned = kotlinx.datetime.LocalDate(1970, 1, 1)) }, 0))
+        assertFalse(TaskRules.paysOnCompletion(task { it.copy(seriesId = "daily", planned = kotlinx.datetime.LocalDate(1970, 1, 2)) }, 0), "not ahead of its day")
         assertTrue(TaskRules.paysOnCompletion(task { it.copy(tutorial = true) }, 0))
         assertFalse(TaskRules.paysOnCompletion(task(), 0))
     }

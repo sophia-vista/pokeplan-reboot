@@ -9,6 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class RecurrenceTest {
@@ -102,7 +103,9 @@ class RecurrenceTest {
         assertEquals("plants-2026-10-19", first.id)
         assertEquals(today, first.planned)
         assertEquals(LocalTime(9, 0), first.plannedTime)
-        assertTrue(TaskRules.paysOnCompletion(first, 0), "recurring instances pay straight away")
+        val noon = kotlinx.datetime.LocalDateTime(2026, 10, 19, 12, 0).toEpochMillis(kotlinx.datetime.TimeZone.UTC)
+        assertTrue(TaskRules.paysOnCompletion(first, noon), "recurring instances pay straight away on their day")
+        assertFalse(TaskRules.paysOnCompletion(existing[1], noon), "but not ahead of it")
         assertEquals(15, RecurringTasks.instancesToCreate(template, r, listOf(first.copy(seriesId = "other")), today, 5).size + 0 + 0)
     }
 

@@ -114,9 +114,13 @@ data class Settings(
     val effectsLevel: Float get() = if (sound) effectsVolume.coerceIn(0, 100) / 100f else 0f
 }
 
-/** A repeating task: the template its instances are copied from, and when they fall. */
+/**
+ * A repeating task: the template its instances are copied from, and when they fall. [firstTaskId] is the plain task the
+ * player turned into a repeating one: it stays the task of its own day and is not an instance, so it keeps the
+ * minimum-age rule, but it still shows that it repeats.
+ */
 @Serializable
-data class TaskSeries(val template: Task, val recurrence: Recurrence)
+data class TaskSeries(val template: Task, val recurrence: Recurrence, val firstTaskId: String? = null)
 
 /** A finished task that may still be undone. [original] is what to restore. */
 @Serializable

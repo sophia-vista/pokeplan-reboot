@@ -153,7 +153,7 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Milestone Super Candies | 3 a day | `MAX_MILESTONE_REWARDS_PER_DAY` |
 | Weekly review berry | 1 a week | `Review` |
 | Habit | pays once a day, even after an undo | `Habit.paysOn`, `paidOn` |
-| Task | pays once, after its rank's minimum age (2, 5, 10, 15, 20 minutes for E to A) | `Rank.minAgeMinutes`, `plan.finish_task` |
+| Task | pays once, after its rank's minimum age (2, 5, 10, 15, 20 minutes for E to A); a repeating task's instance pays from its own day, never ahead | `Rank.minAgeMinutes`, `TaskRules.paysOnCompletion`, `plan.finish_task` |
 | Focus session | 5 minutes at least; 180 in the app; 240 on the server (the shiny bonus stops at 240) | `Egg.MIN_MINUTES`, `MAX_MINUTES` |
 | Egg tickets | 20 a device; 200 reported per sync | `TICKET_STOCK`, `MAX_SPENT` |
 | Friend gifts | 1 per friend a day | `platform.send_gift` |

@@ -30,10 +30,12 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.app.GameStore
 import app.pokeplan.plan.Category
 import app.pokeplan.plan.HabitTarget
+import app.pokeplan.plan.MonthlyRule
 import app.pokeplan.plan.QuickAdd
 import app.pokeplan.plan.Rank
 import app.pokeplan.plan.ReminderOffset
 import app.pokeplan.plan.Reminders
+import app.pokeplan.plan.Repeat
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.TaskList
 import app.pokeplan.plan.TaskState
@@ -55,6 +57,8 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.theme.title
 import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.plus
@@ -81,6 +85,8 @@ import kotlinx.datetime.minus
 
 private enum class View(val label: String, val icon: String) {
     TODAY("Today", "oaks-parcel"), DAY("Calendar", "town-map"), INBOX("Inbox", "seal-bag"), UPCOMING("Next 7 days", "timer-ball"), HABITS("Habits", "heart-scale"), DONE("Done", "premier-ball"),
+    // Last, because widgets and shortcuts open a view by its index.
+    ALL("All tasks", "scope-lens"),
 }
 
 @Composable
@@ -98,7 +104,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
         View.INBOX -> TaskViews.inbox(live)
         View.UPCOMING -> TaskViews.upcoming(live, store.now)
         View.DONE -> live.filter { it.state == TaskState.DONE }.sortedByDescending { it.completedAtMillis }.take(30)
-        View.HABITS, View.DAY -> emptyList()
+        View.HABITS, View.DAY, View.ALL -> emptyList()
     }.filter { it.id !in pendingIds }
 
     fun card(showList: Boolean): @Composable (Task, LocalDate?) -> Unit = { t, day ->
@@ -134,6 +140,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
                             View.UPCOMING -> "${tasksFor(v).size}" to "after today"
                             View.HABITS -> model.data.habits.let { hs -> if (hs.isEmpty()) null to "small things, often" else "${hs.count { store.today in it.completions }}/${hs.size}" to "done today" }
                             View.DONE -> "$doneToday" to "finished today"
+                            View.ALL -> "${live.count { it.isOpen }}" to "search and filter"
                         }
                         ListTile(v, count, detail)
                     },
@@ -149,6 +156,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
         when (current) {
             View.HABITS -> HabitsView(model)
             View.DAY -> DayView(model, pendingIds, startWeek)
+            View.ALL -> AllTasksView(model, live.filter { it.id !in pendingIds }, card(showList = true))
             else -> {
                 if (current == View.TODAY || current == View.INBOX) QuickAddBox(model, current)
                 val shown = tasksFor(current)
@@ -172,7 +180,7 @@ private class ListTile(val view: View, val count: String?, val detail: String)
 /** The list tint, the same on the menu tile and nowhere else (the lists themselves stay calm). */
 private fun View.tint(): Color = when (this) {
     View.TODAY -> Pixel.Red; View.DAY -> Color(0xFF0D9488); View.INBOX -> Pixel.Blue; View.UPCOMING -> Pixel.Warning
-    View.HABITS -> Pixel.Green; View.DONE -> Color(0xFF8B5CF6)
+    View.HABITS -> Pixel.Green; View.DONE -> Color(0xFF8B5CF6); View.ALL -> Pixel.Gray
 }
 
 /** Two tiles to a row: the item icon and the count on top, the name and one quiet line below. */
@@ -258,7 +266,7 @@ private fun TodayList(model: AppModel, tasks: List<Task>, card: @Composable (Tas
  * group is on, so the rows leave it out and show only their time.
  */
 @Composable
-private fun TaskGroup(
+internal fun TaskGroup(
     title: String?, tasks: List<Task>, color: Color = Pixel.Ink, dayOf: LocalDate? = null,
     action: Pair<String, () -> Unit>? = null, card: @Composable (Task, LocalDate?) -> Unit,
 ) {
@@ -305,7 +313,7 @@ private fun emptyTitle(view: View) = when (view) {
     View.UPCOMING -> "Nothing coming up"
     View.DONE -> "Nothing finished yet"
     View.HABITS -> "No habits yet"
-    View.DAY -> ""
+    View.DAY, View.ALL -> ""
 }
 
 private fun emptyLine(view: View) = when (view) {
@@ -314,7 +322,7 @@ private fun emptyLine(view: View) = when (view) {
     View.UPCOMING -> "Tasks planned for the next 7 days show up here."
     View.DONE -> null
     View.HABITS -> "Habits are small things you want to do often."
-    View.DAY -> null
+    View.DAY, View.ALL -> null
 }
 
 /** What the difficulty ranks mean. Harder tasks earn more; it is how hard it feels, not how urgent it is. */
@@ -326,6 +334,43 @@ fun DifficultyPicker(selected: Rank, onSelect: (Rank) -> Unit) {
             Rank.entries.forEach { r -> RankBadge(r, selected = r == selected, onClick = { onSelect(r) }) }
         }
         Text("${selected.letter}: ${selected.title}. Harder tasks earn more.", style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+/** The ways a task can repeat from the planner; the engine's [Repeat] can say more (every 2 weeks, yearly), these are the common four. */
+internal enum class RepeatKind(val label: String) {
+    NEVER("Never"), DAILY("Daily"), WEEKDAYS("Weekdays"), WEEKLY("Weekly"), MONTHLY("Monthly"), CUSTOM("Custom");
+
+    /** The repeat to start from [start]: monthly on its day of the month, weekly on the weekday of the start. Null for NEVER and CUSTOM. */
+    fun toRepeat(start: LocalDate): Repeat? = when (this) {
+        NEVER, CUSTOM -> null
+        DAILY -> Repeat.Daily()
+        WEEKDAYS -> Repeat.Weekly(days = WORKDAYS)
+        WEEKLY -> Repeat.Weekly()
+        MONTHLY -> Repeat.Monthly(rule = MonthlyRule.DayOfMonth(start.dayOfMonth))
+    }
+
+    /** What the repeat does, in a line. */
+    val note: String get() = when (this) {
+        DAILY -> "Every day, starting with its day."
+        WEEKDAYS -> "Monday to Friday."
+        WEEKLY -> "Every week, on the weekday of its first day."
+        MONTHLY -> "Every month, on the date of its first day."
+        NEVER, CUSTOM -> ""
+    }
+
+    companion object {
+        private val WORKDAYS = setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)
+        val PICKABLE = listOf(NEVER, DAILY, WEEKDAYS, WEEKLY, MONTHLY)
+
+        fun of(repeat: Repeat?): RepeatKind = when {
+            repeat == null -> NEVER
+            repeat is Repeat.Daily && repeat.every == 1 -> DAILY
+            repeat is Repeat.Weekly && repeat.every == 1 && repeat.days == WORKDAYS -> WEEKDAYS
+            repeat is Repeat.Weekly && repeat.every == 1 && repeat.days.size <= 1 -> WEEKLY
+            repeat is Repeat.Monthly && repeat.every == 1 -> MONTHLY
+            else -> CUSTOM
+        }
     }
 }
 
@@ -341,6 +386,7 @@ private fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
     var text by remember { mutableStateOf("") }
     var rank by remember { mutableStateOf(Rank.C) }
     var day by remember { mutableStateOf<Int?>(null) } // null: as typed / the view's default; 0 today; 1 tomorrow; WEEKEND; NO_DATE
+    var repeat by remember { mutableStateOf(RepeatKind.NEVER) }
     val focus = remember { FocusRequester() }
     // "Add task" from a widget or the app icon's shortcut lands here with the keyboard open.
     LaunchedEffect(model.addTaskRequested) {
@@ -360,14 +406,16 @@ private fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
                 picked != null -> model.store.today.plus(DatePeriod(days = picked))
                 else -> parsed.planned ?: if (parsed.due == null && view == View.TODAY) model.store.today else null
             }
-            model.store.addTask(
+            val made = model.store.addTask(
                 title = parsed.title.ifBlank { text.trim() }, rank = parsed.rank ?: rank,
                 category = parsed.category ?: Category.PERSONAL,
                 planned = planned, due = parsed.due, estimateMinutes = parsed.estimateMinutes,
                 // "#Groceries" files it in that list; inside a list, the list itself.
                 listId = listId ?: parsed.listName?.let { model.store.listNamed(it)?.id },
             )
-            text = ""; day = null; more = false
+            // A repeating task starts on its day (today when it has none) and the next ones are made ahead.
+            repeat.toRepeat(made.planned ?: model.store.today)?.let { model.store.makeRepeating(made.id, it) }
+            text = ""; day = null; more = false; repeat = RepeatKind.NEVER
         }
     }
     TextBox {
@@ -391,7 +439,14 @@ private fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
                 }
             }
             PixelButton(if (more) "Fewer options" else "More options", { more = !more }, color = Pixel.InkSoft, compact = true)
-            if (more) DifficultyPicker(rank) { rank = it }
+            if (more) {
+                DifficultyPicker(rank) { rank = it }
+                FieldLabel("Repeat")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    RepeatKind.PICKABLE.forEach { k -> TabButton(k.label, repeat == k, { repeat = k }) }
+                }
+                if (repeat != RepeatKind.NEVER) Text(repeat.note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
         }
     }
 }
@@ -415,7 +470,8 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                 Text(task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 4, overflow = TextOverflow.Ellipsis, color = if (task.isOpen) Pixel.Ink else Pixel.InkSoft)
                 // Overdue tasks sit under Today's calm "From before" heading, so the row needs no alarm of its own (docs/design.md, No shame).
                 // A finished task's plan no longer matters: the Done list is grouped by the day it was finished.
-                val line = if (task.isOpen) taskMeta(task, day) else ""
+                val kind = store.seriesOf(task)?.let { RepeatKind.of(it.recurrence.repeat) }
+                val line = if (task.isOpen) taskMeta(task, day, kind?.let { if (it == RepeatKind.CUSTOM) "repeats" else "repeats ${it.label.lowercase()}" }) else ""
                 // Its list, by name and colour, as TickTick shows it in the smart lists (not inside the list itself).
                 val shownList = list?.takeIf { showList }
                 if (line.isNotEmpty() || shownList != null) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
@@ -432,13 +488,24 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
         if (expanded) {
             Box(Modifier.fillMaxWidth().background(Pixel.Shade.copy(alpha = 0.5f)).padding(Spacing.M)) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                    Text("${task.rank.letter}: ${task.rank.title}", style = MaterialTheme.typography.bodyMedium)
+                    Text("${task.rank.letter}: ${task.rank.title}, ${task.category.label}", style = MaterialTheme.typography.bodyMedium)
                     if (editing) {
                         var title by remember { mutableStateOf(task.title) }
                         var rank by remember { mutableStateOf(task.rank) }
                         var minutes by remember { mutableStateOf(task.estimateMinutes ?: 0) }
+                        var category by remember { mutableStateOf(task.category) }
+                        var notes by remember { mutableStateOf(task.notes) }
+                        var dueDay by remember { mutableStateOf(task.due?.date) }
                         OutlinedTextField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge, label = { Text("Title") })
+                        OutlinedTextField(
+                            notes, { notes = it }, Modifier.fillMaxWidth(), minLines = 2, maxLines = 6, textStyle = MaterialTheme.typography.bodyLarge, label = { Text("Notes") },
+                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                        )
                         DifficultyPicker(rank) { rank = it }
+                        FieldLabel("Category")
+                        CategoryChips(category) { category = it ?: category }
+                        // A deadline is not the day you plan to do it (that is "Move to"); it keeps its time of day, or 23:59.
+                        DayPicker("Deadline", dueDay, store.today, listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7), noneLabel = "No deadline") { dueDay = it }
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                             PixelButton("-5", { minutes = (minutes - 5).coerceAtLeast(0) }, color = Pixel.InkSoft, compact = true)
                             Text(if (minutes == 0) "No estimate" else "$minutes min", style = MaterialTheme.typography.bodyLarge)
@@ -446,12 +513,19 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                             PixelButton("Save", {
-                                store.updateTask(task.copy(title = title.trim().ifEmpty { task.title }, rank = rank, estimateMinutes = minutes.takeIf { it > 0 }))
+                                store.updateTask(
+                                    task.copy(
+                                        title = title.trim().ifEmpty { task.title }, rank = rank, estimateMinutes = minutes.takeIf { it > 0 },
+                                        category = category, notes = notes.trim(),
+                                        due = dueDay?.let { LocalDateTime(it, task.due?.time ?: LocalTime(23, 59)) },
+                                    ),
+                                )
                                 editing = false
                             }, Modifier.weight(1f), Pixel.Green, compact = true)
                             PixelButton("Cancel", { editing = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         }
                     } else {
+                        if (task.notes.isNotBlank()) Text(task.notes, style = MaterialTheme.typography.bodyLarge)
                         task.subtasks.forEach { sub ->
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Text(sub.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (sub.done) Pixel.InkSoft else Pixel.Ink)
@@ -488,6 +562,7 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                             }
                             PlannedTime(model, task)
                             RemindMe(model, task)
+                            RepeatRow(model, task)
                             HorizontalDivider(color = Pixel.Border)
                             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                                 PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -500,6 +575,25 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
             }
         }
     }
+}
+
+/** Whether and how the task repeats: the four common ways, or Never to stop (the days ahead that are still untouched go). */
+@Composable
+private fun RepeatRow(model: AppModel, task: Task) {
+    val store = model.store
+    val series = store.seriesOf(task)
+    val kind = RepeatKind.of(series?.recurrence?.repeat)
+    FieldLabel("Repeat")
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        RepeatKind.PICKABLE.forEach { k ->
+            TabButton(k.label, kind == k, {
+                if (k == RepeatKind.NEVER) store.stopRepeating(task.id)
+                else k.toRepeat(series?.recurrence?.start ?: task.planned ?: store.today)?.let { store.makeRepeating(task.id, it) }
+            })
+        }
+    }
+    val note = if (kind == RepeatKind.CUSTOM) "A custom repeat. Choose one above to replace it." else kind.note
+    if (note.isNotEmpty()) Text(note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
 /** A few common times and a 15-minute nudge, rather than a clock dial. */
@@ -558,13 +652,14 @@ private fun RemindMe(model: AppModel, task: Task) {
     Text(note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
-/** "Mon 19 Oct, 45 min, 1/3 steps"; the date is left out when it is [day] (the day the list is grouped on). */
-fun taskMeta(t: Task, day: LocalDate? = null): String = buildList {
+/** "Mon 19 Oct, 45 min, 1/3 steps, repeats weekly" ([repeats] is the marker for a repeating task); the date is left out when it is [day] (the day the list is grouped on). */
+fun taskMeta(t: Task, day: LocalDate? = null, repeats: String? = null): String = buildList {
     t.due?.let { add(listOfNotNull("due", it.date.takeIf { d -> d != day }?.short(), clock(it.time)).joinToString(" ")) }
         ?: t.planned?.let { p -> listOfNotNull(p.takeIf { it != day }?.short(), t.plannedTime?.let(::clock)).joinToString(" ").takeIf { it.isNotEmpty() }?.let(::add) }
     t.estimateMinutes?.let { add("$it min") }
     if (t.reminders.isNotEmpty() && t.isOpen) add("reminder")
     if (t.subtasks.isNotEmpty()) add("${t.subtasks.count { it.done }}/${t.subtasks.size} steps")
+    if (repeats != null) add(repeats)
 }.joinToString(", ")
 
 /** A list's tasks (or the Inbox's) grouped by when they are, as TickTick shows a list: from before, today, tomorrow... */
@@ -712,19 +807,89 @@ private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit
     }
 }
 
+/** Per-week and per-month habits count weeks and months, the others days. */
+private fun streakUnit(target: HabitTarget): String = when (target) {
+    is HabitTarget.PerWeek -> " weeks"
+    is HabitTarget.PerMonth -> " months"
+    else -> ""
+}
+
+/** How often a habit is meant to happen, in the words of the picker. */
+private enum class HabitKind(val label: String) { DAILY("Every day"), WEEKDAYS("Chosen days"), PER_WEEK("Times a week"), PER_MONTH("Times a month") }
+
+private val WEEK = DayOfWeek.entries
+
+/** "Every day", "Mon Wed Fri", "3 times a week", "10 times a month". */
+internal fun habitTargetLabel(target: HabitTarget): String = when (target) {
+    HabitTarget.Daily -> "Every day"
+    is HabitTarget.Weekdays -> if (target.days.size == 7) "Every day" else WEEK.filter { it in target.days }.joinToString(" ") { dayNames[it.ordinal] }
+    is HabitTarget.PerWeek -> if (target.times == 1) "Once a week" else "${target.times} times a week"
+    is HabitTarget.PerMonth -> if (target.times == 1) "Once a month" else "${target.times} times a month"
+}
+
 @Composable
 private fun HabitsView(model: AppModel) {
     val store = model.store
     var title by remember { mutableStateOf("") }
+    var more by remember { mutableStateOf(false) }
+    var kind by remember { mutableStateOf(HabitKind.DAILY) }
+    var days by remember { mutableStateOf(setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) }
+    var times by remember { mutableStateOf(3) }
+    var category by remember { mutableStateOf(Category.HEALTH) }
+    fun target(): HabitTarget = when (kind) {
+        HabitKind.DAILY -> HabitTarget.Daily
+        HabitKind.WEEKDAYS -> HabitTarget.Weekdays(days)
+        HabitKind.PER_WEEK -> HabitTarget.PerWeek(times.coerceIn(1, 7))
+        HabitKind.PER_MONTH -> HabitTarget.PerMonth(times.coerceIn(1, 31))
+    }
+    val ready = title.isNotBlank() && (kind != HabitKind.WEEKDAYS || days.isNotEmpty())
+    fun add() {
+        if (!ready) return
+        store.addHabit(title, target(), category = category)
+        title = ""; more = false; kind = HabitKind.DAILY; category = Category.HEALTH
+    }
     TextBox {
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
-                title, { title = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                placeholder = { Text("New daily habit", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { if (title.isNotBlank()) { store.addHabit(title, HabitTarget.Daily); title = "" } }),
-            )
-            PixelButton("Add", { store.addHabit(title, HabitTarget.Daily); title = "" }, color = Pixel.Red, enabled = title.isNotBlank())
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                OutlinedTextField(
+                    title, { title = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
+                    placeholder = { Text("New habit", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { add() }),
+                )
+                PixelButton("Add", ::add, color = Pixel.Red, enabled = ready)
+            }
+            PixelButton(if (more) "Fewer options" else "How often, and what kind", { more = !more }, color = Pixel.InkSoft, compact = true)
+            if (more) {
+                FieldLabel("How often")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    HabitKind.entries.forEach { k ->
+                        TabButton(k.label, kind == k, {
+                            kind = k
+                            // The count means something different for a week and a month, so start each at a usual number.
+                            if (k == HabitKind.PER_WEEK) times = times.coerceIn(1, 7)
+                            if (k == HabitKind.PER_MONTH && times <= 7) times = 10
+                        })
+                    }
+                }
+                if (kind == HabitKind.WEEKDAYS) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        WEEK.forEach { d -> TabButton(dayNames[d.ordinal], d in days, { days = if (d in days) days - d else days + d }) }
+                    }
+                    if (days.isEmpty()) Text("Choose at least one day.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                }
+                if (kind == HabitKind.PER_WEEK || kind == HabitKind.PER_MONTH) {
+                    val max = if (kind == HabitKind.PER_WEEK) 7 else 31
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        PixelButton("-", { times = (times - 1).coerceAtLeast(1) }, color = Pixel.InkSoft, compact = true)
+                        Text(habitTargetLabel(target()), style = MaterialTheme.typography.bodyLarge)
+                        PixelButton("+", { times = (times + 1).coerceAtMost(max) }, color = Pixel.InkSoft, compact = true)
+                    }
+                    Text("Miss one now and then and the streak carries on.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                }
+                FieldLabel("Category")
+                CategoryChips(category) { category = it ?: category }
+            }
         }
     }
     if (model.data.habits.isEmpty()) EmptyState(emptyTitle(View.HABITS), emptyLine(View.HABITS), icon = View.HABITS.icon)
@@ -738,7 +903,13 @@ private fun HabitsView(model: AppModel) {
             },
         ) {
             Text(h.title, style = MaterialTheme.typography.bodyLarge)
-            Text(if (doneToday) "Done today" else "Streak ${h.streak(store.today, model.data.restDays, store.perks.extraForgivenDays, store.firstDayOfWeek)}", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                listOf(
+                    if (doneToday) "Done today" else "Streak ${h.streak(store.today, model.data.restDays, store.perks.extraForgivenDays, store.firstDayOfWeek)}${streakUnit(h.target)}",
+                    habitTargetLabel(h.target), h.category.label,
+                ).joinToString(", "),
+                style = MaterialTheme.typography.bodyMedium,
+            )
         }
     }
 }

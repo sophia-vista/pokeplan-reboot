@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.29.0
+
+- Editing a task now also sets its category, its notes and its deadline (a day, with Today, Tomorrow, Next week and a day-by-day nudge, or none).
+- A task can repeat: daily, on weekdays, weekly or monthly. Pick Repeat in a task's options, or in More options when you add one. Repeating tasks say so in their line, and Never stops the repeat.
+- Planner has a new tile, All tasks: search titles and notes, and filter by status, category, list and difficulty.
+- New habits can be on chosen days, a number of times a week or a number of times a month (not only every day), and have a category.
+- New goals can have a category and a target date, both shown on the goal.
+- The weekly review shows where the week's finished tasks went, by category.
+- Fix: a repeating task's later days pay only once their day comes, so ticking ahead earns nothing extra.
+
 ## 0.28.0
 
 - Trainer ranks come quickly at first and slow down later: Apprentice after a day or two of play (it took over two weeks), Ace in under two weeks, and each rank after that takes longer than the last. Nobody loses a rank.

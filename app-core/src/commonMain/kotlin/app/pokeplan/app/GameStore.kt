@@ -52,6 +52,7 @@ import app.pokeplan.plan.HabitTarget
 import app.pokeplan.plan.Phase
 import app.pokeplan.plan.Rank
 import app.pokeplan.plan.Recurrence
+import app.pokeplan.plan.Repeat
 import app.pokeplan.plan.DueReminder
 import app.pokeplan.plan.ReminderOffset
 import app.pokeplan.plan.Reminders
@@ -566,6 +567,57 @@ class GameStore(
         update { it.copy(series = it.series + series) }
         refresh()
     }
+
+    /** The series [task] belongs to (an instance of it, or the plain task it was made from), or null if it does not repeat. */
+    fun seriesOf(task: Task): TaskSeries? =
+        data.series.firstOrNull { it.template.seriesId == task.seriesId && task.seriesId != null || it.firstTaskId == task.id }
+
+    /**
+     * Makes an open task repeat on [repeat], starting from its planned day (today when it has none). The task itself stays
+     * the one of its own day (it pays as a one-off task, with the minimum age); the next ones are created ahead. On a task
+     * that already repeats, this changes how: the later instances you have not touched are made again on the new schedule.
+     */
+    fun makeRepeating(taskId: String, repeat: Repeat): Boolean {
+        val task = data.tasks.firstOrNull { it.id == taskId && it.isOpen } ?: return false
+        val existing = seriesOf(task)
+        if (existing != null) {
+            val id = existing.template.seriesId!!
+            update { d ->
+                d.copy(
+                    series = d.series.map { if (it.template.seriesId == id) it.copy(recurrence = it.recurrence.copy(repeat = repeat)) else it },
+                    tasks = d.tasks.filterNot { untouchedLaterInstance(it, id) },
+                )
+            }
+        } else {
+            val start = task.planned ?: today
+            val seriesId = newId()
+            val template = task.copy(
+                id = seriesId, seriesId = seriesId, planned = null, createdAtMillis = nowMillis, paid = false, focusedMinutes = 0,
+                subtasks = task.subtasks.map { it.copy(done = false, paid = false) },
+            )
+            // Its own day is skipped: the task itself is that day's.
+            val recurrence = Recurrence(repeat, start, skipped = setOf(start))
+            update { d ->
+                d.copy(
+                    series = d.series + TaskSeries(template, recurrence, firstTaskId = task.id),
+                    tasks = d.tasks.map { if (it.id == task.id && it.planned == null) it.copy(planned = start) else it },
+                )
+            }
+        }
+        refresh()
+        return true
+    }
+
+    /** Stops a task repeating. The task itself stays; instances you have not touched and that are still ahead are removed. */
+    fun stopRepeating(taskId: String) {
+        val task = data.tasks.firstOrNull { it.id == taskId } ?: return
+        val id = seriesOf(task)?.template?.seriesId ?: return
+        update { d -> d.copy(series = d.series.filterNot { it.template.seriesId == id }, tasks = d.tasks.filterNot { untouchedLaterInstance(it, id) }) }
+    }
+
+    /** An instance of series [seriesId] after today that is still open and has had nothing done to it. */
+    private fun untouchedLaterInstance(t: Task, seriesId: String): Boolean =
+        t.seriesId == seriesId && t.isOpen && (t.planned ?: today) > today && t.focusedMinutes == 0 && t.subtasks.none { it.done }
 
     // --- the clock ----------------------------------------------------------------------------------------------------
 
