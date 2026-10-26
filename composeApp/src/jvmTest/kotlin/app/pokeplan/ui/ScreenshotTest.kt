@@ -267,6 +267,17 @@ class ScreenshotTest {
         }
     }
 
+    @Test
+    fun pokedexForms() {
+        val store = storeWithTeam()
+        store.grantPokemon(3, "test")
+        val model = AppModel(store)
+        val rows = app.pokeplan.core.dex.Dex.regionDex(app.pokeplan.core.dex.Region.KANTO).mapIndexed { i, s -> (i + 1) to s }
+        render("pokedex-forms", height = 1400) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.DexEntryScreen(model, rows, 3, {}, {}) } }
+        }
+    }
+
     private fun cutscene(name: String, frames: Int, still: Boolean, scene: (GameStore) -> app.pokeplan.ui.screens.Cutscene) {
         val store = storeWithTeam(hatched = 1)
         store.changeSettings { it.copy(reduceMotion = still) }
