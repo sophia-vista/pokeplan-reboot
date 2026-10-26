@@ -107,6 +107,18 @@ data class Settings(
     val reminders: Boolean = true,
     /** Reminders that fall in these hours wait for their end. */
     val quietHours: QuietHours = QuietHours(),
+    /** An unanswered task reminder repeats up to three times, ten minutes apart (Android). */
+    val repeatReminders: Boolean = true,
+    /** A quiet "halfway there" notification in focus sessions of 15 minutes or more (Android). */
+    val focusHalfway: Boolean = true,
+    /** A notification when a focus session's time is up (Android). */
+    val focusEnd: Boolean = true,
+    /** An evening reminder when nothing has counted today and a streak is running (Android). */
+    val streakReminder: Boolean = true,
+    /** The hour of that reminder, local time. */
+    val streakReminderHour: Int = 20,
+    /** A recap of the week on Sunday evening (Android). */
+    val weeklyRecap: Boolean = true,
 ) {
     /** How loud cries and effects play, 0 to 1 (0 when Sound was switched off). */
     val effectsLevel: Float get() = if (sound) effectsVolume.coerceIn(0, 100) / 100f else 0f
