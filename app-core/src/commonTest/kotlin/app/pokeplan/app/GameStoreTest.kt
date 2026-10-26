@@ -604,6 +604,22 @@ class GameStoreTest {
     }
 
     @Test
+    fun an_all_day_event_spans_its_days_and_moves_as_one() {
+        val (s, _) = started()
+        val first = s.today
+        val home = s.addAllDayEvent("Home", first, first.plus(kotlinx.datetime.DatePeriod(days = 2)), app.pokeplan.plan.TaskList.COLORS[0])
+        assertTrue(home.allDay)
+        assertEquals(first.plus(kotlinx.datetime.DatePeriod(days = 2)), home.endDay)
+        s.updateEvent(home.id, day = first.plus(kotlinx.datetime.DatePeriod(days = 1)))
+        val moved = s.data.events.single()
+        assertEquals(first.plus(kotlinx.datetime.DatePeriod(days = 3)), moved.endDay, "the last day moves with the first")
+        s.updateEvent(home.id, allDay = false)
+        assertNull(s.data.events.single().lastDay)
+        val wfh = s.addAllDayEvent("WFH", first)
+        assertNull(wfh.lastDay)
+    }
+
+    @Test
     fun a_shiny_stays_in_the_shiny_dex_after_it_is_transferred() {
         val base = started().first
         val shiny = base.data.player.pokemon.first().copy(isShiny = true)

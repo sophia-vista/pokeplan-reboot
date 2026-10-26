@@ -6,6 +6,10 @@ object WhatsNew {
         "0.23.0" to listOf(
             "More Pokémon sounds: your buddy calls out for good news and when it becomes your buddy, and real game sounds play when you finish a task, give a berry, hatch an egg, evolve or transfer a Pokémon.",
         ),
+        "0.22.0" to listOf(
+            "A Month view in the Calendar, with events over several days as one bar across them.",
+            "Your own events can be all day, over one day or several, in a colour you pick.",
+        ),
         "0.21.0" to listOf(
             "Lists in the Planner, like TickTick: make one for each part of your life. The Inbox now holds every task that isn't in a list.",
         ),

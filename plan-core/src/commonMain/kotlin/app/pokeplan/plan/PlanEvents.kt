@@ -12,6 +12,10 @@ import kotlinx.serialization.Serializable
  * [minutes]. Unlike a task it is never ticked off and never pays. It is saved and synced with the rest of the save, sits
  * on the timeline beside the phone's events, can be dragged and resized like a task, and the time it takes counts as
  * busy in the day load. It never runs past midnight.
+ *
+ * An [allDay] event has no hours: it covers [day] through [lastDay] (the same day when null), like "Home" for a weekend
+ * or "WFH" for a day, sits in the all-day band and the month as a bar across its days, and is never busy time. [color]
+ * is one of [TaskList.COLORS], or null for the own-events teal.
  */
 @Serializable
 data class PlanEvent(
@@ -20,21 +24,34 @@ data class PlanEvent(
     val day: LocalDate,
     val start: LocalTime,
     val minutes: Int = DEFAULT_MINUTES,
+    val allDay: Boolean = false,
+    val lastDay: LocalDate? = null,
+    val color: Long? = null,
 ) {
     init {
         require(title.isNotBlank()) { "an event needs a title" }
         require(minutes > 0) { "an event lasts at least a minute" }
+        require(lastDay == null || lastDay >= day) { "an event ends on or after the day it starts" }
     }
+
+    /** The last day an all-day event covers (its [day] for a timed one). */
+    val endDay: LocalDate get() = if (allDay) lastDay ?: day else day
+
+    /** Whether the event is on [date] at all. */
+    fun isOn(date: LocalDate): Boolean = date >= day && date <= endDay
 
     /** The minute after midnight it starts. */
     val startMinute: Int get() = start.hour * 60 + start.minute
 
     /** As an event on the timeline, beside the phone's events. */
     fun toCalendarEvent(): CalendarEvent {
+        if (allDay) {
+            return CalendarEvent(id, OWN_CALENDAR, title, LocalDateTime(day, LocalTime(0, 0)), LocalDateTime(endDay.plus(DatePeriod(days = 1)), LocalTime(0, 0)), allDay = true, color = color)
+        }
         val end = (startMinute + minutes).coerceAtMost(CalendarEvent.DAY_MINUTES)
         val endTime = if (end >= CalendarEvent.DAY_MINUTES) LocalDateTime(day.plus(DatePeriod(days = 1)), LocalTime(0, 0))
         else LocalDateTime(day, LocalTime(end / 60, end % 60))
-        return CalendarEvent(id, OWN_CALENDAR, title, LocalDateTime(day, start), endTime)
+        return CalendarEvent(id, OWN_CALENDAR, title, LocalDateTime(day, start), endTime, color = color)
     }
 
     companion object {
