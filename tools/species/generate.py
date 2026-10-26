@@ -83,6 +83,7 @@ def main():
 
     species = {int(r['id']): r for r in R('pokemon_species')}
     names = {int(r['pokemon_species_id']): r['name'] for r in R('pokemon_species_names') if r['local_language_id'] == '9'}
+    genus = {int(r['pokemon_species_id']): r['genus'] for r in R('pokemon_species_names') if r['local_language_id'] == '9'}
     pokemon = {int(r['id']): r for r in R('pokemon')}
     forms_by_pokemon = collections.defaultdict(list)
     for r in R('pokemon_forms'):
@@ -127,7 +128,8 @@ def main():
         gender = r['gender_rate']
         species_lines.append('|'.join([
             str(sid), r['identifier'], clean(names[sid]), r['generation_id'], r['evolves_from_species_id'] or '-',
-            gender, r['is_baby'], r['is_legendary'], r['is_mythical'], ','.join(cosmetic) or '-']))
+            gender, r['is_baby'], r['is_legendary'], r['is_mythical'], ','.join(cosmetic) or '-',
+            clean(genus.get(sid) or '') or '-', pokemon[dp]['height'], pokemon[dp]['weight']]))
 
     # ---- forms (every pokemon row)
     form_lines = []

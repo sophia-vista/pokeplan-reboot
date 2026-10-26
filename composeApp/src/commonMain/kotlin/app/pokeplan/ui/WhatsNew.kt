@@ -3,6 +3,10 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.18.0" to listOf(
+            "Eggs hatch and Pokémon evolve with a scene like in the games, and shinies flash gold.",
+            "Every Pokédex species has its own page: category, size, abilities, base stats and its evolution line.",
+        ),
         "0.17.0" to listOf(
             "Me, Growth: pick 7, 30 or 90 days, see tasks and focus minutes for each area, and your goals' progress on their own.",
         ),

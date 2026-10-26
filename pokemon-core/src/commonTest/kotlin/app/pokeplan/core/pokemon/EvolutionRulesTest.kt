@@ -128,4 +128,14 @@ class EvolutionRulesTest {
         assertEquals(setOf("slowbro-galar", "slowking-galar"), options.map { it.target.identifier }.toSet())
         assertEquals(listOf("slowbro-galar"), options.filter { it.available }.map { it.target.identifier })
     }
+
+    @Test
+    fun howToEvolveReadsLikeTheAppsRules() {
+        fun how(from: Int, to: Int) = EvolutionRules.howTo(app.pokeplan.core.dex.Dex.evolutionsFrom(from).first { it.to == to })
+        assertEquals("Lv. 16, Super Candy", how(Ids.CHARMANDER, 5))
+        assertEquals("Water Stone", how(133, 134))
+        assertEquals("Friendship, Super Candy, at night", how(133, 197))
+        assertEquals("Link Cord", how(Ids.MACHOKE, 68))
+        assertEquals("Link Cord, holding Metal Coat", how(95, 208))
+    }
 }
