@@ -3,6 +3,9 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.15.0" to listOf(
+            "Your own events: Planner, Calendar, New event. Lessons, lunch and other things that aren't tasks sit on your hours, drag like tasks and never pay.",
+        ),
         "0.14.0" to listOf(
             "Drag to plan: Planner, Calendar. Hold a task and drop it on an hour, drag its lower edge to change how long it takes, and switch to Week to plan seven days at once.",
         ),

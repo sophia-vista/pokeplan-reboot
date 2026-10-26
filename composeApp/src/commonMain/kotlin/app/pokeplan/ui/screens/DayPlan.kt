@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -60,6 +62,8 @@ import app.pokeplan.plan.CalendarEvent
 import app.pokeplan.plan.Category
 import app.pokeplan.plan.DayLoad
 import app.pokeplan.plan.DayTimeline
+import app.pokeplan.plan.PlanEvent
+import app.pokeplan.plan.isOwn
 import app.pokeplan.plan.Task
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
@@ -113,10 +117,26 @@ private fun duration(minutes: Int): String = when {
 /** A calendar event's own colour, or grey. */
 private fun eventColor(e: CalendarEvent): Color = e.color?.let { Color(it or 0xFF000000L) } ?: Pixel.Gray
 
+/** The colour of PokéPlan's own events on the hours. */
+private val OwnEventColor = Color(0xFF0D9488)
+
+/**
+ * What a drag carries: a task, or one of PokéPlan's own events ([event]), with when it is now: [day] and [start]
+ * minutes after midnight (null for a task without a time), lasting [minutes].
+ */
+private data class Item(val id: String, val title: String, val event: Boolean, val day: LocalDate?, val start: Int?, val minutes: Int)
+
+private fun Task.item() = Item(id, title, false, planned, plannedTime?.let { it.hour * 60 + it.minute }, DayTimeline.minutes(this))
+
+private fun PlanEvent.item() = Item(id, title, true, day, startMinute, minutes)
+
 /** What is being dragged and where the finger is (root coordinates). [resize] drags the block's lower edge instead. */
-private class Drag(val task: Task, val resize: Boolean, val grabMinutes: Int, pointer: Offset) {
+private class Drag(val item: Item, val resize: Boolean, val grabMinutes: Int, pointer: Offset) {
     var pointer by mutableStateOf(pointer)
 }
+
+/** A new event being set up: its title so far, and when. */
+private data class Draft(val title: String, val day: LocalDate, val start: Int, val minutes: Int)
 
 /** Where a drop lands: [day] at [start] minutes after midnight, lasting [minutes]. */
 private data class Target(val day: LocalDate, val start: Int, val minutes: Int)
@@ -155,13 +175,13 @@ private class Grid {
         val c = coords?.takeIf { it.isAttached } ?: return null
         val p = local(d.pointer) ?: return null
         if (d.resize) {
-            val day = d.task.planned ?: return null
-            val start = d.task.plannedTime?.let { it.hour * 60 + it.minute } ?: return null
+            val day = d.item.day ?: return null
+            val start = d.item.start ?: return null
             return Target(day, start, DayTimeline.resized(start, minuteAt(p.y) - d.grabMinutes))
         }
         if (p.x < 0 || p.x > c.size.width || p.y < -hourPx / 2 || p.y > c.size.height + hourPx / 2) return null
         val column = (p.x / (c.size.width.toFloat() / days.size)).toInt().coerceIn(0, days.lastIndex)
-        return Target(days[column], DayTimeline.snap(minuteAt(p.y) - d.grabMinutes), DayTimeline.minutes(d.task))
+        return Target(days[column], DayTimeline.snap(minuteAt(p.y) - d.grabMinutes), d.item.minutes)
     }
 }
 
@@ -198,8 +218,8 @@ private fun Modifier.dragToPlan(
 /**
  * The day timeline, or seven days side by side: the tasks with a time sit on the hours, the rest wait in a tray. Hold a
  * task (in the tray or on the hours) and drag it to an hour, or tap it and then tap an hour; drag a block's lower edge
- * to change how long it takes. Everything snaps to 15 minutes. Events from the calendars shown in Settings sit on the
- * hours too, read-only.
+ * to change how long it takes. Everything snaps to 15 minutes. PokéPlan's own events (New event) are placed, dragged
+ * and resized the same way but never pay. Events from the calendars shown in Settings sit on the hours too, read-only.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -209,6 +229,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     var offset by remember { mutableStateOf(0) }
     var weekOffset by remember { mutableStateOf(0) }
     var picked by remember { mutableStateOf<String?>(null) }
+    var draft by remember { mutableStateOf<Draft?>(null) }
     val days = if (week) (0 until 7).map { store.today.plus(DatePeriod(days = weekOffset * 7 + it)) }
     else listOf(store.today.plus(DatePeriod(days = offset)))
     val tasks = model.data.tasks.filter { it.id !in hidden }
@@ -219,20 +240,23 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
         events = if (source == null || shown.isEmpty()) emptyList()
         else withContext(Dispatchers.Default) { source.events(shown, days.first(), days.last()) }
     }
+    val own = model.data.events
+    val shownEvents = events + own.map { it.toCalendarEvent() }
     val plans: List<DayTimeline.Plan>
     val tray: List<Task>
     val inbox: List<Task>
     val firstHour: Int
     val endHour: Int
     if (week) {
-        val w = DayTimeline.week(tasks, days.first(), store.now, events = events)
+        val w = DayTimeline.week(tasks, days.first(), store.now, events = shownEvents)
         plans = w.days; tray = w.tray; inbox = w.inbox; firstHour = w.firstHour; endHour = w.endHour
     } else {
-        val p = DayTimeline.build(tasks, days.first(), store.now, events = events)
+        val p = DayTimeline.build(tasks, days.first(), store.now, events = shownEvents)
         plans = listOf(p); tray = p.tray; inbox = p.inbox; firstHour = p.firstHour; endHour = p.endHour
     }
     val chosen = tasks.firstOrNull { it.id == picked && it.isOpen }
-    val pick = { t: Task -> picked = if (picked == t.id) null else t.id }
+    val chosenEvent = own.firstOrNull { it.id == picked }
+    val pick = { id: String -> picked = if (picked == id) null else id; draft = null }
 
     val grid = remember { Grid() }
     grid.days = days
@@ -240,16 +264,28 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     grid.hourPx = with(LocalDensity.current) { HourHeight.toPx() }
     fun drop(d: Drag) {
         val target = grid.target(d) ?: return
-        if (d.resize) store.setEstimate(d.task.id, target.minutes)
-        else store.scheduleTask(d.task.id, target.day, LocalTime(target.start / 60, target.start % 60))
+        val at = LocalTime(target.start / 60, target.start % 60)
+        when {
+            d.item.event && d.resize -> store.updateEvent(d.item.id, minutes = target.minutes)
+            d.item.event -> store.updateEvent(d.item.id, day = target.day, start = at)
+            d.resize -> store.setEstimate(d.item.id, target.minutes)
+            else -> store.scheduleTask(d.item.id, target.day, at)
+        }
         picked = null
     }
 
     Box(Modifier.fillMaxWidth().onGloballyPositioned { grid.page = it }) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 TabButton("Day", !week, { week = false })
                 TabButton("Week", week, { week = true })
+                Spacer(Modifier.weight(1f))
+                PixelButton("New event", {
+                    val day = days.first()
+                    val start = if (day == store.today) ((store.now.hour + 1) * 60).coerceIn(firstHour * 60, DayTimeline.LAST_START) else 9 * 60
+                    draft = Draft("", day, start, PlanEvent.DEFAULT_MINUTES)
+                    picked = null
+                }, color = OwnEventColor, compact = true)
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 if (week) {
@@ -284,11 +320,13 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
                 }
             }
 
+            draft?.let { d -> NewEventPanel(d, days.size > 1, { draft = it }, { store.addEvent(d.title, d.day, LocalTime(d.start / 60, d.start % 60), d.minutes); draft = null }) { draft = null } }
             if (chosen != null) PickedPanel(model, chosen, days) { picked = null }
+            if (chosenEvent != null) EventPanel(model, chosenEvent, days.size > 1) { picked = null }
 
             TrayChips("No time yet", tray, picked, pick, grid, ::drop)
             TrayChips("From the inbox", inbox, picked, pick, grid, ::drop)
-            if (chosen == null) {
+            if (chosen == null && chosenEvent == null && draft == null) {
                 Text(
                     "Hold a task and drag it to an hour, or tap it, then an hour. Drag a block's lower edge to change how long it takes.",
                     style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
@@ -296,9 +334,15 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
             }
 
             if (week) WeekHeader(days, store.today) { day -> offset = store.today.daysUntil(day); week = false }
-            Hours(model, plans, firstHour, endHour, compact = week, picked, pick, grid, ::drop) { day, hour ->
-                chosen?.let { store.scheduleTask(it.id, day, LocalTime(hour, 0)) }
-                picked = null
+            val drafted = draft?.let { Target(it.day, it.start, it.minutes) }
+            Hours(model, plans, firstHour, endHour, compact = week, picked, pick, own.associateBy { it.id }, drafted, grid, ::drop) { day, hour ->
+                val d = draft
+                if (d != null) draft = d.copy(day = day, start = hour * 60, minutes = PlanEvent.fit(hour * 60, d.minutes))
+                else {
+                    chosen?.let { store.scheduleTask(it.id, day, LocalTime(hour, 0)) }
+                    chosenEvent?.let { store.updateEvent(it.id, day = day, start = LocalTime(hour, 0)) }
+                    picked = null
+                }
             }
         }
         grid.drag?.let { d -> Carried(d, grid) }
@@ -313,9 +357,9 @@ private fun Carried(d: Drag, grid: Grid) {
     val lift = with(LocalDensity.current) { 56.dp.toPx() }
     val shift = with(LocalDensity.current) { 24.dp.toPx() }
     val label = when {
-        target == null -> d.task.title
-        d.resize -> "${d.task.title}, ${duration(target.minutes)}"
-        else -> "${d.task.title}, ${if (grid.days.size > 1) target.day.short() + " " else ""}${clock(LocalTime(target.start / 60, target.start % 60))}"
+        target == null -> d.item.title
+        d.resize -> "${d.item.title}, ${duration(target.minutes)}"
+        else -> "${d.item.title}, ${if (grid.days.size > 1) target.day.short() + " " else ""}${clock(LocalTime(target.start / 60, target.start % 60))}"
     }
     Text(
         if (label.length > 40) label.take(39).trimEnd() + "…" else label,
@@ -385,7 +429,7 @@ private fun PickedPanel(model: AppModel, task: Task, days: List<LocalDate>, clos
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TrayChips(label: String, tasks: List<Task>, picked: String?, pick: (Task) -> Unit, grid: Grid, drop: (Drag) -> Unit) {
+private fun TrayChips(label: String, tasks: List<Task>, picked: String?, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit) {
     if (tasks.isEmpty()) return
     SectionLabel(label)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -393,12 +437,12 @@ private fun TrayChips(label: String, tasks: List<Task>, picked: String?, pick: (
             val title = if (t.title.length > 24) t.title.take(23).trimEnd() + "…" else t.title
             val anchor = remember { Anchor() }
             TabButton(
-                title, picked == t.id, { pick(t) },
+                title, picked == t.id, { pick(t.id) },
                 Modifier
-                    .alpha(if (grid.drag?.task?.id == t.id) 0.4f else 1f)
+                    .alpha(if (grid.drag?.item?.id == t.id) 0.4f else 1f)
                     .dragToPlan(
                         t, anchor,
-                        onStart = { _, _ -> grid.drag = Drag(t, resize = false, grabMinutes = 0, anchor.root(Offset.Zero)) },
+                        onStart = { _, _ -> grid.drag = Drag(t.item(), resize = false, grabMinutes = 0, anchor.root(Offset.Zero)) },
                         onMove = { grid.drag?.pointer = it },
                         onEnd = { dropped -> grid.drag?.let { if (dropped) drop(it) }; grid.drag = null },
                     ),
@@ -419,14 +463,16 @@ private fun Hours(
     endHour: Int,
     compact: Boolean,
     picked: String?,
-    pick: (Task) -> Unit,
+    pick: (String) -> Unit,
+    own: Map<String, PlanEvent>,
+    draft: Target?,
     grid: Grid,
     drop: (Drag) -> Unit,
     onHour: (LocalDate, Int) -> Unit,
 ) {
     val hours = (firstHour until endHour).toList()
     val line = Pixel.Border
-    val picking = picked != null
+    val picking = picked != null || draft != null
     val origin = firstHour * 60
     val requester = remember { BringIntoViewRequester() }
     val margin = with(LocalDensity.current) { 48.dp.toPx() }
@@ -481,7 +527,7 @@ private fun Hours(
                     val laneWidth = columnWidth / b.lanes
                     val height = (HourHeight * ((b.endMinute - b.startMinute) / 60f)).coerceAtLeast(28.dp)
                     TimelineBlock(
-                        b, picked == b.task.id, compact, grid.drag?.task?.id == b.task.id, { pick(b.task) }, grid, drop,
+                        b, picked == b.task.id, compact, grid.drag?.item?.id == b.task.id, { pick(b.task.id) }, grid, drop,
                         Modifier
                             .offset(x = x + laneWidth * b.lane, y = HourHeight * ((b.startMinute - origin) / 60f))
                             .width(laneWidth)
@@ -489,18 +535,19 @@ private fun Hours(
                             .padding(end = 2.dp, bottom = 2.dp),
                     )
                 } }
-                plan.events.forEach { b ->
+                plan.events.forEach { b -> key(b.event.id) {
                     val laneWidth = columnWidth / b.lanes
                     val height = (HourHeight * ((b.endMinute - b.startMinute) / 60f)).coerceAtLeast(28.dp)
+                    val mine = own[b.event.id]?.takeIf { b.event.isOwn }
                     EventBlock(
-                        b, compact,
+                        b, compact, mine, picked == b.event.id, grid.drag?.item?.id == b.event.id, { pick(b.event.id) }, grid, drop,
                         Modifier
                             .offset(x = x + laneWidth * b.lane, y = HourHeight * ((b.startMinute - origin) / 60f))
                             .width(laneWidth)
                             .height(height)
                             .padding(end = 2.dp, bottom = 2.dp),
                     )
-                }
+                } }
                 if (plan.day == model.store.today) {
                     val now = model.store.now.time.let { it.hour * 60 + it.minute }
                     if (now >= origin && now < endHour * 60) {
@@ -508,9 +555,9 @@ private fun Hours(
                     }
                 }
             }
-            grid.drag?.let { d ->
-                val target = grid.target(d) ?: return@let
+            (grid.drag?.let { grid.target(it) } ?: draft)?.let { target ->
                 val column = grid.days.indexOf(target.day).takeIf { it >= 0 } ?: return@let
+                if (target.start < origin || target.start >= endHour * 60) return@let
                 Box(
                     Modifier
                         .offset(x = columnWidth * column, y = HourHeight * ((target.start - origin) / 60f))
@@ -562,7 +609,7 @@ private fun TimelineBlock(
                         val resize = local.y >= size.height - edge
                         val reference = if (resize) block.endMinute else block.startMinute
                         val grab = grid.local(anchor.root(local))?.let { p -> grid.minuteAt(p.y) - reference } ?: 0
-                        grid.drag = Drag(t, resize, grab, anchor.root(local))
+                        grid.drag = Drag(t.item(), resize, grab, anchor.root(local))
                     },
                     onMove = { grid.drag?.pointer = it },
                     onEnd = { dropped -> grid.drag?.let { if (dropped) drop(it) }; grid.drag = null },
@@ -590,28 +637,119 @@ private fun TimelineBlock(
     }
 }
 
-/** A calendar event on the hours: read-only, in its calendar's colour, with no icon (it is not a task). */
+/**
+ * An event on the hours, with no icon (it is not a task). One from the phone is read-only, in its calendar's colour;
+ * one of PokéPlan's own ([own]) can be picked, dragged and resized like a task.
+ */
 @Composable
-private fun EventBlock(block: DayTimeline.EventBlock, compact: Boolean, modifier: Modifier) {
+private fun EventBlock(
+    block: DayTimeline.EventBlock,
+    compact: Boolean,
+    own: PlanEvent?,
+    selected: Boolean,
+    lifted: Boolean,
+    onClick: () -> Unit,
+    grid: Grid,
+    drop: (Drag) -> Unit,
+    modifier: Modifier,
+) {
     val e = block.event
-    val color = eventColor(e)
+    val color = if (own != null) OwnEventColor else eventColor(e)
     val start = LocalTime(block.startMinute / 60, block.startMinute % 60)
     val end = if (block.endMinute >= 24 * 60) LocalTime(0, 0) else LocalTime(block.endMinute / 60, block.endMinute % 60)
+    val anchor = remember { Anchor() }
+    val edge = with(LocalDensity.current) { ResizeEdge.toPx() }
     Box(
         modifier
+            .alpha(if (lifted) 0.4f else 1f)
             .clip(blockShape)
-            .background(color.copy(alpha = 0.10f), blockShape)
-            .border(1.dp, color.copy(alpha = 0.6f), blockShape)
-            .semantics(mergeDescendants = true) { contentDescription = "Calendar: ${e.title}, ${clock(start)} to ${clock(end)}" }
-            .padding(horizontal = Spacing.S, vertical = 2.dp),
+            .background(color.copy(alpha = if (own != null) 0.16f else 0.10f), blockShape)
+            .border(if (selected) 2.dp else 1.dp, if (selected) Pixel.Ink else color.copy(alpha = 0.6f), blockShape)
+            .semantics(mergeDescendants = true) {
+                contentDescription = "${if (own != null) "Event" else "Calendar"}: ${e.title}, ${clock(start)} to ${clock(end)}"
+            }
+            .let {
+                if (own == null) it
+                else it.clickable(role = Role.Button, onClickLabel = "Pick", onClick = onClick).dragToPlan(
+                    own, anchor,
+                    onStart = { local, size ->
+                        val resize = local.y >= size.height - edge
+                        val reference = if (resize) block.endMinute else block.startMinute
+                        val grab = grid.local(anchor.root(local))?.let { p -> grid.minuteAt(p.y) - reference } ?: 0
+                        grid.drag = Drag(own.item(), resize, grab, anchor.root(local))
+                    },
+                    onMove = { grid.drag?.pointer = it },
+                    onEnd = { dropped -> grid.drag?.let { if (dropped) drop(it) }; grid.drag = null },
+                )
+            }
+            .padding(horizontal = if (compact) 0.dp else Spacing.S, vertical = 2.dp),
     ) {
         if (!compact) Text(
             "${clock(start)} ${e.title}",
             style = MaterialTheme.typography.bodyMedium,
-            color = Pixel.InkSoft,
+            color = if (own != null) Pixel.Ink else Pixel.InkSoft,
             maxLines = if (block.endMinute - block.startMinute >= 45) 2 else 1,
             overflow = TextOverflow.Ellipsis,
         )
+        if (selected) {
+            Box(Modifier.align(Alignment.BottomCenter).width(16.dp).height(3.dp).background(Pixel.Ink, RoundedCornerShape(2.dp)))
+        }
+    }
+}
+
+/** Setting up a new event: its title, then when (tap an hour, or nudge it), then Add. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit, add: () -> Unit, cancel: () -> Unit) {
+    val at = LocalTime(draft.start / 60, draft.start % 60)
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("New event", style = MaterialTheme.typography.titleSmall)
+            OutlinedTextField(
+                draft.title, { change(draft.copy(title = it)) }, Modifier.fillMaxWidth(), singleLine = true,
+                textStyle = MaterialTheme.typography.bodyLarge, label = { Text("What") },
+            )
+            Text(
+                "${draft.day.short()}, ${clock(at)} for ${duration(draft.minutes)}. Tap ${if (week) "a day's hour" else "an hour"} to change it. Events never pay.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelButton("-15", { change(draft.copy(start = shifted(at, -15).let { it.hour * 60 + it.minute }).let { it.copy(minutes = PlanEvent.fit(it.start, it.minutes)) }) }, color = Pixel.InkSoft, compact = true)
+                PixelButton("+15", { change(draft.copy(start = shifted(at, 15).let { it.hour * 60 + it.minute }).let { it.copy(minutes = PlanEvent.fit(it.start, it.minutes)) }) }, color = Pixel.InkSoft, compact = true)
+                PixelButton("Shorter", { change(draft.copy(minutes = PlanEvent.fit(draft.start, draft.minutes - DayTimeline.SNAP_MINUTES))) }, color = Pixel.InkSoft, enabled = draft.minutes > DayTimeline.SNAP_MINUTES, compact = true)
+                PixelButton("Longer", { change(draft.copy(minutes = PlanEvent.fit(draft.start, draft.minutes + DayTimeline.SNAP_MINUTES))) }, color = Pixel.InkSoft, compact = true)
+                PixelButton("Add", add, color = Pixel.Green, enabled = draft.title.isNotBlank(), compact = true)
+                PixelButton("Cancel", cancel, color = Pixel.InkSoft, compact = true)
+            }
+        }
+    }
+}
+
+/** What to do with a picked event of PokéPlan's own: rename it, nudge it or its length, or delete it. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, close: () -> Unit) {
+    val store = model.store
+    var title by remember(event.id) { mutableStateOf(event.title) }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            OutlinedTextField(
+                title, { title = it }, Modifier.fillMaxWidth(), singleLine = true,
+                textStyle = MaterialTheme.typography.bodyLarge, label = { Text("Event") },
+            )
+            Text(
+                "${if (week) event.day.short() + ", " else "At "}${clock(event.start)} for ${duration(event.minutes)}. Tap another hour to move it.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelButton("-15", { store.updateEvent(event.id, start = shifted(event.start, -15)) }, color = Pixel.InkSoft, compact = true)
+                PixelButton("+15", { store.updateEvent(event.id, start = shifted(event.start, 15)) }, color = Pixel.InkSoft, compact = true)
+                PixelButton("Shorter", { store.updateEvent(event.id, minutes = event.minutes - DayTimeline.SNAP_MINUTES) }, color = Pixel.InkSoft, enabled = event.minutes > DayTimeline.SNAP_MINUTES, compact = true)
+                PixelButton("Longer", { store.updateEvent(event.id, minutes = event.minutes + DayTimeline.SNAP_MINUTES) }, color = Pixel.InkSoft, compact = true)
+                PixelButton("Delete", { store.deleteEvent(event.id); close() }, color = Pixel.Red, compact = true)
+                PixelButton("Done", { store.updateEvent(event.id, title = title); close() }, color = Pixel.Green, compact = true)
+            }
+        }
     }
 }
 

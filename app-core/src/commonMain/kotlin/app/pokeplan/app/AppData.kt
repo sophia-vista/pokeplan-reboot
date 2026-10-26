@@ -12,6 +12,7 @@ import app.pokeplan.plan.QuietHours
 import app.pokeplan.plan.DueReminder
 import app.pokeplan.plan.Reminders
 import app.pokeplan.plan.Recurrence
+import app.pokeplan.plan.PlanEvent
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.WeeklyReview
 import kotlinx.datetime.LocalDate
@@ -28,6 +29,8 @@ data class AppData(
     val player: PlayerState = PlayerState(),
     val settings: Settings = Settings(),
     val tasks: List<Task> = emptyList(),
+    /** Events on PokéPlan's own calendar: never paid, synced with the rest of the save. */
+    val events: List<PlanEvent> = emptyList(),
     val series: List<TaskSeries> = emptyList(),
     val habits: List<Habit> = emptyList(),
     val goals: List<Goal> = emptyList(),
