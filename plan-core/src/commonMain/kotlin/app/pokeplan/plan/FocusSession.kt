@@ -37,7 +37,10 @@ sealed interface FocusEvent {
     /** Came back to the app. */
     data object Returned : FocusEvent
 
-    /** The screen was locked: this does not count as leaving. */
+    /**
+     * The screen was locked: this does not count as leaving. The platform may only learn of it just after it reported
+     * [Left] (the app pauses as the screen goes off), so a lock during the grace period takes the player back to running.
+     */
     data object ScreenLocked : FocusEvent
 
     data object CallStarted : FocusEvent
@@ -124,7 +127,7 @@ data class FocusSession(
         return when (event) {
             FocusEvent.Left -> if (s.phase is Phase.Running) s.copy(phase = Phase.Away(now)) else s
             FocusEvent.Returned -> if (s.phase is Phase.Away) s.copy(phase = Phase.Running) else s
-            FocusEvent.ScreenLocked -> s
+            FocusEvent.ScreenLocked -> if (s.phase is Phase.Away) s.copy(phase = Phase.Running) else s
             FocusEvent.CallStarted -> when (s.phase) {
                 is Phase.Running, is Phase.Away -> s.copy(phase = Phase.Paused(PauseReason.CALL, now))
                 else -> s
