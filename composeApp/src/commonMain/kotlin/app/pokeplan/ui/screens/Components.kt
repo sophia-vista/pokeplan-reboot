@@ -1,6 +1,7 @@
 package app.pokeplan.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +17,9 @@ import app.pokeplan.core.model.CandyType
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Emotion
 import app.pokeplan.ui.ItemIcon
+import app.pokeplan.ui.Portrait
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.describe
 import app.pokeplan.ui.theme.GameBox
@@ -46,6 +49,22 @@ fun RewardBox(model: AppModel) {
                 }
             }
             PixelButton("OK", { model.store.markRewardsSeen() }, Modifier.padding(top = 8.dp), Pixel.Green)
+        }
+    }
+}
+
+/**
+ * A text box with the buddy's portrait at its start, the way the Mystery Dungeon games put a face beside a line of text.
+ * The face only listens and cheers: the words are the app's, never the buddy talking. Without a buddy it is a plain text box.
+ */
+@Composable
+fun SpeakerBox(model: AppModel, emotion: Emotion, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    val buddy = model.data.player.buddy
+    TextBox(modifier.fillMaxWidth()) {
+        if (buddy == null) content()
+        else Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Portrait(buddy.form.id, buddy.isShiny, buddy.nickname, emotion = emotion, size = 64.dp)
+            Box(Modifier.weight(1f)) { content() }
         }
     }
 }

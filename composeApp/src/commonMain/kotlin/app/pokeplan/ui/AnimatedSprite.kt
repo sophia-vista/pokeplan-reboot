@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.FilterQuality
@@ -41,7 +42,7 @@ private const val PMD_REFERENCE_PIXELS = 32
 /** The whole-number scale to draw [a]'s frames at in a square of [boxPx]. */
 internal fun pixelScale(boxPx: Float, a: Animation): Int {
     val fit = min(boxPx / a.width, boxPx / a.height).toInt()
-    return (if (a.dir == "pmd") min(fit, (boxPx / PMD_REFERENCE_PIXELS).toInt()) else fit).coerceAtLeast(1)
+    return (if (a.dir.startsWith("pmd")) min(fit, (boxPx / PMD_REFERENCE_PIXELS).toInt()) else fit).coerceAtLeast(1)
 }
 
 private var animations: Map<Int, Animation>? = null
@@ -82,6 +83,28 @@ suspend fun spriteCredit(formId: Int): String? {
     return all[formId]
 }
 
+/**
+ * What a Pokémon is doing: each action is one of its SpriteCollab animations (assets/pmd/<folder>). [plays] is how many
+ * times a one-off action runs before it hands back to idle; 0 loops it.
+ */
+enum class SpriteAction(internal val folder: String?, internal val plays: Int) {
+    IDLE(null, 0), SLEEP("sleep", 0), EAT("eat", 3), HOP("hop", 1),
+}
+
+private val actionTables = mutableMapOf<SpriteAction, Map<Int, Animation>>()
+
+/** The form's own animation for [action], or null without one (for a shiny, without its shiny recolour). */
+internal suspend fun actionAnimation(formId: Int, shiny: Boolean, action: SpriteAction): Animation? {
+    val folder = action.folder ?: return null
+    val all = actionTables[action] ?: table("pmd/$folder", "$folder.tsv").also { actionTables[action] = it }
+    // The regular colours on a shiny would look like a different Pokémon for the length of the action.
+    return all[formId]?.takeIf { !shiny || it.hasShiny }
+}
+
+/** Whether the form has its own animation for [action], so a screen can skip the stand-in it draws otherwise (a hop). */
+suspend fun hasAction(formId: Int, shiny: Boolean, action: SpriteAction): Boolean =
+    action == SpriteAction.IDLE || actionAnimation(formId, shiny, action) != null
+
 /** The animations if they have been read already, else null. */
 internal fun loadedAnimations(): Map<Int, Animation>? = animations
 
@@ -100,49 +123,76 @@ internal suspend fun sheet(name: String): ImageBitmap? {
     return image
 }
 
+/** The animation picked for one form and action, with its decoded sheet (both null when the form has no such animation). */
+private class Picked(val formId: Int, val shiny: Boolean, val action: SpriteAction, val animation: Animation?, val sheet: ImageBitmap?)
+
 /**
  * A Pokémon with its idle animation (Mystery Dungeon style from SpriteCollab, or the Black/White one where SpriteCollab
  * has none), drawn at a whole-number scale so the pixels stay sharp, standing on the bottom edge of the [size] box
  * ([ground] up from it). Forms with neither show the still [Sprite]. With [animate] off it shows the first frame, for
  * "Reduce motion".
+ *
+ * [action] plays another of its SpriteCollab animations instead, at the idle one's size: [SpriteAction.SLEEP] loops, and
+ * a one-off ([SpriteAction.HOP], [SpriteAction.EAT]) runs its [SpriteAction.plays] and then calls [onActionDone]; a new
+ * [actionKey] plays it again. A form without that animation stays idle and calls [onActionDone] at once.
  */
 @Composable
 fun AnimatedSprite(
     formId: Int, shiny: Boolean, description: String, modifier: Modifier = Modifier, size: Dp = 144.dp,
     animate: Boolean = true, ground: Dp = 12.dp,
+    action: SpriteAction = SpriteAction.IDLE, actionKey: Int = 0, onActionDone: () -> Unit = {},
 ) {
     val animation by produceState(loadedAnimations()?.get(formId), formId) { value = animations()[formId] }
-    val a = animation
-    val name = a?.sheetName(formId, shiny)
+    val idle = animation
+    val name = idle?.sheetName(formId, shiny)
     val sheet by produceState(name?.let { sheets[it] }, name) {
         if (value == null && name != null) value = sheet(name)
     }
-    val image = sheet
-    if (a == null || image == null) {
+    val idleImage = sheet
+    val picked by produceState<Picked?>(null, formId, shiny, action) {
+        val a = actionAnimation(formId, shiny, action)
+        value = Picked(formId, shiny, action, a, a?.let { sheet(it.sheetName(formId, shiny)) })
+    }
+    // Only the pick made for what is asked now: the old one stays in the state for a moment after a change.
+    val current = picked?.takeIf { it.formId == formId && it.shiny == shiny && it.action == action }
+    val special = current?.takeIf { it.animation != null && it.sheet != null }
+    val done by rememberUpdatedState(onActionDone)
+    LaunchedEffect(current, actionKey) {
+        if (current != null && special == null && action.plays > 0) done()
+    }
+
+    if (idle == null || idleImage == null) {
         Sprite(formId, shiny, description, modifier, size)
         return
     }
+    val a = special?.animation ?: idle
+    val image = special?.sheet ?: idleImage
     var frame by remember(formId) { mutableIntStateOf(0) }
-    LaunchedEffect(a, animate) {
+    LaunchedEffect(a, animate, actionKey) {
+        val oneOff = special != null && action.plays > 0
+        frame = 0
         if (!animate) {
-            frame = 0
+            if (oneOff) done()
             return@LaunchedEffect
         }
         var i = 0
+        var loops = 0
         while (true) {
             frame = i
             delay(a.times[i].toLong())
             i = (i + 1) % a.frames
+            if (i == 0 && oneOff && ++loops == action.plays) done()
         }
     }
     Canvas(modifier.size(size).semantics { contentDescription = description }) {
         val box = min(this.size.width, this.size.height - ground.toPx())
-        val scale = pixelScale(box, a)
+        // An action keeps the idle sprite's scale, so the Pokémon does not change size when it lies down or hops.
+        val scale = if (a === idle) pixelScale(box, a) else min(pixelScale(box, idle), pixelScale(box, a))
         val w = a.width * scale
         val h = a.height * scale
         drawImage(
             image,
-            srcOffset = IntOffset(frame * a.width, 0), srcSize = IntSize(a.width, a.height),
+            srcOffset = IntOffset(frame.coerceAtMost(a.frames - 1) * a.width, 0), srcSize = IntSize(a.width, a.height),
             dstOffset = IntOffset(((this.size.width - w) / 2).toInt(), (this.size.height - ground.toPx() - h).toInt()), dstSize = IntSize(w, h),
             filterQuality = FilterQuality.None,
         )

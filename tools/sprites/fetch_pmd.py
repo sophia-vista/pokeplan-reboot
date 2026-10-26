@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Downloads the Pokemon Mystery Dungeon style sprites of the PMD SpriteCollab (https://github.com/PMDCollab/SpriteCollab)
-and turns each one's Idle animation, facing the viewer, into a sprite sheet the app plays on every platform.
+"""Downloads the Pokemon Mystery Dungeon style sprites and portraits of the PMD SpriteCollab
+(https://github.com/PMDCollab/SpriteCollab) and turns each one's Idle, Sleep, Eat and Hop animations, facing the viewer, into
+sprite sheets the app plays on every platform, and a few of its portraits into one strip.
 
 Usage: python3 -I tools/sprites/fetch_pmd.py
 
@@ -12,7 +13,10 @@ the first, front-facing row of Idle-Anim.png side by side, or Walk when there is
 has the shiny. Every frame is cut to the box all frames of the row fit in, so the Pokemon fills the frame without jitter.
 assets/pmd/pmd.tsv lists `id <TAB> frames <TAB> frame width <TAB> frame height <TAB> comma separated frame times in
 milliseconds <TAB> shiny (0 or 1)` (the format of assets/animated/animated.tsv), and assets/pmd/credits.tsv lists
-`id <TAB> artists` for the credit the licence asks for. Only the sprites' own pixels are copied; nothing is drawn.
+`id <TAB> artists` for the credit the licence asks for. The Sleep, Eat and Hop rows go the same way into assets/pmd/sleep,
+assets/pmd/eat and assets/pmd/hop, each with its own <name>.tsv. assets/pmd/portraits/<id>.png (and -shiny.png) holds the
+40 x 40 portraits of the EMOTIONS SpriteCollab has for the form, side by side, and portraits.tsv lists `id <TAB> comma
+separated emotions <TAB> shiny (0 or 1) <TAB> artists`. Only the sprites' own pixels are copied; nothing is drawn.
 Forms match SpriteCollab's form names (rattata-alola is Alola, charizard-mega-x is Mega_X); recolours, alternates and
 cutscene versions are skipped. A run downloads and writes everything again.
 """
@@ -38,6 +42,11 @@ COMMIT = 'cf6c95f4684398ca29c1ac69fd4895ed03c07e5b'
 BASE = f'https://raw.githubusercontent.com/PMDCollab/SpriteCollab/{COMMIT}/'
 # Mystery Dungeon games run at 60 frames a second; AnimData durations count those frames.
 FRAME_MS = 1000 / 60
+# The animations kept, by output folder ('' is assets/pmd itself), each with the AnimData names to try in order.
+ANIMS = {'': ('Idle', 'Walk'), 'sleep': ('Sleep',), 'eat': ('Eat',), 'hop': ('Hop',)}
+# The portraits kept, in the order the strip holds them. Normal comes first and a form without it gets none.
+EMOTIONS = ('Normal', 'Happy', 'Joyous', 'Inspired', 'Determined', 'Surprised')
+PORTRAIT = 40
 
 
 def download(url):
@@ -62,7 +71,7 @@ def norm(s):
 
 
 def targets(tracker):
-    """(form id, SpriteCollab folder, tracker node) for every form of ours that SpriteCollab has a sprite for."""
+    """(form id, SpriteCollab folder, tracker node) for every form of ours that SpriteCollab has a sprite or portrait for."""
     with open(MANIFEST, encoding='utf-8') as fh:
         rows = [(int(r[0]), r[1]) for r in csv.reader(fh, delimiter='\t') if r]
     species = {fid: ident for fid, ident in rows if fid < 10000}
@@ -86,17 +95,21 @@ def targets(tracker):
                 continue
             key, node = match[0]
             folder += '/' + key
-        if node.get('sprite_complete', 0) > 0:
+        if node.get('sprite_complete', 0) > 0 or node.get('portrait_complete', 0) > 0:
             out.append((fid, folder, node))
     return out
 
 
-def front_row(folder):
-    """(frames, frame times in ms) of the front-facing row of the Idle animation (Walk if there is none), or None."""
+def anim_data(folder):
+    """The form's animations by name, following CopyOf, or None if it has no sprite."""
     xml = download(BASE + f'sprite/{folder}/AnimData.xml')
     if xml is None:
         return None
-    anims = {a.findtext('Name'): a for a in ET.fromstring(xml).find('Anims')}
+    return {a.findtext('Name'): a for a in ET.fromstring(xml).find('Anims')}
+
+
+def front_row(folder, anims, wanted):
+    """(frames, frame times in ms) of the front-facing row of the first of the [wanted] animations there is, or None."""
 
     def resolve(name):
         a = anims.get(name)
@@ -107,8 +120,8 @@ def front_row(folder):
             a = anims.get(name)
         return name, a
 
-    for wanted in ('Idle', 'Walk'):
-        name, anim = resolve(wanted)
+    for want in wanted:
+        name, anim = resolve(want)
         if anim is None or anim.find('Durations') is None:
             continue
         data = download(BASE + f'sprite/{folder}/{name}-Anim.png')
@@ -143,36 +156,104 @@ def sheet(frames, box=None):
     return out.getvalue(), w, h, box
 
 
-def credit(node, names):
-    ids = [node['sprite_credit']['primary']] + node['sprite_credit'].get('secondary', [])
-    return ', '.join(dict.fromkeys(names.get(i, i.strip('<@!>')) for i in ids if i))
+def credit(node, names, kind='sprite'):
+    ids = [node[f'{kind}_credit']['primary']] + node[f'{kind}_credit'].get('secondary', [])
+    # Some credit names are blank; those are left out rather than shown as an empty name.
+    return ', '.join(dict.fromkeys(n for n in (names.get(i, i.strip('<@!>')).strip() for i in ids if i) if n))
 
 
-def fetch_one(target, names):
-    fid, folder, node = target
-    row = front_row(folder)
-    made = row and sheet(row[0])
-    if not made:
-        return fid, None
-    png, w, h, box = made
-    with open(os.path.join(OUT, f'{fid}.png'), 'wb') as fh:
+def save(png, sub, name):
+    with open(os.path.join(OUT, sub, f'{name}.png'), 'wb') as fh:
         fh.write(png)
+
+
+def fetch_anims(folder, node, fid, names):
+    """{output folder: (frames, width, height, times, shiny)} for the form's animations, and the sprite credit."""
+    anims = anim_data(folder) if node.get('sprite_complete', 0) > 0 else None
+    if anims is None:
+        return {}, None
     shiny = node.get('subgroups', {}).get('0000', {}).get('subgroups', {}).get('0001')
-    has_shiny = False
-    if shiny and shiny.get('sprite_complete', 0) > 0:
-        shiny_row = front_row(folder + '/0000/0001')
+    shiny_anims = anim_data(folder + '/0000/0001') if shiny and shiny.get('sprite_complete', 0) > 0 else None
+    out = {}
+    for sub, wanted in ANIMS.items():
+        row = front_row(folder, anims, wanted)
+        made = row and sheet(row[0])
+        if not made:
+            if sub == '':
+                return {}, None
+            continue
+        png, w, h, box = made
+        save(png, sub, fid)
+        has_shiny = False
+        shiny_row = shiny_anims and front_row(folder + '/0000/0001', shiny_anims, wanted)
         # The shiny is a recolour of the same frames: cut it the same way, and use it only if it has the same frames.
         same = shiny_row and len(shiny_row[0]) == len(row[0]) and shiny_row[0][0].size == row[0][0].size
         shiny_made = same and sheet(shiny_row[0], box)
         if shiny_made:
-            with open(os.path.join(OUT, f'{fid}-shiny.png'), 'wb') as fh:
-                fh.write(shiny_made[0])
+            save(shiny_made[0], sub, f'{fid}-shiny')
             has_shiny = True
-    return fid, (len(row[0]), w, h, row[1], has_shiny, credit(node, names))
+        out[sub] = (len(row[0]), w, h, row[1], has_shiny)
+    return out, credit(node, names)
+
+
+def portrait_strip(folder, emotions):
+    """(PNG bytes, the emotions in it) for the [emotions] the form has portraits for, or None without a Normal one."""
+    faces = []
+    for emotion in emotions:
+        data = download(BASE + f'portrait/{folder}/{emotion}.png')
+        if data is None:
+            continue
+        image = Image.open(io.BytesIO(data)).convert('RGBA')
+        if image.size == (PORTRAIT, PORTRAIT):
+            faces.append((emotion, image))
+    if not faces or faces[0][0] != 'Normal':
+        return None
+    strip = Image.new('RGBA', (PORTRAIT * len(faces), PORTRAIT), (0, 0, 0, 0))
+    for i, (_, f) in enumerate(faces):
+        strip.paste(f, (i * PORTRAIT, 0))
+    if strip.getcolors(maxcolors=256) is not None:
+        strip = strip.quantize(colors=256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
+    out = io.BytesIO()
+    strip.save(out, 'PNG', optimize=True)
+    return out.getvalue(), [e for e, _ in faces]
+
+
+def fetch_portraits(folder, node, fid, names):
+    """(emotions, shiny, artists) for the form's portraits, or None."""
+    if node.get('portrait_complete', 0) <= 0:
+        return None
+    made = portrait_strip(folder, EMOTIONS)
+    if not made:
+        return None
+    save(made[0], 'portraits', fid)
+    shiny = node.get('subgroups', {}).get('0000', {}).get('subgroups', {}).get('0001')
+    has_shiny = False
+    if shiny and shiny.get('portrait_complete', 0) > 0:
+        shiny_made = portrait_strip(folder + '/0000/0001', made[1])
+        # Only a shiny strip with the very same faces, so the app can pick a face by its place in either strip.
+        if shiny_made and shiny_made[1] == made[1]:
+            save(shiny_made[0], 'portraits', f'{fid}-shiny')
+            has_shiny = True
+    return made[1], has_shiny, credit(node, names, 'portrait')
+
+
+def fetch_one(target, names):
+    fid, folder, node = target
+    anims, artists = fetch_anims(folder, node, fid, names)
+    return fid, anims, artists, fetch_portraits(folder, node, fid, names)
+
+
+def write_table(sub, rows):
+    name = 'pmd' if sub == '' else sub
+    with open(os.path.join(OUT, sub, f'{name}.tsv'), 'w', encoding='utf-8') as fh:
+        for fid in sorted(rows):
+            frames, w, h, times, shiny = rows[fid]
+            fh.write(f'{fid}\t{frames}\t{w}\t{h}\t{",".join(map(str, times))}\t{int(shiny)}\n')
 
 
 def main():
-    os.makedirs(OUT, exist_ok=True)
+    for sub in list(ANIMS) + ['portraits']:
+        os.makedirs(os.path.join(OUT, sub), exist_ok=True)
     tracker = json.loads(download(BASE + 'tracker.json'))
     names = {}
     for line in download(BASE + 'credit_names.txt').decode('utf-8').splitlines()[1:]:
@@ -180,22 +261,30 @@ def main():
         if len(parts) >= 2:
             names[parts[1]] = parts[0]
     todo = targets(tracker)
-    print(f'{len(todo)} forms have a SpriteCollab sprite', file=sys.stderr)
-    results = {}
+    print(f'{len(todo)} forms have a SpriteCollab sprite or portrait', file=sys.stderr)
+    tables = {sub: {} for sub in ANIMS}
+    credits, portraits = {}, {}
     with concurrent.futures.ThreadPoolExecutor(8) as pool:
-        for n, (fid, info) in enumerate(pool.map(lambda t: fetch_one(t, names), todo), 1):
-            if info:
-                results[fid] = info
+        for n, (fid, anims, artists, faces) in enumerate(pool.map(lambda t: fetch_one(t, names), todo), 1):
+            for sub, info in anims.items():
+                tables[sub][fid] = info
+            if artists:
+                credits[fid] = artists
+            if faces:
+                portraits[fid] = faces
             if n % 100 == 0:
                 print(f'{n}/{len(todo)}', file=sys.stderr)
-    with open(os.path.join(OUT, 'pmd.tsv'), 'w', encoding='utf-8') as fh:
-        for fid in sorted(results):
-            frames, w, h, times, shiny, _ = results[fid]
-            fh.write(f'{fid}\t{frames}\t{w}\t{h}\t{",".join(map(str, times))}\t{int(shiny)}\n')
+    for sub, rows in tables.items():
+        write_table(sub, rows)
+        print(f'{sub or "idle"}: {len(rows)} sheets ({sum(r[4] for r in rows.values())} with a shiny)', file=sys.stderr)
     with open(os.path.join(OUT, 'credits.tsv'), 'w', encoding='utf-8') as fh:
-        for fid in sorted(results):
-            fh.write(f'{fid}\t{results[fid][5]}\n')
-    print(f'wrote {len(results)} sheets ({sum(r[4] for r in results.values())} with a shiny)', file=sys.stderr)
+        for fid in sorted(credits):
+            fh.write(f'{fid}\t{credits[fid]}\n')
+    with open(os.path.join(OUT, 'portraits', 'portraits.tsv'), 'w', encoding='utf-8') as fh:
+        for fid in sorted(portraits):
+            emotions, shiny, artists = portraits[fid]
+            fh.write(f'{fid}\t{",".join(emotions)}\t{int(shiny)}\t{artists}\n')
+    print(f'portraits: {len(portraits)} strips ({sum(p[1] for p in portraits.values())} with a shiny)', file=sys.stderr)
 
 
 if __name__ == '__main__':

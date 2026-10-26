@@ -39,6 +39,7 @@ import app.pokeplan.plan.FocusEvent
 import app.pokeplan.plan.FocusRules
 import app.pokeplan.plan.Phase
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Emotion
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Stage
 import app.pokeplan.ui.theme.Pixel
@@ -62,7 +63,7 @@ fun FocusScreen(model: AppModel) {
             val end = model.data.lastFocusEnd
             if (end != null && !end.completed) FailedBox(model, end.failReason)
             if (end != null && end.completed) {
-                TextBox { Text("Your egg hatched! Have a look at your Pokémon.", style = MaterialTheme.typography.bodyLarge) }
+                SpeakerBox(model, Emotion.JOYOUS) { Text("Your egg hatched! Have a look at your Pokémon.", style = MaterialTheme.typography.bodyLarge) }
                 PixelButton("OK", { model.store.dismissFocusEnd() }, color = Pixel.Green)
             }
             if (session == null) SetupView(model) else RunningView(model)
@@ -200,7 +201,8 @@ private fun RunningView(model: AppModel) {
     )
     Box(Modifier.rotate(if (model.data.settings.reduceMotion || paused) 0f else angle)) { ItemIcon("mystery-egg", size = 200.dp) }
 
-    TextBox(Modifier.fillMaxWidth()) {
+    // The buddy keeps you company beside the clock: set on it while you work, surprised when you leave.
+    SpeakerBox(model, if (away) Emotion.SURPRISED else if (paused) Emotion.NORMAL else Emotion.DETERMINED) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             Text(
                 clock(remaining), style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center,

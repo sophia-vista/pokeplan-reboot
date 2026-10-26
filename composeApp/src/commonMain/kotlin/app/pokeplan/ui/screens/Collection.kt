@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.PcSort
 import app.pokeplan.app.PcView
@@ -50,6 +51,8 @@ import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.spriteCredit
+import app.pokeplan.ui.portraitCredit
+import app.pokeplan.ui.Portrait
 import app.pokeplan.ui.Stage
 import app.pokeplan.ui.TypePlate
 import app.pokeplan.ui.theme.ListRow
@@ -239,10 +242,18 @@ private fun PokedexView(model: AppModel) {
         }
     }
     shown?.let { (number, id) ->
+        val form = Dex.defaultForm(id).id
+        // The licence of SpriteCollab's portraits (CC BY-NC 4.0) asks for credit to their artists.
+        val credit by produceState<String?>(null, form) { value = portraitCredit(form) }
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("#$number  ${Dex.species(id).name}", style = MaterialTheme.typography.titleMedium)
-                Text(Dex.entry(id), style = MaterialTheme.typography.bodyLarge)
+                // Its face beside its entry, the way the Mystery Dungeon games put a portrait beside a line of text.
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+                    Portrait(form, false, "${Dex.species(id).name}'s portrait", size = 72.dp)
+                    Text(Dex.entry(id), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                }
+                credit?.let { CreditLine("Portrait by $it") }
             }
         }
     }
@@ -263,6 +274,16 @@ private fun PokedexView(model: AppModel) {
     Text(
         "About 1 in 128 eggs is shiny. Longer sessions and a Shiny hunter buddy raise the odds.",
         style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+    )
+}
+
+/** The credit SpriteCollab's licence asks for: small and faint, there to be found rather than read on every visit. */
+@Composable
+private fun CreditLine(credit: String) {
+    Text(
+        "$credit, PMD SpriteCollab (CC\u00A0BY\u2060-\u2060NC\u00A04.0)", Modifier.fillMaxWidth(),
+        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 10.sp, lineHeight = 13.sp),
+        color = Pixel.Gray.copy(alpha = 0.7f), textAlign = TextAlign.Center,
     )
 }
 
@@ -487,9 +508,7 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
             }
             // The SpriteCollab licence (CC BY-NC 4.0) asks for credit to the sprite's artists.
             val credit by produceState<String?>(null, p.form.id) { value = spriteCredit(p.form.id) }
-            credit?.let {
-                Text("Sprite by $it, PMD SpriteCollab (CC BY-NC 4.0)", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            }
+            credit?.let { CreditLine("Sprite by $it") }
 
             TextBox {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
