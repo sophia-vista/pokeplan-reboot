@@ -92,6 +92,14 @@ class ScreenshotTest {
     }
 
     @Test
+    fun homeBuddyAsleepDuringFocus() {
+        val store = started()
+        store.startFocus(25, deepFocus = false)
+        val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
+        render("home-focus-asleep") { App(storage, focusTab = true) }
+    }
+
+    @Test
     fun largeText() {
         val store = started()
         store.addTask("Write the report for the quarterly review", Rank.B, planned = store.today, estimateMinutes = 45)

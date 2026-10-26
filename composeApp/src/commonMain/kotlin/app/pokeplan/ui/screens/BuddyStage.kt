@@ -55,17 +55,22 @@ import app.pokeplan.app.BuddyEventNow
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.ui.AnimatedSprite
+import app.pokeplan.ui.Emotion
 import app.pokeplan.ui.ItemIcon
+import app.pokeplan.ui.Portrait
 import app.pokeplan.ui.SceneImage
+import app.pokeplan.ui.SpriteAction
+import app.pokeplan.ui.hasAction
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.Spacing
 import kotlinx.coroutines.delay
 
 /**
  * The buddy in its place: a real scene for its type (dimmed at night), the Pokémon itself as the one thing that moves,
- * and nothing else loud. Its own idle animation plays (a gentle bob for species without one); level and progress sit
- * small in a corner; there is no speech bubble. A short message and a small celebration happen only for a real event
- * ([event], once), and a pet or a berry answers with a hop, hearts and the cry.
+ * and nothing else loud. Its own idle animation plays (a gentle bob for species without one), and its SpriteCollab Sleep
+ * animation while a focus session runs ([resting]); level and progress sit small in a corner; there is no speech bubble.
+ * A real event ([event], once) shows the buddy's portrait with a happy face in the corner and a hop; a pet answers with
+ * a hop and one emoji, a berry with its Eat animation and one emoji. Forms without those animations hop in code instead.
  */
 @Composable
 fun BuddyStage(
@@ -80,27 +85,35 @@ fun BuddyStage(
     var reactionId by remember { mutableIntStateOf(0) }
     val hop = remember { Animatable(0f) }
     var lastReaction by remember { mutableStateOf<String?>(null) }
+    // The one-off animation the reaction plays (a hop, a bite); sleeping through a focus session there is none.
+    var action by remember { mutableStateOf(SpriteAction.IDLE) }
+    // The face a real event shows in the corner, while its reaction lasts.
+    var face by remember { mutableStateOf<Emotion?>(null) }
 
-    // Every reaction is one emoji above the buddy for a moment; a pet, a berry or an event also gets a hop.
-    fun react(emoji: String) {
+    // Every reaction is one emoji above the buddy for a moment (an event shows its portrait instead), with a hop or a bite.
+    fun react(emoji: String, move: SpriteAction = SpriteAction.HOP, emotion: Emotion? = null) {
         lastReaction = emoji
         reaction = emoji
+        face = emotion
+        action = if (resting) SpriteAction.IDLE else move
         reactionId++
     }
     LaunchedEffect(reactionId) {
         if (reactionId == 0) return@LaunchedEffect
-        if (!calm) {
+        // The code hop stands in only for forms without their own animation for the move.
+        if (!calm && !resting && !hasAction(buddy.form.id, buddy.isShiny, action)) {
             hop.animateTo(-16f, tween(110))
             hop.animateTo(0f, tween(150))
         }
         delay(if (reaction == BuddyEvent.SHINY.emoji) 3_800 else 2_200)
         reaction = null
+        face = null
     }
-    // A real event: its emoji, once per event (not again each time Home is opened).
+    // A real event: the buddy's happy face, once per event (not again each time Home is opened).
     LaunchedEffect(event?.atMillis) {
         if (event == null || event.atMillis <= celebrated) return@LaunchedEffect
         onCelebrated(event.atMillis)
-        react(event.event.emoji)
+        react(event.event.emoji, emotion = event.event.emotion())
     }
 
     // Species without an animation drift up and down very slowly so the scene is never frozen.
@@ -126,7 +139,8 @@ fun BuddyStage(
                     onHaptic()
                     react(onPet(lastReaction))
                 },
-            size = 144.dp, animate = !calm && !resting,
+            size = 144.dp, animate = !calm,
+            action = if (resting) SpriteAction.SLEEP else action, actionKey = reactionId, onActionDone = { action = SpriteAction.IDLE },
         )
 
         if (buddy.isShiny && !calm && !resting) ShinyGlints(Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp).size(144.dp))
@@ -145,19 +159,33 @@ fun BuddyStage(
             }
         }
 
-        AnimatedVisibility(reaction != null, Modifier.align(Alignment.Center).padding(bottom = 150.dp), enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut()) {
+        AnimatedVisibility(reaction != null && face == null, Modifier.align(Alignment.Center).padding(bottom = 150.dp), enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut()) {
             Text(reaction ?: "", fontSize = 30.sp, modifier = Modifier.semantics { contentDescription = "reaction" })
+        }
+        // A real event shows the buddy's own face in the corner, as the Mystery Dungeon games do beside a line of text.
+        AnimatedVisibility(face != null, Modifier.align(Alignment.TopStart).padding(Spacing.S), enter = fadeIn() + scaleIn(initialScale = 0.7f), exit = fadeOut()) {
+            Box {
+                Portrait(buddy.form.id, buddy.isShiny, "${buddy.nickname} is delighted", emotion = face ?: Emotion.HAPPY, size = 64.dp)
+                Text(reaction ?: "", fontSize = 20.sp, modifier = Modifier.align(Alignment.BottomEnd).offset(8.dp, 6.dp))
+            }
         }
 
         if (berry != null) Box(
             Modifier.align(Alignment.BottomEnd).padding(Spacing.S).size(40.dp).background(Color(0xCCFFFFFF), CircleShape)
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Give ${buddy.nickname} a ${Items.get(berry)?.name ?: berry}", role = Role.Button) {
                     onHaptic()
-                    react(onFeed(lastReaction))
+                    react(onFeed(lastReaction), SpriteAction.EAT)
                 },
             contentAlignment = Alignment.Center,
         ) { ItemIcon(berry, size = 28.dp, description = Items.get(berry)?.name ?: berry) }
     }
+}
+
+/** The face an event shows: glad for a task, overjoyed for a hatch, awed by a shiny. */
+private fun BuddyEvent.emotion() = when (this) {
+    BuddyEvent.DONE -> Emotion.HAPPY
+    BuddyEvent.HATCHED -> Emotion.JOYOUS
+    BuddyEvent.SHINY -> Emotion.INSPIRED
 }
 
 /**

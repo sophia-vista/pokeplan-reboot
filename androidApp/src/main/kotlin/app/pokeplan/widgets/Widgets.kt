@@ -363,10 +363,16 @@ class BuddyWidget : GlanceAppWidget() {
         val berry = berryOf(store)
         val d = density(context)
         val darkness = BuddyScene.darkness(store.now.hour, store.now.minute)
-        val calm = store.data.settings.reduceMotion || store.data.focus != null
-        // The idle animation plays by itself in a flipper and keeps playing under a reaction; Reduce motion and a focus
-        // session show one still picture.
-        val animated = if (buddy != null && !calm) WidgetArt.idleFrames(context, buddy.form.id, buddy.isShiny) else null
+        val focusing = store.data.focus != null
+        // The idle animation plays by itself in a flipper and keeps playing under a reaction. During a focus session the
+        // buddy sleeps (its SpriteCollab Sleep animation; one still picture for a form without it); Reduce motion shows
+        // one still picture.
+        val sleep = if (buddy != null && focusing) WidgetArt.sleepFrames(context, buddy.form.id, buddy.isShiny) else null
+        val animated = when {
+            buddy == null || store.data.settings.reduceMotion -> null
+            focusing -> sleep
+            else -> WidgetArt.idleFrames(context, buddy.form.id, buddy.isShiny)
+        }
         val idle = animated?.let { frames ->
             RemoteViews(context.packageName, R.layout.widget_sprite).also { flipper ->
                 frames.forEach { bitmap ->
@@ -379,7 +385,7 @@ class BuddyWidget : GlanceAppWidget() {
             name = buddy?.nickname, buddyId = buddy?.id, level = buddy?.level ?: 1, progress = buddy?.let { store.levelProgress(it) } ?: 0f,
             reaction = moment, description = "${buddy?.nickname}, level ${buddy?.level}",
             scene = buddy?.let { WidgetArt.scene(context, BuddyScene.of(it.form.types), darkness, (420 * d).toInt(), (200 * d).toInt(), 20 * d) },
-            still = if (idle == null) buddy?.let { WidgetArt.still(context, it.form.id, it.isShiny) } else null,
+            still = if (idle == null) buddy?.let { sleep?.first() ?: WidgetArt.still(context, it.form.id, it.isShiny) } else null,
             idle = idle, berryName = berry?.let { Items.get(it)?.name }, berryIcon = berry?.let { WidgetArt.item(context, it, 2) },
         )
     }
