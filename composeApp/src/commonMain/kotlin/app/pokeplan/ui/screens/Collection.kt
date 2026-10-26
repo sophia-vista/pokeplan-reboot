@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
+import app.pokeplan.app.BuddyScene
 import app.pokeplan.app.DexState
 import app.pokeplan.app.PcSort
 import app.pokeplan.app.PcView
@@ -62,6 +63,7 @@ import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.spriteCredit
 import app.pokeplan.ui.portraitCredit
 import app.pokeplan.ui.Portrait
+import app.pokeplan.ui.SceneStage
 import app.pokeplan.ui.Stage
 import app.pokeplan.ui.TypePlate
 import app.pokeplan.ui.theme.ListRow
@@ -343,19 +345,19 @@ internal fun DexEntryScreen(model: AppModel, rows: List<Pair<Int, SpeciesInfo>>,
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Stage("bw08", 232.dp) {
-                if (state.caught) {
-                    AnimatedSprite(
-                        form.id, false, s.name,
-                        Modifier.align(Alignment.TopCenter).padding(top = 12.dp).quietClickable(onClickLabel = "Hear its cry") { model.cry(id) },
-                        size = 160.dp, animate = !model.data.settings.reduceMotion,
-                    )
-                    Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        form.types.forEach { TypePlate(it, width = 84.dp) }
-                    }
-                } else {
-                    Sprite(form.id, false, s.name, Modifier.align(Alignment.Center), size = 160.dp, silhouette = Pixel.Shade)
+            // A caught species stands in a scene for its type (the buddy's scenes on Home); a seen one keeps the plain wallpaper,
+            // so the scene does not give its type away.
+            if (state.caught) SceneStage(BuddyScene.of(form.types), 232.dp) {
+                AnimatedSprite(
+                    form.id, false, s.name,
+                    Modifier.align(Alignment.TopCenter).padding(top = 12.dp).quietClickable(onClickLabel = "Hear its cry") { model.cry(id) },
+                    size = 160.dp, animate = !model.data.settings.reduceMotion,
+                )
+                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    form.types.forEach { TypePlate(it, width = 84.dp) }
                 }
+            } else Stage("bw08", 232.dp) {
+                Sprite(form.id, false, s.name, Modifier.align(Alignment.Center), size = 160.dp, silhouette = Pixel.Shade)
             }
             if (at >= 0 && found.size > 1) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 PixelButton("Previous", { open(found[at - 1]) }, Modifier.weight(1f), Pixel.InkSoft, enabled = at > 0, compact = true)
