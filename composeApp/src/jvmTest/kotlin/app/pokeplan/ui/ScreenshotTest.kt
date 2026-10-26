@@ -209,6 +209,7 @@ class ScreenshotTest {
         listOf(0, 1, 2, 3).forEach { store.addAllDayEvent("RTO", day(it), color = colors[3]) }
         listOf(8, 9, 10).forEach { store.addAllDayEvent("WFH", day(it), color = colors[3]) }
         store.addEvent("The Odyssey", day(4), kotlinx.datetime.LocalTime(19, 0), 150, colors[1])
+        store.addEvent("Gym", day(-20), kotlinx.datetime.LocalTime(18, 0), color = colors[2], repeat = app.pokeplan.plan.EventRepeat.WEEKLY)
         store.addTask("Pay the rent", Rank.B, planned = day(2))
         store.addTask("Book the dentist", Rank.C, planned = day(0))
         val model = AppModel(store)
@@ -216,6 +217,22 @@ class ScreenshotTest {
             PixelTheme {
                 Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
                     androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) { app.pokeplan.ui.screens.DayView(model, emptySet(), startMode = 2) }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun plannerRepeatingEvent() {
+        val store = started()
+        val gym = store.addEvent("Gym", store.today, kotlinx.datetime.LocalTime(18, 0), color = app.pokeplan.plan.TaskList.COLORS[2], repeat = app.pokeplan.plan.EventRepeat.WEEKLY)
+        store.endEventOn(gym.id, store.today.plus(kotlinx.datetime.DatePeriod(days = 63)))
+        val model = AppModel(store)
+        val shown = store.data.events.single().occurrences(store.today, store.today).single()
+        render("planner-repeating-event", height = 1200) {
+            PixelTheme {
+                Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                    androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) { app.pokeplan.ui.screens.EventPanel(model, shown, week = false, {}) {} }
                 }
             }
         }

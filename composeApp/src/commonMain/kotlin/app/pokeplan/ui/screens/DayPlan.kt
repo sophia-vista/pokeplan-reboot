@@ -81,11 +81,13 @@ import app.pokeplan.plan.DaySpan
 import app.pokeplan.plan.Category
 import app.pokeplan.plan.DayLoad
 import app.pokeplan.plan.DayTimeline
+import app.pokeplan.plan.EventRepeat
 import app.pokeplan.plan.PlanEvent
 import app.pokeplan.plan.isOwn
 import app.pokeplan.plan.Task
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
+import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.Spacing
@@ -156,15 +158,15 @@ private class Drag(val item: Item, val resize: Boolean, val grabMinutes: Int, po
 /** A new event being set up: its title so far, and when. */
 internal data class Draft(
     val title: String, val day: LocalDate, val start: Int, val minutes: Int,
-    val allDay: Boolean = false, val lastDay: LocalDate = day, val color: Long? = null,
+    val allDay: Boolean = false, val lastDay: LocalDate = day, val color: Long? = null, val repeat: EventRepeat? = null,
 ) {
     /** The same draft starting on [first], an all-day one keeping its length. */
     fun movedTo(first: LocalDate): Draft = copy(day = first, lastDay = first.plus(DatePeriod(days = day.daysUntil(lastDay))))
 
     /** Adds it to PokéPlan's own calendar. */
     fun addTo(store: app.pokeplan.app.GameStore) {
-        if (allDay) store.addAllDayEvent(title, day, lastDay, color)
-        else store.addEvent(title, day, LocalTime(start / 60, start % 60), minutes, color)
+        if (allDay) store.addAllDayEvent(title, day, lastDay, color, repeat)
+        else store.addEvent(title, day, LocalTime(start / 60, start % 60), minutes, color, repeat)
     }
 }
 
@@ -277,7 +279,9 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
         else withContext(Dispatchers.Default) { source.events(shown, range.first(), range.last()) }
     }
     val own = model.data.events
-    val shownEvents = events + own.map { it.toCalendarEvent() }
+    // A repeating event is shown as each of its occurrences on the days shown, each with an id of its own.
+    val ownShown = own.flatMap { it.occurrences(range.first(), range.last()) }
+    val shownEvents = events + ownShown.map { it.toCalendarEvent() }
     val plans: List<DayTimeline.Plan>
     val tray: List<Task>
     val undated: List<Task>
@@ -291,7 +295,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
         plans = listOf(p); tray = p.tray; undated = p.undated; firstHour = p.firstHour; endHour = p.endHour
     }
     val chosen = tasks.firstOrNull { it.id == picked && it.isOpen }
-    val chosenEvent = own.firstOrNull { it.id == picked }
+    val chosenEvent = ownShown.firstOrNull { it.id == picked }
     val pick = { id: String -> picked = if (picked == id) null else id; draft = null }
 
     val grid = remember { Grid() }
@@ -303,7 +307,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
         val at = LocalTime(target.start / 60, target.start % 60)
         when {
             d.item.event && d.resize -> store.updateEvent(d.item.id, minutes = target.minutes)
-            d.item.event -> store.updateEvent(d.item.id, day = target.day, start = at)
+            d.item.event -> store.moveEvent(d.item.id, target.day, at)
             d.resize -> store.setEstimate(d.item.id, target.minutes)
             else -> store.scheduleTask(d.item.id, target.day, at)
         }
@@ -312,7 +316,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
 
     if (mode == 2) {
         MonthView(
-            model, month, tasks, events + own.map { it.toCalendarEvent() }, monthOffset, { monthOffset = it }, mode, { mode = it },
+            model, month, tasks, shownEvents, monthOffset, { monthOffset = it }, mode, { mode = it },
             openDay = { day -> offset = store.today.daysUntil(day).coerceIn(0, DAYS_AHEAD); mode = 0 },
             canOpen = { day -> store.today.daysUntil(day) in 0..DAYS_AHEAD },
         )
@@ -366,7 +370,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
 
             draft?.let { d -> NewEventPanel(d, days.size > 1, { draft = it }, { d.addTo(store); draft = null }) { draft = null } }
             if (chosen != null) PickedPanel(model, chosen, days) { picked = null }
-            if (chosenEvent != null) EventPanel(model, chosenEvent, days.size > 1) { picked = null }
+            if (chosenEvent != null) EventPanel(model, chosenEvent, days.size > 1, { picked = it }) { picked = null }
 
             Tray(tray, undated, picked, hint = chosen == null && chosenEvent == null && draft == null, pick, grid, ::drop)
 
@@ -382,12 +386,12 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
                 if (week) WeekHeader(days, store.today) { day -> offset = store.today.daysUntil(day); mode = 0 }
                 AllDayRow(plans, picked, pick)
                 val drafted = draft?.let { Target(it.day, it.start, it.minutes) }
-                Hours(model, plans, firstHour, endHour, compact = week, picked, pick, own.associateBy { it.id }, drafted, grid, ::drop) { day, hour ->
+                Hours(model, plans, firstHour, endHour, compact = week, picked, pick, ownShown.associateBy { it.id }, drafted, grid, ::drop) { day, hour ->
                     val d = draft
                     if (d != null) draft = if (d.allDay) d.movedTo(day) else d.copy(day = day, start = hour * 60, minutes = PlanEvent.fit(hour * 60, d.minutes))
                     else {
                         chosen?.let { store.scheduleTask(it.id, day, LocalTime(hour, 0)) }
-                        chosenEvent?.let { store.updateEvent(it.id, day = day, start = LocalTime(hour, 0)) }
+                        chosenEvent?.let { store.moveEvent(it.id, day, LocalTime(hour, 0)) }
                         picked = null
                     }
                 }
@@ -923,7 +927,8 @@ private fun EventBlock(
             .alpha(if (lifted) 0.4f else 1f)
             .blockLook(color, fill = if (own != null) 0.18f else 0.12f, accent = if (own != null) 1f else 0.7f, selected)
             .semantics(mergeDescendants = true) {
-                contentDescription = "${if (own != null) "Event" else "Calendar"}: ${e.title}, ${clock(start)} to ${clock(end)}"
+                contentDescription = "${if (own != null) "Event" else "Calendar"}: ${e.title}, ${clock(start)} to ${clock(end)}" +
+                    (own?.repeat?.let { ", repeats ${it.label.lowercase()}" } ?: "")
             }
             .let {
                 if (own == null) it
@@ -971,6 +976,7 @@ internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit,
             )
             Segmented(listOf("At a time", "All day"), if (draft.allDay) 1 else 0) { change(draft.copy(allDay = it == 1, lastDay = draft.day)) }
             EventColors(draft.color) { change(draft.copy(color = it)) }
+            RepeatPicker(draft.repeat) { change(draft.copy(repeat = it)) }
             if (draft.allDay) {
                 DaySpanPicker(draft.day, draft.lastDay, { change(draft.movedTo(it)) }) { change(draft.copy(lastDay = it)) }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -996,12 +1002,19 @@ internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit,
     }
 }
 
-/** What to do with a picked event of PokéPlan's own: rename it, nudge it or its length, or delete it. */
+/**
+ * What to do with a picked event of PokéPlan's own: rename it, nudge it or its length, change its colour or how it
+ * repeats, or delete it. For an occurrence of a repeating event the changes are made to every one (moving it on the
+ * calendar moves just that one), and Delete asks this one or all. [follow] gets the id the event has after a change
+ * that gives it a new one.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, close: () -> Unit) {
+internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, follow: (String) -> Unit, close: () -> Unit) {
     val store = model.store
-    var title by remember(event.id) { mutableStateOf(event.title) }
+    var title by remember(PlanEvent.seriesOf(event.id)) { mutableStateOf(event.title) }
+    val series = model.data.events.firstOrNull { it.id == PlanEvent.seriesOf(event.id) } ?: event
+    val repeats = event.repeat != null
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             OutlinedTextField(
@@ -1009,17 +1022,28 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, close:
                 textStyle = MaterialTheme.typography.bodyLarge, label = { Text("Event") },
             )
             EventColors(event.color) { store.updateEvent(event.id, color = it) }
+            RepeatPicker(event.repeat) { store.updateEvent(event.id, title = title); follow(store.repeatEvent(event.id, it)) }
+            if (repeats) RepeatEnd(series, event) { store.endEventOn(event.id, it) }
+            val deletes: @Composable () -> Unit = {
+                if (repeats) {
+                    PixelButton("Delete this one", { store.deleteOccurrence(event.id); close() }, color = Pixel.Red, compact = true)
+                    PixelButton("Delete all", { store.deleteEvent(event.id); close() }, color = Pixel.Red, compact = true)
+                } else PixelButton("Delete", { store.deleteEvent(event.id); close() }, color = Pixel.Red, compact = true)
+            }
             if (event.allDay) {
-                DaySpanPicker(event.day, event.endDay, { store.updateEvent(event.id, day = it) }) { store.updateEvent(event.id, lastDay = it) }
+                DaySpanPicker(event.day, event.endDay, { follow(store.updateEvent(event.id, day = it)) }) { store.updateEvent(event.id, lastDay = it) }
+                if (repeats) Text("Changes here are made to every one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     PixelButton("At a time", { store.updateEvent(event.id, allDay = false); close() }, color = Pixel.InkSoft, compact = true)
-                    PixelButton("Delete", { store.deleteEvent(event.id); close() }, color = Pixel.Red, compact = true)
+                    deletes()
                     PixelButton("Done", { store.updateEvent(event.id, title = title); close() }, color = Pixel.Green, compact = true)
                 }
                 return@Column
             }
             Text(
-                "${if (week) event.day.short() + ", " else "At "}${clock(event.start)} for ${duration(event.minutes)}. Tap another hour to move it.",
+                "${if (week) event.day.short() + ", " else "At "}${clock(event.start)} for ${duration(event.minutes)}. " +
+                    if (repeats) "Changes here are made to every one; tap another hour or drag it to move just this one."
+                    else "Tap another hour to move it.",
                 style = MaterialTheme.typography.bodyMedium,
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -1028,10 +1052,70 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, close:
                 PixelButton("Shorter", { store.updateEvent(event.id, minutes = event.minutes - DayTimeline.SNAP_MINUTES) }, color = Pixel.InkSoft, enabled = event.minutes > DayTimeline.SNAP_MINUTES, compact = true)
                 PixelButton("Longer", { store.updateEvent(event.id, minutes = event.minutes + DayTimeline.SNAP_MINUTES) }, color = Pixel.InkSoft, compact = true)
                 PixelButton("All day", { store.updateEvent(event.id, allDay = true) }, color = Pixel.InkSoft, compact = true)
-                PixelButton("Delete", { store.deleteEvent(event.id); close() }, color = Pixel.Red, compact = true)
+                deletes()
                 PixelButton("Done", { store.updateEvent(event.id, title = title); close() }, color = Pixel.Green, compact = true)
             }
         }
+    }
+}
+
+/** How an event repeats: Once or one of [EventRepeat], as a row of choices (the chosen one bold with a thicker border). */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RepeatPicker(selected: EventRepeat?, pick: (EventRepeat?) -> Unit) {
+    val shape = RoundedCornerShape(12.dp)
+    Column {
+        FieldLabel("Repeats")
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            (listOf<EventRepeat?>(null) + EventRepeat.entries).forEach { r ->
+                val on = r == selected
+                Box(
+                    Modifier
+                        .defaultMinSize(minHeight = Spacing.Target)
+                        .clip(shape)
+                        .background(if (on) Pixel.Blue.copy(alpha = 0.10f) else Pixel.Panel, shape)
+                        .border(if (on) 2.dp else 1.dp, if (on) Pixel.Blue else Pixel.Border, shape)
+                        .selectable(on, role = Role.RadioButton) { pick(r) }
+                        .padding(horizontal = Spacing.M),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        r?.label ?: "Once",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (on) FontWeight.Bold else FontWeight.Medium),
+                        color = if (on) Pixel.Ink else Pixel.InkSoft,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** How many occurrences Set an end keeps, counting the one shown. */
+private const val END_AFTER = 10
+
+/**
+ * When a repeating event ends: never, or on one of its occurrences, stepped with ‹ › (never before the one [shown]).
+ * Set an end picks the tenth from the one shown.
+ */
+@Composable
+private fun RepeatEnd(series: PlanEvent, shown: PlanEvent, set: (LocalDate?) -> Unit) {
+    val until = series.until
+    val open = series.copy(until = null)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        if (until == null) {
+            Text("Never ends.", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+            PixelButton("Set an end", {
+                set(open.startDates(shown.day, shown.day.plus(DatePeriod(years = 20))).filter { it >= shown.day }.take(END_AFTER).lastOrNull())
+            }, color = Pixel.InkSoft, compact = true)
+            return@Row
+        }
+        val times = series.startDates(series.day, until).size
+        Text("Ends ${until.short()}, $times in all.", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+        val earlier = series.startDates(shown.day, until.minus(DatePeriod(days = 1))).lastOrNull { it >= shown.day }
+        val later = open.startDates(until.plus(DatePeriod(days = 1)), until.plus(DatePeriod(years = 2))).firstOrNull { it > until }
+        ArrowButton("‹", "End one earlier", enabled = earlier != null) { set(earlier) }
+        ArrowButton("›", "End one later", enabled = later != null) { set(later) }
+        PixelButton("Never", { set(null) }, color = Pixel.InkSoft, compact = true)
     }
 }
 

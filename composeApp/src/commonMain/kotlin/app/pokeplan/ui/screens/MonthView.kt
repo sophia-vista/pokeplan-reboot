@@ -108,8 +108,7 @@ internal fun MonthView(
     var chosen by remember(month.first) { mutableStateOf(if (today.monthNumber == month.first.monthNumber && today.year == month.first.year) today else month.first) }
     var picked by remember { mutableStateOf<String?>(null) }
     var draft by remember { mutableStateOf<Draft?>(null) }
-    val own = model.data.events
-    val pickedEvent = own.firstOrNull { it.id == picked }
+    val pickedEvent = model.data.events.flatMap { it.occurrences(month.days.first(), month.days.last()) }.firstOrNull { it.id == picked }
     val open = tasks.filter { it.isOpen && (it.planned ?: it.due?.date) != null }
 
     // All-day events first (the longest keep the top lanes), then timed events by start, then tasks.
@@ -130,7 +129,7 @@ internal fun MonthView(
             PixelButton("New event", { draft = Draft("", chosen, 9 * 60, 60, allDay = true); picked = null }, color = OwnEventColor, compact = true)
         }
         draft?.let { d -> NewEventPanel(d, week = false, { draft = it }, { d.addTo(store); draft = null; chosen = d.day }, hours = false) { draft = null } }
-        if (pickedEvent != null) EventPanel(model, pickedEvent, week = true) { picked = null }
+        if (pickedEvent != null) EventPanel(model, pickedEvent, week = true, { picked = it }) { picked = null }
 
         val shape = RoundedCornerShape(Spacing.CardRadius)
         Column(

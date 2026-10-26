@@ -34,6 +34,7 @@ import app.pokeplan.plan.Goal
 import app.pokeplan.plan.Insights
 import app.pokeplan.plan.GoalRules
 import app.pokeplan.plan.Habit
+import app.pokeplan.plan.EventRepeat
 import app.pokeplan.plan.PlanEvent
 import app.pokeplan.plan.Milestone
 import app.pokeplan.plan.MilestoneResult
@@ -61,6 +62,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
@@ -346,18 +348,21 @@ class GameStore(
         d.copy(tasks = d.tasks.map { if (it.id == taskId && it.isOpen) it.copy(estimateMinutes = minutes?.takeIf { m -> m > 0 }) else it })
     }
 
-    /** Puts an event on PokéPlan's own calendar. It never pays. */
-    fun addEvent(title: String, day: LocalDate, start: LocalTime, minutes: Int = PlanEvent.DEFAULT_MINUTES, color: Long? = null): PlanEvent {
-        val event = PlanEvent(newId(), title.trim(), day, start, PlanEvent.fit(start.hour * 60 + start.minute, minutes), color = color)
+    /** Puts an event on PokéPlan's own calendar, repeating when [repeat] is set. It never pays. */
+    fun addEvent(
+        title: String, day: LocalDate, start: LocalTime, minutes: Int = PlanEvent.DEFAULT_MINUTES, color: Long? = null,
+        repeat: EventRepeat? = null,
+    ): PlanEvent {
+        val event = PlanEvent(newId(), title.trim(), day, start, PlanEvent.fit(start.hour * 60 + start.minute, minutes), color = color, repeat = repeat)
         update { it.copy(events = it.events + event) }
         return event
     }
 
     /** Puts an all-day event on PokéPlan's own calendar, from [first] through [last] ("Home" for a weekend, "WFH" for a day). */
-    fun addAllDayEvent(title: String, first: LocalDate, last: LocalDate = first, color: Long? = null): PlanEvent {
+    fun addAllDayEvent(title: String, first: LocalDate, last: LocalDate = first, color: Long? = null, repeat: EventRepeat? = null): PlanEvent {
         val event = PlanEvent(
             newId(), title.trim(), first, LocalTime(0, 0), allDay = true,
-            lastDay = maxOf(first, last).takeIf { it > first }, color = color,
+            lastDay = maxOf(first, last).takeIf { it > first }, color = color, repeat = repeat,
         )
         update { it.copy(events = it.events + event) }
         return event
@@ -366,36 +371,111 @@ class GameStore(
     /**
      * Changes an event's title, day, start, length, last day (all-day), colour, or whether it is all-day; the length is kept
      * inside the day. A blank title keeps the old one. Moving an all-day event's first day moves its last day with it.
+     *
+     * [id] may be an occurrence of a repeating event: the change is then made to the whole series, and moving the
+     * occurrence's [day] moves every one (with the series' end and skipped days) by as many days. Returns the id the
+     * same occurrence has afterwards.
      */
     fun updateEvent(
         id: String, title: String? = null, day: LocalDate? = null, start: LocalTime? = null, minutes: Int? = null,
         lastDay: LocalDate? = null, color: Long? = null, allDay: Boolean? = null,
-    ) = update { d ->
-        d.copy(events = d.events.map { e ->
-            if (e.id != id) e
-            else {
-                val s = start ?: e.start
-                val first = day ?: e.day
-                val whole = allDay ?: e.allDay
-                val last = when {
-                    !whole -> null
-                    lastDay != null -> lastDay
-                    else -> e.lastDay?.plus(DatePeriod(days = (first.toEpochDays() - e.day.toEpochDays()).toInt()))
+    ): String {
+        val seriesId = PlanEvent.seriesOf(id)
+        val at = PlanEvent.occurrenceDate(id)
+        var shown = id
+        update { d ->
+            d.copy(events = d.events.map { e ->
+                if (e.id != seriesId) e
+                else {
+                    val from = at ?: e.day
+                    val to = day ?: from
+                    val shift = from.daysUntil(to)
+                    val s = start ?: e.start
+                    val first = e.day.plusDays(shift)
+                    val whole = allDay ?: e.allDay
+                    val last = when {
+                        !whole -> null
+                        lastDay != null -> first.plusDays(to.daysUntil(lastDay))
+                        else -> e.lastDay?.plusDays(shift)
+                    }
+                    if (at != null) shown = PlanEvent.occurrenceId(seriesId, to)
+                    e.copy(
+                        title = title?.trim()?.ifEmpty { null } ?: e.title,
+                        day = first,
+                        start = s,
+                        minutes = PlanEvent.fit(s.hour * 60 + s.minute, minutes ?: e.minutes),
+                        allDay = whole,
+                        lastDay = last?.takeIf { it > first },
+                        color = color ?: e.color,
+                        until = e.until?.plusDays(shift),
+                        skipped = e.skipped.map { it.plusDays(shift) }.toSet(),
+                    )
                 }
-                e.copy(
-                    title = title?.trim()?.ifEmpty { null } ?: e.title,
-                    day = first,
-                    start = s,
-                    minutes = PlanEvent.fit(s.hour * 60 + s.minute, minutes ?: e.minutes),
-                    allDay = whole,
-                    lastDay = last?.takeIf { it > first },
-                    color = color ?: e.color,
-                )
-            }
-        })
+            })
+        }
+        return shown
     }
 
-    fun deleteEvent(id: String) = update { d -> d.copy(events = d.events.filterNot { it.id == id }) }
+    /**
+     * Moves an event to [day] at [start], as dragging it does. An occurrence of a repeating event moves on its own: it
+     * is left out of the series and becomes a one-off event there. Returns the id of the moved event.
+     */
+    fun moveEvent(id: String, day: LocalDate, start: LocalTime): String {
+        val at = PlanEvent.occurrenceDate(id) ?: return updateEvent(id, day = day, start = start)
+        val series = data.events.firstOrNull { it.id == PlanEvent.seriesOf(id) } ?: return id
+        val single = PlanEvent(
+            newId(), series.title, day, if (series.allDay) series.start else start, series.minutes, series.allDay,
+            series.lastDay?.let { day.plusDays(series.spanDays) }, series.color,
+        ).let { it.copy(minutes = PlanEvent.fit(it.startMinute, it.minutes)) }
+        update { d -> d.copy(events = d.events.map { if (it.id == series.id) it.copy(skipped = it.skipped + at) else it } + single) }
+        return single.id
+    }
+
+    /** Deletes an event; for an occurrence of a repeating event, every one of them. */
+    fun deleteEvent(id: String) = update { d -> d.copy(events = d.events.filterNot { it.id == PlanEvent.seriesOf(id) }) }
+
+    /** Deletes just this occurrence of a repeating event (any other event is deleted). */
+    fun deleteOccurrence(id: String) {
+        val at = PlanEvent.occurrenceDate(id) ?: return deleteEvent(id)
+        update { d ->
+            d.copy(events = d.events.mapNotNull { e ->
+                if (e.id != PlanEvent.seriesOf(id)) e
+                else e.copy(skipped = e.skipped + at).takeUnless { left -> left.until?.let { left.startDates(left.day, it).isEmpty() } == true }
+            })
+        }
+    }
+
+    /**
+     * Sets how an event repeats (null: it happens once), from the one shown as [id] on. When [id] is a later occurrence
+     * of a repeating event, the ones before it stay as they were: the series ends the day before and a new one starts
+     * there, so only it and the ones after follow the new rule (a one-off for null). Returns the id it has afterwards.
+     */
+    fun repeatEvent(id: String, repeat: EventRepeat?): String {
+        val seriesId = PlanEvent.seriesOf(id)
+        val series = data.events.firstOrNull { it.id == seriesId } ?: return id
+        if (repeat == series.repeat) return id
+        val at = PlanEvent.occurrenceDate(id) ?: series.day
+        val shownId = { e: PlanEvent -> if (repeat == null) e.id else PlanEvent.occurrenceId(e.id, at) }
+        if (at == series.day) {
+            val changed = series.copy(repeat = repeat, until = series.until.takeIf { repeat != null }, skipped = series.skipped.takeIf { repeat != null }.orEmpty())
+            update { d -> d.copy(events = d.events.map { if (it.id == seriesId) changed else it }) }
+            return shownId(changed)
+        }
+        val next = series.copy(
+            id = newId(), day = at, lastDay = series.lastDay?.let { at.plusDays(series.spanDays) }, repeat = repeat,
+            until = series.until.takeIf { repeat != null }, skipped = series.skipped.filter { repeat != null && it > at }.toSet(),
+        )
+        val before = series.copy(until = at.plusDays(-1)).takeIf { it.startDates(it.day, at.plusDays(-1)).isNotEmpty() }
+        update { d -> d.copy(events = d.events.flatMap { if (it.id == seriesId) listOfNotNull(before, next) else listOf(it) }) }
+        return shownId(next)
+    }
+
+    private fun LocalDate.plusDays(n: Int): LocalDate = plus(DatePeriod(days = n))
+
+    /** Sets the last day a repeating event can happen on (null: it never ends). */
+    fun endEventOn(id: String, until: LocalDate?) = update { d ->
+        d.copy(events = d.events.map { if (it.id == PlanEvent.seriesOf(id)) it.copy(until = until?.let { u -> maxOf(u, it.day) }) else it })
+    }
 
     /** Sets a task's reminders (at most [Reminders.MAX_PER_TASK]). */
     fun setReminders(taskId: String, reminders: List<ReminderOffset>) =

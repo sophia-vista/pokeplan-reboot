@@ -620,6 +620,63 @@ class GameStoreTest {
     }
 
     @Test
+    fun a_repeating_event_is_edited_as_a_series_and_moved_or_deleted_one_at_a_time() {
+        val storage = MemoryStorage()
+        val (s, clock) = store(storage)
+        s.start("Sophia", 25)
+        fun d(n: Int) = kotlinx.datetime.LocalDate(2026, 10, 19).plus(kotlinx.datetime.DatePeriod(days = n))
+        val gym = s.addEvent("Gym", d(0), kotlinx.datetime.LocalTime(18, 0), repeat = app.pokeplan.plan.EventRepeat.WEEKLY)
+        val second = app.pokeplan.plan.PlanEvent.occurrenceId(gym.id, d(7))
+        assertEquals(listOf(d(0), d(7), d(14)), s.data.events.single().startDates(d(0), d(20)))
+        assertEquals(listOf(s.data.events.single()), GameStore(storage, clock, utc).data.events, "saved with the rest")
+
+        // Nudging one changes them all; moving one moves just that one.
+        assertEquals(second, s.updateEvent(second, start = kotlinx.datetime.LocalTime(18, 30), minutes = 90))
+        assertEquals(kotlinx.datetime.LocalTime(18, 30), s.data.events.single().start)
+        val moved = s.moveEvent(second, d(8), kotlinx.datetime.LocalTime(7, 0))
+        val series = s.data.events.first { it.id == gym.id }
+        assertEquals(listOf(d(0), d(14)), series.startDates(d(0), d(20)), "the moved one is left out of the series")
+        val single = s.data.events.first { it.id == moved }
+        assertEquals(Triple(d(8), kotlinx.datetime.LocalTime(7, 0), 90), Triple(single.day, single.start, single.minutes))
+        assertNull(single.repeat)
+
+        // Moving the series' day moves every one, and the skipped day with it.
+        val third = app.pokeplan.plan.PlanEvent.occurrenceId(gym.id, d(14))
+        assertEquals(app.pokeplan.plan.PlanEvent.occurrenceId(gym.id, d(15)), s.updateEvent(third, day = d(15)))
+        assertEquals(listOf(d(1), d(15)), s.data.events.first { it.id == gym.id }.startDates(d(0), d(20)))
+
+        s.deleteOccurrence(app.pokeplan.plan.PlanEvent.occurrenceId(gym.id, d(15)))
+        assertEquals(listOf(d(1), d(22)), s.data.events.first { it.id == gym.id }.startDates(d(0), d(25)))
+        s.deleteEvent(app.pokeplan.plan.PlanEvent.occurrenceId(gym.id, d(22)))
+        assertEquals(listOf(moved), s.data.events.map { it.id }, "Delete all removes the whole series")
+    }
+
+    @Test
+    fun changing_how_an_event_repeats_from_a_later_one_keeps_the_ones_before() {
+        val (s, _) = started()
+        fun d(n: Int) = kotlinx.datetime.LocalDate(2026, 10, 19).plus(kotlinx.datetime.DatePeriod(days = n))
+        val home = s.addAllDayEvent("Home", d(5), d(6))
+        val first = s.repeatEvent(home.id, app.pokeplan.plan.EventRepeat.WEEKLY)
+        assertEquals(app.pokeplan.plan.PlanEvent.occurrenceId(home.id, d(5)), first)
+        val later = app.pokeplan.plan.PlanEvent.occurrenceId(home.id, d(19))
+        val split = s.repeatEvent(later, app.pokeplan.plan.EventRepeat.FORTNIGHTLY)
+        val shown = s.data.events.flatMap { it.occurrences(d(0), d(50)) }
+        assertEquals(listOf(d(5), d(12), d(19), d(33), d(47)), shown.map { it.day }.sorted())
+        assertTrue(shown.all { it.spanDays == 1 }, "every weekend keeps its two days")
+        assertTrue(split in shown.map { it.id })
+
+        s.endEventOn(split, d(33))
+        assertEquals(listOf(d(5), d(12), d(19), d(33)), s.data.events.flatMap { it.startDates(d(0), d(60)) }.sorted())
+        // Once, from the last one: it stays as a one-off and nothing comes after it.
+        val once = s.repeatEvent(app.pokeplan.plan.PlanEvent.occurrenceId(app.pokeplan.plan.PlanEvent.seriesOf(split), d(33)), null)
+        assertNull(s.data.events.first { it.id == once }.repeat)
+        assertEquals(listOf(d(5), d(12), d(19), d(33)), s.data.events.flatMap { it.startDates(d(0), d(60)) }.sorted())
+        // Once on the first one of a series turns it back into a single event with its plain id.
+        assertEquals(home.id, s.repeatEvent(first, null))
+        assertEquals(listOf(d(5)), s.data.events.first { it.id == home.id }.startDates(d(0), d(60)))
+    }
+
+    @Test
     fun a_shiny_stays_in_the_shiny_dex_after_it_is_transferred() {
         val base = started().first
         val shiny = base.data.player.pokemon.first().copy(isShiny = true)
