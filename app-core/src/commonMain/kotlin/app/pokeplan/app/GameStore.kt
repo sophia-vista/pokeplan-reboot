@@ -563,7 +563,9 @@ class GameStore(
         Insights.balanceWheel(data.tasks, data.focusHistory, today.minus(DatePeriod(days = days - 1)), today, zone)
 
     /** Focus minutes and finished tasks for each of the last [weeks] weeks, oldest first. */
-    fun trend(weeks: Int = 6): List<Insights.WeekPoint> = Insights.weeklyTrend(data.tasks, data.focusHistory, weeks, today, zone)
+    fun trend(weeks: Int = 6): List<Insights.WeekPoint> = Insights.weeklyTrend(
+        data.tasks, data.focusHistory, weeks, today, zone, if (data.settings.weekStartsOnMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY,
+    )
 
     // --- streak -------------------------------------------------------------------------------------------------------
 
