@@ -40,6 +40,7 @@ import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.Stage
@@ -136,6 +137,7 @@ private fun HatchScene(model: AppModel, scene: Cutscene.Hatch, close: () -> Unit
             delay(700)
             for (burst in 0 until 3) {
                 model.haptic()
+                model.effect(Sfx.JUMP)
                 val swing = 7f + burst * 5f
                 repeat(2 + burst) {
                     tilt.animateTo(swing, tween(80))
@@ -235,10 +237,13 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
         model.haptic()
         if (still) {
             flash.snapTo(0f)
-            return@LaunchedEffect
+        } else {
+            flash.snapTo(1f)
+            flash.animateTo(0f, tween(700))
         }
-        flash.snapTo(1f)
-        flash.animateTo(0f, tween(700))
+        // "Congratulations!": the Pokémon Center jingle, once the cry has had its moment.
+        delay(1_200)
+        model.effect(Sfx.POKEMON_CENTER)
     }
 
     SceneFrame({ done = true }, flash.value, FlashWhite) {

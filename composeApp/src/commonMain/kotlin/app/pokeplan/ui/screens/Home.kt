@@ -42,6 +42,7 @@ import app.pokeplan.plan.PickForMe
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.TaskState
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Tab
 import app.pokeplan.ui.theme.ExpBar
@@ -105,8 +106,8 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
                     progress = store.levelProgress(buddy), event = store.buddyEvent(),
                     calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
                     onPet = { avoid -> store.pet(); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
-                    onFeed = { avoid -> berry?.let { store.useItem(it, buddy.id) }; BuddyReaction.feed(buddy, avoid = avoid) },
-                    onOpen = { model.openPokemonId = buddy.id; go(Tab.COLLECTION) }, onHaptic = { model.haptic() },
+                    onFeed = { avoid -> berry?.let { store.useItem(it, buddy.id); model.effect(Sfx.HEAL) }; BuddyReaction.feed(buddy, avoid = avoid) },
+                    onOpen = { model.openPokemonId = buddy.id; go(Tab.COLLECTION) }, onHaptic = { model.haptic() }, onEvent = { model.cry(buddy.speciesId) },
                     celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
                 )
             }
@@ -114,7 +115,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
             when {
                 next != null -> NextUp(
                     task = next,
-                    onDone = { store.completeTask(next.id) },
+                    onDone = { model.completeTask(next.id) },
                     onFocus = { model.focusTaskId = next.id; go(Tab.FOCUS) },
                     onChoose = if (open.size > 1) ({ chosen = PickForMe.choose(open.filter { it.id != next.id }, Random)?.task?.id }) else null,
                 )
@@ -141,7 +142,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
             val more = open.filter { it.id != next?.id }.take(4)
             if (more.isNotEmpty()) {
                 SectionLabel("Also today", icon = "oaks-parcel")
-                more.forEach { t -> TaskRow(t, onDone = { store.completeTask(t.id) }) }
+                more.forEach { t -> TaskRow(t, onDone = { model.completeTask(t.id) }) }
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth()) {

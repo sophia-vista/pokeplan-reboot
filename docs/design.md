@@ -311,7 +311,7 @@ Beyond task reminders: a **streak-at-risk reminder** in the evening if nothing h
 - Hatch, level-up and evolution are full ceremonies (egg wobble, text box lines, cry, flash), skippable.
 - Crisp scaling: nearest-neighbour, integer scale, no blur.
 - Fonts: pixel font for headings only; body text stays a readable font.
-- Sound: cries, short jingles; a mute toggle.
+- Sound: cries, short jingles; a mute toggle (Settings → Sound and its volume). *(0.23.0)* The buddy calls out when you pet it, when Home celebrates a real event, and when it is made your buddy; every Pokémon cries on its page, in the Pokédex, when it hatches and when it evolves. A few real game sound effects (`assets/sfx`) mark single moments, each kept for one kind: the menu select blip when a task is ticked off, a hop for each rock of a hatching egg, the healing chime when a berry or item is given, the run-away sound when a Pokémon is transferred, and the Pokémon Center jingle after an evolution's cry. None plays on a timer or a plain tap.
 - Interface rules from the Laws of UX review (0.19.0, `docs/laws-of-ux-review.md`): Back sits at the start of every header; on/off settings are switches whose whole row is the target; a choice is a radio row, never an action button; each screen has one solid primary action and the risky ones (Give up, Transfer, Remove) stay quiet until confirmed; Undo lives in one bar floating above the tabs; Focus keeps Start pinned at the bottom; text fields submit from the keyboard's Done key.
 - Accessibility: content descriptions on all images, text scaling, colour-blind safe type chips, a reduce-motion option, a dyslexia-friendly font option, and every ceremony skippable.
 

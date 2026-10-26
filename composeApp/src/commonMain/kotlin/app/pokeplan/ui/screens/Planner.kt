@@ -426,7 +426,7 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                     if (line.isNotEmpty()) Text(if (shownList != null) "· $line" else line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
             }
-            if (task.state == TaskState.OPEN) PixelButton("Done", { store.completeTask(task.id) }, color = Pixel.Green, compact = true)
+            if (task.state == TaskState.OPEN) PixelButton("Done", { model.completeTask(task.id) }, color = Pixel.Green, compact = true)
             else PixelButton("Reopen", { store.reopen(task.id) }, color = Pixel.InkSoft, compact = true)
         }
         if (expanded) {

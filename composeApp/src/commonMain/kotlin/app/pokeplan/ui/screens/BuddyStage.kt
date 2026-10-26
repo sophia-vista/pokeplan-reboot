@@ -78,6 +78,8 @@ fun BuddyStage(
     buddy: OwnedPokemon, scene: String, darkness: Float, progress: Float, event: BuddyEventNow?,
     calm: Boolean, resting: Boolean, berry: String?,
     onPet: (avoid: String?) -> String, onFeed: (avoid: String?) -> String, onOpen: () -> Unit, onHaptic: () -> Unit,
+    /** A real event is being celebrated: the buddy calls out. */
+    onEvent: () -> Unit,
     celebrated: Long, onCelebrated: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -114,6 +116,7 @@ fun BuddyStage(
     LaunchedEffect(event?.atMillis) {
         if (event == null || event.atMillis <= celebrated) return@LaunchedEffect
         onCelebrated(event.atMillis)
+        onEvent()
         react(event.event.emoji, emotion = event.event.emotion())
     }
 
