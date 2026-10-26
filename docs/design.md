@@ -17,9 +17,9 @@ A fun productivity, growth and self-improvement app for Pokémon lovers: your Po
         focus session ──► egg hatches ──► new Pokémon (stats, nature, ability, shiny?)
              ▲                                   │ duplicates ──► transfer ──► Rare Candies
              │                                   ▼
-   buddy perks (type / ability)  ◄────  partner raised with candies, items, EV training
+   buddy perks (type / ability)  ◄────  partner raised with candies, items, Vitamins
              ▲                                   ▲
-             └──────── finished tasks ───────────┘  (candies, items, EVs via training plan)
+             └──────── finished tasks ───────────┘  (candies, items, Vitamins for EVs)
 ```
 
 Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy's perks feed back into both.
@@ -77,7 +77,7 @@ The app never mentions ADHD; it just removes friction and shame.
 | 1 | Super Candy and evolution, Pokédex, goals, daily mini-quests, the region picker (Kanto opens) |
 | 1 | daily mini-quests |
 | 2 | items, bag, shop, coins, the Growth screen, Lures, spotlight days |
-| 3 | training plans, natures and stats detail, IV judge, Tera, bond styles, mood check-in |
+| 3 | natures and stats detail, IV judge, Tera, bond styles, mood check-in |
 | 4 | legendary quests (regions keep opening, one per rank) |
 | 5 | contests, perfect dex, Hall of Fame |
 
@@ -110,7 +110,7 @@ Each owned Pokémon has: species, level 1 to 100, nature, ability, 6 IVs, 6 EVs,
 - **Stats** use the Gen 3+ formula:
   - HP = ⌊(2·Base + IV + ⌊EV/4⌋) · Level / 100⌋ + Level + 10
   - Other = ⌊(⌊(2·Base + IV + ⌊EV/4⌋) · Level / 100⌋ + 5) · Nature⌋, with nature ×1.1 / ×0.9
-  - IV 0 to 31 rolled at hatch. EV 0 to 252 per stat, 510 total, gained from finished tasks through the Pokémon's training plan (below).
+  - IV 0 to 31 rolled at hatch. EV 0 to 252 per stat, 510 total, gained from Vitamins (below).
 - **Natures:** the existing 25. Each raises one stat and lowers another (five are neutral).
 - **Abilities:** each species has one or two; one is rolled at hatch. Abilities give buddy perks (below).
 - **Shiny:** rolled at hatch, base chance **1 in 128** per egg (about a month at ~5 eggs a day), with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation (a gold flash, twice, instead of the white one).
@@ -135,15 +135,9 @@ Every evolution is reachable solo. Each game trigger maps to an in-app one:
 
 The data pipeline classifies every evolution into one of these.
 
-### Training plan
+### EVs (no training plans)
 
-Stat training is the player's choice, not tied to task type. Each Pokémon has a **training plan**: up to 2 focus stats, changeable at any time. When a task pays out:
-
-- The buddy gains EVs in its focus stats, split evenly. Amount = the task's rank number *(tune)* (E = 1 … A = 5), so an A-rank task gives 5 EVs.
-- The rest of the party gains half *(tune)*, so a raised team is possible.
-- No plan set: no EVs. The same minimum task age applies, so there is nothing to farm.
-
-At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are the shortcut.
+*Training plans were dropped (0.27.0, owner's decision): picking focus stats was one more choice for little play.* Tasks no longer give EVs. EVs come only from **Vitamins** (+10 in one stat, used from the Bag), which drop from paid tasks; perks still scale with the stat behind each bucket, so a Vitamin on the buddy is the way to raise a perk.
 
 ### Items (so a mid partner is not overshadowed)
 
@@ -253,7 +247,7 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 | Shiny hunter | Electric, Ice | small shiny chance bonus |
 | Streak keeper | Water, Fire, Poison | a second missed day forgiven per week (on top of the free one) |
 
-- **Ability perk:** one extra, from the buddy's ability. Real abilities as flavour, data driven. Examples: Pickup (extra item chance), Early Bird (bonus for the first task before 9am), Technician (bonus for 5 to 20 minute sessions), Magic Guard (one failed session a week keeps its egg), Guts (bonus on A-rank tasks), Synchronize (+25% EV gain in the buddy's focus stats).
+- **Ability perk:** one extra, from the buddy's ability. Real abilities as flavour, data driven. Examples: Pickup (extra item chance), Early Bird (bonus for the first task before 9am), Technician (bonus for 5 to 20 minute sessions), Magic Guard (one failed session a week keeps its egg), Guts (bonus on A-rank tasks), Synchronize (+3% Super Candy chance; it boosted EV training until training plans were dropped).
 - **Stats matter:** perk strength scales with the relevant stat (e.g. Attack for candy yield) and nature, so raising and training a partner pays.
 - **Caps:** total bonus from perks, held item and party assists stays below +25% *(tune)* so no single buddy breaks the economy.
 - **Shown, not hidden:** the Party screen has a **Party perks** card (each bucket's total, and opened, every part of it: the buddy's types, its ability, its held item, each assist and each Guardian, with when a conditional ability applies). Each Pokémon's page shows what it gives as the buddy and as an assist, and its held item with Give, Swap and Take. Items are also given from the Bag; the Bottle Cap and Nature Mint ask which stat or nature *(0.26.0)*.
@@ -324,7 +318,7 @@ Navigation is five bottom tabs on the phone: **Home / Planner / Focus / Collecti
 - **Home:** a small pixel scene where the buddy wanders, idles and reacts to events, with a speech bubble. Tap the sprite to pet it (friendship, small daily cap); a berry button feeds it. There is no separate close-up screen. Streak ring (active days this week), today's top tasks (tap to complete) and a "Pick for me" button, a "Start focus" button at the default length, small candy and coin counters.
 - **Planner:** Inbox, Today, Upcoming, All and Calendar views (lists can show as a mission board; the calendar has drag-and-drop planning), category and list filters, search, quick-add sheet (title, difficulty, due, then "more" for category, recurrence, subtasks, reminder). Completing a task opens a reward sheet with the 10 second undo.
 - **Focus:** optional task to focus on, region picker, presets (15 / 25 / 45 / 60) plus custom, Deep Focus toggle, a short reminder of the strict rules, the egg during the session, the emergency pause button. On finish: hatch ceremony, then a summary card with actions (set as buddy, keep, transfer).
-- **Collection:** Party (6), PC boxes (30 each), Pokédex (National Dex, seen / caught, forms tab, cosmetic-forms collection), Bag. The Pokémon detail screen shows stats, nature, ability, an IV "judge" (qualitative, like the games), training plan, held item, and actions: feed Rare Candy, evolve, transfer, nickname, set as buddy.
+- **Collection:** Party (6), PC boxes (30 each), Pokédex (National Dex, seen / caught, forms tab, cosmetic-forms collection), Bag. The Pokémon detail screen shows stats, nature, ability, an IV "judge" (qualitative, like the games), held item, and actions: feed Rare Candy, evolve, transfer, nickname, set as buddy.
 - **Me:** trainer card (badges, streak, totals), the Growth screen, weekly review history, shop, friends and leaderboards (once online), settings (reminders, sound, theme, account linking, data export).
 - **Onboarding:** title → start as guest → personality quiz suggests a starter (player can override) → name the trainer → a **1 minute tutorial focus session** that hatches a free egg → create a first task, which **pays immediately** despite the minimum age (tutorial exemptions). The first reward arrives within about two minutes of opening the app.
 - **Offline:** everything works offline. Because the server grants rewards, offline completions show as "pending" and resolve on sync; a focus session's start and end times are sent and validated for plausibility.

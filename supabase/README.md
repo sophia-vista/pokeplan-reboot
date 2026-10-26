@@ -17,7 +17,7 @@ One Supabase project serves every Pokémon app (see "Platform and apps" in `docs
 
 Every reward source, sink and cap is listed in `docs/economy.md`.
 
-Clients can read their own rows and change a few harmless columns (nickname, party, training plan, buddy, planner data).
+Clients can read their own rows and change a few harmless columns (nickname, party, buddy, planner data; the old training plan column is no longer sent).
 They cannot set coins, levels, items, shininess or task completion: those columns have no client grants.
 
 ## Setting it up

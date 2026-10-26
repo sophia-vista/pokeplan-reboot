@@ -138,7 +138,6 @@ fun PokemonPerksBox(model: AppModel, p: OwnedPokemon) {
                 type.forEach { (b, v) -> add("${pct(v)} ${b.label()}") }
                 ability?.bucket?.let { add("${pct(ability.percent)} ${it.label()} (${p.ability}${ability.condition.label()?.let { c -> ", on $c" } ?: ""})") }
                 if (ability?.keepsFailedEgg == true) add("Magic Guard: a failed session keeps its egg once a week")
-                if ((ability?.evGainPercent ?: 0.0) > 0) add("${p.ability}: +${ability!!.evGainPercent.roundToInt()}% EVs")
                 p.heldItem?.let { HeldItems.perks[it] }?.let { add("${pct(it.percent)} ${it.bucket.label()} (${Items.name(p.heldItem!!)})") }
             }
             Text("As your buddy: " + asBuddy.ifEmpty { listOf("none yet") }.joinToString(", "), style = MaterialTheme.typography.bodyMedium)

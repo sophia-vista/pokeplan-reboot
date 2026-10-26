@@ -53,27 +53,6 @@ class OwnedPokemonTest {
     }
 
     @Test
-    fun trainingPlanSplitsEvsAndRespectsCaps() {
-        val p = pokemon(Ids.PIKACHU).withTrainingPlan(listOf(Stat.ATTACK, Stat.SPEED))
-        val trained = p.gainEvs(5)
-        assertEquals(3, trained.evs.attack)
-        assertEquals(2, trained.evs.speed)
-        assertEquals(StatSpread.ZERO, pokemon(Ids.PIKACHU).gainEvs(5).evs, "no plan, no EVs")
-
-        val nearCap = pokemon(Ids.PIKACHU, evs = StatSpread(attack = 251)).withTrainingPlan(listOf(Stat.ATTACK))
-        assertEquals(252, nearCap.gainEvs(5).evs.attack)
-
-        val nearTotal = pokemon(Ids.PIKACHU, evs = StatSpread(hp = 252, defense = 252, spDefense = 4)).withTrainingPlan(listOf(Stat.SPEED))
-        assertEquals(2, nearTotal.gainEvs(5).evs.speed, "only 2 points of the 510 budget left")
-    }
-
-    @Test
-    fun trainingPlanHoldsAtMostTwoDifferentStats() {
-        assertFailsWith<IllegalArgumentException> { pokemon(Ids.PIKACHU).withTrainingPlan(listOf(Stat.HP, Stat.ATTACK, Stat.SPEED)) }
-        assertFailsWith<IllegalArgumentException> { pokemon(Ids.PIKACHU).withTrainingPlan(listOf(Stat.HP, Stat.HP)) }
-    }
-
-    @Test
     fun friendshipDependsOnBondStyle() {
         assertEquals(4, FriendshipRules.amount(FriendshipRules.Source.PET, BondStyle.COMFORT))
         assertEquals(2, FriendshipRules.amount(FriendshipRules.Source.PET, BondStyle.PRESENCE))

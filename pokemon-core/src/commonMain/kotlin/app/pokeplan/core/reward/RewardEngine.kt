@@ -61,6 +61,7 @@ sealed interface Reward {
     data class ItemDrop(val itemId: String, val amount: Int) : Reward
     @Serializable
     @SerialName("evs")
+    /** EVs from a training plan. Training plans are gone (rules version 4); kept so older reward logs still load. */
     data class Evs(val points: Int) : Reward
     @Serializable
     @SerialName("friendship")
@@ -259,16 +260,7 @@ object RewardEngine {
             rewards += Reward.ItemDrop(drop, 1)
         }
 
-        // EV training: the buddy gets the points, the rest of the party half.
-        val evPoints = scaled(tier, 1.0 + perks.evGainPercent / 100.0)
-        var pokemon = state.pokemon.map { p ->
-            when {
-                p.id == buddy?.id -> p.gainEvs(evPoints).gainFriendship(FriendshipRules.Source.TASK)
-                p.inParty -> p.gainEvs(evPoints / 2)
-                else -> p
-            }
-        }
-        if (buddy != null && buddy.trainingPlan.isNotEmpty()) rewards += Reward.Evs(evPoints)
+        var pokemon = state.pokemon.map { p -> if (p.id == buddy?.id) p.gainFriendship(FriendshipRules.Source.TASK) else p }
 
         // Egg meter
         var meter = state.eggMeter + tier
