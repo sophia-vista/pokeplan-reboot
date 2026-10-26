@@ -23,7 +23,7 @@ class TrainerRankTest {
         val first = TrainerRank.thresholds[1]
         assertEquals(0, TrainerRank.rankFor(first - 1))
         assertEquals(1, TrainerRank.rankFor(first))
-        assertEquals("Apprentice", TrainerRank.nameFor(first + 100))
+        assertEquals("Apprentice", TrainerRank.nameFor(first + 10))
         assertEquals(9, TrainerRank.rankFor(1_000_000))
         assertEquals(1, TrainerRank.pointsToNext(first - 1))
         assertNull(TrainerRank.pointsToNext(TrainerRank.thresholds.last() + 1))
@@ -44,10 +44,19 @@ class TrainerRankTest {
     fun featuresAppearAsTheRankRises() {
         assertTrue(TrainerRank.isVisible(Feature.TASKS, 0))
         assertTrue(Feature.entries.filter { it.step == 0 }.all { TrainerRank.isVisible(it, 0) })
-        assertFalse(TrainerRank.isVisible(Feature.SHOP, 0))
-        assertTrue(TrainerRank.isVisible(Feature.SHOP, TrainerRank.thresholds[2]))
-        assertFalse(TrainerRank.isVisible(Feature.CONTESTS, TrainerRank.thresholds[4]))
-        assertTrue(TrainerRank.isVisible(Feature.CONTESTS, TrainerRank.thresholds[5]))
+        assertFalse(TrainerRank.isVisible(Feature.HELD_ITEMS, TrainerRank.thresholds[1]))
+        assertTrue(TrainerRank.isVisible(Feature.HELD_ITEMS, TrainerRank.thresholds[2]))
+        assertFalse(TrainerRank.isVisible(Feature.GUARDIANS, TrainerRank.thresholds[3]))
+        assertTrue(TrainerRank.isVisible(Feature.GUARDIANS, TrainerRank.thresholds[4]))
+        assertEquals(listOf(Feature.HELD_ITEMS, Feature.PERKS, Feature.GROWTH_SCREEN, Feature.COINS), Feature.at(2))
+        assertTrue((1..4).all { Feature.at(it).isNotEmpty() }, "every early rank opens something")
+    }
+
+    @Test
+    fun ranksComeQuicklyThenSlowly() {
+        val gaps = TrainerRank.thresholds.zipWithNext { a, b -> b - a }
+        assertEquals(gaps.sorted(), gaps, "each rank takes longer than the one before")
+        assertTrue(TrainerRank.thresholds[1] <= 60, "the first rank comes within a couple of days of play")
     }
 
     @Test

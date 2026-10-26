@@ -17,7 +17,7 @@ select test.eq('first push', plan.push_save('00000000-0000-0000-0000-0000000000e
   jsonb_build_object('onboarded', true, 'tasks', '[{"id":"t1"}]'::jsonb, 'player', (select (j->>'state')::jsonb from golden))), 1);
 select test.eq('pulled version', (plan.pull_save('00000000-0000-0000-0000-0000000000e1')->>'version')::int, 1);
 select test.eq('planner data comes back', plan.pull_save('00000000-0000-0000-0000-0000000000e1')->'data'->'tasks', '[{"id":"t1"}]'::jsonb);
-select test.eq('player comes from the tables', plan.pull_save('00000000-0000-0000-0000-0000000000e1')->'data'->'player'->>'trainerPoints', '700');
+select test.eq('player comes from the tables', plan.pull_save('00000000-0000-0000-0000-0000000000e1')->'data'->'player'->>'trainerPoints', '100');
 select test.eq('pokemon were saved to the tables', (select count(*) from platform.pokemon where user_id = '00000000-0000-0000-0000-0000000000e1'), 1::bigint);
 select test.eq('the plan save holds no game state', (select data ? 'player' from plan.saves where user_id = '00000000-0000-0000-0000-0000000000e1'), false);
 select test.eq('a push without a rules version records 0', (select rules_version from platform.reward_ledger

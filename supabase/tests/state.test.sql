@@ -1,10 +1,10 @@
 -- Rank thresholds, and the engine's golden vectors through load_state / apply_outcome.
 select test.eq('thresholds match TrainerRank', platform.rank_thresholds(), :'thresholds'::int[]);
 select test.eq('rank 0', platform.rank_for(0), 0);
-select test.eq('rank 0 at 624', platform.rank_for(624), 0);
-select test.eq('rank 1 at 625', platform.rank_for(625), 1);
-select test.eq('rank 8 at 10624', platform.rank_for(10624), 8);
-select test.eq('top rank', platform.rank_for(10625), 9);
+select test.eq('rank 0 at 49', platform.rank_for(49), 0);
+select test.eq('rank 1 at 50', platform.rank_for(50), 1);
+select test.eq('rank 8 at 8999', platform.rank_for(8999), 8);
+select test.eq('top rank', platform.rank_for(9000), 9);
 select test.eq('beyond the top', platform.rank_for(10000000), 9);
 
 select test.eq('no guardian slots at rank 3', platform.guardian_slots(3), 0);
@@ -82,7 +82,7 @@ select test.eq('one Pokémon left', (select count(*) from platform.pokemon where
 select test.eq('caught kept after transfer', (select cardinality(caught) from platform.profiles where user_id = '00000000-0000-0000-0000-0000000000a1'), 3);
 
 set role service_role;
--- Guardians: rank 1 (700 points) has no slot, so slotting one is refused; at rank 4 it is allowed.
+-- Guardians: rank 1 (100 points) has no slot, so slotting one is refused; at rank 4 it is allowed.
 select test.throws('no guardian slot at this rank', $$select platform.apply_outcome('00000000-0000-0000-0000-0000000000a1', 3, 'plan', 'x', 'g1', 0, '{}',
   jsonb_set(jsonb_build_object('state', (select ((j->>'effortOutcome')::jsonb)->'state' from golden), 'rewards', '[]'::jsonb), '{state,guardians}', '["test-pikachu"]'))$$, '23514');
 select platform.apply_outcome('00000000-0000-0000-0000-0000000000a1', 3, 'plan', 'x', 'g2', 0, '{}',

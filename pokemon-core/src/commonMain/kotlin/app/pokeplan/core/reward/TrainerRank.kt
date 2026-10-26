@@ -2,14 +2,23 @@ package app.pokeplan.core.reward
 
 import app.pokeplan.core.dex.Region
 
-/** A feature that appears as the trainer rank rises, so day one stays simple. See "ADHD-friendly design" in docs/design.md. */
-enum class Feature(val step: Int) {
-    TASKS(0), HABITS(0), FOCUS(0), BUDDY(0), RARE_CANDY(0), EGGS(0), WEEKLY_REVIEW(0),
-    SUPER_CANDY(1), EVOLUTION(1), POKEDEX(1), GOALS(1), MINI_QUESTS(1), REGION_PICKER(1),
-    ITEMS(2), BAG(2), SHOP(2), COINS(2), GROWTH_SCREEN(2), LURES(2), SPOTLIGHT_DAYS(2),
-    TRAINING_PLANS(3), STATS_DETAIL(3), IV_JUDGE(3), TERA(3), BOND_STYLES(3), MOOD_CHECK_IN(3),
-    LEGENDARY_QUESTS(4),
-    CONTESTS(5), PERFECT_DEX(5), HALL_OF_FAME(5),
+/**
+ * A feature that appears as the trainer rank rises, so day one stays simple. See "ADHD-friendly design" in docs/design.md.
+ * Only features that exist are listed; the early ranks come within days, so nothing waits long.
+ */
+enum class Feature(val step: Int, val label: String) {
+    TASKS(0, "Tasks and habits"), FOCUS(0, "Focus and eggs"), BUDDY(0, "Your buddy"), PARTY(0, "Party and PC"),
+    POKEDEX(0, "Pokédex"), RARE_CANDY(0, "Rare Candy"), WEEKLY_REVIEW(0, "Weekly review"),
+    EVOLUTION(1, "Evolution with Super Candy"), BAG(1, "The Bag"), GOALS(1, "Goals"), REGION_PICKER(1, "Choosing a hatching region"),
+    HELD_ITEMS(2, "Held items"), PERKS(2, "Party perks"), GROWTH_SCREEN(2, "Growth trends"), COINS(2, "Coins"),
+    TRAINING_ITEMS(3, "Nature Mints, Bottle Caps, Ability Capsules and Tera Shards"), STATS_DETAIL(3, "Stats and the IV judge"),
+    GUARDIANS(4, "Guardians"), LEGENDARY_QUESTS(4, "Legendary quests"),
+    ;
+
+    companion object {
+        /** What opens exactly at [rank]. */
+        fun at(rank: Int): List<Feature> = entries.filter { it.step == rank }
+    }
 }
 
 /**
@@ -22,8 +31,11 @@ object TrainerRank {
         "Rookie", "Apprentice", "Trainer", "Ace", "Veteran", "Expert", "Elite", "Champion", "Master", "Legend",
     )
 
-    /** Points needed to reach each rank, aimed at a new region every 3 to 4 weeks for a typical player. */
-    val thresholds: List<Int> = listOf(0, 625, 1_375, 2_250, 3_250, 4_375, 5_625, 7_125, 8_750, 10_625)
+    /**
+     * Points needed to reach each rank: quick at first (a typical player reaches Apprentice on day 2 and Ace in under two
+     * weeks, so the reveal never makes anyone wait), then slower, so the later regions keep coming for months. *(tune)*
+     */
+    val thresholds: List<Int> = listOf(0, 50, 150, 325, 650, 1_150, 1_900, 3_000, 5_000, 9_000)
 
     /** Points for finished work of [tier] (1 to 5). */
     fun pointsForAchievement(tier: Int): Int = tier * 2

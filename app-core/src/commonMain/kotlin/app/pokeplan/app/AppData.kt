@@ -59,6 +59,8 @@ data class AppData(
     /** Emergency pauses used on [emergencyPausesDay]. */
     val emergencyPausesDay: LocalDate? = null,
     val emergencyPausesUsed: Int = 0,
+    /** The highest trainer rank whose "Rank up" card the player has seen. */
+    val seenRank: Int = 0,
     /** The app version whose "What's new" the player has seen. Saves from before this existed count as 0.1.0. */
     val lastSeenVersion: String = "0.1.0",
     /** Pokémon the player starred: they cannot be transferred by accident. Stays on this device's save. */
@@ -124,9 +126,13 @@ data class Settings(
     val effectsLevel: Float get() = if (sound) effectsVolume.coerceIn(0, 100) / 100f else 0f
 }
 
-/** A repeating task: the template its instances are copied from, and when they fall. */
+/**
+ * A repeating task: the template its instances are copied from, and when they fall. [firstTaskId] is the plain task the
+ * player turned into a repeating one: it stays the task of its own day and is not an instance, so it keeps the
+ * minimum-age rule, but it still shows that it repeats.
+ */
 @Serializable
-data class TaskSeries(val template: Task, val recurrence: Recurrence)
+data class TaskSeries(val template: Task, val recurrence: Recurrence, val firstTaskId: String? = null)
 
 /** A finished task that may still be undone. [original] is what to restore. */
 @Serializable
@@ -149,9 +155,15 @@ data class RewardEntry(
     val seen: Boolean = false,
 )
 
-/** The end of a focus session: finished (the egg hatched) or failed for [failReason]. */
+/** The end of a focus session: finished (the egg hatched) or failed for [failReason]; or both, see [guarded]. */
 @Serializable
-data class FocusEnd(val atMillis: Long, val completed: Boolean, val failReason: FailReason? = null)
+data class FocusEnd(
+    val atMillis: Long,
+    val completed: Boolean,
+    val failReason: FailReason? = null,
+    /** The session failed, but the buddy's Magic Guard kept its egg (so [completed] is true and [failReason] says why). */
+    val guarded: Boolean = false,
+)
 
 /**
  * A signed-in cloud account and where this device stands with it. [version] is the cloud save version this device last saw;

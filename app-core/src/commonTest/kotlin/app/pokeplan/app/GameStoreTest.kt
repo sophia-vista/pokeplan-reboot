@@ -2,6 +2,7 @@ package app.pokeplan.app
 
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.reward.Reward
+import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.FailReason
 import app.pokeplan.plan.FocusEvent
 import app.pokeplan.plan.HabitTarget
@@ -308,6 +309,69 @@ class GameStoreTest {
     }
 
     @Test
+    fun aTaskCanBeMadeToRepeatAndKeepsItsOwnDay() {
+        val (s, _) = started()
+        val task = s.addTask("Water plants", Rank.E)
+        assertTrue(s.makeRepeating(task.id, Repeat.Daily()))
+        // It had no day, so it is now planned for today; the repeat starts after it, with no second task on the same day.
+        val own = s.data.tasks.first { it.id == task.id }
+        assertEquals(s.today, own.planned)
+        assertNull(own.seriesId)
+        assertNotNull(s.seriesOf(own))
+        val later = s.data.tasks.filter { it.seriesId != null }
+        assertTrue(later.size >= 13)
+        assertTrue(later.all { it.planned!! > s.today })
+        assertEquals(1, s.data.tasks.count { it.title == "Water plants" && it.planned == s.today })
+        s.refresh()
+        assertEquals(later.size, s.data.tasks.count { it.seriesId != null })
+    }
+
+    @Test
+    fun aTaskThatRepeatsStillWaitsForItsMinimumAge() {
+        val (s, _) = started()
+        val task = s.addTask("Water plants", Rank.C)
+        s.makeRepeating(task.id, Repeat.Daily())
+        val pending = s.completeTask(task.id)
+        assertFalse(pending.pays)
+    }
+
+    @Test
+    fun changingARepeatMakesTheLaterOnesAgainOnTheNewSchedule() {
+        val (s, _) = started()
+        val task = s.addTask("Bins out", Rank.E)
+        s.makeRepeating(task.id, Repeat.Daily())
+        s.makeRepeating(task.id, Repeat.Weekly())
+        val later = s.data.tasks.filter { it.seriesId != null }
+        assertEquals(2, later.size)
+        assertTrue(later.all { it.planned!!.dayOfWeek == s.today.dayOfWeek })
+    }
+
+    @Test
+    fun stoppingARepeatRemovesTheUntouchedLaterOnesAndKeepsTheTask() {
+        val (s, _) = started()
+        val task = s.addTask("Water plants", Rank.E)
+        s.makeRepeating(task.id, Repeat.Daily())
+        assertTrue(s.data.tasks.any { it.seriesId != null })
+        s.stopRepeating(task.id)
+        assertTrue(s.data.series.isEmpty())
+        assertTrue(s.data.tasks.none { it.seriesId != null })
+        assertNotNull(s.data.tasks.firstOrNull { it.id == task.id })
+        assertNull(s.seriesOf(s.data.tasks.first { it.id == task.id }))
+    }
+
+    @Test
+    fun anInstanceThatWasWorkedOnIsKeptWhenARepeatStops() {
+        val (s, _) = started()
+        val task = s.addTask("Water plants", Rank.E)
+        s.makeRepeating(task.id, Repeat.Daily())
+        val tomorrow = s.data.tasks.first { it.seriesId != null }
+        s.addSubtask(tomorrow.id, "Fill the can")
+        s.completeSubtask(tomorrow.id, s.data.tasks.first { it.id == tomorrow.id }.subtasks.single().id)
+        s.stopRepeating(tomorrow.id)
+        assertEquals(listOf(tomorrow.id), s.data.tasks.filter { it.seriesId != null }.map { it.id })
+    }
+
+    @Test
     fun streakCountsActiveDays() {
         val (s, clock) = started()
         s.completeTask(s.data.tasks.single().id)
@@ -387,12 +451,12 @@ class GameStoreTest {
     @Test
     fun guardiansNeedASlotAndSlotsOpenWithRank() {
         val (s0, _) = started()
-        val low = s0.withPoints(700)
+        val low = s0.withPoints(TrainerRank.thresholds[1])
         val mew = low.grantPokemon(mewSpecies, "Quest")
         assertEquals(0, low.guardianSlots)
         assertFalse(low.slotGuardian(mew.id))
 
-        val s = s0.withPoints(3_300) // rank 4: one slot
+        val s = s0.withPoints(TrainerRank.thresholds[4]) // rank 4: one slot
         val m = s.grantPokemon(mewSpecies, "Quest")
         val u = s.grantPokemon(uxieSpecies, "Quest")
         assertEquals(1, s.guardianSlots)
@@ -408,7 +472,7 @@ class GameStoreTest {
     @Test
     fun aSlottedGuardianBoostsRewards() {
         val (s0, clock) = started()
-        val s = s0.withPoints(3_300)
+        val s = s0.withPoints(TrainerRank.thresholds[4])
         val u = s.grantPokemon(uxieSpecies, "Quest")
         s.slotGuardian(u.id)
         val perks = app.pokeplan.core.pokemon.Perks.total(s.data.player.buddy, s.data.player.party, guardians = s.data.player.guardianPokemon)
@@ -431,7 +495,7 @@ class GameStoreTest {
     @Test
     fun aQuestIsAcceptedProgressesAndPaysItsGuardianWhenClaimed() {
         val (s0, clock) = started()
-        val s = s0.withPoints(3_300) // rank 4
+        val s = s0.withPoints(TrainerRank.thresholds[4]) // rank 4
         val azelf = app.pokeplan.app.quest.Quests.get("azelf")!!
         assertTrue(s.availableQuests.any { it.id == "azelf" })
         assertTrue(s.acceptQuest("azelf"))

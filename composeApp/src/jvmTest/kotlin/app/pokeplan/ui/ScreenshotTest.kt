@@ -171,6 +171,14 @@ class ScreenshotTest {
         render("planner-done") {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 5) } }
         }
+        // A repeating task shows "repeats weekly"; All tasks lists the open ones with the search and filter chips above.
+        store.makeRepeating(store.data.tasks.first { it.title == "Pay the rent" }.id, app.pokeplan.plan.Repeat.Weekly())
+        render("planner-all", height = 1700) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 6) } }
+        }
+        render("planner-habits") {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { PlannerScreen(model, startView = 4) } }
+        }
     }
 
     @Test

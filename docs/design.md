@@ -17,9 +17,9 @@ A fun productivity, growth and self-improvement app for Pokémon lovers: your Po
         focus session ──► egg hatches ──► new Pokémon (stats, nature, ability, shiny?)
              ▲                                   │ duplicates ──► transfer ──► Rare Candies
              │                                   ▼
-   buddy perks (type / ability)  ◄────  partner raised with candies, items, EV training
+   buddy perks (type / ability)  ◄────  partner raised with candies, items, Vitamins
              ▲                                   ▲
-             └──────── finished tasks ───────────┘  (candies, items, EVs via training plan)
+             └──────── finished tasks ───────────┘  (candies, items, Vitamins for EVs)
 ```
 
 Focus time brings new Pokémon. Finished tasks make Pokémon stronger. The buddy's perks feed back into both.
@@ -69,17 +69,17 @@ The app never mentions ADHD; it just removes friction and shame.
 - **Low friction to start:** one-tap capture into the Inbox (widget, share sheet, quick-add), a **"Just 5 minutes"** button on any task that starts a minimum-length focus session on it, short sessions always welcome.
 - **Pick for me:** a button on Today that picks a random task from the list (a small bonus for taking it *(tune)*), for when choosing is the hard part.
 - **Time awareness:** after finishing a task you focused on, show **estimate vs actual** time, so over time guesses calibrate.
-- **Gradual reveal:** day one is tasks, focus and the buddy only. Other systems appear as the trainer rank rises *(proposal, tune)*:
+- **Gradual reveal:** day one is tasks, focus, the buddy and the collection only. Other systems appear as the trainer rank rises, and the early ranks come within days (`Feature` in `TrainerRank.kt`; a "Rank up" card on Home lists what each rank opened, once). Only features that exist are listed *(0.28.0)*:
 
-| Rank step | Appears |
-|---|---|
-| Start | tasks, habits, planner, focus, buddy, Rare Candy, eggs, the weekly review |
-| 1 | Super Candy and evolution, Pokédex, goals, daily mini-quests, the region picker (Kanto opens) |
-| 1 | daily mini-quests |
-| 2 | items, bag, shop, coins, the Growth screen, Lures, spotlight days |
-| 3 | training plans, natures and stats detail, IV judge, Tera, bond styles, mood check-in |
-| 4 | legendary quests (regions keep opening, one per rank) |
-| 5 | contests, perfect dex, Hall of Fame |
+| Rank | Typical day | Appears |
+|---|---|---|
+| Rookie (start) | 1 | tasks, habits, planner, focus and eggs, buddy, party and PC, Pokédex, Rare Candy, the weekly review |
+| Apprentice | 2 | Super Candy and evolution, the Bag, goals, the region picker (Kanto opens) |
+| Trainer | 5 | held items, party perks, the Growth screen, coins |
+| Ace | 11 | Nature Mints, Bottle Caps, Ability Capsules and Tera Shards; stats and the IV judge |
+| Veteran | 22 | Guardians and legendary quests (regions keep opening, one per rank) |
+
+  Items still drop from the first day; the Bag shows them from Apprentice. Shop, Lures, contests, perfect dex and Hall of Fame join this table when they are built.
 
 - **No shame:** warm, neutral copy; overdue is shown calmly (no red alarm styling); streaks forgive (see Retention); failing a focus session is recoverable in one tap.
 - **Few choices:** every form has sensible defaults (rank C, category Personal, 25 minute session) so the first screen asks for as little as possible.
@@ -110,7 +110,7 @@ Each owned Pokémon has: species, level 1 to 100, nature, ability, 6 IVs, 6 EVs,
 - **Stats** use the Gen 3+ formula:
   - HP = ⌊(2·Base + IV + ⌊EV/4⌋) · Level / 100⌋ + Level + 10
   - Other = ⌊(⌊(2·Base + IV + ⌊EV/4⌋) · Level / 100⌋ + 5) · Nature⌋, with nature ×1.1 / ×0.9
-  - IV 0 to 31 rolled at hatch. EV 0 to 252 per stat, 510 total, gained from finished tasks through the Pokémon's training plan (below).
+  - IV 0 to 31 rolled at hatch. EV 0 to 252 per stat, 510 total, gained from Vitamins (below).
 - **Natures:** the existing 25. Each raises one stat and lowers another (five are neutral).
 - **Abilities:** each species has one or two; one is rolled at hatch. Abilities give buddy perks (below).
 - **Shiny:** rolled at hatch, base chance **1 in 128** per egg (about a month at ~5 eggs a day), with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation (a gold flash, twice, instead of the white one).
@@ -135,15 +135,9 @@ Every evolution is reachable solo. Each game trigger maps to an in-app one:
 
 The data pipeline classifies every evolution into one of these.
 
-### Training plan
+### EVs (no training plans)
 
-Stat training is the player's choice, not tied to task type. Each Pokémon has a **training plan**: up to 2 focus stats, changeable at any time. When a task pays out:
-
-- The buddy gains EVs in its focus stats, split evenly. Amount = the task's rank number *(tune)* (E = 1 … A = 5), so an A-rank task gives 5 EVs.
-- The rest of the party gains half *(tune)*, so a raised team is possible.
-- No plan set: no EVs. The same minimum task age applies, so there is nothing to farm.
-
-At about 5 tasks a day this fills the 510 EV budget in a few weeks; Vitamins are the shortcut.
+*Training plans were dropped (0.27.0, owner's decision): picking focus stats was one more choice for little play.* Tasks no longer give EVs. EVs come only from **Vitamins** (+10 in one stat, used from the Bag), which drop from paid tasks; perks still scale with the stat behind each bucket, so a Vitamin on the buddy is the way to raise a perk.
 
 ### Items (so a mid partner is not overshadowed)
 
@@ -210,7 +204,7 @@ Not hatched from random eggs, which keeps them special and avoids a 4 hour Deep 
 Collecting is **fast at the start and deep at the end.** The simulator tunes toward these targets (at roughly 5 eggs and 5 tasks a day):
 
 - **Basic dex of the Home Region (every species caught, including evolutions): about 2 months** *(tune)*. Each later region is about the same once unlocked.
-- **Region unlocks:** trainer rank opens a new region about every 3 to 4 weeks *(tune)*, so a player is usually collecting in more than one region.
+- **Region unlocks:** trainer rank opens a new region with each rank: the first few within the first weeks, then every month or two *(tune)*, so a player is usually collecting in more than one region.
 - **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Home dex at a median of day 62, opens a region every 20 to 28 days, and earns enough Rare Candies to evolve the whole Home Region in 45 to 86 days and enough Super Candies in about 20.
 - **The long tail** (months to years) is made of layers, each with its own progress, badge and showcase:
 
@@ -229,7 +223,7 @@ Perfect builds are shown on a Pokémon's page and in the Hall of Fame; they have
 Planned, with build order to be set later.
 
 - **Mission board (Mystery Dungeon):** tasks are shown as a job board using their difficulty rank. Presentation only; rewards stay as designed.
-- **Trainer rank (Mystery Dungeon guild ranks):** one rank for the whole account, earned in every app: 2 points per tier of finished work (so 2 for an E task up to 10 for an A task) and 1 point per 5 minutes of effort. Ten ranks (Rookie, Apprentice, Trainer, Ace, Veteran, Expert, Elite, Champion, Master, Legend) at 0, 625, 1,375, 2,250, 3,250, 4,375, 5,625, 7,125, 8,750 and 10,625 points. Each rank opens the next region in order (Home, Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea) and reveals features (see the table above). Names and thresholds are *(tune)*, aimed at a new region every 3 to 4 weeks.
+- **Trainer rank (Mystery Dungeon guild ranks):** one rank for the whole account, earned in every app: 2 points per tier of finished work (so 2 for an E task up to 10 for an A task) and 1 point per 5 minutes of effort. Ten ranks (Rookie, Apprentice, Trainer, Ace, Veteran, Expert, Elite, Champion, Master, Legend) at 0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000 and 9,000 points: **quick at first, slower after** (0.28.0, owner's direction; it was 625 for the first rank, which a typical player reached on day 17). Each rank takes longer than the one before. Each rank opens the next region in order (Home, Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea) and reveals features (see "Gradual reveal"). Names and thresholds are *(tune)*; see `docs/economy-report.md` for the days.
 - **Personality quiz starter (Mystery Dungeon):** onboarding asks a short quiz, which suggests a starter and a nature; the player can override.
 - **Poké Assist perks (Pokémon Ranger):** the buddy's type and ability perks are presented as assists. No extra mechanics.
 - **Weekly contests (Contests / Pokéathlon):** a friends-only weekly event scored by a buddy's stats, nature and training, with ribbons. Comes with the online release and gives stats and natures a purpose.
@@ -253,9 +247,11 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 | Shiny hunter | Electric, Ice | small shiny chance bonus |
 | Streak keeper | Water, Fire, Poison | a second missed day forgiven per week (on top of the free one) |
 
-- **Ability perk:** one extra, from the buddy's ability. Real abilities as flavour, data driven. Examples: Pickup (extra item chance), Early Bird (bonus for the first task before 9am), Technician (bonus for 5 to 20 minute sessions), Magic Guard (one failed session a week keeps its egg), Guts (bonus on A-rank tasks), Synchronize (+25% EV gain in the buddy's focus stats).
+- **Ability perk:** one extra, from the buddy's ability. Real abilities as flavour, data driven. Examples: Pickup (extra item chance), Early Bird (bonus for the first task before 9am), Technician (bonus for 5 to 20 minute sessions), Magic Guard (one failed session a week keeps its egg), Guts (bonus on A-rank tasks), Synchronize (+3% Super Candy chance; it boosted EV training until training plans were dropped).
 - **Stats matter:** perk strength scales with the relevant stat (e.g. Attack for candy yield) and nature, so raising and training a partner pays.
 - **Caps:** total bonus from perks, held item and party assists stays below +25% *(tune)* so no single buddy breaks the economy.
+- **Shown, not hidden:** the Party screen has a **Party perks** card (each bucket's total, and opened, every part of it: the buddy's types, its ability, its held item, each assist and each Guardian, with when a conditional ability applies). Each Pokémon's page shows what it gives as the buddy and as an assist, and its held item with Give, Swap and Take. Items are also given from the Bag; the Bottle Cap and Nature Mint ask which stat or nature *(0.26.0)*.
+- **Magic Guard** hatches the egg of a failed session of 5 minutes or more, once a week, paid as a session of the minutes focused; the session still counts as failed. **Streak keeper** at +10% forgives a second missed day a week, for the daily streak and habit streaks *(0.26.0)*.
 
 ## Guardians (legendaries and mythicals)
 
@@ -322,7 +318,7 @@ Navigation is five bottom tabs on the phone: **Home / Planner / Focus / Collecti
 - **Home:** a small pixel scene where the buddy wanders, idles and reacts to events, with a speech bubble. Tap the sprite to pet it (friendship, small daily cap); a berry button feeds it. There is no separate close-up screen. Streak ring (active days this week), today's top tasks (tap to complete) and a "Pick for me" button, a "Start focus" button at the default length, small candy and coin counters.
 - **Planner:** Inbox, Today, Upcoming, All and Calendar views (lists can show as a mission board; the calendar has drag-and-drop planning), category and list filters, search, quick-add sheet (title, difficulty, due, then "more" for category, recurrence, subtasks, reminder). Completing a task opens a reward sheet with the 10 second undo.
 - **Focus:** optional task to focus on, region picker, presets (15 / 25 / 45 / 60) plus custom, Deep Focus toggle, a short reminder of the strict rules, the egg during the session, the emergency pause button. On finish: hatch ceremony, then a summary card with actions (set as buddy, keep, transfer).
-- **Collection:** Party (6), PC boxes (30 each), Pokédex (National Dex, seen / caught, forms tab, cosmetic-forms collection), Bag. The Pokémon detail screen shows stats, nature, ability, an IV "judge" (qualitative, like the games), training plan, held item, and actions: feed Rare Candy, evolve, transfer, nickname, set as buddy.
+- **Collection:** Party (6), PC boxes (30 each), Pokédex (National Dex, seen / caught, forms tab, cosmetic-forms collection), Bag. The Pokémon detail screen shows stats, nature, ability, an IV "judge" (qualitative, like the games), held item, and actions: feed Rare Candy, evolve, transfer, nickname, set as buddy.
 - **Me:** trainer card (badges, streak, totals), the Growth screen, weekly review history, shop, friends and leaderboards (once online), settings (reminders, sound, theme, account linking, data export).
 - **Onboarding:** title → start as guest → personality quiz suggests a starter (player can override) → name the trainer → a **1 minute tutorial focus session** that hatches a free egg → create a first task, which **pays immediately** despite the minimum age (tutorial exemptions). The first reward arrives within about two minutes of opening the app.
 - **Offline:** everything works offline. Because the server grants rewards, offline completions show as "pending" and resolve on sync; a focus session's start and end times are sent and validated for plausibility.
@@ -415,7 +411,8 @@ The cloud save is Plan's own data (`plan.saves`, without the game state). Every 
 - **Recurring own events (0.24.0, after Google Calendar and TickTick):** an own event, timed or all day, can repeat: Once, Daily, Weekdays, Weekly, Every 2 weeks, Monthly or Yearly, each following its first day (Weekly on its weekday, Monthly on its date or the last day of a shorter month, Yearly on its day and month), never more often than daily. New event and the event panel have a Repeats row; a repeating one never ends or ends on one of its occurrences (Set an end keeps ten from the one shown, then ‹ › one occurrence at a time; it shows how many there are in all). Each occurrence shows on the Day, Week and Month with an id of its own (`PlanEvent.occurrences`, the series id plus its date), and an all-day one keeps its length. Edits from the panel (title, colour, time, length, days, All day or At a time) are made to every one; moving one on the calendar (dragging it or tapping another hour) moves just that one, which leaves the series as a one-off event. Delete asks Delete this one (that date is skipped) or Delete all. Changing how a later occurrence repeats keeps the ones before it: the series ends the day before and a new one starts there with the new rule (Once makes it a one-off and the last one). Like every own event, they never pay and are never busy time when all day. Saved and synced in the save (`PlanEvent.repeat`, `until`, `skipped`).
 - **Planner menu and lists (0.19.3, after Apple Reminders, Things, Todoist and TickTick):** the menu is a one-field quick-add (the day chips and More options appear once something is typed) above six tiles, two to a row, each with its item icon, its count large at the right, its name and one quiet line (Today: how many are from before; Habits: done today out of all; Done: finished today; Calendar has no count). In a list each group is one panel with rows split by lines, under a heading with its count. Today opens with a thin "x of y done" bar (finished today against all of today), then "From before" (overdue, amber heading, one quiet "Move to today" for the ones planned on an earlier day; a passed deadline stays), "Today" and "This evening" (from 18:00, or marked evening); when nothing is left and something was finished, it says "All clear for today". Soon is grouped by day (Tomorrow, then the date), Done by the day each task was finished (Today, Yesterday, then the date). A row leaves out the day its group is on and shows only its time; a finished row shows no plan.
 - **Lists:** optional, user-created (name, colour, icon). A task has at most one list and one category. Archiving a list hides it. Lists carry no reward. **Shipped (0.21.0, after TickTick, owner's choice):** the **Inbox is the tasks in no list**, whatever their date (it was the undated tasks before); the menu's six tiles are the smart lists (Today, Calendar, Inbox, Next 7 days (was Soon), Habits, Done) and below them a **Lists** section: one row per list (its item icon on a soft tint of its colour, its name, its open count), New list, and the archived lists folded under "Archived (n)". A list (and the Inbox) groups its open tasks by when they are: From before, Today, Tomorrow, Next 7 days, Later, No date (`TaskViews.byWhen`). Quick-add inside a list files the task there; `#Name` in quick-add files it in that list when one has the name. A task's options have List chips (Inbox and each list); in the smart lists a row shows its list's colour dot and name. Edit list: name (40 characters), eight colours, sixteen real item icons, Archive, Delete (its tasks go back to the Inbox). The Calendar's "To plan" card calls its second group "No date" (open tasks with neither a planned nor a due date, `TaskViews.undated`). Saved as `AppData.lists` with the rest of the save.
-- **Search and filters:** text search over title and notes; filters by category, list, rank, status and date range.
+- **Search and filters:** text search over title and notes; filters by category, list, rank, status and date range. **Shipped (Unreleased):** Planner → All tasks (the last tile) has the search box and one choice each for status (Open, Done, Any), category, list (the Inbox counts as one) and rank; a chosen chip is dropped by tapping it again; open tasks come first by their day (`plan-core` `TaskFilter`). There is no date-range filter yet.
+- **Repeating a task (shipped, Unreleased):** a task's options have a Repeat row (Never, Daily, Weekdays, Weekly, Monthly), and More options in the quick-add has the same. The task itself stays the one of its own day and pays as a one-off task (with the minimum age); the later ones are made ahead as for any recurring task. Weekly follows the weekday of the first day, Monthly its date. A repeating task shows "repeats weekly" and so on in its line; Never stops it and removes the later ones nobody has touched. Every 2 weeks, yearly, ends and "N days after" exist in the engine but have no screen yet. The editor (Edit) also sets category, notes and the deadline.
 - **Quick-add:** one natural-language parser shared by every platform, e.g. `Call mum tomorrow 5pm #Social !B` (`#` category or list, `!` rank). Also available from the widget and the share sheet.
 - **Task states:** open, done, **won't do** (no reward, hidden from stats), deleted (recoverable for 30 days). A reward is tied to one completion event; reopening and re-completing a task never pays twice.
 - **Locale:** week start and 12 / 24 hour follow the system, with an override. English only for v1.

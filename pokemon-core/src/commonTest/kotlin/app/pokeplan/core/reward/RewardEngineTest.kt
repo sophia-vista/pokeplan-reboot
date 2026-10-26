@@ -12,7 +12,6 @@ import app.pokeplan.core.pokemon.Ids
 import app.pokeplan.core.pokemon.Inventory
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.Nature
-import app.pokeplan.core.pokemon.Stat
 import app.pokeplan.core.pokemon.pokemon
 import kotlin.random.Random
 import kotlin.test.Test
@@ -148,15 +147,12 @@ class RewardEngineTest {
     }
 
     @Test
-    fun theBuddyAndPartyTrainTheirPlannedStats() {
-        val buddy = pokemon(Ids.PIKACHU).withTrainingPlan(listOf(Stat.ATTACK))
-        val helper = pokemon(Ids.CHARMANDER).copy(id = "helper").withTrainingPlan(listOf(Stat.SPEED))
-        val unplanned = pokemon(Ids.RATTATA).copy(id = "other")
-        val state = PlayerState(pokemon = listOf(buddy, helper, unplanned), buddyId = buddy.id)
-        val after = RewardEngine.achievement(state, achievement(4), Random(1)).state
-        assertEquals(4, after.pokemon.first { it.id == buddy.id }.evs.attack)
-        assertEquals(2, after.pokemon.first { it.id == "helper" }.evs.speed)
-        assertEquals(0, after.pokemon.first { it.id == "other" }.evs.total)
+    fun tasksNoLongerTrainEvs() {
+        val buddy = pokemon(Ids.PIKACHU)
+        val state = PlayerState(pokemon = listOf(buddy), buddyId = buddy.id)
+        val out = RewardEngine.achievement(state, achievement(4), Random(1))
+        assertEquals(0, out.state.buddy!!.evs.total, "EVs come from Vitamins only")
+        assertTrue(out.rewards.none { it is Reward.Evs })
     }
 
     @Test

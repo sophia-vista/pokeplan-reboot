@@ -1,0 +1,166 @@
+package app.pokeplan.ui.screens
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import app.pokeplan.core.pokemon.AbilityPerks
+import app.pokeplan.core.pokemon.Guardians
+import app.pokeplan.core.pokemon.HeldItems
+import app.pokeplan.core.pokemon.Items
+import app.pokeplan.core.pokemon.OwnedPokemon
+import app.pokeplan.core.pokemon.PerkBucket
+import app.pokeplan.core.pokemon.PerkCondition
+import app.pokeplan.core.pokemon.PerkSource
+import app.pokeplan.core.pokemon.Perks
+import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.ItemIcon
+import app.pokeplan.ui.theme.ListRow
+import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelBar
+import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.TextBox
+import kotlin.math.roundToInt
+
+internal fun PerkBucket.label() = when (this) {
+    PerkBucket.EGG_LUCK -> "Egg luck"
+    PerkBucket.CANDY_YIELD -> "Candy yield"
+    PerkBucket.SUPER_CANDY_CHANCE -> "Super Candy chance"
+    PerkBucket.ITEM_FINDER -> "Item finder"
+    PerkBucket.SHINY_HUNTER -> "Shiny hunter"
+    PerkBucket.STREAK_KEEPER -> "Streak keeper"
+    PerkBucket.COINS -> "Coins"
+}
+
+/** What a bucket does, in one line, so a percentage means something. */
+private fun PerkBucket.effect() = when (this) {
+    PerkBucket.EGG_LUCK -> "rarer eggs"
+    PerkBucket.CANDY_YIELD -> "more Rare Candies from tasks"
+    PerkBucket.SUPER_CANDY_CHANCE -> "more Super Candies"
+    PerkBucket.ITEM_FINDER -> "more item drops"
+    PerkBucket.SHINY_HUNTER -> "better shiny odds"
+    PerkBucket.STREAK_KEEPER -> "at ${Perks.STREAK_KEEPER_THRESHOLD.roundToInt()}%, a second missed day a week is forgiven"
+    PerkBucket.COINS -> "more coins"
+}
+
+private fun PerkCondition.label(): String? = when (this) {
+    PerkCondition.ALWAYS -> null
+    PerkCondition.FIRST_TASK_BEFORE_9AM -> "first task of the day, before 9am"
+    PerkCondition.SHORT_SESSION -> "focus sessions of 5 to 20 minutes"
+    PerkCondition.TOP_RANK_TASK -> "A-rank tasks"
+}
+
+private fun PerkSource.Kind.label() = when (this) {
+    PerkSource.Kind.BUDDY_TYPE -> "buddy"
+    PerkSource.Kind.ABILITY -> "ability"
+    PerkSource.Kind.HELD_ITEM -> "held item"
+    PerkSource.Kind.ASSIST -> "party assist"
+    PerkSource.Kind.GUARDIAN -> "Guardian"
+}
+
+/** "+0.4%" under 10 (early perks are small, and should still read as something), "+12%" above. */
+private fun pct(v: Double): String = if (v < 10) "+${(v * 10).roundToInt() / 10.0}%".replace(".0%", "%") else "+${v.roundToInt()}%"
+
+/**
+ * The party's perks, bucket by bucket: the total that applies now and, opened, where every part of it comes from (the
+ * buddy's types and ability, its held item, the rest of the party, and Guardians, which sit outside the cap).
+ */
+@Composable
+fun PartyPerksCard(model: AppModel) {
+    val store = model.store
+    val totals = store.perks
+    val sources = store.perkSources
+    val buddy = model.data.player.buddy
+    var open by remember { mutableStateOf(false) }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("Party perks", style = MaterialTheme.typography.titleMedium)
+            if (buddy == null && sources.isEmpty()) {
+                Text("Choose a buddy to get its perks.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                return@Column
+            }
+            PerkBucket.entries.filter { totals[it] > 0 }.forEach { b ->
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(b.label(), Modifier.weight(1.2f), style = MaterialTheme.typography.bodyMedium)
+                    Box(Modifier.weight(1f)) {
+                        PixelBar((totals[b] / (Perks.BUCKET_CAP + Guardians.BUCKET_CAP)).toFloat().coerceIn(0f, 1f), color = Pixel.Green, label = "${b.label()} ${pct(totals[b])}")
+                    }
+                    Text(pct(totals[b]), Modifier.size(width = 48.dp, height = 24.dp), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.End)
+                }
+            }
+            if (totals.keepsFailedEgg) Text("Magic Guard: once a week a failed session of 5 minutes or more still hatches its egg.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+            if (totals.extraForgivenDays > 0) Text("Streak keeper: a second missed day a week is forgiven.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+            PixelButton(if (open) "Hide where they come from" else "Where they come from", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            if (open) {
+                val byBucket = sources.groupBy { it.bucket }
+                PerkBucket.entries.forEach { bucket ->
+                    val parts = byBucket[bucket] ?: return@forEach
+                    Text("${bucket.label()}: ${bucket.effect()}", style = MaterialTheme.typography.bodyLarge)
+                    parts.forEach { s ->
+                        val whenText = s.condition.label()?.let { ", on $it" } ?: ""
+                        Text("  ${pct(s.percent)} ${s.from} (${s.kind.label()}$whenText)", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    }
+                }
+                Text(
+                    "The buddy, its held item and the party add up to at most +${Perks.BUCKET_CAP.roundToInt()}% a bucket; Guardians add up to +${Guardians.BUCKET_CAP.roundToInt()}% on top. Level, friendship, nature and the stat behind each bucket make a perk stronger; the rest of the party gives a quarter of its type perk.",
+                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                )
+            }
+        }
+    }
+}
+
+/** One Pokémon's own perks (what it gives as the buddy, and as an assist) and its held item, with Give and Take. */
+@Composable
+fun PokemonPerksBox(model: AppModel, p: OwnedPokemon) {
+    val store = model.store
+    val bag = model.data.player.inventory
+    var choosing by remember(p.id) { mutableStateOf(false) }
+    val type = Perks.typePerks(p)
+    val ability = AbilityPerks.table[p.ability]
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("Perks", style = MaterialTheme.typography.titleMedium)
+            val asBuddy = buildList {
+                type.forEach { (b, v) -> add("${pct(v)} ${b.label()}") }
+                ability?.bucket?.let { add("${pct(ability.percent)} ${it.label()} (${p.ability}${ability.condition.label()?.let { c -> ", on $c" } ?: ""})") }
+                if (ability?.keepsFailedEgg == true) add("Magic Guard: a failed session keeps its egg once a week")
+                p.heldItem?.let { HeldItems.perks[it] }?.let { add("${pct(it.percent)} ${it.bucket.label()} (${Items.name(p.heldItem!!)})") }
+            }
+            Text("As your buddy: " + asBuddy.ifEmpty { listOf("none yet") }.joinToString(", "), style = MaterialTheme.typography.bodyMedium)
+            Text("In the party: " + type.entries.joinToString(", ") { (b, v) -> "${pct(v * Perks.ASSIST_SHARE)} ${b.label()}" }.ifEmpty { "none" }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+
+            val held = p.heldItem
+            ListRow(lead = { if (held != null) ItemIcon(held, size = 32.dp) else ItemIcon("seal-bag", size = 32.dp, description = null) }, trail = {
+                if (held != null) PixelButton("Take", { store.takeItem(p.id) }, color = Pixel.InkSoft, compact = true)
+                else PixelButton(if (choosing) "Close" else "Give", { choosing = !choosing }, color = Pixel.Blue, compact = true)
+            }) {
+                Text(if (held != null) "Holding ${Items.name(held)}" else "Holds nothing", style = MaterialTheme.typography.bodyLarge)
+            }
+            if (held != null) PixelButton(if (choosing) "Close" else "Swap", { choosing = !choosing }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            if (choosing) {
+                val holdable = bag.counts.filter { it.value > 0 && Items.holdable(it.key) }.keys.sorted()
+                if (holdable.isEmpty()) Text("No items to hold yet. Held items drop from finished tasks.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                holdable.forEach { id ->
+                    val perk = HeldItems.perks[id]?.let { " (${pct(it.percent)} ${it.bucket.label()})" } ?: ""
+                    ListRow(lead = { ItemIcon(id, size = 32.dp) }, onClick = { if (store.holdItem(p.id, id)) choosing = false }, onClickLabel = "Give ${Items.name(id)}") {
+                        Text("${Items.name(id)}$perk", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
+    }
+}
