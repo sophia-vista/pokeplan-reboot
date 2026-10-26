@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.24.1
+
+- Behind the scenes, before a second module: the cloud save is now Plan's own (`plan.saves`), so the shared game tables hold only the game; every reward the server records says which version of the reward rules made it (rules version 1); and `docs/economy.md` lists every reward source, use and cap. Nothing changes in the app. To take effect online, push the new migration, then redeploy the reward function.
+
 ## 0.24.0
 
 - Your own events can repeat: daily, on weekdays, weekly, every 2 weeks, monthly or yearly, timed or all day ("Gym" every Monday, "Home" every weekend). Pick it under Repeats in New event, or tap an event to change it. A repeating event never ends unless you set an end, then ‹ › moves the end one occurrence at a time. Changes in the event panel are made to every one; dragging one, or tapping another hour, moves just that one. Delete asks whether to delete this one or all. Changing how a later one repeats leaves the earlier ones as they were.

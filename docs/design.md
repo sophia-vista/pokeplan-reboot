@@ -361,6 +361,8 @@ PokéPlan is the first app of a planned **family of personal Pokémon apps** (a 
 
 Server-authoritative for everything that grants value: hatching, candies, items, transfers, shiny rolls. Tables are grouped in schemas per area (see Platform and apps): `platform` holds the shared trainer, Pokémon, inventory and reward ledger; `plan` holds PokéPlan's tasks, goals, habits, sessions and reviews. Clients send intents ("finished task X", "hatch session Y") and the server validates and rolls. Row-level security so a user only reads and writes their own rows. Species, base stats, abilities and perk tables are data shipped with the app and mirrored on the server.
 
+The cloud save is Plan's own data (`plan.saves`, without the game state). Every reward row on the server records the rules version (`RewardRules.VERSION`) that made it; every reward source, use and cap is listed in `docs/economy.md`.
+
 ## Data to add
 
 - Per-species base stats, abilities, types, evolutions and forms for **every species through Gen 9**, generated at build time from a public dataset (needs the build environment to reach it). Species use National Dex numbers; the Home Region keeps its own local numbering.
