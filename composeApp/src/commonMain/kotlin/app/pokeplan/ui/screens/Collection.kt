@@ -153,6 +153,8 @@ private fun PokemonRow(p: OwnedPokemon, buddy: Boolean, favorite: Boolean, onCli
     ListRow(
         lead = { Sprite(p.form.id, p.isShiny, p.nickname, size = 64.dp) },
         onClick = onClick,
+        onClickLabel = "Open ${p.nickname}",
+        highlight = false,
         trail = {
             Column(horizontalAlignment = Alignment.End) {
                 if (buddy) Text("Buddy", style = MaterialTheme.typography.labelMedium, color = Pixel.Red)

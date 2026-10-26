@@ -186,8 +186,9 @@ fun AnimatedSprite(
     }
     Canvas(modifier.size(size).semantics { contentDescription = description }) {
         val box = min(this.size.width, this.size.height - ground.toPx())
-        // An action keeps the idle sprite's scale, so the Pokémon does not change size when it lies down or hops.
-        val scale = if (a === idle) pixelScale(box, a) else min(pixelScale(box, idle), pixelScale(box, a))
+        // Every action draws at the idle sprite's scale, so the Pokémon never changes size when it lies down, eats or hops.
+        // A hop's frames are taller than the idle ones (they hold the jump), so the top of a jump may reach above the box.
+        val scale = pixelScale(box, idle)
         val w = a.width * scale
         val h = a.height * scale
         drawImage(
