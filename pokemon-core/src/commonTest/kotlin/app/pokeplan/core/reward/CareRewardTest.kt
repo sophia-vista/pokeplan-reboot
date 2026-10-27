@@ -1,12 +1,18 @@
 package app.pokeplan.core.reward
 
+import app.pokeplan.core.pokemon.CareBucket
+import app.pokeplan.core.pokemon.CarePerks
 import app.pokeplan.core.pokemon.FriendshipRules
+import app.pokeplan.core.pokemon.OwnedPokemon
+import app.pokeplan.core.pokemon.PartyIds
+import app.pokeplan.core.pokemon.Perks
 import app.pokeplan.core.pokemon.Ids
 import app.pokeplan.core.pokemon.Nature
 import app.pokeplan.core.pokemon.pokemon
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CareRewardTest {
@@ -23,6 +29,31 @@ class CareRewardTest {
         assertEquals(FriendshipRules.START + 2, out.state.buddy!!.friendship, "a comfort-loving buddy doubles a routine's friendship")
         assertEquals(listOf<Reward>(Reward.Friendship(2)), out.rewards)
         assertEquals(10 + RewardEngine.CARE_POINTS, out.state.trainerPoints)
+    }
+
+    private fun withCareLead(lead: OwnedPokemon): PlayerState {
+        val base = state()
+        val l = lead.copy(inParty = true, partyId = PartyIds.CARE)
+        return base.copy(pokemon = base.pokemon + l, careLeadId = l.id)
+    }
+
+    @Test
+    fun theCareLeadTakesCaresFriendshipInsteadOfThePlanBuddy() {
+        val lead = pokemon(Ids.EEVEE, friendship = FriendshipRules.START)
+        val s = withCareLead(lead)
+        val out = care(CareKind.ROUTINE, s)
+        assertTrue(out.state.pokemon.first { it.id == lead.id }.friendship > FriendshipRules.START)
+        assertEquals(FriendshipRules.START, out.state.buddy!!.friendship)
+    }
+
+    @Test
+    fun careBucketsComeFromTheirTypesAndStayCapped() {
+        val water = CarePerks.typePerks(pokemon(7))
+        assertTrue((water[CareBucket.FRIENDSHIP_GAIN] ?: 0.0) > 0.0)
+        val big = pokemon(7, level = 100, friendship = FriendshipRules.MAX)
+        val total = CarePerks.total(big, List(6) { big.copy(id = "x$it") })
+        assertTrue(total.values.all { it <= Perks.BUCKET_CAP })
+        assertTrue(CarePerks.total(null).isEmpty())
     }
 
     @Test
@@ -68,5 +99,37 @@ class CareRewardTest {
     fun theEventJsonCarriesOnlyTheKindAndTime() {
         val text = RewardJson.json.encodeToString(CareEvent.serializer(), CareEvent(CareKind.CALM_BREAK, 5L))
         assertEquals("""{"kind":"calm_break_completed","nowMillis":5}""", text)
+    }
+
+    private fun befriend(s: PlayerState, seed: Int = 1) =
+        RewardEngine.befriend(s, BefriendEvent(Ids.EEVEE, app.pokeplan.core.dex.Dex.defaultForm(Ids.EEVEE).identifier, "friend", 5_000L), Random(seed))
+
+    @Test
+    fun aBefriendedVisitorHatchesIntoCaresPartyWithAnIvFloor() {
+        val out = befriend(state())
+        val friend = out.state.pokemon.first { it.id == "friend" }
+        assertEquals(Ids.EEVEE, friend.speciesId)
+        assertEquals(PartyIds.CARE, friend.partyId)
+        assertTrue(friend.inParty)
+        assertEquals(friend.id, out.state.careLeadId, "the first member of Care's party leads")
+        assertTrue(app.pokeplan.core.pokemon.Stat.entries.all { friend.ivs[it] >= RewardEngine.BEFRIEND_IV_FLOOR })
+        assertEquals(10 + RewardEngine.BEFRIEND_POINTS, out.state.trainerPoints)
+        assertTrue(Ids.EEVEE in out.state.caught)
+        assertEquals(listOf(Reward.Hatched(friend, fromTask = false)), out.rewards)
+    }
+
+    @Test
+    fun aFullCarePartySendsTheFriendToThePcAndKeepsItsLead() {
+        val full = (1..6).map { pokemon(Ids.PIKACHU).copy(id = "c$it", inParty = true, partyId = PartyIds.CARE) }
+        val s = state().let { it.copy(pokemon = it.pokemon + full, careLeadId = "c3") }
+        val out = befriend(s)
+        assertFalse(out.state.pokemon.first { it.id == "friend" }.inParty)
+        assertEquals("c3", out.state.careLeadId)
+    }
+
+    @Test
+    fun directJoinsAreRareAndStartWithHighFriendship() {
+        val joins = (1..400).count { befriend(state(), it).state.pokemon.first { p -> p.id == "friend" }.friendship == RewardEngine.BEFRIEND_JOIN_FRIENDSHIP }
+        assertTrue(joins in 5..50, "joined $joins of 400")
     }
 }

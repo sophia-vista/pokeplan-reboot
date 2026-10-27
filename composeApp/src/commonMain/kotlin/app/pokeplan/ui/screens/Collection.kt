@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -51,6 +53,7 @@ import app.pokeplan.core.dex.Region
 import app.pokeplan.core.dex.FormInfo
 import app.pokeplan.core.dex.SpeciesInfo
 import app.pokeplan.core.pokemon.EvolutionRules
+import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.model.PokemonType
 import app.pokeplan.core.pokemon.CandyRules
 import app.pokeplan.core.pokemon.Guardians
@@ -97,6 +100,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
     var selected by remember { mutableStateOf(startOpen) }
     // Kept here, not in the PC section, so opening a Pokémon and coming back leaves the sort and filters as they were.
     var pcView by remember { mutableStateOf(PcView()) }
+    var partyTab by remember { mutableStateOf(0) }
     var dexView by remember { mutableStateOf(DexView()) }
     var dexEntry by remember { mutableStateOf<Int?>(null) }
     val player = model.data.player
@@ -137,9 +141,22 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
     SectionScaffold(current.title, "Pokémon", onBack = { section = null }, icon = current.icon) {
         when (current) {
             Section.PARTY -> {
-                if (player.party.isEmpty()) EmptyState("Your party is empty", "Hatch an egg with a focus session, or move a Pokémon here from the PC.", icon = "poke-ball")
-                else if (store.sees(Feature.PERKS)) PartyPerksCard(model)
-                player.party.forEach { p -> PokemonRow(p, p.id == player.buddyId, store.isFavorite(p.id)) { selected = p.id } }
+                val careOn = model.data.settings.careModule
+                val tab = if (careOn) partyTab else 0
+                if (careOn) {
+                    Segmented(listOf("Plan ${player.party.size}/6", "Care ${player.partyOf(PartyIds.CARE).size}/6"), tab) { partyTab = it }
+                    Spacer(Modifier.height(10.dp))
+                }
+                if (tab == 0) {
+                    if (player.party.isEmpty()) EmptyState("Your party is empty", "Hatch an egg with a focus session, or move a Pokémon here from the PC.", icon = "poke-ball")
+                    else if (store.sees(Feature.PERKS)) PartyPerksCard(model)
+                    player.party.forEach { p -> PokemonRow(p, if (p.id == player.buddyId) "Buddy" else null, store.isFavorite(p.id)) { selected = p.id } }
+                } else {
+                    val care = player.partyOf(PartyIds.CARE)
+                    if (care.isEmpty()) EmptyState("Care's party is empty", "Open a Pokémon and choose \"To Care party\". Until then Care warms your Plan buddy. Its first member leads.", icon = "poke-ball")
+                    else CarePerksCard(model)
+                    care.forEach { p -> PokemonRow(p, if (p.id == player.careLeadId) "Care lead" else null, store.isFavorite(p.id)) { selected = p.id } }
+                }
             }
             Section.PC -> {
                 val box = player.pokemon.filter { !it.inParty && !Guardians.canBe(it) }
@@ -162,7 +179,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
 }
 
 @Composable
-private fun PokemonRow(p: OwnedPokemon, buddy: Boolean, favorite: Boolean, onClick: () -> Unit) {
+private fun PokemonRow(p: OwnedPokemon, role: String?, favorite: Boolean, onClick: () -> Unit) {
     ListRow(
         lead = { Sprite(p.form.id, p.isShiny, p.nickname, size = 64.dp) },
         onClick = onClick,
@@ -170,7 +187,7 @@ private fun PokemonRow(p: OwnedPokemon, buddy: Boolean, favorite: Boolean, onCli
         highlight = false,
         trail = {
             Column(horizontalAlignment = Alignment.End) {
-                if (buddy) Text("Buddy", style = MaterialTheme.typography.labelMedium, color = Pixel.Red)
+                if (role != null) Text(role, style = MaterialTheme.typography.labelMedium, color = Pixel.Red)
                 if (favorite) Text("★ Starred", style = MaterialTheme.typography.labelMedium, color = Pixel.Warning)
             }
         },
@@ -901,7 +918,13 @@ private fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (!isGuardian) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                         PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p.speciesId) }, Modifier.weight(1f), Pixel.Red, enabled = !isBuddy, compact = true)
-                        PixelButton(if (p.inParty) "To PC" else "To party", { store.setInParty(p.id, !p.inParty) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                        PixelButton(if (p.inParty && p.partyId == PartyIds.PLAN) "To PC" else "To Plan party", { store.setInParty(p.id, !(p.inParty && p.partyId == PartyIds.PLAN)) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    }
+                    if (!isGuardian && model.data.settings.careModule) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                        val inCare = p.inParty && p.partyId == PartyIds.CARE
+                        val isLead = p.id == player.careLeadId
+                        PixelButton(if (isLead) "Is Care's lead" else "Make Care lead", { store.setCareLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inCare && !isLead, compact = true)
+                        PixelButton(if (inCare) "To PC" else "To Care party", { store.setInParty(p.id, !inCare, PartyIds.CARE) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                     if (renaming) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {

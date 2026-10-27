@@ -2,6 +2,7 @@ package app.pokeplan.app
 
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.PartyIds
+import app.pokeplan.core.pokemon.TransferBlock
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.FailReason
@@ -299,9 +300,20 @@ class GameStoreTest {
         assertFalse(s.setInParty(buddy, true, PartyIds.CARE))
         assertTrue(s.setInParty(other.id, true, PartyIds.PLAN))
         assertTrue(s.data.player.partyOf(PartyIds.CARE).isEmpty())
-        // A Care party member transfers even while Plan has one member.
+        // Care's first member leads, and a lead cannot be transferred.
         assertTrue(s.setInParty(other.id, true, PartyIds.CARE))
-        assertNull(s.transferBlock(other.id))
+        assertEquals(other.id, s.data.player.careLead?.id)
+        assertEquals(TransferBlock.BUDDY, s.transferBlock(other.id))
+        // A Care member that is not the lead transfers even while Plan has one member, and the lead passes on when it leaves.
+        hatchOne(s, clock)
+        val third = s.data.player.pokemon.first { it.id != buddy && it.id != other.id }
+        assertTrue(s.setInParty(third.id, true, PartyIds.CARE))
+        assertNull(s.transferBlock(third.id))
+        assertTrue(s.setCareLead(third.id))
+        assertEquals(third.id, s.data.player.careLead?.id)
+        assertTrue(s.setInParty(third.id, false))
+        assertEquals(other.id, s.data.player.careLead?.id)
+        assertFalse(s.setCareLead(buddy))
     }
 
     @Test

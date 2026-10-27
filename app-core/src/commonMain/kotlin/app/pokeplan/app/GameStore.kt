@@ -27,6 +27,7 @@ import app.pokeplan.core.pokemon.Stat
 import app.pokeplan.core.pokemon.Transfer
 import app.pokeplan.core.pokemon.TransferBlock
 import app.pokeplan.core.reward.AchievementEvent
+import app.pokeplan.core.reward.BefriendEvent
 import app.pokeplan.core.reward.CareEvent
 import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.EffortEvent
@@ -311,6 +312,28 @@ class GameStore(
             // Only today's counters are kept.
             val counters = d.counters.filterKeys { !it.startsWith("care-") || it.endsWith("-$today") } + (key to paidToday + 1)
             log(CARE_SOURCES.getValue(event.kind), outcome.rewards, d.copy(player = outcome.state, counters = counters))
+        }
+        return outcome.rewards
+    }
+
+    override fun visitorLuck(): Double =
+        app.pokeplan.core.pokemon.CarePerks.total(data.player.careLead, data.player.partyOf(PartyIds.CARE))[app.pokeplan.core.pokemon.CareBucket.VISITOR_LUCK] ?: 0.0
+
+    /**
+     * Makes a friend of a Care visitor, once a day: the egg's dice come from the oldest egg ticket (the day's key is
+     * `befriend:<epochDay>`, the ticket is spent with it) or, with none, from the device. Returns null when nothing was paid.
+     */
+    override fun befriend(event: BefriendEvent): List<Reward>? {
+        if (!data.onboarded) return null
+        val key = "befriend-$today"
+        if ((data.counters[key] ?: 0) >= 1) return null
+        val ticket = data.eggTickets.stock.firstOrNull()
+        val outcome = RewardEngine.befriend(data.player, event, ticket?.let { Random(it.seed) } ?: rng)
+        update { d ->
+            val counters = d.counters.filterKeys { !it.startsWith("befriend-") } + (key to 1)
+            val tickets = if (ticket == null) d.eggTickets
+            else d.eggTickets.copy(stock = d.eggTickets.stock.drop(1), spent = d.eggTickets.spent + SpentTicket(ticket.id, nowMillis, event.newPokemonId))
+            log("Care: made a friend", outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets))
         }
         return outcome.rewards
     }
@@ -1026,7 +1049,21 @@ class GameStore(
         if (inParty && !staying && data.player.partyOf(partyId).size >= OwnedPokemon.PARTY_SIZE) return false
         val leavingPlan = p.inParty && p.partyId == PartyIds.PLAN && !(inParty && partyId == PartyIds.PLAN)
         if (leavingPlan && (planSize <= 1 || id == data.player.buddyId)) return false
-        replace(p.copy(inParty = inParty, partyId = partyId))
+        update { d ->
+            val pokemon = d.player.pokemon.map { if (it.id == id) p.copy(inParty = inParty, partyId = partyId) else it }
+            // Care's lead is its first member until the player picks another, and passes on when it leaves.
+            val care = pokemon.filter { it.inParty && it.partyId == PartyIds.CARE }
+            val lead = d.player.careLeadId?.takeIf { l -> care.any { it.id == l } } ?: care.firstOrNull()?.id
+            d.copy(player = d.player.copy(pokemon = pokemon, careLeadId = lead))
+        }
+        return true
+    }
+
+    /** Makes [id], who must be in Care's party, its lead: the buddy that takes Care's friendship and gives its perks. */
+    fun setCareLead(id: String): Boolean {
+        val p = pokemon(id)
+        if (!p.inParty || p.partyId != PartyIds.CARE) return false
+        update { d -> d.copy(player = d.player.copy(careLeadId = id)) }
         return true
     }
 
@@ -1096,7 +1133,7 @@ class GameStore(
     fun transferBlock(id: String): TransferBlock? =
         pokemon(id).let { p ->
             // The "last party member" rule guards Plan's party only; other modules' parties may be emptied.
-            Transfer.block(p, id == data.player.buddyId, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
+            Transfer.block(p, id == data.player.buddyId || id == data.player.careLead?.id, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
         }
 
     /** Whether [feature] has appeared yet at the player's trainer rank (the gradual reveal). */

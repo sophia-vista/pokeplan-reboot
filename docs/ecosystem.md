@@ -174,7 +174,7 @@ and leaderboards. Export and delete cover it.
 **Events out:** `routine_completed`, `calm_break_completed`, `skill_practised`, `weekly_rhythm`. No other field (not even
 which skill).
 
-### Befriending (decided, not built)
+### Befriending (built in 0.35.0)
 
 *Owner's answers, October 2026.* Care gains a Pokémon source that is about bond, not volume. Entering sensitive information
 still earns nothing, and a visitor never reads a domain (only the *kind* of Care action).
@@ -191,6 +191,18 @@ still earns nothing, and a visitor never reads a domain (only the *kind* of Care
   (a nature bias and a min IV floor), and both go in the **same PC and Pokédex** as every other Pokémon.
 - **Limits** *(tune)*: one befriend a day, a daily total shared with Care's world-side cap, one result per visitor (the
   idempotency key), and the direct-join chance small enough that Care's Pokémon income stays below Plan's.
+- **As built.** *Spending the befriend* is one tap on a visitor and warms it by a point; it needs at least one paid Care action
+  that day, so a quiet day simply waits. Four points make a friend (`Visitors.FRIEND_POINTS`), so one friend takes at least 4 days.
+  Unvisited warming visitors stay 3 days (`WANDER_DAYS`) and then wander off; the day's unpicked visitors leave at midnight. A
+  break of 3 days or more brings 3 visitors instead of 2. The egg hatches at once, like a Task Egg, as the visitor's own species
+  (the player chose it), into Care's party if there is room, else the PC. **Visitor luck** (Flying, Psychic, Ghost in Care's party)
+  raises a visitor's chance of arriving one rarity higher, the egg's IV floor (up to +6) and the direct-join chance (up to +5
+  percentage points). Not built yet: the berry that adds a bonus point (Care cannot see the bag).
+- **Offline.** Visitors are seeded per device and per day (`CareData.visitorSeed`, with the day), so the same device sees the same
+  visitors all day, and the offer is saved the first time it is seen. The egg's dice come from the oldest server-issued egg ticket
+  when the device has one (it is spent with the befriend and reported on the next sync like a focus ticket), and from the device
+  without; the direct-join roll is part of the same dice. The day's cap is the key `befriend-<epochDay>`. The server does not run
+  Care events yet, so nothing here needs a server change.
 - **Numbers** go in `RewardRules` and `docs/economy.md` with the build (a rules version bump), then `simulateEconomy`.
 
 ### Health integration (after v1, optional)

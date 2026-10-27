@@ -1,5 +1,6 @@
 package app.pokeplan.app
 
+import app.pokeplan.care.BefriendResult
 import app.pokeplan.care.CalmBreak
 import app.pokeplan.care.CareData
 import app.pokeplan.care.CareRules
@@ -12,7 +13,10 @@ import app.pokeplan.care.Prompt
 import app.pokeplan.care.Prompts
 import app.pokeplan.care.Routine
 import app.pokeplan.care.SkillPractice
+import app.pokeplan.care.Visitor
+import app.pokeplan.care.Visitors
 import app.pokeplan.care.Skills
+import app.pokeplan.core.reward.BefriendEvent
 import app.pokeplan.core.reward.CareEvent
 import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.Reward
@@ -154,6 +158,50 @@ class CareStore(
     fun practisedToday(): Set<String> =
         data.practices.filter { it.day == today }.map { it.skillId }.toSet() +
             (if (data.breaks.any { it.day == today }) Skills.all.filter { it.calmBreak }.map { it.id } else emptyList())
+
+    // --- visitors (befriending) ---------------------------------------------------------------------------------------
+
+    /** Whether today's befriend is still free and some care has paid today (a visitor warms up on days with care). */
+    fun canBefriend(): Boolean = data.befriendDay != today && CareRules.paidOn(data, today)
+
+    /** Whether today's befriend has been spent. */
+    val befriendSpent: Boolean get() = data.befriendDay == today
+
+    /**
+     * The visitors now: the ones warming up that have not wandered off, and today's new ones (2, or 3 after a break), the same
+     * on this device all day. The day's offer is made the first time it is asked for.
+     */
+    fun visitors(): List<Visitor> {
+        if (data.visitorsDay != today) {
+            val seed = data.visitorSeed.takeIf { it != 0 } ?: (1 + rng.nextInt(Int.MAX_VALUE - 1))
+            val earliest = today.toEpochDays() - Visitors.WANDER_DAYS
+            val staying = data.visitors.filter { it.points > 0 && (it.lastVisitDay?.toEpochDays() ?: 0L) >= earliest }
+            val arrivals = Visitors.offer(
+                seed, today, Visitors.count(data.visitorsDay, today), staying.map { it.speciesId }.toSet(),
+                world.visitorLuck(), Visitors.lean(data, today),
+            )
+            update { it.copy(visitorSeed = seed, visitorsDay = today, visitors = staying + arrivals) }
+        }
+        return data.visitors
+    }
+
+    /**
+     * Spends today's befriend on a visitor: it warms up by a point, and at [Visitors.FRIEND_POINTS] it becomes a friend, paid
+     * through the world (an egg that hatches at once, rarely the visitor itself). Null when it cannot be done now: the
+     * visitor is gone, today's befriend is spent, no care has paid today, or the world paid nothing.
+     */
+    fun befriend(speciesId: Int): BefriendResult? {
+        val visitor = visitors().firstOrNull { it.speciesId == speciesId } ?: return null
+        if (!canBefriend()) return null
+        val warmer = visitor.copy(points = visitor.points + 1, lastVisitDay = today)
+        if (warmer.points < Visitors.FRIEND_POINTS) {
+            update { d -> d.copy(befriendDay = today, visitors = d.visitors.map { if (it.speciesId == speciesId) warmer else it }) }
+            return BefriendResult(warmer, friend = false, rewards = emptyList())
+        }
+        val rewards = world.befriend(BefriendEvent(visitor.speciesId, visitor.formIdentifier, newId(), nowMillis)) ?: return null
+        update { d -> d.copy(befriendDay = today, visitors = d.visitors.filterNot { it.speciesId == speciesId }) }
+        return BefriendResult(warmer, friend = true, rewards = rewards)
+    }
 
     // --- diary card, journal (private, never paid) --------------------------------------------------------------------
 

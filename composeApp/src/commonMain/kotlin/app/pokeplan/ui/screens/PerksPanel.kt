@@ -22,6 +22,9 @@ import app.pokeplan.core.pokemon.Guardians
 import app.pokeplan.core.pokemon.HeldItems
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.OwnedPokemon
+import app.pokeplan.core.pokemon.CareBucket
+import app.pokeplan.core.pokemon.CarePerks
+import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.PerkBucket
 import app.pokeplan.core.pokemon.PerkCondition
 import app.pokeplan.core.pokemon.PerkSource
@@ -119,6 +122,31 @@ fun PartyPerksCard(model: AppModel) {
                     style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
                 )
             }
+        }
+    }
+}
+
+/** Care's party perks: its three buckets, from the lead and the rest of Care's party. */
+@Composable
+fun CarePerksCard(model: AppModel) {
+    val player = model.data.player
+    val totals = CarePerks.total(player.careLead, player.partyOf(PartyIds.CARE))
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("Care perks", style = MaterialTheme.typography.titleMedium)
+            CareBucket.entries.forEach { b ->
+                val v = totals[b] ?: 0.0
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(b.label, Modifier.weight(1.2f), style = MaterialTheme.typography.bodyMedium)
+                    Box(Modifier.weight(1f)) { PixelBar((v / Perks.BUCKET_CAP).toFloat().coerceIn(0f, 1f), color = Pixel.Green, label = "${b.label} ${pct(v)}") }
+                    Text(pct(v), Modifier.size(width = 48.dp, height = 24.dp), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.End)
+                }
+            }
+            Text(
+                "Normal, Fairy and Water add Friendship gain; Grass, Bug and Fighting Berry finder; Flying, Psychic and Ghost Visitor luck. " +
+                    "The lead gives its full perk and the rest of the party a quarter, up to +${Perks.BUCKET_CAP.roundToInt()}%. They only change what Care pays, never what you write.",
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            )
         }
     }
 }

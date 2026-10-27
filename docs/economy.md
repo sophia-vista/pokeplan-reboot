@@ -1,6 +1,6 @@
 # The economy: sources, sinks and caps
 
-Every reward source, every use and every cap, as the code has them under **rules version 8** (`RewardRules.VERSION` in
+Every reward source, every use and every cap, as the code has them under **rules version 10** (`RewardRules.VERSION` in
 `pokemon-core`). This is principle 6 of `docs/ecosystem.md` ("every reward source, cap and use is written down"). The
 reasons and pacing targets are in `docs/design.md`; the simulated pacing is in `docs/economy-report.md`.
 
@@ -12,7 +12,7 @@ Where the rules live: `RewardEngine`, `TrainerRank`, `CandyRewards` and `Egg` (t
 server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`, `Shiny`), `EvolutionRules` in
 `pokemon-core`; `TaskRules`, `Goal`, `Review`, `Streak`, `FocusSession` in `plan-core`; `CareRules` in `care-core`; `GameStore`, `CareStore` and `Quests` in `app-core`.
 
-**Version history.** 1: everything before Care. 2: the Care events (`RewardEngine.care`) and the friendship sources Routine and Calm break; nothing that version 1 paid changed. 3: trade-evolution items (Metal Coat, King's Rock...) join the drop table; Magic Guard hatches a failed session's egg once a week; the Streak keeper perk forgives a second missed day. 4: training plans are gone, so tasks pay no EVs; Synchronize gives +3 Super Candy chance instead of +25% EVs. 5: a new trainer rank curve, quick at first and slower after (0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000, 9,000; it was 0, 625 ... 10,625). 6: the Pick-for-me bonus (candies × 1.10), task friendship capped at 10 a day, and the streak day rolls over at 4am. 7: Care's practised skill (a DBT skill from the library: friendship (skill) and a berry, 3 a day) and the friendship source Skill; nothing else changed.
+**Version history.** 1: everything before Care. 2: the Care events (`RewardEngine.care`) and the friendship sources Routine and Calm break; nothing that version 1 paid changed. 3: trade-evolution items (Metal Coat, King's Rock...) join the drop table; Magic Guard hatches a failed session's egg once a week; the Streak keeper perk forgives a second missed day. 4: training plans are gone, so tasks pay no EVs; Synchronize gives +3 Super Candy chance instead of +25% EVs. 5: a new trainer rank curve, quick at first and slower after (0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000, 9,000; it was 0, 625 ... 10,625). 6: the Pick-for-me bonus (candies × 1.10), task friendship capped at 10 a day, and the streak day rolls over at 4am. 7: Care's practised skill (a DBT skill from the library: friendship (skill) and a berry, 3 a day) and the friendship source Skill; nothing else changed. 8: a Pokémon records which module's party it is in (`partyId`, six per party); nothing paid changed. 9: Care has its own lead (`careLeadId`) and perk buckets: the lead takes Care's friendship, and Friendship gain (a chance of one extra friendship step) and Berry finder (a chance of a second berry) apply; with no Care lead Care pays as before. 10: befriending a Care visitor (`RewardEngine.befriend`), one a day.
 
 ## 1. Sources
 
@@ -38,7 +38,7 @@ server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`,
 | **Care: calm break** (1 to 2 minutes; under a minute is kept but pays nothing) | Buddy friendship (calm break) · 1 random berry · 1 trainer point. At most 3 a day | `CareRules.BREAKS_PAID_PER_DAY`, `BREAK_MIN_SECONDS` |
 | **Care: skill practised** (a DBT skill from the library, each skill once a day; paced breathing pays as a calm break) | Buddy friendship (skill) · 1 random berry · 1 trainer point. At most 3 a day | `CareRules.SKILLS_PAID_PER_DAY` |
 | **Care: kept a rhythm** (care done on 4 days of a week: a routine, a calm break or a skill) | 3 random berries · 5 trainer points, once a week | `RHYTHM_BERRIES`, `RHYTHM_POINTS`, `CareRules.RHYTHM_DAYS` |
-| **Care: befriend a visitor** *(decided, not built; ecosystem.md section 6)* | An Egg (rarely the Pokémon itself) from the Care Region pool. One befriend a day | not yet in `RewardRules` |
+| **Care: befriend a visitor** (the fourth day of spending the day's befriend on the same visitor; ecosystem.md section 6) | The visitor's egg, which hatches at once into Care's party (else the PC), with every IV at least `BEFRIEND_IV_FLOOR` (10, up to +6 with Visitor luck); `BEFRIEND_DIRECT_JOIN_PERCENT` (5%, up to +5 with Visitor luck) of the time the visitor joins at once with friendship `BEFRIEND_JOIN_FRIENDSHIP` (150) · `BEFRIEND_POINTS` (3) trainer points. One befriend a day, so at most one friend every 4 days when played on one visitor; each of the 4 days needs a paid Care action | `RewardEngine.befriend`, `Visitors` |
 | **Care: diary card, journal entry, note** | Nothing, ever: entering sensitive information never earns (ecosystem.md, section 6) | |
 | **A bag stack is full** | 1 coin per candy or item that did not fit | `Inventory.addCapped` |
 
@@ -151,6 +151,7 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | EVs | 252 a stat, 510 in all | `StatCalculator` |
 | Party | 6 | `OwnedPokemon.PARTY_SIZE` |
 | Perk bucket | 25; Guardians add up to 15 on top | `BUCKET_CAP`, `Guardians` |
+| Care perk bucket | 25 (Friendship gain, Berry finder, Visitor luck), from Care's party only | `CarePerks` |
 | Guardian slots | 0, then 1 at rank 4, 2 at rank 6, 3 at rank 9 | `Guardians.slots` |
 | Active quests | 3 | `Quests.MAX_ACTIVE` |
 | Egg meter | 10 | `EGG_METER_SIZE` |
@@ -163,6 +164,8 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Egg tickets | 20 a device; 200 reported per sync | `TICKET_STOCK`, `MAX_SPENT` |
 | Friend gifts | 1 per friend a day | `platform.send_gift` |
 | Trainer points, coins | no cap; points never go down (the server refuses it) | `apply_outcome` |
+
+**Care's Pokémon income (checked at 0.35.0).** `simulateEconomy` does not play Care, and re-running it after rules version 10 left `docs/economy-report.md` byte for byte the same, so Plan's numbers did not move. By construction Care can add at most one Pokémon every 4 days (one befriend a day, 4 warm-up days per visitor, each needing a paid Care action), about 7 in 30 days, with no Pokémon from any Care action but befriending, against several a day from Plan's focus and Task Eggs. A Care-only player always has the starter and a new friend about every 4 days; the Care Region pool has no Super Rare except through quests.
 
 Care is the first module with a per-module daily cap on the world's side (`CARE_DAILY_CAP`). There is no daily cap on tasks, habits or focus sessions yet: `RewardEngine` leaves daily limits to the caller, and
 design.md's "daily reward limit per app" *(tune)* is not built. It matters once a second module earns through the same door.
