@@ -206,7 +206,7 @@ Collecting is **fast at the start and deep at the end.** The simulator tunes tow
 
 - **Basic dex of the Plan Region (every species caught, including evolutions): about 2 months** *(tune)*. Each later region is about the same once unlocked.
 - **Region unlocks:** trainer rank opens a new region with each rank: the first few within the first weeks, then every month or two *(tune)*, so a player is usually collecting in more than one region.
-- **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Plan dex at a median of day 62, opens a region every 20 to 28 days, and earns enough Rare Candies to evolve the whole Plan Region in 45 to 86 days and enough Super Candies in about 20.
+- **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Plan dex at a median of day 65, opens a region every 20 to 28 days, and earns enough Rare Candies to evolve the whole Plan Region in 45 to 84 days and enough Super Candies in about 20.
 - **The long tail** (months to years) is made of layers, each with its own progress, badge and showcase:
 
 | Layer | Goal |
