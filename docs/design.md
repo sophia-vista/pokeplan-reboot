@@ -264,7 +264,7 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 - **Outside the cap.** The ordinary perk cap (+25% per bucket from buddy, held item and assists) does not apply to Guardians: their bonus is added on top, up to **+15%** in a bucket from Guardians, so a bucket can reach +40%. A Guardian's perk does not depend on level or friendship, which is what makes it different from the buddy's.
 - **Why.** The buddy is the one you grow and bond with; Guardians are the rare, hard-earned reward for sustained effort. A new Guardian changes how you play (which bucket do I want this week?) without adding a second thing to level.
 
-## Parties per module (decided October 2026, not built)
+## Parties per module (decided October 2026; steps 1 to 3 built in 0.35.0, befriending next)
 
 *Owner: effectively many parties, one per region/module, but one PC and one Pokédex.* The details below that the owner did not
 state are marked *(proposed)*.
@@ -299,7 +299,7 @@ state are marked *(proposed)*.
   Care's befriending and perks and confirm Care's Pokémon income stays below Plan's and that a Care-only player is not
   stuck.
 
-**Build order:** (1) per-module party in `pokemon-core`/`app-core` with the migration, Plan only; (2) the Party screen tabs;
+**Build order** *(1 to 3 shipped: the Party screen has a Plan and a Care tab, Care's first member leads until you pick another, and a lead cannot be transferred)*: (1) per-module party in `pokemon-core`/`app-core` with the migration, Plan only; (2) the Party screen tabs;
 (3) Care's party, buckets and the lead's friendship; (4) Care befriending (ecosystem.md, section 6); (5) economy report.
 
 ## Retention

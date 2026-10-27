@@ -293,3 +293,42 @@ object Guardians {
         return sums.mapValues { it.value.coerceAtMost(BUCKET_CAP) }
     }
 }
+
+/** What Care's party can improve (docs/design.md, "Parties per module"). Perks only change what a kind of Care action pays. */
+enum class CareBucket(val label: String, val effect: String) {
+    FRIENDSHIP_GAIN("Friendship gain", "a chance of extra friendship from routines, breaks and skills"),
+    BERRY_FINDER("Berry finder", "a chance of a second berry"),
+    VISITOR_LUCK("Visitor luck", "rarer, better befriended eggs"),
+}
+
+/** Care's perks: the lead gives its type perk in full, the rest of Care's party a quarter, each bucket capped like Plan's. */
+object CarePerks {
+    fun bucket(type: PokemonType): CareBucket? = when (type) {
+        PokemonType.NORMAL, PokemonType.FAIRY, PokemonType.WATER -> CareBucket.FRIENDSHIP_GAIN
+        PokemonType.GRASS, PokemonType.BUG, PokemonType.FIGHTING -> CareBucket.BERRY_FINDER
+        PokemonType.FLYING, PokemonType.PSYCHIC, PokemonType.GHOST -> CareBucket.VISITOR_LUCK
+        else -> null
+    }
+
+    /** One Pokémon's Care perks as percent per bucket (primary type full, second type half), from its level and friendship. */
+    fun typePerks(p: OwnedPokemon): Map<CareBucket, Double> {
+        val result = mutableMapOf<CareBucket, Double>()
+        val power = 0.5 * p.level / CandyRules.MAX_LEVEL + 0.5 * p.friendship / FriendshipRules.MAX
+        for ((index, type) in p.perkTypes.withIndex()) {
+            val bucket = bucket(type) ?: continue
+            result[bucket] = (result[bucket] ?: 0.0) + Perks.TYPE_PERK_MAX * power * if (index == 0) 1.0 else Perks.SECOND_TYPE_SHARE
+        }
+        return result
+    }
+
+    /** The percent per bucket for a party led by [lead]; empty with no lead. */
+    fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList()): Map<CareBucket, Double> {
+        if (lead == null) return emptyMap()
+        val sums = mutableMapOf<CareBucket, Double>()
+        typePerks(lead).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v }
+        party.filter { it.id != lead.id }.take(5).forEach { a ->
+            typePerks(a).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v * Perks.ASSIST_SHARE }
+        }
+        return sums.mapValues { it.value.coerceAtMost(Perks.BUCKET_CAP) }
+    }
+}

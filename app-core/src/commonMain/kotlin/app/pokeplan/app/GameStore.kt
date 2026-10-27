@@ -1026,7 +1026,21 @@ class GameStore(
         if (inParty && !staying && data.player.partyOf(partyId).size >= OwnedPokemon.PARTY_SIZE) return false
         val leavingPlan = p.inParty && p.partyId == PartyIds.PLAN && !(inParty && partyId == PartyIds.PLAN)
         if (leavingPlan && (planSize <= 1 || id == data.player.buddyId)) return false
-        replace(p.copy(inParty = inParty, partyId = partyId))
+        update { d ->
+            val pokemon = d.player.pokemon.map { if (it.id == id) p.copy(inParty = inParty, partyId = partyId) else it }
+            // Care's lead is its first member until the player picks another, and passes on when it leaves.
+            val care = pokemon.filter { it.inParty && it.partyId == PartyIds.CARE }
+            val lead = d.player.careLeadId?.takeIf { l -> care.any { it.id == l } } ?: care.firstOrNull()?.id
+            d.copy(player = d.player.copy(pokemon = pokemon, careLeadId = lead))
+        }
+        return true
+    }
+
+    /** Makes [id], who must be in Care's party, its lead: the buddy that takes Care's friendship and gives its perks. */
+    fun setCareLead(id: String): Boolean {
+        val p = pokemon(id)
+        if (!p.inParty || p.partyId != PartyIds.CARE) return false
+        update { d -> d.copy(player = d.player.copy(careLeadId = id)) }
         return true
     }
 
@@ -1096,7 +1110,7 @@ class GameStore(
     fun transferBlock(id: String): TransferBlock? =
         pokemon(id).let { p ->
             // The "last party member" rule guards Plan's party only; other modules' parties may be emptied.
-            Transfer.block(p, id == data.player.buddyId, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
+            Transfer.block(p, id == data.player.buddyId || id == data.player.careLead?.id, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
         }
 
     /** Whether [feature] has appeared yet at the player's trainer rank (the gradual reveal). */

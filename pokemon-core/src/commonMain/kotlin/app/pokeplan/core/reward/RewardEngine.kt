@@ -13,6 +13,8 @@ import app.pokeplan.core.pokemon.Hatching
 import app.pokeplan.core.pokemon.Inventory
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.OwnedPokemon
+import app.pokeplan.core.pokemon.CareBucket
+import app.pokeplan.core.pokemon.CarePerks
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.PerkBucket
 import app.pokeplan.core.pokemon.PerkContext
@@ -37,11 +39,15 @@ data class PlayerState(
     val caught: Set<Int> = emptySet(),
     /** Ids of the Pokémon slotted as Guardians (legendaries and mythicals), at most as many as the rank has slots. */
     val guardians: List<String> = emptyList(),
+    /** The lead of Care's party (its buddy); null until the player sets one, and Care then warms [buddy] as before. */
+    val careLeadId: String? = null,
 ) {
     val buddy: OwnedPokemon? get() = pokemon.firstOrNull { it.id == buddyId }
     val guardianPokemon: List<OwnedPokemon> get() = guardians.mapNotNull { id -> pokemon.firstOrNull { it.id == id } }
     /** Plan's party, the one whose buddy and perks the reward engine uses. */
     val party: List<OwnedPokemon> get() = partyOf(PartyIds.PLAN)
+
+    val careLead: OwnedPokemon? get() = pokemon.firstOrNull { it.id == careLeadId && it.inParty && it.partyId == PartyIds.CARE }
 
     fun partyOf(partyId: String): List<OwnedPokemon> = pokemon.filter { it.inParty && it.partyId == partyId }
 
@@ -312,7 +318,8 @@ object RewardEngine {
     fun care(state: PlayerState, e: CareEvent, rng: Random): Outcome {
         val rewards = mutableListOf<Reward>()
         var pokemon = state.pokemon
-        val buddy = state.buddy
+        val buddy = state.careLead ?: state.buddy
+        val perks = CarePerks.total(state.careLead, state.partyOf(PartyIds.CARE))
         val source = when (e.kind) {
             CareKind.ROUTINE -> FriendshipRules.Source.ROUTINE
             CareKind.CALM_BREAK -> FriendshipRules.Source.CALM_BREAK
@@ -320,7 +327,9 @@ object RewardEngine {
             CareKind.WEEKLY_RHYTHM -> null
         }
         if (buddy != null && source != null) {
-            val grown = buddy.gainFriendship(source)
+            var grown = buddy.gainFriendship(source)
+            val extra = perks[CareBucket.FRIENDSHIP_GAIN] ?: 0.0
+            if (extra > 0 && rng.nextDouble() * 100 < extra) grown = grown.gainFriendship(source)
             pokemon = pokemon.map { if (it.id == buddy.id) grown else it }
             if (grown.friendship > buddy.friendship) rewards += Reward.Friendship(grown.friendship - buddy.friendship)
         }
@@ -331,7 +340,8 @@ object RewardEngine {
         }
         var inventory = state.inventory
         var coins = state.coins
-        repeat(berries) {
+        val second = perks[CareBucket.BERRY_FINDER] ?: 0.0
+        repeat(berries + if (berries > 0 && second > 0 && rng.nextDouble() * 100 < second) 1 else 0) {
             val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
             val (bag, extra) = inventory.addCapped(berry, 1)
             inventory = bag
