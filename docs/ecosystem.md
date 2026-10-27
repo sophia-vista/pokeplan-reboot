@@ -351,8 +351,8 @@ from Guardians). Nothing below changes them.
 3. **Plan arcs stay as built:** one quest per legendary. For future modules, arcs should add up to **one cohesive but small and quick story** (see below).
 4. **Darkrai is out.**
 5. **A full party per module** *(October 2026)*. Each module has its own party of six, and its party's perks apply to that
-   module's rewards only, instead of one party shared by every module. The spec (how a Pokémon moves between parties, the
-   buddy, Guardians, perks and the economy check) goes in docs/design.md before it is built, in its own change after Care.
+   module's rewards only, instead of one party shared by every module. The spec is in docs/design.md, "Parties per module" (a Pokémon in one party at a time, a lead per party, shared
+   Guardians, Care's own perk buckets); not built yet.
    **Refined (owner):** effectively **many parties, one per region/module, but one shared PC and one shared Pokédex**. A
    Pokémon can be in a module's party while staying in the one collection; Care's party is where befriended Pokémon start.
 6. **Care obtains Pokémon by befriending** (section 6, "Befriending"): 2 or 3 random visitors a day, one befriend a day,
