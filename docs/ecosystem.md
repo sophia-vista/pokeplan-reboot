@@ -111,12 +111,16 @@ legendary-class or mythical and earned by quest)*:
 
 | Region | Main types | Patrons | Signature species (draft) | Super Rare line |
 |---|---|---|---|---|
-| **Plan** (the old Home Region, 171) | everyday route Pokémon | Uxie, Mesprit, Azelf (as built) | as curated | as curated |
-| **Care** | Fairy, Grass, Water, Normal | Cresselia (good dreams, sleep), Shaymin (the Gracidea is given in thanks: gratitude) | Happiny line, Audino, Comfey, Alomomola, Swablu line, Munchlax line, Munna line, Cottonee line, Spritzee line, Hatenna line, Indeedee, Snom line | Goomy line |
+| **Plan** (the old Home Region, 167) | everyday route Pokémon | Uxie, Mesprit, Azelf (as built) | as curated | as curated |
+| **Care** (curated, 143) | Fairy, Grass, Water, Normal | Cresselia (good dreams, sleep), Shaymin (the Gracidea is given in thanks: gratitude) | Happiny line, Audino, Comfey, Alomomola, Swablu line, Munchlax line, Munna line, Cottonee line, Spritzee line, Hatenna line, Indeedee, Snom line, and the full list in `tools/species/regions/care.txt` | Goomy line, and Slakoth's (rest) |
 | **Grow** | Psychic, Fighting, Bug | Kubfu and Urshifu (it evolves by passing a trial, like Grow's evolution trials) | Abra line, Slowpoke line, Natu line, Smeargle, Magikarp line, Caterpie line, Larvesta line, Riolu line, Machop line, Mienfoo line, Elgyem line, Unown (letters for the journal) | Beldum line |
 | **Home** | Normal, Fire, Grass, Fairy | Ogerpon (Hoopa and Magearna are already in Plan's list) | Rotom (the appliance forms), Miltank, Swirlix line, Milcery line, Applin line, Sinistea line, Lechonk line, Fidough line, Smoliv line, Tandemaus line, Sewaddle line (sewing, for the closet), Furfrou, Klefki (keys) | Frigibax line |
 
-Care's list is curated first, before Care v1 ships; Grow's and Home's when their modules start.
+Care's list is curated (`Region.CARE`, 0.32.0): 143 species in 64 hatchable lines (20 Common, 23 Uncommon, 19 Rare, 2 Super
+Rare) plus the two patrons, hidden until the Care screens ship. Only 12 lines are Super Rare and 6 were free, so each new
+region takes two: Goomy and Slakoth for Care, leaving Beldum and Jangmo-o for Grow and Frigibax and Duraludon for Home.
+Cresselia's legendary quest still counts the Sinnoh dex until Care's own patron quests are written. Grow's and Home's
+lists are curated when their modules start.
 
 ## 5. Interconnection
 
@@ -214,7 +218,7 @@ the parser matches the real format.
 2. ~~Parked todos~~ (done in 0.2.0).
 3. **Finish Plan.** Done: reminders as notifications with quiet hours, focus and rest days (0.6.0); a time on tasks and snooze until tomorrow (0.7.0); export, delete account, erase device (0.8.0). The day timeline with tap-to-place time-blocking (0.9.0). Egg tickets for offline hatching (0.10.0). PMD SpriteCollab sprites (0.11.0, owner's priority). Calendar events on the day timeline, Google Calendar through the phone's calendars (0.12.0). Dragging and resizing blocks, and a week timeline (0.14.0). PokéPlan's own events on the calendar, never paid (0.15.0). Seen, caught and owned in the Pokédex (0.16.0). Focus rules: a locked screen and calls handled on Android, the rules on screen, focused and paused time apart (0.16.1). Me metrics defined, with 7 / 30 / 90 day ranges and goal progress apart (0.17.0). Accessibility pass: contrast, 48 dp targets, roles and labels (0.17.1). Desktop and web are deprioritised (they keep compiling; no features only for them, see Platforms in design.md). Lists after TickTick, the Inbox being the tasks in no list (0.21.0); a Month view, multi-day bars in the Week and all-day own events in colours (0.22.0); recurring own events, edited as a series and moved or deleted one at a time (0.24.0). **Next:** check the brief's accessibility checklist on a phone (TalkBack, large text; ui-ux-brief.md section 9, the owner's to do on a device); then item 5.
 4. ~~**Platform tidy before a second module**~~ (done in 0.24.1): the cloud save is in `plan.saves`, the reward rules are versioned, and `docs/economy.md` lists every source, sink and cap. To do by the owner: `supabase db push`, then run the Deploy the reward function workflow.
-5. **Care v1** (section 6), as a module in the same app with its own schema. Rules, save and schema done (0.25.0); next the screens, the Settings switch and opt-in sync.
+5. **Care v1** (section 6), as a module in the same app with its own schema. Rules, save and schema done (0.25.0); Care Region curated (0.32.0); next the screens (which release `Region.CARE`), the Settings switch and opt-in sync.
 6. **Charm pass:** hatch and evolution ceremonies, region themes, the Oak sprite, music.
 7. **Grow**, then **health integration** (the Huawei export importer first, see section 6), then **Home** modules.
 8. **PokéLife extras** (the owner's name for the whole family): Poketch-style utilities with helper Pokémon ("Poketch utilities and helper Pokémon" below), a live wallpaper with the buddy in its scene, then a Pokémon-themed launcher as the endgame.
