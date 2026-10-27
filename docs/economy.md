@@ -1,6 +1,6 @@
 # The economy: sources, sinks and caps
 
-Every reward source, every use and every cap, as the code has them under **rules version 6** (`RewardRules.VERSION` in
+Every reward source, every use and every cap, as the code has them under **rules version 8** (`RewardRules.VERSION` in
 `pokemon-core`). This is principle 6 of `docs/ecosystem.md` ("every reward source, cap and use is written down"). The
 reasons and pacing targets are in `docs/design.md`; the simulated pacing is in `docs/economy-report.md`.
 
