@@ -174,6 +174,25 @@ and leaderboards. Export and delete cover it.
 **Events out:** `routine_completed`, `calm_break_completed`, `skill_practised`, `weekly_rhythm`. No other field (not even
 which skill).
 
+### Befriending (decided, not built)
+
+*Owner's answers, October 2026.* Care gains a Pokémon source that is about bond, not volume. Entering sensitive information
+still earns nothing, and a visitor never reads a domain (only the *kind* of Care action).
+
+- **Visitors.** Each day the Care scene offers **2 or 3 random visitors** from the Care Region pool (Common to Rare; Super
+  Rare and the patrons stay quest-only). The type pool tilts a little with the kinds of Care action done lately (calm
+  breaks lean Water and Fairy, routines Normal, skills Grass), and coming back after a break offers a fuller choice. No
+  catch rolls, no balls, no battles.
+- **Befriending.** The user picks one visitor and **spends the day's befriend** on it: **one befriend per day**. The visitor
+  warms up on days that have at least one paid Care action (a berry it likes adds a bonus point); about 4 to 5 points make
+  it a friend. A visitor not visited for a few days wanders off, with no penalty and no streak shown.
+- **Outcome.** Usually it **leaves an Egg** that hatches through the normal path (Dex pacing unchanged); with a **rare
+  chance it joins directly** (owned, high starting friendship). Both are an encounter method for the "best two methods" rule
+  (a nature bias and a min IV floor), and both go in the **same PC and Pokédex** as every other Pokémon.
+- **Limits** *(tune)*: one befriend a day, a daily total shared with Care's world-side cap, one result per visitor (the
+  idempotency key), and the direct-join chance small enough that Care's Pokémon income stays below Plan's.
+- **Numbers** go in `RewardRules` and `docs/economy.md` with the build (a rules version bump), then `simulateEconomy`.
+
 ### Health integration (after v1, optional)
 
 The owner uses a **Huawei Watch 4 Pro** with Huawei Health on a **Samsung Galaxy S26 Ultra**, and wants **historical**
@@ -332,8 +351,12 @@ from Guardians). Nothing below changes them.
 3. **Plan arcs stay as built:** one quest per legendary. For future modules, arcs should add up to **one cohesive but small and quick story** (see below).
 4. **Darkrai is out.**
 5. **A full party per module** *(October 2026)*. Each module has its own party of six, and its party's perks apply to that
-   module's rewards only, instead of one party shared by every module. The spec (how a Pokémon moves between parties, the
-   buddy, Guardians, perks and the economy check) goes in docs/design.md before it is built, in its own change after Care.
+   module's rewards only, instead of one party shared by every module. The spec is in docs/design.md, "Parties per module" (a Pokémon in one party at a time, a lead per party, shared
+   Guardians, Care's own perk buckets); not built yet.
+   **Refined (owner):** effectively **many parties, one per region/module, but one shared PC and one shared Pokédex**. A
+   Pokémon can be in a module's party while staying in the one collection; Care's party is where befriended Pokémon start.
+6. **Care obtains Pokémon by befriending** (section 6, "Befriending"): 2 or 3 random visitors a day, one befriend a day,
+   usually an Egg, rarely a direct join; shared PC and Dex.
 
 ### Story direction (future)
 

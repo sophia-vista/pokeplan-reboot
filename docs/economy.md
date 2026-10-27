@@ -1,6 +1,6 @@
 # The economy: sources, sinks and caps
 
-Every reward source, every use and every cap, as the code has them under **rules version 6** (`RewardRules.VERSION` in
+Every reward source, every use and every cap, as the code has them under **rules version 8** (`RewardRules.VERSION` in
 `pokemon-core`). This is principle 6 of `docs/ecosystem.md` ("every reward source, cap and use is written down"). The
 reasons and pacing targets are in `docs/design.md`; the simulated pacing is in `docs/economy-report.md`.
 
@@ -38,6 +38,7 @@ server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`,
 | **Care: calm break** (1 to 2 minutes; under a minute is kept but pays nothing) | Buddy friendship (calm break) · 1 random berry · 1 trainer point. At most 3 a day | `CareRules.BREAKS_PAID_PER_DAY`, `BREAK_MIN_SECONDS` |
 | **Care: skill practised** (a DBT skill from the library, each skill once a day; paced breathing pays as a calm break) | Buddy friendship (skill) · 1 random berry · 1 trainer point. At most 3 a day | `CareRules.SKILLS_PAID_PER_DAY` |
 | **Care: kept a rhythm** (care done on 4 days of a week: a routine, a calm break or a skill) | 3 random berries · 5 trainer points, once a week | `RHYTHM_BERRIES`, `RHYTHM_POINTS`, `CareRules.RHYTHM_DAYS` |
+| **Care: befriend a visitor** *(decided, not built; ecosystem.md section 6)* | An Egg (rarely the Pokémon itself) from the Care Region pool. One befriend a day | not yet in `RewardRules` |
 | **Care: diary card, journal entry, note** | Nothing, ever: entering sensitive information never earns (ecosystem.md, section 6) | |
 | **A bag stack is full** | 1 coin per candy or item that did not fit | `Inventory.addCapped` |
 

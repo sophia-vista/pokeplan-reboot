@@ -13,6 +13,7 @@ import app.pokeplan.core.pokemon.Hatching
 import app.pokeplan.core.pokemon.Inventory
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.OwnedPokemon
+import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.PerkBucket
 import app.pokeplan.core.pokemon.PerkContext
 import app.pokeplan.core.pokemon.Perks
@@ -39,7 +40,10 @@ data class PlayerState(
 ) {
     val buddy: OwnedPokemon? get() = pokemon.firstOrNull { it.id == buddyId }
     val guardianPokemon: List<OwnedPokemon> get() = guardians.mapNotNull { id -> pokemon.firstOrNull { it.id == id } }
-    val party: List<OwnedPokemon> get() = pokemon.filter { it.inParty }
+    /** Plan's party, the one whose buddy and perks the reward engine uses. */
+    val party: List<OwnedPokemon> get() = partyOf(PartyIds.PLAN)
+
+    fun partyOf(partyId: String): List<OwnedPokemon> = pokemon.filter { it.inParty && it.partyId == partyId }
 
     /** The rank index (0 is the first rank). */
     val rank: Int get() = TrainerRank.rankFor(trainerPoints)
@@ -283,7 +287,7 @@ object RewardEngine {
         var caught = state.caught + state.pokemon.map { it.speciesId }
         if (meter >= EGG_METER_SIZE) {
             meter -= EGG_METER_SIZE
-            val partySize = pokemon.count { it.inParty }
+            val partySize = pokemon.count { it.inParty && it.partyId == PartyIds.PLAN }
             val rarity = luckyBump(Egg.rates(TASK_EGG_MINUTES, false).roll(rng), perks[PerkBucket.EGG_LUCK], rng)
             val known = state.caught + pokemon.map { it.speciesId }
             val option = HatchRules.rollWeighted(e.region, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }

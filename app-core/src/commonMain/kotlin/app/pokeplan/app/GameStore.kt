@@ -19,6 +19,7 @@ import app.pokeplan.core.pokemon.ItemEffects
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.Nature
 import app.pokeplan.core.pokemon.OwnedPokemon
+import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.PerkBonuses
 import app.pokeplan.core.pokemon.PerkSource
 import app.pokeplan.core.pokemon.Perks
@@ -1013,14 +1014,19 @@ class GameStore(
 
     fun rename(id: String, nickname: String) = replace(pokemon(id).withNickname(nickname))
 
-    /** Puts a Pokémon in or out of the party (up to six). Returns false if the party is full or it is the last one. */
-    fun setInParty(id: String, inParty: Boolean): Boolean {
+    /**
+     * Puts a Pokémon in or out of a module's party (up to six; one party at a time, so joining another moves it). Returns
+     * false if the party is full, or it would leave Plan's party empty or take the buddy out of it.
+     */
+    fun setInParty(id: String, inParty: Boolean, partyId: String = PartyIds.PLAN): Boolean {
         val p = pokemon(id)
         if (inParty && Guardians.canBe(p)) return false
-        val partySize = data.player.party.size
-        if (inParty && !p.inParty && partySize >= OwnedPokemon.PARTY_SIZE) return false
-        if (!inParty && p.inParty && (partySize <= 1 || id == data.player.buddyId)) return false
-        replace(p.copy(inParty = inParty))
+        val planSize = data.player.party.size
+        val staying = inParty && p.inParty && p.partyId == partyId
+        if (inParty && !staying && data.player.partyOf(partyId).size >= OwnedPokemon.PARTY_SIZE) return false
+        val leavingPlan = p.inParty && p.partyId == PartyIds.PLAN && !(inParty && partyId == PartyIds.PLAN)
+        if (leavingPlan && (planSize <= 1 || id == data.player.buddyId)) return false
+        replace(p.copy(inParty = inParty, partyId = partyId))
         return true
     }
 
@@ -1088,7 +1094,10 @@ class GameStore(
     }
 
     fun transferBlock(id: String): TransferBlock? =
-        Transfer.block(pokemon(id), id == data.player.buddyId, data.player.party.size)
+        pokemon(id).let { p ->
+            // The "last party member" rule guards Plan's party only; other modules' parties may be emptied.
+            Transfer.block(p, id == data.player.buddyId, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
+        }
 
     /** Whether [feature] has appeared yet at the player's trainer rank (the gradual reveal). */
     fun sees(feature: Feature): Boolean = TrainerRank.isVisible(feature, data.player.trainerPoints)
