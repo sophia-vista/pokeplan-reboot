@@ -1,6 +1,7 @@
 package app.pokeplan.app
 
 import app.pokeplan.core.pokemon.Items
+import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.FailReason
@@ -283,6 +284,24 @@ class GameStoreTest {
         assertEquals(6, s.data.player.party.size)
         val benched = s.data.player.pokemon.first { !it.inParty }
         assertFalse(s.setInParty(benched.id, true))
+    }
+
+    @Test
+    fun aPokemonIsInOnePartyAtATimeAndCareHasItsOwn() {
+        val (s, clock) = started()
+        hatchOne(s, clock)
+        val buddy = s.data.player.buddyId!!
+        val other = s.data.player.pokemon.first { it.id != buddy }
+        assertTrue(s.setInParty(other.id, true, PartyIds.CARE))
+        assertEquals(listOf(other.id), s.data.player.partyOf(PartyIds.CARE).map { it.id })
+        assertEquals(listOf(buddy), s.data.player.party.map { it.id })
+        // Moving back takes it out of Care's party, and Plan's last member and buddy cannot leave for Care.
+        assertFalse(s.setInParty(buddy, true, PartyIds.CARE))
+        assertTrue(s.setInParty(other.id, true, PartyIds.PLAN))
+        assertTrue(s.data.player.partyOf(PartyIds.CARE).isEmpty())
+        // A Care party member transfers even while Plan has one member.
+        assertTrue(s.setInParty(other.id, true, PartyIds.CARE))
+        assertNull(s.transferBlock(other.id))
     }
 
     @Test
