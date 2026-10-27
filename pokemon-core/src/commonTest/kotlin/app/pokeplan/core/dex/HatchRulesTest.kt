@@ -100,6 +100,21 @@ class HatchRulesTest {
     }
 
     @Test
+    fun moduleRegionsNeverShareASpecies() {
+        val modules = Region.entries.filter { it.isModule }.map { r -> Dex.regionDex(r).map { it.id } }
+        val all = modules.flatten()
+        assertEquals(all.size, all.toSet().size, "a species is in at most one module region")
+    }
+
+    @Test
+    fun careRegionHasItsPatronsAndEveryTier() {
+        val care = Dex.regionDex(Region.CARE).map { it.name }
+        assertTrue(care.size in 130..170, "Care has ${care.size}")
+        assertTrue(listOf("Cresselia", "Shaymin", "Goomy", "Swablu", "Altaria", "Cottonee", "Whimsicott").all { it in care })
+        for (r in Rarity.entries) assertTrue(HatchRules.pool(Region.CARE, r).isNotEmpty(), "Care has nothing at $r")
+    }
+
+    @Test
     fun regionalVariantsHatchInTheirRegion() {
         val alola = HatchRules.pool(Region.ALOLA, Rarity.COMMON) + HatchRules.pool(Region.ALOLA, Rarity.UNCOMMON) +
             HatchRules.pool(Region.ALOLA, Rarity.RARE) + HatchRules.pool(Region.ALOLA, Rarity.SUPER_RARE)
