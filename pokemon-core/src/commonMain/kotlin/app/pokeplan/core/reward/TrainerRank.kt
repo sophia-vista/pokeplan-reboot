@@ -52,13 +52,13 @@ object TrainerRank {
     /** Points still needed for the next rank, or null at the top. */
     fun pointsToNext(points: Int): Int? = thresholds.getOrNull(rankFor(points) + 1)?.let { it - points }
 
-    /** The Home Region is always open; the others open in order, one per rank. */
-    fun unlockedRegions(points: Int): List<Region> = Region.entries.take(rankFor(points) + 1)
+    /** Released module regions are always open; the game regions open in order, one per rank. */
+    fun unlockedRegions(points: Int): List<Region> = Region.entries.filter { isUnlocked(it, points) }
 
-    fun isUnlocked(region: Region, points: Int): Boolean = region.ordinal <= rankFor(points)
+    fun isUnlocked(region: Region, points: Int): Boolean = region.released && rankToUnlock(region) <= rankFor(points)
 
-    /** Rank needed to open [region]. */
-    fun rankToUnlock(region: Region): Int = region.ordinal
+    /** Rank needed to open [region]: 0 for a module region, then one game region per rank. */
+    fun rankToUnlock(region: Region): Int = if (region.isModule) 0 else Region.games.indexOf(region) + 1
 
     fun isVisible(feature: Feature, points: Int): Boolean = feature.step <= rankFor(points)
 }

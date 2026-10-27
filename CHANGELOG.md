@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.31.1
+
+- The Home Region is now the Plan Region, the first of the module regions. Your saves, dex progress and focus history carry over unchanged. The name "Home Region" will belong to the household module's own region later.
+
 ## 0.31.0
 
 - Pick for me on Home's Next up card: it picks one of today's tasks for you, and finishing that one pays 10% more candies.

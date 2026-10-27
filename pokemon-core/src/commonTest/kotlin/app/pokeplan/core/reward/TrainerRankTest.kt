@@ -1,6 +1,7 @@
 package app.pokeplan.core.reward
 
 import app.pokeplan.core.dex.Region
+import kotlinx.serialization.json.Json
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -11,7 +12,7 @@ import kotlin.test.assertTrue
 class TrainerRankTest {
     @Test
     fun oneRankPerRegionAndNamesMatch() {
-        assertEquals(Region.entries.size, TrainerRank.names.size)
+        assertEquals(Region.games.size + 1, TrainerRank.names.size)
         assertEquals(TrainerRank.names.size, TrainerRank.thresholds.size)
         assertEquals(TrainerRank.thresholds.sorted(), TrainerRank.thresholds)
         assertEquals(0, TrainerRank.thresholds.first())
@@ -30,14 +31,23 @@ class TrainerRankTest {
     }
 
     @Test
-    fun regionsOpenOnePerRankStartingWithHome() {
-        assertEquals(listOf(Region.HOME), TrainerRank.unlockedRegions(0))
-        assertEquals(listOf(Region.HOME, Region.KANTO), TrainerRank.unlockedRegions(TrainerRank.thresholds[1]))
-        assertEquals(Region.entries, TrainerRank.unlockedRegions(TrainerRank.thresholds.last()))
-        assertTrue(TrainerRank.isUnlocked(Region.HOME, 0))
+    fun regionsOpenOnePerRankAfterTheModuleRegions() {
+        assertEquals(listOf(Region.PLAN), TrainerRank.unlockedRegions(0))
+        assertEquals(listOf(Region.PLAN, Region.KANTO), TrainerRank.unlockedRegions(TrainerRank.thresholds[1]))
+        assertEquals(listOf(Region.PLAN) + Region.games, TrainerRank.unlockedRegions(TrainerRank.thresholds.last()))
+        assertTrue(TrainerRank.isUnlocked(Region.PLAN, 0))
         assertFalse(TrainerRank.isUnlocked(Region.JOHTO, TrainerRank.thresholds[2] - 1))
         assertTrue(TrainerRank.isUnlocked(Region.JOHTO, TrainerRank.thresholds[2]))
         assertEquals(2, TrainerRank.rankToUnlock(Region.JOHTO))
+        assertEquals(0, TrainerRank.rankToUnlock(Region.HOUSEHOLD))
+        assertFalse(TrainerRank.isUnlocked(Region.HOUSEHOLD, TrainerRank.thresholds.last()), "a module region opens when its module ships")
+    }
+
+    @Test
+    fun thePlanRegionKeepsItsStoredName() {
+        assertEquals("\"HOME\"", Json.encodeToString(Region.PLAN))
+        assertEquals(Region.PLAN, Json.decodeFromString<Region>("\"HOME\""))
+        assertEquals("\"KANTO\"", Json.encodeToString(Region.KANTO))
     }
 
     @Test

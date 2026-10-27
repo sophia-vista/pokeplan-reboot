@@ -121,7 +121,7 @@ class FocusSessionTest {
     fun halfwayNotificationOnlyForLongerSessions() {
         assertEquals(12 * minute + 30 * second, start(25).halfwayAtMillis)
         assertNull(start(10).halfwayAtMillis)
-        assertEquals(7 * minute + 30 * second, FocusRules.start("x", 15, 0, false, Region.HOME, null).halfwayAtMillis)
+        assertEquals(7 * minute + 30 * second, FocusRules.start("x", 15, 0, false, Region.PLAN, null).halfwayAtMillis)
     }
 
     @Test
@@ -141,7 +141,7 @@ class FocusSessionTest {
         assertEquals(5, FocusRules.RETRY_MINUTES)
         assertEquals(FocusDuration(0, 5, 0), FocusRules.justFiveMinutes())
         assertEquals("That egg went cold. Try again?", FocusRules.FAILED_MESSAGE)
-        assertFailsWith<IllegalArgumentException> { FocusRules.start("x", 4, 0, false, Region.HOME, null) }
+        assertFailsWith<IllegalArgumentException> { FocusRules.start("x", 4, 0, false, Region.PLAN, null) }
         assertFalse(FocusRules.justFiveMinutes().eggMinutes < 5)
     }
 }

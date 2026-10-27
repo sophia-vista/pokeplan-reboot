@@ -1,14 +1,17 @@
-# The Home Region: your favourite Pokémon, in dex order (line 1 becomes Home #1).
+# The Plan Region (Region.PLAN, stored as HOME; it was the Home Region): everyday route Pokémon, in dex order
+# (line 1 becomes Plan #1). Patrons: Uxie, Mesprit and Azelf.
 #
 # One species per line, by English name (Farfetch'd, Mr. Mime, ...) or by PokeAPI identifier (mr-mime).
 # Blank lines and lines starting with # are ignored. Any number of species from about 30 up works, but
-# the Home dex is meant to be completed in about 2 months, so around 150 is the target size.
+# a module region is meant to be completed in about 2 months, so around 150 is the target size.
+# A species is in at most one module region (the other lists in this folder); the generator checks it.
+# Curation: docs/region-curation-prompt.md.
 #
 # After editing, regenerate the data and run the tests:
 #   python3 -I tools/species/generate.py
-#   ./gradlew :shared:jvmTest
+#   ./gradlew :pokemon-core:jvmTest
 #
-# Legendary, mythical, Ultra Beast and Paradox species can be listed; they stay in your dex but are
+# Legendary, mythical, Ultra Beast and Paradox species can be listed; they stay in the dex but are
 # quest and milestone rewards, never egg drops. Every rarity tier needs at least one hatchable species,
 # so keep a few pseudo-legendary lines (Dratini, Larvitar, Bagon, Gible, Deino...) for Super Rare.
 

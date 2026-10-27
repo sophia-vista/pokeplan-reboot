@@ -9,6 +9,9 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class HatchRulesTest {
+    /** Regions with a species list (a module region not curated yet has none). */
+    private val curated = Region.entries.filter { Dex.regionDex(it).isNotEmpty() }
+
     private fun rarityOf(name: String) = HatchRules.rarity(Dex.species.first { it.name == name }.id)
 
     @Test
@@ -49,7 +52,7 @@ class HatchRulesTest {
 
     @Test
     fun everyRegionHasSomethingToHatchInEveryTier() {
-        for (region in Region.entries) for (r in Rarity.entries) {
+        for (region in curated) for (r in Rarity.entries) {
             assertTrue(HatchRules.pool(region, r).isNotEmpty(), "$region has nothing at $r")
         }
     }
@@ -57,7 +60,7 @@ class HatchRulesTest {
     @Test
     fun regionSizesMatchTheGames() {
         val sizes = Region.entries.associateWith { Dex.regionDex(it).size }
-        assertTrue(sizes.getValue(Region.HOME) >= 30, "the Home Region is the player's own list (tools/species/home-region.txt)")
+        assertTrue(sizes.getValue(Region.PLAN) >= 30, "the Plan Region is a curated list (tools/species/regions/plan.txt)")
         assertEquals(151, sizes.getValue(Region.KANTO))
         assertEquals(256, sizes.getValue(Region.JOHTO))
         assertEquals(211, sizes.getValue(Region.HOENN))
@@ -88,12 +91,12 @@ class HatchRulesTest {
     }
 
     @Test
-    fun homeRegionIsTheFavouritesListInOrder() {
-        val home = Dex.regionDex(Region.HOME)
-        assertTrue(home.size >= 30)
-        assertEquals(home.size, home.map { it.id }.toSet().size, "no duplicates")
+    fun planRegionIsTheCuratedListInOrder() {
+        val plan = Dex.regionDex(Region.PLAN)
+        assertTrue(plan.size >= 30)
+        assertEquals(plan.size, plan.map { it.id }.toSet().size, "no duplicates")
         // Every rarity tier must still have something to hatch once legendary-class species are removed.
-        for (r in Rarity.entries) assertTrue(HatchRules.pool(Region.HOME, r).isNotEmpty(), "Home has nothing at $r")
+        for (r in Rarity.entries) assertTrue(HatchRules.pool(Region.PLAN, r).isNotEmpty(), "Plan has nothing at $r")
     }
 
     @Test
@@ -118,7 +121,7 @@ class HatchRulesTest {
     fun rollingReturnsAPoolMember() {
         val rng = Random(9)
         repeat(300) {
-            val region = Region.entries[rng.nextInt(Region.entries.size)]
+            val region = curated[rng.nextInt(curated.size)]
             val rarity = Rarity.entries[rng.nextInt(4)]
             assertTrue(HatchRules.roll(region, rarity, rng) in HatchRules.pool(region, rarity))
         }

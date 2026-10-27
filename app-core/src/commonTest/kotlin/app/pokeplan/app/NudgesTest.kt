@@ -99,7 +99,7 @@ class NudgesTest {
     }
 
     private fun session(minutes: Long, paused: Long = 0, phase: Phase = Phase.Running) =
-        FocusSession("s", startedAtMillis = 1_000_000, durationMillis = minutes * 60_000, deepFocus = false, region = Region.HOME, buddyIdAtStart = null, phase = phase, pausedMillis = paused)
+        FocusSession("s", startedAtMillis = 1_000_000, durationMillis = minutes * 60_000, deepFocus = false, region = Region.PLAN, buddyIdAtStart = null, phase = phase, pausedMillis = paused)
 
     @Test
     fun longSessionsGetHalfwayAndEndAlerts() {

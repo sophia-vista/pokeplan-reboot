@@ -77,7 +77,7 @@ object Quests {
         for (region in Region.entries) for (s in Dex.regionDex(region)) if (s.id !in regionOf) regionOf[s.id] = region
         Dex.species.filter { it.isSpecial }.map { s ->
             val name = s.name
-            lakeTrio[s.identifier]?.copy(speciesId = s.id, dexRegion = Region.HOME)
+            lakeTrio[s.identifier]?.copy(speciesId = s.id, dexRegion = Region.PLAN)
                 ?: if (s.isMythical) Quest(
                     s.identifier, s.id, "The long road to $name",
                     "$name is a rare friend, and it takes time. Keep showing up: steady days, finished tasks and focused hours add up.",
@@ -99,7 +99,7 @@ object Quests {
                         s.identifier, s.id, "Earn the trust of $name",
                         "$name watches from afar. Prove your focus with deep, undisturbed sessions and the harder tasks, over time.",
                         listOf(Requirement(RequirementKind.DEEP_FOCUS_SESSIONS, deep), Requirement(RequirementKind.TASKS_DONE_HARD, hard), Requirement(RequirementKind.ACTIVE_DAYS, days)),
-                        unlockRank = maxOf(rank, region?.ordinal ?: 0), dexRegion = region, dexShare = if (region == null) 0.0 else share,
+                        unlockRank = maxOf(rank, region?.let(TrainerRank::rankToUnlock) ?: 0), dexRegion = region, dexShare = if (region == null) 0.0 else share,
                     )
                 }
         }
