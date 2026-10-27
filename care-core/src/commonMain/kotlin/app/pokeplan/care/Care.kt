@@ -119,6 +119,8 @@ data class CareData(
     val befriendDay: LocalDate? = null,
     /** The visit in progress, if one was started and not finished (it ends with the day). */
     val visit: Visit? = null,
+    /** Species of visitors the player has cared for, whether or not they became friends (the "met" album). */
+    val met: Set<Int> = emptySet(),
 )
 
 @Serializable

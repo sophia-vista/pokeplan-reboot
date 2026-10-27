@@ -243,6 +243,32 @@ class CareStoreTest {
     }
 
     @Test
+    fun aPatOnItsLikedSpotWarmsOnceAndAMeetingIsKept() {
+        val s = setup()
+        s.care.completeRoutine(s.care.addRoutine("Stretch").id)
+        val visitor = s.care.visitors().first()
+        val liked = app.pokeplan.care.Visitors.likedSpot(visitor.speciesId)
+        val wrong = app.pokeplan.care.PetSpot.entries.first { it != liked }
+        s.care.startVisit(visitor.speciesId)
+        val first = s.care.visitAct(CareAction.TOUCH, wrong)!!
+        assertFalse(first.visit.spotFound, "a wrong spot costs nothing and gives nothing")
+        val liked1 = CareAction.entries.first { it != CareAction.TOUCH }
+        s.care.visitAct(liked1)
+        val last = s.care.visitAct(CareAction.entries.first { it != CareAction.TOUCH && it != liked1 })!!
+        assertTrue(visitor.speciesId in s.care.data.met, "a visit is remembered whatever it came to")
+        assertEquals(null, last.visit.pendingBid)
+        // Another visit, the liked spot: warms one more, once.
+        s.clock.advanceDays(1)
+        s.care.completeRoutine(s.care.addRoutine("Walk").id)
+        val again = s.care.visitors().first { it.speciesId == visitor.speciesId }
+        s.care.startVisit(again.speciesId)
+        val warm = s.care.visitAct(CareAction.TOUCH, liked)!!
+        assertTrue(warm.visit.spotFound)
+        val before = warm.visit.warmth
+        assertTrue(before >= 2)
+    }
+
+    @Test
     fun aWarmingVisitorWandersOffAfterAFewDaysWithoutAVisit() {
         val s = setup()
         val species = s.care.visitors().first().speciesId

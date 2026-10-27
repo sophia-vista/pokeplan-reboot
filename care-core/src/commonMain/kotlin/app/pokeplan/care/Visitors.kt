@@ -35,7 +35,11 @@ enum class CareAction { WORDS, TIME, GIFT, SERVICE, TOUCH }
 
 /** A small moment a visitor offers during a visit, in Gottman's sense of a bid for connection; noticing it is "turning toward". */
 @Serializable
-enum class Bid { LOOK, NUDGE, SHOW }
+enum class Bid { LOOK, NUDGE, SHOW, PLAY, SETTLE }
+
+/** Where a visitor likes a gentle pat; the same for a species every time, so what is learned stays learned. */
+@Serializable
+enum class PetSpot { HEAD, BACK, CHIN }
 
 /** How a visitor took an action: its favourite, a kind of care it likes, or one it already had this visit. */
 enum class Reaction(val warmth: Int) { LOVED(2), LIKED(1), FLAT(0) }
@@ -47,6 +51,8 @@ data class Visit(
     val day: LocalDate,
     val actions: List<CareAction> = emptyList(),
     val warmth: Int = 0,
+    /** Whether the pat found its liked spot this visit (it warms once). */
+    val spotFound: Boolean = false,
     val bidsNoticed: Int = 0,
     val pendingBid: Bid? = null,
 )
@@ -146,13 +152,17 @@ object Visitors {
      * Does [action]. An unnoticed bid is let go without cost, and after the first and second action the visitor makes a new
      * one (the same for the same visitor and day).
      */
-    fun act(visitor: Visitor, visit: Visit, action: CareAction): Pair<Visit, Reaction> {
+    fun act(visitor: Visitor, visit: Visit, action: CareAction, spot: PetSpot? = null): Pair<Visit, Reaction> {
         if (finished(visit)) return visit to Reaction.FLAT
         val reaction = reaction(visitor, visit, action)
         val actions = visit.actions + action
         val bid = if (actions.size < ACTIONS_PER_VISIT) Bid.entries[((visit.speciesId + visit.day.toEpochDays() + actions.size) % Bid.entries.size).toInt()] else null
-        return visit.copy(actions = actions, warmth = visit.warmth + reaction.warmth, pendingBid = bid) to reaction
+        // A pat on its liked spot warms one more, once a visit and only when the pat was new; a wrong spot costs nothing.
+        val spotBonus = if (action == CareAction.TOUCH && reaction != Reaction.FLAT && spot == likedSpot(visitor.speciesId) && !visit.spotFound) 1 else 0
+        return visit.copy(actions = actions, warmth = visit.warmth + reaction.warmth + spotBonus, spotFound = visit.spotFound || spotBonus > 0, pendingBid = bid) to reaction
     }
+
+    fun likedSpot(speciesId: Int): PetSpot = PetSpot.entries[speciesId % PetSpot.entries.size]
 
     /** Turns toward the visitor's bid: one more warmth. Nothing when there is none. */
     fun notice(visit: Visit): Visit =

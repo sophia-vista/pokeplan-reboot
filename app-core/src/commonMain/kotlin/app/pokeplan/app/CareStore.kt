@@ -10,6 +10,7 @@ import app.pokeplan.care.CareTrends
 import app.pokeplan.care.DiaryCard
 import app.pokeplan.care.Emotion
 import app.pokeplan.care.JournalEntry
+import app.pokeplan.care.PetSpot
 import app.pokeplan.care.Prompt
 import app.pokeplan.care.Prompts
 import app.pokeplan.care.Routine
@@ -202,10 +203,10 @@ class CareStore(
     }
 
     /** Does [action] in the visit; the third ends it (see [finishVisit]). Null when there is no visit to do it in. */
-    fun visitAct(action: CareAction): VisitStep? {
+    fun visitAct(action: CareAction, spot: PetSpot? = null): VisitStep? {
         val visit = visit ?: return null
         val visitor = visitors().firstOrNull { it.speciesId == visit.speciesId } ?: return null
-        val (next, reaction) = Visitors.act(visitor, visit, action)
+        val (next, reaction) = Visitors.act(visitor, visit, action, spot)
         update { it.copy(visit = next) }
         return VisitStep(reaction, next, if (Visitors.finished(next)) finishVisit() else null)
     }
@@ -226,11 +227,11 @@ class CareStore(
         val visitor = visitors().firstOrNull { it.speciesId == visit.speciesId } ?: return null
         val warmer = visitor.copy(points = visitor.points + if (Visitors.warm(visit)) 1 else 0, lastVisitDay = today)
         if (warmer.points < Visitors.FRIEND_POINTS) {
-            update { d -> d.copy(befriendDay = today, visit = null, visitors = d.visitors.map { if (it.speciesId == visit.speciesId) warmer else it }) }
+            update { d -> d.copy(befriendDay = today, visit = null, met = d.met + visit.speciesId, visitors = d.visitors.map { if (it.speciesId == visit.speciesId) warmer else it }) }
             return BefriendResult(warmer, friend = false, rewards = emptyList())
         }
         val rewards = world.befriend(BefriendEvent(visitor.speciesId, visitor.formIdentifier, newId(), nowMillis)) ?: return null
-        update { d -> d.copy(befriendDay = today, visit = null, visitors = d.visitors.filterNot { it.speciesId == visit.speciesId }) }
+        update { d -> d.copy(befriendDay = today, visit = null, met = d.met + visit.speciesId, visitors = d.visitors.filterNot { it.speciesId == visit.speciesId }) }
         return BefriendResult(warmer, friend = true, rewards = rewards)
     }
 

@@ -205,8 +205,10 @@ still earns nothing, and a visitor never reads a domain (only the *kind* of Care
   warmth is a day; a quieter one is not, with no penalty. Every kind warms because the evidence that matching a person's love
   language helps is weak (Impett and colleagues, *Current Directions in Psychological Science*); variety and responsiveness
   matter more. Rewards, caps and the one-a-day limit are as before. The copy never claims a mental-health benefit.
-  `Visitors.act`, `Visitors.notice`, `CareStore.startVisit/visitAct/visitNotice/finishVisit`. Not built: visit art (reaction
-  animations, a petting scene), a "met" album, more bid kinds.
+  `Visitors.act`, `Visitors.notice`, `CareStore.startVisit/visitAct/visitNotice/finishVisit`. **0.37.0:** the visitor stands in
+  a meadow scene and reacts with its own SpriteCollab animations (hop for a loved action, eat for a treat; none with Reduce motion);
+  a pat asks for a spot (head, back, chin), a species' liked spot (`Visitors.likedSpot`) warms +1 once a visit; five bid kinds;
+  `CareData.met` keeps every species cared for (shown as a quiet "Met" row). Not built: more care kinds beyond the five.
 - **Offline.** Visitors are seeded per device and per day (`CareData.visitorSeed`, with the day), so the same device sees the same
   visitors all day, and the offer is saved the first time it is seen. The egg's dice come from the oldest server-issued egg ticket
   when the device has one (it is spent with the befriend and reported on the next sync like a focus ticket), and from the device
