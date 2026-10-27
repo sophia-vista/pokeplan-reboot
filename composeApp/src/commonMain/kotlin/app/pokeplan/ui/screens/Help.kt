@@ -45,7 +45,7 @@ internal val helpTopics = listOf(
     HelpTopic(
         "Focus and eggs",
         listOf(
-            HelpItem("How do I hatch an egg?", "Start a focus session on the Focus tab and stay in the app until it ends. A longer session gives better odds of a rarer egg."),
+            HelpItem("How do I hatch an egg?", "Start a focus session in Modules, Plan, Focus, and stay in the app until it ends. A longer session gives better odds of a rarer egg."),
             HelpItem("What happens if I leave the app?", "You have a 10 second grace period to come back. After that the egg is lost and the session does not count for your streak. You get emergency pauses for the times you really must leave; start one before you go."),
             HelpItem("What is Deep Focus?", "The phone has to stay still while the timer runs: picking it up or moving it fails the session. In return the egg odds go up one step."),
         ),

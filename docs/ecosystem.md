@@ -41,7 +41,8 @@ Because modules only meet in the world, adding one never changes another.
 
 ## 3. One app now, separate-ready
 
-**Ship as one app with modules** (turn each on or off in Settings), because the shared buddy and collection work offline
+**Ship as one app with modules** (turn each on or off in Settings; each module is a section of the **Modules** tab, while
+Home, Pokémon and Me hold the shared world, 0.33.0), because the shared buddy and collection work offline
 for free, features like sign-in, widgets and notifications are built once, and friends install one thing. Keep a hard
 module boundary now (own core library, own schema, events only) so a module can become its own app later.
 

@@ -32,7 +32,7 @@ change, with the reason.
 
 ## Already followed (kept)
 
-- **Hick's Law, Choice Overload:** tabs are five labelled tabs; sections open on `MenuGrid` cards of six or fewer; quick add hides difficulty behind "More options"; Home recommends one task (Next up) with "Pick another" instead of a list to choose from.
+- **Hick's Law, Choice Overload:** tabs are four labelled tabs (Home, Modules, Pokémon, Me; 0.33.0); sections open on `MenuGrid` cards of six or fewer; quick add hides difficulty behind "More options"; Home recommends one task (Next up) with "Pick another" instead of a list to choose from.
 - **Tesler's Law:** quick add understands "Call mum tomorrow 5pm 30m", so the app carries the date parsing, not the person.
 - **Goal-Gradient:** Home's "2 of 5 tasks done today" bar, the EXP bar to the next rank, quest bars with "x of y".
 - **Doherty Threshold:** every action applies locally at once; sync runs behind it with a status chip.
@@ -40,6 +40,7 @@ change, with the reason.
 - **Parkinson's Law:** focus presets (15 / 25 / 45 / 60) and task estimates set the time box up front.
 - **Mental Model:** the PC, party, Bag, Pokédex and Professor intro follow the games the audience knows.
 - **Serial Position:** Home first and Me last in the tabs.
+- **Doherty threshold, Fitts's Law (0.33.0):** Planner and Focus moved one level down, into Modules, Plan, so every module gets the same place. The Modules tab reopens the module last used, and Home's Next up, Add a task and Start focus, the widgets, the shortcuts and the reminders still go straight to them.
 - **Cognitive Load, Occam's Razor:** one reaction at a time from the buddy, no meters, no speech bubbles.
 - **Law of Prägnanz, Uniform Connectedness:** one card shape (`TextBox`), one button shape (`PixelButton`), one row shape (`ListRow`).
 
