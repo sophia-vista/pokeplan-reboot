@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.32.1
+
+- Fixed the "Just 5 minutes" button on the Focus screen: it was drawn on top of the Start button, so one hid the other. They now sit one above the other.
+
 ## 0.32.0
 
 - The Care Region's dex is chosen: 143 gentle, soothing Pokémon (Chansey, Snorlax, Munna, Comfey, Milotic, Wooloo and more), with Cresselia and Shaymin as its patrons and Goomy and Slakoth as its Super Rare lines. It opens to everyone when the Care screens arrive. Swablu, Altaria, Cottonee and Whimsicott move there from the Plan Region; the ones you already have stay yours.
