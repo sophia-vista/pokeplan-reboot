@@ -51,7 +51,8 @@ journal), or (b) people want it without the rest, or (c) it is a different kind 
 **Standalone games.** A Mystery Dungeon style idle or expedition game is case (c) and a natural separate app: it reads the
 shared collection and sends effort-like events back (an expedition returning with items). Voidpet Dungeon is the reference
 for that genre; from its [store listings](https://www.bluestacks.com/campaign/com.voidpet.dungeon/en) it is a turn-based
-tactical RPG with 1000+ levels and 200+ creatures, so the "idle" version would be our own, much smaller take. Late, optional.
+tactical RPG with 1000+ levels and 200+ creatures, so the "idle" version would be our own, much smaller take. Late, optional. **Its world is the games' regions** (Kanto to
+Paldea), which fold into it from PokéPlan (owner's decision, see "Module regions" in section 4).
 
 ## 4. Modules
 
@@ -75,6 +76,39 @@ their own: a meal plan or laundry day creates **Plan tasks**, and finishing the 
   buddy's reactions can follow it.
 - **Huawei Health → Care, later** (section 6).
 - **Paprika and a wardrobe app → Home.** Photo-heavy data apps with no natural game loop; build last.
+
+### Module regions *(decided by the owner, October 2026)*
+
+Every life module has its own custom region: a hand-curated list of species in the style of the current Home Region,
+built with the same kit (`docs/home-region-curation-prompt.md`, `./gradlew :pokemon-core:curationReport`). The rules in
+section 10, "Decided (owner)" item 1 still hold: a region is flavour and holds no domain data.
+
+- **Names: "<Module> Region".** Plan Region, Care Region, Grow Region, Home Region. **The current Home Region becomes the
+  Plan Region** (it holds the lake trio, Plan's patrons), and the name "Home Region" passes to the household module.
+  Not renamed in code yet: `Region.HOME` is stored by name in `AppData`, `plan.focus_sessions` and the reward function, so the rename keeps the serial name
+  `HOME` (or migrates the saves) and gives the household module's region a new enum entry.
+- **No overlap.** A species is in at most one module region. When a species clearly belongs to a module, the Plan Region
+  gives it up; owned Pokémon are kept, and only the dex counts change. In Plan's list today and in the drafts below:
+  Swablu, Altaria, Cottonee, Whimsicott, Caterpie, Larvesta, Volcarona, Riolu, Lucario; settle each one during curation.
+- **Size: about 150 species each**, like the Plan Region (about 2 months per dex), with at least one hatchable line
+  in every rarity tier.
+- **The game regions (Kanto to Paldea) fold into the dungeon game** (section 3, "Standalone games"): its world is the real
+  regions, explored with the shared collection. Until that game exists they stay in PokéPlan as they are now, and nothing
+  is taken away from players who have them (*(proposed)* their caught Pokémon and dex progress move with the collection,
+  which is already shared).
+- Modules without a game loop of their own get no region: the Poketch utilities pay nothing (section 8), and the dungeon
+  game uses the game regions.
+
+**Draft themes** *(proposed, for curation; patrons are legendary-class or mythical and earned by quest)*:
+
+| Region | Main types | Patrons | Signature species (draft) | Super Rare line |
+|---|---|---|---|---|
+| **Plan** (the current Home Region, 171) | everyday route Pokémon | Uxie, Mesprit, Azelf (as built) | as curated | as curated |
+| **Care** | Fairy, Grass, Water, Normal | Cresselia (good dreams, sleep), Shaymin (the Gracidea is given in thanks: gratitude) | Happiny line, Audino, Comfey, Alomomola, Swablu line, Munchlax line, Munna line, Cottonee line, Spritzee line, Hatenna line, Indeedee, Snom line | Goomy line |
+| **Grow** | Psychic, Fighting, Bug | Kubfu and Urshifu (it evolves by passing a trial, like Grow's evolution trials) | Abra line, Slowpoke line, Natu line, Smeargle, Magikarp line, Caterpie line, Larvesta line, Riolu line, Machop line, Mienfoo line, Elgyem line, Unown (letters for the journal) | Beldum line |
+| **Home** | Normal, Fire, Grass, Fairy | Ogerpon (Hoopa and Magearna are already in Plan's list) | Rotom (the appliance forms), Miltank, Swirlix line, Milcery line, Applin line, Sinistea line, Lechonk line, Fidough line, Smoliv line, Tandemaus line, Sewaddle line (sewing, for the closet), Furfrou, Klefki (keys) | Frigibax line |
+
+Care's list is curated first, before Care v1 ships; Grow's and Home's when their modules start.
 
 ## 5. Interconnection
 
@@ -228,6 +262,9 @@ Handy tools that live in the app and as widgets, each one a "Poketch app" the pl
 - Per-module daily rank caps, or one shared cap?
 - Is the failed-focus egg loss acceptable, or should it soften?
 - Do you want Care's cloud sync at all, or strictly on-device?
+- Module regions: which rank opens each one once its module ships, and does the Plan Region give up the overlapping
+  species listed in section 4?
+- The game regions in the dungeon game: do they leave PokéPlan when that game ships, or stay in both?
 
 ## 10. Game layer
 
@@ -266,7 +303,7 @@ from Guardians). Nothing below changes them.
 
 ### Decided (owner)
 
-1. **Regions are custom and tied to modules, for flavour.** A module's region is a hand-curated list of species made for that module, in the same way as the Home Region (`tools/species/home-region.txt`), not a copy of a game region. Its theme, patron legendaries and egg type pool fit the module (the lake trio suit Plan, so Plan's list is where they belong; the other lists are curated module by module, and Care's before Care v1 ships). The game regions (Kanto and the rest) stay as the ordinary collectable dexes. It is flavour, not ownership: a custom region holds no domain data, and *(proposed)* it is **not gated by using the module**, so nobody has to use a module they do not want to finish a dex. The same limits as every egg method apply (best two methods, daily caps). Curation uses the existing kit (`docs/home-region-curation-prompt.md`, `./gradlew :pokemon-core:curationReport`).
+1. **Regions are custom and tied to modules, for flavour.** A module's region is a hand-curated list of species made for that module, in the same way as the Home Region (`tools/species/home-region.txt`), not a copy of a game region. Its theme, patron legendaries and egg type pool fit the module (the lake trio suit Plan, so Plan's list is where they belong; the other lists are curated module by module, and Care's before Care v1 ships). The game regions (Kanto and the rest) stay as the ordinary collectable dexes until they fold into the dungeon game. Names, sizes, the no-overlap rule and the draft themes: "Module regions" in section 4. It is flavour, not ownership: a custom region holds no domain data, and *(proposed)* it is **not gated by using the module**, so nobody has to use a module they do not want to finish a dex. The same limits as every egg method apply (best two methods, daily caps). Curation uses the existing kit (`docs/home-region-curation-prompt.md`, `./gradlew :pokemon-core:curationReport`).
 2. **Legendaries and mythicals count towards regional dex completion.** A region is complete only with its legendary-class and mythical species, which are earned through quests, not eggs. Consequences to handle when the completion rewards are built: the "completes the Home dex at about day 67" pacing in docs/design.md covers the hatchable species only, so completion also waits on the quests (rank-gated, long); the Dex should show those pages as "earned by quest" so they never read as missing eggs; and the economy simulation should report both "hatchable done" and "fully complete".
 3. **Plan arcs stay as built:** one quest per legendary. For future modules, arcs should add up to **one cohesive but small and quick story** (see below).
 4. **Darkrai is out.**
