@@ -34,7 +34,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.AppData
+import app.pokeplan.app.CareStore
 import app.pokeplan.app.Clock
+import app.pokeplan.app.MemoryStorage
+import app.pokeplan.care.CareData
+import kotlinx.datetime.DayOfWeek
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.Storage
 import app.pokeplan.app.cloud.CloudClient
@@ -43,6 +47,7 @@ import app.pokeplan.app.cloud.SocialClient
 import app.pokeplan.app.cloud.SyncManager
 import app.pokeplan.app.cloud.SyncStatus
 import io.ktor.client.HttpClient
+import app.pokeplan.ui.screens.CareSection
 import app.pokeplan.ui.screens.CollectionScreen
 import app.pokeplan.ui.screens.Cutscene
 import app.pokeplan.ui.screens.CutsceneHost
@@ -94,6 +99,8 @@ class AppModel(
     val calendars: CalendarSource? = null,
     /** Whether the screen is off or a call is on, for focus sessions; null where the platform cannot tell. */
     val phone: PhoneState? = null,
+    /** The Care module's own store, apart from Plan's save; it pays into [store] (the shared world). */
+    val care: CareStore = CareStore(MemoryStorage(), Clock { store.nowMillis }, store),
 ) {
     /** A light vibration, if the platform can and Haptics is on in Settings. */
     fun haptic() {
@@ -125,6 +132,9 @@ class AppModel(
     var data: AppData by mutableStateOf(store.data)
         private set
 
+    var careData: CareData by mutableStateOf(care.data)
+        private set
+
     /** A task just deleted, which the undo bar can bring back for a few seconds. */
     var deletedTask: Task? by mutableStateOf(null)
 
@@ -142,6 +152,9 @@ class AppModel(
 
     /** The screen open inside Plan (null shows Plan's menu). */
     var planSection: PlanSection? by mutableStateOf(null)
+
+    /** The screen open inside Care (null shows Care's menu). */
+    var careSection: CareSection? by mutableStateOf(null)
 
     /** The hatch or evolution playing over the whole app, if any. */
     var cutscene: Cutscene? by mutableStateOf(null)
@@ -172,6 +185,7 @@ class AppModel(
 
     init {
         store.observe { data = it }
+        care.observe { careData = it }
     }
 }
 
@@ -185,6 +199,8 @@ data class AppLaunch(val place: Place?, val pokemon: String? = null, val addTask
 @Composable
 fun App(
     storage: Storage,
+    /** Where the Care module keeps its own save (`care.json`); in memory only when the platform gives none. */
+    careStorage: Storage? = null,
     focusTab: Boolean = true,
     motion: MotionSource? = null,
     start: Place = Place.HOME,
@@ -209,7 +225,8 @@ fun App(
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
         val client = if (cloud.enabled) CloudClient(cloud, HttpClient()) { clock.nowMillis() } else null
-        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries, haptics, files, calendars, phone).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
+        val care = CareStore(careStorage ?: MemoryStorage(), clock, store, weekStart = { if (store.data.settings.weekStartsOnMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY })
+        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries, haptics, files, calendars, phone, care).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
     }
     val store = model.store
     if (onDataChanged != null) DisposableEffect(store) {
@@ -217,7 +234,12 @@ fun App(
         onDataChanged(store.data) // the state the app starts in counts too (a focus session already running keeps the screen on)
         onDispose(stop)
     }
-    if (externalChanges != null) LaunchedEffect(externalChanges) { externalChanges.collect { store.reload() } }
+    if (externalChanges != null) LaunchedEffect(externalChanges) {
+        externalChanges.collect {
+            store.reload()
+            model.care.reload()
+        }
+    }
 
     // Cloud sync: follow the status, sync when signed in, and again a moment after any change (and now and then, to hear
     // about changes from other devices).

@@ -123,11 +123,19 @@ const user = "u1";
   await refused({ kind: "effort", app: "plan", key: "x", minutes: 0, region: "HOME" }, 400);
   await refused({ kind: "effort", app: "plan", key: "x", minutes: 9999, region: "HOME" }, 400);
   await refused({ kind: "effort", app: "plan", key: "x", minutes: 25, region: "NARNIA" }, 400);
+  await refused({ kind: "effort", app: "plan", key: "x", minutes: 25, region: "HOUSEHOLD" }, 400);
   await refused({ kind: "effort", app: "plan", key: "x", minutes: 25, region: "HOME", epochDay: 5 }, 400);
   await refused({ kind: "achievement", app: "health", key: "x", source: "s", tier: 9, region: "HOME" }, 400);
   await refused({ kind: "magic", app: "plan", region: "HOME" }, 400);
   await refused({ kind: "effort", app: "plan", region: "HOME", minutes: 25 }, 400);
   assert.equal(db.ledger.size, 0);
+}
+
+// A module region is open from the start.
+{
+  const db = fakeDb();
+  const out = await handleReward(user, { kind: "effort", app: "plan", key: "c1", minutes: 25, region: "CARE" }, engine, db, clock);
+  assert.equal(out.applied, true);
 }
 
 // A region opens with rank.

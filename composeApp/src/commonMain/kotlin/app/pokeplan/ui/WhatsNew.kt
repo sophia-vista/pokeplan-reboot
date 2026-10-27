@@ -3,6 +3,10 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.34.0" to listOf(
+            "Care is here, under Modules, inspired by journalling and DBT: daily routines, a calm break with your buddy, a private diary card, DBT skills to practise and a journal. Routines, calm breaks and skills earn friendship and berries.",
+            "The Care Region is open: pick it as your hatching region in Settings.",
+        ),
         "0.33.0" to listOf(
             "A new Modules tab: Planner, Focus, Growth, Goals and Review are now under Modules, Plan, ready for Care to join them. Home, Pokémon and Me hold what every module shares.",
         ),

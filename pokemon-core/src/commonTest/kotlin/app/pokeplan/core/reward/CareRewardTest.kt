@@ -35,6 +35,14 @@ class CareRewardTest {
     }
 
     @Test
+    fun aPractisedSkillGivesFriendshipAndABerry() {
+        val out = care(CareKind.SKILL, state(Nature.HASTY))
+        assertEquals(FriendshipRules.START + 2, out.state.buddy!!.friendship, "a presence-loving buddy doubles a practised skill")
+        assertEquals(1, out.rewards.filterIsInstance<Reward.ItemDrop>().size)
+        assertEquals(10 + RewardEngine.CARE_POINTS, out.state.trainerPoints)
+    }
+
+    @Test
     fun aWeeklyRhythmGivesBerriesAndPointsButNoFriendship() {
         val out = care(CareKind.WEEKLY_RHYTHM)
         assertEquals(RewardEngine.RHYTHM_BERRIES, out.rewards.filterIsInstance<Reward.ItemDrop>().size)

@@ -103,12 +103,16 @@ data class AchievementEvent(
     val friendshipTasksToday: Int = 0,
 )
 
-/** What a Care moment was (docs/ecosystem.md, section 6). Mood, notes and reflections are never events: they earn nothing. */
+/**
+ * What a Care moment was (docs/ecosystem.md, section 6). Diary cards, journal entries and notes are never events: they earn
+ * nothing. A practised skill carries no word of which skill it was.
+ */
 @Serializable
 enum class CareKind {
     @SerialName("routine_completed") ROUTINE,
     @SerialName("calm_break_completed") CALM_BREAK,
     @SerialName("weekly_rhythm") WEEKLY_RHYTHM,
+    @SerialName("skill_practised") SKILL,
 }
 
 /** A Care moment, with no other field: no titles, no mood, no health values. Daily caps are the caller's job. */
@@ -298,8 +302,8 @@ object RewardEngine {
     }
 
     /**
-     * A Care moment: a routine gives the buddy friendship, a calm break friendship and a berry, a weekly rhythm
-     * [RHYTHM_BERRIES] berries; each adds a little trainer rank. Perks don't apply: Care is about the bond, not the haul.
+     * A Care moment: a routine gives the buddy friendship, a calm break or a practised skill friendship and a berry, a
+     * weekly rhythm [RHYTHM_BERRIES] berries; each adds a little trainer rank. Perks don't apply: Care is about the bond, not the haul.
      */
     fun care(state: PlayerState, e: CareEvent, rng: Random): Outcome {
         val rewards = mutableListOf<Reward>()
@@ -308,6 +312,7 @@ object RewardEngine {
         val source = when (e.kind) {
             CareKind.ROUTINE -> FriendshipRules.Source.ROUTINE
             CareKind.CALM_BREAK -> FriendshipRules.Source.CALM_BREAK
+            CareKind.SKILL -> FriendshipRules.Source.SKILL
             CareKind.WEEKLY_RHYTHM -> null
         }
         if (buddy != null && source != null) {
@@ -317,7 +322,7 @@ object RewardEngine {
         }
         val berries = when (e.kind) {
             CareKind.ROUTINE -> 0
-            CareKind.CALM_BREAK -> 1
+            CareKind.CALM_BREAK, CareKind.SKILL -> 1
             CareKind.WEEKLY_RHYTHM -> RHYTHM_BERRIES
         }
         var inventory = state.inventory

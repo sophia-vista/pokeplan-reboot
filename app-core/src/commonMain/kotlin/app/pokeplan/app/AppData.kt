@@ -123,6 +123,8 @@ data class Settings(
     val streakReminderHour: Int = 20,
     /** A recap of the week on Sunday evening (Android). */
     val weeklyRecap: Boolean = true,
+    /** The Care module in Modules (docs/ecosystem.md, section 6). Off only hides it: Care's own save is kept. */
+    val careModule: Boolean = true,
 ) {
     /** How loud cries and effects play, 0 to 1 (0 when Sound was switched off). */
     val effectsLevel: Float get() = if (sound) effectsVolume.coerceIn(0, 100) / 100f else 0f
