@@ -193,7 +193,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
             }
         }
     }
-    Box(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp)) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         PixelButton("Start $minutes min", { store.startFocus(minutes, deep, taskId); store.dismissFocusEnd() }, Modifier.fillMaxWidth(), Pixel.Red)
         // For when starting is the hard part: the shortest session there is, with no choices to make.
         val five = FocusRules.justFiveMinutes().minutesRoundedUp

@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.35.1
+
+- Fixed the "Just 5 minutes" button on the Focus screen: it was drawn on top of the Start button, so one hid the other. They now sit one above the other.
+
 ## 0.35.0
 
 - One party per module. The Party screen now has a Plan tab and a Care tab over the one shared PC: a Pokémon is in one party at a time, up to six each, and Care's party has its own lead, the buddy that takes Care's friendship (a Pokémon's page has "Make Care lead" and "To Care party"). Care's party has its own perks (Friendship gain from Normal, Fairy and Water; Berry finder from Grass, Bug and Fighting; Visitor luck from Flying, Psychic and Ghost, used when Care visitors arrive). Until Care has a lead, Care keeps warming your Plan buddy, and Plan's rewards are unchanged.
