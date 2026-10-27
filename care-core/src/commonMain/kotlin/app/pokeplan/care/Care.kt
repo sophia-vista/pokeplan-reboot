@@ -117,6 +117,8 @@ data class CareData(
     val visitors: List<Visitor> = emptyList(),
     /** The day the day's befriend was spent. */
     val befriendDay: LocalDate? = null,
+    /** The visit in progress, if one was started and not finished (it ends with the day). */
+    val visit: Visit? = null,
 )
 
 @Serializable

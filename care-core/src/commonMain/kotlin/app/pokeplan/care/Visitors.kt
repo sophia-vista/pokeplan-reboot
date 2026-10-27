@@ -22,9 +22,39 @@ data class Visitor(
     val arrivedDay: LocalDate,
     val points: Int = 0,
     val lastVisitDay: LocalDate? = null,
+    /** The way of caring it likes best; the player finds it out by trying (the five love languages as a vocabulary). */
+    val favorite: CareAction = CareAction.TIME,
 )
 
-/** What befriending a visitor did: its new warmth, and whether it became a friend (then [rewards] holds the Pokémon). */
+/**
+ * The ways to care for a visitor, named after Chapman's five love languages. The evidence that matching a person's language
+ * improves a relationship is weak (Impett and colleagues), so every action warms a visitor and its favourite only warms more.
+ */
+@Serializable
+enum class CareAction { WORDS, TIME, GIFT, SERVICE, TOUCH }
+
+/** A small moment a visitor offers during a visit, in Gottman's sense of a bid for connection; noticing it is "turning toward". */
+@Serializable
+enum class Bid { LOOK, NUDGE, SHOW }
+
+/** How a visitor took an action: its favourite, a kind of care it likes, or one it already had this visit. */
+enum class Reaction(val warmth: Int) { LOVED(2), LIKED(1), FLAT(0) }
+
+/** A visit in progress: the actions done so far, and the bid waiting to be noticed, if any. */
+@Serializable
+data class Visit(
+    val speciesId: Int,
+    val day: LocalDate,
+    val actions: List<CareAction> = emptyList(),
+    val warmth: Int = 0,
+    val bidsNoticed: Int = 0,
+    val pendingBid: Bid? = null,
+)
+
+/** One step of a visit: how the visitor took it, the visit now, and once the visit is over, what it came to. */
+data class VisitStep(val reaction: Reaction, val visit: Visit, val result: BefriendResult? = null)
+
+/** What a visit did: the visitor's days now (a visit that was not warm enough adds none), and whether it became a friend (then [rewards] holds the Pokémon). */
 data class BefriendResult(val visitor: Visitor, val friend: Boolean, val rewards: List<app.pokeplan.core.reward.Reward>)
 
 /** Who visits, and how long they stay. *(tune)* */
@@ -38,6 +68,12 @@ object Visitors {
 
     /** A warming visitor not visited for this many days wanders off, with no penalty. */
     const val WANDER_DAYS = 3
+
+    /** Actions in a visit; a bid is offered before the second and the third. */
+    const val ACTIONS_PER_VISIT = 3
+
+    /** Warmth that makes a visit count as a day with the visitor: three different kinds of care alone (3) are not quite enough. *(tune)* */
+    const val WARM_VISIT = 4
 
     private const val UNCOMMON_SHARE = 0.30
     private const val RARE_SHARE = 0.10
@@ -67,7 +103,7 @@ object Visitors {
                 if (rarity != Rarity.RARE && rng.nextDouble() * 100 < luck) rarity = rarity.next()
                 val option = pick(rarity, rng, taken, lean) ?: return@repeat
                 taken += option.speciesId
-                add(Visitor(option.speciesId, option.formIdentifier, today))
+                add(Visitor(option.speciesId, option.formIdentifier, today, favorite = CareAction.entries[rng.nextInt(CareAction.entries.size)]))
             }
         }
     }
@@ -90,6 +126,37 @@ object Visitors {
         }
         return null
     }
+
+    fun start(speciesId: Int, today: LocalDate) = Visit(speciesId, today)
+
+    /** How [visitor] takes [action] in [visit]: a kind of care it already had this visit warms it no more. */
+    fun reaction(visitor: Visitor, visit: Visit, action: CareAction): Reaction = when {
+        action in visit.actions -> Reaction.FLAT
+        action == visitor.favorite -> Reaction.LOVED
+        else -> Reaction.LIKED
+    }
+
+    /** Whether all of [ACTIONS_PER_VISIT] are done. */
+    fun finished(visit: Visit): Boolean = visit.actions.size >= ACTIONS_PER_VISIT
+
+    /** Whether the visit warmed the visitor enough to count as a day. */
+    fun warm(visit: Visit): Boolean = visit.warmth >= WARM_VISIT
+
+    /**
+     * Does [action]. An unnoticed bid is let go without cost, and after the first and second action the visitor makes a new
+     * one (the same for the same visitor and day).
+     */
+    fun act(visitor: Visitor, visit: Visit, action: CareAction): Pair<Visit, Reaction> {
+        if (finished(visit)) return visit to Reaction.FLAT
+        val reaction = reaction(visitor, visit, action)
+        val actions = visit.actions + action
+        val bid = if (actions.size < ACTIONS_PER_VISIT) Bid.entries[((visit.speciesId + visit.day.toEpochDays() + actions.size) % Bid.entries.size).toInt()] else null
+        return visit.copy(actions = actions, warmth = visit.warmth + reaction.warmth, pendingBid = bid) to reaction
+    }
+
+    /** Turns toward the visitor's bid: one more warmth. Nothing when there is none. */
+    fun notice(visit: Visit): Visit =
+        if (visit.pendingBid == null) visit else visit.copy(pendingBid = null, bidsNoticed = visit.bidsNoticed + 1, warmth = visit.warmth + 1)
 
     /** The types the care of the last 7 days leans towards. */
     fun lean(data: CareData, today: LocalDate): Set<PokemonType> = buildSet {

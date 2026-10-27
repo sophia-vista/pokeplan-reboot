@@ -38,7 +38,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.pokeplan.care.Bid
+import app.pokeplan.care.CareAction
 import app.pokeplan.care.CareRules
+import app.pokeplan.care.Reaction
+import app.pokeplan.care.Visit
 import app.pokeplan.care.Emotion
 import app.pokeplan.care.Skills
 import app.pokeplan.care.Visitors
@@ -146,32 +150,30 @@ private fun VisitorsCard(model: AppModel) {
     var note by remember { mutableStateOf<String?>(null) }
     if (visitors.isEmpty()) return
     val canBefriend = care.canBefriend()
+    val visit = model.careData.visit?.takeIf { it.day == care.today }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Visitors", style = MaterialTheme.typography.titleMedium)
             Text(
                 when {
                     care.befriendSpent -> "You spent today's befriend. New visitors come tomorrow."
-                    canBefriend -> "Spend today's befriend on one visitor. Four days with it and it becomes a friend."
+                    visit != null -> "Care for it any way you like. It has a favourite, and little moments it may offer."
+                    canBefriend -> "Visit one visitor today. Every kind of care warms it, and it likes one best. Four warm days make a friend."
                     else -> "Do something in Care today, a routine, a calm break or a skill, and you can spend the day's befriend."
                 },
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
             )
             note?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
+            if (visit != null) VisitPanel(model, visit) { note = it }
             visitors.forEach { v ->
                 val species = Dex.species(v.speciesId)
                 ListRow(
                     lead = { Sprite(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, species.name, size = 56.dp) },
                     trail = {
-                        PixelButton("Befriend", {
-                            val r = care.befriend(v.speciesId)
-                            note = when {
-                                r == null -> "Not today."
-                                r.friend -> "${species.name} is your friend now."
-                                else -> "${species.name} liked that. ${Visitors.FRIEND_POINTS - r.visitor.points} more day${if (Visitors.FRIEND_POINTS - r.visitor.points == 1) "" else "s"}."
-                            }
-                        }, color = Pixel.Green, enabled = canBefriend, compact = true)
+                        PixelButton("Visit", {
+                            if (care.startVisit(v.speciesId) == null) note = "Not today."
+                        }, color = Pixel.Green, enabled = canBefriend || visit?.speciesId == v.speciesId, compact = true)
                     },
                     highlight = false,
                 ) {
@@ -184,6 +186,48 @@ private fun VisitorsCard(model: AppModel) {
                     }
                 }
             }
+        }
+    }
+}
+
+private fun CareAction.label() = when (this) {
+    CareAction.WORDS -> "Kind words"
+    CareAction.TIME -> "Sit together"
+    CareAction.GIFT -> "Offer a treat"
+    CareAction.SERVICE -> "Tidy its spot"
+    CareAction.TOUCH -> "Gentle pat"
+}
+
+private fun Bid.text() = when (this) {
+    Bid.LOOK -> "It looks up at you."
+    Bid.NUDGE -> "It nudges your hand."
+    Bid.SHOW -> "It brings you something small."
+}
+
+/** A visit in progress: the five kinds of care, and the visitor's bid when it makes one. */
+@Composable
+private fun VisitPanel(model: AppModel, visit: Visit, say: (String?) -> Unit) {
+    val care = model.care
+    val name = Dex.species(visit.speciesId).name
+    visit.pendingBid?.let { bid ->
+        Text(bid.text(), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+        PixelButton("Notice", { care.visitNotice() }, color = Pixel.Green, compact = true)
+    }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        CareAction.entries.forEach { action ->
+            PixelButton(action.label(), {
+                val step = care.visitAct(action)
+                say(
+                    when {
+                        step == null -> "Not now."
+                        step.result?.friend == true -> "$name is your friend now."
+                        step.result != null -> if (step.result!!.visitor.points == 0) "$name had a quiet visit. Try again tomorrow." else "$name liked the visit. ${Visitors.FRIEND_POINTS - step.result!!.visitor.points} more warm days."
+                        step.reaction == Reaction.LOVED -> "$name loved that."
+                        step.reaction == Reaction.LIKED -> "$name liked that."
+                        else -> "$name already had that today."
+                    },
+                )
+            }, color = Pixel.Green, enabled = action !in visit.actions, compact = true)
         }
     }
 }
