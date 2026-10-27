@@ -450,6 +450,45 @@ class ScreenshotTest {
     @Test
     fun planReview() = modules("plan-review", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.REVIEW)
 
+    /** The Care module, with a few routines (one done), a skill practised, a diary card and a journal entry, open on [section] (null for its menu). */
+    private fun care(name: String, section: app.pokeplan.ui.screens.CareSection?) {
+        val store = storeWithTeam()
+        store.markRewardsSeen()
+        val model = AppModel(store)
+        val care = model.care
+        val water = care.addRoutine("Drink a glass of water", kotlinx.datetime.LocalTime(9, 0))
+        care.addRoutine("Stretch for five minutes")
+        care.addRoutine("Wind down without the phone", kotlinx.datetime.LocalTime(22, 0))
+        care.completeRoutine(water.id)
+        care.practiseSkill("stop")
+        care.saveDiary(mapOf(app.pokeplan.care.Emotion.JOY to 3, app.pokeplan.care.Emotion.FEAR to 2), skills = setOf("stop"), note = "A calm morning")
+        care.write("Tea with a friend after work.", tags = setOf("People"))
+        model.module = app.pokeplan.ui.screens.Module.CARE
+        model.careSection = section
+        render(name) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+    }
+
+    @Test
+    fun careMenu() = care("care", null)
+
+    @Test
+    fun careRoutines() = care("care-routines", app.pokeplan.ui.screens.CareSection.ROUTINES)
+
+    @Test
+    fun careCalm() = care("care-calm", app.pokeplan.ui.screens.CareSection.CALM)
+
+    @Test
+    fun careDiary() = care("care-diary", app.pokeplan.ui.screens.CareSection.DIARY)
+
+    @Test
+    fun careSkills() = care("care-skills", app.pokeplan.ui.screens.CareSection.SKILLS)
+
+    @Test
+    fun careJournal() = care("care-journal", app.pokeplan.ui.screens.CareSection.JOURNAL)
+
+    @Test
+    fun careTrends() = care("care-trends", app.pokeplan.ui.screens.CareSection.TRENDS)
+
     @Test
     fun meSettings() = me("me-settings", 1)
 

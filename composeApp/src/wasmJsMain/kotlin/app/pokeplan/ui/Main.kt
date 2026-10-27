@@ -5,14 +5,10 @@ import androidx.compose.ui.window.ComposeViewport
 import app.pokeplan.app.Storage
 import kotlinx.browser.localStorage
 
-/** The save lives in the browser's local storage. */
-class BrowserStorage : Storage {
-    override fun load(): String? = localStorage.getItem(KEY)
-    override fun save(text: String) = localStorage.setItem(KEY, text)
-
-    private companion object {
-        const val KEY = "pokeplan.save"
-    }
+/** The save lives in the browser's local storage, under [key] (Care keeps its own). */
+class BrowserStorage(private val key: String = "pokeplan.save") : Storage {
+    override fun load(): String? = localStorage.getItem(key)
+    override fun save(text: String) = localStorage.setItem(key, text)
 }
 
 /** Downloads the data export through the browser. */
@@ -29,5 +25,5 @@ private fun download(name: String, text: String): Unit = js(
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
-    ComposeViewport { App(BrowserStorage(), focusTab = false, cries = WebCryPlayer(), files = BrowserFileSaver()) }
+    ComposeViewport { App(BrowserStorage(), careStorage = BrowserStorage("pokeplan.care"), focusTab = false, cries = WebCryPlayer(), files = BrowserFileSaver()) }
 }

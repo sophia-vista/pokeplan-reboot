@@ -59,9 +59,16 @@ export class RequestError extends Error {
   }
 }
 
-// The Plan Region (stored as HOME) and the game regions, in the order trainer rank opens them (TrainerRank.rankToUnlock).
-// Module regions not released yet (Region.released in pokemon-core) are refused.
-const REGIONS = ["HOME", "KANTO", "JOHTO", "HOENN", "SINNOH", "UNOVA", "KALOS", "ALOLA", "GALAR", "PALDEA"];
+// The released module regions (Region.isModule and released in pokemon-core), open from the start: the Plan Region
+// (stored as HOME) and the Care Region. Module regions not released yet are refused.
+const MODULE_REGIONS = ["HOME", "CARE"];
+// The game regions, in the order trainer rank opens them, Kanto at rank 1 (TrainerRank.rankToUnlock).
+const GAME_REGIONS = ["KANTO", "JOHTO", "HOENN", "SINNOH", "UNOVA", "KALOS", "ALOLA", "GALAR", "PALDEA"];
+const REGIONS = [...MODULE_REGIONS, ...GAME_REGIONS];
+
+function rankToUnlock(region: string): number {
+  return MODULE_REGIONS.includes(region) ? 0 : GAME_REGIONS.indexOf(region) + 1;
+}
 const MAX_MINUTES = 240;
 const MAX_RETRIES = 3;
 const DAY_MILLIS = 86_400_000;
@@ -129,7 +136,7 @@ export async function handleReward(user: string, body: Body, engine: Engine, db:
   for (let attempt = 0; ; attempt++) {
     const { version, state } = await db.loadState(user);
     const points = (state as { trainerPoints: number }).trainerPoints;
-    if (REGIONS.indexOf(region) > db.rankFor(points)) throw new RequestError(403, `${region} is not open yet`);
+    if (rankToUnlock(region) > db.rankFor(points)) throw new RequestError(403, `${region} is not open yet`);
 
     const now = clock.nowMillis();
     const seed = clock.seed();

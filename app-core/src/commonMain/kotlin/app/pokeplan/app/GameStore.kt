@@ -1265,9 +1265,9 @@ class GameStore(
         const val LOG_SIZE = 50
 
         /** The most of each Care kind the world pays a day *(tune)*, a backstop to the same limits in CareRules. */
-        val CARE_DAILY_CAP: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 5, CareKind.CALM_BREAK to 3, CareKind.WEEKLY_RHYTHM to 1)
+        val CARE_DAILY_CAP: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 5, CareKind.CALM_BREAK to 3, CareKind.SKILL to 3, CareKind.WEEKLY_RHYTHM to 1)
         private val CARE_SOURCES = mapOf(
-            CareKind.ROUTINE to "Care: a routine", CareKind.CALM_BREAK to "Care: a calm break", CareKind.WEEKLY_RHYTHM to "Care: kept a rhythm",
+            CareKind.ROUTINE to "Care: a routine", CareKind.CALM_BREAK to "Care: a calm break", CareKind.WEEKLY_RHYTHM to "Care: kept a rhythm", CareKind.SKILL to "Care: a skill practised",
         )
 
         /** Parts of the save that stay on this device: never uploaded, kept when the cloud save is adopted. */

@@ -18,6 +18,9 @@ class FileStorage(private val file: File) : Storage {
 
 fun saveStorage(context: Context): Storage = FileStorage(File(context.filesDir, "save.json"))
 
+/** The Care module's own save, apart from Plan's (docs/ecosystem.md, section 6). */
+fun careStorage(context: Context): Storage = FileStorage(File(context.filesDir, "care.json"))
+
 /** A store for the widgets: reads the same save as the app and writes back what a tap changes. */
 fun widgetStore(context: Context): GameStore =
     GameStore(saveStorage(context), Clock { System.currentTimeMillis() })

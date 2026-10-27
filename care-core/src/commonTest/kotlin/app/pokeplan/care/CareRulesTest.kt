@@ -48,6 +48,21 @@ class CareRulesTest {
     }
 
     @Test
+    fun aPractisedSkillCountsTowardsTheRhythmAndPaysOnceADay() {
+        val data = CareData(practices = listOf(SkillPractice(0, day(0), "stop", paid = true)))
+        assertFalse(CareRules.skillPaysOn(data, "stop", day(0)))
+        assertTrue(CareRules.skillPaysOn(data, "stop", day(1)))
+        assertEquals(setOf(day(0)), CareRules.careDays(data, monday))
+    }
+
+    @Test
+    fun everySkillIsInTheLibraryOnceAndEveryGroupHasSome() {
+        assertEquals(Skills.all.size, Skills.all.map { it.id }.toSet().size)
+        SkillGroup.entries.forEach { assertTrue(Skills.inGroup(it).isNotEmpty(), "$it") }
+        assertEquals(1, Skills.all.count { it.calmBreak })
+    }
+
+    @Test
     fun weeksCanStartOnSunday() {
         assertEquals(day(-1), CareRules.weekStartOf(day(3), DayOfWeek.SUNDAY))
         assertEquals(monday, CareRules.weekStartOf(day(6), DayOfWeek.MONDAY))
@@ -68,12 +83,16 @@ class CareRulesTest {
         assertEquals(1, CareTrends.routinesLast7Days(listOf(r), day(14)))
         assertEquals(2, CareTrends.routinesLast7Days(listOf(r), day(8)))
         assertEquals(3, CareTrends.bestWeek(listOf(r)))
-        val moods = listOf(
-            MoodCheckIn("a", 0, day(0), Mood.GOOD), MoodCheckIn("b", 0, day(1), Mood.OKAY), MoodCheckIn("c", 0, day(9), Mood.GREAT),
+        val cards = listOf(
+            DiaryCard("a", day(0), 0, mapOf(Emotion.JOY to 4, Emotion.FEAR to 1)), DiaryCard("b", day(1), 0, mapOf(Emotion.JOY to 3)),
+            DiaryCard("c", day(9), 0, mapOf(Emotion.CALM to 5), skills = setOf("stop")),
         )
-        val weeks = CareTrends.moodWeeks(moods, day(9), 3)
-        assertEquals(listOf(null, 3.5, 5.0), weeks.map { it.average })
+        val weeks = CareTrends.feelingWeeks(cards, day(9), 3)
+        assertEquals(listOf(null, 3.5, null), weeks.map { it.averages[Emotion.JOY] })
+        assertEquals(listOf(0, 2, 1), weeks.map { it.cards })
         assertEquals(day(-7), weeks.first().weekStart)
+        val practised = CareData(diary = cards, practices = listOf(SkillPractice(0, day(9), "stop"), SkillPractice(0, day(8), "tipp")))
+        assertEquals(2, CareTrends.skillsLast7Days(practised, day(9)), "a skill ticked and practised on the same day counts once")
         assertEquals(1, CareTrends.calmMinutesLast7Days(listOf(CalmBreak(0, day(0), 90), CalmBreak(0, day(-10), 120)), day(2)))
     }
 }

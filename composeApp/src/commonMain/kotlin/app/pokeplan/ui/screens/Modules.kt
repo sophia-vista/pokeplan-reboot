@@ -23,7 +23,7 @@ import app.pokeplan.ui.theme.Spacing
  * life; everything done in any of them looks after the same Pokémon, which live in the shared tabs (Home, Pokémon, Me).
  */
 enum class Module(val label: String, val icon: String) {
-    PLAN("Plan", "journal"),
+    PLAN("Plan", "journal"), CARE("Care", "soothe-bell"),
 }
 
 /** Plan's screens: tasks and focus, and the trends, goals and weekly review that read them. */
@@ -38,13 +38,16 @@ enum class PlanSection(val label: String, val icon: String) {
 @Composable
 fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> Unit) {
     when (model.module) {
-        null -> ModulesMenu(model)
         Module.PLAN -> PlanScreen(model, focusTab, openPokemon)
+        // Care switched off in Settings hides it; what it saved is kept.
+        Module.CARE -> if (model.data.settings.careModule) CareScreen(model) else ModulesMenu(model)
+        null -> ModulesMenu(model)
     }
 }
 
 @Composable
 private fun ModulesMenu(model: AppModel) {
+    model.careData // redraw when Care changes
     val today = model.store.todayTasks().size
     Column(Modifier.fillMaxSize()) {
         ScreenHeader("Modules", subtitle = "Each looks after the same Pokémon", icon = "explorer-kit")
@@ -52,11 +55,19 @@ private fun ModulesMenu(model: AppModel) {
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
+            val routines = model.care.todayRoutines()
+            val routinesLeft = routines.count { !it.doneOn(model.care.today) }
             MenuGrid(
-                listOf(MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = Pixel.Red)),
+                listOfNotNull(
+                    MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = Pixel.Red),
+                    if (!model.data.settings.careModule) null else MenuEntry(
+                        Module.CARE.name, Module.CARE.icon, Module.CARE.label, if (routinesLeft == 0) "routines and calm" else "$routinesLeft routines today", tint = Pixel.Green,
+                    ),
+                ),
             ) { key -> model.module = Module.valueOf(key) }
             Text(
-                "Each module is one part of your day. Your party, Pokédex and Bag are shared by all of them, under Pokémon.",
+                "Each module is one part of your day. Your party, Pokédex and Bag are shared by all of them, under Pokémon." +
+                    if (model.data.settings.careModule) "" else " Care is switched off in Me, Settings.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
         }

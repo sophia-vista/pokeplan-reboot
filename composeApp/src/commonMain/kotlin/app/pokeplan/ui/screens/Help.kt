@@ -39,6 +39,7 @@ internal val helpTopics = listOf(
         listOf(
             HelpItem("What is PokéPlan?", "A planner and focus timer where doing real things looks after your Pokémon. Finish a focus session to hatch an egg; finish tasks, habits and goals to earn candies and items that level up and evolve your Pokémon. There are no battles."),
             HelpItem("What is the buddy?", "One Pokémon from your party that stays with you on Home and in the widget. Pet it, feed it a berry, and it gets friendlier. Its type and nature give small bonuses to the rewards you earn."),
+            HelpItem("What is Care?", "A module under Modules for looking after yourself, inspired by journalling and DBT: small routines to tick off, a calm break to breathe with your buddy, a daily diary card, DBT skills with short how-tos, and a journal. Routines, calm breaks and practised skills earn friendship and berries; diary cards and journal entries never earn anything and stay on this device. It is a reminder, not therapy. Turn Care off in Me, Settings, Modules."),
             HelpItem("How do I rank up?", "Every reward you earn also adds trainer points. New ranks open new things: Super Candies and evolution, new regions, Guardians and more quests."),
         ),
     ),
