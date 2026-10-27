@@ -77,8 +77,9 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 
+/** Me holds only what every module shares; Plan's Growth, Goals and Review are in Modules, Plan. */
 private enum class MeSection(val label: String, val icon: String) {
-    GROWTH("Growth", "exp-share"), GOALS("Goals", "star-piece"), REVIEW("Review", "journal"), FRIENDS("Friends", "friend-ball"), SETTINGS("Settings", "gb-sounds"), HELP("Help", "town-map"),
+    FRIENDS("Friends", "friend-ball"), SETTINGS("Settings", "gb-sounds"), HELP("Help", "town-map"),
 }
 
 @Composable
@@ -95,14 +96,11 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
             ) {
                 TrainerCard(model)
                 MenuGrid(
-                    (listOfNotNull(
-                        if (model.store.sees(Feature.GROWTH_SCREEN)) MenuEntry("GROWTH", "exp-share", "Growth", "effort and trends", tint = Pixel.Green) else null,
-                        if (!model.store.sees(Feature.GOALS)) null else MenuEntry("GOALS", "star-piece", "Goals", if (data.goals.size == 1) "1 goal" else "${data.goals.size} goals", tint = Pixel.Warning),
-                        MenuEntry("REVIEW", "journal", "Review", if (model.store.canReview()) "ready this week" else "done this week", badge = if (model.store.canReview()) 1 else 0, tint = Pixel.Blue),
-                    ) + (if (model.social != null) listOf(MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = androidx.compose.ui.graphics.Color(0xFFEC4899))) else emptyList()) + listOf(
+                    listOfNotNull(
+                        if (model.social == null) null else MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = androidx.compose.ui.graphics.Color(0xFFEC4899)),
                         MenuEntry("SETTINGS", "gb-sounds", "Settings", "name, region, sound", tint = Pixel.InkSoft),
                         MenuEntry("HELP", "town-map", "Help", "how it works", tint = Pixel.Blue),
-                    )),
+                    ),
                 ) { key -> section = MeSection.valueOf(key) }
             }
         }
@@ -110,9 +108,6 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
     }
     SectionScaffold(current.label, "Me", onBack = { section = null }, icon = current.icon) {
         when (current) {
-            MeSection.GROWTH -> GrowthView(model)
-            MeSection.GOALS -> GoalsView(model)
-            MeSection.REVIEW -> ReviewView(model)
             MeSection.FRIENDS -> FriendsView(model)
             MeSection.SETTINGS -> SettingsView(model)
             MeSection.HELP -> HelpView()
@@ -155,7 +150,7 @@ private fun plural(n: Int, word: String) = if (n == 1) "1 $word" else "$n ${word
 private val growthRanges = listOf(7, 30, 90)
 
 @Composable
-private fun GrowthView(model: AppModel) {
+internal fun GrowthView(model: AppModel) {
     var days by remember { mutableStateOf(7) }
     val wheel = model.store.wheel(days)
     val trend = model.store.trend(6)
@@ -281,7 +276,7 @@ private fun GoalsSummary(model: AppModel) {
 // ----- Goals ----------------------------------------------------------------------------------------------------------
 
 @Composable
-private fun GoalsView(model: AppModel) {
+internal fun GoalsView(model: AppModel) {
     val store = model.store
     var title by remember { mutableStateOf("") }
     var more by remember { mutableStateOf(false) }
@@ -358,7 +353,7 @@ private fun GoalsView(model: AppModel) {
 // ----- Weekly review --------------------------------------------------------------------------------------------------
 
 @Composable
-private fun ReviewView(model: AppModel) {
+internal fun ReviewView(model: AppModel) {
     val store = model.store
     RewardBox(model)
     if (!store.canReview()) {

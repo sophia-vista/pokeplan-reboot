@@ -57,10 +57,10 @@ import app.pokeplan.ui.theme.TextBox
 
 /** [openPokemon] shows a Pokémon on the Pokémon tab: the one that just hatched. */
 @Composable
-fun FocusScreen(model: AppModel, openPokemon: ((String) -> Unit)? = null) {
+fun FocusScreen(model: AppModel, openPokemon: ((String) -> Unit)? = null, onBack: (() -> Unit)? = null) {
     val session = model.data.focus
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader("Focus", subtitle = if (session == null) "Hatch an egg" else if (session.deepFocus) "Deep Focus" else "Egg incubating", icon = "mystery-egg")
+        ScreenHeader("Focus", subtitle = if (session == null) "Hatch an egg" else if (session.deepFocus) "Deep Focus" else "Egg incubating", icon = "mystery-egg", onBack = onBack)
         if (session == null) SetupView(model) { Ends(model, openPokemon) }
         else Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),

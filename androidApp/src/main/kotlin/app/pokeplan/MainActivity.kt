@@ -18,7 +18,7 @@ import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.ui.App
 import app.pokeplan.ui.AppLaunch
-import app.pokeplan.ui.Tab
+import app.pokeplan.ui.Place
 import app.pokeplan.reminders.AppAlerts
 import app.pokeplan.reminders.TaskReminders
 import app.pokeplan.widgets.announceBuddyEvent
@@ -53,12 +53,12 @@ class MainActivity : ComponentActivity() {
         val storage = saveStorage(this)
         val motion = AccelerometerMotion(this)
         val calendars = AndroidCalendars(this)
-        // A widget can open the app on a tab ("FOCUS" for the Start focus widget).
+        // A widget can open the app on a place ("FOCUS" for the Start focus widget).
         val first = launchFrom(intent)
-        val tab = first.tab ?: Tab.HOME
+        val place = first.place ?: Place.HOME
         setContent {
             App(
-                storage, focusTab = true, motion = motion, startTab = tab, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
+                storage, focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
                 cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), onDataChanged = ::keepWidgetsCurrent, onDark = ::matchSystemBars,
             )
         }
@@ -133,7 +133,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun launchFrom(intent: Intent?) = AppLaunch(
-        tab = intent?.getStringExtra(EXTRA_TAB)?.let { name -> Tab.entries.firstOrNull { it.name == name } },
+        place = intent?.getStringExtra(EXTRA_TAB)?.let { name -> Place.entries.firstOrNull { it.name == name } },
         pokemon = intent?.getStringExtra(EXTRA_POKEMON),
         // A shortcut's extra may arrive as a boolean or as text.
         addTask = intent?.extras?.get(EXTRA_ADD_TASK)?.toString() == "true",

@@ -46,7 +46,7 @@ import app.pokeplan.plan.TaskState
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.ItemIcon
-import app.pokeplan.ui.Tab
+import app.pokeplan.ui.Place
 import app.pokeplan.ui.theme.ExpBar
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
@@ -65,7 +65,7 @@ import app.pokeplan.ui.theme.title
  * today is going, and shortcuts. Nothing here punishes a quiet day.
  */
 @Composable
-fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
+fun HomeScreen(model: AppModel, go: (Place) -> Unit) {
     val store = model.store
     val data = model.data
     val buddy = data.player.buddy
@@ -85,7 +85,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
             footer = { RankProgress(points) },
             trailing = {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    SyncChip(model) { go(Tab.ME) }
+                    SyncChip(model) { go(Place.ME) }
                     if (store.sees(Feature.COINS)) StatChip("${data.player.coins}", { ItemIcon("amulet-coin", size = 28.dp, description = "Coins") })
                     StatChip("${data.player.inventory[Items.RARE_CANDY]}", { ItemIcon("rare-candy", size = 28.dp, description = "Rare Candies") })
                 }
@@ -109,7 +109,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
                     calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
                     onPet = { avoid -> store.pet(); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
                     onFeed = { avoid -> berry?.let { store.useItem(it, buddy.id); model.effect(Sfx.HEAL) }; BuddyReaction.feed(buddy, avoid = avoid) },
-                    onOpen = { model.openPokemonId = buddy.id; go(Tab.COLLECTION) }, onHaptic = { model.haptic() }, onEvent = { model.cry(buddy.speciesId) },
+                    onOpen = { model.openPokemonId = buddy.id; go(Place.COLLECTION) }, onHaptic = { model.haptic() }, onEvent = { model.cry(buddy.speciesId) },
                     celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
                 )
             }
@@ -118,7 +118,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
                 next != null -> NextUp(
                     task = next,
                     onDone = { model.completeTask(next.id) },
-                    onFocus = { model.focusTaskId = next.id; go(Tab.FOCUS) },
+                    onFocus = { model.focusTaskId = next.id; go(Place.FOCUS) },
                     onChoose = if (open.size > 1 || data.pickedTaskId != next.id) ({ store.pickForMe() }) else null,
                     picked = next.id == data.pickedTaskId,
                 )
@@ -127,7 +127,7 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
                 else -> TextBox {
                     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                         Text("Nothing planned for today", style = MaterialTheme.typography.titleSmall)
-                        PixelButton("Add a task", { go(Tab.PLANNER) }, Modifier.fillMaxWidth(), Pixel.Red)
+                        PixelButton("Add a task", { go(Place.PLANNER) }, Modifier.fillMaxWidth(), Pixel.Red)
                     }
                 }
             }
@@ -152,8 +152,8 @@ fun HomeScreen(model: AppModel, go: (Tab) -> Unit) {
 
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth()) {
                 // With nothing planned, the empty card's "Add a task" already goes to the Planner.
-                if (total > 0) PixelButton("Planner", { go(Tab.PLANNER) }, Modifier.weight(1f), Pixel.InkSoft)
-                PixelButton("Start focus", { model.focusTaskId = null; go(Tab.FOCUS) }, Modifier.weight(1f), Pixel.InkSoft)
+                if (total > 0) PixelButton("Planner", { go(Place.PLANNER) }, Modifier.weight(1f), Pixel.InkSoft)
+                PixelButton("Start focus", { model.focusTaskId = null; go(Place.FOCUS) }, Modifier.weight(1f), Pixel.InkSoft)
             }
         }
     }
@@ -225,7 +225,7 @@ private fun RestDayRow(model: AppModel) {
 
 /** Three small actions a day, each a berry (honour system). "Open the task you've been avoiding" starts 5 minutes on it. */
 @Composable
-private fun MiniQuestsCard(model: AppModel, go: (Tab) -> Unit) {
+private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
     val store = model.store
     val quests = store.miniQuests()
     TextBox {
@@ -242,7 +242,7 @@ private fun MiniQuestsCard(model: AppModel, go: (Tab) -> Unit) {
                         avoided && oldest != null && model.data.focus == null -> PixelButton("Start 5 min", {
                             store.completeMiniQuest(q.id)
                             store.startFocus(FocusRules.justFiveMinutes().minutesRoundedUp, deepFocus = false, taskId = oldest.id)
-                            go(Tab.FOCUS)
+                            go(Place.FOCUS)
                         }, color = Pixel.Blue, compact = true)
                         else -> PixelButton("Done", { if (store.completeMiniQuest(q.id)) model.effect(Sfx.HEAL) }, color = Pixel.Green, compact = true)
                     }

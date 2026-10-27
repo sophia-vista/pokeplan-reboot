@@ -90,7 +90,7 @@ private enum class View(val label: String, val icon: String) {
 }
 
 @Composable
-fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = false) {
+fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = false, onBack: (() -> Unit)? = null) {
     var view by remember { mutableStateOf(View.entries.getOrNull(startView)) }
     var expanded by remember { mutableStateOf<String?>(null) }
     // A list opened from the menu's Lists section (TickTick's lists); null shows the menu or the smart list in [view].
@@ -123,7 +123,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
         val overdue = TaskViews.overdue(today, store.now).size
         val doneToday = store.doneToday()
         Column(Modifier.fillMaxSize()) {
-            ScreenHeader("Planner", subtitle = if (today.isEmpty()) "Nothing left for today" else "${today.size} to do today", icon = "journal")
+            ScreenHeader("Planner", subtitle = if (today.isEmpty()) "Nothing left for today" else "${today.size} to do today", icon = "journal", onBack = onBack)
             Column(
                 Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
                 verticalArrangement = Arrangement.spacedBy(Spacing.L),

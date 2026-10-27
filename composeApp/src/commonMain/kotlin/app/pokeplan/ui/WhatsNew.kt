@@ -3,6 +3,9 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.33.0" to listOf(
+            "A new Modules tab: Planner, Focus, Growth, Goals and Review are now under Modules, Plan, ready for Care to join them. Home, Pokémon and Me hold what every module shares.",
+        ),
         "0.31.0" to listOf(
             "Pick for me: let PokéPlan choose today's task, for 10% more candies.",
             "Daily mini-quests, Just 5 minutes, rest days and a welcome-back gift.",

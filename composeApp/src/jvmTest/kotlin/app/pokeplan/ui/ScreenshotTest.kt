@@ -367,7 +367,7 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.Cutscene.Evolve(before, before.evolvedInto(5, "charmeleon"))
     }
 
-    private fun dark(name: String, tab: Tab) {
+    private fun dark(name: String, place: Place) {
         val store = storeWithTeam()
         store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 45)
         store.addTask("Reply to mail", Rank.E, planned = store.today)
@@ -375,23 +375,23 @@ class ScreenshotTest {
         // Unseen hatches would play their scene over the screen.
         store.markRewardsSeen()
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
-        render(name) { App(storage, focusTab = true, startTab = tab) }
+        render(name) { App(storage, focusTab = true, start = place) }
     }
 
     @Test
-    fun darkHome() = dark("dark-home", Tab.HOME)
+    fun darkHome() = dark("dark-home", Place.HOME)
 
     @Test
-    fun darkPlanner() = dark("dark-planner", Tab.PLANNER)
+    fun darkPlanner() = dark("dark-planner", Place.PLANNER)
 
     @Test
-    fun darkFocus() = dark("dark-focus", Tab.FOCUS)
+    fun darkFocus() = dark("dark-focus", Place.FOCUS)
 
     @Test
-    fun darkPokemon() = dark("dark-pokemon", Tab.COLLECTION)
+    fun darkPokemon() = dark("dark-pokemon", Place.COLLECTION)
 
     @Test
-    fun darkMe() = dark("dark-me", Tab.ME)
+    fun darkMe() = dark("dark-me", Place.ME)
 
     @Test
     fun collectionPc() = collection("collection-pc", 1, hatched = 14)
@@ -407,7 +407,15 @@ class ScreenshotTest {
     @Test
     fun pokemonDetail() = collection("pokemon-detail", 0, open = true)
 
-    private fun me(name: String, section: Int) {
+    private fun me(name: String, section: Int) = meStore(name) { model ->
+        app.pokeplan.ui.screens.MeScreen(model, section)
+    }
+
+    /** The Modules tab with [module] open on [plan] (null for the menus). */
+    private fun modules(name: String, module: app.pokeplan.ui.screens.Module?, plan: app.pokeplan.ui.screens.PlanSection? = null) =
+        meStore(name, prepare = { it.module = module; it.planSection = plan }) { model -> app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
+
+    private fun meStore(name: String, prepare: (AppModel) -> Unit = {}, content: @Composable (AppModel) -> Unit) {
         val store = storeWithTeam()
         store.addGoal("Learn guitar").also { g ->
             store.addMilestone(g.id, "Buy a guitar")
@@ -418,26 +426,35 @@ class ScreenshotTest {
         store.completeTask(t.id)
         clock.millis += 11_000
         store.tick()
-        val model = AppModel(store)
+        val model = AppModel(store).also(prepare)
         render(name) {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.MeScreen(model, section) } }
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { content(model) } }
         }
     }
 
     @Test
-    fun meGrowth() = me("me-growth", 0)
+    fun me() = me("me", -1)
 
     @Test
-    fun meGoals() = me("me-goals", 1)
+    fun modulesMenu() = modules("modules", null)
 
     @Test
-    fun meReview() = me("me-review", 2)
+    fun planMenu() = modules("plan", app.pokeplan.ui.screens.Module.PLAN)
 
     @Test
-    fun meSettings() = me("me-settings", 4)
+    fun planGrowth() = modules("plan-growth", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.GROWTH)
 
     @Test
-    fun meHelp() = me("me-help", 5)
+    fun planGoals() = modules("plan-goals", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.GOALS)
+
+    @Test
+    fun planReview() = modules("plan-review", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.REVIEW)
+
+    @Test
+    fun meSettings() = me("me-settings", 1)
+
+    @Test
+    fun meHelp() = me("me-help", 2)
 
     @Test
     fun collectionGuardians() {

@@ -69,7 +69,7 @@ Trends seen across these sites that clash with the rules. Don't bring them in, e
   obsidianui.dev), leaderboards against strangers, countdown offers, paywalls on core features, ads, sponsor slots,
   newsletter and email capture, rating popups, streak-loss warnings. `docs/design.md` already rules these out.
 - **Menus that hide things:** hamburger and full-screen overlay menus over content, dropdown and mega menus, a dock
-  of unlabelled icons (beui.dev Dock). Tabs are five labelled tabs; sections open on `MenuGrid` cards.
+  of unlabelled icons (beui.dev Dock). Tabs are four labelled tabs (Home, Modules, Pokémon, Me); sections open on `MenuGrid` cards.
 - **Giant display type** that fills the screen (supahero.io: KARO, Red Antler; 404s.design: UPCLOSE, BOC Studio).
 - **Shape morphs** that move the content you're reading: a panel that grows into the next view with a blur
   cross-fade (beui.dev Morphing Modal, Dynamic Island; uiarc.dev Share sheet, Morph select).
@@ -81,7 +81,7 @@ Clonix (a dark full-screen menu of large words), Aveon (a cream side panel of pl
 full-height photo), Orchid (a floating pill nav over a blurred colour background).
 
 **Take this**
-- Static: the five bottom tabs, each an icon and a label, the selected one filled (ui-ux-brief §4). Nothing nested.
+- Static: the four bottom tabs, each an icon and a label, the selected one filled (ui-ux-brief §4). Nothing nested.
 - Clonix's full-screen list of large words is close to our section menus: `MenuGrid`'s big cards with real item
   icons, one tap to a section, Back to return.
 - Breadcrumbs, made small: `SectionScaffold`'s title and Back, and the system back gesture, always.

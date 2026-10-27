@@ -46,12 +46,13 @@ import io.ktor.client.HttpClient
 import app.pokeplan.ui.screens.CollectionScreen
 import app.pokeplan.ui.screens.Cutscene
 import app.pokeplan.ui.screens.CutsceneHost
-import app.pokeplan.ui.screens.FocusScreen
 import app.pokeplan.ui.screens.FocusWatch
 import app.pokeplan.ui.screens.HomeScreen
 import app.pokeplan.ui.screens.MeScreen
+import app.pokeplan.ui.screens.Module
+import app.pokeplan.ui.screens.ModulesScreen
 import app.pokeplan.ui.screens.OnboardingScreen
-import app.pokeplan.ui.screens.PlannerScreen
+import app.pokeplan.ui.screens.PlanSection
 import app.pokeplan.ui.screens.NavButton
 import app.pokeplan.ui.screens.UndoBar
 import app.pokeplan.plan.Task
@@ -63,13 +64,23 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlin.time.Clock as SystemClock
 
-/** The bottom tabs, each with the real game item that stands for it. */
 private const val SYNC_DEBOUNCE_MILLIS = 3_000L
 private const val SYNC_EVERY_MILLIS = 120_000L
 
-enum class Tab(val label: String, val icon: String, val background: String) {
-    HOME("Home", "town-map", "bw01"), PLANNER("Planner", "journal", "bw07"), FOCUS("Focus", "mystery-egg", "bw11"),
-    COLLECTION("Pokémon", "poke-ball", "bw15"), ME("Me", "member-card", "bw08"),
+/**
+ * The bottom tabs, each with the real game item that stands for it. Home, Pokémon and Me are the shared world; each life
+ * module (Plan, and the ones to come) lives in Modules (docs/ecosystem.md, section 3).
+ */
+enum class Tab(val label: String, val icon: String) {
+    HOME("Home", "town-map"), MODULES("Modules", "explorer-kit"), COLLECTION("Pokémon", "poke-ball"), ME("Me", "member-card"),
+}
+
+/**
+ * Where the app can be asked to go: a tab, or a module's screen inside Modules. Widgets, shortcuts and notifications name
+ * it ("PLANNER", "FOCUS"), so the names stay as they are.
+ */
+enum class Place(val tab: Tab) {
+    HOME(Tab.HOME), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), ME(Tab.ME),
 }
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
@@ -126,6 +137,12 @@ class AppModel(
     /** A Pokémon the Pokémon tab should open on (the buddy's level chip on Home, the widget's chip). Used once. */
     var openPokemonId: String? by mutableStateOf(null)
 
+    /** The module open in the Modules tab (null shows the list of modules), kept while other tabs are open. */
+    var module: Module? by mutableStateOf(null)
+
+    /** The screen open inside Plan (null shows Plan's menu). */
+    var planSection: PlanSection? by mutableStateOf(null)
+
     /** The hatch or evolution playing over the whole app, if any. */
     var cutscene: Cutscene? by mutableStateOf(null)
 
@@ -144,13 +161,22 @@ class AppModel(
         now = store.nowMillis
     }
 
+    /** Opens a module's screen for [place] (Planner, Focus) inside Modules; Focus only where there is one ([focusTab]). */
+    fun open(place: Place, focusTab: Boolean) {
+        when (place) {
+            Place.PLANNER -> { module = Module.PLAN; planSection = PlanSection.PLANNER }
+            Place.FOCUS -> { module = Module.PLAN; planSection = if (focusTab) PlanSection.FOCUS else null }
+            else -> {}
+        }
+    }
+
     init {
         store.observe { data = it }
     }
 }
 
-/** A request to open the app on a tab, a Pokémon, or the add-task box. */
-data class AppLaunch(val tab: Tab?, val pokemon: String? = null, val addTask: Boolean = false)
+/** A request to open the app on a place, a Pokémon, or the add-task box. */
+data class AppLaunch(val place: Place?, val pokemon: String? = null, val addTask: Boolean = false)
 
 /**
  * The whole app. [storage] is where the save lives on this platform; [focusTab] is false on desktop and the web, where
@@ -161,7 +187,7 @@ fun App(
     storage: Storage,
     focusTab: Boolean = true,
     motion: MotionSource? = null,
-    startTab: Tab = Tab.HOME,
+    start: Place = Place.HOME,
     startPokemon: String? = null,
     startAddTask: Boolean = false,
     /** Where the app was asked to go while it was already open (a widget tap or a shortcut). */
@@ -183,7 +209,7 @@ fun App(
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
         val client = if (cloud.enabled) CloudClient(cloud, HttpClient()) { clock.nowMillis() } else null
-        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries, haptics, files, calendars, phone).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask }
+        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries, haptics, files, calendars, phone).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
     }
     val store = model.store
     if (onDataChanged != null) DisposableEffect(store) {
@@ -238,23 +264,25 @@ fun App(
                 // The intro's picture runs under the system bars; only its content keeps clear of them.
                 PixelBackground("bw12", Modifier.fillMaxSize()) { Box(Modifier.fillMaxSize().safeDrawingPadding()) { OnboardingScreen(store) } }
             } else {
-                MainShell(model, focusTab, startTab, launches)
+                MainShell(model, focusTab, start, launches)
             }
         }
     }
 }
 
 @Composable
-private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab, launches: Flow<AppLaunch>?) {
-    val tabs = Tab.entries.filter { focusTab || it != Tab.FOCUS }
-    var selected by rememberSaveable { mutableStateOf(startTab.name) }
-    val tab = Tab.valueOf(selected).takeIf { it in tabs } ?: Tab.HOME
-    val go = { to: Tab -> selected = to.name }
+private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches: Flow<AppLaunch>?) {
+    var selected by rememberSaveable { mutableStateOf(start.tab.name) }
+    val tab = Tab.entries.firstOrNull { it.name == selected } ?: Tab.HOME
+    val go = { to: Place ->
+        model.open(to, focusTab)
+        selected = to.tab.name
+    }
     LaunchedEffect(launches) {
         launches?.collect { launch ->
             model.openPokemonId = launch.pokemon
             model.addTaskRequested = launch.addTask
-            launch.tab?.let { selected = it.name }
+            launch.place?.let(go)
         }
     }
 
@@ -267,8 +295,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab, launche
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when (tab) {
                 Tab.HOME -> HomeScreen(model, go)
-                Tab.PLANNER -> PlannerScreen(model, startView = if (model.addTaskRequested) 0 else -1)
-                Tab.FOCUS -> FocusScreen(model) { id -> model.openPokemonId = id; go(Tab.COLLECTION) }
+                Tab.MODULES -> ModulesScreen(model, focusTab) { id -> model.openPokemonId = id; go(Place.COLLECTION) }
                 Tab.COLLECTION -> {
                     val open = remember { model.openPokemonId }
                     LaunchedEffect(Unit) { model.openPokemonId = null }
@@ -279,7 +306,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab, launche
             UndoBar(model, Modifier.align(Alignment.BottomCenter))
         }
         Column(Modifier.fillMaxWidth().background(Pixel.Panel).border(1.dp, Pixel.Border)) {
-            // Five labels in one row cannot grow with the system text size without being cut off, so the tab bar's text
+            // The labels in one row cannot grow with the system text size without being cut off, so the tab bar's text
             // scales up to 1.25x and its icons and touch targets carry the rest.
             val density = LocalDensity.current
             CompositionLocalProvider(LocalDensity provides Density(density.density, density.fontScale.coerceAtMost(1.25f))) {
@@ -287,8 +314,8 @@ private fun MainShell(model: AppModel, focusTab: Boolean, startTab: Tab, launche
                     Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    tabs.forEach { t ->
-                        NavButton(t.label, t.icon, selected = t == tab, onClick = { go(t) }, modifier = Modifier.weight(1f))
+                    Tab.entries.forEach { t ->
+                        NavButton(t.label, t.icon, selected = t == tab, onClick = { selected = t.name }, modifier = Modifier.weight(1f))
                     }
                 }
             }
