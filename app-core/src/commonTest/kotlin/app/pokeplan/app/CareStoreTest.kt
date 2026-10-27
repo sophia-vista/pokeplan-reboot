@@ -1,5 +1,6 @@
 package app.pokeplan.app
 
+import app.pokeplan.care.CareAction
 import app.pokeplan.care.CareRules
 import app.pokeplan.care.Emotion
 import app.pokeplan.core.reward.Reward
@@ -165,9 +166,13 @@ class CareStoreTest {
         assertTrue(again.data.routines.isEmpty())
     }
 
+    /** A warm visit with the first visitor: its favourite first, then two other kinds of care. */
     private fun befriendOnce(s: Setup, day: Int): app.pokeplan.care.BefriendResult? {
         s.care.completeRoutine(s.care.addRoutine("R$day").id)
-        return s.care.befriend(s.care.visitors().first().speciesId)
+        val visitor = s.care.visitors().first()
+        s.care.startVisit(visitor.speciesId) ?: return null
+        val actions = listOf(visitor.favorite) + CareAction.entries.filter { it != visitor.favorite }.take(2)
+        return actions.map { s.care.visitAct(it) }.last()?.result
     }
 
     @Test
@@ -176,14 +181,14 @@ class CareStoreTest {
         assertTrue(s.care.visitors().size in 2..3)
         assertTrue(s.care.visitors().all { it.points == 0 })
         // Nothing to spend the befriend on until some care has paid.
-        assertEquals(null, s.care.befriend(s.care.visitors().first().speciesId))
+        assertEquals(null, s.care.startVisit(s.care.visitors().first().speciesId))
         val species = s.care.visitors().first().speciesId
         val owned = s.game.data.player.pokemon.size
         repeat(3) { day ->
             val r = assertNotNull(befriendOnce(s, day))
             assertFalse(r.friend)
             assertEquals(day + 1, r.visitor.points)
-            assertEquals(null, s.care.befriend(species), "one befriend a day")
+            assertEquals(null, s.care.startVisit(species), "one visit a day")
             assertEquals(owned, s.game.data.player.pokemon.size)
             s.clock.advanceDays(1)
             assertTrue(s.care.visitors().any { it.speciesId == species && it.points == day + 1 }, "a warming visitor stays")
@@ -197,6 +202,44 @@ class CareStoreTest {
         assertTrue(s.care.visitors().none { it.speciesId == species })
         assertTrue(s.game.data.rewardLog.last().rewards.any { it is Reward.Hatched })
         assertEquals("Care: made a friend", s.game.data.rewardLog.last().source)
+    }
+
+    @Test
+    fun aVisitIsWarmWithItsFavouriteOrNoticedBidsButNotWithPlainCareAlone() {
+        val s = setup()
+        s.care.completeRoutine(s.care.addRoutine("Stretch").id)
+        val visitor = s.care.visitors().first()
+        s.care.startVisit(visitor.speciesId)
+        val others = CareAction.entries.filter { it != visitor.favorite }
+        val steps = others.take(3).map { s.care.visitAct(it) }
+        assertTrue(steps.all { it!!.reaction == app.pokeplan.care.Reaction.LIKED })
+        val result = assertNotNull(steps.last()!!.result)
+        assertEquals(0, result.visitor.points, "not warm enough: no day, no penalty")
+        assertTrue(s.care.befriendSpent)
+        // Noticing both bids makes the same visit warm.
+        s.clock.advanceDays(1)
+        s.care.completeRoutine(s.care.addRoutine("Walk").id)
+        val again = s.care.visitors().first()
+        s.care.startVisit(again.speciesId)
+        val kinds = CareAction.entries.filter { it != again.favorite }.take(3)
+        kinds.forEachIndexed { i, a -> s.care.visitAct(a); if (i < 2) s.care.visitNotice() }
+        assertEquals(1, s.care.visitors().first { it.speciesId == again.speciesId }.points)
+    }
+
+    @Test
+    fun aRepeatedKindOfCareWarmsNoMoreAndAnOldBidIsLetGoFree() {
+        val s = setup()
+        s.care.completeRoutine(s.care.addRoutine("Stretch").id)
+        val visitor = s.care.visitors().first()
+        s.care.startVisit(visitor.speciesId)
+        s.care.visitAct(visitor.favorite)
+        val again = assertNotNull(s.care.visitAct(visitor.favorite))
+        assertEquals(app.pokeplan.care.Reaction.FLAT, again.reaction)
+        assertEquals(2, again.visit.warmth)
+        assertNotNull(again.visit.pendingBid)
+        assertEquals(1, s.care.visitNotice()!!.bidsNoticed)
+        assertEquals(null, s.care.visitNotice()!!.pendingBid, "noticing twice adds nothing")
+        assertEquals(3, s.care.visit!!.warmth)
     }
 
     @Test

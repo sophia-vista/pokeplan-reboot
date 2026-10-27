@@ -198,6 +198,15 @@ still earns nothing, and a visitor never reads a domain (only the *kind* of Care
   (the player chose it), into Care's party if there is room, else the PC. **Visitor luck** (Flying, Psychic, Ghost in Care's party)
   raises a visitor's chance of arriving one rarity higher, the egg's IV floor (up to +6) and the direct-join chance (up to +5
   percentage points). Not built yet: the berry that adds a bonus point (Care cannot see the bag).
+- **Visits (0.36.0, replaces the one-tap befriend).** Tapping a visitor starts a **visit** of 3 actions from five kinds of care, named
+  after Chapman's love languages (words, time, gift, service, touch). Each visitor has a seeded **favourite** (`Visitor.favorite`)
+  found by trying: the favourite gives 2 warmth, any other kind 1, one already used in the visit 0. After the 1st and 2nd action it
+  may make a **bid** (look, nudge, show; Gottman's bids for connection) and **noticing** it adds 1. A visit of `WARM_VISIT` (4)
+  warmth is a day; a quieter one is not, with no penalty. Every kind warms because the evidence that matching a person's love
+  language helps is weak (Impett and colleagues, *Current Directions in Psychological Science*); variety and responsiveness
+  matter more. Rewards, caps and the one-a-day limit are as before. The copy never claims a mental-health benefit.
+  `Visitors.act`, `Visitors.notice`, `CareStore.startVisit/visitAct/visitNotice/finishVisit`. Not built: visit art (reaction
+  animations, a petting scene), a "met" album, more bid kinds.
 - **Offline.** Visitors are seeded per device and per day (`CareData.visitorSeed`, with the day), so the same device sees the same
   visitors all day, and the offer is saved the first time it is seen. The egg's dice come from the oldest server-issued egg ticket
   when the device has one (it is spent with the befriend and reported on the next sync like a focus ticket), and from the device
