@@ -88,18 +88,25 @@ section 10, "Decided (owner)" item 1 still hold: a region is flavour and holds n
   Not renamed in code yet: `Region.HOME` is stored by name in `AppData`, `plan.focus_sessions` and the reward function, so the rename keeps the serial name
   `HOME` (or migrates the saves) and gives the household module's region a new enum entry.
 - **No overlap.** A species is in at most one module region. When a species clearly belongs to a module, the Plan Region
-  gives it up; owned Pokémon are kept, and only the dex counts change. In Plan's list today and in the drafts below:
-  Swablu, Altaria, Cottonee, Whimsicott, Caterpie, Larvesta, Volcarona, Riolu, Lucario; settle each one during curation.
+  gives it up; owned Pokémon are kept, and only the dex counts change. **The Plan Region gives up nine** (owner): Swablu,
+  Altaria, Cottonee and Whimsicott go to Care; Caterpie, Larvesta, Volcarona, Riolu and Lucario go to Grow. Each leaves
+  Plan's list (`tools/species/home-region.txt`) in the same change that adds its new region, so no species is ever left
+  without one; Caterpie's line (Metapod, Butterfree) moves with it.
+- **All module regions are open by default** (owner): each one is open to every player, from the first day, as soon as its
+  module ships, with no rank gate and no need to use the module. (Today's rank chain for the game regions is unchanged
+  until they leave.)
 - **Size: about 150 species each**, like the Plan Region (about 2 months per dex), with at least one hatchable line
   in every rarity tier.
 - **The game regions (Kanto to Paldea) fold into the dungeon game** (section 3, "Standalone games"): its world is the real
-  regions, explored with the shared collection. Until that game exists they stay in PokéPlan as they are now, and nothing
-  is taken away from players who have them (*(proposed)* their caught Pokémon and dex progress move with the collection,
-  which is already shared).
+  regions, explored with the shared collection. **They leave PokéPlan when that game ships** (owner); until then they stay
+  as they are now. Nothing is taken away from players who have them (*(proposed)* their caught Pokémon and dex progress
+  move with the collection, which is already shared). Once they leave, trainer rank no longer opens regions in PokéPlan
+  and only reveals features; their legendary quests move with them.
 - Modules without a game loop of their own get no region: the Poketch utilities pay nothing (section 8), and the dungeon
   game uses the game regions.
 
-**Draft themes** *(proposed, for curation; patrons are legendary-class or mythical and earned by quest)*:
+**Draft themes** *(patrons accepted by the owner for now; species lists are drafts for curation; patrons are
+legendary-class or mythical and earned by quest)*:
 
 | Region | Main types | Patrons | Signature species (draft) | Super Rare line |
 |---|---|---|---|---|
@@ -262,9 +269,6 @@ Handy tools that live in the app and as widgets, each one a "Poketch app" the pl
 - Per-module daily rank caps, or one shared cap?
 - Is the failed-focus egg loss acceptable, or should it soften?
 - Do you want Care's cloud sync at all, or strictly on-device?
-- Module regions: which rank opens each one once its module ships, and does the Plan Region give up the overlapping
-  species listed in section 4?
-- The game regions in the dungeon game: do they leave PokéPlan when that game ships, or stay in both?
 
 ## 10. Game layer
 
