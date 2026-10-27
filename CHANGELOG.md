@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.37.0
+
+- Visits finished. The visitor now stands in the meadow during a visit and answers with its own animation (a hop for its favourite, eating for a treat; still with Reduce motion). A gentle pat asks where: each species likes one of head, back or under the chin, and finding it warms once more (a wrong spot costs nothing). Two more bids, a little hop and curling up closer. A "Met" row shows every visitor you have cared for, friend or not, with no counts.
+
+## 0.36.0
+
+- Befriending is now a visit instead of a button. Tap Visit on a visitor and care for it three ways from five (kind words, sitting together, a treat, tidying its spot, a gentle pat, after Chapman's love languages). Each visitor has a favourite you find out by trying; every kind of care warms it, the favourite warms more, and a kind it already had adds nothing. After the first and second action it may make a small bid (it looks up, nudges your hand, brings you something) and noticing it adds a little warmth. A visit with 4 warmth counts as a day; a quieter one counts as none and costs nothing. Four warm days still make a friend, one visit a day, and no rewards changed.
+
 ## 0.35.1
 
 - Fixed the "Just 5 minutes" button on the Focus screen: it was drawn on top of the Start button, so one hid the other. They now sit one above the other.

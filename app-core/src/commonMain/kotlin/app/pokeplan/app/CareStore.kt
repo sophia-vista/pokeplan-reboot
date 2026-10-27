@@ -2,6 +2,7 @@ package app.pokeplan.app
 
 import app.pokeplan.care.BefriendResult
 import app.pokeplan.care.CalmBreak
+import app.pokeplan.care.CareAction
 import app.pokeplan.care.CareData
 import app.pokeplan.care.CareRules
 import app.pokeplan.care.CareSettings
@@ -9,11 +10,14 @@ import app.pokeplan.care.CareTrends
 import app.pokeplan.care.DiaryCard
 import app.pokeplan.care.Emotion
 import app.pokeplan.care.JournalEntry
+import app.pokeplan.care.PetSpot
 import app.pokeplan.care.Prompt
 import app.pokeplan.care.Prompts
 import app.pokeplan.care.Routine
 import app.pokeplan.care.SkillPractice
 import app.pokeplan.care.Visitor
+import app.pokeplan.care.Visit
+import app.pokeplan.care.VisitStep
 import app.pokeplan.care.Visitors
 import app.pokeplan.care.Skills
 import app.pokeplan.core.reward.BefriendEvent
@@ -185,21 +189,49 @@ class CareStore(
         return data.visitors
     }
 
+    /** The visit in progress today, if there is one. */
+    val visit: Visit? get() = data.visit?.takeIf { it.day == today }
+
     /**
-     * Spends today's befriend on a visitor: it warms up by a point, and at [Visitors.FRIEND_POINTS] it becomes a friend, paid
-     * through the world (an egg that hatches at once, rarely the visitor itself). Null when it cannot be done now: the
-     * visitor is gone, today's befriend is spent, no care has paid today, or the world paid nothing.
+     * Starts a visit with a visitor, which spends today's befriend when it ends. Null when it cannot be done now: the visitor
+     * is gone, today's befriend is spent, or no care has paid today. A visit already started with that visitor carries on.
      */
-    fun befriend(speciesId: Int): BefriendResult? {
-        val visitor = visitors().firstOrNull { it.speciesId == speciesId } ?: return null
-        if (!canBefriend()) return null
-        val warmer = visitor.copy(points = visitor.points + 1, lastVisitDay = today)
+    fun startVisit(speciesId: Int): Visit? {
+        visit?.takeIf { it.speciesId == speciesId }?.let { return it }
+        if (visitors().none { it.speciesId == speciesId } || !canBefriend()) return null
+        return Visitors.start(speciesId, today).also { v -> update { it.copy(visit = v) } }
+    }
+
+    /** Does [action] in the visit; the third ends it (see [finishVisit]). Null when there is no visit to do it in. */
+    fun visitAct(action: CareAction, spot: PetSpot? = null): VisitStep? {
+        val visit = visit ?: return null
+        val visitor = visitors().firstOrNull { it.speciesId == visit.speciesId } ?: return null
+        val (next, reaction) = Visitors.act(visitor, visit, action, spot)
+        update { it.copy(visit = next) }
+        return VisitStep(reaction, next, if (Visitors.finished(next)) finishVisit() else null)
+    }
+
+    /** Turns toward the visitor's bid, if it made one. */
+    fun visitNotice(): Visit? {
+        val visit = visit ?: return null
+        return Visitors.notice(visit).also { next -> update { it.copy(visit = next) } }
+    }
+
+    /**
+     * Ends a finished visit: the visitor warms by a day if the visit was warm enough, and at [Visitors.FRIEND_POINTS] it
+     * becomes a friend, paid through the world (an egg that hatches at once, rarely the visitor itself). Spends today's
+     * befriend. Null when the visit is not finished, or the world paid nothing (it can be tried again).
+     */
+    fun finishVisit(): BefriendResult? {
+        val visit = visit?.takeIf { Visitors.finished(it) } ?: return null
+        val visitor = visitors().firstOrNull { it.speciesId == visit.speciesId } ?: return null
+        val warmer = visitor.copy(points = visitor.points + if (Visitors.warm(visit)) 1 else 0, lastVisitDay = today)
         if (warmer.points < Visitors.FRIEND_POINTS) {
-            update { d -> d.copy(befriendDay = today, visitors = d.visitors.map { if (it.speciesId == speciesId) warmer else it }) }
+            update { d -> d.copy(befriendDay = today, visit = null, met = d.met + visit.speciesId, visitors = d.visitors.map { if (it.speciesId == visit.speciesId) warmer else it }) }
             return BefriendResult(warmer, friend = false, rewards = emptyList())
         }
         val rewards = world.befriend(BefriendEvent(visitor.speciesId, visitor.formIdentifier, newId(), nowMillis)) ?: return null
-        update { d -> d.copy(befriendDay = today, visitors = d.visitors.filterNot { it.speciesId == speciesId }) }
+        update { d -> d.copy(befriendDay = today, visit = null, met = d.met + visit.speciesId, visitors = d.visitors.filterNot { it.speciesId == visit.speciesId }) }
         return BefriendResult(warmer, friend = true, rewards = rewards)
     }
 
