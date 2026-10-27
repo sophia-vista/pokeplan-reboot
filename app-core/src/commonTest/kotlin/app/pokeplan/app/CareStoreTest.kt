@@ -10,6 +10,7 @@ import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class CareStoreTest {
@@ -162,5 +163,57 @@ class CareStoreTest {
         assertEquals(s.care.data, again.data)
         again.erase()
         assertTrue(again.data.routines.isEmpty())
+    }
+
+    private fun befriendOnce(s: Setup, day: Int): app.pokeplan.care.BefriendResult? {
+        s.care.completeRoutine(s.care.addRoutine("R$day").id)
+        return s.care.befriend(s.care.visitors().first().speciesId)
+    }
+
+    @Test
+    fun aVisitorBecomesAFriendAfterFourDaysAndOneBefriendADay() {
+        val s = setup()
+        assertTrue(s.care.visitors().size in 2..3)
+        assertTrue(s.care.visitors().all { it.points == 0 })
+        // Nothing to spend the befriend on until some care has paid.
+        assertEquals(null, s.care.befriend(s.care.visitors().first().speciesId))
+        val species = s.care.visitors().first().speciesId
+        val owned = s.game.data.player.pokemon.size
+        repeat(3) { day ->
+            val r = assertNotNull(befriendOnce(s, day))
+            assertFalse(r.friend)
+            assertEquals(day + 1, r.visitor.points)
+            assertEquals(null, s.care.befriend(species), "one befriend a day")
+            assertEquals(owned, s.game.data.player.pokemon.size)
+            s.clock.advanceDays(1)
+            assertTrue(s.care.visitors().any { it.speciesId == species && it.points == day + 1 }, "a warming visitor stays")
+        }
+        val r = assertNotNull(befriendOnce(s, 3))
+        assertTrue(r.friend)
+        val friend = s.game.data.player.pokemon.last()
+        assertEquals(species, friend.speciesId)
+        assertEquals(app.pokeplan.core.pokemon.PartyIds.CARE, friend.partyId)
+        assertEquals(friend.id, s.game.data.player.careLeadId, "the first in Care's party leads")
+        assertTrue(s.care.visitors().none { it.speciesId == species })
+        assertTrue(s.game.data.rewardLog.last().rewards.any { it is Reward.Hatched })
+        assertEquals("Care: made a friend", s.game.data.rewardLog.last().source)
+    }
+
+    @Test
+    fun aWarmingVisitorWandersOffAfterAFewDaysWithoutAVisit() {
+        val s = setup()
+        val species = s.care.visitors().first().speciesId
+        assertNotNull(befriendOnce(s, 0))
+        s.clock.advanceDays(app.pokeplan.care.Visitors.WANDER_DAYS + 1)
+        assertTrue(s.care.visitors().none { it.speciesId == species && it.points > 0 })
+        assertEquals(3, s.care.visitors().size, "a fuller choice after a break")
+    }
+
+    @Test
+    fun theSameDeviceAndDayOfferTheSameVisitors() {
+        val s = setup()
+        val first = s.care.visitors()
+        val again = CareStore(s.storage, s.clock, s.game, utc, rng = Random(99))
+        assertEquals(first, again.visitors())
     }
 }

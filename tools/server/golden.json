@@ -1,5 +1,5 @@
 {
-    "rulesVersion": 9,
+    "rulesVersion": 10,
     "state": "{\"pokemon\":[{\"id\":\"test-pikachu\",\"speciesId\":25,\"formIdentifier\":\"pikachu\",\"nickname\":\"Pikachu\",\"nature\":\"HARDY\",\"ability\":\"Static\",\"gender\":null,\"ivs\":{\"hp\":31,\"attack\":31,\"defense\":31,\"spAttack\":31,\"spDefense\":31,\"speed\":31},\"evs\":{\"hp\":0,\"attack\":0,\"defense\":0,\"spAttack\":0,\"spDefense\":0,\"speed\":0},\"level\":40,\"candyProgress\":0,\"totalCandies\":0,\"friendship\":70,\"isShiny\":false,\"heldItem\":\"lucky-egg\",\"teraType\":null,\"cosmeticForm\":null,\"personality\":0,\"inParty\":true,\"caughtAtMillis\":0,\"partyId\":\"plan\"}],\"buddyId\":\"test-pikachu\",\"inventory\":{\"counts\":{\"rare-candy\":12,\"lure-fire\":1}},\"coins\":50,\"eggMeter\":4,\"trainerPoints\":100,\"caught\":[25,4],\"guardians\":[],\"careLeadId\":null}",
     "effortEvent": "{\"minutes\":30,\"deepFocus\":true,\"region\":\"KANTO\",\"lure\":null,\"epochDay\":11,\"newPokemonId\":\"new-1\",\"nowMillis\":1700000000000}",
     "effortSeed": 42,

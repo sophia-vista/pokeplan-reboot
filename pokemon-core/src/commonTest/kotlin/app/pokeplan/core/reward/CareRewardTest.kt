@@ -12,6 +12,7 @@ import app.pokeplan.core.pokemon.pokemon
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CareRewardTest {
@@ -98,5 +99,37 @@ class CareRewardTest {
     fun theEventJsonCarriesOnlyTheKindAndTime() {
         val text = RewardJson.json.encodeToString(CareEvent.serializer(), CareEvent(CareKind.CALM_BREAK, 5L))
         assertEquals("""{"kind":"calm_break_completed","nowMillis":5}""", text)
+    }
+
+    private fun befriend(s: PlayerState, seed: Int = 1) =
+        RewardEngine.befriend(s, BefriendEvent(Ids.EEVEE, app.pokeplan.core.dex.Dex.defaultForm(Ids.EEVEE).identifier, "friend", 5_000L), Random(seed))
+
+    @Test
+    fun aBefriendedVisitorHatchesIntoCaresPartyWithAnIvFloor() {
+        val out = befriend(state())
+        val friend = out.state.pokemon.first { it.id == "friend" }
+        assertEquals(Ids.EEVEE, friend.speciesId)
+        assertEquals(PartyIds.CARE, friend.partyId)
+        assertTrue(friend.inParty)
+        assertEquals(friend.id, out.state.careLeadId, "the first member of Care's party leads")
+        assertTrue(app.pokeplan.core.pokemon.Stat.entries.all { friend.ivs[it] >= RewardEngine.BEFRIEND_IV_FLOOR })
+        assertEquals(10 + RewardEngine.BEFRIEND_POINTS, out.state.trainerPoints)
+        assertTrue(Ids.EEVEE in out.state.caught)
+        assertEquals(listOf(Reward.Hatched(friend, fromTask = false)), out.rewards)
+    }
+
+    @Test
+    fun aFullCarePartySendsTheFriendToThePcAndKeepsItsLead() {
+        val full = (1..6).map { pokemon(Ids.PIKACHU).copy(id = "c$it", inParty = true, partyId = PartyIds.CARE) }
+        val s = state().let { it.copy(pokemon = it.pokemon + full, careLeadId = "c3") }
+        val out = befriend(s)
+        assertFalse(out.state.pokemon.first { it.id == "friend" }.inParty)
+        assertEquals("c3", out.state.careLeadId)
+    }
+
+    @Test
+    fun directJoinsAreRareAndStartWithHighFriendship() {
+        val joins = (1..400).count { befriend(state(), it).state.pokemon.first { p -> p.id == "friend" }.friendship == RewardEngine.BEFRIEND_JOIN_FRIENDSHIP }
+        assertTrue(joins in 5..50, "joined $joins of 400")
     }
 }

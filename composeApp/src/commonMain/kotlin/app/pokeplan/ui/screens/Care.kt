@@ -22,6 +22,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -40,6 +41,9 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.care.CareRules
 import app.pokeplan.care.Emotion
 import app.pokeplan.care.Skills
+import app.pokeplan.care.Visitors
+import app.pokeplan.core.dex.Dex
+import app.pokeplan.ui.Sprite
 import app.pokeplan.care.Prompts
 import app.pokeplan.care.Routine
 import app.pokeplan.ui.AnimatedSprite
@@ -104,6 +108,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             RewardBox(model)
+            VisitorsCard(model)
             SectionLabel("Today", icon = CareSection.ROUTINES.icon)
             if (today.isEmpty()) {
                 EmptyState(
@@ -122,6 +127,63 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit) {
                     MenuEntry(CareSection.TRENDS.name, CareSection.TRENDS.icon, "Trends", "the last few weeks", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.careSection = CareSection.valueOf(key) }
+        }
+    }
+}
+
+// ----- Visitors -------------------------------------------------------------------------------------------------------
+
+/**
+ * Who is visiting Care's scene today. The day's befriend is spent on one visitor; it warms up on days with some care done,
+ * and at four points becomes a friend: an egg that hatches at once, rarely the visitor itself.
+ */
+@Composable
+private fun VisitorsCard(model: AppModel) {
+    val care = model.care
+    // The day's visitors are made the first time they are asked for.
+    LaunchedEffect(care.today) { care.visitors() }
+    val visitors = model.careData.visitors
+    var note by remember { mutableStateOf<String?>(null) }
+    if (visitors.isEmpty()) return
+    val canBefriend = care.canBefriend()
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("Visitors", style = MaterialTheme.typography.titleMedium)
+            Text(
+                when {
+                    care.befriendSpent -> "You spent today's befriend. New visitors come tomorrow."
+                    canBefriend -> "Spend today's befriend on one visitor. Four days with it and it becomes a friend."
+                    else -> "Do something in Care today, a routine, a calm break or a skill, and you can spend the day's befriend."
+                },
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+            )
+            note?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
+            visitors.forEach { v ->
+                val species = Dex.species(v.speciesId)
+                ListRow(
+                    lead = { Sprite(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, species.name, size = 56.dp) },
+                    trail = {
+                        PixelButton("Befriend", {
+                            val r = care.befriend(v.speciesId)
+                            note = when {
+                                r == null -> "Not today."
+                                r.friend -> "${species.name} is your friend now."
+                                else -> "${species.name} liked that. ${Visitors.FRIEND_POINTS - r.visitor.points} more day${if (Visitors.FRIEND_POINTS - r.visitor.points == 1) "" else "s"}."
+                            }
+                        }, color = Pixel.Green, enabled = canBefriend, compact = true)
+                    },
+                    highlight = false,
+                ) {
+                    Column {
+                        Text(species.name, style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            if (v.points == 0) "Just arrived" else "${v.points} of ${Visitors.FRIEND_POINTS} days",
+                            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                        )
+                    }
+                }
+            }
         }
     }
 }

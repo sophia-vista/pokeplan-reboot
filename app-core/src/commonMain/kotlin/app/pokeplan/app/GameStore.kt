@@ -27,6 +27,7 @@ import app.pokeplan.core.pokemon.Stat
 import app.pokeplan.core.pokemon.Transfer
 import app.pokeplan.core.pokemon.TransferBlock
 import app.pokeplan.core.reward.AchievementEvent
+import app.pokeplan.core.reward.BefriendEvent
 import app.pokeplan.core.reward.CareEvent
 import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.EffortEvent
@@ -311,6 +312,28 @@ class GameStore(
             // Only today's counters are kept.
             val counters = d.counters.filterKeys { !it.startsWith("care-") || it.endsWith("-$today") } + (key to paidToday + 1)
             log(CARE_SOURCES.getValue(event.kind), outcome.rewards, d.copy(player = outcome.state, counters = counters))
+        }
+        return outcome.rewards
+    }
+
+    override fun visitorLuck(): Double =
+        app.pokeplan.core.pokemon.CarePerks.total(data.player.careLead, data.player.partyOf(PartyIds.CARE))[app.pokeplan.core.pokemon.CareBucket.VISITOR_LUCK] ?: 0.0
+
+    /**
+     * Makes a friend of a Care visitor, once a day: the egg's dice come from the oldest egg ticket (the day's key is
+     * `befriend:<epochDay>`, the ticket is spent with it) or, with none, from the device. Returns null when nothing was paid.
+     */
+    override fun befriend(event: BefriendEvent): List<Reward>? {
+        if (!data.onboarded) return null
+        val key = "befriend-$today"
+        if ((data.counters[key] ?: 0) >= 1) return null
+        val ticket = data.eggTickets.stock.firstOrNull()
+        val outcome = RewardEngine.befriend(data.player, event, ticket?.let { Random(it.seed) } ?: rng)
+        update { d ->
+            val counters = d.counters.filterKeys { !it.startsWith("befriend-") } + (key to 1)
+            val tickets = if (ticket == null) d.eggTickets
+            else d.eggTickets.copy(stock = d.eggTickets.stock.drop(1), spent = d.eggTickets.spent + SpentTicket(ticket.id, nowMillis, event.newPokemonId))
+            log("Care: made a friend", outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets))
         }
         return outcome.rewards
     }

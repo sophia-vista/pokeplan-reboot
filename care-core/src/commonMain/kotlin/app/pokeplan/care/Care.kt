@@ -110,6 +110,13 @@ data class CareData(
     /** The weeks (their first day) whose "kept a rhythm" milestone has paid. */
     val rhythmWeeks: Set<LocalDate> = emptySet(),
     val settings: CareSettings = CareSettings(),
+    /** Seeds this device's visitors (with the day); made the first time they are offered. */
+    val visitorSeed: Int = 0,
+    /** The day visitors were last offered, and who is visiting now (those being befriended stay, the rest are today's). */
+    val visitorsDay: LocalDate? = null,
+    val visitors: List<Visitor> = emptyList(),
+    /** The day the day's befriend was spent. */
+    val befriendDay: LocalDate? = null,
 )
 
 @Serializable
@@ -148,6 +155,10 @@ object CareRules {
     fun breaksPaidOn(data: CareData, date: LocalDate): Int = data.breaks.count { it.day == date && it.paid }
 
     fun skillsPaidOn(data: CareData, date: LocalDate): Int = data.practices.count { it.day == date && it.paid }
+
+    /** Whether any care paid on [date]: befriending a visitor needs one. */
+    fun paidOn(data: CareData, date: LocalDate): Boolean =
+        routinesPaidOn(data, date) > 0 || breaksPaidOn(data, date) > 0 || skillsPaidOn(data, date) > 0
 
     /** Whether practising [skillId] on [date] can pay: not already paid today, and under the day's limit. */
     fun skillPaysOn(data: CareData, skillId: String, date: LocalDate): Boolean =

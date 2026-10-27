@@ -19,6 +19,7 @@ import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.PerkBucket
 import app.pokeplan.core.pokemon.PerkContext
 import app.pokeplan.core.pokemon.Perks
+import app.pokeplan.core.pokemon.Stat
 import kotlin.math.roundToInt
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -91,6 +92,18 @@ data class EffortEvent(
     val lure: PokemonType? = null,
     /** The player's local day number, for the spotlight type. */
     val epochDay: Long = 0,
+    val newPokemonId: String,
+    val nowMillis: Long,
+)
+
+/**
+ * A Care visitor became a friend (docs/ecosystem.md, section 6, "Befriending"): the species the player chose to befriend.
+ * Carries nothing but the visitor, so no routine, mood or note ever reaches the world.
+ */
+@Serializable
+data class BefriendEvent(
+    val speciesId: Int,
+    val formIdentifier: String,
     val newPokemonId: String,
     val nowMillis: Long,
 )
@@ -200,6 +213,15 @@ object RewardEngine {
 
     /** Care pays bond, berries and a small share of trainer rank; never candies or eggs. *(tune)* */
     const val CARE_POINTS = 1
+
+    /** Befriending a visitor: trainer points, the IV floor of its egg (visitor luck adds up to the bonus), the chance it joins at once, and its friendship then. *(tune)* */
+    const val BEFRIEND_POINTS = 3
+    const val BEFRIEND_IV_FLOOR = 10
+    const val BEFRIEND_LUCK_IV_BONUS = 6
+    const val BEFRIEND_DIRECT_JOIN_PERCENT = 5.0
+    /** Each percent of Visitor luck adds this share of a percent to the direct-join chance. */
+    const val BEFRIEND_LUCK_JOIN_SHARE = 0.2
+    const val BEFRIEND_JOIN_FRIENDSHIP = 150
     const val RHYTHM_POINTS = 5
     const val RHYTHM_BERRIES = 3
 
@@ -315,6 +337,28 @@ object RewardEngine {
      * A Care moment: a routine gives the buddy friendship, a calm break or a practised skill friendship and a berry, a
      * weekly rhythm [RHYTHM_BERRIES] berries; each adds a little trainer rank. Perks don't apply: Care is about the bond, not the haul.
      */
+    /**
+     * A friend made through Care: the visitor's egg hatches at once into Care's party if there is room (else the PC), with a
+     * floor on its IVs; rarely the visitor joins directly with a high starting friendship. Visitor luck from Care's party
+     * raises the floor and the chance a little. [rng] is the egg ticket's seed when the device has one.
+     */
+    fun befriend(state: PlayerState, e: BefriendEvent, rng: Random): Outcome {
+        val luck = CarePerks.total(state.careLead, state.partyOf(PartyIds.CARE))[CareBucket.VISITOR_LUCK] ?: 0.0
+        val careParty = state.partyOf(PartyIds.CARE).size
+        var p = Hatching.create(e.newPokemonId, HatchOption(e.speciesId, e.formIdentifier), careParty, e.nowMillis, TASK_EGG_MINUTES, rng)
+        val floor = BEFRIEND_IV_FLOOR + (luck / Perks.BUCKET_CAP * BEFRIEND_LUCK_IV_BONUS).toInt()
+        p = p.copy(partyId = PartyIds.CARE, ivs = Stat.entries.fold(p.ivs) { ivs, stat -> ivs.with(stat, maxOf(ivs[stat], floor)) })
+        if (rng.nextDouble() * 100 < BEFRIEND_DIRECT_JOIN_PERCENT + luck * BEFRIEND_LUCK_JOIN_SHARE) p = p.copy(friendship = BEFRIEND_JOIN_FRIENDSHIP)
+        val lead = state.careLeadId?.takeIf { state.careLead != null } ?: p.id.takeIf { p.inParty }
+        return Outcome(
+            state.copy(
+                pokemon = state.pokemon + p, careLeadId = lead,
+                trainerPoints = state.trainerPoints + BEFRIEND_POINTS, caught = state.caught + p.speciesId,
+            ),
+            listOf(Reward.Hatched(p, fromTask = false)),
+        )
+    }
+
     fun care(state: PlayerState, e: CareEvent, rng: Random): Outcome {
         val rewards = mutableListOf<Reward>()
         var pokemon = state.pokemon
