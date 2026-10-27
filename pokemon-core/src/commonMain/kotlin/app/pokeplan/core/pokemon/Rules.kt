@@ -40,13 +40,15 @@ object FriendshipRules {
         LEVEL_UP(1),
         CALM_BREAK(1),
         ROUTINE(1),
+        /** A DBT skill practised in Care. */
+        SKILL(1),
     }
 
     /** Friendship gained from [source]: doubled when it matches the bond style, +50% (rounded up) for balanced natures. */
     fun amount(source: Source, style: BondStyle): Int {
         val matches = when (style) {
             BondStyle.COMFORT -> source == Source.PET || source == Source.ROUTINE
-            BondStyle.PRESENCE -> source == Source.FOCUS_SESSION || source == Source.CALM_BREAK
+            BondStyle.PRESENCE -> source == Source.FOCUS_SESSION || source == Source.CALM_BREAK || source == Source.SKILL
             BondStyle.GIFTS -> source == Source.BERRY
             BondStyle.BALANCED -> false
         }

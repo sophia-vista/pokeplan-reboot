@@ -41,7 +41,8 @@ Because modules only meet in the world, adding one never changes another.
 
 ## 3. One app now, separate-ready
 
-**Ship as one app with modules** (turn each on or off in Settings), because the shared buddy and collection work offline
+**Ship as one app with modules** (turn each on or off in Settings; each module is a section of the **Modules** tab, while
+Home, Pokémon and Me hold the shared world, 0.33.0), because the shared buddy and collection work offline
 for free, features like sign-in, widgets and notifications are built once, and friends install one thing. Keep a hard
 module boundary now (own core library, own schema, events only) so a module can become its own app later.
 
@@ -117,7 +118,7 @@ legendary-class or mythical and earned by quest)*:
 | **Home** | Normal, Fire, Grass, Fairy | Ogerpon (Hoopa and Magearna are already in Plan's list) | Rotom (the appliance forms), Miltank, Swirlix line, Milcery line, Applin line, Sinistea line, Lechonk line, Fidough line, Smoliv line, Tandemaus line, Sewaddle line (sewing, for the closet), Furfrou, Klefki (keys) | Frigibax line |
 
 Care's list is curated (`Region.CARE`, 0.32.0): 143 species in 64 hatchable lines (20 Common, 23 Uncommon, 19 Rare, 2 Super
-Rare) plus the two patrons, hidden until the Care screens ship. Only 12 lines are Super Rare and 6 were free, so each new
+Rare) plus the two patrons, open to everyone since the Care screens shipped (0.34.0). Only 12 lines are Super Rare and 6 were free, so each new
 region takes two: Goomy and Slakoth for Care, leaving Beldum and Jangmo-o for Grow and Frigibax and Duraludon for Home.
 Cresselia's legendary quest still counts the Sinnoh dex until Care's own patron quests are written. Grow's and Home's
 lists are curated when their modules start.
@@ -138,26 +139,71 @@ lists are curated when their modules start.
 **Built (0.25.0, no screens yet):** `care-core` (routines, calm breaks, mood check-ins, prompts, trends, `CareRules`), the
 Care events in the shared engine (`RewardEngine.care`, rules version 2), `CareStore` in `app-core` with its own save, apart
 from Plan's, paying through the `World` interface with a per-day cap on the world's side, and the opt-in cloud copy in
-`care.saves`. Rewards and caps are in `docs/economy.md`. **Next:** the Care screens, the module switch in Settings and
-opt-in sync through the reward function; then routine reminders and a widget.
+`care.saves`. Rewards and caps are in `docs/economy.md`. **Screens (0.34.0), after journalling and DBT (owner):** Care is a
+module in the Modules tab (`screens/Care.kt`), on by default and switched off in Settings → Modules (only hidden: its save
+stays). Today's routines sit on its menu; then Routines (an optional time and days, put away, delete), Calm break (1 or 2
+minutes, a breathing circle that stands still with Reduce motion, the buddy asleep in a scene), **Diary card** (one a day,
+after the DBT diary card: six feelings rated 0 to 5, urges the user chooses to track, the skills used, a note), **Skills**
+(the four DBT groups, Mindfulness, Distress tolerance, Emotion regulation and Interpersonal effectiveness, with 20
+well-known skills as short how-tos in our own words and "I practised this"; paced breathing opens the calm break; a line
+that it is a reminder, not therapy), **Journal** (free entries any time, today's prompt as an optional start, six preset
+tags, search) and Trends (7-day counts, best week, each feeling by week; no streaks). Its save is `care.json`
+(`pokeplan.care` on the web); Settings → Your data exports and erases it, and erasing the device erases it too. The Care
+Region opened with it. **Next:** opt-in sync through the reward function; then routine reminders and a widget.
 
 **Goal:** a calm self-care companion in the spirit of Voidpet Garden, with the buddy, that stays useful with no game at all.
 
 - **Routines:** user-defined (drink water, stretch, take a walk, wind down), with a time or none, ticked off from a
   widget or notification. Reminders are gentle and can be dismissed; no streak-shaming, only rolling trends and personal bests.
 - **Calm breaks:** the 1 to 2 minute breathing moment from the design doc, also available on its own.
-- **Mood check-in:** an emoji scale, an optional note, optional tags. Private; a trend view over weeks.
-- **Gratitude and reflection prompts:** optional, one at a time, skippable.
+- **Diary card** *(replaces the mood check-in, owner, 0.34.0)*: after the DBT diary card, feelings rated 0 to 5, optional
+  urges, the skills used, a note. Private; a trend view over weeks.
+- **Skills library** *(owner, 0.34.0)*: DBT's four skill groups as short reminders; practising one is doing, so it earns.
+- **Journal** *(replaces the reflection prompts, owner, 0.34.0)*: free entries; the gratitude and reflection prompts are an
+  optional, skippable starting point.
 - **Buddy:** reacts with an emoji chosen from its type and bond style, rests during a calm break, never comments on mood.
 
-**Rewards, with the privacy rule built in:** *entering sensitive information earns nothing* (mood, notes, health values).
-**Doing** earns: a finished routine (tier 1, capped per day), a calm break (minutes), and a weekly "kept a rhythm" milestone.
+**Rewards, with the privacy rule built in:** *entering sensitive information earns nothing* (diary cards, journal entries,
+notes, health values). **Doing** earns: a finished routine (tier 1, capped per day), a calm break (minutes), a practised
+skill (3 a day), and a weekly "kept a rhythm" milestone.
 Rewards are bond, berries and cosmetics, plus a small capped share of trainer rank.
 
 **Data:** `care.*` tables with row-level security, **on-device by default**; cloud sync is opt-in and excluded from friends
 and leaderboards. Export and delete cover it.
 
-**Events out:** `routine_completed`, `calm_break_completed`, `weekly_rhythm`. No other field.
+**Events out:** `routine_completed`, `calm_break_completed`, `skill_practised`, `weekly_rhythm`. No other field (not even
+which skill).
+
+### Befriending (built in 0.35.0)
+
+*Owner's answers, October 2026.* Care gains a Pokémon source that is about bond, not volume. Entering sensitive information
+still earns nothing, and a visitor never reads a domain (only the *kind* of Care action).
+
+- **Visitors.** Each day the Care scene offers **2 or 3 random visitors** from the Care Region pool (Common to Rare; Super
+  Rare and the patrons stay quest-only). The type pool tilts a little with the kinds of Care action done lately (calm
+  breaks lean Water and Fairy, routines Normal, skills Grass), and coming back after a break offers a fuller choice. No
+  catch rolls, no balls, no battles.
+- **Befriending.** The user picks one visitor and **spends the day's befriend** on it: **one befriend per day**. The visitor
+  warms up on days that have at least one paid Care action (a berry it likes adds a bonus point); about 4 to 5 points make
+  it a friend. A visitor not visited for a few days wanders off, with no penalty and no streak shown.
+- **Outcome.** Usually it **leaves an Egg** that hatches through the normal path (Dex pacing unchanged); with a **rare
+  chance it joins directly** (owned, high starting friendship). Both are an encounter method for the "best two methods" rule
+  (a nature bias and a min IV floor), and both go in the **same PC and Pokédex** as every other Pokémon.
+- **Limits** *(tune)*: one befriend a day, a daily total shared with Care's world-side cap, one result per visitor (the
+  idempotency key), and the direct-join chance small enough that Care's Pokémon income stays below Plan's.
+- **As built.** *Spending the befriend* is one tap on a visitor and warms it by a point; it needs at least one paid Care action
+  that day, so a quiet day simply waits. Four points make a friend (`Visitors.FRIEND_POINTS`), so one friend takes at least 4 days.
+  Unvisited warming visitors stay 3 days (`WANDER_DAYS`) and then wander off; the day's unpicked visitors leave at midnight. A
+  break of 3 days or more brings 3 visitors instead of 2. The egg hatches at once, like a Task Egg, as the visitor's own species
+  (the player chose it), into Care's party if there is room, else the PC. **Visitor luck** (Flying, Psychic, Ghost in Care's party)
+  raises a visitor's chance of arriving one rarity higher, the egg's IV floor (up to +6) and the direct-join chance (up to +5
+  percentage points). Not built yet: the berry that adds a bonus point (Care cannot see the bag).
+- **Offline.** Visitors are seeded per device and per day (`CareData.visitorSeed`, with the day), so the same device sees the same
+  visitors all day, and the offer is saved the first time it is seen. The egg's dice come from the oldest server-issued egg ticket
+  when the device has one (it is spent with the befriend and reported on the next sync like a focus ticket), and from the device
+  without; the direct-join roll is part of the same dice. The day's cap is the key `befriend-<epochDay>`. The server does not run
+  Care events yet, so nothing here needs a server change.
+- **Numbers** go in `RewardRules` and `docs/economy.md` with the build (a rules version bump), then `simulateEconomy`.
 
 ### Health integration (after v1, optional)
 
@@ -218,7 +264,7 @@ the parser matches the real format.
 2. ~~Parked todos~~ (done in 0.2.0).
 3. **Finish Plan.** Done: reminders as notifications with quiet hours, focus and rest days (0.6.0); a time on tasks and snooze until tomorrow (0.7.0); export, delete account, erase device (0.8.0). The day timeline with tap-to-place time-blocking (0.9.0). Egg tickets for offline hatching (0.10.0). PMD SpriteCollab sprites (0.11.0, owner's priority). Calendar events on the day timeline, Google Calendar through the phone's calendars (0.12.0). Dragging and resizing blocks, and a week timeline (0.14.0). PokéPlan's own events on the calendar, never paid (0.15.0). Seen, caught and owned in the Pokédex (0.16.0). Focus rules: a locked screen and calls handled on Android, the rules on screen, focused and paused time apart (0.16.1). Me metrics defined, with 7 / 30 / 90 day ranges and goal progress apart (0.17.0). Accessibility pass: contrast, 48 dp targets, roles and labels (0.17.1). Desktop and web are deprioritised (they keep compiling; no features only for them, see Platforms in design.md). Lists after TickTick, the Inbox being the tasks in no list (0.21.0); a Month view, multi-day bars in the Week and all-day own events in colours (0.22.0); recurring own events, edited as a series and moved or deleted one at a time (0.24.0). **Next:** check the brief's accessibility checklist on a phone (TalkBack, large text; ui-ux-brief.md section 9, the owner's to do on a device); then item 5.
 4. ~~**Platform tidy before a second module**~~ (done in 0.24.1): the cloud save is in `plan.saves`, the reward rules are versioned, and `docs/economy.md` lists every source, sink and cap. To do by the owner: `supabase db push`, then run the Deploy the reward function workflow.
-5. **Care v1** (section 6), as a module in the same app with its own schema. Rules, save and schema done (0.25.0); Care Region curated (0.32.0); next the screens (which release `Region.CARE`), the Settings switch and opt-in sync.
+5. **Care v1** (section 6), as a module in the same app with its own schema. Rules, save and schema done (0.25.0); Care Region curated (0.32.0); the Modules tab (0.33.0); the screens, the Settings switch and the Care Region released (0.34.0); next opt-in sync, then routine reminders and a widget.
 6. **Charm pass:** hatch and evolution ceremonies, region themes, the Oak sprite, music.
 7. **Grow**, then **health integration** (the Huawei export importer first, see section 6), then **Home** modules.
 8. **PokéLife extras** (the owner's name for the whole family): Poketch-style utilities with helper Pokémon ("Poketch utilities and helper Pokémon" below), a live wallpaper with the buddy in its scene, then a Pokémon-themed launcher as the endgame.
@@ -316,6 +362,13 @@ from Guardians). Nothing below changes them.
 2. **Legendaries and mythicals count towards regional dex completion.** A region is complete only with its legendary-class and mythical species, which are earned through quests, not eggs. Consequences to handle when the completion rewards are built: the "completes the Plan dex at about day 67" pacing in docs/design.md covers the hatchable species only, so completion also waits on the quests (rank-gated, long); the Dex should show those pages as "earned by quest" so they never read as missing eggs; and the economy simulation should report both "hatchable done" and "fully complete".
 3. **Plan arcs stay as built:** one quest per legendary. For future modules, arcs should add up to **one cohesive but small and quick story** (see below).
 4. **Darkrai is out.**
+5. **A full party per module** *(October 2026)*. Each module has its own party of six, and its party's perks apply to that
+   module's rewards only, instead of one party shared by every module. The spec is in docs/design.md, "Parties per module" (a Pokémon in one party at a time, a lead per party, shared
+   Guardians, Care's own perk buckets); not built yet.
+   **Refined (owner):** effectively **many parties, one per region/module, but one shared PC and one shared Pokédex**. A
+   Pokémon can be in a module's party while staying in the one collection; Care's party is where befriended Pokémon start.
+6. **Care obtains Pokémon by befriending** (section 6, "Befriending"): 2 or 3 random visitors a day, one befriend a day,
+   usually an Egg, rarely a direct join; shared PC and Dex.
 
 ### Story direction (future)
 

@@ -38,8 +38,10 @@ MAPPED.update({f'tera-shard-{t}': f'{t}-tera-shard' for t in TYPES})
 SAME = ['rare-candy', 'ability-capsule', 'ability-patch', 'bottle-cap', 'dynamax-band',
         'hp-up', 'protein', 'iron', 'calcium', 'zinc', 'carbos',
         'oval-charm', 'lucky-egg', 'star-piece', 'scope-lens', 'shiny-charm', 'leftovers', 'amulet-coin',
-        # Tab icons: Home, Planner, Focus, Pokémon, Me.
-        'town-map', 'journal', 'mystery-egg', 'poke-ball', 'member-card',
+        # Tab icons: Home, Modules, Pokémon, Me; Plan's Planner and Focus.
+        'town-map', 'explorer-kit', 'poke-ball', 'member-card', 'journal', 'mystery-egg',
+        # Module cards: Care, its calm break and skills.
+        'soothe-bell', 'lunar-wing', 'mental-herb',
         # Menu entries inside the tabs.
         'great-ball', 'storage-key', 'seal-bag', 'master-ball', 'oaks-letter', 'exp-share', 'heart-scale', 'gb-sounds',
         'oaks-parcel', 'timer-ball', 'premier-ball', 'friend-ball']

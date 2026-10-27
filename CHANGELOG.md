@@ -5,9 +5,24 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.32.1
+## 0.35.1
 
 - Fixed the "Just 5 minutes" button on the Focus screen: it was drawn on top of the Start button, so one hid the other. They now sit one above the other.
+
+## 0.35.0
+
+- One party per module. The Party screen now has a Plan tab and a Care tab over the one shared PC: a Pokémon is in one party at a time, up to six each, and Care's party has its own lead, the buddy that takes Care's friendship (a Pokémon's page has "Make Care lead" and "To Care party"). Care's party has its own perks (Friendship gain from Normal, Fairy and Water; Berry finder from Grass, Bug and Fighting; Visitor luck from Flying, Psychic and Ghost, used when Care visitors arrive). Until Care has a lead, Care keeps warming your Plan buddy, and Plan's rewards are unchanged.
+- Reward rules versions 8 and 9: the party a Pokémon is in, and Care's lead and perks. Needs the new Supabase migrations (`party_ids`, `care_lead`) and a redeployed reward function.
+
+## 0.34.0
+
+- Care, the second module, under Modules, inspired by journalling and DBT: small routines you tick off each day, a 1 or 2 minute calm break with your buddy asleep beside you, a daily diary card (how strongly you felt six feelings, any urges you choose to track, the skills you used), a library of DBT skills (Mindfulness, Distress tolerance, Emotion regulation, Interpersonal effectiveness) with short how-tos, and a journal with a question for each day if you want one. Gentle trends, no streaks. Routines, calm breaks and practised skills earn friendship and berries; a diary card or a journal entry never earns anything, and everything stays on this device. Care is on for everyone and can be switched off in Me, Settings, Modules.
+- Reward rules version 7: practising a skill pays friendship (doubled for Presence natures) and a berry, up to 3 skills a day.
+- The Care Region opens to everyone: 143 gentle Pokémon to hatch, from the first day, with no rank needed.
+
+## 0.33.0
+
+- A new Modules tab, ready for Care and the modules after it. The tabs are now Home, Modules, Pokémon and Me: Home, Pokémon and Me hold what every module shares (your buddy, party, PC, Pokédex, Bag, trainer card, friends and settings), and each module has its own place under Modules. Plan is the first: Planner, Focus, Growth, Goals and Review are under Modules, Plan. The Modules tab remembers what you had open, and widgets, shortcuts and reminders still open the Planner and Focus directly.
 
 ## 0.32.0
 

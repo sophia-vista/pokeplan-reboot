@@ -77,8 +77,9 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 
+/** Me holds only what every module shares; Plan's Growth, Goals and Review are in Modules, Plan. */
 private enum class MeSection(val label: String, val icon: String) {
-    GROWTH("Growth", "exp-share"), GOALS("Goals", "star-piece"), REVIEW("Review", "journal"), FRIENDS("Friends", "friend-ball"), SETTINGS("Settings", "gb-sounds"), HELP("Help", "town-map"),
+    FRIENDS("Friends", "friend-ball"), SETTINGS("Settings", "gb-sounds"), HELP("Help", "town-map"),
 }
 
 @Composable
@@ -95,14 +96,11 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
             ) {
                 TrainerCard(model)
                 MenuGrid(
-                    (listOfNotNull(
-                        if (model.store.sees(Feature.GROWTH_SCREEN)) MenuEntry("GROWTH", "exp-share", "Growth", "effort and trends", tint = Pixel.Green) else null,
-                        if (!model.store.sees(Feature.GOALS)) null else MenuEntry("GOALS", "star-piece", "Goals", if (data.goals.size == 1) "1 goal" else "${data.goals.size} goals", tint = Pixel.Warning),
-                        MenuEntry("REVIEW", "journal", "Review", if (model.store.canReview()) "ready this week" else "done this week", badge = if (model.store.canReview()) 1 else 0, tint = Pixel.Blue),
-                    ) + (if (model.social != null) listOf(MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = androidx.compose.ui.graphics.Color(0xFFEC4899))) else emptyList()) + listOf(
+                    listOfNotNull(
+                        if (model.social == null) null else MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = androidx.compose.ui.graphics.Color(0xFFEC4899)),
                         MenuEntry("SETTINGS", "gb-sounds", "Settings", "name, region, sound", tint = Pixel.InkSoft),
                         MenuEntry("HELP", "town-map", "Help", "how it works", tint = Pixel.Blue),
-                    )),
+                    ),
                 ) { key -> section = MeSection.valueOf(key) }
             }
         }
@@ -110,9 +108,6 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
     }
     SectionScaffold(current.label, "Me", onBack = { section = null }, icon = current.icon) {
         when (current) {
-            MeSection.GROWTH -> GrowthView(model)
-            MeSection.GOALS -> GoalsView(model)
-            MeSection.REVIEW -> ReviewView(model)
             MeSection.FRIENDS -> FriendsView(model)
             MeSection.SETTINGS -> SettingsView(model)
             MeSection.HELP -> HelpView()
@@ -155,7 +150,7 @@ private fun plural(n: Int, word: String) = if (n == 1) "1 $word" else "$n ${word
 private val growthRanges = listOf(7, 30, 90)
 
 @Composable
-private fun GrowthView(model: AppModel) {
+internal fun GrowthView(model: AppModel) {
     var days by remember { mutableStateOf(7) }
     val wheel = model.store.wheel(days)
     val trend = model.store.trend(6)
@@ -281,7 +276,7 @@ private fun GoalsSummary(model: AppModel) {
 // ----- Goals ----------------------------------------------------------------------------------------------------------
 
 @Composable
-private fun GoalsView(model: AppModel) {
+internal fun GoalsView(model: AppModel) {
     val store = model.store
     var title by remember { mutableStateOf("") }
     var more by remember { mutableStateOf(false) }
@@ -358,7 +353,7 @@ private fun GoalsView(model: AppModel) {
 // ----- Weekly review --------------------------------------------------------------------------------------------------
 
 @Composable
-private fun ReviewView(model: AppModel) {
+internal fun ReviewView(model: AppModel) {
     val store = model.store
     RewardBox(model)
     if (!store.canReview()) {
@@ -446,6 +441,12 @@ private fun SettingsView(model: AppModel) {
         }
     }
     // Settings come in small groups, one card each, so a setting is found by its group rather than by reading a long list.
+    SettingsGroup("Modules") {
+        ToggleRow(
+            "Care", settings.careModule,
+            detail = "Routines, calm breaks, a diary card, DBT skills and a journal, under Modules. Switched off, it is only hidden: what you saved in it stays.",
+        ) { store.changeSettings { s -> s.copy(careModule = it) } }
+    }
     SettingsGroup("Focus") {
         ToggleRow("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
         Stepper("Usual focus length", "${settings.defaultFocusMinutes} min", 5) { by ->
@@ -539,6 +540,7 @@ private fun DataCard(model: AppModel) {
             Text("Your data", style = MaterialTheme.typography.titleMedium)
             model.files?.let { files ->
                 PixelButton("Export my data", { note = files.save("pokeplan-export-${store.today}.json", store.exportJson()) }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+                PixelButton("Export Care data", { note = files.save("pokeplan-care-${store.today}.json", model.care.exportJson()) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
             when (asking) {
                 "account" -> {
@@ -555,16 +557,24 @@ private fun DataCard(model: AppModel) {
                         PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }
-                "device" -> {
-                    Text("Erase this device? Every task, Pokémon and setting here is removed and the app starts over. This cannot be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
+                "care" -> {
+                    Text("Erase Care's data on this device? Every routine, calm break, diary card, skill practised and journal entry is removed. What they earned stays. This cannot be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PixelButton("Erase", { store.eraseDevice(); asking = null }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                        PixelButton("Erase", { model.care.erase(); asking = null; note = "Care's data on this device was erased." }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                        PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    }
+                }
+                "device" -> {
+                    Text("Erase this device? Every task, Pokémon, setting and Care entry here is removed and the app starts over. This cannot be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        PixelButton("Erase", { store.eraseDevice(); model.care.erase(); asking = null }, Modifier.weight(1f), Pixel.Danger, compact = true)
                         PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }
                 else -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (signedIn && sync != null) PixelButton("Delete account", { asking = "account"; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     else PixelButton("Erase this device", { asking = "device"; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Erase Care data", { asking = "care"; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
             note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }

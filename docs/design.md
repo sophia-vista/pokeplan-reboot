@@ -264,6 +264,44 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 - **Outside the cap.** The ordinary perk cap (+25% per bucket from buddy, held item and assists) does not apply to Guardians: their bonus is added on top, up to **+15%** in a bucket from Guardians, so a bucket can reach +40%. A Guardian's perk does not depend on level or friendship, which is what makes it different from the buddy's.
 - **Why.** The buddy is the one you grow and bond with; Guardians are the rare, hard-earned reward for sustained effort. A new Guardian changes how you play (which bucket do I want this week?) without adding a second thing to level.
 
+## Parties per module (decided October 2026; steps 1 to 3 built in 0.35.0, befriending next)
+
+*Owner: effectively many parties, one per region/module, but one PC and one Pokédex.* The details below that the owner did not
+state are marked *(proposed)*.
+
+- **One collection.** Every owned Pokémon lives in the one PC and one Pokédex (caught is still permanent). A **party** is a
+  list of up to 6 from that collection, one per module: **Plan, Care**, and Grow and Home when they ship. Moving a Pokémon
+  between a party and the PC is free and instant; there is no copy.
+- **One party at a time** *(proposed)*. A Pokémon is in at most one party, so each party is a real choice and the best six
+  cannot serve every module at once. Putting it in another party moves it.
+- **Lead per party** *(proposed)*. Each party has a **lead**, the module's buddy: it sits in that module's scenes, takes
+  that module's friendship, and gives the **buddy perk**; the other five give **assists** (25% of type perk strength), as
+  now. The Home tab and widgets show the **Plan lead**. A party can be empty (module unused), except Plan's, which keeps
+  at least one (the "last party member" rule moves to it). Transfer still refuses a lead.
+- **Perks stay inside the module.** A party's perks apply to that module's own rewards only. Plan's party keeps today's
+  buckets and numbers unchanged. **Care's party** *(proposed)* has Care's own buckets, all capped at +25% like Plan's:
+  **Friendship gain** (Normal, Fairy, Water: more friendship from routines, breaks and skills), **Berry finder** (Grass,
+  Bug, Fighting: a chance of a second berry), **Visitor luck** (Flying, Psychic, Ghost: better rarity and IV floor on a
+  befriended egg, a little more direct-join chance). Ability perks follow the same rule. Perks never read what the user
+  wrote; they only change what a *kind* of Care action pays.
+- **Guardians stay shared** *(proposed)*. Guardian slots are global (rank-opened as now), and each Guardian's signature
+  bucket applies in every module that pays that bucket (Care pays no candies, so Candy yield does nothing there). They are
+  never in a party.
+- **Where new Pokémon go.** A hatch, befriend or granted Pokémon goes **into the party of the module that paid it if there
+  is room, else the PC** *(proposed)*; nothing is lost either way. Quest rewards go to the PC.
+- **Held items, friendship, level, evolution** are per Pokémon, not per party, so moving a Pokémon changes nothing about it.
+- **Migration.** The existing party becomes Plan's party. Until Care's party has a lead, Care keeps paying the Plan lead as
+  today, so nobody loses a reward by not setting it up. The Party screen becomes one tab per module party over the shared PC.
+- **Server and sync.** `PlayerState` carries a party per module (a map keyed by module id) and the reward engine is passed
+  the party of the event's module. This is a rules version bump and a migration of saved state, with the golden vector
+  regenerated (see the `backend` skill).
+- **Economy check before release.** Run `./gradlew :plan-core:simulateEconomy`: Plan's numbers must not move; then add
+  Care's befriending and perks and confirm Care's Pokémon income stays below Plan's and that a Care-only player is not
+  stuck.
+
+**Build order** *(1 to 3 shipped: the Party screen has a Plan and a Care tab, Care's first member leads until you pick another, and a lead cannot be transferred)*: (1) per-module party in `pokemon-core`/`app-core` with the migration, Plan only; (2) the Party screen tabs;
+(3) Care's party, buckets and the lead's friendship; (4) Care befriending (ecosystem.md, section 6); (5) economy report.
+
 ## Retention
 
 - **Forgiving daily streak:** kept alive by one paid task **or** one completed focus session that day. **Everyone gets one free missed day per week** that does not break it, and Home shows "active days this week" as a ring. Weekly goals, and a Pokédex with seen/caught, region completion rewards and a trainer card.
@@ -314,13 +352,14 @@ Beyond task reminders: a **streak-at-risk reminder** in the evening if nothing h
 
 ## Screens and flows (proposal, to confirm)
 
-Navigation is five bottom tabs on the phone: **Home / Planner / Focus / Collection / Me**. Desktop and web have no Focus tab (four sections).
+Navigation is four bottom tabs: **Home / Modules / Pokémon / Me** *(0.33.0, owner)*. Home, Pokémon and Me hold what every module shares (the buddy, the collection, the trainer card, friends, settings); each life module is a section of **Modules**, which opens on a menu of module cards and reopens the module last used. **Plan** holds Planner, Focus, Growth, Goals and Review. Desktop and web have no Focus in Plan.
 
 - **Home:** a small pixel scene where the buddy idles and reacts to real events (no permanent speech bubble). Tap the sprite to pet it (friendship, small daily cap); a berry button feeds it. There is no separate close-up screen. The Next up task with Done, Focus on this and "Pick for me"; today's progress and streak (with Rest today); mini-quests; small candy and coin counters. *(A streak ring is not built; the streak is a line of text.)*
-- **Planner:** a menu of smart lists (Today, Calendar, Inbox, Next 7 days, Habits, Done, All tasks) and the player's lists; All tasks has search and category, list, rank and status filters (0.29.0). Quick-add is an inline box (title, then "More options" for difficulty, category, repeat). Completing a task shows the reward and a 10 second undo bar. *(A mission board is not built.)*
-- **Focus:** optional task to focus on, region picker, presets (15 / 25 / 45 / 60) plus custom, Deep Focus toggle, a short reminder of the strict rules, the egg during the session, the emergency pause button. On finish: hatch ceremony, then a summary card with actions (set as buddy, keep, transfer).
-- **Collection:** Party (6), PC boxes (30 each), Pokédex (National Dex, seen / caught, forms tab, cosmetic-forms collection), Bag. The Pokémon detail screen shows stats, nature, ability, an IV "judge" (qualitative, like the games), held item, and actions: feed Rare Candy, evolve, transfer, nickname, set as buddy.
-- **Me:** trainer card (badges, streak, totals), the Growth screen, goals, the weekly review, friends and the weekly board (once online), settings (reminders and notifications, sound, theme, account linking, data export). *(No shop yet.)*
+- **Modules → Plan → Planner:** a menu of smart lists (Today, Calendar, Inbox, Next 7 days, Habits, Done, All tasks) and the player's lists; All tasks has search and category, list, rank and status filters (0.29.0). Quick-add is an inline box (title, then "More options" for difficulty, category, repeat). Completing a task shows the reward and a 10 second undo bar. *(A mission board is not built.)*
+- **Modules → Plan → Focus:** optional task to focus on, region picker, presets (15 / 25 / 45 / 60) plus custom, Deep Focus toggle, a short reminder of the strict rules, the egg during the session, the emergency pause button. On finish: hatch ceremony, then a summary card with actions (set as buddy, keep, transfer).
+- **Pokémon:** Party (6), PC boxes (30 each), Pokédex (National Dex, seen / caught, forms tab, cosmetic-forms collection), Bag. The Pokémon detail screen shows stats, nature, ability, an IV "judge" (qualitative, like the games), held item, and actions: feed Rare Candy, evolve, transfer, nickname, set as buddy.
+- **Modules → Plan → Growth, Goals, Review:** the effort trends, goals with milestones and the weekly review.
+- **Me:** trainer card (badges, streak, totals), friends and the weekly board (once online), settings (reminders and notifications, sound, theme, account linking, data export). *(No shop yet.)*
 - **Onboarding:** title → start as guest → pick a starter → name the trainer → a **1 minute tutorial focus session** that hatches a free egg → create a first task, which **pays immediately** despite the minimum age (tutorial exemptions). The first reward arrives within about two minutes of opening the app.
 - **Offline:** everything works offline. Because the server grants rewards, offline completions show as "pending" and resolve on sync; a focus session's start and end times are sent and validated for plausibility.
 

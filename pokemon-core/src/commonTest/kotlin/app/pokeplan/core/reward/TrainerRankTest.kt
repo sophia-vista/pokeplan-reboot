@@ -32,10 +32,12 @@ class TrainerRankTest {
 
     @Test
     fun regionsOpenOnePerRankAfterTheModuleRegions() {
-        assertEquals(listOf(Region.PLAN), TrainerRank.unlockedRegions(0))
-        assertEquals(listOf(Region.PLAN, Region.KANTO), TrainerRank.unlockedRegions(TrainerRank.thresholds[1]))
-        assertEquals(listOf(Region.PLAN) + Region.games, TrainerRank.unlockedRegions(TrainerRank.thresholds.last()))
+        assertEquals(listOf(Region.PLAN, Region.CARE), TrainerRank.unlockedRegions(0))
+        assertEquals(listOf(Region.PLAN, Region.KANTO, Region.CARE), TrainerRank.unlockedRegions(TrainerRank.thresholds[1]))
+        assertEquals(listOf(Region.PLAN) + Region.games + Region.CARE, TrainerRank.unlockedRegions(TrainerRank.thresholds.last()))
         assertTrue(TrainerRank.isUnlocked(Region.PLAN, 0))
+        assertTrue(TrainerRank.isUnlocked(Region.CARE, 0))
+        assertFalse(TrainerRank.isUnlocked(Region.HOUSEHOLD, TrainerRank.thresholds.last()))
         assertFalse(TrainerRank.isUnlocked(Region.JOHTO, TrainerRank.thresholds[2] - 1))
         assertTrue(TrainerRank.isUnlocked(Region.JOHTO, TrainerRank.thresholds[2]))
         assertEquals(2, TrainerRank.rankToUnlock(Region.JOHTO))

@@ -28,7 +28,7 @@ set role service_role;
 
 -- An empty player loads as the engine's empty state.
 select test.eq('empty state', pg_temp.norm(platform.load_state('00000000-0000-0000-0000-0000000000a1')->'state'),
-  '{"pokemon":[],"buddyId":null,"inventory":{"counts":{}},"coins":0,"eggMeter":0,"trainerPoints":0,"caught":[],"guardians":[]}'::jsonb);
+  '{"pokemon":[],"buddyId":null,"inventory":{"counts":{}},"coins":0,"eggMeter":0,"trainerPoints":0,"caught":[],"guardians":[],"careLeadId":null}'::jsonb);
 
 -- Save the golden starting state, then load it back unchanged.
 select platform.apply_outcome('00000000-0000-0000-0000-0000000000a1', 0, 'plan', 'test', 'seed-state', 0, '{}',
@@ -65,6 +65,12 @@ select test.throws('party of seven', $$select platform.apply_outcome('00000000-0
   jsonb_build_object('rewards', '[]'::jsonb, 'state', jsonb_set(jsonb_set(
     (select ((j->>'effortOutcome')::jsonb)->'state' from golden), '{buddyId}', '"m1"'), '{pokemon}',
     (select jsonb_agg(jsonb_set(jsonb_set(p, '{id}', to_jsonb('m' || n)), '{inParty}', 'true'))
+       from generate_series(1, 7) n, (select ((j->>'effortOutcome')::jsonb)->'state'->'pokemon'->0 as p from golden) q))))$$, '23514');
+-- The limit is per party: seven in Care's party is refused too.
+select test.throws('care party of seven', $$select platform.apply_outcome('00000000-0000-0000-0000-0000000000a1', 2, 'plan', 'x', 'k3c', 0, '{}',
+  jsonb_build_object('rewards', '[]'::jsonb, 'state', jsonb_set(jsonb_set(
+    (select ((j->>'effortOutcome')::jsonb)->'state' from golden), '{buddyId}', '"m1"'), '{pokemon}',
+    (select jsonb_agg(jsonb_set(jsonb_set(jsonb_set(p, '{id}', to_jsonb('m' || n)), '{inParty}', 'true'), '{partyId}', '"care"'))
        from generate_series(1, 7) n, (select ((j->>'effortOutcome')::jsonb)->'state'->'pokemon'->0 as p from golden) q))))$$, '23514');
 select test.eq('nothing changed after the failed save', (platform.load_state('00000000-0000-0000-0000-0000000000a1')->>'version')::int, 2);
 

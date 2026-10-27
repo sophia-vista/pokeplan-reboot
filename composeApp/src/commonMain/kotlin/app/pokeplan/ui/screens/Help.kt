@@ -39,13 +39,14 @@ internal val helpTopics = listOf(
         listOf(
             HelpItem("What is PokéPlan?", "A planner and focus timer where doing real things looks after your Pokémon. Finish a focus session to hatch an egg; finish tasks, habits and goals to earn candies and items that level up and evolve your Pokémon. There are no battles."),
             HelpItem("What is the buddy?", "One Pokémon from your party that stays with you on Home and in the widget. Pet it, feed it a berry, and it gets friendlier. Its type and nature give small bonuses to the rewards you earn."),
+            HelpItem("What is Care?", "A module under Modules for looking after yourself, inspired by journalling and DBT: small routines to tick off, a calm break to breathe with your buddy, a daily diary card, DBT skills with short how-tos, and a journal. Routines, calm breaks and practised skills earn friendship and berries; diary cards and journal entries never earn anything and stay on this device. It is a reminder, not therapy. Turn Care off in Me, Settings, Modules."),
             HelpItem("How do I rank up?", "Every reward you earn also adds trainer points. New ranks open new things: Super Candies and evolution, new regions, Guardians and more quests."),
         ),
     ),
     HelpTopic(
         "Focus and eggs",
         listOf(
-            HelpItem("How do I hatch an egg?", "Start a focus session on the Focus tab and stay in the app until it ends. A longer session gives better odds of a rarer egg."),
+            HelpItem("How do I hatch an egg?", "Start a focus session in Modules, Plan, Focus, and stay in the app until it ends. A longer session gives better odds of a rarer egg."),
             HelpItem("What happens if I leave the app?", "You have a 10 second grace period to come back. After that the egg is lost and the session does not count for your streak. You get emergency pauses for the times you really must leave; start one before you go."),
             HelpItem("What is Deep Focus?", "The phone has to stay still while the timer runs: picking it up or moving it fails the session. In return the egg odds go up one step."),
         ),

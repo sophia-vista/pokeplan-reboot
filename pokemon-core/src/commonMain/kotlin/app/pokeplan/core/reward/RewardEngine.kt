@@ -13,9 +13,13 @@ import app.pokeplan.core.pokemon.Hatching
 import app.pokeplan.core.pokemon.Inventory
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.OwnedPokemon
+import app.pokeplan.core.pokemon.CareBucket
+import app.pokeplan.core.pokemon.CarePerks
+import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.PerkBucket
 import app.pokeplan.core.pokemon.PerkContext
 import app.pokeplan.core.pokemon.Perks
+import app.pokeplan.core.pokemon.Stat
 import kotlin.math.roundToInt
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -36,10 +40,17 @@ data class PlayerState(
     val caught: Set<Int> = emptySet(),
     /** Ids of the Pokémon slotted as Guardians (legendaries and mythicals), at most as many as the rank has slots. */
     val guardians: List<String> = emptyList(),
+    /** The lead of Care's party (its buddy); null until the player sets one, and Care then warms [buddy] as before. */
+    val careLeadId: String? = null,
 ) {
     val buddy: OwnedPokemon? get() = pokemon.firstOrNull { it.id == buddyId }
     val guardianPokemon: List<OwnedPokemon> get() = guardians.mapNotNull { id -> pokemon.firstOrNull { it.id == id } }
-    val party: List<OwnedPokemon> get() = pokemon.filter { it.inParty }
+    /** Plan's party, the one whose buddy and perks the reward engine uses. */
+    val party: List<OwnedPokemon> get() = partyOf(PartyIds.PLAN)
+
+    val careLead: OwnedPokemon? get() = pokemon.firstOrNull { it.id == careLeadId && it.inParty && it.partyId == PartyIds.CARE }
+
+    fun partyOf(partyId: String): List<OwnedPokemon> = pokemon.filter { it.inParty && it.partyId == partyId }
 
     /** The rank index (0 is the first rank). */
     val rank: Int get() = TrainerRank.rankFor(trainerPoints)
@@ -85,6 +96,18 @@ data class EffortEvent(
     val nowMillis: Long,
 )
 
+/**
+ * A Care visitor became a friend (docs/ecosystem.md, section 6, "Befriending"): the species the player chose to befriend.
+ * Carries nothing but the visitor, so no routine, mood or note ever reaches the world.
+ */
+@Serializable
+data class BefriendEvent(
+    val speciesId: Int,
+    val formIdentifier: String,
+    val newPokemonId: String,
+    val nowMillis: Long,
+)
+
 /** A finished piece of work of some [tier] (1 to 5): a task, a habit, a milestone... */
 @Serializable
 data class AchievementEvent(
@@ -103,12 +126,16 @@ data class AchievementEvent(
     val friendshipTasksToday: Int = 0,
 )
 
-/** What a Care moment was (docs/ecosystem.md, section 6). Mood, notes and reflections are never events: they earn nothing. */
+/**
+ * What a Care moment was (docs/ecosystem.md, section 6). Diary cards, journal entries and notes are never events: they earn
+ * nothing. A practised skill carries no word of which skill it was.
+ */
 @Serializable
 enum class CareKind {
     @SerialName("routine_completed") ROUTINE,
     @SerialName("calm_break_completed") CALM_BREAK,
     @SerialName("weekly_rhythm") WEEKLY_RHYTHM,
+    @SerialName("skill_practised") SKILL,
 }
 
 /** A Care moment, with no other field: no titles, no mood, no health values. Daily caps are the caller's job. */
@@ -186,6 +213,15 @@ object RewardEngine {
 
     /** Care pays bond, berries and a small share of trainer rank; never candies or eggs. *(tune)* */
     const val CARE_POINTS = 1
+
+    /** Befriending a visitor: trainer points, the IV floor of its egg (visitor luck adds up to the bonus), the chance it joins at once, and its friendship then. *(tune)* */
+    const val BEFRIEND_POINTS = 3
+    const val BEFRIEND_IV_FLOOR = 10
+    const val BEFRIEND_LUCK_IV_BONUS = 6
+    const val BEFRIEND_DIRECT_JOIN_PERCENT = 5.0
+    /** Each percent of Visitor luck adds this share of a percent to the direct-join chance. */
+    const val BEFRIEND_LUCK_JOIN_SHARE = 0.2
+    const val BEFRIEND_JOIN_FRIENDSHIP = 150
     const val RHYTHM_POINTS = 5
     const val RHYTHM_BERRIES = 3
 
@@ -279,7 +315,7 @@ object RewardEngine {
         var caught = state.caught + state.pokemon.map { it.speciesId }
         if (meter >= EGG_METER_SIZE) {
             meter -= EGG_METER_SIZE
-            val partySize = pokemon.count { it.inParty }
+            val partySize = pokemon.count { it.inParty && it.partyId == PartyIds.PLAN }
             val rarity = luckyBump(Egg.rates(TASK_EGG_MINUTES, false).roll(rng), perks[PerkBucket.EGG_LUCK], rng)
             val known = state.caught + pokemon.map { it.speciesId }
             val option = HatchRules.rollWeighted(e.region, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
@@ -298,31 +334,58 @@ object RewardEngine {
     }
 
     /**
-     * A Care moment: a routine gives the buddy friendship, a calm break friendship and a berry, a weekly rhythm
-     * [RHYTHM_BERRIES] berries; each adds a little trainer rank. Perks don't apply: Care is about the bond, not the haul.
+     * A Care moment: a routine gives the buddy friendship, a calm break or a practised skill friendship and a berry, a
+     * weekly rhythm [RHYTHM_BERRIES] berries; each adds a little trainer rank. Perks don't apply: Care is about the bond, not the haul.
      */
+    /**
+     * A friend made through Care: the visitor's egg hatches at once into Care's party if there is room (else the PC), with a
+     * floor on its IVs; rarely the visitor joins directly with a high starting friendship. Visitor luck from Care's party
+     * raises the floor and the chance a little. [rng] is the egg ticket's seed when the device has one.
+     */
+    fun befriend(state: PlayerState, e: BefriendEvent, rng: Random): Outcome {
+        val luck = CarePerks.total(state.careLead, state.partyOf(PartyIds.CARE))[CareBucket.VISITOR_LUCK] ?: 0.0
+        val careParty = state.partyOf(PartyIds.CARE).size
+        var p = Hatching.create(e.newPokemonId, HatchOption(e.speciesId, e.formIdentifier), careParty, e.nowMillis, TASK_EGG_MINUTES, rng)
+        val floor = BEFRIEND_IV_FLOOR + (luck / Perks.BUCKET_CAP * BEFRIEND_LUCK_IV_BONUS).toInt()
+        p = p.copy(partyId = PartyIds.CARE, ivs = Stat.entries.fold(p.ivs) { ivs, stat -> ivs.with(stat, maxOf(ivs[stat], floor)) })
+        if (rng.nextDouble() * 100 < BEFRIEND_DIRECT_JOIN_PERCENT + luck * BEFRIEND_LUCK_JOIN_SHARE) p = p.copy(friendship = BEFRIEND_JOIN_FRIENDSHIP)
+        val lead = state.careLeadId?.takeIf { state.careLead != null } ?: p.id.takeIf { p.inParty }
+        return Outcome(
+            state.copy(
+                pokemon = state.pokemon + p, careLeadId = lead,
+                trainerPoints = state.trainerPoints + BEFRIEND_POINTS, caught = state.caught + p.speciesId,
+            ),
+            listOf(Reward.Hatched(p, fromTask = false)),
+        )
+    }
+
     fun care(state: PlayerState, e: CareEvent, rng: Random): Outcome {
         val rewards = mutableListOf<Reward>()
         var pokemon = state.pokemon
-        val buddy = state.buddy
+        val buddy = state.careLead ?: state.buddy
+        val perks = CarePerks.total(state.careLead, state.partyOf(PartyIds.CARE))
         val source = when (e.kind) {
             CareKind.ROUTINE -> FriendshipRules.Source.ROUTINE
             CareKind.CALM_BREAK -> FriendshipRules.Source.CALM_BREAK
+            CareKind.SKILL -> FriendshipRules.Source.SKILL
             CareKind.WEEKLY_RHYTHM -> null
         }
         if (buddy != null && source != null) {
-            val grown = buddy.gainFriendship(source)
+            var grown = buddy.gainFriendship(source)
+            val extra = perks[CareBucket.FRIENDSHIP_GAIN] ?: 0.0
+            if (extra > 0 && rng.nextDouble() * 100 < extra) grown = grown.gainFriendship(source)
             pokemon = pokemon.map { if (it.id == buddy.id) grown else it }
             if (grown.friendship > buddy.friendship) rewards += Reward.Friendship(grown.friendship - buddy.friendship)
         }
         val berries = when (e.kind) {
             CareKind.ROUTINE -> 0
-            CareKind.CALM_BREAK -> 1
+            CareKind.CALM_BREAK, CareKind.SKILL -> 1
             CareKind.WEEKLY_RHYTHM -> RHYTHM_BERRIES
         }
         var inventory = state.inventory
         var coins = state.coins
-        repeat(berries) {
+        val second = perks[CareBucket.BERRY_FINDER] ?: 0.0
+        repeat(berries + if (berries > 0 && second > 0 && rng.nextDouble() * 100 < second) 1 else 0) {
             val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
             val (bag, extra) = inventory.addCapped(berry, 1)
             inventory = bag

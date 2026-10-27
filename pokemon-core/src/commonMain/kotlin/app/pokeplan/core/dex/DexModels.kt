@@ -22,8 +22,8 @@ enum class Region(val label: String, val isModule: Boolean = false, val released
     ALOLA("Alola"),
     GALAR("Galar"),
     PALDEA("Paldea"),
-    /** The Care module's region: gentle, soothing Pokémon. Released with the Care screens. */
-    CARE("Care Region", isModule = true, released = false),
+    /** The Care module's region: gentle, soothing Pokémon. Released with the Care screens (0.34.0). */
+    CARE("Care Region", isModule = true),
     /** The household module's region (recipes, closet). Not curated yet. */
     HOUSEHOLD("Home Region", isModule = true, released = false),
     ;

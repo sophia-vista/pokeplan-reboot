@@ -1,16 +1,22 @@
 package app.pokeplan.app
 
+import app.pokeplan.care.BefriendResult
 import app.pokeplan.care.CalmBreak
 import app.pokeplan.care.CareData
 import app.pokeplan.care.CareRules
 import app.pokeplan.care.CareSettings
 import app.pokeplan.care.CareTrends
-import app.pokeplan.care.Mood
-import app.pokeplan.care.MoodCheckIn
+import app.pokeplan.care.DiaryCard
+import app.pokeplan.care.Emotion
+import app.pokeplan.care.JournalEntry
 import app.pokeplan.care.Prompt
 import app.pokeplan.care.Prompts
-import app.pokeplan.care.Reflection
 import app.pokeplan.care.Routine
+import app.pokeplan.care.SkillPractice
+import app.pokeplan.care.Visitor
+import app.pokeplan.care.Visitors
+import app.pokeplan.care.Skills
+import app.pokeplan.core.reward.BefriendEvent
 import app.pokeplan.core.reward.CareEvent
 import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.Reward
@@ -25,8 +31,8 @@ import kotlin.random.Random
 /**
  * The Care module on this device (docs/ecosystem.md, section 6): its own save in its own [storage] (`care.json`), apart
  * from Plan's. It reaches the shared world only through [world], with events that carry no text, mood or health value.
- * Doing earns (a routine, a calm break, a week with a rhythm); entering anything sensitive (a mood, a note, a reflection)
- * never does.
+ * Doing earns (a routine, a calm break, a practised skill, a week with a rhythm); entering anything sensitive (a diary card,
+ * a note, a journal entry) never does.
  */
 class CareStore(
     private val storage: Storage,
@@ -134,32 +140,122 @@ class CareStore(
         return rewards.orEmpty() + rhythm()
     }
 
-    // --- mood, prompts (private, never paid) --------------------------------------------------------------------------
+    // --- skills (practising pays) -------------------------------------------------------------------------------------
 
-    fun checkIn(mood: Mood, note: String? = null, tags: Set<String> = emptySet()): MoodCheckIn {
-        val entry = MoodCheckIn(newId(), nowMillis, today, mood, note?.trim()?.ifEmpty { null }, tags.map { it.trim() }.filter { it.isNotEmpty() }.toSet())
-        update { it.copy(moods = it.moods + entry) }
-        return entry
+    /**
+     * Records a practised skill from the library. The first practice of a skill each day pays, up to
+     * [CareRules.SKILLS_PAID_PER_DAY] skills a day; paced breathing is practised as a calm break instead. Returns what it earned.
+     */
+    fun practiseSkill(skillId: String): List<Reward> {
+        val skill = Skills.byId(skillId) ?: return emptyList()
+        if (skill.calmBreak) return emptyList()
+        val rewards = if (CareRules.skillPaysOn(data, skillId, today)) pay(CareKind.SKILL) else null
+        update { it.copy(practices = it.practices + SkillPractice(nowMillis, today, skillId, paid = rewards != null)) }
+        return rewards.orEmpty() + rhythm()
     }
 
-    fun deleteCheckIn(id: String) = update { d -> d.copy(moods = d.moods.filterNot { it.id == id }) }
+    /** The skills practised today, by id (calm breaks count as paced breathing). */
+    fun practisedToday(): Set<String> =
+        data.practices.filter { it.day == today }.map { it.skillId }.toSet() +
+            (if (data.breaks.any { it.day == today }) Skills.all.filter { it.calmBreak }.map { it.id } else emptyList())
 
-    /** Today's prompt, or null when all are skipped or one is already answered today. */
+    // --- visitors (befriending) ---------------------------------------------------------------------------------------
+
+    /** Whether today's befriend is still free and some care has paid today (a visitor warms up on days with care). */
+    fun canBefriend(): Boolean = data.befriendDay != today && CareRules.paidOn(data, today)
+
+    /** Whether today's befriend has been spent. */
+    val befriendSpent: Boolean get() = data.befriendDay == today
+
+    /**
+     * The visitors now: the ones warming up that have not wandered off, and today's new ones (2, or 3 after a break), the same
+     * on this device all day. The day's offer is made the first time it is asked for.
+     */
+    fun visitors(): List<Visitor> {
+        if (data.visitorsDay != today) {
+            val seed = data.visitorSeed.takeIf { it != 0 } ?: (1 + rng.nextInt(Int.MAX_VALUE - 1))
+            val earliest = today.toEpochDays() - Visitors.WANDER_DAYS
+            val staying = data.visitors.filter { it.points > 0 && (it.lastVisitDay?.toEpochDays() ?: 0L) >= earliest }
+            val arrivals = Visitors.offer(
+                seed, today, Visitors.count(data.visitorsDay, today), staying.map { it.speciesId }.toSet(),
+                world.visitorLuck(), Visitors.lean(data, today),
+            )
+            update { it.copy(visitorSeed = seed, visitorsDay = today, visitors = staying + arrivals) }
+        }
+        return data.visitors
+    }
+
+    /**
+     * Spends today's befriend on a visitor: it warms up by a point, and at [Visitors.FRIEND_POINTS] it becomes a friend, paid
+     * through the world (an egg that hatches at once, rarely the visitor itself). Null when it cannot be done now: the
+     * visitor is gone, today's befriend is spent, no care has paid today, or the world paid nothing.
+     */
+    fun befriend(speciesId: Int): BefriendResult? {
+        val visitor = visitors().firstOrNull { it.speciesId == speciesId } ?: return null
+        if (!canBefriend()) return null
+        val warmer = visitor.copy(points = visitor.points + 1, lastVisitDay = today)
+        if (warmer.points < Visitors.FRIEND_POINTS) {
+            update { d -> d.copy(befriendDay = today, visitors = d.visitors.map { if (it.speciesId == speciesId) warmer else it }) }
+            return BefriendResult(warmer, friend = false, rewards = emptyList())
+        }
+        val rewards = world.befriend(BefriendEvent(visitor.speciesId, visitor.formIdentifier, newId(), nowMillis)) ?: return null
+        update { d -> d.copy(befriendDay = today, visitors = d.visitors.filterNot { it.speciesId == speciesId }) }
+        return BefriendResult(warmer, friend = true, rewards = rewards)
+    }
+
+    // --- diary card, journal (private, never paid) --------------------------------------------------------------------
+
+    /** Today's diary card, if one was saved. */
+    fun diaryToday(): DiaryCard? = data.diary.firstOrNull { it.day == today }
+
+    /** Saves today's diary card, replacing the one saved earlier today. Ratings are kept from 0 to 5. */
+    fun saveDiary(feelings: Map<Emotion, Int>, urges: Map<String, Int> = emptyMap(), skills: Set<String> = emptySet(), note: String? = null): DiaryCard {
+        val card = DiaryCard(
+            diaryToday()?.id ?: newId(), today, nowMillis,
+            feelings.mapValues { it.value.coerceIn(0, 5) },
+            urges.filterKeys { it.isNotBlank() }.mapValues { it.value.coerceIn(0, 5) },
+            skills.filter { Skills.byId(it) != null }.toSet(),
+            note?.trim()?.ifEmpty { null },
+        )
+        update { d -> d.copy(diary = d.diary.filterNot { it.day == today } + card) }
+        return card
+    }
+
+    fun deleteDiary(id: String) = update { d -> d.copy(diary = d.diary.filterNot { it.id == id }) }
+
+    /** Today's prompt, a starting point for the journal, or null when all are skipped or one is answered today. */
     fun prompt(): Prompt? =
-        if (data.reflections.any { it.day == today }) null else Prompts.forDay(today, data.skippedPrompts[today] ?: 0)
+        if (data.journal.any { it.day == today && it.promptId != null }) null else Prompts.forDay(today, data.skippedPrompts[today] ?: 0)
 
     fun skipPrompt() = update { d -> d.copy(skippedPrompts = mapOf(today to (d.skippedPrompts[today] ?: 0) + 1)) }
 
-    fun reflect(promptId: String, text: String) {
-        if (text.isBlank()) return
-        update { it.copy(reflections = it.reflections + Reflection(newId(), today, promptId, text.trim())) }
+    /** Adds a journal entry; [promptId] when it answers today's prompt. A blank entry is not kept. */
+    fun write(text: String, promptId: String? = null, tags: Set<String> = emptySet()): JournalEntry? {
+        if (text.isBlank()) return null
+        val entry = JournalEntry(newId(), nowMillis, today, text.trim(), promptId, tags.map { it.trim() }.filter { it.isNotEmpty() }.toSet())
+        update { it.copy(journal = it.journal + entry) }
+        return entry
     }
 
-    fun deleteReflection(id: String) = update { d -> d.copy(reflections = d.reflections.filterNot { it.id == id }) }
+    fun editEntry(id: String, text: String) {
+        if (text.isBlank()) return
+        update { d -> d.copy(journal = d.journal.map { if (it.id == id) it.copy(text = text.trim()) else it }) }
+    }
+
+    fun deleteEntry(id: String) = update { d -> d.copy(journal = d.journal.filterNot { it.id == id }) }
+
+    /** Journal entries whose text or tags contain [query], newest first. */
+    fun searchJournal(query: String): List<JournalEntry> {
+        val q = query.trim()
+        return data.journal.filter { q.isEmpty() || it.text.contains(q, ignoreCase = true) || it.tags.any { t -> t.contains(q, ignoreCase = true) } }
+            .sortedByDescending { it.atMillis }
+    }
 
     // --- trends, settings, export -------------------------------------------------------------------------------------
 
-    fun moodWeeks(weeks: Int = 8) = CareTrends.moodWeeks(data.moods, today, weeks, weekStart())
+    fun feelingWeeks(weeks: Int = 8) = CareTrends.feelingWeeks(data.diary, today, weeks, weekStart())
+
+    fun skillsLast7Days(): Int = CareTrends.skillsLast7Days(data, today)
 
     fun routinesLast7Days(): Int = CareTrends.routinesLast7Days(data.routines, today)
 

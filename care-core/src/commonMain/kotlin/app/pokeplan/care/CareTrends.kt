@@ -7,17 +7,31 @@ import kotlinx.datetime.plus
 
 /** Rolling trends and personal bests, never streaks: a quiet week costs nothing and says nothing. */
 object CareTrends {
-    data class MoodWeek(val weekStart: LocalDate, val average: Double?, val checkIns: Int)
+    /** A week of diary cards: the average of each feeling rated that week (only the ones rated), and how many cards. */
+    data class FeelingWeek(val weekStart: LocalDate, val averages: Map<Emotion, Double>, val cards: Int)
 
-    /** The average mood of each of the last [weeks] weeks, oldest first; a week with no check-ins has no average. */
-    fun moodWeeks(moods: List<MoodCheckIn>, today: LocalDate, weeks: Int, weekStart: DayOfWeek = DayOfWeek.MONDAY): List<MoodWeek> {
+    /** The last [weeks] weeks of diary cards, oldest first; a week with no cards has no averages. */
+    fun feelingWeeks(cards: List<DiaryCard>, today: LocalDate, weeks: Int, weekStart: DayOfWeek = DayOfWeek.MONDAY): List<FeelingWeek> {
         val current = CareRules.weekStartOf(today, weekStart)
         return (weeks - 1 downTo 0).map { back ->
             val start = current.plus(DatePeriod(days = -7 * back))
             val end = start.plus(DatePeriod(days = 7))
-            val inWeek = moods.filter { it.day >= start && it.day < end }
-            MoodWeek(start, if (inWeek.isEmpty()) null else inWeek.map { it.mood.score }.average(), inWeek.size)
+            val inWeek = cards.filter { it.day >= start && it.day < end }
+            val averages = Emotion.entries.mapNotNull { e ->
+                val rated = inWeek.mapNotNull { it.feelings[e] }
+                if (rated.isEmpty()) null else e to rated.average()
+            }.toMap()
+            FeelingWeek(start, averages, inWeek.size)
         }
+    }
+
+    /** Skills practised in the 7 days up to and including [today], and skills ticked on diary cards in them. */
+    fun skillsLast7Days(data: CareData, today: LocalDate): Int {
+        val from = today.plus(DatePeriod(days = -6))
+        fun inRange(d: LocalDate) = d >= from && d <= today
+        val practised = data.practices.filter { inRange(it.day) }.map { it.day to it.skillId }
+        val ticked = data.diary.filter { inRange(it.day) }.flatMap { c -> c.skills.map { c.day to it } }
+        return (practised + ticked).toSet().size
     }
 
     /** Routines done in the 7 days up to and including [today]. */

@@ -35,6 +35,8 @@ data class OwnedPokemon(
     val personality: Int = 0,
     val inParty: Boolean,
     val caughtAtMillis: Long,
+    /** Which module's party it is in while [inParty] (docs/design.md, "Parties per module"); old saves read as Plan's. */
+    val partyId: String = PartyIds.PLAN,
 ) {
     init {
         require(level in 1..CandyRules.MAX_LEVEL) { "level $level" }
@@ -121,4 +123,10 @@ data class OwnedPokemon(
     companion object {
         const val PARTY_SIZE = 6
     }
+}
+
+/** The ids of the parties: one per module, over one shared PC and Pokédex. */
+object PartyIds {
+    const val PLAN = "plan"
+    const val CARE = "care"
 }
