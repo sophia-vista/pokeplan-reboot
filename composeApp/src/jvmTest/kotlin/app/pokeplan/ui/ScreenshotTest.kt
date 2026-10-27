@@ -398,7 +398,7 @@ class ScreenshotTest {
 
     @Test
     fun collectionDex() = collection("collection-dex", 2) { s ->
-        s.markSeen(app.pokeplan.core.dex.Dex.regionDex(app.pokeplan.core.dex.Region.HOME).take(2).map { it.id })
+        s.markSeen(app.pokeplan.core.dex.Dex.regionDex(app.pokeplan.core.dex.Region.PLAN).take(2).map { it.id })
     }
 
     @Test

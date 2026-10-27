@@ -82,15 +82,15 @@ private class Run(val profile: Profile, val seed: Int, val days: Int) {
     var state = PlayerState()
     var nextId = 0
     val owned = mutableSetOf<Int>()
-    val homeEntries: Set<Int> = Rarity.entries.flatMap { HatchRules.pool(Region.HOME, it) }.map { it.speciesId }.toSet()
-    var homeDay: Int? = null
+    val planEntries: Set<Int> = Rarity.entries.flatMap { HatchRules.pool(Region.PLAN, it) }.map { it.speciesId }.toSet()
+    var planDay: Int? = null
     val regionUnlockDay = mutableMapOf<Region, Int>()
     var eggs = 0; var taskEggs = 0; var shinies = 0
     var rare = 0; var superCandy = 0; var coinsFromTransfers = 0
     var drops = 0; var transfers = 0
     val checkpoints = mutableMapOf<Int, Snapshot>()
 
-    data class Snapshot(val rank: Int, val points: Int, val eggs: Int, val taskEggs: Int, val rare: Int, val superCandy: Int, val coins: Int, val drops: Int, val shinies: Int, val buddyLevel: Int, val homeSeen: Int, val species: Int)
+    data class Snapshot(val rank: Int, val points: Int, val eggs: Int, val taskEggs: Int, val rare: Int, val superCandy: Int, val coins: Int, val drops: Int, val shinies: Int, val buddyLevel: Int, val planSeen: Int, val species: Int)
 
     fun id() = "sim-${nextId++}"
 
@@ -99,8 +99,8 @@ private class Run(val profile: Profile, val seed: Int, val days: Int) {
         val unseen = open.associateWith { r ->
             Rarity.entries.flatMap { HatchRules.pool(r, it) }.map { it.speciesId }.toSet().count { it !in owned }
         }
-        // A collector finishes the Home dex first, then goes where the most is still missing.
-        if (unseen.getValue(Region.HOME) > 0) return Region.HOME
+        // A collector finishes the Plan dex first, then goes where the most is still missing.
+        if (unseen.getValue(Region.PLAN) > 0) return Region.PLAN
         val best = open.maxByOrNull { unseen.getValue(it) * 1000 - it.ordinal }!!
         return if (unseen.getValue(best) > 0) best else open[rng.nextInt(open.size)]
     }
@@ -158,7 +158,7 @@ private class Run(val profile: Profile, val seed: Int, val days: Int) {
         checkpoints[day] = Snapshot(
             rank = state.rank, points = state.trainerPoints, eggs = eggs, taskEggs = taskEggs, rare = rare, superCandy = superCandy,
             coins = state.coins, drops = drops, shinies = shinies, buddyLevel = state.buddy?.level ?: 0,
-            homeSeen = homeEntries.count { it in owned }, species = owned.size,
+            planSeen = planEntries.count { it in owned }, species = owned.size,
         )
     }
 
@@ -184,7 +184,7 @@ private class Run(val profile: Profile, val seed: Int, val days: Int) {
             }
             housekeeping()
             for (r in TrainerRank.unlockedRegions(state.trainerPoints)) regionUnlockDay.putIfAbsent(r, day)
-            if (homeDay == null && homeEntries.all { it in owned }) homeDay = day
+            if (planDay == null && planEntries.all { it in owned }) planDay = day
             if (day in listOf(30, 60, 90, 180)) snapshot(day)
         }
         return this
@@ -207,13 +207,13 @@ fun simulateReport(runsPerProfile: Int = 60, days: Int = 180): String {
     sb.appendLine("|---|---|---|---|")
     for (p in profiles) sb.appendLine("| ${p.name} | ${fmt(p.activeDayChance * 7)} | ${p.tasksPerDay.first}-${p.tasksPerDay.last} | ${p.sessionsPerDay.first}-${p.sessionsPerDay.last} |")
     sb.appendLine()
-    val home = Rarity.entries.flatMap { HatchRules.pool(Region.HOME, it) }.size
-    val demand = evolutionDemand(Region.HOME)
+    val plan = Rarity.entries.flatMap { HatchRules.pool(Region.PLAN, it) }.size
+    val demand = evolutionDemand(Region.PLAN)
     sb.appendLine("## Targets")
     sb.appendLine()
-    sb.appendLine("- Basic Home dex ($home hatchable species) in about 60 days for a typical player.")
+    sb.appendLine("- Basic Plan dex ($plan hatchable species) in about 60 days for a typical player.")
     sb.appendLine("- Ranks quick at first, slower after: Apprentice (Kanto) within about 2 days and Ace within about 2 weeks for a typical player; each rank takes longer than the one before.")
-    sb.appendLine("- Evolving everything in the Home Region once needs ${demand.evolutions} evolutions: ${demand.superCandies} Super Candies, ${demand.rareCandiesLow} to ${demand.rareCandiesHigh} Rare Candies (with and without the catch-up discount), ${demand.stones} stones, ${demand.linkCords} Link Cords, ${demand.trials} trials.")
+    sb.appendLine("- Evolving everything in the Plan Region once needs ${demand.evolutions} evolutions: ${demand.superCandies} Super Candies, ${demand.rareCandiesLow} to ${demand.rareCandiesHigh} Rare Candies (with and without the catch-up discount), ${demand.stones} stones, ${demand.linkCords} Link Cords, ${demand.trials} trials.")
     sb.appendLine()
     for (p in profiles) {
         val runs = (1..runsPerProfile).map { Run(p, it, days).play() }
@@ -222,9 +222,9 @@ fun simulateReport(runsPerProfile: Int = 60, days: Int = 180): String {
         fun row(label: String, values: List<Double>) = sb.appendLine("| $label | ${fmt(pct(values, .5))} (${fmt(pct(values, .1))} to ${fmt(pct(values, .9))}) |")
         sb.appendLine("| Measure | Value |")
         sb.appendLine("|---|---|")
-        val homeDays = runs.map { (it.homeDay ?: (days + 1)).toDouble() }
-        row("Day the basic Home dex is complete (${days + 1} = not within $days)", homeDays)
-        for (region in Region.entries.drop(1).take(4)) row("Day ${region.label} unlocks", runs.map { (it.regionUnlockDay[region] ?: (days + 1)).toDouble() })
+        val planDays = runs.map { (it.planDay ?: (days + 1)).toDouble() }
+        row("Day the basic Plan dex is complete (${days + 1} = not within $days)", planDays)
+        for (region in Region.games.take(4)) row("Day ${region.label} unlocks", runs.map { (it.regionUnlockDay[region] ?: (days + 1)).toDouble() })
         for (d in listOf(30, 60, 90)) {
             row("Rank after $d days", runs.map { it.checkpoints[d]!!.rank.toDouble() })
             row("Eggs after $d days (incl. Task Eggs)", runs.map { it.checkpoints[d]!!.eggs.toDouble() })
@@ -240,7 +240,7 @@ fun simulateReport(runsPerProfile: Int = 60, days: Int = 180): String {
         val superIncome = pct(runs.map { it.checkpoints[60]!!.superCandy.toDouble() }, .5)
         val rareIncome = pct(runs.map { it.checkpoints[60]!!.rare.toDouble() }, .5)
         sb.appendLine()
-        sb.appendLine("Evolving the whole Home Region needs ${demand.superCandies} Super Candies: at the 60-day rate (${fmt(superIncome)}) that is about ${fmt(demand.superCandies / maxOf(superIncome, 0.01) * 60)} days. Rare Candies: ${demand.rareCandiesLow} to ${demand.rareCandiesHigh} needed, ${fmt(rareIncome)} earned in 60 days (about ${fmt(demand.rareCandiesLow / maxOf(rareIncome, 0.01) * 60)} to ${fmt(demand.rareCandiesHigh / maxOf(rareIncome, 0.01) * 60)} days).")
+        sb.appendLine("Evolving the whole Plan Region needs ${demand.superCandies} Super Candies: at the 60-day rate (${fmt(superIncome)}) that is about ${fmt(demand.superCandies / maxOf(superIncome, 0.01) * 60)} days. Rare Candies: ${demand.rareCandiesLow} to ${demand.rareCandiesHigh} needed, ${fmt(rareIncome)} earned in 60 days (about ${fmt(demand.rareCandiesLow / maxOf(rareIncome, 0.01) * 60)} to ${fmt(demand.rareCandiesHigh / maxOf(rareIncome, 0.01) * 60)} days).")
         sb.appendLine()
     }
     return sb.toString()

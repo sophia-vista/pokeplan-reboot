@@ -1,10 +1,18 @@
 package app.pokeplan.core.dex
 
 import app.pokeplan.core.model.PokemonType
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-/** A collecting region. [HOME] is the curated starter dex; the others are the games' regional dexes. */
-enum class Region(val label: String) {
-    HOME("Home Region"),
+/**
+ * A collecting region. The module regions ([isModule]) are hand-curated lists, one per life module
+ * (`tools/species/regions/<name>.txt`, "Module regions" in docs/ecosystem.md); the others are the games' regional dexes,
+ * which open one per trainer rank. A module region is open to everyone once its module ships ([released]); until then it
+ * is hidden. [PLAN] was the Home Region and keeps its stored name `HOME` (saves, plan.focus_sessions, the reward function).
+ */
+@Serializable
+enum class Region(val label: String, val isModule: Boolean = false, val released: Boolean = true) {
+    @SerialName("HOME") PLAN("Plan Region", isModule = true),
     KANTO("Kanto"),
     JOHTO("Johto"),
     HOENN("Hoenn"),
@@ -14,6 +22,14 @@ enum class Region(val label: String) {
     ALOLA("Alola"),
     GALAR("Galar"),
     PALDEA("Paldea"),
+    /** The household module's region (recipes, closet). Not curated yet. */
+    HOUSEHOLD("Home Region", isModule = true, released = false),
+    ;
+
+    companion object {
+        /** The game regions, in the order trainer rank opens them. */
+        val games: List<Region> = entries.filter { !it.isModule }
+    }
 }
 
 data class BaseStats(val hp: Int, val attack: Int, val defense: Int, val spAttack: Int, val spDefense: Int, val speed: Int) {

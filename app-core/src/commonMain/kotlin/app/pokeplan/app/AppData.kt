@@ -93,7 +93,7 @@ enum class ThemeMode(val label: String) { SYSTEM("Match phone"), LIGHT("Light"),
 
 @Serializable
 data class Settings(
-    val region: Region = Region.HOME,
+    val region: Region = Region.PLAN,
     val defaultFocusMinutes: Int = 25,
     val deepFocus: Boolean = false,
     /** Master switch kept from the old Sound toggle; the sliders turn it on again. */

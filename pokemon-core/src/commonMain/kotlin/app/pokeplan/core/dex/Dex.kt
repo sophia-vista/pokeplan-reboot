@@ -19,9 +19,9 @@ object Dex {
 
     private val regionData: Map<String, List<Int>> by lazy { DexParser.regions() }
 
-    /** Species of [region] in dex order. For [Region.HOME] the position is the Home Region's own number. */
+    /** Species of [region] in dex order (empty for a module region not curated yet). For a module region the position is its own number. */
     fun regionDex(region: Region): List<SpeciesInfo> =
-        regionData.getValue(region.name).map { speciesById.getValue(it) }
+        regionData[region.name].orEmpty().map { speciesById.getValue(it) }
 
     /** Species that have a Hisuian form in the Hisui dex (used to pick the Hisuian variant in Sinnoh). */
     internal val hisuiSpecies: Set<Int> by lazy { regionData.getValue("HISUI").toSet() }

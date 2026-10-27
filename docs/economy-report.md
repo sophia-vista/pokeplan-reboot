@@ -12,15 +12,15 @@ Plays 180 days for 60 simulated players per profile through the real reward engi
 
 ## Targets
 
-- Basic Home dex (59 hatchable species) in about 60 days for a typical player.
+- Basic Plan dex (59 hatchable species) in about 60 days for a typical player.
 - Ranks quick at first, slower after: Apprentice (Kanto) within about 2 days and Ace within about 2 weeks for a typical player; each rank takes longer than the one before.
-- Evolving everything in the Home Region once needs 85 evolutions: 71 Super Candies, 3886 to 7314 Rare Candies (with and without the catch-up discount), 13 stones, 1 Link Cords, 3 trials.
+- Evolving everything in the Plan Region once needs 85 evolutions: 71 Super Candies, 3886 to 7314 Rare Candies (with and without the catch-up discount), 13 stones, 1 Link Cords, 3 trials.
 
 ## Light
 
 | Measure | Value |
 |---|---|
-| Day the basic Home dex is complete (181 = not within 180) | 181 (181 to 181) |
+| Day the basic Plan dex is complete (181 = not within 180) | 181 (181 to 181) |
 | Day Kanto unlocks | 6.0 (3.0 to 9.0) |
 | Day Johto unlocks | 18.0 (14.0 to 23.0) |
 | Day Hoenn unlocks | 38.0 (32.0 to 44.0) |
@@ -40,13 +40,13 @@ Plays 180 days for 60 simulated players per profile through the real reward engi
 | Shinies in 180 days | 1.0 (0.0 to 2.0) |
 | Species owned after 90 days | 41.0 (38.0 to 45.0) |
 
-Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (61.0) that is about 69.8 days. Rare Candies: 3886 to 7314 needed, 1229 earned in 60 days (about 190 to 357 days).
+Evolving the whole Plan Region needs 71 Super Candies: at the 60-day rate (61.0) that is about 69.8 days. Rare Candies: 3886 to 7314 needed, 1229 earned in 60 days (about 190 to 357 days).
 
 ## Typical
 
 | Measure | Value |
 |---|---|
-| Day the basic Home dex is complete (181 = not within 180) | 62.0 (43.0 to 95.0) |
+| Day the basic Plan dex is complete (181 = not within 180) | 62.0 (43.0 to 95.0) |
 | Day Kanto unlocks | 2.0 (1.0 to 3.0) |
 | Day Johto unlocks | 4.0 (3.0 to 6.0) |
 | Day Hoenn unlocks | 9.0 (7.0 to 11.0) |
@@ -66,13 +66,13 @@ Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (61.0)
 | Shinies in 180 days | 5.0 (3.0 to 9.0) |
 | Species owned after 90 days | 126 (59.0 to 158) |
 
-Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (214) that is about 19.9 days. Rare Candies: 3886 to 7314 needed, 5100 earned in 60 days (about 45.7 to 86.0 days).
+Evolving the whole Plan Region needs 71 Super Candies: at the 60-day rate (214) that is about 19.9 days. Rare Candies: 3886 to 7314 needed, 5100 earned in 60 days (about 45.7 to 86.0 days).
 
 ## Heavy
 
 | Measure | Value |
 |---|---|
-| Day the basic Home dex is complete (181 = not within 180) | 27.0 (20.0 to 38.0) |
+| Day the basic Plan dex is complete (181 = not within 180) | 27.0 (20.0 to 38.0) |
 | Day Kanto unlocks | 1.0 (1.0 to 1.0) |
 | Day Johto unlocks | 2.0 (2.0 to 3.0) |
 | Day Hoenn unlocks | 4.0 (3.0 to 5.0) |
@@ -92,5 +92,5 @@ Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (214) 
 | Shinies in 180 days | 11.0 (7.0 to 15.0) |
 | Species owned after 90 days | 283 (250 to 301) |
 
-Evolving the whole Home Region needs 71 Super Candies: at the 60-day rate (581) that is about 7.3 days. Rare Candies: 3886 to 7314 needed, 11678 earned in 60 days (about 20.0 to 37.6 days).
+Evolving the whole Plan Region needs 71 Super Candies: at the 60-day rate (581) that is about 7.3 days. Rare Candies: 3886 to 7314 needed, 11678 earned in 60 days (about 20.0 to 37.6 days).
 

@@ -1,6 +1,6 @@
 ---
 name: game-assets
-description: Where the real game assets come from and how to fetch or regenerate them: the Dex data generator, sprites, animated sprites, cries, scenes, item icons, PC box wallpapers and the Home Region curation kit. Use before running or changing tools/species or tools/sprites, adding or replacing anything in assets/, or regenerating DexData.kt.
+description: Where the real game assets come from and how to fetch or regenerate them: the Dex data generator, sprites, animated sprites, cries, scenes, item icons, PC box wallpapers and the module region curation kit. Use before running or changing tools/species or tools/sprites, adding or replacing anything in assets/, or regenerating DexData.kt.
 ---
 
 # Game assets
@@ -22,5 +22,5 @@ The art rule in `CLAUDE.md` always applies: real game assets only. Sources and l
 - `assets/items/`: real item icons from PokeAPI/sprites (`python3 -I tools/sprites/fetch_items.py`), used for the tab icons and the bag.
 - `assets/backgrounds/`: Black/White PC box wallpapers from PKHeX, tiled behind each tab by `PixelBackground` (see `docs/assets.md` for sources and licences).
 
-## Home Region curation
-- `docs/home-region-curation-prompt.md` and `docs/home-region-candidates.md`: the kit for curating the Home Region (`tools/species/home-region.txt`) in a separate chat. Regenerate the candidates table with `./gradlew :pokemon-core:curationReport`.
+## Module region curation
+- `docs/region-curation-prompt.md` (with a brief per region) and `docs/region-candidates.md` (every hatchable line, its tier and the module region it is in): the kit for curating a module region's list in `tools/species/regions/<region>.txt` (`plan.txt`, `care.txt`, `household.txt`, one per `Region` entry with `isModule`; the generator refuses a species in two lists, and a missing file is an empty, uncurated region). Regenerate the candidates table with `./gradlew :pokemon-core:curationReport`.

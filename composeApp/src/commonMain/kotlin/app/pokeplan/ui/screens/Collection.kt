@@ -241,7 +241,7 @@ private val generations = listOf(
 private enum class DexFilter(val label: String) { ALL("All"), CAUGHT("Caught"), MISSING("Not caught") }
 
 /** Which list the Pokédex shows, kept by the Pokémon tab so opening an entry and coming back leaves it as it was. */
-private data class DexView(val region: Region = Region.HOME, val national: Boolean = false, val generation: Int = 0, val filter: DexFilter = DexFilter.ALL) {
+private data class DexView(val region: Region = Region.PLAN, val national: Boolean = false, val generation: Int = 0, val filter: DexFilter = DexFilter.ALL) {
     /** (number shown, species): own order from 1 for a region, the National Dex number for the National tab. */
     fun rows(): List<Pair<Int, SpeciesInfo>> =
         if (national) Dex.species.filter { it.id in generations[generation].second }.map { it.id to it }
@@ -254,7 +254,7 @@ private data class DexView(val region: Region = Region.HOME, val national: Boole
 private fun dexNumber(n: Int) = "#" + n.toString().padStart(3, '0')
 
 /**
- * The Pokédex. A region's list is numbered from 1 in its own order (the Home Region starts at 1 too); the National Dex tab
+ * The Pokédex. A region's list is numbered from 1 in its own order (the Plan Region starts at 1 too); the National Dex tab
  * uses the real National Dex numbers, a generation at a time. Tapping a species found so far opens its entry.
  */
 @Composable

@@ -59,7 +59,8 @@ export class RequestError extends Error {
   }
 }
 
-// Region.entries order in pokemon-core: a region opens at the rank equal to its position.
+// The Plan Region (stored as HOME) and the game regions, in the order trainer rank opens them (TrainerRank.rankToUnlock).
+// Module regions not released yet (Region.released in pokemon-core) are refused.
 const REGIONS = ["HOME", "KANTO", "JOHTO", "HOENN", "SINNOH", "UNOVA", "KALOS", "ALOLA", "GALAR", "PALDEA"];
 const MAX_MINUTES = 240;
 const MAX_RETRIES = 3;

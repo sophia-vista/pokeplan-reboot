@@ -24,7 +24,10 @@ FILES = ['pokemon', 'pokemon_species', 'pokemon_species_names', 'pokemon_stats',
          'pokemon_abilities', 'abilities', 'ability_names', 'pokemon_evolution', 'pokemon_forms',
          'pokedexes', 'pokemon_dex_numbers', 'items', 'moves', 'locations', 'pokemon_species_flavor_text']
 OUT = os.path.join(ROOT, 'pokemon-core/src/commonMain/kotlin/app/pokeplan/core/dex/generated/DexData.kt')
-HOME_LIST = os.path.join(ROOT, 'tools/species/home-region.txt')
+# Module regions, hand-curated (docs/region-curation-prompt.md): Region entry -> list file. A missing file is a region
+# not curated yet, which gets no row (an empty dex). A species is in at most one module region.
+MODULE_REGIONS = {'PLAN': 'plan', 'CARE': 'care', 'HOUSEHOLD': 'household'}
+REGION_LIST_DIR = os.path.join(ROOT, 'tools/species/regions')
 CHUNK = 28000
 KIND_RANK = {'LEVEL': 0, 'STONE': 1, 'FRIENDSHIP': 2, 'LEVEL_TIME': 3, 'GENDER': 4, 'TRADE': 5, 'RANDOM': 6, 'TRIAL': 7}
 
@@ -249,9 +252,18 @@ def main():
                     seen.add(sid)
                     order.append(sid)
         region_lines.append(region + '|' + ','.join(map(str, order)))
-    # Home region: the player's favourites from tools/species/home-region.txt
-    home = read_home_list(species, names)
-    region_lines.insert(0, 'HOME|' + ','.join(map(str, home)))
+    # Module regions: the curated lists in tools/species/regions
+    owner = {}
+    for i, (region, file) in enumerate(MODULE_REGIONS.items()):
+        path = os.path.join(REGION_LIST_DIR, file + '.txt')
+        if not os.path.exists(path):
+            continue
+        ids = read_region_list(path, species, names)
+        for sid in ids:
+            if sid in owner:
+                sys.exit(f'{path}: {names[sid]} is already in the {owner[sid]} region; a species is in at most one module region')
+            owner[sid] = region
+        region_lines.insert(i, region + '|' + ','.join(map(str, ids)))
     # Species whose Hisuian form is the one found in the Hisui dex (used to pick the variant in Sinnoh)
     region_lines.append('HISUI|' + ','.join(str(sid) for _, sid in sorted(dex_numbers[30])))
 
@@ -273,12 +285,12 @@ def main():
     print(len(species_lines), 'species,', len(form_lines), 'forms,', len(evo_lines), 'evolutions,', len(region_lines), 'regions')
 
 
-def read_home_list(species, names):
+def read_region_list(path, species, names):
     import difflib
     by_name = {v.lower(): k for k, v in names.items()}
     by_ident = {r['identifier']: k for k, r in species.items()}
-    home, seen = [], set()
-    with open(HOME_LIST, encoding='utf-8') as fh:
+    found, seen = [], set()
+    with open(path, encoding='utf-8') as fh:
         for number, raw in enumerate(fh, 1):
             line = raw.strip()
             if not line or line.startswith('#'):
@@ -286,17 +298,17 @@ def read_home_list(species, names):
             sid = by_name.get(line.lower()) or by_ident.get(line.lower())
             if sid is None:
                 close = difflib.get_close_matches(line.lower(), list(by_name) + list(by_ident), n=3)
-                sys.exit(f'{HOME_LIST}:{number}: no species called "{line}". Did you mean: {", ".join(dict.fromkeys(close)) or "?"}')
+                sys.exit(f'{path}:{number}: no species called "{line}". Did you mean: {", ".join(dict.fromkeys(close)) or "?"}')
             if sid in seen:
-                sys.exit(f'{HOME_LIST}:{number}: "{line}" is listed twice')
+                sys.exit(f'{path}:{number}: "{line}" is listed twice')
             seen.add(sid)
-            home.append(sid)
-    if len(home) < 30:
-        sys.exit(f'{HOME_LIST}: only {len(home)} species; need at least 30')
-    special = [names[s] for s in home if species[s]['is_legendary'] == '1' or species[s]['is_mythical'] == '1']
+            found.append(sid)
+    if len(found) < 30:
+        sys.exit(f'{path}: only {len(found)} species; need at least 30')
+    special = [names[s] for s in found if species[s]['is_legendary'] == '1' or species[s]['is_mythical'] == '1']
     if special:
-        print('note: legendary/mythical in your Home list (quest rewards, not eggs):', ', '.join(special))
-    return home
+        print(f'note: legendary/mythical in {os.path.basename(path)} (quest rewards, not eggs):', ', '.join(special))
+    return found
 
 
 def chunks(lines):
