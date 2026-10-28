@@ -353,11 +353,11 @@ do not get it.
   come in once that is solid. Its data (pins, hidden apps, categories, layout) is client-side, on the device only, never
   synced (it describes the user's installed apps).
 
-**Open questions for the owner.**
-- **Strict focus.** Leaving the app during focus starts the 10 second grace period. With PokéPlan as the home app, pressing
-  Home lands back in PokéPlan: should that count as staying? And should a running session offer a calm "focus home" that
-  hides the apps the user chose (nothing locked, one tap to show all)?
-- Should Care's routines and today's diary card sit on the home page when Care is on?
+**Decided (owner, October 2026).**
+- **Strict focus.** During a focus session, pressing Home keeps the Focus screen on: it is not leaving the app and starts no
+  grace period. There is no separate "focus home" that hides apps; opening another app still starts the 10 second grace
+  period as today.
+- **Care on the home page.** When Care is on, today's routines (with a tick) and today's diary card sit on the home page.
 
 ## 9. Open questions
 
