@@ -30,7 +30,6 @@ import app.pokeplan.core.pokemon.PerkCondition
 import app.pokeplan.core.pokemon.PerkSource
 import app.pokeplan.core.pokemon.Perks
 import app.pokeplan.core.reward.Feature
-import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.ListRow
@@ -105,7 +104,7 @@ fun PartyPerksCard(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("Party perks", style = MaterialTheme.typography.titleMedium)
             if (!store.sees(Feature.PERKS)) {
-                Text("Open at rank ${TrainerRank.names[Feature.PERKS.step]}. Your party is already growing them.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                Text(PERKS_LOCKED, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 return@Column
             }
             if (buddy == null && sources.isEmpty()) {
@@ -137,7 +136,7 @@ fun PartyPerksCard(model: AppModel) {
 
 /**
  * Care's party perks, laid out like [PartyPerksCard]: each bucket's total from the lead and the rest of Care's party and,
- * opened, where every part comes from.
+ * opened, where every part comes from. Like Plan's, they show from the rank that opens party perks.
  */
 @Composable
 fun CarePerksCard(model: AppModel) {
@@ -149,6 +148,10 @@ fun CarePerksCard(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("Care perks", style = MaterialTheme.typography.titleMedium)
+            if (!model.store.sees(Feature.PERKS)) {
+                Text(PERKS_LOCKED, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                return@Column
+            }
             if (lead == null) {
                 Text("Care's first member leads and gives its perks.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 return@Column
