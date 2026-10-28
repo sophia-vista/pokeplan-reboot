@@ -212,7 +212,7 @@ still earns nothing, and a visitor never reads a domain (only the *kind* of Care
   that day, so a quiet day simply waits. Four points make a friend (`Visitors.FRIEND_POINTS`), so one friend takes at least 4 days.
   Unvisited warming visitors stay 3 days (`WANDER_DAYS`) and then wander off; the day's unpicked visitors leave at midnight. A
   break of 3 days or more brings 3 visitors instead of 2. The egg hatches at once, like a Task Egg, as the visitor's own species
-  (the player chose it), into Care's party if there is room, else the PC. **Visitor luck** (Flying, Psychic, Ghost in Care's party)
+  (the player chose it; until 0.45.0, below), into Care's party if there is room, else the PC. **Visitor luck** (Flying, Psychic, Ghost in Care's party)
   raises a visitor's chance of arriving one rarity higher, the egg's IV floor (up to +6) and the direct-join chance (up to +5
   percentage points). **The liked berry (0.41.0):** each species likes one of the five berry flavours
 (`Visitors.likedBerry`, the same every time, found by trying). "Offer a treat" can give a berry from the shared bag (spent
@@ -235,6 +235,23 @@ at once through `World.spendBerry`); its liked flavour adds one bonus day once p
   without; the direct-join roll is part of the same dice. The day's cap is the key `befriend-<epochDay>`. The server does not run
   Care events yet, so nothing here needs a server change.
 - **Numbers** go in `RewardRules` and `docs/economy.md` with the build (a rules version bump), then `simulateEconomy`.
+- **More with visitors (0.45.0, owner, replaces one befriend a day and the visitor's own egg).**
+  - *A visit for every visitor:* each visitor can have **one visit a day** (`Visitor.lastVisitDay`, `CareStore.canVisit`), each
+    warming on its own, once some Care action has paid that day; one visit is open at a time. New visitors come only while
+    the meadow has room for `Visitors.MAX_VISITORS` (4), so friends come at most 4 a day (`GameStore.BEFRIEND_DAILY_CAP`) and
+    in practice about one a day for someone who visits all of them.
+  - *The friend's gift:* usually an **egg of its family's first stage**, Day Care style (`Dex.lineRoot`: a Pikachu leaves a Pichu
+    egg; a first stage leaves its own kind), hatched at once as before; **10%** of the time (`BEFRIEND_DIRECT_JOIN_PERCENT`,
+    up to +5 with Visitor luck) the visitor itself joins with friendship 150 (`BefriendResult.joined`). Rules version 11.
+  - *Care done with the visitor, not with buttons* (`VisitorScene`): pick a kind of care, then do it in the meadow. A pat lands
+    where you tap the visitor (its head, under its chin, or its back), a treat or berry is dragged to it (or tapped), sitting
+    together is a press held on it for a moment, tidying its spot is a few swipes across the meadow, and kind words are picked
+    from three warm lines. A bid is answered by tapping the visitor. A counter shows how far the visit is. Every gesture has a
+    screen-reader action, and Reduce motion keeps the visitor still.
+  - *Free play* with any visitor, any time (Play on its row): a pat, a treat (never a berry) or a game of tag where it bounds to
+    where the meadow is tapped. Play warms nothing and pays nothing.
+  - *In the meadow:* the two warmest visitors stand beside Care's buddy on its stage (`StageGuest`); a tap is a pat, with its cry,
+    a hop and a heart.
 
 ### Health integration (after v1, optional)
 
@@ -295,7 +312,7 @@ the parser matches the real format.
 2. ~~Parked todos~~ (done in 0.2.0).
 3. **Finish Plan.** Done: reminders as notifications with quiet hours, focus and rest days (0.6.0); a time on tasks and snooze until tomorrow (0.7.0); export, delete account, erase device (0.8.0). The day timeline with tap-to-place time-blocking (0.9.0). Egg tickets for offline hatching (0.10.0). PMD SpriteCollab sprites (0.11.0, owner's priority). Calendar events on the day timeline, Google Calendar through the phone's calendars (0.12.0). Dragging and resizing blocks, and a week timeline (0.14.0). PokéPlan's own events on the calendar, never paid (0.15.0). Seen, caught and owned in the Pokédex (0.16.0). Focus rules: a locked screen and calls handled on Android, the rules on screen, focused and paused time apart (0.16.1). Me metrics defined, with 7 / 30 / 90 day ranges and goal progress apart (0.17.0). Accessibility pass: contrast, 48 dp targets, roles and labels (0.17.1). Desktop and web are deprioritised (they keep compiling; no features only for them, see Platforms in design.md). Lists after TickTick, the Inbox being the tasks in no list (0.21.0); a Month view, multi-day bars in the Week and all-day own events in colours (0.22.0); recurring own events, edited as a series and moved or deleted one at a time (0.24.0). **Next:** check the brief's accessibility checklist on a phone (TalkBack, large text; ui-ux-brief.md section 9, the owner's to do on a device); then item 5.
 4. ~~**Platform tidy before a second module**~~ (done in 0.24.1): the cloud save is in `plan.saves`, the reward rules are versioned, and `docs/economy.md` lists every source, sink and cap. To do by the owner: `supabase db push`, then run the Deploy the reward function workflow.
-5. **Care v1** (section 6), as a module in the same app with its own schema. Rules, save and schema done (0.25.0); Care Region curated (0.32.0); the Modules tab (0.33.0); the screens, the Settings switch and the Care Region released (0.34.0); opt-in sync (0.38.0); routine reminders (0.39.0); the Care widget (0.40.0); the visitor's liked berry (0.41.0). **Care v1 is done**; next item 6.
+5. **Care v1** (section 6), as a module in the same app with its own schema. Rules, save and schema done (0.25.0); Care Region curated (0.32.0); the Modules tab (0.33.0); the screens, the Settings switch and the Care Region released (0.34.0); opt-in sync (0.38.0); routine reminders (0.39.0); the Care widget (0.40.0); the visitor's liked berry (0.41.0). **Care v1 is done**; next item 6. Since: Care's Pokémon feel (0.42.0), aligned Plan and Care pages (0.43.0), a visit a day for every visitor, care by gesture, free play and the family egg (0.45.0).
 6. **PokéPlan Launcher** *(moved up by the owner, October 2026: right after Care v1)*: PokéPlan as an optional Android home screen, after Niagara and Smart Launcher ("PokéPlan Launcher" below).
 7. **Charm pass:** hatch and evolution ceremonies, region themes, the Oak sprite, music.
 8. **Grow**, then **health integration** (the Huawei export importer first, see section 6), then **Home** modules.

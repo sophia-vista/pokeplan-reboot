@@ -65,14 +65,23 @@ data class Visit(
 /** One step of a visit: how the visitor took it, the visit now, and once the visit is over, what it came to. */
 data class VisitStep(val reaction: Reaction, val visit: Visit, val result: BefriendResult? = null)
 
-/** What a visit did: the visitor's days now (a visit that was not warm enough adds none), and whether it became a friend (then [rewards] holds the Pokémon). */
-data class BefriendResult(val visitor: Visitor, val friend: Boolean, val rewards: List<app.pokeplan.core.reward.Reward>)
+/**
+ * What a visit did: the visitor's days now (a visit that was not warm enough adds none), and whether it became a friend (then
+ * [rewards] holds the Pokémon). [joined] is true when the visitor itself joined, rather than leaving an egg of its family.
+ */
+data class BefriendResult(val visitor: Visitor, val friend: Boolean, val rewards: List<app.pokeplan.core.reward.Reward>, val joined: Boolean = false)
 
 /** Who visits, and how long they stay. *(tune)* */
 object Visitors {
     /** Visitors offered on an ordinary day; a fuller choice after a break. */
     const val OFFERED = 2
     const val OFFERED_AFTER_BREAK = 3
+
+    /**
+     * Visitors in the meadow at once: new ones come only while there is room, so visiting every one each day stays a few
+     * short visits, and friends come at most this many a day. *(tune)*
+     */
+    const val MAX_VISITORS = 4
 
     /** Days of befriending that make a visitor a friend. */
     const val FRIEND_POINTS = 4
@@ -92,9 +101,9 @@ object Visitors {
     /** Care actions done lately tilt the type pool a little: calm breaks lean Water and Fairy, routines Normal, skills Grass. */
     const val LEAN_WEIGHT = 1.5
 
-    /** How many visitors to offer on [today] when the last offer was on [lastOffer]. */
-    fun count(lastOffer: LocalDate?, today: LocalDate): Int =
-        if (lastOffer != null && lastOffer.daysUntil(today) >= WANDER_DAYS) OFFERED_AFTER_BREAK else OFFERED
+    /** How many new visitors to offer on [today] when the last offer was on [lastOffer] and [staying] are still warming up. */
+    fun count(lastOffer: LocalDate?, today: LocalDate, staying: Int = 0): Int =
+        minOf(if (lastOffer != null && lastOffer.daysUntil(today) >= WANDER_DAYS) OFFERED_AFTER_BREAK else OFFERED, MAX_VISITORS - staying).coerceAtLeast(0)
 
     /**
      * Today's new visitors from the Care Region (Common to Rare; Super Rare and the patrons stay quest-only), the same for the

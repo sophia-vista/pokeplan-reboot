@@ -26,6 +26,7 @@ import app.pokeplan.core.reward.BefriendEvent
 import app.pokeplan.core.reward.CareEvent
 import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.Reward
+import app.pokeplan.core.reward.RewardEngine
 import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -175,18 +176,26 @@ class CareStore(
 
     // --- visitors (befriending) ---------------------------------------------------------------------------------------
 
-    /** Whether today's befriend is still free and some care has paid today (a visitor warms up on days with care). */
-    fun canBefriend(): Boolean = data.befriendDay != today && CareRules.paidOn(data, today)
+    /** Whether some care has paid today: each visitor can then be visited once (a visitor warms up on days with care). */
+    fun canBefriend(): Boolean = CareRules.paidOn(data, today)
+
+    /** Whether [visitor] had its visit today; each visitor has one a day. */
+    fun visitedToday(visitor: Visitor): Boolean = visitor.lastVisitDay == today
+
+    /** Whether [visitor] can be visited now: care has paid today, it has not had today's visit, and no other visit is on. */
+    fun canVisit(visitor: Visitor): Boolean =
+        canBefriend() && !visitedToday(visitor) && (visit == null || visit?.speciesId == visitor.speciesId)
 
     /** The berries Care can offer as a treat (from the shared bag). */
     fun berries(): Map<String, Int> = world.berries()
 
-    /** Whether today's befriend has been spent. */
-    val befriendSpent: Boolean get() = data.befriendDay == today
+    /** Whether every visitor here has had today's visit. */
+    val befriendSpent: Boolean get() = data.visitors.isNotEmpty() && data.visitors.all { visitedToday(it) }
 
     /**
-     * The visitors now: the ones warming up that have not wandered off, and today's new ones (2, or 3 after a break), the same
-     * on this device all day. The day's offer is made the first time it is asked for.
+     * The visitors now: the ones warming up that have not wandered off, and today's new ones (2, or 3 after a break, while
+     * there is room for [Visitors.MAX_VISITORS]), the same on this device all day. The day's offer is made the first time it
+     * is asked for.
      */
     fun visitors(): List<Visitor> {
         if (data.visitorsDay != today) {
@@ -194,7 +203,7 @@ class CareStore(
             val earliest = today.toEpochDays() - Visitors.WANDER_DAYS
             val staying = data.visitors.filter { it.points > 0 && (it.lastVisitDay?.toEpochDays() ?: 0L) >= earliest }
             val arrivals = Visitors.offer(
-                seed, today, Visitors.count(data.visitorsDay, today), staying.map { it.speciesId }.toSet(),
+                seed, today, Visitors.count(data.visitorsDay, today, staying.size), staying.map { it.speciesId }.toSet(),
                 world.visitorLuck(), Visitors.lean(data, today),
             )
             update { it.copy(visitorSeed = seed, visitorsDay = today, visitors = staying + arrivals) }
@@ -206,12 +215,13 @@ class CareStore(
     val visit: Visit? get() = data.visit?.takeIf { it.day == today }
 
     /**
-     * Starts a visit with a visitor, which spends today's befriend when it ends. Null when it cannot be done now: the visitor
-     * is gone, today's befriend is spent, or no care has paid today. A visit already started with that visitor carries on.
+     * Starts a visit with a visitor, its one visit today. Null when it cannot be done now: the visitor is gone or already had
+     * today's visit, another visit is on, or no care has paid today. A visit already started with that visitor carries on.
      */
     fun startVisit(speciesId: Int): Visit? {
         visit?.takeIf { it.speciesId == speciesId }?.let { return it }
-        if (visitors().none { it.speciesId == speciesId } || !canBefriend()) return null
+        val visitor = visitors().firstOrNull { it.speciesId == speciesId } ?: return null
+        if (!canVisit(visitor)) return null
         return Visitors.start(speciesId, today).also { v -> update { it.copy(visit = v) } }
     }
 
@@ -238,8 +248,8 @@ class CareStore(
 
     /**
      * Ends a finished visit: the visitor warms by a day if the visit was warm enough, and at [Visitors.FRIEND_POINTS] it
-     * becomes a friend, paid through the world (an egg that hatches at once, rarely the visitor itself). Spends today's
-     * befriend. Null when the visit is not finished, or the world paid nothing (it can be tried again).
+     * becomes a friend, paid through the world (usually an egg of its family's first stage that hatches at once, rarely the
+     * visitor itself). Null when the visit is not finished, or the world paid nothing (it can be tried again).
      */
     fun finishVisit(): BefriendResult? {
         val visit = visit?.takeIf { Visitors.finished(it) } ?: return null
@@ -254,7 +264,9 @@ class CareStore(
         }
         val rewards = world.befriend(BefriendEvent(visitor.speciesId, visitor.formIdentifier, newId(), nowMillis)) ?: return null
         update { d -> d.copy(befriendDay = today, visit = null, met = d.met + visit.speciesId, visitors = d.visitors.filterNot { it.speciesId == visit.speciesId }) }
-        return BefriendResult(warmer, friend = true, rewards = rewards)
+        // The visitor itself joins with the high friendship only a direct join starts with; an egg starts low.
+        val joined = rewards.filterIsInstance<Reward.Hatched>().any { it.pokemon.speciesId == visitor.speciesId && it.pokemon.friendship >= RewardEngine.BEFRIEND_JOIN_FRIENDSHIP }
+        return BefriendResult(warmer, friend = true, rewards = rewards, joined = joined)
     }
 
     // --- diary card, journal (private, never paid) --------------------------------------------------------------------

@@ -72,6 +72,7 @@ import kotlinx.coroutines.delay
  * animation while a focus session runs ([resting]); level and progress sit small in a corner; there is no speech bubble.
  * A real event ([event], once) shows the buddy's portrait with a happy face in the corner and a hop; a pet answers with
  * a hop and one emoji, a berry with its Eat animation and one emoji. Forms without those animations hop in code instead.
+ * [guests] (Care's visitors) stand a little behind it on either side, each with its own idle; tapping one is a pat.
  */
 @Composable
 fun BuddyStage(
@@ -81,6 +82,7 @@ fun BuddyStage(
     /** A real event is being celebrated: the buddy calls out. */
     onEvent: () -> Unit,
     celebrated: Long, onCelebrated: (Long) -> Unit,
+    guests: List<StageGuest> = emptyList(),
     modifier: Modifier = Modifier,
 ) {
     var taps by remember { mutableIntStateOf(0) }
@@ -135,6 +137,10 @@ fun BuddyStage(
             rows.forEachIndexed { i, share ->
                 drawRect(Color(0x40000000), Offset((size.width - size.width * share) / 2, i * rowHeight), Size(size.width * share, rowHeight))
             }
+        }
+        // Visitors stand behind the buddy, one on each side, above the corner panels so neither covers the other.
+        guests.take(2).forEachIndexed { i, guest ->
+            StageGuestSprite(guest, calm, Modifier.align(Alignment.BottomCenter).padding(bottom = 60.dp).offset(x = if (i == 0) (-108).dp else 108.dp))
         }
         AnimatedSprite(
             buddy.form.id, buddy.isShiny, "${buddy.nickname}, level ${buddy.level}",

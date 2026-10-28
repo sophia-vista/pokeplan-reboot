@@ -3,6 +3,10 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.45.0" to listOf(
+            "Visit every visitor each day, and care for them by hand: tap to pat, drag a treat, hold to sit together, swipe to tidy.",
+            "Play with visitors any time, just for fun. New friends usually leave an Egg of their family; about 1 in 10 stays itself.",
+        ),
         "0.44.0" to listOf(
             "Eggs now come from the Plan and Care Regions only. The game regions are gone; Pokémon you hatched there stay yours.",
         ),

@@ -38,19 +38,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.pokeplan.care.Bid
-import app.pokeplan.care.PetSpot
-import app.pokeplan.care.VisitStep
-import app.pokeplan.care.CareAction
 import app.pokeplan.care.CareRules
-import app.pokeplan.care.Reaction
-import app.pokeplan.care.Visit
 import app.pokeplan.care.Emotion
 import app.pokeplan.care.Skills
 import app.pokeplan.care.Visitors
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.pokemon.Items
-import app.pokeplan.ui.ItemIcon
 import app.pokeplan.app.BuddyReaction
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.core.pokemon.ItemCategory
@@ -149,8 +142,8 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
 
 /**
  * Care's buddy (Care's lead, else the Plan buddy) in the meadow, as on Home: pet it, give it a berry, and it celebrates Care's
- * own moments (a routine, a calm break, a skill, a friend) with its cry, its portrait and a hop. Care's whole party sits
- * below it ([CarePartyPanel]). It never comments on how the player feels.
+ * own moments (a routine, a calm break, a skill, a friend) with its cry, its portrait and a hop. Two of today's visitors stand
+ * beside it, and Care's whole party sits below ([CarePartyPanel]). It never comments on how the player feels.
  */
 @Composable
 private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
@@ -167,14 +160,19 @@ private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
         onOpen = { openPokemon(buddy.id) }, onHaptic = { model.haptic() },
         onEvent = { model.cry(buddy.speciesId) },
         celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
+        // The warmest visitors wait in the meadow beside the buddy; a tap is a pat, just for fun.
+        guests = model.careData.visitors.sortedByDescending { it.points }.take(2).map { v ->
+            StageGuest(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, Dex.species(v.speciesId).name) { model.haptic(); model.cry(v.speciesId) }
+        },
     )
 }
 
 // ----- Visitors -------------------------------------------------------------------------------------------------------
 
 /**
- * Who is visiting Care's scene today. The day's befriend is spent on one visitor; it warms up on days with some care done,
- * and at four points becomes a friend: an egg that hatches at once, rarely the visitor itself.
+ * Who is visiting Care's meadow. Each visitor can have one visit a day once some care has paid; it warms up on days with a
+ * warm visit, and at four becomes a friend: usually an egg of its family's first stage that hatches at once, rarely the
+ * visitor itself. Any visitor can also be played with at any time, which counts for nothing and is just for fun.
  */
 @Composable
 private fun VisitorsCard(model: AppModel) {
@@ -183,26 +181,27 @@ private fun VisitorsCard(model: AppModel) {
     LaunchedEffect(care.today) { care.visitors() }
     val visitors = model.careData.visitors
     var note by remember { mutableStateOf<String?>(null) }
+    var playing by remember { mutableStateOf<Int?>(null) }
     if (visitors.isEmpty()) return
-    val canBefriend = care.canBefriend()
     val visit = model.careData.visit?.takeIf { it.day == care.today }
+    val open = visitors.firstOrNull { it.speciesId == (visit?.speciesId ?: playing) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Visitors", style = MaterialTheme.typography.titleMedium)
-            Text(
+            if (open == null) Text(
                 when {
-                    care.befriendSpent -> "You spent today's befriend. New visitors come tomorrow."
-                    visit != null -> "Care for it any way you like. It has a favourite, and little moments it may offer."
-                    canBefriend -> "Visit one visitor today. Every kind of care warms it, and it likes one best. Four warm days make a friend."
-                    else -> "Do something in Care today, a routine, a calm break or a skill, and you can spend the day's befriend."
+                    !care.canBefriend() -> "Do something in Care today, a routine, a calm break or a skill, and each visitor can have a visit. You can play with them any time."
+                    care.befriendSpent -> "Every visitor has had today's visit. You can still play with them."
+                    else -> "Visit each one once a day. Every kind of care warms it, and it likes one best. After four warm days most leave you an egg of their family; a few stay themselves."
                 },
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
             )
             note?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
-            if (visit != null) VisitPanel(model, visit) { note = it }
+            if (open != null) VisitorScene(model, open, visit?.takeIf { it.speciesId == open.speciesId }, { note = it }) { playing = null }
             visitors.forEach { v ->
                 val species = Dex.species(v.speciesId)
+                val visited = care.visitedToday(v)
                 ListRow(
                     lead = {
                         AnimatedSprite(
@@ -212,147 +211,31 @@ private fun VisitorsCard(model: AppModel) {
                         )
                     },
                     trail = {
-                        PixelButton("Visit", {
-                            if (care.startVisit(v.speciesId) == null) note = "Not today." else { model.haptic(); model.cry(v.speciesId) }
-                        }, color = Pixel.Green, enabled = canBefriend || visit?.speciesId == v.speciesId, compact = true)
+                        when {
+                            visit?.speciesId == v.speciesId -> Text("Visiting", style = MaterialTheme.typography.labelMedium, color = Pixel.Green)
+                            care.canVisit(v) -> PixelButton("Visit", {
+                                if (care.startVisit(v.speciesId) == null) note = "Not today." else { playing = null; note = null; model.haptic(); model.cry(v.speciesId) }
+                            }, color = Pixel.Green, compact = true)
+                            else -> PixelButton(if (playing == v.speciesId) "Playing" else "Play", {
+                                playing = v.speciesId; note = null; model.haptic()
+                            }, color = Pixel.InkSoft, enabled = visit == null && playing != v.speciesId, compact = true)
+                        }
                     },
                     highlight = false,
                 ) {
                     Column {
                         Text(species.name, style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            if (v.points == 0) "Just arrived" else "${v.points} of ${Visitors.FRIEND_POINTS} days",
+                            listOfNotNull(
+                                if (v.points == 0) "Just arrived" else "${v.points} of ${Visitors.FRIEND_POINTS} days",
+                                if (visited) "visited today" else null,
+                            ).joinToString(", "),
                             style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
                         )
                     }
                 }
             }
             MetAlbum(model)
-        }
-    }
-}
-
-private fun CareAction.label() = when (this) {
-    CareAction.WORDS -> "Kind words"
-    CareAction.TIME -> "Sit together"
-    CareAction.GIFT -> "Offer a treat"
-    CareAction.SERVICE -> "Tidy its spot"
-    CareAction.TOUCH -> "Gentle pat"
-}
-
-private fun Bid.text() = when (this) {
-    Bid.LOOK -> "It looks up at you."
-    Bid.NUDGE -> "It nudges your hand."
-    Bid.SHOW -> "It brings you something small."
-    Bid.PLAY -> "It does a little hop and looks back at you."
-    Bid.SETTLE -> "It curls up a little closer."
-}
-
-private fun PetSpot.label() = when (this) {
-    PetSpot.HEAD -> "Its head"
-    PetSpot.BACK -> "Its back"
-    PetSpot.CHIN -> "Under its chin"
-}
-
-/** A visit in progress: the visitor in the meadow, the five kinds of care, a choice of spot for a pat, and its bid when it makes one. */
-@Composable
-private fun VisitPanel(model: AppModel, visit: Visit, say: (String?) -> Unit) {
-    val care = model.care
-    val reduce = model.data.settings.reduceMotion
-    val species = Dex.species(visit.speciesId)
-    val name = species.name
-    val formId = model.careData.visitors.firstOrNull { it.speciesId == visit.speciesId }
-        ?.let { Dex.form(it.formIdentifier)?.id } ?: Dex.defaultForm(visit.speciesId).id
-    var action by remember { mutableStateOf(SpriteAction.IDLE) }
-    var key by remember { mutableStateOf(0) }
-    var choosingSpot by remember { mutableStateOf(false) }
-    var choosingTreat by remember { mutableStateOf(false) }
-    // Its own hop for a favourite, its own eating for a treat; with Reduce motion it stays still and only the words answer.
-    fun react(step: VisitStep?, given: CareAction) {
-        if (step != null) {
-            model.haptic()
-            when {
-                step.result?.friend == true -> { model.effect(Sfx.POKEMON_CENTER); model.cry(visit.speciesId) }
-                step.reaction == Reaction.LOVED -> model.cry(visit.speciesId)
-                given == CareAction.GIFT && step.reaction != Reaction.FLAT -> model.effect(Sfx.HEAL)
-                step.reaction == Reaction.LIKED -> model.effect(Sfx.SELECT)
-            }
-        }
-        if (!reduce && step != null) {
-            action = when {
-                step.reaction == Reaction.LOVED -> SpriteAction.HOP
-                given == CareAction.GIFT && step.reaction != Reaction.FLAT -> SpriteAction.EAT
-                else -> SpriteAction.IDLE
-            }
-            key++
-        }
-        say(
-            when {
-                step == null -> "Not now."
-                step.result?.friend == true -> "$name is your friend now."
-                step.result != null ->
-                    if (step.result!!.visitor.points == 0) "$name had a quiet visit. Try again tomorrow."
-                    else "$name liked the visit. ${Visitors.FRIEND_POINTS - step.result!!.visitor.points} more warm days."
-                step.visit.berry != null && step.visit.berry == Visitors.likedBerry(visit.speciesId) -> "$name's favourite berry! It will remember that."
-                step.reaction == Reaction.LOVED -> "$name loved that."
-                step.reaction == Reaction.LIKED -> "$name liked that."
-                else -> "$name already had that today."
-            },
-        )
-    }
-    SceneStage("meadow", 160.dp) {
-        AnimatedSprite(
-            formId, false, name,
-            Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp).clickable(onClickLabel = "Hear $name", role = Role.Button) {
-                model.haptic(); model.cry(visit.speciesId)
-                if (!reduce) { action = SpriteAction.HOP; key++ }
-            },
-            size = 112.dp, animate = !reduce,
-            action = action, actionKey = key, onActionDone = { action = SpriteAction.IDLE },
-        )
-    }
-    visit.pendingBid?.let { bid ->
-        Text(bid.text(), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
-        PixelButton("Notice", { care.visitNotice(); model.haptic(); model.effect(Sfx.JUMP) }, color = Pixel.Green, compact = true)
-    }
-    if (choosingSpot) {
-        Text("Where do you pat $name?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PetSpot.entries.forEach { spot ->
-                PixelButton(spot.label(), {
-                    choosingSpot = false
-                    react(care.visitAct(CareAction.TOUCH, spot), CareAction.TOUCH)
-                }, color = Pixel.Green, compact = true)
-            }
-        }
-        return
-    }
-    if (choosingTreat) {
-        // A berry from the shared bag, or a plain treat; each species likes one flavour, found by trying.
-        Text("What do you offer $name?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelButton("A little treat", { choosingTreat = false; react(care.visitAct(CareAction.GIFT), CareAction.GIFT) }, color = Pixel.Green, compact = true)
-            care.berries().entries.sortedBy { it.key }.forEach { (berry, n) ->
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                    ItemIcon(berry, size = 28.dp, description = null)
-                    PixelButton("${Items.name(berry)} ($n)", {
-                        choosingTreat = false
-                        react(care.visitAct(CareAction.GIFT, berry = berry), CareAction.GIFT)
-                    }, color = Pixel.Green, compact = true)
-                }
-            }
-        }
-        return
-    }
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        CareAction.entries.forEach { given ->
-            PixelButton(given.label(), {
-                when {
-                    given == CareAction.TOUCH -> choosingSpot = true
-                    given == CareAction.GIFT && care.berries().isNotEmpty() -> choosingTreat = true
-                    else -> react(care.visitAct(given), given)
-                }
-            }, color = Pixel.Green, enabled = given !in visit.actions, compact = true)
         }
     }
 }

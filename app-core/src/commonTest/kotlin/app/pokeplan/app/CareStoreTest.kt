@@ -183,7 +183,7 @@ class CareStoreTest {
     }
 
     @Test
-    fun aVisitorBecomesAFriendAfterFourDaysAndOneBefriendADay() {
+    fun aVisitorBecomesAFriendAfterFourDaysOfOneVisitADay() {
         val s = setup()
         assertTrue(s.care.visitors().size in 2..3)
         assertTrue(s.care.visitors().all { it.points == 0 })
@@ -203,7 +203,8 @@ class CareStoreTest {
         val r = assertNotNull(befriendOnce(s, 3))
         assertTrue(r.friend)
         val friend = s.game.data.player.pokemon.last()
-        assertEquals(species, friend.speciesId)
+        // Usually an egg of its family's first stage; rarely the visitor itself.
+        assertEquals(if (r.joined) species else app.pokeplan.core.dex.Dex.lineRoot(species), friend.speciesId)
         assertEquals(app.pokeplan.core.pokemon.PartyIds.CARE, friend.partyId)
         assertEquals(friend.id, s.game.data.player.careLeadId, "the first in Care's party leads")
         assertTrue(s.care.visitors().none { it.speciesId == species })
@@ -222,7 +223,7 @@ class CareStoreTest {
         assertTrue(steps.all { it!!.reaction == app.pokeplan.care.Reaction.LIKED })
         val result = assertNotNull(steps.last()!!.result)
         assertEquals(0, result.visitor.points, "not warm enough: no day, no penalty")
-        assertTrue(s.care.befriendSpent)
+        assertTrue(s.care.visitedToday(s.care.visitors().first { it.speciesId == visitor.speciesId }))
         // Noticing both bids makes the same visit warm.
         s.clock.advanceDays(1)
         s.care.completeRoutine(s.care.addRoutine("Walk").id)
@@ -312,6 +313,30 @@ class CareStoreTest {
         s.care.startVisit(visitor.speciesId)
         val step = s.care.visitAct(CareAction.GIFT, berry = app.pokeplan.care.Visitors.likedBerry(visitor.speciesId))!!
         assertEquals(null, step.visit.berry)
+    }
+
+    @Test
+    fun everyVisitorCanBeVisitedOnceADayAndTheMeadowHoldsFour() {
+        val s = setup()
+        s.care.completeRoutine(s.care.addRoutine("Stretch").id)
+        val (a, b) = s.care.visitors()
+        assertNotNull(s.care.startVisit(a.speciesId))
+        assertEquals(null, s.care.startVisit(b.speciesId), "one visit at a time")
+        CareAction.entries.take(3).forEach { s.care.visitAct(it) }
+        assertEquals(null, s.care.startVisit(a.speciesId), "one visit a day for each visitor")
+        assertNotNull(s.care.startVisit(b.speciesId), "another visitor can still be visited today")
+        CareAction.entries.take(3).forEach { s.care.visitAct(it) }
+        assertTrue(s.care.befriendSpent, "every visitor has had today's visit")
+        // Warming visitors stay, and new ones come only while there is room.
+        repeat(3) { day ->
+            s.clock.advanceDays(1)
+            s.care.completeRoutine(s.care.addRoutine("R$day").id)
+            for (v in s.care.visitors()) {
+                s.care.startVisit(v.speciesId) ?: continue
+                (listOf(v.favorite) + CareAction.entries.filter { it != v.favorite }.take(2)).forEach { s.care.visitAct(it) }
+            }
+            assertTrue(s.care.visitors().size <= app.pokeplan.care.Visitors.MAX_VISITORS)
+        }
     }
 
     @Test
