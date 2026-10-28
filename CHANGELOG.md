@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.39.0
+
+- Gentle routine reminders on Android. A Care routine with a time now sends one quiet notification at that time on its days, unless it is already done, with Done (ticked off and paid just as in the app) and "In 30 min". It never repeats, and it waits for the end of a focus session. Switch them off in Me, Settings, Modules, "Routine reminders". Routines with no time never remind.
+
 ## 0.38.0
 
 - Care can keep a copy in the cloud, if you want it to. In Me, Settings, Modules, "Care copy in the cloud" is off by default; signed in and switched on, your routines, diary cards and journal go with your account (on their own, apart from your Plan save, and never to friends or leaderboards), so another phone can have them. If two phones both changed, you choose which to keep. Switching it off, or erasing Care's data, deletes the copy. Needs the new Supabase migration, the `care` schema exposed in the API settings, and a redeployed reward function.

@@ -83,10 +83,10 @@ enum class Tab(val label: String, val icon: String) {
 
 /**
  * Where the app can be asked to go: a tab, or a module's screen inside Modules. Widgets, shortcuts and notifications name
- * it ("PLANNER", "FOCUS"), so the names stay as they are.
+ * it ("PLANNER", "FOCUS", "CARE"), so the names stay as they are.
  */
 enum class Place(val tab: Tab) {
-    HOME(Tab.HOME), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), ME(Tab.ME),
+    HOME(Tab.HOME), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), ME(Tab.ME), CARE(Tab.MODULES),
 }
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
@@ -186,6 +186,7 @@ class AppModel(
         when (place) {
             Place.PLANNER -> { module = Module.PLAN; planSection = PlanSection.PLANNER }
             Place.FOCUS -> { module = Module.PLAN; planSection = if (focusTab) PlanSection.FOCUS else null }
+            Place.CARE -> { module = Module.CARE; careSection = null }
             else -> {}
         }
     }
@@ -225,6 +226,8 @@ fun App(
     phone: PhoneState? = null,
     /** Called after every change to the saved data (the Android app uses it to keep its widgets up to date). */
     onDataChanged: ((AppData) -> Unit)? = null,
+    /** Called after every change to Care's save (the Android app keeps routine reminders and the Care widget up to date). */
+    onCareChanged: ((CareData) -> Unit)? = null,
     /** Called when the app switches between the light and dark colours, so the host can match the system bar icons. */
     onDark: ((Boolean) -> Unit)? = null,
 ) {
@@ -241,6 +244,11 @@ fun App(
     if (onDataChanged != null) DisposableEffect(store) {
         val stop = store.observe(onDataChanged)
         onDataChanged(store.data) // the state the app starts in counts too (a focus session already running keeps the screen on)
+        onDispose(stop)
+    }
+    if (onCareChanged != null) DisposableEffect(model.care) {
+        val stop = model.care.observe(onCareChanged)
+        onCareChanged(model.care.data)
         onDispose(stop)
     }
     if (externalChanges != null) LaunchedEffect(externalChanges) {

@@ -153,7 +153,12 @@ Region opened with it. **Opt-in sync (0.38.0):** Settings → Modules → "Care 
 only to a signed-in player; `CareSync` (app-core `cloud`) uploads `care.json` through the reward function (`care-pull`,
 `care-push`, `care-delete`) to `care.saves` with its own version, apart from the Plan save, and asks which to keep when two
 devices both changed. The device's visitor seed and its sync state are never uploaded; turning it off, or erasing Care's
-data, deletes the copy. **Next:** routine reminders and a widget.
+data, deletes the copy.
+**Routine reminders (0.39.0):** on Android, a routine with a time reminds once at that time on
+its days while it is not done (`CareReminders` in app-core, `RoutineReminders` in androidApp), with Done (ticked and paid
+as on the screen) and "In 30 min"; never repeated, not moved by Plan's quiet hours or rest days, held until the end of a
+focus session; Settings → Modules → "Routine reminders" (`CareSettings.reminders`). **Next:** a
+widget.
 
 **Goal:** a calm self-care companion in the spirit of Voidpet Garden, with the buddy, that stays useful with no game at all.
 
@@ -279,7 +284,7 @@ the parser matches the real format.
 2. ~~Parked todos~~ (done in 0.2.0).
 3. **Finish Plan.** Done: reminders as notifications with quiet hours, focus and rest days (0.6.0); a time on tasks and snooze until tomorrow (0.7.0); export, delete account, erase device (0.8.0). The day timeline with tap-to-place time-blocking (0.9.0). Egg tickets for offline hatching (0.10.0). PMD SpriteCollab sprites (0.11.0, owner's priority). Calendar events on the day timeline, Google Calendar through the phone's calendars (0.12.0). Dragging and resizing blocks, and a week timeline (0.14.0). PokéPlan's own events on the calendar, never paid (0.15.0). Seen, caught and owned in the Pokédex (0.16.0). Focus rules: a locked screen and calls handled on Android, the rules on screen, focused and paused time apart (0.16.1). Me metrics defined, with 7 / 30 / 90 day ranges and goal progress apart (0.17.0). Accessibility pass: contrast, 48 dp targets, roles and labels (0.17.1). Desktop and web are deprioritised (they keep compiling; no features only for them, see Platforms in design.md). Lists after TickTick, the Inbox being the tasks in no list (0.21.0); a Month view, multi-day bars in the Week and all-day own events in colours (0.22.0); recurring own events, edited as a series and moved or deleted one at a time (0.24.0). **Next:** check the brief's accessibility checklist on a phone (TalkBack, large text; ui-ux-brief.md section 9, the owner's to do on a device); then item 5.
 4. ~~**Platform tidy before a second module**~~ (done in 0.24.1): the cloud save is in `plan.saves`, the reward rules are versioned, and `docs/economy.md` lists every source, sink and cap. To do by the owner: `supabase db push`, then run the Deploy the reward function workflow.
-5. **Care v1** (section 6), as a module in the same app with its own schema. Rules, save and schema done (0.25.0); Care Region curated (0.32.0); the Modules tab (0.33.0); the screens, the Settings switch and the Care Region released (0.34.0); opt-in sync (0.38.0); next routine reminders and a widget.
+5. **Care v1** (section 6), as a module in the same app with its own schema. Rules, save and schema done (0.25.0); Care Region curated (0.32.0); the Modules tab (0.33.0); the screens, the Settings switch and the Care Region released (0.34.0); opt-in sync (0.38.0); routine reminders (0.39.0); next a widget.
 6. **PokéPlan Launcher** *(moved up by the owner, October 2026: right after Care v1)*: PokéPlan as an optional Android home screen, after Niagara and Smart Launcher ("PokéPlan Launcher" below).
 7. **Charm pass:** hatch and evolution ceremonies, region themes, the Oak sprite, music.
 8. **Grow**, then **health integration** (the Huawei export importer first, see section 6), then **Home** modules.

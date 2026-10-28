@@ -13,13 +13,16 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
 import app.pokeplan.app.AppData
+import app.pokeplan.app.CareReminders
 import app.pokeplan.app.upcomingReminders
+import app.pokeplan.care.CareData
 import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.ui.App
 import app.pokeplan.ui.AppLaunch
 import app.pokeplan.ui.Place
 import app.pokeplan.reminders.AppAlerts
+import app.pokeplan.reminders.RoutineReminders
 import app.pokeplan.reminders.TaskReminders
 import app.pokeplan.widgets.announceBuddyEvent
 import app.pokeplan.widgets.updateWidgets
@@ -41,6 +44,10 @@ class MainActivity : ComponentActivity() {
     private var widgetRefresh: Job? = null
     private var reminderSignature: Int? = null
     private var reminderRefresh: Job? = null
+    private var appData: AppData? = null
+    private var careData: CareData? = null
+    private var routineSignature: Int? = null
+    private var routineRefresh: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,7 +66,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             App(
                 storage, careStorage = careStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), onDataChanged = ::keepWidgetsCurrent, onDark = ::matchSystemBars,
+                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onDark = ::matchSystemBars,
             )
         }
     }
@@ -76,6 +83,8 @@ class MainActivity : ComponentActivity() {
     private fun keepWidgetsCurrent(data: AppData) {
         keepScreenOn(data.focus != null)
         keepRemindersCurrent(data)
+        appData = data
+        keepRoutineRemindersCurrent()
         val buddy = data.player.buddy
         val signature = listOf(
             buddy?.id, buddy?.form?.id, buddy?.isShiny, buddy?.nickname, buddy?.level, buddy?.candyProgress,
@@ -114,6 +123,27 @@ class MainActivity : ComponentActivity() {
             delay(800)
             TaskReminders.reschedule(applicationContext, upcoming)
             AppAlerts.schedule(applicationContext, alerts)
+        }
+    }
+
+    private fun careChanged(data: CareData) {
+        careData = data
+        keepRoutineRemindersCurrent()
+    }
+
+    /** Sets Care's routine reminders again when they change (a routine, a tick, a focus session), a moment after the last change. */
+    private fun keepRoutineRemindersCurrent() {
+        val app = appData ?: return
+        val care = careData ?: return
+        val upcoming = CareReminders.upcoming(care, app, System.currentTimeMillis(), TimeZone.currentSystemDefault())
+        if (upcoming.isNotEmpty()) askForNotifications()
+        val signature = upcoming.map { it.routineId to it.atMillis }.hashCode()
+        if (signature == routineSignature) return
+        routineSignature = signature
+        routineRefresh?.cancel()
+        routineRefresh = lifecycleScope.launch {
+            delay(800)
+            RoutineReminders.reschedule(applicationContext, upcoming)
         }
     }
 
