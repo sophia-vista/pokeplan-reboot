@@ -5,7 +5,7 @@ One Supabase project serves every Pokémon app (see "Platform and apps" in `docs
 
 | Path | What |
 |---|---|
-| `migrations/` | The database, in order. `…01_platform` (profiles, Pokémon, bag, ledger), `…02_plan` (planner tables), `…03_state_functions` (`load_state`, `apply_outcome`), `…04_social` (friends, leaderboard, gifts), `…05_guardians`, `…06_cloud_save`, `…07_egg_tickets` (offline hatching), `…08_plan_saves` (the cloud save moves to `plan.saves`; the rules version on the ledger), `…09_care` (Care's opt-in cloud copy, `care.saves`: its own version, readable and deletable only by its player, never game state) |
+| `migrations/` | The database, in order. `…01_platform` (profiles, Pokémon, bag, ledger), `…02_plan` (planner tables), `…03_state_functions` (`load_state`, `apply_outcome`), `…04_social` (friends, leaderboard, gifts), `…05_guardians`, `…06_cloud_save`, `…07_egg_tickets` (offline hatching), `…08_plan_saves` (the cloud save moves to `plan.saves`; the rules version on the ledger), `…09_care` (Care's opt-in cloud copy, `care.saves`: its own version, readable and deletable only by its player, never game state), `…14_care_sync` (`care.delete_save`, for turning Care's sync off) |
 | `tests/` | SQL tests, run by `tests/run.sh` on a throwaway PostgreSQL 16 (no Supabase needed) |
 | `functions/reward/` | The Edge Function that grants rewards by running the Kotlin engine compiled to JavaScript |
 
@@ -24,7 +24,7 @@ They cannot set coins, levels, items, shininess or task completion: those column
 
 1. Create a project at supabase.com (the free tier is enough).
 2. Link and push the schema: `supabase link --project-ref <ref>` then `supabase db push`.
-3. In *Project settings → API → Exposed schemas* add `platform` and `plan`.
+3. In *Project settings → API → Exposed schemas* add `platform`, `plan` and `care` (the reward function calls `care.pull_save`, `care.push_save` and `care.delete_save` for Care's opt-in copy).
 4. Build and deploy the function: `supabase/functions/reward/build.sh && supabase functions deploy reward`. `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided to functions automatically.
    Without a computer set up for it: add the repository secret `SUPABASE_ACCESS_TOKEN` (Supabase → Account → Access Tokens → Generate new token; GitHub → Settings → Secrets and variables → Actions), then run *Actions → Deploy the reward function → Run workflow* (`.github/workflows/deploy-reward.yml`). Run it again after any change to the engine or the function.
    **Order:** push new migrations (`supabase db push`) before deploying the function that needs them. A function deployed before a migration keeps working after it (from `…08`, `platform.pull_save` and `platform.push_save` are wrappers for the old function, to drop once the new one is deployed).

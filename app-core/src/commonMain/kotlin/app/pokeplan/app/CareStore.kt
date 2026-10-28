@@ -3,6 +3,7 @@ package app.pokeplan.app
 import app.pokeplan.care.BefriendResult
 import app.pokeplan.care.CalmBreak
 import app.pokeplan.care.CareAction
+import app.pokeplan.care.CareCloud
 import app.pokeplan.care.CareData
 import app.pokeplan.care.CareRules
 import app.pokeplan.care.CareSettings
@@ -30,6 +31,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import kotlin.random.Random
 
 /**
@@ -78,7 +80,14 @@ class CareStore(
     }
 
     private fun update(change: (CareData) -> CareData) {
-        data = change(data)
+        val before = data
+        val after = change(before)
+        // Any change while sync is on waits to be uploaded; a change that sets the cloud state itself (a sync) does not.
+        data = if (after.settings.cloudSync && after.cloud != null && after.cloud == before.cloud && after != before) {
+            after.copy(cloud = after.cloud!!.copy(unsynced = true))
+        } else {
+            after
+        }
         storage.save(json.encodeToString(CareData.serializer(), data))
         listeners.toList().forEach { it(data) }
     }
@@ -302,6 +311,42 @@ class CareStore(
 
     /** Erases Care's save on this device. */
     fun erase() = update { CareData() }
+
+    // --- the opt-in cloud copy (CareSync) -----------------------------------------------------------------------------
+
+    /** Whether there is anything of the player's to lose: a device with only its settings can take the cloud copy as it is. */
+    val hasEntries: Boolean
+        get() = data.routines.isNotEmpty() || data.diary.isNotEmpty() || data.breaks.isNotEmpty() || data.practices.isNotEmpty() ||
+            data.journal.isNotEmpty() || data.met.isNotEmpty() || data.befriendDay != null
+
+    /** Turns the cloud copy on or off; off forgets where it stood (the copy itself is deleted by CareSync). */
+    fun setCloudSync(on: Boolean) = update { it.copy(settings = it.settings.copy(cloudSync = on), cloud = if (on) it.cloud else null) }
+
+    /** The document uploaded: everything but this device's cloud state and visitor seed (visitors are seeded per device). */
+    fun cloudDocument(): JsonObject =
+        json.encodeToJsonElement(CareData.serializer(), data.copy(cloud = null, visitorSeed = 0)) as JsonObject
+
+    /** Takes the cloud copy (another device's), keeping this device's sync switch, seed and cloud state. */
+    fun adoptCloud(document: JsonObject, userId: String, version: Int) {
+        val cloud = try {
+            json.decodeFromJsonElement(CareData.serializer(), document)
+        } catch (e: Exception) {
+            return
+        }
+        update {
+            cloud.copy(
+                settings = cloud.settings.copy(cloudSync = it.settings.cloudSync),
+                visitorSeed = it.visitorSeed,
+                cloud = CareCloud(userId, version, unsynced = false, syncedAtMillis = nowMillis),
+            )
+        }
+    }
+
+    /** The cloud has this device's copy at [version]; [sent] is what was uploaded, so a change made meanwhile still waits. */
+    fun markSynced(userId: String, version: Int, sent: CareData? = null) = update {
+        val changedSince = sent != null && it.copy(cloud = null) != sent.copy(cloud = null)
+        it.copy(cloud = CareCloud(userId, version, unsynced = changedSince, syncedAtMillis = nowMillis))
+    }
 
     companion object {
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
