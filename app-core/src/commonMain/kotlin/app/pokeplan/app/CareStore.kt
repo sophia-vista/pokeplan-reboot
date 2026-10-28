@@ -14,6 +14,7 @@ import app.pokeplan.care.JournalEntry
 import app.pokeplan.care.PetSpot
 import app.pokeplan.care.Prompt
 import app.pokeplan.care.Prompts
+import app.pokeplan.care.Reaction
 import app.pokeplan.care.Routine
 import app.pokeplan.care.SkillPractice
 import app.pokeplan.care.Visitor
@@ -177,6 +178,9 @@ class CareStore(
     /** Whether today's befriend is still free and some care has paid today (a visitor warms up on days with care). */
     fun canBefriend(): Boolean = data.befriendDay != today && CareRules.paidOn(data, today)
 
+    /** The berries Care can offer as a treat (from the shared bag). */
+    fun berries(): Map<String, Int> = world.berries()
+
     /** Whether today's befriend has been spent. */
     val befriendSpent: Boolean get() = data.befriendDay == today
 
@@ -211,11 +215,17 @@ class CareStore(
         return Visitors.start(speciesId, today).also { v -> update { it.copy(visit = v) } }
     }
 
-    /** Does [action] in the visit; the third ends it (see [finishVisit]). Null when there is no visit to do it in. */
-    fun visitAct(action: CareAction, spot: PetSpot? = null): VisitStep? {
+    /**
+     * Does [action] in the visit; the third ends it (see [finishVisit]). A treat ([CareAction.GIFT]) can be a [berry] from the
+     * shared bag, spent at once; the berry the visitor likes adds a bonus day once. Null when there is no visit to do it in.
+     */
+    fun visitAct(action: CareAction, spot: PetSpot? = null, berry: String? = null): VisitStep? {
         val visit = visit ?: return null
         val visitor = visitors().firstOrNull { it.speciesId == visit.speciesId } ?: return null
-        val (next, reaction) = Visitors.act(visitor, visit, action, spot)
+        val (acted, reaction) = Visitors.act(visitor, visit, action, spot)
+        // Only a treat the visitor takes (not a repeat) uses up the berry.
+        val given = berry?.takeIf { action == CareAction.GIFT && reaction != Reaction.FLAT && visit.berry == null && world.spendBerry(it) }
+        val next = if (given != null) acted.copy(berry = given) else acted
         update { it.copy(visit = next) }
         return VisitStep(reaction, next, if (Visitors.finished(next)) finishVisit() else null)
     }
@@ -234,7 +244,10 @@ class CareStore(
     fun finishVisit(): BefriendResult? {
         val visit = visit?.takeIf { Visitors.finished(it) } ?: return null
         val visitor = visitors().firstOrNull { it.speciesId == visit.speciesId } ?: return null
-        val warmer = visitor.copy(points = visitor.points + if (Visitors.warm(visit)) 1 else 0, lastVisitDay = today)
+        val warmer = visitor.copy(
+            points = visitor.points + Visitors.daysEarned(visitor, visit), lastVisitDay = today,
+            berryBonus = visitor.berryBonus || Visitors.berryBonusDue(visitor, visit),
+        )
         if (warmer.points < Visitors.FRIEND_POINTS) {
             update { d -> d.copy(befriendDay = today, visit = null, met = d.met + visit.speciesId, visitors = d.visitors.map { if (it.speciesId == visit.speciesId) warmer else it }) }
             return BefriendResult(warmer, friend = false, rewards = emptyList())

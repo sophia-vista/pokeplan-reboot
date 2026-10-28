@@ -319,6 +319,15 @@ class GameStore(
     override fun visitorLuck(): Double =
         app.pokeplan.core.pokemon.CarePerks.total(data.player.careLead, data.player.partyOf(PartyIds.CARE))[app.pokeplan.core.pokemon.CareBucket.VISITOR_LUCK] ?: 0.0
 
+    override fun berries(): Map<String, Int> =
+        data.player.inventory.counts.filter { (id, n) -> n > 0 && Items.category(id) == ItemCategory.BERRY }
+
+    override fun spendBerry(berry: String): Boolean {
+        if (!data.onboarded || Items.category(berry) != ItemCategory.BERRY || !data.player.inventory.has(berry)) return false
+        update { d -> d.copy(player = d.player.copy(inventory = d.player.inventory.remove(berry))) }
+        return true
+    }
+
     /**
      * Makes a friend of a Care visitor, once a day: the egg's dice come from the oldest egg ticket (the day's key is
      * `befriend:<epochDay>`, the ticket is spent with it) or, with none, from the device. Returns null when nothing was paid.
