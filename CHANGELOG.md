@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.42.0
+
+- Care feels more like Pokémon. Care opens on your Care buddy in the meadow, just like Home: pet it, give it a berry, and it cries out and hops when you finish a routine, a calm break or a skill. Your Care party stands below it; tap one to hear its cry. Visitors move with their own animations and cry when you tap or visit them. A favourite kind of care gets their cry, a treat the healing chime, and a new friend the Pokémon Center tune. After a calm break your buddy wakes with a stretch and its cry. Ticking a routine, practising a skill and saving a diary card play the menu blip. Sound and Reduce motion settings are respected.
+
 ## 0.41.0
 
 - Visitors like berries. "Offer a treat" during a visit can now be a berry from your bag. Each kind of Pokémon likes one flavour, the same every time; find it by trying. The first time a visitor gets the berry it likes, it counts as an extra warm day, so a friend can come a day sooner. Any berry you offer is eaten. This finishes Care's first version.

@@ -294,6 +294,9 @@ class GameStore(
         return log(source, outcome.rewards, d.copy(player = outcome.state, activeDays = d.activeDays + streakDay, counters = counters))
     }
 
+    /** The Pokémon Care's screens show: Care's lead, or the Plan buddy until Care has one (it takes Care's friendship then). */
+    val careBuddy: OwnedPokemon? get() = data.player.careLead ?: data.player.buddy
+
     /** The day work counts for in streaks: it rolls over at 4am, so a late night still counts for the day before. */
     val streakDay: LocalDate get() = Streaks.streakDay(now)
 
@@ -1189,8 +1192,9 @@ class GameStore(
      * The meaningful thing that happened in the last few minutes (an egg hatched, a task or session paid out), or null.
      * The buddy only speaks and celebrates for these; the rest of the time it just idles.
      */
-    fun buddyEvent(): BuddyEventNow? {
-        val recent = data.rewardLog.filter { nowMillis - it.atMillis < EVENT_MILLIS }
+    fun buddyEvent(care: Boolean = false): BuddyEventNow? {
+        // On Care's screens only Care's own moments count (a routine, a calm break, a skill, a friend made).
+        val recent = data.rewardLog.filter { nowMillis - it.atMillis < EVENT_MILLIS && (!care || it.source.startsWith(CARE_LOG_PREFIX)) }
         val latest = recent.lastOrNull() ?: return null
         val hatches = recent.flatMap { e -> e.rewards.filterIsInstance<Reward.Hatched>() }
         val event = when {
@@ -1209,11 +1213,11 @@ class GameStore(
     }
 
     /**
-     * Pets the buddy: friendship from [FriendshipRules.Source.PET], up to [PET_DAILY_CAP] a day *(tune)*.
+     * Pets the buddy, or [pokemonId] (Care's lead on Care's screens): friendship from [FriendshipRules.Source.PET], up to [PET_DAILY_CAP] a day *(tune)*, shared by all.
      * Returns the friendship gained, 0 when nothing changed (no buddy, or today's petting is used up; nothing is saved then).
      */
-    fun pet(): Int {
-        val buddy = data.player.buddy ?: return 0
+    fun pet(pokemonId: String? = null): Int {
+        val buddy = (if (pokemonId == null) data.player.buddy else data.player.pokemon.firstOrNull { it.id == pokemonId }) ?: return 0
         val key = "pet-$today"
         val gainedToday = data.counters[key] ?: 0
         if (gainedToday >= PET_DAILY_CAP || buddy.friendship >= FriendshipRules.MAX) return 0
@@ -1321,6 +1325,9 @@ class GameStore(
 
         /** The most of each Care kind the world pays a day *(tune)*, a backstop to the same limits in CareRules. */
         val CARE_DAILY_CAP: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 5, CareKind.CALM_BREAK to 3, CareKind.SKILL to 3, CareKind.WEEKLY_RHYTHM to 1)
+        /** Every Care entry in the reward log starts with this (the kind of moment only, never what it was). */
+        const val CARE_LOG_PREFIX = "Care: "
+
         private val CARE_SOURCES = mapOf(
             CareKind.ROUTINE to "Care: a routine", CareKind.CALM_BREAK to "Care: a calm break", CareKind.WEEKLY_RHYTHM to "Care: kept a rhythm", CareKind.SKILL to "Care: a skill practised",
         )

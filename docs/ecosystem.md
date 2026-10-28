@@ -172,6 +172,12 @@ the meadow scene; tapping opens Care. **Care v1 is complete** with the visitor's
 - **Journal** *(replaces the reflection prompts, owner, 0.34.0)*: free entries; the gratitude and reflection prompts are an
   optional, skippable starting point.
 - **Buddy:** reacts with an emoji chosen from its type and bond style, rests during a calm break, never comments on mood.
+  *(0.42.0)* Care's menu opens on Care's buddy (`GameStore.careBuddy`: Care's lead, else the Plan buddy) in the meadow, the
+  same `BuddyStage` as Home: pet it (`pet(id)`, the shared daily cap), give it a berry, and it celebrates only Care's own
+  moments (`buddyEvent(care = true)`) with its cry, portrait and hop. Care's party sits below it, each tappable for its cry.
+  Visitors idle with their own animations and cry when tapped or visited; a loved action plays the cry, a treat the healing
+  chime, a new friend the Pokémon Center tune. The calm-break buddy wakes with a stretch and its cry. Ticks, practised
+  skills and a saved diary card play the select blip. Sounds follow the Sound setting, motion Reduce motion.
 
 **Rewards, with the privacy rule built in:** *entering sensitive information earns nothing* (diary cards, journal entries,
 notes, health values). **Doing** earns: a finished routine (tier 1, capped per day), a calm break (minutes), a practised

@@ -51,6 +51,13 @@ import app.pokeplan.care.Visitors
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.ui.ItemIcon
+import app.pokeplan.app.BuddyReaction
+import app.pokeplan.app.BuddyScene
+import app.pokeplan.core.pokemon.ItemCategory
+import app.pokeplan.core.pokemon.PartyIds
+import app.pokeplan.ui.Sfx
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.Role
 import app.pokeplan.ui.Sprite
 import app.pokeplan.care.Prompts
 import app.pokeplan.care.Routine
@@ -82,12 +89,12 @@ enum class CareSection(val label: String, val icon: String) {
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-internal fun CareScreen(model: AppModel) {
+internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
     val section = model.careSection
     if (section == null) {
         val toModules = { model.module = null }
         BackHandler(enabled = true, onBack = toModules)
-        CareMenu(model, toModules)
+        CareMenu(model, toModules, openPokemon)
         return
     }
     SectionScaffold(section.label, Module.CARE.label, onBack = { model.careSection = null }, icon = section.icon) {
@@ -103,7 +110,7 @@ internal fun CareScreen(model: AppModel) {
 }
 
 @Composable
-private fun CareMenu(model: AppModel, onBack: () -> Unit) {
+private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) -> Unit) {
     val care = model.careData
     val today = model.care.todayRoutines()
     val done = today.count { it.doneOn(model.care.today) }
@@ -115,6 +122,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit) {
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
+            CareBuddy(model, openPokemon)
             RewardBox(model)
             VisitorsCard(model)
             SectionLabel("Today", icon = CareSection.ROUTINES.icon)
@@ -135,6 +143,41 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit) {
                     MenuEntry(CareSection.TRENDS.name, CareSection.TRENDS.icon, "Trends", "the last few weeks", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.careSection = CareSection.valueOf(key) }
+        }
+    }
+}
+
+/**
+ * Care's buddy (Care's lead, else the Plan buddy) in the meadow, as on Home: pet it, give it a berry, and it celebrates Care's
+ * own moments (a routine, a calm break, a skill, a friend) with its cry, its portrait and a hop. Below, Care's party, each
+ * one tappable for its cry. It never comments on how the player feels.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
+    val store = model.store
+    val buddy = store.careBuddy ?: return
+    val data = model.data
+    val berry = data.player.inventory.counts.keys.sorted().firstOrNull { Items.category(it) == ItemCategory.BERRY && data.player.inventory.has(it) }
+    BuddyStage(
+        buddy = buddy, scene = "meadow", darkness = BuddyScene.darkness(store.now.hour, store.now.minute),
+        progress = store.levelProgress(buddy), event = store.buddyEvent(care = true),
+        calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
+        onPet = { avoid -> store.pet(buddy.id); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
+        onFeed = { avoid -> berry?.let { store.useItem(it, buddy.id); model.effect(Sfx.HEAL) }; BuddyReaction.feed(buddy, avoid = avoid) },
+        onOpen = { openPokemon(buddy.id) }, onHaptic = { model.haptic() },
+        onEvent = { model.cry(buddy.speciesId) },
+        celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
+    )
+    val party = data.player.partyOf(PartyIds.CARE).filter { it.id != buddy.id }
+    if (party.isEmpty()) return
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        party.forEach { p ->
+            AnimatedSprite(
+                p.form.id, p.isShiny, p.nickname,
+                Modifier.size(56.dp).clickable(onClickLabel = "Hear ${p.nickname}", role = Role.Button) { model.haptic(); model.cry(p.speciesId) },
+                size = 56.dp, animate = !data.settings.reduceMotion,
+            )
         }
     }
 }
@@ -173,10 +216,16 @@ private fun VisitorsCard(model: AppModel) {
             visitors.forEach { v ->
                 val species = Dex.species(v.speciesId)
                 ListRow(
-                    lead = { Sprite(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, species.name, size = 56.dp) },
+                    lead = {
+                        AnimatedSprite(
+                            Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, species.name,
+                            Modifier.size(56.dp).clickable(onClickLabel = "Hear ${species.name}", role = Role.Button) { model.cry(v.speciesId) },
+                            size = 56.dp, animate = !model.data.settings.reduceMotion,
+                        )
+                    },
                     trail = {
                         PixelButton("Visit", {
-                            if (care.startVisit(v.speciesId) == null) note = "Not today."
+                            if (care.startVisit(v.speciesId) == null) note = "Not today." else { model.haptic(); model.cry(v.speciesId) }
                         }, color = Pixel.Green, enabled = canBefriend || visit?.speciesId == v.speciesId, compact = true)
                     },
                     highlight = false,
@@ -232,6 +281,15 @@ private fun VisitPanel(model: AppModel, visit: Visit, say: (String?) -> Unit) {
     var choosingTreat by remember { mutableStateOf(false) }
     // Its own hop for a favourite, its own eating for a treat; with Reduce motion it stays still and only the words answer.
     fun react(step: VisitStep?, given: CareAction) {
+        if (step != null) {
+            model.haptic()
+            when {
+                step.result?.friend == true -> { model.effect(Sfx.POKEMON_CENTER); model.cry(visit.speciesId) }
+                step.reaction == Reaction.LOVED -> model.cry(visit.speciesId)
+                given == CareAction.GIFT && step.reaction != Reaction.FLAT -> model.effect(Sfx.HEAL)
+                step.reaction == Reaction.LIKED -> model.effect(Sfx.SELECT)
+            }
+        }
         if (!reduce && step != null) {
             action = when {
                 step.reaction == Reaction.LOVED -> SpriteAction.HOP
@@ -256,13 +314,18 @@ private fun VisitPanel(model: AppModel, visit: Visit, say: (String?) -> Unit) {
     }
     SceneStage("meadow", 160.dp) {
         AnimatedSprite(
-            formId, false, name, Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp), size = 112.dp, animate = !reduce,
+            formId, false, name,
+            Modifier.align(Alignment.BottomCenter).padding(bottom = 20.dp).clickable(onClickLabel = "Hear $name", role = Role.Button) {
+                model.haptic(); model.cry(visit.speciesId)
+                if (!reduce) { action = SpriteAction.HOP; key++ }
+            },
+            size = 112.dp, animate = !reduce,
             action = action, actionKey = key, onActionDone = { action = SpriteAction.IDLE },
         )
     }
     visit.pendingBid?.let { bid ->
         Text(bid.text(), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
-        PixelButton("Notice", { care.visitNotice() }, color = Pixel.Green, compact = true)
+        PixelButton("Notice", { care.visitNotice(); model.haptic(); model.effect(Sfx.JUMP) }, color = Pixel.Green, compact = true)
     }
     if (choosingSpot) {
         Text("Where do you pat $name?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -331,7 +394,7 @@ private fun RoutineRow(model: AppModel, routine: Routine, onOpen: (() -> Unit)? 
             when {
                 routine.archived || !due -> Unit
                 doneToday -> PixelButton("Undo", { care.undoRoutine(routine.id) }, color = Pixel.InkSoft, compact = true)
-                else -> PixelButton("Done", { care.completeRoutine(routine.id) }, color = Pixel.Green, compact = true)
+                else -> PixelButton("Done", { model.effect(Sfx.SELECT); model.haptic(); care.completeRoutine(routine.id) }, color = Pixel.Green, compact = true)
             }
         },
     ) {
@@ -448,12 +511,18 @@ private fun CalmBreakView(model: AppModel) {
     var seconds by remember { mutableStateOf(CareRules.BREAK_MIN_SECONDS) }
     var startedAt by remember { mutableStateOf<Long?>(null) }
     var result by remember { mutableStateOf<String?>(null) }
-    val buddy = model.data.player.buddy
+    val buddy = model.store.careBuddy
+    var wake by remember { mutableStateOf(0) }
+    var waking by remember { mutableStateOf(false) }
 
     fun finish(length: Int) {
         val short = length < CareRules.BREAK_MIN_SECONDS
         val paid = care.finishCalmBreak(length).isNotEmpty()
         startedAt = null
+        // It wakes up beside you: a stretch (its hop), its cry, and the healing chime when the break earned.
+        buddy?.let { model.cry(it.speciesId) }
+        if (paid) model.effect(Sfx.HEAL)
+        if (!reduce) { waking = true; wake++ }
         result = when {
             paid -> "A calm break, done. Well rested."
             short -> "That one was under a minute, so it doesn't earn anything. It still counts in Trends."
@@ -468,8 +537,17 @@ private fun CalmBreakView(model: AppModel) {
     if (buddy != null) SceneStage("meadow", 200.dp) {
         AnimatedSprite(
             buddy.form.id, buddy.isShiny, if (start != null) "${buddy.nickname}, resting" else buddy.nickname,
-            Modifier.align(Alignment.BottomCenter).padding(bottom = 24.dp), size = 120.dp, animate = !reduce,
-            action = if (start != null) SpriteAction.SLEEP else SpriteAction.IDLE,
+            Modifier.align(Alignment.BottomCenter).padding(bottom = 24.dp).clickable(enabled = start == null, onClickLabel = "Hear ${buddy.nickname}", role = Role.Button) {
+                model.haptic(); model.cry(buddy.speciesId)
+                if (!reduce) { waking = true; wake++ }
+            },
+            size = 120.dp, animate = !reduce,
+            action = when {
+                start != null -> SpriteAction.SLEEP
+                waking -> SpriteAction.HOP
+                else -> SpriteAction.IDLE
+            },
+            actionKey = wake, onActionDone = { waking = false },
         )
     }
     if (start == null) {
@@ -481,7 +559,7 @@ private fun CalmBreakView(model: AppModel) {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     listOf(60, 120).forEach { s -> TabButton(if (s == 60) "1 minute" else "2 minutes", seconds == s, { seconds = s }, Modifier.weight(1f)) }
                 }
-                PixelButton("Start", { result = null; startedAt = model.now }, Modifier.fillMaxWidth(), Pixel.Blue)
+                PixelButton("Start", { result = null; waking = false; model.haptic(); startedAt = model.now }, Modifier.fillMaxWidth(), Pixel.Blue)
                 Text(
                     "Up to ${CareRules.BREAKS_PAID_PER_DAY} calm breaks a day earn friendship and a berry.",
                     style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
@@ -595,6 +673,7 @@ private fun DiaryView(model: AppModel) {
             )
             PixelButton(if (saved == null) "Save today's card" else "Update today's card", {
                 care.saveDiary(feelings, urges, skills, note)
+                model.effect(Sfx.SELECT)
                 done = true
             }, Modifier.fillMaxWidth(), Pixel.Red, enabled = feelings.isNotEmpty() || urges.isNotEmpty() || skills.isNotEmpty() || note.isNotBlank())
             Text(
@@ -636,7 +715,7 @@ private fun SkillsView(model: AppModel) {
                 skill.steps.forEachIndexed { i, step -> Text("${i + 1}. $step", style = MaterialTheme.typography.bodyLarge) }
                 when {
                     skill.calmBreak -> PixelButton("Start a calm break", { model.careSection = CareSection.CALM }, Modifier.fillMaxWidth(), Pixel.Blue)
-                    else -> PixelButton(if (skill.id in practised) "Practised again" else "I practised this", { care.practiseSkill(skill.id) }, Modifier.fillMaxWidth(), Pixel.Green)
+                    else -> PixelButton(if (skill.id in practised) "Practised again" else "I practised this", { model.effect(Sfx.SELECT); model.haptic(); care.practiseSkill(skill.id) }, Modifier.fillMaxWidth(), Pixel.Green)
                 }
                 if (skill.id in practised) Text("Practised today.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 PixelButton("All skills", { open = null }, color = Pixel.InkSoft, compact = true)

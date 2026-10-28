@@ -331,4 +331,18 @@ class CareStoreTest {
         val again = CareStore(s.storage, s.clock, s.game, utc, rng = Random(99))
         assertEquals(first, again.visitors())
     }
+
+    @Test
+    fun careScreensCelebrateOnlyCareMomentsAndPetCaresBuddy() {
+        val s = setup()
+        assertEquals(s.game.data.player.buddy?.id, s.game.careBuddy?.id, "without a Care lead, Care shows the Plan buddy")
+        assertEquals(null, s.game.buddyEvent(care = true))
+        s.care.completeRoutine(s.care.addRoutine("Stretch").id)
+        assertNotNull(s.game.buddyEvent(care = true))
+        val buddy = s.game.careBuddy!!
+        val before = buddy.friendship
+        assertTrue(s.game.pet(buddy.id) > 0)
+        assertTrue(s.game.data.player.pokemon.first { it.id == buddy.id }.friendship > before)
+        assertEquals(0, s.game.pet("nobody"))
+    }
 }
