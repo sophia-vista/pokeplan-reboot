@@ -338,11 +338,12 @@ class GameStore(
     override fun befriend(event: BefriendEvent): List<Reward>? {
         if (!data.onboarded) return null
         val key = "befriend-$today"
-        if ((data.counters[key] ?: 0) >= 1) return null
+        val made = data.counters[key] ?: 0
+        if (made >= BEFRIEND_DAILY_CAP) return null
         val ticket = data.eggTickets.stock.firstOrNull()
         val outcome = RewardEngine.befriend(data.player, event, ticket?.let { Random(it.seed) } ?: rng)
         update { d ->
-            val counters = d.counters.filterKeys { !it.startsWith("befriend-") } + (key to 1)
+            val counters = d.counters.filterKeys { !it.startsWith("befriend-") } + (key to made + 1)
             val tickets = if (ticket == null) d.eggTickets
             else d.eggTickets.copy(stock = d.eggTickets.stock.drop(1), spent = d.eggTickets.spent + SpentTicket(ticket.id, nowMillis, event.newPokemonId))
             log("Care: made a friend", outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets))
@@ -1322,6 +1323,9 @@ class GameStore(
         /** Friendship a day that petting can give. */
         const val PET_DAILY_CAP = 10
         const val LOG_SIZE = 50
+
+        /** Friends Care can make a day, one per visitor in the meadow (`Visitors.MAX_VISITORS`). *(tune)* */
+        const val BEFRIEND_DAILY_CAP = 4
 
         /** The most of each Care kind the world pays a day *(tune)*, a backstop to the same limits in CareRules. */
         val CARE_DAILY_CAP: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 5, CareKind.CALM_BREAK to 3, CareKind.SKILL to 3, CareKind.WEEKLY_RHYTHM to 1)

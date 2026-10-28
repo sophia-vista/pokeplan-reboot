@@ -457,7 +457,7 @@ class ScreenshotTest {
     fun planReview() = modules("plan-review", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.REVIEW)
 
     /** The Care module, with a few routines (one done), a skill practised, a diary card and a journal entry, open on [section] (null for its menu). */
-    private fun care(name: String, section: app.pokeplan.ui.screens.CareSection?, height: Int = 1080, careParty: Int = 0) {
+    private fun care(name: String, section: app.pokeplan.ui.screens.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(careParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.CARE) }
@@ -472,6 +472,7 @@ class ScreenshotTest {
         care.write("Tea with a friend after work.", tags = setOf("People"))
         model.module = app.pokeplan.ui.screens.Module.CARE
         model.careSection = section
+        if (visiting) care.visitors().first().let { v -> care.startVisit(v.speciesId); care.visitAct(app.pokeplan.care.CareAction.WORDS) }
         render(name, height = height) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
@@ -481,6 +482,10 @@ class ScreenshotTest {
     /** Care's whole page with three in Care's party, for comparing with Plan's. */
     @Test
     fun careMenuFull() = care("care-full", null, height = 3600, careParty = 3)
+
+    /** Care with a visit on: the visitor up close in the meadow, its bid, and the kinds of care left. */
+    @Test
+    fun careVisit() = care("care-visit", null, height = 3800, careParty = 3, visiting = true)
 
     @Test
     fun careRoutines() = care("care-routines", app.pokeplan.ui.screens.CareSection.ROUTINES)

@@ -130,6 +130,21 @@ class CareRewardTest {
     @Test
     fun directJoinsAreRareAndStartWithHighFriendship() {
         val joins = (1..400).count { befriend(state(), it).state.pokemon.first { p -> p.id == "friend" }.friendship == RewardEngine.BEFRIEND_JOIN_FRIENDSHIP }
-        assertTrue(joins in 5..50, "joined $joins of 400")
+        assertTrue(joins in 20..70, "joined $joins of 400, about 10%")
+    }
+
+    @Test
+    fun usuallyAFriendLeavesAnEggOfItsFamilysFirstStageAndRarelyJoinsItself() {
+        val pikachu = app.pokeplan.core.dex.Dex.defaultForm(Ids.PIKACHU).identifier
+        val pichu = app.pokeplan.core.dex.Dex.lineRoot(Ids.PIKACHU)
+        assertTrue(pichu != Ids.PIKACHU)
+        val friends = (1..400).map { seed ->
+            RewardEngine.befriend(state(), BefriendEvent(Ids.PIKACHU, pikachu, "friend", 5_000L), Random(seed)).state.pokemon.first { it.id == "friend" }
+        }
+        val (joined, eggs) = friends.partition { it.speciesId == Ids.PIKACHU }
+        assertTrue(eggs.all { it.speciesId == pichu && it.friendship < RewardEngine.BEFRIEND_JOIN_FRIENDSHIP }, "an egg is its family's first stage")
+        assertTrue(joined.all { it.friendship == RewardEngine.BEFRIEND_JOIN_FRIENDSHIP }, "the visitor itself joins with high friendship")
+        assertTrue(joined.size in 20..70, "joined ${joined.size} of 400")
+        assertTrue((joined + eggs).all { p -> app.pokeplan.core.pokemon.Stat.entries.all { p.ivs[it] >= RewardEngine.BEFRIEND_IV_FLOOR } })
     }
 }

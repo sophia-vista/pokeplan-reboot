@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.45.0
+
+- More time with visitors. Every visitor can now have its own visit each day, once you've done something in Care, so you can care for all of them, not just one. Up to four stay in the meadow at once, and the two warmest stand beside your Care buddy: tap one to pat it.
+- Care for visitors with your hands, not just buttons: tap where to pat (its head, under its chin, or its back), drag a treat or berry to it, press and hold it to sit together, swipe across the meadow to tidy its spot, or pick something kind to say. Tap it when it reaches out to you. A small counter shows how far the visit is. Every gesture also works with a screen reader.
+- Play with any visitor any time: pat it, give it a treat, or play tag as it bounds to wherever you tap. Playing is just for fun and never counts as a visit.
+- A new friend is now usually an Egg of its family's first stage, like an egg from the Day Care (a Pikachu leaves a Pichu egg), which hatches at once. About 1 friend in 10 stays as itself, with a high friendship. Reward rules version 11.
+
 ## 0.43.0
 
 - Plan and Care pages now match. Both open on their buddy in its scene, then the whole party in six equal slots (the lead outlined and named Buddy or Lead, free places shown as a faint Poké Ball), the party's perks, today's tasks or routines, and the sections. Tap a party member to hear its cry and see it hop; hold it to open its page. Plan's perks say which rank opens them (they already count before that). In Pokémon, Party, the Plan and Care tabs now both show a perk card, and Care's has "Where they come from" too. Smaller fixes: "1 entry" and "1 routine today" instead of "1 entries" and "1 routines today", and a gap under the party tabs closed.

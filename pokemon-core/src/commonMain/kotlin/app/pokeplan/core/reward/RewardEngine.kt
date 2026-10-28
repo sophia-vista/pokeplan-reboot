@@ -214,11 +214,14 @@ object RewardEngine {
     /** Care pays bond, berries and a small share of trainer rank; never candies or eggs. *(tune)* */
     const val CARE_POINTS = 1
 
-    /** Befriending a visitor: trainer points, the IV floor of its egg (visitor luck adds up to the bonus), the chance it joins at once, and its friendship then. *(tune)* */
+    /**
+     * Befriending a visitor: trainer points, the IV floor of what joins (visitor luck adds up to the bonus), the chance the
+     * visitor itself joins rather than leaving an egg of its family's first stage, and its friendship then. *(tune)*
+     */
     const val BEFRIEND_POINTS = 3
     const val BEFRIEND_IV_FLOOR = 10
     const val BEFRIEND_LUCK_IV_BONUS = 6
-    const val BEFRIEND_DIRECT_JOIN_PERCENT = 5.0
+    const val BEFRIEND_DIRECT_JOIN_PERCENT = 10.0
     /** Each percent of Visitor luck adds this share of a percent to the direct-join chance. */
     const val BEFRIEND_LUCK_JOIN_SHARE = 0.2
     const val BEFRIEND_JOIN_FRIENDSHIP = 150
@@ -338,17 +341,21 @@ object RewardEngine {
      * weekly rhythm [RHYTHM_BERRIES] berries; each adds a little trainer rank. Perks don't apply: Care is about the bond, not the haul.
      */
     /**
-     * A friend made through Care: the visitor's egg hatches at once into Care's party if there is room (else the PC), with a
-     * floor on its IVs; rarely the visitor joins directly with a high starting friendship. Visitor luck from Care's party
+     * A friend made through Care. Usually it leaves an egg of its family's first stage, like an egg from the Day Care (a
+     * Pikachu leaves a Pichu egg), which hatches at once into Care's party if there is room (else the PC); rarely the
+     * visitor itself joins, with a high starting friendship. Both have a floor on their IVs. Visitor luck from Care's party
      * raises the floor and the chance a little. [rng] is the egg ticket's seed when the device has one.
      */
     fun befriend(state: PlayerState, e: BefriendEvent, rng: Random): Outcome {
         val luck = CarePerks.total(state.careLead, state.partyOf(PartyIds.CARE))[CareBucket.VISITOR_LUCK] ?: 0.0
         val careParty = state.partyOf(PartyIds.CARE).size
-        var p = Hatching.create(e.newPokemonId, HatchOption(e.speciesId, e.formIdentifier), careParty, e.nowMillis, TASK_EGG_MINUTES, rng)
+        val joins = rng.nextDouble() * 100 < BEFRIEND_DIRECT_JOIN_PERCENT + luck * BEFRIEND_LUCK_JOIN_SHARE
+        val first = Dex.lineRoot(e.speciesId)
+        val hatch = if (joins || first == e.speciesId) HatchOption(e.speciesId, e.formIdentifier) else HatchOption(first, Dex.defaultForm(first).identifier)
+        var p = Hatching.create(e.newPokemonId, hatch, careParty, e.nowMillis, TASK_EGG_MINUTES, rng)
         val floor = BEFRIEND_IV_FLOOR + (luck / Perks.BUCKET_CAP * BEFRIEND_LUCK_IV_BONUS).toInt()
         p = p.copy(partyId = PartyIds.CARE, ivs = Stat.entries.fold(p.ivs) { ivs, stat -> ivs.with(stat, maxOf(ivs[stat], floor)) })
-        if (rng.nextDouble() * 100 < BEFRIEND_DIRECT_JOIN_PERCENT + luck * BEFRIEND_LUCK_JOIN_SHARE) p = p.copy(friendship = BEFRIEND_JOIN_FRIENDSHIP)
+        if (joins) p = p.copy(friendship = BEFRIEND_JOIN_FRIENDSHIP)
         val lead = state.careLeadId?.takeIf { state.careLead != null } ?: p.id.takeIf { p.inParty }
         return Outcome(
             state.copy(
