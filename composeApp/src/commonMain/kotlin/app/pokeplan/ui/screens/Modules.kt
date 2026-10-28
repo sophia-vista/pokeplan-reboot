@@ -40,7 +40,7 @@ fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> U
     when (model.module) {
         Module.PLAN -> PlanScreen(model, focusTab, openPokemon)
         // Care switched off in Settings hides it; what it saved is kept.
-        Module.CARE -> if (model.data.settings.careModule) CareScreen(model) else ModulesMenu(model)
+        Module.CARE -> if (model.data.settings.careModule) CareScreen(model, openPokemon) else ModulesMenu(model)
         null -> ModulesMenu(model)
     }
 }
