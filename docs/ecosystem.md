@@ -276,10 +276,11 @@ the parser matches the real format.
 3. **Finish Plan.** Done: reminders as notifications with quiet hours, focus and rest days (0.6.0); a time on tasks and snooze until tomorrow (0.7.0); export, delete account, erase device (0.8.0). The day timeline with tap-to-place time-blocking (0.9.0). Egg tickets for offline hatching (0.10.0). PMD SpriteCollab sprites (0.11.0, owner's priority). Calendar events on the day timeline, Google Calendar through the phone's calendars (0.12.0). Dragging and resizing blocks, and a week timeline (0.14.0). PokéPlan's own events on the calendar, never paid (0.15.0). Seen, caught and owned in the Pokédex (0.16.0). Focus rules: a locked screen and calls handled on Android, the rules on screen, focused and paused time apart (0.16.1). Me metrics defined, with 7 / 30 / 90 day ranges and goal progress apart (0.17.0). Accessibility pass: contrast, 48 dp targets, roles and labels (0.17.1). Desktop and web are deprioritised (they keep compiling; no features only for them, see Platforms in design.md). Lists after TickTick, the Inbox being the tasks in no list (0.21.0); a Month view, multi-day bars in the Week and all-day own events in colours (0.22.0); recurring own events, edited as a series and moved or deleted one at a time (0.24.0). **Next:** check the brief's accessibility checklist on a phone (TalkBack, large text; ui-ux-brief.md section 9, the owner's to do on a device); then item 5.
 4. ~~**Platform tidy before a second module**~~ (done in 0.24.1): the cloud save is in `plan.saves`, the reward rules are versioned, and `docs/economy.md` lists every source, sink and cap. To do by the owner: `supabase db push`, then run the Deploy the reward function workflow.
 5. **Care v1** (section 6), as a module in the same app with its own schema. Rules, save and schema done (0.25.0); Care Region curated (0.32.0); the Modules tab (0.33.0); the screens, the Settings switch and the Care Region released (0.34.0); next opt-in sync, then routine reminders and a widget.
-6. **Charm pass:** hatch and evolution ceremonies, region themes, the Oak sprite, music.
-7. **Grow**, then **health integration** (the Huawei export importer first, see section 6), then **Home** modules.
-8. **PokéLife extras** (the owner's name for the whole family): Poketch-style utilities with helper Pokémon ("Poketch utilities and helper Pokémon" below), a live wallpaper with the buddy in its scene, then a Pokémon-themed launcher as the endgame.
-9. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
+6. **PokéPlan Launcher** *(moved up by the owner, October 2026: right after Care v1)*: PokéPlan as an optional Android home screen, after Niagara and Smart Launcher ("PokéPlan Launcher" below).
+7. **Charm pass:** hatch and evolution ceremonies, region themes, the Oak sprite, music.
+8. **Grow**, then **health integration** (the Huawei export importer first, see section 6), then **Home** modules.
+9. **PokéLife extras** (the owner's name for the whole family): Poketch-style utilities with helper Pokémon ("Poketch utilities and helper Pokémon" below) and a live wallpaper with the buddy in its scene (the launcher can show it once it exists).
+10. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
 
 ### Ideas parked
 
@@ -325,6 +326,38 @@ Handy tools that live in the app and as widgets, each one a "Poketch app" the pl
 **Decided (owner).**
 - No friendship tick for using a tool: helpers stay pure flavour, and no tool pays anything.
 - Exchange rates come from a free rates service called by the app (no Supabase function). Which service is picked when the tool is built.
+
+### PokéPlan Launcher *(proposed, owner's idea)*
+
+PokéPlan can also be the phone's home screen, in the spirit of **Niagara** (one clean list, the apps you use most) and
+**Smart Launcher** (apps sorted into categories by themselves, widgets, personalization). Android only; desktop and web
+do not get it.
+
+- **One APK, opt-in.** A `LauncherActivity` in `androidApp` with the `HOME` and `DEFAULT` intent categories. Nothing
+  changes until the user picks PokéPlan as the home app in Android's settings (the launcher offers a button that opens
+  them); the normal app icon and `MainActivity` stay as they are. One APK keeps a single `save.json` and `GameStore`, which
+  a second APK could not read.
+- **Home page (Niagara).** The buddy in its scene (the live wallpaper later), today's tasks with a tick, a Focus button,
+  and a short pinned list of apps. No dock clutter, no badges.
+- **App list.** Swipe up for every app A to Z with a letter scroller and search (`LauncherApps`, which also covers work
+  profiles). Long press: pin, hide, app info, uninstall.
+- **Categories (Smart Launcher).** Apps sorted by the category they declare (`ApplicationInfo.category`, Android 8, our
+  minSdk), with a fallback "Other" and the user able to move an app. Each category card uses a real item icon, as on the
+  menus (`screens/Menu.kt`).
+- **Widgets.** Hosts any app's widgets (`AppWidgetHost`), PokéPlan's Buddy, Today's tasks and Focus first among them.
+- **Personalization.** PC box wallpapers, region themes and `DayBackground`; the buddy on the home page is any party
+  Pokémon. App icons are each app's own (no icon packs drawn by us), so the art rule holds.
+- **Pays nothing.** Opening apps, pinning or sorting earns no candies, items, eggs, rank points or effort events, like the
+  Poketch tools. The launcher only shows and starts what already pays.
+- **Reliability first.** A home screen must never crash or lag: v1 is the app list, categories and widgets; the game parts
+  come in once that is solid. Its data (pins, hidden apps, categories, layout) is client-side, on the device only, never
+  synced (it describes the user's installed apps).
+
+**Decided (owner, October 2026).**
+- **Strict focus.** During a focus session, pressing Home keeps the Focus screen on: it is not leaving the app and starts no
+  grace period. There is no separate "focus home" that hides apps; opening another app still starts the 10 second grace
+  period as today.
+- **Care on the home page.** When Care is on, today's routines (with a tick) and today's diary card sit on the home page.
 
 ## 9. Open questions
 
