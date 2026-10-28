@@ -84,7 +84,8 @@ private class Run(val profile: Profile, val seed: Int, val days: Int) {
     val owned = mutableSetOf<Int>()
     val planEntries: Set<Int> = Rarity.entries.flatMap { HatchRules.pool(Region.PLAN, it) }.map { it.speciesId }.toSet()
     var planDay: Int? = null
-    val regionUnlockDay = mutableMapOf<Region, Int>()
+    val careEntries: Set<Int> = Rarity.entries.flatMap { HatchRules.pool(Region.CARE, it) }.map { it.speciesId }.toSet()
+    var careDay: Int? = null
     var eggs = 0; var taskEggs = 0; var shinies = 0
     var rare = 0; var superCandy = 0; var coinsFromTransfers = 0
     var drops = 0; var transfers = 0
@@ -183,7 +184,7 @@ private class Run(val profile: Profile, val seed: Int, val days: Int) {
                 }
             }
             housekeeping()
-            for (r in TrainerRank.unlockedRegions(state.trainerPoints)) regionUnlockDay.putIfAbsent(r, day)
+            if (careDay == null && careEntries.all { it in owned }) careDay = day
             if (planDay == null && planEntries.all { it in owned }) planDay = day
             if (day in listOf(30, 60, 90, 180)) snapshot(day)
         }
@@ -212,7 +213,7 @@ fun simulateReport(runsPerProfile: Int = 60, days: Int = 180): String {
     sb.appendLine("## Targets")
     sb.appendLine()
     sb.appendLine("- Basic Plan dex ($plan hatchable species) in about 60 days for a typical player.")
-    sb.appendLine("- Ranks quick at first, slower after: Apprentice (Kanto) within about 2 days and Ace within about 2 weeks for a typical player; each rank takes longer than the one before.")
+    sb.appendLine("- Ranks quick at first, slower after: Apprentice within about 2 days and Ace within about 2 weeks for a typical player; each rank takes longer than the one before.")
     sb.appendLine("- Evolving everything in the Plan Region once needs ${demand.evolutions} evolutions: ${demand.superCandies} Super Candies, ${demand.rareCandiesLow} to ${demand.rareCandiesHigh} Rare Candies (with and without the catch-up discount), ${demand.stones} stones, ${demand.linkCords} Link Cords, ${demand.trials} trials.")
     sb.appendLine()
     for (p in profiles) {
@@ -224,7 +225,8 @@ fun simulateReport(runsPerProfile: Int = 60, days: Int = 180): String {
         sb.appendLine("|---|---|")
         val planDays = runs.map { (it.planDay ?: (days + 1)).toDouble() }
         row("Day the basic Plan dex is complete (${days + 1} = not within $days)", planDays)
-        for (region in Region.games.take(4)) row("Day ${region.label} unlocks", runs.map { (it.regionUnlockDay[region] ?: (days + 1)).toDouble() })
+        // Only the Plan and Care Regions are collected (0.44.0); once the Plan dex is done, eggs come from the Care Region.
+        row("Day the basic Care dex is complete (${days + 1} = not within $days)", runs.map { (it.careDay ?: (days + 1)).toDouble() })
         for (d in listOf(30, 60, 90)) {
             row("Rank after $d days", runs.map { it.checkpoints[d]!!.rank.toDouble() })
             row("Eggs after $d days (incl. Task Eggs)", runs.map { it.checkpoints[d]!!.eggs.toDouble() })

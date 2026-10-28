@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.44.0
+
+- Only the Plan and Care Regions now. Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar and Paldea are gone from the hatching region picker and the Pokédex tabs, and ranks no longer open them; the National Dex tab still lists every species. Pokémon you already hatched from them stay yours, and if one of them was your hatching region, eggs now come from the Plan Region. Legendary quests no longer ask you to catch a share of those regions.
+
 ## 0.43.0
 
 - Plan and Care pages now match. Both open on their buddy in its scene, then the whole party in six equal slots (the lead outlined and named Buddy or Lead, free places shown as a faint Poké Ball), the party's perks, today's tasks or routines, and the sections. Tap a party member to hear its cry and see it hop; hold it to open its page. Plan's perks say which rank opens them (they already count before that). In Pokémon, Party, the Plan and Care tabs now both show a perk card, and Care's has "Where they come from" too. Smaller fixes: "1 entry" and "1 routine today" instead of "1 entries" and "1 routines today", and a gap under the party tabs closed.

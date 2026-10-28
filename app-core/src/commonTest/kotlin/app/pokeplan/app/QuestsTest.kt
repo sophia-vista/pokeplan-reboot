@@ -66,6 +66,12 @@ class QuestsTest {
     }
 
     @Test
+    fun noQuestAsksForARetiredRegion() {
+        // The games' regions are retired (0.44.0), so a quest's dex share is only ever asked of the Plan or Care Region.
+        assertTrue(Quests.all.all { q -> q.dexRegion == null || q.dexRegion!!.released })
+    }
+
+    @Test
     fun progressCountsOnlyWhatHappenedAfterAcceptance() {
         val since = 1_000_000L
         val state = QuestState(since)
