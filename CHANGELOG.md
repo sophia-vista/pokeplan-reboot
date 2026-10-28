@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.41.0
+
+- Visitors like berries. "Offer a treat" during a visit can now be a berry from your bag. Each kind of Pokémon likes one flavour, the same every time; find it by trying. The first time a visitor gets the berry it likes, it counts as an extra warm day, so a friend can come a day sooner. Any berry you offer is eaten. This finishes Care's first version.
+
 ## 0.40.0
 
 - A Care widget for the home screen: today's routines with a tick (ticking one there counts and pays just as in the app), the ones already done, and whether today's diary card is saved, in the meadow. Tap it to open Care.

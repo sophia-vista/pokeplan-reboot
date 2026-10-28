@@ -134,7 +134,7 @@ lists are curated when their modules start.
 - **Evolution paths map to modules:** level (Plan), friendship (Care), trials (Grow). Existing rules already have all three.
 - **Duplicates:** the same real action never rewards twice. A routine shown in two modules has one canonical source record.
 
-## 6. Care module v1 (being built)
+## 6. Care module v1 (done in 0.41.0)
 
 **Built (0.25.0, no screens yet):** `care-core` (routines, calm breaks, mood check-ins, prompts, trends, `CareRules`), the
 Care events in the shared engine (`RewardEngine.care`, rules version 2), `CareStore` in `app-core` with its own save, apart
@@ -159,7 +159,7 @@ its days while it is not done (`CareReminders` in app-core, `RoutineReminders` i
 as on the screen) and "In 30 min"; never repeated, not moved by Plan's quiet hours or rest days, held until the end of a
 focus session; Settings → Modules → "Routine reminders" (`CareSettings.reminders`). **Care widget (0.40.0):** today's
 routines with a tick (ticked and paid as on the screen), the done ones below, and whether today's diary card is saved, in
-the meadow scene; tapping opens Care. **Next:** the visitor's liked berry.
+the meadow scene; tapping opens Care. **Care v1 is complete** with the visitor's liked berry (0.41.0, under Befriending).
 
 **Goal:** a calm self-care companion in the spirit of Voidpet Garden, with the buddy, that stays useful with no game at all.
 
@@ -207,7 +207,10 @@ still earns nothing, and a visitor never reads a domain (only the *kind* of Care
   break of 3 days or more brings 3 visitors instead of 2. The egg hatches at once, like a Task Egg, as the visitor's own species
   (the player chose it), into Care's party if there is room, else the PC. **Visitor luck** (Flying, Psychic, Ghost in Care's party)
   raises a visitor's chance of arriving one rarity higher, the egg's IV floor (up to +6) and the direct-join chance (up to +5
-  percentage points). Not built yet: the berry that adds a bonus point (Care cannot see the bag).
+  percentage points). **The liked berry (0.41.0):** each species likes one of the five berry flavours
+(`Visitors.likedBerry`, the same every time, found by trying). "Offer a treat" can give a berry from the shared bag (spent
+at once through `World.spendBerry`); its liked flavour adds one bonus day once per visitor (`Visitors.BERRY_BONUS`,
+`Visitor.berryBonus`), so a friend takes 3 days at the quickest instead of 4.
 - **Visits (0.36.0, replaces the one-tap befriend).** Tapping a visitor starts a **visit** of 3 actions from five kinds of care, named
   after Chapman's love languages (words, time, gift, service, touch). Each visitor has a seeded **favourite** (`Visitor.favorite`)
   found by trying: the favourite gives 2 warmth, any other kind 1, one already used in the visit 0. After the 1st and 2nd action it
@@ -285,7 +288,7 @@ the parser matches the real format.
 2. ~~Parked todos~~ (done in 0.2.0).
 3. **Finish Plan.** Done: reminders as notifications with quiet hours, focus and rest days (0.6.0); a time on tasks and snooze until tomorrow (0.7.0); export, delete account, erase device (0.8.0). The day timeline with tap-to-place time-blocking (0.9.0). Egg tickets for offline hatching (0.10.0). PMD SpriteCollab sprites (0.11.0, owner's priority). Calendar events on the day timeline, Google Calendar through the phone's calendars (0.12.0). Dragging and resizing blocks, and a week timeline (0.14.0). PokéPlan's own events on the calendar, never paid (0.15.0). Seen, caught and owned in the Pokédex (0.16.0). Focus rules: a locked screen and calls handled on Android, the rules on screen, focused and paused time apart (0.16.1). Me metrics defined, with 7 / 30 / 90 day ranges and goal progress apart (0.17.0). Accessibility pass: contrast, 48 dp targets, roles and labels (0.17.1). Desktop and web are deprioritised (they keep compiling; no features only for them, see Platforms in design.md). Lists after TickTick, the Inbox being the tasks in no list (0.21.0); a Month view, multi-day bars in the Week and all-day own events in colours (0.22.0); recurring own events, edited as a series and moved or deleted one at a time (0.24.0). **Next:** check the brief's accessibility checklist on a phone (TalkBack, large text; ui-ux-brief.md section 9, the owner's to do on a device); then item 5.
 4. ~~**Platform tidy before a second module**~~ (done in 0.24.1): the cloud save is in `plan.saves`, the reward rules are versioned, and `docs/economy.md` lists every source, sink and cap. To do by the owner: `supabase db push`, then run the Deploy the reward function workflow.
-5. **Care v1** (section 6), as a module in the same app with its own schema. Rules, save and schema done (0.25.0); Care Region curated (0.32.0); the Modules tab (0.33.0); the screens, the Settings switch and the Care Region released (0.34.0); opt-in sync (0.38.0); routine reminders (0.39.0); the Care widget (0.40.0); next the visitor's liked berry.
+5. **Care v1** (section 6), as a module in the same app with its own schema. Rules, save and schema done (0.25.0); Care Region curated (0.32.0); the Modules tab (0.33.0); the screens, the Settings switch and the Care Region released (0.34.0); opt-in sync (0.38.0); routine reminders (0.39.0); the Care widget (0.40.0); the visitor's liked berry (0.41.0). **Care v1 is done**; next item 6.
 6. **PokéPlan Launcher** *(moved up by the owner, October 2026: right after Care v1)*: PokéPlan as an optional Android home screen, after Niagara and Smart Launcher ("PokéPlan Launcher" below).
 7. **Charm pass:** hatch and evolution ceremonies, region themes, the Oak sprite, music.
 8. **Grow**, then **health integration** (the Huawei export importer first, see section 6), then **Home** modules.

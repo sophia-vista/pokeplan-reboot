@@ -17,4 +17,10 @@ interface World {
 
     /** Care's Visitor luck in percent, from the lead and party of Care's party. */
     fun visitorLuck(): Double = 0.0
+
+    /** The berries in the shared bag (item id to count), which Care can offer a visitor as a treat. */
+    fun berries(): Map<String, Int> = emptyMap()
+
+    /** Takes one [berry] from the shared bag for a visitor's treat; false when there is none. */
+    fun spendBerry(berry: String): Boolean = false
 }

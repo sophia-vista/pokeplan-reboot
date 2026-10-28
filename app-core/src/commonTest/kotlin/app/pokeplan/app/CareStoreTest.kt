@@ -23,14 +23,21 @@ class CareStoreTest {
     private val utc = TimeZone.UTC
     private val monday = LocalDateTime(2026, 10, 19, 9, 0).toInstant(utc).toEpochMilliseconds()
 
-    private class Setup(val game: GameStore, val care: CareStore, val clock: FakeClock, val storage: MemoryStorage)
+    private class Setup(val game: GameStore, val care: CareStore, val clock: FakeClock, val storage: MemoryStorage, val gameStorage: MemoryStorage) {
+        /** Puts items in the shared bag, as if earned elsewhere. */
+        fun give(item: String, n: Int) {
+            gameStorage.save(GameStore.json.encodeToString(AppData.serializer(), game.data.let { d -> d.copy(player = d.player.copy(inventory = d.player.inventory.add(item, n))) }))
+            game.reload()
+        }
+    }
 
     private fun setup(started: Boolean = true): Setup {
         val clock = FakeClock(monday)
-        val game = GameStore(MemoryStorage(), clock, utc, Random(7))
+        val gameStorage = MemoryStorage()
+        val game = GameStore(gameStorage, clock, utc, Random(7))
         if (started) game.start("Sophia", 25)
         val storage = MemoryStorage()
-        return Setup(game, CareStore(storage, clock, game, utc, rng = Random(3)), clock, storage)
+        return Setup(game, CareStore(storage, clock, game, utc, rng = Random(3)), clock, storage, gameStorage)
     }
 
     private val Setup.points get() = game.data.player.trainerPoints
@@ -266,6 +273,45 @@ class CareStoreTest {
         assertTrue(warm.visit.spotFound)
         val before = warm.visit.warmth
         assertTrue(before >= 2)
+    }
+
+    @Test
+    fun theBerryAVisitorLikesAddsABonusDayOnceAndAnyBerryIsSpent() {
+        val s = setup()
+        val visitor = s.care.visitors().first()
+        val liked = app.pokeplan.care.Visitors.likedBerry(visitor.speciesId)
+        val other = app.pokeplan.core.pokemon.Items.flavors.values.map { app.pokeplan.core.pokemon.Items.berry(it) }.first { it != liked }
+        s.give(liked, 2)
+        s.give(other, 1)
+        fun visit(day: Int, berry: String?): app.pokeplan.care.BefriendResult {
+            s.care.completeRoutine(s.care.addRoutine("R$day").id)
+            s.care.startVisit(visitor.speciesId)
+            val actions = listOf(visitor.favorite) + CareAction.entries.filter { it != visitor.favorite && it != CareAction.GIFT }.take(1) + CareAction.GIFT
+            return actions.map { s.care.visitAct(it, berry = berry.takeIf { _ -> it == CareAction.GIFT }) }.last()!!.result!!
+        }
+        assertEquals(mapOf(liked to 2, other to 1), s.care.berries())
+        // Another flavour is a treat like any other: spent, no bonus.
+        assertEquals(1, visit(0, other).visitor.points)
+        assertEquals(null, s.care.berries()[other])
+        s.clock.advanceDays(1)
+        // Its liked berry: a warm day and a bonus day.
+        assertEquals(3, visit(1, liked).visitor.points)
+        assertEquals(1, s.care.berries()[liked])
+        s.clock.advanceDays(1)
+        // Only once per visitor; the berry is still eaten.
+        val last = visit(2, liked)
+        assertTrue(last.friend, "four days: a warm one, a warm one and a bonus, and this one")
+        assertEquals(null, s.care.berries()[liked])
+    }
+
+    @Test
+    fun aBerryNotInTheBagGivesNothing() {
+        val s = setup()
+        s.care.completeRoutine(s.care.addRoutine("Stretch").id)
+        val visitor = s.care.visitors().first()
+        s.care.startVisit(visitor.speciesId)
+        val step = s.care.visitAct(CareAction.GIFT, berry = app.pokeplan.care.Visitors.likedBerry(visitor.speciesId))!!
+        assertEquals(null, step.visit.berry)
     }
 
     @Test

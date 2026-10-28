@@ -5,6 +5,7 @@ import app.pokeplan.core.dex.HatchRules
 import app.pokeplan.core.dex.Region
 import app.pokeplan.core.model.PokemonType
 import app.pokeplan.core.model.Rarity
+import app.pokeplan.core.pokemon.Items
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
@@ -24,6 +25,8 @@ data class Visitor(
     val lastVisitDay: LocalDate? = null,
     /** The way of caring it likes best; the player finds it out by trying (the five love languages as a vocabulary). */
     val favorite: CareAction = CareAction.TIME,
+    /** Whether its liked berry has given its one bonus day ([Visitors.likedBerry]). */
+    val berryBonus: Boolean = false,
 )
 
 /**
@@ -55,6 +58,8 @@ data class Visit(
     val spotFound: Boolean = false,
     val bidsNoticed: Int = 0,
     val pendingBid: Bid? = null,
+    /** The berry offered as this visit's treat (an item id), if one was. */
+    val berry: String? = null,
 )
 
 /** One step of a visit: how the visitor took it, the visit now, and once the visit is over, what it came to. */
@@ -163,6 +168,24 @@ object Visitors {
     }
 
     fun likedSpot(speciesId: Int): PetSpot = PetSpot.entries[speciesId % PetSpot.entries.size]
+
+    /** The berry a species likes, the same every time (one of the five flavours), so what is learned stays learned. */
+    fun likedBerry(speciesId: Int): String {
+        val flavors = Items.flavors.values.sorted()
+        return Items.berry(flavors[(speciesId / PetSpot.entries.size) % flavors.size])
+    }
+
+    /**
+     * The days a finished [visit] adds to [visitor]: one for a warm visit, and one more the first time it is given the berry it
+     * likes as a treat (once per visitor, warm visit or not). *(tune)*
+     */
+    fun daysEarned(visitor: Visitor, visit: Visit): Int =
+        (if (warm(visit)) 1 else 0) + (if (berryBonusDue(visitor, visit)) BERRY_BONUS else 0)
+
+    fun berryBonusDue(visitor: Visitor, visit: Visit): Boolean = !visitor.berryBonus && visit.berry == likedBerry(visitor.speciesId)
+
+    /** Days the liked berry adds, once per visitor. *(tune)* */
+    const val BERRY_BONUS = 1
 
     /** Turns toward the visitor's bid: one more warmth. Nothing when there is none. */
     fun notice(visit: Visit): Visit =

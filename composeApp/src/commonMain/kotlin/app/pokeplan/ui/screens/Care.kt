@@ -49,6 +49,8 @@ import app.pokeplan.care.Emotion
 import app.pokeplan.care.Skills
 import app.pokeplan.care.Visitors
 import app.pokeplan.core.dex.Dex
+import app.pokeplan.core.pokemon.Items
+import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
 import app.pokeplan.care.Prompts
 import app.pokeplan.care.Routine
@@ -227,6 +229,7 @@ private fun VisitPanel(model: AppModel, visit: Visit, say: (String?) -> Unit) {
     var action by remember { mutableStateOf(SpriteAction.IDLE) }
     var key by remember { mutableStateOf(0) }
     var choosingSpot by remember { mutableStateOf(false) }
+    var choosingTreat by remember { mutableStateOf(false) }
     // Its own hop for a favourite, its own eating for a treat; with Reduce motion it stays still and only the words answer.
     fun react(step: VisitStep?, given: CareAction) {
         if (!reduce && step != null) {
@@ -244,6 +247,7 @@ private fun VisitPanel(model: AppModel, visit: Visit, say: (String?) -> Unit) {
                 step.result != null ->
                     if (step.result!!.visitor.points == 0) "$name had a quiet visit. Try again tomorrow."
                     else "$name liked the visit. ${Visitors.FRIEND_POINTS - step.result!!.visitor.points} more warm days."
+                step.visit.berry != null && step.visit.berry == Visitors.likedBerry(visit.speciesId) -> "$name's favourite berry! It will remember that."
                 step.reaction == Reaction.LOVED -> "$name loved that."
                 step.reaction == Reaction.LIKED -> "$name liked that."
                 else -> "$name already had that today."
@@ -272,10 +276,31 @@ private fun VisitPanel(model: AppModel, visit: Visit, say: (String?) -> Unit) {
         }
         return
     }
+    if (choosingTreat) {
+        // A berry from the shared bag, or a plain treat; each species likes one flavour, found by trying.
+        Text("What do you offer $name?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelButton("A little treat", { choosingTreat = false; react(care.visitAct(CareAction.GIFT), CareAction.GIFT) }, color = Pixel.Green, compact = true)
+            care.berries().entries.sortedBy { it.key }.forEach { (berry, n) ->
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    ItemIcon(berry, size = 28.dp, description = null)
+                    PixelButton("${Items.name(berry)} ($n)", {
+                        choosingTreat = false
+                        react(care.visitAct(CareAction.GIFT, berry = berry), CareAction.GIFT)
+                    }, color = Pixel.Green, compact = true)
+                }
+            }
+        }
+        return
+    }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         CareAction.entries.forEach { given ->
             PixelButton(given.label(), {
-                if (given == CareAction.TOUCH) choosingSpot = true else react(care.visitAct(given), given)
+                when {
+                    given == CareAction.TOUCH -> choosingSpot = true
+                    given == CareAction.GIFT && care.berries().isNotEmpty() -> choosingTreat = true
+                    else -> react(care.visitAct(given), given)
+                }
             }, color = Pixel.Green, enabled = given !in visit.actions, compact = true)
         }
     }
