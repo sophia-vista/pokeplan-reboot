@@ -12,6 +12,14 @@ release always has the newest merge).
 - Play with any visitor any time: pat it, give it a treat, or play tag as it bounds to wherever you tap. Playing is just for fun and never counts as a visit.
 - A new friend is now usually an Egg of its family's first stage, like an egg from the Day Care (a Pikachu leaves a Pichu egg), which hatches at once. About 1 friend in 10 stays as itself, with a high friendship. Reward rules version 11.
 
+## 0.44.0
+
+- Only the Plan and Care Regions now. Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar and Paldea are gone from the hatching region picker and the Pokédex tabs, and ranks no longer open them; the National Dex tab still lists every species. Pokémon you already hatched from them stay yours, and if one of them was your hatching region, eggs now come from the Plan Region. Legendary quests no longer ask you to catch a share of those regions.
+
+## 0.43.1
+
+- Care's perks now open at rank Trainer, together with Plan's party perks: before then, Care's party panel and its card in Pokémon, Party say which rank shows them. They already count, as Plan's do.
+
 ## 0.43.0
 
 - Plan and Care pages now match. Both open on their buddy in its scene, then the whole party in six equal slots (the lead outlined and named Buddy or Lead, free places shown as a faint Poké Ball), the party's perks, today's tasks or routines, and the sections. Tap a party member to hear its cry and see it hop; hold it to open its page. Plan's perks say which rank opens them (they already count before that). In Pokémon, Party, the Plan and Care tabs now both show a perk card, and Care's has "Where they come from" too. Smaller fixes: "1 entry" and "1 routine today" instead of "1 entries" and "1 routines today", and a gap under the party tabs closed.

@@ -73,7 +73,7 @@ The Super Candy chance perk adds percentage points.
 - Deep Focus moves a session up one row. Egg luck then moves the rolled rarity up one with its chance (`luckyBump`).
 - A species' rarity comes from its evolution line's highest base stat total: 580 or more is Super Rare (`SUPER_RARE_LINE_BST`); the rest are split by rank, the bottom 30% Common, the next 40% Uncommon, the rest Rare. Legendaries and mythicals never hatch.
 - Within a rarity: a species not caught yet × 3 (`UNCAUGHT_WEIGHT`), the Lure's type × 3 (`LURE_WEIGHT`), the day's spotlight type × 2 (`SPOTLIGHT_WEIGHT`, one of 18 types by `epochDay % 18`).
-- The pool is the chosen region's dex, base forms only. A region opens at the rank equal to its position (Home at rank 0, Paldea at 9).
+- The pool is the chosen region's dex, base forms only: the Plan or the Care Region, both open from the start. The games' regions are retired (0.44.0); a save or event that names one hatches from the Plan Region (`Region.open`). The engine still pays a retired region's pool if an event names it, so the rules version is unchanged.
 - Shiny chance: `1/128 × (1 + 0.5 × min(minutes, 240) / 240)` times the shiny perk (`Shiny.chance`); a Task Egg counts as 15 minutes.
 - A signed-in phone rolls focus eggs from egg tickets, seeds the server issued ahead of time (stock 20 a device, `TICKET_STOCK`), so the dice are fixed before the session.
 
@@ -135,7 +135,7 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Berry | +1 friendship (more with the Gifts or Balanced style) | `GameStore.useItem` |
 | Lure | Used up when its session hatches; kept when the session fails | `RewardEngine.effort` |
 | Pokémon | Transferred for candy and coins (never the buddy, the last party member, a starred one, or a legendary or mythical) | `Transfer.block` |
-| Trainer points | Never spent; they open regions, features, Guardian slots and quests. Ranks at 0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000 and 9,000 | `TrainerRank` |
+| Trainer points | Never spent; they open features, Guardian slots and quests. Ranks at 0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000 and 9,000 | `TrainerRank` |
 | Coins | **Nothing yet** (section 5) | |
 
 ## 3. Caps

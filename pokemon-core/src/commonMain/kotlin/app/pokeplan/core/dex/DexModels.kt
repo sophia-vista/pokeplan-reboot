@@ -6,30 +6,36 @@ import kotlinx.serialization.Serializable
 
 /**
  * A collecting region. The module regions ([isModule]) are hand-curated lists, one per life module
- * (`tools/species/regions/<name>.txt`, "Module regions" in docs/ecosystem.md); the others are the games' regional dexes,
- * which open one per trainer rank. A module region is open to everyone once its module ships ([released]); until then it
- * is hidden. [PLAN] was the Home Region and keeps its stored name `HOME` (saves, plan.focus_sessions, the reward function).
+ * (`tools/species/regions/<name>.txt`, "Module regions" in docs/ecosystem.md). A module region is open to everyone once its
+ * module ships ([released]); until then it is hidden. [PLAN] was the Home Region and keeps its stored name `HOME` (saves,
+ * plan.focus_sessions, the reward function).
+ *
+ * The games' regional dexes (Kanto to Paldea) are retired (0.44.0, owner): only the Plan and Care Regions are collected. They
+ * stay here, never released, only so saves, sessions and events that name one still load; [open] sends them to [PLAN].
  */
 @Serializable
 enum class Region(val label: String, val isModule: Boolean = false, val released: Boolean = true) {
     @SerialName("HOME") PLAN("Plan Region", isModule = true),
-    KANTO("Kanto"),
-    JOHTO("Johto"),
-    HOENN("Hoenn"),
-    SINNOH("Sinnoh"),
-    UNOVA("Unova"),
-    KALOS("Kalos"),
-    ALOLA("Alola"),
-    GALAR("Galar"),
-    PALDEA("Paldea"),
+    KANTO("Kanto", released = false),
+    JOHTO("Johto", released = false),
+    HOENN("Hoenn", released = false),
+    SINNOH("Sinnoh", released = false),
+    UNOVA("Unova", released = false),
+    KALOS("Kalos", released = false),
+    ALOLA("Alola", released = false),
+    GALAR("Galar", released = false),
+    PALDEA("Paldea", released = false),
     /** The Care module's region: gentle, soothing Pokémon. Released with the Care screens (0.34.0). */
     CARE("Care Region", isModule = true),
     /** The household module's region (recipes, closet). Not curated yet. */
     HOUSEHOLD("Home Region", isModule = true, released = false),
     ;
 
+    /** Where an egg from this region really comes from: itself while released, else the Plan Region. */
+    val open: Region get() = if (released) this else PLAN
+
     companion object {
-        /** The game regions, in the order trainer rank opens them. */
+        /** The games' regions, retired: none is released. */
         val games: List<Region> = entries.filter { !it.isModule }
     }
 }

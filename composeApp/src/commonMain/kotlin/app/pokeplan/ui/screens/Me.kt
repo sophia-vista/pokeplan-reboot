@@ -434,10 +434,10 @@ private fun SettingsView(model: AppModel) {
             Text("Hatching region", style = MaterialTheme.typography.titleMedium)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 TrainerRank.unlockedRegions(model.data.player.trainerPoints).forEach { r ->
-                    TabButton(r.label, r == settings.region, { store.changeSettings { it.copy(region = r) } })
+                    TabButton(r.label, r == settings.region.open, { store.changeSettings { it.copy(region = r) } })
                 }
             }
-            Text("A new region opens with each trainer rank.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Text("Eggs hatch from this region: the Plan Region's Pokémon, or the Care Region's gentle ones.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
     // Settings come in small groups, one card each, so a setting is found by its group rather than by reading a long list.

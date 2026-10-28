@@ -7,6 +7,9 @@ object WhatsNew {
             "Visit every visitor each day, and care for them by hand: tap to pat, drag a treat, hold to sit together, swipe to tidy.",
             "Play with visitors any time, just for fun. New friends usually leave an Egg of their family; about 1 in 10 stays itself.",
         ),
+        "0.44.0" to listOf(
+            "Eggs now come from the Plan and Care Regions only. The game regions are gone; Pokémon you hatched there stay yours.",
+        ),
         "0.43.0" to listOf(
             "Plan and Care now open the same way: your buddy in its scene, then your whole party with its perks. Tap a party member to hear it, hold it to open it.",
         ),

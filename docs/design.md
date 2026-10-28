@@ -74,10 +74,10 @@ The app never mentions ADHD; it just removes friction and shame.
 | Rank | Typical day | Appears |
 |---|---|---|
 | Rookie (start) | 1 | tasks, habits, planner, focus and eggs, buddy, party and PC, Pokédex, Rare Candy, the weekly review |
-| Apprentice | 2 | Super Candy and evolution, the Bag, goals, the region picker (Kanto opens) |
-| Trainer | 5 | held items, party perks, the Growth screen, coins |
+| Apprentice | 2 | Super Candy and evolution, the Bag, goals, the region picker (Plan or Care Region) |
+| Trainer | 5 | held items, party perks (Plan's and Care's alike, *0.43.1*), the Growth screen, coins |
 | Ace | 11 | Nature Mints, Bottle Caps, Ability Capsules and Tera Shards; stats and the IV judge |
-| Veteran | 22 | Guardians and legendary quests (regions keep opening, one per rank) |
+| Veteran | 22 | Guardians and legendary quests |
 
   Items still drop from the first day; the Bag shows them from Apprentice. Shop, Lures, contests, perfect dex and Hall of Fame join this table when they are built.
 
@@ -192,21 +192,19 @@ Not hatched from random eggs, which keeps them special and avoids a 4 hour Deep 
 
 - The **Plan Region** (`Region.PLAN`, stored as `HOME`; it was the Home Region) is the owner's curated list, kept in `tools/species/regions/plan.txt` (one name per line; edit it and run the generator). It started as the original app's curated 150 and is now the owner's own curated list of 167 species (57 hatchable entry points across all four tiers, plus 26 legendary-class and mythical species earned through quests and milestones). The dex is meant to be completed in about 2 months at about 5 eggs a day; the economy simulator checks that pace. It is the starter dex every player begins in, keeping its local numbers 1 to 150. Its ten legendary-class species (Mew, Celebi, Jirachi, Uxie, Mesprit, Azelf, Manaphy, Shaymin, Victini, Keldeo) leave the egg pool and become quest rewards, so its rarities are re-derived by the rarity rule like every other region.
 - **Module regions** *(owner's decision, October 2026)*: each life module gets its own curated region of about 150 species, named "<Module> Region". The Home Region became the **Plan Region**, and "Home Region" passes to the household module (`Region.HOUSEHOLD`); no species is in two module regions. Module regions are open to everyone from the start, once their module ships. The game regions below leave PokéPlan for the dungeon game when it ships. Details and draft themes: docs/ecosystem.md, section 4, "Module regions".
-- Every other region is a real game's regional dex: Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea. **All are in at launch.** Regional dexes are data (lists pointing at species), generated from a public dataset; other regions use the rarity rule.
+- **Only the Plan and Care Regions are collected** *(owner, 0.44.0)*. The games' regional dexes (Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea) are retired early, ahead of the dungeon game: they stay in the generated data and in `Region` (never released, `Region.open` sends them to the Plan Region) only so old saves, sessions and events still load. Pokémon already hatched from them are kept, and the National Dex tab still lists every species.
 - A Pokémon has one record with a **National Dex number**; a region is just a list of those. Regional forms hatch in their home region (Alolan forms in Alola, and so on).
 - **Soft pity:** within a rarity, species the player has not caught yet are 3 times as likely to be picked (rarity odds are unchanged), so the last few species do not take forever. "Caught" is permanent, even after a transfer.
 - **Where a region's eggs start:** a species can hatch in a region if its pre-evolution is not in that region's dex (a region that has Pikachu but not Pichu can hatch Pikachu), so no region depends on another to be completed. Hisui's dex is merged into Sinnoh, and Hisuian forms hatch there.
-- **Region picker:** before a focus session the player chooses which region the egg comes from. Eggs hatch from that region's pool only. Each region has its own dex progress bar, badge and background theme.
-- **Unlock by trainer rank** (below). The National Dex is the combination of all regions.
-- Mega / Gigantamax forms are available through the region where they were introduced (Kalos for Mega, Galar for G-Max, etc.) *(proposal)*.
+- **Region picker:** the player chooses which region eggs come from, the Plan or the Care Region (Me, Settings, from rank Apprentice). Eggs hatch from that region's pool only. Each region has its own dex progress bar.
+- Mega / Gigantamax forms came through the region where they were introduced (Kalos, Galar); with those retired they have no source yet *(proposal)*.
 
 ## Pacing and collection layers
 
 Collecting is **fast at the start and deep at the end.** The simulator tunes toward these targets (at roughly 5 eggs and 5 tasks a day):
 
-- **Basic dex of the Plan Region (every species caught, including evolutions): about 2 months** *(tune)*. Each later region is about the same once unlocked.
-- **Region unlocks:** trainer rank opens a new region with each rank: the first few within the first weeks, then every month or two *(tune)*, so a player is usually collecting in more than one region.
-- **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Plan dex at a median of day 65, opens a region every 20 to 28 days, and earns enough Rare Candies to evolve the whole Plan Region in 45 to 84 days and enough Super Candies in about 20.
+- **Basic dex of the Plan Region (every species caught, including evolutions): about 2 months** *(tune)*. The Care Region's is about the same.
+- **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Plan dex at a median of day 65 and the Care dex at about day 128 (0.44.0: with the games' regions retired, a heavy player owns every hatchable species by about day 54), and earns enough Rare Candies to evolve the whole Plan Region in 45 to 84 days and enough Super Candies in about 20.
 - **The long tail** (months to years) is made of layers, each with its own progress, badge and showcase:
 
 | Layer | Goal |
@@ -224,7 +222,7 @@ Perfect builds are shown on a Pokémon's page and in the Hall of Fame; they have
 Planned, with build order to be set later.
 
 - **Mission board (Mystery Dungeon):** tasks are shown as a job board using their difficulty rank. Presentation only; rewards stay as designed.
-- **Trainer rank (Mystery Dungeon guild ranks):** one rank for the whole account, earned in every app: 2 points per tier of finished work (so 2 for an E task up to 10 for an A task) and 1 point per 5 minutes of effort. Ten ranks (Rookie, Apprentice, Trainer, Ace, Veteran, Expert, Elite, Champion, Master, Legend) at 0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000 and 9,000 points: **quick at first, slower after** (0.28.0, owner's direction; it was 625 for the first rank, which a typical player reached on day 17). Each rank takes longer than the one before. Each rank opens the next region in order (Home, Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea) and reveals features (see "Gradual reveal"). Names and thresholds are *(tune)*; see `docs/economy-report.md` for the days.
+- **Trainer rank (Mystery Dungeon guild ranks):** one rank for the whole account, earned in every app: 2 points per tier of finished work (so 2 for an E task up to 10 for an A task) and 1 point per 5 minutes of effort. Ten ranks (Rookie, Apprentice, Trainer, Ace, Veteran, Expert, Elite, Champion, Master, Legend) at 0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000 and 9,000 points: **quick at first, slower after** (0.28.0, owner's direction; it was 625 for the first rank, which a typical player reached on day 17). Each rank takes longer than the one before. Each rank reveals features (it opened the games' regions until they were retired in 0.44.0) (see "Gradual reveal"). Names and thresholds are *(tune)*; see `docs/economy-report.md` for the days.
 - ~~**Personality quiz starter (Mystery Dungeon)**~~ *(dropped from PokéPlan, owner's decision, 0.31.0)*: onboarding stays a starter picker. A personality quiz may come back in another module of the family (parked in `docs/ecosystem.md`, section 8).
 - **Poké Assist perks (Pokémon Ranger):** the buddy's type and ability perks are presented as assists. No extra mechanics.
 - **Weekly contests (Contests / Pokéathlon):** a friends-only weekly event scored by a buddy's stats, nature and training, with ribbons. Comes with the online release and gives stats and natures a purpose.
