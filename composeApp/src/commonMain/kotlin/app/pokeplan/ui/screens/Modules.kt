@@ -13,9 +13,11 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import app.pokeplan.core.reward.Feature
+import app.pokeplan.plan.TaskState
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.ScreenHeader
+import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
 
 /**
@@ -61,7 +63,7 @@ private fun ModulesMenu(model: AppModel) {
                 listOfNotNull(
                     MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = Pixel.Red),
                     if (!model.data.settings.careModule) null else MenuEntry(
-                        Module.CARE.name, Module.CARE.icon, Module.CARE.label, if (routinesLeft == 0) "routines and calm" else "$routinesLeft routines today", tint = Pixel.Green,
+                        Module.CARE.name, Module.CARE.icon, Module.CARE.label, if (routinesLeft == 0) "routines and calm" else if (routinesLeft == 1) "1 routine today" else "$routinesLeft routines today", tint = Pixel.Green,
                     ),
                 ),
             ) { key -> model.module = Module.valueOf(key) }
@@ -83,7 +85,7 @@ private fun PlanScreen(model: AppModel, focusTab: Boolean, openPokemon: (String)
         null -> {
             val toModules = { model.module = null }
             BackHandler(enabled = true, onBack = toModules)
-            PlanMenu(model, focusTab, toModules)
+            PlanMenu(model, focusTab, toModules, openPokemon)
         }
         // Planner and Focus have their own headers; the screens they open inside handle Back before this does.
         PlanSection.PLANNER -> {
@@ -104,18 +106,43 @@ private fun PlanScreen(model: AppModel, focusTab: Boolean, openPokemon: (String)
     }
 }
 
+/** How many of today's tasks Plan's page lists; the Planner has the rest. */
+private const val TODAY_SHOWN = 3
+
+/**
+ * Plan's own page, laid out like Care's so the two modules read alike: its buddy in its scene, new rewards, the whole party
+ * with its perks, today's tasks, then the sections.
+ */
 @Composable
-private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit) {
+private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, openPokemon: (String) -> Unit) {
     val data = model.data
     val store = model.store
     val today = store.todayTasks().size
     val session = data.focus
+    // Tasks just ticked off wait for their Undo in the bar at the bottom, so they leave this list at once.
+    val pendingIds = data.pending.map { it.original.id }.toSet()
+    val open = store.todayTasks().filter { it.id !in pendingIds }
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.PLAN.label, subtitle = "Modules", onBack = onBack)
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
+            PlanBuddyStage(model) { data.player.buddyId?.let(openPokemon) }
+            RewardBox(model)
+            PlanPartyPanel(model, openPokemon)
+            SectionLabel("Today", icon = PlanSection.PLANNER.icon)
+            if (open.isEmpty()) {
+                val doneToday = data.tasks.any { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
+                EmptyState(
+                    if (doneToday) "All done for today" else "Nothing planned for today",
+                    if (doneToday) "Rest, or add one more if you feel like it." else "One small thing is plenty. Each one you finish pays candies.",
+                    action = "Add a task" to { model.addTaskRequested = true; model.planSection = PlanSection.PLANNER },
+                )
+            } else {
+                open.take(TODAY_SHOWN).forEach { t -> TaskRow(t, onDone = { model.completeTask(t.id) }) }
+                if (open.size > TODAY_SHOWN) Text("${open.size - TODAY_SHOWN} more in the Planner", style = MaterialTheme.typography.bodyMedium)
+            }
             MenuGrid(
                 listOfNotNull(
                     MenuEntry(PlanSection.PLANNER.name, PlanSection.PLANNER.icon, "Planner", if (today == 0) "nothing left today" else "$today to do today", tint = Pixel.Red),

@@ -3,6 +3,9 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.43.0" to listOf(
+            "Plan and Care now open the same way: your buddy in its scene, then your whole party with its perks. Tap a party member to hear it, hold it to open it.",
+        ),
         "0.34.0" to listOf(
             "Care is here, under Modules, inspired by journalling and DBT: daily routines, a calm break with your buddy, a private diary card, DBT skills to practise and a journal. Routines, calm breaks and skills earn friendship and berries.",
             "The Care Region is open: pick it as your hatching region in Settings.",

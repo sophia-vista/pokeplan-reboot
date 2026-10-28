@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -145,11 +144,10 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                 val tab = if (careOn) partyTab else 0
                 if (careOn) {
                     Segmented(listOf("Plan ${player.party.size}/6", "Care ${player.partyOf(PartyIds.CARE).size}/6"), tab) { partyTab = it }
-                    Spacer(Modifier.height(10.dp))
                 }
                 if (tab == 0) {
                     if (player.party.isEmpty()) EmptyState("Your party is empty", "Hatch an egg with a focus session, or move a Pokémon here from the PC.", icon = "poke-ball")
-                    else if (store.sees(Feature.PERKS)) PartyPerksCard(model)
+                    else PartyPerksCard(model)
                     player.party.forEach { p -> PokemonRow(p, if (p.id == player.buddyId) "Buddy" else null, store.isFavorite(p.id)) { selected = p.id } }
                 } else {
                     val care = player.partyOf(PartyIds.CARE)
