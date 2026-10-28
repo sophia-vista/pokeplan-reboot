@@ -62,6 +62,9 @@ private const val PARTY_SIZE = 6
 /** One perk line of a party panel: its name and its total now. */
 private class PerkLine(val label: String, val percent: Double)
 
+/** What a party's perks say before the rank that shows them: every party's perks open together, and they already count. */
+internal val PERKS_LOCKED = "Open at rank ${TrainerRank.names[Feature.PERKS.step]}. Your party is already growing them."
+
 /** Plan's party in its module: the buddy leads, and its perks once the rank has opened them. */
 @Composable
 fun PlanPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
@@ -73,7 +76,7 @@ fun PlanPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
         model, player.party, player.buddyId, lead = "Buddy", perksTitle = "Party perks",
         perks = if (opened) PerkBucket.entries.filter { totals[it] > 0 }.map { PerkLine(it.label(), totals[it]) } else emptyList(),
         perksNote = when {
-            !opened -> "Open at rank ${TrainerRank.names[Feature.PERKS.step]}. Your party is already growing them."
+            !opened -> PERKS_LOCKED
             player.buddy == null -> "Choose a buddy to get its perks."
             else -> null
         },
@@ -82,16 +85,21 @@ fun PlanPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     )
 }
 
-/** Care's party in its module: its lead first, and its three perks, which only change what Care pays. */
+/** Care's party in its module: its lead first, and its three perks (which only change what Care pays) once the rank opens them, as Plan's. */
 @Composable
 fun CarePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val player = model.data.player
     val party = player.partyOf(PartyIds.CARE)
+    val opened = model.store.sees(Feature.PERKS)
     val totals = CarePerks.total(player.careLead, party)
     PartyPanel(
         model, party, player.careLeadId, lead = "Lead", perksTitle = "Care perks",
-        perks = CareBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } },
-        perksNote = if (party.isEmpty() || totals.values.any { it > 0 }) null else "None yet: Normal, Fairy, Water, Grass, Bug, Fighting, Flying, Psychic and Ghost types bring them.",
+        perks = if (opened) CareBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
+        perksNote = when {
+            !opened -> PERKS_LOCKED
+            party.isEmpty() || totals.values.any { it > 0 } -> null
+            else -> "None yet: Normal, Fairy, Water, Grass, Bug, Fighting, Flying, Psychic and Ghost types bring them."
+        },
         empty = "Open a Pokémon and choose \"To Care party\". Until then Care warms your Plan buddy.",
         onOpen = onOpen,
     )
