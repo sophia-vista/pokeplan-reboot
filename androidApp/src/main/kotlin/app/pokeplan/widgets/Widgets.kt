@@ -69,11 +69,13 @@ import app.pokeplan.MainActivity
 import app.pokeplan.app.BuddyReaction
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.app.GameStore
+import app.pokeplan.care.Routine
 import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.plan.Phase
 import app.pokeplan.plan.Rank
 import app.pokeplan.plan.Task
+import app.pokeplan.careStore
 import app.pokeplan.widgetStore
 import kotlinx.coroutines.delay
 import java.time.Instant
@@ -108,7 +110,7 @@ private fun openApp(context: Context, tab: String? = null, pokemon: String? = nu
 
 /** Brings every widget up to date; called when the app is left and after a tap on a widget. */
 suspend fun updateWidgets(context: Context) {
-    for (widget in listOf(TodayWidget(), BuddyWidget(), FocusWidget())) {
+    for (widget in listOf(TodayWidget(), BuddyWidget(), FocusWidget(), CareWidget())) {
         val stamp = System.currentTimeMillis()
         for (id in GlanceAppWidgetManager(context).getGlanceIds(widget.javaClass)) {
             updateAppWidgetState(context, id) { it[RefreshKey] = stamp }
@@ -517,6 +519,115 @@ private fun FocusContent(context: Context, s: FocusState) {
                     s.detail, GlanceModifier.pill().padding(horizontal = 8.dp, vertical = 3.dp),
                     style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp), maxLines = 2,
                 )
+            }
+        }
+    }
+}
+
+// ----- Care: today's routines -----------------------------------------------------------------------------------------
+
+private val RoutineIdKey = ActionParameters.Key<String>("routineId")
+
+/** A tap on a routine's tick: ticks it off for today and pays it, exactly as on the Care screen (into the shared save). */
+class CompleteRoutineAction : ActionCallback {
+    override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
+        val id = parameters[RoutineIdKey] ?: return
+        val care = careStore(context)
+        if (care.todayRoutines().any { it.id == id && !it.doneOn(care.today) }) care.completeRoutine(id)
+        updateWidgets(context)
+    }
+}
+
+private data class CareState(val on: Boolean, val started: Boolean, val routines: List<Routine>, val done: Int, val diarySaved: Boolean, val today: kotlinx.datetime.LocalDate)
+
+/** Care's routines for today with a tick, and whether today's diary card is saved (what the launcher's home page will show too). */
+class CareWidget : GlanceAppWidget() {
+    override suspend fun provideGlance(context: Context, id: GlanceId) =
+        provideFresh(context, id, { load(context) }) { (state, header) -> CareContent(context, state, header) }
+
+    private suspend fun load(context: Context): Pair<CareState, Bitmap?> {
+        val game = widgetStore(context)
+        val care = careStore(context, game)
+        val today = care.todayRoutines()
+        val d = density(context)
+        val dark = BuddyScene.darkness(game.now.hour, game.now.minute)
+        val header = WidgetArt.scene(context, "meadow", dark, (420 * d).toInt(), (44 * d).toInt(), 20 * d, roundBottom = false)
+        val state = CareState(
+            on = game.data.settings.careModule, started = game.data.onboarded,
+            // Not done first, so the ticks stay at the top; then the ones done today.
+            routines = today.sortedBy { it.doneOn(care.today) }.take(8),
+            done = today.count { it.doneOn(care.today) }, diarySaved = care.diaryToday() != null, today = care.today,
+        )
+        return state to header
+    }
+}
+
+class CareWidgetReceiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = CareWidget()
+}
+
+@Composable
+private fun CareContent(context: Context, state: CareState, header: Bitmap?) {
+    val open = openApp(context, "CARE")
+    Column(GlanceModifier.fillMaxSize().background(paper).cornerRadius(20.dp)) {
+        Box(GlanceModifier.fillMaxWidth().height(44.dp).clickable(open)) {
+            if (header != null) Image(ImageProvider(header), contentDescription = null, modifier = GlanceModifier.fillMaxSize(), contentScale = ContentScale.Crop)
+            else Box(GlanceModifier.fillMaxSize().background(green)) {}
+            Row(GlanceModifier.fillMaxSize().padding(horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "Care", GlanceModifier.pill().padding(horizontal = 12.dp, vertical = 4.dp),
+                    style = TextStyle(color = ColorProvider(green), fontSize = 15.sp, fontWeight = FontWeight.Bold),
+                )
+                Spacer(GlanceModifier.defaultWeight())
+                if (state.on && state.routines.isNotEmpty()) Text(
+                    "${state.done} of ${state.routines.size} done", GlanceModifier.pill().padding(horizontal = 10.dp, vertical = 4.dp),
+                    style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp, fontWeight = FontWeight.Medium),
+                )
+            }
+        }
+        Column(GlanceModifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp)) {
+            if (!state.on || !state.started) {
+                Text(
+                    if (!state.started) "Open PokéPlan to start" else "Care is switched off. Turn it on in Me, Settings, Modules.",
+                    GlanceModifier.clickable(openApp(context, if (state.started) "ME" else null)),
+                    style = TextStyle(color = ColorProvider(soft), fontSize = 13.sp),
+                )
+                return@Column
+            }
+            Text(
+                if (state.diarySaved) "Diary card saved today" else "Diary card: how did today feel?",
+                GlanceModifier.fillMaxWidth().padding(bottom = 6.dp).clickable(open),
+                style = TextStyle(color = ColorProvider(soft), fontSize = 13.sp),
+            )
+            if (state.routines.isEmpty()) {
+                Text("No routines today. Tap to add one.", GlanceModifier.clickable(open), style = TextStyle(color = ColorProvider(soft), fontSize = 13.sp))
+            } else LazyColumn {
+                items(state.routines, itemId = { it.id.hashCode().toLong() }) { r ->
+                    val done = r.doneOn(state.today)
+                    Row(GlanceModifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        val icon = r.icon?.let { WidgetArt.item(context, it, 1) }
+                        if (icon != null) {
+                            Image(ImageProvider(icon), contentDescription = null, modifier = GlanceModifier.size(26.dp))
+                            Spacer(GlanceModifier.width(10.dp))
+                        }
+                        Text(
+                            r.title + (r.time?.let { "  ${it.hour}:${it.minute.toString().padStart(2, '0')}" } ?: ""),
+                            GlanceModifier.defaultWeight().clickable(open),
+                            style = TextStyle(color = ColorProvider(if (done) soft else ink), fontSize = 13.sp), maxLines = 2,
+                        )
+                        Spacer(GlanceModifier.width(8.dp))
+                        if (done) Box(
+                            GlanceModifier.size(36.dp).background(shade).cornerRadius(18.dp).semantics { contentDescription = "${r.title}, done today" },
+                            contentAlignment = Alignment.Center,
+                        ) { Text("✓", style = TextStyle(color = ColorProvider(green), fontSize = 15.sp, fontWeight = FontWeight.Bold)) }
+                        else Box(
+                            GlanceModifier.size(36.dp).background(green).cornerRadius(18.dp)
+                                .semantics { contentDescription = "Done: ${r.title}" }
+                                .clickable(actionRunCallback<CompleteRoutineAction>(actionParametersOf(RoutineIdKey to r.id))),
+                            contentAlignment = Alignment.Center,
+                        ) { Text("✓", style = TextStyle(color = ColorProvider(Color.White), fontSize = 15.sp, fontWeight = FontWeight.Bold)) }
+                    }
+                }
             }
         }
     }

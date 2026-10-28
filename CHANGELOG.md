@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.40.0
+
+- A Care widget for the home screen: today's routines with a tick (ticking one there counts and pays just as in the app), the ones already done, and whether today's diary card is saved, in the meadow. Tap it to open Care.
+
 ## 0.39.0
 
 - Gentle routine reminders on Android. A Care routine with a time now sends one quiet notification at that time on its days, unless it is already done, with Done (ticked off and paid just as in the app) and "In 30 min". It never repeats, and it waits for the end of a focus session. Switch them off in Me, Settings, Modules, "Routine reminders". Routines with no time never remind.
