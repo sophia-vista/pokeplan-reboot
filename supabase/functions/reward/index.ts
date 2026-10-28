@@ -4,7 +4,7 @@
 // Secrets (set by the platform): SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 import { RewardApi } from "./engine/pokeplan-pokemon-core.mjs";
-import { type Database, handleDeleteAccount, handleReward, handleSync, handleTickets, RequestError } from "./core.ts";
+import { type Database, handleCareSync, handleDeleteAccount, handleReward, handleSync, handleTickets, RequestError } from "./core.ts";
 // Written by build.sh from the VERSION file and the commit being deployed.
 import { COMMIT, VERSION } from "./version.ts";
 
@@ -53,6 +53,21 @@ const db: Database = {
     if (error) throw error;
     return version;
   },
+  async pullCareSave(user) {
+    const { data, error } = await service.schema("care").rpc("pull_save", { p_user: user });
+    if (error) throw error;
+    return data;
+  },
+  async pushCareSave(user, expectedVersion, data) {
+    const { data: version, error } = await service.schema("care").rpc("push_save", { p_user: user, p_expected_version: expectedVersion, p_data: data });
+    if (error) throw error;
+    return version;
+  },
+  async deleteCareSave(user) {
+    const { data, error } = await service.schema("care").rpc("delete_save", { p_user: user });
+    if (error) throw error;
+    return data;
+  },
   async eggTickets(user, device, spent, stock) {
     const { data, error } = await service.schema("platform").rpc("egg_tickets", { p_user: user, p_device: device, p_spent: spent, p_stock: stock });
     if (error) throw error;
@@ -85,10 +100,12 @@ Deno.serve(async (req) => {
     if (!user) throw new RequestError(401, "sign in first");
 
     const body = await req.json();
-    // "pull" and "push" are the cloud save, "tickets" the egg tickets, "delete-account" removes the account; everything
-    // else earns rewards.
+    // "pull" and "push" are the cloud save, "care-pull", "care-push" and "care-delete" Care's opt-in copy, "tickets" the
+    // egg tickets, "delete-account" removes the account; everything else earns rewards.
     const result = body.kind === "pull" || body.kind === "push"
       ? await handleSync(user.id, body, db)
+      : typeof body.kind === "string" && body.kind.startsWith("care-")
+      ? await handleCareSync(user.id, body, db)
       : body.kind === "tickets"
       ? await handleTickets(user.id, body, db)
       : body.kind === "delete-account"
