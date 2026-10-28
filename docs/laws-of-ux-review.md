@@ -29,6 +29,7 @@ change, with the reason.
 | Aesthetic-Usability, Paradox of the Active User | Empty lists were a bare title and line. | **Fixed:** `EmptyState` takes a real item icon (and at most one action), in the shape the design-references skill asks for. |
 | Accessibility (Law of Similarity's "not colour alone") | The starter picker and PC tiles were clickable boxes with no role. | **Fixed:** starters are radio buttons with a selected state; PC tiles say "Open <name>". |
 | Hick's Law, Law of Common Region, Chunking | (0.19.3) The Planner menu needed scrolling to see all its lists, the quick-add showed every choice before anything was typed, and the lists were one long column of separate cards. | **Fixed:** six smaller tiles with counts fit on one screen, the quick-add's day chips wait until there is text, and each list is grouped under headings with counts, one panel per group. |
+| Law of Similarity, Jakob's Law | (0.43.0) Plan's page was four cards while Care's opened on its buddy and party, so the two modules felt like different apps; Care's party sat in a ragged, left-aligned row, and only Care's party showed perks. | **Fixed:** both pages share one layout (buddy in its scene, the whole party in six equal slots with its perks, today, the sections) through `PartyPanel.kt`, and the Party screen shows a perk card for both parties. |
 
 ## Already followed (kept)
 

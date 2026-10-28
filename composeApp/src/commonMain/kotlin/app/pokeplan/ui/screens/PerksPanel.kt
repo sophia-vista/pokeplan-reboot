@@ -29,6 +29,8 @@ import app.pokeplan.core.pokemon.PerkBucket
 import app.pokeplan.core.pokemon.PerkCondition
 import app.pokeplan.core.pokemon.PerkSource
 import app.pokeplan.core.pokemon.Perks
+import app.pokeplan.core.reward.Feature
+import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.ListRow
@@ -75,11 +77,22 @@ private fun PerkSource.Kind.label() = when (this) {
 }
 
 /** "+0.4%" under 10 (early perks are small, and should still read as something), "+12%" above. */
-private fun pct(v: Double): String = if (v < 10) "+${(v * 10).roundToInt() / 10.0}%".replace(".0%", "%") else "+${v.roundToInt()}%"
+internal fun pct(v: Double): String = if (v < 10) "+${(v * 10).roundToInt() / 10.0}%".replace(".0%", "%") else "+${v.roundToInt()}%"
+
+/** One bucket's total as a row: its name, a bar out of [cap] and the percent. Both parties' perk cards use it. */
+@Composable
+private fun PerkRow(label: String, value: Double, cap: Double) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(label, Modifier.weight(1.2f), style = MaterialTheme.typography.bodyMedium)
+        Box(Modifier.weight(1f)) { PixelBar((value / cap).toFloat().coerceIn(0f, 1f), color = Pixel.Green, label = "$label ${pct(value)}") }
+        Text(pct(value), Modifier.size(width = 48.dp, height = 24.dp), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.End)
+    }
+}
 
 /**
  * The party's perks, bucket by bucket: the total that applies now and, opened, where every part of it comes from (the
- * buddy's types and ability, its held item, the rest of the party, and Guardians, which sit outside the cap).
+ * buddy's types and ability, its held item, the rest of the party, and Guardians, which sit outside the cap). Before the
+ * rank that opens them it says when they will show; they already count.
  */
 @Composable
 fun PartyPerksCard(model: AppModel) {
@@ -91,19 +104,15 @@ fun PartyPerksCard(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("Party perks", style = MaterialTheme.typography.titleMedium)
+            if (!store.sees(Feature.PERKS)) {
+                Text("Open at rank ${TrainerRank.names[Feature.PERKS.step]}. Your party is already growing them.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                return@Column
+            }
             if (buddy == null && sources.isEmpty()) {
                 Text("Choose a buddy to get its perks.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 return@Column
             }
-            PerkBucket.entries.filter { totals[it] > 0 }.forEach { b ->
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(b.label(), Modifier.weight(1.2f), style = MaterialTheme.typography.bodyMedium)
-                    Box(Modifier.weight(1f)) {
-                        PixelBar((totals[b] / (Perks.BUCKET_CAP + Guardians.BUCKET_CAP)).toFloat().coerceIn(0f, 1f), color = Pixel.Green, label = "${b.label()} ${pct(totals[b])}")
-                    }
-                    Text(pct(totals[b]), Modifier.size(width = 48.dp, height = 24.dp), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.End)
-                }
-            }
+            PerkBucket.entries.filter { totals[it] > 0 }.forEach { b -> PerkRow(b.label(), totals[b], Perks.BUCKET_CAP + Guardians.BUCKET_CAP) }
             if (totals.keepsFailedEgg) Text("Magic Guard: once a week a failed session of 5 minutes or more still hatches its egg.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             if (totals.extraForgivenDays > 0) Text("Streak keeper: a second missed day a week is forgiven.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             PixelButton(if (open) "Hide where they come from" else "Where they come from", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
@@ -126,27 +135,45 @@ fun PartyPerksCard(model: AppModel) {
     }
 }
 
-/** Care's party perks: its three buckets, from the lead and the rest of Care's party. */
+/**
+ * Care's party perks, laid out like [PartyPerksCard]: each bucket's total from the lead and the rest of Care's party and,
+ * opened, where every part comes from.
+ */
 @Composable
 fun CarePerksCard(model: AppModel) {
     val player = model.data.player
-    val totals = CarePerks.total(player.careLead, player.partyOf(PartyIds.CARE))
+    val lead = player.careLead
+    val party = player.partyOf(PartyIds.CARE)
+    val totals = CarePerks.total(lead, party)
+    var open by remember { mutableStateOf(false) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text("Care perks", style = MaterialTheme.typography.titleMedium)
-            CareBucket.entries.forEach { b ->
-                val v = totals[b] ?: 0.0
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(b.label, Modifier.weight(1.2f), style = MaterialTheme.typography.bodyMedium)
-                    Box(Modifier.weight(1f)) { PixelBar((v / Perks.BUCKET_CAP).toFloat().coerceIn(0f, 1f), color = Pixel.Green, label = "${b.label} ${pct(v)}") }
-                    Text(pct(v), Modifier.size(width = 48.dp, height = 24.dp), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.End)
-                }
+            if (lead == null) {
+                Text("Care's first member leads and gives its perks.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                return@Column
             }
-            Text(
-                "Normal, Fairy and Water add Friendship gain; Grass, Bug and Fighting Berry finder; Flying, Psychic and Ghost Visitor luck. " +
-                    "The lead gives its full perk and the rest of the party a quarter, up to +${Perks.BUCKET_CAP.roundToInt()}%. They only change what Care pays, never what you write.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
+            val shown = CareBucket.entries.filter { (totals[it] ?: 0.0) > 0 }
+            shown.forEach { b -> PerkRow(b.label, totals[b] ?: 0.0, Perks.BUCKET_CAP) }
+            if (shown.isEmpty()) Text("None yet: no one in Care's party has a Care type.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            PixelButton(if (open) "Hide where they come from" else "Where they come from", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            if (open) {
+                val assists = party.filter { it.id != lead.id }.take(5)
+                CareBucket.entries.forEach { bucket ->
+                    val parts = buildList {
+                        CarePerks.typePerks(lead)[bucket]?.let { add("  ${pct(it)} ${lead.nickname} (lead)") }
+                        assists.forEach { a -> CarePerks.typePerks(a)[bucket]?.let { add("  ${pct(it * Perks.ASSIST_SHARE)} ${a.nickname} (party assist)") } }
+                    }
+                    if (parts.isEmpty()) return@forEach
+                    Text("${bucket.label}: ${bucket.effect}", style = MaterialTheme.typography.bodyLarge)
+                    parts.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
+                }
+                Text(
+                    "Normal, Fairy and Water add Friendship gain; Grass, Bug and Fighting Berry finder; Flying, Psychic and Ghost Visitor luck. " +
+                        "The lead gives its full perk and the rest of the party a quarter, up to +${Perks.BUCKET_CAP.roundToInt()}%. They only change what Care pays, never what you write.",
+                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                )
+            }
         }
     }
 }

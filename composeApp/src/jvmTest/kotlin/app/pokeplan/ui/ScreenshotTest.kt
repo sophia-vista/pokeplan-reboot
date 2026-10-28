@@ -415,7 +415,7 @@ class ScreenshotTest {
     private fun modules(name: String, module: app.pokeplan.ui.screens.Module?, plan: app.pokeplan.ui.screens.PlanSection? = null) =
         meStore(name, prepare = { it.module = module; it.planSection = plan }) { model -> app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
 
-    private fun meStore(name: String, prepare: (AppModel) -> Unit = {}, content: @Composable (AppModel) -> Unit) {
+    private fun meStore(name: String, prepare: (AppModel) -> Unit = {}, height: Int = 1080, content: @Composable (AppModel) -> Unit) {
         val store = storeWithTeam()
         store.addGoal("Learn guitar").also { g ->
             store.addMilestone(g.id, "Buy a guitar")
@@ -427,7 +427,7 @@ class ScreenshotTest {
         clock.millis += 11_000
         store.tick()
         val model = AppModel(store).also(prepare)
-        render(name) {
+        render(name, height = height) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { content(model) } }
         }
     }
@@ -441,6 +441,12 @@ class ScreenshotTest {
     @Test
     fun planMenu() = modules("plan", app.pokeplan.ui.screens.Module.PLAN)
 
+    /** Plan's whole page, for comparing with Care's: the buddy's scene, the party with its perks, today and the sections. */
+    @Test
+    fun planMenuFull() = meStore("plan-full", prepare = { it.module = app.pokeplan.ui.screens.Module.PLAN; it.store.markRewardsSeen() }, height = 3200) { model ->
+        app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {}
+    }
+
     @Test
     fun planGrowth() = modules("plan-growth", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.GROWTH)
 
@@ -451,9 +457,10 @@ class ScreenshotTest {
     fun planReview() = modules("plan-review", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.REVIEW)
 
     /** The Care module, with a few routines (one done), a skill practised, a diary card and a journal entry, open on [section] (null for its menu). */
-    private fun care(name: String, section: app.pokeplan.ui.screens.CareSection?) {
+    private fun care(name: String, section: app.pokeplan.ui.screens.CareSection?, height: Int = 1080, careParty: Int = 0) {
         val store = storeWithTeam()
         store.markRewardsSeen()
+        store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(careParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.CARE) }
         val model = AppModel(store)
         val care = model.care
         val water = care.addRoutine("Drink a glass of water", kotlinx.datetime.LocalTime(9, 0))
@@ -465,11 +472,15 @@ class ScreenshotTest {
         care.write("Tea with a friend after work.", tags = setOf("People"))
         model.module = app.pokeplan.ui.screens.Module.CARE
         model.careSection = section
-        render(name) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+        render(name, height = height) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
     @Test
     fun careMenu() = care("care", null)
+
+    /** Care's whole page with three in Care's party, for comparing with Plan's. */
+    @Test
+    fun careMenuFull() = care("care-full", null, height = 3600, careParty = 3)
 
     @Test
     fun careRoutines() = care("care-routines", app.pokeplan.ui.screens.CareSection.ROUTINES)

@@ -101,18 +101,7 @@ fun HomeScreen(model: AppModel, go: (Place) -> Unit) {
             WelcomeBackCard(model)
             RewardBox(model)
 
-            if (buddy != null) {
-                val berry = data.player.inventory.counts.keys.firstOrNull { Items.category(it) == ItemCategory.BERRY && data.player.inventory.has(it) }
-                BuddyStage(
-                    buddy = buddy, scene = BuddyScene.of(buddy.form.types), darkness = BuddyScene.darkness(store.now.hour, store.now.minute),
-                    progress = store.levelProgress(buddy), event = store.buddyEvent(),
-                    calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
-                    onPet = { avoid -> store.pet(); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
-                    onFeed = { avoid -> berry?.let { store.useItem(it, buddy.id); model.effect(Sfx.HEAL) }; BuddyReaction.feed(buddy, avoid = avoid) },
-                    onOpen = { model.openPokemonId = buddy.id; go(Place.COLLECTION) }, onHaptic = { model.haptic() }, onEvent = { model.cry(buddy.speciesId) },
-                    celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
-                )
-            }
+            PlanBuddyStage(model) { buddy?.let { model.openPokemonId = it.id }; go(Place.COLLECTION) }
 
             when {
                 next != null -> NextUp(
@@ -157,6 +146,27 @@ fun HomeScreen(model: AppModel, go: (Place) -> Unit) {
             }
         }
     }
+}
+
+/**
+ * The Plan buddy in its type's scene, on Home and in Plan: pet it, give it a berry, and it celebrates a finished task or a
+ * hatch with its cry, its portrait and a hop. Nothing before the first buddy.
+ */
+@Composable
+fun PlanBuddyStage(model: AppModel, onOpen: () -> Unit) {
+    val store = model.store
+    val data = model.data
+    val buddy = data.player.buddy ?: return
+    val berry = data.player.inventory.counts.keys.sorted().firstOrNull { Items.category(it) == ItemCategory.BERRY && data.player.inventory.has(it) }
+    BuddyStage(
+        buddy = buddy, scene = BuddyScene.of(buddy.form.types), darkness = BuddyScene.darkness(store.now.hour, store.now.minute),
+        progress = store.levelProgress(buddy), event = store.buddyEvent(),
+        calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
+        onPet = { avoid -> store.pet(); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
+        onFeed = { avoid -> berry?.let { store.useItem(it, buddy.id); model.effect(Sfx.HEAL) }; BuddyReaction.feed(buddy, avoid = avoid) },
+        onOpen = onOpen, onHaptic = { model.haptic() }, onEvent = { model.cry(buddy.speciesId) },
+        celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
+    )
 }
 
 /** The one recommended task, with its two actions. Completing is its own button; the rest of the card is just information. */

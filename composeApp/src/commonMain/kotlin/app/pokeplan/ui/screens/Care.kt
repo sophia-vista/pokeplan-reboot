@@ -54,7 +54,6 @@ import app.pokeplan.ui.ItemIcon
 import app.pokeplan.app.BuddyReaction
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.core.pokemon.ItemCategory
-import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.ui.Sfx
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.semantics.Role
@@ -124,6 +123,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         ) {
             CareBuddy(model, openPokemon)
             RewardBox(model)
+            CarePartyPanel(model, openPokemon)
             VisitorsCard(model)
             SectionLabel("Today", icon = CareSection.ROUTINES.icon)
             if (today.isEmpty()) {
@@ -139,7 +139,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                     MenuEntry(CareSection.CALM.name, CareSection.CALM.icon, "Calm break", "a minute to breathe", tint = Pixel.Blue),
                     MenuEntry(CareSection.DIARY.name, CareSection.DIARY.icon, "Diary card", if (diarySaved) "saved today" else "how today felt", tint = Pixel.Red),
                     MenuEntry(CareSection.SKILLS.name, CareSection.SKILLS.icon, "Skills", if (practised == 0) "DBT skills to try" else "$practised practised today", tint = Pixel.Green),
-                    MenuEntry(CareSection.JOURNAL.name, CareSection.JOURNAL.icon, "Journal", if (care.journal.isEmpty()) "write anything" else "${care.journal.size} entries", tint = Pixel.Warning),
+                    MenuEntry(CareSection.JOURNAL.name, CareSection.JOURNAL.icon, "Journal", if (care.journal.isEmpty()) "write anything" else if (care.journal.size == 1) "1 entry" else "${care.journal.size} entries", tint = Pixel.Warning),
                     MenuEntry(CareSection.TRENDS.name, CareSection.TRENDS.icon, "Trends", "the last few weeks", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.careSection = CareSection.valueOf(key) }
@@ -149,10 +149,9 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
 
 /**
  * Care's buddy (Care's lead, else the Plan buddy) in the meadow, as on Home: pet it, give it a berry, and it celebrates Care's
- * own moments (a routine, a calm break, a skill, a friend) with its cry, its portrait and a hop. Below, Care's party, each
- * one tappable for its cry. It never comments on how the player feels.
+ * own moments (a routine, a calm break, a skill, a friend) with its cry, its portrait and a hop. Care's whole party sits
+ * below it ([CarePartyPanel]). It never comments on how the player feels.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
     val store = model.store
@@ -169,17 +168,6 @@ private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
         onEvent = { model.cry(buddy.speciesId) },
         celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
     )
-    val party = data.player.partyOf(PartyIds.CARE).filter { it.id != buddy.id }
-    if (party.isEmpty()) return
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        party.forEach { p ->
-            AnimatedSprite(
-                p.form.id, p.isShiny, p.nickname,
-                Modifier.size(56.dp).clickable(onClickLabel = "Hear ${p.nickname}", role = Role.Button) { model.haptic(); model.cry(p.speciesId) },
-                size = 56.dp, animate = !data.settings.reduceMotion,
-            )
-        }
-    }
 }
 
 // ----- Visitors -------------------------------------------------------------------------------------------------------
