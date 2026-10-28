@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
     private var appData: AppData? = null
     private var careData: CareData? = null
     private var routineSignature: Int? = null
+    private var careWidgetSignature: Int? = null
     private var routineRefresh: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -129,6 +130,19 @@ class MainActivity : ComponentActivity() {
     private fun careChanged(data: CareData) {
         careData = data
         keepRoutineRemindersCurrent()
+        // The Care widget shows today's routines, their ticks and the diary card.
+        val signature = listOf(data.routines.map { listOf(it.id, it.title, it.icon, it.time, it.days, it.archived, it.completions.maxOrNull()) }, data.diary.maxOfOrNull { it.day }).hashCode()
+        if (careWidgetSignature == null) {
+            careWidgetSignature = signature
+            return
+        }
+        if (signature == careWidgetSignature) return
+        careWidgetSignature = signature
+        widgetRefresh?.cancel()
+        widgetRefresh = lifecycleScope.launch {
+            delay(800)
+            updateWidgets(applicationContext)
+        }
     }
 
     /** Sets Care's routine reminders again when they change (a routine, a tick, a focus session), a moment after the last change. */
