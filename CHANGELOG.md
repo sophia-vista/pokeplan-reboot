@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.39.0
+
+- Gentle routine reminders on Android. A Care routine with a time now sends one quiet notification at that time on its days, unless it is already done, with Done (ticked off and paid just as in the app) and "In 30 min". It never repeats, and it waits for the end of a focus session. Switch them off in Me, Settings, Modules, "Routine reminders". Routines with no time never remind.
+
 ## 0.37.0
 
 - Visits finished. The visitor now stands in the meadow during a visit and answers with its own animation (a hop for its favourite, eating for a treat; still with Reduce motion). A gentle pat asks where: each species likes one of head, back or under the chin, and finding it warms once more (a wrong spot costs nothing). Two more bids, a little hop and curling up closer. A "Met" row shows every visitor you have cared for, friend or not, with no counts.

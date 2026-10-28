@@ -228,6 +228,7 @@ class ReminderBootReceiver : BroadcastReceiver() {
             try {
                 TaskReminders.rescheduleFromSave(app)
                 AppAlerts.rescheduleFromSave(app)
+                RoutineReminders.rescheduleFromSave(app)
             } finally {
                 pending.finish()
             }

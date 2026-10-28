@@ -446,6 +446,10 @@ private fun SettingsView(model: AppModel) {
             "Care", settings.careModule,
             detail = "Routines, calm breaks, a diary card, DBT skills and a journal, under Modules. Switched off, it is only hidden: what you saved in it stays.",
         ) { store.changeSettings { s -> s.copy(careModule = it) } }
+        if (settings.careModule) ToggleRow(
+            "Routine reminders", model.careData.settings.reminders,
+            detail = "A gentle note at a routine's own time, once, with Done. Routines with no time never remind.",
+        ) { on -> model.care.changeSettings { it.copy(reminders = on) } }
     }
     SettingsGroup("Focus") {
         ToggleRow("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
