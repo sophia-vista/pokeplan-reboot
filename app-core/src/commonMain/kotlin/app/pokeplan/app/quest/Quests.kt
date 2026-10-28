@@ -74,7 +74,7 @@ object Quests {
 
     val all: List<Quest> by lazy {
         val regionOf = mutableMapOf<Int, Region>()
-        for (region in Region.entries) for (s in Dex.regionDex(region)) if (s.id !in regionOf) regionOf[s.id] = region
+        for (region in Region.entries.filter { it.released }) for (s in Dex.regionDex(region)) if (s.id !in regionOf) regionOf[s.id] = region
         Dex.species.filter { it.isSpecial }.map { s ->
             val name = s.name
             lakeTrio[s.identifier]?.copy(speciesId = s.id, dexRegion = Region.PLAN)

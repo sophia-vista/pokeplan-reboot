@@ -23,8 +23,7 @@ enum class Feature(val step: Int, val label: String) {
 }
 
 /**
- * The trainer rank, shared by every app: it is earned from rewards in any of them. Ranks unlock regions one by one and
- * reveal features. Names and thresholds are *(tune)*.
+ * The trainer rank, shared by every app: it is earned from rewards in any of them. Ranks reveal features. Names and thresholds are *(tune)*.
  */
 object TrainerRank {
     /** Rank names, from the first. */
@@ -34,7 +33,7 @@ object TrainerRank {
 
     /**
      * Points needed to reach each rank: quick at first (a typical player reaches Apprentice on day 2 and Ace in under two
-     * weeks, so the reveal never makes anyone wait), then slower, so the later regions keep coming for months. *(tune)*
+     * weeks, so the reveal never makes anyone wait), then slower, for the Guardians and quests of the later ranks. *(tune)*
      */
     val thresholds: List<Int> = listOf(0, 50, 150, 325, 650, 1_150, 1_900, 3_000, 5_000, 9_000)
 
@@ -52,7 +51,7 @@ object TrainerRank {
     /** Points still needed for the next rank, or null at the top. */
     fun pointsToNext(points: Int): Int? = thresholds.getOrNull(rankFor(points) + 1)?.let { it - points }
 
-    /** Released module regions are always open; the game regions open in order, one per rank. */
+    /** The released regions, open to everyone (the games' regions are retired). */
     fun unlockedRegions(points: Int): List<Region> = Region.entries.filter { isUnlocked(it, points) }
 
     fun isUnlocked(region: Region, points: Int): Boolean = region.released && rankToUnlock(region) <= rankFor(points)

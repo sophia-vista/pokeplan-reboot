@@ -285,7 +285,7 @@ class GameStore(
         val warmKey = "warm-$streakDay"
         val warmed = d.counters[warmKey] ?: 0
         val event = AchievementEvent(
-            tier = tier, region = d.settings.region, hourOfDay = now.hour, firstOfDay = firstOfDay, onTime = onTime,
+            tier = tier, region = d.settings.region.open, hourOfDay = now.hour, firstOfDay = firstOfDay, onTime = onTime,
             focusedOnIt = focusedOnIt, picked = picked, friendshipTasksToday = warmed, newPokemonId = newId(), nowMillis = nowMillis,
         )
         val outcome = RewardEngine.achievement(d.player, event, rng)
@@ -932,7 +932,7 @@ class GameStore(
     fun startFocus(minutes: Int, deepFocus: Boolean, taskId: String? = null, lure: PokemonType? = null): FocusSession {
         check(data.focus == null) { "a session is already running" }
         val session = FocusRules.start(
-            id = newId(), durationMinutes = minutes, nowMillis = nowMillis, deepFocus = deepFocus, region = data.settings.region,
+            id = newId(), durationMinutes = minutes, nowMillis = nowMillis, deepFocus = deepFocus, region = data.settings.region.open,
             buddyIdAtStart = data.player.buddyId, taskId = taskId, lure = lure, emergencyPausesUsedToday = emergencyPausesToday(),
         )
         // The oldest egg ticket fixes the egg's dice now, like the perks; without one the egg rolls on the device.
@@ -967,7 +967,7 @@ class GameStore(
         return when (val phase = session.phase) {
             is Phase.Completed -> {
                 val minutes = (session.durationMillis / 60_000L).toInt()
-                val event: EffortEvent = session.toEffortEvent(newId(), nowMillis, epochDay)
+                val event: EffortEvent = session.toEffortEvent(newId(), nowMillis, epochDay).let { it.copy(region = it.region.open) }
                 // The perks that count are the ones of the buddy when the session started.
                 val player = data.player
                 val ticket = data.eggTickets.inSession
@@ -1009,7 +1009,7 @@ class GameStore(
         if (minutes < Egg.MIN_MINUTES || key in data.counters) return null
         if (!Perks.total(player.buddy, player.party, guardians = player.guardianPokemon).keepsFailedEgg) return null
         val ticket = data.eggTickets.inSession
-        val event = EffortEvent(minutes, false, session.region, session.lure, epochDay, newId(), nowMillis)
+        val event = EffortEvent(minutes, false, session.region.open, session.lure, epochDay, newId(), nowMillis)
         val outcome = RewardEngine.effort(player, event, ticket?.let { Random(it.seed) } ?: rng)
         update { d ->
             log("Magic Guard: $minutes min", outcome.rewards, d.copy(

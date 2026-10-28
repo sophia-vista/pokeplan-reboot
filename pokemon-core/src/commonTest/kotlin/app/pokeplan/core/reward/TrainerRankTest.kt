@@ -11,8 +11,8 @@ import kotlin.test.assertTrue
 
 class TrainerRankTest {
     @Test
-    fun oneRankPerRegionAndNamesMatch() {
-        assertEquals(Region.games.size + 1, TrainerRank.names.size)
+    fun tenRanksAndNamesMatch() {
+        assertEquals(10, TrainerRank.names.size)
         assertEquals(TrainerRank.names.size, TrainerRank.thresholds.size)
         assertEquals(TrainerRank.thresholds.sorted(), TrainerRank.thresholds)
         assertEquals(0, TrainerRank.thresholds.first())
@@ -31,16 +31,15 @@ class TrainerRankTest {
     }
 
     @Test
-    fun regionsOpenOnePerRankAfterTheModuleRegions() {
-        assertEquals(listOf(Region.PLAN, Region.CARE), TrainerRank.unlockedRegions(0))
-        assertEquals(listOf(Region.PLAN, Region.KANTO, Region.CARE), TrainerRank.unlockedRegions(TrainerRank.thresholds[1]))
-        assertEquals(listOf(Region.PLAN) + Region.games + Region.CARE, TrainerRank.unlockedRegions(TrainerRank.thresholds.last()))
-        assertTrue(TrainerRank.isUnlocked(Region.PLAN, 0))
-        assertTrue(TrainerRank.isUnlocked(Region.CARE, 0))
-        assertFalse(TrainerRank.isUnlocked(Region.HOUSEHOLD, TrainerRank.thresholds.last()))
-        assertFalse(TrainerRank.isUnlocked(Region.JOHTO, TrainerRank.thresholds[2] - 1))
-        assertTrue(TrainerRank.isUnlocked(Region.JOHTO, TrainerRank.thresholds[2]))
-        assertEquals(2, TrainerRank.rankToUnlock(Region.JOHTO))
+    fun onlyThePlanAndCareRegionsOpen() {
+        // The games' regions are retired: they never open, at any rank, and send their eggs to the Plan Region.
+        for (points in listOf(0, TrainerRank.thresholds[1], TrainerRank.thresholds.last())) {
+            assertEquals(listOf(Region.PLAN, Region.CARE), TrainerRank.unlockedRegions(points))
+        }
+        assertTrue(Region.games.isNotEmpty() && Region.games.none { it.released })
+        assertTrue(Region.games.all { it.open == Region.PLAN })
+        assertEquals(Region.CARE, Region.CARE.open)
+        assertFalse(TrainerRank.isUnlocked(Region.JOHTO, TrainerRank.thresholds.last()))
         assertEquals(0, TrainerRank.rankToUnlock(Region.HOUSEHOLD))
         assertFalse(TrainerRank.isUnlocked(Region.HOUSEHOLD, TrainerRank.thresholds.last()), "a module region opens when its module ships")
     }

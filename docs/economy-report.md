@@ -13,7 +13,7 @@ Plays 180 days for 60 simulated players per profile through the real reward engi
 ## Targets
 
 - Basic Plan dex (57 hatchable species) in about 60 days for a typical player.
-- Ranks quick at first, slower after: Apprentice (Kanto) within about 2 days and Ace within about 2 weeks for a typical player; each rank takes longer than the one before.
+- Ranks quick at first, slower after: Apprentice within about 2 days and Ace within about 2 weeks for a typical player; each rank takes longer than the one before.
 - Evolving everything in the Plan Region once needs 83 evolutions: 70 Super Candies, 3808 to 7170 Rare Candies (with and without the catch-up discount), 12 stones, 1 Link Cords, 3 trials.
 
 ## Light
@@ -21,10 +21,7 @@ Plays 180 days for 60 simulated players per profile through the real reward engi
 | Measure | Value |
 |---|---|
 | Day the basic Plan dex is complete (181 = not within 180) | 181 (181 to 181) |
-| Day Kanto unlocks | 6.0 (4.0 to 10.0) |
-| Day Johto unlocks | 18.0 (15.0 to 24.0) |
-| Day Hoenn unlocks | 37.0 (32.0 to 45.0) |
-| Day Sinnoh unlocks | 73.0 (67.0 to 84.0) |
+| Day the basic Care dex is complete (181 = not within 180) | 181 (181 to 181) |
 | Rank after 30 days | 2.0 (2.0 to 2.0) |
 | Eggs after 30 days (incl. Task Eggs) | 20.0 (16.0 to 24.0) |
 | Rank after 60 days | 3.0 (3.0 to 3.0) |
@@ -47,24 +44,21 @@ Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (59.0)
 | Measure | Value |
 |---|---|
 | Day the basic Plan dex is complete (181 = not within 180) | 65.0 (45.0 to 88.0) |
-| Day Kanto unlocks | 2.0 (1.0 to 3.0) |
-| Day Johto unlocks | 4.0 (3.0 to 6.0) |
-| Day Hoenn unlocks | 9.0 (8.0 to 11.0) |
-| Day Sinnoh unlocks | 18.0 (16.0 to 21.0) |
+| Day the basic Care dex is complete (181 = not within 180) | 128 (93.0 to 158) |
 | Rank after 30 days | 4.0 (4.0 to 5.0) |
 | Eggs after 30 days (incl. Task Eggs) | 86.0 (75.0 to 95.0) |
 | Rank after 60 days | 6.0 (6.0 to 6.0) |
-| Eggs after 60 days (incl. Task Eggs) | 174 (156 to 188) |
+| Eggs after 60 days (incl. Task Eggs) | 174 (156 to 187) |
 | Rank after 90 days | 7.0 (7.0 to 7.0) |
-| Eggs after 90 days (incl. Task Eggs) | 258 (239 to 278) |
-| Task Eggs after 60 days | 70.0 (65.0 to 75.0) |
-| Rare Candies earned in 60 days (incl. transfers) | 5122 (4600 to 5522) |
-| Super Candies earned in 60 days | 214 (168 to 250) |
-| Coins after 60 days | 7808 (6968 to 8605) |
-| Item drops in 60 days | 135 (120 to 150) |
+| Eggs after 90 days (incl. Task Eggs) | 261 (240 to 275) |
+| Task Eggs after 60 days | 70.0 (65.0 to 76.0) |
+| Rare Candies earned in 60 days (incl. transfers) | 5122 (4597 to 5504) |
+| Super Candies earned in 60 days | 214 (178 to 256) |
+| Coins after 60 days | 7837 (6920 to 8587) |
+| Item drops in 60 days | 135 (120 to 151) |
 | Buddy level after 60 days | 100 (100 to 100) |
-| Shinies in 180 days | 4.0 (2.0 to 8.0) |
-| Species owned after 90 days | 118 (58.0 to 154) |
+| Shinies in 180 days | 5.0 (1.0 to 8.0) |
+| Species owned after 90 days | 107 (58.0 to 119) |
 
 Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (214) that is about 19.6 days. Rare Candies: 3808 to 7170 needed, 5122 earned in 60 days (about 44.6 to 84.0 days).
 
@@ -73,24 +67,21 @@ Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (214) 
 | Measure | Value |
 |---|---|
 | Day the basic Plan dex is complete (181 = not within 180) | 28.0 (21.0 to 38.0) |
-| Day Kanto unlocks | 1.0 (1.0 to 1.0) |
-| Day Johto unlocks | 2.0 (2.0 to 2.0) |
-| Day Hoenn unlocks | 4.0 (3.0 to 5.0) |
-| Day Sinnoh unlocks | 7.0 (7.0 to 9.0) |
+| Day the basic Care dex is complete (181 = not within 180) | 54.0 (45.0 to 64.0) |
 | Rank after 30 days | 6.0 (6.0 to 7.0) |
-| Eggs after 30 days (incl. Task Eggs) | 183 (168 to 198) |
+| Eggs after 30 days (incl. Task Eggs) | 182 (169 to 198) |
 | Rank after 60 days | 8.0 (8.0 to 8.0) |
-| Eggs after 60 days (incl. Task Eggs) | 367 (348 to 386) |
+| Eggs after 60 days (incl. Task Eggs) | 368 (352 to 386) |
 | Rank after 90 days | 8.0 (8.0 to 8.0) |
-| Eggs after 90 days (incl. Task Eggs) | 548 (535 to 578) |
-| Task Eggs after 60 days | 168 (156 to 176) |
-| Rare Candies earned in 60 days (incl. transfers) | 11522 (10831 to 12288) |
-| Super Candies earned in 60 days | 593 (534 to 656) |
-| Coins after 60 days | 18355 (17094 to 19490) |
-| Item drops in 60 days | 275 (259 to 289) |
+| Eggs after 90 days (incl. Task Eggs) | 554 (522 to 572) |
+| Task Eggs after 60 days | 168 (159 to 177) |
+| Rare Candies earned in 60 days (incl. transfers) | 11731 (11066 to 12226) |
+| Super Candies earned in 60 days | 613 (551 to 685) |
+| Coins after 60 days | 18747 (17457 to 19506) |
+| Item drops in 60 days | 272 (255 to 292) |
 | Buddy level after 60 days | 100 (100 to 100) |
-| Shinies in 180 days | 10.0 (6.0 to 14.0) |
-| Species owned after 90 days | 281 (256 to 297) |
+| Shinies in 180 days | 10.0 (6.0 to 13.0) |
+| Species owned after 90 days | 122 (122 to 122) |
 
-Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (593) that is about 7.1 days. Rare Candies: 3808 to 7170 needed, 11522 earned in 60 days (about 19.8 to 37.3 days).
+Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (613) that is about 6.9 days. Rare Candies: 3808 to 7170 needed, 11731 earned in 60 days (about 19.5 to 36.7 days).
 

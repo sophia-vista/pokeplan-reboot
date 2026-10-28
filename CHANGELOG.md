@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.44.0
+
+- Only the Plan and Care Regions now. Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar and Paldea are gone from the hatching region picker and the Pokédex tabs, and ranks no longer open them; the National Dex tab still lists every species. Pokémon you already hatched from them stay yours, and if one of them was your hatching region, eggs now come from the Plan Region. Legendary quests no longer ask you to catch a share of those regions.
+
 ## 0.43.1
 
 - Care's perks now open at rank Trainer, together with Plan's party perks: before then, Care's party panel and its card in Pokémon, Party say which rank shows them. They already count, as Plan's do.

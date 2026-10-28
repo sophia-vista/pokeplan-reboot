@@ -3,6 +3,9 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.44.0" to listOf(
+            "Eggs now come from the Plan and Care Regions only. The game regions are gone; Pokémon you hatched there stay yours.",
+        ),
         "0.43.0" to listOf(
             "Plan and Care now open the same way: your buddy in its scene, then your whole party with its perks. Tap a party member to hear it, hold it to open it.",
         ),
