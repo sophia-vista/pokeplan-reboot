@@ -75,7 +75,7 @@ The app never mentions ADHD; it just removes friction and shame.
 |---|---|---|
 | Rookie (start) | 1 | tasks, habits, planner, focus and eggs, buddy, party and PC, Pokédex, Rare Candy, the weekly review |
 | Apprentice | 2 | Super Candy and evolution, the Bag, goals, the region picker (Plan or Care Region) |
-| Trainer | 5 | held items, party perks, the Growth screen, coins |
+| Trainer | 5 | held items, party perks (Plan's and Care's alike, *0.43.1*), the Growth screen, coins |
 | Ace | 11 | Nature Mints, Bottle Caps, Ability Capsules and Tera Shards; stats and the IV judge |
 | Veteran | 22 | Guardians and legendary quests |
 
