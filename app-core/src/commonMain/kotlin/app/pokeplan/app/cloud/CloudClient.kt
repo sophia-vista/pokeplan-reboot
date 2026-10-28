@@ -82,6 +82,24 @@ class CloudClient(private val config: CloudConfig, private val http: HttpClient,
             session.accessToken,
         ) { it["version"]!!.jsonPrimitive.int }
 
+    /** Care's opt-in copy, apart from the Plan save: [Pulled.data] is null when nothing has been uploaded. */
+    suspend fun carePull(session: Session): CloudResult<Pulled> =
+        call("/functions/v1/reward", buildJsonObject { put("kind", "care-pull") }, session.accessToken) { body ->
+            Pulled(body["version"]!!.jsonPrimitive.int, (body["data"] as? JsonObject))
+        }
+
+    /** Saves Care's [document] if the cloud copy is still at [expectedVersion]; a stale one is a 409 with the server's `version`. */
+    suspend fun carePush(session: Session, expectedVersion: Int, document: JsonObject): CloudResult<Int> =
+        call(
+            "/functions/v1/reward",
+            buildJsonObject { put("kind", "care-push"); put("expectedVersion", expectedVersion); put("data", document) },
+            session.accessToken,
+        ) { it["version"]!!.jsonPrimitive.int }
+
+    /** Deletes Care's cloud copy (turning sync off). */
+    suspend fun careDelete(session: Session): CloudResult<Unit> =
+        call("/functions/v1/reward", buildJsonObject { put("kind", "care-delete") }, session.accessToken) { }
+
     /** Reports the egg tickets this device spent and gets its unspent stock back, topped up. */
     suspend fun tickets(session: Session, device: String, spent: List<SpentTicket>): CloudResult<List<EggTicket>> =
         call(

@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { type Database, handleDeleteAccount, handleReward, handleSync, handleTickets, RequestError } from "./core.ts";
+import { type Database, handleCareSync, handleDeleteAccount, handleReward, handleSync, handleTickets, RequestError } from "./core.ts";
 
 const dir = resolve(process.argv[2] ?? "pokemon-core/build/compileSync/js/main/productionLibrary/kotlin");
 const lib = await import(pathToFileURL(join(dir, "pokeplan-pokemon-core.mjs")).href);
@@ -19,6 +19,8 @@ function fakeDb(overrides: Partial<Database> = {}) {
   let staleOnce = 0;
   let saved: unknown = null;
   let pushError: Error | null = null;
+  let care: unknown = null;
+  let careVersion = 0;
   const db: Database & { rules: number[]; deleted: string[]; ticketCalls: unknown[]; ledger: typeof ledger; setState(s: unknown): void; failStale(n: number): void; failPush(e: Error | null): void; loads: number } = {
     loads: 0,
     ledger,
@@ -49,6 +51,13 @@ function fakeDb(overrides: Partial<Database> = {}) {
       saved = data;
       return ++version;
     },
+    async pullCareSave() { return { version: careVersion, data: care }; },
+    async pushCareSave(_u, expected, data) {
+      if (expected !== careVersion) throw Object.assign(new Error("stale"), { code: "40001" });
+      care = data;
+      return ++careVersion;
+    },
+    async deleteCareSave() { const had = care !== null; care = null; careVersion = 0; return had; },
     ticketCalls: [] as unknown[],
     async eggTickets(_u, device, spent, stock) {
       db.ticketCalls.push({ device, spent, stock });
@@ -192,6 +201,26 @@ const user = "u1";
   for (const bad of [{ kind: "tickets" }, { kind: "tickets", device: "phone", spent: "x" }, { kind: "tickets", device: "phone", spent: new Array(201).fill(good) }]) {
     await assert.rejects(handleTickets(user, bad as Record<string, unknown>, db), (e: unknown) => e instanceof RequestError && e.status === 400);
   }
+}
+
+// Care's opt-in copy: its own version, apart from Plan's; never game state; turning sync off deletes it.
+{
+  const db = fakeDb();
+  assert.deepEqual(await handleCareSync(user, { kind: "care-pull" }, db), { version: 0, data: null });
+  const doc = { routines: [{ id: "r1" }], journal: [] };
+  assert.deepEqual(await handleCareSync(user, { kind: "care-push", expectedVersion: 0, data: doc }, db), { version: 1 });
+  assert.deepEqual(await handleCareSync(user, { kind: "care-pull" }, db), { version: 1, data: doc });
+  assert.deepEqual(await handleSync(user, { kind: "pull" }, db), { version: 0, data: null });
+  await assert.rejects(handleCareSync(user, { kind: "care-push", expectedVersion: 0, data: doc }, db),
+    (e: unknown) => e instanceof RequestError && e.status === 409 && (e.extra as { version: number }).version === 1);
+  for (const bad of [{ kind: "care-push", expectedVersion: 1 }, { kind: "care-push", expectedVersion: 1, data: [] }, { kind: "care-push", expectedVersion: 1, data: { player: {} } }, { kind: "care-nope" }]) {
+    await assert.rejects(handleCareSync(user, bad as Record<string, unknown>, db), (e: unknown) => e instanceof RequestError && e.status === 400);
+  }
+  await assert.rejects(handleCareSync(user, { kind: "care-push", expectedVersion: 1, data: { journal: "x".repeat(5_000_001) } }, db),
+    (e: unknown) => e instanceof RequestError && e.status === 413);
+  assert.deepEqual(await handleCareSync(user, { kind: "care-delete" }, db), { deleted: true });
+  assert.deepEqual(await handleCareSync(user, { kind: "care-delete" }, db), { deleted: false });
+  assert.deepEqual(await handleCareSync(user, { kind: "care-pull" }, db), { version: 0, data: null });
 }
 
 console.log("reward function: all good");
