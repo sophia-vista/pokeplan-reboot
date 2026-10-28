@@ -446,6 +446,7 @@ private fun SettingsView(model: AppModel) {
             "Care", settings.careModule,
             detail = "Routines, calm breaks, a diary card, DBT skills and a journal, under Modules. Switched off, it is only hidden: what you saved in it stays.",
         ) { store.changeSettings { s -> s.copy(careModule = it) } }
+        if (settings.careModule) CareCloudRow(model)
     }
     SettingsGroup("Focus") {
         ToggleRow("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
@@ -558,9 +559,24 @@ private fun DataCard(model: AppModel) {
                     }
                 }
                 "care" -> {
-                    Text("Erase Care's data on this device? Every routine, calm break, diary card, skill practised and journal entry is removed. What they earned stays. This cannot be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
+                    val inCloud = model.careData.settings.cloudSync && model.careSync != null
+                    Text(
+                        "Erase Care's data on this device? Every routine, calm break, diary card, skill practised and journal entry is removed" +
+                            (if (inCloud) ", and its copy in the cloud too" else "") + ". What they earned stays. This cannot be undone.",
+                        style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger,
+                    )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PixelButton("Erase", { model.care.erase(); asking = null; note = "Care's data on this device was erased." }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                        PixelButton("Erase", {
+                            busy = true
+                            scope.launch {
+                                // The cloud copy goes first, so a failure leaves everything as it was.
+                                val failed = if (inCloud) model.careSync?.turnOff() else null
+                                if (failed == null) model.care.erase()
+                                note = failed?.let { "Care's cloud copy could not be deleted: $it" } ?: "Care's data was erased."
+                                busy = false
+                                asking = null
+                            }
+                        }, Modifier.weight(1f), Pixel.Danger, enabled = !busy, compact = true)
                         PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }
@@ -692,6 +708,50 @@ private fun AccountCard(model: AppModel) {
             }
         }
     }
+}
+
+/**
+ * Care's opt-in cloud copy: off by default, so Care stays on this device. On, routines, diary cards and journal entries go to
+ * the account's own Care copy (never to friends or leaderboards); off deletes that copy.
+ */
+@Composable
+private fun CareCloudRow(model: AppModel) {
+    val careSync = model.careSync ?: return
+    val on = model.careData.settings.cloudSync
+    val signedIn = model.data.account != null
+    val scope = rememberCoroutineScope()
+    var busy by remember { mutableStateOf(false) }
+    var message by remember { mutableStateOf<String?>(null) }
+    ToggleRow(
+        "Care copy in the cloud", on,
+        detail = if (signedIn) "Off by default: Care stays on this device. On, it is kept with your account so another phone can have it, and never shown to friends. Off deletes the copy."
+        else "Sign in under Account to keep a copy of Care with your account. Until then Care stays on this device.",
+    ) { want ->
+        if (busy || !signedIn) return@ToggleRow
+        busy = true; message = null
+        scope.launch {
+            message = if (want) careSync.turnOn() else careSync.turnOff()
+            busy = false
+        }
+    }
+    if (on && signedIn) {
+        val status = model.careSyncStatus
+        Text(
+            when (status) {
+                SyncStatus.Syncing -> "Syncing Care..."
+                is SyncStatus.Offline -> "No connection. Care's changes are kept and sent later."
+                is SyncStatus.Refused -> status.message
+                is SyncStatus.Conflict -> "This device and the cloud both have new Care entries."
+                else -> if (model.careData.cloud?.unsynced == true) "Care changes waiting to sync" else "Care is saved to the cloud."
+            },
+            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+        )
+        if (status is SyncStatus.Conflict) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            PixelButton("This device", { scope.launch { careSync.resolve(keepThisDevice = true) } }, Modifier.weight(1f), Pixel.Blue, compact = true)
+            PixelButton("The cloud", { scope.launch { careSync.resolve(keepThisDevice = false) } }, Modifier.weight(1f), Pixel.Green, compact = true)
+        }
+    }
+    message?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) }
 }
 
 /** One group of settings in its own card, under a small heading. */

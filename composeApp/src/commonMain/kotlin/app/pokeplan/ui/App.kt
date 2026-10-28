@@ -44,6 +44,7 @@ import app.pokeplan.app.Storage
 import app.pokeplan.app.cloud.CloudClient
 import app.pokeplan.app.cloud.CloudConfig
 import app.pokeplan.app.cloud.SocialClient
+import app.pokeplan.app.cloud.CareSync
 import app.pokeplan.app.cloud.SyncManager
 import app.pokeplan.app.cloud.SyncStatus
 import io.ktor.client.HttpClient
@@ -101,6 +102,8 @@ class AppModel(
     val phone: PhoneState? = null,
     /** The Care module's own store, apart from Plan's save; it pays into [store] (the shared world). */
     val care: CareStore = CareStore(MemoryStorage(), Clock { store.nowMillis }, store),
+    /** Care's opt-in cloud copy, through the account [sync] signed in to; null without a cloud. */
+    val careSync: CareSync? = null,
 ) {
     /** A light vibration, if the platform can and Haptics is on in Settings. */
     fun haptic() {
@@ -127,6 +130,10 @@ class AppModel(
 
     /** Where the cloud sync stands, for Settings. */
     var syncStatus: SyncStatus by mutableStateOf(sync?.status?.value ?: SyncStatus.SignedOut)
+        internal set
+
+    /** Where Care's cloud copy stands, for Settings → Modules. */
+    var careSyncStatus: SyncStatus by mutableStateOf(SyncStatus.Idle)
         internal set
 
     var data: AppData by mutableStateOf(store.data)
@@ -226,7 +233,9 @@ fun App(
         val store = GameStore(storage, clock)
         val client = if (cloud.enabled) CloudClient(cloud, HttpClient()) { clock.nowMillis() } else null
         val care = CareStore(careStorage ?: MemoryStorage(), clock, store, weekStart = { if (store.data.settings.weekStartsOnMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY })
-        AppModel(store, motion, client?.let { SyncManager(store, it) }, client?.let { SocialClient(it) }, cries, haptics, files, calendars, phone, care).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
+        val sync = client?.let { SyncManager(store, it) }
+        val careSync = if (client != null && sync != null) CareSync(care, client) { sync.session() } else null
+        AppModel(store, motion, sync, client?.let { SocialClient(it) }, cries, haptics, files, calendars, phone, care, careSync).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
     }
     val store = model.store
     if (onDataChanged != null) DisposableEffect(store) {
@@ -250,9 +259,11 @@ fun App(
         LaunchedEffect(account?.userId) {
             if (account != null) {
                 sync.sync()
+                model.careSync?.sync()
                 while (true) {
                     delay(SYNC_EVERY_MILLIS)
                     sync.sync()
+                    model.careSync?.sync()
                 }
             }
         }
@@ -260,6 +271,19 @@ fun App(
             if (account?.unsynced == true && model.syncStatus !is SyncStatus.Conflict && model.syncStatus !is SyncStatus.Refused) {
                 delay(SYNC_DEBOUNCE_MILLIS)
                 sync.sync()
+            }
+        }
+    }
+
+    // Care's opt-in copy: follow its status, and upload a moment after any change.
+    val careSync = model.careSync
+    if (careSync != null) {
+        LaunchedEffect(careSync) { careSync.status.collect { model.careSyncStatus = it } }
+        val careCloud = model.careData.cloud
+        LaunchedEffect(careCloud?.unsynced, careCloud?.syncedAtMillis, model.data.account?.userId) {
+            if (careCloud?.unsynced == true && model.data.account != null && model.careSyncStatus !is SyncStatus.Conflict && model.careSyncStatus !is SyncStatus.Refused) {
+                delay(SYNC_DEBOUNCE_MILLIS)
+                careSync.sync()
             }
         }
     }

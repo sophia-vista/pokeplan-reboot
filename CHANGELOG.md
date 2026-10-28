@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.38.0
+
+- Care can keep a copy in the cloud, if you want it to. In Me, Settings, Modules, "Care copy in the cloud" is off by default; signed in and switched on, your routines, diary cards and journal go with your account (on their own, apart from your Plan save, and never to friends or leaderboards), so another phone can have them. If two phones both changed, you choose which to keep. Switching it off, or erasing Care's data, deletes the copy. Needs the new Supabase migration, the `care` schema exposed in the API settings, and a redeployed reward function.
+
 ## 0.37.0
 
 - Visits finished. The visitor now stands in the meadow during a visit and answers with its own animation (a hop for its favourite, eating for a treat; still with Reduce motion). A gentle pat asks where: each species likes one of head, back or under the chin, and finding it warms once more (a wrong spot costs nothing). Two more bids, a little hop and curling up closer. A "Met" row shows every visitor you have cared for, friend or not, with no counts.

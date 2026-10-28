@@ -28,6 +28,12 @@ export interface Database {
    * error with code "40001" when the version is stale.
    */
   pushSave(user: string, expectedVersion: number, data: unknown, rulesVersion: number): Promise<number>;
+  /** care.pull_save: Care's own opt-in copy, {version, data} where data is null if nothing was uploaded yet. */
+  pullCareSave(user: string): Promise<{ version: number; data: unknown }>;
+  /** care.push_save: the new version. Throws an error with code "40001" when the version is stale. */
+  pushCareSave(user: string, expectedVersion: number, data: unknown): Promise<number>;
+  /** care.delete_save: whether there was a copy to delete. */
+  deleteCareSave(user: string): Promise<boolean>;
   /** platform.egg_tickets: records the spent tickets and returns the device's unspent stock topped up to `stock`. */
   eggTickets(user: string, device: string, spent: SpentTicket[], stock: number): Promise<{ tickets: unknown[]; refused: string[] }>;
   /** Deletes the sign-in; every table cascades from it, so nothing of the player is left. */
@@ -75,6 +81,8 @@ const DAY_MILLIS = 86_400_000;
 // Egg tickets a device holds (see "Focus" in docs/design.md). (tune)
 const TICKET_STOCK = 20;
 const MAX_SPENT = 200;
+// Care's copy: years of journal entries fit well under this.
+const MAX_CARE_BYTES = 5_000_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type Body = Record<string, unknown>;
@@ -197,6 +205,34 @@ export async function handleSync(user: string, body: Body, db: Database) {
       throw new RequestError(409, "the save changed somewhere else", { version });
     }
     if (code === "P0001" || code === "23514" || code === "23503") throw new RequestError(422, (e as Error).message);
+    throw e;
+  }
+}
+
+/**
+ * Care's opt-in cloud copy, apart from Plan's: {"kind": "care-pull"} returns {version, data}; {"kind": "care-push",
+ * "expectedVersion": n, "data": {...}} saves it and returns {version}; {"kind": "care-delete"} (turning sync off) removes
+ * it and returns {deleted}. A stale version is a 409 carrying the version on the server. The document never holds game
+ * state: Care pays only through effort events.
+ */
+export async function handleCareSync(user: string, body: Body, db: Database) {
+  const kind = text(body, "kind");
+  if (kind === "care-pull") return await db.pullCareSave(user);
+  if (kind === "care-delete") return { deleted: await db.deleteCareSave(user) };
+  if (kind !== "care-push") throw new RequestError(400, `unknown kind ${kind}`);
+
+  const expected = int(body, "expectedVersion", 0, 2_000_000_000);
+  const data = body.data;
+  if (typeof data !== "object" || data === null || Array.isArray(data)) throw new RequestError(400, "data must be an object");
+  if ("player" in data) throw new RequestError(400, "Care's copy holds no game state");
+  if (JSON.stringify(data).length > MAX_CARE_BYTES) throw new RequestError(413, "Care's copy is too large");
+  try {
+    return { version: await db.pushCareSave(user, expected, data) };
+  } catch (e) {
+    if ((e as { code?: string }).code === "40001") {
+      const { version } = await db.pullCareSave(user);
+      throw new RequestError(409, "the Care copy changed somewhere else", { version });
+    }
     throw e;
   }
 }
