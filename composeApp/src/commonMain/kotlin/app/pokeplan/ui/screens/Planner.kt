@@ -611,7 +611,7 @@ private fun PlannedTime(model: AppModel, task: Task) {
 
 private val TIME_PRESETS = listOf(LocalTime(9, 0), LocalTime(12, 0), LocalTime(15, 0), LocalTime(19, 0))
 
-internal fun clock(t: LocalTime) = "${t.hour}:${t.minute.toString().padStart(2, '0')}"
+fun clock(t: LocalTime) = "${t.hour}:${t.minute.toString().padStart(2, '0')}"
 
 /** Moves [t] by [minutes] within the same day (it stops at 0:00 and 23:45). */
 internal fun shifted(t: LocalTime, minutes: Int): LocalTime {

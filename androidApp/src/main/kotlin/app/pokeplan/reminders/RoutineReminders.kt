@@ -8,17 +8,13 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Icon
 import app.pokeplan.MainActivity
 import app.pokeplan.app.CareReminders
 import app.pokeplan.app.RoutineReminder
 import app.pokeplan.careStore
+import app.pokeplan.ui.Place
 import app.pokeplan.widgetStore
-import app.pokeplan.widgets.WidgetArt
 import app.pokeplan.widgets.updateWidgets
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 
@@ -28,9 +24,7 @@ import kotlinx.datetime.TimeZone
  * reminder and a reboot set them again from the saves.
  */
 object RoutineReminders {
-    private const val CHANNEL = "care-routines"
     private const val PREFS = "routine_reminders"
-    private const val MAX_ALARMS = 24
     private const val LATER_MILLIS = 30 * 60_000L
 
     const val ACTION_FIRE = "app.pokeplan.reminders.ROUTINE_FIRE"
@@ -40,13 +34,9 @@ object RoutineReminders {
     const val EXTRA_DAY = "day"
 
     fun reschedule(context: Context, upcoming: List<RoutineReminder>) {
-        val alarms = context.getSystemService(AlarmManager::class.java) ?: return
-        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        val wanted = upcoming.take(MAX_ALARMS).associateBy { code(it.routineId, it.day) }
-        val before = prefs.getStringSet("codes", emptySet()).orEmpty().mapNotNull { it.toIntOrNull() }
-        for (code in before) if (code !in wanted) fireIntent(context, code, null, null, PendingIntent.FLAG_NO_CREATE)?.let { alarms.cancel(it); it.cancel() }
-        for ((code, r) in wanted) TaskReminders.set(context, alarms, r.atMillis, fireIntent(context, code, r.routineId, r.day, PendingIntent.FLAG_UPDATE_CURRENT)!!)
-        prefs.edit().putStringSet("codes", wanted.keys.map { it.toString() }.toSet()).apply()
+        Alarms.reschedule(context, PREFS, upcoming, { code(it.routineId, it.day) }, { it.atMillis }) { code, r, flags ->
+            fireIntent(context, code, r?.routineId, r?.day, flags)
+        }
     }
 
     fun rescheduleFromSave(context: Context) {
@@ -70,14 +60,14 @@ object RoutineReminders {
     /** Shows the routine again in 30 minutes, the same day. */
     fun later(context: Context, routineId: String, day: LocalDate) {
         val alarms = context.getSystemService(AlarmManager::class.java) ?: return
-        TaskReminders.set(context, alarms, System.currentTimeMillis() + LATER_MILLIS, fireIntent(context, code(routineId, day) + 1, routineId, day, PendingIntent.FLAG_UPDATE_CURRENT)!!)
+        Alarms.set(context, alarms, System.currentTimeMillis() + LATER_MILLIS, fireIntent(context, code(routineId, day) + 1, routineId, day, PendingIntent.FLAG_UPDATE_CURRENT)!!)
     }
 
     fun notificationId(routineId: String) = ("routine" to routineId).hashCode()
 
     fun show(context: Context, routineId: String, title: String, day: LocalDate) {
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
-        manager.createNotificationChannel(NotificationChannel(CHANNEL, "Care routines", NotificationManager.IMPORTANCE_DEFAULT))
+        manager.createNotificationChannel(NotificationChannel(Channels.CARE_ROUTINES, "Care routines", NotificationManager.IMPORTANCE_DEFAULT))
         val id = notificationId(routineId)
         fun action(action: String) = PendingIntent.getBroadcast(
             context, id + action.hashCode(),
@@ -85,12 +75,11 @@ object RoutineReminders {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val open = PendingIntent.getActivity(
-            context, id, Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, "CARE"),
+            context, id, Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, Place.CARE.name),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        val icon = WidgetArt.item(context, "oaks-parcel", 1)?.let { Icon.createWithBitmap(it) } ?: Icon.createWithResource(context, android.R.drawable.ic_popup_reminder)
-        val notification = Notification.Builder(context, CHANNEL)
-            .setSmallIcon(icon)
+        val notification = Notification.Builder(context, Channels.CARE_ROUTINES)
+            .setSmallIcon(notificationIcon(context, "oaks-parcel"))
             .setContentTitle(title)
             .setContentText("A small thing for you, whenever you're ready.")
             .setCategory(Notification.CATEGORY_REMINDER)
@@ -99,11 +88,7 @@ object RoutineReminders {
             .addAction(Notification.Action.Builder(null, "Done", action(ACTION_DONE)).build())
             .addAction(Notification.Action.Builder(null, "In 30 min", action(ACTION_LATER)).build())
             .build()
-        try {
-            manager.notify(id, notification)
-        } catch (e: SecurityException) {
-            // Notifications are not allowed: nothing to show.
-        }
+        notifySafely(context, id, notification)
     }
 }
 
@@ -113,14 +98,7 @@ class RoutineReminderReceiver : BroadcastReceiver() {
         val routineId = intent.getStringExtra(RoutineReminders.EXTRA_ROUTINE) ?: return
         val day = LocalDate.fromEpochDays(intent.getLongExtra(RoutineReminders.EXTRA_DAY, Long.MIN_VALUE).takeIf { it != Long.MIN_VALUE }?.toInt() ?: return)
         val app = context.applicationContext
-        val pending = goAsync()
-        CoroutineScope(Dispatchers.Default).launch {
-            try {
-                handle(app, intent.action, routineId, day)
-            } finally {
-                pending.finish()
-            }
-        }
+        doAsync { handle(app, intent.action, routineId, day) }
     }
 
     private suspend fun handle(context: Context, action: String?, routineId: String, day: LocalDate) {

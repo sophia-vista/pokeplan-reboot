@@ -8,18 +8,14 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Icon
 import app.pokeplan.MainActivity
 import app.pokeplan.app.AppData
 import app.pokeplan.app.FocusAlert
 import app.pokeplan.app.Nudges
 import app.pokeplan.plan.FocusSession
 import app.pokeplan.plan.Phase
+import app.pokeplan.ui.Place
 import app.pokeplan.widgetStore
-import app.pokeplan.widgets.WidgetArt
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 
 /**
@@ -33,14 +29,14 @@ import kotlinx.datetime.TimeZone
  */
 object AppAlerts {
     enum class Kind(val code: Int, val channel: String, val notificationId: Int) {
-        HALFWAY(9101, "focus-halfway", 7101),
-        END(9102, "focus-end", 7102),
-        STREAK(9103, "evening-nudges", 7103),
-        RECAP(9104, "evening-nudges", 7104),
+        HALFWAY(9101, Channels.FOCUS_HALFWAY, 7101),
+        END(9102, Channels.FOCUS_END, 7102),
+        STREAK(9103, Channels.EVENING_NUDGES, 7103),
+        RECAP(9104, Channels.EVENING_NUDGES, 7104),
 
         /** A streak reminder or recap that came due during a focus session and waits for its end. */
-        STREAK_LATER(9105, "evening-nudges", 7103),
-        RECAP_LATER(9106, "evening-nudges", 7104),
+        STREAK_LATER(9105, Channels.EVENING_NUDGES, 7103),
+        RECAP_LATER(9106, Channels.EVENING_NUDGES, 7104),
     }
 
     const val ACTION_ALERT = "app.pokeplan.reminders.ALERT"
@@ -83,7 +79,7 @@ object AppAlerts {
             return
         }
         val intent = pending(context, kind, sessionId, PendingIntent.FLAG_UPDATE_CURRENT)!!
-        if (exact) TaskReminders.set(context, alarms, atMillis, intent) else alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMillis, intent)
+        if (exact) Alarms.set(context, alarms, atMillis, intent) else alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMillis, intent)
     }
 
     private fun pending(context: Context, kind: Kind, sessionId: String?, flags: Int): PendingIntent? =
@@ -95,21 +91,20 @@ object AppAlerts {
 
     private fun channels(context: Context): NotificationManager? {
         val manager = context.getSystemService(NotificationManager::class.java) ?: return null
-        manager.createNotificationChannel(NotificationChannel("focus-halfway", "Focus halfway", NotificationManager.IMPORTANCE_LOW))
-        manager.createNotificationChannel(NotificationChannel("focus-end", "Focus time is up", NotificationManager.IMPORTANCE_DEFAULT))
-        manager.createNotificationChannel(NotificationChannel("evening-nudges", "Streak and weekly recap", NotificationManager.IMPORTANCE_DEFAULT))
+        manager.createNotificationChannel(NotificationChannel(Channels.FOCUS_HALFWAY, "Focus halfway", NotificationManager.IMPORTANCE_LOW))
+        manager.createNotificationChannel(NotificationChannel(Channels.FOCUS_END, "Focus time is up", NotificationManager.IMPORTANCE_DEFAULT))
+        manager.createNotificationChannel(NotificationChannel(Channels.EVENING_NUDGES, "Streak and weekly recap", NotificationManager.IMPORTANCE_DEFAULT))
         return manager
     }
 
     fun show(context: Context, kind: Kind, title: String, text: String, tab: String) {
-        val manager = channels(context) ?: return
+        channels(context) ?: return
         val open = PendingIntent.getActivity(
             context, kind.code, Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, tab),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        val icon = WidgetArt.item(context, "poke-ball", 1)?.let { Icon.createWithBitmap(it) } ?: Icon.createWithResource(context, android.R.drawable.ic_popup_reminder)
         val notification = Notification.Builder(context, kind.channel)
-            .setSmallIcon(icon)
+            .setSmallIcon(notificationIcon(context, "poke-ball"))
             .setContentTitle(title)
             .setContentText(text)
             .setCategory(if (kind == Kind.HALFWAY || kind == Kind.END) Notification.CATEGORY_PROGRESS else Notification.CATEGORY_RECOMMENDATION)
@@ -117,11 +112,7 @@ object AppAlerts {
             .setAutoCancel(true)
             .apply { if (kind == Kind.HALFWAY) setOnlyAlertOnce(true) }
             .build()
-        try {
-            manager.notify(kind.notificationId, notification)
-        } catch (e: SecurityException) {
-            // Notifications are not allowed: nothing to show.
-        }
+        notifySafely(context, kind.notificationId, notification)
     }
 
     fun cancel(context: Context, kind: Kind) {
@@ -138,14 +129,7 @@ class NudgeReceiver : BroadcastReceiver() {
         val kind = intent.getStringExtra(AppAlerts.EXTRA_KIND)?.let { name -> AppAlerts.Kind.entries.firstOrNull { it.name == name } } ?: return
         val sessionId = intent.getStringExtra(AppAlerts.EXTRA_SESSION)
         val app = context.applicationContext
-        val pending = goAsync()
-        CoroutineScope(Dispatchers.Default).launch {
-            try {
-                handle(app, kind, sessionId)
-            } finally {
-                pending.finish()
-            }
-        }
+        doAsync { handle(app, kind, sessionId) }
     }
 
     private fun handle(context: Context, kind: AppAlerts.Kind, sessionId: String?) {
@@ -159,23 +143,23 @@ class NudgeReceiver : BroadcastReceiver() {
                 // Only for the session it was set for, and only while it is still going: not failed, given up or paused.
                 if (session != null && session.id == sessionId && data.settings.focusHalfway && (session.phase is Phase.Running || session.phase is Phase.Away)) {
                     val minutes = ((session.remainingMillis(now) + 59_999) / 60_000).coerceAtLeast(1)
-                    AppAlerts.show(context, kind, "Halfway there", "$minutes min to go. Your Egg is warming up.", "FOCUS")
+                    AppAlerts.show(context, kind, "Halfway there", "$minutes min to go. Your Egg is warming up.", Place.FOCUS.name)
                 }
             }
             AppAlerts.Kind.END -> {
                 if (session != null && session.id == sessionId && data.settings.focusEnd && session.phase !is Phase.Failed && session.phase !is Phase.Paused) {
-                    AppAlerts.show(context, kind, "Focus time is up", "Open PokéLife to see your Egg hatch.", "FOCUS")
+                    AppAlerts.show(context, kind, "Focus time is up", "Open PokéLife to see your Egg hatch.", Place.FOCUS.name)
                 }
             }
             AppAlerts.Kind.STREAK, AppAlerts.Kind.STREAK_LATER -> {
                 if (!deferDuringFocus(context, kind, session) && Nudges.streakAtRisk(data, now, zone)) {
                     val text = Nudges.streakText(data, now, zone)
-                    AppAlerts.show(context, AppAlerts.Kind.STREAK, text.title, text.body, "HOME")
+                    AppAlerts.show(context, AppAlerts.Kind.STREAK, text.title, text.body, Place.HOME.name)
                 }
             }
             AppAlerts.Kind.RECAP, AppAlerts.Kind.RECAP_LATER -> {
                 if (!deferDuringFocus(context, kind, session)) {
-                    Nudges.weeklyRecap(data, now, zone)?.let { AppAlerts.show(context, AppAlerts.Kind.RECAP, it.title, it.body, "ME") }
+                    Nudges.weeklyRecap(data, now, zone)?.let { AppAlerts.show(context, AppAlerts.Kind.RECAP, it.title, it.body, Place.ME.name) }
                 }
             }
         }
