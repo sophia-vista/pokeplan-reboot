@@ -78,13 +78,13 @@ class HatchingTest {
     }
 
     @Test
-    fun shinyRateIsAboutOneIn128WithASmallLongSessionBonus() {
+    fun shinyRateIsAboutOneIn192WithASmallLongSessionBonus() {
         val rng = Random(21)
         val n = 200_000
         val short = (1..n).count { Shiny.roll(rng, 5) }
-        assertTrue(short in 1400..1750, "5 minute sessions: $short of $n")
+        assertTrue(short in 930..1150, "5 minute sessions: $short of $n")
         val long = (1..n).count { Shiny.roll(rng, 240) }
-        assertTrue(long in 2200..2600, "4 hour sessions: $long of $n (expected about 2,340)")
+        assertTrue(long in 1420..1700, "4 hour sessions: $long of $n (expected about 1,560)")
         assertTrue(Shiny.chance(240, 2.0) > Shiny.chance(240))
     }
 

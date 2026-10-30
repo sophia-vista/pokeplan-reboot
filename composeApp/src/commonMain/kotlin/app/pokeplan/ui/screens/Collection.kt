@@ -59,6 +59,7 @@ import app.pokeplan.core.pokemon.Guardians
 import app.pokeplan.core.pokemon.PerkBucket
 import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.Items
+import app.pokeplan.core.pokemon.Shop
 import app.pokeplan.core.pokemon.Nature
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.Stat
@@ -688,7 +689,24 @@ private fun BagView(model: AppModel) {
     val player = model.data.player
     var open by remember { mutableStateOf<String?>(null) }
     val items = player.inventory.counts.entries.filter { it.value > 0 }.sortedWith(compareBy({ Items.category(it.key)?.ordinal ?: 99 }, { it.key }))
-    if (store.sees(Feature.COINS)) TextBox { Text("${player.coins} coins", style = MaterialTheme.typography.titleMedium) }
+    if (store.sees(Feature.COINS)) TextBox {
+        // The shop: coins buy Rare Candies.
+        val each = Shop.COINS_PER_RARE_CANDY
+        val afford = player.coins / each
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("${player.coins} coins", style = MaterialTheme.typography.titleMedium)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ItemIcon(Items.RARE_CANDY, size = 32.dp)
+                Text("Rare Candy: $each coins each", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(1, 10).forEach { n ->
+                    PixelButton("Buy $n", { if (store.buyRareCandies(n) > 0) model.effect(Sfx.HEAL) }, Modifier.weight(1f), Pixel.Green, compact = true, enabled = afford >= n)
+                }
+                PixelButton("Buy $afford", { if (store.buyRareCandies(afford) > 0) model.effect(Sfx.HEAL) }, Modifier.weight(1f), Pixel.Green, compact = true, enabled = afford > 10)
+            }
+        }
+    }
     if (items.isEmpty()) EmptyState("The bag is empty", "Finish tasks and focus sessions to find candies, berries and more.", icon = "seal-bag")
     items.groupBy { Items.category(it.key) }.forEach { (category, group) ->
         SectionLabel(category.bagLabel())

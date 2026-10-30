@@ -32,12 +32,12 @@ object CandyRewards {
     const val MAX_PRIORITY = 5
 
     private val tables = listOf(
-        CandyRates(superAbove = 90, rare = 3..5, superCandy = 1..2),
-        CandyRates(superAbove = 85, rare = 4..10, superCandy = 2..3),
-        CandyRates(superAbove = 80, rare = 5..13, superCandy = 3..4),
-        CandyRates(superAbove = 70, rare = 6..17, superCandy = 4..5),
+        CandyRates(superAbove = 90, rare = 6..10, superCandy = 1..2),
+        CandyRates(superAbove = 85, rare = 8..20, superCandy = 2..3),
+        CandyRates(superAbove = 80, rare = 10..26, superCandy = 3..4),
+        CandyRates(superAbove = 70, rare = 12..34, superCandy = 4..5),
         // The original had this super range as 7..6 (min above max), which always paid 7.
-        CandyRates(superAbove = 60, rare = 7..20, superCandy = 6..7),
+        CandyRates(superAbove = 60, rare = 14..40, superCandy = 6..7),
     )
 
     fun rates(priority: Int): CandyRates {

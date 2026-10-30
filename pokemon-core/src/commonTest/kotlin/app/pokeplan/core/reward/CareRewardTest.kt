@@ -11,6 +11,8 @@ import app.pokeplan.core.pokemon.Nature
 import app.pokeplan.core.pokemon.pokemon
 import kotlin.random.Random
 import kotlin.test.Test
+import app.pokeplan.core.model.CandyType
+import app.pokeplan.core.pokemon.Items
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -27,7 +29,7 @@ class CareRewardTest {
     fun aRoutineGrowsTheBondAndALittleRank() {
         val out = care(CareKind.ROUTINE, state(Nature.BOLD))
         assertEquals(FriendshipRules.START + 2, out.state.buddy!!.friendship, "a comfort-loving buddy doubles a routine's friendship")
-        assertEquals(listOf<Reward>(Reward.Friendship(2)), out.rewards)
+        assertEquals(listOf(Reward.Friendship(2), Reward.Candies(CandyType.RARE, RewardEngine.CARE_CANDIES.getValue(CareKind.ROUTINE))), out.rewards)
         assertEquals(10 + RewardEngine.CARE_POINTS, out.state.trainerPoints)
     }
 
@@ -82,19 +84,32 @@ class CareRewardTest {
     }
 
     @Test
-    fun careNeverPaysCandiesEggsOrCoins() {
+    fun everyCareMomentPaysRareCandiesButNoEggOrCoins() {
         for (kind in CareKind.entries) {
             val out = care(kind)
-            assertTrue(out.rewards.none { it is Reward.Candies || it is Reward.Hatched || it is Reward.Coins }, "$kind")
+            assertEquals(RewardEngine.CARE_CANDIES.getValue(kind), out.state.inventory[Items.RARE_CANDY], "$kind")
+            assertTrue(out.rewards.none { it is Reward.Hatched || it is Reward.Coins }, "$kind: Care Eggs come from the app's meter")
             assertEquals(1, out.state.pokemon.size)
         }
     }
 
     @Test
-    fun noFriendshipRewardAtTheMaximum() {
-        assertTrue(care(CareKind.ROUTINE, state(friendship = FriendshipRules.MAX)).rewards.isEmpty())
+    fun aCareEggHatchesFromTheCareRegionIntoCaresPartyAndPaysANewSpecies() {
+        val out = RewardEngine.careEgg(state(), "egg", 1_000L, Random(4))
+        val egg = out.state.pokemon.first { it.id == "egg" }
+        assertEquals(PartyIds.CARE, egg.partyId)
+        assertEquals(egg.id, out.state.careLeadId, "the first member of Care's party leads")
+        assertTrue(app.pokeplan.core.model.Rarity.entries.any { r ->
+            app.pokeplan.core.dex.HatchRules.pool(app.pokeplan.core.dex.Region.CARE, r).any { it.speciesId == egg.speciesId }
+        }, "from the Care Region")
+        assertTrue(egg.speciesId in out.state.caught)
+        assertEquals(RewardEngine.NEW_SPECIES_CANDIES, out.state.inventory[Items.RARE_CANDY], "a species not had before")
     }
 
+    @Test
+    fun noFriendshipRewardAtTheMaximum() {
+        assertTrue(care(CareKind.ROUTINE, state(friendship = FriendshipRules.MAX)).rewards.none { it is Reward.Friendship })
+    }
     @Test
     fun theEventJsonCarriesOnlyTheKindAndTime() {
         val text = RewardJson.json.encodeToString(CareEvent.serializer(), CareEvent(CareKind.CALM_BREAK, 5L))
@@ -115,7 +130,7 @@ class CareRewardTest {
         assertTrue(app.pokeplan.core.pokemon.Stat.entries.all { friend.ivs[it] >= RewardEngine.BEFRIEND_IV_FLOOR })
         assertEquals(10 + RewardEngine.BEFRIEND_POINTS, out.state.trainerPoints)
         assertTrue(Ids.EEVEE in out.state.caught)
-        assertEquals(listOf(Reward.Hatched(friend, fromTask = false)), out.rewards)
+        assertEquals(listOf(Reward.Hatched(friend, fromTask = false), Reward.Candies(CandyType.RARE, RewardEngine.NEW_SPECIES_CANDIES), Reward.Candies(CandyType.SUPER, RewardEngine.NEW_SPECIES_SUPER_CANDIES)), out.rewards)
     }
 
     @Test

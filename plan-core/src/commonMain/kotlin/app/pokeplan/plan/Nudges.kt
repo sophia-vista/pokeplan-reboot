@@ -17,7 +17,7 @@ object PickForMe {
     }
 }
 
-/** A small action the app suggests each day; each is worth a berry. */
+/** A small action the app suggests each day; each is worth a berry and a few Rare Candies. */
 data class MiniQuest(val id: String, val text: String, val kind: Kind = Kind.PLAIN) {
     enum class Kind { PLAIN, AVOIDED_TASK }
 }
@@ -28,6 +28,10 @@ object MiniQuests {
 
     /** Finishing all of a day's quests adds a small bonus. *(tune)* */
     const val ALL_THREE_BONUS_BERRIES = 1
+
+    /** Rare Candies for each quest, and the bonus for all three. *(tune)* */
+    const val RARE_CANDIES = 2
+    const val ALL_THREE_BONUS_CANDIES = 5
 
     /** "Pet your buddy": petting ticks it by itself. */
     const val PET_QUEST = "pet"

@@ -190,13 +190,12 @@ class CareStoreTest {
         // Nothing to spend the befriend on until some care has paid.
         assertEquals(null, s.care.startVisit(s.care.visitors().first().speciesId))
         val species = s.care.visitors().first().speciesId
-        val owned = s.game.data.player.pokemon.size
         repeat(3) { day ->
             val r = assertNotNull(befriendOnce(s, day))
             assertFalse(r.friend)
             assertEquals(day + 1, r.visitor.points)
             assertEquals(null, s.care.startVisit(species), "one visit a day")
-            assertEquals(owned, s.game.data.player.pokemon.size)
+            assertTrue(s.game.data.rewardLog.none { it.source == "Care: made a friend" }, "no friend yet (a Care Egg may hatch)")
             s.clock.advanceDays(1)
             assertTrue(s.care.visitors().any { it.speciesId == species && it.points == day + 1 }, "a warming visitor stays")
         }
@@ -206,7 +205,7 @@ class CareStoreTest {
         // Usually an egg of its family's first stage; rarely the visitor itself.
         assertEquals(if (r.joined) species else app.pokeplan.core.dex.Dex.lineRoot(species), friend.speciesId)
         assertEquals(app.pokeplan.core.pokemon.PartyIds.CARE, friend.partyId)
-        assertEquals(friend.id, s.game.data.player.careLeadId, "the first in Care's party leads")
+        assertNotNull(s.game.data.player.careLeadId, "the first in Care's party leads (a Care Egg may have come first)")
         assertTrue(s.care.visitors().none { it.speciesId == species })
         assertTrue(s.game.data.rewardLog.last().rewards.any { it is Reward.Hatched })
         assertEquals("Care: made a friend", s.game.data.rewardLog.last().source)

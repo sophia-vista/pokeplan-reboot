@@ -11,7 +11,7 @@ object CandyRules {
      * group (each level needs more the higher it is): 2 candies up to level 12, 8 at 30, 18 at 50, 67 at 99. *(tune)*
      */
     const val BASE = 2
-    const val CURVE = 150
+    const val CURVE = 300
 
     /** A Pokémon more than this many levels below your partner levels up on half the candies (rounded up). *(tune)* */
     const val CATCH_UP_GAP = 5
@@ -65,7 +65,8 @@ object FriendshipRules {
 
 /** Shiny odds. */
 object Shiny {
-    const val BASE_ODDS = 128
+    /** 1 in 192 since rules version 12 (was 128): eggs came 1.5 times as often, so shinies per player stay as rare. */
+    const val BASE_ODDS = 192
 
     /**
      * Chance that a hatched Pokémon is shiny: 1 in [BASE_ODDS], up to 50% better for a 4 hour session, times any perk bonus.

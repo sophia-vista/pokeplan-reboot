@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.46.0
+
+- Much more candy, and a Pokédex that fills faster. Levels cost half as many Rare Candies. Tasks pay twice the Rare Candies, and Task Eggs come twice as often. Focus sessions now pay Rare Candies too (10 for 25 minutes), so do mini-quests (2 each, 5 more for all three), and the first of every species brings 5 Rare Candies and a Super Candy so it can evolve. Eggs favour species you haven't caught yet even more.
+- Coins finally buy something: the Bag has a shop where 5 coins buy a Rare Candy.
+- Care gives Pokémon too, not just visitors: every routine, calm break and skill fills a Care Egg meter (on the Care page), and a full one hatches a Care Egg from the Care Region into Care's party. Care moments also pay Rare Candies (3 to 4 each, 15 for a weekly rhythm).
+- Good Pokémon stay special: with eggs coming more often, the shiny odds are now 1 in 192 per egg (were 1 in 128), so you'll find about as many shinies as before. Reward rules version 12.
+
 ## 0.45.1
 
 - Mini-quests answer when you tap Done: the quest turns to "Done" straight away and the card says what you got (the berry, and the bonus one for all three). Before, the card did not redraw, so Done looked like it did nothing. The welcome-back gift had the same problem and is fixed too.

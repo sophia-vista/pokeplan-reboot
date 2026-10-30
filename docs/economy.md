@@ -1,6 +1,6 @@
 # The economy: sources, sinks and caps
 
-Every reward source, every use and every cap, as the code has them under **rules version 10** (`RewardRules.VERSION` in
+Every reward source, every use and every cap, as the code has them under **rules version 12** (`RewardRules.VERSION` in
 `pokemon-core`). This is principle 6 of `docs/ecosystem.md` ("every reward source, cap and use is written down"). The
 reasons and pacing targets are in `docs/design.md`; the simulated pacing is in `docs/economy-report.md`.
 
@@ -12,7 +12,7 @@ Where the rules live: `RewardEngine`, `TrainerRank`, `CandyRewards` and `Egg` (t
 server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`, `Shiny`), `EvolutionRules` in
 `pokemon-core`; `TaskRules`, `Goal`, `Review`, `Streak`, `FocusSession` in `plan-core`; `CareRules` in `care-core`; `GameStore`, `CareStore` and `Quests` in `app-core`.
 
-**Version history.** 1: everything before Care. 2: the Care events (`RewardEngine.care`) and the friendship sources Routine and Calm break; nothing that version 1 paid changed. 3: trade-evolution items (Metal Coat, King's Rock...) join the drop table; Magic Guard hatches a failed session's egg once a week; the Streak keeper perk forgives a second missed day. 4: training plans are gone, so tasks pay no EVs; Synchronize gives +3 Super Candy chance instead of +25% EVs. 5: a new trainer rank curve, quick at first and slower after (0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000, 9,000; it was 0, 625 ... 10,625). 6: the Pick-for-me bonus (candies × 1.10), task friendship capped at 10 a day, and the streak day rolls over at 4am. 7: Care's practised skill (a DBT skill from the library: friendship (skill) and a berry, 3 a day) and the friendship source Skill; nothing else changed. 8: a Pokémon records which module's party it is in (`partyId`, six per party); nothing paid changed. 9: Care has its own lead (`careLeadId`) and perk buckets: the lead takes Care's friendship, and Friendship gain (a chance of one extra friendship step) and Berry finder (a chance of a second berry) apply; with no Care lead Care pays as before. 10: befriending a Care visitor (`RewardEngine.befriend`), one a day. 11: a befriended visitor usually leaves an egg of its family's first stage (`Dex.lineRoot`), and joins itself 10% of the time (was 5%, and always its own species); each visitor can have a visit a day, so up to 4 friends a day.
+**Version history.** 1: everything before Care. 2: the Care events (`RewardEngine.care`) and the friendship sources Routine and Calm break; nothing that version 1 paid changed. 3: trade-evolution items (Metal Coat, King's Rock...) join the drop table; Magic Guard hatches a failed session's egg once a week; the Streak keeper perk forgives a second missed day. 4: training plans are gone, so tasks pay no EVs; Synchronize gives +3 Super Candy chance instead of +25% EVs. 5: a new trainer rank curve, quick at first and slower after (0, 50, 150, 325, 650, 1,150, 1,900, 3,000, 5,000, 9,000; it was 0, 625 ... 10,625). 6: the Pick-for-me bonus (candies × 1.10), task friendship capped at 10 a day, and the streak day rolls over at 4am. 7: Care's practised skill (a DBT skill from the library: friendship (skill) and a berry, 3 a day) and the friendship source Skill; nothing else changed. 8: a Pokémon records which module's party it is in (`partyId`, six per party); nothing paid changed. 9: Care has its own lead (`careLeadId`) and perk buckets: the lead takes Care's friendship, and Friendship gain (a chance of one extra friendship step) and Berry finder (a chance of a second berry) apply; with no Care lead Care pays as before. 10: befriending a Care visitor (`RewardEngine.befriend`), one a day. 11: a befriended visitor usually leaves an egg of its family's first stage (`Dex.lineRoot`), and joins itself 10% of the time (was 5%, and always its own species); each visitor can have a visit a day, so up to 4 friends a day. 12 *(owner, October 2026: "easy to complete the Pokédex, hard to get good versions")*: a level costs half as many Rare Candies (`CandyRules.CURVE` 300, was 150); focus sessions pay `CANDIES_PER_FIVE_MINUTES` (2) Rare Candies per 5 minutes; every Care moment pays Rare Candies (`CARE_CANDIES`: routine 3, calm break 4, skill 4, rhythm 15) and fills Care's Egg meter (`CARE_EGG_POINTS`, a Care Egg every `CARE_EGG_METER_SIZE` (3) points); the first of each species pays `NEW_SPECIES_CANDIES` (5); species not caught yet are 6 times as likely in an egg (`UNCAUGHT_WEIGHT`, was 3); coins buy Rare Candies at the shop (`Shop.COINS_PER_RARE_CANDY`, 5); tasks pay twice the Rare Candies (`CandyRewards`) and the Egg meter fills at 5 (`EGG_METER_SIZE`, was 10); the first of a species also pays a Super Candy; mini-quests pay 2 Rare Candies each and 5 more for all three. Shinies stay as rare per player: eggs come about 1.5 times as often, so the base odds are 1 in 192 (`Shiny.BASE_ODDS`, was 128). IVs and natures are unchanged.
 
 ## 1. Sources
 
@@ -20,21 +20,23 @@ server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`,
 
 | Event | Pays | Constant |
 |---|---|---|
-| **Focus session completed** (5 minutes or more) | One egg, hatched at once (rarity from the length, section 1.3) · coins `minutes / 5` · trainer points `minutes / 5` · 1 random berry · buddy friendship (focus session) · an active day | `COINS_PER_FIVE_MINUTES`, `TrainerRank.pointsForEffort`, `Egg.MIN_MINUTES` |
+| **Focus session completed** (5 minutes or more) | One egg, hatched at once (rarity from the length, section 1.3) · Rare Candies `2 × minutes / 5` (× Candy yield) · coins `minutes / 5` · trainer points `minutes / 5` · 1 random berry · buddy friendship (focus session) · an active day | `COINS_PER_FIVE_MINUTES`, `TrainerRank.pointsForEffort`, `Egg.MIN_MINUTES` |
 | **Task or habit completed** (tier 1 to 5 = rank E to A) | Rare Candies (table below), maybe Super Candies · coins `tier × 2` · trainer points `tier × 2` · an item drop chance `8 + 2 × tier` % · buddy friendship (task) · `tier` points on the Egg meter · an active day | `COINS_PER_TIER`, `pointsForAchievement`, `DROP_BASE_PERCENT`, `DROP_PER_TIER_PERCENT` |
-| **Egg meter full** (10 points) | A Task Egg, rolled as a 15 minute session (no lure, no spotlight); the rest carries over | `EGG_METER_SIZE`, `TASK_EGG_MINUTES` |
+| **Egg meter full** (5 points) | A Task Egg, rolled as a 15 minute session (no lure, no spotlight); the rest carries over | `EGG_METER_SIZE`, `TASK_EGG_MINUTES` |
 | **Subtask done** | 1 Rare Candy, once per subtask, at most 5 paid per task, after the task rank's minimum age | `SUBTASK_RARE_CANDIES`, `MAX_PAID_SUBTASKS` |
 | **Goal milestone done** (24 hours old or more) | 1 Super Candy, at most 3 a day; an active day | `SUPER_CANDIES_PER_MILESTONE`, `MILESTONE_MIN_AGE_MILLIS`, `MAX_MILESTONE_REWARDS_PER_DAY` |
 | **Every milestone of a goal done** | 1 Nature Mint, once per goal | `Goal.bonusGiven` |
 | **Weekly review** | 1 berry, once a week | `Review.REWARD_BERRIES` |
-| **Mini-quest** ticked (honour system, 3 a day from 4am, one reroll before any is done that gives three others; petting the buddy ticks "Pet your buddy") | 1 random berry each, 1 more for the third; no active day | `MiniQuests.ALL_THREE_BONUS_BERRIES`, `GameStore.completeMiniQuest` |
+| **Mini-quest** ticked (honour system, 3 a day from 4am, one reroll before any is done that gives three others; petting the buddy ticks "Pet your buddy") | 1 random berry and 2 Rare Candies each, 1 more berry and 5 more candies for the third; no active day | `MiniQuests.ALL_THREE_BONUS_BERRIES`, `RARE_CANDIES`, `ALL_THREE_BONUS_CANDIES`, `GameStore.completeMiniQuest` |
 | **Welcome back** after 7 or more days away (once per absence) | 5 Rare Candies and 2 berries of one flavour | `WELCOME_BACK_RARE_CANDIES`, `WELCOME_BACK_BERRIES` |
 | **Transfer** a Pokémon | Rare Candies (Common 8, Uncommon 12, Rare 22, Super Rare 60, plus a fifth of the candies it was fed), coins twice the base candies (16 / 24 / 44 / 120), its held item back | `Transfer.candiesByRarity`, `COIN_FACTOR`, `REFUND_DIVISOR` |
 | **Legendary or mythical quest** claimed | That Pokémon (out of the party; it can be shiny) | `Quests` |
 | **Friend's gift** opened | 3 Rare Candies (one gift per friend a day) | `platform.send_gift` |
 | **Starter** | The starter (never shiny) and a tutorial task that pays at once | `GameStore.start` |
 | **Petting the buddy** | Friendship (pet), up to 10 a day | `PET_DAILY_CAP` |
-| **Care: routine done** (first tick of the day for that routine) | Buddy friendship (routine) · 1 trainer point. At most 5 routines a day | `CARE_POINTS`, `CareRules.ROUTINES_PAID_PER_DAY` |
+| **Care: routine done** (first tick of the day for that routine) | Buddy friendship (routine) · 3 Rare Candies · 1 point on Care's Egg meter · 1 trainer point. At most 5 routines a day | `CARE_POINTS`, `CARE_CANDIES`, `CARE_EGG_POINTS`, `CareRules.ROUTINES_PAID_PER_DAY` |
+| **Care's Egg meter full** (3 points: a routine 1, a calm break or a skill 2, a rhythm 0) | A Care Egg from the Care Region, rolled as a 15 minute session (species not caught yet × 6), hatched at once into Care's party (else the PC); it leads Care if there is no lead; the rest carries over. Kept by the app (counter `care-egg-meter`), never sent to the server | `RewardEngine.careEgg`, `CARE_EGG_METER_SIZE` |
+| **First of a species** (from any egg, Task Egg, Care Egg or friend) | 5 Rare Candies and 1 Super Candy, so it can evolve | `NEW_SPECIES_CANDIES`, `NEW_SPECIES_SUPER_CANDIES` |
 | **Care: calm break** (1 to 2 minutes; under a minute is kept but pays nothing) | Buddy friendship (calm break) · 1 random berry · 1 trainer point. At most 3 a day | `CareRules.BREAKS_PAID_PER_DAY`, `BREAK_MIN_SECONDS` |
 | **Care: skill practised** (a DBT skill from the library, each skill once a day; paced breathing pays as a calm break) | Buddy friendship (skill) · 1 random berry · 1 trainer point. At most 3 a day | `CareRules.SKILLS_PAID_PER_DAY` |
 | **Care: kept a rhythm** (care done on 4 days of a week: a routine, a calm break or a skill) | 3 random berries · 5 trainer points, once a week | `RHYTHM_BERRIES`, `RHYTHM_POINTS`, `CareRules.RHYTHM_DAYS` |
@@ -50,11 +52,11 @@ bonuses on small rewards round away.
 
 | Tier (rank) | Rare Candies | Super Candy chance | Super Candies |
 |---|---|---|---|
-| 1 (E) | 3–5 | 10% | 1–2 |
-| 2 (D) | 4–10 | 15% | 2–3 |
-| 3 (C) | 5–13 | 20% | 3–4 |
-| 4 (B) | 6–17 | 30% | 4–5 |
-| 5 (A) | 7–20 | 40% | 6–7 |
+| 1 (E) | 6–10 | 10% | 1–2 |
+| 2 (D) | 8–20 | 15% | 2–3 |
+| 3 (C) | 10–26 | 20% | 3–4 |
+| 4 (B) | 12–34 | 30% | 4–5 |
+| 5 (A) | 14–40 | 40% | 6–7 |
 
 The Super Candy chance perk adds percentage points.
 
@@ -74,7 +76,7 @@ The Super Candy chance perk adds percentage points.
 - A species' rarity comes from its evolution line's highest base stat total: 580 or more is Super Rare (`SUPER_RARE_LINE_BST`); the rest are split by rank, the bottom 30% Common, the next 40% Uncommon, the rest Rare. Legendaries and mythicals never hatch.
 - Within a rarity: a species not caught yet × 3 (`UNCAUGHT_WEIGHT`), the Lure's type × 3 (`LURE_WEIGHT`), the day's spotlight type × 2 (`SPOTLIGHT_WEIGHT`, one of 18 types by `epochDay % 18`).
 - The pool is the chosen region's dex, base forms only: the Plan or the Care Region, both open from the start. The games' regions are retired (0.44.0); a save or event that names one hatches from the Plan Region (`Region.open`). The engine still pays a retired region's pool if an event names it, so the rules version is unchanged.
-- Shiny chance: `1/128 × (1 + 0.5 × min(minutes, 240) / 240)` times the shiny perk (`Shiny.chance`); a Task Egg counts as 15 minutes.
+- Shiny chance: `1/192 × (1 + 0.5 × min(minutes, 240) / 240)` times the shiny perk (`Shiny.chance`); a Task Egg counts as 15 minutes.
 - A signed-in phone rolls focus eggs from egg tickets, seeds the server issued ahead of time (stock 20 a device, `TICKET_STOCK`), so the dice are fixed before the session.
 
 ### Item drops (`DropTable`, one roll per paid task or habit)
@@ -127,7 +129,8 @@ signature perk (10, +5 for a second type). Caps in section 3.
 
 | Resource | Spent on | Constant |
 |---|---|---|
-| Rare Candy | 1 per feed; a level costs `2 + level² / 150` candies (2 at the start, 18 at level 50, 67 at level 99; 2,341 for 1 to 100), half when the Pokémon is more than 5 levels below the party's best | `CandyRules.candiesNeeded`, `CATCH_UP_GAP` |
+| Rare Candy | 1 per feed; a level costs `2 + level² / 300` candies (2 at the start, 10 at level 50, 34 at level 99; 1,249 for 1 to 100), half when the Pokémon is more than 5 levels below the party's best | `CandyRules.candiesNeeded`, `CATCH_UP_GAP` |
+| Coins | 5 for a Rare Candy at the shop (Bag) | `Shop.COINS_PER_RARE_CANDY`, `GameStore.buyRareCandies` |
 | Super Candy | 1 per evolution by level, friendship, time, random branch, trial, or gender with no item | `EvolutionRules` |
 | Evolution stone, gender item | 1 per evolution that needs it | `EvolutionRules` |
 | Link Cord | 1 per trade evolution (and the held item it needs) | `EvolutionRules` |
@@ -167,6 +170,8 @@ signature perk (10, +5 for a second type). Caps in section 3.
 
 **Care's Pokémon income (checked at 0.35.0; see 0.45.0 below).** `simulateEconomy` does not play Care, and re-running it after rules version 10 left `docs/economy-report.md` byte for byte the same, so Plan's numbers did not move. By construction Care can add at most one Pokémon every 4 days (one befriend a day, 4 warm-up days per visitor, each needing a paid Care action), about 7 in 30 days; from 0.41.0 a liked berry (a sink: one berry per visitor) makes it one every 3 days at best, about 10 in 30 days, with no Pokémon from any Care action but befriending, against several a day from Plan's focus and Task Eggs. A Care-only player always has the starter and a new friend about every 4 days; the Care Region pool has no Super Rare except through quests.
 
+**Care's Pokémon income at 0.46.0 (rules version 12).** Care Eggs bring Care level with Plan: a Care moment fills the Egg meter (a routine 1 point, a calm break or a skill 2, 3 to an egg), so a day with every routine, calm break and skill done gives 5 Care Eggs (17 points) and a few moments give 1 or 2, on top of about a friend a day from visitors. Plan's typical day is 1 to 3 focus eggs and about a Task Egg. Care moments also pay Rare Candies (3 to 4 each, 15 for a rhythm), up to about 45 a day. `simulateEconomy` still plays only Plan.
+
 **Care's Pokémon income at 0.45.0.** With a visit a day for every visitor and up to 4 visitors in the meadow, someone who visits them all warmly every day makes about one friend a day (four visitors each four days along, a new one arriving as each leaves), against about one every 4 days before: about 30 in 30 days at most, still well below Plan's several eggs a day (`economy-report.md`). Most are first stages (a family's egg), so they add to the Care dex's first stages and leave evolving to candies; the visitor itself joins 1 time in 10. `simulateEconomy` still does not play Care, so Plan's report is unchanged by this.
 
 Care is the first module with a per-module daily cap on the world's side (`CARE_DAILY_CAP`). There is no daily cap on tasks, habits or focus sessions yet: `RewardEngine` leaves daily limits to the caller, and
@@ -184,7 +189,7 @@ design.md's "daily reward limit per app" *(tune)* is not built. It matters once 
 
 Found while writing this down; each is its own change, none is in this rules version.
 
-- **Coins have no use.** design.md plans a shop (rank step 2) and Lures bought or crafted from berries; neither exists, so coins only pile up.
+- **Coins buy only Rare Candies** (0.46.0). design.md also plans Lures bought or crafted from berries; not built.
 - **Earned items with no use yet:** Lures (Focus never passes one). Mega Stones can be held but never drop.
 - **Trial evolutions** can never happen: nothing records a completed trial.
 - **Stack caps are uneven:** transfers, the focus berry and the weekly review berry add without the cap; the server's gift caps every item at 9,999, the app caps non-candies at 999.

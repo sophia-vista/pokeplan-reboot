@@ -212,7 +212,7 @@ fun simulateReport(runsPerProfile: Int = 60, days: Int = 180): String {
     val demand = evolutionDemand(Region.PLAN)
     sb.appendLine("## Targets")
     sb.appendLine()
-    sb.appendLine("- Basic Plan dex ($plan hatchable species) in about 60 days for a typical player.")
+    sb.appendLine("- Basic Plan dex ($plan hatchable species) in about 45 days for a typical player (rules version 12: easy to fill, hard to perfect).")
     sb.appendLine("- Ranks quick at first, slower after: Apprentice within about 2 days and Ace within about 2 weeks for a typical player; each rank takes longer than the one before.")
     sb.appendLine("- Evolving everything in the Plan Region once needs ${demand.evolutions} evolutions: ${demand.superCandies} Super Candies, ${demand.rareCandiesLow} to ${demand.rareCandiesHigh} Rare Candies (with and without the catch-up discount), ${demand.stones} stones, ${demand.linkCords} Link Cords, ${demand.trials} trials.")
     sb.appendLine()

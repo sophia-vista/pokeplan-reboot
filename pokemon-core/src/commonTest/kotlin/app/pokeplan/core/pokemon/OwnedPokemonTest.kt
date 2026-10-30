@@ -14,13 +14,13 @@ class OwnedPokemonTest {
 
     @Test
     fun enoughCandiesMakeOneLevelAndAddFriendship() {
-        val p = feed(pokemon(Ids.BULBASAUR, level = 30, nature = Nature.ADAMANT), 7)
+        val p = feed(pokemon(Ids.BULBASAUR, level = 30, nature = Nature.ADAMANT), 4)
         assertEquals(30, p.level)
-        assertEquals(7, p.candyProgress)
+        assertEquals(4, p.candyProgress)
         val up = p.feedRareCandy()
         assertEquals(31, up.level)
         assertEquals(0, up.candyProgress)
-        assertEquals(8, up.totalCandies)
+        assertEquals(5, up.totalCandies)
         assertEquals(FriendshipRules.START + 1, up.friendship)
     }
 
@@ -28,20 +28,20 @@ class OwnedPokemonTest {
     fun higherLevelsCostMoreCandies() {
         assertEquals(2, CandyRules.candiesNeeded(1, 1))
         assertEquals(2, CandyRules.candiesNeeded(12, 12))
-        assertEquals(8, CandyRules.candiesNeeded(30, 30))
-        assertEquals(18, CandyRules.candiesNeeded(50, 50))
-        assertEquals(67, CandyRules.candiesNeeded(99, 99))
-        assertEquals(33, CandyRules.candiesBetween(1, 16), "Charmander to its level 16 evolution")
-        assertEquals(154, CandyRules.candiesBetween(1, 36), "Charmeleon's level 36")
-        assertEquals(2_341, CandyRules.candiesBetween(1, 100))
+        assertEquals(5, CandyRules.candiesNeeded(30, 30))
+        assertEquals(10, CandyRules.candiesNeeded(50, 50))
+        assertEquals(34, CandyRules.candiesNeeded(99, 99))
+        assertEquals(30, CandyRules.candiesBetween(1, 16), "Charmander to its level 16 evolution")
+        assertEquals(106, CandyRules.candiesBetween(1, 36), "Charmeleon's level 36")
+        assertEquals(1_249, CandyRules.candiesBetween(1, 100))
     }
 
     @Test
     fun aLaggingPokemonNeedsHalfTheCandies() {
-        assertEquals(8, CandyRules.candiesNeeded(45, 60), "15 halved, rounded up")
-        val p = feed(pokemon(Ids.BULBASAUR, level = 45), 8, partner = 60)
+        assertEquals(4, CandyRules.candiesNeeded(45, 60), "8 halved")
+        val p = feed(pokemon(Ids.BULBASAUR, level = 45), 4, partner = 60)
         assertEquals(46, p.level)
-        val close = feed(pokemon(Ids.BULBASAUR, level = 45), 8, partner = 50)
+        val close = feed(pokemon(Ids.BULBASAUR, level = 45), 4, partner = 50)
         assertEquals(45, close.level, "within 5 levels: no discount")
     }
 

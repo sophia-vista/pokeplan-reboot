@@ -263,7 +263,7 @@ private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
                 }
             }
             val got = store.miniQuestRewards()
-            if (got.isEmpty()) Text("A berry each, and one more for all three.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            if (got.isEmpty()) Text("A berry and 2 Rare Candies each, more for all three.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             else got.forEach { r ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     r.iconItem()?.let { ItemIcon(it, size = 24.dp) }

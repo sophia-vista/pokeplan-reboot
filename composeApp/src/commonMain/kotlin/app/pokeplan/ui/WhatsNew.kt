@@ -3,6 +3,11 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.46.0" to listOf(
+            "Much more candy: levels cost half, tasks pay double, and focus, Care, mini-quests and new species pay Rare Candies too.",
+            "Coins buy Rare Candies in the Bag. Care fills a Care Egg meter that hatches Pokémon from the Care Region.",
+            "Eggs come more often and favour new species; shinies are 1 in 192 per egg, about as rare as before.",
+        ),
         "0.45.1" to listOf(
             "Mini-quests answer when you tap Done and show the berry you got. They turn over at 4am, like your streak.",
         ),

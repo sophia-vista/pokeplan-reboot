@@ -26,6 +26,9 @@ import app.pokeplan.core.pokemon.Perks
 import app.pokeplan.core.pokemon.Stat
 import app.pokeplan.core.pokemon.Transfer
 import app.pokeplan.core.pokemon.TransferBlock
+import app.pokeplan.core.model.CandyType
+import app.pokeplan.core.pokemon.Inventory
+import app.pokeplan.core.pokemon.Shop
 import app.pokeplan.core.reward.AchievementEvent
 import app.pokeplan.core.reward.BefriendEvent
 import app.pokeplan.core.reward.CareEvent
@@ -311,12 +314,35 @@ class GameStore(
         val paidToday = data.counters[key] ?: 0
         if (paidToday >= CARE_DAILY_CAP.getValue(event.kind)) return null
         val outcome = RewardEngine.care(data.player, event, rng)
+        // Care's Egg meter: a full one hatches a Care Egg on top of the moment's own rewards.
+        val meter = (data.counters[CARE_EGG_METER] ?: 0) + RewardEngine.CARE_EGG_POINTS.getValue(event.kind)
+        val egg = if (meter >= RewardEngine.CARE_EGG_METER_SIZE) RewardEngine.careEgg(outcome.state, newId(), nowMillis, rng) else null
+        val rewards = outcome.rewards + egg?.rewards.orEmpty()
         update { d ->
-            // Only today's counters are kept.
-            val counters = d.counters.filterKeys { !it.startsWith("care-") || it.endsWith("-$today") } + (key to paidToday + 1)
-            log(CARE_SOURCES.getValue(event.kind), outcome.rewards, d.copy(player = outcome.state, counters = counters))
+            // Only today's counters are kept (and the Egg meter, which carries over).
+            val counters = d.counters.filterKeys { !it.startsWith("care-") || it.endsWith("-$today") || it == CARE_EGG_METER } +
+                (key to paidToday + 1) + (CARE_EGG_METER to meter % RewardEngine.CARE_EGG_METER_SIZE)
+            log(CARE_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters))
         }
-        return outcome.rewards
+        return rewards
+    }
+
+    /** Points towards the next Care Egg, out of [RewardEngine.CARE_EGG_METER_SIZE]. */
+    fun careEggMeter(): Int = data.counters[CARE_EGG_METER] ?: 0
+
+    /**
+     * The shop: trades [Shop.COINS_PER_RARE_CANDY] coins for each Rare Candy. Returns how many were bought (fewer when the
+     * coins or the bag's room run out, 0 for none).
+     */
+    fun buyRareCandies(count: Int): Int {
+        val room = Inventory.MAX_CANDIES - data.player.inventory[Items.RARE_CANDY]
+        val n = minOf(count, data.player.coins / Shop.COINS_PER_RARE_CANDY, room)
+        if (n <= 0) return 0
+        update { d ->
+            val player = d.player.copy(coins = d.player.coins - n * Shop.COINS_PER_RARE_CANDY, inventory = d.player.inventory.add(Items.RARE_CANDY, n))
+            log("Shop", listOf(Reward.Candies(CandyType.RARE, n)), d.copy(player = player), seen = true)
+        }
+        return n
     }
 
     override fun visitorLuck(): Double =
@@ -806,8 +832,8 @@ class GameStore(
     }
 
     /**
-     * Ticks off one of today's mini-quests (honour system): a berry, and [MiniQuests.ALL_THREE_BONUS_BERRIES] more for the
-     * third. No streak and no active day: they are small kindnesses, not work. Returns false if it is not today's or done.
+     * Ticks off one of today's mini-quests (honour system): a berry and [MiniQuests.RARE_CANDIES] Rare Candies, and
+     * [MiniQuests.ALL_THREE_BONUS_BERRIES] more berries and [MiniQuests.ALL_THREE_BONUS_CANDIES] more candies for the third. No streak and no active day: they are small kindnesses, not work. Returns false if it is not today's or done.
      * The reward is logged as seen: the quest's own card shows it, so the reward box at the top of the page does not repeat it.
      */
     fun completeMiniQuest(id: String): Boolean {
@@ -817,12 +843,14 @@ class GameStore(
         val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
         val allDone = quests.all { it.id == id || miniQuestDone(it.id) }
         val berries = 1 + if (allDone) MiniQuests.ALL_THREE_BONUS_BERRIES else 0
+        val candies = MiniQuests.RARE_CANDIES + if (allDone) MiniQuests.ALL_THREE_BONUS_CANDIES else 0
         update { d ->
             // Only today's mini-quest marks are kept.
             val counters = d.counters.filterKeys { !it.startsWith("mq-") || it.contains("-$day") } + ("mq-$day-$id" to 1)
-            val (bag, overflow) = d.player.inventory.addCapped(berry, berries)
-            log(MINI_QUEST_SOURCE, listOf(Reward.ItemDrop(berry, berries)), d.copy(
-                counters = counters, player = d.player.copy(inventory = bag, coins = d.player.coins + overflow),
+            val (withBerry, berryOverflow) = d.player.inventory.addCapped(berry, berries)
+            val (bag, candyOverflow) = withBerry.addCapped(Items.RARE_CANDY, candies)
+            log(MINI_QUEST_SOURCE, listOf(Reward.ItemDrop(berry, berries), Reward.Candies(CandyType.RARE, candies)), d.copy(
+                counters = counters, player = d.player.copy(inventory = bag, coins = d.player.coins + berryOverflow + candyOverflow),
             ), seen = true)
         }
         return true
@@ -1333,8 +1361,11 @@ class GameStore(
         /** Friendship a day that petting can give. */
         const val PET_DAILY_CAP = 10
 
-        /** The reward log's name for a mini-quest's berries. */
+        /** The reward log's name for a mini-quest's rewards. */
         const val MINI_QUEST_SOURCE = "Mini-quest"
+
+        /** The counter that holds Care's Egg meter. */
+        const val CARE_EGG_METER = "care-egg-meter"
         const val LOG_SIZE = 50
 
         /** Friends Care can make a day, one per visitor in the meadow (`Visitors.MAX_VISITORS`). *(tune)* */
