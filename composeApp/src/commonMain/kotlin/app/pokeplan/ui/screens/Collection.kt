@@ -34,6 +34,7 @@ import app.pokeplan.app.PcView
 import app.pokeplan.app.quest.Quests
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.dex.PokemonType
+import app.pokeplan.core.dex.Region
 import app.pokeplan.core.pokemon.Guardians
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.reward.Feature
@@ -46,6 +47,7 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.quietClickable
 import app.pokeplan.ui.theme.ScreenHeader
+import app.pokeplan.ui.theme.RegionLook
 import app.pokeplan.ui.theme.SectionLabel
 
 private enum class Section(val title: String, val icon: String) {
@@ -64,7 +66,6 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
     var selected by remember { mutableStateOf(startOpen) }
     // Kept here, not in the PC section, so opening a Pokémon and coming back leaves the sort and filters as they were.
     var pcView by remember { mutableStateOf(PcView()) }
-    var partyTab by remember { mutableStateOf(0) }
     var dexView by remember { mutableStateOf(DexView()) }
     var dexEntry by remember { mutableStateOf<Int?>(null) }
     val player = model.data.player
@@ -107,20 +108,11 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
         SectionScaffold(current.title, "Pokémon", onBack = { section = null }, icon = current.icon) {
             when (current) {
                 Section.PARTY -> {
-                    val careOn = model.data.settings.careModule
-                    val tab = if (careOn) partyTab else 0
-                    if (careOn) {
-                        Segmented(listOf("Plan ${player.party.size}/6", "Care ${player.partyOf(PartyIds.CARE).size}/6"), tab) { partyTab = it }
-                    }
-                    if (tab == 0) {
-                        if (player.party.isEmpty()) EmptyState("Your party is empty", "Hatch an egg with a focus session, or move a Pokémon here from the PC.", icon = "poke-ball")
-                        else PartyPerksCard(model)
-                        player.party.forEach { p -> PokemonRow(p, if (p.id == player.buddyId) "Buddy" else null, store.isFavorite(p.id)) { selected = p.id } }
-                    } else {
-                        val care = player.partyOf(PartyIds.CARE)
-                        if (care.isEmpty()) EmptyState("Care's party is empty", "Open a Pokémon and choose \"To Care party\". Until then Care warms your Plan buddy. Its first member leads.", icon = "poke-ball")
-                        else CarePerksCard(model)
-                        care.forEach { p -> PokemonRow(p, if (p.id == player.careLeadId) "Care lead" else null, store.isFavorite(p.id)) { selected = p.id } }
+                    // Every region's party on one page, each under its region with its lead first and its perks after
+                    // (docs/design.md, "Parties per module"): one collection, a party per module.
+                    PartyGroup(model, Region.PLAN, player.party, player.buddyId, "Buddy", { PartyPerksCard(model) }) { selected = it }
+                    if (model.data.settings.careModule) {
+                        PartyGroup(model, Region.CARE, player.partyOf(PartyIds.CARE), player.careLeadId, "Lead", { CarePerksCard(model) }) { selected = it }
                     }
                 }
                 Section.PC -> {
@@ -144,6 +136,32 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
     }
 }
 
+/** One region's party: its name and "x of 6", the lead first, then the rest, then the party's perks. */
+@Composable
+private fun PartyGroup(
+    model: AppModel, region: Region, party: List<OwnedPokemon>, leadId: String?, leadLabel: String,
+    perks: @Composable () -> Unit, open: (String) -> Unit,
+) {
+    val store = model.store
+    // The region's colour beside its name, as down the edge of its card on Home; the name says which region it is.
+    val accent = (if (region == Region.CARE) RegionLook.CARE else RegionLook.PLAN).accent
+    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Box(Modifier.padding(bottom = 2.dp).size(width = 4.dp, height = 20.dp).clip(RoundedCornerShape(2.dp)).background(accent))
+        SectionLabel("${region.label} · ${party.size} of ${OwnedPokemon.PARTY_SIZE}")
+    }
+    if (party.isEmpty()) {
+        val how = if (region == Region.CARE) "Open a Pokémon and choose \"To Care party\", or befriend a visitor. Until then Care warms your Plan buddy. Its first member leads."
+        else "Hatch an egg with a focus session, or move a Pokémon here from the PC."
+        EmptyState("No one here yet", how, icon = "poke-ball")
+        return
+    }
+    party.sortedByDescending { it.id == leadId }.forEach { p ->
+        PokemonRow(p, if (p.id == leadId) leadLabel else null, store.isFavorite(p.id)) { open(p.id) }
+    }
+    perks()
+}
+
+/** A Pokémon in a list: its sprite, its name, and one quiet line (level and types), with its role and marks at the end. */
 @Composable
 private fun PokemonRow(p: OwnedPokemon, role: String?, favorite: Boolean, onClick: () -> Unit) {
     ListRow(
@@ -155,12 +173,13 @@ private fun PokemonRow(p: OwnedPokemon, role: String?, favorite: Boolean, onClic
             Column(horizontalAlignment = Alignment.End) {
                 if (role != null) Text(role, style = MaterialTheme.typography.labelMedium, color = Pixel.Red)
                 if (favorite) Text("★ Starred", style = MaterialTheme.typography.labelMedium, color = Pixel.Warning)
+                if (p.isShiny) Text("✨ Shiny", style = MaterialTheme.typography.labelMedium, color = Pixel.Warning)
             }
         },
     ) {
         Text(p.nickname, style = MaterialTheme.typography.titleMedium)
-        Text(if (p.isShiny) "Lv. ${p.level}, ✨ Shiny" else "Lv. ${p.level}", style = MaterialTheme.typography.bodyMedium, color = if (p.isShiny) Pixel.Warning else Pixel.InkSoft)
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) { p.form.types.forEach { TypePlate(it, width = 56.dp) } }
+        val types = p.form.types.joinToString(" / ") { it.label }
+        Text("Lv. ${p.level} · $types", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     }
 }
 

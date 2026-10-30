@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.52.0
+
+- The Party page shows every region's party at once: Plan's, then Care's, each under its region's name and colour with its lead first and its perks after, instead of a switch between them. Each Pokémon is one tidy row: its sprite, its name, and its level and types, with Buddy or Lead, Starred and Shiny at the end.
+
 ## 0.51.0
 
 - A Pokémon's page reads in a clear order: who it is (its Pokédex number, species, level and types), its traits (nature with the stat it raises and lowers, ability, gender, shiny, and the IV judge with its best stat), how it is growing (Rare Candies, friendship and how it likes to bond, stats with the nature's ▲ and ▼), its evolution, its role (party, lead or PC, and which region's Pokédex it counts for), and where it came from. Transfer sits quietly at the end.
