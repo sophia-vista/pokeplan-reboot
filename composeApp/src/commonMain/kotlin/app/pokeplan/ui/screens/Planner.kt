@@ -111,65 +111,68 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
         TaskCard(model, t, day, expanded == t.id, { expanded = if (expanded == t.id) null else t.id }, onDeleted = { model.deletedTask = t; expanded = null }, showList = showList)
     }
 
-    val list = openList?.let { id -> model.data.lists.firstOrNull { it.id == id } }
-    if (list != null) {
-        ListScreen(model, list, TaskViews.inList(live, list.id).filter { it.id !in pendingIds }, card(showList = false)) { openList = null }
-        return
-    }
-
-    val current = view
-    if (current == null) {
-        val today = tasksFor(View.TODAY)
-        val overdue = TaskViews.overdue(today, store.now).size
-        val doneToday = store.doneToday()
-        Column(Modifier.fillMaxSize()) {
-            ScreenHeader("Planner", subtitle = if (today.isEmpty()) "Nothing left for today" else "${today.size} to do today", icon = "journal", onBack = onBack)
-            Column(
-                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
-                verticalArrangement = Arrangement.spacedBy(Spacing.L),
-            ) {
-                RewardBox(model)
-                QuickAddBox(model, View.INBOX)
-                // Smart lists, after Apple Reminders and Things: each tile says how many it holds, so the menu is also a glance at the day.
-                ListTiles(
-                    View.entries.map { v ->
-                        val (count, detail) = when (v) {
-                            View.TODAY -> "${today.size}" to if (overdue > 0) "$overdue from before" else "to do"
-                            View.DAY -> null to "plan the hours"
-                            View.INBOX -> "${tasksFor(v).size}" to "in no list"
-                            View.UPCOMING -> "${tasksFor(v).size}" to "after today"
-                            View.HABITS -> model.data.habits.let { hs -> if (hs.isEmpty()) null to "small things, often" else "${hs.count { store.today in it.completions }}/${hs.size}" to "done today" }
-                            View.DONE -> "$doneToday" to "finished today"
-                            View.ALL -> "${live.count { it.isOpen }}" to "search and filter"
-                        }
-                        ListTile(v, count, detail)
-                    },
-                ) { view = it }
-                ListsSection(model, live) { openList = it }
-            }
+    // A list or a smart list slides in from the menu and back out; each keeps its scroll position.
+    ScreenSwitch(view to openList, depth = { (v, l) -> if (v == null && l == null) 0 else 1 }) { (pageView, pageList) ->
+        val list = pageList?.let { id -> model.data.lists.firstOrNull { it.id == id } }
+        if (list != null) {
+            ListScreen(model, list, TaskViews.inList(live, list.id).filter { it.id !in pendingIds }, card(showList = false)) { openList = null }
+            return@ScreenSwitch
         }
-        return
-    }
 
-    SectionScaffold(current.label, "Planner", onBack = { view = null }, icon = current.icon) {
-        RewardBox(model)
-        when (current) {
-            View.HABITS -> HabitsView(model)
-            View.DAY -> DayView(model, pendingIds, startWeek)
-            View.ALL -> AllTasksView(model, live.filter { it.id !in pendingIds }, card(showList = true))
-            else -> {
-                if (current == View.TODAY || current == View.INBOX) QuickAddBox(model, current)
-                val shown = tasksFor(current)
-                val card = card(showList = true)
-                when (current) {
-                    View.TODAY -> TodayList(model, shown, card)
-                    // Soon by the day each task is on, Done by the day it was finished (Todoist's Upcoming, Things' Logbook).
-                    View.UPCOMING -> shown.groupBy { it.planned ?: it.due!!.date }.forEach { (day, ts) -> TaskGroup(dayName(model, day), ts, dayOf = day, card = card) }
-                    View.DONE -> shown.groupBy { store.dayOf(it.completedAtMillis ?: 0L) }.forEach { (day, ts) -> TaskGroup(dayName(model, day), ts, card = card) }
-                    View.INBOX -> WhenGroups(model, shown, card)
-                    else -> if (shown.isNotEmpty()) TaskGroup(null, shown, card = card)
+        val current = pageView
+        if (current == null) {
+            val today = tasksFor(View.TODAY)
+            val overdue = TaskViews.overdue(today, store.now).size
+            val doneToday = store.doneToday()
+            Column(Modifier.fillMaxSize()) {
+                ScreenHeader("Planner", subtitle = if (today.isEmpty()) "Nothing left for today" else "${today.size} to do today", icon = "journal", onBack = onBack)
+                Column(
+                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.L),
+                ) {
+                    RewardBox(model)
+                    QuickAddBox(model, View.INBOX)
+                    // Smart lists, after Apple Reminders and Things: each tile says how many it holds, so the menu is also a glance at the day.
+                    ListTiles(
+                        View.entries.map { v ->
+                            val (count, detail) = when (v) {
+                                View.TODAY -> "${today.size}" to if (overdue > 0) "$overdue from before" else "to do"
+                                View.DAY -> null to "plan the hours"
+                                View.INBOX -> "${tasksFor(v).size}" to "in no list"
+                                View.UPCOMING -> "${tasksFor(v).size}" to "after today"
+                                View.HABITS -> model.data.habits.let { hs -> if (hs.isEmpty()) null to "small things, often" else "${hs.count { store.today in it.completions }}/${hs.size}" to "done today" }
+                                View.DONE -> "$doneToday" to "finished today"
+                                View.ALL -> "${live.count { it.isOpen }}" to "search and filter"
+                            }
+                            ListTile(v, count, detail)
+                        },
+                    ) { view = it }
+                    ListsSection(model, live) { openList = it }
                 }
-                if (shown.isEmpty() && current != View.TODAY) EmptyState(emptyTitle(current), emptyLine(current), icon = current.icon)
+            }
+            return@ScreenSwitch
+        }
+
+        SectionScaffold(current.label, "Planner", onBack = { view = null }, icon = current.icon) {
+            RewardBox(model)
+            when (current) {
+                View.HABITS -> HabitsView(model)
+                View.DAY -> DayView(model, pendingIds, startWeek)
+                View.ALL -> AllTasksView(model, live.filter { it.id !in pendingIds }, card(showList = true))
+                else -> {
+                    if (current == View.TODAY || current == View.INBOX) QuickAddBox(model, current)
+                    val shown = tasksFor(current)
+                    val card = card(showList = true)
+                    when (current) {
+                        View.TODAY -> TodayList(model, shown, card)
+                        // Soon by the day each task is on, Done by the day it was finished (Todoist's Upcoming, Things' Logbook).
+                        View.UPCOMING -> shown.groupBy { it.planned ?: it.due!!.date }.forEach { (day, ts) -> TaskGroup(dayName(model, day), ts, dayOf = day, card = card) }
+                        View.DONE -> shown.groupBy { store.dayOf(it.completedAtMillis ?: 0L) }.forEach { (day, ts) -> TaskGroup(dayName(model, day), ts, card = card) }
+                        View.INBOX -> WhenGroups(model, shown, card)
+                        else -> if (shown.isNotEmpty()) TaskGroup(null, shown, card = card)
+                    }
+                    if (shown.isEmpty() && current != View.TODAY) EmptyState(emptyTitle(current), emptyLine(current), icon = current.icon)
+                }
             }
         }
     }

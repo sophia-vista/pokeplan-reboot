@@ -80,10 +80,14 @@ enum class CareSection(val label: String, val icon: String) {
     SKILLS("Skills", "mental-herb"), JOURNAL("Journal", "journal"), TRENDS("Trends", "exp-share"),
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
-    val section = model.careSection
+    ScreenSwitch(model.careSection, depth = { if (it == null) 0 else 1 }) { section -> CarePage(model, section, openPokemon) }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun CarePage(model: AppModel, section: CareSection?, openPokemon: (String) -> Unit) {
     if (section == null) {
         val toModules = { model.module = null }
         BackHandler(enabled = true, onBack = toModules)
