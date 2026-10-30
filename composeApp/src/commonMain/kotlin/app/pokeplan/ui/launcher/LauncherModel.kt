@@ -139,8 +139,20 @@ object LauncherList {
 /** The scenes a town can be set in (real Pokémon backdrops from assets/scenes), with their names. */
 object TownScenes {
     const val DEFAULT = "meadow"
-    val all = listOf(
+    val scenes = listOf(
         "meadow" to "Meadow", "city" to "City", "route" to "Route", "forest" to "Forest", "mountain" to "Mountain", "beach" to "Beach",
         "desert" to "Desert", "thunderplains" to "Thunder plains", "icecave" to "Ice cave", "dampcave" to "Damp cave", "volcanocave" to "Volcano cave",
     )
+
+    /** Towns built from the tiles of Mystery Dungeon dungeons (assets/tiles), by atlas name. */
+    val dungeons = listOf(
+        "lush-prairie" to "Lush Prairie", "apple-woods" to "Apple Woods", "dusk-forest" to "Dusk Forest", "deep-dusk-forest" to "Deep Dusk Forest",
+        "deep-dusk-forest-autumn" to "Deep Dusk Forest (autumn)", "drenched-bluff" to "Drenched Bluff", "craggy-coast" to "Craggy Coast", "beach-cave" to "Beach Cave",
+        "brine-cave" to "Brine Cave", "crystal-cave" to "Crystal Cave", "crystal-cave-deep" to "Crystal Cave (deep)", "crystal-crossing" to "Crystal Crossing",
+        "dark-hill" to "Dark Hill", "dark-hill-deep" to "Dark Hill (deep)", "deep-sealed-ruin" to "Deep Sealed Ruin", "concealed-ruins" to "Concealed Ruins", "amp-plains" to "Amp Plains",
+    )
+
+    val all = scenes + dungeons
+
+    fun isDungeon(name: String) = dungeons.any { it.first == name }
 }

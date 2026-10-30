@@ -13,6 +13,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -138,6 +140,10 @@ fun AnimatedSprite(
     formId: Int, shiny: Boolean, description: String, modifier: Modifier = Modifier, size: Dp = 144.dp,
     animate: Boolean = true, ground: Dp = 12.dp,
     action: SpriteAction = SpriteAction.IDLE, actionKey: Int = 0, onActionDone: () -> Unit = {},
+    /** A fixed whole-number scale (screen pixels per sprite pixel) instead of one fitted to [size], with the sprite kept on that pixel grid, for scenes drawn on a grid of their own. */
+    fixedScale: Int? = null,
+    /** Draws the frames flipped left to right, pixel for pixel. */
+    mirror: Boolean = false,
 ) {
     val animation by produceState(loadedAnimations()?.get(formId), formId) { value = animations()[formId] }
     val idle = animation
@@ -192,14 +198,18 @@ fun AnimatedSprite(
         val box = min(this.size.width, this.size.height - ground.toPx())
         // Every action draws at the idle sprite's scale, so the Pokémon never changes size when it lies down, eats or hops.
         // A hop's frames are taller than the idle ones (they hold the jump), so the top of a jump may reach above the box.
-        val scale = pixelScale(box, idle)
+        val scale = fixedScale ?: pixelScale(box, idle)
         val w = a.width * scale
         val h = a.height * scale
-        drawImage(
-            image,
-            srcOffset = IntOffset(frame.coerceAtMost(a.frames - 1) * a.width, 0), srcSize = IntSize(a.width, a.height),
-            dstOffset = IntOffset(((this.size.width - w) / 2).toInt(), (this.size.height - ground.toPx() - h).toInt()), dstSize = IntSize(w, h),
-            filterQuality = FilterQuality.None,
-        )
+        val left = ((this.size.width - w) / 2).toInt().let { if (fixedScale != null) it / fixedScale * fixedScale else it }
+        val top = (this.size.height - ground.toPx() - h).toInt().let { if (fixedScale != null) it / fixedScale * fixedScale else it }
+        withTransform({ if (mirror) scale(-1f, 1f, Offset(this.size.width / 2f, 0f)) }) {
+            drawImage(
+                image,
+                srcOffset = IntOffset(frame.coerceAtMost(a.frames - 1) * a.width, 0), srcSize = IntSize(a.width, a.height),
+                dstOffset = IntOffset(left, top), dstSize = IntSize(w, h),
+                filterQuality = FilterQuality.None,
+            )
+        }
     }
 }
