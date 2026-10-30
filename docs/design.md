@@ -113,7 +113,7 @@ Each owned Pokémon has: species, level 1 to 100, nature, ability, 6 IVs, 6 EVs,
   - IV 0 to 31 rolled at hatch. EV 0 to 252 per stat, 510 total, gained from Vitamins (below).
 - **Natures:** the existing 25. Each raises one stat and lowers another (five are neutral).
 - **Abilities:** each species has one or two; one is rolled at hatch. Abilities give buddy perks (below).
-- **Shiny:** rolled at hatch, base chance **1 in 192** per egg (1 in 128 before rules version 12, when eggs came less often), with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation (a gold flash, twice, instead of the white one).
+- **Shiny:** rolled at hatch, base chance **1 in 128** per egg *(owner, rules version 13; version 12 briefly made it 1 in 192)*, with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation (a gold flash, twice, instead of the white one).
 - **Levelling:** Rare Candies per level grow with the level, the shape of the games' Medium Fast experience group: **2 + level² / 150**, rounded down *(tune)* (2 a level up to level 12, 8 at 30, 18 at 50, 67 at 99; 33 candies from level 1 to 16, 154 to 36, 2,341 to 100). A Pokémon more than 5 levels below your partner needs half the candies, rounded up *(tune)*, so new hatches catch up without outshining the partner.
 - **Evolution:** Super Candy at the species' game evolution level (Charmander at 16). Evolution stones for the species that use them.
 
@@ -212,7 +212,7 @@ Collecting is **fast at the start and deep at the end.** The simulator tunes tow
 |---|---|
 | Basic dex | one of each species caught |
 | Form dex | regional, gendered and Mega / G-Max forms; cosmetic forms are the side collection |
-| Shiny dex | a shiny of each species (1 in 192 per egg makes this the longest chase) |
+| Shiny dex | a shiny of each species (1 in 128 per egg makes this the longest chase) |
 | Perfect dex | a "perfect build" of each species: 31 IVs, an EV spread of 252 / 252 / 6, a favourable nature, a chosen ability. Competitive-style building, and the endgame use for Nature Mints, Bottle Caps, Vitamins and Ability Capsules |
 | Ribbons | contest ribbons, legendary quests, mythical milestones |
 

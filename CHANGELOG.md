@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.47.1
+
+- Shinies are back to 1 in 128 per egg (0.46.0 made them 1 in 192). With eggs coming more often since 0.46.0, you'll find shinies a little more often than before. Reward rules version 13.
+
 ## 0.47.0
 
 - The app is now called **PokéLife**: a Pokémon world for real life, where each module is its own region. PokéPlan lives on as the name of the Plan module. Your Pokémon, save and cloud sync carry on as before.

@@ -65,8 +65,8 @@ object FriendshipRules {
 
 /** Shiny odds. */
 object Shiny {
-    /** 1 in 192 since rules version 12 (was 128): eggs came 1.5 times as often, so shinies per player stay as rare. */
-    const val BASE_ODDS = 192
+    /** 1 in 128 (owner's decision, rules version 13): version 12 tried 1 in 192 when eggs came more often, and went back. */
+    const val BASE_ODDS = 128
 
     /**
      * Chance that a hatched Pokémon is shiny: 1 in [BASE_ODDS], up to 50% better for a 4 hour session, times any perk bonus.

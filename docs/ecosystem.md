@@ -406,7 +406,7 @@ do not get it.
 ## 10. Game layer
 
 Reconciles an outside draft (the "Game Layer Spec") with what is built. **Shiny odds and the Guardian rules stay exactly as
-they are in docs/design.md** *(owner's decision)*: shiny is about 1 in 192 per egg (1 in 128 until rules version 12 made eggs more frequent, so shinies per player stay as rare), and Guardians are legendary-class and
+they are in docs/design.md** *(owner's decision)*: shiny is 1 in 128 per egg (rules version 12 tried 1 in 192 to offset more frequent eggs; the owner kept 1 in 128 in version 13), and Guardians are legendary-class and
 mythical Pokémon in rank-opened slots with +10% signature perks added on top of the ordinary cap (up to +15% in a bucket
 from Guardians). Nothing below changes them.
 
@@ -431,7 +431,7 @@ from Guardians). Nothing below changes them.
 
 | Idea | Why |
 |---|---|
-| Shiny odds 1/4096 and a Shiny Charm | Shiny stays about 1 in 192 per egg, about as rare per player as 1 in 128 was |
+| Shiny odds 1/4096 and a Shiny Charm | Shiny stays 1 in 128 per egg |
 | One Guardian slot with a single +15% effect inside the cap | Guardians stay as designed |
 | Party slots 2 to 6 as cosmetic only | Non-buddy party members keep their 25% perk share |
 | Steps, Oval Charm and step-based eggs | Eggs hatch from focus time; there are no steps |
