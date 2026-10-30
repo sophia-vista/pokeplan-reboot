@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
@@ -131,11 +133,12 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     val sheetApp = sheetKey?.let { key -> apps.firstOrNull { it.key == key } }
     PixelTheme(dark) {
         CompositionLocalProvider(LocalReduceMotion provides data.settings.reduceMotion) {
-            Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+            androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                val pixel = townScale(maxWidth.value * LocalDensity.current.density)
                 Town(model, prefs.scene, Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onLongPress = { pickingTown = true }) })
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
                 BackHandler(enabled = true) { if (pickingTown) pickingTown = false else if (sheetApp != null) sheetKey = null else listOpen = false }
-                HomePage(model, apps, prefs, isDefault, host, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
+                HomePage(model, apps, prefs, isDefault, host, pixel, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
                 AnimatedVisibility(listOpen, enter = slideInVertically { it / 4 } + fadeIn(), exit = slideOutVertically { it / 4 } + fadeOut()) {
                     AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key })
                 }
@@ -146,94 +149,60 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     }
 }
 
+/**
+ * The home page's text, as the game's dialogue boxes: a note at the top when there is one, then (bottom, by the thumb) your
+ * pinned apps and the parts of PokéLife as two menu boxes side by side, the buddy and one task in a message box, and All apps.
+ */
 @Composable
-private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPrefs, isDefault: Boolean, host: LauncherHost, onAllApps: () -> Unit, onHold: (LauncherApp) -> Unit) {
+private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPrefs, isDefault: Boolean, host: LauncherHost, pixel: Int, onAllApps: () -> Unit, onHold: (LauncherApp) -> Unit) {
     val data = model.data
-    val white = Color.White
-    Column(Modifier.fillMaxSize().safeDrawingPadding()) {
-        // The top: one quiet line, only when there is something to say.
-        Box(Modifier.fillMaxWidth().padding(horizontal = Spacing.Page, vertical = Spacing.S)) {
-            val note = when {
-                !data.onboarded -> "Open PokéLife to meet your first Pokémon" to { host.openApp(Place.HOME) }
-                !isDefault -> "Make PokéLife your home app" to host::openHomeSettings
-                else -> null
-            }
-            if (note != null) Text(
-                note.first + "  ›", style = MaterialTheme.typography.labelLarge, color = white,
-                modifier = Modifier.background(Color.Black.copy(alpha = 0.45f), CircleShape).clip(CircleShape).clickable(role = Role.Button, onClick = note.second).padding(horizontal = Spacing.L, vertical = Spacing.S),
-            )
+    Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = Spacing.M), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        val note = when {
+            !data.onboarded -> "Open PokéLife to meet your first Pokémon" to { host.openApp(Place.HOME) }
+            !isDefault -> "Make PokéLife your home app" to host::openHomeSettings
+            else -> null
         }
-        // The town above fills the middle; the day sits at the bottom, in reach of the thumb, on a soft dark fade.
+        if (note != null) PmdBox(pixel, Modifier.clickable(role = Role.Button, onClick = note.second), PmdTone.BLUE) { PmdText(note.first, pixel, Modifier.padding(vertical = Spacing.S)) }
         Box(Modifier.weight(1f))
-        Column(
-            Modifier.fillMaxWidth()
-                .background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f), Color.Black.copy(alpha = 0.7f))))
-                .padding(horizontal = Spacing.Page).padding(top = Spacing.XXL),
-            verticalArrangement = Arrangement.spacedBy(Spacing.XS),
-        ) {
-            if (data.onboarded) {
-                val buddy = data.player.buddy
-                if (buddy != null) Text(
-                    "${buddy.nickname}  Lv. ${buddy.level}  ·  ${data.player.pokemon.size} Pokémon", style = MaterialTheme.typography.labelLarge, color = white.copy(alpha = 0.85f),
-                    modifier = Modifier.clickable(role = Role.Button, onClickLabel = "Open PokéLife") { host.openApp(Place.HOME) }.padding(vertical = Spacing.XS),
-                )
-                // One thing to do, not the whole list: the rest is a tap away in Plan.
-                model.store.openTodayTasks().firstOrNull()?.let { task ->
-                    Row(
-                        Modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).clickable(role = Role.Checkbox, onClickLabel = "Done: ${task.title}") { model.completeTask(task.id) },
-                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
-                    ) {
-                        Box(Modifier.size(20.dp).border(2.dp, white, CircleShape))
-                        Text(task.title, style = MaterialTheme.typography.bodyLarge, color = white, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
+        val pinned = LauncherList.pinned(apps, prefs)
+        val running = data.focus != null
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
+            if (pinned.isNotEmpty()) PmdBox(pixel, Modifier.weight(1f), PmdTone.BLUE) {
+                Column(Modifier.heightIn(max = 240.dp).verticalScroll(rememberScrollState())) {
+                    pinned.forEach { app -> PmdMenuLine(app.label, pixel, onHold = { onHold(app) }) { host.open(app.key) } }
                 }
-                // Every part of PokéLife, side by side: Plan is one of them.
-                val running = data.focus != null
-                Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(vertical = Spacing.S), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    ModuleChip("Plan") { host.openApp(Place.PLAN) }
-                    ModuleChip(if (running) "Back to focus" else "Focus", highlight = running) { host.openApp(Place.FOCUS) }
-                    if (data.settings.careModule) ModuleChip("Care") { host.openApp(Place.CARE) }
-                    ModuleChip("Party") { host.openApp(Place.PARTY) }
-                    ModuleChip("Pokémon") { host.openApp(Place.COLLECTION) }
-                }
-            }
-            LauncherList.pinned(apps, prefs).takeIf { it.isNotEmpty() }?.let { PinnedGrid(it, host, onHold) }
-            // The handle for the app list: a tap or a swipe up opens it.
-            Box(
-                Modifier.fillMaxWidth().height(Spacing.Target + Spacing.S)
-                    .pointerInput(Unit) {
-                        var drag = 0f
-                        detectVerticalDragGestures(onDragStart = { drag = 0f }, onDragEnd = { if (drag < -40f) onAllApps() }) { _, dy -> drag += dy }
-                    }
-                    .clickable(role = Role.Button, onClickLabel = "Open all apps", onClick = onAllApps),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(Modifier.width(40.dp).height(4.dp).background(white, CircleShape))
-                    Text("All apps", style = MaterialTheme.typography.labelMedium, color = white, modifier = Modifier.padding(top = Spacing.XS))
+            } else Box(Modifier.weight(1f))
+            if (data.onboarded) PmdBox(pixel, tone = PmdTone.BLUE) {
+                Column {
+                    PmdMenuLine("Plan", pixel) { host.openApp(Place.PLAN) }
+                    PmdMenuLine(if (running) "Back to focus" else "Focus", pixel, selected = running) { host.openApp(Place.FOCUS) }
+                    if (data.settings.careModule) PmdMenuLine("Care", pixel) { host.openApp(Place.CARE) }
+                    PmdMenuLine("Party", pixel) { host.openApp(Place.PARTY) }
+                    PmdMenuLine("Pokémon", pixel) { host.openApp(Place.COLLECTION) }
                 }
             }
         }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun PinnedGrid(pinned: List<LauncherApp>, host: LauncherHost, onHold: (LauncherApp) -> Unit) {
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        pinned.chunked(4).forEach { row ->
-            Row(Modifier.fillMaxWidth()) {
-                row.forEach { app ->
-                    Column(
-                        Modifier.weight(1f).clip(rowShape).combinedClickable(role = Role.Button, onLongClick = { onHold(app) }, onClick = { host.open(app.key) }).padding(vertical = Spacing.XS),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        AppIcon(host, app.key, 52.dp)
-                        Text(app.label, style = MaterialTheme.typography.labelMedium, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+        if (data.onboarded) {
+            val buddy = data.player.buddy
+            val task = model.store.openTodayTasks().firstOrNull()
+            PmdBox(pixel, Modifier.fillMaxWidth()) {
+                Column {
+                    if (buddy != null) Box(Modifier.defaultMinSize(minHeight = Spacing.Target).clickable(role = Role.Button, onClickLabel = "Open PokéLife") { host.openApp(Place.HOME) }, contentAlignment = Alignment.CenterStart) {
+                        PmdText("${buddy.nickname}  Lv. ${buddy.level}  ${data.player.pokemon.size} Pokémon", pixel, alpha = 0.85f)
                     }
+                    // One thing to do, not the whole list: the rest is a tap away in Plan.
+                    if (task != null) Box(Modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).clickable(role = Role.Checkbox, onClickLabel = "Done: ${task.title}") { model.completeTask(task.id) }, contentAlignment = Alignment.CenterStart) {
+                        PmdText(task.title, pixel)
+                    } else PmdText("Nothing left for today", pixel, Modifier.padding(vertical = Spacing.S), alpha = 0.7f)
                 }
-                repeat(4 - row.size) { Box(Modifier.weight(1f)) }
             }
+        }
+        PmdBox(pixel, Modifier.align(Alignment.CenterHorizontally).clickable(role = Role.Button, onClickLabel = "Open all apps", onClick = onAllApps)
+            .pointerInput(Unit) {
+                var drag = 0f
+                detectVerticalDragGestures(onDragStart = { drag = 0f }, onDragEnd = { if (drag < -40f) onAllApps() }) { _, dy -> drag += dy }
+            }, PmdTone.BLUE) {
+            Box(Modifier.defaultMinSize(minHeight = Spacing.Target - Spacing.S), contentAlignment = Alignment.Center) { PmdText("All apps", pixel) }
         }
     }
 }
@@ -245,16 +214,6 @@ private fun AppIcon(host: LauncherHost, key: String, size: androidx.compose.ui.u
     val shown = icon
     if (shown != null) Image(shown, contentDescription = null, modifier = Modifier.size(size))
     else Box(Modifier.size(size).background(Color.White.copy(alpha = 0.2f), CircleShape))
-}
-
-/** A plain pill that opens one part of PokéLife from the home page. */
-@Composable
-private fun ModuleChip(label: String, highlight: Boolean = false, onClick: () -> Unit) {
-    Box(
-        Modifier.height(40.dp).clip(CircleShape).background(if (highlight) Pixel.Green else Color.White.copy(alpha = 0.2f), CircleShape)
-            .clickable(role = Role.Button, onClick = onClick).padding(horizontal = Spacing.L),
-        contentAlignment = Alignment.Center,
-    ) { Text(label, style = MaterialTheme.typography.labelLarge, color = Color.White, maxLines = 1) }
 }
 
 private sealed interface ListRow {
