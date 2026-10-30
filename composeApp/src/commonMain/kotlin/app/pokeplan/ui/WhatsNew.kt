@@ -3,6 +3,9 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.48.1" to listOf(
+            "Shinies are back to 1 in 128 per egg.",
+        ),
         "0.48.0" to listOf(
             "Screens fade and slide a little as you move around, and lists stay scrolled where you left them. Reduce motion keeps them still.",
         ),

@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.48.1
+
+- Shinies are back to 1 in 128 per egg (0.46.0 made them 1 in 192). With eggs coming more often since 0.46.0, you'll find shinies a little more often than before. Reward rules version 13.
+
 ## 0.48.0
 
 - Moving around feels smoother: the bottom tabs fade into each other, and opening a module, a section or a Pokémon slides it in a little, with Back sliding it out the other way. Coming back to a tab or a list finds it scrolled where you left it. Reduce motion (Me, Settings) switches screens instantly.
