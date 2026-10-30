@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.core.pokemon.ItemCategory
+import app.pokeplan.core.pokemon.ItemUse
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.Shop
 import app.pokeplan.core.pokemon.Nature
@@ -105,7 +106,7 @@ private fun UseItemBox(model: AppModel, id: String, holdable: Boolean, close: ()
                     Text("Which stat should ${who.nickname} max out?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Stat.entries.filter { who.ivs[it] < StatCalculator.MAX_IV }.forEach { st ->
-                            PixelButton(st.label, { done(store.useItem(id, who.id, st)) }, color = Pixel.Blue, compact = true)
+                            PixelButton(st.label, { done(store.useItem(ItemUse.BottleCap(st), who.id)) }, color = Pixel.Blue, compact = true)
                         }
                     }
                 }
@@ -114,7 +115,7 @@ private fun UseItemBox(model: AppModel, id: String, holdable: Boolean, close: ()
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Nature.entries.filter { it != who.nature }.forEach { n ->
                             val detail = if (n.raised == null) "" else " (+${n.raised!!.label} -${n.lowered!!.label})"
-                            PixelButton(n.name.lowercase().replaceFirstChar { it.uppercase() } + detail, { done(store.useItem(id, who.id, n)) }, color = Pixel.Blue, compact = true)
+                            PixelButton(n.name.lowercase().replaceFirstChar { it.uppercase() } + detail, { done(store.useItem(ItemUse.NatureMint(n), who.id)) }, color = Pixel.Blue, compact = true)
                         }
                     }
                 }

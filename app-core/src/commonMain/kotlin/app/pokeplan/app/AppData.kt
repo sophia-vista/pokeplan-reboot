@@ -16,7 +16,13 @@ import app.pokeplan.plan.PlanEvent
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.TaskList
 import app.pokeplan.plan.WeeklyReview
+import app.pokeplan.core.pokemon.PerkBonuses
+import app.pokeplan.core.pokemon.Perks
+import app.pokeplan.plan.FocusRules
+import app.pokeplan.plan.Streaks
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.serialization.Serializable
 
@@ -127,7 +133,18 @@ data class Settings(
     val careModule: Boolean = true,
 ) {
     /** How loud cries and effects play, 0 to 1 (0 when Sound was switched off). */
-    val effectsLevel: Float get() = if (sound) effectsVolume.coerceIn(0, 100) / 100f else 0f
+    val effectsLevel: Float get() = if (sound) effectsVolume / 100f else 0f
+
+    /** The first day of the week the player chose. */
+    val weekStart: DayOfWeek get() = if (weekStartsOnMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY
+
+    /** These settings with every number in its range. The store applies it to everything that comes in (a change, a save, the cloud). */
+    fun clamped(): Settings = copy(
+        defaultFocusMinutes = defaultFocusMinutes.coerceIn(FocusRules.RETRY_MINUTES, FocusRules.MAX_MINUTES),
+        effectsVolume = effectsVolume.coerceIn(0, 100),
+        musicVolume = musicVolume.coerceIn(0, 100),
+        streakReminderHour = streakReminderHour.coerceIn(0, 23),
+    )
 }
 
 /**
@@ -218,3 +235,13 @@ enum class DexState(val label: String) {
         }
     }
 }
+
+/** The perks of the buddy, its party and the slotted Guardians as they stand now (no task or session in view). */
+val AppData.perks: PerkBonuses get() = player.let { Perks.total(it.buddy, it.party, guardians = it.guardianPokemon) }
+
+/**
+ * The daily streak at [now], wherever it is shown (the app, the evening reminder): the day turns over at
+ * [Streaks.ROLLOVER_HOUR], and the perks forgive more missed days.
+ */
+fun AppData.streakAt(now: LocalDateTime): Streaks.Result =
+    Streaks.daily(activeDays, restDays, Streaks.streakDay(now), perks.extraForgivenDays, settings.weekStart)

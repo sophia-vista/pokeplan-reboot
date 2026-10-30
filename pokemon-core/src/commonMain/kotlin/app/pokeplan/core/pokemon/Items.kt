@@ -4,6 +4,7 @@ import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.EvolutionKind
 import app.pokeplan.core.model.PokemonType
 import kotlinx.serialization.Serializable
+import kotlin.random.Random
 
 enum class ItemCategory { CANDY, VITAMIN, TRAINING, EVOLUTION, HELD, BERRY, LURE, TERA, FORM, KEY }
 
@@ -33,6 +34,9 @@ object Items {
     )
 
     fun berry(flavor: String) = "berry-$flavor"
+
+    /** A berry of a random flavour. */
+    fun randomBerry(rng: Random): String = berry(flavors.values.toList()[rng.nextInt(flavors.size)])
     fun lure(type: PokemonType) = "lure-${type.name.lowercase()}"
     fun teraShard(type: PokemonType) = "tera-shard-${type.name.lowercase()}"
     fun megaStone(formIdentifier: String) = "mega-stone-$formIdentifier"
@@ -132,6 +136,22 @@ data class Inventory(val counts: Map<String, Int> = emptyMap()) {
     }
 }
 
+/** One use of a bag item on a Pokémon, with the choice the item needs: the stat a Bottle Cap perfects, a Mint's nature. */
+sealed interface ItemUse {
+    val itemId: String
+
+    /** An item that needs no choice: a vitamin, a berry, the Ability Capsule or Patch, a Tera Shard (it sets its own type). */
+    data class Plain(override val itemId: String) : ItemUse
+
+    data class BottleCap(val stat: Stat) : ItemUse {
+        override val itemId: String get() = Items.BOTTLE_CAP
+    }
+
+    data class NatureMint(val nature: Nature) : ItemUse {
+        override val itemId: String get() = Items.NATURE_MINT
+    }
+}
+
 /** What using an item does to a Pokémon. Each function returns the changed Pokémon; the caller removes the item. */
 object ItemEffects {
     const val VITAMIN_EVS = 10
@@ -166,6 +186,28 @@ object ItemEffects {
     fun useTeraShard(p: OwnedPokemon, type: PokemonType): OwnedPokemon {
         check(p.teraType != type) { "${p.nickname} is already ${type.label} Tera" }
         return p.withTeraType(type)
+    }
+
+    /** [p] after [use], or null when it would do nothing (an IV already perfect, the nature it has, not a usable item). */
+    fun apply(p: OwnedPokemon, use: ItemUse): OwnedPokemon? = when (use) {
+        is ItemUse.BottleCap -> if (p.ivs[use.stat] < StatCalculator.MAX_IV) useBottleCap(p, use.stat) else null
+        is ItemUse.NatureMint -> if (p.nature != use.nature) useNatureMint(p, use.nature) else null
+        is ItemUse.Plain -> applyPlain(p, use.itemId)
+    }
+
+    /** Whether [itemId] can do anything for [p] with some choice, for the bag's list of who can use it. */
+    fun canUse(itemId: String, p: OwnedPokemon): Boolean = when (itemId) {
+        Items.BOTTLE_CAP -> p.ivs.values.any { it < StatCalculator.MAX_IV }
+        Items.NATURE_MINT -> true
+        else -> applyPlain(p, itemId) != null
+    }
+
+    private fun applyPlain(p: OwnedPokemon, itemId: String): OwnedPokemon? = when {
+        itemId in Items.vitamins -> useVitamin(p, itemId)
+        Items.category(itemId) == ItemCategory.BERRY -> feedBerry(p)
+        itemId == Items.ABILITY_CAPSULE -> if (p.form.abilities.size == 2 && p.ability in p.form.abilities) useAbilityCapsule(p) else null
+        itemId == Items.ABILITY_PATCH -> if (p.form.hiddenAbility.let { it != null && it != p.ability }) useAbilityPatch(p) else null
+        else -> PokemonType.entries.firstOrNull { Items.teraShard(it) == itemId }?.takeIf { it != p.teraType }?.let { useTeraShard(p, it) }
     }
 
     /** Feeds a berry: a little friendship now (and, with Contests, a condition boost). */

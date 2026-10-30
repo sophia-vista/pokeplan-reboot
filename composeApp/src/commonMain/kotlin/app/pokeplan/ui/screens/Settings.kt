@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.core.reward.Feature
 import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.plan.DeviceCalendar
+import app.pokeplan.plan.FocusRules
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.display
@@ -98,7 +99,7 @@ internal fun SettingsView(model: AppModel) {
     SettingsGroup("Focus") {
         ToggleRow("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
         Stepper("Usual focus length", "${settings.defaultFocusMinutes} min", 5) { by ->
-            store.changeSettings { s -> s.copy(defaultFocusMinutes = (s.defaultFocusMinutes + by).coerceIn(5, 180)) }
+            store.changeSettings { s -> s.copy(defaultFocusMinutes = (s.defaultFocusMinutes + by).coerceIn(FocusRules.RETRY_MINUTES, FocusRules.MAX_MINUTES)) }
         }
     }
     SettingsGroup("Sound and touch") {

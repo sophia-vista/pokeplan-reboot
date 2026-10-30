@@ -300,7 +300,7 @@ object RewardEngine {
         inventory = afterNew
         coins += newOverflow
         rewards += newRewards
-        val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
+        val berry = Items.randomBerry(rng)
         inventory = inventory.add(berry)
         rewards += Reward.ItemDrop(berry, 1)
 
@@ -465,7 +465,7 @@ object RewardEngine {
         var coins = state.coins
         val second = perks[CareBucket.BERRY_FINDER] ?: 0.0
         repeat(berries + if (berries > 0 && second > 0 && rng.nextDouble() * 100 < second) 1 else 0) {
-            val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
+            val berry = Items.randomBerry(rng)
             val (bag, extra) = inventory.addCapped(berry, 1)
             inventory = bag
             coins += extra

@@ -9,6 +9,7 @@ import kotlinx.browser.localStorage
 class BrowserStorage(private val key: String = "pokeplan.save") : Storage {
     override fun load(): String? = localStorage.getItem(key)
     override fun save(text: String) = localStorage.setItem(key, text)
+    override fun keepAside(text: String) = localStorage.setItem("$key.unreadable", text)
 }
 
 /** Downloads the data export through the browser. */

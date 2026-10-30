@@ -24,6 +24,7 @@ import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import kotlin.coroutines.cancellation.CancellationException
 
 /** Where the Supabase project is. The URL and the anon key are meant to ship in every client; they are not secrets. */
 data class CloudConfig(val url: String, val anonKey: String) {
@@ -145,8 +146,8 @@ class CloudClient(private val config: CloudConfig, private val http: HttpClient,
         }
 
     private suspend fun <T> send(path: String, body: String?, bearer: String?, post: Boolean, profile: String?, parse: (JsonElement) -> T): CloudResult<T> {
-        val response = try {
-            http.request(config.base + path) {
+        val (response, text) = try {
+            val response = http.request(config.base + path) {
                 method = if (post) HttpMethod.Post else HttpMethod.Get
                 header("apikey", config.anonKey)
                 header("Authorization", "Bearer ${bearer ?: config.anonKey}")
@@ -159,10 +160,12 @@ class CloudClient(private val config: CloudConfig, private val http: HttpClient,
                     setBody(body)
                 }
             }
+            response to response.bodyAsText()
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             return CloudResult.Failure("No connection.")
         }
-        val text = response.bodyAsText()
         val element: JsonElement? = try {
             if (text.isBlank()) JsonNull else json.parseToJsonElement(text)
         } catch (e: Exception) {
