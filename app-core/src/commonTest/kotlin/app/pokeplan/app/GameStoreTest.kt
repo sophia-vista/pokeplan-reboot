@@ -47,6 +47,19 @@ class GameStoreTest {
     }
 
     @Test
+    fun everyNewPokemonRemembersWhereItCameFrom() {
+        val (s, clock) = started()
+        assertEquals(Origin(Origin.How.STARTER), s.data.origins[s.data.player.buddyId])
+        hatchOne(s, clock)
+        val hatched = s.data.player.pokemon.last()
+        assertEquals(Origin(Origin.How.FOCUS_EGG, app.pokeplan.core.dex.Region.PLAN), s.data.origins[hatched.id])
+        val quest = s.grantPokemon(16, "Quest: Pidgey")
+        assertEquals(Origin(Origin.How.QUEST), s.data.origins[quest.id])
+        assertTrue(s.transfer(quest.id))
+        assertFalse(quest.id in s.data.origins, "a transferred Pokémon's origin goes with it")
+    }
+
+    @Test
     fun startCreatesTheTrainerBuddyAndAFirstTask() {
         val (s, _) = started()
         assertEquals("Sophia", s.data.trainerName)

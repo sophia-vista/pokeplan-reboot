@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.51.0
+
+- A Pokémon's page reads in a clear order: who it is (its Pokédex number, species, level and types), its traits (nature with the stat it raises and lowers, ability, gender, shiny, and the IV judge with its best stat), how it is growing (Rare Candies, friendship and how it likes to bond, stats with the nature's ▲ and ▼), its evolution, its role (party, lead or PC, and which region's Pokédex it counts for), and where it came from. Transfer sits quietly at the end.
+- Pokémon remember where they came from: your first partner, a Focus, Task or Care Egg and the region it hatched in, a Care visitor you befriended, or a quest, and the day you met. Pokémon from before this version show the day only.
+- The page holds up at large text sizes: names no longer wrap beside Rename, and stat names no longer get cut off.
+
 ## 0.50.0
 
 - Each region has its own look. Plan is a town: your buddy now stands on a red-brick street on Plan's page, on Home and in the widgets, whatever its type. Care is a meadow, with green headers on its pages. On Home each region's card shows its lead in its own scene, with the region's colour down the edge. Pokédex entries still show each species in the scene of its type.
