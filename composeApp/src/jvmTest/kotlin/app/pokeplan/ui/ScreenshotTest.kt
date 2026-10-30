@@ -677,4 +677,12 @@ class ScreenshotTest {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.AppSheet(fakeApps[2], app.pokeplan.ui.launcher.LauncherPrefs(), {}, {}, fakeHost) } }
         }
     }
+
+    @Test
+    fun appWithTownBackground() {
+        val store = started()
+        store.changeSettings { it.copy(appBackground = "lush-prairie") }
+        val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
+        render("app-town-background") { App(storage, focusTab = true) }
+    }
 }

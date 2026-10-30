@@ -114,6 +114,8 @@ data class Settings(
     val haptics: Boolean = true,
     val weekStartsOnMonday: Boolean = true,
     val theme: ThemeMode = ThemeMode.SYSTEM,
+    /** The page behind every screen: "day" (the time-of-day gradient), or the name of a scene or dungeon town (a veil keeps the text readable). */
+    val appBackground: String = "day",
     /** Task reminders as notifications (Android). */
     val reminders: Boolean = true,
     /** Reminders that fall in these hours wait for their end. */

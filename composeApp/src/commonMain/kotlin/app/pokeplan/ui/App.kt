@@ -319,7 +319,7 @@ fun App(
     PixelTheme(dark) {
         Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
             val clock = store.now
-            DayBackground(clock.hour, clock.minute, dark = dark)
+            AppBackdrop(model.data.settings.appBackground, clock.hour, clock.minute, dark)
             if (!model.data.onboarded) {
                 // The intro's picture runs under the system bars; only its content keeps clear of them.
                 PixelBackground("bw12", Modifier.fillMaxSize()) { Box(Modifier.fillMaxSize().safeDrawingPadding()) { OnboardingScreen(store) } }
