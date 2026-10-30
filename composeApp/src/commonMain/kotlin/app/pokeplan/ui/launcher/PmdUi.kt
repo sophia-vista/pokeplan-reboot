@@ -96,9 +96,8 @@ internal fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, al
     }
 }
 
-/** The colours of a dialogue box's frame: the green of the game's questions, or the blue of its menus. */
+/** The colours of a dialogue box's frame. Every panel uses the same one; selection and the main action show in other ways. */
 internal enum class PmdTone(val outer: Color, val inner: Color) {
-    GREEN(Color(0xFF58C858), Color(0xFF105010)),
     BLUE(Color(0xFF5088F0), Color(0xFF102058)),
 }
 
@@ -107,7 +106,7 @@ internal enum class PmdTone(val outer: Color, val inner: Color) {
  * of art pixels at [pixel]. The frame is drawn in code (UI chrome); the text inside is the dialogue font.
  */
 @Composable
-internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = PmdTone.GREEN, inset: Int = 6, content: @Composable BoxScope.() -> Unit) {
+internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = PmdTone.BLUE, inset: Int = 6, content: @Composable BoxScope.() -> Unit) {
     val density = LocalDensity.current.density
     Box(
         modifier.drawBehind { pmdFrame(pixel, tone) }.padding(horizontal = ((inset + 2) * pixel / density).dp, vertical = (inset * pixel / density).dp),
@@ -136,7 +135,7 @@ private fun DrawScope.pmdFrame(p: Int, tone: PmdTone) {
 /** One line of a dialogue menu: a touch target at least 48 dp tall with [text] in it, a small cursor in front when [selected]. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, dim: Boolean = false, center: Boolean = false, onHold: (() -> Unit)? = null, onClick: () -> Unit) {
+internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, dim: Boolean = false, center: Boolean = false, pixelText: Boolean = true, onHold: (() -> Unit)? = null, onClick: () -> Unit) {
     val density = LocalDensity.current.density
     Box(
         modifier.fillMaxWidth().defaultMinSize(minHeight = 44.dp).combinedClickable(role = Role.Button, onLongClick = onHold, onClick = onClick),
@@ -146,7 +145,9 @@ internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier
             val p = pixel.toFloat()
             drawPath(Path().apply { moveTo(0f, 0f); lineTo(3 * p, 2.5f * p); lineTo(0f, 5 * p); close() }, Color.White)
         }
-        PmdText(text, pixel, Modifier.padding(start = if (center) 0.dp else (5 * pixel / density).dp), alpha = if (dim) 0.75f else 1f)
+        val start = Modifier.padding(start = if (center) 0.dp else (5 * pixel / density).dp)
+        if (pixelText) PmdText(text, pixel, start, alpha = if (dim) 0.75f else 1f)
+        else Text(text, style = MaterialTheme.typography.bodyLarge, color = Color.White.copy(alpha = if (dim) 0.75f else 1f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = start)
     }
 }
 
@@ -155,4 +156,20 @@ internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier
 internal fun PmdRule(pixel: Int, modifier: Modifier = Modifier) {
     val density = LocalDensity.current.density
     Box(modifier.fillMaxWidth().height((pixel / density).dp).background(Color.White.copy(alpha = 0.3f)))
+}
+
+/** The one main action of a box, in Poké Ball red with a darker lower edge: at least 48 dp tall, the label in the dialogue font. */
+@Composable
+internal fun PmdButton(text: String, pixel: Int, modifier: Modifier = Modifier, color: Color = Color(0xFFE84436), onClick: () -> Unit) {
+    val edge = Color(color.red * 0.7f, color.green * 0.7f, color.blue * 0.7f)
+    Box(
+        modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp)
+            .drawBehind {
+                val p = pixel.toFloat()
+                drawRect(edge, Offset(0f, p), Size(size.width, size.height - p))
+                drawRect(color, Offset(0f, 0f), Size(size.width, size.height - 2 * p))
+            }
+            .clickable(role = Role.Button, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) { PmdText(text, pixel) }
 }
