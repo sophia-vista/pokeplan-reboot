@@ -87,7 +87,7 @@ enum class Tab(val label: String, val icon: String) {
  * it ("PLANNER", "FOCUS", "CARE"), so the names stay as they are.
  */
 enum class Place(val tab: Tab) {
-    HOME(Tab.HOME), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), ME(Tab.ME), CARE(Tab.MODULES),
+    HOME(Tab.HOME), PLAN(Tab.MODULES), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), ME(Tab.ME), CARE(Tab.MODULES),
 }
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
@@ -182,9 +182,10 @@ class AppModel(
         now = store.nowMillis
     }
 
-    /** Opens a module's screen for [place] (Planner, Focus) inside Modules; Focus only where there is one ([focusTab]). */
+    /** Opens a module's screen for [place] (Plan's page, Planner, Focus, Care) inside Modules; Focus only where there is one ([focusTab]). */
     fun open(place: Place, focusTab: Boolean) {
         when (place) {
+            Place.PLAN -> { module = Module.PLAN; planSection = null }
             Place.PLANNER -> { module = Module.PLAN; planSection = PlanSection.PLANNER }
             Place.FOCUS -> { module = Module.PLAN; planSection = if (focusTab) PlanSection.FOCUS else null }
             Place.CARE -> { module = Module.CARE; careSection = null }

@@ -35,7 +35,7 @@ change, with the reason.
 
 - **Hick's Law, Choice Overload:** tabs are four labelled tabs (Home, Modules, Pokémon, Me; 0.33.0); sections open on `MenuGrid` cards of six or fewer; quick add hides difficulty behind "More options"; Home recommends one task (Next up) with "Pick another" instead of a list to choose from.
 - **Tesler's Law:** quick add understands "Call mum tomorrow 5pm 30m", so the app carries the date parsing, not the person.
-- **Goal-Gradient:** Home's "2 of 5 tasks done today" bar, the EXP bar to the next rank, quest bars with "x of y".
+- **Goal-Gradient:** Home's region cards ("2 of 5 tasks done today"), the EXP bar to the next rank, quest bars with "x of y".
 - **Doherty Threshold:** every action applies locally at once; sync runs behind it with a status chip.
 - **Flow, Selective Attention:** a running focus session shows only the egg, the clock, the buddy's face and two buttons.
 - **Parkinson's Law:** focus presets (15 / 25 / 45 / 60) and task estimates set the time box up front.

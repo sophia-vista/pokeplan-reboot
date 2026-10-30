@@ -64,7 +64,7 @@ Trends seen across these sites that clash with the rules. Don't bring them in, e
   with cursor glare (beui.dev Tilt Card), magnetic and metallic buttons, custom cursors, scroll-driven scenes. The
   game feel comes from sprites, cries and the hatch, level-up and evolution ceremonies.
 - **Bento dashboards:** walls of mixed-size stat tiles (the component-library home pages: rareui.com, uiarc.dev's
-  Metrics dashboard, cuedesign.space). Home is the buddy's scene, today's tasks and one Start focus.
+  Metrics dashboard, cuedesign.space). Home is a short overview: one card per region with its lead and one next step.
 - **Growth and guilt patterns:** "51 joined today" counters, star counts, testimonial walls (interior.dev,
   obsidianui.dev), leaderboards against strangers, countdown offers, paywalls on core features, ads, sponsor slots,
   newsletter and email capture, rating popups, streak-loss warnings. `docs/design.md` already rules these out.
@@ -221,10 +221,10 @@ Where each idea belongs in the app. "Exists" means it is already built; use the 
 | Labelled tabs, nothing nested | navbar.gallery (Static) | Exists | Exists | Exists | Exists | Exists | |
 | Big cards that open a section | navbar.gallery (Clonix) | | Exists | | Exists | Exists | |
 | Side rail on wide windows | navbar.gallery (Side Bar) | Desktop | Desktop | | Desktop | Desktop | |
-| The picture carries the screen | supahero.io (Dream Design Laboratory) | Buddy scene | | Egg | Detail sprite | | Buddy |
+| The picture carries the screen | supahero.io (Dream Design Laboratory) | Region leads | | Egg | Detail sprite | | Buddy |
 | Text on a panel, never on the picture | supahero.io (Treize grammes) | Level corner | | | | | Buddy |
 | One field, one button | cta.gallery (plnty) | | Quick-add | | Nickname | Trainer name | |
-| One primary action per screen | cta.gallery (Augustus) | Start focus | Add task | Start | | | Focus |
+| One primary action per screen | cta.gallery (Augustus) | One step per region | Add task | Start | | | Focus |
 | Small sprite, short line, one action | 404s.design (Kobbe) | | Empty lists | | Empty party, PC | Offline | Empty |
 | Speak in the game's terms | 404s.design (WithUPI) | | | Failed session | | Sync errors | |
 | Nothing jumps | interior.dev | | Task done | Timer | Rows | Sync button | |
@@ -233,7 +233,7 @@ Where each idea belongs in the app. "Exists" means it is already built; use the 
 | Numbers that count | uiarc.dev | Counters | Reward sheet | Hatch summary | EXP | | |
 | Detents | interior.dev (Slider Detents) | | | Custom length | | | |
 | Index list with aligned numbers | a1.gallery (Jeffrey Stubbs) | | All, Upcoming | | Pokédex | History | |
-| Thumbnail, name, one quiet line | seesaw.website | Today's tasks | Rows | | Party, PC | | Tasks |
+| Thumbnail, name, one quiet line | seesaw.website | Recently | Rows | | Party, PC | | Tasks |
 | Placeholder from what's known | detail.design | | Subtasks | | Nickname | | |
 
 ## Before you ship a design
