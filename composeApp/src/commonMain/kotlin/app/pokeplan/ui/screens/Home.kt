@@ -39,6 +39,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
+import app.pokeplan.ui.SceneImage
+import app.pokeplan.ui.theme.RegionLook
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.BuddyReaction
 import app.pokeplan.app.BuddyScene
@@ -114,23 +118,29 @@ fun HomeScreen(model: AppModel, go: (Place) -> Unit) {
 }
 
 /**
- * One region on Home: its lead idling in a circle of the region's colour, its name, how today stands there, and below a
- * line its one most useful next step ([step]). The top of the card opens the region.
+ * One region on Home: its lead idling in a window onto the region's scene ([RegionLook]), its name, how today stands there,
+ * and below a line its one most useful next step ([step]). The region's colour runs down the card's edge. The top of the
+ * card opens the region.
  */
 @Composable
 private fun RegionCard(
-    name: String, icon: String, tint: Color, lead: OwnedPokemon?, leadLine: String, status: String, still: Boolean,
-    onOpen: () -> Unit, step: @Composable () -> Unit,
+    name: String, icon: String, look: RegionLook, darkness: Float, lead: OwnedPokemon?, leadLine: String, status: String,
+    still: Boolean, onOpen: () -> Unit, step: @Composable () -> Unit,
 ) {
     val shape = RoundedCornerShape(Spacing.CardRadius)
-    Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)) {
+    Column(
+        Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)
+            .drawBehind { drawRect(look.accent, size = Size(4.dp.toPx(), size.height)) },
+    ) {
         Row(
             Modifier.fillMaxWidth().clickable(onClickLabel = "Open $name", role = Role.Button, onClick = onOpen).padding(Spacing.M),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
-            Box(Modifier.size(80.dp).background(tint.copy(alpha = 0.12f), CircleShape), contentAlignment = Alignment.Center) {
+            val window = RoundedCornerShape(Spacing.M)
+            Box(Modifier.size(80.dp).clip(window).border(1.dp, Pixel.Border, window), contentAlignment = Alignment.BottomCenter) {
+                SceneImage(look.scene, Modifier.matchParentSize(), darkness)
                 if (lead != null) AnimatedSprite(lead.form.id, lead.isShiny, lead.nickname, size = 72.dp, animate = !still, ground = 4.dp)
-                else ItemIcon(icon, size = 56.dp, description = null)
+                else ItemIcon(icon, size = 56.dp, description = null, modifier = Modifier.align(Alignment.Center))
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(name, style = MaterialTheme.typography.titleMedium)
@@ -167,7 +177,7 @@ private fun PlanRegionCard(model: AppModel, go: (Place) -> Unit) {
     val doneToday = data.tasks.count { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
     val total = doneToday + open.size
     RegionCard(
-        Module.PLAN.label, Module.PLAN.icon, Pixel.Red, buddy, buddy?.let(::leadLine) ?: "No buddy yet",
+        Module.PLAN.label, Module.PLAN.icon, Module.PLAN.look, BuddyScene.darkness(store.now.hour, store.now.minute), buddy, buddy?.let(::leadLine) ?: "No buddy yet",
         if (total == 0) "Tasks and focus" else "$doneToday of $total tasks done today",
         still = data.settings.reduceMotion, onOpen = { go(Place.PLAN) },
     ) {
@@ -192,7 +202,7 @@ private fun CareRegionCard(model: AppModel, go: (Place) -> Unit) {
     val next = today.firstOrNull { !it.doneOn(care.today) }
     val shown = lead ?: model.store.careBuddy
     RegionCard(
-        Module.CARE.label, Module.CARE.icon, Pixel.Green, shown,
+        Module.CARE.label, Module.CARE.icon, Module.CARE.look, BuddyScene.darkness(model.store.now.hour, model.store.now.minute), shown,
         lead?.let(::leadLine) ?: shown?.let { "No lead yet: ${it.nickname} helps out" } ?: "No lead yet",
         if (today.isEmpty()) "Routines and calm" else "$done of ${today.size} routines today",
         still = model.data.settings.reduceMotion, onOpen = { go(Place.CARE) },
@@ -259,7 +269,7 @@ private fun daysAgo(today: LocalDate, day: LocalDate): String = when (val n = da
 }
 
 /**
- * The Plan buddy in its type's scene, on Home and in Plan: pet it, give it a berry, and it celebrates a finished task or a
+ * The Plan buddy in Plan's town, on Plan's page: pet it, give it a berry, and it celebrates a finished task or a
  * hatch with its cry, its portrait and a hop. Nothing before the first buddy.
  */
 @Composable
@@ -269,7 +279,7 @@ fun PlanBuddyStage(model: AppModel, onOpen: () -> Unit) {
     val buddy = data.player.buddy ?: return
     val berry = store.buddyBerry()
     BuddyStage(
-        buddy = buddy, scene = BuddyScene.of(buddy.form.types), darkness = BuddyScene.darkness(store.now.hour, store.now.minute),
+        buddy = buddy, scene = Module.PLAN.look.scene, darkness = BuddyScene.darkness(store.now.hour, store.now.minute),
         progress = store.levelProgress(buddy), event = store.buddyEvent(),
         calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
         onPet = { avoid -> store.pet(); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },

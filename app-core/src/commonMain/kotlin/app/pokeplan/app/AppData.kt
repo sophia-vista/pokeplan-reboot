@@ -72,7 +72,7 @@ data class AppData(
     val lastSeenVersion: String = "0.1.0",
     /** Pokémon the player starred: they cannot be transferred by accident. Stays on this device's save. */
     val favorites: Set<String> = emptySet(),
-    /** Where each Pokémon came from, by Pokémon id, for its detail page; Pokémon from before 0.50.0 have none. */
+    /** Where each Pokémon came from, by Pokémon id, for its detail page; Pokémon from before 0.51.0 have none. */
     val origins: Map<String, Origin> = emptyMap(),
     /** Species the player has ever owned as a shiny, kept even after the shiny is transferred. */
     val shinySpecies: Set<Int> = emptySet(),

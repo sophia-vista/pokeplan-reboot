@@ -85,6 +85,8 @@ object Pixel {
     val Warning: Color get() = if (dark) Color(0xFFD99A1E) else Color(0xFF946000)
     /** `danger` */
     val Danger: Color get() = if (dark) Color(0xFFEC6A75) else Color(0xFFB42332)
+    /** Care's header: a deep meadow green, the same in both palettes so white text stays readable on it. */
+    val Meadow = Color(0xFF1E7F52)
     /** A highlight for selected items and rewards. */
     val Yellow = Color(0xFFFFCB05)
     val Gray = Color(0xFF9AA1B5)

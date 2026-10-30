@@ -164,12 +164,12 @@ private val TaskIdKey = ActionParameters.Key<String>("taskId")
 
 private fun density(context: Context) = context.resources.displayMetrics.density
 
-/** The buddy's scene (its type, dimmed at dusk) as a [heightDp] strip for the other widgets, or null before there is a buddy. */
+/** The buddy's scene (Plan's town, dimmed at dusk) as a [heightDp] strip for the other widgets, or null before there is a buddy. */
 private fun buddyScene(context: Context, store: GameStore, heightDp: Int, roundBottom: Boolean = true): Bitmap? {
     val buddy = store.data.player.buddy ?: return null
     val d = density(context)
     return WidgetArt.scene(
-        context, BuddyScene.of(buddy.form.types), BuddyScene.darkness(store.now.hour, store.now.minute),
+        context, BuddyScene.PLAN, BuddyScene.darkness(store.now.hour, store.now.minute),
         (420 * d).toInt(), (heightDp * d).toInt(), 20 * d, roundBottom,
     )
 }
@@ -396,7 +396,7 @@ class BuddyWidget : GlanceAppWidget() {
         return BuddyState(
             name = buddy?.nickname, buddyId = buddy?.id, level = buddy?.level ?: 1, progress = buddy?.let { store.levelProgress(it) } ?: 0f,
             reaction = moment, description = "${buddy?.nickname}, level ${buddy?.level}",
-            scene = buddy?.let { WidgetArt.scene(context, BuddyScene.of(it.form.types), darkness, (420 * d).toInt(), (200 * d).toInt(), 20 * d) },
+            scene = buddy?.let { WidgetArt.scene(context, BuddyScene.PLAN, darkness, (420 * d).toInt(), (200 * d).toInt(), 20 * d) },
             still = if (idle == null) buddy?.let { sleep?.first() ?: WidgetArt.still(context, it.form.id, it.isShiny) } else null,
             idle = idle, berryName = berry?.let { Items.get(it)?.name }, berryIcon = berry?.let { WidgetArt.item(context, it, 2) },
         )
@@ -561,7 +561,7 @@ class CareWidget : GlanceAppWidget() {
         val today = care.todayRoutines()
         val d = density(context)
         val dark = BuddyScene.darkness(game.now.hour, game.now.minute)
-        val header = WidgetArt.scene(context, "meadow", dark, (420 * d).toInt(), (44 * d).toInt(), 20 * d, roundBottom = false)
+        val header = WidgetArt.scene(context, BuddyScene.CARE, dark, (420 * d).toInt(), (44 * d).toInt(), 20 * d, roundBottom = false)
         val state = CareState(
             on = game.data.settings.careModule, started = game.data.onboarded,
             // Not done first, so the ticks stay at the top; then the ones done today.

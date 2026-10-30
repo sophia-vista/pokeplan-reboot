@@ -16,6 +16,7 @@ import app.pokeplan.core.reward.Feature
 import app.pokeplan.plan.TaskState
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.RegionLook
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
@@ -24,8 +25,8 @@ import app.pokeplan.ui.theme.Spacing
  * The life modules (docs/ecosystem.md, section 4), each a section of the Modules tab. Each one is a different part of
  * life; everything done in any of them looks after the same Pokémon, which live in the shared tabs (Home, Pokémon, Me).
  */
-enum class Module(val label: String, val icon: String) {
-    PLAN("Plan", "journal"), CARE("Care", "soothe-bell"),
+enum class Module(val label: String, val icon: String, val look: RegionLook) {
+    PLAN("Plan", "journal", RegionLook.PLAN), CARE("Care", "soothe-bell", RegionLook.CARE),
 }
 
 /** Plan's screens: tasks and focus, and the trends, goals and weekly review that read them. */
@@ -64,9 +65,9 @@ private fun ModulesMenu(model: AppModel) {
             val routinesLeft = routines.count { !it.doneOn(model.care.today) }
             MenuGrid(
                 listOfNotNull(
-                    MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = Pixel.Red),
+                    MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = Module.PLAN.look.accent),
                     if (!model.data.settings.careModule) null else MenuEntry(
-                        Module.CARE.name, Module.CARE.icon, Module.CARE.label, if (routinesLeft == 0) "routines and calm" else if (routinesLeft == 1) "1 routine today" else "$routinesLeft routines today", tint = Pixel.Green,
+                        Module.CARE.name, Module.CARE.icon, Module.CARE.label, if (routinesLeft == 0) "routines and calm" else if (routinesLeft == 1) "1 routine today" else "$routinesLeft routines today", tint = Module.CARE.look.accent,
                     ),
                 ),
             ) { key -> model.module = Module.valueOf(key) }
@@ -103,7 +104,7 @@ private fun PlanPage(model: AppModel, section: PlanSection?, focusTab: Boolean, 
             BackHandler(enabled = true, onBack = toMenu)
             FocusScreen(model, openPokemon, onBack = toMenu)
         }
-        else -> SectionScaffold(section.label, Module.PLAN.label, onBack = toMenu, icon = section.icon) {
+        else -> SectionScaffold(section.label, Module.PLAN.label, onBack = toMenu, icon = section.icon, color = Module.PLAN.look.header) {
             when (section) {
                 PlanSection.GROWTH -> GrowthView(model)
                 PlanSection.GOALS -> GoalsView(model)
@@ -117,7 +118,7 @@ private fun PlanPage(model: AppModel, section: PlanSection?, focusTab: Boolean, 
 private const val TODAY_SHOWN = 3
 
 /**
- * Plan's own page, laid out like Care's so the two modules read alike: its buddy in its scene, new rewards, the whole party
+ * Plan's own page, laid out like Care's so the two modules read alike: its buddy in Plan's town, new rewards, the whole party
  * with its perks, today's tasks, then the sections.
  */
 @Composable
@@ -128,7 +129,7 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
     val session = data.focus
     val open = store.openTodayTasks()
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.PLAN.label, subtitle = "Modules", onBack = onBack)
+        ScreenHeader(Module.PLAN.label, subtitle = "Modules", onBack = onBack, color = Module.PLAN.look.header)
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
