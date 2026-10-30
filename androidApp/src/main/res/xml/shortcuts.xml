@@ -27,4 +27,30 @@
             <extra android:name="app.pokeplan.TAB" android:value="FOCUS" />
         </intent>
     </shortcut>
+    <shortcut
+        android:shortcutId="care"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_care"
+        android:shortcutLongLabel="@string/shortcut_care_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="app.pokeplan"
+            android:targetClass="app.pokeplan.MainActivity">
+            <extra android:name="app.pokeplan.TAB" android:value="CARE" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="party"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_party"
+        android:shortcutLongLabel="@string/shortcut_party_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="app.pokeplan"
+            android:targetClass="app.pokeplan.MainActivity">
+            <extra android:name="app.pokeplan.TAB" android:value="PARTY" />
+        </intent>
+    </shortcut>
 </shortcuts>

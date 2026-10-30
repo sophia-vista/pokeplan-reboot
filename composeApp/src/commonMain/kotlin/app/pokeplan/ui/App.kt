@@ -87,7 +87,7 @@ enum class Tab(val label: String, val icon: String) {
  * it ("PLANNER", "FOCUS", "CARE"), so the names stay as they are.
  */
 enum class Place(val tab: Tab) {
-    HOME(Tab.HOME), PLAN(Tab.MODULES), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), ME(Tab.ME), CARE(Tab.MODULES),
+    HOME(Tab.HOME), PLAN(Tab.MODULES), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), PARTY(Tab.COLLECTION), ME(Tab.ME), CARE(Tab.MODULES),
 }
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
@@ -155,6 +155,9 @@ class AppModel(
     /** A Pokémon the Pokémon tab should open on (the buddy's level chip on Home, the widget's chip). Used once. */
     var openPokemonId: String? by mutableStateOf(null)
 
+    /** Set by the "Party" shortcut: the Pokémon tab opens on the Party page. Used once. */
+    var openParty: Boolean by mutableStateOf(false)
+
     /** The module open in the Modules tab (null shows the list of modules), kept while other tabs are open. */
     var module: Module? by mutableStateOf(null)
 
@@ -189,6 +192,7 @@ class AppModel(
             Place.PLANNER -> { module = Module.PLAN; planSection = PlanSection.PLANNER }
             Place.FOCUS -> { module = Module.PLAN; planSection = if (focusTab) PlanSection.FOCUS else null }
             Place.CARE -> { module = Module.CARE; careSection = null }
+            Place.PARTY -> openParty = true
             else -> {}
         }
     }
@@ -356,8 +360,9 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                     Tab.MODULES -> ModulesScreen(model, focusTab) { id -> model.openPokemonId = id; go(Place.COLLECTION) }
                     Tab.COLLECTION -> {
                         val open = remember { model.openPokemonId }
-                        LaunchedEffect(Unit) { model.openPokemonId = null }
-                        CollectionScreen(model, startOpen = open)
+                        val party = remember { model.openParty }
+                        LaunchedEffect(Unit) { model.openPokemonId = null; model.openParty = false }
+                        CollectionScreen(model, startParty = party, startOpen = open)
                     }
                     Tab.ME -> MeScreen(model)
                 }
