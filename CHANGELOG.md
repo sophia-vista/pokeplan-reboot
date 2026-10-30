@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.55.0
+
+- PokéLife can be the phone's home screen, opt-in: nothing changes until it is chosen as the home app in Android's settings (the home page has a button that opens them). The home page shows the buddy, today's tasks with a Done key, a Focus button and pinned apps, on a Pokémon pixel wallpaper; a swipe or tap up opens every app A to Z over the wallpaper, blurred and darkened, with search, a letter scroller, categories (the one each app declares, with "Other" as the fallback) and work-profile apps.
+- Long-pressing an app pins it, hides it (a Hidden chip brings it back), moves it to another category, opens its app info or uninstalls it. Pins, hidden apps and moved apps stay on the device and are never synced. The launcher pays nothing.
+- Strict focus: pressing Home during a focus session brings the Focus screen back.
+- Widget hosting comes in the next launcher release.
+
 ## 0.54.0
 
 - The app icon has a themed version: on Android 13 and later, with Themed icons on, the launcher tints the egg's outline, check and stopwatch in the wallpaper's colours. It is the real icon with its light fill let clear, nothing redrawn.
