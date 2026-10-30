@@ -181,7 +181,7 @@ private fun TraitsBox(p: OwnedPokemon, stats: Boolean) = DetailBox("Traits") {
     Text("Nature: ${natureText(p)}", style = body)
     Text("Ability: ${p.ability}", style = body)
     p.gender?.let { Text("Gender: ${it.name.titleCase()}", style = body) }
-    if (p.isShiny) Text("✦ Shiny", style = body, color = Pixel.Warning)
+    if (p.isShiny) Text("✨ Shiny", style = body, color = Pixel.Warning)
     if (stats) {
         Text("Judge: ${judge(p.ivs.values.sum())}", style = body)
         Text("Its best: ${bestStats(p)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
