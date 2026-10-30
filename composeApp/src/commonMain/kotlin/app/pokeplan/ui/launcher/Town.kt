@@ -67,18 +67,25 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, isBuddy: Boolean, width
     val random = remember(mon.id) { Random(mon.id.hashCode()) }
     // Position as fractions of the ground: x across the screen, y from the back of the ground (0) to the front (1).
     val spot = remember(mon.id) { Animatable(Offset(0.08f + random.nextFloat() * 0.84f, random.nextFloat()), Offset.VectorConverter) }
-    var facingLeft by remember(mon.id) { mutableStateOf(random.nextBoolean()) }
+    var facingLeft by remember(mon.id) { mutableStateOf(false) }
     var hopKey by remember(mon.id) { mutableIntStateOf(0) }
-    var action by remember(mon.id) { mutableStateOf(SpriteAction.IDLE) }
+    var hopping by remember(mon.id) { mutableStateOf(false) }
+    // How it is walking now (null while it stands): to the side, towards the viewer or away, whichever way it mostly goes.
+    var walk by remember(mon.id) { mutableStateOf<SpriteAction?>(null) }
     if (!calm) LaunchedEffect(mon.id) {
         delay(300L + index * 150L)
         while (true) {
             delay(1500L + random.nextLong(5000))
             val to = Offset(0.08f + random.nextFloat() * 0.84f, random.nextFloat())
-            facingLeft = to.x < spot.value.x
+            val dx = to.x - spot.value.x
+            val dy = to.y - spot.value.y
+            facingLeft = dx < 0
+            // The ground is deeper than it looks (a step in depth covers more screen than a step across), so weigh it up before choosing a side or a front view.
+            walk = if (abs(dx) * 2f >= abs(dy)) SpriteAction.WALK_SIDE else if (dy < 0) SpriteAction.WALK_UP else SpriteAction.WALK_DOWN
             // A steady stroll: about 6 seconds for the width of the screen.
-            val seconds = 0.8f + abs(to.x - spot.value.x) * 6f + abs(to.y - spot.value.y) * 2f
+            val seconds = 0.8f + abs(dx) * 6f + abs(dy) * 2f
             spot.animateTo(to, tween((seconds * 1000).toInt(), easing = LinearEasing))
+            walk = null
         }
     }
     // Pokémon at the front of the ground are drawn larger and over those behind, for a little depth.
@@ -89,18 +96,18 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, isBuddy: Boolean, width
     val y = height * GROUND_TOP + groundH * depth - size
     Box(
         Modifier.offset(x, y).size(size).zIndex(depth + if (isBuddy) 0.01f else 0f)
-            .scale(if (facingLeft) 1f else -1f, 1f)
+            .scale(if (walk == SpriteAction.WALK_SIDE && facingLeft) -1f else 1f, 1f)
             .pointerInput(mon.id) {
                 detectTapGestures {
                     model.cry(mon.speciesId)
-                    action = SpriteAction.HOP
+                    hopping = true
                     hopKey++
                 }
             },
     ) {
         AnimatedSprite(
             mon.form.id, mon.isShiny, mon.nickname, Modifier.fillMaxSize(), size = size, animate = !calm, ground = 2.dp,
-            action = action, actionKey = hopKey, onActionDone = { action = SpriteAction.IDLE },
+            action = if (hopping) SpriteAction.HOP else walk ?: SpriteAction.IDLE, actionKey = hopKey, onActionDone = { hopping = false },
         )
     }
 }

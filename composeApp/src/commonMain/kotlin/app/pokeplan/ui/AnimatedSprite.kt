@@ -88,6 +88,8 @@ suspend fun spriteCredit(formId: Int): String? {
  */
 enum class SpriteAction(internal val folder: String?, internal val plays: Int) {
     IDLE(null, 0), SLEEP("sleep", 0), EAT("eat", 3), HOP("hop", 1),
+    /** Walking towards the viewer, to the side (facing right; mirror it for left) and away: they loop. */
+    WALK_DOWN("walk-down", 0), WALK_SIDE("walk-side", 0), WALK_UP("walk-up", 0),
 }
 
 private val actionTables = mutableMapOf<SpriteAction, Map<Int, Animation>>()
