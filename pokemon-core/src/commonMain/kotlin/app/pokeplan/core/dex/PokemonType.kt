@@ -1,4 +1,4 @@
-package app.pokeplan.core.model
+package app.pokeplan.core.dex
 
 enum class PokemonType {
     NORMAL, FIRE, WATER, GRASS, ELECTRIC, ICE, FIGHTING, POISON, GROUND, FLYING,

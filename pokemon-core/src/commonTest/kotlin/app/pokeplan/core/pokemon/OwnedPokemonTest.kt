@@ -1,7 +1,7 @@
 package app.pokeplan.core.pokemon
 
 import app.pokeplan.core.dex.Dex
-import app.pokeplan.core.model.PokemonType
+import app.pokeplan.core.dex.PokemonType
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

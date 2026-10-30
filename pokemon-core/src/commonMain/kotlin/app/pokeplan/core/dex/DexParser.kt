@@ -5,7 +5,6 @@ import app.pokeplan.core.dex.generated.DEX_EVOLUTIONS
 import app.pokeplan.core.dex.generated.DEX_FORMS
 import app.pokeplan.core.dex.generated.DEX_REGIONS
 import app.pokeplan.core.dex.generated.DEX_SPECIES
-import app.pokeplan.core.model.PokemonType
 
 /** Parses the generated tables (see tools/species/generate.py). Fields are `|` separated, `-` means empty. */
 internal object DexParser {

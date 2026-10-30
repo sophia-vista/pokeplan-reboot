@@ -1,4 +1,4 @@
-package app.pokeplan.core.model
+package app.pokeplan.core.reward
 
 import kotlin.random.Random
 

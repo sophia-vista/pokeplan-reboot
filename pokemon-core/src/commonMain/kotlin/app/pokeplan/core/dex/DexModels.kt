@@ -1,6 +1,5 @@
 package app.pokeplan.core.dex
 
-import app.pokeplan.core.model.PokemonType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

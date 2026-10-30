@@ -3,10 +3,8 @@ package app.pokeplan.core.reward
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.HatchRules
 import app.pokeplan.core.dex.Region
-import app.pokeplan.core.model.CandyRewards
-import app.pokeplan.core.model.CandyType
-import app.pokeplan.core.model.PokemonType
-import app.pokeplan.core.model.Rarity
+import app.pokeplan.core.dex.PokemonType
+import app.pokeplan.core.dex.Rarity
 import app.pokeplan.core.pokemon.FriendshipRules
 import app.pokeplan.core.pokemon.Ids
 import app.pokeplan.core.pokemon.Inventory

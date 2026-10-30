@@ -96,6 +96,10 @@ class QuickAddTest {
         assertEquals(45, parse("x 45 min").estimateMinutes)
         assertEquals(90, parse("x 1h30").estimateMinutes)
         assertEquals(60, parse("x for 1 hour").estimateMinutes)
+        assertNull(parse("x 0m").estimateMinutes, "no estimate is better than a task that cannot exist")
+        assertNull(parse("x 99999999999m").estimateMinutes)
+        assertNull(parse("x 0 min").estimateMinutes)
+        assertEquals("x 0m", parse("x 0m").title)
         assertEquals("x", parse("x for 90 minutes").title)
     }
 

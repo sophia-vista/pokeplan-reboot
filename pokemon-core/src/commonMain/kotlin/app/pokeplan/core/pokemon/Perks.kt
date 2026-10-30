@@ -2,7 +2,7 @@ package app.pokeplan.core.pokemon
 
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.FormKind
-import app.pokeplan.core.model.PokemonType
+import app.pokeplan.core.dex.PokemonType
 
 /** What a perk improves. See "Buddy and perks" in docs/design.md. */
 enum class PerkBucket {

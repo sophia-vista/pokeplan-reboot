@@ -9,6 +9,15 @@ release always has the newest merge).
 
 - Moving around feels smoother: the bottom tabs fade into each other, and opening a module, a section or a Pokémon slides it in a little, with Back sliding it out the other way. Coming back to a tab or a list finds it scrolled where you left it. Reduce motion (Me, Settings) switches screens instantly.
 
+## 0.47.1
+
+- A save that cannot be read is now kept aside (as `save.json.unreadable-…` or `care.json.unreadable-…` beside it) instead of being overwritten when the app starts fresh, so progress and Care's diary can still be recovered. A widget catching the save mid-write no longer empties Care.
+- A cloud save this version cannot read leaves the device as it is and says so in Settings, instead of stopping the sync (Plan) or reporting success (Care).
+- The evening streak reminder counts the streak the way the app does (the day turns over at 4am, and perks forgive missed days).
+- Quick add no longer fails on "0m" or a huge number: a duration counts from a minute to a day, anything else stays in the title.
+- The bag no longer offers a Tera Shard to a Pokémon that already has its type, and the widget feeds the buddy the same berry as the app.
+- Under the hood: the calendar, item and tally rules moved out of the app store into their modules, the largest screens are split by feature, and the Android reminders share one set of helpers.
+
 ## 0.47.0
 
 - The app is now called **PokéLife**: a Pokémon world for real life, where each module is its own region. PokéPlan lives on as the name of the Plan module. Your Pokémon, save and cloud sync carry on as before.

@@ -22,6 +22,7 @@ import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalSize
+import androidx.glance.action.Action
 import androidx.glance.action.ActionParameters
 import androidx.glance.action.actionParametersOf
 import androidx.glance.action.clickable
@@ -48,6 +49,7 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
+import androidx.glance.layout.RowScope
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
@@ -70,11 +72,12 @@ import app.pokeplan.app.BuddyReaction
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.app.GameStore
 import app.pokeplan.care.Routine
-import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.plan.Phase
 import app.pokeplan.plan.Rank
 import app.pokeplan.plan.Task
+import app.pokeplan.ui.Place
+import app.pokeplan.ui.screens.clock
 import app.pokeplan.careStore
 import app.pokeplan.widgetStore
 import kotlinx.coroutines.delay
@@ -107,6 +110,25 @@ private fun openApp(context: Context, tab: String? = null, pokemon: String? = nu
         if (addTask) putExtra(MainActivity.EXTRA_ADD_TASK, true)
     },
 )
+
+/** The 44 dp strip on top of the Today and Care widgets: the header picture, or a flat [fallback] colour without one, with [content] laid over it. */
+@Composable
+private fun WidgetHeader(header: Bitmap?, fallback: Color, onClick: Action, content: @Composable RowScope.() -> Unit) {
+    Box(GlanceModifier.fillMaxWidth().height(44.dp).clickable(onClick)) {
+        if (header != null) Image(ImageProvider(header), contentDescription = null, modifier = GlanceModifier.fillMaxSize(), contentScale = ContentScale.Crop)
+        else Box(GlanceModifier.fillMaxSize().background(fallback)) {}
+        Row(GlanceModifier.fillMaxSize().padding(horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically, content = content)
+    }
+}
+
+/** The round tick at the end of a task or routine row: green and tappable, or grey and inert once [done]. */
+@Composable
+private fun TickButton(description: String, done: Boolean = false, onClick: Action? = null) {
+    val button = GlanceModifier.size(36.dp).background(if (done) shade else green).cornerRadius(18.dp).semantics { contentDescription = description }
+    Box(if (onClick != null) button.clickable(onClick) else button, contentAlignment = Alignment.Center) {
+        Text("✓", style = TextStyle(color = ColorProvider(if (done) green else Color.White), fontSize = 15.sp, fontWeight = FontWeight.Bold))
+    }
+}
 
 /** Brings every widget up to date; called when the app is left and after a tap on a widget. */
 suspend fun updateWidgets(context: Context) {
@@ -175,8 +197,7 @@ class TodayWidget : GlanceAppWidget() {
 
     private suspend fun load(context: Context): Pair<TodayState, Bitmap?> {
         val store = widgetStore(context)
-        val pending = store.data.pending.map { it.original.id }.toSet()
-        val open = if (store.data.onboarded) store.todayTasks().filter { it.id !in pending && it.isOpen } else emptyList()
+        val open = if (store.data.onboarded) store.openTodayTasks() else emptyList()
         val done = if (store.data.onboarded) store.doneToday() else 0
         val d = density(context)
         val header = buddyScene(context, store, 44, roundBottom = false)
@@ -192,26 +213,22 @@ class TodayWidgetReceiver : GlanceAppWidgetReceiver() {
 @Composable
 private fun TodayContent(context: Context, state: TodayState, header: Bitmap?) {
     Column(GlanceModifier.fillMaxSize().background(paper).cornerRadius(20.dp)) {
-        Box(GlanceModifier.fillMaxWidth().height(44.dp).clickable(openApp(context, "PLANNER"))) {
-            if (header != null) Image(ImageProvider(header), contentDescription = null, modifier = GlanceModifier.fillMaxSize(), contentScale = ContentScale.Crop)
-            else Box(GlanceModifier.fillMaxSize().background(red)) {}
-            Row(GlanceModifier.fillMaxSize().padding(horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "Today", GlanceModifier.pill().padding(horizontal = 12.dp, vertical = 4.dp),
-                    style = TextStyle(color = ColorProvider(red), fontSize = 15.sp, fontWeight = FontWeight.Bold),
-                )
-                Spacer(GlanceModifier.defaultWeight())
-                Text(
-                    "+ Add", GlanceModifier.pill().padding(horizontal = 10.dp, vertical = 4.dp).semantics { contentDescription = "Add a task" }
-                        .clickable(rippleOverride = R.drawable.no_ripple, onClick = openApp(context, "PLANNER", addTask = true)),
-                    style = TextStyle(color = ColorProvider(green), fontSize = 13.sp, fontWeight = FontWeight.Bold),
-                )
-                Spacer(GlanceModifier.width(6.dp))
-                if (state.total > 0) Text(
-                    "${state.done} of ${state.total} done", GlanceModifier.pill().padding(horizontal = 10.dp, vertical = 4.dp),
-                    style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp, fontWeight = FontWeight.Medium),
-                )
-            }
+        WidgetHeader(header, red, openApp(context, Place.PLANNER.name)) {
+            Text(
+                "Today", GlanceModifier.pill().padding(horizontal = 12.dp, vertical = 4.dp),
+                style = TextStyle(color = ColorProvider(red), fontSize = 15.sp, fontWeight = FontWeight.Bold),
+            )
+            Spacer(GlanceModifier.defaultWeight())
+            Text(
+                "+ Add", GlanceModifier.pill().padding(horizontal = 10.dp, vertical = 4.dp).semantics { contentDescription = "Add a task" }
+                    .clickable(rippleOverride = R.drawable.no_ripple, onClick = openApp(context, Place.PLANNER.name, addTask = true)),
+                style = TextStyle(color = ColorProvider(green), fontSize = 13.sp, fontWeight = FontWeight.Bold),
+            )
+            Spacer(GlanceModifier.width(6.dp))
+            if (state.total > 0) Text(
+                "${state.done} of ${state.total} done", GlanceModifier.pill().padding(horizontal = 10.dp, vertical = 4.dp),
+                style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp, fontWeight = FontWeight.Medium),
+            )
         }
         Column(GlanceModifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp)) {
             if (state.total > 0) {
@@ -229,7 +246,7 @@ private fun TodayContent(context: Context, state: TodayState, header: Bitmap?) {
                         state.done > 0 -> "All done for today"
                         else -> "Nothing planned. Tap to add a task."
                     },
-                    GlanceModifier.clickable(openApp(context, "PLANNER")),
+                    GlanceModifier.clickable(openApp(context, Place.PLANNER.name)),
                     style = TextStyle(color = ColorProvider(soft), fontSize = 13.sp),
                 )
             } else {
@@ -244,16 +261,11 @@ private fun TodayContent(context: Context, state: TodayState, header: Bitmap?) {
                             }
                             Spacer(GlanceModifier.width(10.dp))
                             Text(
-                                t.title, GlanceModifier.defaultWeight().clickable(openApp(context, "PLANNER")),
+                                t.title, GlanceModifier.defaultWeight().clickable(openApp(context, Place.PLANNER.name)),
                                 style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp), maxLines = 2,
                             )
                             Spacer(GlanceModifier.width(8.dp))
-                            Box(
-                                GlanceModifier.size(36.dp).background(green).cornerRadius(18.dp)
-                                    .semantics { contentDescription = "Finish ${t.title}" }
-                                    .clickable(actionRunCallback<CompleteTaskAction>(actionParametersOf(TaskIdKey to t.id))),
-                                contentAlignment = Alignment.Center,
-                            ) { Text("✓", style = TextStyle(color = ColorProvider(Color.White), fontSize = 15.sp, fontWeight = FontWeight.Bold)) }
+                            TickButton("Finish ${t.title}", onClick = actionRunCallback<CompleteTaskAction>(actionParametersOf(TaskIdKey to t.id)))
                         }
                     }
                 }
@@ -315,8 +327,6 @@ suspend fun announceBuddyEvent(context: Context) {
     }
 }
 
-private fun berryOf(store: GameStore): String? =
-    store.data.player.inventory.counts.entries.firstOrNull { (id, n) -> n > 0 && Items.category(id) == ItemCategory.BERRY }?.key
 
 /** A tap on the buddy: the same petting as in the app, with a heart and the cry. */
 class PetAction : ActionCallback {
@@ -337,7 +347,7 @@ class FeedAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val store = widgetStore(context)
         val buddy = store.data.player.buddy ?: return
-        val berry = berryOf(store) ?: return
+        val berry = store.buddyBerry() ?: return
         store.useItem(berry, buddy.id)
         BuddyTalk.show(context, BuddyReaction.feed(buddy, avoid = BuddyTalk.last(context)))
         updateWidgets(context)
@@ -362,7 +372,7 @@ class BuddyWidget : GlanceAppWidget() {
         val moment = BuddyTalk.current(context)
         // An alarm refreshes the widget when the reaction ends, to take the emoji away.
         if (moment != null) scheduleWidgetRefresh(context, BuddyTalk.remaining(context) + 300)
-        val berry = berryOf(store)
+        val berry = store.buddyBerry()
         val d = density(context)
         val darkness = BuddyScene.darkness(store.now.hour, store.now.minute)
         val focusing = store.data.focus != null
@@ -500,7 +510,7 @@ class FocusWidgetReceiver : GlanceAppWidgetReceiver() {
 @Composable
 private fun FocusContent(context: Context, s: FocusState) {
     val tall = LocalSize.current.height >= 100.dp
-    Box(GlanceModifier.fillMaxSize().cornerRadius(20.dp).clickable(openApp(context, "FOCUS"))) {
+    Box(GlanceModifier.fillMaxSize().cornerRadius(20.dp).clickable(openApp(context, Place.FOCUS.name))) {
         if (s.wallpaper != null) Image(ImageProvider(s.wallpaper), contentDescription = null, modifier = GlanceModifier.fillMaxSize(), contentScale = ContentScale.Crop)
         else Box(GlanceModifier.fillMaxSize().background(red)) {}
         Row(GlanceModifier.fillMaxSize().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -568,28 +578,24 @@ class CareWidgetReceiver : GlanceAppWidgetReceiver() {
 
 @Composable
 private fun CareContent(context: Context, state: CareState, header: Bitmap?) {
-    val open = openApp(context, "CARE")
+    val open = openApp(context, Place.CARE.name)
     Column(GlanceModifier.fillMaxSize().background(paper).cornerRadius(20.dp)) {
-        Box(GlanceModifier.fillMaxWidth().height(44.dp).clickable(open)) {
-            if (header != null) Image(ImageProvider(header), contentDescription = null, modifier = GlanceModifier.fillMaxSize(), contentScale = ContentScale.Crop)
-            else Box(GlanceModifier.fillMaxSize().background(green)) {}
-            Row(GlanceModifier.fillMaxSize().padding(horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    "Care", GlanceModifier.pill().padding(horizontal = 12.dp, vertical = 4.dp),
-                    style = TextStyle(color = ColorProvider(green), fontSize = 15.sp, fontWeight = FontWeight.Bold),
-                )
-                Spacer(GlanceModifier.defaultWeight())
-                if (state.on && state.routines.isNotEmpty()) Text(
-                    "${state.done} of ${state.routines.size} done", GlanceModifier.pill().padding(horizontal = 10.dp, vertical = 4.dp),
-                    style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp, fontWeight = FontWeight.Medium),
-                )
-            }
+        WidgetHeader(header, green, open) {
+            Text(
+                "Care", GlanceModifier.pill().padding(horizontal = 12.dp, vertical = 4.dp),
+                style = TextStyle(color = ColorProvider(green), fontSize = 15.sp, fontWeight = FontWeight.Bold),
+            )
+            Spacer(GlanceModifier.defaultWeight())
+            if (state.on && state.routines.isNotEmpty()) Text(
+                "${state.done} of ${state.routines.size} done", GlanceModifier.pill().padding(horizontal = 10.dp, vertical = 4.dp),
+                style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp, fontWeight = FontWeight.Medium),
+            )
         }
         Column(GlanceModifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp)) {
             if (!state.on || !state.started) {
                 Text(
                     if (!state.started) "Open PokéLife to start" else "Care is switched off. Turn it on in Me, Settings, Modules.",
-                    GlanceModifier.clickable(openApp(context, if (state.started) "ME" else null)),
+                    GlanceModifier.clickable(openApp(context, if (state.started) Place.ME.name else null)),
                     style = TextStyle(color = ColorProvider(soft), fontSize = 13.sp),
                 )
                 return@Column
@@ -611,21 +617,13 @@ private fun CareContent(context: Context, state: CareState, header: Bitmap?) {
                             Spacer(GlanceModifier.width(10.dp))
                         }
                         Text(
-                            r.title + (r.time?.let { "  ${it.hour}:${it.minute.toString().padStart(2, '0')}" } ?: ""),
+                            r.title + (r.time?.let { "  ${clock(it)}" } ?: ""),
                             GlanceModifier.defaultWeight().clickable(open),
                             style = TextStyle(color = ColorProvider(if (done) soft else ink), fontSize = 13.sp), maxLines = 2,
                         )
                         Spacer(GlanceModifier.width(8.dp))
-                        if (done) Box(
-                            GlanceModifier.size(36.dp).background(shade).cornerRadius(18.dp).semantics { contentDescription = "${r.title}, done today" },
-                            contentAlignment = Alignment.Center,
-                        ) { Text("✓", style = TextStyle(color = ColorProvider(green), fontSize = 15.sp, fontWeight = FontWeight.Bold)) }
-                        else Box(
-                            GlanceModifier.size(36.dp).background(green).cornerRadius(18.dp)
-                                .semantics { contentDescription = "Done: ${r.title}" }
-                                .clickable(actionRunCallback<CompleteRoutineAction>(actionParametersOf(RoutineIdKey to r.id))),
-                            contentAlignment = Alignment.Center,
-                        ) { Text("✓", style = TextStyle(color = ColorProvider(Color.White), fontSize = 15.sp, fontWeight = FontWeight.Bold)) }
+                        if (done) TickButton("${r.title}, done today", done = true)
+                        else TickButton("Done: ${r.title}", onClick = actionRunCallback<CompleteRoutineAction>(actionParametersOf(RoutineIdKey to r.id)))
                     }
                 }
             }

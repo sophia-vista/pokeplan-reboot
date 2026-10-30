@@ -11,7 +11,6 @@ import app.pokeplan.core.pokemon.Nature
 import app.pokeplan.core.pokemon.pokemon
 import kotlin.random.Random
 import kotlin.test.Test
-import app.pokeplan.core.model.CandyType
 import app.pokeplan.core.pokemon.Items
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -99,7 +98,7 @@ class CareRewardTest {
         val egg = out.state.pokemon.first { it.id == "egg" }
         assertEquals(PartyIds.CARE, egg.partyId)
         assertEquals(egg.id, out.state.careLeadId, "the first member of Care's party leads")
-        assertTrue(app.pokeplan.core.model.Rarity.entries.any { r ->
+        assertTrue(app.pokeplan.core.dex.Rarity.entries.any { r ->
             app.pokeplan.core.dex.HatchRules.pool(app.pokeplan.core.dex.Region.CARE, r).any { it.speciesId == egg.speciesId }
         }, "from the Care Region")
         assertTrue(egg.speciesId in out.state.caught)

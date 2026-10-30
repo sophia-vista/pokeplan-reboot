@@ -19,6 +19,14 @@ sealed interface SyncStatus {
 
     /** The cloud refused the save (the message says why). */
     data class Refused(val message: String) : SyncStatus
+
+    companion object {
+        /** What a failed call means for the sync: try again later when offline, else the cloud said no. */
+        fun of(failure: CloudResult.Failure): SyncStatus = if (failure.offline) Offline(failure.message) else Refused(failure.message)
+
+        /** A cloud save this app cannot read (made by a newer version, or damaged): nothing on this device changes. */
+        val Unreadable: SyncStatus = Refused("The cloud save could not be read, so this device kept its own. Update the app and try again.")
+    }
 }
 
 /**
@@ -73,7 +81,7 @@ class SyncManager(private val store: GameStore, private val cloud: CloudClient) 
 
         val pulled = when (val r = cloud.pull(session)) {
             is CloudResult.Ok -> r.value
-            is CloudResult.Failure -> { state.value = failed(r); return }
+            is CloudResult.Failure -> { state.value = SyncStatus.of(r); return }
         }
         val serverChanged = pulled.version != account.version
         // A device that was never played on has nothing to lose.
@@ -82,7 +90,7 @@ class SyncManager(private val store: GameStore, private val cloud: CloudClient) 
             pulled.data == null -> push(session, pulled.version)
             !serverChanged && !localChanged -> { if (account.unsynced) store.markSynced(pulled.version); state.value = SyncStatus.Idle }
             !serverChanged -> push(session, pulled.version)
-            !localChanged -> { adoptCloud(pulled.data, pulled.version); state.value = SyncStatus.Idle }
+            !localChanged -> adopt(pulled.data, pulled.version)
             else -> state.value = SyncStatus.Conflict(pulled.version)
         }
         refillTickets(session)
@@ -106,12 +114,14 @@ class SyncManager(private val store: GameStore, private val cloud: CloudClient) 
         }
         state.value = SyncStatus.Syncing
         when (val r = cloud.pull(session)) {
-            is CloudResult.Ok -> { r.value.data?.let { adoptCloud(it, r.value.version) }; state.value = SyncStatus.Idle }
-            is CloudResult.Failure -> state.value = failed(r)
+            is CloudResult.Ok -> r.value.data?.let { adopt(it, r.value.version) } ?: run { state.value = SyncStatus.Idle }
+            is CloudResult.Failure -> state.value = SyncStatus.of(r)
         }
     }
 
-    private fun adoptCloud(document: JsonObject, version: Int) = store.adoptCloud(document, version)
+    private fun adopt(document: JsonObject, version: Int) {
+        state.value = if (store.adoptCloud(document, version)) SyncStatus.Idle else SyncStatus.Unreadable
+    }
 
     private suspend fun push(session: Session, expectedVersion: Int) {
         val document = store.cloudDocument()
@@ -119,12 +129,10 @@ class SyncManager(private val store: GameStore, private val cloud: CloudClient) 
             is CloudResult.Ok -> { store.markSynced(r.value); state.value = SyncStatus.Idle }
             is CloudResult.Failure -> state.value = when (r.status) {
                 409 -> SyncStatus.Conflict((r.body?.get("version") as? kotlinx.serialization.json.JsonPrimitive)?.content?.toIntOrNull() ?: expectedVersion)
-                else -> failed(r)
+                else -> SyncStatus.of(r)
             }
         }
     }
-
-    private fun failed(r: CloudResult.Failure): SyncStatus = if (r.offline) SyncStatus.Offline(r.message) else SyncStatus.Refused(r.message)
 
     /** The signed-in session, refreshed if it is about to run out, for calls other than the save (friends, gifts). Null if signed out or refused. */
     suspend fun session(): Session? = freshSession()

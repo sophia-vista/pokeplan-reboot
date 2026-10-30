@@ -43,58 +43,35 @@ import kotlin.random.Random
  * a note, a journal entry) never does.
  */
 class CareStore(
-    private val storage: Storage,
+    storage: Storage,
     private val clock: Clock,
     private val world: World,
     private val zone: TimeZone = TimeZone.currentSystemDefault(),
     private val weekStart: () -> DayOfWeek = { DayOfWeek.MONDAY },
     private val rng: Random = Random,
 ) {
-    var data: CareData = load()
-        private set
+    private val document = SavedDocument(storage, CareData.serializer(), json) { CareData() }
 
-    private val listeners = mutableListOf<(CareData) -> Unit>()
+    val data: CareData get() = document.value
 
-    fun observe(listener: (CareData) -> Unit): () -> Unit {
-        listeners += listener
-        return { listeners -= listener }
-    }
+    fun observe(listener: (CareData) -> Unit): () -> Unit = document.observe(listener)
 
     private val nowMillis: Long get() = clock.nowMillis()
     val today: LocalDate get() = nowMillis.toLocalDateTime(zone).date
     private val thisWeek: LocalDate get() = CareRules.weekStartOf(today, weekStart())
 
-    private fun load(): CareData {
-        val text = storage.load() ?: return CareData()
-        return try {
-            json.decodeFromString(CareData.serializer(), text)
-        } catch (e: Exception) {
-            CareData()
-        }
-    }
-
-    /** Picks up a change another process made (a widget), without writing anything back. */
-    fun reload() {
-        val fresh = load()
-        if (fresh == data) return
-        data = fresh
-        listeners.toList().forEach { it(data) }
-    }
+    /** Picks up a change another process made (a widget), without writing anything back; see [SavedDocument.reload]. */
+    fun reload() = document.reload()
 
     private fun update(change: (CareData) -> CareData) {
         val before = data
         val after = change(before)
         // Any change while sync is on waits to be uploaded; a change that sets the cloud state itself (a sync) does not.
-        data = if (after.settings.cloudSync && after.cloud != null && after.cloud == before.cloud && after != before) {
-            after.copy(cloud = after.cloud!!.copy(unsynced = true))
-        } else {
-            after
-        }
-        storage.save(json.encodeToString(CareData.serializer(), data))
-        listeners.toList().forEach { it(data) }
+        val cloud = after.cloud
+        document.write(if (after.settings.cloudSync && cloud != null && cloud == before.cloud && after != before) after.copy(cloud = cloud.copy(unsynced = true)) else after)
     }
 
-    private fun newId(): String = "${nowMillis.toString(36)}-${rng.nextInt(Int.MAX_VALUE).toString(36)}"
+    private fun newId(): String = newId(nowMillis, rng)
 
     private fun pay(kind: CareKind): List<Reward>? = world.care(CareEvent(kind, nowMillis))
 
@@ -271,7 +248,6 @@ class CareStore(
 
     // --- diary card, journal (private, never paid) --------------------------------------------------------------------
 
-    /** Today's diary card, if one was saved. */
     fun diaryToday(): DiaryCard? = data.diary.firstOrNull { it.day == today }
 
     /** Saves today's diary card, replacing the one saved earlier today. Ratings are kept from 0 to 5. */
@@ -352,11 +328,11 @@ class CareStore(
         json.encodeToJsonElement(CareData.serializer(), data.copy(cloud = null, visitorSeed = 0)) as JsonObject
 
     /** Takes the cloud copy (another device's), keeping this device's sync switch, seed and cloud state. */
-    fun adoptCloud(document: JsonObject, userId: String, version: Int) {
+    fun adoptCloud(document: JsonObject, userId: String, version: Int): Boolean {
         val cloud = try {
             json.decodeFromJsonElement(CareData.serializer(), document)
-        } catch (e: Exception) {
-            return
+        } catch (e: IllegalArgumentException) {
+            return false
         }
         update {
             cloud.copy(
@@ -365,6 +341,7 @@ class CareStore(
                 cloud = CareCloud(userId, version, unsynced = false, syncedAtMillis = nowMillis),
             )
         }
+        return true
     }
 
     /** The cloud has this device's copy at [version]; [sent] is what was uploaded, so a change made meanwhile still waits. */

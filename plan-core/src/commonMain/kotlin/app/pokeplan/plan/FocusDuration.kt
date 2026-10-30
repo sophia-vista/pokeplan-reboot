@@ -1,6 +1,6 @@
 package app.pokeplan.plan
 
-import app.pokeplan.core.model.Egg
+import app.pokeplan.core.dex.Egg
 
 /** Length of a focus session, as set on the timer. */
 data class FocusDuration(val hours: Int, val mins: Int, val secs: Int) {

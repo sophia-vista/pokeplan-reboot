@@ -50,7 +50,23 @@ object QuickAdd {
     private val unit = Regex("^(m|min|mins|minutes?|h|hr|hrs|hours?)$", RegexOption.IGNORE_CASE)
     private val iso = Regex("^\\d{4}-\\d{2}-\\d{2}$")
 
-    private fun minutesOf(amount: Int, unit: String) = if (unit.lowercase().startsWith("h")) amount * 60 else amount
+    /** The longest estimate quick add reads: a day. Anything longer, or 0, stays in the title as typed. */
+    private const val MAX_ESTIMATE_MINUTES = 24 * 60
+
+    private fun minutesOf(amount: String, unit: String): Int? = estimate(amount.toIntOrNull()?.takeIf { it <= MAX_ESTIMATE_MINUTES }?.let {
+        if (unit.lowercase().startsWith("h")) it * 60 else it
+    })
+
+    /** The minutes "1h30", "45m" or "2h" stand for, or null when [token] is not a duration quick add accepts. */
+    private fun durationOf(token: String): Int? {
+        durationHm.matchEntire(token)?.let { m ->
+            val hours = m.groupValues[1].toIntOrNull()?.takeIf { it <= 24 } ?: return null
+            return estimate(m.groupValues[2].toIntOrNull()?.let { hours * 60 + it })
+        }
+        return durationCompact.matchEntire(token)?.let { m -> minutesOf(m.groupValues[1], m.groupValues[2]) }
+    }
+
+    private fun estimate(minutes: Int?): Int? = minutes?.takeIf { it in 1..MAX_ESTIMATE_MINUTES }
 
     private fun parseTime(token: String): LocalTime? {
         timeAmPm.matchEntire(token)?.let { m ->
@@ -136,18 +152,11 @@ object QuickAdd {
                 (lower == "by" || lower == "due") && startsDateOrTime(i + 1) -> { dueMode = true; use(i, 1); i++ }
                 lower == "at" && i + 1 <= tokens.lastIndex && parseTime(tokens[i + 1]) != null -> { use(i, 1); i++ }
                 lower == "next" && i + 1 <= tokens.lastIndex && weekdays.containsKey(tokens[i + 1].lowercase()) -> { use(i, 1); i++ }
-                lower == "for" && i + 1 <= tokens.lastIndex && (durationCompact.matches(tokens[i + 1]) || durationHm.matches(tokens[i + 1]) ||
-                    (tokens[i + 1].toIntOrNull() != null && i + 2 <= tokens.lastIndex && unit.matches(tokens[i + 2]))) -> { use(i, 1); i++ }
-                durationHm.matches(tok) -> {
-                    val m = durationHm.matchEntire(tok)!!
-                    estimate = m.groupValues[1].toInt() * 60 + m.groupValues[2].toInt(); use(i, 1); i++
-                }
-                durationCompact.matches(tok) -> {
-                    val m = durationCompact.matchEntire(tok)!!
-                    estimate = minutesOf(m.groupValues[1].toInt(), m.groupValues[2]); use(i, 1); i++
-                }
-                tok.toIntOrNull() != null && i + 1 <= tokens.lastIndex && unit.matches(tokens[i + 1]) && parseDate(tokens, i, today) == null -> {
-                    estimate = minutesOf(tok.toInt(), tokens[i + 1]); use(i, 2); i += 2
+                lower == "for" && i + 1 <= tokens.lastIndex && (durationOf(tokens[i + 1]) != null ||
+                    (i + 2 <= tokens.lastIndex && unit.matches(tokens[i + 2]) && minutesOf(tokens[i + 1], tokens[i + 2]) != null)) -> { use(i, 1); i++ }
+                durationOf(tok) != null -> { estimate = durationOf(tok); use(i, 1); i++ }
+                i + 1 <= tokens.lastIndex && unit.matches(tokens[i + 1]) && minutesOf(tok, tokens[i + 1]) != null && parseDate(tokens, i, today) == null -> {
+                    estimate = minutesOf(tok, tokens[i + 1]); use(i, 2); i += 2
                 }
                 parseTime(tok) != null -> {
                     if (dueMode) dueTime = parseTime(tok) else plannedTime = parseTime(tok)
