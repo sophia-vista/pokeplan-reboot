@@ -1,7 +1,6 @@
 package app.pokeplan.ui.screens
 
 import androidx.compose.foundation.background
-import app.pokeplan.core.pokemon.ItemCategory
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -72,8 +71,7 @@ fun HomeScreen(model: AppModel, go: (Place) -> Unit) {
     val buddy = data.player.buddy
     val points = data.player.trainerPoints
 
-    val pendingIds = data.pending.map { it.original.id }.toSet()
-    val open = store.todayTasks().filter { it.id !in pendingIds }
+    val open = store.openTodayTasks()
     val next = open.firstOrNull { it.id == data.pickedTaskId } ?: open.firstOrNull()
     val doneToday = data.tasks.count { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
     val total = doneToday + open.size
@@ -158,7 +156,7 @@ fun PlanBuddyStage(model: AppModel, onOpen: () -> Unit) {
     val store = model.store
     val data = model.data
     val buddy = data.player.buddy ?: return
-    val berry = data.player.inventory.counts.keys.sorted().firstOrNull { Items.category(it) == ItemCategory.BERRY && data.player.inventory.has(it) }
+    val berry = store.buddyBerry()
     BuddyStage(
         buddy = buddy, scene = BuddyScene.of(buddy.form.types), darkness = BuddyScene.darkness(store.now.hour, store.now.minute),
         progress = store.levelProgress(buddy), event = store.buddyEvent(),

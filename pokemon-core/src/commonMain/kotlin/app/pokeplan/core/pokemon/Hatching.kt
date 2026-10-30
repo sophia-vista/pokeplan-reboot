@@ -5,8 +5,8 @@ import app.pokeplan.core.dex.Gender
 import app.pokeplan.core.dex.HatchOption
 import app.pokeplan.core.dex.HatchRules
 import app.pokeplan.core.dex.Region
-import app.pokeplan.core.model.Egg
-import app.pokeplan.core.model.Rarity
+import app.pokeplan.core.dex.Egg
+import app.pokeplan.core.dex.Rarity
 import kotlin.random.Random
 
 /** Turns a finished egg into a new [OwnedPokemon]. */

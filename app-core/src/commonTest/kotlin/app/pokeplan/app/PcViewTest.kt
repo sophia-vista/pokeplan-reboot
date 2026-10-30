@@ -1,7 +1,7 @@
 package app.pokeplan.app
 
 import app.pokeplan.core.dex.Region
-import app.pokeplan.core.model.PokemonType
+import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Hatching
 import app.pokeplan.core.pokemon.OwnedPokemon
 import kotlin.random.Random

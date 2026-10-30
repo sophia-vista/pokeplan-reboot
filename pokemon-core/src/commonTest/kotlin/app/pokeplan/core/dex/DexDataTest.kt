@@ -1,6 +1,5 @@
 package app.pokeplan.core.dex
 
-import app.pokeplan.core.model.PokemonType
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

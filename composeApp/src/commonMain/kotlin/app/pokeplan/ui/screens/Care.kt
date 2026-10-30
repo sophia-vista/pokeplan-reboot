@@ -44,10 +44,8 @@ import app.pokeplan.care.Emotion
 import app.pokeplan.care.Skills
 import app.pokeplan.care.Visitors
 import app.pokeplan.core.dex.Dex
-import app.pokeplan.core.pokemon.Items
 import app.pokeplan.app.BuddyReaction
 import app.pokeplan.app.BuddyScene
-import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.ui.Sfx
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.semantics.Role
@@ -152,7 +150,7 @@ private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
     val store = model.store
     val buddy = store.careBuddy ?: return
     val data = model.data
-    val berry = data.player.inventory.counts.keys.sorted().firstOrNull { Items.category(it) == ItemCategory.BERRY && data.player.inventory.has(it) }
+    val berry = store.buddyBerry()
     BuddyStage(
         buddy = buddy, scene = "meadow", darkness = BuddyScene.darkness(store.now.hour, store.now.minute),
         progress = store.levelProgress(buddy), event = store.buddyEvent(care = true),

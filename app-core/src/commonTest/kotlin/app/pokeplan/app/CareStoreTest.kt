@@ -43,6 +43,21 @@ class CareStoreTest {
     private val Setup.points get() = game.data.player.trainerPoints
 
     @Test
+    fun anUnreadableCareSaveIsKeptAsideAndAHalfWrittenOneIsIgnored() {
+        val s = setup()
+        val storage = MemoryStorage("{\"routines\": [")
+        val care = CareStore(storage, s.clock, s.game, utc)
+        assertEquals("{\"routines\": [", storage.keptAside, "the diary and journal are never written over")
+
+        s.care.saveDiary(mapOf(Emotion.entries.first() to 2), note = "private")
+        val saved = s.care.data
+        s.storage.text = s.storage.text!!.take(20)
+        s.care.reload()
+        assertEquals(saved, s.care.data)
+        assertTrue(care.data.routines.isEmpty())
+    }
+
+    @Test
     fun aRoutinePaysOnceADayAndUndoNeverPaysTwice() {
         val s = setup()
         val water = s.care.addRoutine("Drink water")

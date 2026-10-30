@@ -23,6 +23,7 @@ import app.pokeplan.ui.AppLaunch
 import app.pokeplan.ui.Place
 import app.pokeplan.reminders.AppAlerts
 import app.pokeplan.reminders.RoutineReminders
+import app.pokeplan.reminders.TASK_REMINDERS_PREFS
 import app.pokeplan.reminders.TaskReminders
 import app.pokeplan.widgets.announceBuddyEvent
 import app.pokeplan.widgets.updateWidgets
@@ -165,7 +166,7 @@ class MainActivity : ComponentActivity() {
     private fun askForNotifications() {
         if (Build.VERSION.SDK_INT < 33) return
         if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) return
-        val prefs = getSharedPreferences("task_reminders", MODE_PRIVATE)
+        val prefs = getSharedPreferences(TASK_REMINDERS_PREFS, MODE_PRIVATE)
         if (prefs.getBoolean("asked", false)) return
         prefs.edit().putBoolean("asked", true).apply()
         runOnUiThread { requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1) }

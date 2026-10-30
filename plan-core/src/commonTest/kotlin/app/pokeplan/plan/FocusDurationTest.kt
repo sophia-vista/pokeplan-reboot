@@ -1,7 +1,7 @@
 package app.pokeplan.plan
 
-import app.pokeplan.core.model.Egg
-import app.pokeplan.core.model.RarityRates
+import app.pokeplan.core.dex.Egg
+import app.pokeplan.core.dex.RarityRates
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

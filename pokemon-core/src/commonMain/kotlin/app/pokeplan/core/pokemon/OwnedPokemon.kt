@@ -4,7 +4,7 @@ import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.FormInfo
 import app.pokeplan.core.dex.Gender
 import app.pokeplan.core.dex.SpeciesInfo
-import app.pokeplan.core.model.PokemonType
+import app.pokeplan.core.dex.PokemonType
 import kotlinx.serialization.Serializable
 
 /**

@@ -8,8 +8,6 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Icon
-import android.os.Build
 import app.pokeplan.MainActivity
 import app.pokeplan.app.Nudges
 import app.pokeplan.app.upcomingReminders
@@ -19,25 +17,20 @@ import app.pokeplan.plan.Snooze
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.toEpochMillis
 import app.pokeplan.plan.toLocalDateTime
+import app.pokeplan.ui.Place
+import app.pokeplan.ui.screens.clock
 import app.pokeplan.ui.screens.short
 import app.pokeplan.widgetStore
-import app.pokeplan.widgets.WidgetArt
 import app.pokeplan.widgets.updateWidgets
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 
 /**
- * Task reminders as notifications. The next [MAX_ALARMS] reminders are set as alarms; each one that fires shows the task
+ * Task reminders as notifications. The next [Alarms.MAX_ALARMS] reminders are set as alarms; each one that fires shows the task
  * with Done and Snooze, then sets the alarms again. The app calls [reschedule] whenever the reminders change.
  * A reminder nobody answers repeats up to [Nudges.REMINDER_REPEATS] times, [Nudges.REMINDER_REPEAT_MILLIS] apart: the
  * chain ends as soon as the notification is gone (done, snoozed, tapped or swiped away).
  */
 object TaskReminders {
-    private const val CHANNEL = "task-reminders"
-    private const val PREFS = "task_reminders"
-    private const val MAX_ALARMS = 24
     private const val SNOOZE_MILLIS = 60 * 60_000L
     private const val REPEAT = -2L
 
@@ -52,13 +45,9 @@ object TaskReminders {
 
     /** Sets alarms for the next reminders and cancels the ones no longer wanted. */
     fun reschedule(context: Context, upcoming: List<DueReminder>) {
-        val alarms = context.getSystemService(AlarmManager::class.java) ?: return
-        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        val wanted = upcoming.take(MAX_ALARMS).associateBy { code(it.taskId, it.atMillis) }
-        val before = prefs.getStringSet("codes", emptySet()).orEmpty().mapNotNull { it.toIntOrNull() }
-        for (code in before) if (code !in wanted) fireIntent(context, code, null, PendingIntent.FLAG_NO_CREATE)?.let { alarms.cancel(it); it.cancel() }
-        for ((code, r) in wanted) set(context, alarms, r.atMillis, fireIntent(context, code, r.taskId, PendingIntent.FLAG_UPDATE_CURRENT)!!)
-        prefs.edit().putStringSet("codes", wanted.keys.map { it.toString() }.toSet()).apply()
+        Alarms.reschedule(context, TASK_REMINDERS_PREFS, upcoming, { code(it.taskId, it.atMillis) }, { it.atMillis }) { code, r, flags ->
+            fireIntent(context, code, r?.taskId, flags)
+        }
     }
 
     /** Works the reminders out from the save and sets them again (after a reboot, a time change or a fired reminder). */
@@ -80,26 +69,16 @@ object TaskReminders {
             flags or PendingIntent.FLAG_IMMUTABLE,
         )
 
-    /** On time where the phone allows exact alarms, otherwise as close as it lets us. */
-    internal fun set(context: Context, alarms: AlarmManager, atMillis: Long, intent: PendingIntent) {
-        try {
-            if (Build.VERSION.SDK_INT >= 31 && !alarms.canScheduleExactAlarms()) alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMillis, intent)
-            else alarms.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMillis, intent)
-        } catch (e: SecurityException) {
-            alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMillis, intent)
-        }
-    }
-
     /** Shows the task's reminder again at [atMillis] (a snooze, or the end of a focus session it fell in). */
     fun remindAgain(context: Context, taskId: String, atMillis: Long = System.currentTimeMillis() + SNOOZE_MILLIS) {
         val alarms = context.getSystemService(AlarmManager::class.java) ?: return
-        set(context, alarms, atMillis, fireIntent(context, code(taskId, -1), taskId, PendingIntent.FLAG_UPDATE_CURRENT, snoozed = true)!!)
+        Alarms.set(context, alarms, atMillis, fireIntent(context, code(taskId, -1), taskId, PendingIntent.FLAG_UPDATE_CURRENT, snoozed = true)!!)
     }
 
     /** Shows the unanswered reminder again in [Nudges.REMINDER_REPEAT_MILLIS]; [count] is which repeat that will be (1 to 3). */
     fun scheduleRepeat(context: Context, taskId: String, count: Int) {
         val alarms = context.getSystemService(AlarmManager::class.java) ?: return
-        set(context, alarms, System.currentTimeMillis() + Nudges.REMINDER_REPEAT_MILLIS, fireIntent(context, code(taskId, REPEAT), taskId, PendingIntent.FLAG_UPDATE_CURRENT, repeat = count)!!)
+        Alarms.set(context, alarms, System.currentTimeMillis() + Nudges.REMINDER_REPEAT_MILLIS, fireIntent(context, code(taskId, REPEAT), taskId, PendingIntent.FLAG_UPDATE_CURRENT, repeat = count)!!)
     }
 
     /** The reminder was answered: no more repeats. */
@@ -116,19 +95,18 @@ object TaskReminders {
 
     fun show(context: Context, task: Task, nowMillis: Long) {
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
-        manager.createNotificationChannel(NotificationChannel(CHANNEL, "Task reminders", NotificationManager.IMPORTANCE_HIGH))
+        manager.createNotificationChannel(NotificationChannel(Channels.TASK_REMINDERS, "Task reminders", NotificationManager.IMPORTANCE_HIGH))
         val id = notificationId(task.id)
         fun action(action: String) = PendingIntent.getBroadcast(
             context, id, Intent(context, ReminderReceiver::class.java).setAction(action).putExtra(EXTRA_TASK, task.id),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         val open = PendingIntent.getActivity(
-            context, id, Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, "PLANNER"),
+            context, id, Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, Place.PLANNER.name),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        val icon = WidgetArt.item(context, "poke-ball", 1)?.let { Icon.createWithBitmap(it) } ?: Icon.createWithResource(context, android.R.drawable.ic_popup_reminder)
-        val notification = Notification.Builder(context, CHANNEL)
-            .setSmallIcon(icon)
+        val notification = Notification.Builder(context, Channels.TASK_REMINDERS)
+            .setSmallIcon(notificationIcon(context, "poke-ball"))
             .setContentTitle(task.title)
             .setContentText(whenText(task, nowMillis))
             .setCategory(Notification.CATEGORY_REMINDER)
@@ -139,22 +117,17 @@ object TaskReminders {
             .addAction(Notification.Action.Builder(null, "10 min", action(ACTION_SNOOZE_TEN)).build())
             .addAction(Notification.Action.Builder(null, "1 hour", action(ACTION_SNOOZE)).build())
             .build()
-        try {
-            manager.notify(id, notification)
-        } catch (e: SecurityException) {
-            // Notifications are not allowed: nothing to show.
-        }
+        notifySafely(context, id, notification)
     }
 
     private fun whenText(task: Task, nowMillis: Long): String {
         val today = nowMillis.toLocalDateTime(TimeZone.currentSystemDefault()).date
-        fun clock(h: Int, m: Int) = "$h:${m.toString().padStart(2, '0')}"
         val due = task.due
         val time = task.plannedTime
         val planned = task.planned
         return when {
-            planned != null && time != null -> if (planned == today) "Planned for ${clock(time.hour, time.minute)}" else "Planned for ${planned.short()} ${clock(time.hour, time.minute)}"
-            due != null -> if (due.date == today) "Due today at ${clock(due.hour, due.minute)}" else "Due ${due.date.short()} at ${clock(due.hour, due.minute)}"
+            planned != null && time != null -> if (planned == today) "Planned for ${clock(time)}" else "Planned for ${planned.short()} ${clock(time)}"
+            due != null -> if (due.date == today) "Due today at ${clock(due.time)}" else "Due ${due.date.short()} at ${clock(due.time)}"
             planned == today -> "Planned for today"
             else -> "Planned for ${planned?.short()}"
         }
@@ -166,14 +139,7 @@ class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val taskId = intent.getStringExtra(TaskReminders.EXTRA_TASK) ?: return
         val app = context.applicationContext
-        val pending = goAsync()
-        CoroutineScope(Dispatchers.Default).launch {
-            try {
-                handle(app, intent.action, taskId, intent.getBooleanExtra(TaskReminders.EXTRA_SNOOZED, false), intent.getIntExtra(TaskReminders.EXTRA_REPEAT, 0))
-            } finally {
-                pending.finish()
-            }
-        }
+        doAsync { handle(app, intent.action, taskId, intent.getBooleanExtra(TaskReminders.EXTRA_SNOOZED, false), intent.getIntExtra(TaskReminders.EXTRA_REPEAT, 0)) }
     }
 
     private suspend fun handle(context: Context, action: String?, taskId: String, snoozed: Boolean, repeat: Int) {
@@ -223,15 +189,10 @@ class ReminderReceiver : BroadcastReceiver() {
 class ReminderBootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val app = context.applicationContext
-        val pending = goAsync()
-        CoroutineScope(Dispatchers.Default).launch {
-            try {
-                TaskReminders.rescheduleFromSave(app)
-                AppAlerts.rescheduleFromSave(app)
-                RoutineReminders.rescheduleFromSave(app)
-            } finally {
-                pending.finish()
-            }
+        doAsync {
+            TaskReminders.rescheduleFromSave(app)
+            AppAlerts.rescheduleFromSave(app)
+            RoutineReminders.rescheduleFromSave(app)
         }
     }
 }
