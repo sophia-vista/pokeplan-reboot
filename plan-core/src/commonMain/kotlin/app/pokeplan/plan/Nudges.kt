@@ -29,6 +29,9 @@ object MiniQuests {
     /** Finishing all of a day's quests adds a small bonus. *(tune)* */
     const val ALL_THREE_BONUS_BERRIES = 1
 
+    /** "Pet your buddy": petting ticks it by itself. */
+    const val PET_QUEST = "pet"
+
     val pool: List<MiniQuest> = listOf(
         MiniQuest("water", "Drink a glass of water"),
         MiniQuest("stretch", "Stand up and stretch for a minute"),
@@ -53,7 +56,7 @@ object MiniQuests {
         MiniQuest("phone-away", "Put your phone in another room for 10 minutes"),
         MiniQuest("eyes", "Rest your eyes: look far away for 20 seconds"),
         MiniQuest("small-step", "Do the first two minutes of something you are putting off"),
-        MiniQuest("pet", "Pet your buddy"),
+        MiniQuest(PET_QUEST, "Pet your buddy"),
         MiniQuest("snack", "Plan a healthy snack"),
         MiniQuest("bag", "Pack your bag for tomorrow"),
         MiniQuest("call", "Call or voice-message someone you miss"),
@@ -62,10 +65,12 @@ object MiniQuests {
         MiniQuest("smile", "Do something that makes you smile"),
     )
 
-    /** The day's quests: the same for everyone on a date, with a reroll that shifts the picks. */
+    /** The day's quests: the same for everyone on a date. A reroll gives three others, none of the first three again. */
     fun forDay(date: LocalDate, rerolled: Boolean = false): List<MiniQuest> {
-        val seed = date.toString().hashCode() * 31 + if (rerolled) 17 else 0
-        val rng = Random(seed)
-        return pool.shuffled(rng).take(PER_DAY)
+        val first = pick(date, 0, emptySet())
+        return if (rerolled) pick(date, 17, first.map { it.id }.toSet()) else first
     }
+
+    private fun pick(date: LocalDate, salt: Int, not: Set<String>): List<MiniQuest> =
+        pool.filter { it.id !in not }.shuffled(Random(date.toString().hashCode() * 31 + salt)).take(PER_DAY)
 }

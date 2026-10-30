@@ -46,6 +46,7 @@ import app.pokeplan.plan.TaskState
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.ItemIcon
+import app.pokeplan.ui.describe
 import app.pokeplan.ui.Place
 import app.pokeplan.ui.theme.ExpBar
 import app.pokeplan.ui.theme.ListRow
@@ -237,6 +238,9 @@ private fun RestDayRow(model: AppModel) {
 @Composable
 private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
     val store = model.store
+    // Read the save through Compose state: the store itself is not observable, so without this the card never redraws
+    // after Done and the button looks dead.
+    model.data
     val quests = store.miniQuests()
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -258,7 +262,14 @@ private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
                     }
                 }
             }
-            Text("A berry each, and one more for all three.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            val got = store.miniQuestRewards()
+            if (got.isEmpty()) Text("A berry each, and one more for all three.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            else got.forEach { r ->
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    r.iconItem()?.let { ItemIcon(it, size = 24.dp) }
+                    Text("You got ${r.describe()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+                }
+            }
             if (store.canRerollMiniQuests()) PixelButton("Different ones", { store.rerollMiniQuests() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
     }
@@ -267,6 +278,7 @@ private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
 /** After a week or more away: a gift and a fresh start, never a scolding. */
 @Composable
 private fun WelcomeBackCard(model: AppModel) {
+    model.data // observe the save (see MiniQuestsCard)
     if (!model.store.welcomeBackDue()) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {

@@ -59,11 +59,44 @@ class NudgeStoreTest {
     }
 
     @Test
-    fun aRerollChangesTheDaysQuests() {
+    fun aRerollGivesThreeOtherQuests() {
         val first = s.miniQuests()
         s.rerollMiniQuests()
         assertFalse(s.canRerollMiniQuests())
-        assertTrue(first != s.miniQuests())
+        assertTrue(s.miniQuests().none { it in first }, "none of the first three again")
+    }
+
+    @Test
+    fun aMiniQuestDoneLateAtNightStaysDoneUntilFourInTheMorning() {
+        clock.millis = at(19, 23)
+        val quest = s.miniQuests()[0]
+        assertTrue(s.completeMiniQuest(quest.id))
+        clock.millis = at(20, 1)
+        assertEquals(quest, s.miniQuests()[0], "still the same day after midnight")
+        assertTrue(s.miniQuestDone(quest.id))
+        clock.millis = at(20, 5)
+        assertFalse(s.miniQuestDone(s.miniQuests()[0].id), "a new day at 4am")
+    }
+
+    @Test
+    fun aMiniQuestsRewardIsShownOnItsCardNotInTheRewardBox() {
+        val quest = s.miniQuests()[0]
+        s.completeMiniQuest(quest.id)
+        val got = s.miniQuestRewards()
+        assertEquals(1, got.size)
+        assertTrue(s.data.rewardLog.last().seen, "the card shows it, so the box at the top does not repeat it")
+        clock.millis = at(20, 9)
+        assertTrue(s.miniQuestRewards().isEmpty(), "a new day starts empty")
+    }
+
+    @Test
+    fun pettingTicksThePetQuest() {
+        // Find a day whose quests include petting.
+        val day = (1..28).first { d -> MiniQuests.forDay(LocalDate(2026, 11, d)).any { it.id == MiniQuests.PET_QUEST } }
+        clock.millis = LocalDateTime(2026, 11, day, 9, 0).toInstant(utc).toEpochMilliseconds()
+        assertFalse(s.miniQuestDone(MiniQuests.PET_QUEST))
+        s.pet()
+        assertTrue(s.miniQuestDone(MiniQuests.PET_QUEST))
     }
 
     @Test

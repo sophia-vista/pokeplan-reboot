@@ -275,8 +275,8 @@ class GameStore(
 
     // --- rewards ------------------------------------------------------------------------------------------------------
 
-    private fun log(source: String, rewards: List<Reward>, d: AppData): AppData =
-        d.copy(rewardLog = (d.rewardLog + RewardEntry(nowMillis, source, rewards)).takeLast(LOG_SIZE))
+    private fun log(source: String, rewards: List<Reward>, d: AppData, seen: Boolean = false): AppData =
+        d.copy(rewardLog = (d.rewardLog + RewardEntry(nowMillis, source, rewards, seen)).takeLast(LOG_SIZE))
 
     fun markRewardsSeen() = update { d -> d.copy(rewardLog = d.rewardLog.map { it.copy(seen = true) }) }
 
@@ -792,38 +792,46 @@ class GameStore(
         return pick
     }
 
-    /** Today's three mini-quests (the same for everyone on a date, until rerolled). */
-    fun miniQuests(): List<MiniQuest> = MiniQuests.forDay(today, rerolled = "mq-reroll-$today" in data.counters)
+    /** Today's three mini-quests (the same for everyone on a date, until rerolled). The day turns over at 4am, like streaks. */
+    fun miniQuests(): List<MiniQuest> = MiniQuests.forDay(streakDay, rerolled = "mq-reroll-$streakDay" in data.counters)
 
-    fun miniQuestDone(id: String): Boolean = "mq-$today-$id" in data.counters
+    fun miniQuestDone(id: String): Boolean = "mq-$streakDay-$id" in data.counters
 
     /** One reroll a day, before any of the day's quests is done. */
-    fun canRerollMiniQuests(): Boolean = "mq-reroll-$today" !in data.counters && miniQuests().none { miniQuestDone(it.id) }
+    fun canRerollMiniQuests(): Boolean = "mq-reroll-$streakDay" !in data.counters && miniQuests().none { miniQuestDone(it.id) }
 
     fun rerollMiniQuests() {
         if (!canRerollMiniQuests()) return
-        update { d -> d.copy(counters = d.counters.filterKeys { !it.startsWith("mq-") } + ("mq-reroll-$today" to 1)) }
+        update { d -> d.copy(counters = d.counters.filterKeys { !it.startsWith("mq-") } + ("mq-reroll-$streakDay" to 1)) }
     }
 
     /**
      * Ticks off one of today's mini-quests (honour system): a berry, and [MiniQuests.ALL_THREE_BONUS_BERRIES] more for the
      * third. No streak and no active day: they are small kindnesses, not work. Returns false if it is not today's or done.
+     * The reward is logged as seen: the quest's own card shows it, so the reward box at the top of the page does not repeat it.
      */
     fun completeMiniQuest(id: String): Boolean {
         val quests = miniQuests()
         if (quests.none { it.id == id } || miniQuestDone(id)) return false
+        val day = streakDay
         val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
         val allDone = quests.all { it.id == id || miniQuestDone(it.id) }
         val berries = 1 + if (allDone) MiniQuests.ALL_THREE_BONUS_BERRIES else 0
         update { d ->
             // Only today's mini-quest marks are kept.
-            val counters = d.counters.filterKeys { !it.startsWith("mq-") || it.contains("-$today") } + ("mq-$today-$id" to 1)
+            val counters = d.counters.filterKeys { !it.startsWith("mq-") || it.contains("-$day") } + ("mq-$day-$id" to 1)
             val (bag, overflow) = d.player.inventory.addCapped(berry, berries)
-            log("Mini-quest", listOf(Reward.ItemDrop(berry, berries)), d.copy(
+            log(MINI_QUEST_SOURCE, listOf(Reward.ItemDrop(berry, berries)), d.copy(
                 counters = counters, player = d.player.copy(inventory = bag, coins = d.player.coins + overflow),
-            ))
+            ), seen = true)
         }
         return true
+    }
+
+    /** What today's mini-quests have paid so far, oldest first: the card shows it beside the quests. */
+    fun miniQuestRewards(): List<Reward> {
+        val since = LocalDateTime(streakDay, kotlinx.datetime.LocalTime(Streaks.ROLLOVER_HOUR, 0)).toEpochMillis(zone)
+        return data.rewardLog.filter { it.source == MINI_QUEST_SOURCE && it.atMillis >= since }.flatMap { it.rewards }
     }
 
     /** The oldest open task: what "open the task you've been avoiding" starts 5 minutes of focus on. */
@@ -1219,6 +1227,8 @@ class GameStore(
      */
     fun pet(pokemonId: String? = null): Int {
         val buddy = (if (pokemonId == null) data.player.buddy else data.player.pokemon.firstOrNull { it.id == pokemonId }) ?: return 0
+        // Petting is the "Pet your buddy" mini-quest, so it ticks itself, even once today's petting friendship is used up.
+        completeMiniQuest(MiniQuests.PET_QUEST)
         val key = "pet-$today"
         val gainedToday = data.counters[key] ?: 0
         if (gainedToday >= PET_DAILY_CAP || buddy.friendship >= FriendshipRules.MAX) return 0
@@ -1322,6 +1332,9 @@ class GameStore(
 
         /** Friendship a day that petting can give. */
         const val PET_DAILY_CAP = 10
+
+        /** The reward log's name for a mini-quest's berries. */
+        const val MINI_QUEST_SOURCE = "Mini-quest"
         const val LOG_SIZE = 50
 
         /** Friends Care can make a day, one per visitor in the meadow (`Visitors.MAX_VISITORS`). *(tune)* */
