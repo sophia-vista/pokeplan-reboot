@@ -7,6 +7,7 @@ import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.HatchOption
 import app.pokeplan.core.dex.Egg
 import app.pokeplan.core.dex.PokemonType
+import app.pokeplan.core.dex.Region
 import app.pokeplan.core.pokemon.CandyRules
 import app.pokeplan.core.pokemon.EvolutionContext
 import app.pokeplan.core.pokemon.EvolutionOption
@@ -242,7 +243,7 @@ class GameStore(
             it.copy(
                 trainerName = trainerName.trim().ifEmpty { "Trainer" }, onboarded = true,
                 player = it.player.copy(pokemon = listOf(starter), buddyId = starter.id, caught = setOf(starter.speciesId)),
-                tasks = listOf(first),
+                tasks = listOf(first), origins = mapOf(starter.id to Origin(Origin.How.STARTER)),
             )
         }
     }
@@ -253,8 +254,12 @@ class GameStore(
 
     // --- rewards ------------------------------------------------------------------------------------------------------
 
-    private fun log(source: String, rewards: List<Reward>, d: AppData, seen: Boolean = false): AppData =
-        d.copy(rewardLog = (d.rewardLog + RewardEntry(nowMillis, source, rewards, seen)).takeLast(LOG_SIZE))
+    /** Logs [rewards]; a Pokémon among them is recorded as having come from [origin] (a Task Egg when not given). */
+    private fun log(source: String, rewards: List<Reward>, d: AppData, seen: Boolean = false, origin: Origin? = null): AppData {
+        val joined = rewards.filterIsInstance<Reward.Hatched>()
+            .associate { it.pokemon.id to (origin ?: Origin(Origin.How.TASK_EGG, d.settings.region.open)) }
+        return d.copy(rewardLog = (d.rewardLog + RewardEntry(nowMillis, source, rewards, seen)).takeLast(LOG_SIZE), origins = d.origins + joined)
+    }
 
     fun markRewardsSeen() = update { d -> d.copy(rewardLog = d.rewardLog.map { it.copy(seen = true) }) }
 
@@ -293,7 +298,7 @@ class GameStore(
         val rewards = outcome.rewards + egg?.rewards.orEmpty()
         update { d ->
             val counters = tally.set(d.counters, today, paidToday + 1) + (Counters.CARE_EGG_METER to meter % RewardEngine.CARE_EGG_METER_SIZE)
-            log(CARE_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters))
+            log(CARE_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters), origin = Origin(Origin.How.CARE_EGG, Region.CARE))
         }
         return rewards
     }
@@ -342,7 +347,8 @@ class GameStore(
             val counters = Counters.BEFRIEND.set(d.counters, today, made + 1)
             val tickets = if (ticket == null) d.eggTickets
             else d.eggTickets.copy(stock = d.eggTickets.stock.drop(1), spent = d.eggTickets.spent + SpentTicket(ticket.id, nowMillis, event.newPokemonId))
-            log(CARE_LOG_PREFIX + "made a friend", outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets))
+            log(CARE_LOG_PREFIX + "made a friend", outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets),
+                origin = Origin(Origin.How.BEFRIENDED, Region.CARE))
         }
         return outcome.rewards
     }
@@ -899,7 +905,7 @@ class GameStore(
                         player = outcome.state.copy(buddyId = d.player.buddyId), focus = null, activeDays = d.activeDays + streakDay, lastFocusEnd = FocusEnd(nowMillis, true),
                         focusHistory = d.focusHistory + session.record(minutes, completed = true),
                         tasks = d.tasks.map { if (it.id == session.taskId) it.copy(focusedMinutes = it.focusedMinutes + minutes) else it },
-                    ))
+                    ), origin = Origin(Origin.How.FOCUS_EGG, event.region))
                 }
                 FocusResult.Hatched(outcome.rewards)
             }
@@ -938,7 +944,7 @@ class GameStore(
                 lastFocusEnd = FocusEnd(nowMillis, true, reason, guarded = true),
                 focusHistory = d.focusHistory + session.record(minutes, completed = false),
                 counters = Counters.MAGIC_GUARD.set(d.counters, weekStart, 1),
-            ))
+            ), origin = Origin(Origin.How.FOCUS_EGG, event.region))
         }
         return FocusResult.Hatched(outcome.rewards)
     }
@@ -1025,7 +1031,7 @@ class GameStore(
         val p = Hatching.create(newId(), option, OwnedPokemon.PARTY_SIZE, nowMillis, 60, rng).copy(inParty = false)
         update { d ->
             log(source, listOf(Reward.Hatched(p, fromTask = false)),
-                d.copy(player = d.player.copy(pokemon = d.player.pokemon + p, caught = d.player.caught + p.speciesId)))
+                d.copy(player = d.player.copy(pokemon = d.player.pokemon + p, caught = d.player.caught + p.speciesId)), origin = Origin(Origin.How.QUEST))
         }
         return p
     }
@@ -1102,7 +1108,7 @@ class GameStore(
             quote.returnedItem?.let { bag = bag.add(it) }
             d.copy(player = d.player.copy(
                 pokemon = d.player.pokemon.filter { it.id != id }, inventory = bag, coins = d.player.coins + quote.coins,
-            ))
+            ), origins = d.origins - id)
         }
         return true
     }

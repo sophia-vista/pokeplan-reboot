@@ -72,6 +72,8 @@ data class AppData(
     val lastSeenVersion: String = "0.1.0",
     /** Pokémon the player starred: they cannot be transferred by accident. Stays on this device's save. */
     val favorites: Set<String> = emptySet(),
+    /** Where each Pokémon came from, by Pokémon id, for its detail page; Pokémon from before 0.50.0 have none. */
+    val origins: Map<String, Origin> = emptyMap(),
     /** Species the player has ever owned as a shiny, kept even after the shiny is transferred. */
     val shinySpecies: Set<Int> = emptySet(),
     /** Form ids the player has ever had (see [FormDex]), kept after the Pokémon is transferred. */
@@ -165,6 +167,19 @@ data class PendingCompletion(
     val focusedOnIt: Boolean,
     val finalAtMillis: Long,
 )
+
+/** How a Pokémon joined the collection, and in which region when it hatched or was befriended there. */
+@Serializable
+data class Origin(val how: How, val region: Region? = null) {
+    enum class How(val label: String) {
+        STARTER("Your first partner"),
+        FOCUS_EGG("Hatched from a Focus Egg"),
+        TASK_EGG("Hatched from a Task Egg"),
+        CARE_EGG("Hatched from a Care Egg"),
+        BEFRIENDED("Befriended on a Care visit"),
+        QUEST("Earned on a quest"),
+    }
+}
 
 /** A batch of rewards from one source ("Task: Write report"). */
 @Serializable

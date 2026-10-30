@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.50.0
+
+- A Pokémon's page reads in a clear order: who it is (its Pokédex number, species, level and types), its traits (nature with the stat it raises and lowers, ability, gender, shiny, and the IV judge with its best stat), how it is growing (Rare Candies, friendship and how it likes to bond, stats with the nature's ▲ and ▼), its evolution, its role (party, lead or PC, and which region's Pokédex it counts for), and where it came from. Transfer sits quietly at the end.
+- Pokémon remember where they came from: your first partner, a Focus, Task or Care Egg and the region it hatched in, a Care visitor you befriended, or a quest, and the day you met. Pokémon from before this version show the day only.
+- The page holds up at large text sizes: names no longer wrap beside Rename, and stat names no longer get cut off.
+
 ## 0.49.0
 
 - Home is now an overview of your whole world: a card for each region (Plan and Care) with its lead, how today is going there and the one next thing to do, then your streak, mini-quests and what happened recently. Tap a region's card to open it, or a recent hatch to see that Pokémon.

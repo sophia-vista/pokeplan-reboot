@@ -407,6 +407,27 @@ class ScreenshotTest {
     @Test
     fun pokemonDetail() = collection("pokemon-detail", 0, open = true)
 
+    /** The whole detail page at a rank that shows stats, the IV judge and held items, at [fontScale]. */
+    private fun pokemonDetailFull(name: String, fontScale: Float, height: Int) {
+        val base = storeWithTeam()
+        val text = GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), base.data.copy(player = base.data.player.copy(trainerPoints = 700)))
+        val store = GameStore(MemoryStorage(text), clock)
+        val model = AppModel(store)
+        render(name, fontScale = fontScale, height = height) {
+            PixelTheme {
+                Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                    app.pokeplan.ui.screens.PokemonDetail(model, store.data.player.party.last()) {}
+                }
+            }
+        }
+    }
+
+    @Test
+    fun pokemonDetailWhole() = pokemonDetailFull("pokemon-detail-whole", 1f, 3000)
+
+    @Test
+    fun pokemonDetailLargeText() = pokemonDetailFull("pokemon-detail-large-text", 1.8f, 4600)
+
     private fun me(name: String, section: Int) = meStore(name) { model ->
         app.pokeplan.ui.screens.MeScreen(model, section)
     }
