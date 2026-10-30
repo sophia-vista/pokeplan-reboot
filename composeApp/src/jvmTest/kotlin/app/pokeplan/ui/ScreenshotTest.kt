@@ -318,6 +318,15 @@ class ScreenshotTest {
     @Test
     fun collectionParty() = collection("collection-party", 0)
 
+    /** Both regions' parties on one page: Plan's, then Care's with its lead first. */
+    @Test
+    fun collectionPartyRegions() = collection("collection-party-regions", 0, hatched = 6) { store ->
+        store.changeSettings { it.copy(careModule = true) }
+        val plan = store.data.player.party.filter { it.id != store.data.player.buddyId }
+        plan.take(2).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.CARE) }
+        store.setCareLead(plan[1].id)
+    }
+
     @Test
     fun pokedexEntry() {
         val store = storeWithTeam()

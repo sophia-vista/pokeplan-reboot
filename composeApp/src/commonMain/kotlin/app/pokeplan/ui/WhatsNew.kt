@@ -3,6 +3,9 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.52.0" to listOf(
+            "The Party page shows Plan's and Care's parties together, each with its lead first.",
+        ),
         "0.51.0" to listOf(
             "A Pokémon's page reads in order now: who it is, its traits, how it's growing, its evolution, its role and where it came from.",
             "New Pokémon remember where they came from and the day you met.",
