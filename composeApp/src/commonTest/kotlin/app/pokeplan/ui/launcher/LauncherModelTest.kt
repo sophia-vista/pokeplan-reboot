@@ -79,4 +79,37 @@ class LauncherModelTest {
         assertEquals(LauncherPrefs(hidden = setOf("ok")), damaged)
         assertEquals(LauncherPrefs(), LauncherPrefs.decode(null))
     }
+
+    @Test
+    fun dungeonTownsAreWallsAndWaterInWholeRectanglesWithGroundWhereThePokemonWalk() {
+        for (seed in 0 until 200) {
+            val map = TownLayout.build(13, 26, seed)
+            // The band along the top is wall, and no pond or clump reaches the strip the Pokémon walk in.
+            assertEquals(TownCell.WALL, map.at(6, 0))
+            val walkTop = (26 * TownLayout.WALK_TOP).toInt()
+            val walkBottom = (26 * TownLayout.WALK_BOTTOM).toInt()
+            for (y in walkTop..walkBottom) for (x in 0 until 13) assertEquals(TownCell.GROUND, map.at(x, y), "seed $seed at $x,$y")
+            // Wall and water squares take their tiles from the atlas blocks on rows 0 to 2, ground from row 3.
+            for (y in 0 until 26) for (x in 0 until 13) {
+                val (ax, ay) = map.atlas(x, y, seed)
+                assertTrue(ax in 0..5 && ay in 0..3)
+                if (map.at(x, y) == TownCell.GROUND) assertEquals(3, ay) else assertTrue(ay in 0..2)
+            }
+        }
+    }
+
+    @Test
+    fun aTownLooksTheSameEveryTime() {
+        val a = TownLayout.build(13, 26, 7)
+        val b = TownLayout.build(13, 26, 7)
+        for (y in 0 until 26) for (x in 0 until 13) assertEquals(a.atlas(x, y, 7), b.atlas(x, y, 7))
+    }
+
+    @Test
+    fun theTownScaleIsAWholeNumberAndPositionsSnapToIt() {
+        assertEquals(1, townScale(100f))
+        assertEquals(3, townScale(1080f))
+        assertEquals(4, townScale(1440f))
+        for (pixel in 1..6) for (v in listOf(0f, 1f, 17.4f, 333.3f, 1079f)) assertEquals(0, snap(v, pixel) % pixel)
+    }
 }

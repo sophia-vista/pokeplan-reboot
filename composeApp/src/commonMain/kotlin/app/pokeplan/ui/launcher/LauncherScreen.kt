@@ -259,7 +259,7 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
     BackHandler(enabled = true) { if (query.isNotEmpty()) query = "" else onClose() }
     val soft = Color.White.copy(alpha = 0.7f)
     Box(Modifier.fillMaxSize()) {
-        SceneImage(prefs.scene, Modifier.fillMaxSize().blur(24.dp))
+        TownBackdrop(prefs.scene, Modifier.fillMaxSize().blur(24.dp))
         Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.62f)))
         Column(Modifier.fillMaxSize().safeDrawingPadding()) {
             Row(Modifier.padding(horizontal = Spacing.Page, vertical = Spacing.S), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -389,23 +389,31 @@ internal fun TownPicker(current: String, onPick: (String) -> Unit, onClose: () -
             verticalArrangement = Arrangement.spacedBy(Spacing.S),
         ) {
             Text("Where is your town?", style = MaterialTheme.typography.titleSmall)
-            Column(Modifier.height(380.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                TownScenes.all.chunked(2).forEach { row ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        row.forEach { (name, label) ->
-                            Box(
-                                Modifier.weight(1f).height(96.dp).clip(rowShape).then(if (name == current) Modifier.border(3.dp, Pixel.Blue, rowShape) else Modifier)
-                                    .clickable(role = Role.RadioButton, onClickLabel = "Set the town in $label") { onPick(name) },
-                            ) {
-                                SceneImage(name, Modifier.fillMaxSize())
-                                Text(label, style = MaterialTheme.typography.labelMedium, color = Color.White, modifier = Modifier.align(Alignment.BottomStart).background(Color.Black.copy(alpha = 0.5f)).padding(horizontal = Spacing.S, vertical = 2.dp))
-                            }
-                        }
-                        if (row.size == 1) Box(Modifier.weight(1f))
-                    }
-                }
+            Column(Modifier.height(420.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Text("Scenes", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+                TownChoices(TownScenes.scenes, current, onPick)
+                Text("Dungeons", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, modifier = Modifier.padding(top = Spacing.S))
+                TownChoices(TownScenes.dungeons, current, onPick)
             }
             Text("Press and hold the town any time to change it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        }
+    }
+}
+
+@Composable
+private fun TownChoices(choices: List<Pair<String, String>>, current: String, onPick: (String) -> Unit) {
+    choices.chunked(2).forEach { row ->
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            row.forEach { (name, label) ->
+                Box(
+                    Modifier.weight(1f).height(96.dp).clip(rowShape).then(if (name == current) Modifier.border(3.dp, Pixel.Blue, rowShape) else Modifier)
+                        .clickable(role = Role.RadioButton, onClickLabel = "Set the town in $label") { onPick(name) },
+                ) {
+                    TownBackdrop(name, Modifier.fillMaxSize())
+                    Text(label, style = MaterialTheme.typography.labelMedium, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.align(Alignment.BottomStart).background(Color.Black.copy(alpha = 0.5f)).padding(horizontal = Spacing.S, vertical = 2.dp))
+                }
+            }
+            if (row.size == 1) Box(Modifier.weight(1f))
         }
     }
 }

@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.59.0
+
+- The launcher's town can be a dungeon: 17 towns laid out from the tilesets of Mystery Dungeon dungeons (Lush Prairie, Apple Woods, Drenched Bluff, Craggy Coast, Crystal Cave, Dark Hill and more), with a wall band along the top, a pond and wall clumps, and every Pokémon walking the open ground. Pick one under "Dungeons" when you press and hold the town.
+- One pixel grid: the tiles, the Pokémon and where they stand are all drawn at the same whole-number scale without smoothing, and the scene backdrops are scaled by whole numbers too. A flipped Pokémon is flipped pixel for pixel.
+
 ## 0.58.0
 
 - The Pokémon of the launcher's town now walk: towards you, away from you, or to the side (mirrored for left), with their own Mystery Dungeon walk animations, instead of sliding about facing front. A form without a walk animation keeps its idle one.
