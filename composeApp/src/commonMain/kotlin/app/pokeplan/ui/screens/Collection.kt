@@ -53,6 +53,11 @@ private enum class Section(val title: String, val icon: String) {
     GUARDIANS("Guardians", "master-ball"), QUESTS("Quests", "oaks-letter"),
 }
 
+/** What the Pokémon tab shows: its menu, a section, a Pokédex entry or one Pokémon; each one opened goes a level deeper. */
+private data class CollectionPage(val section: Section?, val dexEntry: Int?, val pokemon: String?) {
+    val depth get() = listOfNotNull(section, dexEntry, pokemon).size
+}
+
 @Composable
 fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String? = null) {
     var section by remember { mutableStateOf(Section.entries.getOrNull(startSection)) }
@@ -65,73 +70,76 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
     val player = model.data.player
     val store = model.store
 
-    val open = selected?.let { id -> player.pokemon.firstOrNull { it.id == id } }
-    if (open != null) {
-        PokemonDetail(model, open) { selected = null }
-        return
-    }
-
-    dexEntry?.let { id ->
-        DexEntryScreen(model, remember(dexView) { dexView.rows() }, id, open = { dexEntry = it }) { dexEntry = null }
-        return
-    }
-
-    val current = section
-    if (current == null) {
-        Column(Modifier.fillMaxSize()) {
-            ScreenHeader("Pokémon", subtitle = "${player.pokemon.size} owned, ${player.caught.size} seen", icon = "poke-ball")
-            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp)) {
-                val ready = store.activeQuests.count { store.questReady(it) }
-                MenuGrid(
-                    listOfNotNull(
-                        MenuEntry("PARTY", "poke-ball", "Party", "${player.party.size} of 6", tint = Pixel.Red),
-                        MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { !it.inParty && !Guardians.canBe(it) }} stored", tint = Pixel.Warning),
-                        MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught", tint = Pixel.Blue),
-                        if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.Green) else null,
-                        if (!store.sees(Feature.GUARDIANS)) null else MenuEntry("GUARDIANS", "master-ball", "Guardians", if (store.guardianSlots == 0) "opens at rank ${TrainerRank.names[4]}" else "${player.guardians.size} of ${store.guardianSlots} slotted", tint = androidx.compose.ui.graphics.Color(0xFF8B5CF6)),
-                        if (!store.sees(Feature.LEGENDARY_QUESTS)) null else MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready, tint = Pixel.Warning),
-                    ),
-                ) { key -> section = Section.valueOf(key) }
-            }
+    // Deeper pages (a section, a Pokédex entry, a Pokémon) slide in and back out; one entry to the next crossfades.
+    ScreenSwitch(CollectionPage(section, dexEntry, selected), depth = { it.depth }) { page ->
+        val open = page.pokemon?.let { id -> player.pokemon.firstOrNull { it.id == id } }
+        if (open != null) {
+            PokemonDetail(model, open) { selected = null }
+            return@ScreenSwitch
         }
-        return
-    }
 
-    SectionScaffold(current.title, "Pokémon", onBack = { section = null }, icon = current.icon) {
-        when (current) {
-            Section.PARTY -> {
-                val careOn = model.data.settings.careModule
-                val tab = if (careOn) partyTab else 0
-                if (careOn) {
-                    Segmented(listOf("Plan ${player.party.size}/6", "Care ${player.partyOf(PartyIds.CARE).size}/6"), tab) { partyTab = it }
-                }
-                if (tab == 0) {
-                    if (player.party.isEmpty()) EmptyState("Your party is empty", "Hatch an egg with a focus session, or move a Pokémon here from the PC.", icon = "poke-ball")
-                    else PartyPerksCard(model)
-                    player.party.forEach { p -> PokemonRow(p, if (p.id == player.buddyId) "Buddy" else null, store.isFavorite(p.id)) { selected = p.id } }
-                } else {
-                    val care = player.partyOf(PartyIds.CARE)
-                    if (care.isEmpty()) EmptyState("Care's party is empty", "Open a Pokémon and choose \"To Care party\". Until then Care warms your Plan buddy. Its first member leads.", icon = "poke-ball")
-                    else CarePerksCard(model)
-                    care.forEach { p -> PokemonRow(p, if (p.id == player.careLeadId) "Care lead" else null, store.isFavorite(p.id)) { selected = p.id } }
+        page.dexEntry?.let { id ->
+            DexEntryScreen(model, remember(dexView) { dexView.rows() }, id, open = { dexEntry = it }) { dexEntry = null }
+            return@ScreenSwitch
+        }
+
+        val current = page.section
+        if (current == null) {
+            Column(Modifier.fillMaxSize()) {
+                ScreenHeader("Pokémon", subtitle = "${player.pokemon.size} owned, ${player.caught.size} seen", icon = "poke-ball")
+                Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp)) {
+                    val ready = store.activeQuests.count { store.questReady(it) }
+                    MenuGrid(
+                        listOfNotNull(
+                            MenuEntry("PARTY", "poke-ball", "Party", "${player.party.size} of 6", tint = Pixel.Red),
+                            MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { !it.inParty && !Guardians.canBe(it) }} stored", tint = Pixel.Warning),
+                            MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught", tint = Pixel.Blue),
+                            if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.Green) else null,
+                            if (!store.sees(Feature.GUARDIANS)) null else MenuEntry("GUARDIANS", "master-ball", "Guardians", if (store.guardianSlots == 0) "opens at rank ${TrainerRank.names[4]}" else "${player.guardians.size} of ${store.guardianSlots} slotted", tint = androidx.compose.ui.graphics.Color(0xFF8B5CF6)),
+                            if (!store.sees(Feature.LEGENDARY_QUESTS)) null else MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready, tint = Pixel.Warning),
+                        ),
+                    ) { key -> section = Section.valueOf(key) }
                 }
             }
-            Section.PC -> {
-                val box = player.pokemon.filter { !it.inParty && !Guardians.canBe(it) }
-                if (box.isEmpty()) EmptyState("The PC is empty", "New eggs go to your party first, then here once it is full.", icon = "storage-key")
-                else {
-                    val shown = pcView.apply(box) { store.isFavorite(it) }
-                    PcControls(pcView, { pcView = it }, shown.size, box.size)
-                    if (shown.isEmpty()) EmptyState("Nothing matches", "Try another type or clear the filters.")
-                    FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        shown.forEach { p -> PcTile(p, store.isFavorite(p.id)) { selected = p.id } }
+            return@ScreenSwitch
+        }
+
+        SectionScaffold(current.title, "Pokémon", onBack = { section = null }, icon = current.icon) {
+            when (current) {
+                Section.PARTY -> {
+                    val careOn = model.data.settings.careModule
+                    val tab = if (careOn) partyTab else 0
+                    if (careOn) {
+                        Segmented(listOf("Plan ${player.party.size}/6", "Care ${player.partyOf(PartyIds.CARE).size}/6"), tab) { partyTab = it }
+                    }
+                    if (tab == 0) {
+                        if (player.party.isEmpty()) EmptyState("Your party is empty", "Hatch an egg with a focus session, or move a Pokémon here from the PC.", icon = "poke-ball")
+                        else PartyPerksCard(model)
+                        player.party.forEach { p -> PokemonRow(p, if (p.id == player.buddyId) "Buddy" else null, store.isFavorite(p.id)) { selected = p.id } }
+                    } else {
+                        val care = player.partyOf(PartyIds.CARE)
+                        if (care.isEmpty()) EmptyState("Care's party is empty", "Open a Pokémon and choose \"To Care party\". Until then Care warms your Plan buddy. Its first member leads.", icon = "poke-ball")
+                        else CarePerksCard(model)
+                        care.forEach { p -> PokemonRow(p, if (p.id == player.careLeadId) "Care lead" else null, store.isFavorite(p.id)) { selected = p.id } }
                     }
                 }
+                Section.PC -> {
+                    val box = player.pokemon.filter { !it.inParty && !Guardians.canBe(it) }
+                    if (box.isEmpty()) EmptyState("The PC is empty", "New eggs go to your party first, then here once it is full.", icon = "storage-key")
+                    else {
+                        val shown = pcView.apply(box) { store.isFavorite(it) }
+                        PcControls(pcView, { pcView = it }, shown.size, box.size)
+                        if (shown.isEmpty()) EmptyState("Nothing matches", "Try another type or clear the filters.")
+                        FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            shown.forEach { p -> PcTile(p, store.isFavorite(p.id)) { selected = p.id } }
+                        }
+                    }
+                }
+                Section.DEX -> PokedexView(model, dexView, { dexView = it }) { dexEntry = it }
+                Section.BAG -> BagView(model)
+                Section.GUARDIANS -> GuardiansView(model) { selected = it }
+                Section.QUESTS -> QuestsView(model)
             }
-            Section.DEX -> PokedexView(model, dexView, { dexView = it }) { dexEntry = it }
-            Section.BAG -> BagView(model)
-            Section.GUARDIANS -> GuardiansView(model) { selected = it }
-            Section.QUESTS -> QuestsView(model)
         }
     }
 }
