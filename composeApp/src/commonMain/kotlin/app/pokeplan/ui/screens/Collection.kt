@@ -27,6 +27,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import app.pokeplan.app.PcSort
@@ -116,14 +120,21 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                     }
                 }
                 Section.PC -> {
+                    // One PC for every region's party (docs/design.md, "Parties per module"), in boxes of 30 like the games.
                     val box = player.pokemon.filter { !it.inParty && !Guardians.canBe(it) }
-                    if (box.isEmpty()) EmptyState("The PC is empty", "New eggs go to your party first, then here once it is full.", icon = "storage-key")
+                    if (box.isEmpty()) EmptyState("The PC is empty", "New eggs go to their region's party first, then here once it is full. One PC serves every region.", icon = "storage-key")
                     else {
                         val shown = pcView.apply(box) { store.isFavorite(it) }
+                        val boxes = pcView.boxCount(shown.size)
+                        val at = pcView.box.coerceIn(0, boxes - 1)
                         PcControls(pcView, { pcView = it }, shown.size, box.size)
                         if (shown.isEmpty()) EmptyState("Nothing matches", "Try another type or clear the filters.")
-                        FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            shown.forEach { p -> PcTile(p, store.isFavorite(p.id)) { selected = p.id } }
+                        else {
+                            if (boxes > 1) PcBoxBar(at, boxes) { pcView = pcView.copy(box = it) }
+                            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                pcView.page(shown).forEach { p -> PcTile(p, store.isFavorite(p.id)) { selected = p.id } }
+                            }
+                            if (boxes > 1) PcBoxBar(at, boxes) { pcView = pcView.copy(box = it) }
                         }
                     }
                 }
@@ -185,14 +196,17 @@ private fun PokemonRow(p: OwnedPokemon, role: String?, favorite: Boolean, onClic
 
 /** Search, sort and filters for the PC boxes. A type plate is dimmed until chosen; choosing it again clears it. */
 @Composable
-private fun PcControls(view: PcView, change: (PcView) -> Unit, shown: Int, total: Int) {
+private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, total: Int) {
+    // Any new search, sort or filter starts again from the first box.
+    val change = { v: PcView -> onChange(v.copy(box = 0)) }
     Column(Modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedTextField(
             view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
             placeholder = { Text("Search by name") }, textStyle = MaterialTheme.typography.bodyLarge,
         )
         var open by remember { mutableStateOf(false) }
-        PixelButton(if (open) "Hide sort and filters" else "Sort and filters", { open = !open }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+        // Quiet: the boxes are the page, the controls only help find one.
+        PixelButton(if (open) "Hide sort and filters" else "Sort and filters", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         if (open) {
             SectionLabel("Sort by")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -215,20 +229,43 @@ private fun PcControls(view: PcView, change: (PcView) -> Unit, shown: Int, total
             }
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text(if (view.filtering) "$shown of $total" else "$total stored", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+            Text(
+                (if (view.filtering) "$shown of $total" else "$total stored") + " · by ${view.sort.label}",
+                Modifier.weight(1f), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft,
+            )
             if (view.filtering) PixelButton("Clear", { change(view.copy(type = null, shinyOnly = false, starredOnly = false, search = "")) }, color = Pixel.InkSoft, compact = true)
         }
     }
 }
 
+/** Previous and Next between the PC's boxes, with "Box 2 of 5" between them. */
+@Composable
+private fun PcBoxBar(at: Int, boxes: Int, go: (Int) -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        PixelButton("Previous", { go(at - 1) }, Modifier.weight(1f), Pixel.InkSoft, enabled = at > 0, compact = true)
+        Text("Box ${at + 1} of $boxes", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+        PixelButton("Next", { go(at + 1) }, Modifier.weight(1f), Pixel.InkSoft, enabled = at < boxes - 1, compact = true)
+    }
+}
+
+/** A Pokémon in a box: its sprite, its name and one quiet line (level, with Shiny and Starred in words for screen readers). */
 @Composable
 private fun PcTile(p: OwnedPokemon, favorite: Boolean, onClick: () -> Unit) {
     Column(
-        Modifier.clip(RoundedCornerShape(12.dp)).background(Pixel.Panel).quietClickable(onClickLabel = "Open ${p.nickname}", onClick = onClick).padding(6.dp),
+        Modifier.size(width = 92.dp, height = 112.dp).clip(RoundedCornerShape(12.dp)).background(Pixel.Panel)
+            .quietClickable(onClickLabel = "Open ${p.nickname}", onClick = onClick)
+            .semantics(mergeDescendants = true) {
+                contentDescription = "${p.nickname}, level ${p.level}" + (if (p.isShiny) ", shiny" else "") + (if (favorite) ", starred" else "")
+            }
+            .padding(horizontal = 4.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Sprite(p.form.id, p.isShiny, p.nickname, size = 64.dp)
-        Text("Lv. ${p.level}" + (if (p.isShiny) " ✨" else "") + (if (favorite) " ★" else ""), style = MaterialTheme.typography.labelMedium)
+        Sprite(p.form.id, p.isShiny, "", size = 64.dp)
+        Text(p.nickname, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(
+            "Lv. ${p.level}" + (if (p.isShiny) " ✨" else "") + (if (favorite) " ★" else ""),
+            style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, maxLines = 1,
+        )
     }
 }
 

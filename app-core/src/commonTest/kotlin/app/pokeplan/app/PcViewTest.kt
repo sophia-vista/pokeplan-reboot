@@ -52,4 +52,19 @@ class PcViewTest {
         assertEquals(emptyList(), ids(PcView(shinyOnly = true, starredOnly = true, search = "zzzz")))
         assertTrue(PcView(type = PokemonType.FIRE).filtering)
     }
+
+    @Test
+    fun boxesHoldThirtyAndStayInRange() {
+        val view = PcView()
+        assertEquals(2, view.boxCount(box.size))
+        assertEquals(1, view.boxCount(0))
+        assertEquals(1, view.boxCount(30))
+        assertEquals(2, view.boxCount(31))
+        val sorted = view.apply(box) { false }
+        assertEquals(30, view.page(sorted).size)
+        assertEquals(10, view.copy(box = 1).page(sorted).size)
+        assertEquals(sorted.drop(30).map { it.id }, view.copy(box = 5).page(sorted).map { it.id }, "past the end shows the last box")
+        assertEquals(sorted.take(30).map { it.id }, view.copy(box = -2).page(sorted).map { it.id })
+        assertTrue(view.page(emptyList()).isEmpty())
+    }
 }
