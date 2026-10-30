@@ -110,7 +110,7 @@ internal fun SettingsView(model: AppModel) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             ThemeMode.entries.forEach { mode -> TabButton(mode.label, settings.theme == mode, { store.changeSettings { s -> s.copy(theme = mode) } }) }
         }
-        ToggleRow("Reduce motion", settings.reduceMotion, detail = "Sprites stand still and nothing wobbles.") { store.changeSettings { s -> s.copy(reduceMotion = it) } }
+        ToggleRow("Reduce motion", settings.reduceMotion, detail = "Sprites stand still, nothing wobbles and screens switch without sliding.") { store.changeSettings { s -> s.copy(reduceMotion = it) } }
     }
     SettingsGroup("Notifications and week") {
         ToggleRow("Task reminders", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }

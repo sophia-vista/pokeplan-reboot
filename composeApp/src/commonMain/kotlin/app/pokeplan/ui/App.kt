@@ -55,7 +55,9 @@ import app.pokeplan.ui.screens.FocusWatch
 import app.pokeplan.ui.screens.HomeScreen
 import app.pokeplan.ui.screens.MeScreen
 import app.pokeplan.ui.screens.Module
+import app.pokeplan.ui.screens.LocalReduceMotion
 import app.pokeplan.ui.screens.ModulesScreen
+import app.pokeplan.ui.screens.ScreenSwitch
 import app.pokeplan.ui.screens.OnboardingScreen
 import app.pokeplan.ui.screens.PlanSection
 import app.pokeplan.ui.screens.NavButton
@@ -317,7 +319,7 @@ fun App(
                 // The intro's picture runs under the system bars; only its content keeps clear of them.
                 PixelBackground("bw12", Modifier.fillMaxSize()) { Box(Modifier.fillMaxSize().safeDrawingPadding()) { OnboardingScreen(store) } }
             } else {
-                MainShell(model, focusTab, start, launches)
+                CompositionLocalProvider(LocalReduceMotion provides model.data.settings.reduceMotion) { MainShell(model, focusTab, start, launches) }
             }
         }
     }
@@ -346,15 +348,18 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
     Column(Modifier.fillMaxSize().imePadding()) {
         Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).background(Pixel.Red))
         Box(Modifier.weight(1f).fillMaxWidth()) {
-            when (tab) {
-                Tab.HOME -> HomeScreen(model, go)
-                Tab.MODULES -> ModulesScreen(model, focusTab) { id -> model.openPokemonId = id; go(Place.COLLECTION) }
-                Tab.COLLECTION -> {
-                    val open = remember { model.openPokemonId }
-                    LaunchedEffect(Unit) { model.openPokemonId = null }
-                    CollectionScreen(model, startOpen = open)
+            // The bottom tabs crossfade; each keeps its scroll position while another is open.
+            ScreenSwitch(tab) { page ->
+                when (page) {
+                    Tab.HOME -> HomeScreen(model, go)
+                    Tab.MODULES -> ModulesScreen(model, focusTab) { id -> model.openPokemonId = id; go(Place.COLLECTION) }
+                    Tab.COLLECTION -> {
+                        val open = remember { model.openPokemonId }
+                        LaunchedEffect(Unit) { model.openPokemonId = null }
+                        CollectionScreen(model, startOpen = open)
+                    }
+                    Tab.ME -> MeScreen(model)
                 }
-                Tab.ME -> MeScreen(model)
             }
             UndoBar(model, Modifier.align(Alignment.BottomCenter))
         }
