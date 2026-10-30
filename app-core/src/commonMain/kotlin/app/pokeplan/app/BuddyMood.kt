@@ -5,8 +5,17 @@ import app.pokeplan.core.pokemon.BondStyle
 import app.pokeplan.core.pokemon.OwnedPokemon
 import kotlin.random.Random
 
-/** Where the buddy lives on Home and in the widget: a real scene picked from its type (assets/scenes), dimmed at night. */
+/**
+ * The real scenes Pokémon stand in (assets/scenes), dimmed at night. A region's lead stands in its region's scene (Plan's
+ * town, Care's meadow: docs/ecosystem.md section 11, "Three visual layers"); a Pokédex entry shows a scene from its type.
+ */
 object BuddyScene {
+    /** Plan's region scene: a town street, where the Plan buddy stands in the app and the widgets. */
+    const val PLAN = "city"
+
+    /** Care's region scene: the meadow, where Care's lead and its visitors stand. */
+    const val CARE = "meadow"
+
     /** The scene file name (without .png) for a Pokémon whose types are [types]. */
     fun of(types: List<PokemonType>): String = when (types.firstOrNull()) {
         PokemonType.FIRE -> "mountain"

@@ -3,8 +3,8 @@
 
 Usage: python3 -I tools/sprites/fetch_scenes.py
 
-These are the places the buddy stands in on Home and in the widget (see BuddyScene in app-core). Existing files are
-skipped, so it can be re-run.
+These are the region scenes (Plan's town, Care's meadow) and the type scenes of the Pokédex entries (see BuddyScene in
+app-core). Existing files are skipped, so it can be re-run.
 """
 import os
 import sys
@@ -15,7 +15,7 @@ OUT = os.path.join(ROOT, 'assets/scenes')
 # Pinned for reproducibility. To update: git ls-remote https://github.com/smogon/pokemon-showdown-client refs/heads/master
 COMMIT = 'ab4b77b8f3a5712e8fbe03ce106ef2b70a874fdb'
 BASE = f'https://raw.githubusercontent.com/smogon/pokemon-showdown-client/{COMMIT}/play.pokemonshowdown.com/fx/bg-'
-SCENES = ['meadow', 'forest', 'route', 'mountain', 'volcanocave', 'beach', 'desert', 'thunderplains', 'icecave', 'dampcave']
+SCENES = ['city', 'meadow', 'forest', 'route', 'mountain', 'volcanocave', 'beach', 'desert', 'thunderplains', 'icecave', 'dampcave']
 
 
 def main():
