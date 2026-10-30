@@ -342,7 +342,7 @@ class GameStore(
             val counters = Counters.BEFRIEND.set(d.counters, today, made + 1)
             val tickets = if (ticket == null) d.eggTickets
             else d.eggTickets.copy(stock = d.eggTickets.stock.drop(1), spent = d.eggTickets.spent + SpentTicket(ticket.id, nowMillis, event.newPokemonId))
-            log("Care: made a friend", outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets))
+            log(CARE_LOG_PREFIX + "made a friend", outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets))
         }
         return outcome.rewards
     }
@@ -507,10 +507,14 @@ class GameStore(
         return pays
     }
 
-    fun addSubtask(taskId: String, title: String) = update { d ->
-        d.copy(tasks = d.tasks.map { t ->
-            if (t.id == taskId && t.subtasks.size < MAX_SUBTASKS) t.copy(subtasks = t.subtasks + Subtask(newId(), title.trim(), createdAtMillis = nowMillis)) else t
-        })
+    /** Adds a step to a task, up to [MAX_SUBTASKS]. A blank title is not a step. */
+    fun addSubtask(taskId: String, title: String) {
+        val clean = title.trim().ifEmpty { return }
+        update { d ->
+            d.copy(tasks = d.tasks.map { t ->
+                if (t.id == taskId && t.subtasks.size < MAX_SUBTASKS) t.copy(subtasks = t.subtasks + Subtask(newId(), clean, createdAtMillis = nowMillis)) else t
+            })
+        }
     }
 
     /** A repeating task. Its next instances are created straight away and topped up by [refresh]. */
@@ -629,8 +633,10 @@ class GameStore(
         return goal
     }
 
-    fun addMilestone(goalId: String, title: String) = update { d ->
-        d.copy(goals = d.goals.map { g -> if (g.id == goalId) GoalRules.addMilestone(g, Milestone(newId(), title.trim(), nowMillis)) else g })
+    /** Adds a milestone to a goal. A blank title is not a milestone. */
+    fun addMilestone(goalId: String, title: String) {
+        val clean = title.trim().ifEmpty { return }
+        update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) GoalRules.addMilestone(g, Milestone(newId(), clean, nowMillis)) else g }) }
     }
 
     /** Ticks a milestone. It pays a Super Candy if it is old enough (and fewer than 3 paid today); finishing the goal gives a bonus item. */
@@ -1237,11 +1243,11 @@ class GameStore(
         const val CARE_LOG_PREFIX = "Care: "
 
         private val CARE_SOURCES = mapOf(
-            CareKind.ROUTINE to "Care: a routine", CareKind.CALM_BREAK to "Care: a calm break", CareKind.WEEKLY_RHYTHM to "Care: kept a rhythm", CareKind.SKILL to "Care: a skill practised",
-        )
+            CareKind.ROUTINE to "a routine", CareKind.CALM_BREAK to "a calm break", CareKind.WEEKLY_RHYTHM to "kept a rhythm", CareKind.SKILL to "a skill practised",
+        ).mapValues { CARE_LOG_PREFIX + it.value }
 
-        /** Parts of the save that stay on this device: never uploaded, kept when the cloud save is adopted. */
-        private val DEVICE_ONLY = setOf("account", "eggTickets", "shownCalendars")
+        /** Parts of the save that stay on this device: never uploaded, kept when the cloud save is adopted (see [cloudPart] and [adoptCloud]). */
+        internal val DEVICE_ONLY = setOf("account", "eggTickets", "shownCalendars")
 
         // "kind" because the rewards have a field called "type" (the same setting the reward engine uses over JSON).
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true; classDiscriminator = "kind" }

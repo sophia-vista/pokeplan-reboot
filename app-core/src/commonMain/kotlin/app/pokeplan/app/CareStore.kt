@@ -248,7 +248,6 @@ class CareStore(
 
     // --- diary card, journal (private, never paid) --------------------------------------------------------------------
 
-    /** Today's diary card, if one was saved. */
     fun diaryToday(): DiaryCard? = data.diary.firstOrNull { it.day == today }
 
     /** Saves today's diary card, replacing the one saved earlier today. Ratings are kept from 0 to 5. */

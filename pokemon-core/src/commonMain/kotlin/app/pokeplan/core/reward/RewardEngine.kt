@@ -340,12 +340,10 @@ object RewardEngine {
         }
         coins += overflow
 
-        // Coins
         val earned = scaled(tier * COINS_PER_TIER, perks.multiplier(PerkBucket.COINS))
         coins += earned
         rewards += Reward.Coins(earned + overflow)
 
-        // Item drop
         val dropPercent = DROP_BASE_PERCENT + DROP_PER_TIER_PERCENT * tier + perks[PerkBucket.ITEM_FINDER]
         if (rng.nextDouble() * 100 < dropPercent) {
             val drop = DropTable.roll(rng)
@@ -358,7 +356,6 @@ object RewardEngine {
         val warms = e.friendshipTasksToday < TASK_FRIENDSHIP_DAILY_CAP
         var pokemon = state.pokemon.map { p -> if (warms && p.id == buddy?.id) p.gainFriendship(FriendshipRules.Source.TASK) else p }
 
-        // Egg meter
         var meter = state.eggMeter + tier
         var caught = state.caught + state.pokemon.map { it.speciesId }
         if (meter >= EGG_METER_SIZE) {

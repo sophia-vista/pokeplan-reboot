@@ -60,7 +60,6 @@ data class AppData(
     val account: Account? = null,
     /** Legendary and mythical quests the player has accepted, by quest id. */
     val quests: Map<String, QuestState> = emptyMap(),
-    /** Evolution trials already completed. */
     val completedTrials: Set<String> = emptySet(),
     /** Emergency pauses used on [emergencyPausesDay]. */
     val emergencyPausesDay: LocalDate? = null,

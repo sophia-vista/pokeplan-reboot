@@ -98,6 +98,15 @@ class GameStoreTest {
     }
 
     @Test
+    fun theDeviceOnlyPartsAreRealFieldsAndNeverUploaded() {
+        val fields = (0 until AppData.serializer().descriptor.elementsCount).map { AppData.serializer().descriptor.getElementName(it) }
+        assertTrue(fields.containsAll(GameStore.DEVICE_ONLY), "a renamed field would be uploaded without anyone noticing")
+        val (s, _) = started()
+        s.setShownCalendars(setOf(4L))
+        assertTrue(s.cloudDocument().keys.none { it in GameStore.DEVICE_ONLY })
+    }
+
+    @Test
     fun anUnreadableCloudSaveChangesNothing() {
         val (s, _) = started()
         val before = s.data

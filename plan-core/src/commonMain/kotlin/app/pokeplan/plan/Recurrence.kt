@@ -87,7 +87,6 @@ data class Recurrence(
         if (end is RepeatEnd.After) require(end.count >= 1) { "an end count must be at least 1" }
     }
 
-    private fun mondayOf(d: LocalDate) = d.plusDays(-(d.dayOfWeek.isoDayNumber - 1))
 
     private fun monthsBetween(a: LocalDate, b: LocalDate) = (b.year - a.year) * 12 + (b.monthNumber - a.monthNumber)
 
@@ -115,7 +114,7 @@ data class Recurrence(
             is Repeat.Daily -> start.daysUntil(d) % r.every == 0
             is Repeat.Weekly -> {
                 val days = r.days.ifEmpty { setOf(start.dayOfWeek) }
-                mondayOf(start).daysUntil(mondayOf(d)) / 7 % r.every == 0 && d.dayOfWeek in days
+                Streaks.weekStartOf(start, DayOfWeek.MONDAY).daysUntil(Streaks.weekStartOf(d, DayOfWeek.MONDAY)) / 7 % r.every == 0 && d.dayOfWeek in days
             }
             is Repeat.Monthly -> monthsBetween(start, d) % r.every == 0 && d == monthlyDate(r.rule, d.year, d.monthNumber)
             is Repeat.Yearly -> {

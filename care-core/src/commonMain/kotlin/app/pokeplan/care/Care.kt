@@ -115,7 +115,7 @@ data class CareData(
     /** The day visitors were last offered, and who is visiting now (those being befriended stay, the rest are today's). */
     val visitorsDay: LocalDate? = null,
     val visitors: List<Visitor> = emptyList(),
-    /** The day the day's befriend was spent. */
+    /** The last day a visit was finished. */
     val befriendDay: LocalDate? = null,
     /** The visit in progress, if one was started and not finished (it ends with the day). */
     val visit: Visit? = null,

@@ -8,6 +8,7 @@ import app.pokeplan.core.model.Rarity
 import app.pokeplan.core.pokemon.Items
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
@@ -207,6 +208,4 @@ object Visitors {
         if (data.routines.any { r -> r.completions.any { it > since } }) add(PokemonType.NORMAL)
         if (data.practices.any { it.paid && it.day > since }) add(PokemonType.GRASS)
     }
-
-    private fun LocalDate.daysUntil(other: LocalDate): Int = (other.toEpochDays() - toEpochDays()).toInt()
 }
