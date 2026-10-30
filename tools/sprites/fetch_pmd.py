@@ -3,7 +3,10 @@
 (https://github.com/PMDCollab/SpriteCollab) and turns each one's Idle, Sleep, Eat and Hop animations, facing the viewer, into
 sprite sheets the app plays on every platform, and a few of its portraits into one strip.
 
-Usage: python3 -I tools/sprites/fetch_pmd.py
+Usage: python3 -I tools/sprites/fetch_pmd.py [walk]
+
+With `walk` only the Walk rows facing down, to the side (right; the app mirrors it for left) and up are fetched, into
+assets/pmd/walk-down, walk-side and walk-up, and nothing else is touched.
 
 Needs Pillow (pip install pillow) and assets/sprites/manifest.tsv (tools/sprites/fetch.py), which names every form id.
 
@@ -44,6 +47,13 @@ BASE = f'https://raw.githubusercontent.com/PMDCollab/SpriteCollab/{COMMIT}/'
 FRAME_MS = 1000 / 60
 # The animations kept, by output folder ('' is assets/pmd itself), each with the AnimData names to try in order.
 ANIMS = {'': ('Idle', 'Walk'), 'sleep': ('Sleep',), 'eat': ('Eat',), 'hop': ('Hop',)}
+# SpriteCollab's rows run Down, DownRight, Right, UpRight, Up, UpLeft, Left, DownLeft: the Walk rows kept are Down, Right and Up.
+WALK = {'walk-down': 0, 'walk-side': 2, 'walk-up': 4}
+WALK_ONLY = 'walk' in sys.argv[1:]
+if WALK_ONLY:
+    ANIMS = {sub: ('Walk',) for sub in WALK}
+else:
+    ANIMS = {**ANIMS, **{sub: ('Walk',) for sub in WALK}}
 # The portraits kept, in the order the strip holds them. Normal comes first and a form without it gets none.
 EMOTIONS = ('Normal', 'Happy', 'Joyous', 'Inspired', 'Determined', 'Surprised')
 PORTRAIT = 40
@@ -108,8 +118,8 @@ def anim_data(folder):
     return {a.findtext('Name'): a for a in ET.fromstring(xml).find('Anims')}
 
 
-def front_row(folder, anims, wanted):
-    """(frames, frame times in ms) of the front-facing row of the first of the [wanted] animations there is, or None."""
+def front_row(folder, anims, wanted, row=0):
+    """(frames, frame times in ms) of the [row] (by default the front-facing one) of the first of the [wanted] animations there is, or None."""
 
     def resolve(name):
         a = anims.get(name)
@@ -131,7 +141,9 @@ def front_row(folder, anims, wanted):
         times = [max(1, round(int(d.text) * FRAME_MS)) for d in anim.find('Durations')]
         image = Image.open(io.BytesIO(data)).convert('RGBA')
         # Row 0 faces down, towards the viewer.
-        frames = [image.crop((i * w, 0, (i + 1) * w, h)) for i in range(min(len(times), image.width // w))]
+        if image.height < (row + 1) * h:
+            continue
+        frames = [image.crop((i * w, row * h, (i + 1) * w, (row + 1) * h)) for i in range(min(len(times), image.width // w))]
         if frames:
             return frames, times[:len(frames)]
     return None
@@ -176,7 +188,7 @@ def fetch_anims(folder, node, fid, names):
     shiny_anims = anim_data(folder + '/0000/0001') if shiny and shiny.get('sprite_complete', 0) > 0 else None
     out = {}
     for sub, wanted in ANIMS.items():
-        row = front_row(folder, anims, wanted)
+        row = front_row(folder, anims, wanted, WALK.get(sub, 0))
         made = row and sheet(row[0])
         if not made:
             if sub == '':
@@ -185,7 +197,7 @@ def fetch_anims(folder, node, fid, names):
         png, w, h, box = made
         save(png, sub, fid)
         has_shiny = False
-        shiny_row = shiny_anims and front_row(folder + '/0000/0001', shiny_anims, wanted)
+        shiny_row = shiny_anims and front_row(folder + '/0000/0001', shiny_anims, wanted, WALK.get(sub, 0))
         # The shiny is a recolour of the same frames: cut it the same way, and use it only if it has the same frames.
         same = shiny_row and len(shiny_row[0]) == len(row[0]) and shiny_row[0][0].size == row[0][0].size
         shiny_made = same and sheet(shiny_row[0], box)
@@ -240,7 +252,7 @@ def fetch_portraits(folder, node, fid, names):
 def fetch_one(target, names):
     fid, folder, node = target
     anims, artists = fetch_anims(folder, node, fid, names)
-    return fid, anims, artists, fetch_portraits(folder, node, fid, names)
+    return fid, anims, artists, None if WALK_ONLY else fetch_portraits(folder, node, fid, names)
 
 
 def write_table(sub, rows):
@@ -252,7 +264,7 @@ def write_table(sub, rows):
 
 
 def main():
-    for sub in list(ANIMS) + ['portraits']:
+    for sub in list(ANIMS) + ([] if WALK_ONLY else ['portraits']):
         os.makedirs(os.path.join(OUT, sub), exist_ok=True)
     tracker = json.loads(download(BASE + 'tracker.json'))
     names = {}
@@ -277,6 +289,8 @@ def main():
     for sub, rows in tables.items():
         write_table(sub, rows)
         print(f'{sub or "idle"}: {len(rows)} sheets ({sum(r[4] for r in rows.values())} with a shiny)', file=sys.stderr)
+    if WALK_ONLY:
+        return
     with open(os.path.join(OUT, 'credits.tsv'), 'w', encoding='utf-8') as fh:
         for fid in sorted(credits):
             fh.write(f'{fid}\t{credits[fid]}\n')
