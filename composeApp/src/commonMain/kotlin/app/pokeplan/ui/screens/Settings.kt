@@ -115,12 +115,11 @@ internal fun SettingsView(model: AppModel) {
     SettingsGroup("Notifications and week") {
         ToggleRow("Task reminders", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }
         if (settings.reminders) {
-            fun hour(t: LocalTime) = "${t.hour.toString().padStart(2, '0')}:00"
             fun shift(t: LocalTime, by: Int) = LocalTime((t.hour + by + 24) % 24, 0)
-            Stepper("Quiet from", hour(settings.quietHours.start), 1) { by ->
+            Stepper("Quiet from", hourText(settings.quietHours.start.hour), 1) { by ->
                 store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = shift(s.quietHours.start, by))) }
             }
-            Stepper("Quiet until", hour(settings.quietHours.end), 1) { by ->
+            Stepper("Quiet until", hourText(settings.quietHours.end.hour), 1) { by ->
                 store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = shift(s.quietHours.end, by))) }
             }
             ToggleRow("Repeat until answered", settings.repeatReminders, detail = "An unanswered reminder comes back up to 3 times, 10 minutes apart.") { store.changeSettings { s -> s.copy(repeatReminders = it) } }
@@ -130,7 +129,7 @@ internal fun SettingsView(model: AppModel) {
         ToggleRow("Focus end alert", settings.focusEnd, detail = "When a session's time is up. These two are the only notifications during focus.") { store.changeSettings { s -> s.copy(focusEnd = it) } }
         ToggleRow("Streak reminder", settings.streakReminder, detail = "In the evening, if nothing has counted yet today and you have a streak going.") { store.changeSettings { s -> s.copy(streakReminder = it) } }
         if (settings.streakReminder) {
-            Stepper("Streak reminder at", "${settings.streakReminderHour.toString().padStart(2, '0')}:00", 1) { by ->
+            Stepper("Streak reminder at", hourText(settings.streakReminderHour), 1) { by ->
                 store.changeSettings { s -> s.copy(streakReminderHour = (s.streakReminderHour + by + 24) % 24) }
             }
         }
@@ -425,3 +424,6 @@ private fun Stepper(label: String, value: String, step: Int, change: (Int) -> Un
         }
     }
 }
+
+/** An hour as the settings show it, "07:00". */
+private fun hourText(hour: Int) = "${hour.toString().padStart(2, '0')}:00"
