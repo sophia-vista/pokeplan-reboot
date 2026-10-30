@@ -1,6 +1,13 @@
 package app.pokeplan.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import app.pokeplan.core.pokemon.OwnedPokemon
+import app.pokeplan.core.reward.Reward
+import app.pokeplan.ui.AnimatedSprite
+import app.pokeplan.ui.Sprite
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
 import app.pokeplan.core.pokemon.ItemCategory
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,21 +69,15 @@ import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.theme.title
 
 /**
- * Home helps decide what to do next: a slim header with the rank, the buddy, one recommended task with its actions, how
- * today is going, and shortcuts. Nothing here punishes a quiet day.
+ * Home is the world at a glance (docs/ecosystem.md, section 11): the trainer, every region with its lead and its one most
+ * useful next step, then the day's streak, mini-quests and what happened lately. It is not Plan's dashboard: the planner,
+ * focus and each lead's scene stay inside their region. Nothing here punishes a quiet day.
  */
 @Composable
 fun HomeScreen(model: AppModel, go: (Place) -> Unit) {
     val store = model.store
     val data = model.data
-    val buddy = data.player.buddy
     val points = data.player.trainerPoints
-
-    val pendingIds = data.pending.map { it.original.id }.toSet()
-    val open = store.todayTasks().filter { it.id !in pendingIds }
-    val next = open.firstOrNull { it.id == data.pickedTaskId } ?: open.firstOrNull()
-    val doneToday = data.tasks.count { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
-    val total = doneToday + open.size
 
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(
@@ -102,51 +103,161 @@ fun HomeScreen(model: AppModel, go: (Place) -> Unit) {
             WelcomeBackCard(model)
             RewardBox(model)
 
-            PlanBuddyStage(model) { buddy?.let { model.openPokemonId = it.id }; go(Place.COLLECTION) }
+            SectionLabel("Regions", icon = "explorer-kit")
+            PlanRegionCard(model, go)
+            if (data.settings.careModule) CareRegionCard(model, go)
 
-            when {
-                next != null -> NextUp(
-                    task = next,
-                    onDone = { model.completeTask(next.id) },
-                    onFocus = { model.focusTaskId = next.id; go(Place.FOCUS) },
-                    onChoose = if (open.size > 1 || data.pickedTaskId != next.id) ({ store.pickForMe() }) else null,
-                    picked = next.id == data.pickedTaskId,
-                )
-                // The progress card below already counts what was done, so this says only that the day is clear.
-                doneToday > 0 -> TextBox { Text("All done for today", style = MaterialTheme.typography.titleSmall) }
-                else -> TextBox {
-                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                        Text("Nothing planned for today", style = MaterialTheme.typography.titleSmall)
-                        PixelButton("Add a task", { go(Place.PLANNER) }, Modifier.fillMaxWidth(), Pixel.Red)
-                    }
-                }
-            }
-
-            if (total > 0) TextBox {
-                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    val label = "$doneToday of $total tasks done today"
-                    Text(label, style = MaterialTheme.typography.bodyLarge)
-                    PixelBar(doneToday.toFloat() / total, color = Pixel.Green, label = label)
-                    val streak = store.streak.current
-                    Text(if (streak == 0) "Do one thing today to start a streak." else "Streak: $streak day${if (streak == 1) "" else "s"}", style = MaterialTheme.typography.bodyMedium)
-                    RestDayRow(model)
-                }
-            }
+            StreakCard(model)
             if (store.sees(Feature.MINI_QUESTS)) MiniQuestsCard(model, go)
-
-            val more = open.filter { it.id != next?.id }.take(4)
-            if (more.isNotEmpty()) {
-                SectionLabel("Also today", icon = "oaks-parcel")
-                more.forEach { t -> TaskRow(t, onDone = { model.completeTask(t.id) }) }
-            }
-
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth()) {
-                // With nothing planned, the empty card's "Add a task" already goes to the Planner.
-                if (total > 0) PixelButton("Planner", { go(Place.PLANNER) }, Modifier.weight(1f), Pixel.InkSoft)
-                PixelButton("Start focus", { model.focusTaskId = null; go(Place.FOCUS) }, Modifier.weight(1f), Pixel.InkSoft)
-            }
+            RecentCard(model, go)
         }
     }
+}
+
+/**
+ * One region on Home: its lead idling in a circle of the region's colour, its name, how today stands there, and below a
+ * line its one most useful next step ([step]). The top of the card opens the region.
+ */
+@Composable
+private fun RegionCard(
+    name: String, icon: String, tint: Color, lead: OwnedPokemon?, leadLine: String, status: String, still: Boolean,
+    onOpen: () -> Unit, step: @Composable () -> Unit,
+) {
+    val shape = RoundedCornerShape(Spacing.CardRadius)
+    Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)) {
+        Row(
+            Modifier.fillMaxWidth().clickable(onClickLabel = "Open $name", role = Role.Button, onClick = onOpen).padding(Spacing.M),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
+        ) {
+            Box(Modifier.size(80.dp).background(tint.copy(alpha = 0.12f), CircleShape), contentAlignment = Alignment.Center) {
+                if (lead != null) AnimatedSprite(lead.form.id, lead.isShiny, lead.nickname, size = 72.dp, animate = !still, ground = 4.dp)
+                else ItemIcon(icon, size = 56.dp, description = null)
+            }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(name, style = MaterialTheme.typography.titleMedium)
+                Text(leadLine, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 2)
+                Text(status, style = MaterialTheme.typography.bodyMedium)
+            }
+            Text("›", style = MaterialTheme.typography.titleLarge, color = Pixel.InkSoft)
+        }
+        Box(Modifier.fillMaxWidth().height(1.dp).background(Pixel.Border))
+        Box(Modifier.fillMaxWidth().padding(Spacing.M)) { step() }
+    }
+}
+
+/** A next step: what it is in words, and the one button that does it. */
+@Composable
+private fun StepRow(text: String, action: String?, color: Color = Pixel.Green, lead: @Composable () -> Unit = {}, onClick: () -> Unit = {}) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        lead()
+        Text(text, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 3)
+        if (action != null) PixelButton(action, onClick, color = color, compact = true)
+    }
+}
+
+private fun leadLine(p: OwnedPokemon) = "Lead: ${p.nickname}, Lv. ${p.level}"
+
+/** Plan: its buddy, today's tasks, and the next one with Done (the picked one first), or the running focus session. */
+@Composable
+private fun PlanRegionCard(model: AppModel, go: (Place) -> Unit) {
+    val store = model.store
+    val data = model.data
+    val buddy = data.player.buddy
+    val pendingIds = data.pending.map { it.original.id }.toSet()
+    val open = store.todayTasks().filter { it.id !in pendingIds }
+    val next = open.firstOrNull { it.id == data.pickedTaskId } ?: open.firstOrNull()
+    val doneToday = data.tasks.count { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
+    val total = doneToday + open.size
+    RegionCard(
+        Module.PLAN.label, Module.PLAN.icon, Pixel.Red, buddy, buddy?.let(::leadLine) ?: "No buddy yet",
+        if (total == 0) "Tasks and focus" else "$doneToday of $total tasks done today",
+        still = data.settings.reduceMotion, onOpen = { go(Place.PLAN) },
+    ) {
+        when {
+            data.focus != null -> StepRow("An egg is incubating", "Open", Pixel.Blue) { go(Place.FOCUS) }
+            next != null -> StepRow(next.title, "Done", lead = { RankBadge(next.rank) }) { model.completeTask(next.id) }
+            doneToday > 0 -> StepRow("All done for today. Rest, or add one more if you feel like it.", null)
+            else -> StepRow("Nothing planned for today", "Add a task", Pixel.Red) { model.addTaskRequested = true; go(Place.PLANNER) }
+        }
+    }
+}
+
+/** Care: its lead (or the Plan buddy helping until it has one), today's routines, and the next one with Done. */
+@Composable
+private fun CareRegionCard(model: AppModel, go: (Place) -> Unit) {
+    model.careData // redraw when Care changes
+    val care = model.care
+    val player = model.data.player
+    val lead = player.careLead
+    val today = care.todayRoutines()
+    val done = today.count { it.doneOn(care.today) }
+    val next = today.firstOrNull { !it.doneOn(care.today) }
+    val shown = lead ?: model.store.careBuddy
+    RegionCard(
+        Module.CARE.label, Module.CARE.icon, Pixel.Green, shown,
+        lead?.let(::leadLine) ?: shown?.let { "No lead yet: ${it.nickname} helps out" } ?: "No lead yet",
+        if (today.isEmpty()) "Routines and calm" else "$done of ${today.size} routines today",
+        still = model.data.settings.reduceMotion, onOpen = { go(Place.CARE) },
+    ) {
+        val open = { section: CareSection -> go(Place.CARE); model.careSection = section }
+        when {
+            next != null -> StepRow(next.title, "Done") { model.effect(Sfx.SELECT); model.haptic(); care.completeRoutine(next.id) }
+            today.isNotEmpty() -> StepRow("Routines done for today. A calm break is always there.", "Calm break", Pixel.Blue) { open(CareSection.CALM) }
+            model.careData.routines.none { !it.archived } -> StepRow("Small things you do for yourself, like a glass of water.", "Add a routine", Pixel.Green) { open(CareSection.ROUTINES) }
+            else -> StepRow("No routines today. A calm break is always there.", "Calm break", Pixel.Blue) { open(CareSection.CALM) }
+        }
+    }
+}
+
+/** The streak, which any region's effort keeps, and the rest day that pauses it. */
+@Composable
+private fun StreakCard(model: AppModel) {
+    val streak = model.store.streak.current
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text(if (streak == 0) "Do one thing today to start a streak." else "Streak: $streak day${if (streak == 1) "" else "s"}", style = MaterialTheme.typography.bodyLarge)
+            RestDayRow(model)
+        }
+    }
+}
+
+/** How many things Recently lists; the rest stay in the log. */
+private const val RECENT_SHOWN = 4
+
+/**
+ * What happened lately in any region, newest first: hatches with their sprite (a tap opens the Pokémon), other rewards with
+ * their item. Rewards not looked at yet are in [RewardBox] above, so only seen ones are here.
+ */
+@Composable
+private fun RecentCard(model: AppModel, go: (Place) -> Unit) {
+    val store = model.store
+    val entries = model.data.rewardLog.filter { it.seen }.takeLast(RECENT_SHOWN).reversed()
+    if (entries.isEmpty()) return
+    SectionLabel("Recently", icon = "oaks-letter")
+    entries.forEach { entry ->
+        val hatched = entry.rewards.filterIsInstance<Reward.Hatched>().firstOrNull()?.pokemon
+        val owned = hatched?.let { h -> model.data.player.pokemon.firstOrNull { it.id == h.id } }
+        ListRow(
+            lead = {
+                Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                    if (hatched != null) Sprite(hatched.form.id, hatched.isShiny, hatched.nickname, size = 48.dp)
+                    else entry.rewards.firstNotNullOfOrNull { it.iconItem() }?.let { ItemIcon(it, size = 32.dp, description = null) }
+                }
+            },
+            onClick = owned?.let { p -> { model.openPokemonId = p.id; go(Place.COLLECTION) } },
+            onClickLabel = owned?.let { "Open ${it.nickname}" },
+        ) {
+            Text(if (hatched != null) "${hatched.nickname} hatched" else entry.source, style = MaterialTheme.typography.bodyLarge, maxLines = 2)
+            val what = if (hatched != null) entry.source else entry.rewards.take(2).joinToString(", ") { it.describe() }
+            Text(listOf(what, daysAgo(store.today, store.dayOf(entry.atMillis))).filter { it.isNotEmpty() }.joinToString(", "), style = MaterialTheme.typography.bodyMedium, maxLines = 2)
+        }
+    }
+}
+
+private fun daysAgo(today: LocalDate, day: LocalDate): String = when (val n = day.daysUntil(today)) {
+    0 -> "today"
+    1 -> "yesterday"
+    else -> "$n days ago"
 }
 
 /**
@@ -170,9 +281,9 @@ fun PlanBuddyStage(model: AppModel, onOpen: () -> Unit) {
     )
 }
 
-/** The one recommended task, with its two actions. Completing is its own button; the rest of the card is just information. */
+/** The one recommended task (on Plan's page), with its actions. Completing is its own button; the rest of the card is just information. */
 @Composable
-private fun NextUp(task: Task, onDone: () -> Unit, onFocus: () -> Unit, onChoose: (() -> Unit)?, picked: Boolean = false) {
+internal fun NextUp(task: Task, onDone: () -> Unit, onFocus: (() -> Unit)?, onChoose: (() -> Unit)?, picked: Boolean = false) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Text(if (picked) "Picked for you: +10% candies" else "Next up", style = MaterialTheme.typography.labelMedium, color = if (picked) Pixel.Green else Pixel.InkSoft)
@@ -182,8 +293,8 @@ private fun NextUp(task: Task, onDone: () -> Unit, onFocus: () -> Unit, onChoose
                 Text(listOf(task.rank.title, taskMeta(task)).filter { it.isNotEmpty() }.joinToString(", "), style = MaterialTheme.typography.bodyMedium)
             }
             PixelButton("Done", onDone, Modifier.fillMaxWidth(), Pixel.Green)
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth()) {
-                PixelButton("Focus on this", onFocus, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            if (onFocus != null || onChoose != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth()) {
+                if (onFocus != null) PixelButton("Focus on this", onFocus, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 if (onChoose != null) PixelButton(if (picked) "Pick another" else "Pick for me", onChoose, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
         }

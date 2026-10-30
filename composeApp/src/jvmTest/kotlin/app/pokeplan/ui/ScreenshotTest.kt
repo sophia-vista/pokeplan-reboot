@@ -85,30 +85,30 @@ class ScreenshotTest {
     }
 
     @Test
-    fun homeShinyBuddy() {
+    fun planShinyBuddy() {
         val store = started()
         val data = store.data.copy(player = store.data.player.copy(pokemon = store.data.player.pokemon.map { it.copy(isShiny = true) }))
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), data.copy(lastSeenVersion = app.pokeplan.ui.AppVersion.NAME)))
-        render("home-shiny", frames = 47) { App(storage, focusTab = true) }
+        render("plan-buddy-shiny", frames = 47) { App(storage, focusTab = true, start = Place.PLAN) }
     }
 
     @Test
-    fun homeTorchicAfterAnEvent() {
+    fun planTorchicAfterAnEvent() {
         val store = GameStore(MemoryStorage(), clock).also { it.start("Sophia", 255) }
         store.completeTask(store.data.tasks.single().id)
         clock.millis += 11_000
         store.tick()
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
         // Stop early: a reaction lasts about two seconds of animation time, so it is on screen at frame 30.
-        render("home-torchic-event", frames = 30) { App(storage, focusTab = true) }
+        render("plan-buddy-event", frames = 30) { App(storage, focusTab = true, start = Place.PLAN) }
     }
 
     @Test
-    fun homeBuddyAsleepDuringFocus() {
+    fun planBuddyAsleepDuringFocus() {
         val store = started()
         store.startFocus(25, deepFocus = false)
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
-        render("home-focus-asleep") { App(storage, focusTab = true) }
+        render("plan-buddy-asleep") { App(storage, focusTab = true, start = Place.PLAN) }
     }
 
     @Test
@@ -474,6 +474,22 @@ class ScreenshotTest {
         model.careSection = section
         if (visiting) care.visitors().first().let { v -> care.startVisit(v.speciesId); care.visitAct(app.pokeplan.care.CareAction.WORDS) }
         render(name, height = height) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+    }
+
+    /** Home as the world overview: each region with its lead and next step, the streak, and what happened recently. */
+    @Test
+    fun homeRegions() {
+        val store = storeWithTeam()
+        store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 45)
+        store.markRewardsSeen()
+        store.markVersionSeen(AppVersion.NAME)
+        store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(2).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.CARE) }
+        val model = AppModel(store)
+        val water = model.care.addRoutine("Drink a glass of water", kotlinx.datetime.LocalTime(9, 0))
+        model.care.addRoutine("Stretch for five minutes")
+        model.care.completeRoutine(water.id)
+        store.markRewardsSeen()
+        render("home-regions", height = 1700) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.HomeScreen(model) {} } } }
     }
 
     @Test

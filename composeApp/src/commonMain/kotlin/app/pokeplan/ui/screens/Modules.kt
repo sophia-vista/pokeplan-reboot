@@ -140,7 +140,16 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
                     action = "Add a task" to { model.addTaskRequested = true; model.planSection = PlanSection.PLANNER },
                 )
             } else {
-                open.take(TODAY_SHOWN).forEach { t -> TaskRow(t, onDone = { model.completeTask(t.id) }) }
+                // The one to do next first, with Focus on this and Pick for me (+10% candies); then a few more.
+                val next = open.firstOrNull { it.id == data.pickedTaskId } ?: open.first()
+                NextUp(
+                    task = next,
+                    onDone = { model.completeTask(next.id) },
+                    onFocus = if (!focusTab) null else ({ model.focusTaskId = next.id; model.planSection = PlanSection.FOCUS }),
+                    onChoose = if (open.size > 1 || data.pickedTaskId != next.id) ({ store.pickForMe() }) else null,
+                    picked = next.id == data.pickedTaskId,
+                )
+                open.filter { it.id != next.id }.take(TODAY_SHOWN - 1).forEach { t -> TaskRow(t, onDone = { model.completeTask(t.id) }) }
                 if (open.size > TODAY_SHOWN) Text("${open.size - TODAY_SHOWN} more in the Planner", style = MaterialTheme.typography.bodyMedium)
             }
             MenuGrid(

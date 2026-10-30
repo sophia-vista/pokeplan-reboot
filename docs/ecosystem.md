@@ -317,7 +317,7 @@ the parser matches the real format.
 7. **Charm pass:** hatch and evolution ceremonies, region themes, the Oak sprite, music.
 8. **Grow**, then **health integration** (the Huawei export importer first, see section 6), then **Home** modules.
 9. **PokéLife extras** (PokéLife is the app's name from 0.47.0, section 11): Poketch-style utilities with helper Pokémon ("Poketch utilities and helper Pokémon" below) and a live wallpaper with the buddy in its scene (the launcher can show it once it exists).
-10. **The October 2026 audit** (section 11): a generous economy and Care Eggs (0.46.0); the PokéLife name; screen transitions; Home as an overview of every region with each region's lead; regional looks; then the Pokémon detail, Party and Pokédex passes.
+10. **The October 2026 audit** (section 11): a generous economy and Care Eggs (0.46.0); the PokéLife name; screen transitions; Home as an overview of every region with each region's lead (0.49.0); regional looks; then the Pokémon detail, Party and Pokédex passes.
 11. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
 
 ### Ideas parked
