@@ -150,15 +150,24 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
 }
 
 /**
- * The home page's text, as one of the game's dialogue boxes at the bottom, by the thumb: a note if there is one, the buddy
- * and one task, then your pinned apps and the parts of PokéLife side by side, then All apps, parts divided by thin rules.
+ * The home page over the town, in three layers: a small status strip at the top (the companion, then the collection), the
+ * town itself, and one dialogue box by the thumb with today's task, the main action (Focus), the parts of PokéLife, your
+ * pinned apps and All apps. Long names (tasks, apps) are in the readable body font, labels in the dialogue font.
  */
 @Composable
 private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPrefs, isDefault: Boolean, host: LauncherHost, pixel: Int, onAllApps: () -> Unit, onHold: (LauncherApp) -> Unit) {
     val data = model.data
     val pinned = LauncherList.pinned(apps, prefs)
     val running = data.focus != null
+    val buddy = data.player.buddy
     Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = Spacing.M, vertical = Spacing.S)) {
+        if (data.onboarded && buddy != null) PmdBox(pixel, Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Open PokéLife") { host.openApp(Place.HOME) }, inset = 3) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                PmdText("${buddy.nickname}  Lv. ${buddy.level}", pixel)
+                Box(Modifier.weight(1f))
+                PmdText("${data.player.pokemon.size} Pokémon", pixel, alpha = 0.75f)
+            }
+        }
         Box(Modifier.weight(1f))
         PmdBox(pixel, Modifier.fillMaxWidth().pointerInput(Unit) {
             var drag = 0f
@@ -171,21 +180,19 @@ private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPr
                     else -> null
                 }
                 if (note != null) {
-                    PmdMenuLine(note.first, pixel, onClick = note.second)
+                    PmdMenuLine(note.first, pixel, pixelText = false, onClick = note.second)
                     PmdRule(pixel)
                 }
                 if (data.onboarded) {
-                    val buddy = data.player.buddy
-                    val task = model.store.openTodayTasks().firstOrNull()
-                    if (buddy != null) PmdMenuLine("${buddy.nickname}  Lv. ${buddy.level}  ${data.player.pokemon.size} Pokémon", pixel, dim = true) { host.openApp(Place.HOME) }
+                    val open = model.store.openTodayTasks()
+                    PmdText(if (open.isEmpty()) "Today" else "Today  ${open.size} left", pixel, Modifier.padding(start = (5 * pixel / LocalDensity.current.density).dp, top = 2.dp), alpha = 0.7f)
                     // One thing to do, not the whole list: the rest is a tap away in Plan.
-                    if (task != null) PmdMenuLine(task.title, pixel) { model.completeTask(task.id) }
-                    else PmdMenuLine("Nothing left for today", pixel, dim = true) { host.openApp(Place.PLAN) }
-                    PmdRule(pixel)
-                    // The parts of PokéLife in one row, Plan among them.
+                    val task = open.firstOrNull()
+                    if (task != null) PmdMenuLine(task.title, pixel, pixelText = false) { model.completeTask(task.id) }
+                    else PmdMenuLine("Nothing left for today", pixel, pixelText = false, dim = true) { host.openApp(Place.PLAN) }
+                    PmdButton(if (running) "Back to focus" else "Start focus", pixel, color = if (running) Pixel.Green else Color(0xFFE84436)) { host.openApp(Place.FOCUS) }
                     Row(Modifier.fillMaxWidth()) {
                         PmdMenuLine("Plan", pixel, Modifier.weight(1f), center = true) { host.openApp(Place.PLAN) }
-                        PmdMenuLine("Focus", pixel, Modifier.weight(1f), selected = running, center = true) { host.openApp(Place.FOCUS) }
                         if (data.settings.careModule) PmdMenuLine("Care", pixel, Modifier.weight(1f), center = true) { host.openApp(Place.CARE) }
                         PmdMenuLine("Party", pixel, Modifier.weight(1f), center = true) { host.openApp(Place.PARTY) }
                         PmdMenuLine("Pokémon", pixel, Modifier.weight(1.3f), center = true) { host.openApp(Place.COLLECTION) }
@@ -195,7 +202,7 @@ private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPr
                         Column(Modifier.heightIn(max = 220.dp).verticalScroll(rememberScrollState())) {
                             pinned.chunked(2).forEach { pair ->
                                 Row(Modifier.fillMaxWidth()) {
-                                    pair.forEach { app -> PmdMenuLine(app.label, pixel, Modifier.weight(1f), onHold = { onHold(app) }) { host.open(app.key) } }
+                                    pair.forEach { app -> PmdMenuLine(app.label, pixel, Modifier.weight(1f), pixelText = false, onHold = { onHold(app) }) { host.open(app.key) } }
                                     if (pair.size == 1) Box(Modifier.weight(1f))
                                 }
                             }
@@ -203,7 +210,7 @@ private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPr
                     }
                     PmdRule(pixel)
                 }
-                PmdMenuLine("All apps", pixel, onClick = onAllApps)
+                PmdMenuLine("All apps", pixel, center = true, onClick = onAllApps)
             }
         }
     }

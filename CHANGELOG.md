@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.63.0
+
+- Launcher home: a clearer hierarchy, in three layers. A small strip at the top names your companion and its level on the left and the size of your collection on the right; the town fills the middle; one dialogue box by the thumb has today's task (with how many are left), a red Start focus button as the main action (green "Back to focus" while a session runs), then Plan, Care, Party and Pokémon, your pinned apps and All apps.
+- Every panel now has the same blue frame; the green outline is gone, so colour means something (the red main action, the green running session). Task and app names are in the readable body font; the dialogue font is kept for labels.
+
 ## 0.62.1
 
 - Launcher: the home page's text is one dialogue box, not several, with even padding all round. Inside: the buddy and your task, a row of shortcuts (Plan, Focus, Care, Party, Pokémon), your pinned apps in two columns, and All apps, divided by thin rules. It is shorter, so the town's Pokémon stay in view.
