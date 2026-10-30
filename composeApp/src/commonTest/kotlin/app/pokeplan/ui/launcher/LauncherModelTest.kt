@@ -112,4 +112,19 @@ class LauncherModelTest {
         assertEquals(4, townScale(1440f))
         for (pixel in 1..6) for (v in listOf(0f, 1f, 17.4f, 333.3f, 1079f)) assertEquals(0, snap(v, pixel) % pixel)
     }
+
+    @Test
+    fun appsWithNoDeclaredCategoryAreSortedByTheirNames() {
+        assertEquals(AppCategory.GAMES, AppCategory.guess(0, "com.some.thing", "Thing", false))
+        assertEquals(AppCategory.COMMUNICATION, AppCategory.guess(-1, "com.google.android.apps.messaging", "Messages", false))
+        assertEquals(AppCategory.SOCIAL, AppCategory.guess(-1, "com.instagram.android", "Instagram", false))
+        assertEquals(AppCategory.MEDIA, AppCategory.guess(-1, "com.spotify.music", "Spotify", false))
+        assertEquals(AppCategory.FINANCE, AppCategory.guess(-1, "com.revolut.revolut", "Revolut", false))
+        assertEquals(AppCategory.TRAVEL, AppCategory.guess(-1, "com.google.android.apps.maps", "Maps", false))
+        assertEquals(AppCategory.TOOLS, AppCategory.guess(-1, "com.android.settings", "Settings", true))
+        assertEquals(AppCategory.TOOLS, AppCategory.guess(-1, "com.android.something", "Mystery", true))
+        assertEquals(AppCategory.OTHER, AppCategory.guess(-1, "org.example.app", "Mystery", false))
+        // A declared category wins over the words.
+        assertEquals(AppCategory.PRODUCTIVITY, AppCategory.guess(7, "com.instagram.notes", "Notes", false))
+    }
 }

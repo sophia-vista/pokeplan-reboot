@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -107,7 +108,7 @@ private val rowShape = RoundedCornerShape(14.dp)
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, isDefault: Boolean, host: LauncherHost) {
+fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, isDefault: Boolean, host: LauncherHost, homePresses: Int = 0) {
     val data = model.data
     val dark = when (data.settings.theme) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
@@ -123,6 +124,10 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var listOpen by remember { mutableStateOf(false) }
     var sheetKey by remember { mutableStateOf<String?>(null) }
     var pickingTown by remember { mutableStateOf(false) }
+    // The Home button always comes back to the home page.
+    LaunchedEffect(homePresses) {
+        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false }
+    }
     val sheetApp = sheetKey?.let { key -> apps.firstOrNull { it.key == key } }
     PixelTheme(dark) {
         CompositionLocalProvider(LocalReduceMotion provides data.settings.reduceMotion) {
@@ -168,10 +173,12 @@ private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPr
         ) {
             if (data.onboarded) {
                 val buddy = data.player.buddy
-                if (buddy != null) Text("${buddy.nickname}  Lv. ${buddy.level}  ·  ${data.player.pokemon.size} Pokémon", style = MaterialTheme.typography.labelLarge, color = white.copy(alpha = 0.8f))
-                val open = model.store.openTodayTasks()
-                if (open.isEmpty()) Text("Nothing left for today", style = MaterialTheme.typography.bodyLarge, color = white.copy(alpha = 0.8f))
-                open.take(3).forEach { task ->
+                if (buddy != null) Text(
+                    "${buddy.nickname}  Lv. ${buddy.level}  ·  ${data.player.pokemon.size} Pokémon", style = MaterialTheme.typography.labelLarge, color = white.copy(alpha = 0.85f),
+                    modifier = Modifier.clickable(role = Role.Button, onClickLabel = "Open PokéLife") { host.openApp(Place.HOME) }.padding(vertical = Spacing.XS),
+                )
+                // One thing to do, not the whole list: the rest is a tap away in Plan.
+                model.store.openTodayTasks().firstOrNull()?.let { task ->
                     Row(
                         Modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).clickable(role = Role.Checkbox, onClickLabel = "Done: ${task.title}") { model.completeTask(task.id) },
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -180,9 +187,15 @@ private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPr
                         Text(task.title, style = MaterialTheme.typography.bodyLarge, color = white, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
-                if (open.size > 3) Text("+ ${open.size - 3} more", style = MaterialTheme.typography.bodyMedium, color = white.copy(alpha = 0.7f))
+                // Every part of PokéLife, side by side: Plan is one of them.
                 val running = data.focus != null
-                PixelButton(if (running) "Back to focus" else "Start focus", { host.openApp(Place.FOCUS) }, Modifier.fillMaxWidth().padding(vertical = Spacing.S), if (running) Pixel.Green else Pixel.Red)
+                Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(vertical = Spacing.S), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    ModuleChip("Plan") { host.openApp(Place.PLAN) }
+                    ModuleChip(if (running) "Back to focus" else "Focus", highlight = running) { host.openApp(Place.FOCUS) }
+                    if (data.settings.careModule) ModuleChip("Care") { host.openApp(Place.CARE) }
+                    ModuleChip("Party") { host.openApp(Place.PARTY) }
+                    ModuleChip("Pokémon") { host.openApp(Place.COLLECTION) }
+                }
             }
             LauncherList.pinned(apps, prefs).takeIf { it.isNotEmpty() }?.let { PinnedGrid(it, host, onHold) }
             // The handle for the app list: a tap or a swipe up opens it.
@@ -232,6 +245,16 @@ private fun AppIcon(host: LauncherHost, key: String, size: androidx.compose.ui.u
     val shown = icon
     if (shown != null) Image(shown, contentDescription = null, modifier = Modifier.size(size))
     else Box(Modifier.size(size).background(Color.White.copy(alpha = 0.2f), CircleShape))
+}
+
+/** A plain pill that opens one part of PokéLife from the home page. */
+@Composable
+private fun ModuleChip(label: String, highlight: Boolean = false, onClick: () -> Unit) {
+    Box(
+        Modifier.height(40.dp).clip(CircleShape).background(if (highlight) Pixel.Green else Color.White.copy(alpha = 0.2f), CircleShape)
+            .clickable(role = Role.Button, onClick = onClick).padding(horizontal = Spacing.L),
+        contentAlignment = Alignment.Center,
+    ) { Text(label, style = MaterialTheme.typography.labelLarge, color = Color.White, maxLines = 1) }
 }
 
 private sealed interface ListRow {
