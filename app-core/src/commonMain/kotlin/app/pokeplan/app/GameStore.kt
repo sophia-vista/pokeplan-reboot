@@ -691,7 +691,7 @@ class GameStore(
      * and remembers it, so finishing it pays [RewardEngine.PICKED_BONUS] on its candies. Returns null when nothing is open.
      */
     fun pickForMe(): Task? {
-        val open = todayTasks().filter { it.isOpen && it.id !in data.pending.map { p -> p.original.id } }
+        val open = openTodayTasks()
         val pick = PickForMe.choose(open.filter { it.id != data.pickedTaskId }.ifEmpty { open }, rng)?.task ?: return null
         update { it.copy(pickedTaskId = pick.id) }
         return pick
@@ -1200,6 +1200,15 @@ class GameStore(
     // --- views --------------------------------------------------------------------------------------------------------
 
     fun todayTasks(): List<Task> = TaskViews.today(data.tasks.filter { it.state != TaskState.DELETED }, now)
+
+    /** Today's open tasks, less the ones just ticked off and waiting out their undo: the list Home, Plan and the widget show. */
+    fun openTodayTasks(): List<Task> {
+        val pending = data.pending.map { it.original.id }.toSet()
+        return todayTasks().filter { it.id !in pending }
+    }
+
+    /** The berry the buddy is fed from the bag (the first by name), wherever it is fed; null with none. */
+    fun buddyBerry(): String? = berries().keys.minOrNull()
 
     companion object {
         /** The welcome-back gift after a week or more away. *(tune)* */

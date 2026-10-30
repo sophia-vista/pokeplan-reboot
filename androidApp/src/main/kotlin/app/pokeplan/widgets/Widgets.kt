@@ -70,7 +70,6 @@ import app.pokeplan.app.BuddyReaction
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.app.GameStore
 import app.pokeplan.care.Routine
-import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.plan.Phase
 import app.pokeplan.plan.Rank
@@ -175,8 +174,7 @@ class TodayWidget : GlanceAppWidget() {
 
     private suspend fun load(context: Context): Pair<TodayState, Bitmap?> {
         val store = widgetStore(context)
-        val pending = store.data.pending.map { it.original.id }.toSet()
-        val open = if (store.data.onboarded) store.todayTasks().filter { it.id !in pending && it.isOpen } else emptyList()
+        val open = if (store.data.onboarded) store.openTodayTasks() else emptyList()
         val done = if (store.data.onboarded) store.doneToday() else 0
         val d = density(context)
         val header = buddyScene(context, store, 44, roundBottom = false)
@@ -315,8 +313,6 @@ suspend fun announceBuddyEvent(context: Context) {
     }
 }
 
-private fun berryOf(store: GameStore): String? =
-    store.data.player.inventory.counts.entries.firstOrNull { (id, n) -> n > 0 && Items.category(id) == ItemCategory.BERRY }?.key
 
 /** A tap on the buddy: the same petting as in the app, with a heart and the cry. */
 class PetAction : ActionCallback {
@@ -337,7 +333,7 @@ class FeedAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
         val store = widgetStore(context)
         val buddy = store.data.player.buddy ?: return
-        val berry = berryOf(store) ?: return
+        val berry = store.buddyBerry() ?: return
         store.useItem(berry, buddy.id)
         BuddyTalk.show(context, BuddyReaction.feed(buddy, avoid = BuddyTalk.last(context)))
         updateWidgets(context)
@@ -362,7 +358,7 @@ class BuddyWidget : GlanceAppWidget() {
         val moment = BuddyTalk.current(context)
         // An alarm refreshes the widget when the reaction ends, to take the emoji away.
         if (moment != null) scheduleWidgetRefresh(context, BuddyTalk.remaining(context) + 300)
-        val berry = berryOf(store)
+        val berry = store.buddyBerry()
         val d = density(context)
         val darkness = BuddyScene.darkness(store.now.hour, store.now.minute)
         val focusing = store.data.focus != null

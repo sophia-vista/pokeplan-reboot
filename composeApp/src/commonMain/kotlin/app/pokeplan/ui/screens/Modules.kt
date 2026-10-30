@@ -119,9 +119,7 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
     val store = model.store
     val today = store.todayTasks().size
     val session = data.focus
-    // Tasks just ticked off wait for their Undo in the bar at the bottom, so they leave this list at once.
-    val pendingIds = data.pending.map { it.original.id }.toSet()
-    val open = store.todayTasks().filter { it.id !in pendingIds }
+    val open = store.openTodayTasks()
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.PLAN.label, subtitle = "Modules", onBack = onBack)
         Column(
