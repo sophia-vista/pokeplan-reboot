@@ -27,7 +27,7 @@ server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`,
 | **Goal milestone done** (24 hours old or more) | 1 Super Candy, at most 3 a day; an active day | `SUPER_CANDIES_PER_MILESTONE`, `MILESTONE_MIN_AGE_MILLIS`, `MAX_MILESTONE_REWARDS_PER_DAY` |
 | **Every milestone of a goal done** | 1 Nature Mint, once per goal | `Goal.bonusGiven` |
 | **Weekly review** | 1 berry, once a week | `Review.REWARD_BERRIES` |
-| **Mini-quest** ticked (honour system, 3 a day, one reroll before any is done) | 1 random berry each, 1 more for the third; no active day | `MiniQuests.ALL_THREE_BONUS_BERRIES`, `GameStore.completeMiniQuest` |
+| **Mini-quest** ticked (honour system, 3 a day from 4am, one reroll before any is done that gives three others; petting the buddy ticks "Pet your buddy") | 1 random berry each, 1 more for the third; no active day | `MiniQuests.ALL_THREE_BONUS_BERRIES`, `GameStore.completeMiniQuest` |
 | **Welcome back** after 7 or more days away (once per absence) | 5 Rare Candies and 2 berries of one flavour | `WELCOME_BACK_RARE_CANDIES`, `WELCOME_BACK_BERRIES` |
 | **Transfer** a Pokémon | Rare Candies (Common 8, Uncommon 12, Rare 22, Super Rare 60, plus a fifth of the candies it was fed), coins twice the base candies (16 / 24 / 44 / 120), its held item back | `Transfer.candiesByRarity`, `COIN_FACTOR`, `REFUND_DIVISOR` |
 | **Legendary or mythical quest** claimed | That Pokémon (out of the party; it can be shiny) | `Quests` |

@@ -3,6 +3,9 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.45.1" to listOf(
+            "Mini-quests answer when you tap Done and show the berry you got. They turn over at 4am, like your streak.",
+        ),
         "0.45.0" to listOf(
             "Visit every visitor each day, and care for them by hand: tap to pat, drag a treat, hold to sit together, swipe to tidy.",
             "Play with visitors any time, just for fun. New friends usually leave an Egg of their family; about 1 in 10 stays itself.",

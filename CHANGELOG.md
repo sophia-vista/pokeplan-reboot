@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.45.1
+
+- Mini-quests answer when you tap Done: the quest turns to "Done" straight away and the card says what you got (the berry, and the bonus one for all three). Before, the card did not redraw, so Done looked like it did nothing. The welcome-back gift had the same problem and is fixed too.
+- Mini-quests now turn over at 4am like your streak, so a quest done late at night stays done after midnight.
+- "Pet your buddy" ticks itself when you pet your buddy, and "Different ones" always gives three new quests.
+
 ## 0.45.0
 
 - More time with visitors. Every visitor can now have its own visit each day, once you've done something in Care, so you can care for all of them, not just one. Up to four stay in the meadow at once, and the two warmest stand beside your Care buddy: tap one to pat it.
