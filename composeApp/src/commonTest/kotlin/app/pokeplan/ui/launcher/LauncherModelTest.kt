@@ -55,6 +55,15 @@ class LauncherModelTest {
     }
 
     @Test
+    fun theTownSceneIsRememberedAndAnUnknownOneIgnored() {
+        val prefs = LauncherPrefs().withScene("beach")
+        assertEquals(prefs, LauncherPrefs.decode(prefs.encode()))
+        assertEquals("meadow", LauncherPrefs().withScene("nowhere").scene)
+        assertEquals("meadow", LauncherPrefs.decode("S nowhere\n").scene)
+        assertEquals("", LauncherPrefs().encode())
+    }
+
+    @Test
     fun androidCategoriesMapAndUnknownIsOther() {
         assertEquals(AppCategory.GAMES, AppCategory.fromAndroid(0))
         assertEquals(AppCategory.MEDIA, AppCategory.fromAndroid(2))

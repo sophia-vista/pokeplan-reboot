@@ -35,8 +35,7 @@ import kotlinx.coroutines.delay
 import kotlin.math.abs
 import kotlin.random.Random
 
-/** The town's backdrop (a real Pokémon scene) and where the ground is on it, as fractions of the screen's height. */
-internal const val TOWN_SCENE = "meadow"
+/** Where the ground is on the town's scene, as fractions of the screen's height. */
 private const val GROUND_TOP = 0.26f
 private const val GROUND_BOTTOM = 0.56f
 
@@ -52,11 +51,11 @@ internal fun townResidents(all: List<OwnedPokemon>, buddyId: String?): List<Owne
  * idle animation. A tap gives its cry and a hop. The buddy walks a little larger. With Reduce motion they stand still.
  */
 @Composable
-internal fun Town(model: AppModel, modifier: Modifier = Modifier) {
+internal fun Town(model: AppModel, scene: String, modifier: Modifier = Modifier) {
     val data = model.data
     val residents = townResidents(data.player.pokemon, data.player.buddy?.id)
     BoxWithConstraints(modifier) {
-        SceneImage(TOWN_SCENE, Modifier.fillMaxSize(), darkness = BuddyScene.darkness(model.store.now.hour, model.store.now.minute))
+        SceneImage(scene, Modifier.fillMaxSize(), darkness = BuddyScene.darkness(model.store.now.hour, model.store.now.minute))
         residents.forEachIndexed { i, mon ->
             key(mon.id) { Resident(model, mon, isBuddy = mon.id == data.player.buddy?.id, maxWidth, maxHeight, calm = data.settings.reduceMotion, index = i) }
         }
