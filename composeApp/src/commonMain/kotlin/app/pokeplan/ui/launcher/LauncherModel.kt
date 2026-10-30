@@ -9,11 +9,16 @@ package app.pokeplan.ui.launcher
 /** The groups of Smart Launcher: the category an app declares (`ApplicationInfo.category`), with "Other" as the fallback. */
 enum class AppCategory(val label: String, val icon: String) {
     GAMES("Games", "great-ball"),
+    COMMUNICATION("Messages and calls", "gb-sounds"),
     SOCIAL("Social", "friend-ball"),
-    MEDIA("Media", "premier-ball"),
+    MEDIA("Music, video and photos", "premier-ball"),
     PRODUCTIVITY("Productivity", "timer-ball"),
+    FINANCE("Money", "amulet-coin"),
+    HEALTH("Health and fitness", "rare-candy"),
+    SHOPPING("Shopping", "master-ball"),
     TRAVEL("Maps and travel", "town-map"),
     NEWS("News", "soothe-bell"),
+    TOOLS("Tools and system", "exp-share"),
     OTHER("Other", "poke-ball");
 
     companion object {
@@ -26,6 +31,32 @@ enum class AppCategory(val label: String, val icon: String) {
             6 -> TRAVEL
             7 -> PRODUCTIVITY
             else -> OTHER
+        }
+
+        /** Words in an app's package name or name that place it, tried in this order; most apps declare no category, so this fills the gap. */
+        private val keywords: List<Pair<AppCategory, List<String>>> = listOf(
+            GAMES to listOf("game", "supercell", "niantic", "pokemon", "mojang", "minecraft", "roblox", "rovio", "ubisoft", "nintendo", "wordle", "chess"),
+            COMMUNICATION to listOf("dialer", "contacts", "messag", "sms", "mms", "mail", "telegram", "whatsapp", "signal", "zoom", "teams", "meet", "duo", "viber", "skype", "phone"),
+            SOCIAL to listOf("facebook", "instagram", "twitter", "tiktok", "snapchat", "reddit", "discord", "linkedin", "pinterest", "threads", "bluesky", "mastodon", "tumblr"),
+            MEDIA to listOf("music", "spotify", "youtube", "netflix", "video", "photos", "gallery", "podcast", "radio", "twitch", "soundcloud", "disney", "camera", "player"),
+            PRODUCTIVITY to listOf("docs", "sheets", "slides", "calendar", "notes", "office", "excel", "powerpoint", "notion", "todoist", "tasks", "onenote", "evernote", "pdf", "obsidian", "trello", "drive"),
+            FINANCE to listOf("bank", "paypal", "gpay", "googlepay", "samsungpay", "revolut", "wallet", "finance", "invest", "crypto", "coinbase", "venmo", "cashapp", "monzo"),
+            HEALTH to listOf("health", "fitness", "fitbit", "strava", "workout", "sleep", "meditat", "yoga", "calm", "steps"),
+            SHOPPING to listOf("amazon", "shop", "ebay", "aliexpress", "temu", "shein", "etsy", "walmart", "lazada"),
+            TRAVEL to listOf("maps", "uber", "lyft", "grab", "taxi", "transit", "airbnb", "booking", "flight", "travel", "waze", "navigation", "expedia"),
+            NEWS to listOf("news", "bbc", "cnn", "reuters", "guardian"),
+            TOOLS to listOf("settings", "calculator", "clock", "files", "filemanager", "browser", "chrome", "firefox", "brave", "vending", "weather", "flashlight", "compass", "translate", "vpn", "wallpaper", "keyboard", "authenticator", "password"),
+        )
+
+        /**
+         * An app's category: the one it declares ([declared], Android's constant), else the first group whose words appear in
+         * its [packageName] or [label], else Tools and system for a [system] app and Other for the rest. The user can always move it.
+         */
+        fun guess(declared: Int, packageName: String, label: String, system: Boolean): AppCategory {
+            fromAndroid(declared).takeIf { it != OTHER }?.let { return it }
+            val text = "$packageName $label".lowercase()
+            keywords.firstOrNull { (_, words) -> words.any { it in text } }?.let { return it.first }
+            return if (system) TOOLS else OTHER
         }
     }
 }

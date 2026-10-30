@@ -18,6 +18,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
@@ -56,6 +57,9 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     private var apps by mutableStateOf<List<LauncherApp>>(emptyList())
     private var prefs by mutableStateOf(LauncherPrefs())
     private var isDefault by mutableStateOf(false)
+
+    /** How many times Home was pressed while this was open: the screens go back to the home page on each. */
+    private var homePresses by mutableIntStateOf(0)
     private var reloading: Job? = null
     private val icons = object : LruCache<String, ImageBitmap>(256) {}
 
@@ -76,13 +80,14 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         val model = AppModel(store, cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this))
         launcherApps.registerCallback(packageChanges)
         reloadApps()
-        setContent { LauncherScreen(model, apps, prefs, ::savePrefs, isDefault, this) }
+        setContent { LauncherScreen(model, apps, prefs, ::savePrefs, isDefault, this, homePresses) }
         keepFocusScreen()
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        // Home pressed while this is the home app.
+        // Home pressed while this is the home app: back to the home page, from the app list, a sheet or the town picker.
+        homePresses++
         keepFocusScreen()
     }
 
@@ -130,10 +135,12 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
             entries = found.associateBy { key(it) }
             icons.evictAll()
             apps = found.map { info ->
+                val label = info.label?.toString().orEmpty().ifBlank { info.componentName.packageName }
+                val removable = info.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM == 0 || info.applicationInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0
                 LauncherApp(
-                    key(info), info.label?.toString().orEmpty().ifBlank { info.componentName.packageName },
-                    AppCategory.fromAndroid(info.applicationInfo.category),
-                    removable = info.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM == 0 || info.applicationInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0,
+                    key(info), label,
+                    AppCategory.guess(info.applicationInfo.category, info.componentName.packageName, label, system = !removable),
+                    removable = removable,
                 )
             }
         }

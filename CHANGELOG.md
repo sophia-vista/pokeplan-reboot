@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.61.0
+
+- Launcher: pressing Home now always returns to the home page, from the app list, the long-press sheet or the town picker (it used to stay in the app list).
+- Launcher: more categories in the app list. Most apps declare none, so apps are also sorted by the words in their name (Messages and calls, Money, Health and fitness, Shopping, Tools and system join Games, Social, Music/video/photos, Productivity, Maps and travel, News); system apps with no match go under Tools and system. You can still move any app.
+- Launcher: the home page is less about Plan. It shows the buddy, one task to tick off and a row of shortcuts to Plan, Focus (or Back to focus), Care, Party and Pokémon, above your pinned apps.
+
 ## 0.60.0
 
 - The whole app can use a scene or a dungeon town as its page background: Settings → Look → Background → Change shows small pictures of Day (the default time-of-day gradient), the 11 scenes and the 17 dungeon towns. A veil of the page colour sits over the picture so the text stays readable, in the light and the dark theme. The choice is a setting in the save, so it follows you across devices.
