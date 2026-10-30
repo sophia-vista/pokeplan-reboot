@@ -5,7 +5,7 @@ import app.pokeplan.core.dex.EvolutionKind
 import app.pokeplan.core.dex.HatchOption
 import app.pokeplan.core.dex.HatchRules
 import app.pokeplan.core.dex.Region
-import app.pokeplan.core.model.Rarity
+import app.pokeplan.core.dex.Rarity
 import app.pokeplan.core.pokemon.CandyRules
 import app.pokeplan.core.pokemon.EvolutionRules
 import app.pokeplan.core.pokemon.Hatching
@@ -119,7 +119,7 @@ private class Run(val profile: Profile, val seed: Int, val days: Int) {
                 if (r.fromTask) taskEggs++
                 if (r.pokemon.isShiny) shinies++
             }
-            is Reward.Candies -> if (r.type == app.pokeplan.core.model.CandyType.SUPER) superCandy += r.amount else rare += r.amount
+            is Reward.Candies -> if (r.type == app.pokeplan.core.reward.CandyType.SUPER) superCandy += r.amount else rare += r.amount
             is Reward.ItemDrop -> drops++
             else -> {}
         }

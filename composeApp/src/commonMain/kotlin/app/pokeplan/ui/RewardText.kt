@@ -1,7 +1,7 @@
 package app.pokeplan.ui
 
 import app.pokeplan.core.dex.Dex
-import app.pokeplan.core.model.CandyType
+import app.pokeplan.core.reward.CandyType
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.reward.Reward
 

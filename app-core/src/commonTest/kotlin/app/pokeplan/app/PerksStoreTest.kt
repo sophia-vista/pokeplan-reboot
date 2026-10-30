@@ -1,6 +1,6 @@
 package app.pokeplan.app
 
-import app.pokeplan.core.model.PokemonType
+import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.ItemUse
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.Nature

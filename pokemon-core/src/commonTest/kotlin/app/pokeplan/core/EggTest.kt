@@ -1,8 +1,8 @@
 package app.pokeplan.core
 
-import app.pokeplan.core.model.Egg
-import app.pokeplan.core.model.Rarity
-import app.pokeplan.core.model.RarityRates
+import app.pokeplan.core.dex.Egg
+import app.pokeplan.core.dex.Rarity
+import app.pokeplan.core.dex.RarityRates
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals

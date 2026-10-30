@@ -2,7 +2,7 @@ package app.pokeplan.core.pokemon
 
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.EvolutionKind
-import app.pokeplan.core.model.PokemonType
+import app.pokeplan.core.dex.PokemonType
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
 

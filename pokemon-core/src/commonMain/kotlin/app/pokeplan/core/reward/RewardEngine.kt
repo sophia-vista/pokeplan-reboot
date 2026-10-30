@@ -4,11 +4,9 @@ import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.HatchOption
 import app.pokeplan.core.dex.HatchRules
 import app.pokeplan.core.dex.Region
-import app.pokeplan.core.model.CandyRewards
-import app.pokeplan.core.model.CandyType
-import app.pokeplan.core.model.Egg
-import app.pokeplan.core.model.PokemonType
-import app.pokeplan.core.model.Rarity
+import app.pokeplan.core.dex.Egg
+import app.pokeplan.core.dex.PokemonType
+import app.pokeplan.core.dex.Rarity
 import app.pokeplan.core.pokemon.FriendshipRules
 import app.pokeplan.core.pokemon.Hatching
 import app.pokeplan.core.pokemon.Inventory
@@ -264,7 +262,7 @@ object RewardEngine {
         ))
     }
 
-    private fun luckyBump(rarity: app.pokeplan.core.model.Rarity, eggLuckPercent: Double, rng: Random) =
+    private fun luckyBump(rarity: app.pokeplan.core.dex.Rarity, eggLuckPercent: Double, rng: Random) =
         if (rng.nextDouble() * 100 < eggLuckPercent) rarity.next() else rarity
 
     fun effort(state: PlayerState, e: EffortEvent, rng: Random): Outcome {

@@ -657,7 +657,7 @@ class GameStoreTest {
 
     @Test
     fun the_scene_follows_the_type_and_night_falls_in_the_evening() {
-        assertEquals("mountain", BuddyScene.of(listOf(app.pokeplan.core.model.PokemonType.FIRE)))
+        assertEquals("mountain", BuddyScene.of(listOf(app.pokeplan.core.dex.PokemonType.FIRE)))
         assertEquals("meadow", BuddyScene.of(emptyList()))
         assertTrue(BuddyScene.isNight(22) && BuddyScene.isNight(3) && !BuddyScene.isNight(12))
     }

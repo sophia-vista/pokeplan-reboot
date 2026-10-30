@@ -2,7 +2,7 @@ package app.pokeplan.plan
 
 import kotlinx.serialization.Serializable
 import app.pokeplan.core.dex.Region
-import app.pokeplan.core.model.PokemonType
+import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.reward.EffortEvent
 
 enum class PauseReason { CALL, EMERGENCY }

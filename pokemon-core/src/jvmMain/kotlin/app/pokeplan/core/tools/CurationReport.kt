@@ -4,7 +4,7 @@ import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.HatchRules
 import app.pokeplan.core.dex.Region
 import app.pokeplan.core.dex.SpeciesInfo
-import app.pokeplan.core.model.Rarity
+import app.pokeplan.core.dex.Rarity
 import java.io.File
 
 /**

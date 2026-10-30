@@ -5,8 +5,8 @@ import app.pokeplan.app.quest.Quests
 import app.pokeplan.app.quest.Requirement
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.HatchOption
-import app.pokeplan.core.model.Egg
-import app.pokeplan.core.model.PokemonType
+import app.pokeplan.core.dex.Egg
+import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.CandyRules
 import app.pokeplan.core.pokemon.EvolutionContext
 import app.pokeplan.core.pokemon.EvolutionOption
@@ -25,7 +25,7 @@ import app.pokeplan.core.pokemon.PerkSource
 import app.pokeplan.core.pokemon.Perks
 import app.pokeplan.core.pokemon.Transfer
 import app.pokeplan.core.pokemon.TransferBlock
-import app.pokeplan.core.model.CandyType
+import app.pokeplan.core.reward.CandyType
 import app.pokeplan.core.pokemon.Inventory
 import app.pokeplan.core.pokemon.Shop
 import app.pokeplan.core.reward.AchievementEvent
@@ -499,7 +499,7 @@ class GameStore(
             val withTask = d.copy(tasks = d.tasks.map { if (it.id == taskId) updated else it })
             if (!pays) withTask else {
                 val (bag, overflow) = withTask.player.inventory.addCapped(Items.RARE_CANDY, TaskRules.SUBTASK_RARE_CANDIES)
-                val rewards = listOf(Reward.Candies(app.pokeplan.core.model.CandyType.RARE, TaskRules.SUBTASK_RARE_CANDIES))
+                val rewards = listOf(Reward.Candies(app.pokeplan.core.reward.CandyType.RARE, TaskRules.SUBTASK_RARE_CANDIES))
                 log("Step: ${task.subtasks.first { it.id == subtaskId }.title}", rewards,
                     withTask.copy(player = withTask.player.copy(inventory = bag, coins = withTask.player.coins + overflow)))
             }
@@ -656,7 +656,7 @@ class GameStore(
                 var coins = next.player.coins
                 gifts.forEach { (item, n) -> bag.addCapped(item, n).let { (b, over) -> bag = b; coins += over } }
                 val rewards = gifts.map { (item, n) ->
-                    if (item == Items.SUPER_CANDY) Reward.Candies(app.pokeplan.core.model.CandyType.SUPER, n) else Reward.ItemDrop(item, n)
+                    if (item == Items.SUPER_CANDY) Reward.Candies(app.pokeplan.core.reward.CandyType.SUPER, n) else Reward.ItemDrop(item, n)
                 }
                 next = log("Goal: ${goal.title}", rewards, next.copy(player = next.player.copy(inventory = bag, coins = coins)))
             }

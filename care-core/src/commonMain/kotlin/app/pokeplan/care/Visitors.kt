@@ -3,8 +3,8 @@ package app.pokeplan.care
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.HatchRules
 import app.pokeplan.core.dex.Region
-import app.pokeplan.core.model.PokemonType
-import app.pokeplan.core.model.Rarity
+import app.pokeplan.core.dex.PokemonType
+import app.pokeplan.core.dex.Rarity
 import app.pokeplan.core.pokemon.Items
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate

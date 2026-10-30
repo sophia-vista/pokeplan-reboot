@@ -1,6 +1,5 @@
 package app.pokeplan.core.dex
 
-import app.pokeplan.core.model.Rarity
 import kotlin.random.Random
 
 /**

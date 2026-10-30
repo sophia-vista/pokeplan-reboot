@@ -33,7 +33,7 @@ import app.pokeplan.app.PcSort
 import app.pokeplan.app.PcView
 import app.pokeplan.app.quest.Quests
 import app.pokeplan.core.pokemon.PartyIds
-import app.pokeplan.core.model.PokemonType
+import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Guardians
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.reward.Feature
