@@ -88,7 +88,7 @@ internal fun CareScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
         CareMenu(model, toModules, openPokemon)
         return
     }
-    SectionScaffold(section.label, Module.CARE.label, onBack = { model.careSection = null }, icon = section.icon) {
+    SectionScaffold(section.label, Module.CARE.label, onBack = { model.careSection = null }, icon = section.icon, color = Module.CARE.look.header) {
         when (section) {
             CareSection.ROUTINES -> RoutinesView(model)
             CareSection.CALM -> CalmBreakView(model)
@@ -108,7 +108,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     val diarySaved = model.care.diaryToday() != null
     val practised = model.care.practisedToday().size
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.CARE.label, subtitle = "Modules", onBack = onBack)
+        ScreenHeader(Module.CARE.label, subtitle = "Modules", onBack = onBack, color = Module.CARE.look.header)
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -152,7 +152,7 @@ private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
     val data = model.data
     val berry = store.buddyBerry()
     BuddyStage(
-        buddy = buddy, scene = "meadow", darkness = BuddyScene.darkness(store.now.hour, store.now.minute),
+        buddy = buddy, scene = Module.CARE.look.scene, darkness = BuddyScene.darkness(store.now.hour, store.now.minute),
         progress = store.levelProgress(buddy), event = store.buddyEvent(care = true),
         calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
         onPet = { avoid -> store.pet(buddy.id); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
@@ -405,7 +405,7 @@ private fun CalmBreakView(model: AppModel) {
     val elapsed = if (start == null) 0L else (model.now - start).coerceAtLeast(0)
     if (start != null && elapsed >= seconds * 1000L) finish(seconds)
 
-    if (buddy != null) SceneStage("meadow", 200.dp) {
+    if (buddy != null) SceneStage(Module.CARE.look.scene, 200.dp) {
         AnimatedSprite(
             buddy.form.id, buddy.isShiny, if (start != null) "${buddy.nickname}, resting" else buddy.nickname,
             Modifier.align(Alignment.BottomCenter).padding(bottom = 24.dp).clickable(enabled = start == null, onClickLabel = "Hear ${buddy.nickname}", role = Role.Button) {

@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.50.0
+
+- Each region has its own look. Plan is a town: your buddy now stands on a red-brick street on Plan's page, on Home and in the widgets, whatever its type. Care is a meadow, with green headers on its pages. On Home each region's card shows its lead in its own scene, with the region's colour down the edge. Pokédex entries still show each species in the scene of its type.
+
 ## 0.49.0
 
 - Home is now an overview of your whole world: a card for each region (Plan and Care) with its lead, how today is going there and the one next thing to do, then your streak, mini-quests and what happened recently. Tap a region's card to open it, or a recent hatch to see that Pokémon.

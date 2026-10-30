@@ -100,10 +100,12 @@ fun ScreenHeader(
     footer: (@Composable () -> Unit)? = null,
     /** Shows Back at the start of the bar, where every phone app puts it; it takes the icon's place. */
     onBack: (() -> Unit)? = null,
+    /** The bar's colour: the brand red, or a region's own ([RegionLook.header]) on that region's pages. */
+    color: Color = Pixel.Red,
     trailing: @Composable () -> Unit = {},
 ) {
     val shape = RoundedCornerShape(bottomStart = Spacing.CardRadius, bottomEnd = Spacing.CardRadius)
-    Column(modifier.fillMaxWidth().clip(shape).background(Pixel.Red, shape)) {
+    Column(modifier.fillMaxWidth().clip(shape).background(color, shape)) {
         Row(
             Modifier.fillMaxWidth().padding(start = Spacing.Page, end = Spacing.L, top = Spacing.M, bottom = if (footer == null) Spacing.M else Spacing.XS),
             verticalAlignment = Alignment.CenterVertically,
