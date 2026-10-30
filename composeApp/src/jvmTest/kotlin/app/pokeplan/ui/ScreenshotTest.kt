@@ -633,4 +633,39 @@ class ScreenshotTest {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.SectionScaffold("Friends", null, {}) { app.pokeplan.ui.screens.FriendsView(model) } } }
         }
     }
+
+    private val fakeApps = listOf(
+        "Calendar" to app.pokeplan.ui.launcher.AppCategory.PRODUCTIVITY, "Camera" to app.pokeplan.ui.launcher.AppCategory.OTHER, "Chess" to app.pokeplan.ui.launcher.AppCategory.GAMES,
+        "Clock" to app.pokeplan.ui.launcher.AppCategory.OTHER, "Maps" to app.pokeplan.ui.launcher.AppCategory.TRAVEL, "Messages" to app.pokeplan.ui.launcher.AppCategory.SOCIAL,
+        "Music" to app.pokeplan.ui.launcher.AppCategory.MEDIA, "News" to app.pokeplan.ui.launcher.AppCategory.NEWS, "Notes" to app.pokeplan.ui.launcher.AppCategory.PRODUCTIVITY,
+        "Phone" to app.pokeplan.ui.launcher.AppCategory.OTHER, "Photos" to app.pokeplan.ui.launcher.AppCategory.MEDIA, "Settings" to app.pokeplan.ui.launcher.AppCategory.OTHER,
+        "Tasks" to app.pokeplan.ui.launcher.AppCategory.PRODUCTIVITY, "Weather" to app.pokeplan.ui.launcher.AppCategory.OTHER,
+    ).map { (name, c) -> app.pokeplan.ui.launcher.LauncherApp("pkg.$name", name, c) }
+
+    private val fakeHost = object : app.pokeplan.ui.launcher.LauncherHost {
+        override suspend fun icon(key: String) = null
+        override fun open(key: String) {}
+        override fun appInfo(key: String) {}
+        override fun uninstall(key: String) {}
+        override fun openHomeSettings() {}
+        override fun openApp(place: Place) {}
+    }
+
+    @Test
+    fun launcherHome() {
+        val model = AppModel(started())
+        val prefs = app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages").pin("pkg.Camera")
+        render("launcher-home") { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs, {}, isDefault = false, host = fakeHost) }
+    }
+
+    @Test
+    fun launcherList() {
+        val many = fakeApps + ('D'..'L').flatMap { c -> listOf(1, 2).map { app.pokeplan.ui.launcher.LauncherApp("pkg.$c$it", "$c app $it") } }
+        render("launcher-list") {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.AppListPage(many, app.pokeplan.ui.launcher.LauncherPrefs(), fakeHost, {}, {}) } }
+        }
+        render("launcher-sheet") {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.AppSheet(fakeApps[2], app.pokeplan.ui.launcher.LauncherPrefs(), {}, {}, fakeHost) } }
+        }
+    }
 }
