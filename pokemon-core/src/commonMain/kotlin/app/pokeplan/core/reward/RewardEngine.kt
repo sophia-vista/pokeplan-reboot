@@ -8,6 +8,7 @@ import app.pokeplan.core.model.CandyRewards
 import app.pokeplan.core.model.CandyType
 import app.pokeplan.core.model.Egg
 import app.pokeplan.core.model.PokemonType
+import app.pokeplan.core.model.Rarity
 import app.pokeplan.core.pokemon.FriendshipRules
 import app.pokeplan.core.pokemon.Hatching
 import app.pokeplan.core.pokemon.Inventory
@@ -185,13 +186,23 @@ object RewardEngine {
     /** Coins per 5 minutes of effort. *(tune)* */
     const val COINS_PER_FIVE_MINUTES = 1
 
+    /** Rare Candies per 5 minutes of effort (a 25 minute session pays 10). *(tune)* */
+    const val CANDIES_PER_FIVE_MINUTES = 2
+
+    /** Rare Candies and a Super Candy the first time a species joins, from any source, so it can evolve. *(tune)* */
+    const val NEW_SPECIES_CANDIES = 5
+    const val NEW_SPECIES_SUPER_CANDIES = 1
+
     /** A coin per tier point of finished work, doubled. *(tune)* */
     const val COINS_PER_TIER = 2
 
     const val LURE_WEIGHT = 3.0
 
-    /** Soft pity: within a rarity, species you have not caught yet are this many times as likely. *(tune)* */
-    const val UNCAUGHT_WEIGHT = 3.0
+    /**
+     * Soft pity: within a rarity, species you have not caught yet are this many times as likely. High on purpose: filling
+     * the Pokédex should be easy; a shiny or a Pokémon with great IVs is what stays hard. *(tune)*
+     */
+    const val UNCAUGHT_WEIGHT = 6.0
     const val SPOTLIGHT_WEIGHT = 2.0
 
     /** Base chance (percent) of an item drop, plus 2 per tier. *(tune)* */
@@ -199,7 +210,7 @@ object RewardEngine {
     const val DROP_PER_TIER_PERCENT = 2
 
     /** Points that fill the Egg meter, and what a Task Egg is rolled on (a 15 minute session). *(tune)* */
-    const val EGG_METER_SIZE = 10
+    const val EGG_METER_SIZE = 5
     const val TASK_EGG_MINUTES = 15
 
     const val ON_TIME_BONUS = 1.10
@@ -211,8 +222,18 @@ object RewardEngine {
     /** Finished work raises the buddy's friendship this many times a day at most. *(tune)* */
     const val TASK_FRIENDSHIP_DAILY_CAP = 10
 
-    /** Care pays bond, berries and a small share of trainer rank; never candies or eggs. *(tune)* */
+    /** Care pays bond, berries, Rare Candies, Care Eggs and a small share of trainer rank. *(tune)* */
     const val CARE_POINTS = 1
+
+    /** Rare Candies for each Care moment. *(tune)* */
+    val CARE_CANDIES: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 3, CareKind.CALM_BREAK to 4, CareKind.SKILL to 4, CareKind.WEEKLY_RHYTHM to 15)
+
+    /**
+     * Care's Egg meter, kept by the app (it never reaches the server): each Care moment adds its points, and a full meter
+     * gives a Care Egg ([careEgg]). With every routine, calm break and skill done that is 5 eggs a day; a few moments, 1 or 2.
+     */
+    val CARE_EGG_POINTS: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 1, CareKind.CALM_BREAK to 2, CareKind.SKILL to 2, CareKind.WEEKLY_RHYTHM to 0)
+    const val CARE_EGG_METER_SIZE = 3
 
     /**
      * Befriending a visitor: trainer points, the IV floor of what joins (visitor luck adds up to the bonus), the chance the
@@ -229,6 +250,19 @@ object RewardEngine {
     const val RHYTHM_BERRIES = 3
 
     private fun scaled(base: Int, multiplier: Double): Int = maxOf(base, (base * multiplier).roundToInt())
+
+    /**
+     * Adds [NEW_SPECIES_CANDIES] and [NEW_SPECIES_SUPER_CANDIES] when [species] was not in [known] (the first of its kind).
+     * Returns the bag, the coins of any overflow, and the rewards to show (none for a species already had).
+     */
+    private fun newSpecies(known: Set<Int>, species: Int, inventory: Inventory): Triple<Inventory, Int, List<Reward>> {
+        if (species in known) return Triple(inventory, 0, emptyList())
+        val (withRare, rareOverflow) = inventory.addCapped(Items.RARE_CANDY, NEW_SPECIES_CANDIES)
+        val (bag, superOverflow) = withRare.addCapped(Items.SUPER_CANDY, NEW_SPECIES_SUPER_CANDIES)
+        return Triple(bag, rareOverflow + superOverflow, listOf(
+            Reward.Candies(CandyType.RARE, NEW_SPECIES_CANDIES), Reward.Candies(CandyType.SUPER, NEW_SPECIES_SUPER_CANDIES),
+        ))
+    }
 
     private fun luckyBump(rarity: app.pokeplan.core.model.Rarity, eggLuckPercent: Double, rng: Random) =
         if (rng.nextDouble() * 100 < eggLuckPercent) rarity.next() else rarity
@@ -253,8 +287,19 @@ object RewardEngine {
         val hatched = Hatching.create(e.newPokemonId, option, state.party.size, e.nowMillis, e.minutes, rng, perks.multiplier(PerkBucket.SHINY_HUNTER))
         rewards += Reward.Hatched(hatched, fromTask = false)
 
-        val coins = scaled(e.minutes / 5 * COINS_PER_FIVE_MINUTES, perks.multiplier(PerkBucket.COINS))
+        var coins = scaled(e.minutes / 5 * COINS_PER_FIVE_MINUTES, perks.multiplier(PerkBucket.COINS))
         rewards += Reward.Coins(coins)
+        val candies = scaled(e.minutes / 5 * CANDIES_PER_FIVE_MINUTES, perks.multiplier(PerkBucket.CANDY_YIELD))
+        if (candies > 0) {
+            val (bag, overflow) = inventory.addCapped(Items.RARE_CANDY, candies)
+            inventory = bag
+            coins += overflow
+            rewards += Reward.Candies(CandyType.RARE, candies)
+        }
+        val (afterNew, newOverflow, newRewards) = newSpecies(caught, hatched.speciesId, inventory)
+        inventory = afterNew
+        coins += newOverflow
+        rewards += newRewards
         val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
         inventory = inventory.add(berry)
         rewards += Reward.ItemDrop(berry, 1)
@@ -326,6 +371,10 @@ object RewardEngine {
             pokemon = pokemon + egg
             caught = known + egg.speciesId
             rewards += Reward.Hatched(egg, fromTask = true)
+            val (afterNew, newOverflow, newRewards) = newSpecies(known, egg.speciesId, inventory)
+            inventory = afterNew
+            coins += newOverflow
+            rewards += newRewards
         }
         return Outcome(
             state.copy(
@@ -338,7 +387,8 @@ object RewardEngine {
 
     /**
      * A Care moment: a routine gives the buddy friendship, a calm break or a practised skill friendship and a berry, a
-     * weekly rhythm [RHYTHM_BERRIES] berries; each adds a little trainer rank. Perks don't apply: Care is about the bond, not the haul.
+     * weekly rhythm [RHYTHM_BERRIES] berries; each pays [CARE_CANDIES] Rare Candies and a little trainer rank. Only Care's
+     * own perks apply.
      */
     /**
      * A friend made through Care. Usually it leaves an egg of its family's first stage, like an egg from the Day Care (a
@@ -357,12 +407,34 @@ object RewardEngine {
         p = p.copy(partyId = PartyIds.CARE, ivs = Stat.entries.fold(p.ivs) { ivs, stat -> ivs.with(stat, maxOf(ivs[stat], floor)) })
         if (joins) p = p.copy(friendship = BEFRIEND_JOIN_FRIENDSHIP)
         val lead = state.careLeadId?.takeIf { state.careLead != null } ?: p.id.takeIf { p.inParty }
+        val (bag, overflow, newRewards) = newSpecies(state.caught + state.pokemon.map { it.speciesId }, p.speciesId, state.inventory)
         return Outcome(
             state.copy(
-                pokemon = state.pokemon + p, careLeadId = lead,
+                pokemon = state.pokemon + p, careLeadId = lead, inventory = bag, coins = state.coins + overflow,
                 trainerPoints = state.trainerPoints + BEFRIEND_POINTS, caught = state.caught + p.speciesId,
             ),
-            listOf(Reward.Hatched(p, fromTask = false)),
+            listOf(Reward.Hatched(p, fromTask = false)) + newRewards,
+        )
+    }
+
+    /**
+     * A Care Egg from a full Care Egg meter ([CARE_EGG_POINTS]): rolled like a Task Egg from the Care Region (species not
+     * caught yet more likely), it hatches at once into Care's party if there is room (else the PC), and leads it if Care
+     * has no lead yet. Shiny odds and IVs are the ordinary ones: a Care Egg fills the Pokédex, it does not make a better
+     * Pokémon.
+     */
+    fun careEgg(state: PlayerState, newPokemonId: String, nowMillis: Long, rng: Random): Outcome {
+        val known = state.caught + state.pokemon.map { it.speciesId }
+        var rarity = Egg.rates(TASK_EGG_MINUTES, false).roll(rng)
+        while (rarity.ordinal > 0 && HatchRules.pool(Region.CARE, rarity).isEmpty()) rarity = Rarity.entries[rarity.ordinal - 1]
+        val option = HatchRules.rollWeighted(Region.CARE, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
+        val careParty = state.partyOf(PartyIds.CARE).size
+        val p = Hatching.create(newPokemonId, option, careParty, nowMillis, TASK_EGG_MINUTES, rng).copy(partyId = PartyIds.CARE)
+        val lead = state.careLeadId?.takeIf { state.careLead != null } ?: p.id.takeIf { p.inParty }
+        val (bag, overflow, newRewards) = newSpecies(known, p.speciesId, state.inventory)
+        return Outcome(
+            state.copy(pokemon = state.pokemon + p, careLeadId = lead, inventory = bag, coins = state.coins + overflow, caught = known + p.speciesId),
+            listOf(Reward.Hatched(p, fromTask = true)) + newRewards,
         )
     }
 
@@ -399,6 +471,11 @@ object RewardEngine {
             coins += extra
             rewards += Reward.ItemDrop(berry, 1)
         }
+        val candies = CARE_CANDIES.getValue(e.kind)
+        val (bag, overflow) = inventory.addCapped(Items.RARE_CANDY, candies)
+        inventory = bag
+        coins += overflow
+        rewards += Reward.Candies(CandyType.RARE, candies)
         val points = if (e.kind == CareKind.WEEKLY_RHYTHM) RHYTHM_POINTS else CARE_POINTS
         return Outcome(state.copy(pokemon = pokemon, inventory = inventory, coins = coins, trainerPoints = state.trainerPoints + points), rewards)
     }

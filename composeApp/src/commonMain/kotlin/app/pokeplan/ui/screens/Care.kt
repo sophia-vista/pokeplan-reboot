@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.core.reward.RewardEngine
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -126,6 +127,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                     action = "Add a routine" to { model.careSection = CareSection.ROUTINES },
                 )
             } else today.forEach { RoutineRow(model, it) }
+            CareEggMeter(model)
             MenuGrid(
                 listOf(
                     MenuEntry(CareSection.ROUTINES.name, CareSection.ROUTINES.icon, "Routines", if (today.isEmpty()) "none today" else "$done of ${today.size} today", tint = Pixel.Green),
@@ -716,6 +718,22 @@ private fun TrendsView(model: AppModel) {
                 }
             }
             Text("Only you see this. It never earns and your buddy never mentions it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        }
+    }
+}
+
+/** How far the next Care Egg is: every routine, calm break and skill fills it a little. */
+@Composable
+private fun CareEggMeter(model: AppModel) {
+    model.data // observe the save: the store itself is not Compose state
+    val points = model.store.careEggMeter()
+    val size = RewardEngine.CARE_EGG_METER_SIZE
+    val label = "Care Egg: $points of $size"
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text(label, style = MaterialTheme.typography.bodyLarge)
+            PixelBar(points.toFloat() / size, color = Pixel.Green, label = label)
+            Text("A routine adds 1, a calm break or a skill 2.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }

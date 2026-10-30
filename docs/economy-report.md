@@ -14,7 +14,7 @@ Plays 180 days for 60 simulated players per profile through the real reward engi
 
 - Basic Plan dex (57 hatchable species) in about 60 days for a typical player.
 - Ranks quick at first, slower after: Apprentice within about 2 days and Ace within about 2 weeks for a typical player; each rank takes longer than the one before.
-- Evolving everything in the Plan Region once needs 83 evolutions: 70 Super Candies, 3808 to 7170 Rare Candies (with and without the catch-up discount), 12 stones, 1 Link Cords, 3 trials.
+- Evolving everything in the Plan Region once needs 83 evolutions: 70 Super Candies, 2562 to 4707 Rare Candies (with and without the catch-up discount), 12 stones, 1 Link Cords, 3 trials.
 
 ## Light
 
@@ -23,65 +23,65 @@ Plays 180 days for 60 simulated players per profile through the real reward engi
 | Day the basic Plan dex is complete (181 = not within 180) | 181 (181 to 181) |
 | Day the basic Care dex is complete (181 = not within 180) | 181 (181 to 181) |
 | Rank after 30 days | 2.0 (2.0 to 2.0) |
-| Eggs after 30 days (incl. Task Eggs) | 20.0 (16.0 to 24.0) |
+| Eggs after 30 days (incl. Task Eggs) | 30.0 (23.0 to 37.0) |
 | Rank after 60 days | 3.0 (3.0 to 3.0) |
-| Eggs after 60 days (incl. Task Eggs) | 42.0 (34.0 to 47.0) |
+| Eggs after 60 days (incl. Task Eggs) | 61.0 (53.0 to 71.0) |
 | Rank after 90 days | 4.0 (4.0 to 4.0) |
-| Eggs after 90 days (incl. Task Eggs) | 64.0 (53.0 to 70.0) |
-| Task Eggs after 60 days | 20.0 (16.0 to 23.0) |
-| Rare Candies earned in 60 days (incl. transfers) | 1228 (1025 to 1404) |
-| Super Candies earned in 60 days | 59.0 (39.0 to 78.0) |
-| Coins after 60 days | 1662 (1248 to 1836) |
-| Item drops in 60 days | 33.0 (25.0 to 40.0) |
-| Buddy level after 60 days | 79.0 (75.0 to 83.0) |
+| Eggs after 90 days (incl. Task Eggs) | 92.0 (82.0 to 101) |
+| Task Eggs after 60 days | 39.0 (34.0 to 46.0) |
+| Rare Candies earned in 60 days (incl. transfers) | 2515 (2196 to 2822) |
+| Super Candies earned in 60 days | 100 (73.0 to 117) |
+| Coins after 60 days | 2044 (1733 to 2353) |
+| Item drops in 60 days | 33.0 (27.0 to 40.0) |
+| Buddy level after 60 days | 100 (100 to 100) |
 | Shinies in 180 days | 1.0 (0.0 to 2.0) |
-| Species owned after 90 days | 41.0 (37.0 to 44.0) |
+| Species owned after 90 days | 45.0 (40.0 to 48.0) |
 
-Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (59.0) that is about 71.2 days. Rare Candies: 3808 to 7170 needed, 1228 earned in 60 days (about 186 to 350 days).
+Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (100) that is about 42.0 days. Rare Candies: 2562 to 4707 needed, 2515 earned in 60 days (about 61.1 to 112 days).
 
 ## Typical
 
 | Measure | Value |
 |---|---|
-| Day the basic Plan dex is complete (181 = not within 180) | 65.0 (45.0 to 88.0) |
-| Day the basic Care dex is complete (181 = not within 180) | 128 (93.0 to 158) |
+| Day the basic Plan dex is complete (181 = not within 180) | 42.0 (34.0 to 56.0) |
+| Day the basic Care dex is complete (181 = not within 180) | 84.0 (71.0 to 106) |
 | Rank after 30 days | 4.0 (4.0 to 5.0) |
-| Eggs after 30 days (incl. Task Eggs) | 86.0 (75.0 to 95.0) |
+| Eggs after 30 days (incl. Task Eggs) | 123 (109 to 138) |
 | Rank after 60 days | 6.0 (6.0 to 6.0) |
-| Eggs after 60 days (incl. Task Eggs) | 174 (156 to 187) |
+| Eggs after 60 days (incl. Task Eggs) | 247 (224 to 265) |
 | Rank after 90 days | 7.0 (7.0 to 7.0) |
-| Eggs after 90 days (incl. Task Eggs) | 261 (240 to 275) |
-| Task Eggs after 60 days | 70.0 (65.0 to 76.0) |
-| Rare Candies earned in 60 days (incl. transfers) | 5122 (4597 to 5504) |
-| Super Candies earned in 60 days | 214 (178 to 256) |
-| Coins after 60 days | 7837 (6920 to 8587) |
-| Item drops in 60 days | 135 (120 to 151) |
+| Eggs after 90 days (incl. Task Eggs) | 368 (340 to 393) |
+| Task Eggs after 60 days | 140 (129 to 155) |
+| Rare Candies earned in 60 days (incl. transfers) | 10349 (9429 to 11328) |
+| Super Candies earned in 60 days | 321 (262 to 365) |
+| Coins after 60 days | 9306 (8629 to 10341) |
+| Item drops in 60 days | 142 (123 to 153) |
 | Buddy level after 60 days | 100 (100 to 100) |
-| Shinies in 180 days | 5.0 (1.0 to 8.0) |
-| Species owned after 90 days | 107 (58.0 to 119) |
+| Shinies in 180 days | 5.0 (2.0 to 7.0) |
+| Species owned after 90 days | 122 (119 to 122) |
 
-Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (214) that is about 19.6 days. Rare Candies: 3808 to 7170 needed, 5122 earned in 60 days (about 44.6 to 84.0 days).
+Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (321) that is about 13.1 days. Rare Candies: 2562 to 4707 needed, 10349 earned in 60 days (about 14.9 to 27.3 days).
 
 ## Heavy
 
 | Measure | Value |
 |---|---|
-| Day the basic Plan dex is complete (181 = not within 180) | 28.0 (21.0 to 38.0) |
-| Day the basic Care dex is complete (181 = not within 180) | 54.0 (45.0 to 64.0) |
+| Day the basic Plan dex is complete (181 = not within 180) | 19.0 (14.0 to 24.0) |
+| Day the basic Care dex is complete (181 = not within 180) | 36.0 (30.0 to 44.0) |
 | Rank after 30 days | 6.0 (6.0 to 7.0) |
-| Eggs after 30 days (incl. Task Eggs) | 182 (169 to 198) |
+| Eggs after 30 days (incl. Task Eggs) | 263 (246 to 286) |
 | Rank after 60 days | 8.0 (8.0 to 8.0) |
-| Eggs after 60 days (incl. Task Eggs) | 368 (352 to 386) |
+| Eggs after 60 days (incl. Task Eggs) | 531 (500 to 561) |
 | Rank after 90 days | 8.0 (8.0 to 8.0) |
-| Eggs after 90 days (incl. Task Eggs) | 554 (522 to 572) |
-| Task Eggs after 60 days | 168 (159 to 177) |
-| Rare Candies earned in 60 days (incl. transfers) | 11731 (11066 to 12226) |
-| Super Candies earned in 60 days | 613 (551 to 685) |
-| Coins after 60 days | 18747 (17457 to 19506) |
-| Item drops in 60 days | 272 (255 to 292) |
+| Eggs after 90 days (incl. Task Eggs) | 798 (765 to 839) |
+| Task Eggs after 60 days | 333 (314 to 351) |
+| Rare Candies earned in 60 days (incl. transfers) | 23631 (22084 to 24932) |
+| Super Candies earned in 60 days | 703 (642 to 791) |
+| Coins after 60 days | 29769 (27277 to 32010) |
+| Item drops in 60 days | 273 (250 to 297) |
 | Buddy level after 60 days | 100 (100 to 100) |
-| Shinies in 180 days | 10.0 (6.0 to 13.0) |
+| Shinies in 180 days | 10.0 (7.0 to 13.0) |
 | Species owned after 90 days | 122 (122 to 122) |
 
-Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (613) that is about 6.9 days. Rare Candies: 3808 to 7170 needed, 11731 earned in 60 days (about 19.5 to 36.7 days).
+Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (703) that is about 6.0 days. Rare Candies: 2562 to 4707 needed, 23631 earned in 60 days (about 6.5 to 12.0 days).
 

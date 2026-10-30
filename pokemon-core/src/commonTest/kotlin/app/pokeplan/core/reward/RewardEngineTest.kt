@@ -134,7 +134,7 @@ class RewardEngineTest {
     @Test
     fun onTimeAndFocusedBonusesAddUp() {
         fun rareCandies(e: AchievementEvent, seed: Int) =
-            RewardEngine.achievement(PlayerState(), e, Random(seed)).rewards.filterIsInstance<Reward.Candies>().single { it.type == CandyType.RARE }.amount
+            RewardEngine.achievement(PlayerState(), e, Random(seed)).rewards.filterIsInstance<Reward.Candies>().first { it.type == CandyType.RARE }.amount // the task's own, before a Task Egg's
         val plain = (1..400).sumOf { i -> rareCandies(achievement(5), i) }
         val both = (1..400).sumOf { i -> rareCandies(achievement(5, onTime = true, focused = true), i) }
         assertTrue(both > plain * 1.1, "plain $plain, both $both")
@@ -216,17 +216,17 @@ class RewardEngineTest {
     @Test
     fun theEggMeterTurnsIntoATaskEgg() {
         var state = PlayerState()
-        val first = RewardEngine.achievement(state, achievement(5), Random(1))
-        assertEquals(5, first.state.eggMeter)
+        val first = RewardEngine.achievement(state, achievement(3), Random(1))
+        assertEquals(3, first.state.eggMeter)
         assertTrue(first.rewards.none { it is Reward.Hatched })
-        val second = RewardEngine.achievement(first.state, achievement(5), Random(2))
-        assertEquals(0, second.state.eggMeter)
+        val second = RewardEngine.achievement(first.state, achievement(3), Random(2))
+        assertEquals(1, second.state.eggMeter, "the rest carries over")
         val egg = second.rewards.filterIsInstance<Reward.Hatched>().single()
         assertTrue(egg.fromTask)
         assertEquals(1, second.state.pokemon.size)
         assertTrue(Dex.regionDex(Region.KANTO).any { it.id == egg.pokemon.speciesId })
         state = second.state
-        assertEquals(0, state.eggMeter)
+        assertEquals(1, state.eggMeter)
     }
 
     @Test

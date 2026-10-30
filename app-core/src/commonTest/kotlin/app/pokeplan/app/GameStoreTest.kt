@@ -612,7 +612,7 @@ class GameStoreTest {
         s.grant("rare-candy", toThirty + 3)
         s.feedRareCandy(buddy.id, toThirty + 3)
         assertEquals(30, s.data.player.buddy!!.level)
-        assertEquals(3f / 8, s.levelProgress(s.data.player.buddy!!), 0.001f, "8 candies a level at 30")
+        assertEquals(3f / 5, s.levelProgress(s.data.player.buddy!!), 0.001f, "5 candies a level at 30")
     }
 
     @Test

@@ -113,7 +113,7 @@ Each owned Pokémon has: species, level 1 to 100, nature, ability, 6 IVs, 6 EVs,
   - IV 0 to 31 rolled at hatch. EV 0 to 252 per stat, 510 total, gained from Vitamins (below).
 - **Natures:** the existing 25. Each raises one stat and lowers another (five are neutral).
 - **Abilities:** each species has one or two; one is rolled at hatch. Abilities give buddy perks (below).
-- **Shiny:** rolled at hatch, base chance **1 in 128** per egg (about a month at ~5 eggs a day), with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation (a gold flash, twice, instead of the white one).
+- **Shiny:** rolled at hatch, base chance **1 in 192** per egg (1 in 128 before rules version 12, when eggs came less often), with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation (a gold flash, twice, instead of the white one).
 - **Levelling:** Rare Candies per level grow with the level, the shape of the games' Medium Fast experience group: **2 + level² / 150**, rounded down *(tune)* (2 a level up to level 12, 8 at 30, 18 at 50, 67 at 99; 33 candies from level 1 to 16, 154 to 36, 2,341 to 100). A Pokémon more than 5 levels below your partner needs half the candies, rounded up *(tune)*, so new hatches catch up without outshining the partner.
 - **Evolution:** Super Candy at the species' game evolution level (Charmander at 16). Evolution stones for the species that use them.
 
@@ -203,15 +203,16 @@ Not hatched from random eggs, which keeps them special and avoids a 4 hour Deep 
 
 Collecting is **fast at the start and deep at the end.** The simulator tunes toward these targets (at roughly 5 eggs and 5 tasks a day):
 
-- **Basic dex of the Plan Region (every species caught, including evolutions): about 2 months** *(tune)*. The Care Region's is about the same.
-- **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Plan dex at a median of day 65 and the Care dex at about day 128 (0.44.0: with the games' regions retired, a heavy player owns every hatchable species by about day 54), and earns enough Rare Candies to evolve the whole Plan Region in 45 to 84 days and enough Super Candies in about 20.
+- **Easy to fill, hard to perfect** *(owner, October 2026)*: completing a Pokédex should be easy, with more Pokémon and Rare Candies a day in every region; what stays hard is a good version of a Pokémon (a shiny, high IVs, the right nature). Rules version 12 (0.46.0) applied this: cheaper levels, Rare Candies from focus, Care and the shop, Care Eggs, more Task Eggs, more weight on species not caught yet, and shiny odds lowered to keep shinies per player as rare as before.
+- **Basic dex of the Plan Region (every species caught, including evolutions): about 6 weeks** *(tune)*. Every module region should give roughly as many Pokémon as Plan for comparable use (Care Eggs, docs/economy.md).
+- **Checked by simulation** (`docs/economy-report.md`, regenerate with `./gradlew :plan-core:simulateEconomy`): a typical player (6 days a week, about 5 tasks and 2 sessions a day) completes the basic Plan dex at a median of day 42 and the Care dex (through Plan's eggs alone) at about day 84, and earns enough Rare Candies to evolve the whole Plan Region in 15 to 27 days and enough Super Candies in about 13 (rules version 12; it was day 65, day 128, 45 to 84 and 20). The simulator does not play Care, mini-quests or the shop, which add more.
 - **The long tail** (months to years) is made of layers, each with its own progress, badge and showcase:
 
 | Layer | Goal |
 |---|---|
 | Basic dex | one of each species caught |
 | Form dex | regional, gendered and Mega / G-Max forms; cosmetic forms are the side collection |
-| Shiny dex | a shiny of each species (1 in 128 per egg makes this the longest chase) |
+| Shiny dex | a shiny of each species (1 in 192 per egg makes this the longest chase) |
 | Perfect dex | a "perfect build" of each species: 31 IVs, an EV spread of 252 / 252 / 6, a favourable nature, a chosen ability. Competitive-style building, and the endgame use for Nature Mints, Bottle Caps, Vitamins and Ability Capsules |
 | Ribbons | contest ribbons, legendary quests, mythical milestones |
 
@@ -283,7 +284,7 @@ state are marked *(proposed)*.
   befriended egg, a little more direct-join chance). Ability perks follow the same rule. Perks never read what the user
   wrote; they only change what a *kind* of Care action pays.
 - **Guardians stay shared** *(proposed)*. Guardian slots are global (rank-opened as now), and each Guardian's signature
-  bucket applies in every module that pays that bucket (Care pays no candies, so Candy yield does nothing there). They are
+  bucket applies in every module that pays that bucket (Care's candies are fixed, so Candy yield does nothing there). They are
   never in a party.
 - **Where new Pokémon go.** A hatch, befriend or granted Pokémon goes **into the party of the module that paid it if there
   is room, else the PC** *(proposed)*; nothing is lost either way. Quest rewards go to the PC.

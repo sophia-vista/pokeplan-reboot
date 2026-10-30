@@ -83,7 +83,7 @@ class NudgeStoreTest {
         val quest = s.miniQuests()[0]
         s.completeMiniQuest(quest.id)
         val got = s.miniQuestRewards()
-        assertEquals(1, got.size)
+        assertEquals(2, got.size, "a berry and Rare Candies")
         assertTrue(s.data.rewardLog.last().seen, "the card shows it, so the box at the top does not repeat it")
         clock.millis = at(20, 9)
         assertTrue(s.miniQuestRewards().isEmpty(), "a new day starts empty")
