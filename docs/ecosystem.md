@@ -316,8 +316,9 @@ the parser matches the real format.
 6. **PokéPlan Launcher** *(moved up by the owner, October 2026: right after Care v1)*: PokéPlan as an optional Android home screen, after Niagara and Smart Launcher ("PokéPlan Launcher" below).
 7. **Charm pass:** hatch and evolution ceremonies, region themes, the Oak sprite, music.
 8. **Grow**, then **health integration** (the Huawei export importer first, see section 6), then **Home** modules.
-9. **PokéLife extras** (the owner's name for the whole family): Poketch-style utilities with helper Pokémon ("Poketch utilities and helper Pokémon" below) and a live wallpaper with the buddy in its scene (the launcher can show it once it exists).
-10. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
+9. **PokéLife extras** (PokéLife is the app's name from 0.47.0, section 11): Poketch-style utilities with helper Pokémon ("Poketch utilities and helper Pokémon" below) and a live wallpaper with the buddy in its scene (the launcher can show it once it exists).
+10. **The October 2026 audit** (section 11): a generous economy and Care Eggs (0.46.0); the PokéLife name; screen transitions; Home as an overview of every region with each region's lead; regional looks; then the Pokémon detail, Party and Pokédex passes.
+11. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
 
 ### Ideas parked
 
@@ -454,4 +455,22 @@ from Guardians). Nothing below changes them.
 ### Story direction (future)
 
 Keep it light: a few short beats, never a cutscene, never a wall of text. One shared thread runs through every module's arc so they read as one world rather than separate checklists. Each arc is quick (a handful of beats, tied to the effort the quest already asks for) and each beat is one or two lines with the patron's sprite and the usual reaction emoji. The story reacts to real effort only and never reads a domain (no task titles, notes or values), like every other event. The lake trio's arcs (knowledge, emotion, willpower) are the template; the thread that joins modules is still to be written, and should be agreed before the second module's arc ships.
+
+## 11. Product direction from the October 2026 audit *(owner's decisions)*
+
+An outside audit of the whole app (product, UX, visual design, the Pokémon side) asked the owner to settle a few questions. The answers:
+
+1. **Each module is its own Pokémon region** (already decided, section 4), and **every region gives Pokémon at a comparable rate**: several a day in each, not one region far ahead. Care Eggs (0.46.0) brought Care level with Plan; Grow and Home need their own way to give eggs when they ship.
+2. **Easy to fill, hard to perfect.** Completing a Pokédex should be easy, with plenty of Pokémon and Rare Candies a day. What stays hard is a good version of a Pokémon: a shiny, high IVs, the right nature. Loosen pacing and caps where they slow collecting; never make shinies or IVs easier to make up for it (rules version 12, docs/economy.md).
+3. **A lead per region.** Each region keeps its own lead (Plan's buddy, Care's lead, later Grow's and Home's), with no single global buddy. Home shows every region's lead, not only Plan's.
+4. **The app is renamed PokéLife.** PokéPlan becomes the name of the Plan module. Code packages (`app.pokeplan.*`), the repository, the Android application id and the save keep their names, so installs, saves and sync carry on.
+5. **All of the audit's areas are wanted**, in this order: docs (this section), the economy (done), the name, screen transitions, a Home that is an overview of every region, regional looks, then the Pokémon detail, Party, PC and Pokédex passes.
+
+What the audit asked for in navigation and look, adopted as the brief for those passes:
+
+- **Transitions:** a crossfade between bottom tabs; a short directional slide into a region or a detail and back out; a crossfade between sections of a collection; about 160 to 240 ms for ordinary navigation, longer only for real game moments (hatch, evolution). All of it follows Reduce motion. Switching screens keeps scroll position and selection where it can, and Back behaves the same everywhere.
+- **Home** is a world overview: the trainer, every region with its lead and its one most useful next step, recent events and discoveries. It must not read as Plan's dashboard; Plan's planner and focus stay inside Plan.
+- **Three visual layers:** the region's world (scene, sprites, its own palette and motif: Plan a town or guild board, Care a meadow, Grow a training ground, Home a house), the functional layer (lists, forms, settings: readable first, Nunito for body text, the DS font only for titles, ranks and numbers, red used sparingly), and game moments (hatch, evolution, rewards: richer, but brief and never on every small action).
+- **The Pokémon detail** reads in this order: identity (sprite, number, name, types, level), the specimen (nature, ability, gender, shiny, IVs), growth (EXP, friendship, stats), evolution, its role (party, region, favourite), and where it came from.
+- **Kept as they are:** the no-chores companion (no hunger, decay or missed-day penalties), Care's privacy (mood and journal entries never pay or reach the world), real game assets only, and the shared event architecture (module activity, a minimal event, the shared world, the reward rules).
 
