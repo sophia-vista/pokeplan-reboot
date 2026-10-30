@@ -65,8 +65,8 @@ private data class CollectionPage(val section: Section?, val dexEntry: Int?, val
 }
 
 @Composable
-fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String? = null) {
-    var section by remember { mutableStateOf(Section.entries.getOrNull(startSection)) }
+fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String? = null, startParty: Boolean = false) {
+    var section by remember { mutableStateOf(if (startParty) Section.PARTY else Section.entries.getOrNull(startSection)) }
     var selected by remember { mutableStateOf(startOpen) }
     // Kept here, not in the PC section, so opening a Pokémon and coming back leaves the sort and filters as they were.
     var pcView by remember { mutableStateOf(PcView()) }

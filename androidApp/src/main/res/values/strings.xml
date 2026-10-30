@@ -8,4 +8,8 @@
     <string name="shortcut_add_task_long">Add a task to today</string>
     <string name="shortcut_start_focus">Start focus</string>
     <string name="shortcut_start_focus_long">Start a focus session</string>
+    <string name="shortcut_care">Care</string>
+    <string name="shortcut_care_long">Open Care and today\'s routines</string>
+    <string name="shortcut_party">Party</string>
+    <string name="shortcut_party_long">View your party</string>
 </resources>

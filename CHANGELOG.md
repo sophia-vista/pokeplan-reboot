@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.54.0
+
+- The app icon has a themed version: on Android 13 and later, with Themed icons on, the launcher tints the egg's outline, check and stopwatch in the wallpaper's colours. It is the real icon with its light fill let clear, nothing redrawn.
+- Long-pressing the app icon offers four shortcuts: Add task, Start focus, Care and Party (the Pokémon tab opens on the party, every region's party on one page).
+
 ## 0.53.0
 
 - The PC is now boxes of 30, like the games, with Previous, Next and "Box 2 of 5" above and below the grid. Each Pokémon shows its name under its sprite (cut short with … when long) with its level, ✨ and ★, and the sort and filters sit in a quiet button; any new search, sort or filter starts again from the first box. One PC serves every region's party.
