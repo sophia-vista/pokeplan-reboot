@@ -60,9 +60,9 @@ Paldea), which fold into it from PokéPlan (owner's decision, see "Module region
 | Module | Real-world job | What it owns | What it grows in the world |
 |---|---|---|---|
 | **Plan** (built) | Time and tasks: calendar, tasks, habits, focus, review | `plan.*` | Eggs (focus), Rare Candies (levels), items, rank |
-| **Care** (next) | Body and mind: self-care routines, calm breaks, mood check-ins; later health summaries | `care.*`, on-device first | Bond (friendship), berries, camp comfort (cosmetic) |
+| **Care** (built) | Body and mind: self-care routines, calm breaks, mood check-ins; later health summaries | `care.*`, on-device first | Bond (friendship), berries, camp comfort (cosmetic) |
 | **Grow** | Learning: goals, practice, journal, reflection | `grow.*` | Dex discoveries, evolution trials, forms |
-| **Home** | Household: recipes, meal plan, grocery list, closet | `home.*` | Berries or curry (cosmetic); mostly creates Plan tasks |
+| **Home** | Household: recipes, meal plan, grocery list, closet | `home.*` | Berries or curry (cosmetic); mostly creates Plan tasks *(the expansion blueprint proposes Household Finds instead, section 12)* |
 
 Each tool grows a different thing, so a player is drawn to all of them but none is required. Home modules have no game loop of
 their own: a meal plan or laundry day creates **Plan tasks**, and finishing the task is the one canonical reward source.
@@ -319,6 +319,7 @@ the parser matches the real format.
 9. **PokéLife extras** (PokéLife is the app's name from 0.47.0, section 11): Poketch-style utilities with helper Pokémon ("Poketch utilities and helper Pokémon" below) and a live wallpaper with the buddy in its scene (the launcher can show it once it exists).
 10. **The October 2026 audit** (section 11): a generous economy and Care Eggs (0.46.0); the PokéLife name (0.47.0); screen transitions (0.48.0); Home as an overview of every region with each region's lead (0.49.0); regional looks (0.50.0: Plan a town, Care a meadow); the Pokémon detail (0.51.0); Party (0.52.0); the PC and Pokédex (0.53.0), which closes the audit's list.
 11. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
+12. **The 0.52.0 audit and the expansion blueprint** (section 12): a multi-region economy simulator, then documentation, regional depth, Pokégear and the companion layer; the blueprint's extra regions are candidates only.
 
 ### Ideas parked
 
@@ -474,3 +475,33 @@ What the audit asked for in navigation and look, adopted as the brief for those 
 - **The Pokémon detail** reads in this order: identity (sprite, number, name, types, level), the specimen (nature, ability, gender, shiny, IVs), growth (EXP, friendship, stats), evolution, its role (party, region, favourite), and where it came from.
 - **Kept as they are:** the no-chores companion (no hunger, decay or missed-day penalties), Care's privacy (mood and journal entries never pay or reach the world), real game assets only, and the shared event architecture (module activity, a minimal event, the shared world, the reward rules).
 
+## 12. Expansion blueprint and the 0.52.0 audit *(proposed; read before starting Grow or Home)*
+
+Two outside documents arrived after 0.52.0: the **Ecosystem and Expansion Blueprint** (`docs/expansion-blueprint.md`, kept whole as received) and an **updated audit of 0.52.0**. The audit confirms the direction of section 11 (Home as an overview, a lead per region, transitions, provenance and the region-wide Party are all built) and asks for no new redesign. Nothing below is an owner decision until marked so; items already decided elsewhere in this file win over the blueprint.
+
+**What the blueprint adds**
+
+- **Eight regions, not four:** Plan, Care, Grow, Home, plus Health (Move, Fitness, Nutrition and Recovery as one region), Finance, Connect and Explore. Admission criteria (a distinct domain, standalone activities, its own data and privacy boundary, its own progression, a distinct but generous acquisition, a reason to be a region and not a feature) and the acquisition names (Research Discoveries, Household Finds, Activity Discoveries, Financial Milestones, Encounters, Exploration Finds) are the blueprint's section 2 and 10. They are presentations over one shared reward framework, not eight egg systems.
+- **One primary reward owner per real-world action** (blueprint section 3): a workout planned in Plan and done in Health pays once, in Health; Plan keeps a linked record. Idempotency keys and explicit source ownership prevent a double pay. This is the effort-event contract of section 5, made explicit.
+- **Privacy rule for the sensitive regions** (Health, Finance, Connect, Care): detailed records stay in the owning region and on the device or its own schema; the shared game receives a minimal effort event; nothing sensitive in widgets, notifications, wallpaper or sharing by default; no reward for weight loss, low body weight, balance or income; no scoring of real people.
+- **Pokégear** is the blueprint's name for the Poketch utilities (section 8, "Poketch utilities and helper Pokémon"): a global hub reached from anywhere, not a region, never gating a tool behind a Pokémon, paying nothing when opened directly. A tool launched from a region's activity (a Focus timer from Plan, a study timer from Grow) is the region's event and the region pays it. The blueprint adds clock and alarms, stopwatch and countdown, compass, dice, weather, breathing timer and ambient sounds to the candidate list.
+- **A companion layer** for Android (widgets for every region, a Habitat live wallpaper, notification channels per region with quiet hours and no streak-loss or guilt reminders, Quick Settings tiles, app shortcuts, lock screen where supported, sharing that is user-initiated, a wearable investigation for the Huawei Watch Fit 4 Pro as its own feasibility study) with one **Companion settings** area. Surfaces read the one save and never award anything.
+- **Economy rules:** several Pokémon a day in every region, no scarcity or forced parity, duplicates always have a use, no need for perfect attendance, and a **multi-region simulator** measured at light, typical and heavy use over 7, 30, 60 and 90 days.
+
+**Where it conflicts with what is already decided (the owner picks)**
+
+| Topic | Already in this repo | Blueprint | Suggested resolution |
+|---|---|---|---|
+| Home module | Has no game loop; it creates Plan tasks and the task is the one reward (section 4) | Home owns household activity and pays Household Finds; Plan only schedules it | Keep section 4 until Home's acquisition is specified. Both satisfy "one owner": the choice is whether finishing a Plan task *created by* Home pays the Plan egg meter or a Home find |
+| Launcher | The PokéPlan Launcher is roadmap item 6, moved up by the owner (October 2026) | Support existing launchers first (shortcuts, themed icons, widgets); a custom launcher is optional and later | Do the shared parts first (adaptive and themed icon, shortcuts, widgets); the launcher stays the owner's call |
+| Health | A later Care add-on, the Huawei export importer first (section 6) | Its own region | Decide after Grow and Home; the privacy and no-harmful-rewards rules apply either way |
+| Region count | Four modules plus the game regions that leave with the dungeon game (section 4) | Eight regions | Treat Health, Finance, Connect and Explore as candidates that must pass the admission criteria; none is on the roadmap yet |
+| Order | Grow, health, Home, then extras (item 8 and 9) | Pokégear and the first widgets before Grow and Home | Pokégear's first tools (timer, stopwatch, calculator, picker, coin, flashlight) are cheap and do not wait on a region |
+
+**The audit's work list, in its priority order** *(it is the roadmap's item 12)*
+
+- **P0:** a multi-region economy simulator (today `EconomySimulator` covers Focus, tasks, Plan and Care egg selection, hatching, candies and duplicate transfers, but not Care's routines, its egg meter, visitors or befriending; the 84-day median for the Care Dex in `docs/economy-report.md` comes from Plan's eggs alone and says nothing about Care's own rate, so never use it to call Care slower). Do not cut rewards to make regions match.
+- **P0:** documentation reconciliation (this change fixes the party, visitor and module-status text; `README.md` below its first paragraph still describes the original PokéPlan app).
+- **P1:** deepen the regions as places (ambient Pokémon, visitors or NPCs, weather and time of day, milestone feedback); show the regional Pokédex progress inside each region and separate seen, caught, evolved and registered forms; put the region overview earlier on Home for a returning player, keeping What's New and Rank Up in the header.
+- **P2:** visitor retention: a visitor that wandered off after 3 unvisited days loses its relationship progress; consider keeping familiarity if it returns. Ambient interactions and sound. Visual QA on a device.
+- **Before Grow or Home is built:** write its own acquisition loop and progression expectations, so it gives Pokémon at a rate comparable to Plan and Care (section 11, item 1).

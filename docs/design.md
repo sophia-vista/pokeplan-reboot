@@ -263,7 +263,7 @@ One party Pokémon is the **buddy**. It lives on the home screen and widget, rea
 - **Outside the cap.** The ordinary perk cap (+25% per bucket from buddy, held item and assists) does not apply to Guardians: their bonus is added on top, up to **+15%** in a bucket from Guardians, so a bucket can reach +40%. A Guardian's perk does not depend on level or friendship, which is what makes it different from the buddy's.
 - **Why.** The buddy is the one you grow and bond with; Guardians are the rare, hard-earned reward for sustained effort. A new Guardian changes how you play (which bucket do I want this week?) without adding a second thing to level.
 
-## Parties per module (decided October 2026; steps 1 to 3 built in 0.35.0, befriending next)
+## Parties per module (decided October 2026; built in 0.35.0 to 0.45.0, shown together on the Party page since 0.52.0)
 
 *Owner: effectively many parties, one per region/module, but one PC and one Pokédex.* The details below that the owner did not
 state are marked *(proposed)*.
@@ -275,7 +275,7 @@ state are marked *(proposed)*.
   cannot serve every module at once. Putting it in another party moves it.
 - **Lead per party** *(proposed)*. Each party has a **lead**, the module's buddy: it sits in that module's scenes, takes
   that module's friendship, and gives the **buddy perk**; the other five give **assists** (25% of type perk strength), as
-  now. The Home tab and widgets show the **Plan lead**. A party can be empty (module unused), except Plan's, which keeps
+  now. Since 0.49.0 the Home tab shows every region's lead; the widgets show the Plan lead. A party can be empty (module unused), except Plan's, which keeps
   at least one (the "last party member" rule moves to it). Transfer still refuses a lead.
 - **Perks stay inside the module.** A party's perks apply to that module's own rewards only. Plan's party keeps today's
   buckets and numbers unchanged. **Care's party** *(proposed)* has Care's own buckets, all capped at +25% like Plan's:
@@ -290,7 +290,7 @@ state are marked *(proposed)*.
   is room, else the PC** *(proposed)*; nothing is lost either way. Quest rewards go to the PC.
 - **Held items, friendship, level, evolution** are per Pokémon, not per party, so moving a Pokémon changes nothing about it.
 - **Migration.** The existing party becomes Plan's party. Until Care's party has a lead, Care keeps paying the Plan lead as
-  today, so nobody loses a reward by not setting it up. The Party screen becomes one tab per module party over the shared PC.
+  today, so nobody loses a reward by not setting it up. The Party page (0.52.0) lists every module's party at once, each under its region's name with its lead first, over the shared PC.
 - **Server and sync.** `PlayerState` carries a party per module (a map keyed by module id) and the reward engine is passed
   the party of the event's module. This is a rules version bump and a migration of saved state, with the golden vector
   regenerated (see the `backend` skill).
@@ -298,7 +298,7 @@ state are marked *(proposed)*.
   Care's befriending and perks and confirm Care's Pokémon income stays below Plan's and that a Care-only player is not
   stuck.
 
-**Build order** *(1 to 3 shipped: the Party screen has a Plan and a Care tab, Care's first member leads until you pick another, and a lead cannot be transferred)*: (1) per-module party in `pokemon-core`/`app-core` with the migration, Plan only; (2) the Party screen tabs;
+**Build order** *(1 to 4 shipped; 5 is the open multi-region simulator, ecosystem.md section 12)*: (1) per-module party in `pokemon-core`/`app-core` with the migration, Plan only; (2) the Party screen tabs;
 (3) Care's party, buckets and the lead's friendship; (4) Care befriending (ecosystem.md, section 6); (5) economy report.
 
 ## Retention
