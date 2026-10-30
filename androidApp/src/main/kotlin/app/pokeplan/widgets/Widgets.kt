@@ -225,7 +225,7 @@ private fun TodayContent(context: Context, state: TodayState, header: Bitmap?) {
             if (state.tasks.isEmpty()) {
                 Text(
                     when {
-                        state.name.isEmpty() -> "Open PokéPlan to start"
+                        state.name.isEmpty() -> "Open PokéLife to start"
                         state.done > 0 -> "All done for today"
                         else -> "Nothing planned. Tap to add a task."
                     },
@@ -407,7 +407,7 @@ private fun BuddyContent(context: Context, s: BuddyState) {
         else Box(GlanceModifier.fillMaxSize().background(Color(0xFF8FCB7F))) {}
         if (s.name == null) {
             Box(GlanceModifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Open PokéPlan to start", GlanceModifier.pill().padding(horizontal = 12.dp, vertical = 8.dp), style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp))
+                Text("Open PokéLife to start", GlanceModifier.pill().padding(horizontal = 12.dp, vertical = 8.dp), style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp))
             }
             return@Box
         }
@@ -588,7 +588,7 @@ private fun CareContent(context: Context, state: CareState, header: Bitmap?) {
         Column(GlanceModifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp)) {
             if (!state.on || !state.started) {
                 Text(
-                    if (!state.started) "Open PokéPlan to start" else "Care is switched off. Turn it on in Me, Settings, Modules.",
+                    if (!state.started) "Open PokéLife to start" else "Care is switched off. Turn it on in Me, Settings, Modules.",
                     GlanceModifier.clickable(openApp(context, if (state.started) "ME" else null)),
                     style = TextStyle(color = ColorProvider(soft), fontSize = 13.sp),
                 )

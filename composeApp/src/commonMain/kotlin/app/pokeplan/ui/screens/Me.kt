@@ -628,7 +628,7 @@ private fun AboutCard() {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text("About", style = MaterialTheme.typography.titleMedium)
-            Text("PokéPlan ${AppVersion.display}", style = MaterialTheme.typography.bodyLarge)
+            Text("PokéLife ${AppVersion.display}", style = MaterialTheme.typography.bodyLarge)
             Text(
                 "A private fan project. Pokémon names, sprites and sounds belong to Nintendo, Game Freak and The Pokémon Company.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,

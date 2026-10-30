@@ -53,7 +53,7 @@ private enum class Step { GREETING, NAME, CONFIRM_NAME, STARTER, CONFIRM_STARTER
 
 /** What the Professor says before asking for a name. Written for this app, in the cadence of the games' intro. */
 private val greeting = listOf(
-    "Hello there! Welcome to the world of PokéPlan!",
+    "Hello there! Welcome to the world of PokéLife!",
     "I am Professor Oak. People around here just call me the Professor.",
     "Pokémon live alongside people everywhere. And they love to help.",
     "Finish your tasks and keep your focus, and they will grow beside you.",

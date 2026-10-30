@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.47.0
+
+- The app is now called **PokéLife**: a Pokémon world for real life, where each module is its own region. PokéPlan lives on as the name of the Plan module. Your Pokémon, save and cloud sync carry on as before.
+
 ## 0.46.0
 
 - Much more candy, and a Pokédex that fills faster. Levels cost half as many Rare Candies. Tasks pay twice the Rare Candies, and Task Eggs come twice as often. Focus sessions now pay Rare Candies too (10 for 25 minutes), so do mini-quests (2 each, 5 more for all three), and the first of every species brings 5 Rare Candies and a Super Candy so it can evolve. Eggs favour species you haven't caught yet even more.

@@ -185,7 +185,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
                 val pause = FocusRules.EMERGENCY_PAUSE_MILLIS / 60_000
                 listOf(
                     "The egg hatches when the timer reaches zero.",
-                    "Leaving PokéPlan for more than $grace seconds makes the egg go cold.",
+                    "Leaving PokéLife for more than $grace seconds makes the egg go cold.",
                     "Locking the screen is fine: the timer keeps going with the phone face down.",
                     "A phone call pauses the timer until you come back.",
                     "${FocusRules.EMERGENCY_PAUSES_PER_DAY} pauses of up to $pause minutes a day; paused time doesn't count. Give up stops at any time.",

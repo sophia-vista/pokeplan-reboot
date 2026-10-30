@@ -1,4 +1,6 @@
-# PokéPlan: Gotta Plan 'em All!
+# PokéLife (formerly PokéPlan): Gotta Plan 'em All!
+
+*PokéLife is a Pokémon world for real life, made of modules that are each their own region: Plan (PokéPlan, the planner and focus timer below) and Care, with Grow and Home to come. The app was renamed in 0.47.0; the text below describes the original PokéPlan app.*
 <img src="https://user-images.githubusercontent.com/75743382/132638099-15cb3985-b189-4a7a-9e91-fd6035649498.png" width="200">
 PokéPlan is a productivity application that encourages its users to be productive and organized while having fun. This application incentivizes users to achieve their goals by adding Pokémon elements to their life: for example, finishing tasks rewards the user with Pokémon Eggs and Rare Candies. Eggs can be hatched by staying focused on a task and avoiding distractions for a certain amount of time while Rare Candies are used to level up and evolve Pokémon. The overall goal of this application is to collect all the available Pokémon, all while helping the user to stay motivated and productive in real life.
 

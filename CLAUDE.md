@@ -2,9 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# PokéPlan (reboot)
+# PokéLife (reboot)
 
-A fun productivity, growth and self-improvement app for Pokémon lovers: finishing a focus timer hatches an Egg, finishing tasks, habits and goals earns candies and items that level up and evolve Pokémon. The repo holds two codebases:
+The app is **PokéLife** (renamed from PokéPlan in 0.47.0; PokéPlan is now the name of its Plan module). Code packages (`app.pokeplan.*`), the repository, the Android application id and the save keep the old name. A fun productivity, growth and self-improvement app for Pokémon lovers: finishing a focus timer hatches an Egg, finishing tasks, habits and goals earns candies and items that level up and evolve Pokémon. The repo holds two codebases:
 
 - **The rewrite (repo root):** Kotlin Multiplatform (Android, desktop, web) with a Supabase backend. **`docs/design.md` is the source of truth for what to build**; read it before changing game rules, and update it when a rule changes. Numbers marked *(tune)* there are starting values.
 - **The original app (`legacy-android/`):** a native Android Java app from a MOBDEVE pair project, kept as the reference for the old rules. It is no longer developed.

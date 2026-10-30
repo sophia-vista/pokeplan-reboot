@@ -3,6 +3,9 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.47.0" to listOf(
+            "PokéPlan is now PokéLife: one Pokémon world where each module is its own region. Plan keeps the PokéPlan name.",
+        ),
         "0.46.0" to listOf(
             "Much more candy: levels cost half, tasks pay double, and focus, Care, mini-quests and new species pay Rare Candies too.",
             "Coins buy Rare Candies in the Bag. Care fills a Care Egg meter that hatches Pokémon from the Care Region.",
