@@ -444,7 +444,7 @@ private fun FormsBox(model: AppModel, speciesId: Int, shownId: Int, shiny: Boole
                             .alpha(if (canHave) 1f else 0.45f)
                             .semantics(mergeDescendants = true) {
                                 contentDescription = (if (caught) f.name else "Unknown form") + ", " +
-                                    (if (!canHave) "not in PokéPlan yet" else if (found) "caught" else "not caught yet") + if (shiny) ", shiny" else ""
+                                    (if (!canHave) "not in PokéLife yet" else if (found) "caught" else "not caught yet") + if (shiny) ", shiny" else ""
                             },
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
@@ -459,7 +459,7 @@ private fun FormsBox(model: AppModel, speciesId: Int, shownId: Int, shiny: Boole
                 }
             }
             if (counted.size < forms.size) Text(
-                "Faded forms (Gigantamax and other special forms) can't be found in PokéPlan yet and don't count.",
+                "Faded forms (Gigantamax and other special forms) can't be found in PokéLife yet and don't count.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
         }

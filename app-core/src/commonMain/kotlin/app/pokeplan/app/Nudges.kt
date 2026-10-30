@@ -91,7 +91,7 @@ object Nudges {
             add(focusText(s.focusMinutes))
             if (top != null) add("most in ${top.label}")
         }
-        return NudgeText("Your week in PokéPlan", parts.joinToString(", ") + ".")
+        return NudgeText("Your week in PokéLife", parts.joinToString(", ") + ".")
     }
 
     private fun focusText(minutes: Int): String = when {

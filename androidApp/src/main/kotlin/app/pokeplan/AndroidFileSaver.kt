@@ -17,7 +17,7 @@ class AndroidFileSaver(private val context: Context) : FileSaver {
             .setType("application/json")
             .putExtra(Intent.EXTRA_STREAM, uri)
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        context.startActivity(Intent.createChooser(send, "Save your PokéPlan data").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        context.startActivity(Intent.createChooser(send, "Save your PokéLife data").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         "Choose where to keep the file."
     } catch (e: Exception) {
         "Could not export: ${e.message}"

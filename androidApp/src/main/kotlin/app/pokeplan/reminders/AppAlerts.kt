@@ -164,7 +164,7 @@ class NudgeReceiver : BroadcastReceiver() {
             }
             AppAlerts.Kind.END -> {
                 if (session != null && session.id == sessionId && data.settings.focusEnd && session.phase !is Phase.Failed && session.phase !is Phase.Paused) {
-                    AppAlerts.show(context, kind, "Focus time is up", "Open PokéPlan to see your Egg hatch.", "FOCUS")
+                    AppAlerts.show(context, kind, "Focus time is up", "Open PokéLife to see your Egg hatch.", "FOCUS")
                 }
             }
             AppAlerts.Kind.STREAK, AppAlerts.Kind.STREAK_LATER -> {
