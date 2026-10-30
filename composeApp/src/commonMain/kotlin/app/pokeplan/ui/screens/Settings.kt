@@ -110,6 +110,13 @@ internal fun SettingsView(model: AppModel) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             ThemeMode.entries.forEach { mode -> TabButton(mode.label, settings.theme == mode, { store.changeSettings { s -> s.copy(theme = mode) } }) }
         }
+        var choosing by remember { mutableStateOf(false) }
+        val background = app.pokeplan.ui.AppBackgrounds.firstOrNull { it.first == settings.appBackground }?.second ?: "Day"
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Background: $background", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+            TabButton(if (choosing) "Done" else "Change", choosing, { choosing = !choosing })
+        }
+        if (choosing) app.pokeplan.ui.BackgroundChoices(settings.appBackground, store.now.hour, store.now.minute, Pixel.dark) { name -> store.changeSettings { s -> s.copy(appBackground = name) } }
         ToggleRow("Reduce motion", settings.reduceMotion, detail = "Sprites stand still, nothing wobbles and screens switch without sliding.") { store.changeSettings { s -> s.copy(reduceMotion = it) } }
     }
     SettingsGroup("Notifications and week") {

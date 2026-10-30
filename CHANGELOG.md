@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.60.0
+
+- The whole app can use a scene or a dungeon town as its page background: Settings → Look → Background → Change shows small pictures of Day (the default time-of-day gradient), the 11 scenes and the 17 dungeon towns. A veil of the page colour sits over the picture so the text stays readable, in the light and the dark theme. The choice is a setting in the save, so it follows you across devices.
+
 ## 0.59.0
 
 - The launcher's town can be a dungeon: 17 towns laid out from the tilesets of Mystery Dungeon dungeons (Lush Prairie, Apple Woods, Drenched Bluff, Craggy Coast, Crystal Cave, Dark Hill and more), with a wall band along the top, a pond and wall clumps, and every Pokémon walking the open ground. Pick one under "Dungeons" when you press and hold the town.
