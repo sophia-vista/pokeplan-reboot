@@ -67,25 +67,19 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.app.ThemeMode
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
-import app.pokeplan.ui.PixelBackground
-import app.pokeplan.ui.screens.PlanBuddyStage
-import app.pokeplan.ui.screens.TaskRow
+import app.pokeplan.ui.SceneImage
 import androidx.compose.ui.draw.blur
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.produceState
 import app.pokeplan.ui.theme.PixelButton
-import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.Place
 import app.pokeplan.ui.screens.LocalReduceMotion
-import app.pokeplan.ui.screens.PlanBuddyStage
-import app.pokeplan.ui.screens.TaskRow
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelTheme
-import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.coroutines.delay
@@ -105,9 +99,6 @@ interface LauncherHost {
 }
 
 private val rowShape = RoundedCornerShape(14.dp)
-
-/** The wallpaper behind the launcher: a real game box wallpaper, the same on the home page and under the app list. */
-private const val WALLPAPER = "bw12"
 
 /**
  * PokéLife as the phone's home screen: the home page (the buddy, today's tasks, a Focus button, pinned apps) on a Pokémon
@@ -134,7 +125,8 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     val sheetApp = sheetKey?.let { key -> apps.firstOrNull { it.key == key } }
     PixelTheme(dark) {
         CompositionLocalProvider(LocalReduceMotion provides data.settings.reduceMotion) {
-            PixelBackground(WALLPAPER, Modifier.fillMaxSize().background(Pixel.Paper)) {
+            Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                Town(model, Modifier.fillMaxSize())
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
                 BackHandler(enabled = true) { if (sheetApp != null) sheetKey = null else listOpen = false }
                 HomePage(model, apps, prefs, isDefault, host, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
@@ -150,54 +142,61 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
 @Composable
 private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPrefs, isDefault: Boolean, host: LauncherHost, onAllApps: () -> Unit, onHold: (LauncherApp) -> Unit) {
     val data = model.data
+    val white = Color.White
     Column(Modifier.fillMaxSize().safeDrawingPadding()) {
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.L)) {
-            if (!isDefault) TextBox {
-                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Text("Make PokéLife your home screen", style = MaterialTheme.typography.titleSmall)
-                    Text("Pick it as the home app in Android's settings. Nothing changes until you do.", style = MaterialTheme.typography.bodyMedium)
-                    PixelButton("Open home settings", host::openHomeSettings, Modifier.fillMaxWidth(), Pixel.Blue)
-                }
+        // The top: one quiet line, only when there is something to say.
+        Box(Modifier.fillMaxWidth().padding(horizontal = Spacing.Page, vertical = Spacing.S)) {
+            val note = when {
+                !data.onboarded -> "Open PokéLife to meet your first Pokémon" to { host.openApp(Place.HOME) }
+                !isDefault -> "Make PokéLife your home app" to host::openHomeSettings
+                else -> null
             }
-            if (!data.onboarded) {
-                TextBox {
-                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        Text("Welcome", style = MaterialTheme.typography.titleSmall)
-                        Text("Open PokéLife once to meet your first Pokémon.", style = MaterialTheme.typography.bodyMedium)
-                        PixelButton("Open PokéLife", { host.openApp(Place.HOME) }, Modifier.fillMaxWidth(), Pixel.Red)
-                    }
-                }
-            } else {
-                PlanBuddyStage(model, onOpen = { host.openApp(Place.HOME) })
-                val open = model.store.openTodayTasks()
-                TextBox {
-                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        SectionLabel("Today")
-                        if (open.isEmpty()) Text("Nothing left for today.", style = MaterialTheme.typography.bodyMedium)
-                        open.take(4).forEach { task -> TaskRow(task) { model.completeTask(task.id) } }
-                        if (open.size > 4) Text("and ${open.size - 4} more in the Planner", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    }
-                }
-                val running = data.focus != null
-                PixelButton(if (running) "Back to focus" else "Start focus", { host.openApp(Place.FOCUS) }, Modifier.fillMaxWidth(), if (running) Pixel.Green else Pixel.Red)
-            }
+            if (note != null) Text(
+                note.first + "  ›", style = MaterialTheme.typography.labelLarge, color = white,
+                modifier = Modifier.background(Color.Black.copy(alpha = 0.45f), CircleShape).clip(CircleShape).clickable(role = Role.Button, onClick = note.second).padding(horizontal = Spacing.L, vertical = Spacing.S),
+            )
         }
-        // Pinned apps stay in reach under the scrolling page, above the handle.
-        val pinned = LauncherList.pinned(apps, prefs)
-        if (pinned.isNotEmpty()) Box(Modifier.padding(horizontal = Spacing.Page)) { PinnedGrid(pinned, host, onHold) }
-        // The handle for the app list: a tap or a swipe up opens it.
-        Box(
-            Modifier.fillMaxWidth().height(Spacing.Target + Spacing.S)
-                .pointerInput(Unit) {
-                    var drag = 0f
-                    detectVerticalDragGestures(onDragStart = { drag = 0f }, onDragEnd = { if (drag < -40f) onAllApps() }) { _, dy -> drag += dy }
-                }
-                .clickable(role = Role.Button, onClickLabel = "Open all apps", onClick = onAllApps),
-            contentAlignment = Alignment.Center,
+        // The town above fills the middle; the day sits at the bottom, in reach of the thumb, on a soft dark fade.
+        Box(Modifier.weight(1f))
+        Column(
+            Modifier.fillMaxWidth()
+                .background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f), Color.Black.copy(alpha = 0.7f))))
+                .padding(horizontal = Spacing.Page).padding(top = Spacing.XXL),
+            verticalArrangement = Arrangement.spacedBy(Spacing.XS),
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(Modifier.width(40.dp).height(4.dp).background(Color.White, CircleShape))
-                Text("All apps", style = MaterialTheme.typography.labelMedium, color = Color.White, modifier = Modifier.padding(top = Spacing.XS))
+            if (data.onboarded) {
+                val buddy = data.player.buddy
+                if (buddy != null) Text("${buddy.nickname}  Lv. ${buddy.level}  ·  ${data.player.pokemon.size} Pokémon", style = MaterialTheme.typography.labelLarge, color = white.copy(alpha = 0.8f))
+                val open = model.store.openTodayTasks()
+                if (open.isEmpty()) Text("Nothing left for today", style = MaterialTheme.typography.bodyLarge, color = white.copy(alpha = 0.8f))
+                open.take(3).forEach { task ->
+                    Row(
+                        Modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).clickable(role = Role.Checkbox, onClickLabel = "Done: ${task.title}") { model.completeTask(task.id) },
+                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
+                    ) {
+                        Box(Modifier.size(20.dp).border(2.dp, white, CircleShape))
+                        Text(task.title, style = MaterialTheme.typography.bodyLarge, color = white, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                }
+                if (open.size > 3) Text("+ ${open.size - 3} more", style = MaterialTheme.typography.bodyMedium, color = white.copy(alpha = 0.7f))
+                val running = data.focus != null
+                PixelButton(if (running) "Back to focus" else "Start focus", { host.openApp(Place.FOCUS) }, Modifier.fillMaxWidth().padding(vertical = Spacing.S), if (running) Pixel.Green else Pixel.Red)
+            }
+            LauncherList.pinned(apps, prefs).takeIf { it.isNotEmpty() }?.let { PinnedGrid(it, host, onHold) }
+            // The handle for the app list: a tap or a swipe up opens it.
+            Box(
+                Modifier.fillMaxWidth().height(Spacing.Target + Spacing.S)
+                    .pointerInput(Unit) {
+                        var drag = 0f
+                        detectVerticalDragGestures(onDragStart = { drag = 0f }, onDragEnd = { if (drag < -40f) onAllApps() }) { _, dy -> drag += dy }
+                    }
+                    .clickable(role = Role.Button, onClickLabel = "Open all apps", onClick = onAllApps),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Box(Modifier.width(40.dp).height(4.dp).background(white, CircleShape))
+                    Text("All apps", style = MaterialTheme.typography.labelMedium, color = white, modifier = Modifier.padding(top = Spacing.XS))
+                }
             }
         }
     }
@@ -206,7 +205,7 @@ private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPr
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PinnedGrid(pinned: List<LauncherApp>, host: LauncherHost, onHold: (LauncherApp) -> Unit) {
-    Column(Modifier.fillMaxWidth().background(Color.Black.copy(alpha = 0.35f), RoundedCornerShape(20.dp)).padding(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         pinned.chunked(4).forEach { row ->
             Row(Modifier.fillMaxWidth()) {
                 row.forEach { app ->
@@ -258,7 +257,7 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
     BackHandler(enabled = true) { if (query.isNotEmpty()) query = "" else onClose() }
     val soft = Color.White.copy(alpha = 0.7f)
     Box(Modifier.fillMaxSize()) {
-        PixelBackground(WALLPAPER, Modifier.fillMaxSize().blur(24.dp).background(Pixel.Paper)) {}
+        SceneImage(TOWN_SCENE, Modifier.fillMaxSize().blur(24.dp))
         Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.62f)))
         Column(Modifier.fillMaxSize().safeDrawingPadding()) {
             Row(Modifier.padding(horizontal = Spacing.Page, vertical = Spacing.S), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {

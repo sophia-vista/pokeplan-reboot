@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.56.0
+
+- The launcher's home page is now a town: a real Pokémon scene where every Pokémon you own (up to 24, the buddy and the highest levels first) wanders with its own idle animation; tap one for its cry and a hop. They stand still with Reduce motion. Tasks, Focus and pinned apps sit on a soft dark fade at the bottom; the app list opens over the same town, blurred and darkened.
+- Fix: the app list showed only a few apps until PokéLife was chosen as the home app (Android 11 and later hide apps from a launcher that is not the home app). It now declares permission to see every app.
+
 ## 0.55.0
 
 - PokéLife can be the phone's home screen, opt-in: nothing changes until it is chosen as the home app in Android's settings (the home page has a button that opens them). The home page shows the buddy, today's tasks with a Done key, a Focus button and pinned apps, on a Pokémon pixel wallpaper; a swipe or tap up opens every app A to Z over the wallpaper, blurred and darkened, with search, a letter scroller, categories (the one each app declares, with "Other" as the fallback) and work-profile apps.

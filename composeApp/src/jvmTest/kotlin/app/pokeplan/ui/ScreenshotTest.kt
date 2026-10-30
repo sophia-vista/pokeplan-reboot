@@ -653,7 +653,9 @@ class ScreenshotTest {
 
     @Test
     fun launcherHome() {
-        val model = AppModel(started())
+        val store = started()
+        listOf(1, 4, 7, 39, 52, 54, 94, 133, 143, 150, 151, 25, 175, 183).forEach { store.grantPokemon(it, "test") }
+        val model = AppModel(store)
         val prefs = app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages").pin("pkg.Camera")
         render("launcher-home") { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs, {}, isDefault = false, host = fakeHost) }
     }
