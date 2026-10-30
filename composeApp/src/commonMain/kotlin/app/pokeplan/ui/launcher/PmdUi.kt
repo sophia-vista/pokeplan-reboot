@@ -4,7 +4,10 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
@@ -104,10 +107,10 @@ internal enum class PmdTone(val outer: Color, val inner: Color) {
  * of art pixels at [pixel]. The frame is drawn in code (UI chrome); the text inside is the dialogue font.
  */
 @Composable
-internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = PmdTone.GREEN, content: @Composable BoxScope.() -> Unit) {
+internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = PmdTone.GREEN, inset: Int = 6, content: @Composable BoxScope.() -> Unit) {
     val density = LocalDensity.current.density
     Box(
-        modifier.drawBehind { pmdFrame(pixel, tone) }.padding((4 * pixel / density).dp),
+        modifier.drawBehind { pmdFrame(pixel, tone) }.padding(horizontal = ((inset + 2) * pixel / density).dp, vertical = (inset * pixel / density).dp),
         content = content,
     )
 }
@@ -133,16 +136,23 @@ private fun DrawScope.pmdFrame(p: Int, tone: PmdTone) {
 /** One line of a dialogue menu: a touch target at least 48 dp tall with [text] in it, a small cursor in front when [selected]. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-internal fun PmdMenuLine(text: String, pixel: Int, selected: Boolean = false, onHold: (() -> Unit)? = null, onClick: () -> Unit) {
+internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, dim: Boolean = false, center: Boolean = false, onHold: (() -> Unit)? = null, onClick: () -> Unit) {
     val density = LocalDensity.current.density
     Box(
-        Modifier.defaultMinSize(minHeight = 48.dp).combinedClickable(role = Role.Button, onLongClick = onHold, onClick = onClick),
-        contentAlignment = Alignment.CenterStart,
+        modifier.fillMaxWidth().defaultMinSize(minHeight = 44.dp).combinedClickable(role = Role.Button, onLongClick = onHold, onClick = onClick),
+        contentAlignment = if (center) Alignment.Center else Alignment.CenterStart,
     ) {
         if (selected) Canvas(Modifier.size((3 * pixel / density).dp, (5 * pixel / density).dp)) {
             val p = pixel.toFloat()
             drawPath(Path().apply { moveTo(0f, 0f); lineTo(3 * p, 2.5f * p); lineTo(0f, 5 * p); close() }, Color.White)
         }
-        PmdText(text, pixel, Modifier.padding(start = (5 * pixel / density).dp))
+        PmdText(text, pixel, Modifier.padding(start = if (center) 0.dp else (5 * pixel / density).dp), alpha = if (dim) 0.75f else 1f)
     }
+}
+
+/** A one-pixel rule across a dialogue box, between its parts. */
+@Composable
+internal fun PmdRule(pixel: Int, modifier: Modifier = Modifier) {
+    val density = LocalDensity.current.density
+    Box(modifier.fillMaxWidth().height((pixel / density).dp).background(Color.White.copy(alpha = 0.3f)))
 }
