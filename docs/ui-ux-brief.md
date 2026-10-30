@@ -4,7 +4,9 @@
 
 Redesign the app so it feels like a **modern Pokémon game that helps users manage real life**, rather than a productivity app with Pokémon sprites added on top.
 
-The app is built with **Flutter**. The current audit is screenshot-based; the codebase is not available for inspection. Treat this document as the design direction and implementation brief, not as proof of the current architecture.
+> **Status (October 2026):** this brief was written from screenshots for a Flutter app with five tabs. The app is **Kotlin and Compose Multiplatform** (`composeApp/`) with four tabs, **Home / Modules / Pokémon / Me**, and each life module (Plan, Care, later Grow and Home) is its own Pokémon region inside Modules. Its tokens are in `theme/PixelTheme.kt`. Read Flutter names below as their Compose equivalents (for example `MediaQuery.disableAnimations` is `Settings.reduceMotion`, a widget is a composable, a golden test is `ScreenshotTest`). Its principles, states and the accessibility checklist (section 9) still apply. The product direction from the October 2026 audit (regions, a lead per region, the PokéLife name, navigation transitions) is in `docs/ecosystem.md`, section 11.
+
+The original framing: treat this document as the design direction and implementation brief, not as proof of the current architecture.
 
 ### Core principle
 
@@ -16,7 +18,7 @@ The game layer should encourage real-life progress without becoming another dema
 
 ## 1. Current App Structure
 
-The current UI has five main tabs:
+*(Historical: the app now has four tabs, Home / Modules / Pokémon / Me; Planner, Focus, Growth, Goals and Review are sections of Plan inside Modules, and Care is a module beside it.)* The UI the screenshots showed had five main tabs:
 
 1. **Home** — trainer summary, active Pokémon, next task, shortcuts.
 2. **Planner** — Today, Inbox, Soon, Habits, Done; task creation and completion.
@@ -24,7 +26,7 @@ The current UI has five main tabs:
 4. **Pokémon** — Party, PC, Dex, Bag.
 5. **Me** — trainer profile, Growth, Goals, Review, Settings.
 
-Preserve the five-tab structure unless usability evidence demonstrates a reason to change it.
+The brief said to keep five tabs; the owner moved to four tabs with a Modules tab once Care shipped (0.33.0).
 
 ## 2. Initial Screenshot Audit
 
@@ -279,7 +281,7 @@ Requirements:
 
 ## 7. Navigation and Global Interaction Rules
 
-- Preserve the five primary tabs: Home, Planner, Focus, Pokémon, Me, unless user testing supports a change.
+- Keep the four primary tabs: Home, Modules, Pokémon, Me (`Tab` in `App.kt`). Home shows every region, not only Plan.
 - Preserve selected tab and relevant scroll position when navigating away and returning, where appropriate.
 - Use consistent back navigation for detail screens and modal sheets.
 - Fixed navigation must not cover scrollable content or primary actions.
