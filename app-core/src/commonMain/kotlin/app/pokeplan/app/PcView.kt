@@ -1,6 +1,6 @@
 package app.pokeplan.app
 
-import app.pokeplan.core.model.PokemonType
+import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.OwnedPokemon
 
 /** How the PC boxes are ordered. */

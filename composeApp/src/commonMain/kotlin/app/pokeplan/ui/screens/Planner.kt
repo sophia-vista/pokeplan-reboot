@@ -12,7 +12,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import kotlinx.datetime.isoDayNumber
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.FocusRequester
@@ -29,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.GameStore
 import app.pokeplan.plan.Category
-import app.pokeplan.plan.HabitTarget
 import app.pokeplan.plan.MonthlyRule
 import app.pokeplan.plan.QuickAdd
 import app.pokeplan.plan.Rank
@@ -37,11 +35,9 @@ import app.pokeplan.plan.ReminderOffset
 import app.pokeplan.plan.Reminders
 import app.pokeplan.plan.Repeat
 import app.pokeplan.plan.Task
-import app.pokeplan.plan.TaskList
 import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.TaskViews
 import app.pokeplan.ui.AppModel
-import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.FieldLabel
 import androidx.compose.foundation.text.KeyboardActions
@@ -52,7 +48,6 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.RankBadge
 import app.pokeplan.ui.theme.ScreenHeader
-import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.theme.title
@@ -77,13 +72,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.datetime.minus
 
-private enum class View(val label: String, val icon: String) {
+internal enum class View(val label: String, val icon: String) {
     TODAY("Today", "oaks-parcel"), DAY("Calendar", "town-map"), INBOX("Inbox", "seal-bag"), UPCOMING("Next 7 days", "timer-ball"), HABITS("Habits", "heart-scale"), DONE("Done", "premier-ball"),
     // Last, because widgets and shortcuts open a view by its index.
     ALL("All tasks", "scope-lens"),
@@ -307,7 +300,7 @@ fun EmptyState(title: String, line: String? = null, icon: String? = null, action
     }
 }
 
-private fun emptyTitle(view: View) = when (view) {
+internal fun emptyTitle(view: View) = when (view) {
     View.TODAY -> "Nothing planned for today"
     View.INBOX -> "The inbox is empty"
     View.UPCOMING -> "Nothing coming up"
@@ -316,7 +309,7 @@ private fun emptyTitle(view: View) = when (view) {
     View.DAY, View.ALL -> ""
 }
 
-private fun emptyLine(view: View) = when (view) {
+internal fun emptyLine(view: View) = when (view) {
     View.TODAY -> null
     View.INBOX -> "Tasks you add outside a list land here. File them in a list from a task's options."
     View.UPCOMING -> "Tasks planned for the next 7 days show up here."
@@ -375,6 +368,7 @@ internal enum class RepeatKind(val label: String) {
 }
 
 private const val WEEKEND = 100
+
 private const val NO_DATE = -1
 
 /** Days from [today] to the coming Saturday (today on a Saturday or Sunday). */
@@ -382,7 +376,7 @@ private fun daysToWeekend(today: LocalDate): Int = today.dayOfWeek.isoDayNumber.
 
 /** Add a task with just a title; the chips pick a day and "More options" adds difficulty. "Call mum tomorrow 5pm 30m" is understood too. */
 @Composable
-private fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
+internal fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
     var text by remember { mutableStateOf("") }
     var rank by remember { mutableStateOf(Rank.C) }
     var day by remember { mutableStateOf<Int?>(null) } // null: as typed / the view's default; 0 today; 1 tomorrow; WEEKEND; NO_DATE
@@ -617,7 +611,7 @@ private fun PlannedTime(model: AppModel, task: Task) {
 
 private val TIME_PRESETS = listOf(LocalTime(9, 0), LocalTime(12, 0), LocalTime(15, 0), LocalTime(19, 0))
 
-internal fun clock(t: LocalTime) = "${t.hour}:${t.minute.toString().padStart(2, '0')}"
+fun clock(t: LocalTime) = "${t.hour}:${t.minute.toString().padStart(2, '0')}"
 
 /** Moves [t] by [minutes] within the same day (it stops at 0:00 and 23:45). */
 internal fun shifted(t: LocalTime, minutes: Int): LocalTime {
@@ -669,7 +663,7 @@ fun taskMeta(t: Task, day: LocalDate? = null, repeats: String? = null): String =
 
 /** A list's tasks (or the Inbox's) grouped by when they are, as TickTick shows a list: from before, today, tomorrow... */
 @Composable
-private fun WhenGroups(model: AppModel, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit) {
+internal fun WhenGroups(model: AppModel, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit) {
     val today = model.store.today
     TaskViews.byWhen(tasks, model.store.now).forEach { (w, ts) ->
         TaskGroup(
@@ -681,240 +675,5 @@ private fun WhenGroups(model: AppModel, tasks: List<Task>, card: @Composable (Ta
             },
             card = card,
         )
-    }
-}
-
-/** The colour names, for screen readers, in the order of [TaskList.COLORS]. */
-private val listColorNames = listOf("Red", "Blue", "Green", "Amber", "Teal", "Purple", "Pink", "Slate")
-
-/** The menu's Lists: one row per list with its icon and count, "New list", and the archived ones folded away. */
-@Composable
-private fun ListsSection(model: AppModel, tasks: List<Task>, open: (String) -> Unit) {
-    val store = model.store
-    var creating by remember { mutableStateOf(false) }
-    var showArchived by remember { mutableStateOf(false) }
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("Lists", Modifier.weight(1f).semantics { heading() }, style = MaterialTheme.typography.titleSmall)
-            if (!creating) PixelButton("New list", { creating = true }, color = Pixel.InkSoft, compact = true)
-        }
-        if (creating) ListEditor(model, null) { made -> creating = false; made?.let(open) }
-        val lists = store.activeLists
-        if (lists.isEmpty() && !creating) Text(
-            "Make a list for each part of your life (Groceries, Thesis, Home). Tasks in no list stay in the Inbox.",
-            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-        )
-        ListRows(lists, tasks, open)
-        val archived = model.data.lists.filter { it.archived }
-        if (archived.isNotEmpty()) {
-            PixelButton(if (showArchived) "Hide archived" else "Archived (${archived.size})", { showArchived = !showArchived }, color = Pixel.InkSoft, compact = true)
-            if (showArchived) ListRows(archived, tasks, open)
-        }
-    }
-}
-
-@Composable
-private fun ListRows(lists: List<TaskList>, tasks: List<Task>, open: (String) -> Unit) {
-    if (lists.isEmpty()) return
-    val shape = RoundedCornerShape(Spacing.CardRadius)
-    Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)) {
-        lists.forEachIndexed { i, l ->
-            if (i > 0) HorizontalDivider(Modifier.padding(start = Spacing.M), color = Pixel.Border)
-            val count = tasks.count { it.isOpen && it.listId == l.id }
-            Row(
-                Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Open ${l.name}") { open(l.id) }
-                    .defaultMinSize(minHeight = 56.dp).padding(horizontal = Spacing.M, vertical = Spacing.S),
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
-            ) {
-                Box(Modifier.size(40.dp).background(Color(l.color).copy(alpha = 0.16f), CircleShape), contentAlignment = Alignment.Center) {
-                    ItemIcon(l.icon, size = 32.dp, description = null)
-                }
-                Text(l.name, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                if (count > 0) Text("$count", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft)
-            }
-        }
-    }
-}
-
-/** One list: add straight into it, its tasks grouped by when they are, and Edit for its name, colour, icon and archive. */
-@Composable
-private fun ListScreen(model: AppModel, list: TaskList, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit, back: () -> Unit) {
-    var editing by remember(list.id) { mutableStateOf(false) }
-    SectionScaffold(list.name, if (list.archived) "Archived list" else "Planner", onBack = back, icon = list.icon) {
-        RewardBox(model)
-        if (editing) ListEditor(model, list) { kept -> editing = false; if (kept == null) back() }
-        else PixelButton("Edit list", { editing = true }, color = Pixel.InkSoft, compact = true)
-        if (!list.archived) QuickAddBox(model, View.INBOX, listId = list.id)
-        WhenGroups(model, tasks, card)
-        if (tasks.isEmpty()) EmptyState("Nothing in ${list.name}", "Add a task above, or file one here from its options.", icon = list.icon)
-    }
-}
-
-/**
- * Makes a list ([list] null) or edits one: its name, one of eight colours and a real item icon; an existing list can also
- * be archived (hidden from the menu, tasks kept) or deleted (its tasks go back to the Inbox). [done] gets the list's id,
- * or null when it was deleted or nothing was made.
- */
-@Composable
-private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit) {
-    val store = model.store
-    var name by remember { mutableStateOf(list?.name ?: "") }
-    var color by remember { mutableStateOf(list?.color ?: TaskList.COLORS.first()) }
-    var icon by remember { mutableStateOf(list?.icon ?: TaskList.ICONS.first()) }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            OutlinedTextField(
-                name, { name = it.take(TaskList.MAX_NAME) }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                label = { Text("List name") },
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-            )
-            FieldLabel("Colour")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                TaskList.COLORS.forEachIndexed { i, c ->
-                    val on = c == color
-                    Box(
-                        Modifier.size(Spacing.Target).clip(CircleShape)
-                            .selectable(on, role = Role.RadioButton) { color = c }
-                            .semantics { contentDescription = listColorNames[i] },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Box(Modifier.size(32.dp).background(Color(c), CircleShape).border(if (on) 3.dp else 0.dp, if (on) Pixel.Ink else Color.Transparent, CircleShape))
-                    }
-                }
-            }
-            FieldLabel("Icon")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                TaskList.ICONS.forEach { id ->
-                    val on = id == icon
-                    Box(
-                        Modifier.size(Spacing.Target).clip(RoundedCornerShape(12.dp))
-                            .background(if (on) Color(color).copy(alpha = 0.2f) else Color.Transparent)
-                            .border(if (on) 2.dp else 0.dp, if (on) Color(color) else Color.Transparent, RoundedCornerShape(12.dp))
-                            .selectable(on, role = Role.RadioButton) { icon = id }
-                            .semantics { contentDescription = id.replace('-', ' ') },
-                        contentAlignment = Alignment.Center,
-                    ) { ItemIcon(id, size = 36.dp, description = null) }
-                }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelButton(if (list == null) "Make list" else "Save", {
-                    if (list == null) done(store.addList(name, color, icon)?.id)
-                    else { store.updateList(list.copy(name = name, color = color, icon = icon)); done(list.id) }
-                }, Modifier.weight(1f), Pixel.Green, enabled = name.isNotBlank(), compact = true)
-                PixelButton("Cancel", { done(list?.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-            }
-            if (list != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelButton(if (list.archived) "Unarchive" else "Archive", { store.updateList(list.copy(archived = !list.archived)); done(list.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelButton("Delete", { store.deleteList(list.id); done(null) }, Modifier.weight(1f), Pixel.Danger, compact = true)
-            }
-            if (list != null) Text("Deleting a list moves its tasks to the Inbox.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        }
-    }
-}
-
-/** Per-week and per-month habits count weeks and months, the others days. */
-private fun streakUnit(target: HabitTarget): String = when (target) {
-    is HabitTarget.PerWeek -> " weeks"
-    is HabitTarget.PerMonth -> " months"
-    else -> ""
-}
-
-/** How often a habit is meant to happen, in the words of the picker. */
-private enum class HabitKind(val label: String) { DAILY("Every day"), WEEKDAYS("Chosen days"), PER_WEEK("Times a week"), PER_MONTH("Times a month") }
-
-private val WEEK = DayOfWeek.entries
-
-/** "Every day", "Mon Wed Fri", "3 times a week", "10 times a month". */
-internal fun habitTargetLabel(target: HabitTarget): String = when (target) {
-    HabitTarget.Daily -> "Every day"
-    is HabitTarget.Weekdays -> if (target.days.size == 7) "Every day" else WEEK.filter { it in target.days }.joinToString(" ") { dayNames[it.ordinal] }
-    is HabitTarget.PerWeek -> if (target.times == 1) "Once a week" else "${target.times} times a week"
-    is HabitTarget.PerMonth -> if (target.times == 1) "Once a month" else "${target.times} times a month"
-}
-
-@Composable
-private fun HabitsView(model: AppModel) {
-    val store = model.store
-    var title by remember { mutableStateOf("") }
-    var more by remember { mutableStateOf(false) }
-    var kind by remember { mutableStateOf(HabitKind.DAILY) }
-    var days by remember { mutableStateOf(setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) }
-    var times by remember { mutableStateOf(3) }
-    var category by remember { mutableStateOf(Category.HEALTH) }
-    fun target(): HabitTarget = when (kind) {
-        HabitKind.DAILY -> HabitTarget.Daily
-        HabitKind.WEEKDAYS -> HabitTarget.Weekdays(days)
-        HabitKind.PER_WEEK -> HabitTarget.PerWeek(times.coerceIn(1, 7))
-        HabitKind.PER_MONTH -> HabitTarget.PerMonth(times.coerceIn(1, 31))
-    }
-    val ready = title.isNotBlank() && (kind != HabitKind.WEEKDAYS || days.isNotEmpty())
-    fun add() {
-        if (!ready) return
-        store.addHabit(title, target(), category = category)
-        title = ""; more = false; kind = HabitKind.DAILY; category = Category.HEALTH
-    }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(
-                    title, { title = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                    placeholder = { Text("New habit", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { add() }),
-                )
-                PixelButton("Add", ::add, color = Pixel.Red, enabled = ready)
-            }
-            PixelButton(if (more) "Fewer options" else "How often, and what kind", { more = !more }, color = Pixel.InkSoft, compact = true)
-            if (more) {
-                FieldLabel("How often")
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    HabitKind.entries.forEach { k ->
-                        TabButton(k.label, kind == k, {
-                            kind = k
-                            // The count means something different for a week and a month, so start each at a usual number.
-                            if (k == HabitKind.PER_WEEK) times = times.coerceIn(1, 7)
-                            if (k == HabitKind.PER_MONTH && times <= 7) times = 10
-                        })
-                    }
-                }
-                if (kind == HabitKind.WEEKDAYS) {
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        WEEK.forEach { d -> TabButton(dayNames[d.ordinal], d in days, { days = if (d in days) days - d else days + d }) }
-                    }
-                    if (days.isEmpty()) Text("Choose at least one day.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                }
-                if (kind == HabitKind.PER_WEEK || kind == HabitKind.PER_MONTH) {
-                    val max = if (kind == HabitKind.PER_WEEK) 7 else 31
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PixelButton("-", { times = (times - 1).coerceAtLeast(1) }, color = Pixel.InkSoft, compact = true)
-                        Text(habitTargetLabel(target()), style = MaterialTheme.typography.bodyLarge)
-                        PixelButton("+", { times = (times + 1).coerceAtMost(max) }, color = Pixel.InkSoft, compact = true)
-                    }
-                    Text("Miss one now and then and the streak carries on.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                }
-                FieldLabel("Category")
-                CategoryChips(category) { category = it ?: category }
-            }
-        }
-    }
-    if (model.data.habits.isEmpty()) EmptyState(emptyTitle(View.HABITS), emptyLine(View.HABITS), icon = View.HABITS.icon)
-    model.data.habits.forEach { h ->
-        val doneToday = store.today in h.completions
-        ListRow(
-            lead = { RankBadge(h.rank) },
-            trail = {
-                if (doneToday) PixelButton("Undo", { store.undoHabit(h.id) }, color = Pixel.InkSoft, compact = true)
-                else PixelButton("Done", { store.completeHabit(h.id) }, color = Pixel.Green, compact = true)
-            },
-        ) {
-            Text(h.title, style = MaterialTheme.typography.bodyLarge)
-            Text(
-                listOf(
-                    if (doneToday) "Done today" else "Streak ${h.streak(store.today, model.data.restDays, store.perks.extraForgivenDays, store.firstDayOfWeek)}${streakUnit(h.target)}",
-                    habitTargetLabel(h.target), h.category.label,
-                ).joinToString(", "),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
     }
 }

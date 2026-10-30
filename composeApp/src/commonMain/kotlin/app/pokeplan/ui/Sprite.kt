@@ -115,7 +115,7 @@ fun NpcPortrait(name: String, modifier: Modifier = Modifier, size: Dp = 200.dp) 
 
 /** A type name plate (Fire, Water...), real game art. */
 @Composable
-fun TypePlate(type: app.pokeplan.core.model.PokemonType, modifier: Modifier = Modifier, width: Dp = 72.dp) {
+fun TypePlate(type: app.pokeplan.core.dex.PokemonType, modifier: Modifier = Modifier, width: Dp = 72.dp) {
     val path = "files/types/${type.name.lowercase()}.png"
     val bitmap by produceState(cache[path], path) {
         if (value == null) {

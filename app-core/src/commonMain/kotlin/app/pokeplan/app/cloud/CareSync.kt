@@ -45,7 +45,7 @@ class CareSync(private val care: CareStore, private val cloud: CloudClient, priv
         state.value = SyncStatus.Syncing
         val pulled = when (val r = cloud.carePull(s)) {
             is CloudResult.Ok -> r.value
-            is CloudResult.Failure -> { state.value = failed(r); return }
+            is CloudResult.Failure -> { state.value = SyncStatus.of(r); return }
         }
         // The state this device last saw, if it was for this account; another account's starts afresh.
         val seen = care.data.cloud?.takeIf { it.userId == s.userId }
@@ -55,7 +55,7 @@ class CareSync(private val care: CareStore, private val cloud: CloudClient, priv
             pulled.data == null -> push(s, pulled.version)
             !serverChanged && !localChanged -> { if (seen == null || seen.unsynced) care.markSynced(s.userId, pulled.version); state.value = SyncStatus.Idle }
             !serverChanged -> push(s, pulled.version)
-            !localChanged -> { care.adoptCloud(pulled.data, s.userId, pulled.version); state.value = SyncStatus.Idle }
+            !localChanged -> state.value = if (care.adoptCloud(pulled.data, s.userId, pulled.version)) SyncStatus.Idle else SyncStatus.Unreadable
             else -> state.value = SyncStatus.Conflict(pulled.version)
         }
     }
@@ -70,8 +70,8 @@ class CareSync(private val care: CareStore, private val cloud: CloudClient, priv
             return
         }
         when (val r = cloud.carePull(s)) {
-            is CloudResult.Ok -> { r.value.data?.let { care.adoptCloud(it, s.userId, r.value.version) }; state.value = SyncStatus.Idle }
-            is CloudResult.Failure -> state.value = failed(r)
+            is CloudResult.Ok -> state.value = if (r.value.data?.let { care.adoptCloud(it, s.userId, r.value.version) } != false) SyncStatus.Idle else SyncStatus.Unreadable
+            is CloudResult.Failure -> state.value = SyncStatus.of(r)
         }
     }
 
@@ -81,10 +81,9 @@ class CareSync(private val care: CareStore, private val cloud: CloudClient, priv
             is CloudResult.Ok -> { care.markSynced(s.userId, r.value, sent); state.value = SyncStatus.Idle }
             is CloudResult.Failure -> state.value = when (r.status) {
                 409 -> SyncStatus.Conflict((r.body?.get("version") as? JsonPrimitive)?.content?.toIntOrNull() ?: expectedVersion)
-                else -> failed(r)
+                else -> SyncStatus.of(r)
             }
         }
     }
 
-    private fun failed(r: CloudResult.Failure): SyncStatus = if (r.offline) SyncStatus.Offline(r.message) else SyncStatus.Refused(r.message)
 }

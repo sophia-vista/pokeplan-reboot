@@ -1,7 +1,7 @@
 package app.pokeplan.core.pokemon
 
 import app.pokeplan.core.dex.HatchRules
-import app.pokeplan.core.model.Rarity
+import app.pokeplan.core.dex.Rarity
 
 enum class TransferBlock(val reason: String) {
     BUDDY("This is your buddy."),

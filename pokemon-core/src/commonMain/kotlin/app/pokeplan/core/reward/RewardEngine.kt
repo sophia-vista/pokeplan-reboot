@@ -4,11 +4,9 @@ import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.HatchOption
 import app.pokeplan.core.dex.HatchRules
 import app.pokeplan.core.dex.Region
-import app.pokeplan.core.model.CandyRewards
-import app.pokeplan.core.model.CandyType
-import app.pokeplan.core.model.Egg
-import app.pokeplan.core.model.PokemonType
-import app.pokeplan.core.model.Rarity
+import app.pokeplan.core.dex.Egg
+import app.pokeplan.core.dex.PokemonType
+import app.pokeplan.core.dex.Rarity
 import app.pokeplan.core.pokemon.FriendshipRules
 import app.pokeplan.core.pokemon.Hatching
 import app.pokeplan.core.pokemon.Inventory
@@ -264,7 +262,7 @@ object RewardEngine {
         ))
     }
 
-    private fun luckyBump(rarity: app.pokeplan.core.model.Rarity, eggLuckPercent: Double, rng: Random) =
+    private fun luckyBump(rarity: app.pokeplan.core.dex.Rarity, eggLuckPercent: Double, rng: Random) =
         if (rng.nextDouble() * 100 < eggLuckPercent) rarity.next() else rarity
 
     fun effort(state: PlayerState, e: EffortEvent, rng: Random): Outcome {
@@ -300,7 +298,7 @@ object RewardEngine {
         inventory = afterNew
         coins += newOverflow
         rewards += newRewards
-        val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
+        val berry = Items.randomBerry(rng)
         inventory = inventory.add(berry)
         rewards += Reward.ItemDrop(berry, 1)
 
@@ -340,12 +338,10 @@ object RewardEngine {
         }
         coins += overflow
 
-        // Coins
         val earned = scaled(tier * COINS_PER_TIER, perks.multiplier(PerkBucket.COINS))
         coins += earned
         rewards += Reward.Coins(earned + overflow)
 
-        // Item drop
         val dropPercent = DROP_BASE_PERCENT + DROP_PER_TIER_PERCENT * tier + perks[PerkBucket.ITEM_FINDER]
         if (rng.nextDouble() * 100 < dropPercent) {
             val drop = DropTable.roll(rng)
@@ -358,7 +354,6 @@ object RewardEngine {
         val warms = e.friendshipTasksToday < TASK_FRIENDSHIP_DAILY_CAP
         var pokemon = state.pokemon.map { p -> if (warms && p.id == buddy?.id) p.gainFriendship(FriendshipRules.Source.TASK) else p }
 
-        // Egg meter
         var meter = state.eggMeter + tier
         var caught = state.caught + state.pokemon.map { it.speciesId }
         if (meter >= EGG_METER_SIZE) {
@@ -465,7 +460,7 @@ object RewardEngine {
         var coins = state.coins
         val second = perks[CareBucket.BERRY_FINDER] ?: 0.0
         repeat(berries + if (berries > 0 && second > 0 && rng.nextDouble() * 100 < second) 1 else 0) {
-            val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
+            val berry = Items.randomBerry(rng)
             val (bag, extra) = inventory.addCapped(berry, 1)
             inventory = bag
             coins += extra

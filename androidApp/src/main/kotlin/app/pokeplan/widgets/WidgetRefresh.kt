@@ -5,9 +5,7 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import app.pokeplan.reminders.doAsync
 
 /**
  * Refreshes the widgets when an alarm goes off. A pet or an event shows a still picture for a few seconds and a delayed
@@ -16,14 +14,7 @@ import kotlinx.coroutines.launch
  */
 class WidgetRefreshReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        val pending = goAsync()
-        CoroutineScope(Dispatchers.Default).launch {
-            try {
-                updateWidgets(context.applicationContext)
-            } finally {
-                pending.finish()
-            }
-        }
+        doAsync { updateWidgets(context.applicationContext) }
     }
 }
 

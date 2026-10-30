@@ -38,7 +38,6 @@ import app.pokeplan.app.CareStore
 import app.pokeplan.app.Clock
 import app.pokeplan.app.MemoryStorage
 import app.pokeplan.care.CareData
-import kotlinx.datetime.DayOfWeek
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.Storage
 import app.pokeplan.app.cloud.CloudClient
@@ -235,7 +234,7 @@ fun App(
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
         val client = if (cloud.enabled) CloudClient(cloud, HttpClient()) { clock.nowMillis() } else null
-        val care = CareStore(careStorage ?: MemoryStorage(), clock, store, weekStart = { if (store.data.settings.weekStartsOnMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY })
+        val care = CareStore(careStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val sync = client?.let { SyncManager(store, it) }
         val careSync = if (client != null && sync != null) CareSync(care, client) { sync.session() } else null
         AppModel(store, motion, sync, client?.let { SocialClient(it) }, cries, haptics, files, calendars, phone, care, careSync).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }

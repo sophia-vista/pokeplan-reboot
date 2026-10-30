@@ -50,7 +50,7 @@ object Nudges {
 
     /** When the streak reminder should be checked next; null when it is switched off. The check itself is [streakAtRisk]. */
     fun nextStreakCheck(data: AppData, nowMillis: Long, zone: TimeZone): Long? =
-        if (data.settings.streakReminder) nextAt(nowMillis, zone, LocalTime(data.settings.streakReminderHour.coerceIn(0, 23), 0)) else null
+        if (data.settings.streakReminder) nextAt(nowMillis, zone, LocalTime(data.settings.streakReminderHour, 0)) else null
 
     /** When the weekly recap goes out next; null when it is switched off. */
     fun nextRecap(data: AppData, nowMillis: Long, zone: TimeZone): Long? =
@@ -63,14 +63,15 @@ object Nudges {
     fun streakAtRisk(data: AppData, nowMillis: Long, zone: TimeZone): Boolean {
         if (!data.settings.streakReminder) return false
         val now = nowMillis.toLocalDateTime(zone)
-        if (now.date in data.activeDays || now.date in data.restDays) return false
+        val day = Streaks.streakDay(now)
+        if (day in data.activeDays || day in data.restDays) return false
         if (data.settings.quietHours.contains(now.time)) return false
-        return Streaks.daily(data.activeDays, data.restDays, now.date).current > 0
+        return data.streakAt(now).current > 0
     }
 
     /** The streak reminder's text: an invitation, never a scolding. */
     fun streakText(data: AppData, nowMillis: Long, zone: TimeZone): NudgeText {
-        val days = Streaks.daily(data.activeDays, data.restDays, nowMillis.toLocalDateTime(zone).date).current
+        val days = data.streakAt(nowMillis.toLocalDateTime(zone)).current
         return NudgeText("Your $days-day streak is waiting", "One task or one focus session today keeps it going.")
     }
 

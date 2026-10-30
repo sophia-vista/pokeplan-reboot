@@ -155,7 +155,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     PixelButton("-5", { minutes = (minutes - 5).coerceAtLeast(FocusRules.RETRY_MINUTES) }, color = Pixel.InkSoft, compact = true)
                     Text("$minutes minutes", style = MaterialTheme.typography.titleMedium)
-                    PixelButton("+5", { minutes = (minutes + 5).coerceAtMost(180) }, color = Pixel.InkSoft, compact = true)
+                    PixelButton("+5", { minutes = (minutes + 5).coerceAtMost(FocusRules.MAX_MINUTES) }, color = Pixel.InkSoft, compact = true)
                 }
             }
         }

@@ -5,8 +5,8 @@ import app.pokeplan.app.quest.Quests
 import app.pokeplan.app.quest.Requirement
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.HatchOption
-import app.pokeplan.core.model.Egg
-import app.pokeplan.core.model.PokemonType
+import app.pokeplan.core.dex.Egg
+import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.CandyRules
 import app.pokeplan.core.pokemon.EvolutionContext
 import app.pokeplan.core.pokemon.EvolutionOption
@@ -16,17 +16,16 @@ import app.pokeplan.core.pokemon.Guardians
 import app.pokeplan.core.pokemon.Hatching
 import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.ItemEffects
+import app.pokeplan.core.pokemon.ItemUse
 import app.pokeplan.core.pokemon.Items
-import app.pokeplan.core.pokemon.Nature
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.PerkBonuses
 import app.pokeplan.core.pokemon.PerkSource
 import app.pokeplan.core.pokemon.Perks
-import app.pokeplan.core.pokemon.Stat
 import app.pokeplan.core.pokemon.Transfer
 import app.pokeplan.core.pokemon.TransferBlock
-import app.pokeplan.core.model.CandyType
+import app.pokeplan.core.reward.CandyType
 import app.pokeplan.core.pokemon.Inventory
 import app.pokeplan.core.pokemon.Shop
 import app.pokeplan.core.reward.AchievementEvent
@@ -49,6 +48,7 @@ import app.pokeplan.plan.Insights
 import app.pokeplan.plan.GoalRules
 import app.pokeplan.plan.Habit
 import app.pokeplan.plan.EventRepeat
+import app.pokeplan.plan.PlanCalendar
 import app.pokeplan.plan.PlanEvent
 import app.pokeplan.plan.Milestone
 import app.pokeplan.plan.MiniQuest
@@ -80,11 +80,9 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.daysUntil
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
@@ -104,48 +102,20 @@ sealed interface FocusResult {
  * Rewards are granted locally; once the account is online the server becomes the authority and this store only previews.
  */
 class GameStore(
-    private val storage: Storage,
+    storage: Storage,
     private val clock: Clock,
     private val zone: TimeZone = TimeZone.currentSystemDefault(),
     private val rng: Random = Random,
 ) : World {
-    var data: AppData = load()
-        private set
+    private val document = SavedDocument(storage, AppData.serializer(), json, tidy = ::tidy) { AppData() }
 
-    private val listeners = mutableListOf<(AppData) -> Unit>()
+    val data: AppData get() = document.value
 
     /** Calls [listener] after every change. Returns a function that stops listening. */
-    fun observe(listener: (AppData) -> Unit): () -> Unit {
-        listeners += listener
-        return { listeners -= listener }
-    }
+    fun observe(listener: (AppData) -> Unit): () -> Unit = document.observe(listener)
 
-    /**
-     * Picks up a change another process made to the save (an Android widget). Nothing is written back, so the app never
-     * overwrites a widget's tap with its older copy.
-     */
-    fun reload() {
-        val text = storage.load() ?: return
-        val fresh = try {
-            json.decodeFromString(AppData.serializer(), text)
-        } catch (e: Exception) {
-            return
-        }
-        if (fresh == data) return
-        data = fresh
-        listeners.toList().forEach { it(data) }
-    }
-
-    private fun load(): AppData {
-        val text = storage.load() ?: return AppData()
-        return try {
-            json.decodeFromString(AppData.serializer(), text)
-        } catch (e: Exception) {
-            // A damaged save never blocks the app: keep a copy aside and start fresh.
-            storage.save(text)
-            AppData()
-        }
-    }
+    /** Picks up a change another process made to the save (an Android widget); see [SavedDocument.reload]. */
+    fun reload() = document.reload()
 
     private fun update(change: (AppData) -> AppData) {
         val before = data
@@ -158,18 +128,15 @@ class GameStore(
         // A shiny stays in the Shiny Dex, and a form in the form dex, even if the Pokémon is transferred later.
         val shinyNow = after.player.pokemon.filter { it.isShiny }.map { it.speciesId }.toSet()
         if (!after.shinySpecies.containsAll(shinyNow)) after = after.copy(shinySpecies = after.shinySpecies + shinyNow)
-        after = FormDex.record(after)
-        data = after
-        storage.save(json.encodeToString(AppData.serializer(), data))
-        listeners.toList().forEach { it(data) }
+        document.write(FormDex.record(after))
     }
 
     // --- cloud account ------------------------------------------------------------------------------------------------
 
     /** Remembers a signed-in session. Progress made as a guest counts as not yet in the cloud. */
     fun signedIn(email: String, userId: String, accessToken: String, refreshToken: String, expiresAtMillis: Long) = update { d ->
-        val same = d.account?.userId == userId
-        d.copy(account = Account(email, userId, accessToken, refreshToken, expiresAtMillis, if (same) d.account!!.version else 0, if (same) d.account!!.unsynced else true))
+        val same = d.account?.takeIf { it.userId == userId }
+        d.copy(account = Account(email, userId, accessToken, refreshToken, expiresAtMillis, same?.version ?: 0, same?.unsynced ?: true))
     }
 
     fun refreshedSession(accessToken: String, refreshToken: String, expiresAtMillis: Long) =
@@ -199,6 +166,9 @@ class GameStore(
         return JsonObject(full.filterKeys { it !in DEVICE_ONLY })
     }
 
+    /** What every save that comes in (from the device or the cloud) goes through: numbers back in their range. */
+    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped())
+
     private fun AppData.cloudPart(): AppData = copy(account = null, eggTickets = EggTickets(), shownCalendars = emptySet())
 
     /** Shows or hides calendar events from this phone's calendars on the day timeline. */
@@ -207,15 +177,20 @@ class GameStore(
     /** The cloud accepted the document at [version]. */
     fun markSynced(version: Int) = update { d -> d.copy(account = d.account?.copy(version = version, unsynced = false, syncedAtMillis = nowMillis)) }
 
-    /** Replaces this device's progress with the cloud's. The account stays. */
-    fun adoptCloud(document: JsonObject, version: Int) {
-        val incoming = json.decodeFromJsonElement(AppData.serializer(), document)
+    /** Replaces this device's progress with the cloud's. The account stays. Returns false, changing nothing, if the document cannot be read. */
+    fun adoptCloud(document: JsonObject, version: Int): Boolean {
+        val incoming = try {
+            tidy(json.decodeFromJsonElement(AppData.serializer(), document))
+        } catch (e: IllegalArgumentException) {
+            return false
+        }
         update { d ->
             incoming.copy(
                 account = d.account?.copy(version = version, unsynced = false, syncedAtMillis = nowMillis),
                 eggTickets = d.eggTickets, shownCalendars = d.shownCalendars,
             )
         }
+        return true
     }
 
     // --- egg tickets --------------------------------------------------------------------------------------------------
@@ -251,7 +226,7 @@ class GameStore(
     /** The local day [millis] falls on (a finished task's day in the Done list). */
     fun dayOf(millis: Long): LocalDate = millis.toLocalDateTime(zone).date
 
-    private fun newId(): String = "${nowMillis.toString(36)}-${rng.nextInt(Int.MAX_VALUE).toString(36)}"
+    private fun newId(): String = newId(nowMillis, rng)
 
     // --- onboarding ---------------------------------------------------------------------------------------------------
 
@@ -274,7 +249,7 @@ class GameStore(
 
     fun rename(trainerName: String) = update { it.copy(trainerName = trainerName.trim().ifEmpty { it.trainerName }) }
 
-    fun changeSettings(change: (Settings) -> Settings) = update { it.copy(settings = change(it.settings)) }
+    fun changeSettings(change: (Settings) -> Settings) = update { it.copy(settings = change(it.settings).clamped()) }
 
     // --- rewards ------------------------------------------------------------------------------------------------------
 
@@ -285,15 +260,13 @@ class GameStore(
 
     private fun achieve(d: AppData, tier: Int, source: String, onTime: Boolean = false, focusedOnIt: Boolean = false, picked: Boolean = false): AppData {
         val firstOfDay = streakDay !in d.activeDays
-        val warmKey = "warm-$streakDay"
-        val warmed = d.counters[warmKey] ?: 0
+        val warmed = Counters.WARM.get(d.counters, streakDay)
         val event = AchievementEvent(
             tier = tier, region = d.settings.region.open, hourOfDay = now.hour, firstOfDay = firstOfDay, onTime = onTime,
             focusedOnIt = focusedOnIt, picked = picked, friendshipTasksToday = warmed, newPokemonId = newId(), nowMillis = nowMillis,
         )
         val outcome = RewardEngine.achievement(d.player, event, rng)
-        // Only today's count of friendship-warming work is kept.
-        val counters = d.counters.filterKeys { !it.startsWith("warm-") } + (warmKey to warmed + 1)
+        val counters = Counters.WARM.set(d.counters, streakDay, warmed + 1)
         return log(source, outcome.rewards, d.copy(player = outcome.state, activeDays = d.activeDays + streakDay, counters = counters))
     }
 
@@ -310,25 +283,23 @@ class GameStore(
      */
     override fun care(event: CareEvent): List<Reward>? {
         if (!data.onboarded) return null
-        val key = "care-${event.kind.name}-$today"
-        val paidToday = data.counters[key] ?: 0
+        val tally = Counters.care(event.kind)
+        val paidToday = tally.get(data.counters, today)
         if (paidToday >= CARE_DAILY_CAP.getValue(event.kind)) return null
         val outcome = RewardEngine.care(data.player, event, rng)
         // Care's Egg meter: a full one hatches a Care Egg on top of the moment's own rewards.
-        val meter = (data.counters[CARE_EGG_METER] ?: 0) + RewardEngine.CARE_EGG_POINTS.getValue(event.kind)
+        val meter = careEggMeter() + RewardEngine.CARE_EGG_POINTS.getValue(event.kind)
         val egg = if (meter >= RewardEngine.CARE_EGG_METER_SIZE) RewardEngine.careEgg(outcome.state, newId(), nowMillis, rng) else null
         val rewards = outcome.rewards + egg?.rewards.orEmpty()
         update { d ->
-            // Only today's counters are kept (and the Egg meter, which carries over).
-            val counters = d.counters.filterKeys { !it.startsWith("care-") || it.endsWith("-$today") || it == CARE_EGG_METER } +
-                (key to paidToday + 1) + (CARE_EGG_METER to meter % RewardEngine.CARE_EGG_METER_SIZE)
+            val counters = tally.set(d.counters, today, paidToday + 1) + (Counters.CARE_EGG_METER to meter % RewardEngine.CARE_EGG_METER_SIZE)
             log(CARE_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters))
         }
         return rewards
     }
 
     /** Points towards the next Care Egg, out of [RewardEngine.CARE_EGG_METER_SIZE]. */
-    fun careEggMeter(): Int = data.counters[CARE_EGG_METER] ?: 0
+    fun careEggMeter(): Int = data.counters[Counters.CARE_EGG_METER] ?: 0
 
     /**
      * The shop: trades [Shop.COINS_PER_RARE_CANDY] coins for each Rare Candy. Returns how many were bought (fewer when the
@@ -363,16 +334,15 @@ class GameStore(
      */
     override fun befriend(event: BefriendEvent): List<Reward>? {
         if (!data.onboarded) return null
-        val key = "befriend-$today"
-        val made = data.counters[key] ?: 0
+        val made = Counters.BEFRIEND.get(data.counters, today)
         if (made >= BEFRIEND_DAILY_CAP) return null
         val ticket = data.eggTickets.stock.firstOrNull()
         val outcome = RewardEngine.befriend(data.player, event, ticket?.let { Random(it.seed) } ?: rng)
         update { d ->
-            val counters = d.counters.filterKeys { !it.startsWith("befriend-") } + (key to made + 1)
+            val counters = Counters.BEFRIEND.set(d.counters, today, made + 1)
             val tickets = if (ticket == null) d.eggTickets
             else d.eggTickets.copy(stock = d.eggTickets.stock.drop(1), spent = d.eggTickets.spent + SpentTicket(ticket.id, nowMillis, event.newPokemonId))
-            log("Care: made a friend", outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets))
+            log(CARE_LOG_PREFIX + "made a friend", outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets))
         }
         return outcome.rewards
     }
@@ -450,133 +420,43 @@ class GameStore(
         d.copy(tasks = d.tasks.map { if (it.id == taskId && it.isOpen) it.copy(estimateMinutes = minutes?.takeIf { m -> m > 0 }) else it })
     }
 
+    // --- own calendar events (the rules are in [PlanCalendar]) ---------------------------------------------------------
+
     /** Puts an event on PokéPlan's own calendar, repeating when [repeat] is set. It never pays. */
     fun addEvent(
         title: String, day: LocalDate, start: LocalTime, minutes: Int = PlanEvent.DEFAULT_MINUTES, color: Long? = null,
         repeat: EventRepeat? = null,
-    ): PlanEvent {
-        val event = PlanEvent(newId(), title.trim(), day, start, PlanEvent.fit(start.hour * 60 + start.minute, minutes), color = color, repeat = repeat)
-        update { it.copy(events = it.events + event) }
-        return event
-    }
+    ): PlanEvent = PlanCalendar.timed(newId(), title, day, start, minutes, color, repeat).also { e -> update { it.copy(events = it.events + e) } }
 
     /** Puts an all-day event on PokéPlan's own calendar, from [first] through [last] ("Home" for a weekend, "WFH" for a day). */
-    fun addAllDayEvent(title: String, first: LocalDate, last: LocalDate = first, color: Long? = null, repeat: EventRepeat? = null): PlanEvent {
-        val event = PlanEvent(
-            newId(), title.trim(), first, LocalTime(0, 0), allDay = true,
-            lastDay = maxOf(first, last).takeIf { it > first }, color = color, repeat = repeat,
-        )
-        update { it.copy(events = it.events + event) }
-        return event
-    }
+    fun addAllDayEvent(title: String, first: LocalDate, last: LocalDate = first, color: Long? = null, repeat: EventRepeat? = null): PlanEvent =
+        PlanCalendar.allDay(newId(), title, first, last, color, repeat).also { e -> update { it.copy(events = it.events + e) } }
 
-    /**
-     * Changes an event's title, day, start, length, last day (all-day), colour, or whether it is all-day; the length is kept
-     * inside the day. A blank title keeps the old one. Moving an all-day event's first day moves its last day with it.
-     *
-     * [id] may be an occurrence of a repeating event: the change is then made to the whole series, and moving the
-     * occurrence's [day] moves every one (with the series' end and skipped days) by as many days. Returns the id the
-     * same occurrence has afterwards.
-     */
+    /** See [PlanCalendar.update]. Returns the id the same occurrence has afterwards. */
     fun updateEvent(
         id: String, title: String? = null, day: LocalDate? = null, start: LocalTime? = null, minutes: Int? = null,
         lastDay: LocalDate? = null, color: Long? = null, allDay: Boolean? = null,
-    ): String {
-        val seriesId = PlanEvent.seriesOf(id)
-        val at = PlanEvent.occurrenceDate(id)
-        var shown = id
-        update { d ->
-            d.copy(events = d.events.map { e ->
-                if (e.id != seriesId) e
-                else {
-                    val from = at ?: e.day
-                    val to = day ?: from
-                    val shift = from.daysUntil(to)
-                    val s = start ?: e.start
-                    val first = e.day.plusDays(shift)
-                    val whole = allDay ?: e.allDay
-                    val last = when {
-                        !whole -> null
-                        lastDay != null -> first.plusDays(to.daysUntil(lastDay))
-                        else -> e.lastDay?.plusDays(shift)
-                    }
-                    if (at != null) shown = PlanEvent.occurrenceId(seriesId, to)
-                    e.copy(
-                        title = title?.trim()?.ifEmpty { null } ?: e.title,
-                        day = first,
-                        start = s,
-                        minutes = PlanEvent.fit(s.hour * 60 + s.minute, minutes ?: e.minutes),
-                        allDay = whole,
-                        lastDay = last?.takeIf { it > first },
-                        color = color ?: e.color,
-                        until = e.until?.plusDays(shift),
-                        skipped = e.skipped.map { it.plusDays(shift) }.toSet(),
-                    )
-                }
-            })
-        }
-        return shown
-    }
+    ): String = editEvents { PlanCalendar.update(it, id, title, day, start, minutes, lastDay, color, allDay) }
 
-    /**
-     * Moves an event to [day] at [start], as dragging it does. An occurrence of a repeating event moves on its own: it
-     * is left out of the series and becomes a one-off event there. Returns the id of the moved event.
-     */
-    fun moveEvent(id: String, day: LocalDate, start: LocalTime): String {
-        val at = PlanEvent.occurrenceDate(id) ?: return updateEvent(id, day = day, start = start)
-        val series = data.events.firstOrNull { it.id == PlanEvent.seriesOf(id) } ?: return id
-        val single = PlanEvent(
-            newId(), series.title, day, if (series.allDay) series.start else start, series.minutes, series.allDay,
-            series.lastDay?.let { day.plusDays(series.spanDays) }, series.color,
-        ).let { it.copy(minutes = PlanEvent.fit(it.startMinute, it.minutes)) }
-        update { d -> d.copy(events = d.events.map { if (it.id == series.id) it.copy(skipped = it.skipped + at) else it } + single) }
-        return single.id
-    }
+    /** See [PlanCalendar.move]. Returns the id of the moved event. */
+    fun moveEvent(id: String, day: LocalDate, start: LocalTime): String = editEvents { PlanCalendar.move(it, id, day, start, ::newId) }
 
     /** Deletes an event; for an occurrence of a repeating event, every one of them. */
-    fun deleteEvent(id: String) = update { d -> d.copy(events = d.events.filterNot { it.id == PlanEvent.seriesOf(id) }) }
+    fun deleteEvent(id: String) = update { d -> d.copy(events = PlanCalendar.delete(d.events, id)) }
 
     /** Deletes just this occurrence of a repeating event (any other event is deleted). */
-    fun deleteOccurrence(id: String) {
-        val at = PlanEvent.occurrenceDate(id) ?: return deleteEvent(id)
-        update { d ->
-            d.copy(events = d.events.mapNotNull { e ->
-                if (e.id != PlanEvent.seriesOf(id)) e
-                else e.copy(skipped = e.skipped + at).takeUnless { left -> left.until?.let { left.startDates(left.day, it).isEmpty() } == true }
-            })
-        }
-    }
+    fun deleteOccurrence(id: String) = update { d -> d.copy(events = PlanCalendar.deleteOccurrence(d.events, id)) }
 
-    /**
-     * Sets how an event repeats (null: it happens once), from the one shown as [id] on. When [id] is a later occurrence
-     * of a repeating event, the ones before it stay as they were: the series ends the day before and a new one starts
-     * there, so only it and the ones after follow the new rule (a one-off for null). Returns the id it has afterwards.
-     */
-    fun repeatEvent(id: String, repeat: EventRepeat?): String {
-        val seriesId = PlanEvent.seriesOf(id)
-        val series = data.events.firstOrNull { it.id == seriesId } ?: return id
-        if (repeat == series.repeat) return id
-        val at = PlanEvent.occurrenceDate(id) ?: series.day
-        val shownId = { e: PlanEvent -> if (repeat == null) e.id else PlanEvent.occurrenceId(e.id, at) }
-        if (at == series.day) {
-            val changed = series.copy(repeat = repeat, until = series.until.takeIf { repeat != null }, skipped = series.skipped.takeIf { repeat != null }.orEmpty())
-            update { d -> d.copy(events = d.events.map { if (it.id == seriesId) changed else it }) }
-            return shownId(changed)
-        }
-        val next = series.copy(
-            id = newId(), day = at, lastDay = series.lastDay?.let { at.plusDays(series.spanDays) }, repeat = repeat,
-            until = series.until.takeIf { repeat != null }, skipped = series.skipped.filter { repeat != null && it > at }.toSet(),
-        )
-        val before = series.copy(until = at.plusDays(-1)).takeIf { it.startDates(it.day, at.plusDays(-1)).isNotEmpty() }
-        update { d -> d.copy(events = d.events.flatMap { if (it.id == seriesId) listOfNotNull(before, next) else listOf(it) }) }
-        return shownId(next)
-    }
-
-    private fun LocalDate.plusDays(n: Int): LocalDate = plus(DatePeriod(days = n))
+    /** See [PlanCalendar.repeat]. Returns the id the event shown as [id] has afterwards. */
+    fun repeatEvent(id: String, repeat: EventRepeat?): String = editEvents { PlanCalendar.repeat(it, id, repeat, ::newId) }
 
     /** Sets the last day a repeating event can happen on (null: it never ends). */
-    fun endEventOn(id: String, until: LocalDate?) = update { d ->
-        d.copy(events = d.events.map { if (it.id == PlanEvent.seriesOf(id)) it.copy(until = until?.let { u -> maxOf(u, it.day) }) else it })
+    fun endEventOn(id: String, until: LocalDate?) = update { d -> d.copy(events = PlanCalendar.endOn(d.events, id, until)) }
+
+    private fun editEvents(edit: (List<PlanEvent>) -> PlanCalendar.Edit): String {
+        val result = edit(data.events)
+        if (result.events != data.events) update { it.copy(events = result.events) }
+        return result.shownId
     }
 
     /** Sets a task's reminders (at most [Reminders.MAX_PER_TASK]). */
@@ -619,7 +499,7 @@ class GameStore(
             val withTask = d.copy(tasks = d.tasks.map { if (it.id == taskId) updated else it })
             if (!pays) withTask else {
                 val (bag, overflow) = withTask.player.inventory.addCapped(Items.RARE_CANDY, TaskRules.SUBTASK_RARE_CANDIES)
-                val rewards = listOf(Reward.Candies(app.pokeplan.core.model.CandyType.RARE, TaskRules.SUBTASK_RARE_CANDIES))
+                val rewards = listOf(Reward.Candies(app.pokeplan.core.reward.CandyType.RARE, TaskRules.SUBTASK_RARE_CANDIES))
                 log("Step: ${task.subtasks.first { it.id == subtaskId }.title}", rewards,
                     withTask.copy(player = withTask.player.copy(inventory = bag, coins = withTask.player.coins + overflow)))
             }
@@ -627,10 +507,14 @@ class GameStore(
         return pays
     }
 
-    fun addSubtask(taskId: String, title: String) = update { d ->
-        d.copy(tasks = d.tasks.map { t ->
-            if (t.id == taskId && t.subtasks.size < MAX_SUBTASKS) t.copy(subtasks = t.subtasks + Subtask(newId(), title.trim(), createdAtMillis = nowMillis)) else t
-        })
+    /** Adds a step to a task, up to [MAX_SUBTASKS]. A blank title is not a step. */
+    fun addSubtask(taskId: String, title: String) {
+        val clean = title.trim().ifEmpty { return }
+        update { d ->
+            d.copy(tasks = d.tasks.map { t ->
+                if (t.id == taskId && t.subtasks.size < MAX_SUBTASKS) t.copy(subtasks = t.subtasks + Subtask(newId(), clean, createdAtMillis = nowMillis)) else t
+            })
+        }
     }
 
     /** A repeating task. Its next instances are created straight away and topped up by [refresh]. */
@@ -749,28 +633,30 @@ class GameStore(
         return goal
     }
 
-    fun addMilestone(goalId: String, title: String) = update { d ->
-        d.copy(goals = d.goals.map { g -> if (g.id == goalId) GoalRules.addMilestone(g, Milestone(newId(), title.trim(), nowMillis)) else g })
+    /** Adds a milestone to a goal. A blank title is not a milestone. */
+    fun addMilestone(goalId: String, title: String) {
+        val clean = title.trim().ifEmpty { return }
+        update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) GoalRules.addMilestone(g, Milestone(newId(), clean, nowMillis)) else g }) }
     }
 
     /** Ticks a milestone. It pays a Super Candy if it is old enough (and fewer than 3 paid today); finishing the goal gives a bonus item. */
     fun completeMilestone(goalId: String, milestoneId: String): MilestoneResult {
         val goal = data.goals.first { it.id == goalId }
-        val key = "milestones:$today"
-        val result = GoalRules.completeMilestone(goal, milestoneId, nowMillis, data.counters[key] ?: 0)
+        val paidToday = Counters.MILESTONES.get(data.counters, today)
+        val result = GoalRules.completeMilestone(goal, milestoneId, nowMillis, paidToday)
         update { d ->
             var next = d.copy(goals = d.goals.map { if (it.id == goalId) result.goal else it })
             val gifts = buildList {
                 if (result.pays) add(Items.SUPER_CANDY to GoalRules.SUPER_CANDIES_PER_MILESTONE)
                 result.bonusItem?.let { add(it to 1) }
             }
-            if (result.pays) next = next.copy(counters = next.counters + (key to ((next.counters[key] ?: 0) + 1)), activeDays = next.activeDays + streakDay)
+            if (result.pays) next = next.copy(counters = Counters.MILESTONES.set(next.counters, today, paidToday + 1), activeDays = next.activeDays + streakDay)
             if (gifts.isNotEmpty()) {
                 var bag = next.player.inventory
                 var coins = next.player.coins
                 gifts.forEach { (item, n) -> bag.addCapped(item, n).let { (b, over) -> bag = b; coins += over } }
                 val rewards = gifts.map { (item, n) ->
-                    if (item == Items.SUPER_CANDY) Reward.Candies(app.pokeplan.core.model.CandyType.SUPER, n) else Reward.ItemDrop(item, n)
+                    if (item == Items.SUPER_CANDY) Reward.Candies(app.pokeplan.core.reward.CandyType.SUPER, n) else Reward.ItemDrop(item, n)
                 }
                 next = log("Goal: ${goal.title}", rewards, next.copy(player = next.player.copy(inventory = bag, coins = coins)))
             }
@@ -782,7 +668,7 @@ class GameStore(
     // --- weekly review and rest days ----------------------------------------------------------------------------------
 
     val weekStart: LocalDate
-        get() = Streaks.weekStartOf(today, if (data.settings.weekStartsOnMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY)
+        get() = Streaks.weekStartOf(today, firstDayOfWeek)
 
     fun reviewSummary(): Reviews.Summary = Reviews.summary(weekStart, data.tasks, data.focusHistory, data.habits, zone)
 
@@ -793,7 +679,7 @@ class GameStore(
         check(canReview()) { "this week was already reviewed" }
         val carried = if (carryTo != null) reviewSummary().unfinished.map { Reviews.carryForward(it, carryTo) } else emptyList()
         val review = Reviews.complete(weekStart, nowMillis, note, carried, data.reviews)
-        val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
+        val berry = Items.randomBerry(rng)
         update { d ->
             val byId = carried.associateBy { it.id }
             val next = d.copy(
@@ -804,7 +690,6 @@ class GameStore(
         }
     }
 
-    /** Marks or unmarks a rest day; a rest day does not break the streak. Returns false if too many rest days are set. */
     // --- nudges: Pick for me, mini-quests, welcome back ---------------------------------------------------------------
 
     /**
@@ -812,23 +697,23 @@ class GameStore(
      * and remembers it, so finishing it pays [RewardEngine.PICKED_BONUS] on its candies. Returns null when nothing is open.
      */
     fun pickForMe(): Task? {
-        val open = todayTasks().filter { it.isOpen && it.id !in data.pending.map { p -> p.original.id } }
+        val open = openTodayTasks()
         val pick = PickForMe.choose(open.filter { it.id != data.pickedTaskId }.ifEmpty { open }, rng)?.task ?: return null
         update { it.copy(pickedTaskId = pick.id) }
         return pick
     }
 
     /** Today's three mini-quests (the same for everyone on a date, until rerolled). The day turns over at 4am, like streaks. */
-    fun miniQuests(): List<MiniQuest> = MiniQuests.forDay(streakDay, rerolled = "mq-reroll-$streakDay" in data.counters)
+    fun miniQuests(): List<MiniQuest> = MiniQuests.forDay(streakDay, rerolled = Counters.MINI_QUEST_REROLL.isSet(data.counters, streakDay))
 
-    fun miniQuestDone(id: String): Boolean = "mq-$streakDay-$id" in data.counters
+    fun miniQuestDone(id: String): Boolean = Counters.MINI_QUEST.isSet(data.counters, streakDay, id)
 
     /** One reroll a day, before any of the day's quests is done. */
-    fun canRerollMiniQuests(): Boolean = "mq-reroll-$streakDay" !in data.counters && miniQuests().none { miniQuestDone(it.id) }
+    fun canRerollMiniQuests(): Boolean = !Counters.MINI_QUEST_REROLL.isSet(data.counters, streakDay) && miniQuests().none { miniQuestDone(it.id) }
 
     fun rerollMiniQuests() {
         if (!canRerollMiniQuests()) return
-        update { d -> d.copy(counters = d.counters.filterKeys { !it.startsWith("mq-") } + ("mq-reroll-$streakDay" to 1)) }
+        update { d -> d.copy(counters = Counters.MINI_QUEST_REROLL.set(d.counters, streakDay, 1)) }
     }
 
     /**
@@ -840,13 +725,12 @@ class GameStore(
         val quests = miniQuests()
         if (quests.none { it.id == id } || miniQuestDone(id)) return false
         val day = streakDay
-        val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
+        val berry = Items.randomBerry(rng)
         val allDone = quests.all { it.id == id || miniQuestDone(it.id) }
         val berries = 1 + if (allDone) MiniQuests.ALL_THREE_BONUS_BERRIES else 0
         val candies = MiniQuests.RARE_CANDIES + if (allDone) MiniQuests.ALL_THREE_BONUS_CANDIES else 0
         update { d ->
-            // Only today's mini-quest marks are kept.
-            val counters = d.counters.filterKeys { !it.startsWith("mq-") || it.contains("-$day") } + ("mq-$day-$id" to 1)
+            val counters = Counters.MINI_QUEST.set(d.counters, day, 1, detail = id)
             val (withBerry, berryOverflow) = d.player.inventory.addCapped(berry, berries)
             val (bag, candyOverflow) = withBerry.addCapped(Items.RARE_CANDY, candies)
             log(MINI_QUEST_SOURCE, listOf(Reward.ItemDrop(berry, berries), Reward.Candies(CandyType.RARE, candies)), d.copy(
@@ -870,14 +754,13 @@ class GameStore(
     /** True after [Streaks.WELCOME_BACK_DAYS] or more days away, until the gift is taken (once per absence). */
     fun welcomeBackDue(): Boolean {
         val last = lastActive ?: return false
-        return Streaks.welcomeBack(last, streakDay) && "welcome-$last" !in data.counters
+        return Streaks.welcomeBack(last, streakDay) && !Counters.WELCOME.isSet(data.counters, last)
     }
 
     /** Takes the welcome-back gift: [WELCOME_BACK_RARE_CANDIES] Rare Candies and [WELCOME_BACK_BERRIES] berries, no scolding. */
     fun claimWelcomeBack(): List<Reward> {
-        if (!welcomeBackDue()) return emptyList()
-        val last = lastActive!!
-        val berry = Items.berry(Items.flavors.values.toList()[rng.nextInt(Items.flavors.size)])
+        val last = lastActive?.takeIf { welcomeBackDue() } ?: return emptyList()
+        val berry = Items.randomBerry(rng)
         val rewards = listOf(Reward.ItemDrop(Items.RARE_CANDY, WELCOME_BACK_RARE_CANDIES), Reward.ItemDrop(berry, WELCOME_BACK_BERRIES))
         update { d ->
             var bag = d.player.inventory
@@ -885,12 +768,13 @@ class GameStore(
             listOf(Items.RARE_CANDY to WELCOME_BACK_RARE_CANDIES, berry to WELCOME_BACK_BERRIES).forEach { (item, n) ->
                 bag.addCapped(item, n).let { (b, over) -> bag = b; coins += over }
             }
-            val counters = d.counters.filterKeys { !it.startsWith("welcome-") } + ("welcome-$last" to 1)
+            val counters = Counters.WELCOME.set(d.counters, last, 1)
             log("Welcome back", rewards, d.copy(counters = counters, player = d.player.copy(inventory = bag, coins = coins)))
         }
         return rewards
     }
 
+    /** Marks or unmarks a rest day; a rest day does not break the streak. Returns false if too many rest days are set. */
     fun toggleRestDay(date: LocalDate): Boolean {
         val days = data.restDays
         if (date in days) {
@@ -948,17 +832,17 @@ class GameStore(
 
     /** Focus minutes and finished tasks for each of the last [weeks] weeks, oldest first. */
     fun trend(weeks: Int = 6): List<Insights.WeekPoint> = Insights.weeklyTrend(
-        data.tasks, data.focusHistory, weeks, today, zone, if (data.settings.weekStartsOnMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY,
+        data.tasks, data.focusHistory, weeks, today, zone, firstDayOfWeek,
     )
 
     // --- streak -------------------------------------------------------------------------------------------------------
 
-    val streak: Streaks.Result get() = Streaks.daily(data.activeDays, data.restDays, streakDay, perks.extraForgivenDays, firstDayOfWeek)
+    val streak: Streaks.Result get() = data.streakAt(now)
 
-    val firstDayOfWeek: DayOfWeek get() = if (data.settings.weekStartsOnMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY
+    val firstDayOfWeek: DayOfWeek get() = data.settings.weekStart
 
-    /** The perks of the buddy, its party and the slotted Guardians as they stand now (no task or session in view). */
-    val perks: PerkBonuses get() = data.player.let { Perks.total(it.buddy, it.party, guardians = it.guardianPokemon) }
+    /** See [AppData.perks]. */
+    val perks: PerkBonuses get() = data.perks
 
     /** Where [perks] come from, part by part, for the perks panel. */
     val perkSources: List<PerkSource> get() = data.player.let { Perks.sources(it.buddy, it.party, it.guardianPokemon) }
@@ -1013,7 +897,7 @@ class GameStore(
                     log("Focus: $minutes min", outcome.rewards, d.copy(
                         eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
                         player = outcome.state.copy(buddyId = d.player.buddyId), focus = null, activeDays = d.activeDays + streakDay, lastFocusEnd = FocusEnd(nowMillis, true),
-                        focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, true, session.taskId, session.deepFocus),
+                        focusHistory = d.focusHistory + session.record(minutes, completed = true),
                         tasks = d.tasks.map { if (it.id == session.taskId) it.copy(focusedMinutes = it.focusedMinutes + minutes) else it },
                     ))
                 }
@@ -1026,7 +910,7 @@ class GameStore(
                     d.copy(
                         eggTickets = d.eggTickets.spend(d.eggTickets.inSession, session.startedAtMillis, null),
                         focus = null, lastFocusEnd = FocusEnd(nowMillis, false, phase.reason),
-                        focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, false, session.taskId, session.deepFocus),
+                        focusHistory = d.focusHistory + session.record(minutes, completed = false),
                     )
                 }
                 FocusResult.Failed(phase.reason)
@@ -1042,8 +926,7 @@ class GameStore(
      */
     private fun magicGuard(session: FocusSession, reason: FailReason, minutes: Int): FocusResult? {
         val player = data.player.atStartOf(session)
-        val key = "magic-guard-$weekStart"
-        if (minutes < Egg.MIN_MINUTES || key in data.counters) return null
+        if (minutes < Egg.MIN_MINUTES || Counters.MAGIC_GUARD.isSet(data.counters, weekStart)) return null
         if (!Perks.total(player.buddy, player.party, guardians = player.guardianPokemon).keepsFailedEgg) return null
         val ticket = data.eggTickets.inSession
         val event = EffortEvent(minutes, false, session.region.open, session.lure, epochDay, newId(), nowMillis)
@@ -1053,8 +936,8 @@ class GameStore(
                 eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
                 player = outcome.state.copy(buddyId = d.player.buddyId), focus = null,
                 lastFocusEnd = FocusEnd(nowMillis, true, reason, guarded = true),
-                focusHistory = d.focusHistory + FocusRecord(session.startedAtMillis, minutes, false, session.taskId, session.deepFocus),
-                counters = d.counters.filterKeys { !it.startsWith("magic-guard-") } + (key to 1),
+                focusHistory = d.focusHistory + session.record(minutes, completed = false),
+                counters = Counters.MAGIC_GUARD.set(d.counters, weekStart, 1),
             ))
         }
         return FocusResult.Hatched(outcome.rewards)
@@ -1063,6 +946,8 @@ class GameStore(
     /** The perks that count for a session are the ones of the buddy when it started, if that Pokémon is still here. */
     private fun app.pokeplan.core.reward.PlayerState.atStartOf(session: FocusSession) =
         if (session.buddyIdAtStart != null && pokemon.any { it.id == session.buddyIdAtStart }) copy(buddyId = session.buddyIdAtStart) else this
+
+    private fun FocusSession.record(minutes: Int, completed: Boolean) = FocusRecord(startedAtMillis, minutes, completed, taskId, deepFocus)
 
     /** A failed session spends its ticket too, so failing never rerolls an egg. */
     private fun EggTickets.spend(ticket: EggTicket?, startedAtMillis: Long, pokemonId: String?): EggTickets =
@@ -1257,14 +1142,12 @@ class GameStore(
         val buddy = (if (pokemonId == null) data.player.buddy else data.player.pokemon.firstOrNull { it.id == pokemonId }) ?: return 0
         // Petting is the "Pet your buddy" mini-quest, so it ticks itself, even once today's petting friendship is used up.
         completeMiniQuest(MiniQuests.PET_QUEST)
-        val key = "pet-$today"
-        val gainedToday = data.counters[key] ?: 0
+        val gainedToday = Counters.PET.get(data.counters, today)
         if (gainedToday >= PET_DAILY_CAP || buddy.friendship >= FriendshipRules.MAX) return 0
         val petted = buddy.gainFriendship(FriendshipRules.Source.PET)
         val gained = petted.friendship - buddy.friendship
         update { d ->
-            // Only today's counter is kept.
-            val counters = d.counters.filterKeys { !it.startsWith("pet-") } + (key to gainedToday + gained)
+            val counters = Counters.PET.set(d.counters, today, gainedToday + gained)
             d.copy(counters = counters, player = d.player.copy(pokemon = d.player.pokemon.map { if (it.id == buddy.id) petted else it }))
         }
         return gained
@@ -1297,46 +1180,22 @@ class GameStore(
     }
 
     /** Whether [itemId] would do anything if used on [p] now (an Ability Capsule on a Pokémon with one ability does not). */
-    fun canUse(itemId: String, p: OwnedPokemon): Boolean = when {
-        itemId in Items.vitamins || Items.category(itemId) == ItemCategory.BERRY -> true
-        itemId == Items.ABILITY_CAPSULE -> p.form.abilities.size == 2 && p.ability in p.form.abilities
-        itemId == Items.ABILITY_PATCH -> p.form.hiddenAbility != null && p.ability != p.form.hiddenAbility
-        itemId == Items.BOTTLE_CAP -> p.ivs.values.any { it < app.pokeplan.core.pokemon.StatCalculator.MAX_IV }
-        itemId == Items.NATURE_MINT || itemId.startsWith("tera-shard-") -> true
-        else -> false
-    }
+    fun canUse(itemId: String, p: OwnedPokemon): Boolean = ItemEffects.canUse(itemId, p)
 
-    /**
-     * Uses a bag item on a Pokémon: vitamins, berries, the Ability Capsule and Patch, and with a [choice] the Bottle Cap
-     * (a [Stat]), the Nature Mint (a [Nature]). A Tera Shard sets its own type. Returns false if there is none or it does
-     * nothing.
-     */
-    fun useItem(itemId: String, pokemonId: String, choice: Any? = null): Boolean {
-        if (!data.player.inventory.has(itemId)) return false
-        val p = pokemon(pokemonId)
-        if (!canUse(itemId, p)) return false
-        val changed = runCatching {
-            when {
-                itemId in Items.vitamins -> ItemEffects.useVitamin(p, itemId)
-                Items.category(itemId) == ItemCategory.BERRY -> ItemEffects.feedBerry(p)
-                itemId == Items.ABILITY_CAPSULE -> ItemEffects.useAbilityCapsule(p)
-                itemId == Items.ABILITY_PATCH -> ItemEffects.useAbilityPatch(p)
-                itemId == Items.BOTTLE_CAP -> ItemEffects.useBottleCap(p, choice as? Stat ?: return false)
-                itemId == Items.NATURE_MINT -> ItemEffects.useNatureMint(p, choice as? Nature ?: return false)
-                itemId.startsWith("tera-shard-") -> {
-                    val type = PokemonType.entries.first { Items.teraShard(it) == itemId }
-                    ItemEffects.useTeraShard(p, type)
-                }
-                else -> return false
-            }
-        }.getOrElse { return false }
+    /** Uses a bag item on a Pokémon (see [ItemUse]). Returns false if the bag has none, or it would do nothing. */
+    fun useItem(use: ItemUse, pokemonId: String): Boolean {
+        if (!data.player.inventory.has(use.itemId)) return false
+        val changed = data.player.pokemon.firstOrNull { it.id == pokemonId }?.let { ItemEffects.apply(it, use) } ?: return false
         update { d ->
             d.copy(player = d.player.copy(
-                inventory = d.player.inventory.remove(itemId), pokemon = d.player.pokemon.map { if (it.id == pokemonId) changed else it },
+                inventory = d.player.inventory.remove(use.itemId), pokemon = d.player.pokemon.map { if (it.id == pokemonId) changed else it },
             ))
         }
         return true
     }
+
+    /** Uses an item that needs no choice: a vitamin, a berry, the Ability Capsule or Patch, a Tera Shard. */
+    fun useItem(itemId: String, pokemonId: String): Boolean = useItem(ItemUse.Plain(itemId), pokemonId)
 
     /** Puts items in the bag (gifts, quest rewards, the shop). Anything over the bag limit turns into coins. */
     fun grant(itemId: String, amount: Int) = update { d ->
@@ -1347,6 +1206,15 @@ class GameStore(
     // --- views --------------------------------------------------------------------------------------------------------
 
     fun todayTasks(): List<Task> = TaskViews.today(data.tasks.filter { it.state != TaskState.DELETED }, now)
+
+    /** Today's open tasks, less the ones just ticked off and waiting out their undo: the list Home, Plan and the widget show. */
+    fun openTodayTasks(): List<Task> {
+        val pending = data.pending.map { it.original.id }.toSet()
+        return todayTasks().filter { it.id !in pending }
+    }
+
+    /** The berry the buddy is fed from the bag (the first by name), wherever it is fed; null with none. */
+    fun buddyBerry(): String? = berries().keys.minOrNull()
 
     companion object {
         /** The welcome-back gift after a week or more away. *(tune)* */
@@ -1364,8 +1232,6 @@ class GameStore(
         /** The reward log's name for a mini-quest's rewards. */
         const val MINI_QUEST_SOURCE = "Mini-quest"
 
-        /** The counter that holds Care's Egg meter. */
-        const val CARE_EGG_METER = "care-egg-meter"
         const val LOG_SIZE = 50
 
         /** Friends Care can make a day, one per visitor in the meadow (`Visitors.MAX_VISITORS`). *(tune)* */
@@ -1377,11 +1243,11 @@ class GameStore(
         const val CARE_LOG_PREFIX = "Care: "
 
         private val CARE_SOURCES = mapOf(
-            CareKind.ROUTINE to "Care: a routine", CareKind.CALM_BREAK to "Care: a calm break", CareKind.WEEKLY_RHYTHM to "Care: kept a rhythm", CareKind.SKILL to "Care: a skill practised",
-        )
+            CareKind.ROUTINE to "a routine", CareKind.CALM_BREAK to "a calm break", CareKind.WEEKLY_RHYTHM to "kept a rhythm", CareKind.SKILL to "a skill practised",
+        ).mapValues { CARE_LOG_PREFIX + it.value }
 
-        /** Parts of the save that stay on this device: never uploaded, kept when the cloud save is adopted. */
-        private val DEVICE_ONLY = setOf("account", "eggTickets", "shownCalendars")
+        /** Parts of the save that stay on this device: never uploaded, kept when the cloud save is adopted (see [cloudPart] and [adoptCloud]). */
+        internal val DEVICE_ONLY = setOf("account", "eggTickets", "shownCalendars")
 
         // "kind" because the rewards have a field called "type" (the same setting the reward engine uses over JSON).
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true; classDiscriminator = "kind" }
