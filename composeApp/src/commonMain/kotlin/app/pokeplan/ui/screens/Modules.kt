@@ -40,11 +40,14 @@ enum class PlanSection(val label: String, val icon: String) {
  */
 @Composable
 fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> Unit) {
-    when (model.module) {
-        Module.PLAN -> PlanScreen(model, focusTab, openPokemon)
-        // Care switched off in Settings hides it; what it saved is kept.
-        Module.CARE -> if (model.data.settings.careModule) CareScreen(model, openPokemon) else ModulesMenu(model)
-        null -> ModulesMenu(model)
+    // Care switched off in Settings hides it; what it saved is kept.
+    val open = model.module?.takeIf { it != Module.CARE || model.data.settings.careModule }
+    ScreenSwitch(open, depth = { if (it == null) 0 else 1 }) { page ->
+        when (page) {
+            Module.PLAN -> PlanScreen(model, focusTab, openPokemon)
+            Module.CARE -> CareScreen(model, openPokemon)
+            null -> ModulesMenu(model)
+        }
     }
 }
 
@@ -77,11 +80,15 @@ private fun ModulesMenu(model: AppModel) {
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun PlanScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> Unit) {
-    val section = model.planSection
     val toMenu = { model.planSection = null }
+    ScreenSwitch(model.planSection, depth = { if (it == null) 0 else 1 }) { section -> PlanPage(model, section, focusTab, toMenu, openPokemon) }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun PlanPage(model: AppModel, section: PlanSection?, focusTab: Boolean, toMenu: () -> Unit, openPokemon: (String) -> Unit) {
     when (section) {
         null -> {
             val toModules = { model.module = null }

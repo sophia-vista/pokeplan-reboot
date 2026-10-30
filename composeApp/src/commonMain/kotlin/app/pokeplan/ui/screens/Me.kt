@@ -36,31 +36,33 @@ private enum class MeSection(val label: String, val icon: String) {
 fun MeScreen(model: AppModel, startSection: Int = -1) {
     var section by remember { mutableStateOf(MeSection.entries.getOrNull(startSection)) }
     val data = model.data
-    val current = section
-    if (current == null) {
-        Column(Modifier.fillMaxSize()) {
-            ScreenHeader("Me", subtitle = "Rank: ${TrainerRank.nameFor(data.player.trainerPoints)}", icon = "member-card")
-            Column(
-                Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                TrainerCard(model)
-                MenuGrid(
-                    listOfNotNull(
-                        if (model.social == null) null else MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = androidx.compose.ui.graphics.Color(0xFFEC4899)),
-                        MenuEntry("SETTINGS", "gb-sounds", "Settings", "name, region, sound", tint = Pixel.InkSoft),
-                        MenuEntry("HELP", "town-map", "Help", "how it works", tint = Pixel.Blue),
-                    ),
-                ) { key -> section = MeSection.valueOf(key) }
+    // Into a section and back slides; each page keeps its scroll position.
+    ScreenSwitch(section, depth = { if (it == null) 0 else 1 }) { current ->
+        if (current == null) {
+            Column(Modifier.fillMaxSize()) {
+                ScreenHeader("Me", subtitle = "Rank: ${TrainerRank.nameFor(data.player.trainerPoints)}", icon = "member-card")
+                Column(
+                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    TrainerCard(model)
+                    MenuGrid(
+                        listOfNotNull(
+                            if (model.social == null) null else MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = androidx.compose.ui.graphics.Color(0xFFEC4899)),
+                            MenuEntry("SETTINGS", "gb-sounds", "Settings", "name, region, sound", tint = Pixel.InkSoft),
+                            MenuEntry("HELP", "town-map", "Help", "how it works", tint = Pixel.Blue),
+                        ),
+                    ) { key -> section = MeSection.valueOf(key) }
+                }
             }
+            return@ScreenSwitch
         }
-        return
-    }
-    SectionScaffold(current.label, "Me", onBack = { section = null }, icon = current.icon) {
-        when (current) {
-            MeSection.FRIENDS -> FriendsView(model)
-            MeSection.SETTINGS -> SettingsView(model)
-            MeSection.HELP -> HelpView()
+        SectionScaffold(current.label, "Me", onBack = { section = null }, icon = current.icon) {
+            when (current) {
+                MeSection.FRIENDS -> FriendsView(model)
+                MeSection.SETTINGS -> SettingsView(model)
+                MeSection.HELP -> HelpView()
+            }
         }
     }
 }

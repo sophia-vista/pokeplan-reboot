@@ -10,6 +10,12 @@ object WhatsNew {
             "Home shows every region at a glance: each one's lead, how today is going and the next thing to do there.",
             "Your buddy's scene and Pick for me are on Plan's page now, beside today's tasks.",
         ),
+        "0.48.1" to listOf(
+            "Shinies are back to 1 in 128 per egg.",
+        ),
+        "0.48.0" to listOf(
+            "Screens fade and slide a little as you move around, and lists stay scrolled where you left them. Reduce motion keeps them still.",
+        ),
         "0.47.0" to listOf(
             "PokéPlan is now PokéLife: one Pokémon world where each module is its own region. Plan keeps the PokéPlan name.",
         ),

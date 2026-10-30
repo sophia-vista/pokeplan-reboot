@@ -113,7 +113,7 @@ Each owned Pokémon has: species, level 1 to 100, nature, ability, 6 IVs, 6 EVs,
   - IV 0 to 31 rolled at hatch. EV 0 to 252 per stat, 510 total, gained from Vitamins (below).
 - **Natures:** the existing 25. Each raises one stat and lowers another (five are neutral).
 - **Abilities:** each species has one or two; one is rolled at hatch. Abilities give buddy perks (below).
-- **Shiny:** rolled at hatch, base chance **1 in 192** per egg (1 in 128 before rules version 12, when eggs came less often), with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation (a gold flash, twice, instead of the white one).
+- **Shiny:** rolled at hatch, base chance **1 in 128** per egg *(owner, rules version 13; version 12 briefly made it 1 in 192)*, with a small bonus for longer sessions. Shinies get a distinct sprite palette and a hatch animation (a gold flash, twice, instead of the white one).
 - **Levelling:** Rare Candies per level grow with the level, the shape of the games' Medium Fast experience group: **2 + level² / 150**, rounded down *(tune)* (2 a level up to level 12, 8 at 30, 18 at 50, 67 at 99; 33 candies from level 1 to 16, 154 to 36, 2,341 to 100). A Pokémon more than 5 levels below your partner needs half the candies, rounded up *(tune)*, so new hatches catch up without outshining the partner.
 - **Evolution:** Super Candy at the species' game evolution level (Charmander at 16). Evolution stones for the species that use them.
 
@@ -212,7 +212,7 @@ Collecting is **fast at the start and deep at the end.** The simulator tunes tow
 |---|---|
 | Basic dex | one of each species caught |
 | Form dex | regional, gendered and Mega / G-Max forms; cosmetic forms are the side collection |
-| Shiny dex | a shiny of each species (1 in 192 per egg makes this the longest chase) |
+| Shiny dex | a shiny of each species (1 in 128 per egg makes this the longest chase) |
 | Perfect dex | a "perfect build" of each species: 31 IVs, an EV spread of 252 / 252 / 6, a favourable nature, a chosen ability. Competitive-style building, and the endgame use for Nature Mints, Bottle Caps, Vitamins and Ability Capsules |
 | Ribbons | contest ribbons, legendary quests, mythical milestones |
 
@@ -343,6 +343,7 @@ Beyond task reminders: a **streak-at-risk reminder** in the evening if nothing h
 
 - Gen 3 to 5 pixel art: GBA/DS-era text boxes and menus. **Pokémon are drawn with the Pokémon Mystery Dungeon style sprites of the PMD SpriteCollab** *(owner's choice, 0.11.0)*: the idle animation facing the viewer everywhere a Pokémon appears, its first frame where it stands still, and the PokeAPI and Black/White sprites only for the few forms SpriteCollab lacks. The buddy also uses SpriteCollab's Sleep (during a focus session, on Home and the widget), Hop (a pet or an event) and Eat (a berry) animations *(0.13.0)*, and **portraits** show a Pokémon's face beside text the way the Mystery Dungeon games do: on its page (Normal), beside the Focus timer (Determined, Surprised when the player leaves) and the hatch message (Joyous), and in the corner of Home for a real event (Happy for a task, Joyous for a hatch, Inspired for a shiny). Faces are only ever glad, set or surprised, never sad. A shiny without its own recolour of an animation or portrait keeps its idle sprite. Their licence (CC BY-NC 4.0) keeps the app non-commercial and asks for credit, shown in small faint text under each species' Pokédex entry.
 - Hatch, level-up and evolution are full ceremonies (egg wobble, text box lines, cry, flash), skippable.
+- **Screen transitions** *(0.48.0, docs/ecosystem.md section 11)*: the bottom tabs crossfade (180 ms); opening a module, a section, a Pokédex entry or a Pokémon slides a short way in from the end and Back slides it out the other way (220 ms); one Pokédex entry to the next crossfades. Each page keeps its scroll position while another is open. Reduce motion makes every switch instant. All of it is `ScreenSwitch` in `screens/Menu.kt`.
 - **Regional looks** *(0.50.0, docs/ecosystem.md section 11, "Three visual layers")*: each region has its own world, one real scene and one colour, in `RegionLook` (`theme/RegionLook.kt`, scenes in `BuddyScene`). **Plan is a town** (Showdown's city backdrop, red brick, Plan's red): the Plan buddy stands there on Plan's page, on its Home card and in the widgets, at every type (a Pokédex entry still shows the scene of its type). **Care is a meadow** in green: Care's page and its sections have a deep meadow-green header (`Pixel.Meadow`, white text readable on it), and its lead and visitors stand in the meadow. A region's colour tints its card in Modules and runs down the edge of its card on Home. Lists, forms and settings inside a region keep the plain look; game moments keep theirs. Grow (a training ground) and Home (a house) get theirs when they ship.
 - Crisp scaling: nearest-neighbour, integer scale, no blur.
 - Fonts: pixel font for headings only; body text stays a readable font.
