@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.57.0
+
+- The launcher's town can be set in any of 11 real Pokémon scenes (meadow, city, route, forest, mountain, beach, desert, thunder plains, ice cave, damp cave, volcano cave): press and hold the town and pick one. The choice stays on the device with the other launcher settings, and the app list blurs the same scene.
+
 ## 0.56.0
 
 - The launcher's home page is now a town: a real Pokémon scene where every Pokémon you own (up to 24, the buddy and the highest levels first) wanders with its own idle animation; tap one for its cry and a hop. They stand still with Reduce motion. Tasks, Focus and pinned apps sit on a soft dark fade at the bottom; the app list opens over the same town, blurred and darkened.

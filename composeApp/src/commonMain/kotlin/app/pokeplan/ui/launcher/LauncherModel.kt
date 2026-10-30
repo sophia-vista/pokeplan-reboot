@@ -41,7 +41,11 @@ data class LauncherPrefs(
     val pinned: List<String> = emptyList(),
     val hidden: Set<String> = emptySet(),
     val moved: Map<String, AppCategory> = emptyMap(),
+    /** The scene the home page's town is set in (a name from [TownScenes]). */
+    val scene: String = TownScenes.DEFAULT,
 ) {
+    fun withScene(name: String) = if (name in TownScenes.all.map { it.first }) copy(scene = name) else this
+
     fun pin(key: String) = if (key in pinned) this else copy(pinned = pinned + key)
     fun unpin(key: String) = copy(pinned = pinned - key)
     fun hide(key: String) = copy(hidden = hidden + key, pinned = pinned - key)
@@ -54,8 +58,9 @@ data class LauncherPrefs(
     /** An app's category after the user's moves. */
     fun categoryOf(app: LauncherApp): AppCategory = moved[app.key] ?: app.category
 
-    /** One text for a `SharedPreferences` string: a line per choice, `P key`, `H key` or `M key<TAB>CATEGORY`. */
+    /** One text for a `SharedPreferences` string: a line per choice, `P key`, `H key`, `M key<TAB>CATEGORY` or `S scene`. */
     fun encode(): String = buildString {
+        if (scene != TownScenes.DEFAULT) append("S ").append(scene).append('\n')
         pinned.forEach { append("P ").append(it).append('\n') }
         hidden.sorted().forEach { append("H ").append(it).append('\n') }
         moved.entries.sortedBy { it.key }.forEach { (key, category) -> append("M ").append(key).append('\t').append(category.name).append('\n') }
@@ -71,6 +76,7 @@ data class LauncherPrefs(
                 prefs = when (line[0]) {
                     'P' -> prefs.pin(rest)
                     'H' -> prefs.copy(hidden = prefs.hidden + rest)
+                    'S' -> prefs.withScene(rest)
                     'M' -> {
                         val at = rest.lastIndexOf('\t')
                         val category = if (at > 0) AppCategory.entries.firstOrNull { it.name == rest.substring(at + 1) } else null
@@ -128,4 +134,13 @@ object LauncherList {
         sorted.forEachIndexed { i, app -> if (out.lastOrNull()?.first != app.letter()) out += app.letter() to i }
         return out
     }
+}
+
+/** The scenes a town can be set in (real Pokémon backdrops from assets/scenes), with their names. */
+object TownScenes {
+    const val DEFAULT = "meadow"
+    val all = listOf(
+        "meadow" to "Meadow", "city" to "City", "route" to "Route", "forest" to "Forest", "mountain" to "Mountain", "beach" to "Beach",
+        "desert" to "Desert", "thunderplains" to "Thunder plains", "icecave" to "Ice cave", "dampcave" to "Damp cave", "volcanocave" to "Volcano cave",
+    )
 }

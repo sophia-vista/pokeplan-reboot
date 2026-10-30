@@ -122,17 +122,19 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     }
     var listOpen by remember { mutableStateOf(false) }
     var sheetKey by remember { mutableStateOf<String?>(null) }
+    var pickingTown by remember { mutableStateOf(false) }
     val sheetApp = sheetKey?.let { key -> apps.firstOrNull { it.key == key } }
     PixelTheme(dark) {
         CompositionLocalProvider(LocalReduceMotion provides data.settings.reduceMotion) {
             Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
-                Town(model, Modifier.fillMaxSize())
+                Town(model, prefs.scene, Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onLongPress = { pickingTown = true }) })
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
-                BackHandler(enabled = true) { if (sheetApp != null) sheetKey = null else listOpen = false }
+                BackHandler(enabled = true) { if (pickingTown) pickingTown = false else if (sheetApp != null) sheetKey = null else listOpen = false }
                 HomePage(model, apps, prefs, isDefault, host, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
                 AnimatedVisibility(listOpen, enter = slideInVertically { it / 4 } + fadeIn(), exit = slideOutVertically { it / 4 } + fadeOut()) {
                     AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key })
                 }
+                if (pickingTown) TownPicker(prefs.scene, onPick = { onPrefs(prefs.withScene(it)); pickingTown = false }, onClose = { pickingTown = false })
                 if (sheetApp != null) AppSheet(sheetApp, prefs, onPrefs, onClose = { sheetKey = null }, host = host)
             }
         }
@@ -257,7 +259,7 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
     BackHandler(enabled = true) { if (query.isNotEmpty()) query = "" else onClose() }
     val soft = Color.White.copy(alpha = 0.7f)
     Box(Modifier.fillMaxSize()) {
-        SceneImage(TOWN_SCENE, Modifier.fillMaxSize().blur(24.dp))
+        SceneImage(prefs.scene, Modifier.fillMaxSize().blur(24.dp))
         Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.62f)))
         Column(Modifier.fillMaxSize().safeDrawingPadding()) {
             Row(Modifier.padding(horizontal = Spacing.Page, vertical = Spacing.S), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -372,6 +374,38 @@ internal fun AppSheet(app: LauncherApp, prefs: LauncherPrefs, onPrefs: (Launcher
                     }
                 }
             }
+        }
+    }
+}
+
+/** Long-press the town: pick the scene it is set in, shown as small pictures. */
+@Composable
+internal fun TownPicker(current: String, onPick: (String) -> Unit, onClose: () -> Unit) {
+    val none = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)).clickable(indication = null, interactionSource = none, onClick = onClose)) {
+        Column(
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().safeDrawingPadding().padding(Spacing.L).background(Pixel.Panel, RoundedCornerShape(24.dp))
+                .padding(Spacing.L).clickable(indication = null, interactionSource = none) {},
+            verticalArrangement = Arrangement.spacedBy(Spacing.S),
+        ) {
+            Text("Where is your town?", style = MaterialTheme.typography.titleSmall)
+            Column(Modifier.height(380.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                TownScenes.all.chunked(2).forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        row.forEach { (name, label) ->
+                            Box(
+                                Modifier.weight(1f).height(96.dp).clip(rowShape).then(if (name == current) Modifier.border(3.dp, Pixel.Blue, rowShape) else Modifier)
+                                    .clickable(role = Role.RadioButton, onClickLabel = "Set the town in $label") { onPick(name) },
+                            ) {
+                                SceneImage(name, Modifier.fillMaxSize())
+                                Text(label, style = MaterialTheme.typography.labelMedium, color = Color.White, modifier = Modifier.align(Alignment.BottomStart).background(Color.Black.copy(alpha = 0.5f)).padding(horizontal = Spacing.S, vertical = 2.dp))
+                            }
+                        }
+                        if (row.size == 1) Box(Modifier.weight(1f))
+                    }
+                }
+            }
+            Text("Press and hold the town any time to change it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }
