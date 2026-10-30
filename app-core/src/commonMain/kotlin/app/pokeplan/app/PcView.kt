@@ -18,9 +18,20 @@ data class PcView(
     val shinyOnly: Boolean = false,
     val starredOnly: Boolean = false,
     val search: String = "",
+    /** Which box (page of [BOX_SIZE]) is open, counting from 0; [boxCount] and [page] keep it in range. */
+    val box: Int = 0,
 ) {
     /** True when the view hides some of the Pokémon (the screen shows a "clear" button then). */
     val filtering: Boolean get() = type != null || shinyOnly || starredOnly || search.isNotBlank()
+
+    /** How many boxes [total] Pokémon fill (at least one, so an empty result still has a box to show). */
+    fun boxCount(total: Int): Int = ((total + BOX_SIZE - 1) / BOX_SIZE).coerceAtLeast(1)
+
+    /** The open box's Pokémon from the already sorted and filtered [shown]. */
+    fun page(shown: List<OwnedPokemon>): List<OwnedPokemon> {
+        val at = box.coerceIn(0, boxCount(shown.size) - 1)
+        return shown.drop(at * BOX_SIZE).take(BOX_SIZE)
+    }
 
     fun apply(pokemon: List<OwnedPokemon>, isStarred: (String) -> Boolean): List<OwnedPokemon> {
         val text = search.trim().lowercase()
@@ -38,5 +49,10 @@ data class PcView(
             PcSort.FRIENDSHIP -> kept.sortedWith(compareByDescending<OwnedPokemon> { it.friendship }.thenByDescending { it.caughtAtMillis })
             PcSort.IVS -> kept.sortedWith(compareByDescending<OwnedPokemon> { it.ivs.total }.thenByDescending { it.caughtAtMillis })
         }
+    }
+
+    companion object {
+        /** Pokémon per box, as in the games. */
+        const val BOX_SIZE = 30
     }
 }

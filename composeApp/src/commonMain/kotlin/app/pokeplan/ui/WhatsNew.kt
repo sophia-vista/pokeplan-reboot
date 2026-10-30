@@ -3,6 +3,10 @@ package app.pokeplan.ui
 /** What is new in each version, shown once on Home after an update. A version with no entry shows no card. */
 object WhatsNew {
     val entries: Map<String, List<String>> = mapOf(
+        "0.53.0" to listOf(
+            "The PC is in boxes of 30, with each Pokémon's name under its sprite.",
+            "The Pokédex is an index with a search box: find a species by name or number.",
+        ),
         "0.52.0" to listOf(
             "The Party page shows Plan's and Care's parties together, each with its lead first.",
         ),

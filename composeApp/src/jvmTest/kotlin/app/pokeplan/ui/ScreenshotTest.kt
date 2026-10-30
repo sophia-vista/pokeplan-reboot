@@ -405,8 +405,18 @@ class ScreenshotTest {
     @Test
     fun collectionPc() = collection("collection-pc", 1, hatched = 14)
 
+    /** More than one box of Pokémon: names under the sprites and the Previous / Next bar. */
+    @Test
+    fun collectionPcBoxes() = collection("collection-pc-boxes", 1, hatched = 40)
+
     @Test
     fun collectionDex() = collection("collection-dex", 2) { s ->
+        s.markSeen(app.pokeplan.core.dex.Dex.regionDex(app.pokeplan.core.dex.Region.PLAN).take(2).map { it.id })
+    }
+
+    /** The Pokédex as an index: number, sprite, name and a quiet line per row, with the search box. */
+    @Test
+    fun collectionDexIndex() = collection("collection-dex-index", 2, hatched = 3) { s ->
         s.markSeen(app.pokeplan.core.dex.Dex.regionDex(app.pokeplan.core.dex.Region.PLAN).take(2).map { it.id })
     }
 

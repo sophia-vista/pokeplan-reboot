@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.53.0
+
+- The PC is now boxes of 30, like the games, with Previous, Next and "Box 2 of 5" above and below the grid. Each Pokémon shows its name under its sprite (cut short with … when long) with its level, ✨ and ★, and the sort and filters sit in a quiet button; any new search, sort or filter starts again from the first box. One PC serves every region's party.
+- The Pokédex is an index: a row per species with its number, sprite, name and one quiet line (Owned, Caught, Seen or Not found yet), hairlines between rows instead of a card each, a ✨ when a shiny was found, and a Poké Ball for ones in your party or PC. A search box finds a species by name or number (a species not found yet matches by number only, so its name stays a secret). The progress card is a number, a bar and one quiet line.
+
 ## 0.52.0
 
 - The Party page shows every region's party at once: Plan's, then Care's, each under its region's name and colour with its lead first and its perks after, instead of a switch between them. Each Pokémon is one tidy row: its sprite, its name, and its level and types, with Buddy or Lead, Starred and Shiny at the end.
