@@ -6,3 +6,6 @@ local.properties
 .idea/
 node_modules/
 tools/species/cache
+
+# Claude Code agent worktrees (local only)
+.claude/worktrees/

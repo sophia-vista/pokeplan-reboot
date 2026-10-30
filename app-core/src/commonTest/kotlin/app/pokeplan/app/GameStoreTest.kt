@@ -70,8 +70,48 @@ class GameStoreTest {
 
     @Test
     fun aDamagedSaveStartsFreshInsteadOfCrashing() {
-        val s = GameStore(MemoryStorage("{not json"), FakeClock(start), utc)
+        val storage = MemoryStorage("{not json")
+        val s = GameStore(storage, FakeClock(start), utc)
         assertFalse(s.data.onboarded)
+        assertEquals("{not json", storage.keptAside, "the damaged save is kept where the next write cannot reach it")
+        s.start("Ash", 25)
+        assertEquals("{not json", storage.keptAside)
+    }
+
+    @Test
+    fun aSaveTheRulesRejectIsKeptAsideToo() {
+        val (s, _) = started()
+        val good = GameStore.json.encodeToString(AppData.serializer(), s.data)
+        val bad = good.replace("\"title\":\"${s.data.tasks.single().title}\"", "\"title\":\" \"")
+        val storage = MemoryStorage(bad)
+        assertFalse(GameStore(storage, FakeClock(start), utc).data.onboarded)
+        assertEquals(bad, storage.keptAside)
+    }
+
+    @Test
+    fun reloadIgnoresASaveCaughtHalfWritten() {
+        val storage = MemoryStorage()
+        val s = GameStore(storage, FakeClock(start), utc).also { it.start("Ash", 25) }
+        storage.text = storage.text!!.take(40)
+        s.reload()
+        assertTrue(s.data.onboarded, "a half-written save never replaces the progress in memory")
+    }
+
+    @Test
+    fun theDeviceOnlyPartsAreRealFieldsAndNeverUploaded() {
+        val fields = (0 until AppData.serializer().descriptor.elementsCount).map { AppData.serializer().descriptor.getElementName(it) }
+        assertTrue(fields.containsAll(GameStore.DEVICE_ONLY), "a renamed field would be uploaded without anyone noticing")
+        val (s, _) = started()
+        s.setShownCalendars(setOf(4L))
+        assertTrue(s.cloudDocument().keys.none { it in GameStore.DEVICE_ONLY })
+    }
+
+    @Test
+    fun anUnreadableCloudSaveChangesNothing() {
+        val (s, _) = started()
+        val before = s.data
+        assertFalse(s.adoptCloud(kotlinx.serialization.json.buildJsonObject { put("tasks", kotlinx.serialization.json.JsonPrimitive(3)) }, 7))
+        assertEquals(before, s.data)
     }
 
     @Test
@@ -617,7 +657,7 @@ class GameStoreTest {
 
     @Test
     fun the_scene_follows_the_type_and_night_falls_in_the_evening() {
-        assertEquals("mountain", BuddyScene.of(listOf(app.pokeplan.core.model.PokemonType.FIRE)))
+        assertEquals("mountain", BuddyScene.of(listOf(app.pokeplan.core.dex.PokemonType.FIRE)))
         assertEquals("meadow", BuddyScene.of(emptyList()))
         assertTrue(BuddyScene.isNight(22) && BuddyScene.isNight(3) && !BuddyScene.isNight(12))
     }

@@ -1,4 +1,4 @@
-package app.pokeplan.core.model
+package app.pokeplan.core.dex
 
 enum class Rarity(val label: String) {
     COMMON("Common"),

@@ -57,7 +57,6 @@ object Reviews {
         )
     }
 
-    /** Moves an unfinished task to [newDate] ("carry forward"). */
     fun carryForward(task: Task, newDate: LocalDate): Task = task.copy(planned = newDate)
 
     /** One review per week; it can be done during that week or after it. */

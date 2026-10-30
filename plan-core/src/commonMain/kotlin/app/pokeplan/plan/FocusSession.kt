@@ -2,7 +2,7 @@ package app.pokeplan.plan
 
 import kotlinx.serialization.Serializable
 import app.pokeplan.core.dex.Region
-import app.pokeplan.core.model.PokemonType
+import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.reward.EffortEvent
 
 enum class PauseReason { CALL, EMERGENCY }
@@ -178,6 +178,9 @@ object FocusRules {
 
     /** After a failure, one tap starts this retry. */
     val RETRY_MINUTES = FocusDuration.MIN_MINUTES
+
+    /** The longest session the focus screen and the settings offer. */
+    const val MAX_MINUTES = 180
 
     /** "Just 5 minutes" and the retry are the shortest session there is. */
     fun justFiveMinutes(): FocusDuration = FocusDuration(0, FocusDuration.MIN_MINUTES, 0)

@@ -1,7 +1,7 @@
 package app.pokeplan.core
 
-import app.pokeplan.core.model.CandyRewards
-import app.pokeplan.core.model.CandyType
+import app.pokeplan.core.reward.CandyRewards
+import app.pokeplan.core.reward.CandyType
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals

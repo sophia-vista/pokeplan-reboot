@@ -21,7 +21,7 @@ import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import app.pokeplan.core.model.CandyType
+import app.pokeplan.core.reward.CandyType
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.AppModel

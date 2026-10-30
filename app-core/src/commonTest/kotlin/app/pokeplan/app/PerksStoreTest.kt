@@ -1,6 +1,7 @@
 package app.pokeplan.app
 
-import app.pokeplan.core.model.PokemonType
+import app.pokeplan.core.dex.PokemonType
+import app.pokeplan.core.pokemon.ItemUse
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.Nature
 import app.pokeplan.core.pokemon.OwnedPokemon
@@ -78,11 +79,15 @@ class PerksStoreTest {
     fun aBottleCapAndAMintNeedAChoice() {
         editBuddy { it.withIv(Stat.SPEED, 3) }
         give(Items.BOTTLE_CAP); give(Items.NATURE_MINT)
-        assertFalse(s.useItem(Items.BOTTLE_CAP, buddy.id))
-        assertTrue(s.useItem(Items.BOTTLE_CAP, buddy.id, Stat.SPEED))
+        assertFalse(s.useItem(Items.BOTTLE_CAP, buddy.id), "without a stat it does nothing")
+        assertTrue(s.useItem(ItemUse.BottleCap(Stat.SPEED), buddy.id))
         assertEquals(StatCalculator.MAX_IV, buddy.ivs[Stat.SPEED])
+        give(Items.BOTTLE_CAP)
+        assertFalse(s.useItem(ItemUse.BottleCap(Stat.SPEED), buddy.id), "a perfect IV keeps the cap in the bag")
+        assertEquals(1, s.data.player.inventory[Items.BOTTLE_CAP])
+        assertFalse(s.useItem(ItemUse.NatureMint(buddy.nature), buddy.id), "the nature it has already")
         val other = Nature.entries.first { it != buddy.nature }
-        assertTrue(s.useItem(Items.NATURE_MINT, buddy.id, other))
+        assertTrue(s.useItem(ItemUse.NatureMint(other), buddy.id))
         assertEquals(other, buddy.nature)
         assertEquals(0, s.data.player.inventory[Items.NATURE_MINT])
     }
