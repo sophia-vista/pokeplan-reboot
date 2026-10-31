@@ -1,9 +1,6 @@
 package app.pokeplan.ui
 
 import androidx.compose.foundation.background
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.TimeSource
 import androidx.compose.foundation.border
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -130,16 +127,12 @@ class AppModel(
     /** Plays one of the real game sound effects if the platform can and Sound is on. */
     fun effect(sound: Sfx) {
         val volume = data.settings.effectsLevel
-        lastEffect = TimeSource.Monotonic.markNow()
         if (volume > 0f) cries?.effect(sound, volume)
     }
 
-    private var lastEffect = TimeSource.Monotonic.markNow() - 1.seconds
-
-    /** A UI sound for a tap, skipped when another sound has just played for it (a button that pays out has its own chime). */
-    fun tap(sound: Sfx) {
-        if (lastEffect.elapsedNow() > 250.milliseconds) effect(sound)
-    }
+    /** A UI tap (a button, a tab, a menu row): silent. The app keeps its sound for the moments of the game (an egg, a rank up, a berry) and the notifications. */
+    @Suppress("UNUSED_PARAMETER")
+    fun tap(sound: Sfx) = Unit
 
     /** Ticks off a task, with the select blip when it really was open. */
     fun completeTask(id: String) {

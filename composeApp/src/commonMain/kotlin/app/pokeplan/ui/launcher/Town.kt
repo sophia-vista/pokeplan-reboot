@@ -8,6 +8,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
@@ -88,24 +89,31 @@ internal fun townResidents(all: List<OwnedPokemon>, buddyId: String?, cap: Int =
  * stand still. Everything is drawn at one whole-number [townScale] without smoothing, on one pixel grid.
  */
 @Composable
-internal fun Town(model: AppModel, scene: String, active: Boolean, onMenu: (OwnedPokemon) -> Unit, modifier: Modifier = Modifier, size: Int = TOWN_CAP, weather: Weather = Weather.CLEAR) {
+internal fun Town(
+    model: AppModel, scene: String, active: Boolean, onMenu: (OwnedPokemon) -> Unit, modifier: Modifier = Modifier, size: Int = TOWN_CAP, weather: Weather = Weather.CLEAR,
+    screens: Int = 1, interactive: Boolean = true,
+) {
     val data = model.data
     val residents = townResidents(data.player.pokemon, data.player.buddy?.id, size)
     BoxWithConstraints(modifier) {
         val density = LocalDensity.current.density
         val widthPx = maxWidth.value * density
         val heightPx = maxHeight.value * density
-        val pixel = townScale(widthPx)
-        TownBackdrop(scene, Modifier.fillMaxSize(), darkness = BuddyScene.darkness(model.store.now.hour, model.store.now.minute))
+        // The town may be [screens] screens wide: the launcher's pages are windows onto it, and a Pokémon can wander from one to the next.
+        val screenPx = widthPx / screens
+        val pixel = townScale(screenPx)
+        androidx.compose.foundation.layout.Row(Modifier.fillMaxSize()) {
+            repeat(screens) { TownBackdrop(scene, Modifier.weight(1f).fillMaxHeight(), darkness = BuddyScene.darkness(model.store.now.hour, model.store.now.minute)) }
+        }
         val dungeon = TownScenes.isDungeon(scene)
         val top = if (dungeon) TownLayout.WALK_TOP else SCENE_TOP
         val bottom = if (dungeon) TownLayout.WALK_BOTTOM else SCENE_BOTTOM
         val calm = data.settings.reduceMotion || !active
         val life = remember { TownLife() }
         val night = BuddyScene.darkness(model.store.now.hour, model.store.now.minute) >= NIGHT
-        TownMeetings(model, life, residents, calm)
+        TownMeetings(model, life, residents, calm || !interactive)
         residents.forEachIndexed { i, mon ->
-            key(mon.id) { Resident(model, mon, widthPx, heightPx, pixel, top, bottom, calm = calm, index = i, life = life, asleep = night && sleepsAtNight(mon), onMenu = onMenu) }
+            key(mon.id) { Resident(model, mon, screenPx, heightPx, pixel, top, bottom, calm = calm, index = i, life = life, asleep = night && sleepsAtNight(mon), screens = screens, interactive = interactive, onMenu = onMenu) }
         }
         // The weather is over everything and never takes a touch.
         WeatherLayer(weather, pixel, dungeon, calm, Modifier.fillMaxSize().zIndex(10f))
@@ -113,10 +121,10 @@ internal fun Town(model: AppModel, scene: String, active: Boolean, onMenu: (Owne
 }
 
 @Composable
-private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightPx: Float, pixel: Int, groundTop: Float, groundBottom: Float, calm: Boolean, index: Int, life: TownLife, asleep: Boolean, onMenu: (OwnedPokemon) -> Unit) {
+private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightPx: Float, pixel: Int, groundTop: Float, groundBottom: Float, calm: Boolean, index: Int, life: TownLife, asleep: Boolean, screens: Int, interactive: Boolean, onMenu: (OwnedPokemon) -> Unit) {
     val random = remember(mon.id) { Random(mon.id.hashCode()) }
     // Position as fractions of the ground: x across the screen, y from the back of the ground (0) to the front (1).
-    val spot = remember(mon.id) { Animatable(Offset(random.nextFloat(), random.nextFloat()), Offset.VectorConverter) }
+    val spot = remember(mon.id) { Animatable(Offset(random.nextFloat() * screens, random.nextFloat()), Offset.VectorConverter) }
     var facingLeft by remember(mon.id) { mutableStateOf(false) }
     var hopKey by remember(mon.id) { mutableIntStateOf(0) }
     var hopping by remember(mon.id) { mutableStateOf(false) }
@@ -144,7 +152,7 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
         while (true) {
             delay(1500L + random.nextLong(5000))
             // The town has no side walls: a Pokémon may walk off one edge and come back in at the other.
-            val to = Offset(-0.2f + random.nextFloat() * 1.4f, random.nextFloat())
+            val to = Offset(-0.2f + random.nextFloat() * (screens + 0.4f), random.nextFloat())
             val dx = to.x - spot.value.x
             val dy = to.y - spot.value.y
             facingLeft = dx < 0
@@ -155,7 +163,7 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
             spot.animateTo(to, tween((seconds * 1000).toInt(), easing = LinearEasing))
             // Out of sight past an edge: reappear off the other edge, so it walks back in.
             val x = spot.value.x
-            if (x > 1.15f) spot.snapTo(Offset(x - 1.3f, spot.value.y)) else if (x < -0.15f) spot.snapTo(Offset(x + 1.3f, spot.value.y))
+            if (x > screens + 0.15f) spot.snapTo(Offset(x - (screens + 0.3f), spot.value.y)) else if (x < -0.15f) spot.snapTo(Offset(x + (screens + 0.3f), spot.value.y))
             walk = null
         }
     }
@@ -167,13 +175,14 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
     val sizeDp = (box / LocalDensity.current.density).dp
     Box(
         Modifier.offset { IntOffset(feetX - box / 2, feetY - box) }.size(sizeDp).zIndex(depth)
-            .pointerInput(mon.id) {
-                detectTapGestures(onLongPress = { model.effect(Sfx.LONG_PRESS); onMenu(mon) }) {
+            // Only on the main screen can a Pokémon be touched; wandering over the other pages, it is just scenery.
+            .then(if (interactive) Modifier.pointerInput(mon.id) {
+                detectTapGestures(onLongPress = { onMenu(mon) }) {
                     model.cry(mon.speciesId)
                     hopping = true
                     hopKey++
                 }
-            },
+            } else Modifier),
     ) {
         AnimatedSprite(
             mon.form.id, mon.isShiny, mon.nickname, Modifier.fillMaxSize(), size = sizeDp, animate = !calm && !(hold != null && walk == null), ground = 0.dp,
@@ -223,14 +232,8 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
     if (!calm) LaunchedEffect(residents.map { it.id }) {
         val random = Random(residents.hashCode())
         val last = mutableMapOf<String, kotlin.time.TimeMark>()
-        var lastSound = TimeSource.Monotonic.markNow() - 60.seconds
         // They meet now and then, not all day: one meeting at a time, and a pause of half a minute or more after each.
         var nextMeeting = TimeSource.Monotonic.markNow() + (10 + random.nextInt(15)).seconds
-        fun sound(sfx: Sfx, involvesBuddy: Boolean) {
-            if (lastSound.elapsedNow() < 8.seconds || !(involvesBuddy || random.nextInt(3) == 0)) return
-            lastSound = TimeSource.Monotonic.markNow()
-            model.effect(sfx)
-        }
         while (true) {
             delay(900)
             if (!nextMeeting.hasPassedNow()) continue
@@ -256,10 +259,8 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
                         in 0..5 -> {
                             life.holds[first.id] = Hold(StatusKind.QUESTION, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(null, faceLeft = true, approach = towardsSecond)
                             delay(700)
-                            sound(Sfx.CURIOUS, withBuddy)
                             delay(800)
                             life.holds[second.id] = Hold(StatusKind.ALERT, hop = 1, faceLeft = true)
-                            sound(Sfx.SURPRISE, withBuddy)
                             delay(900)
                             // Then they are pleased to meet.
                             life.holds[first.id] = Hold(StatusKind.TWINKLE, faceLeft = false); life.holds[second.id] = Hold(StatusKind.TWINKLE, faceLeft = true)
@@ -267,14 +268,11 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
                         in 6..7 -> {
                             life.holds[first.id] = Hold(StatusKind.CROSS, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(null, faceLeft = true, approach = towardsSecond)
                             delay(700)
-                            sound(Sfx.MAD, withBuddy)
                             delay(700)
                             life.holds[second.id] = Hold(StatusKind.SWEAT, hop = 1, faceLeft = true)
-                            sound(Sfx.URGENT_SHOCK, withBuddy)
                         }
                         else -> {
                             life.holds[first.id] = Hold(StatusKind.ZAP, hop = 1, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(StatusKind.ZAP, hop = 1, faceLeft = true, approach = towardsSecond)
-                            sound(Sfx.SHOCK, withBuddy)
                         }
                     }
                     delay(1800)

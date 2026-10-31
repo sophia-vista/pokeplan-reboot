@@ -56,13 +56,13 @@ internal fun TodayPage(model: AppModel, pixel: Int) {
     fun eventsOn(d: LocalDate) = data.events.flatMap { it.occurrences(d, d) }.sortedWith(compareBy({ !it.allDay }, { it.start }))
     fun busy(d: LocalDate) = data.events.any { it.isOn(d) } || open.any { it.planned == d || it.due?.date == d }
 
-    Box(Modifier.fillMaxSize().background(Pixel.Night.copy(alpha = 0.78f)).safeDrawingPadding()) {
+    Box(Modifier.fillMaxSize().background(Pixel.Night.copy(alpha = 0.5f)).safeDrawingPadding()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = Spacing.Page, end = Spacing.Page, top = Spacing.XXL, bottom = Spacing.XL), verticalArrangement = Arrangement.spacedBy(Spacing.XL)) {
             PmdBox(pixel, Modifier.fillMaxWidth()) {
                 Column(Modifier.fillMaxWidth()) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        PmdMenuLine("Prev", pixel, Modifier.weight(1f)) { month = month.plus(DatePeriod(months = -1)) }
-                        PmdText("${monthName(month.month)} ${month.year}", pixel, Modifier.weight(2f))
+                        PmdMenuLine("Prev", pixel, Modifier.weight(1f), center = true) { month = month.plus(DatePeriod(months = -1)) }
+                        Box(Modifier.weight(2f), contentAlignment = Alignment.Center) { PmdText("${monthName(month.month)} ${month.year}", pixel) }
                         PmdMenuLine("Next", pixel, Modifier.weight(1f), center = true) { month = month.plus(DatePeriod(months = 1)) }
                     }
                     PmdRule(pixel)
