@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.70.3
+
+- Launcher: the app list comes in from the right again, but only a short glide (56 dp) while it fades in and its blur clears, on the app's smooth curve (a flick still keeps its speed and settles on a spring).
+
 ## 0.70.2
 
 - Launcher: the app list no longer slides in. It comes into focus where it is: it fades in, rises a few dp and its blur clears, following your finger when you drag in from the edge (a flick still keeps its speed and settles on a spring). Closing it is silent now.
