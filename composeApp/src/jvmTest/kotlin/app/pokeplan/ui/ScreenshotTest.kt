@@ -47,7 +47,7 @@ class ScreenshotTest {
     }
 
     private fun env(model: AppModel, prefs: app.pokeplan.ui.launcher.LauncherPrefs = app.pokeplan.ui.launcher.LauncherPrefs(), editing: Boolean = false) = app.pokeplan.ui.launcher.WidgetEnv(
-        model, fakeApps, prefs, fakeHost, null, 2, app.pokeplan.ui.launcher.TodayState(model.store.today), editing, {}, {}, {}, {}, {}, {}, {}, {}, {},
+        model, fakeApps, prefs, fakeHost, null, 2, app.pokeplan.ui.launcher.TodayState(model.store.today), app.pokeplan.ui.launcher.BuddyMood(), editing, {}, {}, {}, {}, {}, {}, {}, {}, {},
     )
 
     private val clock = object : Clock {
@@ -705,6 +705,10 @@ class ScreenshotTest {
             app.pokeplan.ui.launcher.LauncherScreen(AppModel(phone), fakeApps, folderWidgets, {}, isDefault = true, phone = fakeHost)
         }
         render("launcher-editing") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { app.pokeplan.ui.launcher.TodayPage(env(AppModel(planned), app.pokeplan.ui.launcher.LauncherPrefs().resizeWidget(app.pokeplan.ui.launcher.WidgetSlot(app.pokeplan.ui.launcher.WidgetArea.TODAY, app.pokeplan.ui.launcher.WidgetKind.CALENDAR), app.pokeplan.ui.launcher.WidgetSize.SMALL), editing = true)) } } }
+        val moody = app.pokeplan.ui.launcher.BuddyMood().also { m -> m.meet(phone.data.player.pokemon.last(), app.pokeplan.ui.Emotion.SURPRISED, app.pokeplan.ui.Emotion.HAPPY) }
+        render("launcher-buddy") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { androidx.compose.foundation.layout.Column(Modifier.padding(20.dp)) {
+            app.pokeplan.ui.launcher.LauncherWidget(app.pokeplan.ui.launcher.WidgetSlot(app.pokeplan.ui.launcher.WidgetArea.HOME_TOP, app.pokeplan.ui.launcher.WidgetKind.BUDDY), env(AppModel(phone)).let { e -> app.pokeplan.ui.launcher.WidgetEnv(e.model, e.apps, e.prefs, e.host, null, 2, e.today, moody, false, {}, {}, {}, {}, {}, {}, {}, {}, {}) })
+        } } } }
         render("launcher-towns") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.TownPicker("meadow", {}, {}) } } }
         render("launcher-pokemon-menu") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.PokemonMenu(started().data.player.buddy!!, false, 2, {}, {}, {}) } } }
         render("launcher-settings") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.LauncherSettings(AppModel(started()), app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone"), {}, false, 2, 2, fakeHost, {}, {}, {}, {}, {}) } } }

@@ -41,6 +41,7 @@ import app.pokeplan.app.BuddyScene
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Emotion
 import app.pokeplan.ui.SceneImage
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.SpriteAction
@@ -91,7 +92,7 @@ internal fun townResidents(all: List<OwnedPokemon>, buddyId: String?, cap: Int =
 @Composable
 internal fun Town(
     model: AppModel, scene: String, active: Boolean, onMenu: (OwnedPokemon) -> Unit, modifier: Modifier = Modifier, size: Int = TOWN_CAP, weather: Weather = Weather.CLEAR,
-    screens: Int = 1, interactive: Boolean = true, gather: Int = 0,
+    screens: Int = 1, interactive: Boolean = true, gather: Int = 0, mood: BuddyMood? = null,
 ) {
     val data = model.data
     val residents = townResidents(data.player.pokemon, data.player.buddy?.id, size)
@@ -111,7 +112,7 @@ internal fun Town(
         val calm = data.settings.reduceMotion || !active
         val life = remember { TownLife() }
         val night = BuddyScene.darkness(model.store.now.hour, model.store.now.minute) >= NIGHT
-        TownMeetings(model, life, residents, calm || !interactive)
+        TownMeetings(model, life, residents, calm || !interactive, mood)
         residents.forEachIndexed { i, mon ->
             key(mon.id) { Resident(model, mon, screenPx, heightPx, pixel, top, bottom, calm = calm, index = i, life = life, asleep = night && sleepsAtNight(mon), screens = screens, interactive = interactive, gather = gather, onMenu = onMenu) }
         }
@@ -235,7 +236,7 @@ internal class TownLife {
  * again after a while.
  */
 @Composable
-private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedPokemon>, calm: Boolean) {
+private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedPokemon>, calm: Boolean, mood: BuddyMood?) {
     val scope = rememberCoroutineScope()
     val buddy = model.data.player.buddy?.id
     if (!calm) LaunchedEffect(residents.map { it.id }) {
@@ -257,6 +258,7 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
                 last[pair] = TimeSource.Monotonic.markNow()
                 nextMeeting = TimeSource.Monotonic.markNow() + (30 + random.nextInt(40)).seconds
                 val withBuddy = a.id == buddy || b.id == buddy
+                val other = if (a.id == buddy) b else a
                 // The one on the left speaks first.
                 val (first, second) = if (pa.x <= pb.x) a to b else b to a
                 // They step up to each other, side by side at the midpoint, and face one another.
@@ -268,20 +270,26 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
                         in 0..5 -> {
                             life.holds[first.id] = Hold(StatusKind.QUESTION, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(null, faceLeft = true, approach = towardsSecond)
                             delay(700)
+                            if (withBuddy) mood?.meet(other, Emotion.NORMAL, Emotion.NORMAL)
                             delay(800)
                             life.holds[second.id] = Hold(StatusKind.ALERT, hop = 1, faceLeft = true)
+                            if (withBuddy) mood?.meet(other, Emotion.SURPRISED, Emotion.SURPRISED)
                             delay(900)
                             // Then they are pleased to meet.
                             life.holds[first.id] = Hold(StatusKind.TWINKLE, faceLeft = false); life.holds[second.id] = Hold(StatusKind.TWINKLE, faceLeft = true)
+                            if (withBuddy) mood?.meet(other, Emotion.HAPPY, Emotion.JOYOUS)
                         }
                         in 6..7 -> {
                             life.holds[first.id] = Hold(StatusKind.CROSS, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(null, faceLeft = true, approach = towardsSecond)
                             delay(700)
+                            // The one that is cross is the other Pokémon if the buddy is not the one that started it.
+                            if (withBuddy) mood?.meet(other, if (first.id == buddy) Emotion.NORMAL else Emotion.DETERMINED, if (first.id == buddy) Emotion.DETERMINED else Emotion.SURPRISED)
                             delay(700)
                             life.holds[second.id] = Hold(StatusKind.SWEAT, hop = 1, faceLeft = true)
                         }
                         else -> {
                             life.holds[first.id] = Hold(StatusKind.ZAP, hop = 1, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(StatusKind.ZAP, hop = 1, faceLeft = true, approach = towardsSecond)
+                            if (withBuddy) mood?.meet(other, Emotion.SURPRISED, Emotion.SURPRISED)
                         }
                     }
                     delay(1800)

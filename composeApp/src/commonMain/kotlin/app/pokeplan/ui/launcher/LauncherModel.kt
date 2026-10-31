@@ -11,7 +11,7 @@ enum class WidgetArea(val label: String) { HOME_TOP("Top of the home page"), HOM
 
 /** What a widget shows. [FOLDER] is the folder named by the slot's argument; the others take none. */
 enum class WidgetKind(val label: String) {
-    CLOCK("Date and time"), STATUS("Companion"), NAV("Shortcuts"), PINNED("Favorites"), OFTEN("Often used"), FOLDER("Folder"),
+    CLOCK("Date and time"), STATUS("Companion"), BUDDY("Buddy"), NAV("Shortcuts"), PINNED("Favorites"), OFTEN("Often used"), FOLDER("Folder"),
     ACTIONS("App buttons"), CALENDAR("Calendar"), AGENDA("Agenda and tasks"), FORECAST("Forecast"),
     /** A widget from another app, hosted by the launcher; the slot's argument is its Android widget id. */
     ANDROID("Android widget");
@@ -33,10 +33,10 @@ data class WidgetSlot(val area: WidgetArea, val kind: WidgetKind, val arg: Strin
     val title: String get() = if (kind == WidgetKind.FOLDER) arg else kind.label
 }
 
-/** The widgets a launcher starts with: the date and time and the companion on top, shortcuts, the often used apps, favorites and the folder and app-list buttons below, and the calendar and agenda on Today. */
+/** The widgets a launcher starts with: the date and time and the buddy's portrait on top, shortcuts, the often used apps, favorites and the folder and app-list buttons below, and the calendar and agenda on Today. */
 fun defaultWidgets(clock: Boolean = true, status: Boolean = true): List<WidgetSlot> = buildList {
     if (clock) add(WidgetSlot(WidgetArea.HOME_TOP, WidgetKind.CLOCK))
-    if (status) add(WidgetSlot(WidgetArea.HOME_TOP, WidgetKind.STATUS))
+    if (status) add(WidgetSlot(WidgetArea.HOME_TOP, WidgetKind.BUDDY))
     add(WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.NAV))
     add(WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.OFTEN))
     add(WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.PINNED))
@@ -167,7 +167,7 @@ data class LauncherPrefs(
     /** The widgets, top to bottom in each area; null until the user changes them, which shows [defaultWidgets]. */
     val layout: List<WidgetSlot>? = null,
 ) {
-    /** The widgets on screen: the user's, or the starting set (the date and time and companion boxes follow their old on/off choices). */
+    /** The widgets on screen: the user's, or the starting set (the date and time and buddy boxes follow their old on/off choices). */
     val widgets: List<WidgetSlot> get() = layout ?: defaultWidgets(showClock, showStatus)
     fun widgetsIn(area: WidgetArea): List<WidgetSlot> = widgets.filter { it.area == area }
     private fun withWidgets(next: List<WidgetSlot>) = copy(layout = next)

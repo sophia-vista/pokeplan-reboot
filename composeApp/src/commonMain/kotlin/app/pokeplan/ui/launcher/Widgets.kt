@@ -46,7 +46,7 @@ import kotlinx.datetime.plus
 /** What every widget needs from the launcher: the model, the apps, the prefs, the phone, the forecast and what to do on a tap. */
 internal class WidgetEnv(
     val model: AppModel, val apps: List<LauncherApp>, val prefs: LauncherPrefs, val host: LauncherHost, val forecast: Forecast?, val pixel: Int,
-    val today: TodayState, val editing: Boolean, val onPrefs: (LauncherPrefs) -> Unit, val onEdit: () -> Unit, val onDone: () -> Unit, val onAllApps: () -> Unit, val onFolders: () -> Unit, val onWidgets: () -> Unit, val onOpenFolder: (String) -> Unit, val onForecast: () -> Unit, val onHold: (LauncherApp) -> Unit,
+    val today: TodayState, val mood: BuddyMood, val editing: Boolean, val onPrefs: (LauncherPrefs) -> Unit, val onEdit: () -> Unit, val onDone: () -> Unit, val onAllApps: () -> Unit, val onFolders: () -> Unit, val onWidgets: () -> Unit, val onOpenFolder: (String) -> Unit, val onForecast: () -> Unit, val onHold: (LauncherApp) -> Unit,
 )
 
 /** The month and day the calendar and agenda widgets share, so choosing a day in one shows its agenda in the other. */
@@ -120,6 +120,7 @@ private fun WidgetBody(slot: WidgetSlot, env: WidgetEnv) {
     when (slot.kind) {
         WidgetKind.CLOCK -> ClockWidget(env)
         WidgetKind.STATUS -> StatusWidget(env)
+        WidgetKind.BUDDY -> BuddyWidget(env)
         WidgetKind.NAV -> NavWidget(env)
         WidgetKind.OFTEN -> OftenWidget(env, slot.size)
         WidgetKind.PINNED -> AppsWidget("", LauncherList.pinned(env.apps, env.prefs), env, slot.size, hint = "Press and hold an app in All apps to pin it", icons = env.prefs.icons, onTitle = null)
