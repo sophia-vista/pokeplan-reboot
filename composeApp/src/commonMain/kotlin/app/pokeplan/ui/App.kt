@@ -373,14 +373,16 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
 
     if (focusTab) FocusWatch(model)
 
-    // The red header colour continues under the status bar and the white tab bar under the system navigation bar, so the
+    // The header colour continues under the status bar and the tab bar (which wears it too) under the system navigation bar, so the
     // system bars match the app instead of showing the cream page colour. The keyboard lifts the whole column.
     // Wide windows (tablet, desktop, web) keep the page a phone-width column in the middle and move the tabs to a rail at the side.
     BoxWithConstraints(Modifier.fillMaxSize().imePadding()) {
         val rail = maxWidth >= EXPANDED_WIDTH
+        // The status bar and the tab bar wear the colour of the header on the page shown.
+        val chrome = remember { androidx.compose.runtime.mutableStateOf(Pixel.Red) }
         val page: @Composable (Modifier) -> Unit = { modifier ->
             Column(modifier) {
-                Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).background(Pixel.Red))
+                Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).background(chrome.value))
                 Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
                     Box(Modifier.widthIn(max = CONTENT_MAX_WIDTH).fillMaxSize()) {
                         // The tabs crossfade; each keeps its scroll position while another is open.
@@ -408,8 +410,6 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
         // its icons and touch targets carry the rest.
         val density = LocalDensity.current
         val navDensity = Density(density.density, density.fontScale.coerceAtMost(1.25f))
-        // The tab bar wears the colour of the header on the page shown.
-        val chrome = remember { androidx.compose.runtime.mutableStateOf(Pixel.Red) }
         CompositionLocalProvider(app.pokeplan.ui.theme.LocalChromeColor provides chrome) {
         if (rail) Row(Modifier.fillMaxSize()) {
             CompositionLocalProvider(LocalDensity provides navDensity) {

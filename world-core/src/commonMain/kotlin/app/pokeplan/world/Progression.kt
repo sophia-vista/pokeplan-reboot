@@ -63,3 +63,9 @@ object Dojo {
     const val COST = 200
     const val SKILL_XP = 60
 }
+
+/** The Croagunk Swap Shop: [GIVE] berries of one flavour for one of another. *(tune)* */
+object SwapShop {
+    const val GIVE = 3
+    val flavors = listOf("sweet", "dry", "sour", "spicy", "bitter")
+}

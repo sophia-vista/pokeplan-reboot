@@ -132,7 +132,7 @@ private fun TickButton(description: String, done: Boolean = false, onClick: Acti
 
 /** Brings every widget up to date; called when the app is left and after a tap on a widget. */
 suspend fun updateWidgets(context: Context) {
-    for (widget in listOf(TodayWidget(), BuddyWidget(), FocusWidget(), CareWidget())) {
+    for (widget in listOf(TodayWidget(), BuddyWidget(), FocusWidget(), CareWidget(), WorldWidget())) {
         val stamp = System.currentTimeMillis()
         for (id in GlanceAppWidgetManager(context).getGlanceIds(widget.javaClass)) {
             updateAppWidgetState(context, id) { it[RefreshKey] = stamp }
@@ -628,6 +628,72 @@ private fun CareContent(context: Context, state: CareState, header: Bitmap?) {
                     }
                 }
             }
+        }
+    }
+}
+
+
+// ----- World: the expedition teams ------------------------------------------------------------------------------------
+
+private val teal = Color(0xFF0E8F85)
+
+private data class WorldState(val started: Boolean, val rank: String, val lines: List<String>, val finds: Int, val jobsReady: Int)
+
+/** Where each World team is (dungeon and floor), the Finds waiting to be recruited and the jobs ready to claim; a tap opens World. */
+class WorldWidget : GlanceAppWidget() {
+    override suspend fun provideGlance(context: Context, id: GlanceId) =
+        provideFresh(context, id, { load(context) }) { (state, header) -> WorldContent(context, state, header) }
+
+    private suspend fun load(context: Context): Pair<WorldState, Bitmap?> {
+        val game = widgetStore(context)
+        // The teams keep climbing while the phone is idle: settle them to now, as opening the screen would.
+        game.worldSettle()
+        val world = game.data.world
+        val d = density(context)
+        val header = WidgetArt.scene(context, "forest", BuddyScene.darkness(game.now.hour, game.now.minute), (420 * d).toInt(), (44 * d).toInt(), 20 * d, roundBottom = false)
+        val lines = world.slots().map { team ->
+            val trip = team.expedition
+            val dungeon = trip?.let { app.pokeplan.world.Dungeons.byId(it.dungeonId) }
+            when {
+                dungeon != null -> "Team ${team.id}: ${dungeon.name}, floor ${trip.floorsClimbed % dungeon.floors + 1} of ${dungeon.floors}"
+                team.members.isEmpty() -> "Team ${team.id}: no one yet"
+                else -> "Team ${team.id}: resting at camp"
+            }
+        }
+        return WorldState(game.data.onboarded, world.rank.label, lines, world.finds.size, world.missions.count { it.done }) to header
+    }
+}
+
+class WorldWidgetReceiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = WorldWidget()
+}
+
+@Composable
+private fun WorldContent(context: Context, state: WorldState, header: Bitmap?) {
+    val open = openApp(context, Place.WORLD.name)
+    Column(GlanceModifier.fillMaxSize().background(paper).cornerRadius(20.dp)) {
+        WidgetHeader(header, teal, open) {
+            Text(
+                "World", GlanceModifier.pill().padding(horizontal = 12.dp, vertical = 4.dp),
+                style = TextStyle(color = ColorProvider(teal), fontSize = 15.sp, fontWeight = FontWeight.Bold),
+            )
+            Spacer(GlanceModifier.defaultWeight())
+            if (state.started) Text(
+                "${state.rank} rank", GlanceModifier.pill().padding(horizontal = 10.dp, vertical = 4.dp),
+                style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp, fontWeight = FontWeight.Medium),
+            )
+        }
+        Column(GlanceModifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp).clickable(open)) {
+            if (!state.started) {
+                Text("Open PokéLife to start", style = TextStyle(color = ColorProvider(soft), fontSize = 13.sp))
+                return@Column
+            }
+            state.lines.forEach { line -> Text(line, GlanceModifier.fillMaxWidth().padding(vertical = 3.dp), style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp), maxLines = 2) }
+            val extra = listOfNotNull(
+                if (state.finds > 0) "${state.finds} to recruit" else null,
+                if (state.jobsReady > 0) "${state.jobsReady} job${if (state.jobsReady == 1) "" else "s"} to claim" else null,
+            )
+            if (extra.isNotEmpty()) Text(extra.joinToString(", "), GlanceModifier.padding(top = 4.dp), style = TextStyle(color = ColorProvider(teal), fontSize = 13.sp, fontWeight = FontWeight.Bold))
         }
     }
 }

@@ -73,3 +73,29 @@ class MissionsTest {
         assertTrue(open.acceptMission("gather-10")!!.abandonMission("gather-10")!!.missions.isEmpty())
     }
 }
+
+class EscortDefeatTest {
+    private fun mon(id: String, species: Int, level: Int): OwnedPokemon =
+        Hatching.create(id, HatchOption(species, Dex.defaultForm(species).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = level)
+
+    private val roster = listOf(mon("a", 74, 40), mon("b", 74, 40), mon("c", 74, 40), mon("d", 74, 40))
+    private val open = WorldData(xp = 400, clears = mapOf("tiny-woods" to 1))
+    private val day = 12L * 3_600_000
+
+    @Test
+    fun anEscortNeedsACrowd() {
+        val small = open.acceptMission("escort-cubone")!!.assign(1, listOf("a", "b"))!!.start(1, "thunderwave-cave", 0L)!!
+        assertTrue(WorldSim.settle(small, roster, day * 4).data.missions.single().done.not(), "two Pokémon are not enough")
+        val crowd = open.acceptMission("escort-cubone")!!.assign(1, listOf("a", "b", "c"))!!.start(1, "thunderwave-cave", 0L)!!
+        assertTrue(WorldSim.settle(crowd, roster, day).data.missions.single().done)
+    }
+
+    @Test
+    fun aDefeatNeedsPower() {
+        val weak = open.acceptMission("defeat-geodude")!!.assign(1, listOf("a"))!!.start(1, "mt-steel", 0L)!!
+        val r = WorldSim.settle(weak, roster, day * 8).data
+        assertTrue(r.missions.single().done.not(), "one level 40 Pokémon has about 50 power")
+        val strong = open.copy(xp = 400).acceptMission("defeat-geodude")!!.assign(1, listOf("a", "b", "c", "d"))!!.start(1, "mt-steel", 0L)!!
+        assertTrue(WorldSim.settle(strong, roster, day * 2).data.missions.single().done, "four level 40 Pokémon have 160")
+    }
+}

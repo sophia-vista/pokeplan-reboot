@@ -3,13 +3,14 @@ package app.pokeplan.world
 import app.pokeplan.core.pokemon.Items
 import kotlinx.serialization.Serializable
 
-/** What a mission asks (docs/world.md, section 8). Escort, Deliver and Defeat wait for the mechanics they need. */
-enum class MissionKind(val label: String) { EXPLORE("Explore"), COLLECT("Find items"), RESCUE("Rescue"), DELIVER("Deliver") }
+/** What a mission asks (docs/world.md, section 8). */
+enum class MissionKind(val label: String) { EXPLORE("Explore"), COLLECT("Find items"), RESCUE("Rescue"), DELIVER("Deliver"), ESCORT("Escort"), DEFEAT("Defeat") }
 
 /**
  * A job on the board. [EXPLORE] is done when any team reaches [floor] of [dungeonId] while it is accepted; [COLLECT] when
  * [count] berries have been found anywhere; [RESCUE] when a team reaches [floor] of [dungeonId], and the lost Pokémon
- * ([rescued], a species id) then waits among the Finds. A job that is [once] never comes back; the others are repeatable.
+ * ([rescued], a species id) then waits among the Finds; [ESCORT] is an Explore job that only counts for a team of at least [count]
+ * Pokémon, and [DEFEAT] one that only counts for a team whose power is at least [count] (docs/world.md, section 8). A job that is [once] never comes back; the others are repeatable.
  * Rewards are paid when the player claims the finished job. Numbers are *(tune)*.
  */
 data class MissionDef(
@@ -52,6 +53,11 @@ object Missions {
         MissionDef("explore-sky-18", "Climb the Sky Tower", "The wind has changed at the top. Go and see why.", MissionKind.EXPLORE, ExplorerRank.PLATINUM, false, "sky-tower", floor = 18, poke = 1_800, xp = 900, period = 7),
         MissionDef("deliver-berries", "Deliver berries to a friend", "A Pokémon waiting deep in Tiny Woods asks for sweet berries.", MissionKind.DELIVER, ExplorerRank.NORMAL, false, "tiny-woods", floor = 5, poke = 150, xp = 70, give = Items.berry("sweet"), giveCount = 3, period = 7),
         MissionDef("deliver-spicy", "Deliver spicy berries to the Dojo", "The Dojo master wants spicy berries delivered to a camp on Mt. Steel.", MissionKind.DELIVER, ExplorerRank.BRONZE, false, "mt-steel", floor = 6, poke = 350, xp = 180, give = Items.berry("spicy"), giveCount = 3, period = 7),
+        MissionDef("escort-cubone", "Escort a Cubone home", "A Cubone must cross Thunderwave Cave to its family. It is safe only in a crowd.", MissionKind.ESCORT, ExplorerRank.BRONZE, false, "thunderwave-cave", floor = 8, count = 3, poke = 400, xp = 200, period = 7),
+        MissionDef("escort-wooper", "Escort a Wooper to the falls", "A Wooper wants to see the waterfall's source, with company.", MissionKind.ESCORT, ExplorerRank.SILVER, false, "waterfall-cave", floor = 12, count = 3, poke = 700, xp = 350, period = 7),
+        MissionDef("defeat-geodude", "Drive off the Geodude gang", "Rowdy Geodude block the pass on Mt. Steel. A strong team can scare them away.", MissionKind.DEFEAT, ExplorerRank.BRONZE, false, "mt-steel", floor = 10, count = 150, poke = 500, xp = 250, period = 7),
+        MissionDef("defeat-glalie", "Calm the Glalie", "A Glalie is freezing the palace halls. Only a mighty team can get near.", MissionKind.DEFEAT, ExplorerRank.GOLD, false, "glacier-palace", floor = 14, count = 250, poke = 1_000, xp = 500, period = 7),
+        MissionDef("defeat-storm", "Face the Sky Tower's storm", "A storm gathers at the top. Face it with a team of great power.", MissionKind.DEFEAT, ExplorerRank.PLATINUM, false, "sky-tower", floor = 18, count = 350, poke = 1_800, xp = 900, period = 7),
         MissionDef("daily-berries", "Daily berry run", "Today's berry order.", MissionKind.COLLECT, ExplorerRank.NORMAL, false, count = 15, poke = 150, xp = 60, period = 1),
         MissionDef("weekly-steel", "Weekly patrol of Mt. Steel", "The mountain needs a patrol once a week.", MissionKind.EXPLORE, ExplorerRank.BRONZE, false, "mt-steel", floor = 10, poke = 900, xp = 400, itemId = Items.RARE_CANDY, itemCount = 1, period = 7),
     )
@@ -75,15 +81,16 @@ object Missions {
     fun day(data: WorldData): Long = data.lastSeenAt / 86_400_000L
 
     /** What one climbed floor does to the accepted jobs. [berries] is how many berries it gave. Reports each job it finishes. */
-    internal fun advance(data: WorldData, dungeonId: String, floor: Int, berries: Int, at: Long, events: MutableList<WorldEvent>): WorldData {
+    internal fun advance(data: WorldData, dungeonId: String, floor: Int, berries: Int, at: Long, teamSize: Int, power: Double, events: MutableList<WorldEvent>): WorldData {
         if (data.missions.isEmpty()) return data
         var d = data
         val updated = data.missions.map { p ->
             val m = byId[p.id]
             if (m == null || p.done) return@map p
-            val reached = m.dungeonId == dungeonId && floor >= m.floor
+            val reached = m.dungeonId == dungeonId && floor >= m.floor &&
+                (m.kind != MissionKind.ESCORT || teamSize >= m.count) && (m.kind != MissionKind.DEFEAT || power >= m.count)
             val next = when (m.kind) {
-                MissionKind.EXPLORE, MissionKind.RESCUE, MissionKind.DELIVER -> if (reached) p.copy(progress = 1, done = true) else p
+                MissionKind.EXPLORE, MissionKind.RESCUE, MissionKind.DELIVER, MissionKind.ESCORT, MissionKind.DEFEAT -> if (reached) p.copy(progress = 1, done = true) else p
                 MissionKind.COLLECT -> p.copy(progress = p.progress + berries).let { if (it.progress >= m.count) it.copy(done = true) else it }
             }
             if (next.done) {
