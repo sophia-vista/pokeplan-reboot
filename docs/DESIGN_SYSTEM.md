@@ -36,11 +36,11 @@ change as any token, component or rule it describes. Approved in the 0.64.0 desi
 - Icon sizes: `Icon.S` 24, `Icon.M` 36, `Icon.L` 56, `Icon.XL` 72 dp. Sprites and portraits are sized per screen.
 
 ## 4. Typography
-- Four sizes: 24 (screen titles), 18 (section titles, buttons), 16 (body), 13 (secondary, labels).
-- Pixel font (Pokemon DP) for game headings, rank, stats and button labels, **at 16 sp and up only**. Everything small or read in
-  bulk is Nunito. Long names (tasks, apps) are always Nunito.
+- Four sizes: 24 (screen titles), 18 (section titles, buttons), 16 (body), 14 (secondary, labels).
+- One typeface family: the Pokémon DS-era font (Pokemon DP, regular and bold) for everything, with the dialogue bitmap font (below) for
+  titles, labels and buttons. There is no other font.
 - `titleMedium`, `titleSmall` and `labelLarge` are the same style by design; use `labelLarge` for button labels, `title*` for headings.
-- Titles, labels and buttons in the utility register use the dialogue font too (`PixelTitle`, `PixelLabel`: dark on light, white on dark and on coloured faces; a text it cannot draw falls back to the pixel font); body text, descriptions and user text stay in Nunito. Scale: `appPixel()` (about 1.75 dp per art pixel, 1.25 dp for tab labels).
+- Titles, labels and buttons in the utility register use the dialogue font too (`PixelTitle`, `PixelLabel`: dark on light, white on dark and on coloured faces; a text it cannot draw falls back to the pixel font); body text, descriptions and user text are in Pokemon DP. Scale: `appPixel()` (about 1.75 dp per art pixel, 1.25 dp for tab labels).
 - The dialogue font (`PmdText`) is the only font of the world register: every line in a dialogue box uses it (long text is cut with "...", marks it lacks become look-alikes or `?`). It is not used in the utility register.
 - World register spacing: text starts 9 art pixels inside the fill (3 for the box's own inset, 6 for the line, where the cursor goes); rules and buttons run to the 3.
 

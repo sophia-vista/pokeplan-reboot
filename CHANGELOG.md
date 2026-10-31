@@ -9,6 +9,7 @@ release always has the newest merge).
 
 - The whole app uses the game's dialogue box as its card: cards, list rows, menu cards and the Home region cards are drawn with a thin version of the launcher's frame (a pale hairline, a blue band, an inner line, rounded corners) around the usual surface, in the light and the dark theme. Each module has its own colour: Plan's pages and cards are red, Care's green, and the menu cards wear their own tint (the coloured bar down the left edge of the Home cards is gone).
 - More of the Pokémon dialogue font in the app: screen titles, card titles, section labels, buttons and tab labels use it (dark on light pages, white on the dark theme and on coloured bars). A title it cannot draw (another alphabet, a mark it lacks) stays in the pixel font. Long text keeps its readable font, and the see-through black fill stays in the launcher.
+- Nunito is gone: the whole app is in the Pokémon DS-era pixel font (secondary text is 14 sp). Buttons are redrawn to match the boxes: stair-stepped corners, an outline, a one-pixel lip under a solid key that sinks when pressed, and an even inset around a centred label.
 
 ## 0.66.1
 

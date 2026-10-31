@@ -49,9 +49,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.Font
 import pokeplan.composeapp.generated.resources.Res
-import pokeplan.composeapp.generated.resources.nunito_bold
-import pokeplan.composeapp.generated.resources.nunito_regular
-import pokeplan.composeapp.generated.resources.nunito_semibold
 import pokeplan.composeapp.generated.resources.pokemon_dp
 import pokeplan.composeapp.generated.resources.pokemon_dp_bold
 
@@ -134,13 +131,13 @@ fun pixelFont(): FontFamily = FontFamily(
     Font(Res.font.pokemon_dp_bold, FontWeight.Bold),
 )
 
-/** Nunito (OFL): the soft, legible body font for everything read in bulk. */
+/** The body font: the same Pokémon DS-era font as the titles (the app has no other typeface), in its regular and bold. */
 @Composable
 fun bodyFont(): FontFamily = FontFamily(
-    Font(Res.font.nunito_regular, FontWeight.Normal),
-    Font(Res.font.nunito_semibold, FontWeight.Medium),
-    Font(Res.font.nunito_semibold, FontWeight.SemiBold),
-    Font(Res.font.nunito_bold, FontWeight.Bold),
+    Font(Res.font.pokemon_dp, FontWeight.Normal),
+    Font(Res.font.pokemon_dp, FontWeight.Medium),
+    Font(Res.font.pokemon_dp_bold, FontWeight.SemiBold),
+    Font(Res.font.pokemon_dp_bold, FontWeight.Bold),
 )
 
 /** [dark] picks the dark palette for everything below; the tokens in [Pixel] change with it. */
@@ -169,17 +166,17 @@ fun PixelTheme(dark: Boolean = false, content: @Composable () -> Unit) {
             )
         },
         typography = Typography(
-            // Four sizes only: 24 (screen titles, big numbers), 18 (section titles, buttons), 16 (body), 13 (secondary and
+            // Four sizes only: 24 (screen titles, big numbers), 18 (section titles, buttons), 16 (body), 14 (secondary and
             // labels). Hierarchy inside a size comes from the font, weight and colour. Pixel font for game headings, rank,
-            // stats and button labels; everything meant to be read in bulk is Nunito.
+            // stats and button labels; everything meant to be read in bulk is the same font in its regular weight.
             headlineMedium = style(display, 24, 32, FontWeight.Bold),
             titleLarge = style(display, 24, 32, FontWeight.Bold),
             titleMedium = style(display, 18, 24, FontWeight.Bold),
             titleSmall = style(display, 18, 24, FontWeight.Bold),
             bodyLarge = style(body, 16, 24),
-            bodyMedium = style(body, 13, 18, color = Pixel.InkSoft),
+            bodyMedium = style(body, 14, 20, color = Pixel.InkSoft),
             labelLarge = style(display, 18, 24, FontWeight.Bold),
-            labelMedium = style(body, 13, 18, FontWeight.Medium),
+            labelMedium = style(body, 14, 20, FontWeight.Medium),
         ),
     ) { content() }
 }
@@ -212,7 +209,6 @@ fun PixelButton(
     compact: Boolean = false,
 ) {
     val secondary = color == Pixel.InkSoft || color == Pixel.Ink || color == Pixel.Gray
-    val shape = RoundedCornerShape(if (compact) 12.dp else 16.dp)
     val face = when {
         !enabled -> Pixel.Shade
         secondary -> Pixel.Panel
@@ -226,25 +222,26 @@ fun PixelButton(
     val raised = enabled && !secondary
     val source = remember { MutableInteractionSource() }
     val pressed by source.collectIsPressedAsState()
-    val edge = if (raised) darker(color) else Color.Transparent
-    val corner = if (compact) 12.dp else 16.dp
+    // The outline: a darker shade of a solid key, the page line of a quiet one.
+    val outline = if (raised) darker(color) else Pixel.Border
     Box(
         modifier
             .defaultMinSize(minWidth = Spacing.Target, minHeight = Spacing.Target)
-            // A solid action key has a darker lower edge, like the buttons in the games; quiet buttons stay flat.
-            .drawBehind { if (raised) drawRoundRect(edge, Offset(0f, 3.dp.toPx()), Size(size.width, size.height), CornerRadius(corner.toPx())) }
-            // The key sinks 2 dp while it is held, like the games' buttons (instant: nothing animates).
-            .offset { IntOffset(0, if (pressed && raised) 2.dp.roundToPx() else 0) }
-            .padding(bottom = if (raised) 3.dp else 0.dp)
-            .clip(shape)
-            .background(face, shape)
-            .then(if (secondary && enabled) Modifier.border(BorderStroke(1.5.dp, Pixel.Border), shape) else Modifier)
-            .focusRing(shape)
+            // Drawn in whole 2 dp art pixels with stair-stepped corners like the dialogue boxes: an outline, the face, and a one-pixel lip under a solid key that is gone while it is held.
+            .drawBehind {
+                val p = 2.dp.toPx()
+                val lip = if (raised && !pressed) p else 0f
+                drawPath(stairRect(p, 0f, 0f, size.width, size.height, intArrayOf(1, 0)), outline)
+                drawPath(stairRect(p, p, p, size.width - p, size.height - p - lip, intArrayOf(0)), face)
+            }
+            .clip(DialogueShape)
+            .focusRing(DialogueShape)
             .clickable(interactionSource = source, indication = LocalIndication.current, enabled = enabled, role = Role.Button, onClick = onClick)
-            .padding(PaddingValues(horizontal = if (compact) 14.dp else 20.dp, vertical = 8.dp)),
+            .padding(PaddingValues(horizontal = if (compact) 12.dp else 20.dp, vertical = 10.dp)),
         contentAlignment = Alignment.Center,
     ) {
-        PixelLabel(text, label)
+        // The label sinks with the key while it is held.
+        PixelLabel(text, label, Modifier.offset { IntOffset(0, if (pressed && raised) 2.dp.roundToPx() else 0) })
     }
 }
 
