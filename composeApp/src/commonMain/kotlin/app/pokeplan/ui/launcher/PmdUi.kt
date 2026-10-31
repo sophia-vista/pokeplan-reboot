@@ -1,5 +1,6 @@
 package app.pokeplan.ui.launcher
 
+import app.pokeplan.ui.pressScale
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -22,7 +23,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import app.pokeplan.ui.entrance
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -79,7 +82,7 @@ internal enum class PmdTone(val edge: Color, val band: Color, val deep: Color) {
 internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = PmdTone.BLUE, inset: Int = 3, content: @Composable BoxScope.() -> Unit) {
     val density = LocalDensity.current.density
     Box(
-        modifier.drawBehind { pmdFrame(pixel, tone) }
+        modifier.entrance().drawBehind { pmdFrame(pixel, tone) }
             .padding(horizontal = ((SIDE + inset) * pixel / density).dp, vertical = ((TOP + inset) * pixel / density).dp),
         content = content,
     )
@@ -97,8 +100,9 @@ private fun DrawScope.pmdFrame(pixel: Int, tone: PmdTone) = dialogueFrame(pixel.
 internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, dim: Boolean = false, center: Boolean = false, onHold: (() -> Unit)? = null, onClick: () -> Unit) {
     val density = LocalDensity.current.density
     val ui = app.pokeplan.ui.LocalUiSound.current
+    val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Box(
-        modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).focusRing(RoundedCornerShape(4.dp), Color.White).combinedClickable(role = Role.Button, onLongClick = onHold?.let { h -> { ui(app.pokeplan.ui.Sfx.LONG_PRESS); h() } }, onClick = { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }).semantics(mergeDescendants = true) {},
+        modifier.pressScale(source).fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).focusRing(RoundedCornerShape(4.dp), Color.White).combinedClickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onLongClick = onHold?.let { h -> { ui(app.pokeplan.ui.Sfx.LONG_PRESS); h() } }, onClick = { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }).semantics(mergeDescendants = true) {},
         contentAlignment = if (center) Alignment.Center else Alignment.CenterStart,
     ) {
         if (selected) Canvas(Modifier.padding(start = (2 * pixel / density).dp).size((3 * pixel / density).dp, (5 * pixel / density).dp)) {

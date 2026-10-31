@@ -1,5 +1,8 @@
 package app.pokeplan.ui.launcher
 
+import kotlin.math.abs
+import androidx.compose.foundation.gestures.draggable
+import app.pokeplan.ui.pressScale
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -75,6 +78,7 @@ import app.pokeplan.app.ThemeMode
 import androidx.compose.foundation.layout.widthIn
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.entrance
 import app.pokeplan.ui.LocalUiSound
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.ItemIcon
@@ -117,6 +121,13 @@ interface LauncherHost {
 
 private val rowShape = RoundedCornerShape(14.dp)
 
+/** The list's position for a finger at [pulled] (0 open, 1 shut): past the open end it stretches a little and no more, like a rubber band. */
+private fun rubber(pulled: Float): Float = when {
+    pulled < 0f -> pulled / (1f - pulled * 4f) * 0.5f
+    pulled > 1f -> 1f
+    else -> pulled
+}
+
 /**
  * PokéLife as the phone's home screen: the home page (the buddy, today's tasks, a Focus button, pinned apps) on a Pokémon
  * pixel wallpaper and, one swipe or tap up, every app A to Z over that wallpaper blurred and darkened. It shows and starts
@@ -145,10 +156,19 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     // The app list slides in from the right: 1 is off the screen, 0 is in place. A drag from the edge moves it with the finger; letting go settles it.
     val reveal = remember { androidx.compose.animation.core.Animatable(1f) }
     var settle by remember { mutableStateOf(0) }
+    // How fast the finger was going when it let go (in widths per second, towards the open end negative): the list keeps gliding with it.
+    var release by remember { mutableStateOf<Float?>(null) }
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     LaunchedEffect(listOpen, settle) {
         val to = if (listOpen) 0f else 1f
-        if (data.settings.reduceMotion) reveal.snapTo(to) else reveal.animateTo(to, androidx.compose.animation.core.tween(220, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+        val velocity = release
+        release = null
+        when {
+            data.settings.reduceMotion -> reveal.snapTo(to)
+            // A flick keeps its speed and settles on a soft spring (a touch of give at the open end); a tap on a button glides on the house curve.
+            velocity != null -> reveal.animateTo(to, androidx.compose.animation.core.spring(dampingRatio = 0.82f, stiffness = 260f), initialVelocity = velocity)
+            else -> reveal.animateTo(to, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth))
+        }
     }
     var listHidden by remember { mutableStateOf(false) }
     // The list's own whoosh, up and down, but not when the launcher first shows.
@@ -169,13 +189,24 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 HomePage(model, apps, prefs, isDefault, host, pixel, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
                 // Drag in from the right edge: the app list follows the finger, and settles open or shut when it lets go.
                 val widthPx = maxWidth.value * LocalDensity.current.density
+                // Where the finger would have the list (past either end it keeps going, but the list stretches only a little: rubber).
+                var pulled by remember { mutableStateOf(1f) }
                 if (prefs.edgeDrag && !listOpen) Box(
-                    Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(24.dp).pointerInput(widthPx) {
-                        detectHorizontalDragGestures(
-                            onDragEnd = { listOpen = reveal.value < 0.5f; settle++ },
-                            onDragCancel = { listOpen = false; settle++ },
-                        ) { _, dx -> scope.launch { reveal.snapTo((reveal.value + dx / widthPx).coerceIn(0f, 1f)) } }
-                    },
+                    Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(24.dp).draggable(
+                        orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
+                        state = androidx.compose.foundation.gestures.rememberDraggableState { dx ->
+                            pulled += dx / widthPx
+                            scope.launch { reveal.snapTo(rubber(pulled)) }
+                        },
+                        onDragStarted = { pulled = reveal.value },
+                        onDragStopped = { velocity ->
+                            val perSecond = velocity / widthPx
+                            // Fast enough opens or shuts it whichever side of the middle it is on; slowly, the nearer end wins.
+                            listOpen = if (abs(perSecond) > 1.2f) perSecond < 0f else reveal.value < 0.5f
+                            release = perSecond
+                            settle++
+                        },
+                    ),
                 )
                 if (reveal.value < 1f) Box(Modifier.fillMaxSize().offset { IntOffset((reveal.value * widthPx).roundToInt(), 0) }) {
                     AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key }, onTown = { settingsOpen = true }, startHidden = listHidden, pixel = pixel)
@@ -254,8 +285,9 @@ private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPr
 private fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixel: Int, modifier: Modifier, onHold: () -> Unit) {
     val ui = LocalUiSound.current
     val density = LocalDensity.current.density
+    val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Column(
-        modifier.defaultMinSize(minHeight = 72.dp).focusRing(rowShape, Color.White).combinedClickable(role = Role.Button, onLongClick = { ui(Sfx.LONG_PRESS); onHold() }, onClick = { ui(Sfx.CONFIRM); host.open(app.key) })
+        modifier.pressScale(source).defaultMinSize(minHeight = 72.dp).focusRing(rowShape, Color.White).combinedClickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onLongClick = { ui(Sfx.LONG_PRESS); onHold() }, onClick = { ui(Sfx.CONFIRM); host.open(app.key) })
             .semantics(mergeDescendants = true) {}.padding(vertical = (2 * pixel / density).dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
@@ -331,14 +363,14 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
                     items(rows, key = { row -> when (row) { is ListRow.Header -> "#h${row.letter}"; is ListRow.Entry -> row.app.key } }) { row ->
                         when (row) {
                             is ListRow.Header -> PmdText(row.letter.toString(), pixel, Modifier.padding(top = Spacing.M, bottom = Spacing.XS, start = Spacing.XS), alpha = 0.7f)
-                            is ListRow.Entry -> Row(
-                                Modifier.fillMaxWidth().clip(rowShape).combinedClickable(role = Role.Button, onLongClick = { ui(Sfx.LONG_PRESS); onHold(row.app) }, onClick = { ui(Sfx.CONFIRM); host.open(row.app.key) })
+                            is ListRow.Entry -> { val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }; Row(
+                                Modifier.fillMaxWidth().pressScale(source).clip(rowShape).combinedClickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onLongClick = { ui(Sfx.LONG_PRESS); onHold(row.app) }, onClick = { ui(Sfx.CONFIRM); host.open(row.app.key) })
                                     .padding(vertical = Spacing.S, horizontal = Spacing.XS),
                                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
                             ) {
                                 AppIcon(host, row.app.key, 40.dp)
                                 PmdText(row.app.label, pixel, Modifier.weight(1f))
-                            }
+                            } }
                         }
                     }
                 }
@@ -395,7 +427,7 @@ internal fun AppSheet(app: LauncherApp, prefs: LauncherPrefs, onPrefs: (Launcher
     val hidden = app.key in prefs.hidden
     val none = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.4f)).clickable(indication = null, interactionSource = none, onClick = onClose)) {
-        Box(Modifier.align(Alignment.BottomCenter).safeDrawingPadding().padding(Spacing.L).clickable(indication = null, interactionSource = none) {}) {
+        Box(Modifier.align(Alignment.BottomCenter).entrance().safeDrawingPadding().padding(Spacing.L).clickable(indication = null, interactionSource = none) {}) {
             TextBox {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {

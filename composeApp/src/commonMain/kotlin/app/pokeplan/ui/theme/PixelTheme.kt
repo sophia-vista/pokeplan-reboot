@@ -1,5 +1,6 @@
 package app.pokeplan.ui.theme
 
+import app.pokeplan.ui.pressScale
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -232,6 +233,7 @@ fun PixelButton(
     val outline = if (raised) darker(color) else Pixel.Border
     Box(
         modifier
+            .pressScale(source)
             .defaultMinSize(minWidth = Spacing.Target, minHeight = Spacing.Target)
             // Drawn in whole 2 dp art pixels with stair-stepped corners like the dialogue boxes: an outline, the face, and a one-pixel lip under a solid key that is gone while it is held.
             .drawBehind {

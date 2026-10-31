@@ -127,7 +127,7 @@ fun BuddyStage(
     }
 
     // Species without an animation drift up and down very slowly so the scene is never frozen.
-    val drift by rememberInfiniteTransition().animateFloat(0f, 1f, infiniteRepeatable(tween(2_600, easing = FastOutSlowInEasing), RepeatMode.Reverse))
+    val drift by rememberInfiniteTransition().animateFloat(0f, 1f, infiniteRepeatable(tween(2_600, easing = app.pokeplan.ui.Ease.InOut), RepeatMode.Reverse))
     val bob = if (calm || resting) 0f else -3f * drift
 
     val shape = RoundedCornerShape(Spacing.CardRadius)

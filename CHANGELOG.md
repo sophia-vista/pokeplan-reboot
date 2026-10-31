@@ -11,6 +11,7 @@ release always has the newest merge).
 - Sound: Android plays the short sounds through a SoundPool, so a run of taps or the letter scroller no longer cuts itself off. The focus, task and routine notifications use the game's notification sound (their channels are renamed, so every install gets it).
 - Launcher: the town's Pokémon meet. Two that walk up to each other stop and react with the Mystery Dungeon status icons over their heads, a "?" and a "!" (a greeting), a red X and a "!" (a quarrel) or two "!" (both startled), with the matching emote sounds (at most one every few seconds). At night some of them lie down with a Zz over their heads. Reduce motion turns it all off.
 - The buddy has a Zz over its head while it sleeps through a focus session or a calm break.
+- Motion: one set of easing curves (`Ease` in `ui/Ease.kt`) replaces the default ones: smooth for almost everything, in-out for the idle loops. Every button, menu card, tab and launcher row shrinks to 98% while pressed. The launcher's dialogue boxes and sheets rise 6 dp as they fade in (no blur, which would smear the pixel art). The app list follows your finger with real physics: a flick keeps its speed and settles on a spring, and pulling past the open end stretches it a little and lets it spring back. All of it stops under Reduce motion.
 - Assets: `assets/status` (the status icons, cut by `tools/sprites/cut_status.py`) and 38 more sound effects (`tools/sprites/convert_pmd_sfx.py`).
 
 ## 0.69.0

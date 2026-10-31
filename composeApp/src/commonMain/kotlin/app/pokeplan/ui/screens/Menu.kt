@@ -1,5 +1,7 @@
 package app.pokeplan.ui.screens
 
+import androidx.compose.runtime.remember
+import app.pokeplan.ui.pressScale
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
@@ -73,12 +75,14 @@ fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
 @Composable
 private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false, onClick: () -> Unit) {
     val ui = app.pokeplan.ui.LocalUiSound.current
+    val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Box(
         modifier
+            .pressScale(source)
             .dialogueBox(tone = frameToneOf(entry.tint))
             .clip(menuShape)
             .focusRing(menuShape)
-            .clickable(role = Role.Button) { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }
+            .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button) { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }
             .padding(horizontal = Spacing.XL, vertical = Spacing.XL),
     ) {
         val picture = @Composable {
@@ -163,7 +167,7 @@ private fun screenTransition(step: Int?): ContentTransform {
     if (step == null) return EnterTransition.None togetherWith ExitTransition.None
     if (step == 0) return fadeIn(tween(FADE_MS)) togetherWith fadeOut(tween(FADE_MS))
     // A short slide, an eighth of the width, under a fade: enough to say which way, never a whole page sweeping past.
-    val slide = tween<IntOffset>(SLIDE_MS, easing = FastOutSlowInEasing)
+    val slide = tween<IntOffset>(SLIDE_MS, easing = app.pokeplan.ui.Ease.Smooth)
     val enter = slideInHorizontally(slide) { w -> step * w / 8 } + fadeIn(tween(SLIDE_MS))
     val exit = slideOutHorizontally(slide) { w -> -step * w / 8 } + fadeOut(tween(SLIDE_MS / 2))
     return enter togetherWith exit

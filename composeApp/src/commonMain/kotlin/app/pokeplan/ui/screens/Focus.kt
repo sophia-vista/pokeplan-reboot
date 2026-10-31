@@ -141,7 +141,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
 
     // A slow, small wobble so the egg feels alive while you set up (still when Reduce motion is on).
     val idle = rememberInfiniteTransition()
-    val tilt by idle.animateFloat(-2.5f, 2.5f, infiniteRepeatable(tween(1_800, easing = FastOutSlowInEasing), RepeatMode.Reverse))
+    val tilt by idle.animateFloat(-2.5f, 2.5f, infiniteRepeatable(tween(1_800, easing = app.pokeplan.ui.Ease.InOut), RepeatMode.Reverse))
     Column(
         Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M),
         verticalArrangement = Arrangement.spacedBy(Spacing.M),
