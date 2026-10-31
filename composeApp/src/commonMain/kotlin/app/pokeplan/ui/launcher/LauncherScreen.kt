@@ -214,10 +214,10 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                         },
                     ),
                 )
-                // The list comes into focus where it is (no sliding): it fades in, rises a few dp and its blur clears, following the finger or the spring.
+                // The list comes in from the right and into focus: a short glide (56 dp, not the whole width) while it fades in and its blur clears, following the finger or the spring.
                 val shown = (1f - reveal.value).coerceIn(0f, 1f)
                 if (reveal.value < 1f) Box(
-                    Modifier.fillMaxSize().graphicsLayer { alpha = shown; translationY = (1f - shown) * 8.dp.toPx() }.then(if (shown < 0.97f && !data.settings.reduceMotion) Modifier.blur(((1f - shown) * 10f).dp) else Modifier),
+                    Modifier.fillMaxSize().graphicsLayer { alpha = shown; translationX = (1f - shown) * 56.dp.toPx() }.then(if (shown < 0.97f && !data.settings.reduceMotion) Modifier.blur(((1f - shown) * 10f).dp) else Modifier),
                 ) {
                     AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key }, onTown = { settingsOpen = true }, startHidden = listHidden, pixel = pixel)
                 }
