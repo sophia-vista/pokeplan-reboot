@@ -68,6 +68,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.ThemeMode
+import androidx.compose.foundation.layout.widthIn
+import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.SceneImage
@@ -97,6 +99,8 @@ interface LauncherHost {
     fun uninstall(key: String)
     /** Opens Android's own settings page for choosing the home app. */
     fun openHomeSettings()
+    /** Opens a Pokémon's page in PokéLife. */
+    fun openPokemon(id: String)
     /** Opens PokéLife itself on [place] (Focus from the Focus button, Home from the buddy). */
     fun openApp(place: Place)
 }
@@ -110,7 +114,7 @@ private val rowShape = RoundedCornerShape(14.dp)
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, isDefault: Boolean, host: LauncherHost, homePresses: Int = 0) {
+fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, isDefault: Boolean, host: LauncherHost, homePresses: Int = 0, active: Boolean = true) {
     val data = model.data
     val dark = when (data.settings.theme) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
@@ -126,22 +130,24 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var listOpen by remember { mutableStateOf(false) }
     var sheetKey by remember { mutableStateOf<String?>(null) }
     var pickingTown by remember { mutableStateOf(false) }
+    var menuMon by remember { mutableStateOf<OwnedPokemon?>(null) }
     // The Home button always comes back to the home page.
     LaunchedEffect(homePresses) {
-        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false }
+        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null }
     }
     val sheetApp = sheetKey?.let { key -> apps.firstOrNull { it.key == key } }
     PixelTheme(dark) {
         CompositionLocalProvider(LocalReduceMotion provides data.settings.reduceMotion) {
             androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 val pixel = townScale(maxWidth.value * LocalDensity.current.density)
-                Town(model, prefs.scene, Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onLongPress = { pickingTown = true }) })
+                Town(model, prefs.scene, active, onMenu = { menuMon = it }, modifier = Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onLongPress = { pickingTown = true }) })
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
-                BackHandler(enabled = true) { if (pickingTown) pickingTown = false else if (sheetApp != null) sheetKey = null else listOpen = false }
+                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (sheetApp != null) sheetKey = null else listOpen = false }
                 HomePage(model, apps, prefs, isDefault, host, pixel, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
                 AnimatedVisibility(listOpen, enter = slideInVertically { it / 4 } + fadeIn(), exit = slideOutVertically { it / 4 } + fadeOut()) {
                     AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key }, onTown = { listOpen = false; pickingTown = true })
                 }
+                menuMon?.let { mon -> PokemonMenu(mon, mon.id == model.data.player.buddy?.id, pixel, onOpen = { host.openPokemon(mon.id); menuMon = null }, onBuddy = { model.store.setBuddy(mon.id); menuMon = null }, onClose = { menuMon = null }) }
                 if (pickingTown) TownPicker(prefs.scene, onPick = { onPrefs(prefs.withScene(it)); pickingTown = false }, onClose = { pickingTown = false })
                 if (sheetApp != null) AppSheet(sheetApp, prefs, onPrefs, onClose = { sheetKey = null }, host = host)
             }
@@ -409,6 +415,23 @@ private fun TownChoices(choices: List<Pair<String, String>>, current: String, on
                 }
             }
             if (row.size == 1) Box(Modifier.weight(1f))
+        }
+    }
+}
+
+/** Long-press a Pokémon in the town: its name and level, then what can be done with it, as a dialogue box. */
+@Composable
+internal fun PokemonMenu(mon: OwnedPokemon, isBuddy: Boolean, pixel: Int, onOpen: () -> Unit, onBuddy: () -> Unit, onClose: () -> Unit) {
+    val none = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    Box(Modifier.fillMaxSize().background(Pixel.Scrim.copy(alpha = 0.4f)).clickable(indication = null, interactionSource = none, onClick = onClose), contentAlignment = Alignment.Center) {
+        PmdBox(pixel, Modifier.padding(horizontal = Spacing.XXL).clickable(indication = null, interactionSource = none) {}) {
+            Column(Modifier.widthIn(min = 200.dp)) {
+                PmdMenuLine("${mon.nickname}  Lv. ${mon.level}", pixel, dim = true) {}
+                PmdRule(pixel)
+                PmdMenuLine("Open profile", pixel, onClick = onOpen)
+                if (!isBuddy) PmdMenuLine("Make buddy", pixel, onClick = onBuddy)
+                PmdMenuLine("Close", pixel, dim = true, onClick = onClose)
+            }
         }
     }
 }

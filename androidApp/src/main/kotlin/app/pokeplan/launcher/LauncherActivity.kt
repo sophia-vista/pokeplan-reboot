@@ -60,6 +60,9 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
 
     /** How many times Home was pressed while this was open: the screens go back to the home page on each. */
     private var homePresses by mutableIntStateOf(0)
+
+    /** False while the launcher is out of sight, so the town's Pokémon stop walking and the battery is left alone. */
+    private var active by mutableStateOf(true)
     private var reloading: Job? = null
     private val icons = object : LruCache<String, ImageBitmap>(256) {}
 
@@ -80,7 +83,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         val model = AppModel(store, cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this))
         launcherApps.registerCallback(packageChanges)
         reloadApps()
-        setContent { LauncherScreen(model, apps, prefs, ::savePrefs, isDefault, this, homePresses) }
+        setContent { LauncherScreen(model, apps, prefs, ::savePrefs, isDefault, this, homePresses, active) }
         keepFocusScreen()
     }
 
@@ -89,6 +92,16 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         // Home pressed while this is the home app: back to the home page, from the app list, a sheet or the town picker.
         homePresses++
         keepFocusScreen()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        active = true
+    }
+
+    override fun onStop() {
+        active = false
+        super.onStop()
     }
 
     override fun onResume() {
@@ -200,6 +213,10 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         } catch (e: Exception) {
             startActivity(Intent(Settings.ACTION_SETTINGS))
         }
+    }
+
+    override fun openPokemon(id: String) {
+        startActivity(Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, Place.COLLECTION.name).putExtra(MainActivity.EXTRA_POKEMON, id))
     }
 
     override fun openApp(place: Place) {

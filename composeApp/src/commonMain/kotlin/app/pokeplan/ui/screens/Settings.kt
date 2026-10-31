@@ -50,6 +50,8 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.display
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.NoticeTone
+import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.TextBox
 
@@ -317,7 +319,7 @@ private fun AccountCard(model: AppModel) {
                         label = { Text("Password") },
                         // Say the rule up front instead of leaving the buttons grey without a reason.
                         supportingText = { Text("At least 6 characters", style = MaterialTheme.typography.bodyMedium) })
-                    message?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) }
+                    message?.let { Notice(it, tone = NoticeTone.WARNING) }
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PixelButton("Sign in", {
                             busy = true; message = null
@@ -335,15 +337,16 @@ private fun AccountCard(model: AppModel) {
                 }
                 else -> {
                     Text("Signed in as ${account.email}", style = MaterialTheme.typography.bodyLarge)
-                    Text(
-                        when (val st = model.syncStatus) {
+                    val st = model.syncStatus
+                    Notice(
+                        when (st) {
                             SyncStatus.Syncing -> "Syncing..."
                             is SyncStatus.Offline -> "No connection. Your changes are kept and sent later."
                             is SyncStatus.Refused -> st.message
                             is SyncStatus.Conflict -> "This device and the cloud both have new progress."
                             else -> if (account.unsynced) "Changes waiting to sync" else "Everything is saved to the cloud."
                         },
-                        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                        tone = when (st) { is SyncStatus.Refused -> NoticeTone.DANGER; is SyncStatus.Offline, is SyncStatus.Conflict -> NoticeTone.WARNING; else -> NoticeTone.INFO },
                     )
                     val status = model.syncStatus
                     if (status is SyncStatus.Conflict) {
@@ -390,7 +393,7 @@ private fun CareCloudRow(model: AppModel) {
     }
     if (on && signedIn) {
         val status = model.careSyncStatus
-        Text(
+        Notice(
             when (status) {
                 SyncStatus.Syncing -> "Syncing Care..."
                 is SyncStatus.Offline -> "No connection. Care's changes are kept and sent later."
@@ -398,14 +401,14 @@ private fun CareCloudRow(model: AppModel) {
                 is SyncStatus.Conflict -> "This device and the cloud both have new Care entries."
                 else -> if (model.careData.cloud?.unsynced == true) "Care changes waiting to sync" else "Care is saved to the cloud."
             },
-            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            tone = when (status) { is SyncStatus.Refused -> NoticeTone.DANGER; is SyncStatus.Offline, is SyncStatus.Conflict -> NoticeTone.WARNING; else -> NoticeTone.INFO },
         )
         if (status is SyncStatus.Conflict) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelButton("This device", { scope.launch { careSync.resolve(keepThisDevice = true) } }, Modifier.weight(1f), Pixel.Blue, compact = true)
             PixelButton("The cloud", { scope.launch { careSync.resolve(keepThisDevice = false) } }, Modifier.weight(1f), Pixel.Green, compact = true)
         }
     }
-    message?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) }
+    message?.let { Notice(it, tone = NoticeTone.WARNING) }
 }
 
 /** One group of settings in its own card, under a small heading. */

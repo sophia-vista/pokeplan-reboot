@@ -42,13 +42,13 @@ change as any token, component or rule it describes. Approved in the 0.64.0 desi
 
 ## 6. Components and states
 Every interactive component has: default, pressed, focused, disabled.
-- **Pressed:** `PixelButton` sinks 2 dp (instant under Reduce motion); other controls use the platform ripple.
+- **Pressed:** `PixelButton` sinks 2 dp while held (it never animates); other controls use the platform ripple.
 - **Focused:** `Modifier.focusRing(shape)` draws a 2 dp `Pixel.Blue` ring (white in the world register). Put it before the `clickable`.
 - **Disabled:** `Pixel.Shade` face, `Pixel.InkSoft` label.
 - **Selected:** a filled `Pixel.Blue` chip with white text (`TabButton`), or a blue-bordered row with a radio dot (`ChoiceRow`); never black, never red.
 - **Empty:** `EmptyState(title, text, icon)`: one real item icon, one calm sentence, the first action. Never a bare blank page.
-- **Notice:** `Notice(tone, text, action)`: Info or Warning only, one sentence, one action; red only where data is at risk (docs/design.md, No shame).
-- **Loading:** no spinners. Sprites and scenes fade in over 150 ms (instant under Reduce motion); a still sprite or a quiet disc stands in meanwhile.
+- **Notice:** `Notice(text, tone)` (Info, Warning, Danger): one calm sentence saying what happened and what to do, announced politely by screen readers; Danger only where data could be lost (docs/design.md, No shame). Buttons that answer it sit under it.
+- **Loading:** no spinners. Scenes and towns fade in over 150 ms (`rememberFadeIn`; instant under Reduce motion); a quiet colour or disc stands in meanwhile.
 - **MenuGrid:** two columns; a lone last card spans the full width.
 
 ## 7. Icons
@@ -64,6 +64,7 @@ Storage Key, Pokédex = Great Ball, Bag = Seal Bag, Guardians = Master Ball.
 - Text scales to the system size; at 1.3x and up a button never sits beside text that no longer fits (it goes underneath).
 
 ## 9. Motion
+The dark page is a smooth gradient, not the dithered grain of the light one.
 Purposeful only: screen changes, a reward, a buddy reaction. Everything stops under Reduce motion. Anything that loops pauses when the
 screen is off or the app is in the background.
 

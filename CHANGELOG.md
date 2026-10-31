@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.66.0
+
+Polish and states (phase 3 of the design audit).
+- Buttons sink 2 dp while pressed. Scenes and the launcher's town fade in instead of popping in.
+- A calm `Notice` for the sync status and sign-in messages in Settings (blue for what is going on, amber for what needs a look, red only when something was not saved).
+- The dark page is a smooth gradient; the dithered grain is for the light page only.
+- Launcher: the town's Pokémon stop walking while the launcher is out of sight, and press and hold a Pokémon for a menu: its name and level, Open profile, and Make buddy.
+
 ## 0.65.0
 
 Tokens and consistency (phase 2 of the design audit).
