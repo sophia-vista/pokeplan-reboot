@@ -46,6 +46,10 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 
 /** What every widget needs from the launcher: the model, the apps, the prefs, the phone, the forecast and what to do on a tap. */
+/** How many grid cells wide and tall the widget being drawn is (the stacked layout is 4 wide and as tall as it needs): widgets with a short form use it to pick one. */
+internal class Cells(val w: Int, val h: Int) { val narrow get() = w < WidgetGrid.COLUMNS }
+internal val LocalCells = androidx.compose.runtime.staticCompositionLocalOf { Cells(WidgetGrid.COLUMNS, 99) }
+
 internal class WidgetEnv(
     val model: AppModel, val apps: List<LauncherApp>, val prefs: LauncherPrefs, val host: LauncherHost, val forecast: Forecast?, val pixel: Int,
     val today: TodayState, val mood: BuddyMood, val saver: Boolean, val editing: Boolean, val onPrefs: (LauncherPrefs) -> Unit, val onEdit: () -> Unit, val onDone: () -> Unit, val onAllApps: () -> Unit, val onFolders: () -> Unit, val onWidgets: () -> Unit, val onGear: () -> Unit, val onOpenFolder: (String) -> Unit, val onForecast: () -> Unit, val onHold: (LauncherApp) -> Unit,
@@ -154,10 +158,13 @@ private fun ClockWidget(env: WidgetEnv) {
         // The seconds tick in the model, so reading it keeps the minute right.
         env.model.now
         val now = env.model.store.now
+        val cells = LocalCells.current
+        val time = formatTime(now.hour, now.minute, if (env.prefs.showSeconds && !env.saver) now.second else null, env.prefs.hour12)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            PmdText("${formatDate(now.date, env.prefs.dateStyle)}   ${formatTime(now.hour, now.minute, if (env.prefs.showSeconds && !env.saver) now.second else null, env.prefs.hour12)}", env.pixel, gap)
+            // Narrower than the screen the date gives way to the time, and the battery to a wider place.
+            PmdText(if (cells.w >= 3) "${formatDate(now.date, env.prefs.dateStyle)}   $time" else time, env.pixel, gap)
             Box(Modifier.weight(1f))
-            battery?.let { PmdText((if (it.charging) "Charging " else if (env.saver) "Saver " else "Battery ") + it.percent, env.pixel, gap, alpha = 0.75f) }
+            if (cells.w >= 4) battery?.let { PmdText((if (it.charging) "Charging " else if (env.saver) "Saver " else "Battery ") + it.percent, env.pixel, gap, alpha = 0.75f) }
         }
     }
 }
@@ -185,11 +192,14 @@ private fun NavWidget(env: WidgetEnv) {
     val data = env.model.data
     if (!data.onboarded) return
     val running = data.focus != null
+    // Half the screen or less, or a short box, shows the pictures alone: the names would be cut off.
+    val cells = LocalCells.current
+    val labels = cells.w >= 4 && cells.h >= 3
     PmdBox(env.pixel, Modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth()) {
-            PmdNavItem("PokéLife", Tab.HOME.icon, env.pixel, Modifier.weight(1f)) { env.host.openApp(if (running) Place.FOCUS else Place.HOME) }
-            PmdNavItem("Pokémon", Tab.COLLECTION.icon, env.pixel, Modifier.weight(1f)) { env.host.openApp(Place.COLLECTION) }
-            PmdNavItem("Me", Tab.ME.icon, env.pixel, Modifier.weight(1f)) { env.host.openApp(Place.ME) }
+            PmdNavItem("PokéLife", Tab.HOME.icon, env.pixel, Modifier.weight(1f), showLabel = labels) { env.host.openApp(if (running) Place.FOCUS else Place.HOME) }
+            PmdNavItem("Pokémon", Tab.COLLECTION.icon, env.pixel, Modifier.weight(1f), showLabel = labels) { env.host.openApp(Place.COLLECTION) }
+            PmdNavItem("Me", Tab.ME.icon, env.pixel, Modifier.weight(1f), showLabel = labels) { env.host.openApp(Place.ME) }
         }
     }
 }
@@ -232,15 +242,24 @@ private fun AppsWidget(title: String, apps: List<LauncherApp>, env: WidgetEnv, s
 
 @Composable
 private fun ActionsWidget(env: WidgetEnv) {
+    val folders = if (env.prefs.folders.isEmpty()) "Folders" else "Folders ${env.prefs.folders.size}"
     PmdBox(env.pixel, Modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth()) {
-            Row(Modifier.fillMaxWidth()) {
-                PmdMenuLine(if (env.prefs.folders.isEmpty()) "Folders" else "Folders ${env.prefs.folders.size}", env.pixel, Modifier.weight(1f), center = true, onClick = env.onFolders)
-                PmdMenuLine("All apps", env.pixel, Modifier.weight(1f), center = true, onClick = env.onAllApps)
-            }
-            Row(Modifier.fillMaxWidth()) {
-                PmdMenuLine("Widgets", env.pixel, Modifier.weight(1f), center = true, onClick = env.onWidgets)
-                PmdMenuLine("Pokégear", env.pixel, Modifier.weight(1f), center = true, onClick = env.onGear)
+            if (LocalCells.current.narrow) {
+                // Half the screen: one button to a line, the names whole.
+                PmdMenuLine(folders, env.pixel, Modifier.fillMaxWidth(), center = true, onClick = env.onFolders)
+                PmdMenuLine("All apps", env.pixel, Modifier.fillMaxWidth(), center = true, onClick = env.onAllApps)
+                PmdMenuLine("Widgets", env.pixel, Modifier.fillMaxWidth(), center = true, onClick = env.onWidgets)
+                PmdMenuLine("Pokégear", env.pixel, Modifier.fillMaxWidth(), center = true, onClick = env.onGear)
+            } else {
+                Row(Modifier.fillMaxWidth()) {
+                    PmdMenuLine(folders, env.pixel, Modifier.weight(1f), center = true, onClick = env.onFolders)
+                    PmdMenuLine("All apps", env.pixel, Modifier.weight(1f), center = true, onClick = env.onAllApps)
+                }
+                Row(Modifier.fillMaxWidth()) {
+                    PmdMenuLine("Widgets", env.pixel, Modifier.weight(1f), center = true, onClick = env.onWidgets)
+                    PmdMenuLine("Pokégear", env.pixel, Modifier.weight(1f), center = true, onClick = env.onGear)
+                }
             }
         }
     }

@@ -157,8 +157,8 @@ data class LauncherPrefs(
     val pageSwipe: Boolean = true,
     /** Whether three quick taps send every Pokémon to the main screen. */
     val gatherTap: Boolean = true,
-    /** Draws the widgets on the grid (the new Smart Launcher style canvas) instead of the stacked list; a preview until editing on the grid is built (docs/launcher-widget-grid.md). */
-    val gridMode: Boolean = false,
+    /** Draws the widgets on the grid (the Smart Launcher style canvas: drag, resize, half widths) instead of the old stacked list; on since 0.93.0, and the switch in Launcher settings goes back to the list (docs/launcher-widget-grid.md). */
+    val gridMode: Boolean = true,
     /** Whether the box with the date, the time and the battery shows at the top of the home page. */
     val showClock: Boolean = true,
     /** The weather over the town: one of the Mystery Dungeon effects, or [Weather.LIVE], which follows the forecast for the chosen place (a clear sky without one). */
@@ -328,7 +328,7 @@ data class LauncherPrefs(
         if (!sundayFirst) append("K sundayFirst\t0\n")
         if (!pageSwipe) append("K pageSwipe\t0\n")
         if (!gatherTap) append("K gatherTap\t0\n")
-        if (gridMode) append("K gridMode\t1\n")
+        if (!gridMode) append("K gridMode\t0\n")
         if (!showClock) append("K showClock\t0\n")
         if (weather != Weather.LIVE) append("K weather\t").append(weather.name).append('\n')
         if (fahrenheit) append("K fahrenheit\t1\n")

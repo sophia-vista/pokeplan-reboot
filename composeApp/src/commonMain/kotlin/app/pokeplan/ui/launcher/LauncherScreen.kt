@@ -756,7 +756,7 @@ internal fun LauncherSettings(
                     PmdMenuLine("Drag in from the right for apps: ${onOff(prefs.edgeDrag)}", pixel, icon = "link-cord") { onPrefs(prefs.withEdgeDrag(!prefs.edgeDrag)) }
                     PmdMenuLine("Swipe across for Today: ${onOff(prefs.pageSwipe)}", pixel, icon = "lunar-wing") { onPrefs(prefs.withPageSwipe(!prefs.pageSwipe)) }
                     PmdMenuLine("Tap three times to gather: ${onOff(prefs.gatherTap)}", pixel, icon = "heart-scale") { onPrefs(prefs.withGatherTap(!prefs.gatherTap)) }
-                    PmdMenuLine("Widget grid (preview): ${onOff(prefs.gridMode)}", pixel, icon = "town-map") { onPrefs(prefs.withGridMode(!prefs.gridMode)) }
+                    PmdMenuLine("Widget grid (drag, resize): ${onOff(prefs.gridMode)}", pixel, icon = "town-map") { onPrefs(prefs.withGridMode(!prefs.gridMode)) }
                 }
             }
             PmdBox(pixel, Modifier.fillMaxWidth()) {
