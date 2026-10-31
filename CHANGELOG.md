@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.91.0
+
+- Launcher: the widget grid can be switched on as a preview (Launcher settings → "Widget grid (preview)", off by default). Home and Today then draw the same widgets in cells, 4 across and 40 dp tall rows, each clipped to its cells, with the town showing through the empty ones; your layout is converted with the same order. You cannot drag or resize on the grid yet (that is the next step, `docs/launcher-widget-grid.md`); switch it off to edit the stacked layout. A row is 40 dp (the model's limits were scaled to match) and the old Small, Medium and Large become a widget's height.
+
 ## 0.90.8
 
 - Groundwork for launcher widgets like Smart Launcher's (drag anywhere, resize): the grid model (`launcher/WidgetGrid.kt`: 4 columns, per-kind size limits, add, move with what is in the way going down, resize, and the old stacked layout laid out as a grid) and its saved form, with 12 tests. Nothing changes on screen yet; the plan and what is next are in `docs/launcher-widget-grid.md`.

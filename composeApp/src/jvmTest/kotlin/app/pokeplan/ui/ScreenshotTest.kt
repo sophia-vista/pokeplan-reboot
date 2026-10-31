@@ -867,6 +867,17 @@ class ScreenshotTest {
         render("launcher-night", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs, {}, isDefault = false, phone = fakeHost) }
     }
 
+    /** The launcher's home page on the widget grid (the preview), beside the stacked one: the same widgets, in cells. */
+    @Test
+    fun launcherGrid() {
+        val store = started()
+        listOf(1, 4, 7, 39, 52, 54, 94, 133, 143, 150, 151, 25, 175, 183).forEach { store.grantPokemon(it, "test") }
+        val model = AppModel(store)
+        val prefs = app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages").pin("pkg.Camera")
+        render("launcher-stacked", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs, {}, isDefault = true, phone = fakeHost) }
+        render("launcher-grid", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs.withGridMode(true), {}, isDefault = true, phone = fakeHost) }
+    }
+
     @Test
     fun launcherList() {
         val many = fakeApps + ('D'..'L').flatMap { c -> listOf(1, 2).map { app.pokeplan.ui.launcher.LauncherApp("pkg.$c$it", "$c app $it") } }

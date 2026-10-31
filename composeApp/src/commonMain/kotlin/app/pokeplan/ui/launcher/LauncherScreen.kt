@@ -315,9 +315,13 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                             .then(if (page.value < 0.02f) Modifier.pointerInput(prefs.gatherTap) { detectTapGestures(onTap = { countTap() }) } else Modifier),
                     )
                     Box(Modifier.fillMaxSize().graphicsLayer { translationX = -page.value * widthPx0 }) {
-                        HomePage(env, isDefault)
+                        if (prefs.gridMode) GridHomePage(env, when {
+                            !data.onboarded -> "Open PokéLife to meet your first Pokémon" to { host.openApp(Place.HOME) }
+                            !isDefault -> "Make PokéLife your home app" to host::openHomeSettings
+                            else -> null
+                        }) else HomePage(env, isDefault)
                     }
-                    if (page.value > 0.001f) Box(Modifier.fillMaxSize().graphicsLayer { translationX = (1f - page.value) * widthPx0 }) { TodayPage(env) }
+                    if (page.value > 0.001f) Box(Modifier.fillMaxSize().graphicsLayer { translationX = (1f - page.value) * widthPx0 }) { if (prefs.gridMode) GridTodayPage(env) else TodayPage(env) }
                 }
                 // Which page: two small blocks at the top, the current one lit, shown only while the page is moving (and a moment after).
                 val moving = page.isRunning || (page.value > 0.001f && page.value < 0.999f)
@@ -752,6 +756,7 @@ internal fun LauncherSettings(
                     PmdMenuLine("Drag in from the right for apps: ${onOff(prefs.edgeDrag)}", pixel, icon = "link-cord") { onPrefs(prefs.withEdgeDrag(!prefs.edgeDrag)) }
                     PmdMenuLine("Swipe across for Today: ${onOff(prefs.pageSwipe)}", pixel, icon = "lunar-wing") { onPrefs(prefs.withPageSwipe(!prefs.pageSwipe)) }
                     PmdMenuLine("Tap three times to gather: ${onOff(prefs.gatherTap)}", pixel, icon = "heart-scale") { onPrefs(prefs.withGatherTap(!prefs.gatherTap)) }
+                    PmdMenuLine("Widget grid (preview): ${onOff(prefs.gridMode)}", pixel, icon = "town-map") { onPrefs(prefs.withGridMode(!prefs.gridMode)) }
                 }
             }
             PmdBox(pixel, Modifier.fillMaxWidth()) {

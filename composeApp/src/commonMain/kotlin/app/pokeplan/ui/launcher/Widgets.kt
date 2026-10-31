@@ -123,7 +123,7 @@ internal fun EditToolbar(env: WidgetEnv, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun WidgetBody(slot: WidgetSlot, env: WidgetEnv) {
+internal fun WidgetBody(slot: WidgetSlot, env: WidgetEnv) {
     when (slot.kind) {
         WidgetKind.CLOCK -> ClockWidget(env)
         WidgetKind.STATUS -> StatusWidget(env)

@@ -157,6 +157,8 @@ data class LauncherPrefs(
     val pageSwipe: Boolean = true,
     /** Whether three quick taps send every Pokémon to the main screen. */
     val gatherTap: Boolean = true,
+    /** Draws the widgets on the grid (the new Smart Launcher style canvas) instead of the stacked list; a preview until editing on the grid is built (docs/launcher-widget-grid.md). */
+    val gridMode: Boolean = false,
     /** Whether the box with the date, the time and the battery shows at the top of the home page. */
     val showClock: Boolean = true,
     /** The weather over the town: one of the Mystery Dungeon effects, or [Weather.LIVE], which follows the forecast for the chosen place (a clear sky without one). */
@@ -239,6 +241,7 @@ data class LauncherPrefs(
     fun withSundayFirst(on: Boolean) = copy(sundayFirst = on)
     fun withPageSwipe(on: Boolean) = copy(pageSwipe = on)
     fun withGatherTap(on: Boolean) = copy(gatherTap = on)
+    fun withGridMode(on: Boolean) = copy(gridMode = on)
     fun withShowClock(on: Boolean) = copy(showClock = on)
     fun withPlace(place: GeoPlace?) = copy(place = place)
     fun withFahrenheit(on: Boolean) = copy(fahrenheit = on)
@@ -311,6 +314,7 @@ data class LauncherPrefs(
         if (!sundayFirst) append("K sundayFirst\t0\n")
         if (!pageSwipe) append("K pageSwipe\t0\n")
         if (!gatherTap) append("K gatherTap\t0\n")
+        if (gridMode) append("K gridMode\t1\n")
         if (!showClock) append("K showClock\t0\n")
         if (weather != Weather.LIVE) append("K weather\t").append(weather.name).append('\n')
         if (fahrenheit) append("K fahrenheit\t1\n")
@@ -336,7 +340,7 @@ data class LauncherPrefs(
                     'P' -> prefs.pin(rest)
                     'H' -> prefs.copy(hidden = prefs.hidden + rest)
                     'S' -> prefs.withScene(rest)
-                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.LIVE); "fahrenheit" -> prefs.withFahrenheit(f[1] != "0"); "pageSwipe" -> prefs.withPageSwipe(f[1] != "0"); "batterySaver" -> prefs.copy(batterySaver = BatterySaver.entries.firstOrNull { it.name == f[1] } ?: BatterySaver.AUTO); "dateStyle" -> prefs.copy(dateStyle = DateStyle.entries.firstOrNull { it.name == f[1] } ?: DateStyle.SHORT); "hour12" -> prefs.withHour12(f[1] != "0"); "showSeconds" -> prefs.withShowSeconds(f[1] != "0"); "sundayFirst" -> prefs.withSundayFirst(f[1] != "0"); "gatherTap" -> prefs.withGatherTap(f[1] != "0"); "showClock" -> prefs.withShowClock(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> prefs } }
+                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.LIVE); "fahrenheit" -> prefs.withFahrenheit(f[1] != "0"); "pageSwipe" -> prefs.withPageSwipe(f[1] != "0"); "batterySaver" -> prefs.copy(batterySaver = BatterySaver.entries.firstOrNull { it.name == f[1] } ?: BatterySaver.AUTO); "dateStyle" -> prefs.copy(dateStyle = DateStyle.entries.firstOrNull { it.name == f[1] } ?: DateStyle.SHORT); "hour12" -> prefs.withHour12(f[1] != "0"); "showSeconds" -> prefs.withShowSeconds(f[1] != "0"); "sundayFirst" -> prefs.withSundayFirst(f[1] != "0"); "gatherTap" -> prefs.withGatherTap(f[1] != "0"); "gridMode" -> prefs.withGridMode(f[1] != "0"); "showClock" -> prefs.withShowClock(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> prefs } }
                     'W' -> rest.split('\t').let { f -> val lat = f.getOrNull(1)?.toDoubleOrNull(); val lon = f.getOrNull(2)?.toDoubleOrNull(); if (f.size == 3 && f[0].isNotBlank() && lat != null && lon != null) prefs.withPlace(GeoPlace(f[0], lat, lon)) else prefs }
                     'L' -> rest.lastIndexOf('\t').let { at -> val count = if (at > 0) rest.substring(at + 1).toIntOrNull() else null; if (count != null && count > 0) prefs.copy(launches = prefs.launches + (rest.substring(0, at) to count)) else prefs }
                     'F' -> rest.split('\t').let { f -> if (f[0].isBlank()) prefs else prefs.addFolder(f[0]).let { made -> f.drop(1).filter { it.isNotBlank() }.fold(made) { acc, key -> acc.addToFolder(f[0].trim().take(Folder.MAX_NAME), key) } } }
