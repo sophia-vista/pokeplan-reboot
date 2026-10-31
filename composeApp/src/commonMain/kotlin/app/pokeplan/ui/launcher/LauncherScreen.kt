@@ -1,5 +1,6 @@
 package app.pokeplan.ui.launcher
 
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.setProgress
@@ -32,6 +33,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -127,6 +129,13 @@ interface LauncherHost {
 
 private val rowShape = RoundedCornerShape(14.dp)
 
+/** The page position (0 the town, 1 Today) for a finger at [x]: past either end it stretches a little and no more, like a rubber band. */
+private fun rubberPage(x: Float): Float = when {
+    x < 0f -> x / (1f - x * 4f) * 0.5f
+    x > 1f -> 1f + (x - 1f) / (1f + (x - 1f) * 4f) * 0.5f
+    else -> x
+}
+
 /** The list's position for a finger at [pulled] (0 open, 1 shut): past the open end it stretches a little and no more, like a rubber band. */
 private fun rubber(pulled: Float): Float = when {
     pulled < 0f -> pulled / (1f - pulled * 4f) * 0.5f
@@ -177,9 +186,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
         }
     }
     var listHidden by remember { mutableStateOf(false) }
-    // The list's whoosh when it opens (closing is silent), but not when the launcher first shows.
-    var listSeen by remember { mutableStateOf(false) }
-    LaunchedEffect(listOpen) { if (listSeen && listOpen) model.effect(Sfx.DRAWER_OPEN); listSeen = true }
     // The Home button always comes back to the home page.
     LaunchedEffect(homePresses) {
         if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false }
@@ -189,24 +195,43 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
         CompositionLocalProvider(LocalReduceMotion provides data.settings.reduceMotion, LocalUiSound provides model::tap) {
             androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 val pixel = townScale(maxWidth.value * LocalDensity.current.density)
-                // Two pages side by side: the town with its boxes, and Today (a calendar and the day's agenda and tasks). Swipe across, or press Home to come back.
-                val pages = androidx.compose.foundation.pager.rememberPagerState { 2 }
-                LaunchedEffect(homePresses) { if (homePresses > 0) pages.animateScrollToPage(0) }
-                androidx.compose.foundation.pager.HorizontalPager(pages, Modifier.fillMaxSize(), beyondViewportPageCount = 1) { page ->
-                    if (page == 0) Box(Modifier.fillMaxSize()) {
-                        Town(model, prefs.scene, active && prefs.walking && pages.currentPage == 0, onMenu = { menuMon = it }, size = prefs.townSize, weather = prefs.weather, modifier = Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onLongPress = { model.effect(Sfx.LONG_PRESS); pickingTown = true }) })
+                // Two pages side by side: the town with its boxes, and Today (a calendar and the day's agenda and tasks). The town is two screens wide, so its Pokémon can wander over to Today (but only on the main screen can they be touched or meet). Swipe across, or press Home to come back.
+                val widthPx0 = maxWidth.value * LocalDensity.current.density
+                val page = remember { androidx.compose.animation.core.Animatable(0f) }
+                LaunchedEffect(homePresses) { if (homePresses > 0) page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) }
+                Box(
+                    Modifier.fillMaxSize().draggable(
+                        orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
+                        state = androidx.compose.foundation.gestures.rememberDraggableState { dx -> scope.launch { page.snapTo(rubberPage(page.value - dx / widthPx0)) } },
+                        onDragStopped = { velocity ->
+                            val perSecond = -velocity / widthPx0
+                            val to = if (abs(perSecond) > 1.2f) (if (perSecond > 0f) 1f else 0f) else if (page.value > 0.5f) 1f else 0f
+                            scope.launch {
+                                if (data.settings.reduceMotion) page.snapTo(to) else page.animateTo(to, androidx.compose.animation.core.spring(dampingRatio = 0.85f, stiffness = 300f), initialVelocity = perSecond)
+                            }
+                        },
+                    ),
+                ) {
+                    Town(
+                        model, prefs.scene, active && prefs.walking, onMenu = { menuMon = it }, size = prefs.townSize, weather = prefs.weather, screens = 2, interactive = page.value < 0.02f,
+                        modifier = Modifier.layout { measurable, constraints ->
+                            // Two screens wide, placed from the left edge and slid by the page (a required size would be centred instead).
+                            val placeable = measurable.measure(androidx.compose.ui.unit.Constraints.fixed(constraints.maxWidth * 2, constraints.maxHeight))
+                            layout(constraints.maxWidth, constraints.maxHeight) { placeable.place((-page.value * constraints.maxWidth).roundToInt(), 0) }
+                        }
+                            .then(if (page.value < 0.02f) Modifier.pointerInput(Unit) { detectTapGestures(onLongPress = { pickingTown = true }) } else Modifier),
+                    )
+                    Box(Modifier.fillMaxSize().graphicsLayer { translationX = -page.value * widthPx0 }) {
                         HomePage(model, apps, prefs, isDefault, host, pixel, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
-                    } else Box(Modifier.fillMaxSize()) {
-                        TownBackdrop(prefs.scene, Modifier.fillMaxSize(), darkness = 0f)
-                        TodayPage(model, pixel)
                     }
+                    if (page.value > 0.001f) Box(Modifier.fillMaxSize().graphicsLayer { translationX = (1f - page.value) * widthPx0 }) { TodayPage(model, pixel) }
                 }
                 // Which page: two small blocks at the top, the current one lit.
                 Row(Modifier.align(Alignment.TopCenter).safeDrawingPadding().padding(top = Spacing.S), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    repeat(2) { i -> Box(Modifier.size(width = 16.dp, height = 4.dp).background(Color.White.copy(alpha = if (pages.currentPage == i) 0.9f else 0.3f))) }
+                    repeat(2) { i -> Box(Modifier.size(width = 16.dp, height = 4.dp).background(Color.White.copy(alpha = if ((page.value + 0.5f).toInt() == i) 0.9f else 0.3f))) }
                 }
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
-                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (pages.currentPage != 0) scope.launch { pages.animateScrollToPage(0) } }
+                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (page.value > 0.5f) scope.launch { page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } }
                 // Drag in from the right edge: the app list comes into focus with the finger, and settles open or shut when it lets go.
                 val widthPx = maxWidth.value * LocalDensity.current.density
                 // Where the finger would have the list (past either end it keeps going, but the list stretches only a little: rubber).
@@ -358,9 +383,9 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
         TownBackdrop(prefs.scene, Modifier.fillMaxSize().blur(24.dp))
         Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.62f)))
         Column(Modifier.fillMaxSize().safeDrawingPadding()) {
-            Row(Modifier.padding(horizontal = Spacing.Page, vertical = Spacing.S), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(Modifier.padding(start = Spacing.Page, end = Spacing.Page, top = Spacing.L, bottom = Spacing.M), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 Box(
-                    Modifier.weight(1f).height(Spacing.Target).background(Color.White.copy(alpha = 0.14f), rowShape).padding(horizontal = Spacing.M),
+                    Modifier.weight(1f).height(Spacing.Target).background(Color.White.copy(alpha = 0.14f), rowShape).padding(horizontal = Spacing.L),
                     contentAlignment = Alignment.CenterStart,
                 ) {
                     if (query.isEmpty()) Text("Search apps", style = MaterialTheme.typography.bodyLarge, color = soft)
@@ -376,21 +401,21 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
                     PmdText("Close", pixel)
                 }
             }
-            LazyRow(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = Spacing.Page), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            LazyRow(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = Spacing.Page, vertical = Spacing.XS), horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 item { Chip("All", "", category == null && !showHidden, pixel) { category = null; showHidden = false } }
                 items(categories) { (c, n) -> Chip(c.label, "$n", category == c && !showHidden, pixel, icon = c.icon) { category = c; showHidden = false } }
                 if (anyHidden) item { Chip("Hidden", "", showHidden, pixel) { showHidden = true; category = null } }
             }
             Box(Modifier.weight(1f).fillMaxWidth()) {
                 if (rows.isEmpty()) PmdText(if (query.isBlank()) "No apps here" else "No app matches " + query.trim(), pixel, Modifier.align(Alignment.Center), alpha = 0.7f)
-                LazyColumn(Modifier.fillMaxSize(), state = listState, contentPadding = PaddingValues(start = Spacing.Page, end = 40.dp, top = Spacing.S, bottom = Spacing.L)) {
+                LazyColumn(Modifier.fillMaxSize(), state = listState, contentPadding = PaddingValues(start = Spacing.Page, end = Spacing.Page + 32.dp, top = Spacing.M, bottom = Spacing.XXL)) {
                     items(rows, key = { row -> when (row) { is ListRow.Header -> "#h${row.letter}"; is ListRow.Entry -> row.app.key } }) { row ->
                         when (row) {
-                            is ListRow.Header -> PmdText(row.letter.toString(), pixel, Modifier.padding(top = Spacing.M, bottom = Spacing.XS, start = Spacing.XS), alpha = 0.7f)
+                            is ListRow.Header -> PmdText(row.letter.toString(), pixel, Modifier.padding(top = Spacing.XL, bottom = Spacing.S, start = Spacing.S), alpha = 0.7f)
                             is ListRow.Entry -> { val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }; Row(
                                 Modifier.fillMaxWidth().pressScale(source).clip(rowShape).combinedClickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onLongClick = { ui(Sfx.LONG_PRESS); onHold(row.app) }, onClick = { ui(Sfx.CONFIRM); host.open(row.app.key) })
-                                    .padding(vertical = Spacing.S, horizontal = Spacing.XS),
-                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
+                                    .padding(vertical = Spacing.M, horizontal = Spacing.S),
+                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.L),
                             ) {
                                 AppIcon(host, row.app.key, 40.dp)
                                 PmdText(row.app.label, pixel, Modifier.weight(1f))
@@ -411,8 +436,8 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
 private fun Chip(label: String, count: String, selected: Boolean, pixel: Int, icon: String? = null, onClick: () -> Unit) {
     val shape = RoundedCornerShape(50)
     Row(
-        Modifier.height(36.dp).clip(shape).background(if (selected) Color.White else Color.White.copy(alpha = 0.14f), shape)
-            .clickable(role = Role.Tab, onClick = onClick).padding(horizontal = Spacing.M),
+        Modifier.height(Spacing.Target).clip(shape).background(if (selected) Color.White else Color.White.copy(alpha = 0.14f), shape)
+            .clickable(role = Role.Tab, onClick = onClick).padding(horizontal = Spacing.L),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
     ) {
         if (icon != null) ItemIcon(icon, size = 20.dp, description = null)

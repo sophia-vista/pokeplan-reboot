@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.73.0
+
+- Sound: only the moments of the game make a sound now (an egg, a rank up, a berry, a focus session starting or ending, the lock when Home is pressed during focus, notifications). Taps, tabs, menu rows, the app list, pinning, long presses and the Pokémon's meetings are silent.
+- Launcher: the town is two screens wide. Its Pokémon wander over to the Today page and back, and can be touched, long-pressed and meet one another only on the main screen. The page swipe has its own momentum and rubber-band edges.
+- Launcher: the app list has more room: wider gaps between the search, the category chips and the list, full-height touch targets, and more space around each app.
+- Calendar: the month and year are centred.
+- Launcher: the Today page is dimmed less, so the Pokémon wandering behind it can be seen.
+
 ## 0.72.0
 
 - Launcher: weather over the town, from the real Mystery Dungeon effects: rain with splashes, snow, a blizzard, a sandstorm and the shadows of drifting clouds, set in the launcher settings (Weather). It is only a look, not the real weather, and it never takes a touch; it stands still with Reduce motion.

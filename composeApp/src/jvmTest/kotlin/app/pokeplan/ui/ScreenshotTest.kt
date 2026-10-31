@@ -684,6 +684,11 @@ class ScreenshotTest {
                 app.pokeplan.ui.launcher.LauncherScreen(AppModel(sky), fakeApps, app.pokeplan.ui.launcher.LauncherPrefs().copy(weather = weather), {}, isDefault = true, host = fakeHost)
             }
         }
+        // A phone's size and density (2.625), where a box's width is not a multiple of the pixel scale.
+        val phone = started().also { st -> listOf(1, 4, 25, 133, 150).forEach { st.grantPokemon(it, "test") } }
+        render("launcher-phone", width = 923, height = 1990, density = 2.625f) {
+            app.pokeplan.ui.launcher.LauncherScreen(AppModel(phone), fakeApps, app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages"), {}, isDefault = true, host = fakeHost)
+        }
         render("launcher-towns") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.TownPicker("meadow", {}, {}) } } }
         render("launcher-pokemon-menu") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.PokemonMenu(started().data.player.buddy!!, false, 2, {}, {}, {}) } } }
         render("launcher-settings") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.LauncherSettings(AppModel(started()), app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone"), {}, false, 2, 2, fakeHost, {}, {}, {}) } } }
