@@ -19,6 +19,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -115,7 +121,7 @@ fun ScreenHeader(
             else if (icon != null) ItemIcon(icon, size = 36.dp, description = null)
             Column(Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleLarge, color = Color.White, modifier = Modifier.semantics { heading() })
-                if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.9f))
+                if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Color.White)
             }
             trailing()
         }
@@ -170,6 +176,16 @@ fun StatChip(text: String, icon: @Composable () -> Unit, modifier: Modifier = Mo
 fun Modifier.quietClickable(enabled: Boolean = true, onClickLabel: String? = null, onClick: () -> Unit): Modifier =
     clickable(interactionSource = null, indication = null, enabled = enabled, onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
 
+/**
+ * A visible keyboard focus ring (2 dp, [color]) around [shape] while the control after it in the chain has focus. Put it
+ * just before the `clickable`, `selectable` or `toggleable`; touch users never see it.
+ */
+@Composable
+fun Modifier.focusRing(shape: Shape, color: Color = Pixel.Blue): Modifier {
+    var focused by remember { mutableStateOf(false) }
+    return this.onFocusChanged { focused = it.isFocused }.then(if (focused) Modifier.border(2.dp, color, shape) else Modifier)
+}
+
 /** A card row for a list item: [lead] at the left, [content] in the middle, [trail] at the right. */
 @Composable
 fun ListRow(
@@ -193,7 +209,7 @@ fun ListRow(
             .let {
                 when {
                     onClick == null -> it
-                    highlight -> it.clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
+                    highlight -> it.focusRing(shape).clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
                     else -> it.quietClickable(onClickLabel = onClickLabel, onClick = onClick)
                 }
             }
@@ -219,6 +235,7 @@ fun ToggleRow(label: String, on: Boolean, modifier: Modifier = Modifier, detail:
             .fillMaxWidth()
             .defaultMinSize(minHeight = Spacing.Target)
             .clip(RoundedCornerShape(Spacing.S))
+            .focusRing(RoundedCornerShape(Spacing.S))
             .toggleable(value = on, role = Role.Switch, onValueChange = onChange),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -252,6 +269,7 @@ fun ChoiceRow(selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modif
             .clip(shape)
             .background(if (selected) Pixel.Blue.copy(alpha = 0.10f) else Pixel.Panel, shape)
             .border(BorderStroke(if (selected) 2.dp else 1.dp, if (selected) Pixel.Blue else Pixel.Border), shape)
+            .focusRing(shape)
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .padding(horizontal = Spacing.M, vertical = Spacing.XS),
         verticalAlignment = Alignment.CenterVertically,

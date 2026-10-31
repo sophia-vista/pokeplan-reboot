@@ -75,7 +75,7 @@ object Pixel {
     /** `textSecondary` */
     val InkSoft: Color get() = if (dark) Color(0xFFA9AEC4) else Color(0xFF666B7E)
     /** `brandPrimary` */
-    val Red: Color get() = if (dark) Color(0xFFEC4C3E) else Color(0xFFE84436)
+    val Red: Color get() = if (dark) Color(0xFFEC4C3E) else Color(0xFFD23B2E)
     val RedDark = Color(0xFFB62A1C)
     /** `info` */
     val Blue: Color get() = if (dark) Color(0xFF4A89E8) else Color(0xFF2C6CCC)
@@ -90,6 +90,10 @@ object Pixel {
     /** A highlight for selected items and rewards. */
     val Yellow = Color(0xFFFFCB05)
     val Gray = Color(0xFF9AA1B5)
+    /** The cool tint laid over a scene at night (how dark is [app.pokeplan.app.BuddyScene.darkness]). */
+    val Night = Color(0xFF101C3C)
+    /** Under text that sits straight on a picture, and behind sheets. */
+    val Scrim = Color(0xFF000000)
 }
 
 /** The spacing scale (4 dp base) and shape of the brief. */
@@ -222,6 +226,7 @@ fun PixelButton(
             .clip(shape)
             .background(face, shape)
             .then(if (secondary && enabled) Modifier.border(BorderStroke(1.5.dp, Pixel.Border), shape) else Modifier)
+            .focusRing(shape)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(PaddingValues(horizontal = if (compact) 14.dp else 20.dp, vertical = 8.dp)),
         contentAlignment = Alignment.Center,
@@ -260,14 +265,14 @@ fun PixelBar(fraction: Float, modifier: Modifier = Modifier, color: Color = Pixe
  * where it adds the game feel; [label] is also read out by screen readers.
  */
 @Composable
-fun ExpBar(fraction: Float, label: String, modifier: Modifier = Modifier, tag: String = "EXP", color: Color = Pixel.Blue) {
+fun ExpBar(fraction: Float, label: String, modifier: Modifier = Modifier, tag: String = "EXP", color: Color = Pixel.Blue, tagColor: Color = Color.White) {
     val f = fraction.coerceIn(0f, 1f)
     androidx.compose.foundation.layout.Row(
         modifier.fillMaxWidth().semantics { contentDescription = label; progressBarRangeInfo = ProgressBarRangeInfo(f, 0f..1f) },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
     ) {
-        Text(tag, style = MaterialTheme.typography.labelMedium.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold), color = Pixel.Warning)
+        Text(tag, style = MaterialTheme.typography.labelMedium.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold), color = tagColor)
         Box(Modifier.weight(1f).height(14.dp).clip(RoundedCornerShape(7.dp)).background(Pixel.Outline).padding(2.dp)) {
             Box(Modifier.fillMaxWidth().height(10.dp).clip(RoundedCornerShape(5.dp)).background(Pixel.Shade))
             if (f > 0f) Box(Modifier.fillMaxWidth(f).height(10.dp).clip(RoundedCornerShape(5.dp)).background(color))

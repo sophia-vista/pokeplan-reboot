@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.64.0
+
+Accessibility, contrast and layout (phase 1 of the design audit, `docs/DESIGN_SYSTEM.md`).
+- The brand red is a little darker so white text on it passes AA (4.8:1); the rank bar's EXP tag and the header subtitles are now plain white (they were about 1.4:1 and 3.5:1).
+- Home's region cards no longer cut a long task title: at large text sizes the button goes under the words.
+- Keyboard users see where they are: every button, tab, row and choice shows a blue focus ring.
+- Wide windows: from 600 dp the page is a phone-width column in the middle; from 840 dp the four tabs move to a side rail.
+- Launcher: the dialogue text now has content descriptions (a screen reader reads each line), menu lines are 48 dp, an empty pinned list says how to pin, and All apps has a visible "Town" button for changing the town.
+
 ## 0.63.0
 
 - Launcher home: a clearer hierarchy, in three layers. A small strip at the top names your companion and its level on the left and the size of your collection on the right; the town fills the middle; one dialogue box by the thumb has today's task (with how many are left), a red Start focus button as the main action (green "Back to focus" while a session runs), then Plan, Care, Party and Pokémon, your pinned apps and All apps.

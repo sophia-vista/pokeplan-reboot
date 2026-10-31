@@ -2,6 +2,12 @@ package app.pokeplan.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import app.pokeplan.ui.theme.Spacing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.isSystemInDarkTheme
 import app.pokeplan.app.ThemeMode
 import androidx.compose.ui.graphics.Color
@@ -11,6 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.statusBars
@@ -330,6 +337,10 @@ fun App(
     }
 }
 
+/** The window width from which the tabs move to a side rail, and the width the page column never exceeds (design system: breakpoints). */
+private val EXPANDED_WIDTH = 840.dp
+private val CONTENT_MAX_WIDTH = 640.dp
+
 @Composable
 private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches: Flow<AppLaunch>?) {
     var selected by rememberSaveable { mutableStateOf(start.tab.name) }
@@ -350,40 +361,63 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
 
     // The red header colour continues under the status bar and the white tab bar under the system navigation bar, so the
     // system bars match the app instead of showing the cream page colour. The keyboard lifts the whole column.
-    Column(Modifier.fillMaxSize().imePadding()) {
-        Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).background(Pixel.Red))
-        Box(Modifier.weight(1f).fillMaxWidth()) {
-            // The bottom tabs crossfade; each keeps its scroll position while another is open.
-            ScreenSwitch(tab) { page ->
-                when (page) {
-                    Tab.HOME -> HomeScreen(model, go)
-                    Tab.MODULES -> ModulesScreen(model, focusTab) { id -> model.openPokemonId = id; go(Place.COLLECTION) }
-                    Tab.COLLECTION -> {
-                        val open = remember { model.openPokemonId }
-                        val party = remember { model.openParty }
-                        LaunchedEffect(Unit) { model.openPokemonId = null; model.openParty = false }
-                        CollectionScreen(model, startParty = party, startOpen = open)
+    // Wide windows (tablet, desktop, web) keep the page a phone-width column in the middle and move the tabs to a rail at the side.
+    BoxWithConstraints(Modifier.fillMaxSize().imePadding()) {
+        val rail = maxWidth >= EXPANDED_WIDTH
+        val page: @Composable (Modifier) -> Unit = { modifier ->
+            Column(modifier) {
+                Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).background(Pixel.Red))
+                Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+                    Box(Modifier.widthIn(max = CONTENT_MAX_WIDTH).fillMaxSize()) {
+                        // The tabs crossfade; each keeps its scroll position while another is open.
+                        ScreenSwitch(tab) { page ->
+                            when (page) {
+                                Tab.HOME -> HomeScreen(model, go)
+                                Tab.MODULES -> ModulesScreen(model, focusTab) { id -> model.openPokemonId = id; go(Place.COLLECTION) }
+                                Tab.COLLECTION -> {
+                                    val open = remember { model.openPokemonId }
+                                    val party = remember { model.openParty }
+                                    LaunchedEffect(Unit) { model.openPokemonId = null; model.openParty = false }
+                                    CollectionScreen(model, startParty = party, startOpen = open)
+                                }
+                                Tab.ME -> MeScreen(model)
+                            }
+                        }
+                        UndoBar(model, Modifier.align(Alignment.BottomCenter))
                     }
-                    Tab.ME -> MeScreen(model)
                 }
             }
-            UndoBar(model, Modifier.align(Alignment.BottomCenter))
         }
-        Column(Modifier.fillMaxWidth().background(Pixel.Panel).border(1.dp, Pixel.Border)) {
-            // The labels in one row cannot grow with the system text size without being cut off, so the tab bar's text
-            // scales up to 1.25x and its icons and touch targets carry the rest.
-            val density = LocalDensity.current
-            CompositionLocalProvider(LocalDensity provides Density(density.density, density.fontScale.coerceAtMost(1.25f))) {
-                Row(
-                    Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+        // The labels cannot grow with the system text size without being cut off, so the tab text scales up to 1.25x and
+        // its icons and touch targets carry the rest.
+        val density = LocalDensity.current
+        val navDensity = Density(density.density, density.fontScale.coerceAtMost(1.25f))
+        if (rail) Row(Modifier.fillMaxSize()) {
+            CompositionLocalProvider(LocalDensity provides navDensity) {
+                Column(
+                    Modifier.width(96.dp).fillMaxHeight().background(Pixel.Panel).border(1.dp, Pixel.Border)
+                        .windowInsetsPadding(WindowInsets.statusBars.union(WindowInsets.navigationBars)).padding(horizontal = Spacing.S, vertical = Spacing.M),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.S),
                 ) {
-                    Tab.entries.forEach { t ->
-                        NavButton(t.label, t.icon, selected = t == tab, onClick = { selected = t.name }, modifier = Modifier.weight(1f))
-                    }
+                    Tab.entries.forEach { t -> NavButton(t.label, t.icon, selected = t == tab, onClick = { selected = t.name }, modifier = Modifier.fillMaxWidth()) }
                 }
             }
-            Spacer(Modifier.fillMaxWidth().windowInsetsBottomHeight(WindowInsets.navigationBars))
+            page(Modifier.weight(1f).fillMaxHeight())
+        } else Column(Modifier.fillMaxSize()) {
+            page(Modifier.weight(1f).fillMaxWidth())
+            Column(Modifier.fillMaxWidth().background(Pixel.Panel).border(1.dp, Pixel.Border)) {
+                CompositionLocalProvider(LocalDensity provides navDensity) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = Spacing.S, vertical = Spacing.S),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
+                    ) {
+                        Tab.entries.forEach { t ->
+                            NavButton(t.label, t.icon, selected = t == tab, onClick = { selected = t.name }, modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+                Spacer(Modifier.fillMaxWidth().windowInsetsBottomHeight(WindowInsets.navigationBars))
+            }
         }
     }
     CutsceneHost(model)

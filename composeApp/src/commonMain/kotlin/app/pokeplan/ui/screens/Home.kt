@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Size
 import app.pokeplan.ui.SceneImage
 import app.pokeplan.ui.theme.RegionLook
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.BuddyReaction
 import app.pokeplan.app.BuddyScene
@@ -157,6 +158,17 @@ private fun RegionCard(
 /** A next step: what it is in words, and the one button that does it. */
 @Composable
 private fun StepRow(text: String, action: String?, color: Color = Pixel.Green, lead: @Composable () -> Unit = {}, onClick: () -> Unit = {}) {
+    // At large text sizes the words and the button do not fit side by side: the button goes under the words and nothing is cut off.
+    if (LocalDensity.current.fontScale > 1.3f) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                lead()
+                Text(text, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+            }
+            if (action != null) PixelButton(action, onClick, Modifier.fillMaxWidth(), color = color, compact = true)
+        }
+        return
+    }
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         lead()
         Text(text, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 3)
@@ -332,7 +344,7 @@ private fun RankProgress(points: Int) {
     val label = if (next == null) "Top rank" else "$next points to ${TrainerRank.names[rank + 1]}"
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         ExpBar(if (high == null) 1f else (points - low).toFloat() / (high - low), label, color = Pixel.Yellow)
-        Text(label, style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.9f))
+        Text(label, style = MaterialTheme.typography.labelMedium, color = Color.White)
     }
 }
 

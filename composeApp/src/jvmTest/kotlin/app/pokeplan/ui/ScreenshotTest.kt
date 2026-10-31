@@ -31,8 +31,8 @@ import kotlin.test.assertTrue
  */
 @OptIn(ExperimentalComposeUiApi::class)
 class ScreenshotTest {
-    private fun render(name: String, frames: Int = 60, fontScale: Float = 1f, height: Int = 1080, content: @Composable () -> Unit) {
-        val scene = ImageComposeScene(width = 540, height = height, density = Density(1.5f, fontScale)) { content() }
+    private fun render(name: String, frames: Int = 60, fontScale: Float = 1f, height: Int = 1080, width: Int = 540, density: Float = 1.5f, content: @Composable () -> Unit) {
+        val scene = ImageComposeScene(width = width, height = height, density = Density(density, fontScale)) { content() }
         var nanos = 0L
         // Sprites load asynchronously, so draw a few frames with a short wait between them.
         repeat(frames) {
@@ -684,5 +684,14 @@ class ScreenshotTest {
         store.changeSettings { it.copy(appBackground = "lush-prairie") }
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
         render("app-town-background") { App(storage, focusTab = true) }
+    }
+
+    /** Tablet and desktop widths: the page stays a phone-width column, and from 840 dp the tabs move to a rail. */
+    @Test
+    fun wideWindows() {
+        val store = started()
+        val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
+        render("wide-home-medium", width = 900, height = 700, density = 1f) { App(storage, focusTab = true) }
+        render("wide-home-expanded", width = 1280, height = 800, density = 1f) { App(storage, focusTab = true) }
     }
 }

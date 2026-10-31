@@ -39,6 +39,7 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.SceneImage
 import app.pokeplan.ui.SpriteAction
 import app.pokeplan.ui.orNull
+import app.pokeplan.ui.theme.Pixel
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
@@ -182,6 +183,6 @@ private fun TileTown(name: String, modifier: Modifier, darkness: Float) {
                 dstOffset = IntOffset(x * tile - shift, y * tile), dstSize = IntSize(tile, tile), filterQuality = FilterQuality.None,
             )
         }
-        if (darkness > 0f) drawRect(Color(0xFF101C3C).copy(alpha = darkness.coerceIn(0f, 1f)), Offset.Zero, Size(size.width, size.height))
+        if (darkness > 0f) drawRect(Pixel.Night.copy(alpha = darkness.coerceIn(0f, 1f)), Offset.Zero, Size(size.width, size.height))
     }
 }
