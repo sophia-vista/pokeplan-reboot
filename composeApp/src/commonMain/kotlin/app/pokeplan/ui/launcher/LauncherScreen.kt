@@ -1,5 +1,8 @@
 package app.pokeplan.ui.launcher
 
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.setProgress
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Slider
@@ -174,9 +177,9 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
         }
     }
     var listHidden by remember { mutableStateOf(false) }
-    // The list's own whoosh, up and down, but not when the launcher first shows.
+    // The list's whoosh when it opens (closing is silent), but not when the launcher first shows.
     var listSeen by remember { mutableStateOf(false) }
-    LaunchedEffect(listOpen) { if (listSeen) model.effect(if (listOpen) Sfx.DRAWER_OPEN else Sfx.DRAWER_CLOSE); listSeen = true }
+    LaunchedEffect(listOpen) { if (listSeen && listOpen) model.effect(Sfx.DRAWER_OPEN); listSeen = true }
     // The Home button always comes back to the home page.
     LaunchedEffect(homePresses) {
         if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false }
@@ -190,7 +193,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
                 BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else listOpen = false }
                 HomePage(model, apps, prefs, isDefault, host, pixel, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
-                // Drag in from the right edge: the app list follows the finger, and settles open or shut when it lets go.
+                // Drag in from the right edge: the app list comes into focus with the finger, and settles open or shut when it lets go.
                 val widthPx = maxWidth.value * LocalDensity.current.density
                 // Where the finger would have the list (past either end it keeps going, but the list stretches only a little: rubber).
                 var pulled by remember { mutableStateOf(1f) }
@@ -211,7 +214,11 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                         },
                     ),
                 )
-                if (reveal.value < 1f) Box(Modifier.fillMaxSize().offset { IntOffset((reveal.value * widthPx).roundToInt(), 0) }) {
+                // The list comes into focus where it is (no sliding): it fades in, rises a few dp and its blur clears, following the finger or the spring.
+                val shown = (1f - reveal.value).coerceIn(0f, 1f)
+                if (reveal.value < 1f) Box(
+                    Modifier.fillMaxSize().graphicsLayer { alpha = shown; translationY = (1f - shown) * 8.dp.toPx() }.then(if (shown < 0.97f && !data.settings.reduceMotion) Modifier.blur(((1f - shown) * 10f).dp) else Modifier),
+                ) {
                     AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key }, onTown = { settingsOpen = true }, startHidden = listHidden, pixel = pixel)
                 }
                 menuMon?.let { mon -> PokemonMenu(mon, mon.id == model.data.player.buddy?.id, pixel, onOpen = { host.openPokemon(mon.id); menuMon = null }, onBuddy = { model.store.setBuddy(mon.id); menuMon = null }, onClose = { menuMon = null }) }
@@ -546,7 +553,7 @@ internal fun LauncherSettings(
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.L, vertical = Spacing.M), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PmdBox(pixel, Modifier.fillMaxWidth()) {
                 Column {
-                    PmdMenuLine("‹ Back", pixel, onClick = onClose)
+                    PmdMenuLine("Back", pixel, onClick = onClose)
                     PmdRule(pixel)
                     PmdMenuLine("Launcher settings", pixel, dim = true) {}
                 }
@@ -574,23 +581,39 @@ internal fun LauncherSettings(
     }
 }
 
-/** A volume slider in the dialogue font, 0 to 100 in steps of 10; [onDone] fires when the finger lets go, so the new level can be heard. */
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * A volume control in the dialogue style: ten blocks you tap or drag across, 0 to 10 (the font has no % sign, so it says
+ * "7 of 10"). [onDone] fires when the finger lets go, so the new level can be heard. Its text and bar start and end where a
+ * menu line's text does, and the bar's row is a full [Spacing.Target] tall to hit.
+ */
 @Composable
 private fun PmdVolume(label: String, value: Int, pixel: Int, onChange: (Int) -> Unit, onDone: () -> Unit) {
     val density = LocalDensity.current.density
-    Column(Modifier.fillMaxWidth().padding(vertical = (2 * pixel / density).dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    val pad = pmdRowPad(pixel, density)
+    val level = (value / 10).coerceIn(0, 10)
+    var width by remember { mutableStateOf(1f) }
+    // A block at x sets that level; the first block again turns it to 0, so the sound can be switched off.
+    fun set(x: Float) {
+        val block = (x / width * 10).toInt().coerceIn(0, 9)
+        onChange((if (block == 0 && level == 1) 0 else block + 1) * 10)
+    }
+    Column(Modifier.fillMaxWidth().padding(vertical = Spacing.S)) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = pad), horizontalArrangement = Arrangement.SpaceBetween) {
             PmdText(label, pixel)
-            PmdText("$value%", pixel)
+            PmdText("$level of 10", pixel)
         }
-        val colors = SliderDefaults.colors(thumbColor = Color.White, activeTrackColor = Pixel.Red, inactiveTrackColor = Color.White.copy(alpha = 0.25f), activeTickColor = Color.Transparent, inactiveTickColor = Color.Transparent)
-        val interaction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-        Slider(
-            value = value / 100f, onValueChange = { onChange((it * 10).roundToInt() * 10) }, onValueChangeFinished = onDone, valueRange = 0f..1f, steps = 9,
-            colors = colors, interactionSource = interaction,
-            thumb = { SliderDefaults.Thumb(interaction, colors = colors, thumbSize = androidx.compose.ui.unit.DpSize(24.dp, 24.dp)) },
-            modifier = Modifier.semantics { contentDescription = "$label $value percent" },
-        )
+        Row(
+            Modifier.fillMaxWidth().height(Spacing.Target).padding(horizontal = pad).onSizeChanged { width = it.width.toFloat().coerceAtLeast(1f) }
+                .pointerInput(level) { detectTapGestures { set(it.x); onDone() } }
+                .pointerInput(Unit) { detectHorizontalDragGestures(onDragEnd = onDone, onDragCancel = onDone) { change, _ -> change.consume(); set(change.position.x) } }
+                .semantics {
+                    contentDescription = "$label $level of 10"
+                    progressBarRangeInfo = androidx.compose.ui.semantics.ProgressBarRangeInfo(level.toFloat(), 0f..10f, 9)
+                    setProgress { target -> onChange(target.toInt().coerceIn(0, 10) * 10); true }
+                },
+            horizontalArrangement = Arrangement.spacedBy((pixel / density).dp), verticalAlignment = Alignment.CenterVertically,
+        ) {
+            repeat(10) { i -> Box(Modifier.weight(1f).height((5 * pixel / density).dp).background(if (i < level) Pixel.Red else Color.White.copy(alpha = 0.25f))) }
+        }
     }
 }

@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.70.2
+
+- Launcher: the app list no longer slides in. It comes into focus where it is: it fades in, rises a few dp and its blur clears, following your finger when you drag in from the edge (a flick still keeps its speed and settles on a spring). Closing it is silent now.
+- Launcher settings: the sound volume is ten blocks you tap or drag across ("7 of 10", since the font has no % sign), lined up with the menu lines' text; the Back line has no stray arrow character.
+
 ## 0.70.1
 
 - Launcher: the Pokémon's "?" and "!" icons sit just over their heads (they floated far above them).
