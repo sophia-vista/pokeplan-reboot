@@ -5,6 +5,19 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.78.0
+
+- Launcher: more space between an app's icon and its name.
+- Launcher: the clock widget's date and time can be written your way (Launcher settings): the date as "Sat 31 Oct", "Saturday 31 October", "31 Oct 2026", "Oct 31" or "2026-10-31"; the time on a 24-hour or 12-hour clock, with or without seconds. The agenda's times follow the clock.
+- Launcher: the calendar's weeks start on Sunday (a setting switches to Monday).
+
+## 0.77.0
+
+- Launcher: hold any quiet part of a widget on the home screen (or the Today page) to edit the widgets right there. Each widget gets a bar: hold and drag it up or down to move it (past the last widget at the top it goes to the bottom of the page, and the other way), tap its size to change it (Small, Medium, Large), or Remove. Add widget and Done sit at the top. Swiping between pages is off while editing, and Back also finishes.
+- Launcher: sizes mean what fits each widget: Favorites, Often used and folders show one row of apps, two or all (the rest are counted); the calendar one week or the month; the agenda three lines, six or all; the forecast no days, three or four; an Android widget its own height times 1, 1.5 or 2.
+- Launcher: the Favorites widget has no label; folders and Often used have a small one instead of a tall title row with a rule.
+- Launcher: app icons are filled, not outlined: the whole pixel-cornered square is the icon's most common edge colour with the picture over it, so a rounded or see-through corner shows no gap.
+
 ## 0.76.0
 
 - Launcher: put another app's Android widget on the screen. Launcher settings → Widgets (or the new Widgets button in the App buttons widget) → Add a widget → "Android widget from another app" opens the phone's widget picker, then the widget's own set-up screen if it has one, and the widget appears where you added it (top or bottom of the home page, or the Today page) in a pixel frame. Remove drops it. The launcher is the widgets' host, so they update by themselves while it is in sight.

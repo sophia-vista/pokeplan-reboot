@@ -269,9 +269,10 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     override fun widgetLabel(id: Int): String? = widgetManager.getAppWidgetInfo(id)?.loadLabel(packageManager)
 
     @androidx.compose.runtime.Composable
-    override fun HostedWidget(id: Int, modifier: androidx.compose.ui.Modifier) {
+    override fun HostedWidget(id: Int, size: Int, modifier: androidx.compose.ui.Modifier) {
         val info = widgetManager.getAppWidgetInfo(id) ?: return
-        val height = (info.minHeight.coerceAtLeast(48)).coerceAtMost(420)
+        // Small is the height the widget asks for, medium one and a half times that, large twice.
+        val height = (info.minHeight.coerceAtLeast(48) * (1f + size.coerceIn(0, 2) / 2f)).toInt().coerceAtMost(640)
         androidx.compose.ui.viewinterop.AndroidView(
             factory = { context ->
                 widgetHost.createView(context, id, info).apply {

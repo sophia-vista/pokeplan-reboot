@@ -21,7 +21,8 @@ import kotlinx.datetime.Month
 internal fun TodayPage(env: WidgetEnv) {
     Box(Modifier.fillMaxSize().background(Pixel.Night.copy(alpha = 0.5f)).safeDrawingPadding()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = Spacing.Page, end = Spacing.Page, top = Spacing.XXL, bottom = Spacing.XL), verticalArrangement = Arrangement.spacedBy(Spacing.XL)) {
-            env.prefs.widgetsIn(WidgetArea.TODAY).forEach { slot -> LauncherWidget(slot, env) }
+            if (env.editing) EditToolbar(env)
+            env.prefs.widgetsIn(WidgetArea.TODAY).forEach { slot -> androidx.compose.runtime.key(slot.kind, slot.arg) { LauncherWidget(slot, env) } }
         }
     }
 }

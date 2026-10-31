@@ -14,11 +14,21 @@ enum class WidgetKind(val label: String) {
     CLOCK("Date and time"), STATUS("Companion"), NAV("Shortcuts"), PINNED("Favorites"), OFTEN("Often used"), FOLDER("Folder"),
     ACTIONS("App buttons"), CALENDAR("Calendar"), AGENDA("Agenda and tasks"), FORECAST("Forecast"),
     /** A widget from another app, hosted by the launcher; the slot's argument is its Android widget id. */
-    ANDROID("Android widget"),
+    ANDROID("Android widget");
+
+    /** Whether the widget has sizes: the apps widgets show 1, 2 or all rows, the calendar one week or the month, the agenda 3, 6 or all items, the forecast 0, 3 or 4 days, an Android widget its height times 1, 1.5 or 2. */
+    val resizable: Boolean get() = this in setOf(PINNED, OFTEN, FOLDER, CALENDAR, AGENDA, FORECAST, ANDROID)
 }
 
-/** One widget on a page: its [kind], in an [area], with a folder's name as [arg] for a folder widget. The order of the slots is the order on screen. */
-data class WidgetSlot(val area: WidgetArea, val kind: WidgetKind, val arg: String = "") {
+/** How much of itself a widget shows: a few rows, more, or everything. What that means depends on the widget (see [WidgetKind.resizable]). */
+enum class WidgetSize(val label: String) { SMALL("Small"), MEDIUM("Medium"), LARGE("Large");
+    fun next() = entries[(ordinal + 1) % entries.size]
+}
+
+/** One widget on a page: its [kind], in an [area], with a folder's name as [arg] for a folder widget, shown at a [size]. The order of the slots is the order on screen. */
+data class WidgetSlot(val area: WidgetArea, val kind: WidgetKind, val arg: String = "", val size: WidgetSize = WidgetSize.LARGE) {
+    /** The same widget whatever its size: the identity of a slot. */
+    fun sameAs(o: WidgetSlot) = area == o.area && kind == o.kind && arg == o.arg
     /** What to call it: a folder widget by its folder. */
     val title: String get() = if (kind == WidgetKind.FOLDER) arg else kind.label
 }
@@ -146,6 +156,14 @@ data class LauncherPrefs(
     val place: GeoPlace? = null,
     /** Whether temperatures show in degrees Fahrenheit (otherwise Celsius). */
     val fahrenheit: Boolean = false,
+    /** How the clock widget writes the date. */
+    val dateStyle: DateStyle = DateStyle.SHORT,
+    /** Whether the clock widget uses a 12-hour clock (AM and PM). */
+    val hour12: Boolean = false,
+    /** Whether the clock widget shows the seconds. */
+    val showSeconds: Boolean = false,
+    /** Whether the calendar widget's weeks start on Sunday (otherwise Monday). */
+    val sundayFirst: Boolean = true,
     /** The widgets, top to bottom in each area; null until the user changes them, which shows [defaultWidgets]. */
     val layout: List<WidgetSlot>? = null,
 ) {
@@ -157,26 +175,46 @@ data class LauncherPrefs(
     /** Adds a widget at the end of its area; a folder widget needs an existing folder, and no widget is added twice. */
     fun addWidget(slot: WidgetSlot): LauncherPrefs {
         if (slot.kind == WidgetKind.FOLDER && folders.none { it.name == slot.arg }) return this
-        if (widgets.contains(slot)) return this
+        if (widgets.any { it.sameAs(slot) }) return this
         return withWidgets(widgets + slot)
     }
 
-    fun removeWidget(slot: WidgetSlot): LauncherPrefs = withWidgets(widgets - slot)
+    fun removeWidget(slot: WidgetSlot): LauncherPrefs = withWidgets(widgets.filterNot { it.sameAs(slot) })
+
+    fun resizeWidget(slot: WidgetSlot, size: WidgetSize): LauncherPrefs = withWidgets(widgets.map { if (it.sameAs(slot)) it.copy(size = size) else it })
 
     /** Moves a widget one place up (-1) or down (+1) among the widgets of its area. */
     fun moveWidget(slot: WidgetSlot, by: Int): LauncherPrefs {
         val inArea = widgetsIn(slot.area)
-        val at = inArea.indexOf(slot)
+        val at = inArea.indexOfFirst { it.sameAs(slot) }
         val to = at + by
-        if (at < 0 || to !in inArea.indices) return this
-        val reordered = inArea.toMutableList().apply { removeAt(at); add(to, slot) }
+        if (at < 0) return this
+        if (to !in inArea.indices) return moveAcross(inArea[at], by)
+        val reordered = inArea.toMutableList().apply { val moved = removeAt(at); add(to, moved) }
         val queue = reordered.iterator()
         return withWidgets(widgets.map { if (it.area == slot.area) queue.next() else it })
+    }
+
+    /** Past the last widget at the top of the home page a widget goes to the bottom's first place, and past the first at the bottom to the top's last. The Today page is its own. */
+    private fun moveAcross(slot: WidgetSlot, by: Int): LauncherPrefs {
+        val to = when {
+            slot.area == WidgetArea.HOME_TOP && by > 0 -> WidgetArea.HOME_BOTTOM
+            slot.area == WidgetArea.HOME_BOTTOM && by < 0 -> WidgetArea.HOME_TOP
+            else -> return this
+        }
+        val rest = widgets.filterNot { it.sameAs(slot) }
+        val moved = slot.copy(area = to)
+        val at = if (to == WidgetArea.HOME_BOTTOM) rest.indexOfFirst { it.area == WidgetArea.HOME_BOTTOM }.let { if (it < 0) rest.size else it } else rest.indexOfLast { it.area == WidgetArea.HOME_TOP } + 1
+        return withWidgets(rest.toMutableList().apply { add(at, moved) })
     }
 
     fun withWalking(on: Boolean) = copy(walking = on)
     fun withShowStatus(on: Boolean) = copy(showStatus = on)
     fun withEdgeDrag(on: Boolean) = copy(edgeDrag = on)
+    fun nextDateStyle() = copy(dateStyle = dateStyle.next())
+    fun withHour12(on: Boolean) = copy(hour12 = on)
+    fun withShowSeconds(on: Boolean) = copy(showSeconds = on)
+    fun withSundayFirst(on: Boolean) = copy(sundayFirst = on)
     fun withPageSwipe(on: Boolean) = copy(pageSwipe = on)
     fun withGatherTap(on: Boolean) = copy(gatherTap = on)
     fun withShowClock(on: Boolean) = copy(showClock = on)
@@ -244,6 +282,10 @@ data class LauncherPrefs(
         if (townSize != 24) append("K townSize\t").append(townSize).append('\n')
         if (!showStatus) append("K showStatus\t0\n")
         if (!edgeDrag) append("K edgeDrag\t0\n")
+        if (dateStyle != DateStyle.SHORT) append("K dateStyle\t").append(dateStyle.name).append('\n')
+        if (hour12) append("K hour12\t1\n")
+        if (showSeconds) append("K showSeconds\t1\n")
+        if (!sundayFirst) append("K sundayFirst\t0\n")
         if (!pageSwipe) append("K pageSwipe\t0\n")
         if (!gatherTap) append("K gatherTap\t0\n")
         if (!showClock) append("K showClock\t0\n")
@@ -251,7 +293,7 @@ data class LauncherPrefs(
         if (fahrenheit) append("K fahrenheit\t1\n")
         place?.let { append("W ").append(it.name.replace('\t', ' ')).append('\t').append(it.latitude).append('\t').append(it.longitude).append('\n') }
         launches.entries.sortedBy { it.key }.forEach { (key, count) -> append("L ").append(key).append('\t').append(count).append('\n') }
-        layout?.let { l -> if (l.isEmpty()) append("G -\n") else l.forEach { append("G ").append(it.area.name).append('\t').append(it.kind.name).append('\t').append(it.arg.replace('\t', ' ')).append('\n') } }
+        layout?.let { l -> if (l.isEmpty()) append("G -\n") else l.forEach { append("G ").append(it.area.name).append('\t').append(it.kind.name).append('\t').append(it.arg.replace('\t', ' ')).append('\t').append(it.size.name).append('\n') } }
         folders.forEach { f -> append("F ").append(f.name.replace('\t', ' ')); f.apps.forEach { append('\t').append(it) }; append('\n') }
         pinned.forEach { append("P ").append(it).append('\n') }
         hidden.sorted().forEach { append("H ").append(it).append('\n') }
@@ -270,14 +312,14 @@ data class LauncherPrefs(
                     'P' -> prefs.pin(rest)
                     'H' -> prefs.copy(hidden = prefs.hidden + rest)
                     'S' -> prefs.withScene(rest)
-                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.LIVE); "fahrenheit" -> prefs.withFahrenheit(f[1] != "0"); "pageSwipe" -> prefs.withPageSwipe(f[1] != "0"); "gatherTap" -> prefs.withGatherTap(f[1] != "0"); "showClock" -> prefs.withShowClock(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> prefs } }
+                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.LIVE); "fahrenheit" -> prefs.withFahrenheit(f[1] != "0"); "pageSwipe" -> prefs.withPageSwipe(f[1] != "0"); "dateStyle" -> prefs.copy(dateStyle = DateStyle.entries.firstOrNull { it.name == f[1] } ?: DateStyle.SHORT); "hour12" -> prefs.withHour12(f[1] != "0"); "showSeconds" -> prefs.withShowSeconds(f[1] != "0"); "sundayFirst" -> prefs.withSundayFirst(f[1] != "0"); "gatherTap" -> prefs.withGatherTap(f[1] != "0"); "showClock" -> prefs.withShowClock(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> prefs } }
                     'W' -> rest.split('\t').let { f -> val lat = f.getOrNull(1)?.toDoubleOrNull(); val lon = f.getOrNull(2)?.toDoubleOrNull(); if (f.size == 3 && f[0].isNotBlank() && lat != null && lon != null) prefs.withPlace(GeoPlace(f[0], lat, lon)) else prefs }
                     'L' -> rest.lastIndexOf('\t').let { at -> val count = if (at > 0) rest.substring(at + 1).toIntOrNull() else null; if (count != null && count > 0) prefs.copy(launches = prefs.launches + (rest.substring(0, at) to count)) else prefs }
                     'F' -> rest.split('\t').let { f -> if (f[0].isBlank()) prefs else prefs.addFolder(f[0]).let { made -> f.drop(1).filter { it.isNotBlank() }.fold(made) { acc, key -> acc.addToFolder(f[0].trim().take(Folder.MAX_NAME), key) } } }
                     'G' -> if (rest == "-") prefs.copy(layout = prefs.layout ?: emptyList()) else rest.split('\t').let { f ->
                         val area = WidgetArea.entries.firstOrNull { it.name == f[0] }
                         val kind = f.getOrNull(1)?.let { n -> WidgetKind.entries.firstOrNull { it.name == n } }
-                        if (area == null || kind == null) prefs else prefs.copy(layout = (prefs.layout ?: emptyList()) + WidgetSlot(area, kind, f.getOrElse(2) { "" }))
+                        if (area == null || kind == null) prefs else prefs.copy(layout = (prefs.layout ?: emptyList()) + WidgetSlot(area, kind, f.getOrElse(2) { "" }, WidgetSize.entries.firstOrNull { it.name == f.getOrNull(3) } ?: WidgetSize.LARGE))
                     }
                     'I' -> rest.lastIndexOf('\t').let { at -> if (at > 0) prefs.withIcon(rest.substring(0, at), rest.substring(at + 1)) else prefs }
                     'M' -> {

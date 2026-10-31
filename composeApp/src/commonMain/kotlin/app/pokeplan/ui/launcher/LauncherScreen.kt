@@ -139,9 +139,9 @@ interface LauncherHost {
     suspend fun forecast(place: GeoPlace): Forecast? = null
     /** Places that match [query], for choosing where the forecast is for. */
     suspend fun searchPlaces(query: String): List<GeoPlace> = emptyList()
-    /** Shows another app's widget, by its Android widget id, at the width it is given. Only a phone can; elsewhere it shows nothing. */
+    /** Shows another app's widget, by its Android widget id, at the width it is given and a height of its own times 1, 1.5 or 2 for [size] 0, 1 or 2. Only a phone can; elsewhere it shows nothing. */
     @Composable
-    fun HostedWidget(id: Int, modifier: Modifier) {}
+    fun HostedWidget(id: Int, size: Int, modifier: Modifier) {}
     /** Asks the user to choose a widget from the installed apps; [onPicked] gets its id, or is not called if they cancel. */
     fun pickWidget(onPicked: (Int) -> Unit) {}
     /** Lets go of a widget's id when its slot is removed. */
@@ -209,6 +209,8 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var settingsOpen by remember { mutableStateOf(false) }
     var foldersOpen by remember { mutableStateOf(false) }
     var widgetsOpen by remember { mutableStateOf(false) }
+    // Editing the widgets on the screen (hold one): drag, resize, remove; page swipes are off meanwhile.
+    var editing by remember { mutableStateOf(false) }
     val todayState = remember { TodayState(model.store.today) }
     var folderName by remember { mutableStateOf<String?>(null) }
     var forecastOpen by remember { mutableStateOf(false) }
@@ -239,7 +241,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var listHidden by remember { mutableStateOf(false) }
     // The Home button always comes back to the home page.
     LaunchedEffect(homePresses) {
-        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false; foldersOpen = false; folderName = null; forecastOpen = false; placeOpen = false; widgetsOpen = false }
+        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false; foldersOpen = false; folderName = null; forecastOpen = false; placeOpen = false; widgetsOpen = false; editing = false }
     }
     val sheetApp = sheetKey?.let { key -> apps.firstOrNull { it.key == key } }
     PixelTheme(dark) {
@@ -247,7 +249,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
             androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 val pixel = townScale(maxWidth.value * LocalDensity.current.density)
                 val env = WidgetEnv(
-                    model, apps, prefs, host, forecast, pixel, todayState, onAllApps = { listOpen = true }, onFolders = { foldersOpen = true }, onWidgets = { widgetsOpen = true },
+                    model, apps, prefs, host, forecast, pixel, todayState, editing, onPrefs, onEdit = { editing = true }, onDone = { editing = false }, onAllApps = { listOpen = true }, onFolders = { foldersOpen = true }, onWidgets = { widgetsOpen = true; editing = false },
                     onOpenFolder = { folderName = it; foldersOpen = true }, onForecast = { forecastOpen = true }, onHold = { sheetKey = it.key },
                 )
                 // Two pages side by side: the town with its boxes, and Today (a calendar and the day's agenda and tasks). The town is two screens wide, so its Pokémon can wander over to Today (but only on the main screen can they be touched or meet). Swipe across, or press Home to come back.
@@ -256,7 +258,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 LaunchedEffect(homePresses) { if (homePresses > 0) page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) }
                 Box(
                     Modifier.fillMaxSize().pointerInput(prefs.gatherTap) { detectTapGestures(onTap = { countTap() }) }.draggable(
-                        enabled = prefs.pageSwipe,
+                        enabled = prefs.pageSwipe && !editing,
                         orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
                         state = androidx.compose.foundation.gestures.rememberDraggableState { dx -> scope.launch { page.snapTo(rubberPage(page.value - dx / widthPx0)) } },
                         onDragStopped = { velocity ->
@@ -291,7 +293,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     repeat(2) { i -> Box(Modifier.size(width = 16.dp, height = 4.dp).background(Color.White.copy(alpha = if ((page.value + 0.5f).toInt() == i) 0.9f else 0.3f))) }
                 }
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
-                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (placeOpen) placeOpen = false else if (widgetsOpen) widgetsOpen = false else if (forecastOpen) forecastOpen = false else if (folderName != null) folderName = null else if (foldersOpen) foldersOpen = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (page.value > 0.5f) scope.launch { page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } }
+                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (placeOpen) placeOpen = false else if (widgetsOpen) widgetsOpen = false else if (editing) editing = false else if (forecastOpen) forecastOpen = false else if (folderName != null) folderName = null else if (foldersOpen) foldersOpen = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (page.value > 0.5f) scope.launch { page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } }
                 // Drag in from the right edge: the app list comes into focus with the finger, and settles open or shut when it lets go.
                 val widthPx = maxWidth.value * LocalDensity.current.density
                 // Where the finger would have the list (past either end it keeps going, but the list stretches only a little: rubber).
@@ -349,7 +351,8 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
 private fun HomePage(env: WidgetEnv, isDefault: Boolean) {
     val data = env.model.data
     Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        env.prefs.widgetsIn(WidgetArea.HOME_TOP).forEach { LauncherWidget(it, env) }
+        if (env.editing) EditToolbar(env)
+        env.prefs.widgetsIn(WidgetArea.HOME_TOP).forEach { slot -> androidx.compose.runtime.key(slot.kind, slot.arg) { LauncherWidget(slot, env) } }
         // The bottom widgets sit at the foot of the screen, and scroll when they are more than fit.
         Box(Modifier.weight(1f).fillMaxWidth()) {
             Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -359,7 +362,7 @@ private fun HomePage(env: WidgetEnv, isDefault: Boolean) {
                     else -> null
                 }
                 if (note != null) PmdBox(env.pixel, Modifier.fillMaxWidth(), inset = 1) { PmdMenuLine(note.first, env.pixel, onClick = note.second) }
-                env.prefs.widgetsIn(WidgetArea.HOME_BOTTOM).forEach { LauncherWidget(it, env) }
+                env.prefs.widgetsIn(WidgetArea.HOME_BOTTOM).forEach { slot -> androidx.compose.runtime.key(slot.kind, slot.arg) { LauncherWidget(slot, env) } }
             }
         }
     }
@@ -378,7 +381,7 @@ internal fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixe
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
         if (item != null) ItemIcon(item, size = 40.dp, description = null) else AppIcon(host, app.key, 40.dp)
-        Box(Modifier.padding(top = (2 * pixel / density).dp).padding(horizontal = (1 * pixel / density).dp)) { PmdText(app.label, pixel) }
+        Box(Modifier.padding(top = Spacing.M).padding(horizontal = (1 * pixel / density).dp)) { PmdText(app.label, pixel) }
     }
 }
 
@@ -398,24 +401,38 @@ internal fun AppIcon(host: LauncherHost, key: String, size: androidx.compose.ui.
             val p = 2.dp.toPx()
             val w = this.size.width
             val h = this.size.height
-            val inner = stairRect(p, p, p, w - p, h - p, intArrayOf(0))
-            if (shown == null) drawPath(inner, Color.White.copy(alpha = 0.2f)) else clipPath(inner) { this@drawWithContent.drawContent() }
-            val ring = Path().apply { fillType = PathFillType.EvenOdd; addPath(stairRect(p, 0f, 0f, w, h, intArrayOf(1, 0))); addPath(inner) }
-            drawPath(ring, edge)
+            // The whole square, stair-stepped corners and all, is filled with the icon's own edge colour and the picture drawn over it, so nothing shows through a rounded or see-through corner and no line is left between the picture and its frame.
+            val square = stairRect(p, 0f, 0f, w, h, intArrayOf(1, 0))
+            if (shown == null) drawPath(square, Color.White.copy(alpha = 0.2f)) else {
+                drawPath(square, edge)
+                clipPath(square) { this@drawWithContent.drawContent() }
+            }
         },
     ) {
-        if (shown != null) Image(shown, contentDescription = null, modifier = Modifier.fillMaxSize().padding(2.dp), contentScale = androidx.compose.ui.layout.ContentScale.Crop)
+        if (shown != null) Image(shown, contentDescription = null, modifier = Modifier.fillMaxSize(), contentScale = androidx.compose.ui.layout.ContentScale.Crop)
     }
 }
 
-/** The average colour of the outermost ring of pixels of [image], ignoring transparent ones; white when there are none (an icon with a see-through edge). */
+/**
+ * The colour an icon's edge mostly is: the most common shade among the outermost ring of its pixels (shades within 1/16 of
+ * each other count as one, and see-through pixels are ignored), averaged; a quiet grey when too little of the edge is
+ * solid (an icon that is a shape on nothing).
+ */
 internal fun edgeColor(image: ImageBitmap): Color {
     val map = image.toPixelMap()
-    var r = 0f; var g = 0f; var b = 0f; var n = 0
-    fun add(c: Color) { if (c.alpha > 0.5f) { r += c.red; g += c.green; b += c.blue; n++ } }
+    val buckets = HashMap<Int, IntArray>()
+    var seen = 0
+    fun add(c: Color) {
+        if (c.alpha < 0.5f) return
+        seen++
+        val key = ((c.red * 15).toInt() shl 8) or ((c.green * 15).toInt() shl 4) or (c.blue * 15).toInt()
+        val sum = buckets.getOrPut(key) { IntArray(4) }
+        sum[0] += (c.red * 255).toInt(); sum[1] += (c.green * 255).toInt(); sum[2] += (c.blue * 255).toInt(); sum[3]++
+    }
     for (x in 0 until map.width) { add(map[x, 0]); add(map[x, map.height - 1]) }
     for (y in 1 until map.height - 1) { add(map[0, y]); add(map[map.width - 1, y]) }
-    return if (n < (map.width + map.height)) Color.White.copy(alpha = 0.9f) else Color(r / n, g / n, b / n)
+    val top = buckets.values.maxByOrNull { it[3] }
+    return if (top == null || seen < (map.width + map.height) / 2) Color(0xFF3A3A44) else Color(top[0] / top[3] / 255f, top[1] / top[3] / 255f, top[2] / top[3] / 255f)
 }
 
 private sealed interface ListRow {
@@ -682,6 +699,10 @@ internal fun LauncherSettings(
                     PmdMenuLine("Weather: ${prefs.weather.label}", pixel) { onPrefs(prefs.nextWeather()) }
                     PmdMenuLine("Pokémon walk about: ${onOff(prefs.walking)}", pixel) { onPrefs(prefs.withWalking(!prefs.walking)) }
                     PmdMenuLine("Widgets: ${prefs.widgets.size}", pixel, onClick = onWidgets)
+                    PmdMenuLine("Date: ${prefs.dateStyle.label}", pixel) { onPrefs(prefs.nextDateStyle()) }
+                    PmdMenuLine("Clock: ${if (prefs.hour12) "12 hour" else "24 hour"}", pixel) { onPrefs(prefs.withHour12(!prefs.hour12)) }
+                    PmdMenuLine("Seconds: ${onOff(prefs.showSeconds)}", pixel) { onPrefs(prefs.withShowSeconds(!prefs.showSeconds)) }
+                    PmdMenuLine("Calendar weeks start on ${if (prefs.sundayFirst) "Sunday" else "Monday"}", pixel) { onPrefs(prefs.withSundayFirst(!prefs.sundayFirst)) }
                 }
             }
             PmdBox(pixel, Modifier.fillMaxWidth()) {
