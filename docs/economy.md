@@ -194,3 +194,7 @@ Found while writing this down; each is its own change, none is in this rules ver
 - **Trial evolutions** can never happen: nothing records a completed trial.
 - **Stack caps are uneven:** transfers, the focus berry and the weekly review berry add without the cap; the server's gift caps every item at 9,999, the app caps non-candies at 999.
 - **Who decides.** The app computes every reward itself and the server checks the snapshot on sync (points never drop, the party and Guardians fit, column ranges). The server's `effort`, `task` and `achievement` kinds exist and are tested but no app calls them yet. Moving rewards to them (and adding the daily caps) is the step before a public release (`supabase/README.md`, Known limits).
+
+## World (0.83.1)
+
+World pays through `AppData.world` and the Bag only, not the server reward engine, so `RewardRules.VERSION` is unchanged. Sources: per floor Exploration XP (`XP_BASE` + floor), Poké (5 + 2 × floor + 0 to 4), a berry (70%), a treasure box (6%) and a wild find (3%); a milestone (Rare Candies and Poké) once per dungeon floor, never repeated. The only sink is rank. Floors take `baseFloorSeconds / (1 + power / 100)` (never under a quarter of it), at most 12 hours of away time counts per open. Numbers and pacing (about 1 find a day, Gold in about 4 weeks, Platinum in about 3 months at two opens a day): `docs/world-economy-report.md`, regenerate with `./gradlew :world-core:simulateWorldEconomy` after changing any World number. All *(tune)*; Poké has no sink yet, so it only piles up.

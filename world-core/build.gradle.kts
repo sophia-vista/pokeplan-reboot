@@ -26,3 +26,13 @@ kotlin {
         }
     }
 }
+
+// Plays teams through the dungeon simulation and writes docs/world-economy-report.md.
+tasks.register<JavaExec>("simulateWorldEconomy") {
+    group = "tools"
+    val main = kotlin.targets.getByName("jvm").compilations.getByName("main")
+    dependsOn(main.compileTaskProvider)
+    classpath = files(main.output.allOutputs, main.runtimeDependencyFiles)
+    mainClass.set("app.pokeplan.world.tools.WorldEconomySimulatorKt")
+    args(rootProject.file("docs/world-economy-report.md").absolutePath)
+}

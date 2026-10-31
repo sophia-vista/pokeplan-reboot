@@ -41,11 +41,11 @@ object WorldSim {
     const val XP_BASE = 4
 
     /** The chance a floor shows a wild Pokémon that joins the finds, in percent. *(tune)* */
-    const val FIND_PERCENT = 6
+    const val FIND_PERCENT = 3
 
     /** The chance a floor has a berry, and the chance of a treasure box, in percent. *(tune)* */
     const val BERRY_PERCENT = 70
-    const val TREASURE_PERCENT = 9
+    const val TREASURE_PERCENT = 6
 
     /** A team's power: the sum of its members' levels, with 20% more for each member of a type the dungeon favors. */
     fun power(members: List<OwnedPokemon>, dungeon: DungeonDef): Double =

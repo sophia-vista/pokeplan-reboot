@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.83.1
+
+- World economy simulation (`./gradlew :world-core:simulateWorldEconomy` writes `docs/world-economy-report.md`). The first guesses paid far too fast (a floor every 1 to 5 minutes, 20 to 50 Pokémon found a day on a team that stays out, Diamond rank in 23 days), so floors now take 6 times as long (30, 48 and 72 minutes at base), the find chance is 3% and the treasure chance 6%. A typical player (two opens a day) now gets roughly 1 find a day, Gold in about 4 weeks and Platinum in about 3 months.
+
 ## 0.83.0
 
 - World, the dungeon game (design: `docs/world.md`; not the same as the Explore module in the ecosystem plan): a new card in Modules. Send up to two expedition teams of up to four Pokémon each into Tiny Woods, Thunderwave Cave or Mt. Steel (the last needs Bronze rank). Teams climb the floors on their own, while the app is closed too (up to 12 hours away at once), and settle exactly as if you had stayed. They bring back berries, Poké, treasure boxes and Exploration Finds: ordinary Pokémon you recruit into your collection (the same persistent Pokémon as any other, never a legendary or mythical). Pokémon that suit a dungeon's types explore it faster. Rank (Normal to Diamond) opens dungeons and more teams; the story chapters are data for later.
