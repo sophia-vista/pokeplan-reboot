@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.83.0
+
+- World, the dungeon game (design: `docs/world.md`; not the same as the Explore module in the ecosystem plan): a new card in Modules. Send up to two expedition teams of up to four Pokémon each into Tiny Woods, Thunderwave Cave or Mt. Steel (the last needs Bronze rank). Teams climb the floors on their own, while the app is closed too (up to 12 hours away at once), and settle exactly as if you had stayed. They bring back berries, Poké, treasure boxes and Exploration Finds: ordinary Pokémon you recruit into your collection (the same persistent Pokémon as any other, never a legendary or mythical). Pokémon that suit a dungeon's types explore it faster. Rank (Normal to Diamond) opens dungeons and more teams; the story chapters are data for later.
+- World screens: the World map (dungeons, depth, clears, Send team), Expeditions (choose a team, floor progress, Recall), Camp (the Pokémon you recruited and the species found) and Finds and Bag (recruit, move items to the Bag, open treasure boxes). The numbers (floor times, find chance, rank points) are first guesses to tune.
+- Not yet: missions and rescues, skills, facilities and research, the quest engine, the Guardian.
+
 ## 0.82.0
 
 - Buttons are redrawn as flat pixel keys (the "Outline" option): a stair-cornered outline in the key's colour on the panel colour, the label in the same colour, and while held the key fills with its colour and the label turns white. They are smaller: 38 dp tall (32 dp compact) with the same 48 dp touch target and a smaller label. Quiet buttons have a grey outline and an ink label; a disabled one has a faint outline and a dim label; a new `loading` state shows three blinking pixels and cannot be tapped.

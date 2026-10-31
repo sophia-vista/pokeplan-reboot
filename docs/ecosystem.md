@@ -345,6 +345,10 @@ the parser matches the real format.
 13. **Explore, then Finance** *(blueprint phase 6)*, with strong privacy and security; **Connect** and the rest of the companion layer (Quick Settings tiles, lock screen where supported, sharing, a wearable study for the Huawei Watch Fit 4 Pro, more wallpaper environments) *(phase 7)*.
 14. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
 
+### World: the dungeon game *(owner, 0.83.0; spec: docs/world.md)*
+
+World is the Pokémon Mystery Dungeon style dungeon game, the game-like module of PokéLife: expedition teams explore dungeons on their own (offline too), bring back items, treasure and Pokémon to recruit (Exploration Finds), and raise an exploration rank; a story ends in a Guardian. It is not the same thing as the **Explore** module above (trips, places and a travel journal), which keeps its name. **Built in 0.83.0 (P0 core and screens):** `world-core` (three dungeons, teams, a deterministic simulation so offline progress equals staying, finds, items, treasure, rank, the story chapters as data), its save in `AppData.world`, and the Modules → World screens (World map, Expeditions, Camp, Finds and Bag). Numbers are starting values to tune (floor time, find chance, rank points). Not yet: missions and rescues, skills, camps as places, facilities, research, equipment, the quest engine hooks and the Guardian fight.
+
 ### Ideas parked
 
 - **Personality quiz** *(owner, 0.31.0)*: dropped from PokéPlan's onboarding (a starter picker is enough there). It may suit another module, for example Care (a gentle "how are you, really" check that suggests a buddy or a routine) or the standalone dungeon game, where the Mystery Dungeon quiz is at home.

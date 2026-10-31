@@ -1,5 +1,6 @@
 package app.pokeplan.app
 
+import app.pokeplan.world.WorldData
 import app.pokeplan.core.dex.Region
 import app.pokeplan.core.reward.PlayerState
 import app.pokeplan.core.reward.Reward
@@ -72,6 +73,8 @@ data class AppData(
     val lastSeenVersion: String = "0.1.0",
     /** Pokémon the player starred: they cannot be transferred by accident. Stays on this device's save. */
     val favorites: Set<String> = emptySet(),
+    /** The World game's save: teams, expeditions, finds, items and rank (docs/world.md). Client-side; stays on this device's save. */
+    val world: WorldData = WorldData(),
     /** The Pokémon the player chose to help each Pokégear tool, by tool name to Pokémon id. A tool with none uses the best Pokémon owned who can help, else its loan. Cosmetic; stays on this device's save. */
     val gearHelpers: Map<String, String> = emptyMap(),
     /** The Pokégear tools that have a loaner from a Ranger request (it helps until an owned Pokémon can). Cosmetic; stays on this device's save. */
@@ -198,6 +201,7 @@ data class Origin(val how: How, val region: Region? = null) {
         CARE_EGG("Hatched from a Care Egg"),
         BEFRIENDED("Befriended on a Care visit"),
         QUEST("Earned on a quest"),
+        WORLD("Found in the World"),
     }
 }
 
