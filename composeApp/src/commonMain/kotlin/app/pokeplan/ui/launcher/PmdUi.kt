@@ -88,6 +88,11 @@ internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = P
     )
 }
 
+/** The room at the side of a line of text in a box, in art pixels: every row (a menu line, a slider's label and bar) starts and ends this far in, so they line up. */
+private const val ROW_X = 6
+
+internal fun pmdRowPad(pixel: Int, density: Float) = (ROW_X * pixel / density).dp
+
 /** The frame's thickness in art pixels: pale line 1 + band 1 + deep line 1 at the top and bottom, 1 + 5 + 1 at the sides. */
 private const val TOP = 3
 private const val SIDE = 7
@@ -109,7 +114,7 @@ internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier
             val p = pixel.toFloat()
             drawPath(Path().apply { moveTo(0f, 0f); lineTo(3 * p, 2.5f * p); lineTo(0f, 5 * p); close() }, Color.White)
         }
-        PmdText(text, pixel, Modifier.padding(horizontal = (6 * pixel / density).dp), alpha = if (dim) 0.75f else 1f)
+        PmdText(text, pixel, Modifier.padding(horizontal = pmdRowPad(pixel, density)), alpha = if (dim) 0.75f else 1f)
     }
 }
 
