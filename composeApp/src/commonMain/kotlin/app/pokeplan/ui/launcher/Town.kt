@@ -127,7 +127,17 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
     LaunchedEffect(hold?.hop) { if (hold != null && hold.hop > 0) { hopping = true; hopKey++ } }
     // Walking stops with Reduce motion and whenever the launcher is out of sight, and starts again when it is back.
     if (!calm) LaunchedEffect(mon.id, still) {
-        if (still) { walk = null; return@LaunchedEffect }
+        if (still) {
+            walk = null
+            // Meeting someone: step up to them, then stand turned towards them.
+            hold?.approach?.let { to ->
+                facingLeft = hold.faceLeft
+                walk = SpriteAction.WALK_SIDE
+                spot.animateTo(to, tween(600, easing = LinearEasing))
+                walk = null
+            }
+            return@LaunchedEffect
+        }
         delay(300L + index * 150L)
         while (true) {
             delay(1500L + random.nextLong(5000))
@@ -164,9 +174,9 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
             },
     ) {
         AnimatedSprite(
-            mon.form.id, mon.isShiny, mon.nickname, Modifier.fillMaxSize(), size = sizeDp, animate = !calm, ground = 0.dp,
-            action = if (hopping) SpriteAction.HOP else if (asleep) SpriteAction.SLEEP else walk ?: SpriteAction.IDLE, actionKey = hopKey, onActionDone = { hopping = false },
-            fixedScale = pixel, mirror = walk == SpriteAction.WALK_SIDE && facingLeft,
+            mon.form.id, mon.isShiny, mon.nickname, Modifier.fillMaxSize(), size = sizeDp, animate = !calm && !(hold != null && walk == null), ground = 0.dp,
+            action = if (hopping) SpriteAction.HOP else if (asleep) SpriteAction.SLEEP else walk ?: if (hold != null) SpriteAction.WALK_SIDE else SpriteAction.IDLE, actionKey = hopKey, onActionDone = { hopping = false },
+            fixedScale = pixel, mirror = (walk == SpriteAction.WALK_SIDE || hold != null) && (hold?.faceLeft ?: facingLeft),
         )
         // Over its head: the Zz of sleep, or what the meeting makes it feel.
         val icon = if (hold != null) hold.icon else if (asleep) StatusKind.SLEEP else null
@@ -186,8 +196,11 @@ private const val NIGHT = 0.5f
 /** Whether this Pokémon is one of those that sleep at night: a third of them, always the same ones. */
 private fun sleepsAtNight(mon: OwnedPokemon): Boolean = (mon.id.hashCode() and 0x7fffffff) % 3 == 0
 
-/** What a Pokémon does instead of walking: shows [icon] over its head, and hops once for each new [hop]. */
-internal class Hold(val icon: StatusKind?, val hop: Int = 0)
+/**
+ * What a Pokémon does instead of walking: it walks to [approach] if given, then stands turned to [faceLeft] (towards whoever
+ * it is meeting), shows [icon] over its head and hops once for each new [hop].
+ */
+internal class Hold(val icon: StatusKind?, val hop: Int = 0, val faceLeft: Boolean = false, val approach: Offset? = null)
 
 /** What the residents are doing together: where each stands (for meetings) and who has stopped to meet someone. */
 internal class TownLife {
@@ -209,6 +222,8 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
         val random = Random(residents.hashCode())
         val last = mutableMapOf<String, kotlin.time.TimeMark>()
         var lastSound = TimeSource.Monotonic.markNow() - 60.seconds
+        // They meet now and then, not all day: one meeting at a time, and a pause of half a minute or more after each.
+        var nextMeeting = TimeSource.Monotonic.markNow() + (10 + random.nextInt(15)).seconds
         fun sound(sfx: Sfx, involvesBuddy: Boolean) {
             if (lastSound.elapsedNow() < 8.seconds || !(involvesBuddy || random.nextInt(3) == 0)) return
             lastSound = TimeSource.Monotonic.markNow()
@@ -216,6 +231,7 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
         }
         while (true) {
             delay(900)
+            if (!nextMeeting.hasPassedNow()) continue
             val free = residents.filter { it.id !in life.holds && !(sleepsAtNight(it) && BuddyScene.darkness(model.store.now.hour, model.store.now.minute) >= NIGHT) }
             for (a in free) for (b in free) {
                 if (a.id >= b.id || a.id in life.holds || b.id in life.holds) continue
@@ -223,29 +239,36 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
                 val pb = life.spots[b.id]?.invoke() ?: continue
                 if (pa.x !in 0.05f..0.95f || pb.x !in 0.05f..0.95f || abs(pa.x - pb.x) > 0.09f || abs(pa.y - pb.y) > 0.12f) continue
                 val pair = a.id + b.id
-                if (last[pair]?.let { it.elapsedNow() < 30.seconds } == true || random.nextInt(10) >= 6) continue
+                if (last[pair]?.let { it.elapsedNow() < 180.seconds } == true || random.nextInt(10) >= 5) continue
                 last[pair] = TimeSource.Monotonic.markNow()
+                nextMeeting = TimeSource.Monotonic.markNow() + (30 + random.nextInt(40)).seconds
                 val withBuddy = a.id == buddy || b.id == buddy
                 // The one on the left speaks first.
                 val (first, second) = if (pa.x <= pb.x) a to b else b to a
+                // They step up to each other, side by side at the midpoint, and face one another.
+                val mid = Offset((pa.x + pb.x) / 2f, (pa.y + pb.y) / 2f)
+                val towardsFirst = Offset(mid.x - 0.045f, mid.y)
+                val towardsSecond = Offset(mid.x + 0.045f, mid.y)
                 scope.launch {
                     when (random.nextInt(10)) {
                         in 0..5 -> {
-                            life.holds[first.id] = Hold(StatusKind.QUESTION); life.holds[second.id] = Hold(null)
+                            life.holds[first.id] = Hold(StatusKind.QUESTION, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(null, faceLeft = true, approach = towardsSecond)
+                            delay(700)
                             sound(Sfx.CURIOUS, withBuddy)
                             delay(800)
-                            life.holds[second.id] = Hold(StatusKind.ALERT, hop = 1)
+                            life.holds[second.id] = Hold(StatusKind.ALERT, hop = 1, faceLeft = true)
                             sound(Sfx.SURPRISE, withBuddy)
                         }
                         in 6..7 -> {
-                            life.holds[first.id] = Hold(StatusKind.CROSS); life.holds[second.id] = Hold(null)
+                            life.holds[first.id] = Hold(StatusKind.CROSS, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(null, faceLeft = true, approach = towardsSecond)
+                            delay(700)
                             sound(Sfx.MAD, withBuddy)
                             delay(700)
-                            life.holds[second.id] = Hold(StatusKind.ALERT, hop = 1)
+                            life.holds[second.id] = Hold(StatusKind.ALERT, hop = 1, faceLeft = true)
                             sound(Sfx.URGENT_SHOCK, withBuddy)
                         }
                         else -> {
-                            life.holds[first.id] = Hold(StatusKind.ALERT, hop = 1); life.holds[second.id] = Hold(StatusKind.ALERT, hop = 1)
+                            life.holds[first.id] = Hold(StatusKind.ALERT, hop = 1, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(StatusKind.ALERT, hop = 1, faceLeft = true, approach = towardsSecond)
                             sound(Sfx.SHOCK, withBuddy)
                         }
                     }

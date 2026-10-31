@@ -8,6 +8,7 @@ release always has the newest merge).
 ## 0.70.1
 
 - Launcher: the Pokémon's "?" and "!" icons sit just over their heads (they floated far above them).
+- Launcher: Pokémon meet less often (one meeting at a time, about every half minute or more, and the same two not again for three minutes), and when they do they step up to each other, stand side by side and turn to face one another.
 - Launcher: the settings are a screen of their own, with Back, instead of a pop-up.
 - Launcher: a sound volume slider in the settings (the same level as Settings → Sound), which plays a blip when you let go.
 
