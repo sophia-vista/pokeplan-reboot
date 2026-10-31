@@ -6,6 +6,33 @@ package app.pokeplan.ui.launcher
  * Everything here describes the apps installed on this device, so it stays on the device and is never synced.
  */
 
+/** Where a widget goes: the top or the bottom of the home page, or the Today page. */
+enum class WidgetArea(val label: String) { HOME_TOP("Top of the home page"), HOME_BOTTOM("Bottom of the home page"), TODAY("Today page") }
+
+/** What a widget shows. [FOLDER] is the folder named by the slot's argument; the others take none. */
+enum class WidgetKind(val label: String) {
+    CLOCK("Date and time"), STATUS("Companion"), NAV("Shortcuts"), PINNED("Favorites"), OFTEN("Often used"), FOLDER("Folder"),
+    ACTIONS("App buttons"), CALENDAR("Calendar"), AGENDA("Agenda and tasks"), FORECAST("Forecast"),
+}
+
+/** One widget on a page: its [kind], in an [area], with a folder's name as [arg] for a folder widget. The order of the slots is the order on screen. */
+data class WidgetSlot(val area: WidgetArea, val kind: WidgetKind, val arg: String = "") {
+    /** What to call it: a folder widget by its folder. */
+    val title: String get() = if (kind == WidgetKind.FOLDER) arg else kind.label
+}
+
+/** The widgets a launcher starts with: the date and time and the companion on top, shortcuts, the often used apps, favorites and the folder and app-list buttons below, and the calendar and agenda on Today. */
+fun defaultWidgets(clock: Boolean = true, status: Boolean = true): List<WidgetSlot> = buildList {
+    if (clock) add(WidgetSlot(WidgetArea.HOME_TOP, WidgetKind.CLOCK))
+    if (status) add(WidgetSlot(WidgetArea.HOME_TOP, WidgetKind.STATUS))
+    add(WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.NAV))
+    add(WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.OFTEN))
+    add(WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.PINNED))
+    add(WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.ACTIONS))
+    add(WidgetSlot(WidgetArea.TODAY, WidgetKind.CALENDAR))
+    add(WidgetSlot(WidgetArea.TODAY, WidgetKind.AGENDA))
+}
+
 /** A folder the user made: a name and the keys of its apps, in the order they were added. */
 data class Folder(val name: String, val apps: List<String> = emptyList()) {
     companion object { const val MAX_NAME = 24 }
@@ -117,7 +144,34 @@ data class LauncherPrefs(
     val place: GeoPlace? = null,
     /** Whether temperatures show in degrees Fahrenheit (otherwise Celsius). */
     val fahrenheit: Boolean = false,
+    /** The widgets, top to bottom in each area; null until the user changes them, which shows [defaultWidgets]. */
+    val layout: List<WidgetSlot>? = null,
 ) {
+    /** The widgets on screen: the user's, or the starting set (the date and time and companion boxes follow their old on/off choices). */
+    val widgets: List<WidgetSlot> get() = layout ?: defaultWidgets(showClock, showStatus)
+    fun widgetsIn(area: WidgetArea): List<WidgetSlot> = widgets.filter { it.area == area }
+    private fun withWidgets(next: List<WidgetSlot>) = copy(layout = next)
+
+    /** Adds a widget at the end of its area; a folder widget needs an existing folder, and no widget is added twice. */
+    fun addWidget(slot: WidgetSlot): LauncherPrefs {
+        if (slot.kind == WidgetKind.FOLDER && folders.none { it.name == slot.arg }) return this
+        if (widgets.contains(slot)) return this
+        return withWidgets(widgets + slot)
+    }
+
+    fun removeWidget(slot: WidgetSlot): LauncherPrefs = withWidgets(widgets - slot)
+
+    /** Moves a widget one place up (-1) or down (+1) among the widgets of its area. */
+    fun moveWidget(slot: WidgetSlot, by: Int): LauncherPrefs {
+        val inArea = widgetsIn(slot.area)
+        val at = inArea.indexOf(slot)
+        val to = at + by
+        if (at < 0 || to !in inArea.indices) return this
+        val reordered = inArea.toMutableList().apply { removeAt(at); add(to, slot) }
+        val queue = reordered.iterator()
+        return withWidgets(widgets.map { if (it.area == slot.area) queue.next() else it })
+    }
+
     fun withWalking(on: Boolean) = copy(walking = on)
     fun withShowStatus(on: Boolean) = copy(showStatus = on)
     fun withEdgeDrag(on: Boolean) = copy(edgeDrag = on)
@@ -143,13 +197,19 @@ data class LauncherPrefs(
         return if (clean.isEmpty() || folders.any { it.name.equals(clean, ignoreCase = true) }) this else copy(folders = folders + Folder(clean))
     }
 
+    /** A new folder and its widget at the bottom of the home page, together; the apps are added from the long-press sheet in All apps. */
+    fun addFolderWidget(name: String): LauncherPrefs {
+        val made = addFolder(name)
+        return if (made == this) this else made.addWidget(WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.FOLDER, name.trim().take(Folder.MAX_NAME)))
+    }
+
     fun renameFolder(old: String, name: String): LauncherPrefs {
         val clean = name.trim().take(Folder.MAX_NAME)
         if (clean.isEmpty() || folders.any { it.name.equals(clean, ignoreCase = true) && it.name != old }) return this
-        return copy(folders = folders.map { if (it.name == old) it.copy(name = clean) else it })
+        return copy(folders = folders.map { if (it.name == old) it.copy(name = clean) else it }, layout = layout?.map { if (it.kind == WidgetKind.FOLDER && it.arg == old) it.copy(arg = clean) else it })
     }
 
-    fun deleteFolder(name: String) = copy(folders = folders.filter { it.name != name })
+    fun deleteFolder(name: String) = copy(folders = folders.filter { it.name != name }, layout = layout?.filterNot { it.kind == WidgetKind.FOLDER && it.arg == name })
     fun addToFolder(name: String, key: String) = copy(folders = folders.map { if (it.name == name && key !in it.apps) it.copy(apps = it.apps + key) else it })
     fun removeFromFolder(name: String, key: String) = copy(folders = folders.map { if (it.name == name) it.copy(apps = it.apps - key) else it })
 
@@ -189,6 +249,7 @@ data class LauncherPrefs(
         if (fahrenheit) append("K fahrenheit\t1\n")
         place?.let { append("W ").append(it.name.replace('\t', ' ')).append('\t').append(it.latitude).append('\t').append(it.longitude).append('\n') }
         launches.entries.sortedBy { it.key }.forEach { (key, count) -> append("L ").append(key).append('\t').append(count).append('\n') }
+        layout?.let { l -> if (l.isEmpty()) append("G -\n") else l.forEach { append("G ").append(it.area.name).append('\t').append(it.kind.name).append('\t').append(it.arg.replace('\t', ' ')).append('\n') } }
         folders.forEach { f -> append("F ").append(f.name.replace('\t', ' ')); f.apps.forEach { append('\t').append(it) }; append('\n') }
         pinned.forEach { append("P ").append(it).append('\n') }
         hidden.sorted().forEach { append("H ").append(it).append('\n') }
@@ -211,6 +272,11 @@ data class LauncherPrefs(
                     'W' -> rest.split('\t').let { f -> val lat = f.getOrNull(1)?.toDoubleOrNull(); val lon = f.getOrNull(2)?.toDoubleOrNull(); if (f.size == 3 && f[0].isNotBlank() && lat != null && lon != null) prefs.withPlace(GeoPlace(f[0], lat, lon)) else prefs }
                     'L' -> rest.lastIndexOf('\t').let { at -> val count = if (at > 0) rest.substring(at + 1).toIntOrNull() else null; if (count != null && count > 0) prefs.copy(launches = prefs.launches + (rest.substring(0, at) to count)) else prefs }
                     'F' -> rest.split('\t').let { f -> if (f[0].isBlank()) prefs else prefs.addFolder(f[0]).let { made -> f.drop(1).filter { it.isNotBlank() }.fold(made) { acc, key -> acc.addToFolder(f[0].trim().take(Folder.MAX_NAME), key) } } }
+                    'G' -> if (rest == "-") prefs.copy(layout = prefs.layout ?: emptyList()) else rest.split('\t').let { f ->
+                        val area = WidgetArea.entries.firstOrNull { it.name == f[0] }
+                        val kind = f.getOrNull(1)?.let { n -> WidgetKind.entries.firstOrNull { it.name == n } }
+                        if (area == null || kind == null) prefs else prefs.copy(layout = (prefs.layout ?: emptyList()) + WidgetSlot(area, kind, f.getOrElse(2) { "" }))
+                    }
                     'I' -> rest.lastIndexOf('\t').let { at -> if (at > 0) prefs.withIcon(rest.substring(0, at), rest.substring(at + 1)) else prefs }
                     'M' -> {
                         val at = rest.lastIndexOf('\t')

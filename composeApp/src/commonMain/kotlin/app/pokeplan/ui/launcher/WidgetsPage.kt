@@ -1,0 +1,97 @@
+package app.pokeplan.ui.launcher
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.dp
+import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PmdText
+import app.pokeplan.ui.theme.Spacing
+
+/**
+ * The launcher's widgets, listed by where they sit (the top of the home page, its bottom, the Today page): each with Up,
+ * Down and Remove, and Add to put one more in the area. A folder widget is a labelled folder with its apps; "New folder"
+ * makes the folder and its widget together, and the folder's apps are chosen from the long-press sheet in All apps.
+ */
+@Composable
+internal fun WidgetsPage(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, pixel: Int, onClose: () -> Unit) {
+    val density = LocalDensity.current.density
+    val pad = pmdRowPad(pixel, density)
+    var adding by remember { mutableStateOf<WidgetArea?>(null) }
+    var name by remember { mutableStateOf("") }
+    Box(Modifier.fillMaxSize().background(Pixel.Night).safeDrawingPadding()) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = Spacing.Page, end = Spacing.Page, top = Spacing.XL, bottom = Spacing.XXL), verticalArrangement = Arrangement.spacedBy(Spacing.XL)) {
+            PmdBox(pixel, Modifier.fillMaxWidth()) {
+                Column {
+                    PmdMenuLine("Back", pixel, onClick = onClose)
+                    PmdRule(pixel)
+                    PmdMenuLine("Widgets", pixel, dim = true) {}
+                }
+            }
+            WidgetArea.entries.forEach { area ->
+                val slots = prefs.widgetsIn(area)
+                PmdBox(pixel, Modifier.fillMaxWidth()) {
+                    Column(Modifier.fillMaxWidth()) {
+                        PmdText(area.label, pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M), alpha = 0.75f)
+                        PmdRule(pixel)
+                        if (slots.isEmpty()) PmdText("No widgets here", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M), alpha = 0.7f)
+                        slots.forEachIndexed { i, slot ->
+                            Row(Modifier.fillMaxWidth().height(Spacing.Target), verticalAlignment = Alignment.CenterVertically) {
+                                PmdText(slot.title, pixel, Modifier.weight(1f).padding(horizontal = pad))
+                                Action("Up", enabled = i > 0, pixel) { onPrefs(prefs.moveWidget(slot, -1)) }
+                                Action("Down", enabled = i < slots.lastIndex, pixel) { onPrefs(prefs.moveWidget(slot, 1)) }
+                                Action("Remove", enabled = true, pixel) { onPrefs(prefs.removeWidget(slot)) }
+                            }
+                        }
+                        PmdRule(pixel)
+                        PmdMenuLine(if (adding == area) "Close" else "Add a widget", pixel, center = true) { adding = if (adding == area) null else area }
+                        if (adding == area) {
+                            val placed = prefs.widgets.map { it.kind to it.arg }.toSet()
+                            WidgetKind.entries.filter { it != WidgetKind.FOLDER && (it to "") !in placed }.forEach { kind ->
+                                PmdMenuLine(kind.label, pixel) { onPrefs(prefs.addWidget(WidgetSlot(area, kind))); adding = null }
+                            }
+                            prefs.folders.filter { (WidgetKind.FOLDER to it.name) !in placed }.forEach { f ->
+                                PmdMenuLine("Folder: ${f.name}", pixel) { onPrefs(prefs.addWidget(WidgetSlot(area, WidgetKind.FOLDER, f.name))); adding = null }
+                            }
+                            Column(Modifier.padding(top = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                                PmdField(name, { name = it.take(Folder.MAX_NAME) }, "New folder name")
+                                PmdMenuLine("Make the folder widget", pixel, dim = name.isBlank()) {
+                                    val made = prefs.addFolder(name)
+                                    onPrefs(made.addWidget(WidgetSlot(area, WidgetKind.FOLDER, name.trim().take(Folder.MAX_NAME))))
+                                    name = ""; adding = null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Action(label: String, enabled: Boolean, pixel: Int, onClick: () -> Unit) {
+    Box(
+        Modifier.height(Spacing.Target).let { if (enabled) it.clickable(role = Role.Button, onClickLabel = label, onClick = onClick) else it }.padding(horizontal = Spacing.S),
+        contentAlignment = Alignment.Center,
+    ) { PmdText(label, pixel, alpha = if (enabled) 0.9f else 0.3f) }
+}

@@ -82,7 +82,7 @@ internal fun FoldersPage(
                 PmdBox(pixel, Modifier.fillMaxWidth()) {
                     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PmdField(text, { text = it.take(Folder.MAX_NAME) }, "New folder name")
-                        PmdMenuLine("Make the folder", pixel, dim = text.isBlank()) { if (text.isNotBlank()) { val made = prefs.addFolder(text); onPrefs(made); if (made != prefs) onOpenFolder(text.trim().take(Folder.MAX_NAME)); text = "" } }
+                        PmdMenuLine("Make the folder", pixel, dim = text.isBlank()) { if (text.isNotBlank()) { val made = prefs.addFolderWidget(text); onPrefs(made); if (made != prefs) onOpenFolder(text.trim().take(Folder.MAX_NAME)); text = "" } }
                     }
                 }
             } else {

@@ -203,3 +203,39 @@ class LauncherNiagaraTest {
         assertEquals("83 F", degrees(28.4, true))
     }
 }
+
+class LauncherWidgetsTest {
+    @Test
+    fun startsWithTheDefaultsAndFollowsTheOldSwitches() {
+        val prefs = LauncherPrefs()
+        assertEquals(listOf(WidgetKind.CLOCK, WidgetKind.STATUS), prefs.widgetsIn(WidgetArea.HOME_TOP).map { it.kind })
+        assertEquals(listOf(WidgetKind.CALENDAR, WidgetKind.AGENDA), prefs.widgetsIn(WidgetArea.TODAY).map { it.kind })
+        assertEquals(listOf(WidgetKind.STATUS), prefs.withShowClock(false).widgetsIn(WidgetArea.HOME_TOP).map { it.kind })
+        assertEquals("", prefs.encode())
+    }
+
+    @Test
+    fun addsMovesAndRemovesWidgets() {
+        var prefs = LauncherPrefs().addFolder("Work")
+        val folder = WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.FOLDER, "Work")
+        prefs = prefs.addWidget(folder).addWidget(folder).addWidget(WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.FOLDER, "Nope"))
+        assertEquals(WidgetKind.FOLDER, prefs.widgetsIn(WidgetArea.HOME_BOTTOM).last().kind)
+        assertEquals(1, prefs.widgets.count { it.kind == WidgetKind.FOLDER })
+        prefs = prefs.moveWidget(folder, -1)
+        assertEquals(listOf(WidgetKind.NAV, WidgetKind.OFTEN, WidgetKind.PINNED, WidgetKind.FOLDER, WidgetKind.ACTIONS), prefs.widgetsIn(WidgetArea.HOME_BOTTOM).map { it.kind })
+        assertEquals(prefs, prefs.moveWidget(WidgetSlot(WidgetArea.HOME_TOP, WidgetKind.CLOCK), -1))
+        prefs = prefs.renameFolder("Work", "Office")
+        assertEquals("Office", prefs.widgets.first { it.kind == WidgetKind.FOLDER }.arg)
+        assertEquals(0, prefs.deleteFolder("Office").widgets.count { it.kind == WidgetKind.FOLDER })
+        assertEquals(0, prefs.widgetsIn(WidgetArea.HOME_TOP).size - 2)
+    }
+
+    @Test
+    fun layoutsSurviveTheRoundTripEvenWhenEmpty() {
+        val custom = LauncherPrefs().addFolder("Work").addWidget(WidgetSlot(WidgetArea.TODAY, WidgetKind.FOLDER, "Work")).removeWidget(WidgetSlot(WidgetArea.HOME_TOP, WidgetKind.CLOCK))
+        assertEquals(custom, LauncherPrefs.decode(custom.encode()))
+        val empty = LauncherPrefs().copy(layout = emptyList())
+        assertEquals(empty, LauncherPrefs.decode(empty.encode()))
+        assertEquals(LauncherPrefs(), LauncherPrefs.decode("G NOWHERE\tCLOCK\t\nG TODAY\tNOPE\t\n").copy(layout = null))
+    }
+}

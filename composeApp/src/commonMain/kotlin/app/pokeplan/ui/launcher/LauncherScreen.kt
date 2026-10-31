@@ -1,5 +1,6 @@
 package app.pokeplan.ui.launcher
 
+import androidx.compose.ui.graphics.toPixelMap
 import kotlin.time.Duration.Companion.milliseconds
 import app.pokeplan.ui.theme.stairRect
 import androidx.compose.ui.graphics.PathFillType
@@ -198,6 +199,8 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var menuMon by remember { mutableStateOf<OwnedPokemon?>(null) }
     var settingsOpen by remember { mutableStateOf(false) }
     var foldersOpen by remember { mutableStateOf(false) }
+    var widgetsOpen by remember { mutableStateOf(false) }
+    val todayState = remember { TodayState(model.store.today) }
     var folderName by remember { mutableStateOf<String?>(null) }
     var forecastOpen by remember { mutableStateOf(false) }
     var placeOpen by remember { mutableStateOf(false) }
@@ -227,13 +230,17 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var listHidden by remember { mutableStateOf(false) }
     // The Home button always comes back to the home page.
     LaunchedEffect(homePresses) {
-        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false; foldersOpen = false; folderName = null; forecastOpen = false; placeOpen = false }
+        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false; foldersOpen = false; folderName = null; forecastOpen = false; placeOpen = false; widgetsOpen = false }
     }
     val sheetApp = sheetKey?.let { key -> apps.firstOrNull { it.key == key } }
     PixelTheme(dark) {
         CompositionLocalProvider(LocalReduceMotion provides data.settings.reduceMotion, LocalUiSound provides model::tap) {
             androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 val pixel = townScale(maxWidth.value * LocalDensity.current.density)
+                val env = WidgetEnv(
+                    model, apps, prefs, host, forecast, pixel, todayState, onAllApps = { listOpen = true }, onFolders = { foldersOpen = true },
+                    onOpenFolder = { folderName = it; foldersOpen = true }, onForecast = { forecastOpen = true }, onHold = { sheetKey = it.key },
+                )
                 // Two pages side by side: the town with its boxes, and Today (a calendar and the day's agenda and tasks). The town is two screens wide, so its Pokémon can wander over to Today (but only on the main screen can they be touched or meet). Swipe across, or press Home to come back.
                 val widthPx0 = maxWidth.value * LocalDensity.current.density
                 val page = remember { androidx.compose.animation.core.Animatable(0f) }
@@ -262,9 +269,9 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                             .then(if (page.value < 0.02f) Modifier.pointerInput(prefs.gatherTap) { detectTapGestures(onTap = { countTap() }) } else Modifier),
                     )
                     Box(Modifier.fillMaxSize().graphicsLayer { translationX = -page.value * widthPx0 }) {
-                        HomePage(model, apps, prefs, isDefault, host, forecast, pixel, onAllApps = { listOpen = true }, onFolders = { foldersOpen = true }, onForecast = { forecastOpen = true }, onHold = { sheetKey = it.key })
+                        HomePage(env, isDefault)
                     }
-                    if (page.value > 0.001f) Box(Modifier.fillMaxSize().graphicsLayer { translationX = (1f - page.value) * widthPx0 }) { TodayPage(model, pixel) }
+                    if (page.value > 0.001f) Box(Modifier.fillMaxSize().graphicsLayer { translationX = (1f - page.value) * widthPx0 }) { TodayPage(env) }
                 }
                 // Which page: two small blocks at the top, the current one lit, shown only while the page is moving (and a moment after).
                 val moving = page.isRunning || (page.value > 0.001f && page.value < 0.999f)
@@ -275,7 +282,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     repeat(2) { i -> Box(Modifier.size(width = 16.dp, height = 4.dp).background(Color.White.copy(alpha = if ((page.value + 0.5f).toInt() == i) 0.9f else 0.3f))) }
                 }
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
-                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (placeOpen) placeOpen = false else if (forecastOpen) forecastOpen = false else if (folderName != null) folderName = null else if (foldersOpen) foldersOpen = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (page.value > 0.5f) scope.launch { page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } }
+                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (placeOpen) placeOpen = false else if (widgetsOpen) widgetsOpen = false else if (forecastOpen) forecastOpen = false else if (folderName != null) folderName = null else if (foldersOpen) foldersOpen = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (page.value > 0.5f) scope.launch { page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } }
                 // Drag in from the right edge: the app list comes into focus with the finger, and settles open or shut when it lets go.
                 val widthPx = maxWidth.value * LocalDensity.current.density
                 // Where the finger would have the list (past either end it keeps going, but the list stretches only a little: rubber).
@@ -310,8 +317,10 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     onTown = { settingsOpen = false; listOpen = false; pickingTown = true },
                     onHidden = { settingsOpen = false; listHidden = true; listOpen = true },
                     onPlace = { placeOpen = true },
+                    onWidgets = { widgetsOpen = true },
                     onClose = { settingsOpen = false },
                 )
+                if (widgetsOpen) WidgetsPage(prefs, onPrefs, pixel, onClose = { widgetsOpen = false })
                 if (foldersOpen) FoldersPage(apps, prefs, onPrefs, host, folderName, { folderName = it }, onClose = { foldersOpen = false; folderName = null }, pixel = pixel)
                 if (forecastOpen) ForecastPage(forecast, prefs, pixel, onPlace = { placeOpen = true }, onClose = { forecastOpen = false })
                 if (placeOpen) PlacePage(prefs, onPrefs, host, pixel, onClose = { placeOpen = false })
@@ -323,83 +332,25 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
 }
 
 /**
- * PokéLife as the phone's home screen: over the town, at the top a box with the date, the time and the battery and the
- * status box (the buddy, and the weather when a place is set, which opens the forecast), and at the bottom, in reach of a
- * thumb, two dialogue boxes: the app's three places (PokéLife, Pokémon, Me) with their icons, then the apps you open
- * most, your pinned apps, and Folders and All apps.
+ * PokéLife as the phone's home screen: the widgets placed at the top of the home page over the town (the date and time and
+ * the companion to start with), and at the bottom, in reach of a thumb, the widgets placed there (the shortcuts, often used
+ * apps, favorites and the folder and app-list buttons to start with). The user chooses and orders them in Launcher settings → Widgets.
  */
 @Composable
-private fun HomePage(
-    model: AppModel, apps: List<LauncherApp>, prefs: LauncherPrefs, isDefault: Boolean, host: LauncherHost, forecast: Forecast?, pixel: Int,
-    onAllApps: () -> Unit, onFolders: () -> Unit, onForecast: () -> Unit, onHold: (LauncherApp) -> Unit,
-) {
-    val data = model.data
-    val pinned = LauncherList.pinned(apps, prefs)
-    val suggested = prefs.suggested(apps)
-    val running = data.focus != null
-    val buddy = data.player.buddy
-    val density = LocalDensity.current.density
-    val gap = Modifier.padding(horizontal = (6 * pixel / density).dp)
-    var battery by remember { mutableStateOf(host.battery()) }
-    LaunchedEffect(Unit) { while (true) { delay(30_000); battery = host.battery() } }
+private fun HomePage(env: WidgetEnv, isDefault: Boolean) {
+    val data = env.model.data
     Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        if (prefs.showClock) PmdBox(pixel, Modifier.fillMaxWidth()) {
-            // The seconds tick in the model, so reading it keeps the minute right.
-            model.now
-            val now = model.store.now
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                PmdText("${dayName(now.dayOfWeek).take(3)} ${now.dayOfMonth} ${monthName(now.month).take(3)}   ${two(now.hour)}:${two(now.minute)}", pixel, gap)
-                Box(Modifier.weight(1f))
-                battery?.let { PmdText((if (it.charging) "Charging " else "Battery ") + it.percent, pixel, gap, alpha = 0.75f) }
-            }
-        }
-        if (data.onboarded && buddy != null && prefs.showStatus) PmdBox(pixel, Modifier.fillMaxWidth(), inset = 1) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                PmdText("${buddy.nickname}  Lv. ${buddy.level}", pixel, gap.clickable(role = Role.Button, onClickLabel = "Open PokéLife") { host.openApp(Place.HOME) })
-                Box(Modifier.weight(1f))
-                if (forecast != null) PmdText("${degrees(forecast.temperature, prefs.fahrenheit)}  ${WeatherCodes.label(forecast.code)}", pixel, gap.clickable(role = Role.Button, onClickLabel = "Open the forecast") { onForecast() }, alpha = 0.9f)
-                else PmdText(if (running) "Focusing" else "${data.player.pokemon.size} Pokémon", pixel, gap, alpha = 0.75f)
-            }
-        }
-        Box(Modifier.weight(1f))
-        val note = when {
-            !data.onboarded -> "Open PokéLife to meet your first Pokémon" to { host.openApp(Place.HOME) }
-            !isDefault -> "Make PokéLife your home app" to host::openHomeSettings
-            else -> null
-        }
-        if (note != null) PmdBox(pixel, Modifier.fillMaxWidth(), inset = 1) { PmdMenuLine(note.first, pixel, onClick = note.second) }
-        if (data.onboarded) PmdBox(pixel, Modifier.fillMaxWidth(), inset = 1) {
-            // The three places of the app, with the icons of its tabs.
-            Row(Modifier.fillMaxWidth()) {
-                PmdNavItem("PokéLife", Tab.HOME.icon, pixel, Modifier.weight(1f)) { host.openApp(if (running) Place.FOCUS else Place.HOME) }
-                PmdNavItem("Pokémon", Tab.COLLECTION.icon, pixel, Modifier.weight(1f)) { host.openApp(Place.COLLECTION) }
-                PmdNavItem("Me", Tab.ME.icon, pixel, Modifier.weight(1f)) { host.openApp(Place.ME) }
-            }
-        }
-        PmdBox(pixel, Modifier.fillMaxWidth(), inset = 1) {
-            Column {
-                if (suggested.isNotEmpty()) {
-                    PmdText("Often used", pixel, Modifier.padding(horizontal = pmdRowPad(pixel, density), vertical = Spacing.S), alpha = 0.7f)
-                    Row(Modifier.fillMaxWidth()) {
-                        suggested.forEach { app -> PinnedApp(app, prefs.icons[app.key], host, pixel, Modifier.weight(1f), onHold = { onHold(app) }) }
-                        repeat(4 - suggested.size) { Box(Modifier.weight(1f)) }
-                    }
-                    PmdRule(pixel)
+        env.prefs.widgetsIn(WidgetArea.HOME_TOP).forEach { LauncherWidget(it, env) }
+        // The bottom widgets sit at the foot of the screen, and scroll when they are more than fit.
+        Box(Modifier.weight(1f).fillMaxWidth()) {
+            Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                val note = when {
+                    !data.onboarded -> "Open PokéLife to meet your first Pokémon" to { env.host.openApp(Place.HOME) }
+                    !isDefault -> "Make PokéLife your home app" to env.host::openHomeSettings
+                    else -> null
                 }
-                if (pinned.isEmpty() && suggested.isEmpty()) PmdMenuLine("Press and hold an app in All apps to pin it", pixel, dim = true) { onAllApps() }
-                else if (pinned.isNotEmpty()) Column(Modifier.heightIn(max = 240.dp).verticalScroll(rememberScrollState())) {
-                    pinned.chunked(4).forEach { row ->
-                        Row(Modifier.fillMaxWidth()) {
-                            row.forEach { app -> PinnedApp(app, prefs.icons[app.key], host, pixel, Modifier.weight(1f), onHold = { onHold(app) }) }
-                            repeat(4 - row.size) { Box(Modifier.weight(1f)) }
-                        }
-                    }
-                }
-                PmdRule(pixel)
-                Row(Modifier.fillMaxWidth()) {
-                    PmdMenuLine(if (prefs.folders.isEmpty()) "Folders" else "Folders ${prefs.folders.size}", pixel, Modifier.weight(1f), center = true, onClick = onFolders)
-                    PmdMenuLine("All apps", pixel, Modifier.weight(1f), center = true, onClick = onAllApps)
-                }
+                if (note != null) PmdBox(env.pixel, Modifier.fillMaxWidth(), inset = 1) { PmdMenuLine(note.first, env.pixel, onClick = note.second) }
+                env.prefs.widgetsIn(WidgetArea.HOME_BOTTOM).forEach { LauncherWidget(it, env) }
             }
         }
     }
@@ -408,7 +359,7 @@ private fun HomePage(
 /** A pinned app on the home page: its logo (or the game item chosen for it) over its name; tap opens it, press and hold manages it. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixel: Int, modifier: Modifier, onHold: () -> Unit) {
+internal fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixel: Int, modifier: Modifier, onHold: () -> Unit) {
     val ui = LocalUiSound.current
     val density = LocalDensity.current.density
     val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
@@ -431,6 +382,8 @@ private fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixel
 internal fun AppIcon(host: LauncherHost, key: String, size: androidx.compose.ui.unit.Dp) {
     val icon by produceState<ImageBitmap?>(null, key) { value = host.icon(key) }
     val shown = icon
+    // The border is the icon's own edge colour, so it melts into the picture and only the pixel corners show.
+    val edge = remember(shown) { shown?.let { edgeColor(it) } ?: Color.White.copy(alpha = 0.9f) }
     Box(
         Modifier.size(size).drawWithContent {
             val p = 2.dp.toPx()
@@ -439,11 +392,21 @@ internal fun AppIcon(host: LauncherHost, key: String, size: androidx.compose.ui.
             val inner = stairRect(p, p, p, w - p, h - p, intArrayOf(0))
             if (shown == null) drawPath(inner, Color.White.copy(alpha = 0.2f)) else clipPath(inner) { this@drawWithContent.drawContent() }
             val ring = Path().apply { fillType = PathFillType.EvenOdd; addPath(stairRect(p, 0f, 0f, w, h, intArrayOf(1, 0))); addPath(inner) }
-            drawPath(ring, Color.White.copy(alpha = 0.9f))
+            drawPath(ring, edge)
         },
     ) {
         if (shown != null) Image(shown, contentDescription = null, modifier = Modifier.fillMaxSize().padding(2.dp), contentScale = androidx.compose.ui.layout.ContentScale.Crop)
     }
+}
+
+/** The average colour of the outermost ring of pixels of [image], ignoring transparent ones; white when there are none (an icon with a see-through edge). */
+internal fun edgeColor(image: ImageBitmap): Color {
+    val map = image.toPixelMap()
+    var r = 0f; var g = 0f; var b = 0f; var n = 0
+    fun add(c: Color) { if (c.alpha > 0.5f) { r += c.red; g += c.green; b += c.blue; n++ } }
+    for (x in 0 until map.width) { add(map[x, 0]); add(map[x, map.height - 1]) }
+    for (y in 1 until map.height - 1) { add(map[0, y]); add(map[map.width - 1, y]) }
+    return if (n < (map.width + map.height)) Color.White.copy(alpha = 0.9f) else Color(r / n, g / n, b / n)
 }
 
 private sealed interface ListRow {
@@ -602,7 +565,7 @@ internal fun AppSheet(app: LauncherApp, prefs: LauncherPrefs, onPrefs: (Launcher
                         PixelButton("New folder with ${app.label}", {
                             var n = prefs.folders.size + 1
                             while (prefs.folders.any { it.name == "Folder $n" }) n++
-                            onPrefs(prefs.addFolder("Folder $n").addToFolder("Folder $n", app.key)); onClose()
+                            onPrefs(prefs.addFolderWidget("Folder $n").addToFolder("Folder $n", app.key)); onClose()
                         }, Modifier.fillMaxWidth(), Pixel.Green, compact = true)
                     } else if (!moving) {
                         if (!hidden) PixelButton(if (pinned) "Unpin from home" else "Pin to home", { onPrefs(if (pinned) prefs.unpin(app.key) else prefs.pin(app.key)); onClose() }, Modifier.fillMaxWidth(), Pixel.Blue, sound = if (pinned) Sfx.UNPIN else Sfx.PIN)
@@ -688,7 +651,7 @@ internal fun PokemonMenu(mon: OwnedPokemon, isBuddy: Boolean, pixel: Int, onOpen
 @Composable
 internal fun LauncherSettings(
     model: AppModel, prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, isDefault: Boolean, hiddenCount: Int, pixel: Int, host: LauncherHost,
-    onTown: () -> Unit, onHidden: () -> Unit, onPlace: () -> Unit, onClose: () -> Unit,
+    onTown: () -> Unit, onHidden: () -> Unit, onPlace: () -> Unit, onWidgets: () -> Unit, onClose: () -> Unit,
 ) {
     fun onOff(on: Boolean) = if (on) "On" else "Off"
     val settings = model.data.settings
@@ -709,8 +672,7 @@ internal fun LauncherSettings(
                     PmdMenuLine("Pokémon in the town: ${prefs.townSize}", pixel) { onPrefs(prefs.nextTownSize()) }
                     PmdMenuLine("Weather: ${prefs.weather.label}", pixel) { onPrefs(prefs.nextWeather()) }
                     PmdMenuLine("Pokémon walk about: ${onOff(prefs.walking)}", pixel) { onPrefs(prefs.withWalking(!prefs.walking)) }
-                    PmdMenuLine("Date and time box: ${onOff(prefs.showClock)}", pixel) { onPrefs(prefs.withShowClock(!prefs.showClock)) }
-                    PmdMenuLine("Status box: ${onOff(prefs.showStatus)}", pixel) { onPrefs(prefs.withShowStatus(!prefs.showStatus)) }
+                    PmdMenuLine("Widgets: ${prefs.widgets.size}", pixel, onClick = onWidgets)
                 }
             }
             PmdBox(pixel, Modifier.fillMaxWidth()) {
