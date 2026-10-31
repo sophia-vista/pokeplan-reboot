@@ -99,10 +99,12 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     override fun onStart() {
         super.onStart()
         active = true
+        try { widgetHost.startListening() } catch (e: Exception) { /* a widget host that cannot listen just shows what it has */ }
     }
 
     override fun onStop() {
         active = false
+        try { widgetHost.stopListening() } catch (e: Exception) { }
         super.onStop()
     }
 
@@ -222,6 +224,66 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         }
     }
 
+    // Other apps' widgets: the launcher is their host. The system picker returns a widget id; some widgets then ask to be set up before they can show.
+    private val widgetManager by lazy { android.appwidget.AppWidgetManager.getInstance(this) }
+    private val widgetHost by lazy { android.appwidget.AppWidgetHost(this, WIDGET_HOST_ID) }
+    private var pendingWidget: Int = -1
+    private var onWidgetPicked: ((Int) -> Unit)? = null
+
+    private val configureWidget = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
+        val id = pendingWidget
+        if (result.resultCode == RESULT_OK) onWidgetPicked?.invoke(id) else widgetHost.deleteAppWidgetId(id)
+        pendingWidget = -1
+    }
+
+    private val chooseWidget = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
+        val id = pendingWidget
+        if (result.resultCode != RESULT_OK || id < 0) { if (id >= 0) widgetHost.deleteAppWidgetId(id); pendingWidget = -1; return@registerForActivityResult }
+        val info = widgetManager.getAppWidgetInfo(id)
+        if (info?.configure != null) {
+            try {
+                configureWidget.launch(Intent(android.appwidget.AppWidgetManager.ACTION_APPWIDGET_CONFIGURE).setComponent(info.configure).putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID, id))
+            } catch (e: Exception) {
+                onWidgetPicked?.invoke(id) // it can be used without its set-up screen
+            }
+        } else {
+            onWidgetPicked?.invoke(id)
+            pendingWidget = -1
+        }
+    }
+
+    override fun pickWidget(onPicked: (Int) -> Unit) {
+        val id = widgetHost.allocateAppWidgetId()
+        pendingWidget = id
+        onWidgetPicked = onPicked
+        try {
+            chooseWidget.launch(Intent(android.appwidget.AppWidgetManager.ACTION_APPWIDGET_PICK).putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID, id))
+        } catch (e: Exception) {
+            widgetHost.deleteAppWidgetId(id)
+            pendingWidget = -1
+        }
+    }
+
+    override fun releaseWidget(id: Int) = widgetHost.deleteAppWidgetId(id)
+
+    override fun widgetLabel(id: Int): String? = widgetManager.getAppWidgetInfo(id)?.loadLabel(packageManager)
+
+    @androidx.compose.runtime.Composable
+    override fun HostedWidget(id: Int, modifier: androidx.compose.ui.Modifier) {
+        val info = widgetManager.getAppWidgetInfo(id) ?: return
+        val height = (info.minHeight.coerceAtLeast(48)).coerceAtMost(420)
+        androidx.compose.ui.viewinterop.AndroidView(
+            factory = { context ->
+                widgetHost.createView(context, id, info).apply {
+                    setAppWidget(id, info)
+                    layoutParams = android.view.ViewGroup.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, (height * context.resources.displayMetrics.density).toInt())
+                }
+            },
+            modifier = modifier,
+            update = { view -> view.updateAppWidgetSize(null, info.minWidth, info.minHeight, info.minWidth * 2, height) },
+        )
+    }
+
     private val weather by lazy { WeatherClient(this) }
 
     override suspend fun forecast(place: app.pokeplan.ui.launcher.GeoPlace) = weather.forecast(place)
@@ -256,5 +318,6 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     private companion object {
         const val PREFS = "launcher"
         const val PREFS_KEY = "prefs"
+        const val WIDGET_HOST_ID = 4242
     }
 }

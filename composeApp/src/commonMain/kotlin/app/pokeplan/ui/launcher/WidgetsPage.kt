@@ -33,7 +33,7 @@ import app.pokeplan.ui.theme.Spacing
  * makes the folder and its widget together, and the folder's apps are chosen from the long-press sheet in All apps.
  */
 @Composable
-internal fun WidgetsPage(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, pixel: Int, onClose: () -> Unit) {
+internal fun WidgetsPage(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, host: LauncherHost, pixel: Int, onClose: () -> Unit) {
     val density = LocalDensity.current.density
     val pad = pmdRowPad(pixel, density)
     var adding by remember { mutableStateOf<WidgetArea?>(null) }
@@ -56,19 +56,20 @@ internal fun WidgetsPage(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit,
                         if (slots.isEmpty()) PmdText("No widgets here", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M), alpha = 0.7f)
                         slots.forEachIndexed { i, slot ->
                             Row(Modifier.fillMaxWidth().height(Spacing.Target), verticalAlignment = Alignment.CenterVertically) {
-                                PmdText(slot.title, pixel, Modifier.weight(1f).padding(horizontal = pad))
+                                PmdText(if (slot.kind == WidgetKind.ANDROID) slot.arg.toIntOrNull()?.let { host.widgetLabel(it) } ?: slot.title else slot.title, pixel, Modifier.weight(1f).padding(horizontal = pad))
                                 Action("Up", enabled = i > 0, pixel) { onPrefs(prefs.moveWidget(slot, -1)) }
                                 Action("Down", enabled = i < slots.lastIndex, pixel) { onPrefs(prefs.moveWidget(slot, 1)) }
-                                Action("Remove", enabled = true, pixel) { onPrefs(prefs.removeWidget(slot)) }
+                                Action("Remove", enabled = true, pixel) { if (slot.kind == WidgetKind.ANDROID) slot.arg.toIntOrNull()?.let { host.releaseWidget(it) }; onPrefs(prefs.removeWidget(slot)) }
                             }
                         }
                         PmdRule(pixel)
                         PmdMenuLine(if (adding == area) "Close" else "Add a widget", pixel, center = true) { adding = if (adding == area) null else area }
                         if (adding == area) {
                             val placed = prefs.widgets.map { it.kind to it.arg }.toSet()
-                            WidgetKind.entries.filter { it != WidgetKind.FOLDER && (it to "") !in placed }.forEach { kind ->
+                            WidgetKind.entries.filter { it != WidgetKind.FOLDER && it != WidgetKind.ANDROID && (it to "") !in placed }.forEach { kind ->
                                 PmdMenuLine(kind.label, pixel) { onPrefs(prefs.addWidget(WidgetSlot(area, kind))); adding = null }
                             }
+                            PmdMenuLine("Android widget from another app", pixel) { adding = null; host.pickWidget { id -> onPrefs(prefs.addWidget(WidgetSlot(area, WidgetKind.ANDROID, id.toString()))) } }
                             prefs.folders.filter { (WidgetKind.FOLDER to it.name) !in placed }.forEach { f ->
                                 PmdMenuLine("Folder: ${f.name}", pixel) { onPrefs(prefs.addWidget(WidgetSlot(area, WidgetKind.FOLDER, f.name))); adding = null }
                             }

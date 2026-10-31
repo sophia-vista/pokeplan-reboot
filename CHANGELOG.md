@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.76.0
+
+- Launcher: put another app's Android widget on the screen. Launcher settings → Widgets (or the new Widgets button in the App buttons widget) → Add a widget → "Android widget from another app" opens the phone's widget picker, then the widget's own set-up screen if it has one, and the widget appears where you added it (top or bottom of the home page, or the Today page) in a pixel frame. Remove drops it. The launcher is the widgets' host, so they update by themselves while it is in sight.
+
 ## 0.75.0
 
 - Launcher: every box on the home page is a widget now, and so are the calendar and the day's agenda on Today. Launcher settings → Widgets lists them by place (top of the home page, bottom of it, the Today page); each can be moved Up or Down, Removed and Added back, and a place can hold any widget. The widgets: Date and time, Companion, Shortcuts, Often used, Favorites, Folder, App buttons, Calendar, Agenda and tasks, and a new Forecast widget (today and the next four days).

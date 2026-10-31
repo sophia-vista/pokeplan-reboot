@@ -139,6 +139,15 @@ interface LauncherHost {
     suspend fun forecast(place: GeoPlace): Forecast? = null
     /** Places that match [query], for choosing where the forecast is for. */
     suspend fun searchPlaces(query: String): List<GeoPlace> = emptyList()
+    /** Shows another app's widget, by its Android widget id, at the width it is given. Only a phone can; elsewhere it shows nothing. */
+    @Composable
+    fun HostedWidget(id: Int, modifier: Modifier) {}
+    /** Asks the user to choose a widget from the installed apps; [onPicked] gets its id, or is not called if they cancel. */
+    fun pickWidget(onPicked: (Int) -> Unit) {}
+    /** Lets go of a widget's id when its slot is removed. */
+    fun releaseWidget(id: Int) {}
+    /** The name of a hosted widget, for the Widgets list. */
+    fun widgetLabel(id: Int): String? = null
     /** Opens PokéLife itself on [place] (Focus from the Focus button, Home from the buddy). */
     fun openApp(place: Place)
 }
@@ -238,7 +247,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
             androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 val pixel = townScale(maxWidth.value * LocalDensity.current.density)
                 val env = WidgetEnv(
-                    model, apps, prefs, host, forecast, pixel, todayState, onAllApps = { listOpen = true }, onFolders = { foldersOpen = true },
+                    model, apps, prefs, host, forecast, pixel, todayState, onAllApps = { listOpen = true }, onFolders = { foldersOpen = true }, onWidgets = { widgetsOpen = true },
                     onOpenFolder = { folderName = it; foldersOpen = true }, onForecast = { forecastOpen = true }, onHold = { sheetKey = it.key },
                 )
                 // Two pages side by side: the town with its boxes, and Today (a calendar and the day's agenda and tasks). The town is two screens wide, so its Pokémon can wander over to Today (but only on the main screen can they be touched or meet). Swipe across, or press Home to come back.
@@ -320,7 +329,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     onWidgets = { widgetsOpen = true },
                     onClose = { settingsOpen = false },
                 )
-                if (widgetsOpen) WidgetsPage(prefs, onPrefs, pixel, onClose = { widgetsOpen = false })
+                if (widgetsOpen) WidgetsPage(prefs, onPrefs, host, pixel, onClose = { widgetsOpen = false })
                 if (foldersOpen) FoldersPage(apps, prefs, onPrefs, host, folderName, { folderName = it }, onClose = { foldersOpen = false; folderName = null }, pixel = pixel)
                 if (forecastOpen) ForecastPage(forecast, prefs, pixel, onPlace = { placeOpen = true }, onClose = { forecastOpen = false })
                 if (placeOpen) PlacePage(prefs, onPrefs, host, pixel, onClose = { placeOpen = false })
