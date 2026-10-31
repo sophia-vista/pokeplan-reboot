@@ -1,0 +1,121 @@
+package app.pokeplan.ui.launcher
+
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
+class WidgetGridTest {
+    private fun w(kind: WidgetKind, col: Int, row: Int, wd: Int, h: Int, page: WidgetPage = WidgetPage.HOME) = GridWidget(page, kind, "", col, row, wd, h)
+    private fun noOverlap(all: List<GridWidget>) = all.indices.all { i -> all.indices.none { j -> i != j && all[i].overlaps(all[j]) } }
+
+    @Test
+    fun newWidgetsTakeTheFirstFreeSpotAndNeverOverlap() {
+        var g = emptyList<GridWidget>()
+        g = WidgetGrid.add(g, w(WidgetKind.NAV, 0, 0, 2, 1))
+        g = WidgetGrid.add(g, w(WidgetKind.OFTEN, 3, 3, 2, 1))
+        g = WidgetGrid.add(g, w(WidgetKind.ACTIONS, 0, 0, 4, 2))
+        assertEquals(0 to 0, g[0].col to g[0].row)
+        assertEquals(2 to 0, g[1].col to g[1].row, "beside the first, not where it was dropped")
+        assertEquals(0 to 1, g[2].col to g[2].row, "a full-width widget goes below")
+        assertTrue(noOverlap(g))
+    }
+
+    @Test
+    fun noWidgetIsAddedTwice() {
+        val g = WidgetGrid.add(emptyList(), w(WidgetKind.NAV, 0, 0, 4, 2))
+        assertEquals(g, WidgetGrid.add(g, w(WidgetKind.NAV, 1, 5, 2, 1)))
+    }
+
+    @Test
+    fun movingOntoAnotherPushesItDown() {
+        val a = w(WidgetKind.NAV, 0, 0, 4, 2)
+        val b = w(WidgetKind.OFTEN, 0, 2, 4, 2)
+        val c = w(WidgetKind.ACTIONS, 0, 4, 4, 2)
+        val moved = WidgetGrid.move(listOf(a, b, c), c, 0, 0)
+        assertTrue(noOverlap(moved))
+        assertEquals(0, moved.first { it.kind == WidgetKind.ACTIONS }.row)
+        assertEquals(2, moved.first { it.kind == WidgetKind.NAV }.row)
+        assertEquals(4, moved.first { it.kind == WidgetKind.OFTEN }.row)
+    }
+
+    @Test
+    fun aWidgetCannotLeaveTheGrid() {
+        val a = w(WidgetKind.NAV, 0, 0, 3, 1)
+        val moved = WidgetGrid.move(listOf(a), a, 9, -4).single()
+        assertEquals(1, moved.col, "kept on the grid: 4 columns, 3 wide")
+        assertEquals(0, moved.row)
+    }
+
+    @Test
+    fun resizingStaysBetweenTheLimitsAndBumpsTheRest() {
+        val cal = w(WidgetKind.CALENDAR, 0, 0, 4, 3)
+        val agenda = w(WidgetKind.AGENDA, 0, 3, 4, 3)
+        val big = WidgetGrid.resize(listOf(cal, agenda), cal, 9, 9)
+        val c = big.first { it.kind == WidgetKind.CALENDAR }
+        assertEquals(4 to 4, c.w to c.h, "the calendar is at most 4 by 4")
+        assertEquals(4, big.first { it.kind == WidgetKind.AGENDA }.row)
+        val small = WidgetGrid.resize(listOf(cal), cal, 1, 1).single()
+        assertEquals(4 to 2, small.w to small.h, "and at least 4 by 2")
+        assertTrue(noOverlap(big))
+    }
+
+    @Test
+    fun resizingNearTheRightEdgeShiftsLeftToStayOnTheGrid() {
+        val a = w(WidgetKind.OFTEN, 3, 0, 1, 1).copy(w = 2)
+        val g = WidgetGrid.resize(listOf(a), a, 3, 1).single()
+        assertEquals(1, g.col)
+        assertEquals(3, g.w)
+    }
+
+    @Test
+    fun pagesDoNotPushEachOther() {
+        val home = w(WidgetKind.NAV, 0, 0, 4, 2)
+        val today = w(WidgetKind.AGENDA, 0, 0, 4, 3, WidgetPage.TODAY)
+        val moved = WidgetGrid.move(listOf(home, today), home, 0, 0)
+        assertEquals(0, moved.first { it.page == WidgetPage.TODAY }.row)
+    }
+
+    @Test
+    fun theOldStackBecomesAGridInTheSameOrderWithBottomWidgetsAtTheFoot() {
+        val slots = defaultWidgets()
+        val grid = WidgetGrid.fromSlots(slots, homeRows = 14)
+        assertTrue(noOverlap(grid))
+        assertEquals(slots.size, grid.size)
+        val home = WidgetGrid.onPage(grid, WidgetPage.HOME)
+        val order = home.sortedBy { it.row }.map { it.kind }
+        assertEquals(listOf(WidgetKind.CLOCK, WidgetKind.BUDDY, WidgetKind.NAV, WidgetKind.OFTEN, WidgetKind.PINNED, WidgetKind.ACTIONS), order)
+        assertEquals(14, WidgetGrid.rows(grid, WidgetPage.HOME), "the bottom widgets end at the foot")
+        assertTrue(home.all { it.w == WidgetGrid.COLUMNS })
+        assertEquals(listOf(WidgetKind.CALENDAR, WidgetKind.AGENDA), WidgetGrid.onPage(grid, WidgetPage.TODAY).sortedBy { it.row }.map { it.kind })
+    }
+
+    @Test
+    fun smallerOldSizesGiveShorterWidgets() {
+        val large = WidgetGrid.fromSlots(listOf(WidgetSlot(WidgetArea.TODAY, WidgetKind.AGENDA, size = WidgetSize.LARGE))).single()
+        val small = WidgetGrid.fromSlots(listOf(WidgetSlot(WidgetArea.TODAY, WidgetKind.AGENDA, size = WidgetSize.SMALL))).single()
+        assertTrue(small.h < large.h)
+    }
+
+    @Test
+    fun theGridIsSavedAndReadBack() {
+        val prefs = LauncherPrefs().withGrid(listOf(w(WidgetKind.NAV, 1, 2, 3, 1), GridWidget(WidgetPage.TODAY, WidgetKind.FOLDER, "Games", 0, 0, 4, 2)))
+        val back = LauncherPrefs.decode(prefs.encode())
+        assertEquals(prefs.grid, back.grid)
+    }
+
+    @Test
+    fun anEmptyGridIsSavedAndASavedStackStillShowsAsAGrid() {
+        assertEquals(emptyList(), LauncherPrefs.decode(LauncherPrefs().withGrid(emptyList()).encode()).grid)
+        val old = LauncherPrefs.decode("G HOME_TOP\tCLOCK\t\tLARGE\nG TODAY\tAGENDA\t\tSMALL\n")
+        assertEquals(null, old.grid)
+        assertEquals(2, old.gridWidgets.size)
+    }
+
+    @Test
+    fun damagedGridLinesAreSkipped() {
+        val back = LauncherPrefs.decode("X HOME\tNAV\t\t1\t2\t3\nX NOPE\tNAV\t\t0\t0\t4\t2\nX HOME\tNAV\t\t0\t0\t4\t2\n")
+        assertEquals(1, back.grid?.size)
+        assertFalse(back.grid.isNullOrEmpty())
+    }
+}

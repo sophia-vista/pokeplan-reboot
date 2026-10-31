@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.90.8
+
+- Groundwork for launcher widgets like Smart Launcher's (drag anywhere, resize): the grid model (`launcher/WidgetGrid.kt`: 4 columns, per-kind size limits, add, move with what is in the way going down, resize, and the old stacked layout laid out as a grid) and its saved form, with 12 tests. Nothing changes on screen yet; the plan and what is next are in `docs/launcher-widget-grid.md`.
+
 ## 0.90.7
 
 - Launcher: the night tint is one sheet over the whole town, so it reaches the right edge (a lighter, untinted strip showed there at night). A render of the town at 8:39 pm is in the screenshot test.
