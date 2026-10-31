@@ -376,10 +376,10 @@ class ScreenshotTest {
         return store
     }
 
-    private fun collection(name: String, section: Int, open: Boolean = false, hatched: Int = 4, setup: (GameStore) -> Unit = {}) {
+    private fun collection(name: String, section: Int, open: Boolean = false, hatched: Int = 4, fontScale: Float = 1f, height: Int = 1080, setup: (GameStore) -> Unit = {}) {
         val store = storeWithTeam(hatched).also(setup)
         val model = AppModel(store)
-        render(name) {
+        render(name, fontScale = fontScale, height = height) {
             PixelTheme {
                 Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
                     app.pokeplan.ui.screens.CollectionScreen(model, section, if (open) store.data.player.buddyId else null)
@@ -528,7 +528,7 @@ class ScreenshotTest {
     private fun modules(name: String, module: app.pokeplan.ui.screens.Module?, plan: app.pokeplan.ui.screens.PlanSection? = null) =
         meStore(name, prepare = { it.module = module; it.planSection = plan }) { model -> app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
 
-    private fun meStore(name: String, prepare: (AppModel) -> Unit = {}, height: Int = 1080, content: @Composable (AppModel) -> Unit) {
+    private fun meStore(name: String, prepare: (AppModel) -> Unit = {}, height: Int = 1080, fontScale: Float = 1f, content: @Composable (AppModel) -> Unit) {
         val store = storeWithTeam()
         store.addGoal("Learn guitar").also { g ->
             store.addMilestone(g.id, "Buy a guitar")
@@ -540,7 +540,7 @@ class ScreenshotTest {
         clock.millis += 11_000
         store.tick()
         val model = AppModel(store).also(prepare)
-        render(name, height = height) {
+        render(name, fontScale = fontScale, height = height) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { content(model) } }
         }
     }
@@ -570,7 +570,7 @@ class ScreenshotTest {
     fun planReview() = modules("plan-review", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.REVIEW)
 
     /** The Care module, with a few routines (one done), a skill practised, a diary card and a journal entry, open on [section] (null for its menu). */
-    private fun care(name: String, section: app.pokeplan.ui.screens.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false) {
+    private fun care(name: String, section: app.pokeplan.ui.screens.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(careParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.CARE) }
@@ -586,7 +586,7 @@ class ScreenshotTest {
         model.module = app.pokeplan.ui.screens.Module.CARE
         model.careSection = section
         if (visiting) care.visitors().first().let { v -> care.startVisit(v.speciesId); care.visitAct(app.pokeplan.care.CareAction.WORDS) }
-        render(name, height = height) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+        render(name, fontScale = fontScale, height = height) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
     /** Home as the world overview: each region with its lead and next step, the streak, and what happened recently. */
@@ -611,6 +611,19 @@ class ScreenshotTest {
         val model = AppModel(storeWithTeam())
         val r = model.care.addRoutine("Drink a glass of water", kotlinx.datetime.LocalTime(9, 0), setOf(kotlinx.datetime.DayOfWeek.MONDAY, kotlinx.datetime.DayOfWeek.FRIDAY))
         render("care-routine-edit-xl", fontScale = 1.3f, height = 1500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) { app.pokeplan.ui.screens.RoutineOptions(model, model.careData.routines.single { it.id == r.id }, startEditing = true) {} } } } }
+    }
+
+    /** Every Plan section, every Care section and the Pokémon tab at the system's text at 130%: nothing clipped or pushed out of its box. */
+    @Test
+    fun largeTextModules() {
+        app.pokeplan.ui.screens.PlanSection.entries.filter { it != app.pokeplan.ui.screens.PlanSection.PLANNER && it != app.pokeplan.ui.screens.PlanSection.FOCUS }.forEach { sec ->
+            meStore("plan-xl-${sec.name.lowercase()}", prepare = { it.module = app.pokeplan.ui.screens.Module.PLAN; it.planSection = sec }, height = 1500, fontScale = 1.3f) { m -> app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }
+        }
+        meStore("plan-xl-menu", prepare = { it.module = app.pokeplan.ui.screens.Module.PLAN; it.store.markRewardsSeen() }, height = 3600, fontScale = 1.3f) { m -> app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }
+        care("care-xl-menu", null, height = 3800, careParty = 3, fontScale = 1.3f)
+        app.pokeplan.ui.screens.CareSection.entries.forEach { care("care-xl-${it.name.lowercase()}", it, height = 1500, fontScale = 1.3f) }
+        (0..3).forEach { collection("collection-xl-$it", it, hatched = 6, fontScale = 1.3f, height = 1500) }
+        collection("collection-xl-menu", -1, fontScale = 1.3f)
     }
 
     @Test
