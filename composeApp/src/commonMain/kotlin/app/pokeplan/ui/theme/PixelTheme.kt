@@ -113,6 +113,10 @@ object Spacing {
     val XXL = 24.dp
     val XXXL = 32.dp
 
+    /** Room between a dialogue box's outer edge and what is in it: its 8 dp frame plus a gap, sideways and above and below. */
+    val BoxX = 24.dp
+    val BoxY = 18.dp
+
     /** Page horizontal padding. */
     val Page = 20.dp
 
@@ -191,7 +195,7 @@ fun TextBox(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
             .fillMaxWidth()
             .dialogueBox()
             .clip(DialogueShape)
-            .padding(Spacing.L),
+            .padding(horizontal = Spacing.BoxX, vertical = Spacing.BoxY),
     ) { content() }
 }
 
@@ -237,7 +241,7 @@ fun PixelButton(
             .clip(DialogueShape)
             .focusRing(DialogueShape)
             .clickable(interactionSource = source, indication = LocalIndication.current, enabled = enabled, role = Role.Button, onClick = onClick)
-            .padding(PaddingValues(horizontal = if (compact) 12.dp else 20.dp, vertical = 10.dp)),
+            .padding(PaddingValues(horizontal = if (compact) 16.dp else 24.dp, vertical = 12.dp)),
         contentAlignment = Alignment.Center,
     ) {
         // The label sinks with the key while it is held.

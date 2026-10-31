@@ -137,7 +137,7 @@ private fun RegionCard(
         Modifier.fillMaxWidth().dialogueBox(tone = frameToneOf(look.accent)).clip(shape),
     ) {
         Row(
-            Modifier.fillMaxWidth().clickable(onClickLabel = "Open $name", role = Role.Button, onClick = onOpen).padding(horizontal = Spacing.L, vertical = Spacing.M),
+            Modifier.fillMaxWidth().clickable(onClickLabel = "Open $name", role = Role.Button, onClick = onOpen).padding(horizontal = Spacing.BoxX, vertical = Spacing.L),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             val window = RoundedCornerShape(Spacing.M)
@@ -154,7 +154,7 @@ private fun RegionCard(
             Text("›", style = MaterialTheme.typography.titleLarge, color = Pixel.InkSoft)
         }
         Box(Modifier.fillMaxWidth().padding(horizontal = Spacing.S).height(1.dp).background(Pixel.Border))
-        Box(Modifier.fillMaxWidth().padding(horizontal = Spacing.L, vertical = Spacing.M)) { step() }
+        Box(Modifier.fillMaxWidth().padding(horizontal = Spacing.BoxX, vertical = Spacing.L)) { step() }
     }
 }
 
@@ -174,7 +174,7 @@ private fun StepRow(text: String, action: String?, color: Color = Pixel.Green, l
     }
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         lead()
-        Text(text, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 3)
+        Text(text, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
         if (action != null) PixelButton(action, onClick, color = color, compact = true)
     }
 }

@@ -78,7 +78,7 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
             .clip(menuShape)
             .focusRing(menuShape)
             .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = Spacing.M, vertical = Spacing.L),
+            .padding(horizontal = Spacing.XL, vertical = Spacing.XL),
     ) {
         val picture = @Composable {
             Box(Modifier.size(72.dp).background(entry.tint.copy(alpha = 0.12f), CircleShape), contentAlignment = Alignment.Center) {

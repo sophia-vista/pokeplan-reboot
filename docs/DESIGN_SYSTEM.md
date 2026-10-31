@@ -7,7 +7,7 @@ change as any token, component or rule it describes. Approved in the 0.64.0 desi
 ## 1. Two registers
 - **Utility** (the app: every screen under the four tabs): cards drawn as dialogue boxes: `Pixel.Panel` inside a thin version of the
   game's frame (`Modifier.dialogueBox()`: hairline, band 2 px at the sides and 1 at the top and bottom, a muted inner line, 2 dp art
-  pixels, 6 dp corners), no shadow, no padding added (the card's own 16 dp keeps content clear). Components: `TextBox`, `ListRow`,
+  pixels, 6 dp corners), no shadow, no padding added (the card's own padding keeps content clear: `Spacing.BoxX` 24 dp sideways and `BoxY` 18 dp above and below, so text sits about 9 art pixels inside the frame). Components: `TextBox`, `ListRow`,
   `MenuGrid`, `PixelButton`.
 - **World** (the Android launcher home only): the game's dialogue box: a see-through black panel (`PmdPalette.Fill`) in a rounded frame of
   a pale hairline (`#A8C0E0`), a blue band (`#6080F8`, 1 px at the top and bottom, 5 px at the sides) and a deep line (`#4820F8`), drawn at

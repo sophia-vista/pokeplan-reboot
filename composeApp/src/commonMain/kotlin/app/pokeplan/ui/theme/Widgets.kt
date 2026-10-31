@@ -232,7 +232,7 @@ fun ListRow(
                 }
             }
             .defaultMinSize(minHeight = 64.dp)
-            .padding(horizontal = Spacing.M, vertical = Spacing.M),
+            .padding(horizontal = Spacing.XL, vertical = Spacing.M + Spacing.XS),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.M),
     ) {
