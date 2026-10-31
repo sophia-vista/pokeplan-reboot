@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.75.0
+
+- Launcher: every box on the home page is a widget now, and so are the calendar and the day's agenda on Today. Launcher settings → Widgets lists them by place (top of the home page, bottom of it, the Today page); each can be moved Up or Down, Removed and Added back, and a place can hold any widget. The widgets: Date and time, Companion, Shortcuts, Often used, Favorites, Folder, App buttons, Calendar, Agenda and tasks, and a new Forecast widget (today and the next four days).
+- Launcher: folders are widgets. The pinned-apps box is now the Favorites widget; a folder is a labelled box with its apps in it (tap an app to open it, press and hold for its sheet, tap the label to manage the folder). "New folder" in Widgets, in Folders or in an app's sheet makes the folder and its widget together; the apps go in from the long-press sheet in All apps ("Add to folder"). Removing a folder's widget keeps the folder.
+- Launcher: the bottom widgets scroll when there are more than fit.
+- Launcher: an app icon's pixel border is the icon's own edge colour, so it melts into the picture and only the stair-stepped corners show.
+- The old "Date and time box" and "Status box" switches are now the widgets (a launcher that had them off keeps them off).
+
 ## 0.74.0
 
 - Launcher: Niagara-style features. **Often used**: the apps you open most from the launcher (not pinned, opened at least 3 times) show above your pins, kept as counts on the device only. **Folders** on a screen of their own: make, rename and delete folders, add an app from the long-press sheet in All apps ("Add to folder"), open and remove apps. **Weather forecast**: choose a town (Launcher settings → Weather place); the status box shows the temperature and sky, and tapping it opens the forecast for the days ahead. It comes from Open-Meteo (no account; only the chosen place's coordinates are sent), is kept for 30 minutes and works offline from the last one.
