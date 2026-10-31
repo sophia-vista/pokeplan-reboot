@@ -7,8 +7,9 @@ change as any token, component or rule it describes. Approved in the 0.64.0 desi
 ## 1. Two registers
 - **Utility** (the app: every screen under the four tabs): calm cards on the page background, rounded 16 dp, one thin
   border, no shadow. Components: `TextBox`, `ListRow`, `PixelButton`, `MenuGrid`.
-- **World** (the Android launcher home only): the game's dialogue box, a near-black panel with a notched two-pixel frame,
-  drawn at the town's pixel scale in the dialogue font. Components: `PmdBox`, `PmdMenuLine`, `PmdButton`, `PmdRule`.
+- **World** (the Android launcher home only): the game's dialogue box: a see-through black panel (`PmdPalette.Fill`) in a rounded frame of
+  a pale hairline (`#A8C0E0`), a blue band (`#6080F8`, 3 px at the top and bottom, 5 px at the sides) and a deep line (`#4820F8`), drawn at
+  the town's pixel scale in the dialogue font. Components: `PmdBox`, `PmdMenuLine`, `PmdButton`, `PmdRule`.
 - A screen belongs to one register. Do not put a dialogue box in the app or a card on the launcher home.
 
 ## 2. Colour (`Pixel`)

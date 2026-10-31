@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.66.1
+
+- Launcher: the dialogue box is drawn like the game's menu boxes. A pale hairline, a blue band that is thicker at the sides than at the top and bottom, a deep-blue line, rounded corners, and a see-through black inside so the town shows behind the words. There is more room between the frame and the text.
+
 ## 0.66.0
 
 Polish and states (phase 3 of the design audit).

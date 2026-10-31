@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
@@ -104,46 +105,67 @@ internal fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, al
 
 /** The colours of a dialogue box's frame. Every panel uses the same one; selection and the main action show in other ways. */
 internal object PmdPalette {
-    val Frame = Color(0xFF5088F0)
-    val FrameInner = Color(0xFF102058)
-    val Fill = Color(0xEE080810)
+    /** The pale hairline on the outside of the frame. */
+    val Edge = Color(0xFFA8C0E0)
+    /** The frame's main band. */
+    val Band = Color(0xFF6080F8)
+    /** The one-pixel line between the band and the inside. */
+    val Deep = Color(0xFF4820F8)
+    /** The inside: black, see-through, so the town shows behind the words. */
+    val Fill = Color(0xA6000010)
     /** Behind a town while its tiles load. */
     val Loading = Color(0xFF3B4A3A)
 }
 
-internal enum class PmdTone(val outer: Color, val inner: Color) {
-    BLUE(PmdPalette.Frame, PmdPalette.FrameInner),
+/** The frame's colours: the pale hairline, the band and the deep line. Every panel uses the same ones. */
+internal enum class PmdTone(val edge: Color, val band: Color, val deep: Color) {
+    BLUE(PmdPalette.Edge, PmdPalette.Band, PmdPalette.Deep),
 }
 
 /**
- * A dialogue box like the game's: a near-black panel with a two-pixel frame and notched corners, every part a whole number
- * of art pixels at [pixel]. The frame is drawn in code (UI chrome); the text inside is the dialogue font.
+ * A dialogue box like the game's: a see-through black panel in a rounded, layered frame (a pale hairline, a blue band that is
+ * thicker at the sides than at the top and bottom, and a deep-blue line), every part a whole number of art pixels at [pixel].
+ * [inset] is the room, in art pixels, between the frame and the words. The frame is drawn in code (UI chrome).
  */
 @Composable
 internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = PmdTone.BLUE, inset: Int = 6, content: @Composable BoxScope.() -> Unit) {
     val density = LocalDensity.current.density
     Box(
-        modifier.drawBehind { pmdFrame(pixel, tone) }.padding(horizontal = ((inset + 2) * pixel / density).dp, vertical = (inset * pixel / density).dp),
+        modifier.drawBehind { pmdFrame(pixel, tone) }
+            .padding(horizontal = ((SIDE + inset) * pixel / density).dp, vertical = ((TOP + inset / 2) * pixel / density).dp),
         content = content,
     )
 }
 
-private fun DrawScope.pmdFrame(p: Int, tone: PmdTone) {
+/** The frame's thickness in art pixels: pale line 1 + band 3 + deep line 1 at the top and bottom, 1 + 5 + 1 at the sides. */
+private const val TOP = 5
+private const val SIDE = 7
+
+/** A rectangle with stair-stepped (rounded) corners: [insets] is how far in each row from the corner starts, ending in 0. */
+private fun DrawScope.stairRect(p: Float, l: Float, t: Float, r: Float, b: Float, insets: IntArray): Path = Path().apply {
+    val n = insets.size
+    moveTo(l + insets[0] * p, t)
+    for (k in 0 until n) { lineTo(r - insets[k] * p, t + k * p); lineTo(r - insets[k] * p, t + (k + 1) * p) }
+    for (k in n - 1 downTo 0) { lineTo(r - insets[k] * p, b - (k + 1) * p); lineTo(r - insets[k] * p, b - k * p) }
+    for (k in 0 until n) { lineTo(l + insets[k] * p, b - k * p); lineTo(l + insets[k] * p, b - (k + 1) * p) }
+    for (k in n - 1 downTo 0) { lineTo(l + insets[k] * p, t + (k + 1) * p); lineTo(l + insets[k] * p, t + k * p) }
+    close()
+}
+
+private fun DrawScope.pmdFrame(pixel: Int, tone: PmdTone) {
+    val p = pixel.toFloat()
     val w = size.width
     val h = size.height
-    val fill = PmdPalette.Fill
-    fun rect(x: Float, y: Float, rw: Float, rh: Float, c: Color) = drawRect(c, Offset(x, y), Size(rw, rh))
-    // Panel without its corner pixels, then the outer ring, then the inner ring one pixel in.
-    rect(p.toFloat(), 0f, w - 2 * p, h, fill)
-    rect(0f, p.toFloat(), w, h - 2 * p, fill)
-    rect(p.toFloat(), 0f, w - 2 * p, p.toFloat(), tone.outer)
-    rect(p.toFloat(), h - p, w - 2 * p, p.toFloat(), tone.outer)
-    rect(0f, p.toFloat(), p.toFloat(), h - 2 * p, tone.outer)
-    rect(w - p, p.toFloat(), p.toFloat(), h - 2 * p, tone.outer)
-    rect(2f * p, p.toFloat(), w - 4 * p, p.toFloat(), tone.inner)
-    rect(2f * p, h - 2 * p, w - 4 * p, p.toFloat(), tone.inner)
-    rect(p.toFloat(), 2f * p, p.toFloat(), h - 4 * p, tone.inner)
-    rect(w - 2 * p, 2f * p, p.toFloat(), h - 4 * p, tone.inner)
+    val outer = stairRect(p, 0f, 0f, w, h, intArrayOf(2, 1, 0))
+    val band = stairRect(p, p, p, w - p, h - p, intArrayOf(1, 0))
+    val deep = stairRect(p, 6 * p, 4 * p, w - 6 * p, h - 4 * p, intArrayOf(1, 0))
+    val fill = stairRect(p, 7 * p, 5 * p, w - 7 * p, h - 5 * p, intArrayOf(0))
+    // Each layer is a ring (the shape minus the next one in), so the translucent fill sits over the town, not over a coat of paint.
+    fun ring(color: Color, big: Path, small: Path) = drawPath(Path().apply { fillType = PathFillType.EvenOdd; addPath(big); addPath(small) }, color)
+    ring(tone.edge, outer, band)
+    ring(tone.band, band, deep)
+    ring(tone.deep, deep, fill)
+    drawPath(fill, PmdPalette.Fill)
 }
 
 /** One line of a dialogue menu: a touch target at least 48 dp tall with [text] in it, a small cursor in front when [selected]. */
