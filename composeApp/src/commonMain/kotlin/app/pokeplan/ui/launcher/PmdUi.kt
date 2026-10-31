@@ -83,7 +83,8 @@ internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = P
     val density = LocalDensity.current.density
     Box(
         modifier.entrance().drawBehind { pmdFrame(pixel, tone) }
-            .padding(horizontal = ((SIDE + inset) * pixel / density).dp, vertical = ((TOP + inset) * pixel / density).dp),
+            // Room inside the frame is the design system's own (Spacing.BoxX and BoxY, 24 and 18 dp), never less than the frame itself needs.
+            .padding(horizontal = maxOf(((SIDE + inset) * pixel / density).dp, Spacing.BoxX), vertical = maxOf(((TOP + inset) * pixel / density).dp, Spacing.BoxY)),
         content = content,
     )
 }

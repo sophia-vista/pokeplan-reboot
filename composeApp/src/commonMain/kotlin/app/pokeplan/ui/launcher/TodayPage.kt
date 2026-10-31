@@ -57,7 +57,7 @@ internal fun TodayPage(model: AppModel, pixel: Int) {
     fun busy(d: LocalDate) = data.events.any { it.isOn(d) } || open.any { it.planned == d || it.due?.date == d }
 
     Box(Modifier.fillMaxSize().background(Pixel.Night.copy(alpha = 0.78f)).safeDrawingPadding()) {
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.L, vertical = Spacing.M), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(start = Spacing.Page, end = Spacing.Page, top = Spacing.XXL, bottom = Spacing.XL), verticalArrangement = Arrangement.spacedBy(Spacing.XL)) {
             PmdBox(pixel, Modifier.fillMaxWidth()) {
                 Column(Modifier.fillMaxWidth()) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -93,7 +93,7 @@ internal fun TodayPage(model: AppModel, pixel: Int) {
             }
             PmdBox(pixel, Modifier.fillMaxWidth()) {
                 Column(Modifier.fillMaxWidth()) {
-                    PmdText(if (day == today) "Today" else "${dayName(day.dayOfWeek)} ${day.dayOfMonth} ${monthName(day.month)}", pixel, Modifier.padding(horizontal = pmdRowPad(pixel, density), vertical = Spacing.S))
+                    PmdText(if (day == today) "Today" else "${dayName(day.dayOfWeek)} ${day.dayOfMonth} ${monthName(day.month)}", pixel, Modifier.padding(horizontal = pmdRowPad(pixel, density), vertical = Spacing.M))
                     PmdRule(pixel)
                     val events = eventsOn(day)
                     val tasks = tasksOn(day)

@@ -88,7 +88,7 @@ internal fun townResidents(all: List<OwnedPokemon>, buddyId: String?, cap: Int =
  * stand still. Everything is drawn at one whole-number [townScale] without smoothing, on one pixel grid.
  */
 @Composable
-internal fun Town(model: AppModel, scene: String, active: Boolean, onMenu: (OwnedPokemon) -> Unit, modifier: Modifier = Modifier, size: Int = TOWN_CAP) {
+internal fun Town(model: AppModel, scene: String, active: Boolean, onMenu: (OwnedPokemon) -> Unit, modifier: Modifier = Modifier, size: Int = TOWN_CAP, weather: Weather = Weather.CLEAR) {
     val data = model.data
     val residents = townResidents(data.player.pokemon, data.player.buddy?.id, size)
     BoxWithConstraints(modifier) {
@@ -107,6 +107,8 @@ internal fun Town(model: AppModel, scene: String, active: Boolean, onMenu: (Owne
         residents.forEachIndexed { i, mon ->
             key(mon.id) { Resident(model, mon, widthPx, heightPx, pixel, top, bottom, calm = calm, index = i, life = life, asleep = night && sleepsAtNight(mon), onMenu = onMenu) }
         }
+        // The weather is over everything and never takes a touch.
+        WeatherLayer(weather, pixel, dungeon, calm, Modifier.fillMaxSize().zIndex(10f))
     }
 }
 
@@ -187,7 +189,7 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
     }
 }
 
-/** How far above its feet an icon sits, in art pixels (a Pokémon is about this tall). */
+/** How far above its feet an icon sits, in art pixels (a Pokémon is about this tall); a bigger icon sits a little higher. */
 private const val ICON_RISE = 22
 
 /** Where the night starts for the town: the darkness at which the sleepy ones lie down. */
@@ -258,17 +260,20 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
                             delay(800)
                             life.holds[second.id] = Hold(StatusKind.ALERT, hop = 1, faceLeft = true)
                             sound(Sfx.SURPRISE, withBuddy)
+                            delay(900)
+                            // Then they are pleased to meet.
+                            life.holds[first.id] = Hold(StatusKind.TWINKLE, faceLeft = false); life.holds[second.id] = Hold(StatusKind.TWINKLE, faceLeft = true)
                         }
                         in 6..7 -> {
                             life.holds[first.id] = Hold(StatusKind.CROSS, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(null, faceLeft = true, approach = towardsSecond)
                             delay(700)
                             sound(Sfx.MAD, withBuddy)
                             delay(700)
-                            life.holds[second.id] = Hold(StatusKind.ALERT, hop = 1, faceLeft = true)
+                            life.holds[second.id] = Hold(StatusKind.SWEAT, hop = 1, faceLeft = true)
                             sound(Sfx.URGENT_SHOCK, withBuddy)
                         }
                         else -> {
-                            life.holds[first.id] = Hold(StatusKind.ALERT, hop = 1, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(StatusKind.ALERT, hop = 1, faceLeft = true, approach = towardsSecond)
+                            life.holds[first.id] = Hold(StatusKind.ZAP, hop = 1, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(StatusKind.ZAP, hop = 1, faceLeft = true, approach = towardsSecond)
                             sound(Sfx.SHOCK, withBuddy)
                         }
                     }

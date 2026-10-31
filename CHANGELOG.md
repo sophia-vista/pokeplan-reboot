@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.72.0
+
+- Launcher: weather over the town, from the real Mystery Dungeon effects: rain with splashes, snow, a blizzard, a sandstorm and the shadows of drifting clouds, set in the launcher settings (Weather). It is only a look, not the real weather, and it never takes a touch; it stands still with Reduce motion.
+- Launcher: three more status icons for the Pokémon's meetings: a yellow flash when both are startled, a blue drop for the nervous one in a quarrel and a white sparkle when a greeting ends happily.
+- Launcher: more room everywhere. The dialogue boxes keep the design system's own padding inside their frames (24 dp sideways, 18 dp above and below), the home page and the settings and Today pages have the page margin and wider gaps between boxes, and pinned apps have more space around them.
+- Assets: `assets/weather` (cut by `tools/sprites/cut_weather.py`) and three more icons in `assets/status`.
+
 ## 0.71.0
 
 - Launcher: a second page beside the town, Today: a month calendar (Prev and Next change month, a dot marks days with plans) and the chosen day's agenda, events first and then its tasks with a box to tick. It reads PokéPlan's own planner, so it needs no permission. Swipe across to it, press Home or Back to return; two blocks at the top show which page you are on.

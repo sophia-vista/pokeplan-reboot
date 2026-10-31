@@ -194,7 +194,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 LaunchedEffect(homePresses) { if (homePresses > 0) pages.animateScrollToPage(0) }
                 androidx.compose.foundation.pager.HorizontalPager(pages, Modifier.fillMaxSize(), beyondViewportPageCount = 1) { page ->
                     if (page == 0) Box(Modifier.fillMaxSize()) {
-                        Town(model, prefs.scene, active && prefs.walking && pages.currentPage == 0, onMenu = { menuMon = it }, size = prefs.townSize, modifier = Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onLongPress = { model.effect(Sfx.LONG_PRESS); pickingTown = true }) })
+                        Town(model, prefs.scene, active && prefs.walking && pages.currentPage == 0, onMenu = { menuMon = it }, size = prefs.townSize, weather = prefs.weather, modifier = Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onLongPress = { model.effect(Sfx.LONG_PRESS); pickingTown = true }) })
                         HomePage(model, apps, prefs, isDefault, host, pixel, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
                     } else Box(Modifier.fillMaxSize()) {
                         TownBackdrop(prefs.scene, Modifier.fillMaxSize(), darkness = 0f)
@@ -262,7 +262,7 @@ private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPr
     val buddy = data.player.buddy
     val density = LocalDensity.current.density
     val gap = Modifier.padding(horizontal = (6 * pixel / density).dp)
-    Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = Spacing.M, vertical = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+    Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         if (data.onboarded && buddy != null && prefs.showStatus) PmdBox(pixel, Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Open PokéLife") { host.openApp(Place.HOME) }, inset = 1) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 PmdText("${buddy.nickname}  Lv. ${buddy.level}", pixel, gap)
@@ -312,7 +312,7 @@ private fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixel
     val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Column(
         modifier.pressScale(source).defaultMinSize(minHeight = 72.dp).focusRing(rowShape, Color.White).combinedClickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onLongClick = { ui(Sfx.LONG_PRESS); onHold() }, onClick = { ui(Sfx.CONFIRM); host.open(app.key) })
-            .semantics(mergeDescendants = true) {}.padding(vertical = (2 * pixel / density).dp),
+            .semantics(mergeDescendants = true) {}.padding(vertical = Spacing.S),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
         if (item != null) ItemIcon(item, size = 40.dp, description = null) else AppIcon(host, app.key, 40.dp)
@@ -564,7 +564,7 @@ internal fun LauncherSettings(
     val settings = model.data.settings
     val volume = if (settings.sound) settings.effectsVolume else 0
     Box(Modifier.fillMaxSize().background(Pixel.Night).safeDrawingPadding()) {
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.L, vertical = Spacing.M), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.XL), verticalArrangement = Arrangement.spacedBy(Spacing.XL)) {
             PmdBox(pixel, Modifier.fillMaxWidth()) {
                 Column {
                     PmdMenuLine("Back", pixel, onClick = onClose)
@@ -576,6 +576,7 @@ internal fun LauncherSettings(
                 Column {
                     PmdMenuLine("Town: ${(TownScenes.all.firstOrNull { it.first == prefs.scene } ?: TownScenes.all.first()).second}", pixel, onClick = onTown)
                     PmdMenuLine("Pokémon in the town: ${prefs.townSize}", pixel) { onPrefs(prefs.nextTownSize()) }
+                    PmdMenuLine("Weather: ${prefs.weather.label}", pixel) { onPrefs(prefs.nextWeather()) }
                     PmdMenuLine("Pokémon walk about: ${onOff(prefs.walking)}", pixel) { onPrefs(prefs.withWalking(!prefs.walking)) }
                     PmdMenuLine("Status box: ${onOff(prefs.showStatus)}", pixel) { onPrefs(prefs.withShowStatus(!prefs.showStatus)) }
                     PmdMenuLine("Drag in from the right: ${onOff(prefs.edgeDrag)}", pixel) { onPrefs(prefs.withEdgeDrag(!prefs.edgeDrag)) }
