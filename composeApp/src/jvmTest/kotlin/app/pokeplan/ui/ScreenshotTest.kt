@@ -682,6 +682,32 @@ class ScreenshotTest {
         }
     }
 
+    /** Every landing page on a brand-new save (the starter and nothing else): the first-use and empty states. */
+    @Test
+    fun firstUse() {
+        fun page(name: String, prepare: (AppModel) -> Unit = {}, content: @Composable (AppModel) -> Unit) {
+            val model = AppModel(started()).also(prepare)
+            render("first-$name", height = 1500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { content(model) } } }
+        }
+        page("home") { app.pokeplan.ui.screens.HomeScreen(it) {} }
+        page("modules") { app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
+        page("plan") { it.module = app.pokeplan.ui.screens.Module.PLAN; app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
+        app.pokeplan.ui.screens.PlanSection.entries.filter { it != app.pokeplan.ui.screens.PlanSection.PLANNER && it != app.pokeplan.ui.screens.PlanSection.SETTINGS }.forEach { sec ->
+            page("plan-${sec.name.lowercase()}") { it.module = app.pokeplan.ui.screens.Module.PLAN; it.planSection = sec; app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
+        }
+        for (v in 0..5) page("planner-$v") { app.pokeplan.ui.screens.PlannerScreen(it, startView = v) }
+        page("care") { it.module = app.pokeplan.ui.screens.Module.CARE; app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
+        app.pokeplan.ui.screens.CareSection.entries.filter { it != app.pokeplan.ui.screens.CareSection.SETTINGS }.forEach { sec ->
+            page("care-${sec.name.lowercase()}") { it.module = app.pokeplan.ui.screens.Module.CARE; it.careSection = sec; app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
+        }
+        app.pokeplan.ui.screens.WorldSection.entries.filter { it != app.pokeplan.ui.screens.WorldSection.SETTINGS }.forEach { sec ->
+            page("world-${sec.name.lowercase()}") { it.worldSection = sec; app.pokeplan.ui.screens.WorldScreen(it) }
+        }
+        for (i in 0..3) page("pokemon-$i") { app.pokeplan.ui.screens.CollectionScreen(it, i) }
+        page("pokemon-quests") { app.pokeplan.ui.screens.CollectionScreen(it, -1) }
+        page("me") { app.pokeplan.ui.screens.MeScreen(it, -1) }
+    }
+
     @Test
     fun careMenu() = care("care", null)
 

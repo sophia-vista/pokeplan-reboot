@@ -314,10 +314,10 @@ internal fun emptyTitle(view: View) = when (view) {
 }
 
 internal fun emptyLine(view: View) = when (view) {
-    View.TODAY -> null
+    View.TODAY -> "Add one above, or plan one for today from the inbox or the calendar."
     View.INBOX -> "Tasks you add outside a list land here. File them in a list from a task's options."
     View.UPCOMING -> "Tasks planned for the next 7 days show up here."
-    View.DONE -> null
+    View.DONE -> "Tasks you finish show up here, newest first."
     View.HABITS -> "Habits are small things you want to do often."
     View.DAY, View.ALL -> null
 }

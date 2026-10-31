@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.90.5
+
+- First-use pass: every landing page was rendered on a brand-new save (`ScreenshotTest.firstUse`, 33 pages: Home, Modules, Plan and its sections, the planner's views, Care and its sections, World's sections, the Pokémon tab, Me). Nearly all already say what goes there and what to do; the two that gave only a title now give a line too: Planner's Done ("Tasks you finish show up here, newest first.") and an empty Today ("Add one above, or plan one for today from the inbox or the calendar.").
+
 ## 0.90.4
 
 - Control system, the rest of it: a tappable list row tints faintly under a mouse and shrinks to 98% when pressed (like a key); the bottom tab bar items tint under a mouse. In Settings → Account the password field turns red with "A few more characters: at least 6" once you have typed fewer than 6 (the rule shows as a quiet line before), and the email and password fields are dimmed while signing in.
