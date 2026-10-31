@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.91.1
+
+- World map: the wild Pokémon shown on each dungeon are dark shapes standing still, not walking sprites: they are samples of who lives there, not Pokémon you have. (The team's own expedition box still walks.)
+- UI taps: 6% of the Sound effects volume (3% was not audible; 10% was too loud).
+
 ## 0.91.0
 
 - Launcher: the widget grid can be switched on as a preview (Launcher settings → "Widget grid (preview)", off by default). Home and Today then draw the same widgets in cells, 4 across and 40 dp tall rows, each clipped to its cells, with the town showing through the empty ones; your layout is converted with the same order. You cannot drag or resize on the grid yet (that is the next step, `docs/launcher-widget-grid.md`); switch it off to edit the stacked layout. A row is 40 dp (the model's limits were scaled to match) and the old Small, Medium and Large become a widget's height.

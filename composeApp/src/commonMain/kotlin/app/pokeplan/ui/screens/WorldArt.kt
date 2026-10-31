@@ -172,7 +172,9 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
                     val order = shown.size - 1 - i
                     val feet = tile * (if (i % 2 == 0) 2.2f else 2.9f)
                     Box(Modifier.offset(x = step * order + tile * 0.3f, y = feet - size)) {
-                        app.pokeplan.ui.AnimatedSprite(p.formId, p.shiny, p.name, size = size, animate = animate, ground = 0.dp, action = app.pokeplan.ui.SpriteAction.WALK_SIDE)
+                        // A sample (the wild Pokémon of a dungeon on the map) is a dark shape standing still: it is a hint, not someone you have.
+                        if (p.sample) app.pokeplan.ui.Sprite(p.formId, p.shiny, p.name, size = size, silhouette = Color.Black.copy(alpha = 0.85f))
+                        else app.pokeplan.ui.AnimatedSprite(p.formId, p.shiny, p.name, size = size, animate = animate, ground = 0.dp, action = app.pokeplan.ui.SpriteAction.WALK_SIDE)
                     }
                 }
             }
@@ -182,7 +184,7 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
 }
 
 /** Someone who walks on a [TileBox]'s floor. */
-internal data class TileWalker(val formId: Int, val shiny: Boolean, val name: String)
+internal data class TileWalker(val formId: Int, val shiny: Boolean, val name: String, val sample: Boolean = false)
 
 /** [content] in white, for writing on a dark wall. */
 @Composable
