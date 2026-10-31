@@ -19,7 +19,8 @@ val composeAssets = tasks.register<Sync>("prepareComposeAssets") {
     from(rootProject.file("assets/animated")) { include("*.png", "*.tsv"); into("files/animated") }
     from(rootProject.file("assets/pmd")) { include("**/*.png", "**/*.tsv"); into("files/pmd") }
     from(rootProject.file("assets/scenes")) { include("*.png"); into("files/scenes") }
-    from(rootProject.file("assets/world")) { include("*.png"); into("files/world") }
+    from(rootProject.file("assets/world")) { include("*.png", "fx/*.png", "fx/*.tsv"); into("files/world") }
+    from(rootProject.file("assets/pmd-items")) { include("*.png"); into("files/pmditems") }
     from(rootProject.file("assets/tiles")) { include("*.png"); into("files/tiles") }
     from(rootProject.file("assets/cries")) { include("*.ogg"); into("files/cries") }
     from(rootProject.file("assets/sfx")) { include("*.ogg"); into("files/sfx") }

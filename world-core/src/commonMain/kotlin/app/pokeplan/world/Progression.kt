@@ -69,3 +69,21 @@ object SwapShop {
     const val GIVE = 3
     val flavors = listOf("sweet", "dry", "sour", "spicy", "bitter")
 }
+
+/**
+ * Abilities that help a skill (docs/world.md, section 10: skills tie to what a Pokémon can do; the Dex has abilities, not moves).
+ * Each member of a team whose ability is on a skill's list counts as one level of that skill while the team explores, up to
+ * [MAX_BONUS] levels (the skill's own level may go past 10 that way). *(tune)*
+ */
+object AbilityPerks {
+    const val MAX_BONUS = 3
+
+    val bySkill: Map<WorldSkill, Set<String>> = mapOf(
+        WorldSkill.EXPLORATION to setOf("Run Away", "Swift Swim", "Chlorophyll", "Sand Rush", "Slush Rush", "Speed Boost", "Unburden"),
+        WorldSkill.FORAGING to setOf("Pickup", "Honey Gather", "Harvest", "Gluttony", "Cheek Pouch"),
+        WorldSkill.SCOUTING to setOf("Keen Eye", "Illuminate", "Compound Eyes", "Frisk", "Anticipation", "Forewarn", "Telepathy"),
+    )
+
+    /** The levels [skill] gains from [abilities], one for each ability on its list, at most [MAX_BONUS]. */
+    fun bonus(abilities: List<String>, skill: WorldSkill): Int = abilities.count { it in bySkill.getValue(skill) }.coerceAtMost(MAX_BONUS)
+}

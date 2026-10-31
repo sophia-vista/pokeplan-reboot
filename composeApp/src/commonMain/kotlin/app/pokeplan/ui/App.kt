@@ -185,6 +185,12 @@ class AppModel(
     var careSection: CareSection? by mutableStateOf(null)
     var worldSection: WorldSection? by mutableStateOf(null)
 
+    /** The clock World's screens read (the store's, refreshed every few seconds while a World screen is open), so lists that depend on the day or a brew follow it. */
+    var worldNow: Long by mutableStateOf(0L)
+
+    /** The phone's power saver is on: World's animations stand still, like Reduce motion. */
+    var powerSaving: Boolean by mutableStateOf(false)
+
     /** The hatch or evolution playing over the whole app, if any. */
     var cutscene: Cutscene? by mutableStateOf(null)
 
@@ -267,6 +273,8 @@ fun App(
         val careSync = if (client != null && sync != null) CareSync(care, client) { sync.session() } else null
         AppModel(store, motion, sync, client?.let { SocialClient(it) }, cries, haptics, files, calendars, phone, care, careSync, torch).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
     }
+    // The phone's power saver is read now and then; World's animations stand still while it is on.
+    LaunchedEffect(model) { while (true) { model.powerSaving = phone?.powerSaving == true; kotlinx.coroutines.delay(30_000) } }
     val store = model.store
     if (onDataChanged != null) DisposableEffect(store) {
         val stop = store.observe(onDataChanged)

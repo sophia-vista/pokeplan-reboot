@@ -7,6 +7,8 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.draw.alpha
+import androidx.compose.foundation.layout.Row
 import app.pokeplan.ui.ItemIcon
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Arrangement
@@ -104,7 +106,7 @@ private fun DrawScope.pmdFrame(pixel: Int, tone: PmdTone) = dialogueFrame(pixel.
 /** One line of a dialogue menu: a touch target at least 48 dp tall with [text] in it, a small cursor in front when [selected]. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, dim: Boolean = false, center: Boolean = false, onHold: (() -> Unit)? = null, onClick: () -> Unit) {
+internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, dim: Boolean = false, center: Boolean = false, onHold: (() -> Unit)? = null, icon: String? = null, onClick: () -> Unit) {
     val density = LocalDensity.current.density
     val ui = app.pokeplan.ui.LocalUiSound.current
     val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
@@ -116,7 +118,12 @@ internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier
             val p = pixel.toFloat()
             drawPath(Path().apply { moveTo(0f, 0f); lineTo(3 * p, 2.5f * p); lineTo(0f, 5 * p); close() }, Color.White)
         }
-        PmdText(text, pixel, Modifier.padding(horizontal = pmdRowPad(pixel, density)), alpha = if (dim) 0.75f else 1f)
+        if (icon == null) PmdText(text, pixel, Modifier.padding(horizontal = pmdRowPad(pixel, density)), alpha = if (dim) 0.75f else 1f)
+        // With an icon, a real item picture (a small bag or ball for the setting) leads the line and the words follow it.
+        else Row(Modifier.padding(horizontal = pmdRowPad(pixel, density)), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy((3 * pixel / density).dp)) {
+            app.pokeplan.ui.ItemIcon(icon, size = (9 * pixel / density).dp.coerceAtLeast(24.dp), description = null, modifier = Modifier.alpha(if (dim) 0.75f else 1f))
+            PmdText(text, pixel, alpha = if (dim) 0.75f else 1f)
+        }
     }
 }
 

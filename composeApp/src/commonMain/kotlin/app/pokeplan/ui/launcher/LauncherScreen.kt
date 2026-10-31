@@ -173,6 +173,18 @@ private fun rubber(pulled: Float): Float = when {
     else -> pulled
 }
 
+/** A launcher page over the town: it fades and glides in from the right and glides out the same way, instantly under Reduce motion. */
+@Composable
+private fun LauncherPage(visible: Boolean, calm: Boolean, content: @Composable () -> Unit) {
+    AnimatedVisibility(
+        visible,
+        enter = if (calm) androidx.compose.animation.EnterTransition.None else androidx.compose.animation.fadeIn(androidx.compose.animation.core.tween(200, easing = app.pokeplan.ui.Ease.Smooth)) +
+            androidx.compose.animation.slideInHorizontally(androidx.compose.animation.core.tween(260, easing = app.pokeplan.ui.Ease.Smooth)) { it / 12 },
+        exit = if (calm) androidx.compose.animation.ExitTransition.None else androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(140, easing = app.pokeplan.ui.Ease.Smooth)) +
+            androidx.compose.animation.slideOutHorizontally(androidx.compose.animation.core.tween(180, easing = app.pokeplan.ui.Ease.Smooth)) { it / 12 },
+    ) { content() }
+}
+
 /**
  * PokéLife as the phone's home screen: the home page (the buddy, today's tasks, a Focus button, pinned apps) on a Pokémon
  * pixel wallpaper and, one swipe or tap up, every app A to Z over that wallpaper blurred and darkened. It shows and starts
@@ -346,19 +358,23 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key }, onTown = { settingsOpen = true }, startHidden = listHidden, pixel = pixel)
                 }
                 menuMon?.let { mon -> PokemonMenu(mon, mon.id == model.data.player.buddy?.id, pixel, onOpen = { host.openPokemon(mon.id); menuMon = null }, onBuddy = { model.store.setBuddy(mon.id); menuMon = null }, onClose = { menuMon = null }) }
-                if (settingsOpen) LauncherSettings(
-                    model, prefs, onPrefs, isDefault, apps.count { it.key in prefs.hidden }, pixel, host,
-                    onTown = { settingsOpen = false; listOpen = false; pickingTown = true },
-                    onHidden = { settingsOpen = false; listHidden = true; listOpen = true },
-                    onPlace = { placeOpen = true },
-                    onWidgets = { widgetsOpen = true },
-                    onClose = { settingsOpen = false },
-                )
-                if (widgetsOpen) WidgetsPage(prefs, onPrefs, host, pixel, onClose = { widgetsOpen = false })
-                if (foldersOpen) FoldersPage(apps, prefs, onPrefs, host, folderName, { folderName = it }, onClose = { foldersOpen = false; folderName = null }, pixel = pixel)
-                if (forecastOpen) ForecastPage(forecast, prefs, pixel, onPlace = { placeOpen = true }, onClose = { forecastOpen = false })
-                if (placeOpen) PlacePage(prefs, onPrefs, host, pixel, onClose = { placeOpen = false })
-                if (pickingTown) TownPicker(prefs.scene, onPick = { onPrefs(prefs.withScene(it)); pickingTown = false }, onClose = { pickingTown = false })
+                // Each page over the town fades and glides in from the right and out the same way (at once under Reduce motion).
+                val calm = data.settings.reduceMotion
+                LauncherPage(settingsOpen, calm) {
+                    LauncherSettings(
+                        model, prefs, onPrefs, isDefault, apps.count { it.key in prefs.hidden }, pixel, host,
+                        onTown = { settingsOpen = false; listOpen = false; pickingTown = true },
+                        onHidden = { settingsOpen = false; listHidden = true; listOpen = true },
+                        onPlace = { placeOpen = true },
+                        onWidgets = { widgetsOpen = true },
+                        onClose = { settingsOpen = false },
+                    )
+                }
+                LauncherPage(widgetsOpen, calm) { WidgetsPage(prefs, onPrefs, host, pixel, onClose = { widgetsOpen = false }) }
+                LauncherPage(foldersOpen, calm) { FoldersPage(apps, prefs, onPrefs, host, folderName, { folderName = it }, onClose = { foldersOpen = false; folderName = null }, pixel = pixel) }
+                LauncherPage(forecastOpen, calm) { ForecastPage(forecast, prefs, pixel, onPlace = { placeOpen = true }, onClose = { forecastOpen = false }) }
+                LauncherPage(placeOpen, calm) { PlacePage(prefs, onPrefs, host, pixel, onClose = { placeOpen = false }) }
+                LauncherPage(pickingTown, calm) { TownPicker(prefs.scene, onPick = { onPrefs(prefs.withScene(it)); pickingTown = false }, onClose = { pickingTown = false }) }
                 if (sheetApp != null) AppSheet(sheetApp, prefs, onPrefs, onClose = { sheetKey = null }, host = host)
             }
         }
@@ -712,50 +728,50 @@ internal fun LauncherSettings(
                 Column {
                     PmdMenuLine("Back", pixel, onClick = onClose)
                     PmdRule(pixel)
-                    PmdMenuLine("Launcher settings", pixel, dim = true) {}
+                    PmdMenuLine("Launcher settings", pixel, dim = true, icon = "explorer-kit") {}
                 }
             }
             PmdBox(pixel, Modifier.fillMaxWidth()) {
                 Column {
-                    PmdMenuLine("Town: ${(TownScenes.all.firstOrNull { it.first == prefs.scene } ?: TownScenes.all.first()).second}", pixel, onClick = onTown)
-                    PmdMenuLine("Pokémon in the town: ${prefs.townSize}", pixel) { onPrefs(prefs.nextTownSize()) }
-                    PmdMenuLine("Weather: ${prefs.weather.label}", pixel) { onPrefs(prefs.nextWeather()) }
-                    PmdMenuLine("Pokémon walk about: ${onOff(prefs.walking)}", pixel) { onPrefs(prefs.withWalking(!prefs.walking)) }
-                    PmdMenuLine("Widgets: ${prefs.widgets.size}", pixel, onClick = onWidgets)
-                    PmdMenuLine("Date: ${prefs.dateStyle.label}", pixel) { onPrefs(prefs.nextDateStyle()) }
-                    PmdMenuLine("Clock: ${if (prefs.hour12) "12 hour" else "24 hour"}", pixel) { onPrefs(prefs.withHour12(!prefs.hour12)) }
-                    PmdMenuLine("Battery saver: ${prefs.batterySaver.label}", pixel) { onPrefs(prefs.nextBatterySaver()) }
-                    PmdMenuLine("Seconds: ${onOff(prefs.showSeconds)}", pixel) { onPrefs(prefs.withShowSeconds(!prefs.showSeconds)) }
-                    PmdMenuLine("Calendar weeks start on ${if (prefs.sundayFirst) "Sunday" else "Monday"}", pixel) { onPrefs(prefs.withSundayFirst(!prefs.sundayFirst)) }
+                    PmdMenuLine("Town: ${(TownScenes.all.firstOrNull { it.first == prefs.scene } ?: TownScenes.all.first()).second}", pixel, icon = "town-map", onClick = onTown)
+                    PmdMenuLine("Pokémon in the town: ${prefs.townSize}", pixel, icon = "friend-ball") { onPrefs(prefs.nextTownSize()) }
+                    PmdMenuLine("Weather: ${prefs.weather.label}", pixel, icon = "sun-stone") { onPrefs(prefs.nextWeather()) }
+                    PmdMenuLine("Pokémon walk about: ${onOff(prefs.walking)}", pixel, icon = "exp-share") { onPrefs(prefs.withWalking(!prefs.walking)) }
+                    PmdMenuLine("Widgets: ${prefs.widgets.size}", pixel, icon = "storage-key", onClick = onWidgets)
+                    PmdMenuLine("Date: ${prefs.dateStyle.label}", pixel, icon = "oaks-letter") { onPrefs(prefs.nextDateStyle()) }
+                    PmdMenuLine("Clock: ${if (prefs.hour12) "12 hour" else "24 hour"}", pixel, icon = "timer-ball") { onPrefs(prefs.withHour12(!prefs.hour12)) }
+                    PmdMenuLine("Battery saver: ${prefs.batterySaver.label}", pixel, icon = "leftovers") { onPrefs(prefs.nextBatterySaver()) }
+                    PmdMenuLine("Seconds: ${onOff(prefs.showSeconds)}", pixel, icon = "star-piece") { onPrefs(prefs.withShowSeconds(!prefs.showSeconds)) }
+                    PmdMenuLine("Calendar weeks start on ${if (prefs.sundayFirst) "Sunday" else "Monday"}", pixel, icon = "journal") { onPrefs(prefs.withSundayFirst(!prefs.sundayFirst)) }
                 }
             }
             PmdBox(pixel, Modifier.fillMaxWidth()) {
                 Column {
-                    PmdMenuLine("Gestures", pixel, dim = true) {}
+                    PmdMenuLine("Gestures", pixel, dim = true, icon = "scope-lens") {}
                     PmdRule(pixel)
-                    PmdMenuLine("Drag in from the right for apps: ${onOff(prefs.edgeDrag)}", pixel) { onPrefs(prefs.withEdgeDrag(!prefs.edgeDrag)) }
-                    PmdMenuLine("Swipe across for Today: ${onOff(prefs.pageSwipe)}", pixel) { onPrefs(prefs.withPageSwipe(!prefs.pageSwipe)) }
-                    PmdMenuLine("Tap three times to gather: ${onOff(prefs.gatherTap)}", pixel) { onPrefs(prefs.withGatherTap(!prefs.gatherTap)) }
+                    PmdMenuLine("Drag in from the right for apps: ${onOff(prefs.edgeDrag)}", pixel, icon = "link-cord") { onPrefs(prefs.withEdgeDrag(!prefs.edgeDrag)) }
+                    PmdMenuLine("Swipe across for Today: ${onOff(prefs.pageSwipe)}", pixel, icon = "lunar-wing") { onPrefs(prefs.withPageSwipe(!prefs.pageSwipe)) }
+                    PmdMenuLine("Tap three times to gather: ${onOff(prefs.gatherTap)}", pixel, icon = "heart-scale") { onPrefs(prefs.withGatherTap(!prefs.gatherTap)) }
                 }
             }
             PmdBox(pixel, Modifier.fillMaxWidth()) {
                 Column {
-                    PmdMenuLine("Weather place: ${prefs.place?.name ?: "not set"}", pixel, onClick = onPlace)
-                    PmdMenuLine("Temperature: ${if (prefs.fahrenheit) "Fahrenheit" else "Celsius"}", pixel) { onPrefs(prefs.withFahrenheit(!prefs.fahrenheit)) }
+                    PmdMenuLine("Weather place: ${prefs.place?.name ?: "not set"}", pixel, icon = "water-stone", onClick = onPlace)
+                    PmdMenuLine("Temperature: ${if (prefs.fahrenheit) "Fahrenheit" else "Celsius"}", pixel, icon = "fire-stone") { onPrefs(prefs.withFahrenheit(!prefs.fahrenheit)) }
                 }
             }
             PmdBox(pixel, Modifier.fillMaxWidth()) {
                 Column {
-                    PmdVolume("Sound effects", effects, pixel, onChange = { v -> model.store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }, onDone = { model.effect(Sfx.CONFIRM) })
+                    PmdVolume("Sound effects", "gb-sounds", effects, pixel, onChange = { v -> model.store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }, onDone = { model.effect(Sfx.CONFIRM) })
                     PmdRule(pixel)
-                    PmdVolume("Pokémon cries", cries, pixel, onChange = { v -> model.store.changeSettings { s -> s.copy(criesVolume = v, sound = true) } }, onDone = { model.cry(model.data.player.buddy?.speciesId ?: 25) })
+                    PmdVolume("Pokémon cries", "soothe-bell", cries, pixel, onChange = { v -> model.store.changeSettings { s -> s.copy(criesVolume = v, sound = true) } }, onDone = { model.cry(model.data.player.buddy?.speciesId ?: 25) })
                 }
             }
             PmdBox(pixel, Modifier.fillMaxWidth()) {
                 Column {
-                    if (hiddenCount > 0) PmdMenuLine("Hidden apps: $hiddenCount", pixel, onClick = onHidden)
-                    PmdMenuLine("Forget pins and icons", pixel, dim = prefs.pinned.isEmpty() && prefs.icons.isEmpty()) { onPrefs(prefs.withoutPins()) }
-                    PmdMenuLine(if (isDefault) "Home app settings" else "Make PokéLife your home app", pixel) { host.openHomeSettings() }
+                    if (hiddenCount > 0) PmdMenuLine("Hidden apps: $hiddenCount", pixel, icon = "scroll-of-darkness", onClick = onHidden)
+                    PmdMenuLine("Forget pins and icons", pixel, dim = prefs.pinned.isEmpty() && prefs.icons.isEmpty(), icon = "cracked-pot") { onPrefs(prefs.withoutPins()) }
+                    PmdMenuLine(if (isDefault) "Home app settings" else "Make PokéLife your home app", pixel, icon = "master-ball") { host.openHomeSettings() }
                 }
             }
         }
@@ -768,7 +784,7 @@ internal fun LauncherSettings(
  * menu line's text does, and the bar's row is a full [Spacing.Target] tall to hit.
  */
 @Composable
-private fun PmdVolume(label: String, value: Int, pixel: Int, onChange: (Int) -> Unit, onDone: () -> Unit) {
+private fun PmdVolume(label: String, icon: String, value: Int, pixel: Int, onChange: (Int) -> Unit, onDone: () -> Unit) {
     val density = LocalDensity.current.density
     val pad = pmdRowPad(pixel, density)
     val level = (value / 10).coerceIn(0, 10)
@@ -780,7 +796,10 @@ private fun PmdVolume(label: String, value: Int, pixel: Int, onChange: (Int) -> 
     }
     Column(Modifier.fillMaxWidth().padding(vertical = Spacing.S)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = pad), horizontalArrangement = Arrangement.SpaceBetween) {
-            PmdText(label, pixel)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy((3 * pixel / density).dp)) {
+                app.pokeplan.ui.ItemIcon(icon, size = (9 * pixel / density).dp.coerceAtLeast(24.dp), description = null)
+                PmdText(label, pixel)
+            }
             PmdText("$level of 10", pixel)
         }
         Row(

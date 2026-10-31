@@ -1137,6 +1137,22 @@ class GameStore(
         return true
     }
 
+    /**
+     * Sends the strongest free Pokémon to [dungeonId] in one step: the first team slot that is not out takes the (up to four) highest
+     * level Pokémon no team has (Guardians and Pokémon already on a team stay out of it), keeping its members if it already has some.
+     * False when every team is out, no one is free, or the dungeon is not open.
+     */
+    fun worldQuickSend(dungeonId: String): Boolean {
+        worldSettle()
+        val slot = data.world.slots().firstOrNull { it.expedition == null } ?: return false
+        if (slot.members.isEmpty()) {
+            val free = data.player.pokemon.filter { it.id !in data.world.assigned && !app.pokeplan.core.pokemon.Guardians.canBe(it) }
+                .sortedWith(compareByDescending<OwnedPokemon> { it.level }.thenBy { it.id }).take(app.pokeplan.world.WorldTeam.MAX_MEMBERS)
+            if (free.isEmpty() || !worldAssign(slot.id, free.map { it.id })) return false
+        }
+        return worldStart(slot.id, dungeonId)
+    }
+
     /** Brings a team home after settling what it found. */
     fun worldRecall(team: Int) {
         worldSettle()

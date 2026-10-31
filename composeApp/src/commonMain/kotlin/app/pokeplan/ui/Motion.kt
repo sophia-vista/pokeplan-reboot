@@ -17,4 +17,7 @@ interface PhoneState {
 
     /** True while a call rings or is in progress. */
     val inCall: Boolean
+
+    /** True while the phone's power saver (battery saver) is on. */
+    val powerSaving: Boolean get() = false
 }

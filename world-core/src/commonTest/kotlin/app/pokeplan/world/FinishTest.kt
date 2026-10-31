@@ -41,9 +41,9 @@ class FinishTest {
     fun chapterAndStoryGateDungeons() {
         val high = WorldData(xp = 1_000_000, clears = mapOf("tiny-woods" to 1)) // rank Diamond, one clear: only chapter 2
         val d = high.assign(1, ids)!!
-        assertNull(d.start(1, "temporal-tower", 0L), "chapter 6 needs 15 clears")
-        assertNull(d.start(1, "waterfall-cave", 0L), "chapter 3 needs 3 clears")
-        val done = WorldData(xp = 1_000_000, clears = mapOf("a" to 15))
+        assertNull(d.start(1, "temporal-tower", 0L), "chapter 6 needs seven different dungeons cleared")
+        assertNull(d.start(1, "waterfall-cave", 0L), "chapter 3 needs three different dungeons cleared")
+        val done = WorldData(xp = 1_000_000, clears = SEVEN)
         assertNotNull(done.assign(1, ids)!!.start(1, "temporal-tower", 0L))
         assertNull(done.assign(1, ids)!!.start(1, "distortion-rift", 0L), "a Distortion Dungeon opens after the story")
         assertNotNull(done.copy(guardianDone = true).assign(1, ids)!!.start(1, "distortion-rift", 0L))
@@ -51,7 +51,7 @@ class FinishTest {
 
     @Test
     fun clearingTheGuardiansDungeonCompletesTheStoryOnceAndSpeedsUpFloors() {
-        val start = WorldData(xp = 1_000_000, clears = mapOf("a" to 15)).assign(1, ids)!!.start(1, "temporal-tower", 0L)!!
+        val start = WorldData(xp = 1_000_000, clears = SEVEN).assign(1, ids)!!.start(1, "temporal-tower", 0L)!!
         val r = WorldSim.settle(start, roster, 12L * 3_600_000)
         val d = Dungeons.byId("temporal-tower")!!
         val per = WorldSim.floorMillis(d, WorldSim.power(roster, d))
@@ -136,3 +136,28 @@ class FinishTest {
         assertTrue(out.pruned(setOf("a", "b")) === out, "nothing to prune")
     }
 }
+
+class AbilityPerksTest {
+    @Test
+    fun matchingAbilitiesAddLevelsUpToThree() {
+        assertEquals(0, AbilityPerks.bonus(listOf("Static", "Blaze"), WorldSkill.FORAGING))
+        assertEquals(2, AbilityPerks.bonus(listOf("Pickup", "Honey Gather", "Blaze"), WorldSkill.FORAGING))
+        assertEquals(AbilityPerks.MAX_BONUS, AbilityPerks.bonus(List(6) { "Keen Eye" }, WorldSkill.SCOUTING))
+        WorldSkill.entries.forEach { assertTrue(AbilityPerks.bySkill.getValue(it).isNotEmpty()) }
+    }
+
+    @Test
+    fun aHelpfulTeamFindsMoreBerriesOnTheSameFloors() {
+        fun mon(id: String, ability: String) = Hatching.create(id, HatchOption(10, Dex.defaultForm(10).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = 30, ability = ability)
+        val plain = listOf(mon("a", "Blaze"), mon("b", "Blaze"), mon("c", "Blaze"))
+        val pickers = plain.map { it.copy(ability = "Pickup") }
+        fun berries(team: List<OwnedPokemon>): Int {
+            val d = WorldData(xp = 400).assign(1, team.map { it.id })!!.start(1, "tiny-woods", 0L)!!
+            return WorldSim.settle(d, team, 12L * 3_600_000).data.items.filterKeys { it.startsWith("berry-") }.values.sum()
+        }
+        assertTrue(berries(pickers) >= berries(plain), "three levels of Foraging is three points more berry chance")
+    }
+}
+
+/** Seven different dungeons cleared: every chapter that rank allows. */
+private val SEVEN = listOf("tiny-woods", "thunderwave-cave", "mt-steel", "waterfall-cave", "glacier-palace", "ancient-ruins", "sky-tower").associateWith { 1 }
