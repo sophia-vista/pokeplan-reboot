@@ -1,5 +1,7 @@
 package app.pokeplan.ui.theme
 
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.size
@@ -27,6 +29,17 @@ import pokeplan.composeapp.generated.resources.Res
 import kotlin.math.roundToInt
 
 /** White letters turned black and their black shadow white, for dialogue-font text on a light surface. */
+/**
+ * Paints only the letters of the font (its white pixels) in [color] and drops the black shadow, so the text is one thin colour
+ * instead of letters merged with their shadow (which made it look bold).
+ */
+private fun lettersOnly(color: Color) = ColorFilter.colorMatrix(ColorMatrix(floatArrayOf(
+    0f, 0f, 0f, 0f, color.red * 255f,
+    0f, 0f, 0f, 0f, color.green * 255f,
+    0f, 0f, 0f, 0f, color.blue * 255f,
+    color.alpha, 0f, 0f, 0f, 0f,
+)))
+
 private val INVERT = ColorFilter.colorMatrix(ColorMatrix(floatArrayOf(
     -1f, 0f, 0f, 0f, 255f,
     0f, -1f, 0f, 0f, 255f,
@@ -43,11 +56,11 @@ fun appPixel(small: Boolean = false): Int = (LocalDensity.current.density * (if 
  * alphabet, a mark it lacks). Dark text on a light page, white on the dark theme. [large] is one step bigger, for screen titles.
  */
 @Composable
-fun PixelTitle(text: String, modifier: Modifier = Modifier, large: Boolean = false, onLight: Boolean = !Pixel.dark, alpha: Float = 1f, small: Boolean = false) {
+fun PixelTitle(text: String, modifier: Modifier = Modifier, large: Boolean = false, onLight: Boolean = !Pixel.dark, alpha: Float = 1f, small: Boolean = false, tint: Color? = null) {
     val font by produceState<PmdFont?>(null) { value = PmdFont.load() }
     val f = font
-    if (f != null && f.exact(text)) PmdText(text, appPixel(small) + if (large) 1 else 0, modifier, alpha, onLight)
-    else Text(text, modifier, style = if (large) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium, color = if (onLight) Pixel.Ink else Color.White, maxLines = 2, overflow = TextOverflow.Ellipsis)
+    if (f != null && f.exact(text)) PmdText(text, appPixel(small) + if (large) 1 else 0, modifier, alpha, onLight, tint)
+    else Text(text, modifier, style = if (large) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium, color = tint ?: if (onLight) Pixel.Ink else Color.White, maxLines = 2, overflow = TextOverflow.Ellipsis)
 }
 
 /** One glyph of the dialogue font: its box in the sheet and how far its top is below the baseline (negative: above). */
@@ -117,7 +130,7 @@ class PmdFont(val sheet: ImageBitmap, val glyphs: Map<Char, PmdGlyph>) {
  * does not fit. The font is the only font the world register uses: marks it lacks become look-alikes or `?`, never another typeface.
  */
 @Composable
-fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, alpha: Float = 1f, onLight: Boolean = false) {
+fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, alpha: Float = 1f, onLight: Boolean = false, tint: Color? = null) {
     val font by produceState<PmdFont?>(null) { value = PmdFont.load() }
     val f = font ?: return
     val density = LocalDensity.current.density
@@ -132,7 +145,7 @@ fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, alpha: Floa
                 drawImage(
                     f.sheet, srcOffset = IntOffset(g.x, g.y), srcSize = IntSize(g.w, g.h),
                     dstOffset = IntOffset(cursor * pixel, (PmdFont.BASELINE + g.dy) * pixel), dstSize = IntSize(g.w * pixel, g.h * pixel),
-                    alpha = alpha, colorFilter = if (onLight) INVERT else null, filterQuality = FilterQuality.None,
+                    alpha = alpha, colorFilter = if (tint != null) lettersOnly(tint) else if (onLight) INVERT else null, filterQuality = FilterQuality.None,
                 )
                 cursor += g.w
             }
@@ -141,8 +154,12 @@ fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, alpha: Floa
 }
 
 
-/** A button or tab label in the dialogue font (or the pixel font where it cannot draw the text): white on a coloured face, dark on a light one. */
+/**
+ * A button or tab label in the dialogue font (or the pixel font where it cannot draw the text), in [color]: light letters for a
+ * light colour (white, or the ink of the dark theme) and dark letters for a dark one, so it reads on either theme. With [tinted]
+ * the letters are exactly [color] (a button's key colour on its white face) instead of white or ink.
+ */
 @Composable
-fun PixelLabel(text: String, color: Color, modifier: Modifier = Modifier, small: Boolean = false) {
-    PixelTitle(text, modifier, onLight = color != Color.White, alpha = if (color == Pixel.InkSoft || color == Pixel.Gray) 0.65f else 1f, small = small)
+fun PixelLabel(text: String, color: Color, modifier: Modifier = Modifier, small: Boolean = false, tinted: Boolean = false) {
+    PixelTitle(text, modifier, onLight = color.luminance() < 0.5f, alpha = if (!tinted && (color == Pixel.InkSoft || color == Pixel.Gray)) 0.65f else 1f, small = small, tint = if (tinted) color else null)
 }

@@ -45,7 +45,7 @@ fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: M
             .padding(horizontal = Spacing.M, vertical = Spacing.S),
         contentAlignment = Alignment.Center,
     ) {
-        PixelLabel(label, if (selected) Color.White else Pixel.Ink, small = true)
+        PixelLabel(label, if (selected) Color.White else Pixel.Ink, small = true, tinted = !selected)
     }
 }
 
