@@ -69,12 +69,12 @@ object Missions {
     /** Whether the board is open at all for [data]. */
     fun boardOpen(data: WorldData): Boolean = Story.opened(data) >= BOARD_CHAPTER
 
-    /** The jobs [data] can take now: the board is open, the rank is reached, and a one-time job is not done or already taken. */
-    fun available(data: WorldData): List<MissionDef> =
+    /** The jobs [data] can take at [now] (the settle time unless given: the screens pass the clock, which a quiet World would not have stored): the board is open, the rank is reached, and a one-time job is not done or already taken. */
+    fun available(data: WorldData, now: Long = data.lastSeenAt): List<MissionDef> =
         if (!boardOpen(data)) emptyList()
         else all.filter { m ->
             data.rank >= m.needs && data.missions.none { it.id == m.id } && !(m.once && m.id in data.missionsDone) &&
-                (m.period == 0 || data.missionClaimedDay[m.id].let { it == null || day(data) - it >= m.period })
+                (m.period == 0 || data.missionClaimedDay[m.id].let { it == null || now / 86_400_000L - it >= m.period })
         }
 
     /** The day number World thinks it is: the last time it settled, in whole days. */

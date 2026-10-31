@@ -164,7 +164,7 @@ private fun WorldMapView(model: AppModel) {
         val wild = d.wild.sortedByDescending { it.weight }.map { it.speciesId }.distinct().take(4)
             .map { TileWalker(Dex.defaultForm(it).id, false, Dex.species(it).name) }
         // The dungeon is drawn in its own tiles, the wild Pokémon that live there walking its floor; the text is on its walls.
-        TileBox(d.id, wild, animate = !model.data.settings.reduceMotion, modifier = Modifier.alpha(if (open) 1f else 0.75f)) {
+        TileBox(d.id, wild, animate = !model.data.settings.reduceMotion, modifier = Modifier.alpha(if (open) 1f else 0.75f), scrolls = false) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text(d.name, style = MaterialTheme.typography.titleSmall)
                 Text("${d.region.label}, ${d.floors} floors, ${d.needs.label} rank", style = MaterialTheme.typography.bodyMedium)
@@ -242,19 +242,26 @@ private fun WorldMissionsView(model: AppModel) {
                         MissionKind.RESCUE -> "Reach $where to bring the lost Pokémon home."
                         MissionKind.EXPLORE -> "Reach $where."
                         MissionKind.ESCORT -> "Reach $where with a team of at least ${m.count} Pokémon."
-                        MissionKind.DEFEAT -> "Reach $where with a team of power ${m.count} or more (yours: ${(world.teams.maxOfOrNull { t -> t.members.mapNotNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } }.sumOf { it.level } } ?: 0)} in levels)."
+                        MissionKind.DEFEAT -> {
+                            val here = m.dungeonId?.let { Dungeons.byId(it) }
+                            val best = here?.let { d -> world.teams.maxOfOrNull { t -> WorldSim.power(t.members.mapNotNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } }, d) } } ?: 0.0
+                            "Reach $where with a team of power ${m.count} or more (your best team: ${best.toInt()})."
+                        }
                         MissionKind.DELIVER -> "Reach $where, then hand over ${m.giveCount} x ${Items.name(m.give ?: "")} from your Bag."
                     },
                     style = MaterialTheme.typography.bodyLarge,
                 )
                 Text("Reward: ${reward(m)}", style = MaterialTheme.typography.bodyMedium)
-                if (p.done) PixelButton("Claim", { store.worldClaimMission(p.id) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+                val needed = m.give?.let { it to m.giveCount }
+                val haveIt = needed == null || model.data.player.inventory.has(needed.first, needed.second)
+                if (p.done && !haveIt) Text("Needs ${needed!!.second} x ${Items.name(needed.first)} in your Bag (move items there from Finds and Bag).", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
+                if (p.done) PixelButton("Claim", { store.worldClaimMission(p.id) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = haveIt, compact = true)
                 else PixelButton("Give up", { store.worldAbandonMission(p.id) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
         }
     }
     FieldLabel("On the board")
-    val offered = Missions.available(world)
+    val offered = Missions.available(world, store.nowMillis)
     if (offered.isEmpty()) Text("Nothing new for your rank right now.", style = MaterialTheme.typography.bodyMedium)
     offered.forEach { m ->
         TextBox {
@@ -333,7 +340,7 @@ private fun WorldBaseView(model: AppModel) {
             Text("${app.pokeplan.world.Cafe.BERRIES} berries from your Bag make a brew for ${app.pokeplan.world.Cafe.HOURS} hours: 30% more Exploration XP, 5% more treasure chance and 1% more find chance on every floor.", style = MaterialTheme.typography.bodyMedium)
             if (brewing) Text("A brew is working for ${(world.brewUntil - model.store.nowMillis) / 60_000} more minutes.", style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
             var cafeMessage by remember { mutableStateOf("") }
-            PixelButton("Brew", { cafeMessage = if (store.worldBrew()) "Brewed." else "You need ${app.pokeplan.world.Cafe.BERRIES} berries in your Bag." }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+            PixelButton("Brew", { cafeMessage = if (brewing) "A brew is still working." else if (store.worldBrew()) "Brewed." else "You need ${app.pokeplan.world.Cafe.BERRIES} berries in your Bag." }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
             if (cafeMessage.isNotEmpty()) Text(cafeMessage, style = MaterialTheme.typography.bodyMedium)
         }
     }

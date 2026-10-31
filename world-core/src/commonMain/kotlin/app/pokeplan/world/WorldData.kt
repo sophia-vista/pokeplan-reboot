@@ -166,13 +166,22 @@ data class WorldData(
         return copy(poke = poke - candyPrice, shopCandies = shopCandies + 1)
     }
 
-    /** Brews at the Café at [now] (the caller took the berries): every floor finished in the next [Cafe.HOURS] hours is luckier. */
-    fun brew(now: Long): WorldData = copy(brewUntil = now + Cafe.HOURS * 3_600_000L)
+    /** Brews at the Café at [now] (the caller took the berries; null while a brew still works, so berries are never wasted): every floor finished in the next [Cafe.HOURS] hours is luckier. */
+    fun brew(now: Long): WorldData? = if (now < brewUntil) null else copy(brewUntil = now + Cafe.HOURS * 3_600_000L)
 
     /** Dojo training: [Dojo.COST] Poké for [Dojo.SKILL_XP] XP in [skill]; null when Poké is short or the skill is at the top. */
     fun train(skill: WorldSkill): WorldData? {
         if (poke < Dojo.COST || skillLevel(skill) >= WorldSkill.MAX_LEVEL) return null
         return copy(poke = poke - Dojo.COST).withSkillXp(skill, Dojo.SKILL_XP)
+    }
+
+    /** Takes out of every team the Pokémon no longer in [roster] (transferred away); a team left with no one comes home. */
+    fun pruned(roster: Set<String>): WorldData {
+        if (teams.all { t -> t.members.all { it in roster } }) return this
+        return copy(teams = teams.map { t ->
+            val left = t.members.filter { it in roster }
+            t.copy(members = left, expedition = if (left.isEmpty()) null else t.expedition)
+        })
     }
 
     internal fun withTeam(team: WorldTeam) = replace(team)

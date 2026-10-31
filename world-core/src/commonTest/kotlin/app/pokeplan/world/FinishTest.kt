@@ -73,14 +73,14 @@ class FinishTest {
         val trained = d.train(WorldSkill.FORAGING)!!
         assertEquals(9_800, trained.poke)
         assertEquals(60, trained.skillXp["FORAGING"])
-        assertTrue(d.brew(1_000).brewUntil > 1_000)
+        assertTrue(d.brew(1_000)!!.brewUntil > 1_000)
     }
 
     @Test
     fun aBrewMakesFloorsLuckierWithoutChangingTheirPace() {
         val base = WorldData(xp = 1_000_000).assign(1, ids)!!.start(1, "tiny-woods", 0L)!!
         val plain = WorldSim.settle(base, roster, 6L * 3_600_000).data
-        val brewed = WorldSim.settle(base.brew(0), roster, 6L * 3_600_000).data
+        val brewed = WorldSim.settle(base.brew(0)!!, roster, 6L * 3_600_000).data
         assertEquals(plain.teams.single().expedition!!.floorsClimbed, brewed.teams.single().expedition!!.floorsClimbed)
         assertTrue(brewed.xp - 1_000_000 > plain.xp - 1_000_000)
     }
@@ -102,5 +102,37 @@ class FinishTest {
         val d = WorldData(xp = 400, clears = mapOf("tiny-woods" to 1)).acceptMission("deliver-berries")!!.assign(1, ids)!!.start(1, "tiny-woods", 0L)!!
         val r = WorldSim.settle(d, roster, 12L * 3_600_000).data
         assertTrue(r.missions.single().done)
+    }
+
+    @Test
+    fun aBrewIsNotWastedAndEveryFloorCanShowSomeone() {
+        val brewing = WorldData().brew(1_000)!!
+        assertNull(brewing.brew(2_000), "still brewing")
+        assertNotNull(brewing.brew(1_000 + Cafe.HOURS * 3_600_000L))
+        Dungeons.all.forEach { d ->
+            for (floor in 1..d.floors) {
+                val pool = d.wild.filter { floor in it.fromFloor..it.toFloor && Dex.speciesOrNull(it.speciesId)?.isSpecial == false && HatchRules.rarity(it.speciesId) != null }
+                assertTrue(pool.isNotEmpty(), "${d.id} floor $floor has nobody to find")
+            }
+        }
+    }
+
+    @Test
+    fun jobAvailabilityFollowsTheClockPassedInNotTheLastSettle() {
+        val day = 86_400_000L
+        val claimed = WorldData(xp = 400, clears = mapOf("tiny-woods" to 1), lastSeenAt = 10 * day, missions = listOf(MissionProgress("daily-berries", 15, true))).claimMission("daily-berries")!!
+        assertTrue(Missions.available(claimed).none { it.id == "daily-berries" })
+        assertTrue(Missions.available(claimed, now = 12 * day).any { it.id == "daily-berries" }, "a quiet World, two days later")
+    }
+
+    @Test
+    fun aTransferredPokemonLeavesItsTeamAndAnEmptyTeamComesHome() {
+        val out = WorldData().assign(1, listOf("a", "b"))!!.start(1, "tiny-woods", 0L)!!
+        val one = out.pruned(setOf("a", "c"))
+        assertEquals(listOf("a"), one.team(1)!!.members)
+        assertNotNull(one.team(1)!!.expedition)
+        val none = out.pruned(setOf("z"))
+        assertTrue(none.team(1)!!.members.isEmpty() && none.team(1)!!.expedition == null)
+        assertTrue(out.pruned(setOf("a", "b")) === out, "nothing to prune")
     }
 }

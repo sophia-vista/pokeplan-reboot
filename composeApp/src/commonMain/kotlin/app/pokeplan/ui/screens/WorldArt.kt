@@ -117,10 +117,10 @@ internal fun dungeonTiles(dungeonId: String): String = when (dungeonId) {
  * A team's expedition box: the app's dialogue border round the dungeon's own tiles. The top is a floor that scrolls past while the
  * team walks to the right on it with their walking animations (the leader in front); below it, [content] is set on wall tiles
  * (under a dark veil, in white) like writing on the dungeon's wall. Whole-number pixel scale, no smoothing. With Reduce motion
- * ([animate] false) nothing moves.
+ * ([animate] false) nothing moves; with [scrolls] false only the Pokémon move (a screen of many boxes, such as the map, does not redraw them all every frame).
  */
 @Composable
-internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Boolean, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Boolean, modifier: Modifier = Modifier, scrolls: Boolean = true, content: @Composable () -> Unit) {
     val tiles = dungeonTiles(dungeonId)
     val atlas by produceState(tileAtlases[tiles], tiles) {
         if (value == null) {
@@ -129,8 +129,8 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
         }
     }
     var seconds by remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(animate) {
-        if (animate) { val start = withFrameNanos { it }; while (true) withFrameNanos { seconds = (it - start) / 1_000_000_000f } }
+    LaunchedEffect(animate && scrolls) {
+        if (animate && scrolls) { val start = withFrameNanos { it }; while (true) withFrameNanos { seconds = (it - start) / 1_000_000_000f } }
     }
     val density = LocalDensity.current
     BoxWithConstraints(modifier.fillMaxWidth()) {
