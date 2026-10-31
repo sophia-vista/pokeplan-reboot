@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,12 +57,12 @@ internal fun GrowthView(model: AppModel) {
     val trend = model.store.trend(6)
     val weekStart = if (model.data.settings.weekStartsOnMonday) "Monday" else "Sunday"
 
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         growthRanges.forEach { d -> TabButton("$d days", d == days, { days = d }, Modifier.weight(1f)) }
     }
     Insights.estimateAccuracy(model.data.tasks)?.let { acc ->
         TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 Text("Your estimates", style = MaterialTheme.typography.titleMedium)
                 val pct = (acc.averageRatio * 100).roundToInt()
                 Text(
@@ -77,7 +78,7 @@ internal fun GrowthView(model: AppModel) {
         }
     }
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Where your effort went", style = MaterialTheme.typography.titleMedium)
             Text(
                 "The last $days days, today included: tasks finished and minutes focused in each area. The share counts " +
@@ -94,7 +95,7 @@ internal fun GrowthView(model: AppModel) {
                 Column(Modifier.semantics(mergeDescendants = true) {
                     contentDescription = "${c.label}: ${plural(tasks, "task")}, $minutes minutes focused, $share percent of your effort"
                 }) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         Text(c.label, Modifier.width(84.dp), style = MaterialTheme.typography.bodyMedium)
                         Box(Modifier.weight(1f)) { PixelBar(wheel.share(c).toFloat(), color = categoryColor(c)) }
                         Text("$share%", Modifier.width(44.dp), style = MaterialTheme.typography.bodyMedium)
@@ -124,11 +125,11 @@ private fun WeekBars(
     title: String, note: String, weeks: List<Insights.WeekPoint>, value: (Insights.WeekPoint) -> Int, label: (Int) -> String, color: Color,
 ) {
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
             Text(note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             val max = (weeks.maxOfOrNull(value) ?: 0).coerceAtLeast(1)
-            Row(Modifier.fillMaxWidth().height(130.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.Bottom) {
+            Row(Modifier.fillMaxWidth().height(130.dp), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.Bottom) {
                 weeks.forEachIndexed { i, w ->
                     val v = value(w)
                     val week = if (i == weeks.lastIndex) "this week" else "week of ${w.weekStart.dayMonth()}"
@@ -151,7 +152,7 @@ private fun WeekBars(
 private fun GoalsSummary(model: AppModel) {
     val goals = model.data.goals
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Goal progress", style = MaterialTheme.typography.titleMedium)
             if (goals.isEmpty()) {
                 Text("No goals yet. Add one under Me, Goals.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -163,7 +164,7 @@ private fun GoalsSummary(model: AppModel) {
             )
             goals.filter { it.completedAtMillis == null }.take(5).forEach { g ->
                 val pct = (GoalRules.progress(g, model.data.tasks) * 100).roundToInt()
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Text(g.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, maxLines = 1)
                     Box(Modifier.width(96.dp)) { PixelBar(pct / 100f, color = Pixel.Warning) }
                     Text("$pct%", Modifier.width(44.dp), style = MaterialTheme.typography.bodyMedium)
@@ -188,8 +189,8 @@ internal fun GoalsView(model: AppModel) {
         title = ""; more = false; category = Category.PERSONAL; targetDate = null
     }
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
                     title, { title = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
                     placeholder = { Text("A goal, e.g. Learn guitar", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
@@ -215,9 +216,9 @@ internal fun GoalsView(model: AppModel) {
     }
     model.data.goals.forEach { g ->
         TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text(g.title, style = MaterialTheme.typography.titleMedium)
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Box(Modifier.size(10.dp).background(categoryColor(g.category), CircleShape))
                     Text(
                         listOfNotNull(g.category.label, g.targetDate?.let { "aiming for ${it.short()}" }).joinToString(", "),
@@ -236,7 +237,7 @@ internal fun GoalsView(model: AppModel) {
                     }
                 }
                 var step by remember(g.id) { mutableStateOf("") }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
                         step, { step = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
                         placeholder = { Text("Add a milestone", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
@@ -264,7 +265,7 @@ internal fun ReviewView(model: AppModel) {
     var note by remember { mutableStateOf("") }
     var carry by remember { mutableStateOf(true) }
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Your week", style = MaterialTheme.typography.titleMedium)
             Text("${summary.tasksDone} tasks finished", style = MaterialTheme.typography.bodyLarge)
             Text("${summary.focusMinutes} minutes focused in ${summary.sessionsCompleted} sessions", style = MaterialTheme.typography.bodyLarge)
@@ -272,12 +273,12 @@ internal fun ReviewView(model: AppModel) {
             // Where the finished tasks were, biggest first; a bar for each area that had any.
             val split = summary.categorySplit.filterValues { it > 0 }.entries.sortedByDescending { it.value }
             if (split.isNotEmpty()) {
-                Text("Where it went", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 6.dp))
+                Text("Where it went", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = Spacing.S))
                 val most = split.first().value
                 split.forEach { (c, n) ->
                     Row(
                         Modifier.semantics(mergeDescendants = true) { contentDescription = "${c.label}: ${plural(n, "task")}" },
-                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
                     ) {
                         Text(c.label, Modifier.width(84.dp), style = MaterialTheme.typography.bodyMedium)
                         Box(Modifier.weight(1f)) { PixelBar(n.toFloat() / most, color = categoryColor(c)) }
@@ -291,7 +292,7 @@ internal fun ReviewView(model: AppModel) {
         }
     }
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(Reviews.promptFor(store.weekStart), style = MaterialTheme.typography.bodyLarge)
             OutlinedTextField(
                 note, { note = it }, Modifier.fillMaxWidth(), textStyle = MaterialTheme.typography.bodyLarge,

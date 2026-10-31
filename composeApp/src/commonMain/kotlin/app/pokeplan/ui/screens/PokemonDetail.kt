@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -96,7 +97,7 @@ private fun originText(origin: Origin): String {
 /** A box on the detail page with its title. */
 @Composable
 private fun DetailBox(title: String, content: @Composable () -> Unit) = TextBox {
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
         content()
     }
@@ -118,17 +119,17 @@ internal fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
         // The level and species are in the identity box below; the bar names the species only under a nickname.
         ScreenHeader(p.nickname, subtitle = p.species.name.takeIf { it != p.nickname }, onBack = back)
         Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M),
+            verticalArrangement = Arrangement.spacedBy(Spacing.M),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Stage("bw08", 252.dp) {
                 AnimatedSprite(
                     p.form.id, p.isShiny, p.nickname,
-                    Modifier.align(Alignment.TopCenter).padding(top = 16.dp).quietClickable(onClickLabel = "Hear ${p.nickname}") { model.cry(p.speciesId) },
+                    Modifier.align(Alignment.TopCenter).padding(top = Spacing.L).quietClickable(onClickLabel = "Hear ${p.nickname}") { model.cry(p.speciesId) },
                     size = 176.dp, animate = !model.data.settings.reduceMotion,
                 )
-                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.M), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     p.form.types.forEach { TypePlate(it, width = 84.dp) }
                 }
             }
@@ -151,8 +152,8 @@ private fun IdentityBox(model: AppModel, p: OwnedPokemon) {
     var renaming by remember(p.id) { mutableStateOf(false) }
     var nickname by remember(p.id) { mutableStateOf(p.nickname) }
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
                 // Its face, the way a Mystery Dungeon team menu shows each member.
                 Portrait(p.form.id, p.isShiny, "${p.nickname}'s portrait", size = 72.dp)
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -163,7 +164,7 @@ private fun IdentityBox(model: AppModel, p: OwnedPokemon) {
             }
             // Under the name, not beside it, so a long name or large text never squeezes it.
             if (!renaming) PixelButton("Rename", { renaming = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-            else Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
                     nickname, { nickname = it.take(20) }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
                     placeholder = { Text(p.species.name, style = MaterialTheme.typography.bodyLarge) },
@@ -202,11 +203,11 @@ private fun GrowthBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean, sta
             Text("Next level: ${p.candyProgress} of $need Rare Candies", style = soft, color = Pixel.InkSoft)
             PixelBar(p.candyProgress.toFloat() / need, color = Pixel.Yellow, label = "${p.candyProgress} of $need Rare Candies to the next level")
             val have = player.inventory[Items.RARE_CANDY]
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 ItemIcon("rare-candy", size = 32.dp, description = null)
                 Text("$have Rare Candies", style = MaterialTheme.typography.bodyLarge)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelButton("Feed 1", { store.feedRareCandy(p.id, 1) }, Modifier.weight(1f), enabled = have >= 1, compact = true)
                 PixelButton("Feed 10", { store.feedRareCandy(p.id, 10) }, Modifier.weight(1f), enabled = have >= 10, compact = true)
             }
@@ -221,11 +222,11 @@ private fun GrowthBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean, sta
     }
     if (stats) {
         val values = p.stats.values
-        Column(Modifier.padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.padding(top = Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Stat.entries.forEachIndexed { i, stat ->
                 // The nature's raised and lowered stats are marked with an arrow, not only a colour.
                 val mark = when (stat) { p.nature.raised -> " ▲"; p.nature.lowered -> " ▼"; else -> "" }
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     // Minimum widths, not fixed sizes, so large text grows the labels instead of clipping them.
                     Text(statNames[i] + mark, Modifier.widthIn(min = 92.dp), style = soft)
                     Box(Modifier.weight(1f)) { PixelBar(values[i] / 300f, color = if (i == 0) Pixel.Green else Pixel.Blue) }
@@ -249,7 +250,7 @@ private fun EvolutionBox(model: AppModel, p: OwnedPokemon) {
         from?.let { Text("Evolves from ${it.name}", style = soft, color = Pixel.InkSoft) }
         if (options.isEmpty()) Text("This is its final form.", style = soft, color = Pixel.InkSoft)
         options.forEach { o ->
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Sprite(o.target.id, false, o.target.name, size = 56.dp)
                 Column(Modifier.weight(1f)) {
                     Text(o.target.name, style = MaterialTheme.typography.bodyLarge)
@@ -302,11 +303,11 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
         style = soft, color = Pixel.InkSoft,
     )
     if (!isGuardian) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
             PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p.speciesId) }, Modifier.weight(1f), Pixel.Red, enabled = !isBuddy, compact = true)
             PixelButton(if (inPlan) "To PC" else "To Plan party", { store.setInParty(p.id, !inPlan) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        if (care) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        if (care) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
             PixelButton(if (isLead) "Is Care's lead" else "Make Care lead", { store.setCareLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inCare && !isLead, compact = true)
             PixelButton(if (inCare) "To PC" else "To Care party", { store.setInParty(p.id, !inCare, PartyIds.CARE) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
@@ -332,7 +333,7 @@ private fun TransferBox(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
     var confirm by remember(p.id) { mutableStateOf(false) }
     val block = store.transferBlock(p.id)
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             val soft = MaterialTheme.typography.bodyMedium
             when {
                 block != null -> Text(block.reason, style = soft, color = Pixel.InkSoft)
@@ -342,7 +343,7 @@ private fun TransferBox(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                     val quote = Transfer.quote(p)
                     Text("Send ${p.nickname} away for ${quote.rareCandies} Rare Candies and ${quote.coins} coins?", style = MaterialTheme.typography.bodyLarge)
                     quote.warnings.forEach { Text(it, style = soft, color = Pixel.Red) }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PixelButton("Transfer", { if (store.transfer(p.id)) { model.effect(Sfx.ESCAPE); back() } }, Modifier.weight(1f), Pixel.Danger, compact = true)
                         PixelButton("Keep ${p.nickname}", { confirm = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }

@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Spacing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -69,7 +70,7 @@ fun OnboardingScreen(store: GameStore, startStep: Int = 0) {
     var name by remember { mutableStateOf(if (startStep > 1) "Sophia" else "") }
     var starter by remember { mutableStateOf(GameStore.starters.first()) }
 
-    Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.SpaceBetween) {
+    Column(Modifier.fillMaxSize().padding(Spacing.M), verticalArrangement = Arrangement.SpaceBetween) {
         // The upper part: the Professor, or the Pokémon being considered.
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
             when (step) {
@@ -83,10 +84,10 @@ fun OnboardingScreen(store: GameStore, startStep: Int = 0) {
             Step.GREETING -> Dialogue(greeting[line]) {
                 if (line < greeting.lastIndex) line++ else step = Step.NAME
             }
-            Step.NAME -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Step.NAME -> Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 Dialogue("What is your name?") {}
                 TextBox {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                         OutlinedTextField(
                             name, { name = it.take(24) }, Modifier.weight(1f), singleLine = true,
                             textStyle = MaterialTheme.typography.bodyLarge,
@@ -98,15 +99,15 @@ fun OnboardingScreen(store: GameStore, startStep: Int = 0) {
                     }
                 }
             }
-            Step.CONFIRM_NAME -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Step.CONFIRM_NAME -> Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 Dialogue("So your name is ${name.trim()}. Is that right?") {}
                 YesNo(onYes = { line = 0; step = Step.STARTER }, onNo = { step = Step.NAME })
             }
-            Step.STARTER -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Step.STARTER -> Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 Dialogue("Now, ${name.trim()}, choose your first partner.") {}
                 PixelButton("Choose ${Dex.species(starter).name}", { step = Step.CONFIRM_STARTER }, Modifier.fillMaxWidth(), Pixel.Red)
             }
-            Step.CONFIRM_STARTER -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Step.CONFIRM_STARTER -> Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 Dialogue("So, you want ${Dex.species(starter).name}? It will be yours.") {}
                 YesNo(onYes = { step = Step.FAREWELL }, onNo = { step = Step.STARTER })
             }
@@ -120,7 +121,7 @@ fun OnboardingScreen(store: GameStore, startStep: Int = 0) {
 
 @Composable
 private fun YesNo(onYes: () -> Unit, onNo: () -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth()) {
         PixelButton("Yes", onYes, Modifier.weight(1f), Pixel.Green)
         PixelButton("No", onNo, Modifier.weight(1f), Pixel.InkSoft)
     }
@@ -129,20 +130,20 @@ private fun YesNo(onYes: () -> Unit, onNo: () -> Unit) {
 /** All the starters, by game, as tappable sprites under a big preview of the one picked. */
 @Composable
 private fun StarterPicker(selected: Int, onSelect: (Int) -> Unit) {
-    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         // The pick stays on show; only the list of starters scrolls.
         Sprite(Dex.defaultForm(selected).id, false, Dex.species(selected).name, size = 128.dp)
         Text(Dex.species(selected).name, style = MaterialTheme.typography.titleMedium)
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         GameStore.starterGroups.forEach { (game, ids) ->
             Text(game, style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 ids.forEach { id ->
                     val chosen = id == selected
                     Box(
                         Modifier.background(if (chosen) Pixel.Yellow else Pixel.Panel, RoundedCornerShape(12.dp))
                             .selectable(selected = chosen, role = Role.RadioButton) { onSelect(id) }
-                            .padding(4.dp),
+                            .padding(Spacing.XS),
                     ) { Sprite(Dex.defaultForm(id).id, false, Dex.species(id).name, size = 56.dp) }
                 }
             }
@@ -168,8 +169,8 @@ private fun Dialogue(text: String, onNext: () -> Unit) {
     }
     val blink = rememberInfiniteTransition().animateFloat(0.2f, 1f, infiniteRepeatable(tween(500), RepeatMode.Reverse)).value
     GameBox(Modifier.clickable(onClickLabel = if (done) "Next" else "Show all", role = Role.Button) { if (!done) shown = text.length else onNext() }) {
-        Box(Modifier.fillMaxWidth().padding(bottom = 4.dp)) {
-            Text(text.take(shown), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().padding(end = 28.dp, bottom = 12.dp))
+        Box(Modifier.fillMaxWidth().padding(bottom = Spacing.XS)) {
+            Text(text.take(shown), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().padding(end = 28.dp, bottom = Spacing.M))
             if (done) ItemIcon("poke-ball", Modifier.align(Alignment.BottomEnd).alpha(blink), size = 24.dp)
         }
     }

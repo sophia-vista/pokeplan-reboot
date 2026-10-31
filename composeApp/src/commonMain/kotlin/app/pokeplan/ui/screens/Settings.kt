@@ -60,9 +60,9 @@ internal fun SettingsView(model: AppModel) {
     var name by remember { mutableStateOf(model.data.trainerName) }
 
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Trainer name", style = MaterialTheme.typography.titleMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 val changed = name.isNotBlank() && name.trim() != model.data.trainerName
                 OutlinedTextField(
                     name, { name = it.take(24) }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
@@ -74,9 +74,9 @@ internal fun SettingsView(model: AppModel) {
         }
     }
     if (store.sees(Feature.REGION_PICKER)) TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Hatching region", style = MaterialTheme.typography.titleMedium)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 TrainerRank.unlockedRegions(model.data.player.trainerPoints).forEach { r ->
                     TabButton(r.label, r == settings.region.open, { store.changeSettings { it.copy(region = r) } })
                 }
@@ -107,12 +107,12 @@ internal fun SettingsView(model: AppModel) {
         ToggleRow("Vibration", settings.haptics) { store.changeSettings { s -> s.copy(haptics = it) } }
     }
     SettingsGroup("Look") {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             ThemeMode.entries.forEach { mode -> TabButton(mode.label, settings.theme == mode, { store.changeSettings { s -> s.copy(theme = mode) } }) }
         }
         var choosing by remember { mutableStateOf(false) }
         val background = app.pokeplan.ui.AppBackgrounds.firstOrNull { it.first == settings.appBackground }?.second ?: "Day"
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Background: $background", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             TabButton(if (choosing) "Done" else "Change", choosing, { choosing = !choosing })
         }
@@ -159,7 +159,7 @@ private fun CalendarsCard(model: AppModel) {
     val shown = model.data.shownCalendars
 
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Calendars", style = MaterialTheme.typography.titleMedium)
             Text(
                 "Show events from this phone's calendars, Google Calendar included, on Planner → Calendar. They're read-only and never pay.",
@@ -191,7 +191,7 @@ private fun DataCard(model: AppModel) {
     var busy by remember { mutableStateOf(false) }
 
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Your data", style = MaterialTheme.typography.titleMedium)
             model.files?.let { files ->
                 PixelButton("Export my data", { note = files.save("pokeplan-export-${store.today}.json", store.exportJson()) }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
@@ -200,7 +200,7 @@ private fun DataCard(model: AppModel) {
             when (asking) {
                 "account" -> {
                     Text("Delete your account? Your cloud save, friends and gifts are removed for good. This device keeps its progress as a guest.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PixelButton("Delete for good", {
                             busy = true
                             scope.launch {
@@ -219,7 +219,7 @@ private fun DataCard(model: AppModel) {
                             (if (inCloud) ", and its copy in the cloud too" else "") + ". What they earned stays. This cannot be undone.",
                         style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger,
                     )
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PixelButton("Erase", {
                             busy = true
                             scope.launch {
@@ -236,12 +236,12 @@ private fun DataCard(model: AppModel) {
                 }
                 "device" -> {
                     Text("Erase this device? Every task, Pokémon, setting and Care entry here is removed and the app starts over. This cannot be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PixelButton("Erase", { store.eraseDevice(); model.care.erase(); asking = null }, Modifier.weight(1f), Pixel.Danger, compact = true)
                         PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }
-                else -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                else -> Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     if (signedIn && sync != null) PixelButton("Delete account", { asking = "account"; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     else PixelButton("Erase this device", { asking = "device"; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     PixelButton("Erase Care data", { asking = "care"; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -276,7 +276,7 @@ private fun VolumeRow(label: String, value: Int, onChange: (Int) -> Unit) {
 @Composable
 private fun AboutCard() {
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             Text("About", style = MaterialTheme.typography.titleMedium)
             Text("PokéLife ${AppVersion.display}", style = MaterialTheme.typography.bodyLarge)
             Text(
@@ -299,7 +299,7 @@ private fun AccountCard(model: AppModel) {
     var busy by remember { mutableStateOf(false) }
 
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Account", style = MaterialTheme.typography.titleMedium)
             when {
                 sync == null -> Text(
@@ -318,7 +318,7 @@ private fun AccountCard(model: AppModel) {
                         // Say the rule up front instead of leaving the buttons grey without a reason.
                         supportingText = { Text("At least 6 characters", style = MaterialTheme.typography.bodyMedium) })
                     message?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PixelButton("Sign in", {
                             busy = true; message = null
                             scope.launch { message = sync.signIn(email.trim(), password); busy = false }
@@ -348,12 +348,12 @@ private fun AccountCard(model: AppModel) {
                     val status = model.syncStatus
                     if (status is SyncStatus.Conflict) {
                         Text("Which should win?", style = MaterialTheme.typography.bodyLarge)
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                             PixelButton("This device", { scope.launch { sync.resolve(keepThisDevice = true) } }, Modifier.weight(1f), Pixel.Blue, compact = true)
                             PixelButton("The cloud", { scope.launch { sync.resolve(keepThisDevice = false) } }, Modifier.weight(1f), Pixel.Green, compact = true)
                         }
                     } else {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                             PixelButton("Sync now", { scope.launch { sync.sync() } }, Modifier.weight(1f), Pixel.Blue, enabled = status != SyncStatus.Syncing, compact = true)
                             PixelButton("Sign out", { sync.signOut() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         }
@@ -400,7 +400,7 @@ private fun CareCloudRow(model: AppModel) {
             },
             style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
         )
-        if (status is SyncStatus.Conflict) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (status is SyncStatus.Conflict) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelButton("This device", { scope.launch { careSync.resolve(keepThisDevice = true) } }, Modifier.weight(1f), Pixel.Blue, compact = true)
             PixelButton("The cloud", { scope.launch { careSync.resolve(keepThisDevice = false) } }, Modifier.weight(1f), Pixel.Green, compact = true)
         }
@@ -424,7 +424,7 @@ private fun SettingsGroup(title: String, content: @Composable () -> Unit) {
 private fun Stepper(label: String, value: String, step: Int, change: (Int) -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelButton("-$step", { change(-step) }, color = Pixel.InkSoft, compact = true)
             Text(value, style = MaterialTheme.typography.bodyLarge)
             PixelButton("+$step", { change(step) }, color = Pixel.InkSoft, compact = true)

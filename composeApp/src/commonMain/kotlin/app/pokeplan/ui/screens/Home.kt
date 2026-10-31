@@ -107,7 +107,6 @@ fun HomeScreen(model: AppModel, go: (Place) -> Unit) {
             WelcomeBackCard(model)
             RewardBox(model)
 
-            SectionLabel("Regions", icon = "explorer-kit")
             PlanRegionCard(model, go)
             if (data.settings.careModule) CareRegionCard(model, go)
 
@@ -214,7 +213,7 @@ private fun CareRegionCard(model: AppModel, go: (Place) -> Unit) {
     val next = today.firstOrNull { !it.doneOn(care.today) }
     val shown = lead ?: model.store.careBuddy
     RegionCard(
-        Module.CARE.label, Module.CARE.icon, Module.CARE.look, BuddyScene.darkness(model.store.now.hour, model.store.now.minute), shown,
+        Module.CARE.label, Module.CARE.icon, Module.CARE.look, BuddyScene.darkness(model.store.now.hour, model.store.now.minute), lead,
         lead?.let(::leadLine) ?: shown?.let { "No lead yet: ${it.nickname} helps out" } ?: "No lead yet",
         if (today.isEmpty()) "Routines and calm" else "$done of ${today.size} routines today",
         still = model.data.settings.reduceMotion, onOpen = { go(Place.CARE) },
@@ -464,9 +463,9 @@ private fun SyncChip(model: AppModel, open: () -> Unit) {
     Row(
         Modifier.clip(RoundedCornerShape(50)).background(Pixel.Panel)
             .clickable(onClickLabel = "Open the account settings", role = Role.Button, onClick = open)
-            .padding(horizontal = 10.dp, vertical = 6.dp)
+            .padding(horizontal = Spacing.M, vertical = Spacing.S)
             .semantics(mergeDescendants = true) { contentDescription = "Cloud save: $label" },
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
     ) {
         Box(Modifier.size(8.dp).background(color, CircleShape))
         Text(label, style = MaterialTheme.typography.labelMedium, color = Pixel.Ink)

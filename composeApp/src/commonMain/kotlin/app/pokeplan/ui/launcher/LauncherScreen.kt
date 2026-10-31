@@ -288,7 +288,7 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
                             is ListRow.Header -> Text(row.letter.toString(), style = MaterialTheme.typography.titleSmall, color = soft, modifier = Modifier.padding(top = Spacing.M, bottom = Spacing.XS, start = Spacing.XS))
                             is ListRow.Entry -> Row(
                                 Modifier.fillMaxWidth().clip(rowShape).combinedClickable(role = Role.Button, onLongClick = { onHold(row.app) }, onClick = { host.open(row.app.key) })
-                                    .padding(vertical = 6.dp, horizontal = Spacing.XS),
+                                    .padding(vertical = Spacing.S, horizontal = Spacing.XS),
                                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
                             ) {
                                 AppIcon(host, row.app.key, 40.dp)
@@ -315,7 +315,7 @@ private fun Chip(label: String, count: String, selected: Boolean, icon: String? 
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
     ) {
         if (icon != null) ItemIcon(icon, size = 20.dp, description = null)
-        Text(if (count.isEmpty()) label else "$label $count", style = MaterialTheme.typography.labelMedium, color = if (selected) Color(0xFF252637) else Color.White, maxLines = 1)
+        Text(if (count.isEmpty()) label else "$label $count", style = MaterialTheme.typography.labelMedium, color = if (selected) Pixel.Outline else Color.White, maxLines = 1)
     }
 }
 

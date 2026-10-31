@@ -135,11 +135,11 @@ private fun PartyPanel(
             if (ordered.isEmpty()) Text(empty, style = MaterialTheme.typography.bodyMedium)
             else {
                 HorizontalDivider(color = Pixel.Border)
-                Text(perksTitle, style = MaterialTheme.typography.labelMedium.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold))
+                Text(perksTitle, style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
                 perks.forEach { line ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(line.label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                        Text(pct(line.percent), style = MaterialTheme.typography.labelMedium.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold), color = Pixel.Green)
+                        Text(pct(line.percent), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = Pixel.Green)
                     }
                 }
                 if (perks.isEmpty() && perksNote == null) Text("None yet. They grow with level and friendship.", style = MaterialTheme.typography.bodyMedium)
@@ -189,7 +189,7 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
                 action = action, actionKey = hops, onActionDone = { action = SpriteAction.IDLE },
             )
             Text(
-                p.nickname, style = MaterialTheme.typography.labelMedium.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold),
+                p.nickname, style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                 maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
             )
             // The lead's level is on the stage just above, so its slot names its role there instead.
@@ -214,7 +214,7 @@ private fun EmptySlot(modifier: Modifier) {
     ) {
         Column(Modifier.padding(vertical = Spacing.S).alpha(0f)) {
             Box(Modifier.size(56.dp))
-            Text(" ", style = MaterialTheme.typography.labelMedium.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold))
+            Text(" ", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
             Text(" ", style = MaterialTheme.typography.labelMedium)
         }
         ItemIcon("poke-ball", Modifier.alpha(0.22f), size = 32.dp, description = null)

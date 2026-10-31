@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -81,7 +82,7 @@ internal fun pct(v: Double): String = if (v < 10) "+${(v * 10).roundToInt() / 10
 /** One bucket's total as a row: its name, a bar out of [cap] and the percent. Both parties' perk cards use it. */
 @Composable
 private fun PerkRow(label: String, value: Double, cap: Double) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         Text(label, Modifier.weight(1.2f), style = MaterialTheme.typography.bodyMedium)
         Box(Modifier.weight(1f)) { PixelBar((value / cap).toFloat().coerceIn(0f, 1f), color = Pixel.Green, label = "$label ${pct(value)}") }
         Text(pct(value), Modifier.size(width = 48.dp, height = 24.dp), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.End)
@@ -101,7 +102,7 @@ fun PartyPerksCard(model: AppModel) {
     val buddy = model.data.player.buddy
     var open by remember { mutableStateOf(false) }
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Party perks", style = MaterialTheme.typography.titleMedium)
             if (!store.sees(Feature.PERKS)) {
                 Text(PERKS_LOCKED, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -146,7 +147,7 @@ fun CarePerksCard(model: AppModel) {
     val totals = CarePerks.total(lead, party)
     var open by remember { mutableStateOf(false) }
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Care perks", style = MaterialTheme.typography.titleMedium)
             if (!model.store.sees(Feature.PERKS)) {
                 Text(PERKS_LOCKED, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -190,7 +191,7 @@ fun PokemonPerksBox(model: AppModel, p: OwnedPokemon) {
     val type = Perks.typePerks(p)
     val ability = AbilityPerks.table[p.ability]
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Perks", style = MaterialTheme.typography.titleMedium)
             val asBuddy = buildList {
                 type.forEach { (b, v) -> add("${pct(v)} ${b.label()}") }

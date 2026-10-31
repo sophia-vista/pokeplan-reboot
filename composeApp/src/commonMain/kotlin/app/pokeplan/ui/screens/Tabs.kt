@@ -32,10 +32,10 @@ fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: M
     val shape = RoundedCornerShape(12.dp)
     Box(
         modifier
-            .defaultMinSize(minHeight = 44.dp)
+            .defaultMinSize(minHeight = Spacing.Target)
             .clip(shape)
-            .background(if (selected) Pixel.Ink else Pixel.Panel, shape)
-            .border(1.dp, if (selected) Pixel.Ink else Pixel.Border, shape)
+            .background(if (selected) Pixel.Blue else Pixel.Panel, shape)
+            .border(1.dp, if (selected) Pixel.Blue else Pixel.Border, shape)
             .focusRing(shape)
             .clickable(role = Role.Tab, onClick = onClick)
             .semantics { this.selected = selected }
@@ -45,7 +45,7 @@ fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: M
         Text(
             label, textAlign = TextAlign.Center, maxLines = 1,
             style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium),
-            color = if (selected) Pixel.OnInk else Pixel.Ink,
+            color = if (selected) Color.White else Pixel.Ink,
         )
     }
 }
@@ -61,7 +61,7 @@ fun NavButton(label: String, iconItem: String, selected: Boolean, onClick: () ->
             .focusRing(RoundedCornerShape(16.dp))
             .clickable(role = Role.Tab, onClick = onClick)
             .semantics { this.selected = selected }
-            .padding(vertical = 6.dp),
+            .padding(vertical = Spacing.S),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         ItemIcon(iconItem, size = 28.dp, description = null)

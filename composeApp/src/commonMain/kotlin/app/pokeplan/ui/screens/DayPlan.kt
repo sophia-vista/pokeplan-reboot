@@ -107,10 +107,10 @@ private const val DAYS_AHEAD = 13
 
 internal fun categoryColor(c: Category) = when (c) {
     Category.WORK -> Pixel.Blue
-    Category.SCHOOL -> Color(0xFF8B5CF6)
-    Category.HOME -> Color(0xFFF59E0B)
+    Category.SCHOOL -> Pixel.Violet
+    Category.HOME -> Pixel.Amber
     Category.HEALTH -> Pixel.Green
-    Category.SOCIAL -> Color(0xFFEC4899)
+    Category.SOCIAL -> Pixel.Pink
     Category.PERSONAL -> Pixel.Gray
 }
 
@@ -135,7 +135,7 @@ internal fun duration(minutes: Int): String = when {
 internal fun eventColor(e: CalendarEvent): Color = e.color?.let { Color(it or 0xFF000000L) } ?: if (e.isOwn) OwnEventColor else Pixel.Gray
 
 /** The colour of PokéPlan's own events on the hours. */
-internal val OwnEventColor = Color(0xFF0D9488)
+internal val OwnEventColor get() = Pixel.Teal
 
 /**
  * What a drag carries: a task, or one of PokéPlan's own events ([event]), with when it is now: [day] and [start]
@@ -671,7 +671,7 @@ private fun TrayChip(t: Task, selected: Boolean, onClick: () -> Unit, modifier: 
     val color = categoryColor(t.category)
     Row(
         modifier
-            .defaultMinSize(minHeight = 44.dp)
+            .defaultMinSize(minHeight = Spacing.Target)
             .widthIn(max = 260.dp)
             .clip(shape)
             .background(if (selected) Pixel.Ink else color.copy(alpha = 0.12f), shape)

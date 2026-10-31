@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,13 +43,13 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
             Column(Modifier.fillMaxSize()) {
                 ScreenHeader("Me", subtitle = "Rank: ${TrainerRank.nameFor(data.player.trainerPoints)}", icon = "member-card")
                 Column(
-                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.M),
                 ) {
                     TrainerCard(model)
                     MenuGrid(
                         listOfNotNull(
-                            if (model.social == null) null else MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = androidx.compose.ui.graphics.Color(0xFFEC4899)),
+                            if (model.social == null) null else MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = Pixel.Pink),
                             MenuEntry("SETTINGS", "gb-sounds", "Settings", "name, region, sound", tint = Pixel.InkSoft),
                             MenuEntry("HELP", "town-map", "Help", "how it works", tint = Pixel.Blue),
                         ),
@@ -74,8 +75,8 @@ private fun TrainerCard(model: AppModel) {
     val streak = model.store.streak
     val rank = TrainerRank.rankFor(data.player.trainerPoints)
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 if (buddy != null) Sprite(buddy.form.id, buddy.isShiny, buddy.nickname, size = 96.dp)
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(data.trainerName, style = MaterialTheme.typography.titleMedium)

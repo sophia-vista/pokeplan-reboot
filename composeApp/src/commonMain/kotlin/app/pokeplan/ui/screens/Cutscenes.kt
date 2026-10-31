@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Spacing
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -96,8 +97,8 @@ private fun SceneFrame(onTap: () -> Unit, flash: Float, flashColor: Color, conte
         contentAlignment = Alignment.Center,
     ) {
         Column(
-            Modifier.safeDrawingPadding().widthIn(max = 480.dp).fillMaxWidth().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            Modifier.safeDrawingPadding().widthIn(max = 480.dp).fillMaxWidth().padding(Spacing.L),
+            verticalArrangement = Arrangement.spacedBy(Spacing.M),
             horizontalAlignment = Alignment.CenterHorizontally,
             content = content,
         )
@@ -109,7 +110,7 @@ private fun SceneFrame(onTap: () -> Unit, flash: Float, flashColor: Color, conte
 @Composable
 private fun SceneText(text: String, detail: String?, done: Boolean, skip: () -> Unit, close: () -> Unit) {
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(text, Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodyLarge)
             detail?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
@@ -182,8 +183,8 @@ private fun HatchScene(model: AppModel, scene: Cutscene.Hatch, close: () -> Unit
                     size = 144.dp, description = "An egg",
                 )
             } else {
-                AnimatedSprite(p.form.id, p.isShiny, name, Modifier.align(Alignment.TopCenter).padding(top = 20.dp), size = 176.dp, animate = !still)
-                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                AnimatedSprite(p.form.id, p.isShiny, name, Modifier.align(Alignment.TopCenter).padding(top = Spacing.XL), size = 176.dp, animate = !still)
+                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.M), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     p.form.types.forEach { TypePlate(it, width = 84.dp) }
                 }
             }
@@ -249,8 +250,8 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
     SceneFrame({ done = true }, flash.value, FlashWhite) {
         Stage("bw08", 260.dp) {
             if (done) {
-                AnimatedSprite(after.form.id, after.isShiny, after.nickname, Modifier.align(Alignment.TopCenter).padding(top = 20.dp), size = 176.dp, animate = !still)
-                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                AnimatedSprite(after.form.id, after.isShiny, after.nickname, Modifier.align(Alignment.TopCenter).padding(top = Spacing.XL), size = 176.dp, animate = !still)
+                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.M), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     after.form.types.forEach { TypePlate(it, width = 84.dp) }
                 }
             } else {

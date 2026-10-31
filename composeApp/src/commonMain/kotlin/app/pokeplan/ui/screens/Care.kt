@@ -412,7 +412,7 @@ private fun CalmBreakView(model: AppModel) {
     if (buddy != null) SceneStage(Module.CARE.look.scene, 200.dp) {
         AnimatedSprite(
             buddy.form.id, buddy.isShiny, if (start != null) "${buddy.nickname}, resting" else buddy.nickname,
-            Modifier.align(Alignment.BottomCenter).padding(bottom = 24.dp).clickable(enabled = start == null, onClickLabel = "Hear ${buddy.nickname}", role = Role.Button) {
+            Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.XXL).clickable(enabled = start == null, onClickLabel = "Hear ${buddy.nickname}", role = Role.Button) {
                 model.haptic(); model.cry(buddy.speciesId)
                 if (!reduce) { waking = true; wake++ }
             },

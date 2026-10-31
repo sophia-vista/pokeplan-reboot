@@ -102,7 +102,7 @@ private fun HelpRow(item: HelpItem) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(item.question, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                Text(if (open) "−" else "+", style = MaterialTheme.typography.titleMedium, color = Pixel.InkSoft, modifier = Modifier.padding(start = 8.dp))
+                Text(if (open) "−" else "+", style = MaterialTheme.typography.titleMedium, color = Pixel.InkSoft, modifier = Modifier.padding(start = Spacing.S))
             }
             if (open) Text(item.answer, style = MaterialTheme.typography.bodyMedium)
         }

@@ -90,6 +90,11 @@ object Pixel {
     /** A highlight for selected items and rewards. */
     val Yellow = Color(0xFFFFCB05)
     val Gray = Color(0xFF9AA1B5)
+    /** Identity colours for categories and regions (the same in both themes), so no screen needs its own literal. */
+    val Violet = Color(0xFF8B5CF6)
+    val Pink = Color(0xFFEC4899)
+    val Teal = Color(0xFF0D9488)
+    val Amber = Color(0xFFF59E0B)
     /** The cool tint laid over a scene at night (how dark is [app.pokeplan.app.BuddyScene.darkness]). */
     val Night = Color(0xFF101C3C)
     /** Under text that sits straight on a picture, and behind sheets. */
@@ -272,7 +277,7 @@ fun ExpBar(fraction: Float, label: String, modifier: Modifier = Modifier, tag: S
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
     ) {
-        Text(tag, style = MaterialTheme.typography.labelMedium.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold), color = tagColor)
+        Text(tag, style = MaterialTheme.typography.bodyLarge.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold), color = tagColor)
         Box(Modifier.weight(1f).height(14.dp).clip(RoundedCornerShape(7.dp)).background(Pixel.Outline).padding(2.dp)) {
             Box(Modifier.fillMaxWidth().height(10.dp).clip(RoundedCornerShape(5.dp)).background(Pixel.Shade))
             if (f > 0f) Box(Modifier.fillMaxWidth(f).height(10.dp).clip(RoundedCornerShape(5.dp)).background(color))

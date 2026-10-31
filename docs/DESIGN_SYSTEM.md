@@ -19,7 +19,8 @@ change as any token, component or rule it describes. Approved in the 0.64.0 desi
 | Red | `#D23B2E` | `#EC4C3E` | brand, the one main action, headers. White text on it is 4.8:1 (AA) |
 | Blue | `#2C6CCC` | `#4A89E8` | selection, focus, links |
 | Green / Warning / Danger | `#1E7F52` / `#946000` / `#B42332` | `#2E9E6A` / `#D99A1E` / `#EC6A75` | success and a running session / caution / data at risk only |
-| Night, Scrim | `#101C3C`, black | same | the tint over a scene at night; under text on a picture |
+| Night, Scrim | `#101C3C`, black | same | the tint over a scene at night; under text on a picture (with an alpha) |
+| Violet, Pink, Teal, Amber | `#8B5CF6`, `#EC4899`, `#0D9488`, `#F59E0B` | same | identity colours for categories and regions, never for state |
 - Colour means one thing: red = the main action, green = done or running, blue = selected or focused. Never decoration.
 - No colour literal outside `theme/`, the day palette and `PmdPalette`.
 - Text contrast is at least 4.5:1 (3:1 only for text of 24 sp or bold 18.66 sp and up).
@@ -44,15 +45,17 @@ Every interactive component has: default, pressed, focused, disabled.
 - **Pressed:** `PixelButton` sinks 2 dp (instant under Reduce motion); other controls use the platform ripple.
 - **Focused:** `Modifier.focusRing(shape)` draws a 2 dp `Pixel.Blue` ring (white in the world register). Put it before the `clickable`.
 - **Disabled:** `Pixel.Shade` face, `Pixel.InkSoft` label.
-- **Empty:** `EmptyState(icon, line, action)`: one real item icon, one calm sentence, the first action. Never a bare blank page.
+- **Selected:** a filled `Pixel.Blue` chip with white text (`TabButton`), or a blue-bordered row with a radio dot (`ChoiceRow`); never black, never red.
+- **Empty:** `EmptyState(title, text, icon)`: one real item icon, one calm sentence, the first action. Never a bare blank page.
 - **Notice:** `Notice(tone, text, action)`: Info or Warning only, one sentence, one action; red only where data is at risk (docs/design.md, No shame).
 - **Loading:** no spinners. Sprites and scenes fade in over 150 ms (instant under Reduce motion); a still sprite or a quiet disc stands in meanwhile.
 - **MenuGrid:** two columns; a lone last card spans the full width.
 
 ## 7. Icons
-Real item sprites only (assets/items), one per destination, never the same sprite for two destinations. Section icon: at the start of
-the header when there is no Back, hidden when there is. Assignments: Home = Town Map, Modules = Explorer Kit, Pokémon = Poké Ball,
-Me = Mystery Ticket-style key item; Party = Poké Ball only inside its own screen; PC boxes = Storage Key; Pokédex = Great Ball.
+Real item sprites only (assets/items), one per destination, never the same sprite for two destinations. A section's icon is at the start
+of its header; when the header has Back, the icon moves to the end. Assignments: Home = Town Map (`town-map`), Modules = Explorer Kit
+(`explorer-kit`), Pokémon = Poké Ball (`poke-ball`), Me = Member Card (`member-card`); inside Pokémon: Party = Premier Ball, PC boxes =
+Storage Key, Pokédex = Great Ball, Bag = Seal Bag, Guardians = Master Ball.
 
 ## 8. Layout and breakpoints
 - Compact (< 600 dp): one column, tab bar at the bottom.
