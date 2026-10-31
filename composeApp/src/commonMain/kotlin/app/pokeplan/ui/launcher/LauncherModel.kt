@@ -6,9 +6,21 @@ package app.pokeplan.ui.launcher
  * Everything here describes the apps installed on this device, so it stays on the device and is never synced.
  */
 
+/** A folder the user made: a name and the keys of its apps, in the order they were added. */
+data class Folder(val name: String, val apps: List<String> = emptyList()) {
+    companion object { const val MAX_NAME = 24 }
+}
+
+/** A place on Earth the forecast is for. */
+data class GeoPlace(val name: String, val latitude: Double, val longitude: Double)
+
+/** An app is suggested once it has been opened this many times from the launcher. */
+const val MIN_LAUNCHES = 3
+private const val MAX_LAUNCHES = 60
+
 /** The weather the town can have, drawn from the Mystery Dungeon effects (assets/weather). */
 enum class Weather(val label: String) {
-    CLEAR("Clear"), CLOUDS("Cloud shadows"), RAIN("Rain"), SNOW("Snow"), BLIZZARD("Blizzard"), SANDSTORM("Sandstorm"),
+    CLEAR("Clear"), LIVE("Live forecast"), CLOUDS("Cloud shadows"), RAIN("Rain"), SNOW("Snow"), BLIZZARD("Blizzard"), SANDSTORM("Sandstorm"),
 }
 
 /** The groups of Smart Launcher: the category an app declares (`ApplicationInfo.category`), with "Other" as the fallback. */
@@ -89,12 +101,58 @@ data class LauncherPrefs(
     val showStatus: Boolean = true,
     /** Whether dragging in from the right edge opens the app list. */
     val edgeDrag: Boolean = true,
-    /** The weather over the town, one of the Mystery Dungeon effects; it is only a look, not the real weather. */
-    val weather: Weather = Weather.CLEAR,
+    /** Whether swiping across the screen moves between the town and Today. */
+    val pageSwipe: Boolean = true,
+    /** Whether three quick taps send every Pokémon to the main screen. */
+    val gatherTap: Boolean = true,
+    /** Whether the box with the date, the time and the battery shows at the top of the home page. */
+    val showClock: Boolean = true,
+    /** The weather over the town: one of the Mystery Dungeon effects, or [Weather.LIVE], which follows the forecast for the chosen place (a clear sky without one). */
+    val weather: Weather = Weather.LIVE,
+    /** How many times each app was opened from the launcher, for the suggestions: counts only, never what was done in an app. */
+    val launches: Map<String, Int> = emptyMap(),
+    /** The user's folders, in order. */
+    val folders: List<Folder> = emptyList(),
+    /** Where the forecast is for; null until one is chosen. */
+    val place: GeoPlace? = null,
+    /** Whether temperatures show in degrees Fahrenheit (otherwise Celsius). */
+    val fahrenheit: Boolean = false,
 ) {
     fun withWalking(on: Boolean) = copy(walking = on)
     fun withShowStatus(on: Boolean) = copy(showStatus = on)
     fun withEdgeDrag(on: Boolean) = copy(edgeDrag = on)
+    fun withPageSwipe(on: Boolean) = copy(pageSwipe = on)
+    fun withGatherTap(on: Boolean) = copy(gatherTap = on)
+    fun withShowClock(on: Boolean) = copy(showClock = on)
+    fun withPlace(place: GeoPlace?) = copy(place = place)
+    fun withFahrenheit(on: Boolean) = copy(fahrenheit = on)
+
+    /** Counts an opening of [key]; when one count passes [MAX_LAUNCHES] they are all halved, so what you use now outweighs what you used long ago. */
+    fun recordLaunch(key: String): LauncherPrefs {
+        val next = launches + (key to (launches[key] ?: 0) + 1)
+        return copy(launches = if (next.values.max() > MAX_LAUNCHES) next.mapValues { it.value / 2 }.filterValues { it > 0 } else next)
+    }
+
+    /** The apps opened most, not pinned or hidden, opened at least [MIN_LAUNCHES] times, most first. */
+    fun suggested(apps: List<LauncherApp>, limit: Int = 4): List<LauncherApp> =
+        apps.filter { it.key !in pinned && it.key !in hidden && (launches[it.key] ?: 0) >= MIN_LAUNCHES }.sortedWith(compareByDescending<LauncherApp> { launches[it.key] ?: 0 }.thenBy { foldedName(it.label) }).take(limit)
+
+    /** A new folder called [name] (trimmed, 1 to [Folder.MAX_NAME] characters, not the name of another); this prefs unchanged when it cannot. */
+    fun addFolder(name: String): LauncherPrefs {
+        val clean = name.trim().take(Folder.MAX_NAME)
+        return if (clean.isEmpty() || folders.any { it.name.equals(clean, ignoreCase = true) }) this else copy(folders = folders + Folder(clean))
+    }
+
+    fun renameFolder(old: String, name: String): LauncherPrefs {
+        val clean = name.trim().take(Folder.MAX_NAME)
+        if (clean.isEmpty() || folders.any { it.name.equals(clean, ignoreCase = true) && it.name != old }) return this
+        return copy(folders = folders.map { if (it.name == old) it.copy(name = clean) else it })
+    }
+
+    fun deleteFolder(name: String) = copy(folders = folders.filter { it.name != name })
+    fun addToFolder(name: String, key: String) = copy(folders = folders.map { if (it.name == name && key !in it.apps) it.copy(apps = it.apps + key) else it })
+    fun removeFromFolder(name: String, key: String) = copy(folders = folders.map { if (it.name == name) it.copy(apps = it.apps - key) else it })
+
     fun nextWeather() = copy(weather = Weather.entries[(weather.ordinal + 1) % Weather.entries.size])
     /** The next town size: 8, then 16, then 24, then 8 again. */
     fun nextTownSize() = copy(townSize = when (townSize) { 8 -> 16; 16 -> 24; else -> 8 })
@@ -124,7 +182,14 @@ data class LauncherPrefs(
         if (townSize != 24) append("K townSize\t").append(townSize).append('\n')
         if (!showStatus) append("K showStatus\t0\n")
         if (!edgeDrag) append("K edgeDrag\t0\n")
-        if (weather != Weather.CLEAR) append("K weather\t").append(weather.name).append('\n')
+        if (!pageSwipe) append("K pageSwipe\t0\n")
+        if (!gatherTap) append("K gatherTap\t0\n")
+        if (!showClock) append("K showClock\t0\n")
+        if (weather != Weather.LIVE) append("K weather\t").append(weather.name).append('\n')
+        if (fahrenheit) append("K fahrenheit\t1\n")
+        place?.let { append("W ").append(it.name.replace('\t', ' ')).append('\t').append(it.latitude).append('\t').append(it.longitude).append('\n') }
+        launches.entries.sortedBy { it.key }.forEach { (key, count) -> append("L ").append(key).append('\t').append(count).append('\n') }
+        folders.forEach { f -> append("F ").append(f.name.replace('\t', ' ')); f.apps.forEach { append('\t').append(it) }; append('\n') }
         pinned.forEach { append("P ").append(it).append('\n') }
         hidden.sorted().forEach { append("H ").append(it).append('\n') }
         moved.entries.sortedBy { it.key }.forEach { (key, category) -> append("M ").append(key).append('\t').append(category.name).append('\n') }
@@ -142,7 +207,10 @@ data class LauncherPrefs(
                     'P' -> prefs.pin(rest)
                     'H' -> prefs.copy(hidden = prefs.hidden + rest)
                     'S' -> prefs.withScene(rest)
-                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.CLEAR); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> prefs } }
+                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.LIVE); "fahrenheit" -> prefs.withFahrenheit(f[1] != "0"); "pageSwipe" -> prefs.withPageSwipe(f[1] != "0"); "gatherTap" -> prefs.withGatherTap(f[1] != "0"); "showClock" -> prefs.withShowClock(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> prefs } }
+                    'W' -> rest.split('\t').let { f -> val lat = f.getOrNull(1)?.toDoubleOrNull(); val lon = f.getOrNull(2)?.toDoubleOrNull(); if (f.size == 3 && f[0].isNotBlank() && lat != null && lon != null) prefs.withPlace(GeoPlace(f[0], lat, lon)) else prefs }
+                    'L' -> rest.lastIndexOf('\t').let { at -> val count = if (at > 0) rest.substring(at + 1).toIntOrNull() else null; if (count != null && count > 0) prefs.copy(launches = prefs.launches + (rest.substring(0, at) to count)) else prefs }
+                    'F' -> rest.split('\t').let { f -> if (f[0].isBlank()) prefs else prefs.addFolder(f[0]).let { made -> f.drop(1).filter { it.isNotBlank() }.fold(made) { acc, key -> acc.addToFolder(f[0].trim().take(Folder.MAX_NAME), key) } } }
                     'I' -> rest.lastIndexOf('\t').let { at -> if (at > 0) prefs.withIcon(rest.substring(0, at), rest.substring(at + 1)) else prefs }
                     'M' -> {
                         val at = rest.lastIndexOf('\t')

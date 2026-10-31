@@ -148,3 +148,58 @@ class LauncherModelTest {
         assertEquals(24, LauncherPrefs.decode("K townSize\t9\n").townSize)
     }
 }
+
+class LauncherNiagaraTest {
+    private fun app(name: String) = LauncherApp("pkg.$name", name, AppCategory.OTHER)
+
+    @Test
+    fun suggestsTheMostOpenedUnpinnedApps() {
+        val apps = listOf(app("a"), app("b"), app("c"), app("d"))
+        var prefs = LauncherPrefs()
+        repeat(5) { prefs = prefs.recordLaunch("pkg.b") }
+        repeat(3) { prefs = prefs.recordLaunch("pkg.a") }
+        repeat(2) { prefs = prefs.recordLaunch("pkg.c") }
+        assertEquals(listOf("b", "a"), prefs.suggested(apps).map { it.label })
+        assertEquals(listOf("a"), prefs.pin("pkg.b").suggested(apps).map { it.label })
+        assertEquals(listOf("b"), prefs.hide("pkg.a").suggested(apps).map { it.label })
+    }
+
+    @Test
+    fun oldCountsFadeWhenOneGrowsTooBig() {
+        var prefs = LauncherPrefs().copy(launches = mapOf("pkg.a" to 60, "pkg.b" to 1))
+        prefs = prefs.recordLaunch("pkg.a")
+        assertEquals(30, prefs.launches["pkg.a"])
+        assertEquals(null, prefs.launches["pkg.b"])
+    }
+
+    @Test
+    fun foldersKeepOrderRenameAndDelete() {
+        var prefs = LauncherPrefs().addFolder(" Work ").addFolder("work").addFolder("").addFolder("Play")
+        assertEquals(listOf("Work", "Play"), prefs.folders.map { it.name })
+        prefs = prefs.addToFolder("Work", "pkg.a").addToFolder("Work", "pkg.b").addToFolder("Work", "pkg.a")
+        assertEquals(listOf("pkg.a", "pkg.b"), prefs.folders.first().apps)
+        prefs = prefs.removeFromFolder("Work", "pkg.a").renameFolder("Work", "Office").renameFolder("Office", "Play")
+        assertEquals(listOf("Office", "Play"), prefs.folders.map { it.name })
+        assertEquals(listOf("pkg.b"), prefs.folders.first().apps)
+        assertEquals(listOf("Play"), prefs.deleteFolder("Office").folders.map { it.name })
+    }
+
+    @Test
+    fun newChoicesSurviveTheRoundTrip() {
+        val prefs = LauncherPrefs().addFolder("Work").addToFolder("Work", "pkg.a").recordLaunch("pkg.a").withPlace(GeoPlace("Manila, Philippines", 14.6, 121.0)).withFahrenheit(true).copy(weather = Weather.LIVE)
+        assertEquals(prefs, LauncherPrefs.decode(prefs.encode()))
+        assertEquals(LauncherPrefs(), LauncherPrefs.decode("W broken\nW x\t1\nL pkg\tzero\nF \n"))
+    }
+
+    @Test
+    fun forecastsRoundTripAndMapToTheTown() {
+        val forecast = Forecast("Manila", 28.4, 61, listOf(DayForecast("2026-10-31", 61, 30.0, 25.5)), 123L)
+        assertEquals(forecast, Forecast.decode(forecast.encode()))
+        assertEquals(null, Forecast.decode("nonsense"))
+        assertEquals(Weather.RAIN, WeatherCodes.town(63))
+        assertEquals(Weather.SNOW, WeatherCodes.town(73))
+        assertEquals(Weather.CLOUDS, WeatherCodes.town(3))
+        assertEquals("28 C", degrees(28.4, false))
+        assertEquals("83 F", degrees(28.4, true))
+    }
+}

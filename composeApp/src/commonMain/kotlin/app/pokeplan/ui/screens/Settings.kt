@@ -106,7 +106,8 @@ internal fun SettingsView(model: AppModel) {
         }
     }
     SettingsGroup("Sound and touch") {
-        VolumeRow("Sound effects and cries", settings.effectsVolume) { v -> store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }
+        VolumeRow("Sound effects", settings.effectsVolume) { v -> store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }
+        VolumeRow("Pokémon cries", if (settings.criesVolume < 0) settings.effectsVolume else settings.criesVolume) { v -> store.changeSettings { s -> s.copy(criesVolume = v, sound = true) } }
         ToggleRow("Vibration", settings.haptics) { store.changeSettings { s -> s.copy(haptics = it) } }
     }
     SettingsGroup("Look") {

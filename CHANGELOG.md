@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.74.0
+
+- Launcher: Niagara-style features. **Often used**: the apps you open most from the launcher (not pinned, opened at least 3 times) show above your pins, kept as counts on the device only. **Folders** on a screen of their own: make, rename and delete folders, add an app from the long-press sheet in All apps ("Add to folder"), open and remove apps. **Weather forecast**: choose a town (Launcher settings → Weather place); the status box shows the temperature and sky, and tapping it opens the forecast for the days ahead. It comes from Open-Meteo (no account; only the chosen place's coordinates are sent), is kept for 30 minutes and works offline from the last one.
+- Launcher: the town's weather follows the real weather by default (Weather: Live forecast): rain, snow or cloud shadows over the town when it is raining, snowing or cloudy where you are. Pick a fixed look in the settings if you prefer.
+- Launcher: a box at the top with the date, the time and the battery (it can be turned off).
+- Launcher: the Pokémon have much more ground to walk, from just under the top boxes to behind the bottom ones. Tap the screen three times quickly and every Pokémon strolls over to the main screen, one after another, where it can be touched.
+- Launcher: the page markers show only while you swipe. Holding the town no longer opens the town picker; it is in the settings, with a new Gestures group (drag in for apps, swipe for Today, three taps to gather) that turns each one off.
+- Launcher: app icons are squares with pixel corners and a pixel border instead of the phone's round or squircle shape.
+- Sound: separate volumes for sound effects and for the Pokémon's cries, in Settings and in the launcher settings (a save from before follows the effects volume until you change it).
+
 ## 0.73.0
 
 - Sound: only the moments of the game make a sound now (an egg, a rank up, a berry, a focus session starting or ending, the lock when Home is pressed during focus, notifications). Taps, tabs, menu rows, the app list, pinning, long presses and the Pokémon's meetings are silent.
