@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.86.1
+
+- World expeditions: the box of a team that is out is made of its dungeon's own tiles (every dungeon now has its own tileset except the Distortion Rift, which uses the World Abyss): a frame of walls round a floor that scrolls past while the Pokémon walk across it with their walking animations (still under Reduce motion). Nine new tilesets are also available to the launcher's town.
+
 ## 0.86.0
 
 - World, the rest of the first design (`docs/world.md`): five more dungeons across the other regions (Waterfall Cave, Glacier Palace, Ancient Ruins, Sky Tower, Temporal Tower) and a post-story Distortion Rift; dungeons now also need their story chapter. Clearing the Temporal Tower faces the Guardian: the story is complete, Dialga joins your Guardians once, and every expedition climbs 10% faster (Temporal Mastery). Spinda's Café (three berries from the Bag brew three hours of 30% more Exploration XP, 5% more treasure chance, 1% more find chance), the Kecleon Shop (Rare Candies for Poké, a price that rises with each) and the Dojo (Poké into skill XP). Deliver jobs, daily and weekly jobs, and six more jobs; ordinary jobs now wait a week before they can be taken again. World has a `Place` the app can be sent to.

@@ -372,12 +372,14 @@ private fun WorldTeamsView(model: AppModel) {
     world.slots().forEach { team ->
         var editing by remember(team.id) { mutableStateOf(false) }
         var picked by remember(team.id, team.members) { mutableStateOf(team.members) }
-        TextBox {
+        val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
+        val outAt = team.expedition?.let { Dungeons.byId(it.dungeonId) }
+        // A team that is out is shown in a box made of its dungeon's own tiles; any other team in a plain one.
+        val body: @Composable () -> Unit = {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text("Team ${team.id}", style = MaterialTheme.typography.titleSmall)
-                val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
                 if (members.isEmpty()) Text("No one yet.", style = MaterialTheme.typography.bodyMedium)
-                else FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                else if (team.expedition == null) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     members.forEach { p -> AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = 48.dp, animate = false) }
                 }
                 val trip = team.expedition
@@ -406,6 +408,7 @@ private fun WorldTeamsView(model: AppModel) {
                 }
             }
         }
+        if (outAt != null) TileBox(outAt.id, members, animate = !model.data.settings.reduceMotion, content = body) else TextBox { body() }
     }
     if (report.isNotEmpty()) TextBox { Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) { FieldLabel("Lately"); report.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) } } }
     Text("Explore dungeons on the World map, then recall a team any time; nothing it found is lost.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
