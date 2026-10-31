@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -876,6 +878,56 @@ class ScreenshotTest {
         val prefs = app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages").pin("pkg.Camera")
         render("launcher-stacked", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs, {}, isDefault = true, phone = fakeHost) }
         render("launcher-grid", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs.withGridMode(true), {}, isDefault = true, phone = fakeHost) }
+    }
+
+    /** Editing the widget grid: the frames, handles and X on each widget, and a real drag that moves one. */
+    @Test
+    fun launcherGridEdit() {
+        val store = started()
+        listOf(1, 4, 7, 39, 52).forEach { store.grantPokemon(it, "test") }
+        val model = AppModel(store)
+        var prefs by androidx.compose.runtime.mutableStateOf(app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages").withGridMode(true))
+        val env = {
+            app.pokeplan.ui.launcher.WidgetEnv(
+                model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, true,
+                { prefs = it }, {}, {}, {}, {}, {}, {}, {}, {}, {},
+            )
+        }
+        val scene = ImageComposeScene(width = 540, height = 1170, density = Density(1.5f, 1f)) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { app.pokeplan.ui.launcher.GridHomePage(env(), null) } }
+        }
+        fun frames(n: Int = 20) = repeat(n) { scene.render(it * 50_000_000L); Thread.sleep(10) }
+        frames()
+        File("build/screenshots/launcher-grid-edit.png").apply { parentFile.mkdirs() }.writeBytes(scene.render(2_000_000_000L).encodeToData(EncodedImageFormat.PNG)!!.bytes)
+        val before = prefs.gridWidgets.first { it.kind == app.pokeplan.ui.launcher.WidgetKind.NAV }
+        // Drag the shortcuts widget two rows down and one column right.
+        val rowPx = app.pokeplan.ui.launcher.WidgetGrid.ROW_DP * 1.5f
+        val from = androidx.compose.ui.geometry.Offset(150f, 560f)
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, from)
+        frames(2)
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Move, from + androidx.compose.ui.geometry.Offset(0f, rowPx))
+        frames(2)
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Move, from + androidx.compose.ui.geometry.Offset(0f, rowPx * 2))
+        frames(2)
+        File("build/screenshots/launcher-grid-drag.png").writeBytes(scene.render(3_000_000_000L).encodeToData(EncodedImageFormat.PNG)!!.bytes)
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, from + androidx.compose.ui.geometry.Offset(0f, rowPx * 2))
+        frames(4)
+        File("build/screenshots/launcher-grid-dropped.png").writeBytes(scene.render(4_000_000_000L).encodeToData(EncodedImageFormat.PNG)!!.bytes)
+        val moved = prefs.gridWidgets.first { it.kind == app.pokeplan.ui.launcher.WidgetKind.NAV }
+        kotlin.test.assertEquals(before.row + 2, moved.row, "the drag moved the shortcuts two rows down")
+        // Pull its corner square one row down: the widget is one row taller (its kind allows 4).
+        val corner = androidx.compose.ui.geometry.Offset(474f, 169f + (moved.bottom * rowPx) - 42f)
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Press, corner)
+        frames(2)
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Move, corner + androidx.compose.ui.geometry.Offset(0f, rowPx))
+        frames(2)
+        scene.sendPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Release, corner + androidx.compose.ui.geometry.Offset(0f, rowPx))
+        frames(4)
+        File("build/screenshots/launcher-grid-resized.png").writeBytes(scene.render(5_000_000_000L).encodeToData(EncodedImageFormat.PNG)!!.bytes)
+        val resized = prefs.gridWidgets.first { it.kind == app.pokeplan.ui.launcher.WidgetKind.NAV }
+        kotlin.test.assertEquals(moved.h + 1, resized.h, "the corner pulled it one row taller")
+        kotlin.test.assertEquals(moved.row, resized.row)
+        scene.close()
     }
 
     @Test

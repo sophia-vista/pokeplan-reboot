@@ -199,10 +199,24 @@ data class LauncherPrefs(
     fun addWidget(slot: WidgetSlot): LauncherPrefs {
         if (slot.kind == WidgetKind.FOLDER && folders.none { it.name == slot.arg }) return this
         if (widgets.any { it.sameAs(slot) }) return this
-        return withWidgets(widgets + slot)
+        // Once the grid has been changed it is the layout that counts, so a new widget goes in its first free spot there too.
+        val onGrid = grid?.let { g ->
+            val l = slot.kind.limits()
+            WidgetGrid.add(g, GridWidget(if (slot.area == WidgetArea.TODAY) WidgetPage.TODAY else WidgetPage.HOME, slot.kind, slot.arg, 0, 0, l.defW, l.defH))
+        }
+        return withWidgets(widgets + slot).let { if (onGrid != null) it.withGrid(onGrid) else it }
     }
 
-    fun removeWidget(slot: WidgetSlot): LauncherPrefs = withWidgets(widgets.filterNot { it.sameAs(slot) })
+    fun removeWidget(slot: WidgetSlot): LauncherPrefs = withWidgets(widgets.filterNot { it.sameAs(slot) }).let { p ->
+        p.grid?.let { g -> p.withGrid(g.filterNot { it.kind == slot.kind && it.arg == slot.arg && (it.page == WidgetPage.TODAY) == (slot.area == WidgetArea.TODAY) }) } ?: p
+    }
+
+    /** The grid with [widget] removed, and its layout twin too, so the two never disagree about what is on screen. */
+    fun removeGridWidget(widget: GridWidget): LauncherPrefs {
+        val base = WidgetGrid.remove(grid ?: gridWidgets, widget)
+        val twin = widgets.firstOrNull { it.kind == widget.kind && it.arg == widget.arg && (it.area == WidgetArea.TODAY) == (widget.page == WidgetPage.TODAY) }
+        return (if (twin != null) withWidgets(widgets.filterNot { it.sameAs(twin) }) else this).withGrid(base)
+    }
 
     fun resizeWidget(slot: WidgetSlot, size: WidgetSize): LauncherPrefs = withWidgets(widgets.map { if (it.sameAs(slot)) it.copy(size = size) else it })
 

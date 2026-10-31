@@ -138,3 +138,34 @@ class WidgetGridSlotTest {
         assertEquals(grid, LauncherPrefs.decode(LauncherPrefs().withGrid(grid).encode()).grid)
     }
 }
+
+class WidgetGridDragTest {
+    private val nav = GridWidget(WidgetPage.HOME, WidgetKind.NAV, "", 1, 2, 2, 3)
+
+    @Test
+    fun aDropSnapsToTheNearestCell() {
+        assertEquals(2 to 3, WidgetGrid.droppedAt(nav, 60f, 50f, 100f, 40f))
+        assertEquals(1 to 2, WidgetGrid.droppedAt(nav, 40f, 15f, 100f, 40f))
+        assertEquals(0 to 0, WidgetGrid.droppedAt(nav, -900f, -900f, 100f, 40f), "never off the top left")
+        assertEquals(2 to 2, WidgetGrid.droppedAt(nav, 900f, 0f, 100f, 40f), "nor past the right edge: 4 columns, 2 wide")
+    }
+
+    @Test
+    fun aResizeSnapsAndStaysWithinTheLimitsAndTheGrid() {
+        assertEquals(3 to 4, WidgetGrid.resizedTo(nav, 100f, 40f, 100f, 40f))
+        assertEquals(3 to 3, WidgetGrid.resizedTo(nav, 900f, 0f, 100f, 40f), "at most the columns left of it")
+        assertEquals(2 to 2, WidgetGrid.resizedTo(nav, -900f, -900f, 100f, 40f), "at least the kind's minimum")
+    }
+
+    @Test
+    fun addingAndRemovingKeepTheGridAndTheLayoutTogether() {
+        val base = LauncherPrefs().withGrid(WidgetGrid.fromSlots(defaultWidgets()))
+        val added = base.addWidget(WidgetSlot(WidgetArea.TODAY, WidgetKind.FORECAST))
+        assertTrue(added.grid!!.any { it.kind == WidgetKind.FORECAST && it.page == WidgetPage.TODAY })
+        val gone = added.removeWidget(WidgetSlot(WidgetArea.TODAY, WidgetKind.FORECAST))
+        assertTrue(gone.grid!!.none { it.kind == WidgetKind.FORECAST })
+        val dropped = base.removeGridWidget(base.grid!!.first { it.kind == WidgetKind.NAV })
+        assertTrue(dropped.grid!!.none { it.kind == WidgetKind.NAV })
+        assertTrue(dropped.widgets.none { it.kind == WidgetKind.NAV })
+    }
+}
