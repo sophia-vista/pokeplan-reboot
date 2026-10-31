@@ -37,6 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
@@ -152,6 +154,23 @@ fun SectionLabel(text: String, modifier: Modifier = Modifier, icon: String? = nu
         if (icon != null) ItemIcon(icon, size = 28.dp, description = null)
         Text(text, style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
     }
+}
+
+/** How serious a [Notice] is: Info for what is going on, Warning for what needs a look, Danger only where data could be lost. */
+enum class NoticeTone { INFO, WARNING, DANGER }
+
+/**
+ * One calm sentence about the state of something (offline, a save to choose, a sign-in that did not work): a tinted card with
+ * a coloured edge, announced politely by screen readers. Say what happened and what to do; never blame the user.
+ */
+@Composable
+fun Notice(text: String, modifier: Modifier = Modifier, tone: NoticeTone = NoticeTone.INFO) {
+    val color = when (tone) { NoticeTone.INFO -> Pixel.Blue; NoticeTone.WARNING -> Pixel.Warning; NoticeTone.DANGER -> Pixel.Danger }
+    val shape = RoundedCornerShape(12.dp)
+    Row(
+        modifier.fillMaxWidth().background(color.copy(alpha = 0.10f), shape).border(1.dp, color.copy(alpha = 0.4f), shape).padding(Spacing.M)
+            .semantics { liveRegion = LiveRegionMode.Polite },
+    ) { Text(text, style = MaterialTheme.typography.bodyLarge) }
 }
 
 /** A white capsule holding an icon and a number. */

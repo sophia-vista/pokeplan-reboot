@@ -26,6 +26,11 @@ import kotlin.math.floor
 fun DayBackground(hour: Int, minute: Int, modifier: Modifier = Modifier, dark: Boolean = false) {
     val (top, bottom) = DayPalette.at(hour + minute / 60f, dark)
     val cell = with(LocalDensity.current) { 4.dp.toPx() }
+    // The dither is for the light page; on the dark page it reads as noise, so dark is a smooth, quiet gradient.
+    if (dark) {
+        Canvas(modifier.fillMaxSize()) { drawRect(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(top, bottom))) }
+        return
+    }
     Canvas(modifier.fillMaxSize()) {
         val cols = (size.width / cell).toInt() + 1
         val rows = (size.height / cell).toInt() + 1

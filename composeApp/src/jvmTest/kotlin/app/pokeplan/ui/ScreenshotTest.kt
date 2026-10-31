@@ -648,6 +648,7 @@ class ScreenshotTest {
         override fun appInfo(key: String) {}
         override fun uninstall(key: String) {}
         override fun openHomeSettings() {}
+        override fun openPokemon(id: String) {}
         override fun openApp(place: Place) {}
     }
 
@@ -673,6 +674,7 @@ class ScreenshotTest {
             render("launcher-town-$town") { app.pokeplan.ui.launcher.LauncherScreen(AppModel(store), fakeApps, prefs, {}, isDefault = true, host = fakeHost) }
         }
         render("launcher-towns") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.TownPicker("meadow", {}, {}) } } }
+        render("launcher-pokemon-menu") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.PokemonMenu(started().data.player.buddy!!, false, 2, {}, {}, {}) } } }
         render("launcher-sheet") {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.AppSheet(fakeApps[2], app.pokeplan.ui.launcher.LauncherPrefs(), {}, {}, fakeHost) } }
         }

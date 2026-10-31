@@ -5,6 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.PaddingValues
@@ -220,6 +225,8 @@ fun PixelButton(
         else -> Color.White
     }
     val raised = enabled && !secondary
+    val source = remember { MutableInteractionSource() }
+    val pressed by source.collectIsPressedAsState()
     val edge = if (raised) darker(color) else Color.Transparent
     val corner = if (compact) 12.dp else 16.dp
     Box(
@@ -227,12 +234,14 @@ fun PixelButton(
             .defaultMinSize(minWidth = Spacing.Target, minHeight = Spacing.Target)
             // A solid action key has a darker lower edge, like the buttons in the games; quiet buttons stay flat.
             .drawBehind { if (raised) drawRoundRect(edge, Offset(0f, 3.dp.toPx()), Size(size.width, size.height), CornerRadius(corner.toPx())) }
+            // The key sinks 2 dp while it is held, like the games' buttons (instant: nothing animates).
+            .offset { IntOffset(0, if (pressed && raised) 2.dp.roundToPx() else 0) }
             .padding(bottom = if (raised) 3.dp else 0.dp)
             .clip(shape)
             .background(face, shape)
             .then(if (secondary && enabled) Modifier.border(BorderStroke(1.5.dp, Pixel.Border), shape) else Modifier)
             .focusRing(shape)
-            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .clickable(interactionSource = source, indication = LocalIndication.current, enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(PaddingValues(horizontal = if (compact) 14.dp else 20.dp, vertical = 8.dp)),
         contentAlignment = Alignment.Center,
     ) {

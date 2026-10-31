@@ -39,6 +39,7 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.SceneImage
 import app.pokeplan.ui.SpriteAction
 import app.pokeplan.ui.orNull
+import app.pokeplan.ui.rememberFadeIn
 import app.pokeplan.ui.theme.Pixel
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.decodeToImageBitmap
@@ -76,7 +77,7 @@ internal fun townResidents(all: List<OwnedPokemon>, buddyId: String?): List<Owne
  * stand still. Everything is drawn at one whole-number [townScale] without smoothing, on one pixel grid.
  */
 @Composable
-internal fun Town(model: AppModel, scene: String, modifier: Modifier = Modifier) {
+internal fun Town(model: AppModel, scene: String, active: Boolean, onMenu: (OwnedPokemon) -> Unit, modifier: Modifier = Modifier) {
     val data = model.data
     val residents = townResidents(data.player.pokemon, data.player.buddy?.id)
     BoxWithConstraints(modifier) {
@@ -89,13 +90,13 @@ internal fun Town(model: AppModel, scene: String, modifier: Modifier = Modifier)
         val top = if (dungeon) TownLayout.WALK_TOP else SCENE_TOP
         val bottom = if (dungeon) TownLayout.WALK_BOTTOM else SCENE_BOTTOM
         residents.forEachIndexed { i, mon ->
-            key(mon.id) { Resident(model, mon, widthPx, heightPx, pixel, top, bottom, calm = data.settings.reduceMotion, index = i) }
+            key(mon.id) { Resident(model, mon, widthPx, heightPx, pixel, top, bottom, calm = data.settings.reduceMotion || !active, index = i, onMenu = onMenu) }
         }
     }
 }
 
 @Composable
-private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightPx: Float, pixel: Int, groundTop: Float, groundBottom: Float, calm: Boolean, index: Int) {
+private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightPx: Float, pixel: Int, groundTop: Float, groundBottom: Float, calm: Boolean, index: Int, onMenu: (OwnedPokemon) -> Unit) {
     val random = remember(mon.id) { Random(mon.id.hashCode()) }
     // Position as fractions of the ground: x across the screen, y from the back of the ground (0) to the front (1).
     val spot = remember(mon.id) { Animatable(Offset(0.08f + random.nextFloat() * 0.84f, random.nextFloat()), Offset.VectorConverter) }
@@ -104,6 +105,7 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
     var hopping by remember(mon.id) { mutableStateOf(false) }
     // How it is walking now (null while it stands): to the side, towards the viewer or away, whichever way it mostly goes.
     var walk by remember(mon.id) { mutableStateOf<SpriteAction?>(null) }
+    // Walking stops with Reduce motion and whenever the launcher is out of sight, and starts again when it is back.
     if (!calm) LaunchedEffect(mon.id) {
         delay(300L + index * 150L)
         while (true) {
@@ -129,7 +131,7 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
     Box(
         Modifier.offset { IntOffset(feetX - box / 2, feetY - box) }.size(sizeDp).zIndex(depth)
             .pointerInput(mon.id) {
-                detectTapGestures {
+                detectTapGestures(onLongPress = { onMenu(mon) }) {
                     model.cry(mon.speciesId)
                     hopping = true
                     hopKey++
@@ -167,6 +169,7 @@ private fun TileTown(name: String, modifier: Modifier, darkness: Float) {
             atlases[name] = value
         }
     }
+    val fade by rememberFadeIn(atlas != null)
     Canvas(modifier) {
         val image = atlas ?: return@Canvas drawRect(PmdPalette.Loading)
         val pixel = townScale(size.width)
@@ -180,7 +183,7 @@ private fun TileTown(name: String, modifier: Modifier, darkness: Float) {
             val (ax, ay) = map.atlas(x, y, seed)
             drawImage(
                 image, srcOffset = IntOffset(ax * TILE, ay * TILE), srcSize = IntSize(TILE, TILE),
-                dstOffset = IntOffset(x * tile - shift, y * tile), dstSize = IntSize(tile, tile), filterQuality = FilterQuality.None,
+                dstOffset = IntOffset(x * tile - shift, y * tile), dstSize = IntSize(tile, tile), alpha = fade, filterQuality = FilterQuality.None,
             )
         }
         if (darkness > 0f) drawRect(Pixel.Night.copy(alpha = darkness.coerceIn(0f, 1f)), Offset.Zero, Size(size.width, size.height))
