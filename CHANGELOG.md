@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.82.0
+
+- Buttons are redrawn as flat pixel keys (the "Outline" option): a stair-cornered outline in the key's colour on the panel colour, the label in the same colour, and while held the key fills with its colour and the label turns white. They are smaller: 38 dp tall (32 dp compact) with the same 48 dp touch target and a smaller label. Quiet buttons have a grey outline and an ink label; a disabled one has a faint outline and a dim label; a new `loading` state shows three blinking pixels and cannot be tapped.
+- Text lines are set closer (about 1.25 times the size instead of 1.5), and a button's coloured label is drawn as thin letters without the font's black shadow, which had made it look bold.
+- Dark theme: labels on tabs and buttons were drawn dark on a dark bar (the label's colour was only checked against white); they now follow the colour's lightness, so the bottom tabs and the buttons read on both themes.
+
 ## 0.81.0
 
 - Pokégear: a hub of handy tools with helper Pokémon, in Modules (the Pokégear card) and from the launcher (the Pokégear button, which replaces the phone Utilities screen of 0.80.0). The tools: **Flashlight** (the phone's torch on Android, a white screen elsewhere), **Calculator** (a pocket calculator, and a unit converter for length, mass, volume, speed and temperature), **Currency** (the European Central Bank's daily rates through Frankfurter, kept for offline use), **Picker** (choose one from a list you type, kept on the device) and **Coin toss**. Every tool works from the first day and pays nothing.

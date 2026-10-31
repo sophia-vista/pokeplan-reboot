@@ -72,6 +72,29 @@ class ScreenshotTest {
     }
 
     @Test
+    fun buttons() {
+        listOf(false, true).forEach { dark ->
+            render("buttons-${if (dark) "dark" else "light"}") {
+                PixelTheme(dark) {
+                    Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
+                        androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(10.dp)) {
+                            listOf("Start" to Pixel.Blue, "Done" to Pixel.Green, "Brand" to Pixel.Red, "Delete" to Pixel.Danger, "Cancel" to Pixel.InkSoft, "Gold" to Pixel.Yellow).forEach { (label, color) ->
+                                androidx.compose.foundation.layout.Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
+                                    app.pokeplan.ui.theme.PixelButton(label, {}, color = color)
+                                    app.pokeplan.ui.theme.PixelButton(label, {}, color = color, compact = true)
+                                    app.pokeplan.ui.theme.PixelButton("Off", {}, color = color, enabled = false, compact = true)
+                                    app.pokeplan.ui.theme.PixelButton(label, {}, color = color, loading = true, compact = true)
+                                }
+                            }
+                            app.pokeplan.ui.theme.PixelButton("Full width button", {}, Modifier.padding(0.dp), Pixel.Blue)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
     fun onboarding() = render("onboarding") { App(MemoryStorage(), focusTab = true) }
 
     @Test
