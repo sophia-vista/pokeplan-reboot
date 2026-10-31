@@ -8,6 +8,7 @@ release always has the newest merge).
 ## 0.68.0
 
 - Launcher settings: All apps has a Settings button that opens a dialogue box with the town (the picture or the scene), how many Pokémon live in it (8, 16 or 24), whether they walk about, whether the status box shows, whether dragging in from the right edge opens the app list, your hidden apps (opens the list on them), forgetting your pins and icons, and the Android home-app setting. All of it stays on the device.
+- The app's cards are a little see-through (80% solid), so the page behind them, the day gradient or the scene you chose as the background, shows faintly through.
 
 ## 0.67.0
 
