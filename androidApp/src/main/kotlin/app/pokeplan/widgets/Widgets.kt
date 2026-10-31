@@ -261,7 +261,8 @@ private fun TodayContent(context: Context, state: TodayState, header: Bitmap?) {
                             }
                             Spacer(GlanceModifier.width(10.dp))
                             Text(
-                                t.title, GlanceModifier.defaultWeight().clickable(openApp(context, Place.PLANNER.name)),
+                                // Tapping a task finishes it from the widget (it is paid when the app next opens); the header opens the Planner.
+                                t.title, GlanceModifier.defaultWeight().clickable(actionRunCallback<CompleteTaskAction>(actionParametersOf(TaskIdKey to t.id))),
                                 style = TextStyle(color = ColorProvider(ink), fontSize = 13.sp), maxLines = 2,
                             )
                             Spacer(GlanceModifier.width(8.dp))

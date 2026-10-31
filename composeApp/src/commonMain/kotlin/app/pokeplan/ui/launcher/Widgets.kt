@@ -19,6 +19,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,6 +31,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import app.pokeplan.plan.CalendarEvent
 import app.pokeplan.plan.TaskState
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Place
@@ -46,13 +48,17 @@ import kotlinx.datetime.plus
 /** What every widget needs from the launcher: the model, the apps, the prefs, the phone, the forecast and what to do on a tap. */
 internal class WidgetEnv(
     val model: AppModel, val apps: List<LauncherApp>, val prefs: LauncherPrefs, val host: LauncherHost, val forecast: Forecast?, val pixel: Int,
-    val today: TodayState, val mood: BuddyMood, val editing: Boolean, val onPrefs: (LauncherPrefs) -> Unit, val onEdit: () -> Unit, val onDone: () -> Unit, val onAllApps: () -> Unit, val onFolders: () -> Unit, val onWidgets: () -> Unit, val onOpenFolder: (String) -> Unit, val onForecast: () -> Unit, val onHold: (LauncherApp) -> Unit,
+    val today: TodayState, val mood: BuddyMood, val saver: Boolean, val editing: Boolean, val onPrefs: (LauncherPrefs) -> Unit, val onEdit: () -> Unit, val onDone: () -> Unit, val onAllApps: () -> Unit, val onFolders: () -> Unit, val onWidgets: () -> Unit, val onUtilities: () -> Unit, val onOpenFolder: (String) -> Unit, val onForecast: () -> Unit, val onHold: (LauncherApp) -> Unit,
 )
 
 /** The month and day the calendar and agenda widgets share, so choosing a day in one shows its agenda in the other. */
 internal class TodayState(today: LocalDate) {
     var month by mutableStateOf(LocalDate(today.year, today.month, 1))
     var day by mutableStateOf(today)
+    /** The phone's calendar events (Google Calendar's among them) around the month shown, read by the launcher; empty until read or without permission. */
+    var device by mutableStateOf<List<CalendarEvent>>(emptyList())
+    /** Bumped when the calendar permission is answered, so the events are read again. */
+    var permissionAnswers by mutableIntStateOf(0)
 }
 
 /**
@@ -149,9 +155,9 @@ private fun ClockWidget(env: WidgetEnv) {
         env.model.now
         val now = env.model.store.now
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            PmdText("${formatDate(now.date, env.prefs.dateStyle)}   ${formatTime(now.hour, now.minute, if (env.prefs.showSeconds) now.second else null, env.prefs.hour12)}", env.pixel, gap)
+            PmdText("${formatDate(now.date, env.prefs.dateStyle)}   ${formatTime(now.hour, now.minute, if (env.prefs.showSeconds && !env.saver) now.second else null, env.prefs.hour12)}", env.pixel, gap)
             Box(Modifier.weight(1f))
-            battery?.let { PmdText((if (it.charging) "Charging " else "Battery ") + it.percent, env.pixel, gap, alpha = 0.75f) }
+            battery?.let { PmdText((if (it.charging) "Charging " else if (env.saver) "Saver " else "Battery ") + it.percent, env.pixel, gap, alpha = 0.75f) }
         }
     }
 }
@@ -227,10 +233,15 @@ private fun AppsWidget(title: String, apps: List<LauncherApp>, env: WidgetEnv, s
 @Composable
 private fun ActionsWidget(env: WidgetEnv) {
     PmdBox(env.pixel, Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth()) {
-            PmdMenuLine(if (env.prefs.folders.isEmpty()) "Folders" else "Folders ${env.prefs.folders.size}", env.pixel, Modifier.weight(1f), center = true, onClick = env.onFolders)
-            PmdMenuLine("All apps", env.pixel, Modifier.weight(1f), center = true, onClick = env.onAllApps)
-            PmdMenuLine("Widgets", env.pixel, Modifier.weight(1f), center = true, onClick = env.onWidgets)
+        Column(Modifier.fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth()) {
+                PmdMenuLine(if (env.prefs.folders.isEmpty()) "Folders" else "Folders ${env.prefs.folders.size}", env.pixel, Modifier.weight(1f), center = true, onClick = env.onFolders)
+                PmdMenuLine("All apps", env.pixel, Modifier.weight(1f), center = true, onClick = env.onAllApps)
+            }
+            Row(Modifier.fillMaxWidth()) {
+                PmdMenuLine("Widgets", env.pixel, Modifier.weight(1f), center = true, onClick = env.onWidgets)
+                PmdMenuLine("Utilities", env.pixel, Modifier.weight(1f), center = true, onClick = env.onUtilities)
+            }
         }
     }
 }
@@ -266,7 +277,7 @@ private fun CalendarWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) 
     val today = model.store.today
     val density = LocalDensity.current.density
     val open = model.data.tasks.filter { it.state == TaskState.OPEN }
-    fun busy(d: LocalDate) = model.data.events.any { it.isOn(d) } || open.any { it.planned == d || it.due?.date == d }
+    fun busy(d: LocalDate) = model.data.events.any { it.isOn(d) } || state.device.any { it.isOn(d) } || open.any { it.planned == d || it.due?.date == d }
     PmdBox(pixel, Modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth()) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -316,22 +327,30 @@ private fun AgendaWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) {
     val day = state.day
     val open = model.data.tasks.filter { it.state == TaskState.OPEN }
     val tasks = if (day == today) model.store.todayTasks().filter { it.state == TaskState.OPEN } else open.filter { it.planned == day || it.due?.date == day }
-    val events = model.data.events.flatMap { it.occurrences(day, day) }.sortedWith(compareBy({ !it.allDay }, { it.start }))
+    // The app's own events and the phone's calendars (Google Calendar's among them), all-day ones first and then by the hour.
+    class Line(val time: String, val title: String, val sort: Int)
+    val lines = (model.data.events.flatMap { it.occurrences(day, day) }.map { e -> Line(if (e.allDay) "All day" else formatTime(e.start.hour, e.start.minute, null, env.prefs.hour12), e.title, if (e.allDay) -1 else e.start.hour * 60 + e.start.minute) } +
+        state.device.filter { it.isOn(day) }.map { e ->
+            val from = e.span(day)?.first
+            Line(if (e.allDay || from == null) "All day" else formatTime(from / 60, from % 60, null, env.prefs.hour12), if (e.private) "Busy" else e.title, if (e.allDay || from == null) -1 else from)
+        }).sortedBy { it.sort }
     // Small lists three lines, medium six, large all.
     val room = when (size) { WidgetSize.SMALL -> 3; WidgetSize.MEDIUM -> 6; WidgetSize.LARGE -> Int.MAX_VALUE }
-    val shownEvents = events.take(room)
+    val shownEvents = lines.take(room)
     val shownTasks = tasks.take((room - shownEvents.size).coerceAtLeast(0))
+    val source = model.calendars
     PmdBox(pixel, Modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth()) {
             PmdText(if (day == today) "Today" else "${dayName(day.dayOfWeek)} ${day.dayOfMonth} ${monthName(day.month)}", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M))
             PmdRule(pixel)
-            if (events.isEmpty() && tasks.isEmpty()) PmdText("Nothing planned", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M), alpha = 0.7f)
+            if (lines.isEmpty() && tasks.isEmpty()) PmdText("Nothing planned", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M), alpha = 0.7f)
             shownEvents.forEach { e ->
                 Row(Modifier.fillMaxWidth().height(Spacing.Target).padding(horizontal = pad), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                    PmdText(if (e.allDay) "All day" else formatTime(e.start.hour, e.start.minute, null, env.prefs.hour12), pixel, Modifier.weight(0.5f), alpha = 0.75f)
+                    PmdText(e.time, pixel, Modifier.weight(0.5f), alpha = 0.75f)
                     PmdText(e.title, pixel, Modifier.weight(1f))
                 }
             }
+            // Completing a task here finishes it and pays it, like the Plan tab; the box is the whole row.
             shownTasks.forEach { t ->
                 Row(
                     Modifier.fillMaxWidth().height(Spacing.Target).clickable(role = Role.Checkbox, onClickLabel = "Finish ${t.title}") { model.completeTask(t.id) }
@@ -342,7 +361,10 @@ private fun AgendaWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) {
                     PmdText(t.title, pixel, Modifier.weight(1f))
                 }
             }
-            if (events.size + tasks.size > shownEvents.size + shownTasks.size) PmdText("${events.size + tasks.size - shownEvents.size - shownTasks.size} more", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.S), alpha = 0.7f)
+            if (lines.size + tasks.size > shownEvents.size + shownTasks.size) PmdText("${lines.size + tasks.size - shownEvents.size - shownTasks.size} more", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.S), alpha = 0.7f)
+            // Google Calendar, like the app: needs the calendar permission, and the calendars chosen in PokéLife's settings.
+            if (source != null && !source.permitted()) PmdMenuLine("Show Google Calendar", pixel, dim = true) { source.requestPermission { state.permissionAnswers++ } }
+            else if (source != null && model.data.shownCalendars.isEmpty()) PmdMenuLine("Choose calendars in PokéLife: Me, Settings", pixel, dim = true) { env.host.openApp(app.pokeplan.ui.Place.ME) }
         }
     }
 }
