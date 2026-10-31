@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.92.0
+
+- Launcher widget grid (preview switch in Launcher settings): drag and resize like Smart Launcher. Long-press a widget to edit; every widget gets a frame. Drag it anywhere and it snaps to the cell under it when you let go (what is in the way moves down); pull the square in its corner to resize in whole cells, between its kind's smallest and largest; X removes it; a yellow frame shows where it will land. Add widget and Done are at the top as before, and a widget you add takes the first free spot. Each move and resize also has an accessibility action (move up, down, left, right, wider, narrower, taller, shorter, remove). Tested with real pointer events (drag and corner pull). Not yet: dragging to the other page, and widget contents that reshape for narrow cells (they clip).
+
 ## 0.91.1
 
 - World map: the wild Pokémon shown on each dungeon are dark shapes standing still, not walking sprites: they are samples of who lives there, not Pokémon you have. (The team's own expedition box still walks.)

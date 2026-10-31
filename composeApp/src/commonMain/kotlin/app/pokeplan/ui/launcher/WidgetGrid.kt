@@ -1,5 +1,7 @@
 package app.pokeplan.ui.launcher
 
+import kotlin.math.roundToInt
+
 /** The two pages widgets can stand on: the home page (over the town) and Today. */
 enum class WidgetPage { HOME, TODAY }
 
@@ -96,6 +98,17 @@ object WidgetGrid {
     fun resize(all: List<GridWidget>, widget: GridWidget, w: Int, h: Int): List<GridWidget> {
         val current = all.firstOrNull { it.sameAs(widget) } ?: return all
         return settle(all, clamped(current.copy(w = w, h = h)))
+    }
+
+    /** The cell a widget lands on when a finger has carried it ([dxPx], [dyPx]) from where it stood, on a grid of [colPx] by [rowPx] cells. */
+    fun droppedAt(w: GridWidget, dxPx: Float, dyPx: Float, colPx: Float, rowPx: Float): Pair<Int, Int> =
+        (w.col + (dxPx / colPx).roundToInt()).coerceIn(0, COLUMNS - w.w) to maxOf(0, w.row + (dyPx / rowPx).roundToInt())
+
+    /** The size a widget takes when its corner handle has been dragged ([dxPx], [dyPx]), within its kind's limits. */
+    fun resizedTo(w: GridWidget, dxPx: Float, dyPx: Float, colPx: Float, rowPx: Float): Pair<Int, Int> {
+        val l = w.kind.limits()
+        val width = (w.w + (dxPx / colPx).roundToInt()).coerceIn(l.minW, minOf(l.maxW, COLUMNS - w.col))
+        return width to (w.h + (dyPx / rowPx).roundToInt()).coerceIn(l.minH, l.maxH)
     }
 
     /** The rows a page needs: below its lowest widget. */
