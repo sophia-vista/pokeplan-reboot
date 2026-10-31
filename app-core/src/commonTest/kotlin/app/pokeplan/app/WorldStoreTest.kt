@@ -24,8 +24,10 @@ class WorldStoreTest {
         clock.millis += 8L * 60 * 60 * 1000
         val report = assertNotNull(store.worldSettle())
         assertTrue(report.data.xp > 0)
+        // Finds are rare (about 3% of floors), so keep exploring, half a day at a time, until one comes.
+        repeat(20) { if (store.data.world.finds.isEmpty()) { clock.millis += 12L * 60 * 60 * 1000; store.worldSettle() } }
         assertTrue(store.data.world.xp > 0 && store.data.world.poke > 0)
-        assertTrue(store.data.world.finds.isNotEmpty(), "eight hours finds someone")
+        assertTrue(store.data.world.finds.isNotEmpty(), "a few days find someone")
         val before = store.data.player.pokemon.size
         val recruit = assertNotNull(store.worldRecruit(0))
         assertEquals(before + 1, store.data.player.pokemon.size)

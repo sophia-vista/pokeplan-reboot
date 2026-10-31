@@ -41,6 +41,9 @@ import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.world.Dungeons
+import app.pokeplan.world.Facility
+import app.pokeplan.world.Research
+import app.pokeplan.world.WorldSkill
 import app.pokeplan.world.MissionKind
 import app.pokeplan.world.Missions
 import app.pokeplan.world.ExplorerRank
@@ -56,7 +59,7 @@ import kotlinx.coroutines.delay
  * its sections. Its progression (rank, Poké, dungeon depth) is its own; the Pokémon it recruits are the shared collection's.
  */
 enum class WorldSection(val label: String, val icon: String) {
-    MAP("World", "town-map"), MISSIONS("Missions", "journal"), TEAMS("Expeditions", "exp-share"), CAMP("Camp", "friend-ball"), BAG("Finds and Bag", "seal-bag"),
+    MAP("World", "town-map"), MISSIONS("Missions", "journal"), SKILLS("Skills", "ability-capsule"), BASE("Base and Research", "scope-lens"), TEAMS("Expeditions", "exp-share"), CAMP("Camp", "friend-ball"), BAG("Finds and Bag", "seal-bag"),
 }
 
 @Composable
@@ -79,6 +82,8 @@ private fun WorldPage(model: AppModel, section: WorldSection?, openPokemon: (Str
         when (section) {
             WorldSection.MAP -> WorldMapView(model)
             WorldSection.MISSIONS -> WorldMissionsView(model)
+            WorldSection.SKILLS -> WorldSkillsView(model)
+            WorldSection.BASE -> WorldBaseView(model)
             WorldSection.TEAMS -> WorldTeamsView(model)
             WorldSection.CAMP -> WorldCampView(model, openPokemon)
             WorldSection.BAG -> WorldBagView(model)
@@ -97,6 +102,8 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
                 listOf(
                     MenuEntry(WorldSection.MAP.name, WorldSection.MAP.icon, WorldSection.MAP.label, "${Dungeons.all.size} dungeons", tint = Module.WORLD.look.accent),
                     MenuEntry(WorldSection.MISSIONS.name, WorldSection.MISSIONS.icon, WorldSection.MISSIONS.label, if (!Missions.boardOpen(world)) "opens in the story" else "${world.missions.size} taken", badge = world.missions.count { it.done }, tint = Module.WORLD.look.accent),
+                    MenuEntry(WorldSection.SKILLS.name, WorldSection.SKILLS.icon, WorldSection.SKILLS.label, tint = Module.WORLD.look.accent),
+                    MenuEntry(WorldSection.BASE.name, WorldSection.BASE.icon, WorldSection.BASE.label, badge = world.researchReady().size, tint = Module.WORLD.look.accent),
                     MenuEntry(WorldSection.TEAMS.name, WorldSection.TEAMS.icon, WorldSection.TEAMS.label, if (out == 0) "no team out" else "$out out", tint = Module.WORLD.look.accent),
                     MenuEntry(WorldSection.CAMP.name, WorldSection.CAMP.icon, WorldSection.CAMP.label, tint = Module.WORLD.look.accent),
                     MenuEntry(WorldSection.BAG.name, WorldSection.BAG.icon, WorldSection.BAG.label, badge = world.finds.size, tint = Module.WORLD.look.accent),
@@ -200,6 +207,62 @@ private fun WorldMissionsView(model: AppModel) {
             }
         }
     }
+}
+
+// ----- Skills, base and research --------------------------------------------------------------------------------------------
+
+@Composable
+private fun WorldSkillsView(model: AppModel) {
+    val world = model.data.world
+    Text("Skills level as your teams explore, even while you are away.", style = MaterialTheme.typography.bodyMedium)
+    WorldSkill.entries.forEach { skill ->
+        val xp = world.skillXp[skill.name] ?: 0
+        val level = world.skillLevel(skill)
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Text("${skill.label}, level $level", style = MaterialTheme.typography.titleSmall)
+                Text("${skill.blurb}: ${skill.bonus}.", style = MaterialTheme.typography.bodyMedium)
+                if (level < WorldSkill.MAX_LEVEL) {
+                    val from = WorldSkill.xpFor(level)
+                    val to = WorldSkill.xpFor(level + 1)
+                    PixelBar(((xp - from).toFloat() / (to - from)).coerceIn(0f, 1f), Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "$xp of $to")
+                } else Text("Top level.", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+@Composable
+private fun WorldBaseView(model: AppModel) {
+    val store = model.store
+    val world = model.data.world
+    FieldLabel("Base (Poké: ${world.poke})")
+    Facility.entries.forEach { f ->
+        val level = world.facilityLevel(f)
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Text("${f.label}, level $level of ${Facility.MAX_LEVEL}", style = MaterialTheme.typography.titleSmall)
+                Text("${f.blurb} ${f.bonus}.", style = MaterialTheme.typography.bodyMedium)
+                if (level < Facility.MAX_LEVEL) PixelButton("Build level ${level + 1}: ${f.cost(level)} Poké", { store.worldUpgrade(f) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = world.poke >= f.cost(level), compact = true)
+            }
+        }
+    }
+    FieldLabel("Research: ${world.discovered.size} species discovered")
+    Research.steps.forEach { step ->
+        val reached = world.discovered.size >= step.species
+        val claimed = step.species in world.researchClaimed
+        TextBox {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Column(Modifier.weight(1f)) {
+                    Text("${step.species} species", style = MaterialTheme.typography.bodyLarge)
+                    Text(buildString { append("${step.poke} Poké"); step.itemId?.let { append(", ${Items.name(it)} x${step.count}") } }, style = MaterialTheme.typography.bodyMedium)
+                }
+                if (claimed) Text("Done", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+                else PixelButton("Claim", { store.worldClaimResearch(step.species) }, color = Module.WORLD.look.accent, enabled = reached, compact = true)
+            }
+        }
+    }
+    Text("The Café, Dojo, shop and storage are not built yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
 // ----- Expeditions ------------------------------------------------------------------------------------------------------

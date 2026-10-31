@@ -42,6 +42,12 @@ data class WorldData(
     /** The species found so far (the research notebook's start): each counts once. */
     val discovered: Set<Int> = emptySet(),
     val storyChapter: Int = 0,
+    /** Skill XP by [WorldSkill] name. */
+    val skillXp: Map<String, Int> = emptyMap(),
+    /** Facility levels by [Facility] name. */
+    val facilities: Map<String, Int> = emptyMap(),
+    /** The research milestones already claimed, by species count. */
+    val researchClaimed: Set<Int> = emptySet(),
     /** The jobs taken from the mission board, with their progress. */
     val missions: List<MissionProgress> = emptyList(),
     /** The one-time jobs (rescues) already claimed. */
@@ -115,6 +121,30 @@ data class WorldData(
             missions = missions - p, poke = poke + m.poke, xp = xp + m.xp, items = bag,
             missionsDone = if (m.once) missionsDone + m.id else missionsDone,
         )
+    }
+
+    fun skillLevel(skill: WorldSkill): Int = WorldSkill.levelAt(skillXp[skill.name] ?: 0)
+
+    fun facilityLevel(facility: Facility): Int = facilities[facility.name] ?: 0
+
+    internal fun withSkillXp(skill: WorldSkill, amount: Int) = copy(skillXp = skillXp + (skill.name to (skillXp[skill.name] ?: 0) + amount))
+
+    /** Builds the next level of [facility] for Poké; null when it is at the top or Poké is short. */
+    fun upgrade(facility: Facility): WorldData? {
+        val level = facilityLevel(facility)
+        val cost = facility.cost(level)
+        if (level >= Facility.MAX_LEVEL || poke < cost) return null
+        return copy(poke = poke - cost, facilities = facilities + (facility.name to level + 1))
+    }
+
+    /** Research milestones reached by the species discovered and not yet claimed. */
+    fun researchReady(): List<ResearchStep> = Research.steps.filter { discovered.size >= it.species && it.species !in researchClaimed }
+
+    /** Claims the research milestone at [species] species; null when it is not reached or already claimed. */
+    fun claimResearch(species: Int): WorldData? {
+        val step = researchReady().firstOrNull { it.species == species } ?: return null
+        val bag = step.itemId?.let { items + (it to (items[it] ?: 0) + step.count) } ?: items
+        return copy(poke = poke + step.poke, items = bag, researchClaimed = researchClaimed + species)
     }
 
     internal fun withTeam(team: WorldTeam) = replace(team)

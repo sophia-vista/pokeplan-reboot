@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.85.0
+
+- World skills, base and research (`docs/world.md`, sections 10, 12 and 13): three skills level as teams explore, even away (Exploration: 2% more Poké per level; Foraging: 1% more berry chance; Scouting: 0.3% more find chance; level 10 at 3,000 XP). A Base buys the Camp (1% more treasure chance per level) and Research Lab (10% more Exploration XP per level) for Poké, five levels each (the cost triples every level). Research pays Poké, berries and Rare Candies at 3 to 60 species discovered. This gives Poké its first use. None of it changes how long a floor takes. Café, Dojo, shop and storage are not built.
+
 ## 0.84.0
 
 - World missions and rescues (`docs/world.md`, section 8): a Missions section in World, open with story chapter 2 (Bronze rank and one dungeon clear). Take up to three jobs from the board, then send a team where they point. Explore jobs finish when a team reaches the named floor, Find-items jobs count berries, and a rescue leaves the lost Pokémon (Vulpix, Marill, Eevee) among your Finds to recruit, once only. Finished jobs are claimed for Poké, Exploration XP and sometimes an item. Ordinary jobs repeat; missing a day loses nothing. Nine jobs for now; Escort, Deliver, Defeat and daily/weekly jobs are not built.
