@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.Spacing
+import app.pokeplan.ui.theme.focusRing
 
 /** A segmented filter (the planner's views, pickers): the selected one is filled, the others outlined. At least 44 dp tall. */
 @Composable
@@ -35,6 +36,7 @@ fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: M
             .clip(shape)
             .background(if (selected) Pixel.Ink else Pixel.Panel, shape)
             .border(1.dp, if (selected) Pixel.Ink else Pixel.Border, shape)
+            .focusRing(shape)
             .clickable(role = Role.Tab, onClick = onClick)
             .semantics { this.selected = selected }
             .padding(horizontal = Spacing.M, vertical = Spacing.S),
@@ -56,6 +58,7 @@ fun NavButton(label: String, iconItem: String, selected: Boolean, onClick: () ->
             .defaultMinSize(minHeight = 56.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(if (selected) Pixel.Red.copy(alpha = 0.12f) else Color.Transparent)
+            .focusRing(RoundedCornerShape(16.dp))
             .clickable(role = Role.Tab, onClick = onClick)
             .semantics { this.selected = selected }
             .padding(vertical = 6.dp),

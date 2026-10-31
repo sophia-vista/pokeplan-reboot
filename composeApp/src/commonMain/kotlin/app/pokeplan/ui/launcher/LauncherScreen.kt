@@ -140,7 +140,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 BackHandler(enabled = true) { if (pickingTown) pickingTown = false else if (sheetApp != null) sheetKey = null else listOpen = false }
                 HomePage(model, apps, prefs, isDefault, host, pixel, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
                 AnimatedVisibility(listOpen, enter = slideInVertically { it / 4 } + fadeIn(), exit = slideOutVertically { it / 4 } + fadeOut()) {
-                    AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key })
+                    AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key }, onTown = { listOpen = false; pickingTown = true })
                 }
                 if (pickingTown) TownPicker(prefs.scene, onPick = { onPrefs(prefs.withScene(it)); pickingTown = false }, onClose = { pickingTown = false })
                 if (sheetApp != null) AppSheet(sheetApp, prefs, onPrefs, onClose = { sheetKey = null }, host = host)
@@ -190,15 +190,16 @@ private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPr
                     val task = open.firstOrNull()
                     if (task != null) PmdMenuLine(task.title, pixel, pixelText = false) { model.completeTask(task.id) }
                     else PmdMenuLine("Nothing left for today", pixel, pixelText = false, dim = true) { host.openApp(Place.PLAN) }
-                    PmdButton(if (running) "Back to focus" else "Start focus", pixel, color = if (running) Pixel.Green else Color(0xFFE84436)) { host.openApp(Place.FOCUS) }
+                    PmdButton(if (running) "Back to focus" else "Start focus", pixel, color = if (running) Pixel.Green else Pixel.Red) { host.openApp(Place.FOCUS) }
                     Row(Modifier.fillMaxWidth()) {
                         PmdMenuLine("Plan", pixel, Modifier.weight(1f), center = true) { host.openApp(Place.PLAN) }
                         if (data.settings.careModule) PmdMenuLine("Care", pixel, Modifier.weight(1f), center = true) { host.openApp(Place.CARE) }
                         PmdMenuLine("Party", pixel, Modifier.weight(1f), center = true) { host.openApp(Place.PARTY) }
                         PmdMenuLine("Pokémon", pixel, Modifier.weight(1.3f), center = true) { host.openApp(Place.COLLECTION) }
                     }
-                    if (pinned.isNotEmpty()) {
-                        PmdRule(pixel)
+                    PmdRule(pixel)
+                    if (pinned.isEmpty()) PmdMenuLine("Press and hold an app in All apps to pin it", pixel, pixelText = false, dim = true) { onAllApps() }
+                    else {
                         Column(Modifier.heightIn(max = 220.dp).verticalScroll(rememberScrollState())) {
                             pinned.chunked(2).forEach { pair ->
                                 Row(Modifier.fillMaxWidth()) {
@@ -233,7 +234,7 @@ private sealed interface ListRow {
 /** Every app A to Z over the wallpaper, blurred and darkened (the blur shows from Android 12; the dark veil always). */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
-internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: LauncherHost, onClose: () -> Unit, onHold: (LauncherApp) -> Unit) {
+internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: LauncherHost, onClose: () -> Unit, onHold: (LauncherApp) -> Unit, onTown: () -> Unit = {}) {
     var query by remember { mutableStateOf("") }
     var category by remember { mutableStateOf<AppCategory?>(null) }
     var showHidden by remember { mutableStateOf(false) }
@@ -263,6 +264,9 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
                         query, { query = it }, singleLine = true, modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Search apps" },
                         textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White), cursorBrush = SolidColor(Color.White),
                     )
+                }
+                Box(Modifier.height(Spacing.Target).clip(rowShape).clickable(role = Role.Button, onClickLabel = "Change the town", onClick = onTown).padding(horizontal = Spacing.S), contentAlignment = Alignment.Center) {
+                    Text("Town", style = MaterialTheme.typography.labelLarge, color = Color.White)
                 }
                 Box(Modifier.height(Spacing.Target).clip(rowShape).clickable(role = Role.Button, onClick = onClose).padding(horizontal = Spacing.S), contentAlignment = Alignment.Center) {
                     Text("Close", style = MaterialTheme.typography.labelLarge, color = Color.White)

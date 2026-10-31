@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
+import app.pokeplan.ui.theme.Pixel
 import kotlin.math.max
 
 private val scenes = mutableMapOf<String, ImageBitmap?>()
@@ -53,6 +54,6 @@ fun SceneImage(name: String, modifier: Modifier = Modifier, darkness: Float = 0f
                 dstSize = IntSize(size.width.toInt(), size.height.toInt()), filterQuality = FilterQuality.Medium,
             )
         }
-        if (darkness > 0f) drawRect(Color(0xFF101C3C).copy(alpha = darkness.coerceIn(0f, 1f)), Offset.Zero, Size(size.width, size.height))
+        if (darkness > 0f) drawRect(Pixel.Night.copy(alpha = darkness.coerceIn(0f, 1f)), Offset.Zero, Size(size.width, size.height))
     }
 }

@@ -29,9 +29,15 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.Spacing
+import app.pokeplan.ui.theme.focusRing
+import androidx.compose.foundation.shape.RoundedCornerShape
 import app.pokeplan.ui.orNull
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
@@ -81,7 +87,7 @@ internal fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, al
         return
     }
     val density = LocalDensity.current.density
-    Canvas(modifier.size((f.width(text) * pixel / density).dp, (PmdFont.LINE * pixel / density).dp)) {
+    Canvas(modifier.size((f.width(text) * pixel / density).dp, (PmdFont.LINE * pixel / density).dp).semantics { contentDescription = text }) {
         var cursor = 0
         for (ch in text) {
             if (ch == ' ') { cursor += PmdFont.SPACE; continue }
@@ -138,7 +144,7 @@ private fun DrawScope.pmdFrame(p: Int, tone: PmdTone) {
 internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, dim: Boolean = false, center: Boolean = false, pixelText: Boolean = true, onHold: (() -> Unit)? = null, onClick: () -> Unit) {
     val density = LocalDensity.current.density
     Box(
-        modifier.fillMaxWidth().defaultMinSize(minHeight = 44.dp).combinedClickable(role = Role.Button, onLongClick = onHold, onClick = onClick),
+        modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).focusRing(RoundedCornerShape(4.dp), Color.White).combinedClickable(role = Role.Button, onLongClick = onHold, onClick = onClick).semantics(mergeDescendants = true) {},
         contentAlignment = if (center) Alignment.Center else Alignment.CenterStart,
     ) {
         if (selected) Canvas(Modifier.size((3 * pixel / density).dp, (5 * pixel / density).dp)) {
@@ -160,16 +166,18 @@ internal fun PmdRule(pixel: Int, modifier: Modifier = Modifier) {
 
 /** The one main action of a box, in Poké Ball red with a darker lower edge: at least 48 dp tall, the label in the dialogue font. */
 @Composable
-internal fun PmdButton(text: String, pixel: Int, modifier: Modifier = Modifier, color: Color = Color(0xFFE84436), onClick: () -> Unit) {
+internal fun PmdButton(text: String, pixel: Int, modifier: Modifier = Modifier, color: Color = Pixel.Red, onClick: () -> Unit) {
     val edge = Color(color.red * 0.7f, color.green * 0.7f, color.blue * 0.7f)
     Box(
-        modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp)
+        modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target)
             .drawBehind {
                 val p = pixel.toFloat()
                 drawRect(edge, Offset(0f, p), Size(size.width, size.height - p))
                 drawRect(color, Offset(0f, 0f), Size(size.width, size.height - 2 * p))
             }
-            .clickable(role = Role.Button, onClick = onClick),
+            .focusRing(RoundedCornerShape(2.dp), Color.White)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics(mergeDescendants = true) {},
         contentAlignment = Alignment.Center,
     ) { PmdText(text, pixel) }
 }

@@ -46,6 +46,7 @@ import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.Spacing
+import app.pokeplan.ui.theme.focusRing
 
 /** One entry of a tab's menu: a real item icon, a title, a line of detail, and an optional count badge. */
 data class MenuEntry(val key: String, val icon: String, val title: String, val detail: String, val badge: Int = 0, val tint: Color = Pixel.Blue)
@@ -72,6 +73,7 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, onClick: () -> Unit) 
             .background(Pixel.Panel, menuShape)
             .border(1.dp, Pixel.Border, menuShape)
             .clip(menuShape)
+            .focusRing(menuShape)
             .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 16.dp),
     ) {
