@@ -4,6 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import app.pokeplan.ui.theme.Spacing
+import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.Modifier
@@ -624,6 +628,56 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.CareSection.entries.forEach { care("care-xl-${it.name.lowercase()}", it, height = 1500, fontScale = 1.3f) }
         (0..3).forEach { collection("collection-xl-$it", it, hatched = 6, fontScale = 1.3f, height = 1500) }
         collection("collection-xl-menu", -1, fontScale = 1.3f)
+    }
+
+    /** Every control in every state, light and dark and at 130% text: the design system on one page (docs/ui-ux-brief.md, Controls). */
+    @Test
+    fun componentGallery() {
+        for ((suffix, dark, scale) in listOf(Triple("", false, 1f), Triple("-dark", true, 1f), Triple("-xl", false, 1.3f))) {
+            render("components$suffix", height = 2900, fontScale = scale) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Gallery() } } }
+        }
+    }
+
+    @Composable
+    private fun Gallery() {
+        val A = androidx.compose.foundation.layout.Arrangement
+        val states = listOf("Rest" to app.pokeplan.ui.theme.KeyPreview(app.pokeplan.ui.theme.KeyState.Rest), "Hover" to app.pokeplan.ui.theme.KeyPreview(app.pokeplan.ui.theme.KeyState.Hovered),
+            "Press" to app.pokeplan.ui.theme.KeyPreview(app.pokeplan.ui.theme.KeyState.Pressed), "Focus" to app.pokeplan.ui.theme.KeyPreview(app.pokeplan.ui.theme.KeyState.Rest, focused = true),
+            "Off" to app.pokeplan.ui.theme.KeyPreview(app.pokeplan.ui.theme.KeyState.Disabled), "Load" to app.pokeplan.ui.theme.KeyPreview(app.pokeplan.ui.theme.KeyState.Loading))
+        androidx.compose.foundation.layout.Column(Modifier.padding(Spacing.L), verticalArrangement = A.spacedBy(Spacing.S)) {
+            for ((name, color) in listOf("Blue" to Pixel.Blue, "Green" to Pixel.Green, "Red" to Pixel.Danger, "Yellow" to Pixel.Yellow, "Neutral" to Pixel.InkSoft)) {
+                Text(name, style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = A.spacedBy(Spacing.XS)) {
+                    states.forEach { (label, pv) -> app.pokeplan.ui.theme.PixelButton(label, {}, color = color, preview = pv, enabled = pv.state != app.pokeplan.ui.theme.KeyState.Disabled) }
+                }
+            }
+            Text("Compact", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            Row(horizontalArrangement = A.spacedBy(Spacing.S)) {
+                app.pokeplan.ui.theme.PixelButton("Add", {}, compact = true); app.pokeplan.ui.theme.PixelButton("Add", {}, compact = true, enabled = false)
+                app.pokeplan.ui.theme.PixelButton("Back", {}, color = Pixel.InkSoft, compact = true)
+            }
+            Text("Tabs and chips (selected, hover, press, focus, off)", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            Row(horizontalArrangement = A.spacedBy(Spacing.S)) {
+                app.pokeplan.ui.screens.TabButton("Open", false, {}); app.pokeplan.ui.screens.TabButton("Done", true, {}); app.pokeplan.ui.screens.TabButton("Any", false, {}, enabled = false)
+                app.pokeplan.ui.screens.ArrowButton("‹", "Back", true) {}; app.pokeplan.ui.screens.ArrowButton("›", "Next", false) {}
+            }
+            app.pokeplan.ui.screens.CategoryChips(app.pokeplan.plan.Category.entries[1]) {}
+            app.pokeplan.ui.screens.Segmented(listOf("Day", "Week", "Month"), 1) {}
+            Text("Rows", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            app.pokeplan.ui.theme.ChoiceRow(true, {}) { Text("Chosen") }
+            app.pokeplan.ui.theme.ChoiceRow(false, {}) { Text("Not chosen") }
+            app.pokeplan.ui.theme.ToggleRow("A setting", true, detail = "On") {}
+            app.pokeplan.ui.theme.ToggleRow("A setting", false) {}
+            app.pokeplan.ui.theme.ListRow(onClick = {}) { Text("A list row") }
+            Text("Notices and chips", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            app.pokeplan.ui.theme.NoticeTone.entries.forEach { app.pokeplan.ui.theme.Notice("A ${it.name.lowercase()} notice.", tone = it) }
+            app.pokeplan.ui.theme.StatChip("12", { Text("★") })
+            Text("Text fields (rest, error, off)", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            androidx.compose.material3.OutlinedTextField("Some text", {}, Modifier.fillMaxWidth(), singleLine = true, label = { Text("Title") })
+            androidx.compose.material3.OutlinedTextField("", {}, Modifier.fillMaxWidth(), singleLine = true, isError = true, label = { Text("Title") }, supportingText = { Text("Give it a name") })
+            androidx.compose.material3.OutlinedTextField("Locked", {}, Modifier.fillMaxWidth(), singleLine = true, enabled = false)
+            app.pokeplan.ui.theme.PixelBar(0.6f)
+        }
     }
 
     @Test

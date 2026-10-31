@@ -172,6 +172,22 @@ Use shared theme values and component constructors rather than scattering hard-c
 
 ---
 
+### 5.1 Controls (Compose app, 0.90.2)
+
+Every tappable "key" (button, tab, chip, arrow, segment) is one `PixelKey` (`theme/Controls.kt`): the same stair-cornered outline, the same states and a 48 dp touch target. A control only picks its key colour and its content. The table in that file is the specification; `ScreenshotTest.componentGallery` renders it (`components.png`, `-dark`, `-xl` at 130% text).
+
+| State | Face | Outline | Letters | Notes |
+|---|---|---|---|---|
+| Rest | panel | key colour | key colour (ink for neutral keys) | |
+| Hovered | key at 10% over the panel | key colour | key colour | pointer only (desktop, web) |
+| Pressed | key colour | key colour | white | shrinks to 98% unless Reduce motion |
+| Selected | key colour | key colour | white | tabs, chips, segments; announced as `selected`; pressed goes darker |
+| Focused | any of the above | plus a 2 dp blue ring on the touch target | | keyboard and D-pad only |
+| Disabled | panel | border | ink-soft at 55% | not tappable |
+| Loading | as disabled | border | three blinking pixels | not tappable; still under Reduce motion |
+
+Rules: neutral keys (`InkSoft`, `Ink`, `Gray`) look grey with ink letters; a light key colour (yellow) gets darker letters on the panel; colour is never the only signal (selected and disabled are in the semantics); keys in wrapped rows fill their 48 dp target (`fill`), buttons are 38 dp (32 compact) inside it. Rows (`ChoiceRow`, `ListRow`), `Notice` and `StatChip` share the same outline (`pixelFrame`, `pixelPlate`); text fields take the dialogue corner and the blue focus colour from the Material theme. Not yet in the system: text fields have no disabled look of their own, and `NavButton` (on the coloured tab bar) has no hover.
+
 ## 6. Screen Requirements
 
 ### 6.1 Home — P0

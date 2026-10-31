@@ -28,25 +28,13 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelLabel
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
+import app.pokeplan.ui.theme.KeyLabel
+import app.pokeplan.ui.theme.PixelKey
 
-/** A segmented filter (the planner's views, pickers): the selected one is filled, the others outlined. At least 44 dp tall. */
+/** A filter or choice key (the planner's views, pickers): the selected one is filled, the others outlined. Same states as every key. */
 @Composable
-fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val shape = RoundedCornerShape(12.dp)
-    Box(
-        modifier
-            .defaultMinSize(minHeight = Spacing.Target)
-            .clip(shape)
-            .background(if (selected) Pixel.Blue else Pixel.Panel, shape)
-            .border(1.dp, if (selected) Pixel.Blue else Pixel.Border, shape)
-            .focusRing(shape)
-            .clickable(role = Role.Tab, onClick = onClick)
-            .semantics { this.selected = selected }
-            .padding(horizontal = Spacing.M, vertical = Spacing.S),
-        contentAlignment = Alignment.Center,
-    ) {
-        PixelLabel(label, if (selected) Color.White else Pixel.Ink, small = true, tinted = !selected)
-    }
+fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, key: Color = Pixel.Blue) {
+    PixelKey(onClick, modifier, key = key, selected = selected, enabled = enabled, fill = true, role = Role.Tab, quiet = true, horizontal = Spacing.M) { look -> KeyLabel(label, look) }
 }
 
 /** A bottom navigation item: a real item icon over the label; the selected one has a filled pill and a bold label. */

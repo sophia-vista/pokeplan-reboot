@@ -163,17 +163,19 @@ fun PixelTheme(dark: Boolean = false, content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = if (dark) {
             darkColorScheme(
-                primary = Pixel.Red, onPrimary = Color.White, secondary = Pixel.Blue, tertiary = Pixel.Green,
+                primary = Pixel.Blue, onPrimary = Color.White, secondary = Pixel.Blue, tertiary = Pixel.Green,
                 background = Pixel.Paper, surface = Pixel.Panel, onBackground = Pixel.Ink, onSurface = Pixel.Ink,
                 surfaceVariant = Pixel.Shade, onSurfaceVariant = Pixel.InkSoft, error = Pixel.Danger, outline = Pixel.Border,
             )
         } else {
             lightColorScheme(
-                primary = Pixel.Red, onPrimary = Color.White, secondary = Pixel.Blue, tertiary = Pixel.Green,
+                primary = Pixel.Blue, onPrimary = Color.White, secondary = Pixel.Blue, tertiary = Pixel.Green,
                 background = Pixel.Paper, surface = Pixel.Panel, onBackground = Pixel.Ink, onSurface = Pixel.Ink,
                 error = Pixel.Danger, outline = Pixel.Border,
             )
         },
+        // Text fields and anything else Material draws take the dialogue box corner, like the keys.
+        shapes = androidx.compose.material3.Shapes(extraSmall = DialogueShape, small = DialogueShape, medium = DialogueShape),
         typography = Typography(
             // Four sizes only: 24 (screen titles, big numbers), 18 (section titles, buttons), 16 (body), 14 (secondary and
             // labels). Hierarchy inside a size comes from the font, weight and colour. Pixel font for game headings, rank,
@@ -187,6 +189,9 @@ fun PixelTheme(dark: Boolean = false, content: @Composable () -> Unit) {
             bodyMedium = style(body, 14, 18, color = Pixel.InkSoft),
             labelLarge = style(display, 18, 22, FontWeight.Bold),
             labelMedium = style(body, 14, 18, FontWeight.Medium),
+            // Material draws field labels, helper and error text in these two: keep them in the app's font, not the system's.
+            bodySmall = style(body, 14, 18, color = Pixel.InkSoft),
+            labelSmall = style(body, 14, 18, FontWeight.Medium),
         ),
     ) { content() }
 }
@@ -209,8 +214,8 @@ fun TextBox(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
  * A button, drawn as a flat pixel key (option B of the redesign): a stair-cornered outline in the key's colour on the panel
  * colour, the label beside it in the same colour; held down, it fills with the colour and the label turns white. The neutral
  * colours (`Pixel.InkSoft`, `Pixel.Ink`, `Pixel.Gray`) give the quiet secondary look: grey outline, ink label. The key itself is
- * 38 dp tall (32 dp when [compact]) but the touch target is still [Spacing.Target]. States: resting, pressed, [enabled] off
- * (faint outline, dim label), [loading] (three blinking pixels, not tappable) and, from the focus ring, focused.
+ * 38 dp tall (32 dp when [compact]) but the touch target is still [Spacing.Target]. Built on [PixelKey]: its states (resting,
+ * hovered, pressed, focused, disabled, loading) are the table in Controls.kt, shared with tabs, chips and arrows.
  */
 @Composable
 fun PixelButton(
@@ -222,47 +227,13 @@ fun PixelButton(
     compact: Boolean = false,
     sound: app.pokeplan.ui.Sfx? = null,
     loading: Boolean = false,
+    preview: KeyPreview? = null,
 ) {
-    val ui = app.pokeplan.ui.LocalUiSound.current
-    val secondary = color == Pixel.InkSoft || color == Pixel.Ink || color == Pixel.Gray
-    val key = if (secondary) Pixel.InkSoft else color
-    val active = enabled && !loading
-    val source = remember { MutableInteractionSource() }
-    val held by source.collectIsPressedAsState()
-    val pressed = held && active
-    val face = if (pressed) key else Pixel.Panel
-    val edge = if (active) key else Pixel.Border
-    // A light key colour (yellow) is too pale to read as letters on the panel, so its letters are a darker shade of it.
-    val ink = if (!secondary && key.luminance() > 0.45f && !Pixel.dark) darker(key) else key
-    val visible = if (compact) 32.dp else 38.dp
-    Box(
-        modifier
-            .pressScale(source)
-            .defaultMinSize(minWidth = Spacing.Target, minHeight = Spacing.Target)
-            // Drawn in whole 2 dp art pixels with stair-stepped corners like the dialogue boxes: an outline, then the face.
-            .drawBehind {
-                val p = 2.dp.toPx()
-                val h = minOf(size.height, visible.toPx())
-                val top = (size.height - h) / 2
-                drawPath(stairRect(p, 0f, top, size.width, top + h, intArrayOf(1, 0)), edge)
-                drawPath(stairRect(p, p, top + p, size.width - p, top + h - p, intArrayOf(0)), face)
-            }
-            .clip(DialogueShape)
-            .focusRing(DialogueShape)
-            .clickable(interactionSource = source, indication = null, enabled = active, role = Role.Button) {
-                onClick()
-                ui(sound ?: if (text.endsWith("Back")) app.pokeplan.ui.Sfx.BACK else app.pokeplan.ui.Sfx.CONFIRM)
-            }
-            .padding(PaddingValues(horizontal = if (compact) 12.dp else 16.dp, vertical = 8.dp)),
-        contentAlignment = Alignment.Center,
-    ) {
-        when {
-            loading -> LoadingPixels(Pixel.InkSoft)
-            !enabled -> PixelLabel(text, Pixel.InkSoft, small = true, tinted = true)
-            pressed -> PixelLabel(text, Color.White, small = true)
-            secondary -> PixelLabel(text, Pixel.Ink, small = true, tinted = true)
-            else -> PixelLabel(text, ink, small = true, tinted = true)
-        }
+    PixelKey(
+        onClick, modifier, key = color, enabled = enabled, loading = loading, compact = compact, preview = preview,
+        sound = sound ?: if (text.endsWith("Back")) app.pokeplan.ui.Sfx.BACK else app.pokeplan.ui.Sfx.CONFIRM,
+    ) { look ->
+        if (loading || preview?.state == KeyState.Loading) LoadingPixels(Pixel.InkSoft) else KeyLabel(text, look)
     }
 }
 
