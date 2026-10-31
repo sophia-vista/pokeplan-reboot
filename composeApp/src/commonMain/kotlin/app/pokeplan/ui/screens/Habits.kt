@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.Sfx
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -124,7 +125,7 @@ internal fun HabitsView(model: AppModel) {
             lead = { RankBadge(h.rank) },
             trail = {
                 if (doneToday) PixelButton("Undo", { store.undoHabit(h.id) }, color = Pixel.InkSoft, compact = true)
-                else PixelButton("Done", { store.completeHabit(h.id) }, color = Pixel.Green, compact = true)
+                else PixelButton("Done", { model.effect(Sfx.HABIT_TICK); store.completeHabit(h.id) }, color = Pixel.Green, compact = true)
             },
         ) {
             Text(h.title, style = MaterialTheme.typography.bodyLarge)

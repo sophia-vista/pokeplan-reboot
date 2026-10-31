@@ -3,17 +3,34 @@ package app.pokeplan
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
+import android.media.SoundPool
 import app.pokeplan.ui.CryPlayer
 import app.pokeplan.ui.Sfx
 import java.io.File
 
 /**
- * Plays the real cries and sound effects (assets/cries and assets/sfx, packaged with the Compose resources) through
- * MediaPlayer: one cry at a time, and one effect at a time beside it.
+ * Plays the real cries and sound effects (assets/cries and assets/sfx, packaged with the Compose resources): one cry at a
+ * time through MediaPlayer, the short effects through a SoundPool (loaded on first use, several at once, so a run of taps
+ * or the letter scroller never cuts itself off), and the one long jingle through MediaPlayer.
  */
 class AndroidCryPlayer(private val context: Context) : CryPlayer {
     private var player: MediaPlayer? = null
     private var effectPlayer: MediaPlayer? = null
+    private val ids = mutableMapOf<String, Int>()
+    private val ready = mutableSetOf<Int>()
+    private val waiting = mutableMapOf<Int, Float>()
+    private val pool: SoundPool = SoundPool.Builder()
+        .setMaxStreams(6)
+        .setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
+        .build()
+        .also { pool ->
+            pool.setOnLoadCompleteListener { _, id, status ->
+                synchronized(this) {
+                    if (status == 0) ready += id
+                    waiting.remove(id)?.let { volume -> if (status == 0) pool.play(id, volume, volume, 1, 0, 1f) }
+                }
+            }
+        }
 
     @Synchronized
     override fun play(speciesId: Int, volume: Float) {
@@ -23,8 +40,29 @@ class AndroidCryPlayer(private val context: Context) : CryPlayer {
 
     @Synchronized
     override fun effect(sound: Sfx, volume: Float) {
-        effectPlayer?.release()
-        effectPlayer = start("sfx/${sound.file}.ogg", "sfx-${sound.file}.ogg", volume)
+        if (sound == Sfx.POKEMON_CENTER) {
+            effectPlayer?.release()
+            effectPlayer = start("sfx/${sound.file}.ogg", "sfx-${sound.file}.ogg", volume)
+            return
+        }
+        val id = ids.getOrPut(sound.file) { load(sound.file) }
+        if (id == 0) return
+        if (id in ready) pool.play(id, volume, volume, 1, 0, 1f) else waiting[id] = volume
+    }
+
+    /** Starts loading a short effect; 0 when it cannot be read (it then stays silent). */
+    private fun load(file: String): Int = try {
+        val path = "composeResources/pokeplan.composeapp.generated.resources/files/sfx/$file.ogg"
+        try {
+            context.assets.openFd(path).use { pool.load(it, 1) }
+        } catch (e: java.io.FileNotFoundException) {
+            // Packaged compressed: copy it out once and load the copy.
+            val copy = File(context.cacheDir, "sfx-$file.ogg")
+            if (!copy.exists()) context.assets.open(path).use { input -> copy.outputStream().use { input.copyTo(it) } }
+            pool.load(copy.absolutePath, 1)
+        }
+    } catch (e: Exception) {
+        0
     }
 
     private fun start(file: String, cacheName: String, volume: Float): MediaPlayer? {

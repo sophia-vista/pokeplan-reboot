@@ -92,7 +92,8 @@ object AppAlerts {
     private fun channels(context: Context): NotificationManager? {
         val manager = context.getSystemService(NotificationManager::class.java) ?: return null
         manager.createNotificationChannel(NotificationChannel(Channels.FOCUS_HALFWAY, "Focus halfway", NotificationManager.IMPORTANCE_LOW))
-        manager.createNotificationChannel(NotificationChannel(Channels.FOCUS_END, "Focus time is up", NotificationManager.IMPORTANCE_DEFAULT))
+        manager.retireOldChannels()
+        manager.createNotificationChannel(NotificationChannel(Channels.FOCUS_END, "Focus time is up", NotificationManager.IMPORTANCE_DEFAULT).withGameSound(context))
         manager.createNotificationChannel(NotificationChannel(Channels.EVENING_NUDGES, "Streak and weekly recap", NotificationManager.IMPORTANCE_DEFAULT))
         return manager
     }

@@ -67,7 +67,7 @@ object RoutineReminders {
 
     fun show(context: Context, routineId: String, title: String, day: LocalDate) {
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
-        manager.createNotificationChannel(NotificationChannel(Channels.CARE_ROUTINES, "Care routines", NotificationManager.IMPORTANCE_DEFAULT))
+        manager.createNotificationChannel(NotificationChannel(Channels.CARE_ROUTINES, "Care routines", NotificationManager.IMPORTANCE_DEFAULT).withGameSound(context))
         val id = notificationId(routineId)
         fun action(action: String) = PendingIntent.getBroadcast(
             context, id + action.hashCode(),

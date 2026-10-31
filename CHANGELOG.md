@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.70.0
+
+- Sound: the app and the launcher now have their own sounds, from the Mystery Dungeon sound effects: a cursor blip for tabs, menu cards, settings rows and the letter scroller, confirm and back for buttons, whooshes for the app list, a long-press tone, pin, unpin, hide, move and uninstall sounds, a buzz when Home is pressed during a focus session, and sounds for starting and ending a focus session, a hatched egg, a rank up, ticking a habit, a calm break, feeding a berry and a notification.
+- Sound: Android plays the short sounds through a SoundPool, so a run of taps or the letter scroller no longer cuts itself off. The focus, task and routine notifications use the game's notification sound (their channels are renamed, so every install gets it).
+- Launcher: the town's Pokémon meet. Two that walk up to each other stop and react with the Mystery Dungeon status icons over their heads, a "?" and a "!" (a greeting), a red X and a "!" (a quarrel) or two "!" (both startled), with the matching emote sounds (at most one every few seconds). At night some of them lie down with a Zz over their heads. Reduce motion turns it all off.
+- The buddy has a Zz over its head while it sleeps through a focus session or a calm break.
+- Motion: one set of easing curves (`Ease` in `ui/Ease.kt`) replaces the default ones: smooth for almost everything, in-out for the idle loops. Every button, menu card, tab and launcher row shrinks to 98% while pressed. The launcher's dialogue boxes and sheets rise 6 dp as they fade in (no blur, which would smear the pixel art). The app list follows your finger with real physics: a flick keeps its speed and settles on a spring, and pulling past the open end stretches it a little and lets it spring back. All of it stops under Reduce motion.
+- Assets: `assets/status` (the status icons, cut by `tools/sprites/cut_status.py`) and 38 more sound effects (`tools/sprites/convert_pmd_sfx.py`).
+
 ## 0.69.0
 
 - Launcher: the app list now comes in from the right. Dragging in from the right edge pulls it across with your finger and it settles open or shut when you let go; All apps and Close slide it the same way (it stays put under Reduce motion).

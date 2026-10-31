@@ -1,5 +1,9 @@
 package app.pokeplan.ui.screens
 
+import kotlin.math.roundToInt
+import androidx.compose.ui.platform.LocalDensity
+import app.pokeplan.ui.StatusKind
+import app.pokeplan.ui.StatusIcon
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -123,7 +127,7 @@ fun BuddyStage(
     }
 
     // Species without an animation drift up and down very slowly so the scene is never frozen.
-    val drift by rememberInfiniteTransition().animateFloat(0f, 1f, infiniteRepeatable(tween(2_600, easing = FastOutSlowInEasing), RepeatMode.Reverse))
+    val drift by rememberInfiniteTransition().animateFloat(0f, 1f, infiniteRepeatable(tween(2_600, easing = app.pokeplan.ui.Ease.InOut), RepeatMode.Reverse))
     val bob = if (calm || resting) 0f else -3f * drift
 
     val shape = RoundedCornerShape(Spacing.CardRadius)
@@ -154,6 +158,8 @@ fun BuddyStage(
             action = if (resting) SpriteAction.SLEEP else action, actionKey = reactionId, onActionDone = { action = SpriteAction.IDLE },
         )
 
+        // The Zz while it sleeps through a focus session.
+        if (resting) StatusIcon(StatusKind.SLEEP, (3 * LocalDensity.current.density).roundToInt(), Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp + 104.dp).offset(x = 40.dp), loop = true, animate = !calm)
         if (buddy.isShiny && !calm && !resting) ShinyGlints(Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp).size(144.dp))
 
         // Level and progress: small, in the corner, readable on any scene. Its corners are the stage's minus the inset, so

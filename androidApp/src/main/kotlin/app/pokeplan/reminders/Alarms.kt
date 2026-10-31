@@ -2,6 +2,7 @@ package app.pokeplan.reminders
 
 import android.app.AlarmManager
 import android.app.Notification
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -16,10 +17,24 @@ import kotlinx.coroutines.launch
 /** The notification channel ids, in one place so a channel is created and posted to under the same name. */
 internal object Channels {
     const val FOCUS_HALFWAY = "focus-halfway"
-    const val FOCUS_END = "focus-end"
+    // The ones with the game's notification sound are "-2": a channel keeps its sound for good, so a new id gives the old installs the new one.
+    const val FOCUS_END = "focus-end-2"
     const val EVENING_NUDGES = "evening-nudges"
-    const val TASK_REMINDERS = "task-reminders"
-    const val CARE_ROUTINES = "care-routines"
+    const val TASK_REMINDERS = "task-reminders-2"
+    const val CARE_ROUTINES = "care-routines-2"
+}
+
+/** Gives a channel the game's notification sound (res/raw/pokelife_notify, the Mystery Dungeon "notice" blip). */
+internal fun NotificationChannel.withGameSound(context: Context): NotificationChannel = apply {
+    setSound(
+        android.net.Uri.parse("android.resource://${context.packageName}/raw/pokelife_notify"),
+        android.media.AudioAttributes.Builder().setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION).setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION).build(),
+    )
+}
+
+/** Removes the channels this app had before they got the game's sound. */
+internal fun NotificationManager.retireOldChannels() {
+    listOf("focus-end", "task-reminders", "care-routines").forEach { deleteNotificationChannel(it) }
 }
 
 /** The preferences file that holds the task reminders' alarm codes; the app also keeps its "asked for notifications" flag there. */

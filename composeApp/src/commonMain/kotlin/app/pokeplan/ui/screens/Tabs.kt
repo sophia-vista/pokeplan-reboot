@@ -1,5 +1,7 @@
 package app.pokeplan.ui.screens
 
+import androidx.compose.runtime.remember
+import app.pokeplan.ui.pressScale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -50,13 +52,16 @@ fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: M
 /** A bottom navigation item: a real item icon over the label; the selected one has a filled pill and a bold label. */
 @Composable
 fun NavButton(label: String, iconItem: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val ui = app.pokeplan.ui.LocalUiSound.current
+    val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Column(
         modifier
+            .pressScale(source)
             .defaultMinSize(minHeight = 56.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(if (selected) Pixel.Red.copy(alpha = 0.12f) else Color.Transparent)
             .focusRing(RoundedCornerShape(16.dp))
-            .clickable(role = Role.Tab, onClick = onClick)
+            .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Tab) { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }
             .semantics { this.selected = selected }
             .padding(vertical = Spacing.S),
         horizontalAlignment = Alignment.CenterHorizontally,

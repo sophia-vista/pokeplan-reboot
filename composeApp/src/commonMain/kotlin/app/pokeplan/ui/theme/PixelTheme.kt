@@ -1,5 +1,6 @@
 package app.pokeplan.ui.theme
 
+import app.pokeplan.ui.pressScale
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -201,7 +202,7 @@ fun TextBox(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
 
 /**
  * A button. Solid colour for the main action; the neutral colours (`Pixel.InkSoft`, `Pixel.Ink`, `Pixel.Gray`) give the quiet
- * secondary look: white with a border and dark text. A disabled button is grey. At least 44 dp tall (48 dp when not [compact]).
+ * secondary look: white with a border and dark text. A disabled button is grey. At least 44 dp tall (48 dp when not [compact]). A tap plays [sound] (a Back button its own, else the confirm blip) unless a game sound has just played.
  */
 @Composable
 fun PixelButton(
@@ -211,7 +212,9 @@ fun PixelButton(
     color: Color = Pixel.Blue,
     enabled: Boolean = true,
     compact: Boolean = false,
+    sound: app.pokeplan.ui.Sfx? = null,
 ) {
+    val ui = app.pokeplan.ui.LocalUiSound.current
     val secondary = color == Pixel.InkSoft || color == Pixel.Ink || color == Pixel.Gray
     val face = when {
         !enabled -> Pixel.Shade
@@ -230,6 +233,7 @@ fun PixelButton(
     val outline = if (raised) darker(color) else Pixel.Border
     Box(
         modifier
+            .pressScale(source)
             .defaultMinSize(minWidth = Spacing.Target, minHeight = Spacing.Target)
             // Drawn in whole 2 dp art pixels with stair-stepped corners like the dialogue boxes: an outline, the face, and a one-pixel lip under a solid key that is gone while it is held.
             .drawBehind {
@@ -240,7 +244,10 @@ fun PixelButton(
             }
             .clip(DialogueShape)
             .focusRing(DialogueShape)
-            .clickable(interactionSource = source, indication = LocalIndication.current, enabled = enabled, role = Role.Button, onClick = onClick)
+            .clickable(interactionSource = source, indication = LocalIndication.current, enabled = enabled, role = Role.Button) {
+                onClick()
+                ui(sound ?: if (text.endsWith("Back")) app.pokeplan.ui.Sfx.BACK else app.pokeplan.ui.Sfx.CONFIRM)
+            }
             .padding(PaddingValues(horizontal = if (compact) 16.dp else 24.dp, vertical = 12.dp)),
         contentAlignment = Alignment.Center,
     ) {
