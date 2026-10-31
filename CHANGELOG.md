@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.89.1
+
+- Audit (`docs/audit-2026-10-31.md`, answering the owner's repository audit brief): findings with severity, what was and was not inspected, a clean-up classification, a phased plan and the decisions only the owner can make. `docs/world.md` gains a status table of what is built.
+- Fixes it led to: World expeditions no longer freeze when the phone's clock is set back; daily and weekly World jobs come back at the player's midnight, not UTC's; the world map tells a screen reader how many dungeons are cleared and open and that the list holds them all; unused World code and three unused previews are gone. New tests: the clock, the day, and `NavigationTest` (every place the app can be sent lands on the right tab, module and section). World screens are also rendered at 130% text in the screenshot test.
+
 ## 0.89.0
 
 - Emoji show in the launcher's pixel text (an agenda event or a task called "🏠 Home" showed "??"): the dialogue font cannot draw them, so the system's emoji font draws them beside the letters.

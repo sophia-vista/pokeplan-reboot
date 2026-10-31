@@ -1,6 +1,8 @@
 package app.pokeplan.ui.screens
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.background
@@ -52,8 +54,6 @@ import kotlin.math.min
 
 private val worldArt = mutableMapOf<String, ImageBitmap?>()
 
-/** The dungeons that have a real tileset picture in assets/world (`dungeon-<id>.png`). */
-internal val dungeonPictures = setOf("tiny-woods", "thunderwave-cave", "mt-steel")
 
 /**
  * A real Mystery Dungeon picture from assets/world (docs/assets.md): the town, the guild room, the summit, the camp cave and a
@@ -295,6 +295,7 @@ internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: Str
         val heightDp = with(density) { (MAP_H * scale).toDp() }
         Canvas(
             Modifier.fillMaxWidth().height(heightDp).border(2.dp, Pixel.Ink)
+                .semantics { contentDescription = "World map with ${markers.size} dungeons: ${markers.count { it.state == MarkerState.CLEARED }} cleared, ${markers.count { it.state == MarkerState.OPEN }} open. The list below has every dungeon." }
                 .pointerInput(markers, scale, left) {
                     detectTapGestures { tap ->
                         val reach = 24.dp.toPx()

@@ -77,6 +77,11 @@ object WorldSim {
             val dungeon = Dungeons.byId(trip.dungeonId) ?: continue
             val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
             if (members.isEmpty()) continue
+            // A clock set back (or a time zone change on a phone that keeps local time) must not freeze the climb until it catches up.
+            if (trip.settledTo > now) {
+                out = out.withTeam((out.team(team.id) ?: team).copy(expedition = trip.copy(settledTo = now)))
+                continue
+            }
             val per = floorMillis(dungeon, power(members, dungeon), data.guardianDone)
             val until = min(now, trip.settledTo + MAX_AWAY_MILLIS)
             val floors = ((until - trip.settledTo) / per).toInt()

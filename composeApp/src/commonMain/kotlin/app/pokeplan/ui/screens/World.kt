@@ -220,16 +220,6 @@ private fun missionIcon(kind: MissionKind): String = when (kind) {
     MissionKind.DEFEAT -> "scope-lens"
 }
 
-private fun regionColor(region: app.pokeplan.world.WorldRegion): Color = when (region) {
-    app.pokeplan.world.WorldRegion.GREENLANDS -> Color(0xFF5E9E3F)
-    app.pokeplan.world.WorldRegion.MOUNTAINS -> Color(0xFF8A6B4A)
-    app.pokeplan.world.WorldRegion.UNDERGROUND -> Color(0xFFC08A3E)
-    app.pokeplan.world.WorldRegion.AQUATIC -> Color(0xFF3B84B8)
-    app.pokeplan.world.WorldRegion.FROZEN -> Color(0xFF6FB6D6)
-    app.pokeplan.world.WorldRegion.ANCIENT -> Color(0xFF8D6A9F)
-    app.pokeplan.world.WorldRegion.SKY -> Color(0xFF5C8FD6)
-    app.pokeplan.world.WorldRegion.OTHERWORLDLY -> Color(0xFF4B3A7A)
-}
 
 // ----- Missions -------------------------------------------------------------------------------------------------------
 
@@ -284,7 +274,7 @@ private fun WorldMissionsView(model: AppModel) {
         }
     }
     FieldLabel("On the board")
-    val offered = Missions.available(world, model.worldNow.takeIf { it > 0 } ?: store.nowMillis)
+    val offered = Missions.available(world, model.worldNow.takeIf { it > 0 } ?: store.nowMillis, store.utcOffsetMillis)
     if (offered.isEmpty()) Text("Nothing new for your rank right now.", style = MaterialTheme.typography.bodyMedium)
     offered.forEach { m ->
         TextBox {

@@ -70,15 +70,18 @@ object Missions {
     fun boardOpen(data: WorldData): Boolean = Story.opened(data) >= BOARD_CHAPTER
 
     /** The jobs [data] can take at [now] (the settle time unless given: the screens pass the clock, which a quiet World would not have stored): the board is open, the rank is reached, and a one-time job is not done or already taken. */
-    fun available(data: WorldData, now: Long = data.lastSeenAt): List<MissionDef> =
+    fun available(data: WorldData, now: Long = data.lastSeenAt, utcOffsetMillis: Long = 0): List<MissionDef> =
         if (!boardOpen(data)) emptyList()
         else all.filter { m ->
             data.rank >= m.needs && data.missions.none { it.id == m.id } && !(m.once && m.id in data.missionsDone) &&
-                (m.period == 0 || data.missionClaimedDay[m.id].let { it == null || now / 86_400_000L - it >= m.period })
+                (m.period == 0 || data.missionClaimedDay[m.id].let { it == null || day(now, utcOffsetMillis) - it >= m.period })
         }
 
     /** The day number World thinks it is: the last time it settled, in whole days. */
     fun day(data: WorldData): Long = data.lastSeenAt / 86_400_000L
+
+    /** The day number at [now] for a player [utcOffsetMillis] from UTC, so a daily job comes back at the player's midnight. */
+    fun day(now: Long, utcOffsetMillis: Long): Long = (now + utcOffsetMillis).floorDiv(86_400_000L)
 
     /** What one climbed floor does to the accepted jobs. [berries] is how many berries it gave. Reports each job it finishes. */
     internal fun advance(data: WorldData, dungeonId: String, floor: Int, berries: Int, at: Long, teamSize: Int, power: Double, events: MutableList<WorldEvent>): WorldData {
