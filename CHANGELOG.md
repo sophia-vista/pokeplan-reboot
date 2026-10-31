@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.70.1
+
+- Launcher: the Pokémon's "?" and "!" icons sit just over their heads (they floated far above them).
+- Launcher: the settings are a screen of their own, with Back, instead of a pop-up.
+- Launcher: a sound volume slider in the settings (the same level as Settings → Sound), which plays a blip when you let go.
+
 ## 0.70.0
 
 - Sound: the app and the launcher now have their own sounds, from the Mystery Dungeon sound effects: a cursor blip for tabs, menu cards, settings rows and the letter scroller, confirm and back for buttons, whooshes for the app list, a long-press tone, pin, unpin, hide, move and uninstall sounds, a buzz when Home is pressed during a focus session, and sounds for starting and ending a focus session, a hatched egg, a rank up, ticking a habit, a calm break, feeding a berry and a notification.

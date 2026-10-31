@@ -170,9 +170,15 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
         )
         // Over its head: the Zz of sleep, or what the meeting makes it feel.
         val icon = if (hold != null) hold.icon else if (asleep) StatusKind.SLEEP else null
-        if (icon != null) key(icon) { StatusIcon(icon, pixel, Modifier.align(Alignment.TopCenter), loop = icon == StatusKind.SLEEP, animate = !calm) }
+        if (icon != null) key(icon) {
+            // Just over its head: the Pokémon stands at the bottom of the box, so the icon is measured up from its feet, not down from the top.
+            StatusIcon(icon, pixel, Modifier.align(Alignment.BottomCenter).offset(y = (-ICON_RISE * pixel / LocalDensity.current.density).dp), loop = icon == StatusKind.SLEEP, animate = !calm)
+        }
     }
 }
+
+/** How far above its feet an icon sits, in art pixels (a Pokémon is about this tall). */
+private const val ICON_RISE = 22
 
 /** Where the night starts for the town: the darkness at which the sleepy ones lie down. */
 private const val NIGHT = 0.5f

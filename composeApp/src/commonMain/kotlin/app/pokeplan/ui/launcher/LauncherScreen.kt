@@ -1,5 +1,8 @@
 package app.pokeplan.ui.launcher
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Slider
 import kotlin.math.abs
 import androidx.compose.foundation.gestures.draggable
 import app.pokeplan.ui.pressScale
@@ -213,7 +216,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 }
                 menuMon?.let { mon -> PokemonMenu(mon, mon.id == model.data.player.buddy?.id, pixel, onOpen = { host.openPokemon(mon.id); menuMon = null }, onBuddy = { model.store.setBuddy(mon.id); menuMon = null }, onClose = { menuMon = null }) }
                 if (settingsOpen) LauncherSettings(
-                    prefs, onPrefs, isDefault, apps.count { it.key in prefs.hidden }, pixel, host,
+                    model, prefs, onPrefs, isDefault, apps.count { it.key in prefs.hidden }, pixel, host,
                     onTown = { settingsOpen = false; listOpen = false; pickingTown = true },
                     onHidden = { settingsOpen = false; listHidden = true; listOpen = true },
                     onClose = { settingsOpen = false },
@@ -527,31 +530,67 @@ internal fun PokemonMenu(mon: OwnedPokemon, isBuddy: Boolean, pixel: Int, onOpen
     }
 }
 
-/** The launcher's own settings, as a dialogue box: what the home page shows, the town, hidden apps and the home-app choice. All of it stays on the device. */
+/**
+ * The launcher's settings as a screen of their own over the town (not a pop-up): a header with Back, then the town, the
+ * walking, the status box, the edge drag, the sound volume, the hidden apps, the pins and the home-app setting.
+ */
 @Composable
 internal fun LauncherSettings(
-    prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, isDefault: Boolean, hiddenCount: Int, pixel: Int, host: LauncherHost,
+    model: AppModel, prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, isDefault: Boolean, hiddenCount: Int, pixel: Int, host: LauncherHost,
     onTown: () -> Unit, onHidden: () -> Unit, onClose: () -> Unit,
 ) {
-    val none = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     fun onOff(on: Boolean) = if (on) "On" else "Off"
-    Box(Modifier.fillMaxSize().background(Pixel.Scrim.copy(alpha = 0.5f)).clickable(indication = null, interactionSource = none, onClick = onClose), contentAlignment = Alignment.Center) {
-        PmdBox(pixel, Modifier.padding(horizontal = Spacing.L).fillMaxWidth().clickable(indication = null, interactionSource = none) {}) {
-            Column(Modifier.heightIn(max = 560.dp).verticalScroll(rememberScrollState())) {
-                PmdMenuLine("Launcher settings", pixel, dim = true) {}
-                PmdRule(pixel)
-                PmdMenuLine("Town: ${(TownScenes.all.firstOrNull { it.first == prefs.scene } ?: TownScenes.all.first()).second}", pixel, onClick = onTown)
-                PmdMenuLine("Pokémon in the town: ${prefs.townSize}", pixel) { onPrefs(prefs.nextTownSize()) }
-                PmdMenuLine("Pokémon walk about: ${onOff(prefs.walking)}", pixel) { onPrefs(prefs.withWalking(!prefs.walking)) }
-                PmdMenuLine("Status box: ${onOff(prefs.showStatus)}", pixel) { onPrefs(prefs.withShowStatus(!prefs.showStatus)) }
-                PmdMenuLine("Drag in from the right: ${onOff(prefs.edgeDrag)}", pixel) { onPrefs(prefs.withEdgeDrag(!prefs.edgeDrag)) }
-                PmdRule(pixel)
-                if (hiddenCount > 0) PmdMenuLine("Hidden apps: $hiddenCount", pixel, onClick = onHidden)
-                PmdMenuLine("Forget pins and icons", pixel, dim = prefs.pinned.isEmpty() && prefs.icons.isEmpty()) { onPrefs(prefs.withoutPins()) }
-                PmdMenuLine(if (isDefault) "Home app settings" else "Make PokéLife your home app", pixel) { host.openHomeSettings() }
-                PmdRule(pixel)
-                PmdMenuLine("Close", pixel, center = true, dim = true, onClick = onClose)
+    val settings = model.data.settings
+    val volume = if (settings.sound) settings.effectsVolume else 0
+    Box(Modifier.fillMaxSize().background(Pixel.Night).safeDrawingPadding()) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = Spacing.L, vertical = Spacing.M), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PmdBox(pixel, Modifier.fillMaxWidth()) {
+                Column {
+                    PmdMenuLine("‹ Back", pixel, onClick = onClose)
+                    PmdRule(pixel)
+                    PmdMenuLine("Launcher settings", pixel, dim = true) {}
+                }
+            }
+            PmdBox(pixel, Modifier.fillMaxWidth()) {
+                Column {
+                    PmdMenuLine("Town: ${(TownScenes.all.firstOrNull { it.first == prefs.scene } ?: TownScenes.all.first()).second}", pixel, onClick = onTown)
+                    PmdMenuLine("Pokémon in the town: ${prefs.townSize}", pixel) { onPrefs(prefs.nextTownSize()) }
+                    PmdMenuLine("Pokémon walk about: ${onOff(prefs.walking)}", pixel) { onPrefs(prefs.withWalking(!prefs.walking)) }
+                    PmdMenuLine("Status box: ${onOff(prefs.showStatus)}", pixel) { onPrefs(prefs.withShowStatus(!prefs.showStatus)) }
+                    PmdMenuLine("Drag in from the right: ${onOff(prefs.edgeDrag)}", pixel) { onPrefs(prefs.withEdgeDrag(!prefs.edgeDrag)) }
+                }
+            }
+            PmdBox(pixel, Modifier.fillMaxWidth()) {
+                PmdVolume("Sound volume", volume, pixel, onChange = { v -> model.store.changeSettings { s -> s.copy(effectsVolume = v, sound = v > 0) } }, onDone = { model.effect(Sfx.CONFIRM) })
+            }
+            PmdBox(pixel, Modifier.fillMaxWidth()) {
+                Column {
+                    if (hiddenCount > 0) PmdMenuLine("Hidden apps: $hiddenCount", pixel, onClick = onHidden)
+                    PmdMenuLine("Forget pins and icons", pixel, dim = prefs.pinned.isEmpty() && prefs.icons.isEmpty()) { onPrefs(prefs.withoutPins()) }
+                    PmdMenuLine(if (isDefault) "Home app settings" else "Make PokéLife your home app", pixel) { host.openHomeSettings() }
+                }
             }
         }
+    }
+}
+
+/** A volume slider in the dialogue font, 0 to 100 in steps of 10; [onDone] fires when the finger lets go, so the new level can be heard. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PmdVolume(label: String, value: Int, pixel: Int, onChange: (Int) -> Unit, onDone: () -> Unit) {
+    val density = LocalDensity.current.density
+    Column(Modifier.fillMaxWidth().padding(vertical = (2 * pixel / density).dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            PmdText(label, pixel)
+            PmdText("$value%", pixel)
+        }
+        val colors = SliderDefaults.colors(thumbColor = Color.White, activeTrackColor = Pixel.Red, inactiveTrackColor = Color.White.copy(alpha = 0.25f), activeTickColor = Color.Transparent, inactiveTickColor = Color.Transparent)
+        val interaction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+        Slider(
+            value = value / 100f, onValueChange = { onChange((it * 10).roundToInt() * 10) }, onValueChangeFinished = onDone, valueRange = 0f..1f, steps = 9,
+            colors = colors, interactionSource = interaction,
+            thumb = { SliderDefaults.Thumb(interaction, colors = colors, thumbSize = androidx.compose.ui.unit.DpSize(24.dp, 24.dp)) },
+            modifier = Modifier.semantics { contentDescription = "$label $value percent" },
+        )
     }
 }
