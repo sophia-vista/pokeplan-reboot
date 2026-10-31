@@ -167,7 +167,7 @@ private fun journey(opens: Int, size: Int, level: Int, days: Int, cafe: Boolean,
             while (facilitiesDone && data.poke >= data.candyPrice) { j.spentShop += data.candyPrice; data = data.buyCandy()!!; j.candiesBought++ }
             if (cafe) {
                 val berryId = data.items.keys.firstOrNull { it.startsWith("berry-") && (data.items[it] ?: 0) >= Cafe.BERRIES }
-                if (berryId != null && data.brewUntil <= now) { data = data.brew(now).copy(items = data.items + (berryId to data.items.getValue(berryId) - Cafe.BERRIES)); j.brews++ }
+                if (berryId != null && data.brewUntil <= now) { data = (data.brew(now) ?: data).copy(items = data.items + (berryId to data.items.getValue(berryId) - Cafe.BERRIES)); j.brews++ }
             }
             // A job that is not finished sends the team to its dungeon first; otherwise the best open dungeon.
             val errand = data.missions.firstOrNull { !it.done }?.let { Missions.byId(it.id)?.dungeonId }

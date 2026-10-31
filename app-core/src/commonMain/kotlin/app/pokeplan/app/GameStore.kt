@@ -1104,6 +1104,9 @@ class GameStore(
 
     /** Settles every World team to now (floors climbed, finds, items) and returns what happened, or null when nothing did. */
     fun worldSettle(): WorldReport? {
+        // A Pokémon transferred away leaves its team (an empty team comes home), so no slot is held by someone who is gone.
+        val kept = data.world.pruned(data.player.pokemon.map { it.id }.toSet())
+        if (kept !== data.world) update { it.copy(world = kept) }
         val report = WorldSim.settle(data.world, data.player.pokemon, nowMillis)
         if (report.isEmpty) return null
         update { it.copy(world = report.data) }
@@ -1200,10 +1203,11 @@ class GameStore(
         val bag = data.player.inventory
         val berries = bag.counts.filterKeys { Items.category(it) == app.pokeplan.core.pokemon.ItemCategory.BERRY }.entries.sortedBy { it.key }
         if (berries.sumOf { it.value } < app.pokeplan.world.Cafe.BERRIES) return false
+        val brewed = data.world.brew(nowMillis) ?: return false
         var need = app.pokeplan.world.Cafe.BERRIES
         var left = bag
         for ((id, n) in berries) { val take = minOf(n, need); left = left.remove(id, take); need -= take; if (need == 0) break }
-        update { d -> d.copy(player = d.player.copy(inventory = left), world = d.world.brew(nowMillis)) }
+        update { d -> d.copy(player = d.player.copy(inventory = left), world = brewed) }
         return true
     }
 

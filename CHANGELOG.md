@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.88.2
+
+- World review fixes: a daily or weekly job comes back on the right day even when no team has settled since (the screens now pass the clock); a Café brew is no longer wasted by brewing again while one still works; a Pokémon transferred away leaves its World team instead of holding the slot (a team left empty comes home); a finished Deliver job says what the Bag needs and its Claim button waits for it; a Defeat job shows your best team's real power; the map's boxes no longer redraw their floor every frame (only the Pokémon on them move), which keeps the battery for the expedition screen. Every floor of every dungeon is now tested to have someone to find.
+
 ## 0.88.1
 
 - The World economy simulation now plays jobs of every kind (Explore, Find items, Rescue, Deliver, Escort, Defeat), the Swap Shop and the Dojo (`docs/world-economy-report.md`). It showed that jobs paid about half of all Poké and Exploration XP (700 jobs a year at a 7 day wait), so ordinary jobs now wait 14 days (the weekly patrol stays weekly, daily berry run daily); they still pay about 40 to 50% of Poké. It also showed the Swap Shop is hardly ever needed (berries are plentiful) and that the Dojo, played after the Base is built, only saves about three weeks of skill levelling and costs about 3,000 Poké: both are small. The job screen no longer calls every ordinary job "weekly".
