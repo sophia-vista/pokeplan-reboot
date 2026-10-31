@@ -37,28 +37,36 @@ class WorldStoreTest {
     }
 
     @Test
-    fun itemsMoveToTheBagAndTreasureOpensIntoWorldsItems() {
+    fun worldPaysStraightIntoTheBagAndTheRewardLog() {
         val clock = Clock()
         val store = store(clock)
+        val bagBefore = store.data.player.inventory.counts.values.sum()
         store.worldAssign(1, listOf(store.data.player.pokemon.first().id))
         store.worldStart(1, "tiny-woods")
         clock.millis += 12L * 60 * 60 * 1000
         store.worldSettle()
-        val claimed = store.data.world.items
-        assertTrue(claimed.values.sum() > 0)
-        val before = claimed.keys.associateWith { store.data.player.inventory[it] }
-        assertEquals(claimed.values.sum(), store.worldClaimItems())
+        // One inventory: nothing waits in World's own stock, and the Bag has what the floors gave.
         assertTrue(store.data.world.items.isEmpty())
-        assertEquals(0, store.worldClaimItems())
-        claimed.forEach { (id, n) -> assertEquals(before.getValue(id) + n, store.data.player.inventory[id], "$id reached the Bag") }
-        // A treasure box found along the way opens once.
+        assertTrue(store.data.player.inventory.counts.values.sum() > bagBefore)
+        val entry = store.data.rewardLog.lastOrNull { it.source.startsWith("World") }
+        assertNotNull(entry, "the trip is in the reward history")
+        assertTrue(entry.rewards.any { it is app.pokeplan.core.reward.Reward.Poke } && entry.rewards.any { it is app.pokeplan.core.reward.Reward.ItemDrop })
+        assertTrue(entry.seen, "World's entries never pop up a reveal")
+        // Settling again soon after merges into the same entry instead of flooding the log.
+        val entries = store.data.rewardLog.count { it.source.startsWith("World") }
+        clock.millis += 60_000L
+        store.worldSettle()
+        assertEquals(entries, store.data.rewardLog.count { it.source.startsWith("World") })
+        // A treasure box found along the way opens into the Bag and is logged once.
         val tier = store.data.world.treasure.keys.firstOrNull()
         if (tier != null) {
+            val bag = store.data.player.inventory.counts.values.sum()
             val found = store.worldOpenTreasure(tier)
             assertTrue(found.isNotEmpty())
-            assertTrue(store.data.world.items.isNotEmpty())
+            assertTrue(store.data.world.items.isEmpty())
+            assertTrue(store.data.player.inventory.counts.values.sum() >= bag + found.values.sum())
+            assertTrue(store.data.rewardLog.any { it.source == "World: treasure" })
         }
-        assertTrue(store.worldOpenTreasure(3).isEmpty() || store.data.world.treasure[3] != null)
     }
 
     @Test

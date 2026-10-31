@@ -178,7 +178,7 @@ private fun MonthWeek(
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            "${d.dayOfMonth}", style = MaterialTheme.typography.labelMedium,
+                            "${d.day}", style = MaterialTheme.typography.labelMedium,
                             color = when { isToday -> Color.White; d.monthNumber != monthNumber -> Pixel.Gray; else -> Pixel.Ink },
                         )
                     }

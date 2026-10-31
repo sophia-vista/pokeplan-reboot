@@ -136,22 +136,6 @@ fun ScreenHeader(
 /** The colour of the header on the page now shown, which the bottom tab bar takes on (`App` provides it; headers write it). */
 val LocalChromeColor = androidx.compose.runtime.staticCompositionLocalOf<androidx.compose.runtime.MutableState<Color>?> { null }
 
-/** A pill under a Pokémon: its name and level. */
-@Composable
-fun NamePlate(name: String, detail: String, modifier: Modifier = Modifier) {
-    Row(
-        modifier
-            .background(Pixel.Panel, RoundedCornerShape(50))
-            .border(BorderStroke(1.dp, Pixel.Border), RoundedCornerShape(50))
-            .padding(horizontal = Spacing.L, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        Text(name, style = MaterialTheme.typography.titleMedium)
-        Text(detail, style = MaterialTheme.typography.bodyMedium)
-    }
-}
-
 /** A section title ("Today"): semibold, with space above it. */
 @Composable
 fun SectionLabel(text: String, modifier: Modifier = Modifier, icon: String? = null) {

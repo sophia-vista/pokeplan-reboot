@@ -118,8 +118,8 @@ data class Recurrence(
             }
             is Repeat.Monthly -> monthsBetween(start, d) % r.every == 0 && d == monthlyDate(r.rule, d.year, d.monthNumber)
             is Repeat.Yearly -> {
-                val sameDay = minOf(start.dayOfMonth, daysInMonth(d.year, start.monthNumber))
-                (d.year - start.year) % r.every == 0 && d.monthNumber == start.monthNumber && d.dayOfMonth == sameDay
+                val sameDay = minOf(start.day, daysInMonth(d.year, start.monthNumber))
+                (d.year - start.year) % r.every == 0 && d.monthNumber == start.monthNumber && d.day == sameDay
             }
         }
     }
@@ -164,11 +164,11 @@ data class Recurrence(
             is Repeat.Monthly -> {
                 val m = completedOn.plus(DatePeriod(months = r.every))
                 // keep the day of month, clamped (31 Jan + 1 month = 28/29 Feb)
-                LocalDate(m.year, m.monthNumber, minOf(completedOn.dayOfMonth, daysInMonth(m.year, m.monthNumber)))
+                LocalDate(m.year, m.monthNumber, minOf(completedOn.day, daysInMonth(m.year, m.monthNumber)))
             }
             is Repeat.Yearly -> {
                 val y = completedOn.year + r.every
-                LocalDate(y, completedOn.monthNumber, minOf(completedOn.dayOfMonth, daysInMonth(y, completedOn.monthNumber)))
+                LocalDate(y, completedOn.monthNumber, minOf(completedOn.day, daysInMonth(y, completedOn.monthNumber)))
             }
         }
         val e = end

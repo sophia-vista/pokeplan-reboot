@@ -303,11 +303,11 @@ private fun CalendarWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) 
                         Box(
                             Modifier.weight(1f).height(Spacing.Target)
                                 .background(if (d == today) Pixel.Red else if (d == state.day) Color.White.copy(alpha = 0.22f) else Color.Transparent)
-                                .clickable(role = Role.Button, onClickLabel = "Show ${d.dayOfMonth} ${monthName(d.month)}") { state.day = d; if (!inMonth) state.month = LocalDate(d.year, d.month, 1) }
-                                .semantics { contentDescription = "${d.dayOfMonth} ${monthName(d.month)}" + if (busy(d)) ", has plans" else "" },
+                                .clickable(role = Role.Button, onClickLabel = "Show ${d.day} ${monthName(d.month)}") { state.day = d; if (!inMonth) state.month = LocalDate(d.year, d.month, 1) }
+                                .semantics { contentDescription = "${d.day} ${monthName(d.month)}" + if (busy(d)) ", has plans" else "" },
                             contentAlignment = Alignment.Center,
                         ) {
-                            PmdText(d.dayOfMonth.toString(), pixel, alpha = if (inMonth) 1f else 0.4f)
+                            PmdText(d.day.toString(), pixel, alpha = if (inMonth) 1f else 0.4f)
                             if (busy(d)) Box(Modifier.align(Alignment.BottomCenter).padding(bottom = (2 * pixel / density).dp).size((2 * pixel / density).dp).background(Pixel.Yellow))
                         }
                     }
@@ -341,7 +341,7 @@ private fun AgendaWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) {
     val source = model.calendars
     PmdBox(pixel, Modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth()) {
-            PmdText(if (day == today) "Today" else "${dayName(day.dayOfWeek)} ${day.dayOfMonth} ${monthName(day.month)}", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M))
+            PmdText(if (day == today) "Today" else "${dayName(day.dayOfWeek)} ${day.day} ${monthName(day.month)}", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M))
             PmdRule(pixel)
             if (lines.isEmpty() && tasks.isEmpty()) PmdText("Nothing planned", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M), alpha = 0.7f)
             shownEvents.forEach { e ->

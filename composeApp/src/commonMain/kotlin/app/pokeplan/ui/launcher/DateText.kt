@@ -14,11 +14,11 @@ fun formatDate(date: LocalDate, style: DateStyle): String {
     val day = dayName(date.dayOfWeek)
     val month = monthName(date.month)
     return when (style) {
-        DateStyle.SHORT -> "${day.take(3)} ${date.dayOfMonth} ${month.take(3)}"
-        DateStyle.LONG -> "$day ${date.dayOfMonth} $month"
-        DateStyle.DAY_MONTH_YEAR -> "${date.dayOfMonth} ${month.take(3)} ${date.year}"
-        DateStyle.MONTH_DAY -> "${month.take(3)} ${date.dayOfMonth}"
-        DateStyle.ISO -> "${date.year}-${two(date.monthNumber)}-${two(date.dayOfMonth)}"
+        DateStyle.SHORT -> "${day.take(3)} ${date.day} ${month.take(3)}"
+        DateStyle.LONG -> "$day ${date.day} $month"
+        DateStyle.DAY_MONTH_YEAR -> "${date.day} ${month.take(3)} ${date.year}"
+        DateStyle.MONTH_DAY -> "${month.take(3)} ${date.day}"
+        DateStyle.ISO -> "${date.year}-${two(date.monthNumber)}-${two(date.day)}"
     }
 }
 

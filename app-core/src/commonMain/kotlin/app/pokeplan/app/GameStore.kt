@@ -173,7 +173,8 @@ class GameStore(
     }
 
     /** What every save that comes in (from the device or the cloud) goes through: numbers back in their range. */
-    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped())
+    // The Modules setting is gone from Settings: Care is always shown, so a save that switched it off is switched back on when loaded.
+    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true))
 
     private fun AppData.cloudPart(): AppData = copy(account = null, eggTickets = EggTickets(), shownCalendars = emptySet())
 
@@ -233,7 +234,7 @@ class GameStore(
     fun dayOf(millis: Long): LocalDate = millis.toLocalDateTime(zone).date
 
     /** The player's offset from UTC now, in milliseconds (what turns a UTC day into the player's own). */
-    val utcOffsetMillis: Long get() = zone.offsetAt(kotlinx.datetime.Instant.fromEpochMilliseconds(nowMillis)).totalSeconds * 1000L
+    val utcOffsetMillis: Long get() = zone.offsetAt(kotlin.time.Instant.fromEpochMilliseconds(nowMillis)).totalSeconds * 1000L
 
     private fun newId(): String = newId(nowMillis, rng)
 
@@ -1111,9 +1112,11 @@ class GameStore(
         // A Pokémon transferred away leaves its team (an empty team comes home), so no slot is held by someone who is gone.
         val kept = data.world.pruned(data.player.pokemon.map { it.id }.toSet())
         if (kept !== data.world) update { it.copy(world = kept) }
-        val report = WorldSim.settle(data.world, data.player.pokemon, nowMillis)
+        val before = data.world
+        val report = WorldSim.settle(before, data.player.pokemon, nowMillis)
         if (report.isEmpty) return null
         update { it.copy(world = report.data) }
+        worldPaid("World: exploring", before)
         worldGuardian()
         return report
     }
@@ -1124,6 +1127,28 @@ class GameStore(
         if (!w.guardianDone || w.guardianGranted) return
         update { it.copy(world = it.world.copy(guardianGranted = true)) }
         grantPokemon(app.pokeplan.world.Story.GUARDIAN_SPECIES, "World")
+    }
+
+    /**
+     * Writes what World paid between [before] and now (Poké and items) into the reward log, so World's rewards have the same record as
+     * every other source, then moves the items into the shared Bag (one inventory, no staging area). Entries from the same source
+     * within ten minutes are merged, so a team that climbs while the screen is open does not flood the log.
+     */
+    private fun worldPaid(source: String, before: app.pokeplan.world.WorldData) {
+        val after = data.world
+        val paid = mutableListOf<Reward>()
+        (after.poke - before.poke).takeIf { it > 0 }?.let { paid += Reward.Poke(it) }
+        after.items.forEach { (id, n) -> (n - (before.items[id] ?: 0)).takeIf { it > 0 }?.let { paid += Reward.ItemDrop(id, it) } }
+        if (paid.isNotEmpty()) update { d ->
+            val last = d.rewardLog.lastOrNull()
+            val merged = if (last != null && last.source == source && nowMillis - last.atMillis < 10 * 60_000L) {
+                val poke = (last.rewards + paid).filterIsInstance<Reward.Poke>().sumOf { it.amount }
+                val items = (last.rewards + paid).filterIsInstance<Reward.ItemDrop>().groupBy { it.itemId }.map { (id, l) -> Reward.ItemDrop(id, l.sumOf { it.amount }) }
+                d.rewardLog.dropLast(1) + last.copy(atMillis = nowMillis, rewards = listOfNotNull(poke.takeIf { it > 0 }?.let { Reward.Poke(it) }) + items)
+            } else (d.rewardLog + RewardEntry(nowMillis, source, paid, seen = true)).takeLast(LOG_SIZE)
+            d.copy(rewardLog = merged)
+        }
+        worldClaimItems()
     }
 
     /** Sets who is on World team [team]; false when the rank, the team or the Pokémon do not allow it. */
@@ -1191,13 +1216,15 @@ class GameStore(
         data.world.abandonMission(id)?.let { next -> update { it.copy(world = next) } }
     }
 
-    /** Claims a finished job: Poké, Exploration XP and its item go to World's own stock (items move to the Bag with the rest). */
+    /** Claims a finished job: Poké and Exploration XP go to World, its item to the shared Bag, and the reward log records it. */
     fun worldClaimMission(id: String): Boolean {
         worldSettle()
         val give = Missions.byId(id)?.takeIf { it.give != null }
         if (give != null && !data.player.inventory.has(give.give!!, give.giveCount)) return false
-        val next = data.world.copy(lastSeenAt = nowMillis).claimMission(id, utcOffsetMillis) ?: return false
+        val before = data.world
+        val next = before.copy(lastSeenAt = nowMillis).claimMission(id, utcOffsetMillis) ?: return false
         update { d -> d.copy(world = next, player = if (give != null) d.player.copy(inventory = d.player.inventory.remove(give.give!!, give.giveCount)) else d.player) }
+        worldPaid("World: jobs", before)
         return true
     }
 
@@ -1212,8 +1239,10 @@ class GameStore(
     /** Claims the World research milestone at [species] discovered species. */
     fun worldClaimResearch(species: Int): Boolean {
         worldSettle()
-        val next = data.world.claimResearch(species) ?: return false
+        val before = data.world
+        val next = before.claimResearch(species) ?: return false
         update { it.copy(world = next) }
+        worldPaid("World: research", before)
         return true
     }
 
@@ -1254,7 +1283,7 @@ class GameStore(
         return true
     }
 
-    /** Opens a treasure box of [tier]: berries, and from the silver tier a chance of a Rare Candy; what is inside goes to World's items. Returns what was found. *(tune)* */
+    /** Opens a treasure box of [tier]: berries, and from the silver tier a chance of a Rare Candy; what is inside goes to the Bag and the reward log. Returns what was found. *(tune)* */
     fun worldOpenTreasure(tier: Int): Map<String, Int> {
         if ((data.world.treasure[tier] ?: 0) <= 0) return emptyMap()
         val random = Random(nowMillis xor (tier.toLong() shl 40) xor data.world.xp.toLong())
@@ -1263,12 +1292,14 @@ class GameStore(
         repeat(1 + tier) { add(Items.berry(listOf("sweet", "dry", "sour", "spicy", "bitter").random(random)), 1) }
         // A Rare Candy: 15% from a silver box, 35% from a gold one (the simulation showed the first guesses of 60% and 175% paid hundreds a year).
         if (tier >= 2 && random.nextInt(100) < (if (tier >= 3) 35 else 15)) add(Items.RARE_CANDY, 1)
+        val before = data.world
         update { d ->
             d.copy(world = d.world.copy(
                 treasure = d.world.treasure + (tier to d.world.treasure.getValue(tier) - 1),
                 items = found.entries.fold(d.world.items) { m, (id, n) -> m + (id to (m[id] ?: 0) + n) },
             ))
         }
+        worldPaid("World: treasure", before)
         return found
     }
 

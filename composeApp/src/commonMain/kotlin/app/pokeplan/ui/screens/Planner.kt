@@ -343,7 +343,7 @@ internal enum class RepeatKind(val label: String) {
         DAILY -> Repeat.Daily()
         WEEKDAYS -> Repeat.Weekly(days = WORKDAYS)
         WEEKLY -> Repeat.Weekly()
-        MONTHLY -> Repeat.Monthly(rule = MonthlyRule.DayOfMonth(start.dayOfMonth))
+        MONTHLY -> Repeat.Monthly(rule = MonthlyRule.DayOfMonth(start.day))
     }
 
     /** What the repeat does, in a line. */
