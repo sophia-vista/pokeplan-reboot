@@ -193,6 +193,8 @@ private fun missionIcon(kind: MissionKind): String = when (kind) {
     MissionKind.COLLECT -> "seal-bag"
     MissionKind.RESCUE -> "friend-ball"
     MissionKind.DELIVER -> "journal"
+    MissionKind.ESCORT -> "exp-share"
+    MissionKind.DEFEAT -> "scope-lens"
 }
 
 private fun regionColor(region: app.pokeplan.world.WorldRegion): Color = when (region) {
@@ -239,6 +241,8 @@ private fun WorldMissionsView(model: AppModel) {
                         MissionKind.COLLECT -> "Find ${m.count} berries: ${minOf(p.progress, m.count)} so far."
                         MissionKind.RESCUE -> "Reach $where to bring the lost Pokémon home."
                         MissionKind.EXPLORE -> "Reach $where."
+                        MissionKind.ESCORT -> "Reach $where with a team of at least ${m.count} Pokémon."
+                        MissionKind.DEFEAT -> "Reach $where with a team of power ${m.count} or more (yours: ${(world.teams.maxOfOrNull { t -> t.members.mapNotNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } }.sumOf { it.level } } ?: 0)} in levels)."
                         MissionKind.DELIVER -> "Reach $where, then hand over ${m.giveCount} x ${Items.name(m.give ?: "")} from your Bag."
                     },
                     style = MaterialTheme.typography.bodyLarge,
@@ -341,6 +345,26 @@ private fun WorldBaseView(model: AppModel) {
             PixelButton("Buy one: ${world.candyPrice} Poké", { store.worldBuyCandy() }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = world.poke >= world.candyPrice, compact = true)
         }
     }
+    FieldLabel("Croagunk Swap Shop")
+    var swapFrom by remember { mutableStateOf(app.pokeplan.world.SwapShop.flavors[0]) }
+    var swapTo by remember { mutableStateOf(app.pokeplan.world.SwapShop.flavors[1]) }
+    var swapMessage by remember { mutableStateOf("") }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("Berry swap", style = MaterialTheme.typography.titleSmall)
+            Text("${app.pokeplan.world.SwapShop.GIVE} berries of one flavour from your Bag for 1 of another.", style = MaterialTheme.typography.bodyMedium)
+            FieldLabel("Give")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                app.pokeplan.world.SwapShop.flavors.forEach { f -> PixelButton("$f x${model.data.player.inventory[Items.berry(f)]}", { swapFrom = f }, color = if (swapFrom == f) Module.WORLD.look.accent else Pixel.InkSoft, compact = true) }
+            }
+            FieldLabel("Get")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                app.pokeplan.world.SwapShop.flavors.forEach { f -> PixelButton(f, { swapTo = f }, color = if (swapTo == f) Module.WORLD.look.accent else Pixel.InkSoft, compact = true) }
+            }
+            PixelButton("Swap", { swapMessage = if (store.worldSwap(swapFrom, swapTo)) "Swapped." else "Pick two flavours, and have ${app.pokeplan.world.SwapShop.GIVE} to give." }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+            if (swapMessage.isNotEmpty()) Text(swapMessage, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
     FieldLabel("Dojo")
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -351,7 +375,7 @@ private fun WorldBaseView(model: AppModel) {
             }
         }
     }
-    Text("Storage is the shared Bag; the Swap Shop is not built.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    Text("Storage is the shared Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
 // ----- Expeditions ------------------------------------------------------------------------------------------------------
@@ -420,7 +444,8 @@ private fun WorldTeamsView(model: AppModel) {
 private fun WorldCampView(model: AppModel, openPokemon: (String) -> Unit) {
     val data = model.data
     val residents = data.player.pokemon.filter { data.origins[it.id]?.how == Origin.How.WORLD }
-    WorldBanner("cave", "Camp", "${residents.size} residents, camp level ${data.world.facilityLevel(Facility.CAMP)}", sky = Color(0xFF101010), top = true)
+    WorldBanner("cave", "Camp", "${residents.size} resident${if (residents.size == 1) "" else "s"}, camp level ${data.world.facilityLevel(Facility.CAMP)}", sky = Color(0xFF101010), top = true)
+    if (residents.isNotEmpty()) CampYard(data.world.facilityLevel(Facility.CAMP), residents.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !data.settings.reduceMotion)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Species found exploring: ${data.world.discovered.size}", style = MaterialTheme.typography.titleSmall)

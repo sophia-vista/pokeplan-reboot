@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.88.0
+
+- World jobs: Escort (the team must be at least three Pokémon) and Defeat (the team must have enough power) jobs, five in all. The Croagunk Swap Shop in Base trades three berries of one flavour for one of another. The Camp has a yard in the tiles of a clearing that grows into a meadow and an orchard as the Camp is built up, where the recruited Pokémon roam, each walking back and forth facing the way it goes.
+- The status bar strip takes the header colour too, like the tab bar.
+- A World Home-screen widget: each team's dungeon and floor, Finds waiting and jobs to claim; it settles the teams when it refreshes, and a tap opens World.
+- Still not built: move-based skills (the Dex has no moves).
+
 ## 0.87.0
 
 - World's map draws each dungeon like the expedition box: the dialogue border round that dungeon's tiles, its wild Pokémon walking the floor, and its details written on the wall tiles.

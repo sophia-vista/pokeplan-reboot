@@ -1214,6 +1214,15 @@ class GameStore(
         return true
     }
 
+    /** The Swap Shop: three berries of the flavour [from] for one of the flavour [to]. False without the berries or when the flavours are the same. */
+    fun worldSwap(from: String, to: String): Boolean {
+        if (from == to || from !in app.pokeplan.world.SwapShop.flavors || to !in app.pokeplan.world.SwapShop.flavors) return false
+        val give = Items.berry(from)
+        if (!data.player.inventory.has(give, app.pokeplan.world.SwapShop.GIVE)) return false
+        update { d -> d.copy(player = d.player.copy(inventory = d.player.inventory.remove(give, app.pokeplan.world.SwapShop.GIVE).add(Items.berry(to), 1))) }
+        return true
+    }
+
     /** Dojo training: Poké into skill XP. */
     fun worldTrain(skill: app.pokeplan.world.WorldSkill): Boolean {
         val next = data.world.train(skill) ?: return false

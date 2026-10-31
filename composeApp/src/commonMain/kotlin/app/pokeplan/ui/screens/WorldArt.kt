@@ -199,3 +199,64 @@ private val FRAME = 8.dp
 private const val TILE_PX = 24
 /** Rows of floor the team walks on. */
 private const val STRIP_ROWS = 2
+
+/** The tileset the Camp is drawn with: a woodland clearing that grows into a meadow, then an orchard, as the Camp is built up. */
+internal fun campTiles(level: Int): String = when {
+    level >= 4 -> "apple-woods"
+    level >= 2 -> "lush-prairie"
+    else -> "tiny-woods"
+}
+
+/**
+ * The Camp's yard: the dialogue border round a clearing of tiles where the recruited Pokémon roam, each walking back and forth
+ * at its own pace and facing the way it goes, on its own strip of floor. Still under Reduce motion.
+ */
+@Composable
+internal fun CampYard(level: Int, residents: List<TileWalker>, animate: Boolean) {
+    val tiles = campTiles(level)
+    val atlas by produceState(tileAtlases[tiles], tiles) {
+        if (value == null) {
+            value = orNull { Res.readBytes("files/tiles/$tiles.png").decodeToImageBitmap() }
+            tileAtlases[tiles] = value
+        }
+    }
+    var seconds by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(animate) {
+        if (animate) { val start = withFrameNanos { it }; while (true) withFrameNanos { seconds = (it - start) / 1_000_000_000f } }
+    }
+    val density = LocalDensity.current
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val inner = maxWidth - FRAME * 2
+        val pixel = (with(density) { inner.toPx() } / (TILE_PX * 8)).toInt().coerceAtLeast(1)
+        val tilePx = TILE_PX * pixel
+        val tile = with(density) { tilePx.toDp() }
+        Box(Modifier.fillMaxWidth().height(tile * (YARD_ROWS) + FRAME * 2 - 2.dp).dialogueBox(fill = Color(0xFF141C28)).clip(DialogueShape)) {
+            Box(Modifier.matchParentSize().padding(start = FRAME, end = FRAME, top = FRAME, bottom = FRAME - 2.dp).clipToBounds()) {
+                Canvas(Modifier.fillMaxSize()) {
+                    val image = atlas ?: return@Canvas drawRect(Color(0xFF2A2A2A))
+                    fun put(ax: Int, ay: Int, x: Int, y: Int) =
+                        drawImage(image, IntOffset(ax * TILE_PX, ay * TILE_PX), IntSize(TILE_PX, TILE_PX), IntOffset(x, y), IntSize(tilePx, tilePx), filterQuality = FilterQuality.None)
+                    for (r in 0..YARD_ROWS) for (c in 0..(size.width / tilePx).toInt() + 1) {
+                        put(if (r == 0) 1 else 0, if (r == 0) 2 else 3, c * tilePx, r * tilePx)
+                    }
+                }
+                val spriteSize = tile * 1.5f
+                residents.take(8).forEachIndexed { i, p ->
+                    // Each walks a sine path along its own strip of floor; the cosine says which way it faces.
+                    val speed = 0.35f + (i * 7 % 5) * 0.08f
+                    val phase = i * 1.7f
+                    val angle = seconds * speed + phase
+                    val span = (inner - spriteSize).value.coerceAtLeast(1f)
+                    val x = span / 2f * (1f + kotlin.math.sin(angle))
+                    val facingLeft = animate && kotlin.math.cos(angle) < 0f
+                    val feet = tile * (1.5f + (i % 3) * 0.95f)
+                    Box(Modifier.offset(x = x.dp, y = feet - spriteSize)) {
+                        app.pokeplan.ui.AnimatedSprite(p.formId, p.shiny, p.name, size = spriteSize, animate = animate, ground = 0.dp, action = app.pokeplan.ui.SpriteAction.WALK_SIDE, mirror = facingLeft)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private const val YARD_ROWS = 5

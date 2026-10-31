@@ -82,7 +82,7 @@ object WorldSim {
             val floors = ((until - trip.settledTo) / per).toInt()
             if (floors <= 0) continue
             val events = mutableListOf<WorldEvent>()
-            for (n in 0 until floors) out = climb(out, team.id, trip, dungeon, trip.floorsClimbed + n, trip.settledTo + (n + 1) * per, events)
+            for (n in 0 until floors) out = climb(out, team.id, trip, dungeon, trip.floorsClimbed + n, trip.settledTo + (n + 1) * per, members.size, power(members, dungeon), events)
             // The rest of the time carries over (unless the cap cut it, when the clock jumps to now).
             val settled = if (now - trip.settledTo > MAX_AWAY_MILLIS) now else trip.settledTo + floors * per
             val current = out.team(team.id) ?: team
@@ -93,7 +93,7 @@ object WorldSim {
     }
 
     /** One floor climbed: the floor number in the dungeon is its index modulo the floors, so a cleared dungeon starts again. */
-    private fun climb(data: WorldData, teamId: Int, trip: Expedition, dungeon: DungeonDef, index: Int, at: Long, events: MutableList<WorldEvent>): WorldData {
+    private fun climb(data: WorldData, teamId: Int, trip: Expedition, dungeon: DungeonDef, index: Int, at: Long, teamSize: Int, power: Double, events: MutableList<WorldEvent>): WorldData {
         val floor = index % dungeon.floors + 1
         val random = Random(seed(teamId, trip, index))
         var d = data
@@ -131,7 +131,7 @@ object WorldSim {
             }
         }
         d = d.withSkillXp(WorldSkill.EXPLORATION, 1).withSkillXp(WorldSkill.SCOUTING, 1).withSkillXp(WorldSkill.FORAGING, berries)
-        d = Missions.advance(d, dungeon.id, floor, berries, at, events)
+        d = Missions.advance(d, dungeon.id, floor, berries, at, teamSize, power, events)
         if (floor == dungeon.floors && dungeon.guardian && !d.guardianDone) {
             events += WorldEvent.GuardianFaced
             d = d.copy(guardianDone = true)
