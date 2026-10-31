@@ -27,6 +27,10 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import app.pokeplan.ui.entrance
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -83,14 +87,21 @@ internal enum class PmdTone(val edge: Color, val band: Color, val deep: Color) {
 @Composable
 internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = PmdTone.BLUE, inset: Int = 3, compact: Boolean = false, content: @Composable BoxScope.() -> Unit) {
     val density = LocalDensity.current.density
+    val fill = LocalGridFill.current
     Box(
-        modifier.entrance().drawBehind { pmdFrame(pixel, tone) }
+        modifier.then(if (fill) Modifier.fillMaxHeight() else Modifier).entrance().drawBehind { pmdFrame(pixel, tone) }
             // Room inside the frame is the design system's own (Spacing.BoxX and BoxY, 24 and 18 dp), never less than the frame itself needs.
             // A compact box (a portrait's frame) keeps only the frame's own room.
             .padding(horizontal = ((SIDE + inset) * pixel / density).dp.let { if (compact) it else maxOf(it, Spacing.BoxX) }, vertical = ((TOP + inset) * pixel / density).dp.let { if (compact) it else maxOf(it, Spacing.BoxY) }),
-        content = content,
+        content = if (!fill) content else { {
+            // On the widget grid the frame is as tall as its cells, and what does not fit is cut off inside it, never squeezed.
+            Box(Modifier.fillMaxSize().clipToBounds()) { Box(Modifier.fillMaxWidth().wrapContentHeight(Alignment.Top, unbounded = true)) { content() } }
+        } },
     )
 }
+
+/** True while a widget is drawn on the grid: its [PmdBox] then fills the cells it was given. */
+internal val LocalGridFill = androidx.compose.runtime.staticCompositionLocalOf { false }
 
 /** The room at the side of a line of text in a box, in art pixels: every row (a menu line, a slider's label and bar) starts and ends this far in, so they line up. */
 private const val ROW_X = 6
@@ -136,14 +147,14 @@ internal fun PmdRule(pixel: Int, modifier: Modifier = Modifier) {
 
 /** A navigation entry of the world register: a real item icon over a label, at least 56 dp tall, the whole thing one touch target. */
 @Composable
-internal fun PmdNavItem(label: String, icon: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, onClick: () -> Unit) {
+internal fun PmdNavItem(label: String, icon: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, showLabel: Boolean = true, onClick: () -> Unit) {
     val density = LocalDensity.current.density
     Column(
-        modifier.defaultMinSize(minHeight = 56.dp).focusRing(RoundedCornerShape(4.dp), Color.White).clickable(role = Role.Button, onClick = onClick).semantics(mergeDescendants = true) {}
+        modifier.defaultMinSize(minHeight = if (showLabel) 56.dp else 40.dp).focusRing(RoundedCornerShape(4.dp), Color.White).clickable(role = Role.Button, onClick = onClick).semantics(mergeDescendants = true) { contentDescription = label }
             .padding(vertical = (2 * pixel / density).dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
         ItemIcon(icon, size = 32.dp, description = null)
-        Box(Modifier.padding(top = (2 * pixel / density).dp), contentAlignment = Alignment.Center) { PmdText(label, pixel, alpha = if (selected) 1f else 0.9f) }
+        if (showLabel) Box(Modifier.padding(top = (2 * pixel / density).dp), contentAlignment = Alignment.Center) { PmdText(label, pixel, alpha = if (selected) 1f else 0.9f) }
     }
 }

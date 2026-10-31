@@ -20,6 +20,9 @@ Owner's request (31 Oct 2026): launcher widgets with drag and drop and resize, l
 ## Built (0.92.0): edit mode on the grid
 Long-press a widget (`GridCanvas`): frames, drag to move (snaps on release, a yellow frame shows the landing cell), a corner square to resize (`WidgetGrid.droppedAt`, `resizedTo`), X to remove, accessibility actions for every gesture. `LauncherPrefs.addWidget`/`removeWidget`/`removeGridWidget` keep the grid and the old layout together. `ScreenshotTest.launcherGridEdit` drags and resizes with real pointer events.
 
+## Built (0.93.0): the grid is the default
+Bodies adapt through `LocalCells` (clock, shortcuts, app buttons) and `LocalGridFill` (the frame fills its cells, content is clipped inside); `LauncherPrefs.gridMode` is true by default and the Launcher settings switch returns to the list.
+
 ## Still to build (in this order)
 0. Drag to the other page at the screen edge; live preview of what a drop bumps.
 1. **Adapt the bodies:** a half-width widget shows one column of its content; a short one fewer rows; then make the grid the default.

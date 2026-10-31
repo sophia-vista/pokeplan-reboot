@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.93.0
+
+- Launcher widget grid is on by default (Launcher settings → "Widget grid (drag, resize)" goes back to the old list). Your layout is converted in the same order; widgets that are half width or short now reshape instead of being cut off badly: the clock shows the time alone, Shortcuts show pictures only, App buttons go one to a line, and every widget's frame is as tall as its cells, with what does not fit cut off inside it. Tested at the smallest size of every kind (`launcherGridSizes`).
+
 ## 0.92.0
 
 - Launcher widget grid (preview switch in Launcher settings): drag and resize like Smart Launcher. Long-press a widget to edit; every widget gets a frame. Drag it anywhere and it snaps to the cell under it when you let go (what is in the way moves down); pull the square in its corner to resize in whole cells, between its kind's smallest and largest; X removes it; a yellow frame shows where it will land. Add widget and Done are at the top as before, and a widget you add takes the first free spot. Each move and resize also has an accessibility action (move up, down, left, right, wider, narrower, taller, shorter, remove). Tested with real pointer events (drag and corner pull). Not yet: dragging to the other page, and widget contents that reshape for narrow cells (they clip).

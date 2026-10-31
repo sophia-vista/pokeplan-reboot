@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -90,7 +91,10 @@ internal fun GridCanvas(env: WidgetEnv, page: WidgetPage, modifier: Modifier = M
                         Box(
                             Modifier.fillMaxSize().clipToBounds()
                                 .then(if (env.editing) Modifier else Modifier.pointerInput(Unit) { detectTapGestures(onLongPress = { env.onEdit() }) }),
-                        ) { WidgetBody(w.asSlot(), env) }
+                        ) {
+                            // The widget's frame is as tall as its cells; what does not fit is cut off inside it (see PmdBox).
+                            androidx.compose.runtime.CompositionLocalProvider(LocalCells provides Cells(w.w, w.h), LocalGridFill provides true) { WidgetBody(w.asSlot(), env) }
+                        }
                         if (env.editing) EditFrame(
                             w, env,
                             onStart = { resize -> gesture = Gesture(w, resize) },

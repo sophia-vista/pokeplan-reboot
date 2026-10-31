@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import app.pokeplan.ui.launcher.limits
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import app.pokeplan.ui.theme.Spacing
@@ -876,7 +877,7 @@ class ScreenshotTest {
         listOf(1, 4, 7, 39, 52, 54, 94, 133, 143, 150, 151, 25, 175, 183).forEach { store.grantPokemon(it, "test") }
         val model = AppModel(store)
         val prefs = app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages").pin("pkg.Camera")
-        render("launcher-stacked", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs, {}, isDefault = true, phone = fakeHost) }
+        render("launcher-stacked", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs.withGridMode(false), {}, isDefault = true, phone = fakeHost) }
         render("launcher-grid", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs.withGridMode(true), {}, isDefault = true, phone = fakeHost) }
     }
 
@@ -928,6 +929,28 @@ class ScreenshotTest {
         kotlin.test.assertEquals(moved.h + 1, resized.h, "the corner pulled it one row taller")
         kotlin.test.assertEquals(moved.row, resized.row)
         scene.close()
+    }
+
+    /** Every widget kind at its smallest and at half width, on the grid: what clips and what fits. */
+    @Test
+    fun launcherGridSizes() {
+        val store = started()
+        listOf(1, 4, 7, 39, 52).forEach { store.grantPokemon(it, "test") }
+        store.addTask("Write the report", Rank.B, planned = store.today)
+        val model = AppModel(store)
+        val kinds = listOf(app.pokeplan.ui.launcher.WidgetKind.CLOCK, app.pokeplan.ui.launcher.WidgetKind.BUDDY, app.pokeplan.ui.launcher.WidgetKind.NAV, app.pokeplan.ui.launcher.WidgetKind.PINNED, app.pokeplan.ui.launcher.WidgetKind.ACTIONS, app.pokeplan.ui.launcher.WidgetKind.CALENDAR, app.pokeplan.ui.launcher.WidgetKind.AGENDA, app.pokeplan.ui.launcher.WidgetKind.FORECAST)
+        for ((name, wide, tall) in listOf(Triple("min", false, false), Triple("half", true, false))) {
+            var row = 0
+            val grid = kinds.flatMap { k ->
+                val l = k.limits()
+                val w = if (wide) l.minW.coerceAtLeast(2) else l.minW
+                val h = l.minH
+                listOf(app.pokeplan.ui.launcher.GridWidget(app.pokeplan.ui.launcher.WidgetPage.HOME, k, "", 0, row, w, h)).also { row += h }
+            }
+            val prefs = app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages").pin("pkg.Camera").pin("pkg.Maps").withGridMode(true).withGrid(grid)
+            val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, false, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+            render("grid-sizes-$name", height = 1500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { app.pokeplan.ui.launcher.GridHomePage(env, null) } } }
+        }
     }
 
     @Test
