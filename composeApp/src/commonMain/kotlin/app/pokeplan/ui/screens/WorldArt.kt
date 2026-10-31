@@ -36,7 +36,10 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.orNull
+import app.pokeplan.ui.theme.DialogueShape
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.dialogueBox
+import androidx.compose.ui.draw.clip
 import app.pokeplan.ui.theme.Spacing
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
@@ -111,9 +114,10 @@ internal fun dungeonTiles(dungeonId: String): String = when (dungeonId) {
 }
 
 /**
- * A team's expedition box, made of the dungeon's own tiles: a frame of its walls round a floor that scrolls past while the team
- * walks to the right on it with their walking animations (the leader in front), and [content] below on a pale veil so the text
- * reads. Whole-number pixel scale, no smoothing. With Reduce motion ([animate] false) nothing moves.
+ * A team's expedition box: the app's dialogue border round the dungeon's own tiles. The top is a floor that scrolls past while the
+ * team walks to the right on it with their walking animations (the leader in front); below it, [content] is set on wall tiles
+ * (under a dark veil, in white) like writing on the dungeon's wall. Whole-number pixel scale, no smoothing. With Reduce motion
+ * ([animate] false) nothing moves.
  */
 @Composable
 internal fun TileBox(dungeonId: String, members: List<app.pokeplan.core.pokemon.OwnedPokemon>, animate: Boolean, content: @Composable () -> Unit) {
@@ -128,54 +132,67 @@ internal fun TileBox(dungeonId: String, members: List<app.pokeplan.core.pokemon.
     LaunchedEffect(animate) {
         if (animate) { val start = withFrameNanos { it }; while (true) withFrameNanos { seconds = (it - start) / 1_000_000_000f } }
     }
+    val density = LocalDensity.current
     BoxWithConstraints(Modifier.fillMaxWidth()) {
-        val density = LocalDensity.current
-        val widthPx = with(density) { maxWidth.toPx() }
-        val pixel = (widthPx / (TILE_PX * 10)).toInt().coerceAtLeast(1)
-        val tile = TILE_PX * pixel
-        val tileDp = with(density) { tile.toDp() }
-        Box(Modifier.fillMaxWidth().clipToBounds()) {
-            Canvas(Modifier.matchParentSize()) {
-                val image = atlas ?: return@Canvas drawRect(Color(0xFF2A2A2A))
-                val cols = (size.width / tile).toInt() + 2
-                val rows = (size.height / tile).toInt() + 1
-                val scroll = (seconds * 36f).toInt() / pixel * pixel % tile
-                fun put(ax: Int, ay: Int, x: Int, y: Int) =
-                    drawImage(image, IntOffset(ax * TILE_PX, ay * TILE_PX), IntSize(TILE_PX, TILE_PX), IntOffset(x, y), IntSize(tile, tile), filterQuality = FilterQuality.None)
-                // The floor, a tile wider each side, slides left.
-                for (r in 0 until rows) for (c in -1..cols) put(0, 3, c * tile - scroll, r * tile)
-                // A veil under the text, from below the walking strip to the bottom wall.
-                val top = (STRIP_ROWS + 2) * tile.toFloat()
-                drawRect(Color(0xE6FFFFFF), Offset(tile.toFloat(), top), Size(size.width - 2 * tile, size.height - top - tile))
-                // The frame: walls round the room, their faces towards the floor.
-                val right = (size.width / tile).toInt() - 1
-                val bottom = ((size.height - 1) / tile).toInt()
-                val lastX = (size.width - tile).toInt()
-                val lastY = (size.height - tile).toInt()
-                for (c in 0..right) { put(1, 2, if (c == right) lastX else c * tile, tile); put(1, 0, if (c == right) lastX else c * tile, lastY - tile) }
-                for (r in 2 until bottom - 1) { put(2, 1, 0, r * tile); put(0, 1, lastX, r * tile) }
-                for (c in 0..right) { put(1, 1, if (c == right) lastX else c * tile, 0); put(1, 1, if (c == right) lastX else c * tile, lastY) }
-                put(2, 2, 0, tile); put(0, 2, lastX, tile); put(2, 0, 0, lastY - tile); put(0, 0, lastX, lastY - tile)
-            }
-            Column(Modifier.padding(horizontal = tileDp, vertical = tileDp)) {
-                // The team on the strip of floor under the top wall, leader on the right, staggered like a party in a corridor.
-                val strip = tileDp * (STRIP_ROWS + 1)
-                Box(Modifier.fillMaxWidth().height(strip)) {
-                    val size = tileDp * 1.7f
-                    val step = tileDp * 1.35f
-                    val shown = members.take(4)
-                    shown.forEachIndexed { i, p ->
-                        val order = shown.size - 1 - i
-                        Box(Modifier.offset(x = step * order + tileDp * 0.3f, y = tileDp * (if (i % 2 == 0) 1.3f else 1.75f) - size * 0.15f)) {
-                            app.pokeplan.ui.AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = size, animate = animate, action = app.pokeplan.ui.SpriteAction.WALK_SIDE)
+        val widthPx = with(density) { (maxWidth - FRAME * 2).toPx() }
+        val pixel = (widthPx / (TILE_PX * 8)).toInt().coerceAtLeast(1)
+        val tilePx = TILE_PX * pixel
+        val tile = with(density) { tilePx.toDp() }
+        // Dark fill, so a pixel the tiles do not reach shows dark and never the white of a plain box.
+        Box(Modifier.fillMaxWidth().dialogueBox(fill = Color(0xFF141C28)).clip(DialogueShape)) {
+            Box(Modifier.matchParentSize().padding(start = FRAME, end = FRAME, top = FRAME, bottom = FRAME - 2.dp).clipToBounds()) {
+                Canvas(Modifier.fillMaxSize()) {
+                    val image = atlas ?: return@Canvas drawRect(Color(0xFF2A2A2A))
+                    val cols = (size.width / tilePx).toInt() + 2
+                    val rows = (size.height / tilePx).toInt() + 2
+                    val scroll = (seconds * 36f).toInt() / pixel * pixel % tilePx
+                    fun put(ax: Int, ay: Int, x: Int, y: Int) =
+                        drawImage(image, IntOffset(ax * TILE_PX, ay * TILE_PX), IntSize(TILE_PX, TILE_PX), IntOffset(x, y), IntSize(tilePx, tilePx), filterQuality = FilterQuality.None)
+                    for (r in 0 until rows) for (c in -1..cols) {
+                        // Row 0: a single layer of wall; then the floor; then the top edge of the wall below it, and wall.
+                        val x = c * tilePx - scroll
+                        when {
+                            r == 0 -> put(1, 2, x, 0)
+                            r <= STRIP_ROWS -> put(0, 3, x, r * tilePx)
+                            r == STRIP_ROWS + 1 -> put(1, 0, x, r * tilePx)
+                            else -> put(1, 1, x, r * tilePx)
                         }
                     }
+                    drawRect(Color(0xB3141C28), Offset(0f, (STRIP_ROWS + 2) * tilePx.toFloat()), Size(size.width, size.height))
                 }
-                Box(Modifier.padding(top = tileDp * 0.5f, bottom = tileDp * 0.7f)) { content() }
+                // The team on the floor rows, leader on the right: feet on the floor, never on a wall.
+                val shown = members.take(4)
+                val size = tile * 1.5f
+                val step = tile * 1.3f
+                shown.forEachIndexed { i, p ->
+                    val order = shown.size - 1 - i
+                    val feet = tile * (if (i % 2 == 0) 2.2f else 2.9f)
+                    Box(Modifier.offset(x = step * order + tile * 0.3f, y = feet - size)) {
+                        app.pokeplan.ui.AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = size, animate = animate, ground = 0.dp, action = app.pokeplan.ui.SpriteAction.WALK_SIDE)
+                    }
+                }
             }
+            Column(Modifier.padding(start = Spacing.BoxX + 8.dp, end = Spacing.BoxX + 8.dp, top = FRAME + tile * (STRIP_ROWS + 2) + Spacing.L, bottom = Spacing.BoxY + 12.dp)) { onWall(content) }
         }
     }
 }
 
+/** [content] in white, for writing on a dark wall. */
+@Composable
+private fun onWall(content: @Composable () -> Unit) {
+    val t = MaterialTheme.typography
+    val white = Color.White
+    val soft = Color(0xFFE3EEF5)
+    androidx.compose.runtime.CompositionLocalProvider(androidx.compose.material3.LocalContentColor provides white) {
+        MaterialTheme(
+            colorScheme = MaterialTheme.colorScheme,
+            typography = t.copy(titleSmall = t.titleSmall.copy(color = white), bodyLarge = t.bodyLarge.copy(color = white), bodyMedium = t.bodyMedium.copy(color = soft)),
+        ) { content() }
+    }
+}
+
+private val FRAME = 8.dp
+
 private const val TILE_PX = 24
+/** Rows of floor the team walks on. */
 private const val STRIP_ROWS = 2
