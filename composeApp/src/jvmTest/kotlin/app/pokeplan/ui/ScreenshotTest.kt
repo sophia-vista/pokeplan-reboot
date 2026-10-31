@@ -111,6 +111,16 @@ class ScreenshotTest {
         }
     }
 
+    /** The recruiting scene: the question, then the welcome. */
+    @Test
+    fun worldRecruit() {
+        val store = started()
+        val mon = store.data.player.pokemon.first()
+        val find = app.pokeplan.world.Find(37, "tiny-woods", 4, 0L)
+        render("world-recruit-ask") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.RecruitCard(find, null, {}, {}, {}) } } }
+        render("world-recruit-joined") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.RecruitCard(null, mon, {}, {}, {}) } } }
+    }
+
     @Test
     fun onboarding() = render("onboarding") { App(MemoryStorage(), focusTab = true) }
 

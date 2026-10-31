@@ -59,7 +59,7 @@ fun NavButton(label: String, iconItem: String, selected: Boolean, onClick: () ->
             .pressScale(source)
             .defaultMinSize(minHeight = 56.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(if (selected) Pixel.Red.copy(alpha = 0.12f) else Color.Transparent)
+            .background(if (selected) Color.White.copy(alpha = 0.24f) else Color.Transparent)
             .focusRing(RoundedCornerShape(16.dp))
             .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Tab) { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }
             .semantics { this.selected = selected }
@@ -67,6 +67,6 @@ fun NavButton(label: String, iconItem: String, selected: Boolean, onClick: () ->
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         ItemIcon(iconItem, size = 28.dp, description = null)
-        PixelLabel(label, if (selected) Pixel.Red else Pixel.InkSoft, small = true)
+        PixelLabel(label, if (selected) Color.White else Color.White.copy(alpha = 0.82f), small = true)
     }
 }

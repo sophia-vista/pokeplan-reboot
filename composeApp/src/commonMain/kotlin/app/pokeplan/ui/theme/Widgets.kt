@@ -113,6 +113,8 @@ fun ScreenHeader(
     trailing: @Composable () -> Unit = {},
 ) {
     val shape = RoundedCornerShape(bottomStart = Spacing.CardRadius, bottomEnd = Spacing.CardRadius)
+    val chrome = LocalChromeColor.current
+    androidx.compose.runtime.SideEffect { chrome?.value = color }
     Column(modifier.fillMaxWidth().clip(shape).background(color, shape)) {
         Row(
             Modifier.fillMaxWidth().padding(start = Spacing.Page, end = Spacing.L, top = Spacing.M, bottom = if (footer == null) Spacing.M else Spacing.XS),
@@ -130,6 +132,9 @@ fun ScreenHeader(
         if (footer != null) Box(Modifier.fillMaxWidth().padding(start = Spacing.Page, end = Spacing.Page, bottom = Spacing.M)) { footer() }
     }
 }
+
+/** The colour of the header on the page now shown, which the bottom tab bar takes on (`App` provides it; headers write it). */
+val LocalChromeColor = androidx.compose.runtime.staticCompositionLocalOf<androidx.compose.runtime.MutableState<Color>?> { null }
 
 /** A pill under a Pokémon: its name and level. */
 @Composable
