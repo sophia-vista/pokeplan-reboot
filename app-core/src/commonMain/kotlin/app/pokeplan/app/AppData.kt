@@ -105,8 +105,10 @@ data class Settings(
     val deepFocus: Boolean = false,
     /** Master switch kept from the old Sound toggle; the sliders turn it on again. */
     val sound: Boolean = true,
-    /** Volume of cries and sound effects, 0 to 100. */
+    /** Volume of sound effects, 0 to 100 (and of cries too until [criesVolume] is set). */
     val effectsVolume: Int = 100,
+    /** Volume of the Pokémon's cries, 0 to 100; -1 follows [effectsVolume] (every save from before it existed). */
+    val criesVolume: Int = -1,
     /** Volume of music, 0 to 100. There is no music yet; the setting is kept for when there is. */
     val musicVolume: Int = 70,
     val reduceMotion: Boolean = false,
@@ -135,8 +137,11 @@ data class Settings(
     /** The Care module in Modules (docs/ecosystem.md, section 6). Off only hides it: Care's own save is kept. */
     val careModule: Boolean = true,
 ) {
-    /** How loud cries and effects play, 0 to 1 (0 when Sound was switched off). */
+    /** How loud sound effects play, 0 to 1 (0 when Sound was switched off). */
     val effectsLevel: Float get() = if (sound) effectsVolume / 100f else 0f
+
+    /** How loud the Pokémon's cries play, 0 to 1 (0 when Sound was switched off). */
+    val criesLevel: Float get() = if (sound) (if (criesVolume < 0) effectsVolume else criesVolume) / 100f else 0f
 
     /** The first day of the week the player chose. */
     val weekStart: DayOfWeek get() = if (weekStartsOnMonday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY
@@ -145,6 +150,7 @@ data class Settings(
     fun clamped(): Settings = copy(
         defaultFocusMinutes = defaultFocusMinutes.coerceIn(FocusRules.RETRY_MINUTES, FocusRules.MAX_MINUTES),
         effectsVolume = effectsVolume.coerceIn(0, 100),
+        criesVolume = criesVolume.coerceIn(-1, 100),
         musicVolume = musicVolume.coerceIn(0, 100),
         streakReminderHour = streakReminderHour.coerceIn(0, 23),
     )

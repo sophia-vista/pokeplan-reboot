@@ -120,7 +120,7 @@ class AppModel(
 
     /** Plays [speciesId]'s cry if the platform can and Sound is on. */
     fun cry(speciesId: Int) {
-        val volume = data.settings.effectsLevel
+        val volume = data.settings.criesLevel
         if (volume > 0f) cries?.play(speciesId, volume)
     }
 

@@ -43,8 +43,8 @@ class TownMap(val cols: Int, val rows: Int, private val cells: Array<TownCell>) 
 /** Lays a dungeon town out: a wall band along the top, a pond and wall clumps below it, and more clumps at the bottom corners. */
 object TownLayout {
     /** Where the town's Pokémon walk, as fractions of the screen's height: clear of every pond and clump. */
-    const val WALK_TOP = 0.32f
-    const val WALK_BOTTOM = 0.62f
+    const val WALK_TOP = 0.20f
+    const val WALK_BOTTOM = 0.74f
 
     private class Rect(val x: Int, val y: Int, val w: Int, val h: Int) {
         /** Whether this comes within one square of [o], which a new area must not (a square of ground stays between areas). */
@@ -67,14 +67,14 @@ object TownLayout {
             }
         }
         // The band runs off the screen on three sides, so only its lower edge shows.
-        val band = (rows * 0.15f).roundToInt().coerceAtLeast(2)
+        val band = (rows * 0.10f).roundToInt().coerceAtLeast(2)
         put(Rect(-2, -2, cols + 4, band + 2), TownCell.WALL)
         // Between the band and where the Pokémon walk: one pond and a clump or two.
-        val upperEnd = (rows * 0.29f).toInt()
+        val upperEnd = (rows * 0.18f).toInt()
         tryPlace(TownCell.WATER, 3 + random.nextInt(3), 2, 0..cols - 5, band + 1..upperEnd - 2)
         repeat(2) { tryPlace(TownCell.WALL, 2 + random.nextInt(2), 2, -1..cols - 3, band + 1..upperEnd - 2) }
         // Below the Pokémon, behind the day's text: clumps at the corners, running off the screen.
-        val lowerStart = (rows * 0.68f).toInt()
+        val lowerStart = (rows * 0.80f).toInt()
         repeat(3) {
             val w = 2 + random.nextInt(3)
             val xs = if (random.nextBoolean()) -1..1 else cols - w - 1..cols - 1

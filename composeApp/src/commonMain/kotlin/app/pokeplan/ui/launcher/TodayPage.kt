@@ -120,8 +120,8 @@ internal fun TodayPage(model: AppModel, pixel: Int) {
     }
 }
 
-private fun two(n: Int) = n.toString().padStart(2, '0')
+internal fun two(n: Int) = n.toString().padStart(2, '0')
 
-private fun dayName(d: DayOfWeek) = d.name.lowercase().replaceFirstChar { it.uppercase() }
+internal fun dayName(d: DayOfWeek) = d.name.lowercase().replaceFirstChar { it.uppercase() }
 
-private fun monthName(m: Month) = m.name.lowercase().replaceFirstChar { it.uppercase() }
+internal fun monthName(m: Month) = m.name.lowercase().replaceFirstChar { it.uppercase() }

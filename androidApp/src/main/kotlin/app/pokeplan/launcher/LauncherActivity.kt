@@ -176,7 +176,16 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
             try {
                 val size = (resources.displayMetrics.density * 56).toInt().coerceAtLeast(48)
                 val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-                info.getBadgedIcon(0).apply { setBounds(0, 0, size, size) }.draw(Canvas(bitmap))
+                val canvas = Canvas(bitmap)
+                val drawable = info.getBadgedIcon(0)
+                if (drawable is android.graphics.drawable.AdaptiveIconDrawable) {
+                    // Without the phone's mask (round or squircle): the layers fill the square, and the launcher cuts it to its own pixel shape. Only the middle two thirds of an adaptive icon are meant to show, so they are drawn 1.5 times as big.
+                    val grow = (size * 0.25f).toInt()
+                    listOfNotNull(drawable.background, drawable.foreground).forEach { layer -> layer.setBounds(-grow, -grow, size + grow, size + grow); layer.draw(canvas) }
+                } else {
+                    drawable.setBounds(0, 0, size, size)
+                    drawable.draw(canvas)
+                }
                 bitmap.asImageBitmap().also { icons.put(key, it) }
             } catch (e: Exception) {
                 null
@@ -211,6 +220,21 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         } catch (e: Exception) {
             appInfo(key)
         }
+    }
+
+    private val weather by lazy { WeatherClient(this) }
+
+    override suspend fun forecast(place: app.pokeplan.ui.launcher.GeoPlace) = weather.forecast(place)
+
+    override suspend fun searchPlaces(query: String) = weather.search(query)
+
+    override fun battery(): app.pokeplan.ui.launcher.BatteryStatus? {
+        val intent = registerReceiver(null, android.content.IntentFilter(Intent.ACTION_BATTERY_CHANGED)) ?: return null
+        val level = intent.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1)
+        val scale = intent.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, -1)
+        if (level < 0 || scale <= 0) return null
+        val status = intent.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1)
+        return app.pokeplan.ui.launcher.BatteryStatus(level * 100 / scale, status == android.os.BatteryManager.BATTERY_STATUS_CHARGING || status == android.os.BatteryManager.BATTERY_STATUS_FULL)
     }
 
     override fun openHomeSettings() {

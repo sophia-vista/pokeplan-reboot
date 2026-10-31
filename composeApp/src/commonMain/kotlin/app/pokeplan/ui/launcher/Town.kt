@@ -61,8 +61,8 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeSource
 
 /** Where the ground is on a scene backdrop, as fractions of the screen's height. */
-private const val SCENE_TOP = 0.22f
-private const val SCENE_BOTTOM = 0.62f
+private const val SCENE_TOP = 0.14f
+private const val SCENE_BOTTOM = 0.74f
 
 /** How many Pokémon walk the town at once: the buddy first, then the highest levels, so a big collection never slows the home screen. */
 internal const val TOWN_CAP = 24
@@ -91,7 +91,7 @@ internal fun townResidents(all: List<OwnedPokemon>, buddyId: String?, cap: Int =
 @Composable
 internal fun Town(
     model: AppModel, scene: String, active: Boolean, onMenu: (OwnedPokemon) -> Unit, modifier: Modifier = Modifier, size: Int = TOWN_CAP, weather: Weather = Weather.CLEAR,
-    screens: Int = 1, interactive: Boolean = true,
+    screens: Int = 1, interactive: Boolean = true, gather: Int = 0,
 ) {
     val data = model.data
     val residents = townResidents(data.player.pokemon, data.player.buddy?.id, size)
@@ -113,7 +113,7 @@ internal fun Town(
         val night = BuddyScene.darkness(model.store.now.hour, model.store.now.minute) >= NIGHT
         TownMeetings(model, life, residents, calm || !interactive)
         residents.forEachIndexed { i, mon ->
-            key(mon.id) { Resident(model, mon, screenPx, heightPx, pixel, top, bottom, calm = calm, index = i, life = life, asleep = night && sleepsAtNight(mon), screens = screens, interactive = interactive, onMenu = onMenu) }
+            key(mon.id) { Resident(model, mon, screenPx, heightPx, pixel, top, bottom, calm = calm, index = i, life = life, asleep = night && sleepsAtNight(mon), screens = screens, interactive = interactive, gather = gather, onMenu = onMenu) }
         }
         // The weather is over everything and never takes a touch.
         WeatherLayer(weather, pixel, dungeon, calm, Modifier.fillMaxSize().zIndex(10f))
@@ -121,7 +121,7 @@ internal fun Town(
 }
 
 @Composable
-private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightPx: Float, pixel: Int, groundTop: Float, groundBottom: Float, calm: Boolean, index: Int, life: TownLife, asleep: Boolean, screens: Int, interactive: Boolean, onMenu: (OwnedPokemon) -> Unit) {
+private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightPx: Float, pixel: Int, groundTop: Float, groundBottom: Float, calm: Boolean, index: Int, life: TownLife, asleep: Boolean, screens: Int, interactive: Boolean, gather: Int, onMenu: (OwnedPokemon) -> Unit) {
     val random = remember(mon.id) { Random(mon.id.hashCode()) }
     // Position as fractions of the ground: x across the screen, y from the back of the ground (0) to the front (1).
     val spot = remember(mon.id) { Animatable(Offset(random.nextFloat() * screens, random.nextFloat()), Offset.VectorConverter) }
@@ -130,13 +130,15 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
     var hopping by remember(mon.id) { mutableStateOf(false) }
     // How it is walking now (null while it stands): to the side, towards the viewer or away, whichever way it mostly goes.
     var walk by remember(mon.id) { mutableStateOf<SpriteAction?>(null) }
+    // The last gathering this one answered, so a meeting or a sleep does not send it off again.
+    var gathered by remember(mon.id) { mutableIntStateOf(gather) }
     SideEffect { life.spots[mon.id] = { spot.value } }
     val hold = life.holds[mon.id]
     // A Pokémon stands still while it sleeps or meets another.
     val still = asleep || hold != null
     LaunchedEffect(hold?.hop) { if (hold != null && hold.hop > 0) { hopping = true; hopKey++ } }
     // Walking stops with Reduce motion and whenever the launcher is out of sight, and starts again when it is back.
-    if (!calm) LaunchedEffect(mon.id, still) {
+    if (!calm) LaunchedEffect(mon.id, still, gather) {
         if (still) {
             walk = null
             // Meeting someone: step up to them, then stand turned towards them.
@@ -148,11 +150,7 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
             }
             return@LaunchedEffect
         }
-        delay(300L + index * 150L)
-        while (true) {
-            delay(1500L + random.nextLong(5000))
-            // The town has no side walls: a Pokémon may walk off one edge and come back in at the other.
-            val to = Offset(-0.2f + random.nextFloat() * (screens + 0.4f), random.nextFloat())
+        suspend fun strollTo(to: Offset) {
             val dx = to.x - spot.value.x
             val dy = to.y - spot.value.y
             facingLeft = dx < 0
@@ -165,6 +163,17 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
             val x = spot.value.x
             if (x > screens + 0.15f) spot.snapTo(Offset(x - (screens + 0.3f), spot.value.y)) else if (x < -0.15f) spot.snapTo(Offset(x + (screens + 0.3f), spot.value.y))
             walk = null
+        }
+        // Called together (three taps on the screen): each one, after a moment of its own, strolls over to the main screen, where it can be touched.
+        if (gather != gathered) {
+            gathered = gather
+            delay(random.nextLong(1500))
+            strollTo(Offset(0.06f + random.nextFloat() * 0.88f, random.nextFloat()))
+        } else delay(300L + index * 150L)
+        while (true) {
+            delay(1500L + random.nextLong(5000))
+            // The town has no side walls: a Pokémon may walk off one edge and come back in at the other.
+            strollTo(Offset(-0.2f + random.nextFloat() * (screens + 0.4f), random.nextFloat()))
         }
     }
     // Every Pokémon is drawn at the town's pixel scale in a box of three tiles, standing on its feet; the front ones are drawn over those behind.

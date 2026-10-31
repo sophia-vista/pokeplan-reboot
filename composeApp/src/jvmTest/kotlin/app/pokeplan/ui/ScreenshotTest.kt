@@ -658,7 +658,7 @@ class ScreenshotTest {
         listOf(1, 4, 7, 39, 52, 54, 94, 133, 143, 150, 151, 25, 175, 183).forEach { store.grantPokemon(it, "test") }
         val model = AppModel(store)
         val prefs = app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages").pin("pkg.Camera")
-        render("launcher-home") { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs, {}, isDefault = false, host = fakeHost) }
+        render("launcher-home") { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs, {}, isDefault = false, phone = fakeHost) }
     }
 
     @Test
@@ -671,27 +671,33 @@ class ScreenshotTest {
             val store = started()
             listOf(1, 4, 7, 39, 52, 54, 94, 133, 143, 150, 151, 25, 175, 183).forEach { store.grantPokemon(it, "test") }
             val prefs = app.pokeplan.ui.launcher.LauncherPrefs().withScene(town).pin("pkg.Phone").pin("pkg.Messages")
-            render("launcher-town-$town") { app.pokeplan.ui.launcher.LauncherScreen(AppModel(store), fakeApps, prefs, {}, isDefault = true, host = fakeHost) }
+            render("launcher-town-$town") { app.pokeplan.ui.launcher.LauncherScreen(AppModel(store), fakeApps, prefs, {}, isDefault = true, phone = fakeHost) }
         }
         val planned = started()
         planned.addTask("Write the report", Rank.B, planned = planned.today, estimateMinutes = 45)
         planned.addTask("Reply to mail", Rank.E, planned = planned.today)
         planned.addEvent("Gym", planned.today, kotlinx.datetime.LocalTime(18, 30))
         render("launcher-today") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.TodayPage(AppModel(planned), 2) } } }
-        app.pokeplan.ui.launcher.Weather.entries.drop(1).forEach { weather ->
+        app.pokeplan.ui.launcher.Weather.entries.filter { it != app.pokeplan.ui.launcher.Weather.CLEAR && it != app.pokeplan.ui.launcher.Weather.LIVE }.forEach { weather ->
             val sky = started().also { st -> listOf(1, 4, 25, 133, 150).forEach { st.grantPokemon(it, "test") } }
             render("launcher-weather-${weather.name.lowercase()}") {
-                app.pokeplan.ui.launcher.LauncherScreen(AppModel(sky), fakeApps, app.pokeplan.ui.launcher.LauncherPrefs().copy(weather = weather), {}, isDefault = true, host = fakeHost)
+                app.pokeplan.ui.launcher.LauncherScreen(AppModel(sky), fakeApps, app.pokeplan.ui.launcher.LauncherPrefs().copy(weather = weather), {}, isDefault = true, phone = fakeHost)
             }
         }
         // A phone's size and density (2.625), where a box's width is not a multiple of the pixel scale.
         val phone = started().also { st -> listOf(1, 4, 25, 133, 150).forEach { st.grantPokemon(it, "test") } }
         render("launcher-phone", width = 923, height = 1990, density = 2.625f) {
-            app.pokeplan.ui.launcher.LauncherScreen(AppModel(phone), fakeApps, app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages"), {}, isDefault = true, host = fakeHost)
+            app.pokeplan.ui.launcher.LauncherScreen(AppModel(phone), fakeApps, app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages"), {}, isDefault = true, phone = fakeHost)
         }
+        val days = listOf("2026-10-31", "2026-11-01", "2026-11-02", "2026-11-03", "2026-11-04").mapIndexed { n, d -> app.pokeplan.ui.launcher.DayForecast(d, listOf(61, 3, 0, 71, 95)[n], 31.0 - n, 25.0) }
+        val sample = app.pokeplan.ui.launcher.Forecast("Manila, Philippines", 29.6, 61, days, 0L)
+        val withFolder = app.pokeplan.ui.launcher.LauncherPrefs().addFolder("Work").addToFolder("Work", "pkg.Phone").addToFolder("Work", "pkg.Messages").addFolder("Play")
+        render("launcher-forecast") { PixelTheme { app.pokeplan.ui.launcher.ForecastPage(sample, app.pokeplan.ui.launcher.LauncherPrefs(), 2, {}, {}) } }
+        render("launcher-folders") { PixelTheme { app.pokeplan.ui.launcher.FoldersPage(fakeApps, withFolder, {}, fakeHost, null, {}, {}, 2) } }
+        render("launcher-folder") { PixelTheme { app.pokeplan.ui.launcher.FoldersPage(fakeApps, withFolder, {}, fakeHost, "Work", {}, {}, 2) } }
         render("launcher-towns") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.TownPicker("meadow", {}, {}) } } }
         render("launcher-pokemon-menu") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.PokemonMenu(started().data.player.buddy!!, false, 2, {}, {}, {}) } } }
-        render("launcher-settings") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.LauncherSettings(AppModel(started()), app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone"), {}, false, 2, 2, fakeHost, {}, {}, {}) } } }
+        render("launcher-settings") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.LauncherSettings(AppModel(started()), app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone"), {}, false, 2, 2, fakeHost, {}, {}, {}, {}) } } }
         render("launcher-sheet") {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.AppSheet(fakeApps[2], app.pokeplan.ui.launcher.LauncherPrefs(), {}, {}, fakeHost) } }
         }
