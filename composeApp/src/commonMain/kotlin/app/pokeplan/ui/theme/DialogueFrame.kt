@@ -33,6 +33,9 @@ fun frameToneOf(base: Color) = FrameTone(
 /** The frame colours dialogue boxes below this point wear: the game's blue by default, a module's own colour inside its pages. */
 val LocalFrameTone = androidx.compose.runtime.compositionLocalOf<FrameTone?> { null }
 
+/** How solid the app's cards are: mostly, so the page (the day gradient, or the scene chosen as the background) shows faintly through. */
+const val CARD_OPACITY = 0.8f
+
 /** The corner of a dialogue box, for clipping what is drawn inside it (a ripple, a picture). */
 val DialogueShape = RoundedCornerShape(6.dp)
 
@@ -74,7 +77,7 @@ fun DrawScope.dialogueFrame(p: Float, fill: Color, sideBand: Int, topBand: Int, 
  * at the sides and 6 dp at the top, and the card's own padding (16 dp) keeps its content clear.
  */
 @androidx.compose.runtime.Composable
-fun Modifier.dialogueBox(fill: Color = Pixel.Panel, pixel: Dp = 2.dp, tone: FrameTone? = LocalFrameTone.current): Modifier {
+fun Modifier.dialogueBox(fill: Color = Pixel.Panel.copy(alpha = CARD_OPACITY), pixel: Dp = 2.dp, tone: FrameTone? = LocalFrameTone.current): Modifier {
     // On a light card the game's saturated violet line is too loud, so the app's default version of it is a muted indigo.
     val edge = tone?.edge ?: DialogueColors.Edge
     val band = tone?.band ?: DialogueColors.Band

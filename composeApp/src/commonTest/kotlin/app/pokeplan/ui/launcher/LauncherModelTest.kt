@@ -135,4 +135,16 @@ class LauncherModelTest {
         assertEquals(prefs, LauncherPrefs.decode(prefs.encode()))
         assertEquals(emptyMap(), prefs.withIcon("a", null).icons)
     }
+
+    @Test
+    fun launcherSettingsAreRememberedAndOnlyNonDefaultsAreWritten() {
+        assertEquals("", LauncherPrefs().encode())
+        val prefs = LauncherPrefs().withWalking(false).nextTownSize().withShowStatus(false).withEdgeDrag(false).pin("a").withIcon("a", "poke-ball")
+        assertEquals(8, prefs.townSize)
+        assertEquals(prefs, LauncherPrefs.decode(prefs.encode()))
+        assertEquals(16, prefs.nextTownSize().townSize)
+        assertEquals(24, prefs.nextTownSize().nextTownSize().townSize)
+        assertEquals(LauncherPrefs().withWalking(false).nextTownSize().withShowStatus(false).withEdgeDrag(false), prefs.withoutPins())
+        assertEquals(24, LauncherPrefs.decode("K townSize\t9\n").townSize)
+    }
 }

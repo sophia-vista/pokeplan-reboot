@@ -69,8 +69,8 @@ private const val TILES_ACROSS = 14f
 internal fun townScale(widthPx: Float): Int = (widthPx / (TILE * TILES_ACROSS)).roundToInt().coerceAtLeast(1)
 
 /** Who lives in the town: the buddy, then the others by level (highest first), up to [TOWN_CAP]. */
-internal fun townResidents(all: List<OwnedPokemon>, buddyId: String?): List<OwnedPokemon> =
-    all.sortedWith(compareByDescending<OwnedPokemon> { it.id == buddyId }.thenByDescending { it.level }.thenBy { it.id }).take(TOWN_CAP)
+internal fun townResidents(all: List<OwnedPokemon>, buddyId: String?, cap: Int = TOWN_CAP): List<OwnedPokemon> =
+    all.sortedWith(compareByDescending<OwnedPokemon> { it.id == buddyId }.thenByDescending { it.level }.thenBy { it.id }).take(cap.coerceAtMost(TOWN_CAP))
 
 /**
  * The home screen's town: a real scene or a town of a dungeon's tiles, with every Pokémon you own (up to [TOWN_CAP])
@@ -78,9 +78,9 @@ internal fun townResidents(all: List<OwnedPokemon>, buddyId: String?): List<Owne
  * stand still. Everything is drawn at one whole-number [townScale] without smoothing, on one pixel grid.
  */
 @Composable
-internal fun Town(model: AppModel, scene: String, active: Boolean, onMenu: (OwnedPokemon) -> Unit, modifier: Modifier = Modifier) {
+internal fun Town(model: AppModel, scene: String, active: Boolean, onMenu: (OwnedPokemon) -> Unit, modifier: Modifier = Modifier, size: Int = TOWN_CAP) {
     val data = model.data
-    val residents = townResidents(data.player.pokemon, data.player.buddy?.id)
+    val residents = townResidents(data.player.pokemon, data.player.buddy?.id, size)
     BoxWithConstraints(modifier) {
         val density = LocalDensity.current.density
         val widthPx = maxWidth.value * density
