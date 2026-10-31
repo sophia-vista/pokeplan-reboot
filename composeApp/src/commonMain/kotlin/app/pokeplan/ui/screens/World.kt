@@ -1,6 +1,14 @@
 package app.pokeplan.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import app.pokeplan.ui.TypePlate
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -59,7 +67,7 @@ import kotlinx.coroutines.delay
  * its sections. Its progression (rank, Poké, dungeon depth) is its own; the Pokémon it recruits are the shared collection's.
  */
 enum class WorldSection(val label: String, val icon: String) {
-    MAP("World", "town-map"), MISSIONS("Missions", "journal"), SKILLS("Skills", "ability-capsule"), BASE("Base and Research", "scope-lens"), TEAMS("Expeditions", "exp-share"), CAMP("Camp", "friend-ball"), BAG("Finds and Bag", "seal-bag"),
+    MAP("Map", "town-map"), MISSIONS("Missions", "journal"), SKILLS("Skills", "ability-capsule"), BASE("Base", "scope-lens"), TEAMS("Expeditions", "exp-share"), CAMP("Camp", "friend-ball"), BAG("Finds and Bag", "seal-bag"),
 }
 
 @Composable
@@ -98,6 +106,7 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.WORLD.label, subtitle = "Rank: ${world.rank.label}", onBack = onBack, color = Module.WORLD.look.header)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            WorldBanner("town", "Exploration team", "${Dungeons.all.count { world.rank >= it.needs && Story.opened(world) >= it.chapter }} of ${Dungeons.all.size} dungeons open")
             MenuGrid(
                 listOf(
                     MenuEntry(WorldSection.MAP.name, WorldSection.MAP.icon, WorldSection.MAP.label, "${Dungeons.all.size} dungeons", tint = Module.WORLD.look.accent),
@@ -142,24 +151,60 @@ private fun RankCard(model: AppModel) {
 private fun WorldMapView(model: AppModel) {
     val world = model.data.world
     val ready = world.slots().filter { it.members.isNotEmpty() && it.expedition == null }
+    WorldBanner("town", "The world map", "${world.clears.values.sum()} dungeon clears so far")
     Dungeons.all.forEach { d ->
-        val open = world.rank >= d.needs
-        TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Text(d.name, style = MaterialTheme.typography.titleSmall)
-                Text("${d.region.label}, ${d.floors} floors. Quick explorers: ${d.favored.joinToString(", ") { it.label }}.", style = MaterialTheme.typography.bodyMedium)
-                Text("Deepest floor: ${world.deepest[d.id] ?: 0} of ${d.floors}. Cleared ${world.clears[d.id] ?: 0} times.", style = MaterialTheme.typography.bodyLarge)
-                val chapterShut = app.pokeplan.world.Story.opened(world) < d.chapter
-                if (d.postStory && !world.guardianDone) Text("Opens when the story is complete.", style = MaterialTheme.typography.bodyMedium)
-                else if (!open) Text("Needs ${d.needs.label} rank.", style = MaterialTheme.typography.bodyMedium)
-                else if (chapterShut) Text("Needs story chapter ${d.chapter}: ${app.pokeplan.world.Story.chapters[d.chapter - 1].title}.", style = MaterialTheme.typography.bodyMedium)
-                else if (ready.isEmpty()) Text("Make a team in Expeditions to send it here.", style = MaterialTheme.typography.bodyMedium)
-                else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    ready.forEach { team -> PixelButton("Send team ${team.id}", { model.store.worldStart(team.id, d.id) }, color = Module.WORLD.look.accent, compact = true) }
+        val rankOk = world.rank >= d.needs
+        val chapterShut = Story.opened(world) < d.chapter
+        val storyShut = d.postStory && !world.guardianDone
+        val open = rankOk && !chapterShut && !storyShut
+        val deepest = world.deepest[d.id] ?: 0
+        TextBox(Modifier.alpha(if (open) 1f else 0.7f)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                // The tileset picture when the game has one, else a plain swatch in the region's colour.
+                Box(Modifier.width(64.dp).height(132.dp).border(2.dp, Pixel.Ink).background(regionColor(d.region))) {
+                    if (d.id in dungeonPictures) WorldPicture("dungeon-${d.id}", Modifier.fillMaxSize(), crop = true)
+                    else Text(d.region.label, Modifier.align(Alignment.Center).padding(Spacing.XS), style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                    if (!open) Box(Modifier.fillMaxSize().background(Color(0x66000000)))
+                }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Text(d.name, style = MaterialTheme.typography.titleSmall)
+                    Text("${d.region.label}, ${d.floors} floors, ${d.needs.label} rank", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                        d.favored.forEach { TypePlate(it, width = 56.dp) }
+                    }
+                    PixelBar(deepest.toFloat() / d.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "deepest floor $deepest of ${d.floors}")
+                    Text("Deepest floor $deepest of ${d.floors}, cleared ${world.clears[d.id] ?: 0} times", style = MaterialTheme.typography.bodyMedium)
+                    when {
+                        storyShut -> Text("Opens when the story is complete.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
+                        !rankOk -> Text("Needs ${d.needs.label} rank.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
+                        chapterShut -> Text("Needs story chapter ${d.chapter}: ${Story.chapters[d.chapter - 1].title}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
+                        ready.isEmpty() -> Text("Make a team in Expeditions to send it here.", style = MaterialTheme.typography.bodyMedium)
+                        else -> FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            ready.forEach { team -> PixelButton("Send team ${team.id}", { model.store.worldStart(team.id, d.id) }, color = Module.WORLD.look.accent, compact = true) }
+                        }
+                    }
                 }
             }
         }
     }
+}
+
+private fun missionIcon(kind: MissionKind): String = when (kind) {
+    MissionKind.EXPLORE -> "town-map"
+    MissionKind.COLLECT -> "seal-bag"
+    MissionKind.RESCUE -> "friend-ball"
+    MissionKind.DELIVER -> "journal"
+}
+
+private fun regionColor(region: app.pokeplan.world.WorldRegion): Color = when (region) {
+    app.pokeplan.world.WorldRegion.GREENLANDS -> Color(0xFF5E9E3F)
+    app.pokeplan.world.WorldRegion.MOUNTAINS -> Color(0xFF8A6B4A)
+    app.pokeplan.world.WorldRegion.UNDERGROUND -> Color(0xFFC08A3E)
+    app.pokeplan.world.WorldRegion.AQUATIC -> Color(0xFF3B84B8)
+    app.pokeplan.world.WorldRegion.FROZEN -> Color(0xFF6FB6D6)
+    app.pokeplan.world.WorldRegion.ANCIENT -> Color(0xFF8D6A9F)
+    app.pokeplan.world.WorldRegion.SKY -> Color(0xFF5C8FD6)
+    app.pokeplan.world.WorldRegion.OTHERWORLDLY -> Color(0xFF4B3A7A)
 }
 
 // ----- Missions -------------------------------------------------------------------------------------------------------
@@ -169,6 +214,7 @@ private fun WorldMissionsView(model: AppModel) {
     val store = model.store
     val world = model.data.world
     if (!Missions.boardOpen(world)) {
+        WorldBanner("guild-room", "The mission board", "Opens with story chapter 2", sky = Color(0xFF101038), top = true)
         TextBox { Text("The mission board opens with the story's second chapter, Requests and Rescues (Bronze rank and one dungeon clear).", style = MaterialTheme.typography.bodyMedium) }
         return
     }
@@ -176,13 +222,18 @@ private fun WorldMissionsView(model: AppModel) {
         append("${m.poke} Poké, ${m.xp} XP")
         m.itemId?.let { append(", ${Items.name(it)} x${m.itemCount}") }
     }
+    WorldBanner("guild-room", "The mission board", "${world.missions.count { it.done }} ready to claim, ${world.missions.size} of ${Missions.MAX_ACTIVE} taken", sky = Color(0xFF101038), top = true)
     FieldLabel("Taken (${world.missions.size} of ${Missions.MAX_ACTIVE})")
     if (world.missions.isEmpty()) Text("No jobs taken. Pick one below, then send a team to the dungeon it names.", style = MaterialTheme.typography.bodyMedium)
     world.missions.forEach { p ->
         val m = Missions.byId(p.id) ?: return@forEach
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Text(m.title, style = MaterialTheme.typography.titleSmall)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    ItemIcon(missionIcon(m.kind), size = 32.dp, description = null)
+                    Text(m.title, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
+                    if (p.done) Text("Done", style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
+                }
                 val where = m.dungeonId?.let { "floor ${m.floor} of ${Dungeons.byId(it)?.name}" }
                 Text(
                     when (m.kind) {
@@ -205,7 +256,10 @@ private fun WorldMissionsView(model: AppModel) {
     offered.forEach { m ->
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Text("${m.kind.label}${if (m.period == 1) " (daily)" else if (m.period == 7) " (weekly)" else ""}: ${m.title}", style = MaterialTheme.typography.titleSmall)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    ItemIcon(missionIcon(m.kind), size = 32.dp, description = null)
+                    Text("${m.kind.label}${if (m.period == 1) " (daily)" else if (m.period == 7) " (weekly)" else ""}: ${m.title}", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
+                }
                 Text(m.story, style = MaterialTheme.typography.bodyMedium)
                 Text("Reward: ${reward(m)}", style = MaterialTheme.typography.bodyMedium)
                 PixelButton("Take the job", { store.worldAcceptMission(m.id) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true, enabled = world.missions.size < Missions.MAX_ACTIVE)
@@ -241,7 +295,8 @@ private fun WorldSkillsView(model: AppModel) {
 private fun WorldBaseView(model: AppModel) {
     val store = model.store
     val world = model.data.world
-    FieldLabel("Base (Poké: ${world.poke})")
+    WorldBanner("summit", "Exploration base", "${world.poke} Poké to spend", top = true)
+    FieldLabel("Base")
     Facility.entries.forEach { f ->
         val level = world.facilityLevel(f)
         TextBox {
@@ -363,6 +418,7 @@ private fun WorldTeamsView(model: AppModel) {
 private fun WorldCampView(model: AppModel, openPokemon: (String) -> Unit) {
     val data = model.data
     val residents = data.player.pokemon.filter { data.origins[it.id]?.how == Origin.How.WORLD }
+    WorldBanner("cave", "Camp", "${residents.size} residents, camp level ${data.world.facilityLevel(Facility.CAMP)}", sky = Color(0xFF101010), top = true)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Species found exploring: ${data.world.discovered.size}", style = MaterialTheme.typography.titleSmall)
