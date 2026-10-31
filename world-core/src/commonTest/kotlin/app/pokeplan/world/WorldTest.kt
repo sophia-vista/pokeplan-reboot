@@ -130,6 +130,9 @@ class WorldTest {
         assertEquals(1, Story.opened(WorldData()))
         assertEquals(2, Story.opened(WorldData(xp = 300, clears = mapOf("tiny-woods" to 1))))
         assertEquals("Requests and Rescues", Story.next(WorldData())!!.title)
-        assertNull(Story.next(WorldData(xp = 1_000_000, clears = mapOf("x" to 100))))
+        assertNull(Story.next(WorldData(xp = 1_000_000, clears = SEVEN)))
     }
 }
+
+/** Seven different dungeons cleared: every chapter that rank allows. */
+private val SEVEN = listOf("tiny-woods", "thunderwave-cave", "mt-steel", "waterfall-cave", "glacier-palace", "ancient-ruins", "sky-tower").associateWith { 1 }

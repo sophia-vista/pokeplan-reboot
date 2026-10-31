@@ -19,6 +19,9 @@ class AndroidPhoneState(context: Context) : PhoneState {
     override val inCall: Boolean
         get() = audio?.mode in CALL_MODES
 
+    override val powerSaving: Boolean
+        get() = power?.isPowerSaveMode == true
+
     private companion object {
         val CALL_MODES = setOf(AudioManager.MODE_RINGTONE, AudioManager.MODE_IN_CALL, AudioManager.MODE_CALL_SCREENING)
     }

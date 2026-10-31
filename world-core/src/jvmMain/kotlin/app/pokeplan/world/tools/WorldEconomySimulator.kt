@@ -35,7 +35,7 @@ private data class Totals(var floors: Int = 0, var xp: Int = 0, var poke: Int = 
 /** Hourly yield of one team in one dungeon, measured over 24 h of staying (no cap hit because each settle is one hour). */
 private fun hourly(dungeonId: String, size: Int, level: Int): Pair<Double, Totals> {
     val roster = team(size, level)
-    var data = WorldData().copy(xp = 1_000_000, clears = mapOf("x" to 100), guardianDone = true).assign(1, roster.map { it.id })!!.start(1, dungeonId, 0L)!!
+    var data = WorldData().copy(xp = 1_000_000, clears = Dungeons.all.associate { it.id to 1 }, guardianDone = true).assign(1, roster.map { it.id })!!.start(1, dungeonId, 0L)!!
     val t = Totals()
     for (h in 1..24 * 7) {
         val r = WorldSim.settle(data, roster, h * HOUR)

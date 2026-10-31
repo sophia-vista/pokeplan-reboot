@@ -52,18 +52,18 @@ Nothing here pays through the server reward engine; items go to the Bag, Poké s
 |  | first reached |  | Normal d1, Bronze d2, Silver d13 |  |  |  |  |  |
 | 1/day | 2 × Lv 10 | 120 d | 10844 | Gold | 24012 | 35 | 13 | 71 |
 |  | first reached |  | Normal d1, Bronze d2, Silver d13, Gold d60 |  |  |  |  |  |
-| 1/day | 4 × Lv 30 | 30 d | 5993 | Silver | 12906 | 34 | 7 | 48 |
-|  | first reached |  | Bronze d1, Silver d7 |  |  |  |  |  |
-| 1/day | 4 × Lv 30 | 120 d | 19483 | Gold | 42031 | 99 | 11 | 122 |
-|  | first reached |  | Bronze d1, Silver d7, Gold d31 |  |  |  |  |  |
+| 1/day | 4 × Lv 30 | 30 d | 6687 | Gold | 13562 | 37 | 4 | 53 |
+|  | first reached |  | Bronze d1, Silver d7, Gold d27 |  |  |  |  |  |
+| 1/day | 4 × Lv 30 | 120 d | 26352 | Platinum | 55068 | 149 | 4 | 166 |
+|  | first reached |  | Bronze d1, Silver d7, Gold d27, Platinum d91 |  |  |  |  |  |
 | 2/day | 2 × Lv 10 | 30 d | 6014 | Gold | 13164 | 21 | 9 | 48 |
 |  | first reached |  | Bronze d1, Silver d7, Gold d30 |  |  |  |  |  |
 | 2/day | 2 × Lv 10 | 120 d | 20309 | Platinum | 46147 | 80 | 19 | 127 |
 |  | first reached |  | Bronze d1, Silver d7, Gold d30, Platinum d117 |  |  |  |  |  |
-| 2/day | 4 × Lv 30 | 30 d | 10529 | Gold | 23179 | 61 | 11 | 65 |
-|  | first reached |  | Bronze d1, Silver d4, Gold d16 |  |  |  |  |  |
-| 2/day | 4 × Lv 30 | 120 d | 32569 | Platinum | 72864 | 173 | 17 | 184 |
-|  | first reached |  | Bronze d1, Silver d4, Gold d16, Platinum d62 |  |  |  |  |  |
+| 2/day | 4 × Lv 30 | 30 d | 13242 | Gold | 26939 | 61 | 4 | 81 |
+|  | first reached |  | Bronze d1, Silver d4, Gold d14 |  |  |  |  |  |
+| 2/day | 4 × Lv 30 | 120 d | 52572 | Platinum | 113284 | 292 | 4 | 325 |
+|  | first reached |  | Bronze d1, Silver d4, Gold d14, Platinum d46 |  |  |  |  |  |
 | 4/day | 2 × Lv 10 | 30 d | 6288 | Gold | 14716 | 35 | 13 | 47 |
 |  | first reached |  | Bronze d1, Silver d7, Gold d29 |  |  |  |  |  |
 | 4/day | 2 × Lv 10 | 120 d | 20907 | Platinum | 47510 | 106 | 19 | 110 |
@@ -79,11 +79,11 @@ Rare Candies: **free** is milestones, jobs and research; **boxes** is the expect
 
 | Player | Rank | XP | Species found | Free candies | Box candies | Bought | Poké earned | Facilities | Shop | Jobs claimed | Skills (E/F/S) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1/day, 2 × Lv 10 | Diamond | 91040 | 38 | 59 | 42 | 12 | 188448 | 121000 | 63000 | 232 | 10/9/10 |
-| 2/day, 4 × Lv 30 | Diamond | 252576 | 46 | 84 | 151 | 33 | 469948 | 121000 | 346500 | 453 | 10/10/10 |
-| 2/day, 4 × Lv 30, Café | Diamond | 249171 | 47 | 79 | 166 | 32 | 449841 | 121000 | 328000 | 420 | 10/10/10 |
-| 4/day, 4 × Lv 30, Café | Diamond | 254305 | 48 | 91 | 122 | 32 | 455526 | 121000 | 328000 | 495 | 10/10/10 |
-| 2/day, 4 × Lv 30, Café, Dojo | Diamond | 249699 | 47 | 80 | 168 | 31 | 450998 | 121000 | 310000 | 421 | 10/10/10 |
+| 1/day, 2 × Lv 10 | Diamond | 73709 | 39 | 48 | 50 | 6 | 146748 | 121000 | 22500 | 230 | 10/9/10 |
+| 2/day, 4 × Lv 30 | Diamond | 217141 | 45 | 85 | 138 | 29 | 400396 | 121000 | 275500 | 455 | 10/10/10 |
+| 2/day, 4 × Lv 30, Café | Diamond | 218856 | 44 | 77 | 158 | 28 | 383465 | 121000 | 259000 | 424 | 10/10/10 |
+| 4/day, 4 × Lv 30, Café | Diamond | 221980 | 47 | 91 | 122 | 28 | 389579 | 121000 | 259000 | 502 | 10/10/10 |
+| 2/day, 4 × Lv 30, Café, Dojo | Diamond | 218856 | 44 | 77 | 158 | 28 | 383468 | 121000 | 259000 | 424 | 10/10/10 |
 
 ### Jobs, the Swap Shop and the Dojo over that year
 
@@ -91,18 +91,18 @@ Jobs: ordinary jobs wait 7 days, daily ones 1. **Job Poké and XP** are what cla
 
 | Player | Jobs claimed | Explore | Find items | Rescue | Deliver | Escort | Defeat | Job Poké | Poké share | Job XP | XP share | Job candies | Delivered | Missed | Swaps | Dojo sessions | Dojo Poké |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1/day, 2 × Lv 10 | 232 | 139 | 59 | 6 | 28 | 0 | 0 | 99040 | 53% | 48840 | 54% | 14 | 28 | 0 | 0 | 0 | 0 |
-| 2/day, 4 × Lv 30 | 453 | 210 | 153 | 6 | 42 | 42 | 0 | 201210 | 43% | 97590 | 39% | 36 | 42 | 0 | 0 | 0 | 0 |
-| 2/day, 4 × Lv 30, Café | 420 | 195 | 139 | 6 | 40 | 40 | 0 | 187470 | 42% | 91150 | 37% | 31 | 40 | 0 | 0 | 0 | 0 |
-| 4/day, 4 × Lv 30, Café | 495 | 220 | 183 | 6 | 44 | 42 | 0 | 213540 | 47% | 102970 | 40% | 43 | 44 | 0 | 0 | 0 | 0 |
-| 2/day, 4 × Lv 30, Café, Dojo | 421 | 196 | 139 | 6 | 40 | 40 | 0 | 188370 | 42% | 91550 | 37% | 32 | 40 | 0 | 0 | 17 | 3400 |
+| 1/day, 2 × Lv 10 | 230 | 136 | 57 | 6 | 31 | 0 | 0 | 65390 | 45% | 32220 | 44% | 13 | 31 | 0 | 0 | 0 | 0 |
+| 2/day, 4 × Lv 30 | 455 | 212 | 157 | 6 | 40 | 40 | 0 | 134940 | 34% | 64920 | 30% | 37 | 40 | 0 | 0 | 0 | 0 |
+| 2/day, 4 × Lv 30, Café | 424 | 196 | 142 | 6 | 40 | 40 | 0 | 126460 | 33% | 61050 | 28% | 32 | 40 | 0 | 0 | 0 | 0 |
+| 4/day, 4 × Lv 30, Café | 502 | 220 | 190 | 6 | 44 | 42 | 0 | 146420 | 38% | 70040 | 32% | 43 | 44 | 2 | 3 | 0 | 0 |
+| 2/day, 4 × Lv 30, Café, Dojo | 424 | 196 | 142 | 6 | 40 | 40 | 0 | 126460 | 33% | 61050 | 28% | 32 | 40 | 0 | 0 | 9 | 1800 |
 
 ### When things happen (day number)
 
-- **1/day, 2 × Lv 10:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d2, Rank Bronze d4, Story chapter 2 d4, Tiny Woods cleared d5, Mt. Steel cleared d7, Rank Silver d8, Story chapter 3 d8, Waterfall Cave cleared d11, Rank Gold d24, Story chapter 4 d24, Glacier Palace cleared d27, Rank Platinum d85, Story chapter 5 d85, Ancient Ruins cleared d98, Sky Tower cleared d103, Camp maxed d151, Rank Diamond d248, Story chapter 6 d248, Research Lab maxed d253, Guardian faced d266, Temporal Tower cleared d266, Distortion Rift cleared d363
-- **2/day, 4 × Lv 30:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Rank Bronze d2, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 3 d3, Mt. Steel cleared d3, Waterfall Cave cleared d4, Rank Gold d8, Story chapter 4 d8, Glacier Palace cleared d9, Rank Platinum d29, Story chapter 5 d29, Ancient Ruins cleared d31, Sky Tower cleared d33, Camp maxed d49, Rank Diamond d84, Story chapter 6 d84, Guardian faced d86, Temporal Tower cleared d86, Research Lab maxed d87, Distortion Rift cleared d89, All skills at the top d126
-- **2/day, 4 × Lv 30, Café:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Rank Bronze d2, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 3 d3, Mt. Steel cleared d3, Waterfall Cave cleared d4, Rank Gold d8, Story chapter 4 d8, Glacier Palace cleared d9, Rank Platinum d27, Story chapter 5 d27, Ancient Ruins cleared d30, Sky Tower cleared d31, Camp maxed d48, Rank Diamond d81, Story chapter 6 d81, Guardian faced d83, Temporal Tower cleared d83, Research Lab maxed d83, Distortion Rift cleared d85, All skills at the top d129
-- **4/day, 4 × Lv 30, Café:** Rank Bronze d1, Story chapter 2 d1, Tiny Woods cleared d1, Thunderwave Cave cleared d1, Rank Silver d2, Story chapter 3 d2, Mt. Steel cleared d2, Waterfall Cave cleared d3, Rank Gold d6, Story chapter 4 d6, Glacier Palace cleared d7, Rank Platinum d28, Story chapter 5 d28, Ancient Ruins cleared d31, Sky Tower cleared d32, Camp maxed d49, Rank Diamond d80, Story chapter 6 d80, Guardian faced d81, Temporal Tower cleared d81, Distortion Rift cleared d84, Research Lab maxed d84, All skills at the top d154
-- **2/day, 4 × Lv 30, Café, Dojo:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Rank Bronze d2, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 3 d3, Mt. Steel cleared d3, Waterfall Cave cleared d4, Rank Gold d8, Story chapter 4 d8, Glacier Palace cleared d9, Rank Platinum d27, Story chapter 5 d27, Ancient Ruins cleared d30, Sky Tower cleared d31, Camp maxed d48, Rank Diamond d81, Story chapter 6 d81, Guardian faced d83, Temporal Tower cleared d83, Research Lab maxed d83, All skills at the top d85, Distortion Rift cleared d85
+- **1/day, 2 × Lv 10:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d2, Rank Bronze d4, Story chapter 2 d4, Tiny Woods cleared d5, Mt. Steel cleared d7, Rank Silver d9, Story chapter 3 d9, Waterfall Cave cleared d12, Rank Gold d25, Story chapter 4 d25, Glacier Palace cleared d27, Rank Platinum d98, Story chapter 5 d98, Sky Tower cleared d103, Ancient Ruins cleared d124, Camp maxed d185, Rank Diamond d305, Story chapter 6 d305, Research Lab maxed d310, Guardian faced d323, Temporal Tower cleared d323
+- **2/day, 4 × Lv 30:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Rank Bronze d2, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 3 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d8, Story chapter 4 d8, Glacier Palace cleared d9, Rank Platinum d32, Story chapter 5 d32, Ancient Ruins cleared d35, Sky Tower cleared d36, Camp maxed d57, Rank Diamond d95, Story chapter 6 d95, Guardian faced d99, Temporal Tower cleared d99, Research Lab maxed d99, Distortion Rift cleared d101, All skills at the top d124
+- **2/day, 4 × Lv 30, Café:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Rank Bronze d2, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 3 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d8, Story chapter 4 d8, Glacier Palace cleared d9, Rank Platinum d31, Story chapter 5 d31, Ancient Ruins cleared d33, Sky Tower cleared d36, Camp maxed d58, Rank Diamond d95, Story chapter 6 d95, Guardian faced d101, Temporal Tower cleared d101, Research Lab maxed d101, Distortion Rift cleared d103, All skills at the top d129
+- **4/day, 4 × Lv 30, Café:** Rank Bronze d1, Story chapter 2 d1, Tiny Woods cleared d1, Thunderwave Cave cleared d1, Rank Silver d2, Story chapter 3 d2, Mt. Steel cleared d2, Waterfall Cave cleared d3, Rank Gold d7, Story chapter 4 d7, Glacier Palace cleared d8, Rank Platinum d30, Story chapter 5 d30, Ancient Ruins cleared d32, Sky Tower cleared d34, Camp maxed d58, Rank Diamond d92, Story chapter 6 d92, Guardian faced d95, Temporal Tower cleared d95, Distortion Rift cleared d97, Research Lab maxed d97, All skills at the top d154
+- **2/day, 4 × Lv 30, Café, Dojo:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Rank Bronze d2, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 3 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d8, Story chapter 4 d8, Glacier Palace cleared d9, Rank Platinum d31, Story chapter 5 d31, Ancient Ruins cleared d33, Sky Tower cleared d36, Camp maxed d58, Rank Diamond d95, Story chapter 6 d95, Guardian faced d101, All skills at the top d101, Temporal Tower cleared d101, Research Lab maxed d101, Distortion Rift cleared d103
 
 Rank XP: Normal 0, Bronze 300, Silver 1500, Gold 6000, Platinum 20000, Diamond 60000.

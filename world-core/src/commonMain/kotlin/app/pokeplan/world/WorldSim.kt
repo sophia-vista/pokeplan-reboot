@@ -82,7 +82,7 @@ object WorldSim {
             val floors = ((until - trip.settledTo) / per).toInt()
             if (floors <= 0) continue
             val events = mutableListOf<WorldEvent>()
-            for (n in 0 until floors) out = climb(out, team.id, trip, dungeon, trip.floorsClimbed + n, trip.settledTo + (n + 1) * per, members.size, power(members, dungeon), events)
+            for (n in 0 until floors) out = climb(out, team.id, trip, dungeon, trip.floorsClimbed + n, trip.settledTo + (n + 1) * per, members.size, power(members, dungeon), WorldSkill.entries.associateWith { AbilityPerks.bonus(members.map { m -> m.ability }, it) }, events)
             // The rest of the time carries over (unless the cap cut it, when the clock jumps to now).
             val settled = if (now - trip.settledTo > MAX_AWAY_MILLIS) now else trip.settledTo + floors * per
             val current = out.team(team.id) ?: team
@@ -93,7 +93,7 @@ object WorldSim {
     }
 
     /** One floor climbed: the floor number in the dungeon is its index modulo the floors, so a cleared dungeon starts again. */
-    private fun climb(data: WorldData, teamId: Int, trip: Expedition, dungeon: DungeonDef, index: Int, at: Long, teamSize: Int, power: Double, events: MutableList<WorldEvent>): WorldData {
+    private fun climb(data: WorldData, teamId: Int, trip: Expedition, dungeon: DungeonDef, index: Int, at: Long, teamSize: Int, power: Double, perk: Map<WorldSkill, Int>, events: MutableList<WorldEvent>): WorldData {
         val floor = index % dungeon.floors + 1
         val random = Random(seed(teamId, trip, index))
         var d = data
@@ -101,14 +101,14 @@ object WorldSim {
         events += WorldEvent.FloorCleared(dungeon.id, floor)
         d = d.copy(xp = d.xp + (XP_BASE + floor) * (10 + d.facilityLevel(Facility.LAB) + if (brewed) 3 else 0) / 10, deepest = d.deepest + (dungeon.id to maxOf(floor, d.deepest[dungeon.id] ?: 0)))
         var berries = 0
-        if (random.nextInt(100) < BERRY_PERCENT + d.skillLevel(WorldSkill.FORAGING)) {
+        if (random.nextInt(100) < BERRY_PERCENT + (d.skillLevel(WorldSkill.FORAGING) + perk.getValue(WorldSkill.FORAGING))) {
             berries = 1
             val flavor = listOf("sweet", "dry", "sour", "spicy", "bitter").random(random)
             val berry = Items.berry(flavor)
             events += WorldEvent.Item(berry, 1)
             d = d.copy(items = d.items + (berry to (d.items[berry] ?: 0) + 1))
         }
-        val poke = (5 + floor * 2 + random.nextInt(5)) * (100 + 2 * d.skillLevel(WorldSkill.EXPLORATION)) / 100
+        val poke = (5 + floor * 2 + random.nextInt(5)) * (100 + 2 * (d.skillLevel(WorldSkill.EXPLORATION) + perk.getValue(WorldSkill.EXPLORATION))) / 100
         events += WorldEvent.Poke(poke)
         d = d.copy(poke = d.poke + poke)
         if (random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP) + if (brewed) 5 else 0) {
@@ -116,7 +116,7 @@ object WorldSim {
             events += WorldEvent.Treasure(tier)
             d = d.copy(treasure = d.treasure + (tier to (d.treasure[tier] ?: 0) + 1))
         }
-        findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * d.skillLevel(WorldSkill.SCOUTING) + if (brewed) 10 else 0)?.let { species ->
+        findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * (d.skillLevel(WorldSkill.SCOUTING) + perk.getValue(WorldSkill.SCOUTING)) + if (brewed) 10 else 0)?.let { species ->
             events += WorldEvent.Found(species, dungeon.id, floor)
             d = d.copy(finds = d.finds + Find(species, dungeon.id, floor, at), discovered = d.discovered + species).withSkillXp(WorldSkill.SCOUTING, 20)
         }

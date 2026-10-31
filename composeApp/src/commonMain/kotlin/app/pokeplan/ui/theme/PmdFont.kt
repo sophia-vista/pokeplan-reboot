@@ -4,6 +4,10 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -125,9 +129,48 @@ class PmdFont(val sheet: ImageBitmap, val glyphs: Map<Char, PmdGlyph>) {
     }
 }
 
+/** A stretch of text: either characters the dialogue font draws, or a run of emoji (which it cannot, and the system's emoji font draws). */
+internal class TextRun(val text: String, val emoji: Boolean)
+
+private fun codePointAt(text: String, i: Int): Int {
+    val c = text[i]
+    return if (c.isHighSurrogate() && i + 1 < text.length && text[i + 1].isLowSurrogate()) 0x10000 + ((c.code - 0xD800) shl 10) + (text[i + 1].code - 0xDC00) else c.code
+}
+
+private fun isEmojiCodePoint(cp: Int): Boolean =
+    cp in 0x1F000..0x1FAFF || cp in 0x2600..0x27BF || cp in 0x2B00..0x2BFF || cp in 0x2300..0x23FF || cp in 0x2190..0x21FF ||
+        cp == 0x00A9 || cp == 0x00AE || cp == 0x203C || cp == 0x2049 || cp == 0x2122 || cp == 0x2139 || cp in 0x24C2..0x24C2 || cp in 0x25A0..0x25FF || cp in 0x2934..0x2935 || cp == 0x3030 || cp == 0x303D || cp == 0x3297 || cp == 0x3299
+
+/** Joiners and modifiers that belong to the emoji before them: the variation selector, the zero width joiner, the keycap and the skin tones. */
+private fun isEmojiTail(cp: Int): Boolean = cp == 0xFE0F || cp == 0xFE0E || cp == 0x200D || cp == 0x20E3 || cp in 0x1F3FB..0x1F3FF || cp in 0xE0020..0xE007F
+
+/** [text] cut into runs of ordinary text and runs of emoji (a family or a flag is one run). */
+internal fun splitEmoji(text: String): List<TextRun> {
+    val runs = mutableListOf<TextRun>()
+    val current = StringBuilder()
+    var inEmoji = false
+    var i = 0
+    while (i < text.length) {
+        val cp = codePointAt(text, i)
+        val width = if (cp > 0xFFFF) 2 else 1
+        val emoji = isEmojiCodePoint(cp) || (inEmoji && isEmojiTail(cp) || (inEmoji && cp == 0x200D))
+        // A joiner continues the emoji and also lets the next character join it.
+        if (emoji != inEmoji && current.isNotEmpty()) { runs += TextRun(current.toString(), inEmoji); current.clear() }
+        inEmoji = emoji
+        current.append(text, i, i + width)
+        i += width
+    }
+    if (current.isNotEmpty()) runs += TextRun(current.toString(), inEmoji)
+    return runs
+}
+
+/** Whether [text] has any emoji in it. */
+internal fun hasEmoji(text: String): Boolean = splitEmoji(text).any { it.emoji }
+
 /**
  * [text] in the dialogue font at [pixel] screen pixels per art pixel (white; [alpha] softens it), on one line, cut with "..." if it
- * does not fit. The font is the only font the world register uses: marks it lacks become look-alikes or `?`, never another typeface.
+ * does not fit. Marks the font lacks become look-alikes or `?`; emoji are the one exception: they are drawn by the system's emoji
+ * font at the height of the letters, beside the bitmap text, so a task or event called "🏠 Home" shows its house.
  */
 @Composable
 fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, alpha: Float = 1f, onLight: Boolean = false, tint: Color? = null) {
@@ -136,19 +179,47 @@ fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, alpha: Floa
     val density = LocalDensity.current.density
     BoxWithConstraints(modifier) {
         val limit = if (constraints.hasBoundedWidth) constraints.maxWidth / pixel else Int.MAX_VALUE
-        val shown = f.fit(f.clean(text), limit)
-        Canvas(Modifier.size((f.width(shown) * pixel / density).dp, (PmdFont.LINE * pixel / density).dp).semantics { contentDescription = text }) {
-            var cursor = 0
-            for (ch in shown) {
-                if (ch == ' ') { cursor += PmdFont.SPACE; continue }
-                val g = f.glyphs.getValue(ch)
-                drawImage(
-                    f.sheet, srcOffset = IntOffset(g.x, g.y), srcSize = IntSize(g.w, g.h),
-                    dstOffset = IntOffset(cursor * pixel, (PmdFont.BASELINE + g.dy) * pixel), dstSize = IntSize(g.w * pixel, g.h * pixel),
-                    alpha = alpha, colorFilter = if (tint != null) lettersOnly(tint) else if (onLight) INVERT else null, filterQuality = FilterQuality.None,
-                )
-                cursor += g.w
+        if (!hasEmoji(text)) {
+            val shown = f.fit(f.clean(text), limit)
+            PmdRun(f, shown, pixel, density, alpha, onLight, tint, Modifier.semantics { contentDescription = text })
+            return@BoxWithConstraints
+        }
+        // With emoji: each run in turn, an emoji as wide as a line is tall; the last piece of text is cut to what room is left.
+        val emojiWidth = PmdFont.LINE + 2
+        var left = limit
+        Row(Modifier.semantics { contentDescription = text }, verticalAlignment = Alignment.CenterVertically) {
+            for (run in splitEmoji(text)) {
+                if (left <= 0) break
+                if (run.emoji) {
+                    val glyphs = run.text.length
+                    if (emojiWidth > left) break
+                    Text(run.text, fontSize = (PmdFont.LINE * pixel / density * 0.9f).sp, maxLines = 1, modifier = Modifier.padding(end = (2 * pixel / density).dp))
+                    left -= emojiWidth
+                } else {
+                    val shown = f.fit(f.clean(run.text), left)
+                    if (shown.isEmpty()) continue
+                    PmdRun(f, shown, pixel, density, alpha, onLight, tint, Modifier)
+                    left -= f.width(shown)
+                }
             }
+        }
+    }
+}
+
+/** Already-cleaned [shown] drawn glyph by glyph. */
+@Composable
+private fun PmdRun(f: PmdFont, shown: String, pixel: Int, density: Float, alpha: Float, onLight: Boolean, tint: Color?, modifier: Modifier) {
+    Canvas(modifier.size((f.width(shown) * pixel / density).dp, (PmdFont.LINE * pixel / density).dp)) {
+        var cursor = 0
+        for (ch in shown) {
+            if (ch == ' ') { cursor += PmdFont.SPACE; continue }
+            val g = f.glyphs.getValue(ch)
+            drawImage(
+                f.sheet, srcOffset = IntOffset(g.x, g.y), srcSize = IntSize(g.w, g.h),
+                dstOffset = IntOffset(cursor * pixel, (PmdFont.BASELINE + g.dy) * pixel), dstSize = IntSize(g.w * pixel, g.h * pixel),
+                alpha = alpha, colorFilter = if (tint != null) lettersOnly(tint) else if (onLight) INVERT else null, filterQuality = FilterQuality.None,
+            )
+            cursor += g.w
         }
     }
 }

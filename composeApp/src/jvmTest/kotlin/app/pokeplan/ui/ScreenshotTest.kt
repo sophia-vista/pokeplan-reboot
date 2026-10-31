@@ -721,6 +721,23 @@ class ScreenshotTest {
     }
 
     @Test
+    fun launcherSettingsAndEmoji() {
+        val model = AppModel(started())
+        render("launcher-settings") { PixelTheme { app.pokeplan.ui.launcher.LauncherSettings(model, app.pokeplan.ui.launcher.LauncherPrefs(), {}, false, 2, 2, fakeHost, {}, {}, {}, {}, {}) } }
+        render("launcher-emoji", height = 700) {
+            PixelTheme {
+                Box(Modifier.fillMaxSize().background(Pixel.Night).padding(16.dp)) {
+                    androidx.compose.foundation.layout.Column {
+                        app.pokeplan.ui.theme.PmdText("\uD83C\uDFE0Home", 2)
+                        app.pokeplan.ui.theme.PmdText("\uD83D\uDCBB WFH", 2)
+                        app.pokeplan.ui.theme.PmdText("Run \uD83C\uDFC3 today \u2764\uFE0F", 2)
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
     fun launcherHome() {
         val store = started()
         listOf(1, 4, 7, 39, 52, 54, 94, 133, 143, 150, 151, 25, 175, 183).forEach { store.grantPokemon(it, "test") }

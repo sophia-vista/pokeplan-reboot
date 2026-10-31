@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.89.0
+
+- Emoji show in the launcher's pixel text (an agenda event or a task called "🏠 Home" showed "??"): the dialogue font cannot draw them, so the system's emoji font draws them beside the letters.
+- The launcher's settings have a real item icon on every line (a town map for the town, a timer ball for the clock, a bag of leftovers for the battery saver, and so on) and on the two volume controls.
+- Launcher pages (settings, widgets, folders, forecast, weather place, town picker) now fade and glide in from the right and out the same way, instead of appearing and vanishing; at once under Reduce motion.
+- World, from the review: ordinary jobs pay 40% less (World jobs are now about a third of an engaged player's Poké and Exploration XP, 45% of a casual one's); story chapters count different dungeons cleared (3, 4, 5 and 7), so repeating Tiny Woods no longer opens them; the map's "Send my strongest" button sends the highest-level free Pokémon (never a Guardian) in one tap; abilities help skills (Pickup and Honey Gather for Foraging, Keen Eye and Illuminate for Scouting, Run Away and Swift Swim for Exploration: each helper on a team is one level, up to three); the clock on World's screens follows the store every few seconds; World's animations stand still while the phone's power saver is on.
+
 ## 0.88.2
 
 - World review fixes: a daily or weekly job comes back on the right day even when no team has settled since (the screens now pass the clock); a Café brew is no longer wasted by brewing again while one still works; a Pokémon transferred away leaves its World team instead of holding the slot (a team left empty comes home); a finished Deliver job says what the Bag needs and its Claim button waits for it; a Defeat job shows your best team's real power; the map's boxes no longer redraw their floor every frame (only the Pokémon on them move), which keeps the battery for the expedition screen. Every floor of every dungeon is now tested to have someone to find.
