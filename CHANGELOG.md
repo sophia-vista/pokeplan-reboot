@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.71.0
+
+- Launcher: a second page beside the town, Today: a month calendar (Prev and Next change month, a dot marks days with plans) and the chosen day's agenda, events first and then its tasks with a box to tick. It reads PokéPlan's own planner, so it needs no permission. Swipe across to it, press Home or Back to return; two blocks at the top show which page you are on.
+
 ## 0.70.3
 
 - Launcher: the app list comes in from the right again, but only a short glide (56 dp) while it fades in and its blur clears, on the app's smooth curve (a flick still keeps its speed and settles on a spring).

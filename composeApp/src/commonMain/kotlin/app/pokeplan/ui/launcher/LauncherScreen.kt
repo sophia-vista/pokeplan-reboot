@@ -189,10 +189,24 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
         CompositionLocalProvider(LocalReduceMotion provides data.settings.reduceMotion, LocalUiSound provides model::tap) {
             androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 val pixel = townScale(maxWidth.value * LocalDensity.current.density)
-                Town(model, prefs.scene, active && prefs.walking, onMenu = { menuMon = it }, size = prefs.townSize, modifier = Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onLongPress = { model.effect(Sfx.LONG_PRESS); pickingTown = true }) })
+                // Two pages side by side: the town with its boxes, and Today (a calendar and the day's agenda and tasks). Swipe across, or press Home to come back.
+                val pages = androidx.compose.foundation.pager.rememberPagerState { 2 }
+                LaunchedEffect(homePresses) { if (homePresses > 0) pages.animateScrollToPage(0) }
+                androidx.compose.foundation.pager.HorizontalPager(pages, Modifier.fillMaxSize(), beyondViewportPageCount = 1) { page ->
+                    if (page == 0) Box(Modifier.fillMaxSize()) {
+                        Town(model, prefs.scene, active && prefs.walking && pages.currentPage == 0, onMenu = { menuMon = it }, size = prefs.townSize, modifier = Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onLongPress = { model.effect(Sfx.LONG_PRESS); pickingTown = true }) })
+                        HomePage(model, apps, prefs, isDefault, host, pixel, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
+                    } else Box(Modifier.fillMaxSize()) {
+                        TownBackdrop(prefs.scene, Modifier.fillMaxSize(), darkness = 0f)
+                        TodayPage(model, pixel)
+                    }
+                }
+                // Which page: two small blocks at the top, the current one lit.
+                Row(Modifier.align(Alignment.TopCenter).safeDrawingPadding().padding(top = Spacing.S), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    repeat(2) { i -> Box(Modifier.size(width = 16.dp, height = 4.dp).background(Color.White.copy(alpha = if (pages.currentPage == i) 0.9f else 0.3f))) }
+                }
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
-                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else listOpen = false }
-                HomePage(model, apps, prefs, isDefault, host, pixel, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
+                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (pages.currentPage != 0) scope.launch { pages.animateScrollToPage(0) } }
                 // Drag in from the right edge: the app list comes into focus with the finger, and settles open or shut when it lets go.
                 val widthPx = maxWidth.value * LocalDensity.current.density
                 // Where the finger would have the list (past either end it keeps going, but the list stretches only a little: rubber).

@@ -673,6 +673,11 @@ class ScreenshotTest {
             val prefs = app.pokeplan.ui.launcher.LauncherPrefs().withScene(town).pin("pkg.Phone").pin("pkg.Messages")
             render("launcher-town-$town") { app.pokeplan.ui.launcher.LauncherScreen(AppModel(store), fakeApps, prefs, {}, isDefault = true, host = fakeHost) }
         }
+        val planned = started()
+        planned.addTask("Write the report", Rank.B, planned = planned.today, estimateMinutes = 45)
+        planned.addTask("Reply to mail", Rank.E, planned = planned.today)
+        planned.addEvent("Gym", planned.today, kotlinx.datetime.LocalTime(18, 30))
+        render("launcher-today") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.TodayPage(AppModel(planned), 2) } } }
         render("launcher-towns") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.TownPicker("meadow", {}, {}) } } }
         render("launcher-pokemon-menu") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.PokemonMenu(started().data.player.buddy!!, false, 2, {}, {}, {}) } } }
         render("launcher-settings") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.LauncherSettings(AppModel(started()), app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone"), {}, false, 2, 2, fakeHost, {}, {}, {}) } } }
