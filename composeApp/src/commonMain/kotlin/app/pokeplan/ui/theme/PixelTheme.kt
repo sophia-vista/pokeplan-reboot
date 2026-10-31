@@ -244,7 +244,7 @@ fun PixelButton(
             .padding(PaddingValues(horizontal = if (compact) 14.dp else 20.dp, vertical = 8.dp)),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text, style = MaterialTheme.typography.labelLarge, color = label)
+        PixelLabel(text, label)
     }
 }
 

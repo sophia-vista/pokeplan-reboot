@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelLabel
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
 
@@ -42,11 +43,7 @@ fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: M
             .padding(horizontal = Spacing.M, vertical = Spacing.S),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            label, textAlign = TextAlign.Center, maxLines = 1,
-            style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium),
-            color = if (selected) Color.White else Pixel.Ink,
-        )
+        PixelLabel(label, if (selected) Color.White else Pixel.Ink, small = true)
     }
 }
 
@@ -65,10 +62,6 @@ fun NavButton(label: String, iconItem: String, selected: Boolean, onClick: () ->
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         ItemIcon(iconItem, size = 28.dp, description = null)
-        Text(
-            label, textAlign = TextAlign.Center, maxLines = 1,
-            style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium),
-            color = if (selected) Pixel.Red else Pixel.InkSoft,
-        )
+        PixelLabel(label, if (selected) Pixel.Red else Pixel.InkSoft, small = true)
     }
 }

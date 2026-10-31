@@ -45,6 +45,7 @@ import app.pokeplan.plan.PlanEvent
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
@@ -61,7 +62,7 @@ internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit,
     val at = LocalTime(draft.start / 60, draft.start % 60)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("New event", style = MaterialTheme.typography.titleSmall)
+            PixelTitle("New event")
             OutlinedTextField(
                 draft.title, { change(draft.copy(title = it)) }, Modifier.fillMaxWidth(), singleLine = true,
                 textStyle = MaterialTheme.typography.bodyLarge, label = { Text("What") },

@@ -62,8 +62,10 @@ import app.pokeplan.ui.Place
 import app.pokeplan.ui.theme.ExpBar
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelTitle
 import androidx.compose.ui.geometry.Offset
 import app.pokeplan.ui.theme.dialogueBox
+import app.pokeplan.ui.theme.frameToneOf
 import app.pokeplan.ui.theme.DialogueShape
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
@@ -132,8 +134,7 @@ private fun RegionCard(
 ) {
     val shape = DialogueShape
     Column(
-        Modifier.fillMaxWidth().dialogueBox().clip(shape)
-            .drawBehind { drawRect(look.accent, Offset(8.dp.toPx(), 6.dp.toPx()), Size(3.dp.toPx(), size.height - 12.dp.toPx())) },
+        Modifier.fillMaxWidth().dialogueBox(tone = frameToneOf(look.accent)).clip(shape),
     ) {
         Row(
             Modifier.fillMaxWidth().clickable(onClickLabel = "Open $name", role = Role.Button, onClick = onOpen).padding(horizontal = Spacing.L, vertical = Spacing.M),
@@ -146,7 +147,7 @@ private fun RegionCard(
                 else ItemIcon(icon, size = 56.dp, description = null, modifier = Modifier.align(Alignment.Center))
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(name, style = MaterialTheme.typography.titleMedium)
+                PixelTitle(name)
                 Text(leadLine, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 2)
                 Text(status, style = MaterialTheme.typography.bodyMedium)
             }
@@ -377,7 +378,7 @@ private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
     val quests = store.miniQuests()
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Mini-quests", style = MaterialTheme.typography.titleSmall)
+            PixelTitle("Mini-quests")
             quests.forEach { q ->
                 val done = store.miniQuestDone(q.id)
                 val avoided = q.kind == MiniQuest.Kind.AVOIDED_TASK
@@ -415,7 +416,7 @@ private fun WelcomeBackCard(model: AppModel) {
     if (!model.store.welcomeBackDue()) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Welcome back!", style = MaterialTheme.typography.titleSmall)
+            PixelTitle("Welcome back!")
             Text("It's good to see you. Here's a little something to start again with.", style = MaterialTheme.typography.bodyLarge)
             PixelButton("Open the gift", { model.store.claimWelcomeBack(); model.effect(Sfx.HEAL) }, Modifier.fillMaxWidth(), Pixel.Green)
         }

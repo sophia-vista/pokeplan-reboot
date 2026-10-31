@@ -58,6 +58,7 @@ import app.pokeplan.ui.SceneStage
 import app.pokeplan.ui.Stage
 import app.pokeplan.ui.TypePlate
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.quietClickable
@@ -322,12 +323,12 @@ private fun CaughtEntry(model: AppModel, s: SpeciesInfo, form: FormInfo, open: (
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Abilities", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Abilities")
             Text(
                 (form.abilities + listOfNotNull(form.hiddenAbility?.let { "$it (hidden)" })).joinToString(", "),
                 style = MaterialTheme.typography.bodyLarge,
             )
-            Text("Base stats", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Base stats")
             val base = form.stats
             listOf(base.hp, base.attack, base.defense, base.spAttack, base.spDefense, base.speed).forEachIndexed { i, v ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -342,7 +343,7 @@ private fun CaughtEntry(model: AppModel, s: SpeciesInfo, form: FormInfo, open: (
     val line = Dex.lineEvolutions(id)
     if (line.isNotEmpty()) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Evolution", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Evolution")
             line.forEach { e ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     LineMember(model, e.from, current = e.from == id, open)

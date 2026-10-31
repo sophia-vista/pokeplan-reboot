@@ -25,6 +25,7 @@ change as any token, component or rule it describes. Approved in the 0.64.0 desi
 | Green / Warning / Danger | `#1E7F52` / `#946000` / `#B42332` | `#2E9E6A` / `#D99A1E` / `#EC6A75` | success and a running session / caution / data at risk only |
 | Night, Scrim | `#101C3C`, black | same | the tint over a scene at night; under text on a picture (with an alpha) |
 | Violet, Pink, Teal, Amber | `#8B5CF6`, `#EC4899`, `#0D9488`, `#F59E0B` | same | identity colours for categories and regions, never for state |
+- Each module has a frame colour (`LocalFrameTone`, `frameToneOf(colour)`): Plan red, Care green, menu cards their own tint, everything else the game's blue. It never replaces state colours.
 - Colour means one thing: red = the main action, green = done or running, blue = selected or focused. Never decoration.
 - No colour literal outside `theme/`, the day palette and `PmdPalette`.
 - Text contrast is at least 4.5:1 (3:1 only for text of 24 sp or bold 18.66 sp and up).
@@ -39,6 +40,7 @@ change as any token, component or rule it describes. Approved in the 0.64.0 desi
 - Pixel font (Pokemon DP) for game headings, rank, stats and button labels, **at 16 sp and up only**. Everything small or read in
   bulk is Nunito. Long names (tasks, apps) are always Nunito.
 - `titleMedium`, `titleSmall` and `labelLarge` are the same style by design; use `labelLarge` for button labels, `title*` for headings.
+- Titles, labels and buttons in the utility register use the dialogue font too (`PixelTitle`, `PixelLabel`: dark on light, white on dark and on coloured faces; a text it cannot draw falls back to the pixel font); body text, descriptions and user text stay in Nunito. Scale: `appPixel()` (about 1.75 dp per art pixel, 1.25 dp for tab labels).
 - The dialogue font (`PmdText`) is the only font of the world register: every line in a dialogue box uses it (long text is cut with "...", marks it lacks become look-alikes or `?`). It is not used in the utility register.
 - World register spacing: text starts 9 art pixels inside the fill (3 for the box's own inset, 6 for the line, where the cursor goes); rules and buttons run to the 3.
 

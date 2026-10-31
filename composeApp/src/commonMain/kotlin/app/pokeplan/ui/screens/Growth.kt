@@ -40,6 +40,7 @@ import app.pokeplan.plan.GoalRules
 import app.pokeplan.plan.Reviews
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.TextBox
@@ -63,7 +64,7 @@ internal fun GrowthView(model: AppModel) {
     Insights.estimateAccuracy(model.data.tasks)?.let { acc ->
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                Text("Your estimates", style = MaterialTheme.typography.titleMedium)
+                PixelTitle("Your estimates")
                 val pct = (acc.averageRatio * 100).roundToInt()
                 Text(
                     when (acc.bias) {
@@ -79,7 +80,7 @@ internal fun GrowthView(model: AppModel) {
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Where your effort went", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Where your effort went")
             Text(
                 "The last $days days, today included: tasks finished and minutes focused in each area. The share counts " +
                     "${Insights.MINUTES_PER_TASK_POINT} minutes of focus as one task; focus without a task counts as Personal.",
@@ -153,7 +154,7 @@ private fun GoalsSummary(model: AppModel) {
     val goals = model.data.goals
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Goal progress", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Goal progress")
             if (goals.isEmpty()) {
                 Text("No goals yet. Add one under Me, Goals.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 return@Column
@@ -266,7 +267,7 @@ internal fun ReviewView(model: AppModel) {
     var carry by remember { mutableStateOf(true) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Your week", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Your week")
             Text("${summary.tasksDone} tasks finished", style = MaterialTheme.typography.bodyLarge)
             Text("${summary.focusMinutes} minutes focused in ${summary.sessionsCompleted} sessions", style = MaterialTheme.typography.bodyLarge)
             summary.habits.filter { it.completions > 0 }.forEach { Text("${it.title}: ${it.completions} days", style = MaterialTheme.typography.bodyMedium) }

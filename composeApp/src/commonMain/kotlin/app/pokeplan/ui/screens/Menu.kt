@@ -45,7 +45,9 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.DialogueShape
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.dialogueBox
+import app.pokeplan.ui.theme.frameToneOf
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
@@ -72,7 +74,7 @@ fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
 private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false, onClick: () -> Unit) {
     Box(
         modifier
-            .dialogueBox()
+            .dialogueBox(tone = frameToneOf(entry.tint))
             .clip(menuShape)
             .focusRing(menuShape)
             .clickable(role = Role.Button, onClick = onClick)
@@ -86,12 +88,12 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
         if (wide) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.L)) {
             picture()
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                Text(entry.title, style = MaterialTheme.typography.titleMedium)
+                PixelTitle(entry.title)
                 Text(entry.detail, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
             }
         } else Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             picture()
-            Text(entry.title, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+            PixelTitle(entry.title)
             Text(entry.detail, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, maxLines = 2)
         }
         if (entry.badge > 0) {

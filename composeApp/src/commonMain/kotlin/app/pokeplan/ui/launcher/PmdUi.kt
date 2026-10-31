@@ -41,6 +41,9 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.theme.DialogueColors
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PmdGlyph
+import app.pokeplan.ui.theme.PmdFont
+import app.pokeplan.ui.theme.PmdText
 import app.pokeplan.ui.theme.dialogueFrame
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
@@ -48,93 +51,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import app.pokeplan.ui.orNull
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
-
-/** One glyph of the dialogue font: its box in the sheet and how far its top is below the baseline (negative: above). */
-internal class PmdGlyph(val x: Int, val y: Int, val w: Int, val h: Int, val dy: Int)
-
-/**
- * The Pokémon dialogue bitmap font (assets/fonts/pmd-dialogue.png, measured into pmd-dialogue.tsv by tools/fonts/cut_pmd_font.py):
- * white letters with a black shadow, drawn at a whole-number scale without smoothing. It has the Latin letters, digits and a
- * few marks; text with anything else is drawn in the app's own font instead.
- */
-internal class PmdFont(val sheet: ImageBitmap, val glyphs: Map<Char, PmdGlyph>) {
-    /** The glyph's character for [c]: itself, an accent-less look-alike, a stand-in for a mark the font lacks, or `?`; null to leave it out. */
-    private fun resolve(c: Char): Char? {
-        val n = normalize(c)
-        if (n == ' ' || n in glyphs) return n
-        if (n in "()[]{}<>") return null
-        if (n in "/\\|*#@~=^$") return '-'
-        if (n == '&') return '+'
-        val i = ACCENTED.indexOf(n.lowercaseChar())
-        if (i >= 0) return PLAIN[i].let { if (n.isUpperCase()) it.uppercaseChar() else it }.takeIf { it in glyphs }
-        return '?'
-    }
-
-    /** [text] as the characters this font draws. */
-    fun clean(text: String): String = buildString { text.forEach { c -> resolve(c)?.let { append(it) } } }
-
-    /** The width of [clean] text in pixels of the art. */
-    fun width(clean: String) = clean.sumOf { if (it == ' ') SPACE else glyphs.getValue(it).w }
-
-    /** [clean] cut with "..." so it is at most [limit] art pixels wide. */
-    fun fit(clean: String, limit: Int): String {
-        if (width(clean) <= limit) return clean
-        val dots = width("...")
-        var out = clean
-        while (out.isNotEmpty() && width(out) + dots > limit) out = out.dropLast(1)
-        return out.trimEnd() + "..."
-    }
-
-    companion object {
-        const val SPACE = 4
-        /** The height of a line in pixels of the art: the capitals and their shadow, so a line of text is centred by its letters; descenders hang below it. */
-        const val LINE = 10
-        /** The baseline's distance from the top of a line. */
-        const val BASELINE = 9
-        private const val ACCENTED = "àáâãäåçèéêëìíîïñòóôõöøùúûüýÿ"
-        private const val PLAIN = "aaaaaaceeeeiiiinoooooouuuuyy"
-        private var cached: PmdFont? = null
-
-        fun normalize(c: Char): Char = when (c) { '\'' -> '\u2019'; '"' -> '\u201d'; else -> c }
-
-        suspend fun load(): PmdFont? = cached ?: orNull {
-            val sheet = Res.readBytes("files/fonts/pmd-dialogue.png").decodeToImageBitmap()
-            val glyphs = Res.readBytes("files/fonts/pmd-dialogue.tsv").decodeToString().lineSequence().filter { it.isNotBlank() }.associate { line ->
-                val f = line.split('\t')
-                f[0].single() to PmdGlyph(f[1].toInt(), f[2].toInt(), f[3].toInt(), f[4].toInt(), f[5].toInt())
-            }
-            PmdFont(sheet, glyphs)
-        }?.also { cached = it }
-    }
-}
-
-/**
- * [text] in the dialogue font at [pixel] screen pixels per art pixel (white; [alpha] softens it), on one line, cut with "..." if it
- * does not fit. The font is the only font the world register uses: marks it lacks become look-alikes or `?`, never another typeface.
- */
-@Composable
-internal fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, alpha: Float = 1f) {
-    val font by produceState<PmdFont?>(null) { value = PmdFont.load() }
-    val f = font ?: return
-    val density = LocalDensity.current.density
-    BoxWithConstraints(modifier) {
-        val limit = if (constraints.hasBoundedWidth) constraints.maxWidth / pixel else Int.MAX_VALUE
-        val shown = f.fit(f.clean(text), limit)
-        Canvas(Modifier.size((f.width(shown) * pixel / density).dp, (PmdFont.LINE * pixel / density).dp).semantics { contentDescription = text }) {
-            var cursor = 0
-            for (ch in shown) {
-                if (ch == ' ') { cursor += PmdFont.SPACE; continue }
-                val g = f.glyphs.getValue(ch)
-                drawImage(
-                    f.sheet, srcOffset = IntOffset(g.x, g.y), srcSize = IntSize(g.w, g.h),
-                    dstOffset = IntOffset(cursor * pixel, (PmdFont.BASELINE + g.dy) * pixel), dstSize = IntSize(g.w * pixel, g.h * pixel),
-                    alpha = alpha, filterQuality = FilterQuality.None,
-                )
-                cursor += g.w
-            }
-        }
-    }
-}
 
 internal object PmdPalette {
     /** The pale hairline on the outside of the frame. */

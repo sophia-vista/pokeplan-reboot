@@ -20,6 +20,19 @@ object DialogueColors {
     val CardDeep = Color(0xFF3B4FB0)
 }
 
+/** The three colours of a frame: [edge] the hairline, [band] the main band, [deep] the inner line. */
+class FrameTone(val edge: Color, val band: Color, val deep: Color)
+
+/** A frame tone built from one colour: it is the band, its pale tint the hairline, its dark shade the inner line. */
+fun frameToneOf(base: Color) = FrameTone(
+    edge = Color(base.red + (1f - base.red) * 0.6f, base.green + (1f - base.green) * 0.6f, base.blue + (1f - base.blue) * 0.6f),
+    band = base,
+    deep = Color(base.red * 0.55f, base.green * 0.55f, base.blue * 0.55f),
+)
+
+/** The frame colours dialogue boxes below this point wear: the game's blue by default, a module's own colour inside its pages. */
+val LocalFrameTone = androidx.compose.runtime.compositionLocalOf<FrameTone?> { null }
+
 /** The corner of a dialogue box, for clipping what is drawn inside it (a ripple, a picture). */
 val DialogueShape = RoundedCornerShape(6.dp)
 
@@ -60,6 +73,11 @@ fun DrawScope.dialogueFrame(p: Float, fill: Color, sideBand: Int, topBand: Int, 
  * hairline, a band 2 pixels thick at the sides and 1 at the top and bottom, a deep line). It adds no padding: the frame is 8 dp
  * at the sides and 6 dp at the top, and the card's own padding (16 dp) keeps its content clear.
  */
-fun Modifier.dialogueBox(fill: Color = Pixel.Panel, pixel: Dp = 2.dp): Modifier =
-    // On a light card the game's saturated violet line is too loud, so the app's version of it is a muted indigo.
-    drawBehind { dialogueFrame(pixel.toPx(), fill, sideBand = 2, topBand = 1, deep = if (Pixel.dark) DialogueColors.Deep else DialogueColors.CardDeep) }
+@androidx.compose.runtime.Composable
+fun Modifier.dialogueBox(fill: Color = Pixel.Panel, pixel: Dp = 2.dp, tone: FrameTone? = LocalFrameTone.current): Modifier {
+    // On a light card the game's saturated violet line is too loud, so the app's default version of it is a muted indigo.
+    val edge = tone?.edge ?: DialogueColors.Edge
+    val band = tone?.band ?: DialogueColors.Band
+    val deep = tone?.deep ?: if (Pixel.dark) DialogueColors.Deep else DialogueColors.CardDeep
+    return drawBehind { dialogueFrame(pixel.toPx(), fill, sideBand = 2, topBand = 1, edge = edge, band = band, deep = deep) }
+}

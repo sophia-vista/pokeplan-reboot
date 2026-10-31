@@ -35,6 +35,7 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.TextBox
@@ -103,7 +104,7 @@ fun PartyPerksCard(model: AppModel) {
     var open by remember { mutableStateOf(false) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Party perks", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Party perks")
             if (!store.sees(Feature.PERKS)) {
                 Text(PERKS_LOCKED, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 return@Column
@@ -148,7 +149,7 @@ fun CarePerksCard(model: AppModel) {
     var open by remember { mutableStateOf(false) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Care perks", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Care perks")
             if (!model.store.sees(Feature.PERKS)) {
                 Text(PERKS_LOCKED, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 return@Column
@@ -192,7 +193,7 @@ fun PokemonPerksBox(model: AppModel, p: OwnedPokemon) {
     val ability = AbilityPerks.table[p.ability]
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Perks", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Perks")
             val asBuddy = buildList {
                 type.forEach { (b, v) -> add("${pct(v)} ${b.label()}") }
                 ability?.bucket?.let { add("${pct(ability.percent)} ${it.label()} (${p.ability}${ability.condition.label()?.let { c -> ", on $c" } ?: ""})") }

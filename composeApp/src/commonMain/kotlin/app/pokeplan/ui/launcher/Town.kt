@@ -41,6 +41,7 @@ import app.pokeplan.ui.SpriteAction
 import app.pokeplan.ui.orNull
 import app.pokeplan.ui.rememberFadeIn
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PmdText
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
