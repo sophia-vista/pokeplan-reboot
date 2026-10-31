@@ -181,7 +181,13 @@ data class LauncherPrefs(
     val sundayFirst: Boolean = true,
     /** The widgets, top to bottom in each area; null until the user changes them, which shows [defaultWidgets]. */
     val layout: List<WidgetSlot>? = null,
+    /** The widgets on the grid (docs: the Smart Launcher style canvas); null until the grid is first changed, which shows the old [widgets] laid out as a grid. */
+    val grid: List<GridWidget>? = null,
 ) {
+    /** The widgets as a grid: the user's, or the stacked layout laid out by [WidgetGrid.fromSlots]. */
+    val gridWidgets: List<GridWidget> get() = grid ?: WidgetGrid.fromSlots(widgets)
+    fun withGrid(next: List<GridWidget>) = copy(grid = next)
+
     /** The widgets on screen: the user's, or the starting set (the date and time and buddy boxes follow their old on/off choices). */
     val widgets: List<WidgetSlot> get() = layout ?: defaultWidgets(showClock, showStatus)
     fun widgetsIn(area: WidgetArea): List<WidgetSlot> = widgets.filter { it.area == area }
@@ -311,6 +317,7 @@ data class LauncherPrefs(
         place?.let { append("W ").append(it.name.replace('\t', ' ')).append('\t').append(it.latitude).append('\t').append(it.longitude).append('\n') }
         launches.entries.sortedBy { it.key }.forEach { (key, count) -> append("L ").append(key).append('\t').append(count).append('\n') }
         layout?.let { l -> if (l.isEmpty()) append("G -\n") else l.forEach { append("G ").append(it.area.name).append('\t').append(it.kind.name).append('\t').append(it.arg.replace('\t', ' ')).append('\t').append(it.size.name).append('\n') } }
+        grid?.let { g -> if (g.isEmpty()) append("X -\n") else g.forEach { append("X ").append(it.page.name).append('\t').append(it.kind.name).append('\t').append(it.arg.replace('\t', ' ')).append('\t').append(it.col).append('\t').append(it.row).append('\t').append(it.w).append('\t').append(it.h).append('\n') } }
         folders.forEach { f -> append("F ").append(f.name.replace('\t', ' ')); f.apps.forEach { append('\t').append(it) }; append('\n') }
         pinned.forEach { append("P ").append(it).append('\n') }
         hidden.sorted().forEach { append("H ").append(it).append('\n') }
@@ -337,6 +344,13 @@ data class LauncherPrefs(
                         val area = WidgetArea.entries.firstOrNull { it.name == f[0] }
                         val kind = f.getOrNull(1)?.let { n -> WidgetKind.entries.firstOrNull { it.name == n } }
                         if (area == null || kind == null) prefs else prefs.copy(layout = (prefs.layout ?: emptyList()) + WidgetSlot(area, kind, f.getOrElse(2) { "" }, WidgetSize.entries.firstOrNull { it.name == f.getOrNull(3) } ?: WidgetSize.LARGE))
+                    }
+                    'X' -> if (rest == "-") prefs.copy(grid = prefs.grid ?: emptyList()) else rest.split('\t').let { f ->
+                        val page = WidgetPage.entries.firstOrNull { it.name == f[0] }
+                        val kind = f.getOrNull(1)?.let { n -> WidgetKind.entries.firstOrNull { it.name == n } }
+                        val n = f.drop(3).map { it.toIntOrNull() }
+                        if (page == null || kind == null || n.size != 4 || n.any { it == null }) prefs
+                        else prefs.copy(grid = (prefs.grid ?: emptyList()) + GridWidget(page, kind, f.getOrElse(2) { "" }, n[0]!!, n[1]!!, n[2]!!, n[3]!!))
                     }
                     'I' -> rest.lastIndexOf('\t').let { at -> if (at > 0) prefs.withIcon(rest.substring(0, at), rest.substring(at + 1)) else prefs }
                     'M' -> {
