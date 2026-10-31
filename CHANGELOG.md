@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.86.2
+
+- World expeditions, redone: the box of a team that is out is the app's dialogue box filled with its dungeon's own tiles: one row of wall on top, then a floor that scrolls past while the Pokémon walk across it (only on the floor) with their walking animations (still under Reduce motion), and the text written on wall tiles under it. Nine new tilesets are available (every dungeon has its own except the Distortion Rift, which uses the World Abyss).
+
 ## 0.86.1
 
 - World expeditions: the box of a team that is out is made of its dungeon's own tiles (every dungeon now has its own tileset except the Distortion Rift, which uses the World Abyss): a frame of walls round a floor that scrolls past while the Pokémon walk across it with their walking animations (still under Reduce motion). Nine new tilesets are also available to the launcher's town.
