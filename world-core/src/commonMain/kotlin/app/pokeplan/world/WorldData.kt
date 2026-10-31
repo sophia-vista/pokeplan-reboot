@@ -122,14 +122,14 @@ data class WorldData(
     }
 
     /** Claims a finished job's reward (Poké, Exploration XP, an item) and clears it; null when it is not finished. */
-    fun claimMission(id: String): WorldData? {
+    fun claimMission(id: String, utcOffsetMillis: Long = 0): WorldData? {
         val p = missions.firstOrNull { it.id == id && it.done } ?: return null
         val m = Missions.byId(id) ?: return copy(missions = missions - p)
         val bag = m.itemId?.let { items + (it to (items[it] ?: 0) + m.itemCount) } ?: items
         return copy(
             missions = missions - p, poke = poke + m.poke, xp = xp + m.xp, items = bag,
             missionsDone = if (m.once) missionsDone + m.id else missionsDone,
-            missionClaimedDay = if (m.period > 0) missionClaimedDay + (m.id to Missions.day(this)) else missionClaimedDay,
+            missionClaimedDay = if (m.period > 0) missionClaimedDay + (m.id to Missions.day(lastSeenAt, utcOffsetMillis)) else missionClaimedDay,
         )
     }
 

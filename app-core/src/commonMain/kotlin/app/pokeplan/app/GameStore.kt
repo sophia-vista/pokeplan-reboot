@@ -85,6 +85,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.offsetAt
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
@@ -230,6 +231,9 @@ class GameStore(
 
     /** The local day [millis] falls on (a finished task's day in the Done list). */
     fun dayOf(millis: Long): LocalDate = millis.toLocalDateTime(zone).date
+
+    /** The player's offset from UTC now, in milliseconds (what turns a UTC day into the player's own). */
+    val utcOffsetMillis: Long get() = zone.offsetAt(kotlinx.datetime.Instant.fromEpochMilliseconds(nowMillis)).totalSeconds * 1000L
 
     private fun newId(): String = newId(nowMillis, rng)
 
@@ -1192,7 +1196,7 @@ class GameStore(
         worldSettle()
         val give = Missions.byId(id)?.takeIf { it.give != null }
         if (give != null && !data.player.inventory.has(give.give!!, give.giveCount)) return false
-        val next = data.world.copy(lastSeenAt = nowMillis).claimMission(id) ?: return false
+        val next = data.world.copy(lastSeenAt = nowMillis).claimMission(id, utcOffsetMillis) ?: return false
         update { d -> d.copy(world = next, player = if (give != null) d.player.copy(inventory = d.player.inventory.remove(give.give!!, give.giveCount)) else d.player) }
         return true
     }

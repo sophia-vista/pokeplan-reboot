@@ -109,6 +109,11 @@ class ScreenshotTest {
             model.worldSection = section
             render("world-${section.name.lowercase()}") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
         }
+        // The same screens with the system text at 130%: nothing may be clipped or pushed out of its box.
+        app.pokeplan.ui.screens.WorldSection.entries.forEach { section ->
+            model.worldSection = section
+            render("world-xl-${section.name.lowercase()}", fontScale = 1.3f) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
+        }
     }
 
     /** The recruiting scene: the question, then the welcome. */

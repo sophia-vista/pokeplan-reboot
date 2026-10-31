@@ -137,6 +137,35 @@ class FinishTest {
     }
 }
 
+class ClockAndDayTest {
+    private fun mon(id: String) = Hatching.create(id, HatchOption(10, Dex.defaultForm(10).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = 30)
+    private val roster = listOf(mon("a"), mon("b"))
+
+    @Test
+    fun aClockSetBackDoesNotFreezeTheClimb() {
+        val trip = WorldData().assign(1, listOf("a", "b"))!!.start(1, "tiny-woods", 10L * 3_600_000)!!
+        // The phone's clock is now earlier than the moment the expedition last settled.
+        val back = WorldSim.settle(trip, roster, 2L * 3_600_000).data
+        assertEquals(2L * 3_600_000, back.team(1)!!.expedition!!.settledTo, "the settle point follows the clock back")
+        val later = WorldSim.settle(back, roster, 8L * 3_600_000).data
+        assertTrue(later.team(1)!!.expedition!!.floorsClimbed > 0, "and the team climbs again from there")
+    }
+
+    @Test
+    fun aDailyJobComesBackAtThePlayersMidnightNotUtcs() {
+        val hour = 3_600_000L
+        val day = 24 * hour
+        val plus10 = 10 * hour   // a player ten hours ahead of UTC
+        // Claimed at 20:00 UTC on day 5, which is 06:00 on day 6 for them.
+        val claimedAt = 5 * day + 20 * hour
+        val d = WorldData(xp = 400, clears = mapOf("tiny-woods" to 1), lastSeenAt = claimedAt, missions = listOf(MissionProgress("daily-berries", 15, true))).claimMission("daily-berries", plus10)!!
+        assertEquals(6L, d.missionClaimedDay["daily-berries"])
+        // 13:00 UTC on day 6 is 23:00 on day 6 for them: still the same day. 14:00 UTC is their midnight.
+        assertTrue(Missions.available(d, now = 6 * day + 13 * hour, utcOffsetMillis = plus10).none { it.id == "daily-berries" })
+        assertTrue(Missions.available(d, now = 6 * day + 14 * hour, utcOffsetMillis = plus10).any { it.id == "daily-berries" })
+    }
+}
+
 class AbilityPerksTest {
     @Test
     fun matchingAbilitiesAddLevelsUpToThree() {

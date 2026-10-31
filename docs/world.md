@@ -698,3 +698,21 @@ region and overcoming its Guardian.
 **Secondary references:** *Pokémon Mystery Dungeon: Rescue Team DX* and
 other PMD games.\
 **Incremental design reference:** *Legends of IdleOn*.
+
+
+## Implementation status (0.89.0)
+
+What the code does now, against this concept (details: `CHANGELOG.md`, rules: `docs/economy.md`, numbers: `docs/world-economy-report.md`).
+
+| Section | Built | Not built |
+|---|---|---|
+| 5 Dungeon exploration | Nine dungeons across all eight regions, each with its own tiles, floors, offline settlement (bounded to 12 hours), finds, milestones, treasure | Hazards, active choices, floor events |
+| 6 Expedition teams | Up to four teams by rank, four Pokémon each, "Send my strongest" | Held items and moves in the team summary |
+| 7 Pokémon utility | Type bonus to speed, ability helpers for skills | Moves (the Dex has none) |
+| 8 Missions | Explore, Find items, Rescue, Deliver, Escort, Defeat; daily, weekly and ordinary jobs | Special jobs, the shared quest engine |
+| 9 and 10 Rank, skills | Six ranks, three skills, research | Mining, Archaeology, Survival, Navigation |
+| 11 Items and treasure | Berries, boxes, Rare Candies, milestone rewards, Bag staging | Item effects specific to World |
+| 12 and 13 Camp, facilities | Camp (yard), Research Lab, Café, Kecleon Shop, Swap Shop, Dojo | Storage, Duskull Bank |
+| 14 Map | The world map with markers, eight reveal stages | Regions beyond the nine dungeons |
+| 15 Story and Guardian | Six chapters, Temporal Tower, Dialga and the 10% mastery, Distortion Rift | Story text and scenes |
+| 16 Post-story | One Distortion Rift | Modifiers, more dungeons |
