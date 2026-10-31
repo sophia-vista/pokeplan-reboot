@@ -7,7 +7,7 @@ release always has the newest merge).
 
 ## 0.86.1
 
-- World expeditions: a team that is out walks through a corridor of its dungeon's own tiles (Tiny Woods, Thunderwave Cave and Mt. Steel have their own tilesets, the other dungeons a kindred one), the Pokémon using their walking animations while the floor scrolls past (still under Reduce motion). The three new tilesets are also available to the launcher's town.
+- World expeditions: the box of a team that is out is made of its dungeon's own tiles (every dungeon now has its own tileset except the Distortion Rift, which uses the World Abyss): a frame of walls round a floor that scrolls past while the Pokémon walk across it with their walking animations (still under Reduce motion). Nine new tilesets are also available to the launcher's town.
 
 ## 0.86.0
 
