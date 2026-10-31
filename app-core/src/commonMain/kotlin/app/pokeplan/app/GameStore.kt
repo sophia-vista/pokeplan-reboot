@@ -1146,6 +1146,26 @@ class GameStore(
         return items.values.sum()
     }
 
+    /** Takes a job from the World mission board; false when it is not offered or three are held. */
+    fun worldAcceptMission(id: String): Boolean {
+        worldSettle()
+        val next = data.world.acceptMission(id) ?: return false
+        update { it.copy(world = next) }
+        return true
+    }
+
+    fun worldAbandonMission(id: String) {
+        data.world.abandonMission(id)?.let { next -> update { it.copy(world = next) } }
+    }
+
+    /** Claims a finished job: Poké, Exploration XP and its item go to World's own stock (items move to the Bag with the rest). */
+    fun worldClaimMission(id: String): Boolean {
+        worldSettle()
+        val next = data.world.claimMission(id) ?: return false
+        update { it.copy(world = next) }
+        return true
+    }
+
     /** Opens a treasure box of [tier]: berries, and from the silver tier a chance of a Rare Candy; what is inside goes to World's items. Returns what was found. *(tune)* */
     fun worldOpenTreasure(tier: Int): Map<String, Int> {
         if ((data.world.treasure[tier] ?: 0) <= 0) return emptyMap()

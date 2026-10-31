@@ -198,3 +198,5 @@ Found while writing this down; each is its own change, none is in this rules ver
 ## World (0.83.1)
 
 World pays through `AppData.world` and the Bag only, not the server reward engine, so `RewardRules.VERSION` is unchanged. Sources: per floor Exploration XP (`XP_BASE` + floor), Poké (5 + 2 × floor + 0 to 4), a berry (70%), a treasure box (6%) and a wild find (3%); a milestone (Rare Candies and Poké) once per dungeon floor, never repeated. The only sink is rank. Floors take `baseFloorSeconds / (1 + power / 100)` (never under a quarter of it), at most 12 hours of away time counts per open. Numbers and pacing (about 1 find a day, Gold in about 4 weeks, Platinum in about 3 months at two opens a day): `docs/world-economy-report.md`, regenerate with `./gradlew :world-core:simulateWorldEconomy` after changing any World number. All *(tune)*; Poké has no sink yet, so it only piles up.
+
+**Missions (0.84.0):** nine jobs, each paying 60 to 400 Poké and 30 to 250 Exploration XP per claim, with an occasional berry; the only Rare Candy is the once-only Eevee rescue, so repeatable jobs never pay one. Not simulated yet.

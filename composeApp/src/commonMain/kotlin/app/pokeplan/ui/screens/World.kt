@@ -41,6 +41,8 @@ import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.world.Dungeons
+import app.pokeplan.world.MissionKind
+import app.pokeplan.world.Missions
 import app.pokeplan.world.ExplorerRank
 import app.pokeplan.world.Story
 import app.pokeplan.world.WorldEvent
@@ -54,7 +56,7 @@ import kotlinx.coroutines.delay
  * its sections. Its progression (rank, Poké, dungeon depth) is its own; the Pokémon it recruits are the shared collection's.
  */
 enum class WorldSection(val label: String, val icon: String) {
-    MAP("World", "town-map"), TEAMS("Expeditions", "exp-share"), CAMP("Camp", "friend-ball"), BAG("Finds and Bag", "seal-bag"),
+    MAP("World", "town-map"), MISSIONS("Missions", "journal"), TEAMS("Expeditions", "exp-share"), CAMP("Camp", "friend-ball"), BAG("Finds and Bag", "seal-bag"),
 }
 
 @Composable
@@ -76,6 +78,7 @@ private fun WorldPage(model: AppModel, section: WorldSection?, openPokemon: (Str
     SectionScaffold(section.label, Module.WORLD.label, onBack = { model.worldSection = null }, icon = section.icon, color = Module.WORLD.look.header) {
         when (section) {
             WorldSection.MAP -> WorldMapView(model)
+            WorldSection.MISSIONS -> WorldMissionsView(model)
             WorldSection.TEAMS -> WorldTeamsView(model)
             WorldSection.CAMP -> WorldCampView(model, openPokemon)
             WorldSection.BAG -> WorldBagView(model)
@@ -93,6 +96,7 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
             MenuGrid(
                 listOf(
                     MenuEntry(WorldSection.MAP.name, WorldSection.MAP.icon, WorldSection.MAP.label, "${Dungeons.all.size} dungeons", tint = Module.WORLD.look.accent),
+                    MenuEntry(WorldSection.MISSIONS.name, WorldSection.MISSIONS.icon, WorldSection.MISSIONS.label, if (!Missions.boardOpen(world)) "opens in the story" else "${world.missions.size} taken", badge = world.missions.count { it.done }, tint = Module.WORLD.look.accent),
                     MenuEntry(WorldSection.TEAMS.name, WorldSection.TEAMS.icon, WorldSection.TEAMS.label, if (out == 0) "no team out" else "$out out", tint = Module.WORLD.look.accent),
                     MenuEntry(WorldSection.CAMP.name, WorldSection.CAMP.icon, WorldSection.CAMP.label, tint = Module.WORLD.look.accent),
                     MenuEntry(WorldSection.BAG.name, WorldSection.BAG.icon, WorldSection.BAG.label, badge = world.finds.size, tint = Module.WORLD.look.accent),
@@ -142,6 +146,57 @@ private fun WorldMapView(model: AppModel) {
                 else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     ready.forEach { team -> PixelButton("Send team ${team.id}", { model.store.worldStart(team.id, d.id) }, color = Module.WORLD.look.accent, compact = true) }
                 }
+            }
+        }
+    }
+}
+
+// ----- Missions -------------------------------------------------------------------------------------------------------
+
+@Composable
+private fun WorldMissionsView(model: AppModel) {
+    val store = model.store
+    val world = model.data.world
+    if (!Missions.boardOpen(world)) {
+        TextBox { Text("The mission board opens with the story's second chapter, Requests and Rescues (Bronze rank and one dungeon clear).", style = MaterialTheme.typography.bodyMedium) }
+        return
+    }
+    fun reward(m: app.pokeplan.world.MissionDef) = buildString {
+        append("${m.poke} Poké, ${m.xp} XP")
+        m.itemId?.let { append(", ${Items.name(it)} x${m.itemCount}") }
+    }
+    FieldLabel("Taken (${world.missions.size} of ${Missions.MAX_ACTIVE})")
+    if (world.missions.isEmpty()) Text("No jobs taken. Pick one below, then send a team to the dungeon it names.", style = MaterialTheme.typography.bodyMedium)
+    world.missions.forEach { p ->
+        val m = Missions.byId(p.id) ?: return@forEach
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Text(m.title, style = MaterialTheme.typography.titleSmall)
+                val where = m.dungeonId?.let { "floor ${m.floor} of ${Dungeons.byId(it)?.name}" }
+                Text(
+                    when (m.kind) {
+                        MissionKind.COLLECT -> "Find ${m.count} berries: ${minOf(p.progress, m.count)} so far."
+                        MissionKind.RESCUE -> "Reach $where to bring the lost Pokémon home."
+                        MissionKind.EXPLORE -> "Reach $where."
+                    },
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                Text("Reward: ${reward(m)}", style = MaterialTheme.typography.bodyMedium)
+                if (p.done) PixelButton("Claim", { store.worldClaimMission(p.id) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+                else PixelButton("Give up", { store.worldAbandonMission(p.id) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            }
+        }
+    }
+    FieldLabel("On the board")
+    val offered = Missions.available(world)
+    if (offered.isEmpty()) Text("Nothing new for your rank right now.", style = MaterialTheme.typography.bodyMedium)
+    offered.forEach { m ->
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Text("${m.kind.label}: ${m.title}", style = MaterialTheme.typography.titleSmall)
+                Text(m.story, style = MaterialTheme.typography.bodyMedium)
+                Text("Reward: ${reward(m)}", style = MaterialTheme.typography.bodyMedium)
+                PixelButton("Take the job", { store.worldAcceptMission(m.id) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true, enabled = world.missions.size < Missions.MAX_ACTIVE)
             }
         }
     }
