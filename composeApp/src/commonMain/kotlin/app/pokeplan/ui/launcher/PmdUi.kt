@@ -103,8 +103,16 @@ internal fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, al
 }
 
 /** The colours of a dialogue box's frame. Every panel uses the same one; selection and the main action show in other ways. */
+internal object PmdPalette {
+    val Frame = Color(0xFF5088F0)
+    val FrameInner = Color(0xFF102058)
+    val Fill = Color(0xEE080810)
+    /** Behind a town while its tiles load. */
+    val Loading = Color(0xFF3B4A3A)
+}
+
 internal enum class PmdTone(val outer: Color, val inner: Color) {
-    BLUE(Color(0xFF5088F0), Color(0xFF102058)),
+    BLUE(PmdPalette.Frame, PmdPalette.FrameInner),
 }
 
 /**
@@ -123,7 +131,7 @@ internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = P
 private fun DrawScope.pmdFrame(p: Int, tone: PmdTone) {
     val w = size.width
     val h = size.height
-    val fill = Color(0xEE080810)
+    val fill = PmdPalette.Fill
     fun rect(x: Float, y: Float, rw: Float, rh: Float, c: Color) = drawRect(c, Offset(x, y), Size(rw, rh))
     // Panel without its corner pixels, then the outer ring, then the inner ring one pixel in.
     rect(p.toFloat(), 0f, w - 2 * p, h, fill)

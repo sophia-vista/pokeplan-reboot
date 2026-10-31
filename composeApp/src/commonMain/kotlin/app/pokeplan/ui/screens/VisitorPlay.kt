@@ -358,8 +358,8 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         // How far the visit is, small in the corner like the buddy's level.
         if (visit != null) Text(
             "${visit.actions.size} of ${Visitors.ACTIONS_PER_VISIT}",
-            Modifier.align(Alignment.TopEnd).padding(Spacing.S).background(Color(0x55000000), RoundedCornerShape(Spacing.CardRadius - Spacing.S))
-                .padding(horizontal = 10.dp, vertical = 4.dp)
+            Modifier.align(Alignment.TopEnd).padding(Spacing.S).background(Pixel.Scrim.copy(alpha = 0.33f), RoundedCornerShape(Spacing.CardRadius - Spacing.S))
+                .padding(horizontal = Spacing.M, vertical = Spacing.XS)
                 .semantics { contentDescription = "${visit.actions.size} of ${Visitors.ACTIONS_PER_VISIT} kinds of care this visit" },
             style = MaterialTheme.typography.labelMedium, color = Color.White,
         )
@@ -423,7 +423,7 @@ private fun DraggableTreat(label: String, berry: String?, description: String, o
             .background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape)
             .clickable(onClickLabel = "Offer $description", role = Role.Button, onClick = onTap)
             .defaultMinSize(minHeight = Spacing.Target)
-            .padding(horizontal = 10.dp)
+            .padding(horizontal = Spacing.M)
             .semantics(mergeDescendants = true) { contentDescription = description; onClick("Offer $description") { onTap(); true } },
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
     ) {

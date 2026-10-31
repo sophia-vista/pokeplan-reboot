@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.65.0
+
+Tokens and consistency (phase 2 of the design audit).
+- Spacing and colours come from the design tokens: no 6 dp or 10 dp gaps, touch targets of 48 dp, and the category colours (violet, pink, teal, amber) and image scrims named once.
+- Home is lighter: the "Regions" label is gone, and Care no longer repeats the same Pokémon portrait as Plan when it has no lead of its own (it shows its own icon).
+- Menus: a lone last card spans the row instead of leaving a gap. The Pokémon menu's Party card has its own icon (Premier Ball) instead of repeating the Poké Ball.
+- Selected chips are blue everywhere (the focus length buttons were black). Focus: the four lengths show first and "Another length" opens the -5 / +5 stepper.
+- Small labels use the body font: the party card names and perks line no longer use the pixel font at 13 sp.
+
 ## 0.64.0
 
 Accessibility, contrast and layout (phase 1 of the design audit, `docs/DESIGN_SYSTEM.md`).

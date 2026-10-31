@@ -135,7 +135,7 @@ fun BuddyStage(
             val rows = floatArrayOf(0.55f, 0.85f, 1f, 0.85f, 0.55f)
             val rowHeight = size.height / rows.size
             rows.forEachIndexed { i, share ->
-                drawRect(Color(0x40000000), Offset((size.width - size.width * share) / 2, i * rowHeight), Size(size.width * share, rowHeight))
+                drawRect(Pixel.Scrim.copy(alpha = 0.25f), Offset((size.width - size.width * share) / 2, i * rowHeight), Size(size.width * share, rowHeight))
             }
         }
         // Visitors stand behind the buddy, one on each side, above the corner panels so neither covers the other.
@@ -159,15 +159,15 @@ fun BuddyStage(
         // Level and progress: small, in the corner, readable on any scene. Its corners are the stage's minus the inset, so
         // the two curves stay concentric.
         Column(
-            Modifier.align(Alignment.BottomStart).padding(Spacing.S).clip(RoundedCornerShape(Spacing.CardRadius - Spacing.S)).background(Color(0x55000000))
+            Modifier.align(Alignment.BottomStart).padding(Spacing.S).clip(RoundedCornerShape(Spacing.CardRadius - Spacing.S)).background(Pixel.Scrim.copy(alpha = 0.33f))
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Open ${buddy.nickname}", role = Role.Button, onClick = onOpen)
                 // Small to look at, but a full touch target to hit.
                 .defaultMinSize(minHeight = 40.dp)
-                .padding(horizontal = 10.dp, vertical = 7.dp)
+                .padding(horizontal = Spacing.M, vertical = 7.dp)
                 .semantics(mergeDescendants = true) { contentDescription = "${buddy.nickname}, level ${buddy.level}, ${(progress * 100).toInt()} percent to the next level" },
         ) {
             Text("${buddy.nickname}  Lv. ${buddy.level}", style = MaterialTheme.typography.labelMedium, color = Color.White)
-            Box(Modifier.padding(top = 3.dp).width(84.dp).height(3.dp).background(Color(0x55FFFFFF), CircleShape)) {
+            Box(Modifier.padding(top = 3.dp).width(84.dp).height(3.dp).background(Color.White.copy(alpha = 0.33f), CircleShape)) {
                 Box(Modifier.width((84 * progress).dp).height(3.dp).background(Pixel.Yellow, CircleShape))
             }
         }
@@ -184,7 +184,7 @@ fun BuddyStage(
         }
 
         if (berry != null) Box(
-            Modifier.align(Alignment.BottomEnd).padding(Spacing.S).size(Spacing.Target).background(Color(0xCCFFFFFF), CircleShape)
+            Modifier.align(Alignment.BottomEnd).padding(Spacing.S).size(Spacing.Target).background(Color.White.copy(alpha = 0.8f), CircleShape)
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Give ${buddy.nickname} a ${Items.get(berry)?.name ?: berry}", role = Role.Button) {
                     onHaptic()
                     react(onFeed(lastReaction), SpriteAction.EAT)

@@ -175,8 +175,8 @@ private class ListTile(val view: View, val count: String?, val detail: String)
 
 /** The list tint, the same on the menu tile and nowhere else (the lists themselves stay calm). */
 private fun View.tint(): Color = when (this) {
-    View.TODAY -> Pixel.Red; View.DAY -> Color(0xFF0D9488); View.INBOX -> Pixel.Blue; View.UPCOMING -> Pixel.Warning
-    View.HABITS -> Pixel.Green; View.DONE -> Color(0xFF8B5CF6); View.ALL -> Pixel.Gray
+    View.TODAY -> Pixel.Red; View.DAY -> Pixel.Teal; View.INBOX -> Pixel.Blue; View.UPCOMING -> Pixel.Warning
+    View.HABITS -> Pixel.Green; View.DONE -> Pixel.Violet; View.ALL -> Pixel.Gray
 }
 
 /** Two tiles to a row: the item icon and the count on top, the name and one quiet line below. */

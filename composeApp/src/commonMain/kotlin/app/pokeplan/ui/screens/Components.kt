@@ -42,18 +42,18 @@ fun RewardBox(model: AppModel) {
     val fresh = model.data.rewardLog.filter { !it.seen }.takeLast(3)
     if (fresh.isEmpty()) return
     GameBox(Modifier.fillMaxWidth()) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             fresh.forEach { entry ->
                 Text(entry.source, style = MaterialTheme.typography.titleMedium)
                 entry.rewards.forEach { r ->
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         if (r is Reward.Hatched) AnimatedSprite(r.pokemon.form.id, r.pokemon.isShiny, r.pokemon.nickname, size = 72.dp, animate = !model.data.settings.reduceMotion, ground = 4.dp)
                         else r.iconItem()?.let { ItemIcon(it, size = 32.dp) }
                         Text(r.describe(), style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             }
-            PixelButton("OK", { model.store.markRewardsSeen() }, Modifier.padding(top = 8.dp), Pixel.Green)
+            PixelButton("OK", { model.store.markRewardsSeen() }, Modifier.padding(top = Spacing.S), Pixel.Green)
         }
     }
 }
@@ -67,7 +67,7 @@ fun SpeakerBox(model: AppModel, emotion: Emotion, modifier: Modifier = Modifier,
     val buddy = model.data.player.buddy
     TextBox(modifier.fillMaxWidth()) {
         if (buddy == null) content()
-        else Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        else Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Portrait(buddy.form.id, buddy.isShiny, buddy.nickname, emotion = emotion, size = 64.dp)
             Box(Modifier.weight(1f)) { content() }
         }

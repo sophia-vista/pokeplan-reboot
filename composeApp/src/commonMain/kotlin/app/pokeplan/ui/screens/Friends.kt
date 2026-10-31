@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -76,13 +77,13 @@ fun FriendsView(model: AppModel) {
     LaunchedEffect(Unit) { refresh() }
 
     TextBox {
-        androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             Text("Your friend code", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Text(code ?: "...", style = MaterialTheme.typography.headlineMedium)
         }
     }
     TextBox {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
                 friendCode, { friendCode = it.uppercase().take(12) }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
                 placeholder = { Text("A friend's code", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
@@ -121,7 +122,7 @@ fun FriendsView(model: AppModel) {
         SectionLabel("Requests")
         requests.forEach { f ->
             ListRow(trail = {
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     PixelButton("Accept", { act { social.respond(it, f.userId, true) } }, color = Pixel.Green, compact = true)
                     PixelButton("Decline", { act { social.respond(it, f.userId, false) } }, color = Pixel.InkSoft, compact = true)
                 }
@@ -141,7 +142,7 @@ fun FriendsView(model: AppModel) {
                 if (form != null) Sprite(form.id, f.buddyShiny, f.trainerName, size = 56.dp) else ItemIcon("friend-ball", size = 40.dp)
             },
             trail = {
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     if (removing == f.userId) {
                         PixelButton("Remove", { removing = null; act { social.removeFriend(it, f.userId) } }, color = Pixel.Danger, compact = true)
                         PixelButton("Keep", { removing = null }, color = Pixel.InkSoft, compact = true)

@@ -56,18 +56,18 @@ private val menuShape = RoundedCornerShape(16.dp)
 /** The menu of a tab: big cards, two to a row, like the start menu of the games. */
 @Composable
 fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         entries.chunked(2).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                row.forEach { e -> MenuCard(e, Modifier.weight(1f)) { onOpen(e.key) } }
-                if (row.size == 1) Box(Modifier.weight(1f))
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth()) {
+                // A lone last card takes the whole row, laid out sideways, instead of leaving a gap beside it.
+                row.forEach { e -> if (row.size == 1) MenuCard(e, Modifier.fillMaxWidth(), wide = true) { onOpen(e.key) } else MenuCard(e, Modifier.weight(1f)) { onOpen(e.key) } }
             }
         }
     }
 }
 
 @Composable
-private fun MenuCard(entry: MenuEntry, modifier: Modifier, onClick: () -> Unit) {
+private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false, onClick: () -> Unit) {
     Box(
         modifier
             .background(Pixel.Panel, menuShape)
@@ -75,12 +75,21 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, onClick: () -> Unit) 
             .clip(menuShape)
             .focusRing(menuShape)
             .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 16.dp),
+            .padding(horizontal = Spacing.M, vertical = Spacing.L),
     ) {
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        val picture = @Composable {
             Box(Modifier.size(72.dp).background(entry.tint.copy(alpha = 0.12f), CircleShape), contentAlignment = Alignment.Center) {
                 ItemIcon(entry.icon, size = 56.dp, description = null)
             }
+        }
+        if (wide) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.L)) {
+            picture()
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                Text(entry.title, style = MaterialTheme.typography.titleMedium)
+                Text(entry.detail, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
+            }
+        } else Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            picture()
             Text(entry.title, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
             Text(entry.detail, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, maxLines = 2)
         }

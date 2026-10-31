@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Spacing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -63,8 +64,8 @@ fun FocusScreen(model: AppModel, openPokemon: ((String) -> Unit)? = null, onBack
         ScreenHeader("Focus", subtitle = if (session == null) "Hatch an egg" else if (session.deepFocus) "Deep Focus" else "Egg incubating", icon = "mystery-egg", onBack = onBack)
         if (session == null) SetupView(model) { Ends(model, openPokemon) }
         else Column(
-            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M),
+            verticalArrangement = Arrangement.spacedBy(Spacing.M),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Ends(model, openPokemon)
@@ -85,7 +86,7 @@ private fun Ends(model: AppModel, openPokemon: ((String) -> Unit)?) {
         val owned = hatched?.takeIf { h -> model.data.player.pokemon.any { it.id == h.id } }
         val line = if (end.guarded) "The session ended early, but Magic Guard kept your egg safe, and it hatched! (Once a week.)" else "Your egg hatched! Have a look at your Pokémon."
         SpeakerBox(model, Emotion.JOYOUS) { Text(line, style = MaterialTheme.typography.bodyLarge) }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
             if (owned != null && openPokemon != null) {
                 PixelButton("Meet ${owned.nickname}", { model.store.dismissFocusEnd(); openPokemon(owned.id) }, Modifier.weight(1f), Pixel.Green)
                 PixelButton("OK", { model.store.dismissFocusEnd() }, Modifier.weight(1f), Pixel.InkSoft)
@@ -99,7 +100,7 @@ private fun Ends(model: AppModel, openPokemon: ((String) -> Unit)?) {
 @Composable
 private fun FailedBox(model: AppModel, reason: FailReason?) {
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(FocusRules.FAILED_MESSAGE, style = MaterialTheme.typography.titleMedium)
             Text(
                 when (reason) {
@@ -109,7 +110,7 @@ private fun FailedBox(model: AppModel, reason: FailReason?) {
                 },
                 style = MaterialTheme.typography.bodyLarge,
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelButton("Just ${FocusRules.RETRY_MINUTES} min", {
                     model.store.dismissFocusEnd()
                     model.store.startFocus(FocusRules.RETRY_MINUTES, deepFocus = false)
@@ -137,8 +138,8 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
     val idle = rememberInfiniteTransition()
     val tilt by idle.animateFloat(-2.5f, 2.5f, infiniteRepeatable(tween(1_800, easing = FastOutSlowInEasing), RepeatMode.Reverse))
     Column(
-        Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M),
+        verticalArrangement = Arrangement.spacedBy(Spacing.M),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         top()
@@ -147,12 +148,15 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
         }
 
         TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 Text("How long?", style = MaterialTheme.typography.titleMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                     listOf(15, 25, 45, 60).forEach { m -> TabButton("$m min", m == minutes, { minutes = m }, Modifier.weight(1f)) }
                 }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                // The four lengths cover most sessions; any other length is one tap away.
+                var custom by remember { mutableStateOf(minutes !in listOf(15, 25, 45, 60)) }
+                if (!custom) TabButton("Another length", false, { custom = true }, Modifier.fillMaxWidth())
+                else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     PixelButton("-5", { minutes = (minutes - 5).coerceAtLeast(FocusRules.RETRY_MINUTES) }, color = Pixel.InkSoft, compact = true)
                     Text("$minutes minutes", style = MaterialTheme.typography.titleMedium)
                     PixelButton("+5", { minutes = (minutes + 5).coerceAtMost(FocusRules.MAX_MINUTES) }, color = Pixel.InkSoft, compact = true)
@@ -161,7 +165,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
         }
 
         TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 ToggleRow("Deep Focus", deep, detail = if (deep) "Better eggs, one rarity band up. Picking up or moving the phone ends the session, so lay it flat."
                     else "Better eggs if the phone stays still. Off, the timer works as usual and the phone can move.") { deep = it }
                 Text("Hatching in: ${regionName(settings.region)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -170,7 +174,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
 
         if (tasks.isNotEmpty()) {
             TextBox {
-                Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Text("Working on", style = MaterialTheme.typography.titleMedium)
                     TaskChoice("Nothing in particular", null, taskId == null) { taskId = null }
                     tasks.take(4).forEach { t -> TaskChoice(t.title, t.rank, taskId == t.id) { taskId = t.id } }
@@ -179,7 +183,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
         }
 
         TextBox {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 Text("How it works", style = MaterialTheme.typography.titleMedium)
                 val grace = FocusRules.GRACE_MILLIS / 1000
                 val pause = FocusRules.EMERGENCY_PAUSE_MILLIS / 60_000
@@ -193,7 +197,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
             }
         }
     }
-    Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = Spacing.M, vertical = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelButton("Start $minutes min", { store.startFocus(minutes, deep, taskId); store.dismissFocusEnd() }, Modifier.fillMaxWidth(), Pixel.Red)
         // For when starting is the hard part: the shortest session there is, with no choices to make.
         val five = FocusRules.justFiveMinutes().minutesRoundedUp
@@ -268,7 +272,7 @@ private fun RunningView(model: AppModel) {
 
     // The buddy keeps you company beside the clock: set on it while you work, surprised when you leave.
     SpeakerBox(model, if (away) Emotion.SURPRISED else if (paused) Emotion.NORMAL else Emotion.DETERMINED) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
             Text(
                 clock(remaining), style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
@@ -297,7 +301,7 @@ private fun RunningView(model: AppModel) {
 
     val pausesLeft = FocusRules.EMERGENCY_PAUSES_PER_DAY - session.emergencyPausesUsed
     val emergency = (session.phase as? Phase.Paused)?.reason == app.pokeplan.plan.PauseReason.EMERGENCY
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
         if (emergency) {
             PixelButton("Resume", { store.focusEvent(FocusEvent.EmergencyPauseEnded) }, Modifier.weight(1f), Pixel.Green)
         } else {

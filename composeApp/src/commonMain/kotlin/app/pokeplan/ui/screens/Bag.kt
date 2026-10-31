@@ -45,13 +45,13 @@ internal fun BagView(model: AppModel) {
         // The shop: coins buy Rare Candies.
         val each = Shop.COINS_PER_RARE_CANDY
         val afford = player.coins / each
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("${player.coins} coins", style = MaterialTheme.typography.titleMedium)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 ItemIcon(Items.RARE_CANDY, size = 32.dp)
                 Text("Rare Candy: $each coins each", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 listOf(1, 10).forEach { n ->
                     PixelButton("Buy $n", { if (store.buyRareCandies(n) > 0) model.effect(Sfx.HEAL) }, Modifier.weight(1f), Pixel.Green, compact = true, enabled = afford >= n)
                 }
@@ -99,12 +99,12 @@ private fun UseItemBox(model: AppModel, id: String, holdable: Boolean, close: ()
         if (!store.data.player.inventory.has(id)) close()
     }
     TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             val who = target
             when {
                 who != null && id == Items.BOTTLE_CAP -> {
                     Text("Which stat should ${who.nickname} max out?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         Stat.entries.filter { who.ivs[it] < StatCalculator.MAX_IV }.forEach { st ->
                             PixelButton(st.label, { done(store.useItem(ItemUse.BottleCap(st), who.id)) }, color = Pixel.Blue, compact = true)
                         }
@@ -112,7 +112,7 @@ private fun UseItemBox(model: AppModel, id: String, holdable: Boolean, close: ()
                 }
                 who != null && id == Items.NATURE_MINT -> {
                     Text("Which nature for ${who.nickname}?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         Nature.entries.filter { it != who.nature }.forEach { n ->
                             val detail = if (n.raised == null) "" else " (+${n.raised!!.label} -${n.lowered!!.label})"
                             PixelButton(n.name.lowercase().replaceFirstChar { it.uppercase() } + detail, { done(store.useItem(ItemUse.NatureMint(n), who.id)) }, color = Pixel.Blue, compact = true)

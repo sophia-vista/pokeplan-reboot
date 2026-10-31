@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.Arrangement
@@ -92,15 +93,15 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
         if (current == null) {
             Column(Modifier.fillMaxSize()) {
                 ScreenHeader("Pokémon", subtitle = "${player.pokemon.size} owned, ${player.caught.size} seen", icon = "poke-ball")
-                Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(12.dp)) {
+                Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M)) {
                     val ready = store.activeQuests.count { store.questReady(it) }
                     MenuGrid(
                         listOfNotNull(
-                            MenuEntry("PARTY", "poke-ball", "Party", "${player.party.size} of 6", tint = Pixel.Red),
+                            MenuEntry("PARTY", "premier-ball", "Party", "${player.party.size} of 6", tint = Pixel.Red),
                             MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { !it.inParty && !Guardians.canBe(it) }} stored", tint = Pixel.Warning),
                             MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught", tint = Pixel.Blue),
                             if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.Green) else null,
-                            if (!store.sees(Feature.GUARDIANS)) null else MenuEntry("GUARDIANS", "master-ball", "Guardians", if (store.guardianSlots == 0) "opens at rank ${TrainerRank.names[4]}" else "${player.guardians.size} of ${store.guardianSlots} slotted", tint = androidx.compose.ui.graphics.Color(0xFF8B5CF6)),
+                            if (!store.sees(Feature.GUARDIANS)) null else MenuEntry("GUARDIANS", "master-ball", "Guardians", if (store.guardianSlots == 0) "opens at rank ${TrainerRank.names[4]}" else "${player.guardians.size} of ${store.guardianSlots} slotted", tint = Pixel.Violet),
                             if (!store.sees(Feature.LEGENDARY_QUESTS)) null else MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready, tint = Pixel.Warning),
                         ),
                     ) { key -> section = Section.valueOf(key) }
@@ -131,7 +132,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                         if (shown.isEmpty()) EmptyState("Nothing matches", "Try another type or clear the filters.")
                         else {
                             if (boxes > 1) PcBoxBar(at, boxes) { pcView = pcView.copy(box = it) }
-                            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                                 pcView.page(shown).forEach { p -> PcTile(p, store.isFavorite(p.id)) { selected = p.id } }
                             }
                             if (boxes > 1) PcBoxBar(at, boxes) { pcView = pcView.copy(box = it) }
@@ -156,7 +157,7 @@ private fun PartyGroup(
     val store = model.store
     // The region's colour beside its name, as down the edge of its card on Home; the name says which region it is.
     val accent = (if (region == Region.CARE) RegionLook.CARE else RegionLook.PLAN).accent
-    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         Box(Modifier.padding(bottom = 2.dp).size(width = 4.dp, height = 20.dp).clip(RoundedCornerShape(2.dp)).background(accent))
         SectionLabel("${region.label} · ${party.size} of ${OwnedPokemon.PARTY_SIZE}")
     }
@@ -199,7 +200,7 @@ private fun PokemonRow(p: OwnedPokemon, role: String?, favorite: Boolean, onClic
 private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, total: Int) {
     // Any new search, sort or filter starts again from the first box.
     val change = { v: PcView -> onChange(v.copy(box = 0)) }
-    Column(Modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         OutlinedTextField(
             view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
             placeholder = { Text("Search by name") }, textStyle = MaterialTheme.typography.bodyLarge,
@@ -209,15 +210,15 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
         PixelButton(if (open) "Hide sort and filters" else "Sort and filters", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         if (open) {
             SectionLabel("Sort by")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PcSort.entries.forEach { TabButton(it.label, view.sort == it, { change(view.copy(sort = it)) }) }
             }
             SectionLabel("Show")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 TabButton("✨ Shiny", view.shinyOnly, { change(view.copy(shinyOnly = !view.shinyOnly)) })
                 TabButton("★ Starred", view.starredOnly, { change(view.copy(starredOnly = !view.starredOnly)) })
             }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 PokemonType.entries.forEach { t ->
                     val on = view.type == t
                     Box(
@@ -241,7 +242,7 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
 /** Previous and Next between the PC's boxes, with "Box 2 of 5" between them. */
 @Composable
 private fun PcBoxBar(at: Int, boxes: Int, go: (Int) -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().padding(vertical = Spacing.XS), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
         PixelButton("Previous", { go(at - 1) }, Modifier.weight(1f), Pixel.InkSoft, enabled = at > 0, compact = true)
         Text("Box ${at + 1} of $boxes", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
         PixelButton("Next", { go(at + 1) }, Modifier.weight(1f), Pixel.InkSoft, enabled = at < boxes - 1, compact = true)
@@ -257,7 +258,7 @@ private fun PcTile(p: OwnedPokemon, favorite: Boolean, onClick: () -> Unit) {
             .semantics(mergeDescendants = true) {
                 contentDescription = "${p.nickname}, level ${p.level}" + (if (p.isShiny) ", shiny" else "") + (if (favorite) ", starred" else "")
             }
-            .padding(horizontal = 4.dp, vertical = 6.dp),
+            .padding(horizontal = Spacing.XS, vertical = Spacing.S),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Sprite(p.form.id, p.isShiny, "", size = 64.dp)

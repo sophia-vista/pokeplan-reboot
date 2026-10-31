@@ -168,7 +168,7 @@ private fun TileTown(name: String, modifier: Modifier, darkness: Float) {
         }
     }
     Canvas(modifier) {
-        val image = atlas ?: return@Canvas drawRect(Color(0xFF3B4A3A))
+        val image = atlas ?: return@Canvas drawRect(PmdPalette.Loading)
         val pixel = townScale(size.width)
         val tile = TILE * pixel
         val cols = (size.width / tile).toInt() + 2

@@ -44,7 +44,7 @@ internal fun CategoryChip(category: Category, selected: Boolean, onClick: () -> 
     val color = categoryColor(category)
     Row(
         Modifier
-            .defaultMinSize(minHeight = 44.dp)
+            .defaultMinSize(minHeight = Spacing.Target)
             .clip(shape)
             .background(if (selected) color.copy(alpha = 0.18f) else Pixel.Panel, shape)
             .border(if (selected) 2.dp else 1.dp, if (selected) color else Pixel.Border, shape)
