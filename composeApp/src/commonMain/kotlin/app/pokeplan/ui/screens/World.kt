@@ -179,7 +179,7 @@ private fun WorldMapView(model: AppModel) {
         val open = rankOk && !chapterShut && !storyShut
         val deepest = world.deepest[d.id] ?: 0
         val wild = d.wild.sortedByDescending { it.weight }.map { it.speciesId }.distinct().take(4)
-            .map { TileWalker(Dex.defaultForm(it).id, false, Dex.species(it).name) }
+            .map { TileWalker(Dex.defaultForm(it).id, false, Dex.species(it).name, sample = true) }
         // The dungeon is drawn in its own tiles, the wild Pokémon that live there walking its floor; the text is on its walls.
         TileBox(d.id, wild, animate = !model.data.settings.reduceMotion, modifier = Modifier.alpha(if (open) 1f else 0.75f), scrolls = false) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
