@@ -6,6 +6,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.BoxScope
@@ -52,10 +53,32 @@ internal class PmdGlyph(val x: Int, val y: Int, val w: Int, val h: Int, val dy: 
  * few marks; text with anything else is drawn in the app's own font instead.
  */
 internal class PmdFont(val sheet: ImageBitmap, val glyphs: Map<Char, PmdGlyph>) {
-    fun supports(text: String) = text.all { it == ' ' || normalize(it) in glyphs }
+    /** The glyph's character for [c]: itself, an accent-less look-alike, a stand-in for a mark the font lacks, or `?`; null to leave it out. */
+    private fun resolve(c: Char): Char? {
+        val n = normalize(c)
+        if (n == ' ' || n in glyphs) return n
+        if (n in "()[]{}<>") return null
+        if (n in "/\\|*#@~=^$") return '-'
+        if (n == '&') return '+'
+        val i = ACCENTED.indexOf(n.lowercaseChar())
+        if (i >= 0) return PLAIN[i].let { if (n.isUpperCase()) it.uppercaseChar() else it }.takeIf { it in glyphs }
+        return '?'
+    }
 
-    /** The width of [text] in pixels of the art. */
-    fun width(text: String) = text.sumOf { if (it == ' ') SPACE else glyphs.getValue(normalize(it)).w }
+    /** [text] as the characters this font draws. */
+    fun clean(text: String): String = buildString { text.forEach { c -> resolve(c)?.let { append(it) } } }
+
+    /** The width of [clean] text in pixels of the art. */
+    fun width(clean: String) = clean.sumOf { if (it == ' ') SPACE else glyphs.getValue(it).w }
+
+    /** [clean] cut with "..." so it is at most [limit] art pixels wide. */
+    fun fit(clean: String, limit: Int): String {
+        if (width(clean) <= limit) return clean
+        val dots = width("...")
+        var out = clean
+        while (out.isNotEmpty() && width(out) + dots > limit) out = out.dropLast(1)
+        return out.trimEnd() + "..."
+    }
 
     companion object {
         const val SPACE = 4
@@ -63,9 +86,11 @@ internal class PmdFont(val sheet: ImageBitmap, val glyphs: Map<Char, PmdGlyph>) 
         const val LINE = 12
         /** The baseline's distance from the top of a line. */
         const val BASELINE = 9
+        private const val ACCENTED = "àáâãäåçèéêëìíîïñòóôõöøùúûüýÿ"
+        private const val PLAIN = "aaaaaaceeeeiiiinoooooouuuuyy"
         private var cached: PmdFont? = null
 
-        fun normalize(c: Char): Char = when (c) { '\'' -> '’'; '"' -> '”'; else -> c }
+        fun normalize(c: Char): Char = when (c) { '\'' -> '\u2019'; '"' -> '\u201d'; else -> c }
 
         suspend fun load(): PmdFont? = cached ?: orNull {
             val sheet = Res.readBytes("files/fonts/pmd-dialogue.png").decodeToImageBitmap()
@@ -78,32 +103,34 @@ internal class PmdFont(val sheet: ImageBitmap, val glyphs: Map<Char, PmdGlyph>) 
     }
 }
 
-/** [text] in the dialogue font at [pixel] screen pixels per art pixel (white; [alpha] softens it), or in the app's own font if the font cannot draw it. */
+/**
+ * [text] in the dialogue font at [pixel] screen pixels per art pixel (white; [alpha] softens it), on one line, cut with "..." if it
+ * does not fit. The font is the only font the world register uses: marks it lacks become look-alikes or `?`, never another typeface.
+ */
 @Composable
 internal fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, alpha: Float = 1f) {
     val font by produceState<PmdFont?>(null) { value = PmdFont.load() }
-    val f = font
-    if (f == null || !f.supports(text)) {
-        Text(text, style = MaterialTheme.typography.labelLarge, color = Color.White.copy(alpha = alpha), maxLines = 1, modifier = modifier)
-        return
-    }
+    val f = font ?: return
     val density = LocalDensity.current.density
-    Canvas(modifier.size((f.width(text) * pixel / density).dp, (PmdFont.LINE * pixel / density).dp).semantics { contentDescription = text }) {
-        var cursor = 0
-        for (ch in text) {
-            if (ch == ' ') { cursor += PmdFont.SPACE; continue }
-            val g = f.glyphs.getValue(PmdFont.normalize(ch))
-            drawImage(
-                f.sheet, srcOffset = IntOffset(g.x, g.y), srcSize = IntSize(g.w, g.h),
-                dstOffset = IntOffset(cursor * pixel, (PmdFont.BASELINE + g.dy) * pixel), dstSize = IntSize(g.w * pixel, g.h * pixel),
-                alpha = alpha, filterQuality = FilterQuality.None,
-            )
-            cursor += g.w
+    BoxWithConstraints(modifier) {
+        val limit = if (constraints.hasBoundedWidth) constraints.maxWidth / pixel else Int.MAX_VALUE
+        val shown = f.fit(f.clean(text), limit)
+        Canvas(Modifier.size((f.width(shown) * pixel / density).dp, (PmdFont.LINE * pixel / density).dp).semantics { contentDescription = text }) {
+            var cursor = 0
+            for (ch in shown) {
+                if (ch == ' ') { cursor += PmdFont.SPACE; continue }
+                val g = f.glyphs.getValue(ch)
+                drawImage(
+                    f.sheet, srcOffset = IntOffset(g.x, g.y), srcSize = IntSize(g.w, g.h),
+                    dstOffset = IntOffset(cursor * pixel, (PmdFont.BASELINE + g.dy) * pixel), dstSize = IntSize(g.w * pixel, g.h * pixel),
+                    alpha = alpha, filterQuality = FilterQuality.None,
+                )
+                cursor += g.w
+            }
         }
     }
 }
 
-/** The colours of a dialogue box's frame. Every panel uses the same one; selection and the main action show in other ways. */
 internal object PmdPalette {
     /** The pale hairline on the outside of the frame. */
     val Edge = Color(0xFFA8C0E0)
@@ -125,20 +152,20 @@ internal enum class PmdTone(val edge: Color, val band: Color, val deep: Color) {
 /**
  * A dialogue box like the game's: a see-through black panel in a rounded, layered frame (a pale hairline, a blue band that is
  * thicker at the sides than at the top and bottom, and a deep-blue line), every part a whole number of art pixels at [pixel].
- * [inset] is the room, in art pixels, between the frame and the words. The frame is drawn in code (UI chrome).
+ * [inset] is the room, in art pixels, between the frame and what is inside (rules and buttons run to it; text lines add 6 more, where the cursor goes, so text is 9 in). The frame is drawn in code (UI chrome).
  */
 @Composable
-internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = PmdTone.BLUE, inset: Int = 6, content: @Composable BoxScope.() -> Unit) {
+internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = PmdTone.BLUE, inset: Int = 3, content: @Composable BoxScope.() -> Unit) {
     val density = LocalDensity.current.density
     Box(
         modifier.drawBehind { pmdFrame(pixel, tone) }
-            .padding(horizontal = ((SIDE + inset) * pixel / density).dp, vertical = ((TOP + inset / 2) * pixel / density).dp),
+            .padding(horizontal = ((SIDE + inset) * pixel / density).dp, vertical = ((TOP + inset) * pixel / density).dp),
         content = content,
     )
 }
 
-/** The frame's thickness in art pixels: pale line 1 + band 3 + deep line 1 at the top and bottom, 1 + 5 + 1 at the sides. */
-private const val TOP = 5
+/** The frame's thickness in art pixels: pale line 1 + band 1 + deep line 1 at the top and bottom, 1 + 5 + 1 at the sides. */
+private const val TOP = 3
 private const val SIDE = 7
 
 /** A rectangle with stair-stepped (rounded) corners: [insets] is how far in each row from the corner starts, ending in 0. */
@@ -158,8 +185,8 @@ private fun DrawScope.pmdFrame(pixel: Int, tone: PmdTone) {
     val h = size.height
     val outer = stairRect(p, 0f, 0f, w, h, intArrayOf(2, 1, 0))
     val band = stairRect(p, p, p, w - p, h - p, intArrayOf(1, 0))
-    val deep = stairRect(p, 6 * p, 4 * p, w - 6 * p, h - 4 * p, intArrayOf(1, 0))
-    val fill = stairRect(p, 7 * p, 5 * p, w - 7 * p, h - 5 * p, intArrayOf(0))
+    val deep = stairRect(p, 6 * p, 2 * p, w - 6 * p, h - 2 * p, intArrayOf(1, 0))
+    val fill = stairRect(p, 7 * p, 3 * p, w - 7 * p, h - 3 * p, intArrayOf(0))
     // Each layer is a ring (the shape minus the next one in), so the translucent fill sits over the town, not over a coat of paint.
     fun ring(color: Color, big: Path, small: Path) = drawPath(Path().apply { fillType = PathFillType.EvenOdd; addPath(big); addPath(small) }, color)
     ring(tone.edge, outer, band)
@@ -171,19 +198,17 @@ private fun DrawScope.pmdFrame(pixel: Int, tone: PmdTone) {
 /** One line of a dialogue menu: a touch target at least 48 dp tall with [text] in it, a small cursor in front when [selected]. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, dim: Boolean = false, center: Boolean = false, pixelText: Boolean = true, onHold: (() -> Unit)? = null, onClick: () -> Unit) {
+internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, dim: Boolean = false, center: Boolean = false, onHold: (() -> Unit)? = null, onClick: () -> Unit) {
     val density = LocalDensity.current.density
     Box(
         modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).focusRing(RoundedCornerShape(4.dp), Color.White).combinedClickable(role = Role.Button, onLongClick = onHold, onClick = onClick).semantics(mergeDescendants = true) {},
         contentAlignment = if (center) Alignment.Center else Alignment.CenterStart,
     ) {
-        if (selected) Canvas(Modifier.size((3 * pixel / density).dp, (5 * pixel / density).dp)) {
+        if (selected) Canvas(Modifier.padding(start = (2 * pixel / density).dp).size((3 * pixel / density).dp, (5 * pixel / density).dp)) {
             val p = pixel.toFloat()
             drawPath(Path().apply { moveTo(0f, 0f); lineTo(3 * p, 2.5f * p); lineTo(0f, 5 * p); close() }, Color.White)
         }
-        val start = Modifier.padding(start = if (center) 0.dp else (5 * pixel / density).dp)
-        if (pixelText) PmdText(text, pixel, start, alpha = if (dim) 0.75f else 1f)
-        else Text(text, style = MaterialTheme.typography.bodyLarge, color = Color.White.copy(alpha = if (dim) 0.75f else 1f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis, modifier = start)
+        PmdText(text, pixel, Modifier.padding(horizontal = (6 * pixel / density).dp), alpha = if (dim) 0.75f else 1f)
     }
 }
 

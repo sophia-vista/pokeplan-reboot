@@ -8,7 +8,7 @@ change as any token, component or rule it describes. Approved in the 0.64.0 desi
 - **Utility** (the app: every screen under the four tabs): calm cards on the page background, rounded 16 dp, one thin
   border, no shadow. Components: `TextBox`, `ListRow`, `PixelButton`, `MenuGrid`.
 - **World** (the Android launcher home only): the game's dialogue box: a see-through black panel (`PmdPalette.Fill`) in a rounded frame of
-  a pale hairline (`#A8C0E0`), a blue band (`#6080F8`, 3 px at the top and bottom, 5 px at the sides) and a deep line (`#4820F8`), drawn at
+  a pale hairline (`#A8C0E0`), a blue band (`#6080F8`, 1 px at the top and bottom, 5 px at the sides) and a deep line (`#4820F8`), drawn at
   the town's pixel scale in the dialogue font. Components: `PmdBox`, `PmdMenuLine`, `PmdButton`, `PmdRule`.
 - A screen belongs to one register. Do not put a dialogue box in the app or a card on the launcher home.
 
@@ -36,7 +36,8 @@ change as any token, component or rule it describes. Approved in the 0.64.0 desi
 - Pixel font (Pokemon DP) for game headings, rank, stats and button labels, **at 16 sp and up only**. Everything small or read in
   bulk is Nunito. Long names (tasks, apps) are always Nunito.
 - `titleMedium`, `titleSmall` and `labelLarge` are the same style by design; use `labelLarge` for button labels, `title*` for headings.
-- The dialogue font (`PmdText`) is for the world register only: labels, never sentences or user text.
+- The dialogue font (`PmdText`) is the only font of the world register: every line in a dialogue box uses it (long text is cut with "...", marks it lacks become look-alikes or `?`). It is not used in the utility register.
+- World register spacing: text starts 9 art pixels inside the fill (3 for the box's own inset, 6 for the line, where the cursor goes); rules and buttons run to the 3.
 
 ## 5. Shape and elevation
 - Cards 16 dp radius (`Spacing.CardRadius`), controls 12 dp, pills fully round. No shadows. World register: pixel notches, no radius.

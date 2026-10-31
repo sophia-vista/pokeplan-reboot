@@ -157,8 +157,8 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
 
 /**
  * The home page over the town, in three layers: a small status strip at the top (the companion, then the collection), the
- * town itself, and one dialogue box by the thumb with today's task, the main action (Focus), the parts of PokéLife, your
- * pinned apps and All apps. Long names (tasks, apps) are in the readable body font, labels in the dialogue font.
+ * town itself, and one dialogue box by the thumb: every part of PokéLife as an equal entry (Plan is one of six), your pinned
+ * apps and All apps. Everything in it is in the dialogue font.
  */
 @Composable
 private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPrefs, isDefault: Boolean, host: LauncherHost, pixel: Int, onAllApps: () -> Unit, onHold: (LauncherApp) -> Unit) {
@@ -167,11 +167,11 @@ private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPr
     val running = data.focus != null
     val buddy = data.player.buddy
     Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = Spacing.M, vertical = Spacing.S)) {
-        if (data.onboarded && buddy != null) PmdBox(pixel, Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Open PokéLife") { host.openApp(Place.HOME) }, inset = 3) {
+        if (data.onboarded && buddy != null) PmdBox(pixel, Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Open PokéLife") { host.openApp(Place.HOME) }, inset = 1) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                PmdText("${buddy.nickname}  Lv. ${buddy.level}", pixel)
+                PmdText("${buddy.nickname}  Lv. ${buddy.level}", pixel, Modifier.padding(horizontal = (6 * pixel / LocalDensity.current.density).dp))
                 Box(Modifier.weight(1f))
-                PmdText("${data.player.pokemon.size} Pokémon", pixel, alpha = 0.75f)
+                PmdText(if (running) "Focusing" else "${data.player.pokemon.size} Pokémon", pixel, Modifier.padding(horizontal = (6 * pixel / LocalDensity.current.density).dp), alpha = 0.75f)
             }
         }
         Box(Modifier.weight(1f))
@@ -186,32 +186,32 @@ private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPr
                     else -> null
                 }
                 if (note != null) {
-                    PmdMenuLine(note.first, pixel, pixelText = false, onClick = note.second)
+                    PmdMenuLine(note.first, pixel, onClick = note.second)
                     PmdRule(pixel)
                 }
                 if (data.onboarded) {
-                    val open = model.store.openTodayTasks()
-                    PmdText(if (open.isEmpty()) "Today" else "Today  ${open.size} left", pixel, Modifier.padding(start = (5 * pixel / LocalDensity.current.density).dp, top = 2.dp), alpha = 0.7f)
-                    // One thing to do, not the whole list: the rest is a tap away in Plan.
-                    val task = open.firstOrNull()
-                    if (task != null) PmdMenuLine(task.title, pixel, pixelText = false) { model.completeTask(task.id) }
-                    else PmdMenuLine("Nothing left for today", pixel, pixelText = false, dim = true) { host.openApp(Place.PLAN) }
-                    PmdButton(if (running) "Back to focus" else "Start focus", pixel, color = if (running) Pixel.Green else Pixel.Red) { host.openApp(Place.FOCUS) }
-                    Row(Modifier.fillMaxWidth()) {
-                        PmdMenuLine("Plan", pixel, Modifier.weight(1f), center = true) { host.openApp(Place.PLAN) }
-                        if (data.settings.careModule) PmdMenuLine("Care", pixel, Modifier.weight(1f), center = true) { host.openApp(Place.CARE) }
-                        PmdMenuLine("Party", pixel, Modifier.weight(1f), center = true) { host.openApp(Place.PARTY) }
-                        PmdMenuLine("Pokémon", pixel, Modifier.weight(1.3f), center = true) { host.openApp(Place.COLLECTION) }
+                    // Every part of PokéLife, side by side, none above the others.
+                    val parts = buildList<Triple<String, Boolean, () -> Unit>> {
+                        add(Triple("Party", false) { host.openApp(Place.PARTY) })
+                        add(Triple("Pokémon", false) { host.openApp(Place.COLLECTION) })
+                        if (data.settings.careModule) add(Triple("Care", false) { host.openApp(Place.CARE) })
+                        add(Triple("Plan", false) { host.openApp(Place.PLAN) })
+                        add(Triple("Focus", running) { host.openApp(Place.FOCUS) })
+                        add(Triple("Me", false) { host.openApp(Place.ME) })
+                    }
+                    parts.chunked(3).forEach { row ->
+                        Row(Modifier.fillMaxWidth()) {
+                            row.forEach { (label, on, open) -> PmdMenuLine(label, pixel, Modifier.weight(1f), selected = on, center = true, onClick = open) }
+                            repeat(3 - row.size) { Box(Modifier.weight(1f)) }
+                        }
                     }
                     PmdRule(pixel)
-                    if (pinned.isEmpty()) PmdMenuLine("Press and hold an app in All apps to pin it", pixel, pixelText = false, dim = true) { onAllApps() }
-                    else {
-                        Column(Modifier.heightIn(max = 220.dp).verticalScroll(rememberScrollState())) {
-                            pinned.chunked(2).forEach { pair ->
-                                Row(Modifier.fillMaxWidth()) {
-                                    pair.forEach { app -> PmdMenuLine(app.label, pixel, Modifier.weight(1f), pixelText = false, onHold = { onHold(app) }) { host.open(app.key) } }
-                                    if (pair.size == 1) Box(Modifier.weight(1f))
-                                }
+                    if (pinned.isEmpty()) PmdMenuLine("Press and hold an app in All apps to pin it", pixel, dim = true) { onAllApps() }
+                    else Column(Modifier.heightIn(max = 220.dp).verticalScroll(rememberScrollState())) {
+                        pinned.chunked(2).forEach { pair ->
+                            Row(Modifier.fillMaxWidth()) {
+                                pair.forEach { app -> PmdMenuLine(app.label, pixel, Modifier.weight(1f), onHold = { onHold(app) }) { host.open(app.key) } }
+                                if (pair.size == 1) Box(Modifier.weight(1f))
                             }
                         }
                     }

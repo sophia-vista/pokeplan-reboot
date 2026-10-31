@@ -7,7 +7,9 @@ release always has the newest merge).
 
 ## 0.66.1
 
-- Launcher: the dialogue box is drawn like the game's menu boxes. A pale hairline, a blue band that is thicker at the sides than at the top and bottom, a deep-blue line, rounded corners, and a see-through black inside so the town shows behind the words. There is more room between the frame and the text.
+- Launcher: the dialogue box is drawn like the game's menu boxes: a pale hairline, a thin blue band at the top and bottom that is thicker at the sides, a deep-blue line, rounded corners, and a see-through black inside so the town shows behind the words. Every line of text starts the same distance in, with room for the cursor.
+- Launcher: the box uses the Pokémon dialogue font only. Long names are cut with "..." and a mark the font lacks becomes a look-alike or "?", never another typeface.
+- Launcher: the home page is less about Plan. The task and the red Start focus button are gone from the box; Party, Pokémon, Care, Plan, Focus and Me are six equal entries (Focus shows the cursor while a session runs, and the top strip says "Focusing"), then your pinned apps and All apps.
 
 ## 0.66.0
 
