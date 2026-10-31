@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.78.0
+
+- Launcher: more space between an app's icon and its name.
+- Launcher: the clock widget's date and time can be written your way (Launcher settings): the date as "Sat 31 Oct", "Saturday 31 October", "31 Oct 2026", "Oct 31" or "2026-10-31"; the time on a 24-hour or 12-hour clock, with or without seconds. The agenda's times follow the clock.
+- Launcher: the calendar's weeks start on Sunday (a setting switches to Monday).
+
 ## 0.77.0
 
 - Launcher: hold any quiet part of a widget on the home screen (or the Today page) to edit the widgets right there. Each widget gets a bar: hold and drag it up or down to move it (past the last widget at the top it goes to the bottom of the page, and the other way), tap its size to change it (Small, Medium, Large), or Remove. Add widget and Done sit at the top. Swiping between pages is off while editing, and Back also finishes.

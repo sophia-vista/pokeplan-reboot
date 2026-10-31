@@ -381,7 +381,7 @@ internal fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixe
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
         if (item != null) ItemIcon(item, size = 40.dp, description = null) else AppIcon(host, app.key, 40.dp)
-        Box(Modifier.padding(top = (2 * pixel / density).dp).padding(horizontal = (1 * pixel / density).dp)) { PmdText(app.label, pixel) }
+        Box(Modifier.padding(top = Spacing.M).padding(horizontal = (1 * pixel / density).dp)) { PmdText(app.label, pixel) }
     }
 }
 
@@ -699,6 +699,10 @@ internal fun LauncherSettings(
                     PmdMenuLine("Weather: ${prefs.weather.label}", pixel) { onPrefs(prefs.nextWeather()) }
                     PmdMenuLine("Pokémon walk about: ${onOff(prefs.walking)}", pixel) { onPrefs(prefs.withWalking(!prefs.walking)) }
                     PmdMenuLine("Widgets: ${prefs.widgets.size}", pixel, onClick = onWidgets)
+                    PmdMenuLine("Date: ${prefs.dateStyle.label}", pixel) { onPrefs(prefs.nextDateStyle()) }
+                    PmdMenuLine("Clock: ${if (prefs.hour12) "12 hour" else "24 hour"}", pixel) { onPrefs(prefs.withHour12(!prefs.hour12)) }
+                    PmdMenuLine("Seconds: ${onOff(prefs.showSeconds)}", pixel) { onPrefs(prefs.withShowSeconds(!prefs.showSeconds)) }
+                    PmdMenuLine("Calendar weeks start on ${if (prefs.sundayFirst) "Sunday" else "Monday"}", pixel) { onPrefs(prefs.withSundayFirst(!prefs.sundayFirst)) }
                 }
             }
             PmdBox(pixel, Modifier.fillMaxWidth()) {

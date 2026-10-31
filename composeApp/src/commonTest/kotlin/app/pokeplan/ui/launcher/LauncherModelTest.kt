@@ -277,3 +277,33 @@ class LauncherEditWidgetsTest {
         assertEquals(prefs, prefs.moveWidget(calendar, -1))
     }
 }
+
+class LauncherDateTextTest {
+    @Test
+    fun writesTheDateInEachStyle() {
+        val day = kotlinx.datetime.LocalDate(2026, 10, 31)
+        assertEquals("Sat 31 Oct", formatDate(day, DateStyle.SHORT))
+        assertEquals("Saturday 31 October", formatDate(day, DateStyle.LONG))
+        assertEquals("31 Oct 2026", formatDate(day, DateStyle.DAY_MONTH_YEAR))
+        assertEquals("Oct 31", formatDate(day, DateStyle.MONTH_DAY))
+        assertEquals("2026-10-31", formatDate(day, DateStyle.ISO))
+    }
+
+    @Test
+    fun writesTheTimeOnEitherClock() {
+        assertEquals("13:05", formatTime(13, 5))
+        assertEquals("13:05:09", formatTime(13, 5, 9))
+        assertEquals("1:05 PM", formatTime(13, 5, null, true))
+        assertEquals("12:00 AM", formatTime(0, 0, null, true))
+        assertEquals("12:30:00 PM", formatTime(12, 30, 0, true))
+    }
+
+    @Test
+    fun theNewChoicesSurviveTheRoundTripAndWeeksStartWhereAsked() {
+        val prefs = LauncherPrefs().nextDateStyle().withHour12(true).withShowSeconds(true).withSundayFirst(false)
+        assertEquals(prefs, LauncherPrefs.decode(prefs.encode()))
+        assertEquals(kotlinx.datetime.DayOfWeek.SUNDAY, weekDays(true).first())
+        assertEquals(kotlinx.datetime.DayOfWeek.MONDAY, weekDays(false).first())
+        assertEquals(7, weekDays(true).distinct().size)
+    }
+}

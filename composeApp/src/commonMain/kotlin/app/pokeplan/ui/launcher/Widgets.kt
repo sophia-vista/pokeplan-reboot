@@ -147,7 +147,7 @@ private fun ClockWidget(env: WidgetEnv) {
         env.model.now
         val now = env.model.store.now
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            PmdText("${dayName(now.dayOfWeek).take(3)} ${now.dayOfMonth} ${monthName(now.month).take(3)}   ${two(now.hour)}:${two(now.minute)}", env.pixel, gap)
+            PmdText("${formatDate(now.date, env.prefs.dateStyle)}   ${formatTime(now.hour, now.minute, if (env.prefs.showSeconds) now.second else null, env.prefs.hour12)}", env.pixel, gap)
             Box(Modifier.weight(1f))
             battery?.let { PmdText((if (it.charging) "Charging " else "Battery ") + it.percent, env.pixel, gap, alpha = 0.75f) }
         }
@@ -274,10 +274,10 @@ private fun CalendarWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) 
             }
             PmdRule(pixel)
             Row(Modifier.fillMaxWidth().padding(top = Spacing.S)) {
-                DayOfWeek.entries.forEach { Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { PmdText(dayName(it).take(2), pixel, alpha = 0.7f) } }
+                weekDays(env.prefs.sundayFirst).forEach { Box(Modifier.weight(1f), contentAlignment = Alignment.Center) { PmdText(dayName(it).take(2), pixel, alpha = 0.7f) } }
             }
-            // Weeks start on Monday; the first row is padded with the end of the month before.
-            val lead = state.month.dayOfWeek.ordinal
+            // Weeks start on Sunday or Monday as chosen; the first row is padded with the end of the month before.
+            val lead = weekDays(env.prefs.sundayFirst).indexOf(state.month.dayOfWeek)
             val days = (0 until 42).map { state.month.plus(DatePeriod(days = it - lead)) }
             // Small shows only the week of the chosen day (or the month's first week when another month is showing).
             val weeks = days.chunked(7).filter { w -> w.any { it.month == state.month.month } }.let { all ->
@@ -326,7 +326,7 @@ private fun AgendaWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) {
             if (events.isEmpty() && tasks.isEmpty()) PmdText("Nothing planned", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M), alpha = 0.7f)
             shownEvents.forEach { e ->
                 Row(Modifier.fillMaxWidth().height(Spacing.Target).padding(horizontal = pad), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                    PmdText(if (e.allDay) "All day" else "${two(e.start.hour)}:${two(e.start.minute)}", pixel, Modifier.weight(0.4f), alpha = 0.75f)
+                    PmdText(if (e.allDay) "All day" else formatTime(e.start.hour, e.start.minute, null, env.prefs.hour12), pixel, Modifier.weight(0.5f), alpha = 0.75f)
                     PmdText(e.title, pixel, Modifier.weight(1f))
                 }
             }
@@ -344,3 +344,7 @@ private fun AgendaWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) {
         }
     }
 }
+
+/** The days of the week in the order a calendar row shows them. */
+internal fun weekDays(sundayFirst: Boolean): List<DayOfWeek> =
+    if (sundayFirst) listOf(DayOfWeek.SUNDAY) + DayOfWeek.entries.filter { it != DayOfWeek.SUNDAY } else DayOfWeek.entries
