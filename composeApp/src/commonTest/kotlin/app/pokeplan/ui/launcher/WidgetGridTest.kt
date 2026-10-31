@@ -12,12 +12,12 @@ class WidgetGridTest {
     @Test
     fun newWidgetsTakeTheFirstFreeSpotAndNeverOverlap() {
         var g = emptyList<GridWidget>()
-        g = WidgetGrid.add(g, w(WidgetKind.NAV, 0, 0, 2, 1))
-        g = WidgetGrid.add(g, w(WidgetKind.OFTEN, 3, 3, 2, 1))
+        g = WidgetGrid.add(g, w(WidgetKind.NAV, 0, 0, 2, 2))
+        g = WidgetGrid.add(g, w(WidgetKind.OFTEN, 3, 3, 2, 2))
         g = WidgetGrid.add(g, w(WidgetKind.ACTIONS, 0, 0, 4, 2))
         assertEquals(0 to 0, g[0].col to g[0].row)
         assertEquals(2 to 0, g[1].col to g[1].row, "beside the first, not where it was dropped")
-        assertEquals(0 to 1, g[2].col to g[2].row, "a full-width widget goes below")
+        assertEquals(0 to 2, g[2].col to g[2].row, "a full-width widget goes below")
         assertTrue(noOverlap(g))
     }
 
@@ -41,7 +41,7 @@ class WidgetGridTest {
 
     @Test
     fun aWidgetCannotLeaveTheGrid() {
-        val a = w(WidgetKind.NAV, 0, 0, 3, 1)
+        val a = w(WidgetKind.NAV, 0, 0, 3, 2)
         val moved = WidgetGrid.move(listOf(a), a, 9, -4).single()
         assertEquals(1, moved.col, "kept on the grid: 4 columns, 3 wide")
         assertEquals(0, moved.row)
@@ -49,21 +49,21 @@ class WidgetGridTest {
 
     @Test
     fun resizingStaysBetweenTheLimitsAndBumpsTheRest() {
-        val cal = w(WidgetKind.CALENDAR, 0, 0, 4, 3)
-        val agenda = w(WidgetKind.AGENDA, 0, 3, 4, 3)
+        val cal = w(WidgetKind.CALENDAR, 0, 0, 4, 6)
+        val agenda = w(WidgetKind.AGENDA, 0, 6, 4, 6)
         val big = WidgetGrid.resize(listOf(cal, agenda), cal, 9, 9)
         val c = big.first { it.kind == WidgetKind.CALENDAR }
-        assertEquals(4 to 4, c.w to c.h, "the calendar is at most 4 by 4")
-        assertEquals(4, big.first { it.kind == WidgetKind.AGENDA }.row)
+        assertEquals(4 to 8, c.w to c.h, "the calendar is at most 4 by 8")
+        assertEquals(8, big.first { it.kind == WidgetKind.AGENDA }.row)
         val small = WidgetGrid.resize(listOf(cal), cal, 1, 1).single()
-        assertEquals(4 to 2, small.w to small.h, "and at least 4 by 2")
+        assertEquals(4 to 4, small.w to small.h, "and at least 4 by 4")
         assertTrue(noOverlap(big))
     }
 
     @Test
     fun resizingNearTheRightEdgeShiftsLeftToStayOnTheGrid() {
-        val a = w(WidgetKind.OFTEN, 3, 0, 1, 1).copy(w = 2)
-        val g = WidgetGrid.resize(listOf(a), a, 3, 1).single()
+        val a = w(WidgetKind.OFTEN, 3, 0, 2, 2)
+        val g = WidgetGrid.resize(listOf(a), a, 3, 2).single()
         assertEquals(1, g.col)
         assertEquals(3, g.w)
     }
@@ -79,13 +79,13 @@ class WidgetGridTest {
     @Test
     fun theOldStackBecomesAGridInTheSameOrderWithBottomWidgetsAtTheFoot() {
         val slots = defaultWidgets()
-        val grid = WidgetGrid.fromSlots(slots, homeRows = 14)
+        val grid = WidgetGrid.fromSlots(slots, homeRows = 20)
         assertTrue(noOverlap(grid))
         assertEquals(slots.size, grid.size)
         val home = WidgetGrid.onPage(grid, WidgetPage.HOME)
         val order = home.sortedBy { it.row }.map { it.kind }
         assertEquals(listOf(WidgetKind.CLOCK, WidgetKind.BUDDY, WidgetKind.NAV, WidgetKind.OFTEN, WidgetKind.PINNED, WidgetKind.ACTIONS), order)
-        assertEquals(14, WidgetGrid.rows(grid, WidgetPage.HOME), "the bottom widgets end at the foot")
+        assertEquals(20, WidgetGrid.rows(grid, WidgetPage.HOME), "the bottom widgets end at the foot")
         assertTrue(home.all { it.w == WidgetGrid.COLUMNS })
         assertEquals(listOf(WidgetKind.CALENDAR, WidgetKind.AGENDA), WidgetGrid.onPage(grid, WidgetPage.TODAY).sortedBy { it.row }.map { it.kind })
     }
@@ -99,7 +99,7 @@ class WidgetGridTest {
 
     @Test
     fun theGridIsSavedAndReadBack() {
-        val prefs = LauncherPrefs().withGrid(listOf(w(WidgetKind.NAV, 1, 2, 3, 1), GridWidget(WidgetPage.TODAY, WidgetKind.FOLDER, "Games", 0, 0, 4, 2)))
+        val prefs = LauncherPrefs().withGrid(listOf(w(WidgetKind.NAV, 1, 2, 3, 2), GridWidget(WidgetPage.TODAY, WidgetKind.FOLDER, "Games", 0, 0, 4, 2)))
         val back = LauncherPrefs.decode(prefs.encode())
         assertEquals(prefs.grid, back.grid)
     }
@@ -117,5 +117,24 @@ class WidgetGridTest {
         val back = LauncherPrefs.decode("X HOME\tNAV\t\t1\t2\t3\nX NOPE\tNAV\t\t0\t0\t4\t2\nX HOME\tNAV\t\t0\t0\t4\t2\n")
         assertEquals(1, back.grid?.size)
         assertFalse(back.grid.isNullOrEmpty())
+    }
+}
+
+class WidgetGridSlotTest {
+    @Test
+    fun aGridWidgetsHeightPicksTheOldSize() {
+        val l = WidgetKind.AGENDA.limits()
+        fun at(h: Int) = GridWidget(WidgetPage.TODAY, WidgetKind.AGENDA, "", 0, 0, 4, h).asSlot().size
+        assertEquals(WidgetSize.SMALL, at(l.minH))
+        assertEquals(WidgetSize.MEDIUM, at(l.minH + 1))
+        assertEquals(WidgetSize.LARGE, at(l.defH))
+        assertEquals(WidgetSize.LARGE, at(l.maxH))
+    }
+
+    @Test
+    fun theOldLayoutLaidOutAsAGridSurvivesTheRoundTrip() {
+        val grid = WidgetGrid.fromSlots(defaultWidgets())
+        grid.forEach { w -> assertEquals(w.kind, w.asSlot().kind) }
+        assertEquals(grid, LauncherPrefs.decode(LauncherPrefs().withGrid(grid).encode()).grid)
     }
 }

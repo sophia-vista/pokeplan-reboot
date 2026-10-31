@@ -3,19 +3,19 @@ package app.pokeplan.ui.launcher
 /** The two pages widgets can stand on: the home page (over the town) and Today. */
 enum class WidgetPage { HOME, TODAY }
 
-/** How small, how large and how big at first a widget of a kind may be, in grid cells (4 columns wide; a row is as tall as a column is wide). */
+/** How small, how large and how big at first a widget of a kind may be, in grid cells (4 columns wide; a row is [WidgetGrid.ROW_DP] tall, so heights are in rows). */
 class WidgetLimits(val minW: Int, val minH: Int, val maxW: Int, val maxH: Int, val defW: Int, val defH: Int)
 
 fun WidgetKind.limits(): WidgetLimits = when (this) {
-    WidgetKind.CLOCK -> WidgetLimits(2, 1, 4, 2, 4, 1)
-    WidgetKind.STATUS, WidgetKind.BUDDY -> WidgetLimits(2, 2, 4, 3, 4, 2)
-    WidgetKind.NAV -> WidgetLimits(2, 1, 4, 2, 4, 2)
-    WidgetKind.PINNED, WidgetKind.OFTEN, WidgetKind.FOLDER -> WidgetLimits(2, 1, 4, 4, 4, 2)
-    WidgetKind.ACTIONS -> WidgetLimits(2, 1, 4, 2, 4, 2)
-    WidgetKind.CALENDAR -> WidgetLimits(4, 2, 4, 4, 4, 3)
-    WidgetKind.AGENDA -> WidgetLimits(2, 2, 4, 6, 4, 3)
-    WidgetKind.FORECAST -> WidgetLimits(2, 1, 4, 3, 4, 2)
-    WidgetKind.ANDROID -> WidgetLimits(1, 1, 4, 8, 4, 2)
+    WidgetKind.CLOCK -> WidgetLimits(2, 2, 4, 3, 4, 2)
+    WidgetKind.STATUS, WidgetKind.BUDDY -> WidgetLimits(2, 3, 4, 6, 4, 3)
+    WidgetKind.NAV -> WidgetLimits(2, 2, 4, 4, 4, 3)
+    WidgetKind.PINNED, WidgetKind.OFTEN, WidgetKind.FOLDER -> WidgetLimits(2, 2, 4, 8, 4, 3)
+    WidgetKind.ACTIONS -> WidgetLimits(2, 2, 4, 4, 4, 3)
+    WidgetKind.CALENDAR -> WidgetLimits(4, 4, 4, 8, 4, 6)
+    WidgetKind.AGENDA -> WidgetLimits(2, 4, 4, 12, 4, 6)
+    WidgetKind.FORECAST -> WidgetLimits(2, 2, 4, 6, 4, 3)
+    WidgetKind.ANDROID -> WidgetLimits(1, 2, 4, 16, 4, 4)
 }
 
 /**
@@ -37,6 +37,9 @@ data class GridWidget(val page: WidgetPage, val kind: WidgetKind, val arg: Strin
  */
 object WidgetGrid {
     const val COLUMNS = 4
+
+    /** One row, in dp: a fifth of a phone's width, so the old stacked layout (about 17 rows) fits one screen, and a half-width widget is not tall and thin. */
+    const val ROW_DP = 40
 
     fun onPage(all: List<GridWidget>, page: WidgetPage) = all.filter { it.page == page }
 
@@ -103,7 +106,7 @@ object WidgetGrid {
      * other and full width; a widget's old size (Small, Medium, Large) becomes a height between its limits. On the home page
      * the bottom widgets end at row [homeRows], as they sat at the foot of the screen, with the town between.
      */
-    fun fromSlots(slots: List<WidgetSlot>, homeRows: Int = 12): List<GridWidget> {
+    fun fromSlots(slots: List<WidgetSlot>, homeRows: Int = 16): List<GridWidget> {
         fun heightOf(s: WidgetSlot): Int {
             val l = s.kind.limits()
             return when (s.size) {
@@ -123,4 +126,11 @@ object WidgetGrid {
         val bottom = stack(bottomSlots, WidgetPage.HOME, maxOf(top.maxOfOrNull { it.bottom } ?: 0, homeRows - bottomHeight))
         return top + bottom + stack(slots.filter { it.area == WidgetArea.TODAY }, WidgetPage.TODAY, 0)
     }
+}
+
+/** A grid widget as the old slot the widget bodies are drawn from: its size is Small at its least height, Large at its starting height or more, Medium between. */
+fun GridWidget.asSlot(): WidgetSlot {
+    val l = kind.limits()
+    val size = when { h >= l.defH -> WidgetSize.LARGE; h <= l.minH -> WidgetSize.SMALL; else -> WidgetSize.MEDIUM }
+    return WidgetSlot(if (page == WidgetPage.TODAY) WidgetArea.TODAY else WidgetArea.HOME_TOP, kind, arg, size)
 }

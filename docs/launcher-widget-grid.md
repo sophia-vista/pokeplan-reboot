@@ -14,10 +14,11 @@ Owner's request (31 Oct 2026): launcher widgets with drag and drop and resize, l
 - Saved as `X page kind arg col row w h` lines in `LauncherPrefs` (`grid`, null until first changed; `gridWidgets` shows the
   old `layout` as a grid meanwhile). A damaged line is skipped. The old `G` lines are still read and written.
 
+## Built (0.91.0): the grid is drawn
+`launcher/GridPage.kt` draws `gridWidgets` in cells (4 columns, rows of `WidgetGrid.ROW_DP` = 40 dp, so the old stack of about 17 rows fits one screen), each widget's body clipped to its cells and told its old size from its height (`asSlot`). Behind "Widget grid (preview)" in Launcher settings (`LauncherPrefs.gridMode`, off). The old widget bodies are not yet adapted to narrow or short cells (they clip).
+
 ## Still to build (in this order)
-1. **Draw the grid:** home and Today render `gridWidgets` in cells (cell = screen width / 4), the town showing through empty
-   cells; each widget's content adapts to its width and height (the old S/M/L become the height; a half-width widget shows
-   one column of its content). Behind a switch until it is as good as the old stack.
+1. **Adapt the bodies:** a half-width widget shows one column of its content; a short one fewer rows; then make the grid the default.
 2. **Edit mode like Smart Launcher:** long-press a widget to lift it (a little scale and shadow), drag it anywhere (a ghost
    of the drop cell, widgets bump down live), drop; a frame with corner handles to resize in whole cells with the limits as
    the stops; a remove (x) and the widget's settings in the frame; drag to the screen edge for the other page.
