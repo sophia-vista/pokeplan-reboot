@@ -374,9 +374,14 @@ class GameStore(
         estimateMinutes: Int? = null,
         notes: String = "",
         listId: String? = null,
+        /** The time of day to do it, only meaningful with a [planned] day (quick add: "tomorrow 5pm"). */
+        plannedTime: kotlinx.datetime.LocalTime? = null,
+        /** Marks it for "This evening" whatever the time (quick add: "tonight"). */
+        evening: Boolean = false,
     ): Task {
         val task = Task(
             id = newId(), title = title.trim(), notes = notes, rank = rank, category = category, planned = planned, due = due,
+            plannedTime = plannedTime?.takeIf { planned != null }, evening = evening && planned != null,
             estimateMinutes = estimateMinutes, createdAtMillis = nowMillis, listId = listId?.takeIf { id -> data.lists.any { it.id == id } },
         )
         update { it.copy(tasks = it.tasks + task) }

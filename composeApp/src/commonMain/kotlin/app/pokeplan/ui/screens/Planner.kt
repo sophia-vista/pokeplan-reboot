@@ -410,6 +410,8 @@ internal fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
                 planned = planned, due = parsed.due, estimateMinutes = parsed.estimateMinutes,
                 // "#Groceries" files it in that list; inside a list, the list itself.
                 listId = listId ?: parsed.listName?.let { model.store.listNamed(it)?.id },
+                // "tomorrow 5pm" keeps its 5pm and "tonight" its evening; both only mean something on a planned day.
+                plannedTime = parsed.plannedTime, evening = parsed.evening,
             )
             // A repeating task starts on its day (today when it has none) and the next ones are made ahead.
             repeat.toRepeat(made.planned ?: model.store.today)?.let { model.store.makeRepeating(made.id, it) }
@@ -428,6 +430,10 @@ internal fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
                 )
                 PixelButton("Add", ::add, color = Pixel.Red, enabled = text.isNotBlank())
             }
+            // What the line was understood as, so a typed "tomorrow 5pm #Social !B" is never a guess (Tesler: the app does the parsing, and shows it).
+            val parsed = QuickAdd.parse(text, model.store.today)
+            val understood = QuickAdd.hints(if (day != null) parsed.copy(planned = null) else parsed, model.store.today)
+            if (understood.isNotEmpty()) Text("Understood: " + understood.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             // The rest waits until there is something to add, so the box is one field and one button (cta.gallery, plnty).
             if (text.isBlank() && !more) return@Column
             // When: tap a chip to choose a day, tap it again to go back to what the text says ("tomorrow 5pm") or the view's default.

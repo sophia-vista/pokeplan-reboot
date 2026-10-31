@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.90.6
+
+- Plan usability, Quick Add (audit Phase 3, first step): the box now shows what it understood while you type ("Understood: Tomorrow · 17:00 · Social · Difficulty B · 30 min"), so a typed line is never a guess. And a bug it exposed: "Call mum tomorrow 5pm" and "tonight" were understood but the time and the evening were thrown away when the task was made; they are kept now (on a planned day), so the task lands on the calendar at 17:00 and "tonight" goes under This evening. Tests for the hints and for the stored time.
+
 ## 0.90.5
 
 - First-use pass: every landing page was rendered on a brand-new save (`ScreenshotTest.firstUse`, 33 pages: Home, Modules, Plan and its sections, the planner's views, Care and its sections, World's sections, the Pokémon tab, Me). Nearly all already say what goes there and what to do; the two that gave only a title now give a line too: Planner's Done ("Tasks you finish show up here, newest first.") and an empty Today ("Add one above, or plan one for today from the inbox or the calendar.").
