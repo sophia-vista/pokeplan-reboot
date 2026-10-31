@@ -1166,6 +1166,22 @@ class GameStore(
         return true
     }
 
+    /** Builds the next level of a World facility for Poké. False when it is at the top or Poké is short. */
+    fun worldUpgrade(facility: app.pokeplan.world.Facility): Boolean {
+        worldSettle()
+        val next = data.world.upgrade(facility) ?: return false
+        update { it.copy(world = next) }
+        return true
+    }
+
+    /** Claims the World research milestone at [species] discovered species. */
+    fun worldClaimResearch(species: Int): Boolean {
+        worldSettle()
+        val next = data.world.claimResearch(species) ?: return false
+        update { it.copy(world = next) }
+        return true
+    }
+
     /** Opens a treasure box of [tier]: berries, and from the silver tier a chance of a Rare Candy; what is inside goes to World's items. Returns what was found. *(tune)* */
     fun worldOpenTreasure(tier: Int): Map<String, Int> {
         if ((data.world.treasure[tier] ?: 0) <= 0) return emptyMap()

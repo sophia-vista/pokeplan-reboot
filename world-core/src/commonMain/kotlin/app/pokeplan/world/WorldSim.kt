@@ -95,26 +95,26 @@ object WorldSim {
         val random = Random(seed(teamId, trip, index))
         var d = data
         events += WorldEvent.FloorCleared(dungeon.id, floor)
-        d = d.copy(xp = d.xp + XP_BASE + floor, deepest = d.deepest + (dungeon.id to maxOf(floor, d.deepest[dungeon.id] ?: 0)))
+        d = d.copy(xp = d.xp + (XP_BASE + floor) * (10 + d.facilityLevel(Facility.LAB)) / 10, deepest = d.deepest + (dungeon.id to maxOf(floor, d.deepest[dungeon.id] ?: 0)))
         var berries = 0
-        if (random.nextInt(100) < BERRY_PERCENT) {
+        if (random.nextInt(100) < BERRY_PERCENT + d.skillLevel(WorldSkill.FORAGING)) {
             berries = 1
             val flavor = listOf("sweet", "dry", "sour", "spicy", "bitter").random(random)
             val berry = Items.berry(flavor)
             events += WorldEvent.Item(berry, 1)
             d = d.copy(items = d.items + (berry to (d.items[berry] ?: 0) + 1))
         }
-        val poke = 5 + floor * 2 + random.nextInt(5)
+        val poke = (5 + floor * 2 + random.nextInt(5)) * (100 + 2 * d.skillLevel(WorldSkill.EXPLORATION)) / 100
         events += WorldEvent.Poke(poke)
         d = d.copy(poke = d.poke + poke)
-        if (random.nextInt(100) < TREASURE_PERCENT) {
+        if (random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP)) {
             val tier = if (floor >= dungeon.floors - 1) 3 else if (floor >= dungeon.floors / 2) 2 else 1
             events += WorldEvent.Treasure(tier)
             d = d.copy(treasure = d.treasure + (tier to (d.treasure[tier] ?: 0) + 1))
         }
-        findFor(dungeon, floor, random)?.let { species ->
+        findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * d.skillLevel(WorldSkill.SCOUTING))?.let { species ->
             events += WorldEvent.Found(species, dungeon.id, floor)
-            d = d.copy(finds = d.finds + Find(species, dungeon.id, floor, at), discovered = d.discovered + species)
+            d = d.copy(finds = d.finds + Find(species, dungeon.id, floor, at), discovered = d.discovered + species).withSkillXp(WorldSkill.SCOUTING, 20)
         }
         dungeon.milestones[floor]?.let { reward ->
             val key = "${dungeon.id}:$floor"
@@ -126,6 +126,7 @@ object WorldSim {
                 )
             }
         }
+        d = d.withSkillXp(WorldSkill.EXPLORATION, 1).withSkillXp(WorldSkill.SCOUTING, 1).withSkillXp(WorldSkill.FORAGING, berries)
         d = Missions.advance(d, dungeon.id, floor, berries, at, events)
         if (floor == dungeon.floors) {
             events += WorldEvent.Cleared(dungeon.id)
@@ -135,8 +136,8 @@ object WorldSim {
     }
 
     /** The wild Pokémon a floor shows, if it shows one: only ones that can hatch (never a legendary or mythical, which are story discoveries). */
-    private fun findFor(dungeon: DungeonDef, floor: Int, random: Random): Int? {
-        if (random.nextInt(100) >= FIND_PERCENT) return null
+    private fun findFor(dungeon: DungeonDef, floor: Int, random: Random, permille: Int): Int? {
+        if (random.nextInt(1000) >= permille) return null
         val pool = dungeon.wild.filter { floor in it.fromFloor..it.toFloor && Dex.speciesOrNull(it.speciesId)?.let { s -> !s.isSpecial } == true && HatchRules.rarity(it.speciesId) != null }
         val total = pool.sumOf { it.weight }
         if (total == 0) return null
