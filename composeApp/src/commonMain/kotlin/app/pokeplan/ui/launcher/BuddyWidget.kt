@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -57,19 +58,23 @@ internal fun BuddyWidget(env: WidgetEnv) {
     // A face lasts a few seconds, then goes back to a calm one.
     LaunchedEffect(mood.version) { if (mood.version > 0) { delay(4_000); mood.settle() } }
     val density = LocalDensity.current.density
+    // A face is 40 art pixels; drawn at twice the town's pixel scale it stays crisp, and the frame hugs it (no room inside but the frame's own).
+    val face = (40 * 2 * env.pixel / density).dp
+    // The frame is 3 art pixels of room above and below the face, so the name box is made that tall (no intrinsic sizes: the text is measured lazily).
+    val frameHeight = ((40 * 2 + 2 * 3) * env.pixel / density).dp
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = Alignment.CenterVertically) {
-        PmdBox(env.pixel, Modifier.clickable(role = Role.Button, onClickLabel = "Pet ${buddy.nickname}") { env.model.cry(buddy.speciesId); mood.feel(Emotion.HAPPY) }, inset = 1, compact = true) {
-            Portrait(buddy.form.id, buddy.isShiny, "${buddy.nickname}, level ${buddy.level}", emotion = mood.emotion, size = 72.dp)
+        PmdBox(env.pixel, Modifier.clickable(role = Role.Button, onClickLabel = "Pet ${buddy.nickname}") { env.model.cry(buddy.speciesId); mood.feel(Emotion.HAPPY) }, inset = 0, compact = true) {
+            Portrait(buddy.form.id, buddy.isShiny, "${buddy.nickname}, level ${buddy.level}", emotion = mood.emotion, size = face, framed = false)
         }
-        PmdBox(env.pixel, Modifier.weight(1f).clickable(role = Role.Button, onClickLabel = "Open PokéLife") { env.host.openApp(Place.HOME) }, inset = 1) {
-            Column(Modifier.fillMaxWidth().padding(horizontal = pmdRowPad(env.pixel, density)), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        PmdBox(env.pixel, Modifier.weight(1f).height(frameHeight).clickable(role = Role.Button, onClickLabel = "Open PokéLife") { env.host.openApp(Place.HOME) }, inset = 0, compact = true) {
+            Column(Modifier.fillMaxWidth().align(Alignment.CenterStart).padding(horizontal = pmdRowPad(env.pixel, density)), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PmdText(buddy.nickname, env.pixel)
                 PmdText(if (data.focus != null) "Focusing" else "Lv. ${buddy.level}", env.pixel, alpha = 0.75f)
             }
         }
         mood.visitor?.let { v ->
-            PmdBox(env.pixel, inset = 1, compact = true) {
-                Portrait(v.pokemon.form.id, v.pokemon.isShiny, v.pokemon.nickname, emotion = v.emotion, size = 72.dp)
+            PmdBox(env.pixel, inset = 0, compact = true) {
+                Portrait(v.pokemon.form.id, v.pokemon.isShiny, v.pokemon.nickname, emotion = v.emotion, size = face, framed = false)
             }
         }
     }
