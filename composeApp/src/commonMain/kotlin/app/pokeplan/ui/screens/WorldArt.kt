@@ -120,7 +120,7 @@ internal fun dungeonTiles(dungeonId: String): String = when (dungeonId) {
  * ([animate] false) nothing moves.
  */
 @Composable
-internal fun TileBox(dungeonId: String, members: List<app.pokeplan.core.pokemon.OwnedPokemon>, animate: Boolean, content: @Composable () -> Unit) {
+internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Boolean, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     val tiles = dungeonTiles(dungeonId)
     val atlas by produceState(tileAtlases[tiles], tiles) {
         if (value == null) {
@@ -133,7 +133,7 @@ internal fun TileBox(dungeonId: String, members: List<app.pokeplan.core.pokemon.
         if (animate) { val start = withFrameNanos { it }; while (true) withFrameNanos { seconds = (it - start) / 1_000_000_000f } }
     }
     val density = LocalDensity.current
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
+    BoxWithConstraints(modifier.fillMaxWidth()) {
         val widthPx = with(density) { (maxWidth - FRAME * 2).toPx() }
         val pixel = (widthPx / (TILE_PX * 8)).toInt().coerceAtLeast(1)
         val tilePx = TILE_PX * pixel
@@ -161,14 +161,14 @@ internal fun TileBox(dungeonId: String, members: List<app.pokeplan.core.pokemon.
                     drawRect(Color(0xB3141C28), Offset(0f, (STRIP_ROWS + 2) * tilePx.toFloat()), Size(size.width, size.height))
                 }
                 // The team on the floor rows, leader on the right: feet on the floor, never on a wall.
-                val shown = members.take(4)
+                val shown = walkers.take(4)
                 val size = tile * 1.5f
                 val step = tile * 1.3f
                 shown.forEachIndexed { i, p ->
                     val order = shown.size - 1 - i
                     val feet = tile * (if (i % 2 == 0) 2.2f else 2.9f)
                     Box(Modifier.offset(x = step * order + tile * 0.3f, y = feet - size)) {
-                        app.pokeplan.ui.AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = size, animate = animate, ground = 0.dp, action = app.pokeplan.ui.SpriteAction.WALK_SIDE)
+                        app.pokeplan.ui.AnimatedSprite(p.formId, p.shiny, p.name, size = size, animate = animate, ground = 0.dp, action = app.pokeplan.ui.SpriteAction.WALK_SIDE)
                     }
                 }
             }
@@ -176,6 +176,9 @@ internal fun TileBox(dungeonId: String, members: List<app.pokeplan.core.pokemon.
         }
     }
 }
+
+/** Someone who walks on a [TileBox]'s floor. */
+internal data class TileWalker(val formId: Int, val shiny: Boolean, val name: String)
 
 /** [content] in white, for writing on a dark wall. */
 @Composable

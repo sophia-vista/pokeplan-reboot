@@ -40,6 +40,9 @@ import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
+import app.pokeplan.ui.Portrait
+import app.pokeplan.ui.Emotion
+import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.theme.ChoiceRow
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
@@ -158,30 +161,26 @@ private fun WorldMapView(model: AppModel) {
         val storyShut = d.postStory && !world.guardianDone
         val open = rankOk && !chapterShut && !storyShut
         val deepest = world.deepest[d.id] ?: 0
-        TextBox(Modifier.alpha(if (open) 1f else 0.7f)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                // The tileset picture when the game has one, else a plain swatch in the region's colour.
-                Box(Modifier.width(64.dp).height(132.dp).border(2.dp, Pixel.Ink).background(regionColor(d.region))) {
-                    if (d.id in dungeonPictures) WorldPicture("dungeon-${d.id}", Modifier.fillMaxSize(), crop = true)
-                    else Text(d.region.label, Modifier.align(Alignment.Center).padding(Spacing.XS), style = MaterialTheme.typography.bodyMedium, color = Color.White)
-                    if (!open) Box(Modifier.fillMaxSize().background(Color(0x66000000)))
+        val wild = d.wild.sortedByDescending { it.weight }.map { it.speciesId }.distinct().take(4)
+            .map { TileWalker(Dex.defaultForm(it).id, false, Dex.species(it).name) }
+        // The dungeon is drawn in its own tiles, the wild Pokémon that live there walking its floor; the text is on its walls.
+        TileBox(d.id, wild, animate = !model.data.settings.reduceMotion, modifier = Modifier.alpha(if (open) 1f else 0.75f)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Text(d.name, style = MaterialTheme.typography.titleSmall)
+                Text("${d.region.label}, ${d.floors} floors, ${d.needs.label} rank", style = MaterialTheme.typography.bodyMedium)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    d.favored.forEach { TypePlate(it, width = 56.dp) }
                 }
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Text(d.name, style = MaterialTheme.typography.titleSmall)
-                    Text("${d.region.label}, ${d.floors} floors, ${d.needs.label} rank", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                        d.favored.forEach { TypePlate(it, width = 56.dp) }
-                    }
-                    PixelBar(deepest.toFloat() / d.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "deepest floor $deepest of ${d.floors}")
-                    Text("Deepest floor $deepest of ${d.floors}, cleared ${world.clears[d.id] ?: 0} times", style = MaterialTheme.typography.bodyMedium)
-                    when {
-                        storyShut -> Text("Opens when the story is complete.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
-                        !rankOk -> Text("Needs ${d.needs.label} rank.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
-                        chapterShut -> Text("Needs story chapter ${d.chapter}: ${Story.chapters[d.chapter - 1].title}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
-                        ready.isEmpty() -> Text("Make a team in Expeditions to send it here.", style = MaterialTheme.typography.bodyMedium)
-                        else -> FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                            ready.forEach { team -> PixelButton("Send team ${team.id}", { model.store.worldStart(team.id, d.id) }, color = Module.WORLD.look.accent, compact = true) }
-                        }
+                PixelBar(deepest.toFloat() / d.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "deepest floor $deepest of ${d.floors}")
+                Text("Deepest floor $deepest of ${d.floors}, cleared ${world.clears[d.id] ?: 0} times", style = MaterialTheme.typography.bodyMedium)
+                val warn = Color(0xFFFFB4A8)
+                when {
+                    storyShut -> Text("Opens when the story is complete.", style = MaterialTheme.typography.bodyMedium, color = warn)
+                    !rankOk -> Text("Needs ${d.needs.label} rank.", style = MaterialTheme.typography.bodyMedium, color = warn)
+                    chapterShut -> Text("Needs story chapter ${d.chapter}: ${Story.chapters[d.chapter - 1].title}.", style = MaterialTheme.typography.bodyMedium, color = warn)
+                    ready.isEmpty() -> Text("Make a team in Expeditions to send it here.", style = MaterialTheme.typography.bodyMedium)
+                    else -> FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        ready.forEach { team -> PixelButton("Send team ${team.id}", { model.store.worldStart(team.id, d.id) }, color = Module.WORLD.look.accent, compact = true) }
                     }
                 }
             }
@@ -408,7 +407,7 @@ private fun WorldTeamsView(model: AppModel) {
                 }
             }
         }
-        if (outAt != null) TileBox(outAt.id, members, animate = !model.data.settings.reduceMotion, content = body) else TextBox { body() }
+        if (outAt != null) TileBox(outAt.id, members.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !model.data.settings.reduceMotion, content = body) else TextBox { body() }
     }
     if (report.isNotEmpty()) TextBox { Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) { FieldLabel("Lately"); report.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) } } }
     Text("Explore dungeons on the World map, then recall a team any time; nothing it found is lost.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -440,6 +439,38 @@ private fun WorldCampView(model: AppModel, openPokemon: (String) -> Unit) {
 
 private fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier = this.then(Modifier.clickable(interactionSource = null, indication = null, onClick = onClick))
 
+/** The recruiting scene: the wild Pokémon's face beside the question ([find]), or, once it has joined, beside the welcome ([newcomer]). */
+@Composable
+internal fun RecruitCard(find: app.pokeplan.world.Find?, newcomer: app.pokeplan.core.pokemon.OwnedPokemon?, onRecruit: () -> Unit, onLater: () -> Unit, onOk: () -> Unit) {
+    if (newcomer != null) {
+        TextBox {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                Portrait(newcomer.form.id, newcomer.isShiny, newcomer.nickname, emotion = Emotion.JOYOUS, size = 88.dp)
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Text("${newcomer.nickname} joined your team!", style = MaterialTheme.typography.titleSmall)
+                    Text("Level ${newcomer.level}. It lives at the camp and can join any expedition.", style = MaterialTheme.typography.bodyMedium)
+                    PixelButton("OK", onOk, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+                }
+            }
+        }
+    } else if (find != null) {
+        val name = Dex.species(find.speciesId).name
+        TextBox {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                Portrait(Dex.defaultForm(find.speciesId).id, false, name, emotion = Emotion.NORMAL, size = 88.dp)
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Text(name, style = MaterialTheme.typography.titleSmall)
+                    Text("A wild $name, met on floor ${find.floor} of ${Dungeons.byId(find.dungeonId)?.name}, wants to join your team. Recruit it?", style = MaterialTheme.typography.bodyLarge)
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        PixelButton("Recruit", onRecruit, Modifier.weight(1f), Module.WORLD.look.accent, compact = true)
+                        PixelButton("Not now", onLater, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    }
+                }
+            }
+        }
+    }
+}
+
 // ----- Finds and Bag -------------------------------------------------------------------------------------------------
 
 @Composable
@@ -447,6 +478,21 @@ private fun WorldBagView(model: AppModel) {
     val store = model.store
     val world = model.data.world
     var message by remember { mutableStateOf("") }
+    // Recruiting is a short scene, as in the dungeon games: the Pokémon's face beside a question, then beside the welcome.
+    var meeting by remember { mutableStateOf<Int?>(null) }
+    var joined by remember { mutableStateOf<app.pokeplan.core.pokemon.OwnedPokemon?>(null) }
+    val meetFind = meeting?.let { world.finds.getOrNull(it) }
+    if (joined != null || meetFind != null) {
+        RecruitCard(
+            meetFind, joined,
+            onRecruit = {
+                val index = meeting ?: return@RecruitCard
+                store.worldRecruit(index)?.let { p -> joined = p; model.cry(p.speciesId); model.effect(Sfx.CONFIRM) }
+                meeting = null
+            },
+            onLater = { meeting = null }, onOk = { joined = null },
+        )
+    }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Exploration Finds", style = MaterialTheme.typography.titleSmall)
@@ -458,7 +504,7 @@ private fun WorldBagView(model: AppModel) {
                         Text(Dex.species(f.speciesId).name, style = MaterialTheme.typography.bodyLarge)
                         Text("Floor ${f.floor}, ${Dungeons.byId(f.dungeonId)?.name}", style = MaterialTheme.typography.bodyMedium)
                     }
-                    PixelButton("Recruit", { store.worldRecruit(i)?.let { message = "${it.nickname} joined your collection." } }, color = Module.WORLD.look.accent, compact = true)
+                    PixelButton("Meet", { joined = null; meeting = i }, color = Module.WORLD.look.accent, compact = true)
                 }
             }
         }

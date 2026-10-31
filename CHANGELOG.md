@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.87.0
+
+- World's map draws each dungeon like the expedition box: the dialogue border round that dungeon's tiles, its wild Pokémon walking the floor, and its details written on the wall tiles.
+- Recruiting a Pokémon you found is a short scene in the style of the dungeon games, not an egg: its portrait beside "wants to join your team. Recruit it?" (Recruit or Not now), then its portrait, happy, beside "joined your team!", with its cry. The list of finds now says Meet.
+- The bottom tab bar takes the colour of the header of the page you are on (red, Care's green, World's teal), with white labels.
+
 ## 0.86.2
 
 - World expeditions, redone: the box of a team that is out is the app's dialogue box filled with its dungeon's own tiles: one row of wall on top, then a floor that scrolls past while the Pokémon walk across it (only on the floor) with their walking animations (still under Reduce motion), and the text written on wall tiles under it. Nine new tilesets are available (every dungeon has its own except the Distortion Rift, which uses the World Abyss).

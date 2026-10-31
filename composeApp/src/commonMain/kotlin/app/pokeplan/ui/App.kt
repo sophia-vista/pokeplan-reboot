@@ -408,10 +408,13 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
         // its icons and touch targets carry the rest.
         val density = LocalDensity.current
         val navDensity = Density(density.density, density.fontScale.coerceAtMost(1.25f))
+        // The tab bar wears the colour of the header on the page shown.
+        val chrome = remember { androidx.compose.runtime.mutableStateOf(Pixel.Red) }
+        CompositionLocalProvider(app.pokeplan.ui.theme.LocalChromeColor provides chrome) {
         if (rail) Row(Modifier.fillMaxSize()) {
             CompositionLocalProvider(LocalDensity provides navDensity) {
                 Column(
-                    Modifier.width(96.dp).fillMaxHeight().background(Pixel.Panel).border(1.dp, Pixel.Border)
+                    Modifier.width(96.dp).fillMaxHeight().background(chrome.value)
                         .windowInsetsPadding(WindowInsets.statusBars.union(WindowInsets.navigationBars)).padding(horizontal = Spacing.S, vertical = Spacing.M),
                     verticalArrangement = Arrangement.spacedBy(Spacing.S),
                 ) {
@@ -421,7 +424,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
             page(Modifier.weight(1f).fillMaxHeight())
         } else Column(Modifier.fillMaxSize()) {
             page(Modifier.weight(1f).fillMaxWidth())
-            Column(Modifier.fillMaxWidth().background(Pixel.Panel).border(1.dp, Pixel.Border)) {
+            Column(Modifier.fillMaxWidth().background(chrome.value)) {
                 CompositionLocalProvider(LocalDensity provides navDensity) {
                     Row(
                         Modifier.fillMaxWidth().padding(horizontal = Spacing.S, vertical = Spacing.S),
@@ -434,6 +437,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                 }
                 Spacer(Modifier.fillMaxWidth().windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
+        }
         }
     }
     CutsceneHost(model)
