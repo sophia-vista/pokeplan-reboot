@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.90.3
+
+- `PixelField`: one text field for the whole app, replacing 29 plain Material fields (`theme/Fields.kt`). Rest, focused (blue), error (red, with a line that says what to do, announced by screen readers), disabled (shaded, dim letters) and read-only; labels and placeholders are plain strings. The error and disabled looks are new; nothing validates yet, so only the look is added.
+- Taps click again, very quietly: buttons, tabs, filter and category chips and the day arrows play their menu sound at 3% of the Sound effects volume (it was silent since the UI sounds were removed; `TAP_GAIN` in `UiSound.kt`). Game sounds are unchanged. Off when Sound is off.
+
 ## 0.90.2
 
 - Design system: one key for every control. Buttons, tabs, filter chips, category chips, the day and week arrows and the Day/Week/Month switch are all the same stair-cornered pixel key with the same states (resting, hovered with a mouse, pressed, selected, focused, disabled, loading) and the same 48 dp touch target; the table is in `docs/ui-ux-brief.md` section 5.1 and the code in `theme/Controls.kt`. Choice rows, notices and stat chips share the outline; text fields take the dialogue corner, the blue focus colour and the app's font for labels and error text (they showed the system font). Tabs and chips are filled when selected, as before, but no longer rounded; the arrows are keys, not bare symbols.

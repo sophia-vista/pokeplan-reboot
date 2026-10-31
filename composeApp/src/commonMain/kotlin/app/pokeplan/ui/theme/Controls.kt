@@ -138,7 +138,7 @@ fun PixelKey(
             .let {
                 if (onClick == null) it else it.clickable(interactionSource = source, indication = null, enabled = active, role = role) {
                     onClick()
-                    if (!quiet) ui(sound ?: Sfx.CONFIRM)
+                    if (!quiet) ui(sound ?: if (role == Role.Tab) Sfx.CURSOR else Sfx.CONFIRM)
                 }
             }
             .semantics { if (role == Role.Tab || selected) this.selected = selected }

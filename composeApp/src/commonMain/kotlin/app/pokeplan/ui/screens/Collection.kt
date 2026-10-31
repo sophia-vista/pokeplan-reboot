@@ -49,6 +49,7 @@ import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.TypePlate
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.quietClickable
 import app.pokeplan.ui.theme.ScreenHeader
@@ -201,9 +202,9 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
     // Any new search, sort or filter starts again from the first box.
     val change = { v: PcView -> onChange(v.copy(box = 0)) }
     Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        OutlinedTextField(
+        PixelField(
             view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
-            placeholder = { Text("Search by name") }, textStyle = MaterialTheme.typography.bodyLarge,
+            placeholder = "Search by name",
         )
         var open by remember { mutableStateOf(false) }
         // Quiet: the boxes are the page, the controls only help find one.

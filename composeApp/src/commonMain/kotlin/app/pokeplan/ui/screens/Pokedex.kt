@@ -58,6 +58,7 @@ import app.pokeplan.ui.SceneStage
 import app.pokeplan.ui.Stage
 import app.pokeplan.ui.TypePlate
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
@@ -123,9 +124,9 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
             Text(more.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
-    OutlinedTextField(
+    PixelField(
         view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
-        placeholder = { Text("Search by name or number") }, textStyle = MaterialTheme.typography.bodyLarge,
+        placeholder = "Search by name or number",
     )
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         DexFilter.entries.forEach { f -> TabButton(f.label, f == view.filter, { change(view.copy(filter = f)) }, Modifier.padding(0.dp)) }

@@ -44,7 +44,7 @@ import kotlinx.datetime.plus
 @Composable
 internal fun CategoryChip(category: Category, selected: Boolean, onClick: () -> Unit) {
     val color = categoryColor(category)
-    PixelKey(onClick, key = color, selected = selected, fill = true, role = Role.Tab, quiet = true, horizontal = Spacing.M) { look ->
+    PixelKey(onClick, key = color, selected = selected, fill = true, role = Role.Tab, horizontal = Spacing.M) { look ->
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
             // The dot keeps the category's colour on a filled key too: white ring so it shows on its own colour.
             Box(Modifier.size(10.dp).background(color, CircleShape).then(if (selected) Modifier.border(2.dp, Color.White, CircleShape) else Modifier))

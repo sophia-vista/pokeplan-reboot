@@ -45,6 +45,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.RankBadge
 import app.pokeplan.ui.theme.ScreenHeader
@@ -418,9 +419,9 @@ internal fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(
-                    text, { text = it }, Modifier.weight(1f).focusRequester(focus), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                    placeholder = { Text("Add a task", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
+                PixelField(
+                    text, { text = it }, Modifier.weight(1f).focusRequester(focus), singleLine = true,
+                    placeholder = "Add a task",
                     // The keyboard's own key adds the task, so the thumb need not travel to the button.
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
@@ -493,9 +494,9 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                         var category by remember { mutableStateOf(task.category) }
                         var notes by remember { mutableStateOf(task.notes) }
                         var dueDay by remember { mutableStateOf(task.due?.date) }
-                        OutlinedTextField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge, label = { Text("Title") })
-                        OutlinedTextField(
-                            notes, { notes = it }, Modifier.fillMaxWidth(), minLines = 2, maxLines = 6, textStyle = MaterialTheme.typography.bodyLarge, label = { Text("Notes") },
+                        PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Title")
+                        PixelField(
+                            notes, { notes = it }, Modifier.fillMaxWidth(), minLines = 2, maxLines = 6, label = "Notes",
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                         )
                         DifficultyPicker(rank) { rank = it }
@@ -533,9 +534,9 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                             var step by remember { mutableStateOf("") }
                             if (task.subtasks.size < GameStore.MAX_SUBTASKS) {
                                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                                    OutlinedTextField(
-                                        step, { step = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                                        placeholder = { Text("Add a small step", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
+                                    PixelField(
+                                        step, { step = it }, Modifier.weight(1f), singleLine = true,
+                                        placeholder = "Add a small step",
                                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                                         keyboardActions = KeyboardActions(onDone = { if (step.isNotBlank()) { store.addSubtask(task.id, step); step = "" } }),
                                     )

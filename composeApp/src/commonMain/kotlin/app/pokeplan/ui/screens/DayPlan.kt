@@ -427,7 +427,7 @@ private fun Carried(d: Drag, grid: Grid) {
 /** A ‹ or › key that steps a day or a week. */
 @Composable
 internal fun ArrowButton(symbol: String, label: String, enabled: Boolean, onClick: () -> Unit) {
-    PixelKey(onClick, Modifier.semantics { contentDescription = label }, key = Pixel.InkSoft, enabled = enabled, fill = true, quiet = true, horizontal = Spacing.S) { look ->
+    PixelKey(onClick, Modifier.semantics { contentDescription = label }, key = Pixel.InkSoft, enabled = enabled, fill = true, sound = app.pokeplan.ui.Sfx.CURSOR, horizontal = Spacing.S) { look ->
         Text(symbol, style = MaterialTheme.typography.titleMedium, color = if (enabled) Pixel.Ink else look.ink)
     }
 }

@@ -136,9 +136,14 @@ class AppModel(
         if (volume > 0f) cries?.effect(sound, volume)
     }
 
-    /** A UI tap (a button, a tab, a menu row): silent. The app keeps its sound for the moments of the game (an egg, a rank up, a berry) and the notifications. */
-    @Suppress("UNUSED_PARAMETER")
-    fun tap(sound: Sfx) = Unit
+    /**
+     * A UI tap (a button, a tab, a chip, a menu row): a very quiet click, [TAP_GAIN] of the Sound effects volume, so it confirms
+     * the press without competing with the game's own sounds (an egg, a rank up, a berry), which keep their full volume.
+     */
+    fun tap(sound: Sfx) {
+        val volume = data.settings.effectsLevel * TAP_GAIN
+        if (volume > 0f) cries?.effect(sound, volume)
+    }
 
     /** Ticks off a task, with the select blip when it really was open. */
     fun completeTask(id: String) {

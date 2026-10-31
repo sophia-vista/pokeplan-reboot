@@ -48,6 +48,7 @@ import app.pokeplan.ui.Portrait
 import app.pokeplan.ui.Stage
 import app.pokeplan.ui.TypePlate
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.quietClickable
@@ -165,9 +166,9 @@ private fun IdentityBox(model: AppModel, p: OwnedPokemon) {
             // Under the name, not beside it, so a long name or large text never squeezes it.
             if (!renaming) PixelButton("Rename", { renaming = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(
-                    nickname, { nickname = it.take(20) }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                    placeholder = { Text(p.species.name, style = MaterialTheme.typography.bodyLarge) },
+                PixelField(
+                    nickname, { nickname = it.take(20) }, Modifier.weight(1f), singleLine = true,
+                    placeholder = p.species.name,
                 )
                 PixelButton("Save", { store.rename(p.id, nickname); renaming = false }, color = Pixel.Green, compact = true)
             }

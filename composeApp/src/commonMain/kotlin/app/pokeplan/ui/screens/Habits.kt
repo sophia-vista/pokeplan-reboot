@@ -25,6 +25,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.RankBadge
 import app.pokeplan.ui.theme.Spacing
@@ -77,9 +78,9 @@ internal fun HabitsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(
-                    title, { title = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                    placeholder = { Text("New habit", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
+                PixelField(
+                    title, { title = it }, Modifier.weight(1f), singleLine = true,
+                    placeholder = "New habit",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )

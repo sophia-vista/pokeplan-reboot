@@ -634,7 +634,7 @@ class ScreenshotTest {
     @Test
     fun componentGallery() {
         for ((suffix, dark, scale) in listOf(Triple("", false, 1f), Triple("-dark", true, 1f), Triple("-xl", false, 1.3f))) {
-            render("components$suffix", height = 2900, fontScale = scale) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Gallery() } } }
+            render("components$suffix", height = 3300, fontScale = scale) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Gallery() } } }
         }
     }
 
@@ -672,10 +672,12 @@ class ScreenshotTest {
             Text("Notices and chips", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
             app.pokeplan.ui.theme.NoticeTone.entries.forEach { app.pokeplan.ui.theme.Notice("A ${it.name.lowercase()} notice.", tone = it) }
             app.pokeplan.ui.theme.StatChip("12", { Text("★") })
-            Text("Text fields (rest, error, off)", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
-            androidx.compose.material3.OutlinedTextField("Some text", {}, Modifier.fillMaxWidth(), singleLine = true, label = { Text("Title") })
-            androidx.compose.material3.OutlinedTextField("", {}, Modifier.fillMaxWidth(), singleLine = true, isError = true, label = { Text("Title") }, supportingText = { Text("Give it a name") })
-            androidx.compose.material3.OutlinedTextField("Locked", {}, Modifier.fillMaxWidth(), singleLine = true, enabled = false)
+            Text("Text fields (rest, placeholder, error, off, read-only)", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            app.pokeplan.ui.theme.PixelField("Some text", {}, Modifier.fillMaxWidth(), singleLine = true, label = "Title", helper = "Up to 60 letters")
+            app.pokeplan.ui.theme.PixelField("", {}, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Add a task")
+            app.pokeplan.ui.theme.PixelField("", {}, Modifier.fillMaxWidth(), singleLine = true, label = "Title", error = "Give it a name")
+            app.pokeplan.ui.theme.PixelField("Locked", {}, Modifier.fillMaxWidth(), singleLine = true, label = "Title", enabled = false)
+            app.pokeplan.ui.theme.PixelField("Read only", {}, Modifier.fillMaxWidth(), singleLine = true, readOnly = true)
             app.pokeplan.ui.theme.PixelBar(0.6f)
         }
     }

@@ -34,7 +34,7 @@ import app.pokeplan.ui.theme.PixelKey
 /** A filter or choice key (the planner's views, pickers): the selected one is filled, the others outlined. Same states as every key. */
 @Composable
 fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, key: Color = Pixel.Blue) {
-    PixelKey(onClick, modifier, key = key, selected = selected, enabled = enabled, fill = true, role = Role.Tab, quiet = true, horizontal = Spacing.M) { look -> KeyLabel(label, look) }
+    PixelKey(onClick, modifier, key = key, selected = selected, enabled = enabled, fill = true, role = Role.Tab, horizontal = Spacing.M) { look -> KeyLabel(label, look) }
 }
 
 /** A bottom navigation item: a real item icon over the label; the selected one has a filled pill and a bold label. */

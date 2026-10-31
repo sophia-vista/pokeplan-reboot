@@ -46,6 +46,7 @@ import app.pokeplan.ui.NpcPortrait
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.theme.GameBox
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.coroutines.delay
@@ -88,10 +89,9 @@ fun OnboardingScreen(store: GameStore, startStep: Int = 0) {
                 Dialogue("What is your name?") {}
                 TextBox {
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                        OutlinedTextField(
+                        PixelField(
                             name, { name = it.take(24) }, Modifier.weight(1f), singleLine = true,
-                            textStyle = MaterialTheme.typography.bodyLarge,
-                            placeholder = { Text("Your name", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
+                            placeholder = "Your name",
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = { if (name.isNotBlank()) step = Step.CONFIRM_NAME }),
                         )

@@ -40,6 +40,7 @@ import app.pokeplan.plan.GoalRules
 import app.pokeplan.plan.Reviews
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
@@ -192,9 +193,9 @@ internal fun GoalsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(
-                    title, { title = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                    placeholder = { Text("A goal, e.g. Learn guitar", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
+                PixelField(
+                    title, { title = it }, Modifier.weight(1f), singleLine = true,
+                    placeholder = "A goal, e.g. Learn guitar",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
@@ -239,9 +240,9 @@ internal fun GoalsView(model: AppModel) {
                 }
                 var step by remember(g.id) { mutableStateOf("") }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(
-                        step, { step = it }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                        placeholder = { Text("Add a milestone", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
+                    PixelField(
+                        step, { step = it }, Modifier.weight(1f), singleLine = true,
+                        placeholder = "Add a milestone",
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { if (step.isNotBlank()) { store.addMilestone(g.id, step); step = "" } }),
                     )
@@ -295,9 +296,9 @@ internal fun ReviewView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(Reviews.promptFor(store.weekStart), style = MaterialTheme.typography.bodyLarge)
-            OutlinedTextField(
-                note, { note = it }, Modifier.fillMaxWidth(), textStyle = MaterialTheme.typography.bodyLarge,
-                placeholder = { Text("Optional. Only you see this.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
+            PixelField(
+                note, { note = it }, Modifier.fillMaxWidth(),
+                placeholder = "Optional. Only you see this.",
             )
             if (summary.unfinished.isNotEmpty()) {
                 ToggleRow("Carry unfinished to tomorrow", carry) { carry = it }

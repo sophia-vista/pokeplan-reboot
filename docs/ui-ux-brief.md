@@ -186,7 +186,10 @@ Every tappable "key" (button, tab, chip, arrow, segment) is one `PixelKey` (`the
 | Disabled | panel | border | ink-soft at 55% | not tappable |
 | Loading | as disabled | border | three blinking pixels | not tappable; still under Reduce motion |
 
-Rules: neutral keys (`InkSoft`, `Ink`, `Gray`) look grey with ink letters; a light key colour (yellow) gets darker letters on the panel; colour is never the only signal (selected and disabled are in the semantics); keys in wrapped rows fill their 48 dp target (`fill`), buttons are 38 dp (32 compact) inside it. Rows (`ChoiceRow`, `ListRow`), `Notice` and `StatChip` share the same outline (`pixelFrame`, `pixelPlate`); text fields take the dialogue corner and the blue focus colour from the Material theme. Not yet in the system: text fields have no disabled look of their own, and `NavButton` (on the coloured tab bar) has no hover.
+Rules: neutral keys (`InkSoft`, `Ink`, `Gray`) look grey with ink letters; a light key colour (yellow) gets darker letters on the panel; colour is never the only signal (selected and disabled are in the semantics); keys in wrapped rows fill their 48 dp target (`fill`), buttons are 38 dp (32 compact) inside it. Rows (`ChoiceRow`, `ListRow`), `Notice` and `StatChip` share the same outline (`pixelFrame`, `pixelPlate`); text fields take the dialogue corner and the blue focus colour from the Material theme. 
+Text fields are `PixelField` (`theme/Fields.kt`), with the same five-state idea: rest (panel, border), focused (2 dp blue), error (2 dp danger; the `error` text replaces the helper line and is announced), disabled (shade, letters at 55%) and read-only. Labels, placeholders and helper text are plain strings; use a label when the field is alone on a line and a placeholder beside a button. Not yet in the system: `NavButton` (on the coloured tab bar) has no hover, and fields have no hover outline.
+
+**UI tap sounds:** a tap on a button, tab, chip or arrow plays a click (`CONFIRM`, `BACK`, or `CURSOR` for tabs, chips and arrows) at `TAP_GAIN` (3%) of the Sound effects volume (`UiSound.kt`); game sounds keep their full volume.
 
 ## 6. Screen Requirements
 

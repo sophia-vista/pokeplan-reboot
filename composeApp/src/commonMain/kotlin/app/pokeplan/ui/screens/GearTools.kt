@@ -46,6 +46,7 @@ import app.pokeplan.ui.gear.convertCurrency
 import app.pokeplan.ui.launcher.Calculator
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
@@ -136,9 +137,9 @@ private fun UnitConverterPage(onUse: () -> Unit) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Units.kinds.forEachIndexed { i, k -> TabButton(k.label, i == kindIndex, { kindIndex = i }) }
             }
-            OutlinedTextField(
-                text, { text = it.take(16); onUse() }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = { Text("Amount") },
+            PixelField(
+                text, { text = it.take(16); onUse() }, Modifier.fillMaxWidth(), singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Amount",
             )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 OptionPicker("From", kind.units.map { "${it.symbol} (${it.name})" }, fromIndex, Modifier.weight(1f)) { fromIndex = it }
@@ -205,9 +206,9 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
         val amount = text.replace(',', '.').toDoubleOrNull()
         val result = amount?.let { convertCurrency(it, codes[fromIndex], codes[toIndex], rates) }
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            OutlinedTextField(
-                text, { text = it.take(14); onUse() }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = { Text("Amount") },
+            PixelField(
+                text, { text = it.take(14); onUse() }, Modifier.fillMaxWidth(), singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Amount",
             )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 OptionPicker("From", codes, fromIndex, Modifier.weight(1f)) { fromIndex = it }
@@ -254,8 +255,8 @@ internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            OutlinedTextField(
-                text, { text = it.take(40) }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge, label = { Text("Add something to pick from") },
+            PixelField(
+                text, { text = it.take(40) }, Modifier.fillMaxWidth(), singleLine = true, label = "Add something to pick from",
             )
             PixelButton("Add", { model.store.setPickerOptions(options + text); text = "" }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true, enabled = text.isNotBlank() && options.size < app.pokeplan.app.GameStore.MAX_PICKER_OPTIONS)
             options.forEach { option ->

@@ -50,6 +50,7 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.display
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Notice
@@ -67,8 +68,8 @@ internal fun SettingsView(model: AppModel) {
             PixelTitle("Trainer name")
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 val changed = name.isNotBlank() && name.trim() != model.data.trainerName
-                OutlinedTextField(
-                    name, { name = it.take(24) }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
+                PixelField(
+                    name, { name = it.take(24) }, Modifier.weight(1f), singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { if (changed) store.rename(name) }),
                 )
@@ -286,15 +287,15 @@ private fun AccountCard(model: AppModel) {
                 )
                 account == null -> {
                     Text("Sign in to back up your progress and use it on your other devices.", style = MaterialTheme.typography.bodyMedium)
-                    OutlinedTextField(email, { email = it }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
+                    PixelField(email, { email = it }, Modifier.fillMaxWidth(), singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next, autoCorrectEnabled = false),
-                        label = { Text("Email") })
-                    OutlinedTextField(password, { password = it }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
+                        label = "Email")
+                    PixelField(password, { password = it }, Modifier.fillMaxWidth(), singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done, autoCorrectEnabled = false),
-                        label = { Text("Password") },
+                        label = "Password",
                         // Say the rule up front instead of leaving the buttons grey without a reason.
-                        supportingText = { Text("At least 6 characters", style = MaterialTheme.typography.bodyMedium) })
+                        helper = "At least 6 characters")
                     message?.let { Notice(it, tone = NoticeTone.WARNING) }
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PixelButton("Sign in", {
