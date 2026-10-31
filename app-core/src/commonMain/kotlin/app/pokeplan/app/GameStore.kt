@@ -20,6 +20,7 @@ import app.pokeplan.core.pokemon.ItemEffects
 import app.pokeplan.core.pokemon.ItemUse
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.GearTool
+import app.pokeplan.world.Missions
 import app.pokeplan.world.WorldReport
 import app.pokeplan.world.WorldSim
 import app.pokeplan.core.pokemon.OwnedPokemon
@@ -1106,7 +1107,16 @@ class GameStore(
         val report = WorldSim.settle(data.world, data.player.pokemon, nowMillis)
         if (report.isEmpty) return null
         update { it.copy(world = report.data) }
+        worldGuardian()
         return report
+    }
+
+    /** The story's end: the Guardian, Dialga, joins the Guardian collection once (docs/world.md, section 15). The mastery bonus is [app.pokeplan.world.Story.GUARDIAN_BONUS]. */
+    private fun worldGuardian() {
+        val w = data.world
+        if (!w.guardianDone || w.guardianGranted) return
+        update { it.copy(world = it.world.copy(guardianGranted = true)) }
+        grantPokemon(app.pokeplan.world.Story.GUARDIAN_SPECIES, "World")
     }
 
     /** Sets who is on World team [team]; false when the rank, the team or the Pokémon do not allow it. */
@@ -1149,7 +1159,7 @@ class GameStore(
     /** Takes a job from the World mission board; false when it is not offered or three are held. */
     fun worldAcceptMission(id: String): Boolean {
         worldSettle()
-        val next = data.world.acceptMission(id) ?: return false
+        val next = data.world.copy(lastSeenAt = nowMillis).acceptMission(id) ?: return false
         update { it.copy(world = next) }
         return true
     }
@@ -1161,8 +1171,10 @@ class GameStore(
     /** Claims a finished job: Poké, Exploration XP and its item go to World's own stock (items move to the Bag with the rest). */
     fun worldClaimMission(id: String): Boolean {
         worldSettle()
-        val next = data.world.claimMission(id) ?: return false
-        update { it.copy(world = next) }
+        val give = Missions.byId(id)?.takeIf { it.give != null }
+        if (give != null && !data.player.inventory.has(give.give!!, give.giveCount)) return false
+        val next = data.world.copy(lastSeenAt = nowMillis).claimMission(id) ?: return false
+        update { d -> d.copy(world = next, player = if (give != null) d.player.copy(inventory = d.player.inventory.remove(give.give!!, give.giveCount)) else d.player) }
         return true
     }
 
@@ -1182,6 +1194,33 @@ class GameStore(
         return true
     }
 
+    /** Brews at the Café: three berries from the Bag, then three hours of luckier floors. False without the berries. */
+    fun worldBrew(): Boolean {
+        worldSettle()
+        val bag = data.player.inventory
+        val berries = bag.counts.filterKeys { Items.category(it) == app.pokeplan.core.pokemon.ItemCategory.BERRY }.entries.sortedBy { it.key }
+        if (berries.sumOf { it.value } < app.pokeplan.world.Cafe.BERRIES) return false
+        var need = app.pokeplan.world.Cafe.BERRIES
+        var left = bag
+        for ((id, n) in berries) { val take = minOf(n, need); left = left.remove(id, take); need -= take; if (need == 0) break }
+        update { d -> d.copy(player = d.player.copy(inventory = left), world = d.world.brew(nowMillis)) }
+        return true
+    }
+
+    /** Buys a Rare Candy at the Kecleon Shop for Poké. False when Poké is short. */
+    fun worldBuyCandy(): Boolean {
+        val next = data.world.buyCandy() ?: return false
+        update { d -> d.copy(world = next, player = d.player.copy(inventory = d.player.inventory.add(Items.RARE_CANDY, 1))) }
+        return true
+    }
+
+    /** Dojo training: Poké into skill XP. */
+    fun worldTrain(skill: app.pokeplan.world.WorldSkill): Boolean {
+        val next = data.world.train(skill) ?: return false
+        update { it.copy(world = next) }
+        return true
+    }
+
     /** Opens a treasure box of [tier]: berries, and from the silver tier a chance of a Rare Candy; what is inside goes to World's items. Returns what was found. *(tune)* */
     fun worldOpenTreasure(tier: Int): Map<String, Int> {
         if ((data.world.treasure[tier] ?: 0) <= 0) return emptyMap()
@@ -1189,8 +1228,8 @@ class GameStore(
         val found = mutableMapOf<String, Int>()
         fun add(id: String, n: Int) { found[id] = (found[id] ?: 0) + n }
         repeat(1 + tier) { add(Items.berry(listOf("sweet", "dry", "sour", "spicy", "bitter").random(random)), 1) }
-        if (tier >= 2 && random.nextInt(100) < 30 + tier * 15) add(Items.RARE_CANDY, 1)
-        if (tier >= 3) add(Items.RARE_CANDY, 1)
+        // A Rare Candy: 15% from a silver box, 35% from a gold one (the simulation showed the first guesses of 60% and 175% paid hundreds a year).
+        if (tier >= 2 && random.nextInt(100) < (if (tier >= 3) 35 else 15)) add(Items.RARE_CANDY, 1)
         update { d ->
             d.copy(world = d.world.copy(
                 treasure = d.world.treasure + (tier to d.world.treasure.getValue(tier) - 1),

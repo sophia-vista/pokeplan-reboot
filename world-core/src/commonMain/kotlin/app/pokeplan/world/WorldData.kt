@@ -42,6 +42,15 @@ data class WorldData(
     /** The species found so far (the research notebook's start): each counts once. */
     val discovered: Set<Int> = emptySet(),
     val storyChapter: Int = 0,
+    /** Until when the Café's brew helps (milliseconds), 0 for none. */
+    val brewUntil: Long = 0,
+    /** The Guardian has been faced (the story is complete) and whether its reward was given. */
+    val guardianDone: Boolean = false,
+    val guardianGranted: Boolean = false,
+    /** Rare Candies bought from the shop so far (the price rises with each). */
+    val shopCandies: Int = 0,
+    /** For a daily or weekly job, the day number it was last claimed. */
+    val missionClaimedDay: Map<String, Long> = emptyMap(),
     /** Skill XP by [WorldSkill] name. */
     val skillXp: Map<String, Int> = emptyMap(),
     /** Facility levels by [Facility] name. */
@@ -84,7 +93,7 @@ data class WorldData(
     fun start(id: Int, dungeonId: String, now: Long): WorldData? {
         val team = team(id) ?: return null
         val dungeon = Dungeons.byId(dungeonId) ?: return null
-        if (team.members.isEmpty() || team.expedition != null || rank < dungeon.needs) return null
+        if (team.members.isEmpty() || team.expedition != null || rank < dungeon.needs || Story.opened(this) < dungeon.chapter || (dungeon.postStory && !guardianDone)) return null
         return replace(team.copy(expedition = Expedition(dungeonId, now, now)))
     }
 
@@ -120,6 +129,7 @@ data class WorldData(
         return copy(
             missions = missions - p, poke = poke + m.poke, xp = xp + m.xp, items = bag,
             missionsDone = if (m.once) missionsDone + m.id else missionsDone,
+            missionClaimedDay = if (m.period > 0) missionClaimedDay + (m.id to Missions.day(this)) else missionClaimedDay,
         )
     }
 
@@ -145,6 +155,24 @@ data class WorldData(
         val step = researchReady().firstOrNull { it.species == species } ?: return null
         val bag = step.itemId?.let { items + (it to (items[it] ?: 0) + step.count) } ?: items
         return copy(poke = poke + step.poke, items = bag, researchClaimed = researchClaimed + species)
+    }
+
+    /** The Poké the next shop Rare Candy costs. *(tune)* */
+    val candyPrice: Int get() = Shop.CANDY_BASE + Shop.CANDY_STEP * shopCandies
+
+    /** Buys a Rare Candy at the Kecleon Shop; null when Poké is short. The caller puts the candy in the Bag. */
+    fun buyCandy(): WorldData? {
+        if (poke < candyPrice) return null
+        return copy(poke = poke - candyPrice, shopCandies = shopCandies + 1)
+    }
+
+    /** Brews at the Café at [now] (the caller took the berries): every floor finished in the next [Cafe.HOURS] hours is luckier. */
+    fun brew(now: Long): WorldData = copy(brewUntil = now + Cafe.HOURS * 3_600_000L)
+
+    /** Dojo training: [Dojo.COST] Poké for [Dojo.SKILL_XP] XP in [skill]; null when Poké is short or the skill is at the top. */
+    fun train(skill: WorldSkill): WorldData? {
+        if (poke < Dojo.COST || skillLevel(skill) >= WorldSkill.MAX_LEVEL) return null
+        return copy(poke = poke - Dojo.COST).withSkillXp(skill, Dojo.SKILL_XP)
     }
 
     internal fun withTeam(team: WorldTeam) = replace(team)

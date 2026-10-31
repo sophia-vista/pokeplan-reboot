@@ -129,6 +129,7 @@ private fun RankCard(model: AppModel) {
             } else Text("Top rank reached.", style = MaterialTheme.typography.bodyMedium)
             val opened = Story.opened(world)
             Text("Story: chapter $opened, ${Story.chapters[opened - 1].title}", style = MaterialTheme.typography.bodyLarge)
+            if (Story.complete(world)) Text("The story is complete. ${Story.GUARDIAN_BONUS}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             Story.next(world)?.let { Text("Next: ${it.title} (${it.needsRank.label} rank, ${it.needsClears} dungeon clears)", style = MaterialTheme.typography.bodyMedium) }
             Text("Poké: ${world.poke}", style = MaterialTheme.typography.bodyMedium)
         }
@@ -148,7 +149,10 @@ private fun WorldMapView(model: AppModel) {
                 Text(d.name, style = MaterialTheme.typography.titleSmall)
                 Text("${d.region.label}, ${d.floors} floors. Quick explorers: ${d.favored.joinToString(", ") { it.label }}.", style = MaterialTheme.typography.bodyMedium)
                 Text("Deepest floor: ${world.deepest[d.id] ?: 0} of ${d.floors}. Cleared ${world.clears[d.id] ?: 0} times.", style = MaterialTheme.typography.bodyLarge)
-                if (!open) Text("Needs ${d.needs.label} rank.", style = MaterialTheme.typography.bodyMedium)
+                val chapterShut = app.pokeplan.world.Story.opened(world) < d.chapter
+                if (d.postStory && !world.guardianDone) Text("Opens when the story is complete.", style = MaterialTheme.typography.bodyMedium)
+                else if (!open) Text("Needs ${d.needs.label} rank.", style = MaterialTheme.typography.bodyMedium)
+                else if (chapterShut) Text("Needs story chapter ${d.chapter}: ${app.pokeplan.world.Story.chapters[d.chapter - 1].title}.", style = MaterialTheme.typography.bodyMedium)
                 else if (ready.isEmpty()) Text("Make a team in Expeditions to send it here.", style = MaterialTheme.typography.bodyMedium)
                 else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     ready.forEach { team -> PixelButton("Send team ${team.id}", { model.store.worldStart(team.id, d.id) }, color = Module.WORLD.look.accent, compact = true) }
@@ -185,6 +189,7 @@ private fun WorldMissionsView(model: AppModel) {
                         MissionKind.COLLECT -> "Find ${m.count} berries: ${minOf(p.progress, m.count)} so far."
                         MissionKind.RESCUE -> "Reach $where to bring the lost Pokémon home."
                         MissionKind.EXPLORE -> "Reach $where."
+                        MissionKind.DELIVER -> "Reach $where, then hand over ${m.giveCount} x ${Items.name(m.give ?: "")} from your Bag."
                     },
                     style = MaterialTheme.typography.bodyLarge,
                 )
@@ -200,7 +205,7 @@ private fun WorldMissionsView(model: AppModel) {
     offered.forEach { m ->
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Text("${m.kind.label}: ${m.title}", style = MaterialTheme.typography.titleSmall)
+                Text("${m.kind.label}${if (m.period == 1) " (daily)" else if (m.period == 7) " (weekly)" else ""}: ${m.title}", style = MaterialTheme.typography.titleSmall)
                 Text(m.story, style = MaterialTheme.typography.bodyMedium)
                 Text("Reward: ${reward(m)}", style = MaterialTheme.typography.bodyMedium)
                 PixelButton("Take the job", { store.worldAcceptMission(m.id) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true, enabled = world.missions.size < Missions.MAX_ACTIVE)
@@ -262,7 +267,37 @@ private fun WorldBaseView(model: AppModel) {
             }
         }
     }
-    Text("The Café, Dojo, shop and storage are not built yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    FieldLabel("Spinda's Café")
+    val brewing = world.brewUntil > model.store.nowMillis
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("A brew for the road", style = MaterialTheme.typography.titleSmall)
+            Text("${app.pokeplan.world.Cafe.BERRIES} berries from your Bag make a brew for ${app.pokeplan.world.Cafe.HOURS} hours: 30% more Exploration XP, 5% more treasure chance and 1% more find chance on every floor.", style = MaterialTheme.typography.bodyMedium)
+            if (brewing) Text("A brew is working for ${(world.brewUntil - model.store.nowMillis) / 60_000} more minutes.", style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
+            var cafeMessage by remember { mutableStateOf("") }
+            PixelButton("Brew", { cafeMessage = if (store.worldBrew()) "Brewed." else "You need ${app.pokeplan.world.Cafe.BERRIES} berries in your Bag." }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+            if (cafeMessage.isNotEmpty()) Text(cafeMessage, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+    FieldLabel("Kecleon Shop")
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("Rare Candy", style = MaterialTheme.typography.titleSmall)
+            Text("${world.shopCandies} bought so far. Each costs a little more.", style = MaterialTheme.typography.bodyMedium)
+            PixelButton("Buy one: ${world.candyPrice} Poké", { store.worldBuyCandy() }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = world.poke >= world.candyPrice, compact = true)
+        }
+    }
+    FieldLabel("Dojo")
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("Training", style = MaterialTheme.typography.titleSmall)
+            Text("${app.pokeplan.world.Dojo.COST} Poké buys ${app.pokeplan.world.Dojo.SKILL_XP} skill XP in a skill you choose.", style = MaterialTheme.typography.bodyMedium)
+            WorldSkill.entries.forEach { skill ->
+                PixelButton("Train ${skill.label}", { store.worldTrain(skill) }, Modifier.fillMaxWidth(), Pixel.InkSoft, enabled = world.poke >= app.pokeplan.world.Dojo.COST && world.skillLevel(skill) < WorldSkill.MAX_LEVEL, compact = true)
+            }
+        }
+    }
+    Text("Storage is the shared Bag; the Swap Shop is not built.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
 // ----- Expeditions ------------------------------------------------------------------------------------------------------
@@ -295,7 +330,7 @@ private fun WorldTeamsView(model: AppModel) {
                     val dungeon = Dungeons.byId(trip.dungeonId)
                     if (dungeon != null) {
                         val floor = trip.floorsClimbed % dungeon.floors
-                        val per = WorldSim.floorMillis(dungeon, WorldSim.power(members, dungeon))
+                        val per = WorldSim.floorMillis(dungeon, WorldSim.power(members, dungeon), world.guardianDone)
                         Text("Exploring ${dungeon.name}: floor ${floor + 1} of ${dungeon.floors}", style = MaterialTheme.typography.bodyLarge)
                         PixelBar(floor.toFloat() / dungeon.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "floor ${floor + 1} of ${dungeon.floors}")
                         Text("A floor takes about ${per / 1000 / 60} min ${per / 1000 % 60} s. It keeps going while you are away, up to 12 hours.", style = MaterialTheme.typography.bodyMedium)

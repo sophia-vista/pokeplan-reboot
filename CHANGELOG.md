@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.86.0
+
+- World, the rest of the first design (`docs/world.md`): five more dungeons across the other regions (Waterfall Cave, Glacier Palace, Ancient Ruins, Sky Tower, Temporal Tower) and a post-story Distortion Rift; dungeons now also need their story chapter. Clearing the Temporal Tower faces the Guardian: the story is complete, Dialga joins your Guardians once, and every expedition climbs 10% faster (Temporal Mastery). Spinda's Café (three berries from the Bag brew three hours of 30% more Exploration XP, 5% more treasure chance, 1% more find chance), the Kecleon Shop (Rare Candies for Poké, a price that rises with each) and the Dojo (Poké into skill XP). Deliver jobs, daily and weekly jobs, and six more jobs; ordinary jobs now wait a week before they can be taken again. World has a `Place` the app can be sent to.
+- Tuned by the new simulation: silver treasure boxes give a Rare Candy 15% of the time and gold 35% (it was 60% and 100% to 175%, hundreds a year), and the last research steps are 35 and 45 species (the dungeons only have 50 findable, so 60 could not be reached).
+- Not built: Escort and Defeat jobs, the Swap Shop, camp roaming and habitats, move-based skills, a Home-screen widget for World.
+
 ## 0.85.0
 
 - World skills, base and research (`docs/world.md`, sections 10, 12 and 13): three skills level as teams explore, even away (Exploration: 2% more Poké per level; Foraging: 1% more berry chance; Scouting: 0.3% more find chance; level 10 at 3,000 XP). A Base buys the Camp (1% more treasure chance per level) and Research Lab (10% more Exploration XP per level) for Poké, five levels each (the cost triples every level). Research pays Poké, berries and Rare Candies at 3 to 60 species discovered. This gives Poké its first use. None of it changes how long a floor takes. Café, Dojo, shop and storage are not built.

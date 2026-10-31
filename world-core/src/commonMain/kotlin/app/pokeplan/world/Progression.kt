@@ -42,6 +42,24 @@ data class ResearchStep(val species: Int, val poke: Int, val itemId: String? = n
 object Research {
     val steps: List<ResearchStep> = listOf(
         ResearchStep(3, 100), ResearchStep(6, 200, Items.berry("sweet"), 3), ResearchStep(10, 400), ResearchStep(15, 800, Items.RARE_CANDY, 1),
-        ResearchStep(25, 1_500), ResearchStep(40, 3_000, Items.RARE_CANDY, 2), ResearchStep(60, 6_000, Items.RARE_CANDY, 3),
+        ResearchStep(25, 1_500), ResearchStep(35, 3_000, Items.RARE_CANDY, 2), ResearchStep(45, 6_000, Items.RARE_CANDY, 3),
     )
+}
+
+/** The Kecleon Shop: Poké buys Rare Candies at a price that climbs with each one bought (so Poké always has a use). *(tune)* */
+object Shop {
+    const val CANDY_BASE = 2_500
+    const val CANDY_STEP = 500
+}
+
+/** Spinda's Café: three berries from the Bag make a brew that lasts [HOURS] hours: 30% more Exploration XP, 5% more treasure chance, 1% more find chance. *(tune)* */
+object Cafe {
+    const val HOURS = 3
+    const val BERRIES = 3
+}
+
+/** The Dojo: repeatable training that turns Poké into skill XP. *(tune)* */
+object Dojo {
+    const val COST = 200
+    const val SKILL_XP = 60
 }

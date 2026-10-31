@@ -19,10 +19,16 @@ object Story {
 
     /** The Guardian candidates (docs/world.md): the first is the strongest PMD reference. Its mastery bonus is illustrative. */
     const val GUARDIAN = "Primal Dialga"
+
+    /** The species the Guardian gives (Dialga; there is no Primal form in the Dex). */
+    const val GUARDIAN_SPECIES = 483
     const val GUARDIAN_BONUS = "Temporal Mastery: every expedition climbs 10% faster"
 
     /** How many chapters are open for [data]: each needs its rank and enough dungeon clears altogether. */
     fun opened(data: WorldData): Int = chapters.count { data.rank >= it.needsRank && data.clears.values.sum() >= it.needsClears }
+
+    /** The story is complete when the Guardian has been faced. */
+    fun complete(data: WorldData): Boolean = data.guardianDone
 
     /** The next chapter that is not open yet, or null at the end. */
     fun next(data: WorldData): Chapter? = chapters.getOrNull(opened(data))
