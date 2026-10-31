@@ -122,11 +122,6 @@ import app.pokeplan.ui.theme.focusRing
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** The phone's own pages the utilities screen links to. */
-enum class Utility(val label: String) {
-    INTERNET("Internet"), VOLUME("Volume"), BLUETOOTH("Bluetooth"), DISPLAY("Display"), BATTERY("Battery saver"), ALARMS("Alarms"),
-}
-
 /** The battery's charge, 0 to 100, and whether it is charging. */
 data class BatteryStatus(val percent: Int, val charging: Boolean)
 
@@ -143,13 +138,6 @@ interface LauncherHost {
     fun openPokemon(id: String)
     /** The battery now, or null when the phone cannot say. */
     fun battery(): BatteryStatus? = null
-    /** Whether the phone has a flashlight, and whether it is on now. */
-    fun hasTorch(): Boolean = false
-    fun torchOn(): Boolean = false
-    /** Turns the flashlight on or off; returns whether it is on afterwards. */
-    fun setTorch(on: Boolean): Boolean = false
-    /** Opens one of the phone's own panels or settings pages. */
-    fun openUtility(utility: Utility) {}
     /** Whether the phone's own power saving is on. */
     fun powerSaving(): Boolean = false
     /** The forecast for [place]: a recent one kept on the device, else a fresh one from the network; null when there is neither. */
@@ -231,7 +219,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var settingsOpen by remember { mutableStateOf(false) }
     var foldersOpen by remember { mutableStateOf(false) }
     var widgetsOpen by remember { mutableStateOf(false) }
-    var utilitiesOpen by remember { mutableStateOf(false) }
     // Editing the widgets on the screen (hold one): drag, resize, remove; page swipes are off meanwhile.
     var editing by remember { mutableStateOf(false) }
     val todayState = remember { TodayState(model.store.today) }
@@ -277,7 +264,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var listHidden by remember { mutableStateOf(false) }
     // The Home button always comes back to the home page.
     LaunchedEffect(homePresses) {
-        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false; foldersOpen = false; folderName = null; forecastOpen = false; placeOpen = false; widgetsOpen = false; utilitiesOpen = false; editing = false }
+        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false; foldersOpen = false; folderName = null; forecastOpen = false; placeOpen = false; widgetsOpen = false; editing = false }
     }
     val sheetApp = sheetKey?.let { key -> apps.firstOrNull { it.key == key } }
     PixelTheme(dark) {
@@ -285,7 +272,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
             androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 val pixel = townScale(maxWidth.value * LocalDensity.current.density)
                 val env = WidgetEnv(
-                    model, apps, prefs, host, forecast, pixel, todayState, mood, saver, editing, onPrefs, onEdit = { editing = true }, onDone = { editing = false }, onAllApps = { listOpen = true }, onFolders = { foldersOpen = true }, onWidgets = { widgetsOpen = true; editing = false }, onUtilities = { utilitiesOpen = true },
+                    model, apps, prefs, host, forecast, pixel, todayState, mood, saver, editing, onPrefs, onEdit = { editing = true }, onDone = { editing = false }, onAllApps = { listOpen = true }, onFolders = { foldersOpen = true }, onWidgets = { widgetsOpen = true; editing = false }, onGear = { host.openApp(Place.GEAR) },
                     onOpenFolder = { folderName = it; foldersOpen = true }, onForecast = { forecastOpen = true }, onHold = { sheetKey = it.key },
                 )
                 // Two pages side by side: the town with its boxes, and Today (a calendar and the day's agenda and tasks). The town is two screens wide, so its Pokémon can wander over to Today (but only on the main screen can they be touched or meet). Swipe across, or press Home to come back.
@@ -329,7 +316,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     repeat(2) { i -> Box(Modifier.size(width = 16.dp, height = 4.dp).background(Color.White.copy(alpha = if ((page.value + 0.5f).toInt() == i) 0.9f else 0.3f))) }
                 }
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
-                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (placeOpen) placeOpen = false else if (utilitiesOpen) utilitiesOpen = false else if (widgetsOpen) widgetsOpen = false else if (editing) editing = false else if (forecastOpen) forecastOpen = false else if (folderName != null) folderName = null else if (foldersOpen) foldersOpen = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (page.value > 0.5f) scope.launch { page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } }
+                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (placeOpen) placeOpen = false else if (widgetsOpen) widgetsOpen = false else if (editing) editing = false else if (forecastOpen) forecastOpen = false else if (folderName != null) folderName = null else if (foldersOpen) foldersOpen = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (page.value > 0.5f) scope.launch { page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } }
                 // Drag in from the right edge: the app list comes into focus with the finger, and settles open or shut when it lets go.
                 val widthPx = maxWidth.value * LocalDensity.current.density
                 // Where the finger would have the list (past either end it keeps going, but the list stretches only a little: rubber).
@@ -367,7 +354,6 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     onWidgets = { widgetsOpen = true },
                     onClose = { settingsOpen = false },
                 )
-                if (utilitiesOpen) UtilitiesPage(host, pixel, onClose = { utilitiesOpen = false })
                 if (widgetsOpen) WidgetsPage(prefs, onPrefs, host, pixel, onClose = { widgetsOpen = false })
                 if (foldersOpen) FoldersPage(apps, prefs, onPrefs, host, folderName, { folderName = it }, onClose = { foldersOpen = false; folderName = null }, pixel = pixel)
                 if (forecastOpen) ForecastPage(forecast, prefs, pixel, onPlace = { placeOpen = true }, onClose = { forecastOpen = false })

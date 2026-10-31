@@ -353,6 +353,8 @@ the parser matches the real format.
 
 ### Pokégear: utilities and helper Pokémon *(adopted; the owner's Poketch idea, renamed)*
 
+**Built in 0.81.0 (v1, in the app):** the five tools, helpers by signature line, the Ranger loan (a Capture Styler of 2 to 4 loops by the loaner's rarity, speed from its base Speed), the Modules menu card and the launcher's Pokégear button. Not yet: the move rule (the Dex has no moves, so only the signature line counts), the Android widgets (a flashlight toggle and a coin toss), a persistent top-bar entry, and the parked utilities below.
+
 Pokégear is a global utility hub reachable from anywhere (a persistent top-bar entry, shortcuts on Home and on Android), not a region and not a tab. Handy tools that live in the app and as widgets, each one a "Poketch app" the player switches between with a button, like the watch in Diamond and Pearl. Each tool has **helper Pokémon** known for that skill (Ampharos for the flashlight). It stays plain utility: no text from the buddy, real game assets for icons, and nothing a tool records is read by any other module.
 
 **v1 tools and their helpers.** A Pokémon is compatible with a tool if it is in the tool's **signature line OR it learns the tool's move** (in any game, by any method). There is no type fallback.

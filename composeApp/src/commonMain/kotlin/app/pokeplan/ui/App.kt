@@ -94,7 +94,7 @@ enum class Tab(val label: String, val icon: String) {
  * it ("PLANNER", "FOCUS", "CARE"), so the names stay as they are.
  */
 enum class Place(val tab: Tab) {
-    HOME(Tab.HOME), PLAN(Tab.MODULES), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), PARTY(Tab.COLLECTION), ME(Tab.ME), CARE(Tab.MODULES),
+    HOME(Tab.HOME), PLAN(Tab.MODULES), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), PARTY(Tab.COLLECTION), ME(Tab.ME), CARE(Tab.MODULES), GEAR(Tab.HOME),
 }
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
@@ -112,7 +112,12 @@ class AppModel(
     val care: CareStore = CareStore(MemoryStorage(), Clock { store.nowMillis }, store),
     /** Care's opt-in cloud copy, through the account [sync] signed in to; null without a cloud. */
     val careSync: CareSync? = null,
+    /** The phone's flashlight for the Pokégear; null where there is none (the tool then lights the screen). */
+    val torch: Torch? = null,
 ) {
+    /** Whether the Pokégear is open: a screen over whichever tab is showing, reached from the button at the top of every tab. */
+    var gearOpen: Boolean by mutableStateOf(false)
+
     /** A light vibration, if the platform can and Haptics is on in Settings. */
     fun haptic() {
         if (data.settings.haptics) haptics?.tick()
@@ -204,6 +209,7 @@ class AppModel(
             Place.FOCUS -> { module = Module.PLAN; planSection = if (focusTab) PlanSection.FOCUS else null }
             Place.CARE -> { module = Module.CARE; careSection = null }
             Place.PARTY -> openParty = true
+            Place.GEAR -> gearOpen = true
             else -> {}
         }
     }
@@ -241,6 +247,7 @@ fun App(
     files: FileSaver? = null,
     calendars: CalendarSource? = null,
     phone: PhoneState? = null,
+    torch: Torch? = null,
     /** Called after every change to the saved data (the Android app uses it to keep its widgets up to date). */
     onDataChanged: ((AppData) -> Unit)? = null,
     /** Called after every change to Care's save (the Android app keeps routine reminders and the Care widget up to date). */
@@ -255,7 +262,7 @@ fun App(
         val care = CareStore(careStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val sync = client?.let { SyncManager(store, it) }
         val careSync = if (client != null && sync != null) CareSync(care, client) { sync.session() } else null
-        AppModel(store, motion, sync, client?.let { SocialClient(it) }, cries, haptics, files, calendars, phone, care, careSync).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
+        AppModel(store, motion, sync, client?.let { SocialClient(it) }, cries, haptics, files, calendars, phone, care, careSync, torch).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
     }
     val store = model.store
     if (onDataChanged != null) DisposableEffect(store) {
@@ -388,6 +395,8 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                             }
                         }
                         UndoBar(model, Modifier.align(Alignment.BottomCenter))
+                        // The Pokégear covers whichever tab is open until it is closed.
+                        if (model.gearOpen) Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.GearScreen(model) { model.gearOpen = false } }
                     }
                 }
             }

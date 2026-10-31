@@ -48,7 +48,7 @@ import kotlinx.datetime.plus
 /** What every widget needs from the launcher: the model, the apps, the prefs, the phone, the forecast and what to do on a tap. */
 internal class WidgetEnv(
     val model: AppModel, val apps: List<LauncherApp>, val prefs: LauncherPrefs, val host: LauncherHost, val forecast: Forecast?, val pixel: Int,
-    val today: TodayState, val mood: BuddyMood, val saver: Boolean, val editing: Boolean, val onPrefs: (LauncherPrefs) -> Unit, val onEdit: () -> Unit, val onDone: () -> Unit, val onAllApps: () -> Unit, val onFolders: () -> Unit, val onWidgets: () -> Unit, val onUtilities: () -> Unit, val onOpenFolder: (String) -> Unit, val onForecast: () -> Unit, val onHold: (LauncherApp) -> Unit,
+    val today: TodayState, val mood: BuddyMood, val saver: Boolean, val editing: Boolean, val onPrefs: (LauncherPrefs) -> Unit, val onEdit: () -> Unit, val onDone: () -> Unit, val onAllApps: () -> Unit, val onFolders: () -> Unit, val onWidgets: () -> Unit, val onGear: () -> Unit, val onOpenFolder: (String) -> Unit, val onForecast: () -> Unit, val onHold: (LauncherApp) -> Unit,
 )
 
 /** The month and day the calendar and agenda widgets share, so choosing a day in one shows its agenda in the other. */
@@ -240,7 +240,7 @@ private fun ActionsWidget(env: WidgetEnv) {
             }
             Row(Modifier.fillMaxWidth()) {
                 PmdMenuLine("Widgets", env.pixel, Modifier.weight(1f), center = true, onClick = env.onWidgets)
-                PmdMenuLine("Utilities", env.pixel, Modifier.weight(1f), center = true, onClick = env.onUtilities)
+                PmdMenuLine("Pokégear", env.pixel, Modifier.weight(1f), center = true, onClick = env.onGear)
             }
         }
     }

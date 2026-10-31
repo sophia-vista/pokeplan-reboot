@@ -29,6 +29,9 @@ import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.TextBox
 
 /** Me holds only what every module shares; Plan's Growth, Goals and Review are in Modules, Plan. */
+/** Whether the Friends section (gifts and the weekly board) is reachable from the Me menu. Off for now. */
+private const val FRIENDS_ENABLED = false
+
 private enum class MeSection(val label: String, val icon: String) {
     FRIENDS("Friends", "friend-ball"), SETTINGS("Settings", "gb-sounds"), HELP("Help", "town-map"),
 }
@@ -49,9 +52,10 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
                     TrainerCard(model)
                     MenuGrid(
                         listOfNotNull(
-                            if (model.social == null) null else MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = Pixel.Pink),
-                            MenuEntry("SETTINGS", "gb-sounds", "Settings", "name, region, sound", tint = Pixel.InkSoft),
-                            MenuEntry("HELP", "town-map", "Help", "how it works", tint = Pixel.Blue),
+                            // Friends is switched off for now (the screens and the server side are kept): flip FRIENDS_ENABLED to bring it back.
+                            if (!FRIENDS_ENABLED || model.social == null) null else MenuEntry("FRIENDS", "friend-ball", "Friends", if (data.account == null) "sign in first" else "gifts and the weekly board", tint = Pixel.Pink),
+                            MenuEntry("SETTINGS", "gb-sounds", "Settings", tint = Pixel.InkSoft),
+                            MenuEntry("HELP", "town-map", "Help", tint = Pixel.Blue),
                         ),
                     ) { key -> section = MeSection.valueOf(key) }
                 }

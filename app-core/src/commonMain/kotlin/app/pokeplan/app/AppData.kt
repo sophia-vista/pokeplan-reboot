@@ -72,6 +72,14 @@ data class AppData(
     val lastSeenVersion: String = "0.1.0",
     /** Pokémon the player starred: they cannot be transferred by accident. Stays on this device's save. */
     val favorites: Set<String> = emptySet(),
+    /** The Pokémon the player chose to help each Pokégear tool, by tool name to Pokémon id. A tool with none uses the best Pokémon owned who can help, else its loan. Cosmetic; stays on this device's save. */
+    val gearHelpers: Map<String, String> = emptyMap(),
+    /** The Pokégear tools that have a loaner from a Ranger request (it helps until an owned Pokémon can). Cosmetic; stays on this device's save. */
+    val gearLoans: Set<String> = emptySet(),
+    /** The list the Picker chooses from; never synced or sent anywhere. */
+    val pickerOptions: List<String> = emptyList(),
+    /** The last exchange rates the Currency tool fetched, kept for offline use. */
+    val gearRates: GearRates? = null,
     /** Where each Pokémon came from, by Pokémon id, for its detail page; Pokémon from before 0.51.0 have none. */
     val origins: Map<String, Origin> = emptyMap(),
     /** Species the player has ever owned as a shiny, kept even after the shiny is transferred. */
@@ -97,6 +105,10 @@ data class AppData(
 /** Which colours the app uses: the phone's choice, or always light or dark. */
 @Serializable
 enum class ThemeMode(val label: String) { SYSTEM("Match phone"), LIGHT("Light"), DARK("Dark") }
+
+/** Exchange rates: units of each currency for one US dollar, on [date] (`2026-10-31`), as the rates service reported them. */
+@Serializable
+data class GearRates(val date: String, val perUsd: Map<String, Double>)
 
 @Serializable
 data class Settings(
