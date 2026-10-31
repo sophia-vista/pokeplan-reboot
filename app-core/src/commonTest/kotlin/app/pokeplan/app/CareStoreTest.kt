@@ -4,7 +4,9 @@ import app.pokeplan.care.CareAction
 import app.pokeplan.care.CareRules
 import app.pokeplan.care.Emotion
 import app.pokeplan.core.reward.Reward
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlin.random.Random
@@ -55,6 +57,22 @@ class CareStoreTest {
         s.care.reload()
         assertEquals(saved, s.care.data)
         assertTrue(care.data.routines.isEmpty())
+    }
+
+    @Test
+    fun editingARoutineKeepsWhatItEarnedAndWhenItWasDone() {
+        val s = setup()
+        val water = s.care.addRoutine("Drink water")
+        s.care.completeRoutine(water.id)
+        val before = s.points
+        val saved = s.care.data.routines.single()
+        s.care.updateRoutine(saved.copy(title = "Drink two glasses", time = LocalTime(9, 30), days = setOf(DayOfWeek.MONDAY, DayOfWeek.FRIDAY)))
+        val edited = s.care.data.routines.single()
+        assertEquals("Drink two glasses", edited.title)
+        assertEquals(saved.completions, edited.completions, "the days it was done stay")
+        assertEquals(saved.paidOn, edited.paidOn, "and so does the day it paid")
+        assertTrue(s.care.completeRoutine(water.id).isEmpty(), "editing never lets today pay again")
+        assertEquals(before, s.points)
     }
 
     @Test

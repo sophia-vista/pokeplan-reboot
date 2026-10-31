@@ -326,22 +326,7 @@ private fun RoutinesView(model: AppModel) {
                 PixelButton("Add", ::add, color = Pixel.Green, enabled = title.isNotBlank())
             }
             PixelButton(if (more) "Fewer options" else "A time, and which days", { more = !more }, color = Pixel.InkSoft, compact = true)
-            if (more) {
-                PixelTitle("Time")
-                val t = time
-                if (t == null) PixelButton("Give it a time", { time = LocalTime(9, 0) }, color = Pixel.InkSoft, compact = true)
-                else Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    PixelButton("-15", { time = shifted(t, -15) }, color = Pixel.InkSoft, compact = true)
-                    Text(clock(t), style = MaterialTheme.typography.bodyLarge)
-                    PixelButton("+15", { time = shifted(t, 15) }, color = Pixel.InkSoft, compact = true)
-                    PixelButton("No time", { time = null }, color = Pixel.InkSoft, compact = true)
-                }
-                PixelTitle("Days")
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    DayOfWeek.entries.forEach { d -> TabButton(dayNames[d.ordinal], d in days, { days = if (d in days) days - d else days + d }) }
-                }
-                Text(if (days.isEmpty()) "No day chosen means every day." else routineDays(days), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            }
+            if (more) RoutineFields(time, { time = it }, days, { days = it })
         }
     }
 
@@ -364,16 +349,59 @@ private fun RoutinesView(model: AppModel) {
     )
 }
 
-/** Put a routine away (kept for trends) or back, or delete it, which asks first. */
+/** The time and the days of a routine, to set when it is added and when it is edited. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun RoutineOptions(model: AppModel, routine: Routine, onDone: () -> Unit) {
+private fun RoutineFields(time: LocalTime?, onTime: (LocalTime?) -> Unit, days: Set<DayOfWeek>, onDays: (Set<DayOfWeek>) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        PixelTitle("Time")
+        if (time == null) PixelButton("Give it a time", { onTime(LocalTime(9, 0)) }, color = Pixel.InkSoft, compact = true)
+        else Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelButton("-15", { onTime(shifted(time, -15)) }, color = Pixel.InkSoft, compact = true)
+            Text(clock(time), style = MaterialTheme.typography.bodyLarge)
+            PixelButton("+15", { onTime(shifted(time, 15)) }, color = Pixel.InkSoft, compact = true)
+            PixelButton("No time", { onTime(null) }, color = Pixel.InkSoft, compact = true)
+        }
+        PixelTitle("Days")
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            DayOfWeek.entries.forEach { d -> TabButton(dayNames[d.ordinal], d in days, { onDays(if (d in days) days - d else days + d) }) }
+        }
+        Text(if (days.isEmpty()) "No day chosen means every day." else routineDays(days), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    }
+}
+
+/** Edit a routine's name, time and days (what it earned and when it was done stay), put it away (kept for trends) or back, or delete it, which asks first. */
+@Composable
+internal fun RoutineOptions(model: AppModel, routine: Routine, startEditing: Boolean = false, onDone: () -> Unit) {
     var asking by remember { mutableStateOf(false) }
+    var editing by remember(routine.id) { mutableStateOf(startEditing) }
+    var title by remember(routine.id) { mutableStateOf(routine.title) }
+    var time by remember(routine.id) { mutableStateOf(routine.time) }
+    var days by remember(routine.id) { mutableStateOf(routine.days) }
+    if (editing) {
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                PixelTitle("Edit routine")
+                OutlinedTextField(
+                    title, { title = it.take(60) }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                )
+                RoutineFields(time, { time = it }, days, { days = it })
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelButton("Save", { model.care.updateRoutine(routine.copy(title = title.trim(), time = time, days = days)); editing = false; onDone() }, Modifier.weight(1f), Pixel.Green, enabled = title.isNotBlank(), compact = true)
+                    PixelButton("Cancel", { editing = false; title = routine.title; time = routine.time; days = routine.days }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                }
+            }
+        }
+        return
+    }
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
         if (asking) {
             Text("Delete it and its history?", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
             PixelButton("Delete", { model.care.deleteRoutine(routine.id); onDone() }, color = Pixel.Danger, compact = true)
             PixelButton("Keep", { asking = false }, color = Pixel.InkSoft, compact = true)
         } else {
+            PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.Blue, compact = true)
             PixelButton(if (routine.archived) "Bring back" else "Put away", { model.care.archiveRoutine(routine.id, !routine.archived); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }

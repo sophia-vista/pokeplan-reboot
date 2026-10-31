@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.90.1
+
+- Care routines can be edited: tap a routine, then Edit to change its name, time and days (what it earned and the days it was done stay, and editing never lets today pay again). The time and days controls are shared with the add form. Tested in the store and rendered at 130% text.
+
 ## 0.90.0
 
 - Phase 1 of the audit (`docs/audit-2026-10-31.md`) and its five decisions: World's rewards are in the reward history (Poké and items, merged per ten minutes, never a reveal) and its items go straight into the Bag, so there is one inventory and the Finds screen holds Pokémon and treasure boxes only; Plan's "Growth" section is called "Progress"; the Quests screen says how many World jobs are taken and ready; no further candy cuts.
