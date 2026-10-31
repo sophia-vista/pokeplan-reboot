@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.80.0
+
+- Launcher: battery saver (Launcher settings → Battery saver: Off, Automatic or Always). While it is on, the town's Pokémon stand still, the weather and the clock's seconds stop, nothing blurs or animates, and the launcher checks the clock, the battery and the forecast less often. Automatic turns it on at 20% or lower when not charging, or whenever the phone's own power saving is on. The clock widget says "Saver" beside the charge.
+- Launcher: the calendar and agenda widgets show Google Calendar (and any other calendar on the phone), like the app's Planner: the same calendars you chose in PokéLife → Me → Settings, read each time and never saved, private events as "Busy", with dots on the days that have plans. The agenda asks for the calendar permission when it needs it.
+- Launcher: a Utilities screen (the Utilities button in the App buttons widget): a flashlight, a pocket calculator, a stopwatch, and links to the phone's own internet and volume panels and its Bluetooth, display, battery saver and alarm pages. None of it needs a permission.
+- Widget: tapping a task's name in the Today's tasks widget finishes it from the widget (it is paid when the app next opens), instead of opening the app; the header still opens the Planner.
+
 ## 0.79.0
 
 - Launcher: the Buddy widget, with portraits and no words. It shows the buddy's PMD portrait in a pixel frame with its name and level (or "Focusing"), and replaces the Companion box on a launcher that has not changed its widgets (Companion is still there to add: it has the weather). Tap the portrait for its cry and a smile. The portraits are bigger (the face at twice the town's pixel scale, so it stays crisp), fill their pixel frames with no gap inside, and sit flush against the sides of the screen with no page margin; the name box is as tall as the portrait.

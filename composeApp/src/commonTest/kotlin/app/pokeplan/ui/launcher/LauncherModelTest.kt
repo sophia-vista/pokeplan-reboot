@@ -307,3 +307,63 @@ class LauncherDateTextTest {
         assertEquals(7, weekDays(true).distinct().size)
     }
 }
+
+class LauncherBatterySaverTest {
+    @Test
+    fun automaticSavesOnALowUnchargedBatteryOrThePhonesOwnSaving() {
+        val low = BatteryStatus(20, charging = false)
+        assertEquals(true, batterySaving(BatterySaver.AUTO, low, false))
+        assertEquals(false, batterySaving(BatterySaver.AUTO, low.copy(charging = true), false))
+        assertEquals(false, batterySaving(BatterySaver.AUTO, BatteryStatus(21, false), false))
+        assertEquals(true, batterySaving(BatterySaver.AUTO, BatteryStatus(90, false), true))
+        assertEquals(false, batterySaving(BatterySaver.AUTO, null, false))
+        assertEquals(true, batterySaving(BatterySaver.ON, BatteryStatus(100, true), false))
+        assertEquals(false, batterySaving(BatterySaver.OFF, low, true))
+        val prefs = LauncherPrefs().nextBatterySaver()
+        assertEquals(BatterySaver.ON, prefs.batterySaver)
+        assertEquals(prefs, LauncherPrefs.decode(prefs.encode()))
+    }
+}
+
+class CalculatorTest {
+    private fun Calculator.type(keys: String) = keys.forEach { k ->
+        when (k) {
+            in '0'..'9' -> digit(k)
+            '.' -> point()
+            '=' -> equals()
+            'C' -> clear()
+            '<' -> delete()
+            '~' -> negate()
+            else -> operate(k)
+        }
+    }
+
+    @Test
+    fun worksLikeADeskCalculator() {
+        assertEquals("20", Calculator().apply { type("2+3x4=") }.display)
+        assertEquals("0.3", Calculator().apply { type("0.1+0.2=") }.display)
+        assertEquals("7", Calculator().apply { type("12-5=") }.display)
+        assertEquals("2.5", Calculator().apply { type("5/2=") }.display)
+        assertEquals("10", Calculator().apply { type("5+10") }.display)
+        assertEquals("15", Calculator().apply { type("5+10=") }.display)
+    }
+
+    @Test
+    fun editsTheNumberBeingTyped() {
+        assertEquals("12", Calculator().apply { type("123<") }.display)
+        assertEquals("0", Calculator().apply { type("5<") }.display)
+        assertEquals("-8", Calculator().apply { type("8~") }.display)
+        assertEquals("0.5", Calculator().apply { type(".5") }.display)
+        assertEquals("1.5", Calculator().apply { type("1.5.") }.display)
+    }
+
+    @Test
+    fun aDivideByZeroShowsErrorUntilTheNextKey() {
+        val calc = Calculator().apply { type("5/0=") }
+        assertEquals("Error", calc.display)
+        calc.type("7")
+        assertEquals("7", calc.display)
+        assertEquals("0", Calculator().apply { type("9C") }.display)
+        assertEquals("Error", Calculator.format(Double.POSITIVE_INFINITY))
+    }
+}

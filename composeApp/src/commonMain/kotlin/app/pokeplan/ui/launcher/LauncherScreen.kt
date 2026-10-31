@@ -1,5 +1,8 @@
 package app.pokeplan.ui.launcher
 
+import kotlinx.datetime.plus
+import kotlinx.datetime.minus
+import kotlinx.datetime.DatePeriod
 import androidx.compose.ui.graphics.toPixelMap
 import kotlin.time.Duration.Companion.milliseconds
 import app.pokeplan.ui.theme.stairRect
@@ -119,6 +122,11 @@ import app.pokeplan.ui.theme.focusRing
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/** The phone's own pages the utilities screen links to. */
+enum class Utility(val label: String) {
+    INTERNET("Internet"), VOLUME("Volume"), BLUETOOTH("Bluetooth"), DISPLAY("Display"), BATTERY("Battery saver"), ALARMS("Alarms"),
+}
+
 /** The battery's charge, 0 to 100, and whether it is charging. */
 data class BatteryStatus(val percent: Int, val charging: Boolean)
 
@@ -135,6 +143,15 @@ interface LauncherHost {
     fun openPokemon(id: String)
     /** The battery now, or null when the phone cannot say. */
     fun battery(): BatteryStatus? = null
+    /** Whether the phone has a flashlight, and whether it is on now. */
+    fun hasTorch(): Boolean = false
+    fun torchOn(): Boolean = false
+    /** Turns the flashlight on or off; returns whether it is on afterwards. */
+    fun setTorch(on: Boolean): Boolean = false
+    /** Opens one of the phone's own panels or settings pages. */
+    fun openUtility(utility: Utility) {}
+    /** Whether the phone's own power saving is on. */
+    fun powerSaving(): Boolean = false
     /** The forecast for [place]: a recent one kept on the device, else a fresh one from the network; null when there is neither. */
     suspend fun forecast(place: GeoPlace): Forecast? = null
     /** Places that match [query], for choosing where the forecast is for. */
@@ -186,10 +203,15 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
     }
-    LaunchedEffect(Unit) {
+    // Battery saving: read the charge now and then; while it is on the town stands still, nothing blurs, and the clock ticks slowly.
+    var charge by remember { mutableStateOf(phone.battery()) }
+    var phoneSaving by remember { mutableStateOf(phone.powerSaving()) }
+    LaunchedEffect(active) { while (active) { charge = phone.battery(); phoneSaving = phone.powerSaving(); delay(60_000) } }
+    val saver = batterySaving(prefs.batterySaver, charge, phoneSaving)
+    LaunchedEffect(saver) {
         while (true) {
             model.tick()
-            delay(1000)
+            delay(if (saver) 10_000 else 1000)
         }
     }
     var listOpen by remember { mutableStateOf(false) }
@@ -209,18 +231,31 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var settingsOpen by remember { mutableStateOf(false) }
     var foldersOpen by remember { mutableStateOf(false) }
     var widgetsOpen by remember { mutableStateOf(false) }
+    var utilitiesOpen by remember { mutableStateOf(false) }
     // Editing the widgets on the screen (hold one): drag, resize, remove; page swipes are off meanwhile.
     var editing by remember { mutableStateOf(false) }
     val todayState = remember { TodayState(model.store.today) }
     val mood = remember { BuddyMood() }
+    // The phone's calendars around the month the calendar widget shows (six weeks, read off the main thread), again after the permission is answered, the chosen calendars change, or every few minutes.
+    val source = model.calendars
+    val calendarsShown = data.shownCalendars
+    LaunchedEffect(todayState.month, calendarsShown, todayState.permissionAnswers, active) {
+        if (source == null || !active) return@LaunchedEffect
+        while (true) {
+            val first = todayState.month.minus(DatePeriod(days = 7))
+            val last = todayState.month.plus(DatePeriod(days = 42))
+            todayState.device = if (source.permitted() && calendarsShown.isNotEmpty()) kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { runCatching { source.events(calendarsShown, first, last) }.getOrDefault(emptyList()) } else emptyList()
+            delay(5 * 60_000L)
+        }
+    }
     var folderName by remember { mutableStateOf<String?>(null) }
     var forecastOpen by remember { mutableStateOf(false) }
     var placeOpen by remember { mutableStateOf(false) }
     // The forecast for the chosen place, read from the phone (it keeps a recent one and refreshes it) every half hour while the launcher is in sight.
     var forecast by remember { mutableStateOf<Forecast?>(null) }
-    LaunchedEffect(prefs.place, active) {
+    LaunchedEffect(prefs.place, active, saver) {
         val place = prefs.place
-        if (place == null) forecast = null else if (active) while (true) { host.forecast(place)?.let { forecast = it }; delay(30 * 60_000L) }
+        if (place == null) forecast = null else if (active) while (true) { host.forecast(place)?.let { forecast = it }; delay(if (saver) 120 * 60_000L else 30 * 60_000L) }
     }
     // The app list slides in from the right: 1 is off the screen, 0 is in place. A drag from the edge moves it with the finger; letting go settles it.
     val reveal = remember { androidx.compose.animation.core.Animatable(1f) }
@@ -242,15 +277,15 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var listHidden by remember { mutableStateOf(false) }
     // The Home button always comes back to the home page.
     LaunchedEffect(homePresses) {
-        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false; foldersOpen = false; folderName = null; forecastOpen = false; placeOpen = false; widgetsOpen = false; editing = false }
+        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false; foldersOpen = false; folderName = null; forecastOpen = false; placeOpen = false; widgetsOpen = false; utilitiesOpen = false; editing = false }
     }
     val sheetApp = sheetKey?.let { key -> apps.firstOrNull { it.key == key } }
     PixelTheme(dark) {
-        CompositionLocalProvider(LocalReduceMotion provides data.settings.reduceMotion, LocalUiSound provides model::tap) {
+        CompositionLocalProvider(LocalReduceMotion provides (data.settings.reduceMotion || saver), LocalUiSound provides model::tap) {
             androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 val pixel = townScale(maxWidth.value * LocalDensity.current.density)
                 val env = WidgetEnv(
-                    model, apps, prefs, host, forecast, pixel, todayState, mood, editing, onPrefs, onEdit = { editing = true }, onDone = { editing = false }, onAllApps = { listOpen = true }, onFolders = { foldersOpen = true }, onWidgets = { widgetsOpen = true; editing = false },
+                    model, apps, prefs, host, forecast, pixel, todayState, mood, saver, editing, onPrefs, onEdit = { editing = true }, onDone = { editing = false }, onAllApps = { listOpen = true }, onFolders = { foldersOpen = true }, onWidgets = { widgetsOpen = true; editing = false }, onUtilities = { utilitiesOpen = true },
                     onOpenFolder = { folderName = it; foldersOpen = true }, onForecast = { forecastOpen = true }, onHold = { sheetKey = it.key },
                 )
                 // Two pages side by side: the town with its boxes, and Today (a calendar and the day's agenda and tasks). The town is two screens wide, so its Pokémon can wander over to Today (but only on the main screen can they be touched or meet). Swipe across, or press Home to come back.
@@ -272,7 +307,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     ),
                 ) {
                     Town(
-                        model, prefs.scene, active && prefs.walking, onMenu = { menuMon = it }, size = prefs.townSize, mood = mood, weather = if (prefs.weather == Weather.LIVE) forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR else prefs.weather, screens = 2, interactive = page.value < 0.02f, gather = gather,
+                        model, prefs.scene, active && prefs.walking && !saver, onMenu = { menuMon = it }, size = prefs.townSize, mood = mood, weather = if (prefs.weather == Weather.LIVE) forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR else prefs.weather, screens = 2, interactive = page.value < 0.02f, gather = gather,
                         modifier = Modifier.layout { measurable, constraints ->
                             // Two screens wide, placed from the left edge and slid by the page (a required size would be centred instead).
                             val placeable = measurable.measure(androidx.compose.ui.unit.Constraints.fixed(constraints.maxWidth * 2, constraints.maxHeight))
@@ -294,7 +329,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     repeat(2) { i -> Box(Modifier.size(width = 16.dp, height = 4.dp).background(Color.White.copy(alpha = if ((page.value + 0.5f).toInt() == i) 0.9f else 0.3f))) }
                 }
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
-                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (placeOpen) placeOpen = false else if (widgetsOpen) widgetsOpen = false else if (editing) editing = false else if (forecastOpen) forecastOpen = false else if (folderName != null) folderName = null else if (foldersOpen) foldersOpen = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (page.value > 0.5f) scope.launch { page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } }
+                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (placeOpen) placeOpen = false else if (utilitiesOpen) utilitiesOpen = false else if (widgetsOpen) widgetsOpen = false else if (editing) editing = false else if (forecastOpen) forecastOpen = false else if (folderName != null) folderName = null else if (foldersOpen) foldersOpen = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (page.value > 0.5f) scope.launch { page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } }
                 // Drag in from the right edge: the app list comes into focus with the finger, and settles open or shut when it lets go.
                 val widthPx = maxWidth.value * LocalDensity.current.density
                 // Where the finger would have the list (past either end it keeps going, but the list stretches only a little: rubber).
@@ -332,6 +367,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     onWidgets = { widgetsOpen = true },
                     onClose = { settingsOpen = false },
                 )
+                if (utilitiesOpen) UtilitiesPage(host, pixel, onClose = { utilitiesOpen = false })
                 if (widgetsOpen) WidgetsPage(prefs, onPrefs, host, pixel, onClose = { widgetsOpen = false })
                 if (foldersOpen) FoldersPage(apps, prefs, onPrefs, host, folderName, { folderName = it }, onClose = { foldersOpen = false; folderName = null }, pixel = pixel)
                 if (forecastOpen) ForecastPage(forecast, prefs, pixel, onPlace = { placeOpen = true }, onClose = { forecastOpen = false })
@@ -702,6 +738,7 @@ internal fun LauncherSettings(
                     PmdMenuLine("Widgets: ${prefs.widgets.size}", pixel, onClick = onWidgets)
                     PmdMenuLine("Date: ${prefs.dateStyle.label}", pixel) { onPrefs(prefs.nextDateStyle()) }
                     PmdMenuLine("Clock: ${if (prefs.hour12) "12 hour" else "24 hour"}", pixel) { onPrefs(prefs.withHour12(!prefs.hour12)) }
+                    PmdMenuLine("Battery saver: ${prefs.batterySaver.label}", pixel) { onPrefs(prefs.nextBatterySaver()) }
                     PmdMenuLine("Seconds: ${onOff(prefs.showSeconds)}", pixel) { onPrefs(prefs.withShowSeconds(!prefs.showSeconds)) }
                     PmdMenuLine("Calendar weeks start on ${if (prefs.sundayFirst) "Sunday" else "Monday"}", pixel) { onPrefs(prefs.withSundayFirst(!prefs.sundayFirst)) }
                 }

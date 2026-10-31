@@ -6,6 +6,19 @@ package app.pokeplan.ui.launcher
  * Everything here describes the apps installed on this device, so it stays on the device and is never synced.
  */
 
+/** When the launcher saves battery: the town stands still, the weather and the clock's seconds stop, nothing blurs and it checks less often. */
+enum class BatterySaver(val label: String) { OFF("Off"), AUTO("Automatic"), ON("Always") }
+
+/** Whether battery saving is on, given the choice, the charge and whether the phone's own power saving is on. */
+fun batterySaving(choice: BatterySaver, battery: BatteryStatus?, phoneSaving: Boolean): Boolean = when (choice) {
+    BatterySaver.ON -> true
+    BatterySaver.OFF -> false
+    BatterySaver.AUTO -> phoneSaving || (battery != null && !battery.charging && battery.percent <= LOW_BATTERY)
+}
+
+/** The charge at or below which Automatic saves battery. */
+const val LOW_BATTERY = 20
+
 /** Where a widget goes: the top or the bottom of the home page, or the Today page. */
 enum class WidgetArea(val label: String) { HOME_TOP("Top of the home page"), HOME_BOTTOM("Bottom of the home page"), TODAY("Today page") }
 
@@ -156,6 +169,8 @@ data class LauncherPrefs(
     val place: GeoPlace? = null,
     /** Whether temperatures show in degrees Fahrenheit (otherwise Celsius). */
     val fahrenheit: Boolean = false,
+    /** When the launcher saves battery: never, on its own at 20% or lower (or when the phone's power saving is on), or always. */
+    val batterySaver: BatterySaver = BatterySaver.AUTO,
     /** How the clock widget writes the date. */
     val dateStyle: DateStyle = DateStyle.SHORT,
     /** Whether the clock widget uses a 12-hour clock (AM and PM). */
@@ -211,6 +226,7 @@ data class LauncherPrefs(
     fun withWalking(on: Boolean) = copy(walking = on)
     fun withShowStatus(on: Boolean) = copy(showStatus = on)
     fun withEdgeDrag(on: Boolean) = copy(edgeDrag = on)
+    fun nextBatterySaver() = copy(batterySaver = BatterySaver.entries[(batterySaver.ordinal + 1) % BatterySaver.entries.size])
     fun nextDateStyle() = copy(dateStyle = dateStyle.next())
     fun withHour12(on: Boolean) = copy(hour12 = on)
     fun withShowSeconds(on: Boolean) = copy(showSeconds = on)
@@ -282,6 +298,7 @@ data class LauncherPrefs(
         if (townSize != 24) append("K townSize\t").append(townSize).append('\n')
         if (!showStatus) append("K showStatus\t0\n")
         if (!edgeDrag) append("K edgeDrag\t0\n")
+        if (batterySaver != BatterySaver.AUTO) append("K batterySaver\t").append(batterySaver.name).append('\n')
         if (dateStyle != DateStyle.SHORT) append("K dateStyle\t").append(dateStyle.name).append('\n')
         if (hour12) append("K hour12\t1\n")
         if (showSeconds) append("K showSeconds\t1\n")
@@ -312,7 +329,7 @@ data class LauncherPrefs(
                     'P' -> prefs.pin(rest)
                     'H' -> prefs.copy(hidden = prefs.hidden + rest)
                     'S' -> prefs.withScene(rest)
-                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.LIVE); "fahrenheit" -> prefs.withFahrenheit(f[1] != "0"); "pageSwipe" -> prefs.withPageSwipe(f[1] != "0"); "dateStyle" -> prefs.copy(dateStyle = DateStyle.entries.firstOrNull { it.name == f[1] } ?: DateStyle.SHORT); "hour12" -> prefs.withHour12(f[1] != "0"); "showSeconds" -> prefs.withShowSeconds(f[1] != "0"); "sundayFirst" -> prefs.withSundayFirst(f[1] != "0"); "gatherTap" -> prefs.withGatherTap(f[1] != "0"); "showClock" -> prefs.withShowClock(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> prefs } }
+                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.LIVE); "fahrenheit" -> prefs.withFahrenheit(f[1] != "0"); "pageSwipe" -> prefs.withPageSwipe(f[1] != "0"); "batterySaver" -> prefs.copy(batterySaver = BatterySaver.entries.firstOrNull { it.name == f[1] } ?: BatterySaver.AUTO); "dateStyle" -> prefs.copy(dateStyle = DateStyle.entries.firstOrNull { it.name == f[1] } ?: DateStyle.SHORT); "hour12" -> prefs.withHour12(f[1] != "0"); "showSeconds" -> prefs.withShowSeconds(f[1] != "0"); "sundayFirst" -> prefs.withSundayFirst(f[1] != "0"); "gatherTap" -> prefs.withGatherTap(f[1] != "0"); "showClock" -> prefs.withShowClock(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> prefs } }
                     'W' -> rest.split('\t').let { f -> val lat = f.getOrNull(1)?.toDoubleOrNull(); val lon = f.getOrNull(2)?.toDoubleOrNull(); if (f.size == 3 && f[0].isNotBlank() && lat != null && lon != null) prefs.withPlace(GeoPlace(f[0], lat, lon)) else prefs }
                     'L' -> rest.lastIndexOf('\t').let { at -> val count = if (at > 0) rest.substring(at + 1).toIntOrNull() else null; if (count != null && count > 0) prefs.copy(launches = prefs.launches + (rest.substring(0, at) to count)) else prefs }
                     'F' -> rest.split('\t').let { f -> if (f[0].isBlank()) prefs else prefs.addFolder(f[0]).let { made -> f.drop(1).filter { it.isNotBlank() }.fold(made) { acc, key -> acc.addToFolder(f[0].trim().take(Folder.MAX_NAME), key) } } }
