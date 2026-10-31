@@ -289,13 +289,15 @@ private fun AccountCard(model: AppModel) {
                     Text("Sign in to back up your progress and use it on your other devices.", style = MaterialTheme.typography.bodyMedium)
                     PixelField(email, { email = it }, Modifier.fillMaxWidth(), singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next, autoCorrectEnabled = false),
-                        label = "Email")
+                        label = "Email", enabled = !busy)
                     PixelField(password, { password = it }, Modifier.fillMaxWidth(), singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done, autoCorrectEnabled = false),
                         label = "Password",
-                        // Say the rule up front instead of leaving the buttons grey without a reason.
-                        helper = "At least 6 characters")
+                        enabled = !busy,
+                        // Say the rule up front instead of leaving the buttons grey without a reason; once typing, say how far along it is.
+                        helper = if (password.isEmpty() || password.length >= 6) "At least 6 characters" else null,
+                        error = if (password.isNotEmpty() && password.length < 6) "A few more characters: at least 6" else null)
                     message?.let { Notice(it, tone = NoticeTone.WARNING) }
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PixelButton("Sign in", {

@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.90.4
+
+- Control system, the rest of it: a tappable list row tints faintly under a mouse and shrinks to 98% when pressed (like a key); the bottom tab bar items tint under a mouse. In Settings → Account the password field turns red with "A few more characters: at least 6" once you have typed fewer than 6 (the rule shows as a quiet line before), and the email and password fields are dimmed while signing in.
+
 ## 0.90.3
 
 - `PixelField`: one text field for the whole app, replacing 29 plain Material fields (`theme/Fields.kt`). Rest, focused (blue), error (red, with a line that says what to do, announced by screen readers), disabled (shaded, dim letters) and read-only; labels and placeholders are plain strings. The error and disabled looks are new; nothing validates yet, so only the look is added.

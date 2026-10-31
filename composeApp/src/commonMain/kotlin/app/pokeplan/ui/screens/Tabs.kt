@@ -1,6 +1,8 @@
 package app.pokeplan.ui.screens
 
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import app.pokeplan.ui.pressScale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -42,12 +44,13 @@ fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: M
 fun NavButton(label: String, iconItem: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val ui = app.pokeplan.ui.LocalUiSound.current
     val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val hovering by source.collectIsHoveredAsState()
     Column(
         modifier
             .pressScale(source)
             .defaultMinSize(minHeight = 56.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(if (selected) Color.White.copy(alpha = 0.24f) else Color.Transparent)
+            .background(if (selected) Color.White.copy(alpha = if (hovering) 0.32f else 0.24f) else if (hovering) Color.White.copy(alpha = 0.12f) else Color.Transparent)
             .focusRing(RoundedCornerShape(16.dp))
             .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Tab) { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }
             .semantics { this.selected = selected }

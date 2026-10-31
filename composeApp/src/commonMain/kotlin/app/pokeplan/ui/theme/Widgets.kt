@@ -34,6 +34,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import app.pokeplan.ui.pressScale
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
@@ -207,16 +211,21 @@ fun ListRow(
     content: @Composable () -> Unit,
 ) {
     val shape = DialogueShape
+    val source = remember { MutableInteractionSource() }
+    val hovering by source.collectIsHoveredAsState()
     Row(
         modifier
+            .let { if (onClick != null) it.pressScale(source) else it }
             .fillMaxWidth()
             .dialogueBox()
             .clip(shape)
+            // A pointer over a tappable row tints it faintly (desktop and web); touch has the ripple or the press scale.
+            .let { if (hovering && onClick != null) it.background(Pixel.Blue.copy(alpha = 0.06f)) else it }
             .let {
                 when {
                     onClick == null -> it
-                    highlight -> it.focusRing(shape).clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
-                    else -> it.quietClickable(onClickLabel = onClickLabel, onClick = onClick)
+                    highlight -> it.focusRing(shape).clickable(interactionSource = source, indication = LocalIndication.current, onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
+                    else -> it.focusRing(shape).clickable(interactionSource = source, indication = null, onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
                 }
             }
             .defaultMinSize(minHeight = 64.dp)
