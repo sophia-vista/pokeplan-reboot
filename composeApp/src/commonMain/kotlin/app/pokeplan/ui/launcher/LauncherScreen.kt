@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -80,13 +81,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.produceState
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.TextBox
+import app.pokeplan.ui.theme.focusRing
 import app.pokeplan.ui.Place
+import app.pokeplan.ui.Tab
 import app.pokeplan.ui.screens.LocalReduceMotion
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelTheme
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
+import app.pokeplan.ui.theme.focusRing
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -144,6 +148,13 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
                 BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (sheetApp != null) sheetKey = null else listOpen = false }
                 HomePage(model, apps, prefs, isDefault, host, pixel, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
+                // Drag in from the right edge to open every app (All apps does the same for anyone who does not know the gesture).
+                Box(
+                    Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(24.dp).pointerInput(Unit) {
+                        var total = 0f
+                        detectHorizontalDragGestures(onDragStart = { total = 0f }, onDragEnd = { if (total < -60f) listOpen = true }) { _, dx -> total += dx }
+                    },
+                )
                 AnimatedVisibility(listOpen, enter = slideInVertically { it / 4 } + fadeIn(), exit = slideOutVertically { it / 4 } + fadeOut()) {
                     AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key }, onTown = { listOpen = false; pickingTown = true })
                 }
@@ -156,9 +167,9 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
 }
 
 /**
- * The home page over the town, in three layers: a small status strip at the top (the companion, then the collection), the
- * town itself, and one dialogue box by the thumb: every part of PokéLife as an equal entry (Plan is one of six), your pinned
- * apps and All apps. Everything in it is in the dialogue font.
+ * The home page over the town: a small status box at the top (the companion, then the collection), the town, and by the
+ * thumb two dialogue boxes: the app's three places (PokéLife, Pokémon, Me) with their icons, then your pinned apps with
+ * logos (each app's own, or a game item you chose) and All apps. Dragging in from the right edge opens the app list too.
  */
 @Composable
 private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPrefs, isDefault: Boolean, host: LauncherHost, pixel: Int, onAllApps: () -> Unit, onHold: (LauncherApp) -> Unit) {
@@ -166,60 +177,61 @@ private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPr
     val pinned = LauncherList.pinned(apps, prefs)
     val running = data.focus != null
     val buddy = data.player.buddy
-    Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = Spacing.M, vertical = Spacing.S)) {
+    val density = LocalDensity.current.density
+    val gap = Modifier.padding(horizontal = (6 * pixel / density).dp)
+    Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = Spacing.M, vertical = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         if (data.onboarded && buddy != null) PmdBox(pixel, Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Open PokéLife") { host.openApp(Place.HOME) }, inset = 1) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                PmdText("${buddy.nickname}  Lv. ${buddy.level}", pixel, Modifier.padding(horizontal = (6 * pixel / LocalDensity.current.density).dp))
+                PmdText("${buddy.nickname}  Lv. ${buddy.level}", pixel, gap)
                 Box(Modifier.weight(1f))
-                PmdText(if (running) "Focusing" else "${data.player.pokemon.size} Pokémon", pixel, Modifier.padding(horizontal = (6 * pixel / LocalDensity.current.density).dp), alpha = 0.75f)
+                PmdText(if (running) "Focusing" else "${data.player.pokemon.size} Pokémon", pixel, gap, alpha = 0.75f)
             }
         }
         Box(Modifier.weight(1f))
-        PmdBox(pixel, Modifier.fillMaxWidth().pointerInput(Unit) {
-            var drag = 0f
-            detectVerticalDragGestures(onDragStart = { drag = 0f }, onDragEnd = { if (drag < -60f) onAllApps() }) { _, dy -> drag += dy }
-        }) {
+        val note = when {
+            !data.onboarded -> "Open PokéLife to meet your first Pokémon" to { host.openApp(Place.HOME) }
+            !isDefault -> "Make PokéLife your home app" to host::openHomeSettings
+            else -> null
+        }
+        if (note != null) PmdBox(pixel, Modifier.fillMaxWidth(), inset = 1) { PmdMenuLine(note.first, pixel, onClick = note.second) }
+        if (data.onboarded) PmdBox(pixel, Modifier.fillMaxWidth(), inset = 1) {
+            // The three places of the app, with the icons of its tabs.
+            Row(Modifier.fillMaxWidth()) {
+                PmdNavItem("PokéLife", Tab.HOME.icon, pixel, Modifier.weight(1f)) { host.openApp(if (running) Place.FOCUS else Place.HOME) }
+                PmdNavItem("Pokémon", Tab.COLLECTION.icon, pixel, Modifier.weight(1f)) { host.openApp(Place.COLLECTION) }
+                PmdNavItem("Me", Tab.ME.icon, pixel, Modifier.weight(1f)) { host.openApp(Place.ME) }
+            }
+        }
+        PmdBox(pixel, Modifier.fillMaxWidth(), inset = 1) {
             Column {
-                val note = when {
-                    !data.onboarded -> "Open PokéLife to meet your first Pokémon" to { host.openApp(Place.HOME) }
-                    !isDefault -> "Make PokéLife your home app" to host::openHomeSettings
-                    else -> null
-                }
-                if (note != null) {
-                    PmdMenuLine(note.first, pixel, onClick = note.second)
-                    PmdRule(pixel)
-                }
-                if (data.onboarded) {
-                    // Every part of PokéLife, side by side, none above the others.
-                    val parts = buildList<Triple<String, Boolean, () -> Unit>> {
-                        add(Triple("Party", false) { host.openApp(Place.PARTY) })
-                        add(Triple("Pokémon", false) { host.openApp(Place.COLLECTION) })
-                        if (data.settings.careModule) add(Triple("Care", false) { host.openApp(Place.CARE) })
-                        add(Triple("Plan", false) { host.openApp(Place.PLAN) })
-                        add(Triple("Focus", running) { host.openApp(Place.FOCUS) })
-                        add(Triple("Me", false) { host.openApp(Place.ME) })
-                    }
-                    parts.chunked(3).forEach { row ->
+                if (pinned.isEmpty()) PmdMenuLine("Press and hold an app in All apps to pin it", pixel, dim = true) { onAllApps() }
+                else Column(Modifier.heightIn(max = 240.dp).verticalScroll(rememberScrollState())) {
+                    pinned.chunked(4).forEach { row ->
                         Row(Modifier.fillMaxWidth()) {
-                            row.forEach { (label, on, open) -> PmdMenuLine(label, pixel, Modifier.weight(1f), selected = on, center = true, onClick = open) }
-                            repeat(3 - row.size) { Box(Modifier.weight(1f)) }
+                            row.forEach { app -> PinnedApp(app, prefs.icons[app.key], host, pixel, Modifier.weight(1f), onHold = { onHold(app) }) }
+                            repeat(4 - row.size) { Box(Modifier.weight(1f)) }
                         }
                     }
-                    PmdRule(pixel)
-                    if (pinned.isEmpty()) PmdMenuLine("Press and hold an app in All apps to pin it", pixel, dim = true) { onAllApps() }
-                    else Column(Modifier.heightIn(max = 220.dp).verticalScroll(rememberScrollState())) {
-                        pinned.chunked(2).forEach { pair ->
-                            Row(Modifier.fillMaxWidth()) {
-                                pair.forEach { app -> PmdMenuLine(app.label, pixel, Modifier.weight(1f), onHold = { onHold(app) }) { host.open(app.key) } }
-                                if (pair.size == 1) Box(Modifier.weight(1f))
-                            }
-                        }
-                    }
-                    PmdRule(pixel)
                 }
+                PmdRule(pixel)
                 PmdMenuLine("All apps", pixel, center = true, onClick = onAllApps)
             }
         }
+    }
+}
+
+/** A pinned app on the home page: its logo (or the game item chosen for it) over its name; tap opens it, press and hold manages it. */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixel: Int, modifier: Modifier, onHold: () -> Unit) {
+    val density = LocalDensity.current.density
+    Column(
+        modifier.defaultMinSize(minHeight = 72.dp).focusRing(rowShape, Color.White).combinedClickable(role = Role.Button, onLongClick = onHold, onClick = { host.open(app.key) })
+            .semantics(mergeDescendants = true) {}.padding(vertical = (2 * pixel / density).dp),
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
+    ) {
+        if (item != null) ItemIcon(item, size = 40.dp, description = null) else AppIcon(host, app.key, 40.dp)
+        Box(Modifier.padding(top = (2 * pixel / density).dp).padding(horizontal = (1 * pixel / density).dp)) { PmdText(app.label, pixel) }
     }
 }
 
@@ -350,6 +362,7 @@ private fun LetterScroller(letters: List<Char>, modifier: Modifier, onLetter: (C
 @Composable
 internal fun AppSheet(app: LauncherApp, prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, onClose: () -> Unit, host: LauncherHost) {
     var moving by remember { mutableStateOf(false) }
+    var choosingIcon by remember { mutableStateOf(false) }
     val pinned = app.key in prefs.pinned
     val hidden = app.key in prefs.hidden
     val none = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
@@ -361,10 +374,28 @@ internal fun AppSheet(app: LauncherApp, prefs: LauncherPrefs, onPrefs: (Launcher
                         AppIcon(host, app.key, 40.dp)
                         Text(app.label, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
-                    if (!moving) {
+                    if (choosingIcon) {
+                        Text("Icon on the home page", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+                        PixelButton("The app's own logo", { onPrefs(prefs.withIcon(app.key, null)); onClose() }, Modifier.fillMaxWidth(), if (app.key !in prefs.icons) Pixel.Blue else Pixel.InkSoft, compact = true)
+                        Column(Modifier.heightIn(max = 260.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                            LauncherIcons.items.chunked(6).forEach { row ->
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                                    row.forEach { item ->
+                                        Box(
+                                            Modifier.weight(1f).height(48.dp).clip(rowShape).then(if (prefs.icons[app.key] == item) Modifier.border(2.dp, Pixel.Blue, rowShape) else Modifier)
+                                                .clickable(role = Role.RadioButton, onClickLabel = "Use $item") { onPrefs(prefs.withIcon(app.key, item)); onClose() },
+                                            contentAlignment = Alignment.Center,
+                                        ) { ItemIcon(item, size = 32.dp, description = null) }
+                                    }
+                                    repeat(6 - row.size) { Box(Modifier.weight(1f)) }
+                                }
+                            }
+                        }
+                    } else if (!moving) {
                         if (!hidden) PixelButton(if (pinned) "Unpin from home" else "Pin to home", { onPrefs(if (pinned) prefs.unpin(app.key) else prefs.pin(app.key)); onClose() }, Modifier.fillMaxWidth(), Pixel.Blue)
                         PixelButton(if (hidden) "Show again" else "Hide", { onPrefs(if (hidden) prefs.unhide(app.key) else prefs.hide(app.key)); onClose() }, Modifier.fillMaxWidth(), Pixel.InkSoft)
                         PixelButton("Category: ${prefs.categoryOf(app).label}", { moving = true }, Modifier.fillMaxWidth(), Pixel.InkSoft)
+                        if (pinned) PixelButton("Icon on the home page", { choosingIcon = true }, Modifier.fillMaxWidth(), Pixel.InkSoft)
                         PixelButton("App info", { host.appInfo(app.key); onClose() }, Modifier.fillMaxWidth(), Pixel.InkSoft)
                         if (app.removable) PixelButton("Uninstall", { host.uninstall(app.key); onClose() }, Modifier.fillMaxWidth(), Pixel.Danger)
                     } else {

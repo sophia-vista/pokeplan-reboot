@@ -74,7 +74,11 @@ data class LauncherPrefs(
     val moved: Map<String, AppCategory> = emptyMap(),
     /** The scene the home page's town is set in (a name from [TownScenes]). */
     val scene: String = TownScenes.DEFAULT,
+    /** An app's icon on the home page when it is not the app's own logo: a real game item (see [LauncherIcons]). */
+    val icons: Map<String, String> = emptyMap(),
 ) {
+    fun withIcon(key: String, item: String?) = if (item == null) copy(icons = icons - key) else if (item in LauncherIcons.items) copy(icons = icons + (key to item)) else this
+
     fun withScene(name: String) = if (name in TownScenes.all.map { it.first }) copy(scene = name) else this
 
     fun pin(key: String) = if (key in pinned) this else copy(pinned = pinned + key)
@@ -89,12 +93,13 @@ data class LauncherPrefs(
     /** An app's category after the user's moves. */
     fun categoryOf(app: LauncherApp): AppCategory = moved[app.key] ?: app.category
 
-    /** One text for a `SharedPreferences` string: a line per choice, `P key`, `H key`, `M key<TAB>CATEGORY` or `S scene`. */
+    /** One text for a `SharedPreferences` string: a line per choice, `P key`, `H key`, `M key<TAB>CATEGORY`, `I key<TAB>item` or `S scene`. */
     fun encode(): String = buildString {
         if (scene != TownScenes.DEFAULT) append("S ").append(scene).append('\n')
         pinned.forEach { append("P ").append(it).append('\n') }
         hidden.sorted().forEach { append("H ").append(it).append('\n') }
         moved.entries.sortedBy { it.key }.forEach { (key, category) -> append("M ").append(key).append('\t').append(category.name).append('\n') }
+        icons.entries.sortedBy { it.key }.forEach { (key, item) -> append("I ").append(key).append('\t').append(item).append('\n') }
     }
 
     companion object {
@@ -108,6 +113,7 @@ data class LauncherPrefs(
                     'P' -> prefs.pin(rest)
                     'H' -> prefs.copy(hidden = prefs.hidden + rest)
                     'S' -> prefs.withScene(rest)
+                    'I' -> rest.lastIndexOf('\t').let { at -> if (at > 0) prefs.withIcon(rest.substring(0, at), rest.substring(at + 1)) else prefs }
                     'M' -> {
                         val at = rest.lastIndexOf('\t')
                         val category = if (at > 0) AppCategory.entries.firstOrNull { it.name == rest.substring(at + 1) } else null
@@ -186,4 +192,14 @@ object TownScenes {
     val all = scenes + dungeons
 
     fun isDungeon(name: String) = dungeons.any { it.first == name }
+}
+
+/** The game items an app's icon can be set to on the home page (real item sprites from assets/items). */
+object LauncherIcons {
+    val items = listOf(
+        "poke-ball", "great-ball", "master-ball", "premier-ball", "timer-ball", "friend-ball", "rare-candy", "super-candy",
+        "amulet-coin", "exp-share", "lucky-egg", "mystery-egg", "town-map", "explorer-kit", "member-card", "storage-key",
+        "seal-bag", "oaks-letter", "soothe-bell", "gb-sounds", "moon-stone", "sun-stone", "fire-stone", "water-stone",
+        "leaf-stone", "thunder-stone", "dusk-stone", "dawn-stone", "shiny-stone", "ice-stone", "berry-sweet", "ability-capsule",
+    )
 }

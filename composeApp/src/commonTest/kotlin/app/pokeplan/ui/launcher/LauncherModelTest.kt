@@ -127,4 +127,12 @@ class LauncherModelTest {
         // A declared category wins over the words.
         assertEquals(AppCategory.PRODUCTIVITY, AppCategory.guess(7, "com.instagram.notes", "Notes", false))
     }
+
+    @Test
+    fun anAppsHomeIconIsAGameItemOrItsOwnLogo() {
+        val prefs = LauncherPrefs().withIcon("a", "poke-ball").withIcon("b", "not-an-item")
+        assertEquals(mapOf("a" to "poke-ball"), prefs.icons)
+        assertEquals(prefs, LauncherPrefs.decode(prefs.encode()))
+        assertEquals(emptyMap(), prefs.withIcon("a", null).icons)
+    }
 }

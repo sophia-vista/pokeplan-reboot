@@ -6,6 +6,9 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import app.pokeplan.ui.ItemIcon
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -82,8 +85,8 @@ internal class PmdFont(val sheet: ImageBitmap, val glyphs: Map<Char, PmdGlyph>) 
 
     companion object {
         const val SPACE = 4
-        /** The height of a line in pixels of the art: the capitals' height plus room for the descenders. */
-        const val LINE = 12
+        /** The height of a line in pixels of the art: the capitals and their shadow, so a line of text is centred by its letters; descenders hang below it. */
+        const val LINE = 10
         /** The baseline's distance from the top of a line. */
         const val BASELINE = 9
         private const val ACCENTED = "àáâãäåçèéêëìíîïñòóôõöøùúûüýÿ"
@@ -235,4 +238,18 @@ internal fun PmdButton(text: String, pixel: Int, modifier: Modifier = Modifier, 
             .semantics(mergeDescendants = true) {},
         contentAlignment = Alignment.Center,
     ) { PmdText(text, pixel) }
+}
+
+/** A navigation entry of the world register: a real item icon over a label, at least 56 dp tall, the whole thing one touch target. */
+@Composable
+internal fun PmdNavItem(label: String, icon: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, onClick: () -> Unit) {
+    val density = LocalDensity.current.density
+    Column(
+        modifier.defaultMinSize(minHeight = 56.dp).focusRing(RoundedCornerShape(4.dp), Color.White).clickable(role = Role.Button, onClick = onClick).semantics(mergeDescendants = true) {}
+            .padding(vertical = (2 * pixel / density).dp),
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
+    ) {
+        ItemIcon(icon, size = 32.dp, description = null)
+        Box(Modifier.padding(top = (2 * pixel / density).dp), contentAlignment = Alignment.Center) { PmdText(label, pixel, alpha = if (selected) 1f else 0.9f) }
+    }
 }

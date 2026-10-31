@@ -7,9 +7,9 @@ release always has the newest merge).
 
 ## 0.66.1
 
-- Launcher: the dialogue box is drawn like the game's menu boxes: a pale hairline, a thin blue band at the top and bottom that is thicker at the sides, a deep-blue line, rounded corners, and a see-through black inside so the town shows behind the words. Every line of text starts the same distance in, with room for the cursor.
-- Launcher: the box uses the Pokémon dialogue font only. Long names are cut with "..." and a mark the font lacks becomes a look-alike or "?", never another typeface.
-- Launcher: the home page is less about Plan. The task and the red Start focus button are gone from the box; Party, Pokémon, Care, Plan, Focus and Me are six equal entries (Focus shows the cursor while a session runs, and the top strip says "Focusing"), then your pinned apps and All apps.
+- Launcher: the dialogue boxes are drawn like the game's menu boxes: a pale hairline, a thin blue band at the top and bottom that is thicker at the sides, a deep-blue line, rounded corners, and a see-through black inside so the town shows behind the words. The text in them is in the Pokémon dialogue font only, centred in its line, and every line starts the same distance in. Long names are cut with "..." and a mark the font lacks becomes a look-alike or "?".
+- Launcher: the home page is boxes over the town: a status box at the top (companion and collection), a navigation box with three places and their icons (PokéLife, Pokémon, Me), and a box of your pinned apps with logos, then All apps. The task and the Start focus button are gone from the home page; Plan, Focus and Care are one tap away inside the app.
+- Launcher: a pinned app shows its own logo, or a game item you pick (press and hold the app, then "Icon on the home page"). Dragging in from the right edge opens every app, like Niagara; All apps still does the same.
 
 ## 0.66.0
 
