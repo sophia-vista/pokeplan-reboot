@@ -50,8 +50,8 @@ class MissionsTest {
         val claimed = r.data.claimMission("explore-woods-3")!!
         assertEquals(poke + 60, claimed.poke)
         assertTrue(claimed.missions.isEmpty())
-        assertNull(claimed.acceptMission("explore-woods-3"), "ordinary jobs wait a week")
-        assertNotNull(claimed.copy(lastSeenAt = claimed.lastSeenAt + 8 * 86_400_000L).acceptMission("explore-woods-3"), "then they are repeatable")
+        assertNull(claimed.acceptMission("explore-woods-3"), "ordinary jobs wait two weeks")
+        assertNotNull(claimed.copy(lastSeenAt = claimed.lastSeenAt + 15 * 86_400_000L).acceptMission("explore-woods-3"), "then they are repeatable")
     }
 
     @Test
