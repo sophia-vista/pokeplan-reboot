@@ -5,6 +5,34 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.90.7
+
+- Launcher: the night tint is one sheet over the whole town, so it reaches the right edge (a lighter, untinted strip showed there at night). A render of the town at 8:39 pm is in the screenshot test.
+- Menus: every menu card is the same, an icon and a title with no caption (the captions made cards unequal, e.g. World's wrapped to two lines); a screen reader still hears the old caption after the title.
+- World: the dungeon floor scrolls again on a phone with the battery saver on. The saver had been stopping it; only the "Scrolling floors" setting (World → Settings) and Reduce motion stop it now.
+
+## 0.90.6
+
+- Plan usability, Quick Add (audit Phase 3, first step): the box now shows what it understood while you type ("Understood: Tomorrow · 17:00 · Social · Difficulty B · 30 min"), so a typed line is never a guess. And a bug it exposed: "Call mum tomorrow 5pm" and "tonight" were understood but the time and the evening were thrown away when the task was made; they are kept now (on a planned day), so the task lands on the calendar at 17:00 and "tonight" goes under This evening. Tests for the hints and for the stored time.
+
+## 0.90.5
+
+- First-use pass: every landing page was rendered on a brand-new save (`ScreenshotTest.firstUse`, 33 pages: Home, Modules, Plan and its sections, the planner's views, Care and its sections, World's sections, the Pokémon tab, Me). Nearly all already say what goes there and what to do; the two that gave only a title now give a line too: Planner's Done ("Tasks you finish show up here, newest first.") and an empty Today ("Add one above, or plan one for today from the inbox or the calendar.").
+
+## 0.90.4
+
+- Control system, the rest of it: a tappable list row tints faintly under a mouse and shrinks to 98% when pressed (like a key); the bottom tab bar items tint under a mouse. In Settings → Account the password field turns red with "A few more characters: at least 6" once you have typed fewer than 6 (the rule shows as a quiet line before), and the email and password fields are dimmed while signing in.
+
+## 0.90.3
+
+- `PixelField`: one text field for the whole app, replacing 29 plain Material fields (`theme/Fields.kt`). Rest, focused (blue), error (red, with a line that says what to do, announced by screen readers), disabled (shaded, dim letters) and read-only; labels and placeholders are plain strings. The error and disabled looks are new; nothing validates yet, so only the look is added.
+- Taps click again, very quietly: buttons, tabs, filter and category chips and the day arrows play their menu sound at 3% of the Sound effects volume (it was silent since the UI sounds were removed; `TAP_GAIN` in `UiSound.kt`). Game sounds are unchanged. Off when Sound is off.
+
+## 0.90.2
+
+- Design system: one key for every control. Buttons, tabs, filter chips, category chips, the day and week arrows and the Day/Week/Month switch are all the same stair-cornered pixel key with the same states (resting, hovered with a mouse, pressed, selected, focused, disabled, loading) and the same 48 dp touch target; the table is in `docs/ui-ux-brief.md` section 5.1 and the code in `theme/Controls.kt`. Choice rows, notices and stat chips share the outline; text fields take the dialogue corner, the blue focus colour and the app's font for labels and error text (they showed the system font). Tabs and chips are filled when selected, as before, but no longer rounded; the arrows are keys, not bare symbols.
+- A component gallery in the screenshot test renders every control in every state, light, dark and at 130% text.
+
 ## 0.90.1
 
 - Care routines can be edited: tap a routine, then Edit to change its name, time and days (what it earned and the days it was done stay, and editing never lets today pay again). The time and days controls are shared with the add form. Tested in the store and rendered at 130% text.

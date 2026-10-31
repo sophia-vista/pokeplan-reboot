@@ -45,6 +45,7 @@ import app.pokeplan.plan.PlanEvent
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.Spacing
@@ -63,9 +64,8 @@ internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit,
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("New event")
-            OutlinedTextField(
-                draft.title, { change(draft.copy(title = it)) }, Modifier.fillMaxWidth(), singleLine = true,
-                textStyle = MaterialTheme.typography.bodyLarge, label = { Text("What") },
+            PixelField(
+                draft.title, { change(draft.copy(title = it)) }, Modifier.fillMaxWidth(), singleLine = true, label = "What",
             )
             Segmented(listOf("At a time", "All day"), if (draft.allDay) 1 else 0) { change(draft.copy(allDay = it == 1, lastDay = draft.day)) }
             EventColors(draft.color) { change(draft.copy(color = it)) }
@@ -110,9 +110,8 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, follow
     val repeats = event.repeat != null
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            OutlinedTextField(
-                title, { title = it }, Modifier.fillMaxWidth(), singleLine = true,
-                textStyle = MaterialTheme.typography.bodyLarge, label = { Text("Event") },
+            PixelField(
+                title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Event",
             )
             EventColors(event.color) { store.updateEvent(event.id, color = it) }
             RepeatPicker(event.repeat) { store.updateEvent(event.id, title = title); follow(store.repeatEvent(event.id, it)) }

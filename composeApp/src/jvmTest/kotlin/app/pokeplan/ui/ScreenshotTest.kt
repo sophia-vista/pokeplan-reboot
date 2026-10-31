@@ -4,6 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import app.pokeplan.ui.theme.Spacing
+import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.Modifier
@@ -376,10 +380,10 @@ class ScreenshotTest {
         return store
     }
 
-    private fun collection(name: String, section: Int, open: Boolean = false, hatched: Int = 4, setup: (GameStore) -> Unit = {}) {
+    private fun collection(name: String, section: Int, open: Boolean = false, hatched: Int = 4, fontScale: Float = 1f, height: Int = 1080, setup: (GameStore) -> Unit = {}) {
         val store = storeWithTeam(hatched).also(setup)
         val model = AppModel(store)
-        render(name) {
+        render(name, fontScale = fontScale, height = height) {
             PixelTheme {
                 Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
                     app.pokeplan.ui.screens.CollectionScreen(model, section, if (open) store.data.player.buddyId else null)
@@ -528,7 +532,7 @@ class ScreenshotTest {
     private fun modules(name: String, module: app.pokeplan.ui.screens.Module?, plan: app.pokeplan.ui.screens.PlanSection? = null) =
         meStore(name, prepare = { it.module = module; it.planSection = plan }) { model -> app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
 
-    private fun meStore(name: String, prepare: (AppModel) -> Unit = {}, height: Int = 1080, content: @Composable (AppModel) -> Unit) {
+    private fun meStore(name: String, prepare: (AppModel) -> Unit = {}, height: Int = 1080, fontScale: Float = 1f, content: @Composable (AppModel) -> Unit) {
         val store = storeWithTeam()
         store.addGoal("Learn guitar").also { g ->
             store.addMilestone(g.id, "Buy a guitar")
@@ -540,7 +544,7 @@ class ScreenshotTest {
         clock.millis += 11_000
         store.tick()
         val model = AppModel(store).also(prepare)
-        render(name, height = height) {
+        render(name, fontScale = fontScale, height = height) {
             PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { content(model) } }
         }
     }
@@ -570,7 +574,7 @@ class ScreenshotTest {
     fun planReview() = modules("plan-review", app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.PlanSection.REVIEW)
 
     /** The Care module, with a few routines (one done), a skill practised, a diary card and a journal entry, open on [section] (null for its menu). */
-    private fun care(name: String, section: app.pokeplan.ui.screens.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false) {
+    private fun care(name: String, section: app.pokeplan.ui.screens.CareSection?, height: Int = 1080, careParty: Int = 0, visiting: Boolean = false, fontScale: Float = 1f) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(careParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.CARE) }
@@ -586,7 +590,7 @@ class ScreenshotTest {
         model.module = app.pokeplan.ui.screens.Module.CARE
         model.careSection = section
         if (visiting) care.visitors().first().let { v -> care.startVisit(v.speciesId); care.visitAct(app.pokeplan.care.CareAction.WORDS) }
-        render(name, height = height) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+        render(name, fontScale = fontScale, height = height) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
     /** Home as the world overview: each region with its lead and next step, the streak, and what happened recently. */
@@ -611,6 +615,97 @@ class ScreenshotTest {
         val model = AppModel(storeWithTeam())
         val r = model.care.addRoutine("Drink a glass of water", kotlinx.datetime.LocalTime(9, 0), setOf(kotlinx.datetime.DayOfWeek.MONDAY, kotlinx.datetime.DayOfWeek.FRIDAY))
         render("care-routine-edit-xl", fontScale = 1.3f, height = 1500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) { app.pokeplan.ui.screens.RoutineOptions(model, model.careData.routines.single { it.id == r.id }, startEditing = true) {} } } } }
+    }
+
+    /** Every Plan section, every Care section and the Pokémon tab at the system's text at 130%: nothing clipped or pushed out of its box. */
+    @Test
+    fun largeTextModules() {
+        app.pokeplan.ui.screens.PlanSection.entries.filter { it != app.pokeplan.ui.screens.PlanSection.PLANNER && it != app.pokeplan.ui.screens.PlanSection.FOCUS }.forEach { sec ->
+            meStore("plan-xl-${sec.name.lowercase()}", prepare = { it.module = app.pokeplan.ui.screens.Module.PLAN; it.planSection = sec }, height = 1500, fontScale = 1.3f) { m -> app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }
+        }
+        meStore("plan-xl-menu", prepare = { it.module = app.pokeplan.ui.screens.Module.PLAN; it.store.markRewardsSeen() }, height = 3600, fontScale = 1.3f) { m -> app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }
+        care("care-xl-menu", null, height = 3800, careParty = 3, fontScale = 1.3f)
+        app.pokeplan.ui.screens.CareSection.entries.forEach { care("care-xl-${it.name.lowercase()}", it, height = 1500, fontScale = 1.3f) }
+        (0..3).forEach { collection("collection-xl-$it", it, hatched = 6, fontScale = 1.3f, height = 1500) }
+        collection("collection-xl-menu", -1, fontScale = 1.3f)
+    }
+
+    /** Every control in every state, light and dark and at 130% text: the design system on one page (docs/ui-ux-brief.md, Controls). */
+    @Test
+    fun componentGallery() {
+        for ((suffix, dark, scale) in listOf(Triple("", false, 1f), Triple("-dark", true, 1f), Triple("-xl", false, 1.3f))) {
+            render("components$suffix", height = 3300, fontScale = scale) { PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { Gallery() } } }
+        }
+    }
+
+    @Composable
+    private fun Gallery() {
+        val A = androidx.compose.foundation.layout.Arrangement
+        val states = listOf("Rest" to app.pokeplan.ui.theme.KeyPreview(app.pokeplan.ui.theme.KeyState.Rest), "Hover" to app.pokeplan.ui.theme.KeyPreview(app.pokeplan.ui.theme.KeyState.Hovered),
+            "Press" to app.pokeplan.ui.theme.KeyPreview(app.pokeplan.ui.theme.KeyState.Pressed), "Focus" to app.pokeplan.ui.theme.KeyPreview(app.pokeplan.ui.theme.KeyState.Rest, focused = true),
+            "Off" to app.pokeplan.ui.theme.KeyPreview(app.pokeplan.ui.theme.KeyState.Disabled), "Load" to app.pokeplan.ui.theme.KeyPreview(app.pokeplan.ui.theme.KeyState.Loading))
+        androidx.compose.foundation.layout.Column(Modifier.padding(Spacing.L), verticalArrangement = A.spacedBy(Spacing.S)) {
+            for ((name, color) in listOf("Blue" to Pixel.Blue, "Green" to Pixel.Green, "Red" to Pixel.Danger, "Yellow" to Pixel.Yellow, "Neutral" to Pixel.InkSoft)) {
+                Text(name, style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = A.spacedBy(Spacing.XS)) {
+                    states.forEach { (label, pv) -> app.pokeplan.ui.theme.PixelButton(label, {}, color = color, preview = pv, enabled = pv.state != app.pokeplan.ui.theme.KeyState.Disabled) }
+                }
+            }
+            Text("Compact", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            Row(horizontalArrangement = A.spacedBy(Spacing.S)) {
+                app.pokeplan.ui.theme.PixelButton("Add", {}, compact = true); app.pokeplan.ui.theme.PixelButton("Add", {}, compact = true, enabled = false)
+                app.pokeplan.ui.theme.PixelButton("Back", {}, color = Pixel.InkSoft, compact = true)
+            }
+            Text("Tabs and chips (selected, hover, press, focus, off)", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            Row(horizontalArrangement = A.spacedBy(Spacing.S)) {
+                app.pokeplan.ui.screens.TabButton("Open", false, {}); app.pokeplan.ui.screens.TabButton("Done", true, {}); app.pokeplan.ui.screens.TabButton("Any", false, {}, enabled = false)
+                app.pokeplan.ui.screens.ArrowButton("‹", "Back", true) {}; app.pokeplan.ui.screens.ArrowButton("›", "Next", false) {}
+            }
+            app.pokeplan.ui.screens.CategoryChips(app.pokeplan.plan.Category.entries[1]) {}
+            app.pokeplan.ui.screens.Segmented(listOf("Day", "Week", "Month"), 1) {}
+            Text("Rows", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            app.pokeplan.ui.theme.ChoiceRow(true, {}) { Text("Chosen") }
+            app.pokeplan.ui.theme.ChoiceRow(false, {}) { Text("Not chosen") }
+            app.pokeplan.ui.theme.ToggleRow("A setting", true, detail = "On") {}
+            app.pokeplan.ui.theme.ToggleRow("A setting", false) {}
+            app.pokeplan.ui.theme.ListRow(onClick = {}) { Text("A list row") }
+            Text("Notices and chips", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            app.pokeplan.ui.theme.NoticeTone.entries.forEach { app.pokeplan.ui.theme.Notice("A ${it.name.lowercase()} notice.", tone = it) }
+            app.pokeplan.ui.theme.StatChip("12", { Text("★") })
+            Text("Text fields (rest, placeholder, error, off, read-only)", style = androidx.compose.material3.MaterialTheme.typography.bodyMedium)
+            app.pokeplan.ui.theme.PixelField("Some text", {}, Modifier.fillMaxWidth(), singleLine = true, label = "Title", helper = "Up to 60 letters")
+            app.pokeplan.ui.theme.PixelField("", {}, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Add a task")
+            app.pokeplan.ui.theme.PixelField("", {}, Modifier.fillMaxWidth(), singleLine = true, label = "Title", error = "Give it a name")
+            app.pokeplan.ui.theme.PixelField("Locked", {}, Modifier.fillMaxWidth(), singleLine = true, label = "Title", enabled = false)
+            app.pokeplan.ui.theme.PixelField("Read only", {}, Modifier.fillMaxWidth(), singleLine = true, readOnly = true)
+            app.pokeplan.ui.theme.PixelBar(0.6f)
+        }
+    }
+
+    /** Every landing page on a brand-new save (the starter and nothing else): the first-use and empty states. */
+    @Test
+    fun firstUse() {
+        fun page(name: String, prepare: (AppModel) -> Unit = {}, content: @Composable (AppModel) -> Unit) {
+            val model = AppModel(started()).also(prepare)
+            render("first-$name", height = 1500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { content(model) } } }
+        }
+        page("home") { app.pokeplan.ui.screens.HomeScreen(it) {} }
+        page("modules") { app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
+        page("plan") { it.module = app.pokeplan.ui.screens.Module.PLAN; app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
+        app.pokeplan.ui.screens.PlanSection.entries.filter { it != app.pokeplan.ui.screens.PlanSection.PLANNER && it != app.pokeplan.ui.screens.PlanSection.SETTINGS }.forEach { sec ->
+            page("plan-${sec.name.lowercase()}") { it.module = app.pokeplan.ui.screens.Module.PLAN; it.planSection = sec; app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
+        }
+        for (v in 0..5) page("planner-$v") { app.pokeplan.ui.screens.PlannerScreen(it, startView = v) }
+        page("care") { it.module = app.pokeplan.ui.screens.Module.CARE; app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
+        app.pokeplan.ui.screens.CareSection.entries.filter { it != app.pokeplan.ui.screens.CareSection.SETTINGS }.forEach { sec ->
+            page("care-${sec.name.lowercase()}") { it.module = app.pokeplan.ui.screens.Module.CARE; it.careSection = sec; app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
+        }
+        app.pokeplan.ui.screens.WorldSection.entries.filter { it != app.pokeplan.ui.screens.WorldSection.SETTINGS }.forEach { sec ->
+            page("world-${sec.name.lowercase()}") { it.worldSection = sec; app.pokeplan.ui.screens.WorldScreen(it) }
+        }
+        for (i in 0..3) page("pokemon-$i") { app.pokeplan.ui.screens.CollectionScreen(it, i) }
+        page("pokemon-quests") { app.pokeplan.ui.screens.CollectionScreen(it, -1) }
+        page("me") { app.pokeplan.ui.screens.MeScreen(it, -1) }
     }
 
     @Test
@@ -757,6 +852,19 @@ class ScreenshotTest {
         val model = AppModel(store)
         val prefs = app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages").pin("pkg.Camera")
         render("launcher-home") { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs, {}, isDefault = false, phone = fakeHost) }
+    }
+
+    /** The launcher's town at 8:39 pm over a dungeon's tiles: the night tint must reach the right edge (the owner's phone showed a lighter strip there). */
+    @Test
+    fun launcherNight() {
+        val store = started()
+        listOf(1, 4, 7, 39, 52, 54, 94, 133, 143, 150, 151, 25, 175, 183).forEach { store.grantPokemon(it, "test") }
+        val zone = java.util.TimeZone.getDefault()
+        val cal = java.util.Calendar.getInstance(zone).apply { set(java.util.Calendar.HOUR_OF_DAY, 20); set(java.util.Calendar.MINUTE, 39) }
+        clock.millis = cal.timeInMillis
+        val model = AppModel(store)
+        val prefs = app.pokeplan.ui.launcher.LauncherPrefs(scene = "dark-hill").pin("pkg.Phone").pin("pkg.Messages").pin("pkg.Camera")
+        render("launcher-night", height = 1170) { app.pokeplan.ui.launcher.LauncherScreen(model, fakeApps, prefs, {}, isDefault = false, phone = fakeHost) }
     }
 
     @Test

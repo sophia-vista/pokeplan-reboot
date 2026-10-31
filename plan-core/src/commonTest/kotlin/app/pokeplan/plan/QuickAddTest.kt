@@ -118,3 +118,24 @@ class QuickAddTest {
         assertEquals("Pick up 3 apples", parse("Pick up 3 apples").title)
     }
 }
+
+class QuickAddHintsTest {
+    private val today = kotlinx.datetime.LocalDate(2026, 10, 31)
+
+    @kotlin.test.Test
+    fun sayWhatWasUnderstood() {
+        val r = QuickAdd.parse("Call mum tomorrow 5pm 30m #Social !B", today)
+        kotlin.test.assertEquals(listOf("Tomorrow", "17:00", "Social", "Difficulty B", "30 min"), QuickAdd.hints(r, today))
+    }
+
+    @kotlin.test.Test
+    fun aPlainTitleHasNoHints() {
+        kotlin.test.assertEquals(emptyList(), QuickAdd.hints(QuickAdd.parse("Buy milk", today), today))
+    }
+
+    @kotlin.test.Test
+    fun deadlinesListsAndLongDurations() {
+        val r = QuickAdd.parse("Report by friday 5pm #Groceries 2h", today)
+        kotlin.test.assertEquals(listOf("Due Fri 6 Nov 17:00", "List Groceries", "2 h"), QuickAdd.hints(r, today))
+    }
+}

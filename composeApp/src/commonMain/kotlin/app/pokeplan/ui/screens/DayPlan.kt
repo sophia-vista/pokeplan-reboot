@@ -84,6 +84,7 @@ import app.pokeplan.plan.Task
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelKey
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
@@ -423,46 +424,19 @@ private fun Carried(d: Drag, grid: Grid) {
     )
 }
 
-/** A round ‹ or › button that steps a day or a week. */
+/** A ‹ or › key that steps a day or a week. */
 @Composable
 internal fun ArrowButton(symbol: String, label: String, enabled: Boolean, onClick: () -> Unit) {
-    Box(
-        Modifier
-            .size(Spacing.Target)
-            .clip(CircleShape)
-            .clickable(enabled = enabled, role = Role.Button, onClickLabel = label, onClick = onClick)
-            .semantics { contentDescription = label },
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(symbol, style = MaterialTheme.typography.titleMedium, color = if (enabled) Pixel.Ink else Pixel.Border)
+    PixelKey(onClick, Modifier.semantics { contentDescription = label }, key = Pixel.InkSoft, enabled = enabled, fill = true, sound = app.pokeplan.ui.Sfx.CURSOR, horizontal = Spacing.S) { look ->
+        Text(symbol, style = MaterialTheme.typography.titleMedium, color = if (enabled) Pixel.Ink else look.ink)
     }
 }
 
-/** A segmented control: one rounded track, the chosen segment raised on it (iOS and Material 3 style). */
+/** A segmented control: a row of equal keys, the chosen one filled. */
 @Composable
 internal fun Segmented(options: List<String>, selected: Int, onSelect: (Int) -> Unit) {
-    val track = RoundedCornerShape(12.dp)
-    val thumb = RoundedCornerShape(10.dp)
-    Row(Modifier.height(44.dp).background(Pixel.Shade, track).padding(3.dp)) {
-        options.forEachIndexed { i, label ->
-            val on = i == selected
-            Box(
-                Modifier
-                    .fillMaxHeight()
-                    .clip(thumb)
-                    .background(if (on) Pixel.Panel else Color.Transparent, thumb)
-                    .border(1.dp, if (on) Pixel.Border else Color.Transparent, thumb)
-                    .clickable(role = Role.Tab) { onSelect(i) }
-                    .semantics { this.selected = on }
-                    .padding(horizontal = Spacing.L),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    label, style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (on) FontWeight.Bold else FontWeight.Medium),
-                    color = if (on) Pixel.Ink else Pixel.InkSoft,
-                )
-            }
-        }
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        options.forEachIndexed { i, label -> TabButton(label, i == selected, { onSelect(i) }) }
     }
 }
 

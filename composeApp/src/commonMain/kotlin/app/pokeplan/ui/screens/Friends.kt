@@ -29,6 +29,7 @@ import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.TextBox
@@ -84,9 +85,9 @@ fun FriendsView(model: AppModel) {
     }
     TextBox {
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
-                friendCode, { friendCode = it.uppercase().take(12) }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                placeholder = { Text("A friend's code", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) },
+            PixelField(
+                friendCode, { friendCode = it.uppercase().take(12) }, Modifier.weight(1f), singleLine = true,
+                placeholder = "A friend's code",
             )
             PixelButton("Add", { val c = friendCode; friendCode = ""; act("Request sent.") { social.addFriend(it, c) } }, enabled = friendCode.isNotBlank(), compact = true)
         }

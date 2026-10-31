@@ -62,6 +62,7 @@ import app.pokeplan.ui.SceneStage
 import app.pokeplan.ui.SpriteAction
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
@@ -317,9 +318,9 @@ private fun RoutinesView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(
-                    title, { title = it.take(60) }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                    placeholder = { Text("New routine", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
+                PixelField(
+                    title, { title = it.take(60) }, Modifier.weight(1f), singleLine = true,
+                    placeholder = "New routine",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
@@ -382,8 +383,8 @@ internal fun RoutineOptions(model: AppModel, routine: Routine, startEditing: Boo
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 PixelTitle("Edit routine")
-                OutlinedTextField(
-                    title, { title = it.take(60) }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
+                PixelField(
+                    title, { title = it.take(60) }, Modifier.fillMaxWidth(), singleLine = true,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                 )
                 RoutineFields(time, { time = it }, days, { days = it })
@@ -559,9 +560,9 @@ private fun DiaryView(model: AppModel) {
                     if (u.isNotEmpty() && u !in tracked) care.changeSettings { s -> s.copy(urges = s.urges + u) }
                     newUrge = ""
                 }
-                OutlinedTextField(
-                    newUrge, { newUrge = it.take(40) }, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                    placeholder = { Text("Track an urge", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
+                PixelField(
+                    newUrge, { newUrge = it.take(40) }, Modifier.weight(1f), singleLine = true,
+                    placeholder = "Track an urge",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
@@ -578,9 +579,9 @@ private fun DiaryView(model: AppModel) {
                 shown.forEach { k -> TabButton(k.name, k.id in skills, { skills = if (k.id in skills) skills - k.id else skills + k.id; done = false }) }
             }
             PixelButton(if (allSkills) "Fewer skills" else "All skills", { allSkills = !allSkills }, color = Pixel.InkSoft, compact = true)
-            OutlinedTextField(
-                note, { note = it.take(500); done = false }, Modifier.fillMaxWidth(), textStyle = MaterialTheme.typography.bodyLarge,
-                placeholder = { Text("A note, if you like", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
+            PixelField(
+                note, { note = it.take(500); done = false }, Modifier.fillMaxWidth(),
+                placeholder = "A note, if you like",
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
             )
             PixelButton(if (saved == null) "Save today's card" else "Update today's card", {
@@ -691,9 +692,9 @@ private fun JournalView(model: AppModel) {
                 Text(asked.text, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                 PixelButton("Not this", { answering = null }, color = Pixel.InkSoft, compact = true)
             }
-            OutlinedTextField(
-                text, { text = it.take(5_000) }, Modifier.fillMaxWidth(), textStyle = MaterialTheme.typography.bodyLarge, minLines = 4,
-                placeholder = { Text("Write anything", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
+            PixelField(
+                text, { text = it.take(5_000) }, Modifier.fillMaxWidth(), minLines = 4,
+                placeholder = "Write anything",
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -703,9 +704,9 @@ private fun JournalView(model: AppModel) {
             Text("Only for you: the journal stays on this device and never earns anything.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
-    if (data.journal.size > 3) OutlinedTextField(
-        query, { query = it.take(60) }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-        placeholder = { Text("Search the journal", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
+    if (data.journal.size > 3) PixelField(
+        query, { query = it.take(60) }, Modifier.fillMaxWidth(), singleLine = true,
+        placeholder = "Search the journal",
     )
     val entries = care.searchJournal(query).take(30)
     if (data.journal.isNotEmpty() && entries.isEmpty()) EmptyState("Nothing found", "No entry has \"${query.trim()}\" in it.", icon = CareSection.JOURNAL.icon)

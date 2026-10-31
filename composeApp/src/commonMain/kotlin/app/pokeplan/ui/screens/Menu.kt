@@ -36,6 +36,10 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
@@ -55,7 +59,7 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
 
 /** One entry of a tab's menu: a real item icon, a title, a line of detail, and an optional count badge. */
-/** One card of a menu. [detail] is an optional caption: leave it empty when the title says enough (not every card needs one). */
+/** One card of a menu. [detail] is no longer drawn (the owner wants every card the same: icon and title only); it is kept as what a screen reader says after the title. */
 data class MenuEntry(val key: String, val icon: String, val title: String, val detail: String = "", val badge: Int = 0, val tint: Color = Pixel.Blue)
 
 private val menuShape = DialogueShape
@@ -84,6 +88,7 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
             .clip(menuShape)
             .focusRing(menuShape)
             .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button) { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }
+            .semantics { if (entry.detail.isNotEmpty()) contentDescription = entry.title + ", " + entry.detail }
             .padding(horizontal = Spacing.XL, vertical = Spacing.XL),
     ) {
         val picture = @Composable {
@@ -95,12 +100,10 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
             picture()
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 PixelTitle(entry.title)
-                if (entry.detail.isNotEmpty()) Text(entry.detail, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
             }
         } else Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             picture()
             PixelTitle(entry.title)
-            if (entry.detail.isNotEmpty()) Text(entry.detail, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, maxLines = 2)
         }
         if (entry.badge > 0) {
             Box(Modifier.align(Alignment.TopEnd).size(26.dp).background(Pixel.Red, CircleShape), contentAlignment = Alignment.Center) {

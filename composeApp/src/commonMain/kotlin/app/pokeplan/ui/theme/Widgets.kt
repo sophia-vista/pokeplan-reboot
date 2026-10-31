@@ -34,8 +34,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import app.pokeplan.ui.pressScale
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -155,9 +160,8 @@ enum class NoticeTone { INFO, WARNING, DANGER }
 @Composable
 fun Notice(text: String, modifier: Modifier = Modifier, tone: NoticeTone = NoticeTone.INFO) {
     val color = when (tone) { NoticeTone.INFO -> Pixel.Blue; NoticeTone.WARNING -> Pixel.Warning; NoticeTone.DANGER -> Pixel.Danger }
-    val shape = RoundedCornerShape(12.dp)
     Row(
-        modifier.fillMaxWidth().background(color.copy(alpha = 0.10f), shape).border(1.dp, color.copy(alpha = 0.4f), shape).padding(Spacing.M)
+        modifier.fillMaxWidth().pixelPlate(color.copy(alpha = 0.10f).compositeOver(Pixel.Panel), color.copy(alpha = 0.6f)).padding(Spacing.M)
             .semantics { liveRegion = LiveRegionMode.Polite },
     ) { Text(text, style = MaterialTheme.typography.bodyLarge) }
 }
@@ -167,9 +171,8 @@ fun Notice(text: String, modifier: Modifier = Modifier, tone: NoticeTone = Notic
 fun StatChip(text: String, icon: @Composable () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier
-            .background(Pixel.Panel, RoundedCornerShape(50))
-            .border(BorderStroke(1.dp, Pixel.Border), RoundedCornerShape(50))
-            .padding(start = 6.dp, end = 12.dp),
+            .pixelPlate()
+            .padding(start = Spacing.XS, end = Spacing.M),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         icon()
@@ -189,9 +192,9 @@ fun Modifier.quietClickable(enabled: Boolean = true, onClickLabel: String? = nul
  * just before the `clickable`, `selectable` or `toggleable`; touch users never see it.
  */
 @Composable
-fun Modifier.focusRing(shape: Shape, color: Color = Pixel.Blue): Modifier {
+fun Modifier.focusRing(shape: Shape, color: Color = Pixel.Blue, forced: Boolean = false): Modifier {
     var focused by remember { mutableStateOf(false) }
-    return this.onFocusChanged { focused = it.isFocused }.then(if (focused) Modifier.border(2.dp, color, shape) else Modifier)
+    return this.onFocusChanged { focused = it.isFocused }.then(if (focused || forced) Modifier.border(2.dp, color, shape) else Modifier)
 }
 
 /** A card row for a list item: [lead] at the left, [content] in the middle, [trail] at the right. */
@@ -208,16 +211,21 @@ fun ListRow(
     content: @Composable () -> Unit,
 ) {
     val shape = DialogueShape
+    val source = remember { MutableInteractionSource() }
+    val hovering by source.collectIsHoveredAsState()
     Row(
         modifier
+            .let { if (onClick != null) it.pressScale(source) else it }
             .fillMaxWidth()
             .dialogueBox()
             .clip(shape)
+            // A pointer over a tappable row tints it faintly (desktop and web); touch has the ripple or the press scale.
+            .let { if (hovering && onClick != null) it.background(Pixel.Blue.copy(alpha = 0.06f)) else it }
             .let {
                 when {
                     onClick == null -> it
-                    highlight -> it.focusRing(shape).clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
-                    else -> it.quietClickable(onClickLabel = onClickLabel, onClick = onClick)
+                    highlight -> it.focusRing(shape).clickable(interactionSource = source, indication = LocalIndication.current, onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
+                    else -> it.focusRing(shape).clickable(interactionSource = source, indication = null, onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
                 }
             }
             .defaultMinSize(minHeight = 64.dp)
@@ -268,14 +276,13 @@ fun ToggleRow(label: String, on: Boolean, modifier: Modifier = Modifier, detail:
  */
 @Composable
 fun ChoiceRow(selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, lead: @Composable () -> Unit = {}, content: @Composable () -> Unit) {
-    val shape = RoundedCornerShape(12.dp)
+    val shape = DialogueShape
     Row(
         modifier
             .fillMaxWidth()
             .defaultMinSize(minHeight = Spacing.Target)
+            .pixelFrame(if (selected) Pixel.Blue.copy(alpha = 0.10f).compositeOver(Pixel.Panel) else Pixel.Panel, if (selected) Pixel.Blue else Pixel.Border)
             .clip(shape)
-            .background(if (selected) Pixel.Blue.copy(alpha = 0.10f) else Pixel.Panel, shape)
-            .border(BorderStroke(if (selected) 2.dp else 1.dp, if (selected) Pixel.Blue else Pixel.Border), shape)
             .focusRing(shape)
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .padding(horizontal = Spacing.M, vertical = Spacing.XS),

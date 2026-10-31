@@ -120,6 +120,31 @@ object QuickAdd {
         return if (thisYear >= today) thisYear else safeDate(today.year + 1, month, day)
     }
 
+    private val dayWords = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    private val monthWords = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+    private fun dayLabel(d: LocalDate, today: LocalDate) = when (d) {
+        today -> "Today"
+        today.plus(DatePeriod(days = 1)) -> "Tomorrow"
+        else -> "${dayWords[d.dayOfWeek.isoDayNumber - 1]} ${d.dayOfMonth} ${monthWords[d.monthNumber - 1]}"
+    }
+
+    private fun clock(t: LocalTime) = "${t.hour.toString().padStart(2, '0')}:${t.minute.toString().padStart(2, '0')}"
+
+    /**
+     * What [result] was understood as, in plain words and in the order a person says them ("Tomorrow", "17:00", "Social",
+     * "Difficulty B", "30 min"), so the quick-add box can show it before the task is made. Empty when the line is only a title.
+     */
+    fun hints(result: Result, today: LocalDate): List<String> = buildList {
+        result.planned?.let { add(dayLabel(it, today)) }
+        result.plannedTime?.let { add(clock(it)) }
+        result.due?.let { add("Due ${dayLabel(it.date, today)} ${clock(it.time)}") }
+        result.category?.let { add(it.label) }
+        result.listName?.let { add("List $it") }
+        result.rank?.let { add("Difficulty ${it.letter}") }
+        result.estimateMinutes?.let { add(if (it % 60 == 0) "${it / 60} h" else if (it > 60) "${it / 60} h ${it % 60} min" else "$it min") }
+    }
+
     fun parse(input: String, today: LocalDate): Result {
         val tokens = input.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
         val used = BooleanArray(tokens.size)

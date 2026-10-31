@@ -7,3 +7,9 @@ import androidx.compose.runtime.staticCompositionLocalOf
  * which stays silent when a game sound has just played for the same tap, so a "Done" never chimes twice.
  */
 val LocalUiSound = staticCompositionLocalOf<(Sfx) -> Unit> { {} }
+
+/**
+ * How loud a UI tap is, as a share of the Sound effects volume. The owner found 10% still loud, so a tap is 3%: heard in a quiet
+ * room, never over a game sound. Tune here; [AppModel.tap] is the only place it is applied.
+ */
+const val TAP_GAIN = 0.03f

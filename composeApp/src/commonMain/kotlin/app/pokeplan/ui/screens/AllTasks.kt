@@ -25,6 +25,7 @@ import app.pokeplan.plan.TaskState
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.RankBadge
 import app.pokeplan.ui.theme.Spacing
@@ -45,9 +46,9 @@ internal fun AllTasksView(model: AppModel, tasks: List<Task>, card: @Composable 
     val lists = model.store.activeLists
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            OutlinedTextField(
-                filter.query, { filter = filter.copy(query = it) }, Modifier.fillMaxWidth(), singleLine = true, textStyle = MaterialTheme.typography.bodyLarge,
-                placeholder = { Text("Search titles and notes", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft) },
+            PixelField(
+                filter.query, { filter = filter.copy(query = it) }, Modifier.fillMaxWidth(), singleLine = true,
+                placeholder = "Search titles and notes",
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             )
             FieldLabel("Status")

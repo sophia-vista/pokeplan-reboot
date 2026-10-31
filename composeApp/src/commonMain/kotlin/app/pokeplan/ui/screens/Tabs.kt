@@ -1,6 +1,8 @@
 package app.pokeplan.ui.screens
 
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import app.pokeplan.ui.pressScale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,25 +30,13 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelLabel
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
+import app.pokeplan.ui.theme.KeyLabel
+import app.pokeplan.ui.theme.PixelKey
 
-/** A segmented filter (the planner's views, pickers): the selected one is filled, the others outlined. At least 44 dp tall. */
+/** A filter or choice key (the planner's views, pickers): the selected one is filled, the others outlined. Same states as every key. */
 @Composable
-fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val shape = RoundedCornerShape(12.dp)
-    Box(
-        modifier
-            .defaultMinSize(minHeight = Spacing.Target)
-            .clip(shape)
-            .background(if (selected) Pixel.Blue else Pixel.Panel, shape)
-            .border(1.dp, if (selected) Pixel.Blue else Pixel.Border, shape)
-            .focusRing(shape)
-            .clickable(role = Role.Tab, onClick = onClick)
-            .semantics { this.selected = selected }
-            .padding(horizontal = Spacing.M, vertical = Spacing.S),
-        contentAlignment = Alignment.Center,
-    ) {
-        PixelLabel(label, if (selected) Color.White else Pixel.Ink, small = true, tinted = !selected)
-    }
+fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, key: Color = Pixel.Blue) {
+    PixelKey(onClick, modifier, key = key, selected = selected, enabled = enabled, fill = true, role = Role.Tab, horizontal = Spacing.M) { look -> KeyLabel(label, look) }
 }
 
 /** A bottom navigation item: a real item icon over the label; the selected one has a filled pill and a bold label. */
@@ -54,12 +44,13 @@ fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: M
 fun NavButton(label: String, iconItem: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val ui = app.pokeplan.ui.LocalUiSound.current
     val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    val hovering by source.collectIsHoveredAsState()
     Column(
         modifier
             .pressScale(source)
             .defaultMinSize(minHeight = 56.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(if (selected) Color.White.copy(alpha = 0.24f) else Color.Transparent)
+            .background(if (selected) Color.White.copy(alpha = if (hovering) 0.32f else 0.24f) else if (hovering) Color.White.copy(alpha = 0.12f) else Color.Transparent)
             .focusRing(RoundedCornerShape(16.dp))
             .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Tab) { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }
             .semantics { this.selected = selected }

@@ -25,11 +25,14 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 import app.pokeplan.plan.Category
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.Spacing
+import app.pokeplan.ui.theme.KeyLabel
+import app.pokeplan.ui.theme.PixelKey
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
@@ -40,25 +43,13 @@ import kotlinx.datetime.plus
  */
 @Composable
 internal fun CategoryChip(category: Category, selected: Boolean, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(12.dp)
     val color = categoryColor(category)
-    Row(
-        Modifier
-            .defaultMinSize(minHeight = Spacing.Target)
-            .clip(shape)
-            .background(if (selected) color.copy(alpha = 0.18f) else Pixel.Panel, shape)
-            .border(if (selected) 2.dp else 1.dp, if (selected) color else Pixel.Border, shape)
-            .clickable(role = Role.Tab, onClick = onClick)
-            .semantics { this.selected = selected }
-            .padding(horizontal = Spacing.M, vertical = Spacing.S),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Spacing.S),
-    ) {
-        Box(Modifier.size(10.dp).background(color, CircleShape))
-        Text(
-            category.label, maxLines = 1, color = Pixel.Ink,
-            style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium),
-        )
+    PixelKey(onClick, key = color, selected = selected, fill = true, role = Role.Tab, horizontal = Spacing.M) { look ->
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            // The dot keeps the category's colour on a filled key too: white ring so it shows on its own colour.
+            Box(Modifier.size(10.dp).background(color, CircleShape).then(if (selected) Modifier.border(2.dp, Color.White, CircleShape) else Modifier))
+            KeyLabel(category.label, look)
+        }
     }
 }
 

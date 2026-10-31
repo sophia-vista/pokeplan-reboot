@@ -468,7 +468,7 @@ private fun WorldTeamsView(model: AppModel) {
                 }
             }
         }
-        if (outAt != null) TileBox(outAt.id, members.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !model.data.settings.reduceMotion, scrolls = model.data.settings.worldScroll && !model.powerSaving, content = body) else TextBox { body() }
+        if (outAt != null) TileBox(outAt.id, members.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !model.data.settings.reduceMotion, scrolls = model.data.settings.worldScroll, content = body) else TextBox { body() }
     }
     if (report.isNotEmpty()) TextBox { Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) { FieldLabel("Lately"); report.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) } } }
     Text("Explore dungeons on the World map, then recall a team any time; nothing it found is lost.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)

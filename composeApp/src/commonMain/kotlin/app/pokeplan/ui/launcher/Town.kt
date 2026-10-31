@@ -50,6 +50,7 @@ import app.pokeplan.ui.StatusKind
 import app.pokeplan.ui.orNull
 import app.pokeplan.ui.rememberFadeIn
 import app.pokeplan.ui.theme.Pixel
+import androidx.compose.foundation.background
 import app.pokeplan.ui.theme.PmdText
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -104,8 +105,11 @@ internal fun Town(
         val screenPx = widthPx / screens
         val pixel = townScale(screenPx)
         androidx.compose.foundation.layout.Row(Modifier.fillMaxSize()) {
-            repeat(screens) { TownBackdrop(scene, Modifier.weight(1f).fillMaxHeight(), darkness = BuddyScene.darkness(model.store.now.hour, model.store.now.minute)) }
+            repeat(screens) { TownBackdrop(scene, Modifier.weight(1f).fillMaxHeight()) }
         }
+        // The night tint is one sheet over every screen of the town, not one per backdrop, so it reaches the right edge whatever the backdrops' widths.
+        val dark = BuddyScene.darkness(model.store.now.hour, model.store.now.minute)
+        if (dark > 0f) Box(Modifier.matchParentSize().background(Pixel.Night.copy(alpha = dark.coerceIn(0f, 1f))))
         val dungeon = TownScenes.isDungeon(scene)
         val top = if (dungeon) TownLayout.WALK_TOP else SCENE_TOP
         val bottom = if (dungeon) TownLayout.WALK_BOTTOM else SCENE_BOTTOM

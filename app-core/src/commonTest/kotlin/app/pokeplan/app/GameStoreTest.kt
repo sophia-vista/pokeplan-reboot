@@ -944,3 +944,18 @@ class GameStoreTest {
         assertTrue(s.data.tasks.isEmpty())
     }
 }
+
+class QuickAddTimeTest {
+    @kotlin.test.Test
+    fun aTimeAndTheEveningAreKeptOnAPlannedDayOnly() {
+        val s = GameStore(MemoryStorage(), object : Clock { override fun nowMillis() = 1_760_000_000_000L }).also { it.start("A", 25) }
+        val day = s.today
+        val timed = s.addTask("Call mum", planned = day, plannedTime = kotlinx.datetime.LocalTime(17, 0))
+        kotlin.test.assertEquals(kotlinx.datetime.LocalTime(17, 0), timed.plannedTime)
+        val night = s.addTask("Read", planned = day, evening = true)
+        kotlin.test.assertTrue(night.evening)
+        val loose = s.addTask("Someday", plannedTime = kotlinx.datetime.LocalTime(9, 0), evening = true)
+        kotlin.test.assertNull(loose.plannedTime)
+        kotlin.test.assertFalse(loose.evening)
+    }
+}
