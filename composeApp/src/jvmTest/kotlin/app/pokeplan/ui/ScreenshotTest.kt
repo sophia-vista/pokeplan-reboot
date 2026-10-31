@@ -678,6 +678,12 @@ class ScreenshotTest {
         planned.addTask("Reply to mail", Rank.E, planned = planned.today)
         planned.addEvent("Gym", planned.today, kotlinx.datetime.LocalTime(18, 30))
         render("launcher-today") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.TodayPage(AppModel(planned), 2) } } }
+        app.pokeplan.ui.launcher.Weather.entries.drop(1).forEach { weather ->
+            val sky = started().also { st -> listOf(1, 4, 25, 133, 150).forEach { st.grantPokemon(it, "test") } }
+            render("launcher-weather-${weather.name.lowercase()}") {
+                app.pokeplan.ui.launcher.LauncherScreen(AppModel(sky), fakeApps, app.pokeplan.ui.launcher.LauncherPrefs().copy(weather = weather), {}, isDefault = true, host = fakeHost)
+            }
+        }
         render("launcher-towns") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.TownPicker("meadow", {}, {}) } } }
         render("launcher-pokemon-menu") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.PokemonMenu(started().data.player.buddy!!, false, 2, {}, {}, {}) } } }
         render("launcher-settings") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.LauncherSettings(AppModel(started()), app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone"), {}, false, 2, 2, fakeHost, {}, {}, {}) } } }

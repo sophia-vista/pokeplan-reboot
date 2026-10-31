@@ -6,6 +6,11 @@ package app.pokeplan.ui.launcher
  * Everything here describes the apps installed on this device, so it stays on the device and is never synced.
  */
 
+/** The weather the town can have, drawn from the Mystery Dungeon effects (assets/weather). */
+enum class Weather(val label: String) {
+    CLEAR("Clear"), CLOUDS("Cloud shadows"), RAIN("Rain"), SNOW("Snow"), BLIZZARD("Blizzard"), SANDSTORM("Sandstorm"),
+}
+
 /** The groups of Smart Launcher: the category an app declares (`ApplicationInfo.category`), with "Other" as the fallback. */
 enum class AppCategory(val label: String, val icon: String) {
     GAMES("Games", "great-ball"),
@@ -84,10 +89,13 @@ data class LauncherPrefs(
     val showStatus: Boolean = true,
     /** Whether dragging in from the right edge opens the app list. */
     val edgeDrag: Boolean = true,
+    /** The weather over the town, one of the Mystery Dungeon effects; it is only a look, not the real weather. */
+    val weather: Weather = Weather.CLEAR,
 ) {
     fun withWalking(on: Boolean) = copy(walking = on)
     fun withShowStatus(on: Boolean) = copy(showStatus = on)
     fun withEdgeDrag(on: Boolean) = copy(edgeDrag = on)
+    fun nextWeather() = copy(weather = Weather.entries[(weather.ordinal + 1) % Weather.entries.size])
     /** The next town size: 8, then 16, then 24, then 8 again. */
     fun nextTownSize() = copy(townSize = when (townSize) { 8 -> 16; 16 -> 24; else -> 8 })
     /** Pins and their icons forgotten; hidden apps and the other choices kept. */
@@ -116,6 +124,7 @@ data class LauncherPrefs(
         if (townSize != 24) append("K townSize\t").append(townSize).append('\n')
         if (!showStatus) append("K showStatus\t0\n")
         if (!edgeDrag) append("K edgeDrag\t0\n")
+        if (weather != Weather.CLEAR) append("K weather\t").append(weather.name).append('\n')
         pinned.forEach { append("P ").append(it).append('\n') }
         hidden.sorted().forEach { append("H ").append(it).append('\n') }
         moved.entries.sortedBy { it.key }.forEach { (key, category) -> append("M ").append(key).append('\t').append(category.name).append('\n') }
@@ -133,7 +142,7 @@ data class LauncherPrefs(
                     'P' -> prefs.pin(rest)
                     'H' -> prefs.copy(hidden = prefs.hidden + rest)
                     'S' -> prefs.withScene(rest)
-                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> prefs } }
+                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.CLEAR); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> prefs } }
                     'I' -> rest.lastIndexOf('\t').let { at -> if (at > 0) prefs.withIcon(rest.substring(0, at), rest.substring(at + 1)) else prefs }
                     'M' -> {
                         val at = rest.lastIndexOf('\t')

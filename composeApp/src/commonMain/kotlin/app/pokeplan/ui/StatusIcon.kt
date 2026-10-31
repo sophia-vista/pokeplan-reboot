@@ -25,8 +25,10 @@ import pokeplan.composeapp.generated.resources.Res
  * the "!" over a startled Pokémon, the "?" of a curious or confused one, the red X of a hit or a quarrel, the Zz of sleep.
  * [loop] is the frames repeated from the first; [start] is where a looping one begins (the Zz grows before it settles).
  */
-enum class StatusKind(val file: String, val frames: Int, val start: Int = 0, val millis: Long = 110) {
+enum class StatusKind(val file: String, val frames: Int, val start: Int = 0, val millis: Long = 110, val cell: Int = 16) {
     ALERT("alert", 9), QUESTION("question", 10), CROSS("cross", 9), SLEEP("sleep", 9, start = 3, millis = 220), SKULL("skull", 8),
+    /** The yellow flash of a shock, the blue drop of a nervous one and a white sparkle for something nice (24 px, 16 px and 24 px frames). */
+    ZAP("zap", 2, millis = 140, cell = 24), SWEAT("sweat", 2, millis = 300), TWINKLE("twinkle", 3, millis = 160, cell = 24),
 }
 
 private val strips = mutableMapOf<StatusKind, ImageBitmap?>()
@@ -50,12 +52,11 @@ fun StatusIcon(kind: StatusKind, pixel: Int, modifier: Modifier = Modifier, loop
             frame = if (loop) (if (frame + 1 >= kind.frames) kind.start else frame + 1) else minOf(frame + 1, kind.frames - 1)
         }
     }
-    val dp = pixel * CELL / LocalDensity.current.density
+    val cell = kind.cell
+    val dp = pixel * cell / LocalDensity.current.density
     Canvas(modifier.size(dp.dp)) {
         val image = strip ?: return@Canvas
         val shown = if (animate) frame else if (loop) kind.frames - 1 else 0
-        drawImage(image, srcOffset = IntOffset(shown * CELL, 0), srcSize = IntSize(CELL, CELL), dstSize = IntSize(CELL * pixel, CELL * pixel), filterQuality = FilterQuality.None)
+        drawImage(image, srcOffset = IntOffset(shown * cell, 0), srcSize = IntSize(cell, cell), dstSize = IntSize(cell * pixel, cell * pixel), filterQuality = FilterQuality.None)
     }
 }
-
-private const val CELL = 16
