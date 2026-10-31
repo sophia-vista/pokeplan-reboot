@@ -96,8 +96,9 @@ private fun DrawScope.pmdFrame(pixel: Int, tone: PmdTone) = dialogueFrame(pixel.
 @Composable
 internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, dim: Boolean = false, center: Boolean = false, onHold: (() -> Unit)? = null, onClick: () -> Unit) {
     val density = LocalDensity.current.density
+    val ui = app.pokeplan.ui.LocalUiSound.current
     Box(
-        modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).focusRing(RoundedCornerShape(4.dp), Color.White).combinedClickable(role = Role.Button, onLongClick = onHold, onClick = onClick).semantics(mergeDescendants = true) {},
+        modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).focusRing(RoundedCornerShape(4.dp), Color.White).combinedClickable(role = Role.Button, onLongClick = onHold?.let { h -> { ui(app.pokeplan.ui.Sfx.LONG_PRESS); h() } }, onClick = { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }).semantics(mergeDescendants = true) {},
         contentAlignment = if (center) Alignment.Center else Alignment.CenterStart,
     ) {
         if (selected) Canvas(Modifier.padding(start = (2 * pixel / density).dp).size((3 * pixel / density).dp, (5 * pixel / density).dp)) {

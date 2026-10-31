@@ -28,6 +28,7 @@ import app.pokeplan.AndroidCryPlayer
 import app.pokeplan.AndroidHaptics
 import app.pokeplan.MainActivity
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.Place
 import app.pokeplan.ui.launcher.AppCategory
 import app.pokeplan.ui.launcher.LauncherApp
@@ -57,6 +58,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     private var apps by mutableStateOf<List<LauncherApp>>(emptyList())
     private var prefs by mutableStateOf(LauncherPrefs())
     private var isDefault by mutableStateOf(false)
+    private lateinit var model: AppModel
 
     /** How many times Home was pressed while this was open: the screens go back to the home page on each. */
     private var homePresses by mutableIntStateOf(0)
@@ -80,7 +82,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         launcherApps = getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
         users = getSystemService(Context.USER_SERVICE) as UserManager
         prefs = LauncherPrefs.decode(getSharedPreferences(PREFS, MODE_PRIVATE).getString(PREFS_KEY, null))
-        val model = AppModel(store, cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this))
+        model = AppModel(store, cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this))
         launcherApps.registerCallback(packageChanges)
         reloadApps()
         setContent { LauncherScreen(model, apps, prefs, ::savePrefs, isDefault, this, homePresses, active) }
@@ -120,7 +122,11 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     /** Strict focus: Home during a focus session keeps the Focus screen on instead of leaving it. */
     private fun keepFocusScreen() {
         store.reload()
-        if (store.data.focus != null) openApp(Place.FOCUS)
+        if (store.data.focus != null) {
+            // The low buzz says Home is shut while the timer runs.
+            if (::model.isInitialized) model.effect(Sfx.FOCUS_LOCK)
+            openApp(Place.FOCUS)
+        }
     }
 
     private fun isDefaultHome(): Boolean {

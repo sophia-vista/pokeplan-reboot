@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import app.pokeplan.core.pokemon.OwnedPokemon
@@ -298,7 +299,7 @@ fun PlanBuddyStage(model: AppModel, onOpen: () -> Unit) {
         progress = store.levelProgress(buddy), event = store.buddyEvent(),
         calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
         onPet = { avoid -> store.pet(); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
-        onFeed = { avoid -> berry?.let { store.useItem(it, buddy.id); model.effect(Sfx.HEAL) }; BuddyReaction.feed(buddy, avoid = avoid) },
+        onFeed = { avoid -> berry?.let { store.useItem(it, buddy.id); model.effect(Sfx.EATING) }; BuddyReaction.feed(buddy, avoid = avoid) },
         onOpen = onOpen, onHaptic = { model.haptic() }, onEvent = { model.cry(buddy.speciesId) },
         celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
     )
@@ -389,7 +390,7 @@ private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
                         done -> Text("Done", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
                         avoided && oldest != null && model.data.focus == null -> PixelButton("Start 5 min", {
                             store.completeMiniQuest(q.id)
-                            store.startFocus(FocusRules.justFiveMinutes().minutesRoundedUp, deepFocus = false, taskId = oldest.id)
+                            model.effect(Sfx.FOCUS_START); store.startFocus(FocusRules.justFiveMinutes().minutesRoundedUp, deepFocus = false, taskId = oldest.id)
                             go(Place.FOCUS)
                         }, color = Pixel.Blue, compact = true)
                         else -> PixelButton("Done", { if (store.completeMiniQuest(q.id)) model.effect(Sfx.HEAL) }, color = Pixel.Green, compact = true)
@@ -427,6 +428,7 @@ private fun WelcomeBackCard(model: AppModel) {
 @Composable
 private fun RankUpCard(model: AppModel) {
     val opened = model.store.newlyOpened()
+    LaunchedEffect(opened.isEmpty()) { if (opened.isNotEmpty()) model.effect(Sfx.RANK_UP) }
     if (opened.isEmpty()) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {

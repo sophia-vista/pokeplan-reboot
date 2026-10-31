@@ -1,5 +1,9 @@
 package app.pokeplan.ui.screens
 
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.platform.LocalDensity
+import app.pokeplan.ui.StatusKind
+import app.pokeplan.ui.StatusIcon
 import app.pokeplan.core.reward.RewardEngine
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -161,7 +165,7 @@ private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
         progress = store.levelProgress(buddy), event = store.buddyEvent(care = true),
         calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
         onPet = { avoid -> store.pet(buddy.id); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
-        onFeed = { avoid -> berry?.let { store.useItem(it, buddy.id); model.effect(Sfx.HEAL) }; BuddyReaction.feed(buddy, avoid = avoid) },
+        onFeed = { avoid -> berry?.let { store.useItem(it, buddy.id); model.effect(Sfx.EATING) }; BuddyReaction.feed(buddy, avoid = avoid) },
         onOpen = { openPokemon(buddy.id) }, onHaptic = { model.haptic() },
         onEvent = { model.cry(buddy.speciesId) },
         celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
@@ -397,7 +401,7 @@ private fun CalmBreakView(model: AppModel) {
         startedAt = null
         // It wakes up beside you: a stretch (its hop), its cry, and the healing chime when the break earned.
         buddy?.let { model.cry(it.speciesId) }
-        if (paid) model.effect(Sfx.HEAL)
+        if (paid) model.effect(Sfx.CALM_BREAK_END)
         if (!reduce) { waking = true; wake++ }
         result = when {
             paid -> "A calm break, done. Well rested."
@@ -425,6 +429,8 @@ private fun CalmBreakView(model: AppModel) {
             },
             actionKey = wake, onActionDone = { waking = false },
         )
+        // The Zz while it rests.
+        if (start != null) StatusIcon(StatusKind.SLEEP, (3 * LocalDensity.current.density).roundToInt(), Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.XXL + 96.dp).offset(x = 36.dp), loop = true, animate = !reduce)
     }
     if (start == null) {
         RewardBox(model)
@@ -435,7 +441,7 @@ private fun CalmBreakView(model: AppModel) {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     listOf(60, 120).forEach { s -> TabButton(if (s == 60) "1 minute" else "2 minutes", seconds == s, { seconds = s }, Modifier.weight(1f)) }
                 }
-                PixelButton("Start", { result = null; waking = false; model.haptic(); startedAt = model.now }, Modifier.fillMaxWidth(), Pixel.Blue)
+                PixelButton("Start", { result = null; waking = false; model.haptic(); model.effect(Sfx.CALM_BREAK_START); startedAt = model.now }, Modifier.fillMaxWidth(), Pixel.Blue)
                 Text(
                     "Up to ${CareRules.BREAKS_PAID_PER_DAY} calm breaks a day earn friendship and a berry.",
                     style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,

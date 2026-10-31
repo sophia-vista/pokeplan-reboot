@@ -22,6 +22,7 @@ val composeAssets = tasks.register<Sync>("prepareComposeAssets") {
     from(rootProject.file("assets/tiles")) { include("*.png"); into("files/tiles") }
     from(rootProject.file("assets/cries")) { include("*.ogg"); into("files/cries") }
     from(rootProject.file("assets/sfx")) { include("*.ogg"); into("files/sfx") }
+    from(rootProject.file("assets/status")) { include("*.png"); exclude("sheet.png"); into("files/status") }
     from(rootProject.file("assets/fonts")) { include("*.ttf"); into("font") }
     from(rootProject.file("assets/fonts")) { include("pmd-dialogue.*"); into("files/fonts") }
 }

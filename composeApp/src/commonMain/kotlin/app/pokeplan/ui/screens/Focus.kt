@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -80,6 +81,8 @@ fun FocusScreen(model: AppModel, openPokemon: ((String) -> Unit)? = null, onBack
 private fun Ends(model: AppModel, openPokemon: ((String) -> Unit)?) {
     RewardBox(model)
     val end = model.data.lastFocusEnd
+    // The session's own sound when it ends: the success jingle (the egg's when it hatched), or the soft error.
+    LaunchedEffect(end) { if (end != null) model.effect(if (!end.completed) Sfx.ERROR else if (model.data.rewardLog.lastOrNull()?.rewards?.any { it is Reward.Hatched } == true) Sfx.EGG_GET else Sfx.FOCUS_END) }
     if (end != null && !end.completed) FailedBox(model, end.failReason)
     if (end != null && end.completed) {
         // The hatch is the peak of the loop, so its end leads straight to the new Pokémon rather than to a bare OK.
@@ -113,6 +116,7 @@ private fun FailedBox(model: AppModel, reason: FailReason?) {
             )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelButton("Just ${FocusRules.RETRY_MINUTES} min", {
+                    model.effect(Sfx.FOCUS_START)
                     model.store.dismissFocusEnd()
                     model.store.startFocus(FocusRules.RETRY_MINUTES, deepFocus = false)
                 }, Modifier.weight(1f), Pixel.Blue, compact = true)
@@ -199,10 +203,10 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
         }
     }
     Column(Modifier.fillMaxWidth().padding(horizontal = Spacing.M, vertical = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelButton("Start $minutes min", { store.startFocus(minutes, deep, taskId); store.dismissFocusEnd() }, Modifier.fillMaxWidth(), Pixel.Red)
+        PixelButton("Start $minutes min", { model.effect(Sfx.FOCUS_START); store.startFocus(minutes, deep, taskId); store.dismissFocusEnd() }, Modifier.fillMaxWidth(), Pixel.Red)
         // For when starting is the hard part: the shortest session there is, with no choices to make.
         val five = FocusRules.justFiveMinutes().minutesRoundedUp
-        if (minutes != five) PixelButton("Just $five minutes", { store.startFocus(five, deepFocus = false, taskId = taskId); store.dismissFocusEnd() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+        if (minutes != five) PixelButton("Just $five minutes", { model.effect(Sfx.FOCUS_START); store.startFocus(five, deepFocus = false, taskId = taskId); store.dismissFocusEnd() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
     }
 }
 

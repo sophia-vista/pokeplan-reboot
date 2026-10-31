@@ -72,12 +72,13 @@ fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
 
 @Composable
 private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false, onClick: () -> Unit) {
+    val ui = app.pokeplan.ui.LocalUiSound.current
     Box(
         modifier
             .dialogueBox(tone = frameToneOf(entry.tint))
             .clip(menuShape)
             .focusRing(menuShape)
-            .clickable(role = Role.Button, onClick = onClick)
+            .clickable(role = Role.Button) { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }
             .padding(horizontal = Spacing.XL, vertical = Spacing.XL),
     ) {
         val picture = @Composable {

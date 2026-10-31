@@ -75,6 +75,8 @@ import app.pokeplan.app.ThemeMode
 import androidx.compose.foundation.layout.widthIn
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.LocalUiSound
+import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.SceneImage
 import androidx.compose.ui.draw.blur
@@ -149,16 +151,19 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
         if (data.settings.reduceMotion) reveal.snapTo(to) else reveal.animateTo(to, androidx.compose.animation.core.tween(220, easing = androidx.compose.animation.core.FastOutSlowInEasing))
     }
     var listHidden by remember { mutableStateOf(false) }
+    // The list's own whoosh, up and down, but not when the launcher first shows.
+    var listSeen by remember { mutableStateOf(false) }
+    LaunchedEffect(listOpen) { if (listSeen) model.effect(if (listOpen) Sfx.DRAWER_OPEN else Sfx.DRAWER_CLOSE); listSeen = true }
     // The Home button always comes back to the home page.
     LaunchedEffect(homePresses) {
         if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false }
     }
     val sheetApp = sheetKey?.let { key -> apps.firstOrNull { it.key == key } }
     PixelTheme(dark) {
-        CompositionLocalProvider(LocalReduceMotion provides data.settings.reduceMotion) {
+        CompositionLocalProvider(LocalReduceMotion provides data.settings.reduceMotion, LocalUiSound provides model::tap) {
             androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 val pixel = townScale(maxWidth.value * LocalDensity.current.density)
-                Town(model, prefs.scene, active && prefs.walking, onMenu = { menuMon = it }, size = prefs.townSize, modifier = Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onLongPress = { pickingTown = true }) })
+                Town(model, prefs.scene, active && prefs.walking, onMenu = { menuMon = it }, size = prefs.townSize, modifier = Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onLongPress = { model.effect(Sfx.LONG_PRESS); pickingTown = true }) })
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
                 BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else listOpen = false }
                 HomePage(model, apps, prefs, isDefault, host, pixel, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
@@ -247,9 +252,10 @@ private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPr
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixel: Int, modifier: Modifier, onHold: () -> Unit) {
+    val ui = LocalUiSound.current
     val density = LocalDensity.current.density
     Column(
-        modifier.defaultMinSize(minHeight = 72.dp).focusRing(rowShape, Color.White).combinedClickable(role = Role.Button, onLongClick = onHold, onClick = { host.open(app.key) })
+        modifier.defaultMinSize(minHeight = 72.dp).focusRing(rowShape, Color.White).combinedClickable(role = Role.Button, onLongClick = { ui(Sfx.LONG_PRESS); onHold() }, onClick = { ui(Sfx.CONFIRM); host.open(app.key) })
             .semantics(mergeDescendants = true) {}.padding(vertical = (2 * pixel / density).dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
@@ -276,6 +282,7 @@ private sealed interface ListRow {
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: LauncherHost, onClose: () -> Unit, onHold: (LauncherApp) -> Unit, onTown: () -> Unit = {}, startHidden: Boolean = false, pixel: Int = 2) {
+    val ui = LocalUiSound.current
     var query by remember { mutableStateOf("") }
     var category by remember { mutableStateOf<AppCategory?>(null) }
     var showHidden by remember { mutableStateOf(startHidden) }
@@ -306,10 +313,10 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
                         textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White), cursorBrush = SolidColor(Color.White),
                     )
                 }
-                Box(Modifier.height(Spacing.Target).clip(rowShape).clickable(role = Role.Button, onClickLabel = "Launcher settings", onClick = onTown).padding(horizontal = Spacing.S), contentAlignment = Alignment.Center) {
+                Box(Modifier.height(Spacing.Target).clip(rowShape).clickable(role = Role.Button, onClickLabel = "Launcher settings") { ui(Sfx.CURSOR); onTown() }.padding(horizontal = Spacing.S), contentAlignment = Alignment.Center) {
                     PmdText("Settings", pixel)
                 }
-                Box(Modifier.height(Spacing.Target).clip(rowShape).clickable(role = Role.Button, onClick = onClose).padding(horizontal = Spacing.S), contentAlignment = Alignment.Center) {
+                Box(Modifier.height(Spacing.Target).clip(rowShape).clickable(role = Role.Button) { ui(Sfx.BACK); onClose() }.padding(horizontal = Spacing.S), contentAlignment = Alignment.Center) {
                     PmdText("Close", pixel)
                 }
             }
@@ -325,7 +332,7 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
                         when (row) {
                             is ListRow.Header -> PmdText(row.letter.toString(), pixel, Modifier.padding(top = Spacing.M, bottom = Spacing.XS, start = Spacing.XS), alpha = 0.7f)
                             is ListRow.Entry -> Row(
-                                Modifier.fillMaxWidth().clip(rowShape).combinedClickable(role = Role.Button, onLongClick = { onHold(row.app) }, onClick = { host.open(row.app.key) })
+                                Modifier.fillMaxWidth().clip(rowShape).combinedClickable(role = Role.Button, onLongClick = { ui(Sfx.LONG_PRESS); onHold(row.app) }, onClick = { ui(Sfx.CONFIRM); host.open(row.app.key) })
                                     .padding(vertical = Spacing.S, horizontal = Spacing.XS),
                                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
                             ) {
@@ -363,9 +370,10 @@ private fun LetterScroller(letters: List<Char>, pixel: Int, modifier: Modifier, 
     if (letters.isEmpty()) return
     var height by remember { mutableStateOf(1f) }
     var last by remember { mutableStateOf<Char?>(null) }
+    val ui = LocalUiSound.current
     fun pick(y: Float) {
         val letter = letters[(y / height * letters.size).toInt().coerceIn(0, letters.lastIndex)]
-        if (letter != last) { last = letter; onLetter(letter) }
+        if (letter != last) { last = letter; ui(Sfx.CURSOR); onLetter(letter) }
     }
     Column(
         modifier.width(32.dp).fillMaxHeight().padding(vertical = Spacing.S)
@@ -412,16 +420,16 @@ internal fun AppSheet(app: LauncherApp, prefs: LauncherPrefs, onPrefs: (Launcher
                             }
                         }
                     } else if (!moving) {
-                        if (!hidden) PixelButton(if (pinned) "Unpin from home" else "Pin to home", { onPrefs(if (pinned) prefs.unpin(app.key) else prefs.pin(app.key)); onClose() }, Modifier.fillMaxWidth(), Pixel.Blue)
-                        PixelButton(if (hidden) "Show again" else "Hide", { onPrefs(if (hidden) prefs.unhide(app.key) else prefs.hide(app.key)); onClose() }, Modifier.fillMaxWidth(), Pixel.InkSoft)
-                        PixelButton("Category: ${prefs.categoryOf(app).label}", { moving = true }, Modifier.fillMaxWidth(), Pixel.InkSoft)
+                        if (!hidden) PixelButton(if (pinned) "Unpin from home" else "Pin to home", { onPrefs(if (pinned) prefs.unpin(app.key) else prefs.pin(app.key)); onClose() }, Modifier.fillMaxWidth(), Pixel.Blue, sound = if (pinned) Sfx.UNPIN else Sfx.PIN)
+                        PixelButton(if (hidden) "Show again" else "Hide", { onPrefs(if (hidden) prefs.unhide(app.key) else prefs.hide(app.key)); onClose() }, Modifier.fillMaxWidth(), Pixel.InkSoft, sound = if (hidden) Sfx.UNPIN else Sfx.HIDE)
+                        PixelButton("Category: ${prefs.categoryOf(app).label}", { moving = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, sound = Sfx.MOVE_PICKUP)
                         if (pinned) PixelButton("Icon on the home page", { choosingIcon = true }, Modifier.fillMaxWidth(), Pixel.InkSoft)
                         PixelButton("App info", { host.appInfo(app.key); onClose() }, Modifier.fillMaxWidth(), Pixel.InkSoft)
-                        if (app.removable) PixelButton("Uninstall", { host.uninstall(app.key); onClose() }, Modifier.fillMaxWidth(), Pixel.Danger)
+                        if (app.removable) PixelButton("Uninstall", { host.uninstall(app.key); onClose() }, Modifier.fillMaxWidth(), Pixel.Danger, sound = Sfx.UNINSTALL_WARN)
                     } else {
                         Text("Move to", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
                         AppCategory.entries.forEach { c ->
-                            PixelButton(c.label, { onPrefs(prefs.move(app, c)); onClose() }, Modifier.fillMaxWidth(), if (c == prefs.categoryOf(app)) Pixel.Blue else Pixel.InkSoft, compact = true)
+                            PixelButton(c.label, { onPrefs(prefs.move(app, c)); onClose() }, Modifier.fillMaxWidth(), if (c == prefs.categoryOf(app)) Pixel.Blue else Pixel.InkSoft, compact = true, sound = Sfx.MOVE_DROP)
                         }
                     }
                 }

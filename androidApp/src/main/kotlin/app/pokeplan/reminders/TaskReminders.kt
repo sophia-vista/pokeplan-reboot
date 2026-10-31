@@ -95,7 +95,7 @@ object TaskReminders {
 
     fun show(context: Context, task: Task, nowMillis: Long) {
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
-        manager.createNotificationChannel(NotificationChannel(Channels.TASK_REMINDERS, "Task reminders", NotificationManager.IMPORTANCE_HIGH))
+        manager.createNotificationChannel(NotificationChannel(Channels.TASK_REMINDERS, "Task reminders", NotificationManager.IMPORTANCE_HIGH).withGameSound(context))
         val id = notificationId(task.id)
         fun action(action: String) = PendingIntent.getBroadcast(
             context, id, Intent(context, ReminderReceiver::class.java).setAction(action).putExtra(EXTRA_TASK, task.id),
