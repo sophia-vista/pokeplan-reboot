@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.90.7
+
+- Launcher: the night tint is one sheet over the whole town, so it reaches the right edge (a lighter, untinted strip showed there at night). A render of the town at 8:39 pm is in the screenshot test.
+- Menus: every menu card is the same, an icon and a title with no caption (the captions made cards unequal, e.g. World's wrapped to two lines); a screen reader still hears the old caption after the title.
+- World: the dungeon floor scrolls again on a phone with the battery saver on. The saver had been stopping it; only the "Scrolling floors" setting (World → Settings) and Reduce motion stop it now.
+
 ## 0.90.6
 
 - Plan usability, Quick Add (audit Phase 3, first step): the box now shows what it understood while you type ("Understood: Tomorrow · 17:00 · Social · Difficulty B · 30 min"), so a typed line is never a guess. And a bug it exposed: "Call mum tomorrow 5pm" and "tonight" were understood but the time and the evening were thrown away when the task was made; they are kept now (on a planned day), so the task lands on the calendar at 17:00 and "tonight" goes under This evening. Tests for the hints and for the stored time.
