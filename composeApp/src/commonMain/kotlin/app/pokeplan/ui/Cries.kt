@@ -78,6 +78,7 @@ enum class Sfx(val file: String) {
     SAD("sad"),
     MAD("mad"),
     GREAT_SHOCK("great-shock"),
+    EATING("eating"),
 
     /** Notification sounds (the channel needs them as res/raw files, not through this player). */
     REMINDER("reminder"),

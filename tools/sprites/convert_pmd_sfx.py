@@ -4,7 +4,7 @@
 Usage: python3 -I tools/sprites/convert_pmd_sfx.py <folder with songNNN.mp3>
 
 The dump is 478 unlabelled songNNN.mp3 files (not in the repo; the owner has the zip). SOUNDS maps our name (the Sfx enum in
-composeApp, Cries.kt) to the song number: 301, 302, 303, 331, 200 to 204, 207, 332, 333, 337, 342, 344, 356, 406, 421, 455, 457, 466, 468, 470, 471 and 473 were named by the owner, the rest were picked by their
+composeApp, Cries.kt) to the song number: 301, 302, 303, 331, 200 to 204, 207, 332, 333, 337, 342, 344, 356, 406, 421, 455, 457, 466, 468, 470, 471, 473 and 516 were named by the owner, the rest were picked by their
 length and pitch contour and may need swapping after a listen. Each becomes a small mono Ogg Vorbis file, peak-normalised
 so the quiet ones are not lost. Needs ffmpeg and numpy.
 """
@@ -54,6 +54,7 @@ SOUNDS = {
     'sad': 470,  # "oh." (the teardrop)
     'mad': 471,
     'great-shock': 473,
+    'eating': 516,  # a berry given to the buddy
     'calm-end': 202,  # mellow success
     'reminder': 207,
     'timer-done': 207,
