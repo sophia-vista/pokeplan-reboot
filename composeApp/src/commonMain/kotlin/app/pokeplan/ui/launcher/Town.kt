@@ -50,8 +50,8 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 
 /** Where the ground is on a scene backdrop, as fractions of the screen's height. */
-private const val SCENE_TOP = 0.26f
-private const val SCENE_BOTTOM = 0.56f
+private const val SCENE_TOP = 0.22f
+private const val SCENE_BOTTOM = 0.62f
 
 /** How many Pokémon walk the town at once: the buddy first, then the highest levels, so a big collection never slows the home screen. */
 internal const val TOWN_CAP = 24
@@ -100,7 +100,7 @@ internal fun Town(model: AppModel, scene: String, active: Boolean, onMenu: (Owne
 private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightPx: Float, pixel: Int, groundTop: Float, groundBottom: Float, calm: Boolean, index: Int, onMenu: (OwnedPokemon) -> Unit) {
     val random = remember(mon.id) { Random(mon.id.hashCode()) }
     // Position as fractions of the ground: x across the screen, y from the back of the ground (0) to the front (1).
-    val spot = remember(mon.id) { Animatable(Offset(0.08f + random.nextFloat() * 0.84f, random.nextFloat()), Offset.VectorConverter) }
+    val spot = remember(mon.id) { Animatable(Offset(random.nextFloat(), random.nextFloat()), Offset.VectorConverter) }
     var facingLeft by remember(mon.id) { mutableStateOf(false) }
     var hopKey by remember(mon.id) { mutableIntStateOf(0) }
     var hopping by remember(mon.id) { mutableStateOf(false) }
@@ -111,7 +111,8 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
         delay(300L + index * 150L)
         while (true) {
             delay(1500L + random.nextLong(5000))
-            val to = Offset(0.08f + random.nextFloat() * 0.84f, random.nextFloat())
+            // The town has no side walls: a Pokémon may walk off one edge and come back in at the other.
+            val to = Offset(-0.2f + random.nextFloat() * 1.4f, random.nextFloat())
             val dx = to.x - spot.value.x
             val dy = to.y - spot.value.y
             facingLeft = dx < 0
@@ -120,6 +121,9 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
             // A steady stroll: about 6 seconds for the width of the screen.
             val seconds = 0.8f + abs(dx) * 6f + abs(dy) * 2f
             spot.animateTo(to, tween((seconds * 1000).toInt(), easing = LinearEasing))
+            // Out of sight past an edge: reappear off the other edge, so it walks back in.
+            val x = spot.value.x
+            if (x > 1.15f) spot.snapTo(Offset(x - 1.3f, spot.value.y)) else if (x < -0.15f) spot.snapTo(Offset(x + 1.3f, spot.value.y))
             walk = null
         }
     }

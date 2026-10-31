@@ -9,6 +9,7 @@ release always has the newest merge).
 
 - Launcher: the app list now comes in from the right. Dragging in from the right edge pulls it across with your finger and it settles open or shut when you let go; All apps and Close slide it the same way (it stays put under Reduce motion).
 - Launcher: the app list's letters, names, categories and buttons are in the dialogue font.
+- Launcher: the town's Pokémon have more room to walk (the ground is taller) and no side walls: one that walks off an edge comes back in at the other.
 
 ## 0.68.0
 
