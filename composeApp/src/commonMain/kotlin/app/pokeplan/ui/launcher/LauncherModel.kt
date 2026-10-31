@@ -420,11 +420,20 @@ object TownScenes {
 }
 
 /** The game items an app's icon can be set to on the home page (real item sprites from assets/items). */
+/** The item pictures cut from the Mystery Dungeon 2 complete items sheet (assets/pmd-items, `pmd2-001` to `pmd2-NNN`, listed in its manifest). */
+object MysteryDungeonItems {
+    const val COUNT = 214
+    val names: List<String> = (1..COUNT).map { "pmd2-" + it.toString().padStart(3, '0') }
+}
+
 object LauncherIcons {
     val items = listOf(
         "poke-ball", "great-ball", "master-ball", "premier-ball", "timer-ball", "friend-ball", "rare-candy", "super-candy",
         "amulet-coin", "exp-share", "lucky-egg", "mystery-egg", "town-map", "explorer-kit", "member-card", "storage-key",
         "seal-bag", "oaks-letter", "soothe-bell", "gb-sounds", "moon-stone", "sun-stone", "fire-stone", "water-stone",
         "leaf-stone", "thunder-stone", "dusk-stone", "dawn-stone", "shiny-stone", "ice-stone", "berry-sweet", "ability-capsule",
-    )
+    ) + MysteryDungeonItems.names
+
+    /** The icon names that can be picked, those of the Pokémon games' bag first and then the Mystery Dungeon 2 items sheet. */
+    val all: List<String> get() = items
 }

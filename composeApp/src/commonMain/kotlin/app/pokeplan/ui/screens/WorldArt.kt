@@ -1,6 +1,8 @@
 package app.pokeplan.ui.screens
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -13,6 +15,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.mutableFloatStateOf
@@ -260,3 +264,96 @@ internal fun CampYard(level: Int, residents: List<TileWalker>, animate: Boolean)
 }
 
 private const val YARD_ROWS = 5
+
+/** What a dungeon's marker on the world map says: open and not cleared, cleared at least once, or not yet open. */
+internal enum class MarkerState { OPEN, CLEARED, LOCKED }
+
+/** A dungeon's place on the world map (in pixels of the 504 x 336 picture) and its state. */
+internal data class MapMarker(val id: String, val x: Int, val y: Int, val state: MarkerState)
+
+/**
+ * The world map of the dungeon games (assets/world/map-1 to map-8: the same map with more of it uncovered each time, the way the
+ * game uncovers it as the team explores), with a marker on each dungeon: yellow when it is open, green when cleared, grey when
+ * not yet open, ringed in white when [selected]. Tapping near a marker calls [onSelect]. Drawn at a whole-number scale where the
+ * width allows, without smoothing.
+ */
+@Composable
+internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: String?, onSelect: (String) -> Unit) {
+    val name = "map-${stage.coerceIn(1, 8)}"
+    val image by produceState(worldArt[name], name) {
+        if (value == null) {
+            value = orNull { Res.readBytes("files/world/$name.png").decodeToImageBitmap() }
+            worldArt[name] = value
+        }
+    }
+    val density = LocalDensity.current
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val widthPx = with(density) { maxWidth.toPx() }
+        val scale = if (widthPx >= MAP_W) kotlin.math.floor(widthPx / MAP_W) else widthPx / MAP_W
+        val drawnW = MAP_W * scale
+        val left = (widthPx - drawnW) / 2f
+        val heightDp = with(density) { (MAP_H * scale).toDp() }
+        Canvas(
+            Modifier.fillMaxWidth().height(heightDp).border(2.dp, Pixel.Ink)
+                .pointerInput(markers, scale, left) {
+                    detectTapGestures { tap ->
+                        val reach = 24.dp.toPx()
+                        markers.minByOrNull { m -> (left + m.x * scale - tap.x).let { dx -> (m.y * scale - tap.y).let { dy -> dx * dx + dy * dy } } }?.let { m ->
+                            val dx = left + m.x * scale - tap.x
+                            val dy = m.y * scale - tap.y
+                            if (dx * dx + dy * dy <= reach * reach) onSelect(m.id)
+                        }
+                    }
+                },
+        ) {
+            val picture = image ?: return@Canvas drawRect(Color(0xFFD9A05B))
+            drawImage(picture, dstOffset = IntOffset(left.toInt(), 0), dstSize = IntSize((MAP_W * scale).toInt(), (MAP_H * scale).toInt()), filterQuality = if (scale >= 1f) FilterQuality.None else FilterQuality.Medium)
+            val r = max(5.dp.toPx(), 3.5f * scale)
+            for (m in markers) {
+                val c = Offset(left + m.x * scale, m.y * scale)
+                val fill = when (m.state) { MarkerState.OPEN -> Color(0xFFFFD33D); MarkerState.CLEARED -> Color(0xFF4CAF50); MarkerState.LOCKED -> Color(0xFF8E8E93) }
+                if (m.id == selected) drawCircle(Color.White, r + 4.dp.toPx(), c)
+                drawCircle(Color(0xFF1B2230), r + 2.dp.toPx(), c)
+                drawCircle(fill, r, c)
+            }
+        }
+    }
+}
+
+private const val MAP_W = 504f
+private const val MAP_H = 336f
+
+
+private val fxSheets = mutableMapOf<String, ImageBitmap?>()
+
+/** The strips of attack-effect frames in assets/world/fx: name, frame width and height, frame count (fx.tsv). */
+private val fxFrames = mapOf("hit" to Triple(72, 72, 24), "welcome" to Triple(64, 64, 24), "steam" to Triple(60, 60, 22), "sparkle" to Triple(24, 24, 24))
+
+/**
+ * A one-shot effect from the Mystery Dungeon games' attack animations (assets/world/fx: "hit", "welcome", "steam", "sparkle"):
+ * whenever [key] changes to a new non-zero value it plays once, at 20 frames a second and without smoothing, over a box of
+ * [size]; the rest of the time it draws nothing. Skipped under Reduce motion and the phone's power saver ([play] false).
+ */
+@Composable
+internal fun FxBurst(name: String, key: Int, size: Dp, modifier: Modifier = Modifier, play: Boolean = true) {
+    val (fw, fh, count) = fxFrames[name] ?: return
+    val sheet by produceState(fxSheets[name], name) {
+        if (value == null) {
+            value = orNull { Res.readBytes("files/world/fx/$name.png").decodeToImageBitmap() }
+            fxSheets[name] = value
+        }
+    }
+    var frame by remember { mutableStateOf(-1) }
+    LaunchedEffect(key, play) {
+        if (key == 0 || !play) { frame = -1; return@LaunchedEffect }
+        for (i in 0 until count) { frame = i; kotlinx.coroutines.delay(50) }
+        frame = -1
+    }
+    Canvas(modifier.size(size)) {
+        val picture = sheet ?: return@Canvas
+        if (frame < 0) return@Canvas
+        val scale = min(this.size.width / fw, this.size.height / fh)
+        val w = (fw * scale).toInt(); val h = (fh * scale).toInt()
+        drawImage(picture, IntOffset(frame * fw, 0), IntSize(fw, fh), IntOffset(((this.size.width - w) / 2).toInt(), ((this.size.height - h) / 2).toInt()), IntSize(w, h), filterQuality = FilterQuality.None)
+    }
+}

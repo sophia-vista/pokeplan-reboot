@@ -42,7 +42,7 @@ internal inline fun <T> orNull(block: () -> T): T? = try {
 /** The real game icon of a bag item (Rare Candy, a berry, an evolution stone...). Draws nothing if there is no icon for [itemId]. */
 @Composable
 fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp, description: String? = itemId) {
-    val path = "files/items/$itemId.png"
+    val path = if (itemId.startsWith("pmd2-")) "files/pmditems/$itemId.png" else "files/items/$itemId.png"
     val bitmap by produceState(cache[path], path) {
         if (value == null) {
             value = orNull { Res.readBytes(path).decodeToImageBitmap() }

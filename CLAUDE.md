@@ -49,6 +49,7 @@ Project skills in `.claude/skills/` hold the detail for one area each, so this f
 - `backend`: Supabase (migrations, SQL tests, the reward Edge Function and its deploy), the server build of the engine and the golden vector, cloud sync in `app-core/cloud`.
 - `design-references`: ideas from 16 design-reference sites, translated to app screens and filtered through PokéPlan's rules, with an avoid list. Load it before designing or restyling a screen, menu, empty state, reward moment or micro-interaction.
 - `game-assets`: the Dex data generator, every folder in `assets/` and its fetch script, the module region curation kit.
+- `spacing-system`: the spacing scale and rules (inset, stack, inline, density), mapped to `Spacing` in `PixelTheme.kt`. Load it before laying out or restyling a screen, card, list, dialogue box or widget.
 - `legacy-android`: the original Java app (commands, Firebase, architecture, the old rules).
 
 ## Swarm workflow and token use
