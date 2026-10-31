@@ -14,17 +14,22 @@ enum class RegionLook(val scene: String) {
 
     /** A meadow: grass and Care's green. */
     CARE(BuddyScene.CARE),
+
+    /** The World game (docs/world.md): a forest to begin in, and a deep teal. */
+    WORLD("forest"),
     ;
 
     /** The header bar on the region's pages, under white text. */
     val header: Color get() = when (this) {
         PLAN -> Pixel.Red
         CARE -> Pixel.Meadow
+        WORLD -> Pixel.Teal
     }
 
     /** The region's accent: its menu card tint and the edge of its card on Home. */
     val accent: Color get() = when (this) {
         PLAN -> Pixel.Red
         CARE -> Pixel.Green
+        WORLD -> Pixel.Teal
     }
 }

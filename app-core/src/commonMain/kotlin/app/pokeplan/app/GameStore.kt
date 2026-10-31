@@ -20,6 +20,8 @@ import app.pokeplan.core.pokemon.ItemEffects
 import app.pokeplan.core.pokemon.ItemUse
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.GearTool
+import app.pokeplan.world.WorldReport
+import app.pokeplan.world.WorldSim
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.PerkBonuses
@@ -1027,12 +1029,12 @@ class GameStore(
     fun unslotGuardian(id: String) = update { d -> d.copy(player = d.player.copy(guardians = d.player.guardians - id)) }
 
     /** Gives the player a Pokémon outright (a quest reward). It goes to the Guardian collection if it is a legendary or mythical. */
-    fun grantPokemon(speciesId: Int, source: String): OwnedPokemon {
+    fun grantPokemon(speciesId: Int, source: String, how: Origin.How = Origin.How.QUEST): OwnedPokemon {
         val option = HatchOption(speciesId, Dex.defaultForm(speciesId).identifier)
         val p = Hatching.create(newId(), option, OwnedPokemon.PARTY_SIZE, nowMillis, 60, rng).copy(inParty = false)
         update { d ->
             log(source, listOf(Reward.Hatched(p, fromTask = false)),
-                d.copy(player = d.player.copy(pokemon = d.player.pokemon + p, caught = d.player.caught + p.speciesId)), origin = Origin(Origin.How.QUEST))
+                d.copy(player = d.player.copy(pokemon = d.player.pokemon + p, caught = d.player.caught + p.speciesId)), origin = Origin(how))
         }
         return p
     }
@@ -1097,6 +1099,71 @@ class GameStore(
     fun isFavorite(id: String): Boolean = id in data.favorites
 
     /** Stars or unstars a Pokémon; a starred one cannot be transferred. */
+    // ----- World: the dungeon game (docs/world.md). Its rules are in world-core; this keeps its save and moves what it finds into the shared collection and Bag -----
+
+    /** Settles every World team to now (floors climbed, finds, items) and returns what happened, or null when nothing did. */
+    fun worldSettle(): WorldReport? {
+        val report = WorldSim.settle(data.world, data.player.pokemon, nowMillis)
+        if (report.isEmpty) return null
+        update { it.copy(world = report.data) }
+        return report
+    }
+
+    /** Sets who is on World team [team]; false when the rank, the team or the Pokémon do not allow it. */
+    fun worldAssign(team: Int, members: List<String>): Boolean {
+        if (members.any { id -> data.player.pokemon.none { it.id == id } }) return false
+        val next = data.world.assign(team, members) ?: return false
+        update { it.copy(world = next) }
+        return true
+    }
+
+    fun worldStart(team: Int, dungeonId: String): Boolean {
+        worldSettle()
+        val next = data.world.start(team, dungeonId, nowMillis) ?: return false
+        update { it.copy(world = next) }
+        return true
+    }
+
+    /** Brings a team home after settling what it found. */
+    fun worldRecall(team: Int) {
+        worldSettle()
+        data.world.recall(team)?.let { next -> update { it.copy(world = next) } }
+    }
+
+    /** Recruits the find at [index] into the shared collection: the same persistent Pokémon as any other (docs/world.md, section 12). Null when there is none. */
+    fun worldRecruit(index: Int): OwnedPokemon? {
+        val find = data.world.finds.getOrNull(index) ?: return null
+        val mon = grantPokemon(find.speciesId, "World", Origin.How.WORLD)
+        update { it.copy(world = it.world.withoutFind(index)) }
+        return mon
+    }
+
+    /** Moves the items World found into the shared Bag. Returns how many items moved. */
+    fun worldClaimItems(): Int {
+        val items = data.world.items
+        if (items.isEmpty()) return 0
+        update { d -> d.copy(player = d.player.copy(inventory = items.entries.fold(d.player.inventory) { bag, (id, n) -> bag.add(id, n) }), world = d.world.copy(items = emptyMap())) }
+        return items.values.sum()
+    }
+
+    /** Opens a treasure box of [tier]: berries, and from the silver tier a chance of a Rare Candy; what is inside goes to World's items. Returns what was found. *(tune)* */
+    fun worldOpenTreasure(tier: Int): Map<String, Int> {
+        if ((data.world.treasure[tier] ?: 0) <= 0) return emptyMap()
+        val random = Random(nowMillis xor (tier.toLong() shl 40) xor data.world.xp.toLong())
+        val found = mutableMapOf<String, Int>()
+        fun add(id: String, n: Int) { found[id] = (found[id] ?: 0) + n }
+        repeat(1 + tier) { add(Items.berry(listOf("sweet", "dry", "sour", "spicy", "bitter").random(random)), 1) }
+        if (tier >= 2 && random.nextInt(100) < 30 + tier * 15) add(Items.RARE_CANDY, 1)
+        if (tier >= 3) add(Items.RARE_CANDY, 1)
+        update { d ->
+            d.copy(world = d.world.copy(
+                treasure = d.world.treasure + (tier to d.world.treasure.getValue(tier) - 1),
+                items = found.entries.fold(d.world.items) { m, (id, n) -> m + (id to (m[id] ?: 0) + n) },
+            ))
+        }
+        return found
+    }
+
     // ----- Pokégear: tools and their helper Pokémon (cosmetic: nothing here pays, records effort or reaches the server) -----
 
     /** The owned Pokémon who can help [tool], the friendliest first (then the higher level, then by id so it is stable). */

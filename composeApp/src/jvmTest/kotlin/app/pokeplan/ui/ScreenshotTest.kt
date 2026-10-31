@@ -95,6 +95,23 @@ class ScreenshotTest {
     }
 
     @Test
+    fun world() {
+        val store = started()
+        val team = listOf(store.data.player.pokemon.first().id, store.grantPokemon(25, "test").id, store.grantPokemon(74, "test").id)
+        store.worldAssign(1, team)
+        store.worldStart(1, "tiny-woods")
+        clock.millis += 9L * 60 * 60 * 1000
+        store.worldSettle()
+        store.worldRecruit(0)
+        val model = AppModel(store)
+        render("world-menu") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
+        app.pokeplan.ui.screens.WorldSection.entries.forEach { section ->
+            model.worldSection = section
+            render("world-${section.name.lowercase()}") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
+        }
+    }
+
+    @Test
     fun onboarding() = render("onboarding") { App(MemoryStorage(), focusTab = true) }
 
     @Test

@@ -1,5 +1,6 @@
 package app.pokeplan.ui
 
+import app.pokeplan.ui.screens.WorldSection
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import app.pokeplan.ui.theme.Spacing
@@ -182,6 +183,7 @@ class AppModel(
 
     /** The screen open inside Care (null shows Care's menu). */
     var careSection: CareSection? by mutableStateOf(null)
+    var worldSection: WorldSection? by mutableStateOf(null)
 
     /** The hatch or evolution playing over the whole app, if any. */
     var cutscene: Cutscene? by mutableStateOf(null)
