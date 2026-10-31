@@ -36,19 +36,19 @@ object Dungeons {
     val all: List<DungeonDef> = listOf(
         DungeonDef(
             "tiny-woods", "Tiny Woods", WorldRegion.GREENLANDS, floors = 5, favored = setOf(PokemonType.GRASS, PokemonType.BUG, PokemonType.FLYING),
-            baseFloorSeconds = 300, needs = ExplorerRank.NORMAL,
+            baseFloorSeconds = 1800, needs = ExplorerRank.NORMAL,
             wild = listOf(WildEntry(10, 5), WildEntry(13, 5), WildEntry(16, 5), WildEntry(19, 4), WildEntry(43, 3, fromFloor = 2), WildEntry(191, 2, fromFloor = 3), WildEntry(25, 1, fromFloor = 4)),
             milestones = mapOf(3 to MilestoneReward(Items.berry("sweet"), 2), 5 to MilestoneReward(Items.RARE_CANDY, 1, poke = 100)),
         ),
         DungeonDef(
             "thunderwave-cave", "Thunderwave Cave", WorldRegion.UNDERGROUND, floors = 8, favored = setOf(PokemonType.ELECTRIC, PokemonType.ROCK, PokemonType.GROUND),
-            baseFloorSeconds = 480, needs = ExplorerRank.NORMAL,
+            baseFloorSeconds = 2880, needs = ExplorerRank.NORMAL,
             wild = listOf(WildEntry(41, 5), WildEntry(74, 4), WildEntry(81, 4, fromFloor = 2), WildEntry(100, 3, fromFloor = 3), WildEntry(25, 2, fromFloor = 3), WildEntry(239, 1, fromFloor = 5)),
             milestones = mapOf(4 to MilestoneReward(Items.berry("dry"), 2), 8 to MilestoneReward(Items.RARE_CANDY, 2, poke = 200)),
         ),
         DungeonDef(
             "mt-steel", "Mt. Steel", WorldRegion.MOUNTAINS, floors = 10, favored = setOf(PokemonType.STEEL, PokemonType.ROCK, PokemonType.FIGHTING),
-            baseFloorSeconds = 720, needs = ExplorerRank.BRONZE,
+            baseFloorSeconds = 4320, needs = ExplorerRank.BRONZE,
             wild = listOf(WildEntry(74, 5), WildEntry(95, 3, fromFloor = 3), WildEntry(66, 4), WildEntry(227, 1, fromFloor = 7), WildEntry(81, 3), WildEntry(208, 1, fromFloor = 8)),
             milestones = mapOf(5 to MilestoneReward(Items.berry("spicy"), 2), 10 to MilestoneReward(Items.RARE_CANDY, 3, poke = 400)),
         ),
