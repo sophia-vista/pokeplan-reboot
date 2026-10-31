@@ -57,7 +57,7 @@ internal fun BuddyWidget(env: WidgetEnv) {
     // A face lasts a few seconds, then goes back to a calm one.
     LaunchedEffect(mood.version) { if (mood.version > 0) { delay(4_000); mood.settle() } }
     val density = LocalDensity.current.density
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = Alignment.CenterVertically) {
         PmdBox(env.pixel, Modifier.clickable(role = Role.Button, onClickLabel = "Pet ${buddy.nickname}") { env.model.cry(buddy.speciesId); mood.feel(Emotion.HAPPY) }, inset = 1, compact = true) {
             Portrait(buddy.form.id, buddy.isShiny, "${buddy.nickname}, level ${buddy.level}", emotion = mood.emotion, size = 72.dp)
         }

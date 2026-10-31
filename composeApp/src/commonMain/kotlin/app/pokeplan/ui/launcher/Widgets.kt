@@ -64,7 +64,8 @@ internal fun LauncherWidget(slot: WidgetSlot, env: WidgetEnv) {
     var height by remember { mutableStateOf(0) }
     var drag by remember { mutableStateOf(0f) }
     Column(
-        Modifier.fillMaxWidth().onSizeChanged { height = it.height }.graphicsLayer { translationY = drag; shadowElevation = 0f }
+        // Widgets keep the page margin, except the buddy's portraits, which sit flush against the sides of the screen.
+        Modifier.fillMaxWidth().padding(horizontal = if (slot.kind == WidgetKind.BUDDY) 0.dp else Spacing.Page).onSizeChanged { height = it.height }.graphicsLayer { translationY = drag; shadowElevation = 0f }
             .then(if (env.editing) Modifier.border(2.dp, Color.White.copy(alpha = 0.55f)) else Modifier.pointerInput(Unit) { detectTapGestures(onLongPress = { env.onEdit() }) }),
     ) {
         if (env.editing) EditBar(slot, env, onDrag = { dy ->
@@ -106,8 +107,8 @@ private fun EditBar(slot: WidgetSlot, env: WidgetEnv, onDrag: (Float) -> Unit, o
 
 /** The bar at the top of a page being edited: add a widget, or finish. */
 @Composable
-internal fun EditToolbar(env: WidgetEnv) {
-    PmdBox(env.pixel, Modifier.fillMaxWidth()) {
+internal fun EditToolbar(env: WidgetEnv, modifier: Modifier = Modifier) {
+    PmdBox(env.pixel, modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth()) {
             PmdMenuLine("Add widget", env.pixel, Modifier.weight(1f), center = true, onClick = env.onWidgets)
             PmdMenuLine("Done", env.pixel, Modifier.weight(1f), center = true, onClick = env.onDone)

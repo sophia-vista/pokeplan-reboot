@@ -351,8 +351,8 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
 @Composable
 private fun HomePage(env: WidgetEnv, isDefault: Boolean) {
     val data = env.model.data
-    Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        if (env.editing) EditToolbar(env)
+    Column(Modifier.fillMaxSize().safeDrawingPadding().padding(vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        if (env.editing) EditToolbar(env, Modifier.padding(horizontal = Spacing.Page))
         env.prefs.widgetsIn(WidgetArea.HOME_TOP).forEach { slot -> androidx.compose.runtime.key(slot.kind, slot.arg) { LauncherWidget(slot, env) } }
         // The bottom widgets sit at the foot of the screen, and scroll when they are more than fit.
         Box(Modifier.weight(1f).fillMaxWidth()) {
@@ -362,7 +362,7 @@ private fun HomePage(env: WidgetEnv, isDefault: Boolean) {
                     !isDefault -> "Make PokéLife your home app" to env.host::openHomeSettings
                     else -> null
                 }
-                if (note != null) PmdBox(env.pixel, Modifier.fillMaxWidth(), inset = 1) { PmdMenuLine(note.first, env.pixel, onClick = note.second) }
+                if (note != null) PmdBox(env.pixel, Modifier.fillMaxWidth().padding(horizontal = Spacing.Page), inset = 1) { PmdMenuLine(note.first, env.pixel, onClick = note.second) }
                 env.prefs.widgetsIn(WidgetArea.HOME_BOTTOM).forEach { slot -> androidx.compose.runtime.key(slot.kind, slot.arg) { LauncherWidget(slot, env) } }
             }
         }
