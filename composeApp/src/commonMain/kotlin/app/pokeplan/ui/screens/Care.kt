@@ -58,6 +58,7 @@ import app.pokeplan.ui.SceneStage
 import app.pokeplan.ui.SpriteAction
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.ScreenHeader
@@ -191,7 +192,7 @@ private fun VisitorsCard(model: AppModel) {
     val open = visitors.firstOrNull { it.speciesId == (visit?.speciesId ?: playing) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Visitors", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Visitors")
             if (open == null) Text(
                 when {
                     !care.canBefriend() -> "Do something in Care today, a routine, a calm break or a skill, and each visitor can have a visit. You can play with them any time."
@@ -320,7 +321,7 @@ private fun RoutinesView(model: AppModel) {
             }
             PixelButton(if (more) "Fewer options" else "A time, and which days", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
-                Text("Time", style = MaterialTheme.typography.titleSmall)
+                PixelTitle("Time")
                 val t = time
                 if (t == null) PixelButton("Give it a time", { time = LocalTime(9, 0) }, color = Pixel.InkSoft, compact = true)
                 else Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -329,7 +330,7 @@ private fun RoutinesView(model: AppModel) {
                     PixelButton("+15", { time = shifted(t, 15) }, color = Pixel.InkSoft, compact = true)
                     PixelButton("No time", { time = null }, color = Pixel.InkSoft, compact = true)
                 }
-                Text("Days", style = MaterialTheme.typography.titleSmall)
+                PixelTitle("Days")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     DayOfWeek.entries.forEach { d -> TabButton(dayNames[d.ordinal], d in days, { days = if (d in days) days - d else days + d }) }
                 }
@@ -500,7 +501,7 @@ private fun DiaryView(model: AppModel) {
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            Text("How strongly did you feel each of these today?", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("How strongly did you feel each of these today?")
             Text("0 is not at all, 5 is very strongly. Leave out any you like.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Emotion.entries.forEach { e ->
                 Rating("${e.emoji} ${e.label}", feelings[e]) { v -> feelings = if (v == null) feelings - e else feelings + (e to v); done = false }
@@ -509,7 +510,7 @@ private fun DiaryView(model: AppModel) {
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            Text("Urges", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Urges")
             val tracked = data.settings.urges
             if (tracked.isEmpty()) Text("If there's an urge you want to keep an eye on, add it here. Only you see it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             tracked.forEach { u ->
@@ -534,7 +535,7 @@ private fun DiaryView(model: AppModel) {
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            Text("Skills you used", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Skills you used")
             val shown = if (allSkills) Skills.all else Skills.all.filter { it.id in skills || it.id in care.practisedToday() }
             if (shown.isEmpty()) Text("None yet today, and that's fine.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -691,7 +692,7 @@ private fun TrendsView(model: AppModel) {
     var emotion by remember { mutableStateOf(Emotion.JOY) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("The last 7 days", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("The last 7 days")
             Text("Routines done: ${care.routinesLast7Days()}", style = MaterialTheme.typography.bodyLarge)
             Text("Skills used: ${care.skillsLast7Days()}", style = MaterialTheme.typography.bodyLarge)
             Text("Calm breaks: ${care.calmMinutesLast7Days()} min", style = MaterialTheme.typography.bodyLarge)
@@ -701,7 +702,7 @@ private fun TrendsView(model: AppModel) {
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Feelings, week by week", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Feelings, week by week")
             val weeks = care.feelingWeeks(8)
             if (weeks.all { it.cards == 0 }) {
                 Text("Fill in a diary card now and then and your weeks show here.", style = MaterialTheme.typography.bodyLarge)

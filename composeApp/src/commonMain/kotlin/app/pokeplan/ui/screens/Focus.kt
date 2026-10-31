@@ -50,6 +50,7 @@ import app.pokeplan.ui.Emotion
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Stage
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.RankBadge
@@ -149,7 +150,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
 
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                Text("How long?", style = MaterialTheme.typography.titleMedium)
+                PixelTitle("How long?")
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                     listOf(15, 25, 45, 60).forEach { m -> TabButton("$m min", m == minutes, { minutes = m }, Modifier.weight(1f)) }
                 }
@@ -175,7 +176,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
         if (tasks.isNotEmpty()) {
             TextBox {
                 Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Text("Working on", style = MaterialTheme.typography.titleMedium)
+                    PixelTitle("Working on")
                     TaskChoice("Nothing in particular", null, taskId == null) { taskId = null }
                     tasks.take(4).forEach { t -> TaskChoice(t.title, t.rank, taskId == t.id) { taskId = t.id } }
                 }
@@ -184,7 +185,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
 
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                Text("How it works", style = MaterialTheme.typography.titleMedium)
+                PixelTitle("How it works")
                 val grace = FocusRules.GRACE_MILLIS / 1000
                 val pause = FocusRules.EMERGENCY_PAUSE_MILLIS / 60_000
                 listOf(

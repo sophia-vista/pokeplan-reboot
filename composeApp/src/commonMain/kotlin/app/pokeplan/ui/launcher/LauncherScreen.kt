@@ -86,6 +86,7 @@ import app.pokeplan.ui.Place
 import app.pokeplan.ui.Tab
 import app.pokeplan.ui.screens.LocalReduceMotion
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PmdText
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelTheme
 import app.pokeplan.ui.theme.Spacing

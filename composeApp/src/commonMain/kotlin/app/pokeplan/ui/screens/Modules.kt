@@ -15,7 +15,9 @@ import androidx.compose.ui.backhandler.BackHandler
 import app.pokeplan.core.reward.Feature
 import app.pokeplan.plan.TaskState
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.theme.LocalFrameTone
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.frameToneOf
 import app.pokeplan.ui.theme.RegionLook
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.SectionLabel
@@ -44,8 +46,8 @@ fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> U
     val open = model.module?.takeIf { it != Module.CARE || model.data.settings.careModule }
     ScreenSwitch(open, depth = { if (it == null) 0 else 1 }) { page ->
         when (page) {
-            Module.PLAN -> PlanScreen(model, focusTab, openPokemon)
-            Module.CARE -> CareScreen(model, openPokemon)
+            Module.PLAN -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.PLAN.look.accent)) { PlanScreen(model, focusTab, openPokemon) }
+            Module.CARE -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.CARE.look.accent)) { CareScreen(model, openPokemon) }
             null -> ModulesMenu(model)
         }
     }

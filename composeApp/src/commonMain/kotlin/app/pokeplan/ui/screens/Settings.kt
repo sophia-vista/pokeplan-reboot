@@ -50,6 +50,7 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.AppVersion
 import app.pokeplan.ui.display
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.PixelButton
@@ -63,7 +64,7 @@ internal fun SettingsView(model: AppModel) {
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Trainer name", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Trainer name")
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 val changed = name.isNotBlank() && name.trim() != model.data.trainerName
                 OutlinedTextField(
@@ -77,7 +78,7 @@ internal fun SettingsView(model: AppModel) {
     }
     if (store.sees(Feature.REGION_PICKER)) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Hatching region", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Hatching region")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 TrainerRank.unlockedRegions(model.data.player.trainerPoints).forEach { r ->
                     TabButton(r.label, r == settings.region.open, { store.changeSettings { it.copy(region = r) } })
@@ -162,7 +163,7 @@ private fun CalendarsCard(model: AppModel) {
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Calendars", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Calendars")
             Text(
                 "Show events from this phone's calendars, Google Calendar included, on Planner → Calendar. They're read-only and never pay.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
@@ -194,7 +195,7 @@ private fun DataCard(model: AppModel) {
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Your data", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Your data")
             model.files?.let { files ->
                 PixelButton("Export my data", { note = files.save("pokeplan-export-${store.today}.json", store.exportJson()) }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
                 PixelButton("Export Care data", { note = files.save("pokeplan-care-${store.today}.json", model.care.exportJson()) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
@@ -279,7 +280,7 @@ private fun VolumeRow(label: String, value: Int, onChange: (Int) -> Unit) {
 private fun AboutCard() {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-            Text("About", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("About")
             Text("PokéLife ${AppVersion.display}", style = MaterialTheme.typography.bodyLarge)
             Text(
                 "A private fan project. Pokémon names, sprites and sounds belong to Nintendo, Game Freak and The Pokémon Company.",
@@ -302,7 +303,7 @@ private fun AccountCard(model: AppModel) {
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Account", style = MaterialTheme.typography.titleMedium)
+            PixelTitle("Account")
             when {
                 sync == null -> Text(
                     "Online features are off in this build. Progress is saved on this device only.",

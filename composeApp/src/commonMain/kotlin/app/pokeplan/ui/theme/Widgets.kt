@@ -122,7 +122,7 @@ fun ScreenHeader(
             if (onBack != null) PixelButton("‹ Back", onBack, color = Pixel.InkSoft, compact = true)
             else if (icon != null) ItemIcon(icon, size = 36.dp, description = null)
             Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleLarge, color = Color.White, modifier = Modifier.semantics { heading() })
+                PixelTitle(title, Modifier.semantics { heading() }, large = true, onLight = false)
                 if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Color.White)
             }
             trailing()
@@ -152,7 +152,7 @@ fun NamePlate(name: String, detail: String, modifier: Modifier = Modifier) {
 fun SectionLabel(text: String, modifier: Modifier = Modifier, icon: String? = null) {
     Row(modifier.padding(top = Spacing.S), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         if (icon != null) ItemIcon(icon, size = 28.dp, description = null)
-        Text(text, style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+        PixelTitle(text, Modifier.semantics { heading() })
     }
 }
 
@@ -218,12 +218,11 @@ fun ListRow(
     highlight: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val shape = RoundedCornerShape(Spacing.CardRadius)
+    val shape = DialogueShape
     Row(
         modifier
             .fillMaxWidth()
-            .background(Pixel.Panel, shape)
-            .border(BorderStroke(1.dp, Pixel.Border), shape)
+            .dialogueBox()
             .clip(shape)
             .let {
                 when {
@@ -233,7 +232,7 @@ fun ListRow(
                 }
             }
             .defaultMinSize(minHeight = 64.dp)
-            .padding(horizontal = Spacing.M, vertical = Spacing.M),
+            .padding(horizontal = Spacing.XL, vertical = Spacing.M + Spacing.XS),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.M),
     ) {

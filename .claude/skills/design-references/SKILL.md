@@ -46,7 +46,7 @@ them by hand if you need them.
   nothing moves while someone is reading or typing. The real idle animations of sprites are the one thing that loops.
 - **`DayBackground` is the page:** screens never paint their own opaque background over it.
 - **Accessibility:** 48 × 48 dp targets for important controls, status never by colour alone, names on icon-only
-  controls, body text in Nunito (the pixel font is for titles, buttons and numbers only), layouts that survive large
+  controls, body text in Pokemon DP (the app's only typeface; the dialogue bitmap font is for titles, labels and buttons), layouts that survive large
   text and long task names.
 
 ## Avoid

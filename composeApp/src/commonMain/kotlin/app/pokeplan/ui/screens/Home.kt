@@ -62,6 +62,11 @@ import app.pokeplan.ui.Place
 import app.pokeplan.ui.theme.ExpBar
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelTitle
+import androidx.compose.ui.geometry.Offset
+import app.pokeplan.ui.theme.dialogueBox
+import app.pokeplan.ui.theme.frameToneOf
+import app.pokeplan.ui.theme.DialogueShape
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.RankBadge
@@ -127,13 +132,12 @@ private fun RegionCard(
     name: String, icon: String, look: RegionLook, darkness: Float, lead: OwnedPokemon?, leadLine: String, status: String,
     still: Boolean, onOpen: () -> Unit, step: @Composable () -> Unit,
 ) {
-    val shape = RoundedCornerShape(Spacing.CardRadius)
+    val shape = DialogueShape
     Column(
-        Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)
-            .drawBehind { drawRect(look.accent, size = Size(4.dp.toPx(), size.height)) },
+        Modifier.fillMaxWidth().dialogueBox(tone = frameToneOf(look.accent)).clip(shape),
     ) {
         Row(
-            Modifier.fillMaxWidth().clickable(onClickLabel = "Open $name", role = Role.Button, onClick = onOpen).padding(Spacing.M),
+            Modifier.fillMaxWidth().clickable(onClickLabel = "Open $name", role = Role.Button, onClick = onOpen).padding(horizontal = Spacing.BoxX, vertical = Spacing.L),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             val window = RoundedCornerShape(Spacing.M)
@@ -143,14 +147,14 @@ private fun RegionCard(
                 else ItemIcon(icon, size = 56.dp, description = null, modifier = Modifier.align(Alignment.Center))
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(name, style = MaterialTheme.typography.titleMedium)
+                PixelTitle(name)
                 Text(leadLine, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 2)
                 Text(status, style = MaterialTheme.typography.bodyMedium)
             }
             Text("›", style = MaterialTheme.typography.titleLarge, color = Pixel.InkSoft)
         }
-        Box(Modifier.fillMaxWidth().height(1.dp).background(Pixel.Border))
-        Box(Modifier.fillMaxWidth().padding(Spacing.M)) { step() }
+        Box(Modifier.fillMaxWidth().padding(horizontal = Spacing.S).height(1.dp).background(Pixel.Border))
+        Box(Modifier.fillMaxWidth().padding(horizontal = Spacing.BoxX, vertical = Spacing.L)) { step() }
     }
 }
 
@@ -170,7 +174,7 @@ private fun StepRow(text: String, action: String?, color: Color = Pixel.Green, l
     }
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         lead()
-        Text(text, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 3)
+        Text(text, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
         if (action != null) PixelButton(action, onClick, color = color, compact = true)
     }
 }
@@ -374,7 +378,7 @@ private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
     val quests = store.miniQuests()
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Mini-quests", style = MaterialTheme.typography.titleSmall)
+            PixelTitle("Mini-quests")
             quests.forEach { q ->
                 val done = store.miniQuestDone(q.id)
                 val avoided = q.kind == MiniQuest.Kind.AVOIDED_TASK
@@ -412,7 +416,7 @@ private fun WelcomeBackCard(model: AppModel) {
     if (!model.store.welcomeBackDue()) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Welcome back!", style = MaterialTheme.typography.titleSmall)
+            PixelTitle("Welcome back!")
             Text("It's good to see you. Here's a little something to start again with.", style = MaterialTheme.typography.bodyLarge)
             PixelButton("Open the gift", { model.store.claimWelcomeBack(); model.effect(Sfx.HEAL) }, Modifier.fillMaxWidth(), Pixel.Green)
         }

@@ -43,7 +43,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.ItemIcon
+import app.pokeplan.ui.theme.DialogueShape
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.PixelTitle
+import app.pokeplan.ui.theme.dialogueBox
+import app.pokeplan.ui.theme.frameToneOf
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
@@ -51,7 +55,7 @@ import app.pokeplan.ui.theme.focusRing
 /** One entry of a tab's menu: a real item icon, a title, a line of detail, and an optional count badge. */
 data class MenuEntry(val key: String, val icon: String, val title: String, val detail: String, val badge: Int = 0, val tint: Color = Pixel.Blue)
 
-private val menuShape = RoundedCornerShape(16.dp)
+private val menuShape = DialogueShape
 
 /** The menu of a tab: big cards, two to a row, like the start menu of the games. */
 @Composable
@@ -70,12 +74,11 @@ fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
 private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false, onClick: () -> Unit) {
     Box(
         modifier
-            .background(Pixel.Panel, menuShape)
-            .border(1.dp, Pixel.Border, menuShape)
+            .dialogueBox(tone = frameToneOf(entry.tint))
             .clip(menuShape)
             .focusRing(menuShape)
             .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = Spacing.M, vertical = Spacing.L),
+            .padding(horizontal = Spacing.XL, vertical = Spacing.XL),
     ) {
         val picture = @Composable {
             Box(Modifier.size(72.dp).background(entry.tint.copy(alpha = 0.12f), CircleShape), contentAlignment = Alignment.Center) {
@@ -85,12 +88,12 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
         if (wide) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.L)) {
             picture()
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                Text(entry.title, style = MaterialTheme.typography.titleMedium)
+                PixelTitle(entry.title)
                 Text(entry.detail, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
             }
         } else Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             picture()
-            Text(entry.title, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+            PixelTitle(entry.title)
             Text(entry.detail, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, maxLines = 2)
         }
         if (entry.badge > 0) {
