@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.88.1
+
+- The World economy simulation now plays jobs of every kind (Explore, Find items, Rescue, Deliver, Escort, Defeat), the Swap Shop and the Dojo (`docs/world-economy-report.md`). It showed that jobs paid about half of all Poké and Exploration XP (700 jobs a year at a 7 day wait), so ordinary jobs now wait 14 days (the weekly patrol stays weekly, daily berry run daily); they still pay about 40 to 50% of Poké. It also showed the Swap Shop is hardly ever needed (berries are plentiful) and that the Dojo, played after the Base is built, only saves about three weeks of skill levelling and costs about 3,000 Poké: both are small. The job screen no longer calls every ordinary job "weekly".
+
 ## 0.88.0
 
 - World jobs: Escort (the team must be at least three Pokémon) and Defeat (the team must have enough power) jobs, five in all. The Croagunk Swap Shop in Base trades three berries of one flavour for one of another. The Camp has a yard in the tiles of a clearing that grows into a meadow and an orchard as the Camp is built up, where the recruited Pokémon roam, each walking back and forth facing the way it goes.
