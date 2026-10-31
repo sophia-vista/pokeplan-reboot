@@ -605,6 +605,14 @@ class ScreenshotTest {
         render("home-regions", height = 1700) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.HomeScreen(model) {} } } }
     }
 
+    /** The routine editor, at the system's largest text: nothing clipped. */
+    @Test
+    fun careRoutineEditor() {
+        val model = AppModel(storeWithTeam())
+        val r = model.care.addRoutine("Drink a glass of water", kotlinx.datetime.LocalTime(9, 0), setOf(kotlinx.datetime.DayOfWeek.MONDAY, kotlinx.datetime.DayOfWeek.FRIDAY))
+        render("care-routine-edit-xl", fontScale = 1.3f, height = 1500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) { app.pokeplan.ui.screens.RoutineOptions(model, model.careData.routines.single { it.id == r.id }, startEditing = true) {} } } } }
+    }
+
     @Test
     fun careMenu() = care("care", null)
 
