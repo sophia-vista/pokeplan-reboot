@@ -37,6 +37,7 @@ import app.pokeplan.app.Origin
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.ui.AnimatedSprite
+import app.pokeplan.ui.describe
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
@@ -71,7 +72,7 @@ import kotlinx.coroutines.delay
  * its sections. Its progression (rank, Poké, dungeon depth) is its own; the Pokémon it recruits are the shared collection's.
  */
 enum class WorldSection(val label: String, val icon: String) {
-    MAP("Map", "town-map"), MISSIONS("Missions", "journal"), SKILLS("Skills", "ability-capsule"), BASE("Base", "scope-lens"), TEAMS("Expeditions", "exp-share"), CAMP("Camp", "friend-ball"), BAG("Finds and Bag", "seal-bag"),
+    MAP("Map", "town-map"), MISSIONS("Missions", "journal"), SKILLS("Skills", "ability-capsule"), BASE("Base", "scope-lens"), TEAMS("Expeditions", "exp-share"), CAMP("Camp", "friend-ball"), BAG("Finds and Bag", "seal-bag"), SETTINGS("Settings", "storage-key"),
 }
 
 @Composable
@@ -99,6 +100,7 @@ private fun WorldPage(model: AppModel, section: WorldSection?, openPokemon: (Str
             WorldSection.TEAMS -> WorldTeamsView(model)
             WorldSection.CAMP -> WorldCampView(model, openPokemon)
             WorldSection.BAG -> WorldBagView(model)
+            WorldSection.SETTINGS -> WorldSettings(model)
         }
     }
 }
@@ -120,6 +122,7 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
                     MenuEntry(WorldSection.TEAMS.name, WorldSection.TEAMS.icon, WorldSection.TEAMS.label, if (out == 0) "no team out" else "$out out", tint = Module.WORLD.look.accent),
                     MenuEntry(WorldSection.CAMP.name, WorldSection.CAMP.icon, WorldSection.CAMP.label, tint = Module.WORLD.look.accent),
                     MenuEntry(WorldSection.BAG.name, WorldSection.BAG.icon, WorldSection.BAG.label, badge = world.finds.size, tint = Module.WORLD.look.accent),
+                    MenuEntry(WorldSection.SETTINGS.name, WorldSection.SETTINGS.icon, WorldSection.SETTINGS.label, "animation", tint = Module.WORLD.look.accent),
                 ),
             ) { key -> model.worldSection = WorldSection.valueOf(key) }
             RankCard(model)
@@ -178,7 +181,7 @@ private fun WorldMapView(model: AppModel) {
         val wild = d.wild.sortedByDescending { it.weight }.map { it.speciesId }.distinct().take(4)
             .map { TileWalker(Dex.defaultForm(it).id, false, Dex.species(it).name) }
         // The dungeon is drawn in its own tiles, the wild Pokémon that live there walking its floor; the text is on its walls.
-        TileBox(d.id, wild, animate = !(model.data.settings.reduceMotion || model.powerSaving), modifier = Modifier.alpha(if (open) 1f else 0.75f), scrolls = false) {
+        TileBox(d.id, wild, animate = !model.data.settings.reduceMotion, modifier = Modifier.alpha(if (open) 1f else 0.75f), scrolls = false) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text(d.name, style = MaterialTheme.typography.titleSmall)
                 Text("${d.region.label}, ${d.floors} floors, ${d.needs.label} rank", style = MaterialTheme.typography.bodyMedium)
@@ -267,7 +270,7 @@ private fun WorldMissionsView(model: AppModel) {
                 Text("Reward: ${reward(m)}", style = MaterialTheme.typography.bodyMedium)
                 val needed = m.give?.let { it to m.giveCount }
                 val haveIt = needed == null || model.data.player.inventory.has(needed.first, needed.second)
-                if (p.done && !haveIt) Text("Needs ${needed!!.second} x ${Items.name(needed.first)} in your Bag (move items there from Finds and Bag).", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
+                if (p.done && !haveIt) Text("Needs ${needed!!.second} x ${Items.name(needed.first)} in your Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
                 if (p.done) PixelButton("Claim", { store.worldClaimMission(p.id) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = haveIt, compact = true)
                 else PixelButton("Give up", { store.worldAbandonMission(p.id) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
@@ -465,7 +468,7 @@ private fun WorldTeamsView(model: AppModel) {
                 }
             }
         }
-        if (outAt != null) TileBox(outAt.id, members.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !(model.data.settings.reduceMotion || model.powerSaving), content = body) else TextBox { body() }
+        if (outAt != null) TileBox(outAt.id, members.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !model.data.settings.reduceMotion, scrolls = model.data.settings.worldScroll && !model.powerSaving, content = body) else TextBox { body() }
     }
     if (report.isNotEmpty()) TextBox { Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) { FieldLabel("Lately"); report.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) } } }
     Text("Explore dungeons on the World map, then recall a team any time; nothing it found is lost.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -479,7 +482,7 @@ private fun WorldCampView(model: AppModel, openPokemon: (String) -> Unit) {
     val data = model.data
     val residents = data.player.pokemon.filter { data.origins[it.id]?.how == Origin.How.WORLD }
     WorldBanner("cave", "Camp", "${residents.size} resident${if (residents.size == 1) "" else "s"}, camp level ${data.world.facilityLevel(Facility.CAMP)}", sky = Color(0xFF101010), top = true)
-    if (residents.isNotEmpty()) CampYard(data.world.facilityLevel(Facility.CAMP), residents.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !(data.settings.reduceMotion || model.powerSaving))
+    if (residents.isNotEmpty()) CampYard(data.world.facilityLevel(Facility.CAMP), residents.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !data.settings.reduceMotion)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Species found exploring: ${data.world.discovered.size}", style = MaterialTheme.typography.titleSmall)
@@ -487,7 +490,7 @@ private fun WorldCampView(model: AppModel, openPokemon: (String) -> Unit) {
             else FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 residents.forEach { p ->
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        androidx.compose.foundation.layout.Box(Modifier.size(72.dp).clickableNoRipple { openPokemon(p.id) }) { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = 72.dp, animate = !(data.settings.reduceMotion || model.powerSaving)) }
+                        androidx.compose.foundation.layout.Box(Modifier.size(72.dp).clickableNoRipple { openPokemon(p.id) }) { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = 72.dp, animate = !data.settings.reduceMotion) }
                         Text(p.nickname, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
@@ -574,10 +577,13 @@ private fun WorldBagView(model: AppModel) {
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Items", style = MaterialTheme.typography.titleSmall)
-            if (world.items.isEmpty()) Text("Berries and more come back from the dungeons.", style = MaterialTheme.typography.bodyMedium)
-            world.items.forEach { (id, n) -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) { ItemIcon(id, size = 32.dp, description = null); Text("${Items.name(id)} x$n", style = MaterialTheme.typography.bodyLarge) } }
-            if (world.items.isNotEmpty()) PixelButton("Move to the Bag", { val n = store.worldClaimItems(); message = "$n items are in your Bag." }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+            Text("Treasure and rewards", style = MaterialTheme.typography.titleSmall)
+            Text("Everything the dungeons bring back goes straight to your Bag and into your reward history.", style = MaterialTheme.typography.bodyMedium)
+            // The latest World entries of the reward history, so what a trip brought is still there after it.
+            model.data.rewardLog.filter { it.source.startsWith("World") }.takeLast(4).reversed().forEach { entry ->
+                Text("${entry.source.removePrefix("World: ")}: ${entry.rewards.joinToString { it.describe() }}", style = MaterialTheme.typography.bodyMedium)
+            }
+            if (world.treasure.isEmpty()) Text("No treasure boxes waiting.", style = MaterialTheme.typography.bodyMedium)
             world.treasure.entries.sortedBy { it.key }.forEach { (tier, n) ->
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text("${listOf("", "Plain", "Silver", "Gold")[tier.coerceIn(1, 3)]} treasure box x$n", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)

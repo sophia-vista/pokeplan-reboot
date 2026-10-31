@@ -1,0 +1,85 @@
+package app.pokeplan.app
+
+import app.pokeplan.core.dex.Region
+import kotlinx.serialization.json.JsonObject
+import kotlin.random.Random
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.encodeToJsonElement
+
+/** An old save must still load when the app has grown new saved fields, and the stored names must not move. */
+class SaveCompatibilityTest {
+    private class Clock(var millis: Long = 1_700_000_000_000L) : app.pokeplan.app.Clock { override fun nowMillis() = millis }
+
+    private fun store(storage: MemoryStorage = MemoryStorage()) = GameStore(storage, Clock(), kotlinx.datetime.TimeZone.UTC, Random(5)).also { if (storage.load() == null) it.start("Sophia", 25) }
+
+    @Test
+    fun aSaveMissingAnyOneFieldStillLoadsExceptTheFewTheGameCannotStartWithout() {
+        val full = GameStore.json.encodeToJsonElement(AppData.serializer(), store().data) as JsonObject
+        val refused = full.keys.filter { key ->
+            val without = JsonObject(full.filterKeys { it != key })
+            runCatching { GameStore.json.decodeFromJsonElement(AppData.serializer(), without) }.isFailure
+        }
+        // Every field added since the first release has a default, so a save from an older version loads. These are the fields
+        // that have always been there; if one is added to this list a newer field lost its default, which breaks old saves.
+        assertTrue(refused.all { it in ALWAYS_THERE }, "fields an old save would not have but are required: ${refused - ALWAYS_THERE}")
+    }
+
+    @Test
+    fun aSaveFromBeforeWorldAndNewerSettingsLoadsWithTheirDefaults() {
+        val full = GameStore.json.encodeToJsonElement(AppData.serializer(), store().data) as JsonObject
+        val settings = full["settings"] as JsonObject
+        val old = JsonObject(full.filterKeys { it != "world" && it != "rewardLog" } + ("settings" to JsonObject(settings.filterKeys { it !in setOf("worldScroll", "careModule") })))
+        val loaded = GameStore.json.decodeFromJsonElement(AppData.serializer(), old)
+        assertEquals(app.pokeplan.world.WorldData(), loaded.world)
+        assertTrue(loaded.settings.worldScroll)
+        assertTrue(loaded.rewardLog.isEmpty())
+    }
+
+    @Test
+    fun storedNamesDoNotMove() {
+        // The Plan Region keeps its first name in saves.
+        assertEquals("\"HOME\"", GameStore.json.encodeToString(Region.serializer(), Region.PLAN))
+        // A reward kind from an older log still loads, and the new one round-trips.
+        val log = listOf(app.pokeplan.core.reward.Reward.Poke(30), app.pokeplan.core.reward.Reward.Coins(2), app.pokeplan.core.reward.Reward.ItemDrop("rare-candy", 1))
+        val ser = kotlinx.serialization.builtins.ListSerializer(app.pokeplan.core.reward.Reward.serializer())
+        assertEquals(log, GameStore.json.decodeFromString(ser, GameStore.json.encodeToString(ser, log)))
+    }
+
+    @Test
+    fun aCareSwitchedOffSaveComesBackOn() {
+        val storage = MemoryStorage()
+        val first = store(storage)
+        first.changeSettings { it.copy(careModule = false) }
+        assertTrue(store(storage).data.settings.careModule, "the Modules setting is gone, so Care is always shown")
+    }
+
+    @Test
+    fun exportHoldsTheWorldAndTheRewardHistoryAndEraseClearsThem() {
+        val clock = Clock()
+        val store = GameStore(MemoryStorage(), clock, kotlinx.datetime.TimeZone.UTC, Random(5)).also { it.start("Sophia", 25) }
+        store.worldAssign(1, listOf(store.data.player.pokemon.first().id))
+        store.worldStart(1, "tiny-woods")
+        clock.millis += 12L * 3_600_000
+        store.worldSettle()
+        assertTrue(store.data.world.poke > 0)
+        val exported = Json.parseToJsonElement(store.exportJson()) as JsonObject
+        assertNotNull(exported["world"], "the export has World's save")
+        assertNotNull(exported["rewardLog"], "and the reward history")
+        assertTrue((exported["world"] as JsonObject)["poke"].toString() != "0")
+        store.eraseDevice()
+        assertEquals(app.pokeplan.world.WorldData(), store.data.world)
+        assertTrue(store.data.rewardLog.isEmpty())
+        assertFalse(store.data.onboarded)
+    }
+
+    private companion object {
+        /** The top-level fields of the very first saves. */
+        val ALWAYS_THERE = setOf("player")
+    }
+}

@@ -26,7 +26,7 @@ class NudgesTest {
     private val sunday = LocalDate(2026, 10, 25)
     private val monday = LocalDate(2026, 10, 26)
 
-    private fun at(date: LocalDate, hour: Int, minute: Int = 0) = LocalDateTime(date.year, date.monthNumber, date.dayOfMonth, hour, minute).toEpochMillis(zone)
+    private fun at(date: LocalDate, hour: Int, minute: Int = 0) = LocalDateTime(date.year, date.monthNumber, date.day, hour, minute).toEpochMillis(zone)
 
     private fun days(vararg d: LocalDate) = d.toSet()
 

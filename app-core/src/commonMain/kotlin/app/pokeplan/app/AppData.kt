@@ -151,6 +151,8 @@ data class Settings(
     val weeklyRecap: Boolean = true,
     /** The Care module in Modules (docs/ecosystem.md, section 6). Off only hides it: Care's own save is kept. */
     val careModule: Boolean = true,
+    /** World's expedition boxes scroll their floor while the team walks. */
+    val worldScroll: Boolean = true,
 ) {
     /** How loud sound effects play, 0 to 1 (0 when Sound was switched off). */
     val effectsLevel: Float get() = if (sound) effectsVolume / 100f else 0f

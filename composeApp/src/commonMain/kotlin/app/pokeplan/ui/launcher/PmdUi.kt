@@ -134,24 +134,6 @@ internal fun PmdRule(pixel: Int, modifier: Modifier = Modifier) {
     Box(modifier.fillMaxWidth().height((pixel / density).dp).background(Color.White.copy(alpha = 0.3f)))
 }
 
-/** The one main action of a box, in Poké Ball red with a darker lower edge: at least 48 dp tall, the label in the dialogue font. */
-@Composable
-internal fun PmdButton(text: String, pixel: Int, modifier: Modifier = Modifier, color: Color = Pixel.Red, onClick: () -> Unit) {
-    val edge = Color(color.red * 0.7f, color.green * 0.7f, color.blue * 0.7f)
-    Box(
-        modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target)
-            .drawBehind {
-                val p = pixel.toFloat()
-                drawRect(edge, Offset(0f, p), Size(size.width, size.height - p))
-                drawRect(color, Offset(0f, 0f), Size(size.width, size.height - 2 * p))
-            }
-            .focusRing(RoundedCornerShape(2.dp), Color.White)
-            .clickable(role = Role.Button, onClick = onClick)
-            .semantics(mergeDescendants = true) {},
-        contentAlignment = Alignment.Center,
-    ) { PmdText(text, pixel) }
-}
-
 /** A navigation entry of the world register: a real item icon over a label, at least 56 dp tall, the whole thing one touch target. */
 @Composable
 internal fun PmdNavItem(label: String, icon: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, onClick: () -> Unit) {

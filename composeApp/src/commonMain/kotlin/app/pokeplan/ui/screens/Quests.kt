@@ -44,6 +44,14 @@ internal fun QuestsView(model: AppModel) {
             style = MaterialTheme.typography.bodyLarge,
         )
     }
+    // World's jobs are World's own (a module owns its quests and its story); the shared list only says where they stand.
+    val world = data.world
+    if (app.pokeplan.world.Missions.boardOpen(world)) TextBox {
+        Text(
+            "World jobs: ${world.missions.size} taken, ${world.missions.count { it.done }} ready to claim. They are on the mission board, in Modules, World, Missions.",
+            style = MaterialTheme.typography.bodyLarge,
+        )
+    }
     if (active.isEmpty() && available.isEmpty()) {
         EmptyState("No quests yet", "Quests open as your trainer rank grows.", icon = "oaks-letter")
     }

@@ -132,7 +132,7 @@ enum class EventRepeat(val label: String) {
         WEEKDAYS -> Repeat.Weekly(days = setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY))
         WEEKLY -> Repeat.Weekly()
         FORTNIGHTLY -> Repeat.Weekly(every = 2)
-        MONTHLY -> Repeat.Monthly(rule = MonthlyRule.DayOfMonth(first.dayOfMonth))
+        MONTHLY -> Repeat.Monthly(rule = MonthlyRule.DayOfMonth(first.day))
         YEARLY -> Repeat.Yearly()
     }
 }

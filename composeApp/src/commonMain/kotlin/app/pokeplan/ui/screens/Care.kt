@@ -80,7 +80,7 @@ import kotlin.math.roundToInt
  */
 enum class CareSection(val label: String, val icon: String) {
     ROUTINES("Routines", "oaks-parcel"), CALM("Calm break", "lunar-wing"), DIARY("Diary card", "heart-scale"),
-    SKILLS("Skills", "mental-herb"), JOURNAL("Journal", "journal"), TRENDS("Trends", "exp-share"),
+    SKILLS("Skills", "mental-herb"), JOURNAL("Journal", "journal"), TRENDS("Trends", "exp-share"), SETTINGS("Settings", "storage-key"),
 }
 
 @Composable
@@ -105,6 +105,7 @@ private fun CarePage(model: AppModel, section: CareSection?, openPokemon: (Strin
             CareSection.SKILLS -> SkillsView(model)
             CareSection.JOURNAL -> JournalView(model)
             CareSection.TRENDS -> TrendsView(model)
+            CareSection.SETTINGS -> CareSettings(model)
         }
     }
 }
@@ -143,6 +144,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                     MenuEntry(CareSection.SKILLS.name, CareSection.SKILLS.icon, "Skills", if (practised == 0) "DBT skills to try" else "$practised practised today", tint = Pixel.Green),
                     MenuEntry(CareSection.JOURNAL.name, CareSection.JOURNAL.icon, "Journal", if (care.journal.isEmpty()) "write anything" else if (care.journal.size == 1) "1 entry" else "${care.journal.size} entries", tint = Pixel.Warning),
                     MenuEntry(CareSection.TRENDS.name, CareSection.TRENDS.icon, "Trends", "the last few weeks", tint = Pixel.InkSoft),
+                    MenuEntry(CareSection.SETTINGS.name, CareSection.SETTINGS.icon, "Settings", "cloud copy", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.careSection = CareSection.valueOf(key) }
         }

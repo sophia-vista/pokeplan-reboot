@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.90.0
+
+- Phase 1 of the audit (`docs/audit-2026-10-31.md`) and its five decisions: World's rewards are in the reward history (Poké and items, merged per ten minutes, never a reveal) and its items go straight into the Bag, so there is one inventory and the Finds screen holds Pokémon and treasure boxes only; Plan's "Growth" section is called "Progress"; the Quests screen says how many World jobs are taken and ready; no further candy cuts.
+- Settings: the Hatching region picker and the Modules group are gone (Care is always shown); Routine reminders are in Notifications; settings are per module: Plan, Care and World each have a Settings entry on their menu (Plan: focus defaults, first day of the week, phone calendars; Care: cloud copy; World: scrolling floors).
+- World: the Pokémon walk again. The phone's power saver had also stopped them (build 155); now it only stops the scrolling floor and the effects, and a new World setting turns the scrolling off.
+- Tests for old saves (every field has a default, stored names do not move), export and erase, and the World ledger. Two unused composables removed; `dayOfMonth` replaced by `day`.
+
 ## 0.89.1
 
 - Audit (`docs/audit-2026-10-31.md`, answering the owner's repository audit brief): findings with severity, what was and was not inspected, a clean-up classification, a phased plan and the decisions only the owner can make. `docs/world.md` gains a status table of what is built.

@@ -33,7 +33,7 @@ enum class Module(val label: String, val icon: String, val look: RegionLook) {
 
 /** Plan's screens: tasks and focus, and the trends, goals and weekly review that read them. */
 enum class PlanSection(val label: String, val icon: String) {
-    PLANNER("Planner", "journal"), FOCUS("Focus", "mystery-egg"), GROWTH("Growth", "exp-share"), GOALS("Goals", "star-piece"), REVIEW("Review", "oaks-letter"),
+    PLANNER("Planner", "journal"), FOCUS("Focus", "mystery-egg"), GROWTH("Progress", "exp-share"), GOALS("Goals", "star-piece"), REVIEW("Review", "oaks-letter"), SETTINGS("Settings", "storage-key"),
 }
 
 /**
@@ -115,6 +115,7 @@ private fun PlanPage(model: AppModel, section: PlanSection?, focusTab: Boolean, 
             when (section) {
                 PlanSection.GROWTH -> GrowthView(model)
                 PlanSection.GOALS -> GoalsView(model)
+                PlanSection.SETTINGS -> PlanSettings(model)
                 else -> ReviewView(model)
             }
         }
@@ -172,9 +173,10 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
                         PlanSection.FOCUS.name, PlanSection.FOCUS.icon, "Focus",
                         if (session == null) "hatch an egg" else "egg incubating", badge = if (session != null) 1 else 0, tint = Pixel.Warning,
                     ),
-                    if (store.sees(Feature.GROWTH_SCREEN)) MenuEntry(PlanSection.GROWTH.name, PlanSection.GROWTH.icon, "Growth", "effort and trends", tint = Pixel.Green) else null,
+                    if (store.sees(Feature.GROWTH_SCREEN)) MenuEntry(PlanSection.GROWTH.name, PlanSection.GROWTH.icon, "Progress", "effort and trends", tint = Pixel.Green) else null,
                     if (!store.sees(Feature.GOALS)) null else MenuEntry(PlanSection.GOALS.name, PlanSection.GOALS.icon, "Goals", if (data.goals.size == 1) "1 goal" else "${data.goals.size} goals", tint = Pixel.Warning),
                     MenuEntry(PlanSection.REVIEW.name, PlanSection.REVIEW.icon, "Review", if (store.canReview()) "ready this week" else "done this week", badge = if (store.canReview()) 1 else 0, tint = Pixel.Blue),
+                    MenuEntry(PlanSection.SETTINGS.name, PlanSection.SETTINGS.icon, "Settings", "focus, week, calendars", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.planSection = PlanSection.valueOf(key) }
         }

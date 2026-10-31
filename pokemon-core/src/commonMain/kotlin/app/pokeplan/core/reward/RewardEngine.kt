@@ -76,6 +76,10 @@ sealed interface Reward {
     @Serializable
     @SerialName("friendship")
     data class Friendship(val amount: Int) : Reward
+    /** Poké, World's own money. Only World's entries in the reward log carry it; the reward engine never pays it. */
+    @Serializable
+    @SerialName("poke")
+    data class Poke(val amount: Int) : Reward
 }
 
 @Serializable

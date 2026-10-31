@@ -76,35 +76,7 @@ internal fun SettingsView(model: AppModel) {
             }
         }
     }
-    if (store.sees(Feature.REGION_PICKER)) TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Hatching region")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                TrainerRank.unlockedRegions(model.data.player.trainerPoints).forEach { r ->
-                    TabButton(r.label, r == settings.region.open, { store.changeSettings { it.copy(region = r) } })
-                }
-            }
-            Text("Eggs hatch from this region: the Plan Region's Pokémon, or the Care Region's gentle ones.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        }
-    }
     // Settings come in small groups, one card each, so a setting is found by its group rather than by reading a long list.
-    SettingsGroup("Modules") {
-        ToggleRow(
-            "Care", settings.careModule,
-            detail = "Routines, calm breaks, a diary card, DBT skills and a journal, under Modules. Switched off, it is only hidden: what you saved in it stays.",
-        ) { store.changeSettings { s -> s.copy(careModule = it) } }
-        if (settings.careModule) CareCloudRow(model)
-        if (settings.careModule) ToggleRow(
-            "Routine reminders", model.careData.settings.reminders,
-            detail = "A gentle note at a routine's own time, once, with Done. Routines with no time never remind.",
-        ) { on -> model.care.changeSettings { it.copy(reminders = on) } }
-    }
-    SettingsGroup("Focus") {
-        ToggleRow("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
-        Stepper("Usual focus length", "${settings.defaultFocusMinutes} min", 5) { by ->
-            store.changeSettings { s -> s.copy(defaultFocusMinutes = (s.defaultFocusMinutes + by).coerceIn(FocusRules.RETRY_MINUTES, FocusRules.MAX_MINUTES)) }
-        }
-    }
     SettingsGroup("Sound and touch") {
         VolumeRow("Sound effects", settings.effectsVolume) { v -> store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }
         VolumeRow("Pokémon cries", if (settings.criesVolume < 0) settings.effectsVolume else settings.criesVolume) { v -> store.changeSettings { s -> s.copy(criesVolume = v, sound = true) } }
@@ -123,7 +95,11 @@ internal fun SettingsView(model: AppModel) {
         if (choosing) app.pokeplan.ui.BackgroundChoices(settings.appBackground, store.now.hour, store.now.minute, Pixel.dark) { name -> store.changeSettings { s -> s.copy(appBackground = name) } }
         ToggleRow("Reduce motion", settings.reduceMotion, detail = "Sprites stand still, nothing wobbles and screens switch without sliding.") { store.changeSettings { s -> s.copy(reduceMotion = it) } }
     }
-    SettingsGroup("Notifications and week") {
+    SettingsGroup("Notifications") {
+        ToggleRow(
+            "Routine reminders", model.careData.settings.reminders,
+            detail = "Care: a gentle note at a routine's own time, once, with Done. Routines with no time never remind.",
+        ) { on -> model.care.changeSettings { it.copy(reminders = on) } }
         ToggleRow("Task reminders", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }
         if (settings.reminders) {
             fun shift(t: LocalTime, by: Int) = LocalTime((t.hour + by + 24) % 24, 0)
@@ -145,9 +121,7 @@ internal fun SettingsView(model: AppModel) {
             }
         }
         ToggleRow("Weekly recap", settings.weeklyRecap, detail = "Sunday evening: tasks finished, focus time and your top category. Skipped after an empty week.") { store.changeSettings { s -> s.copy(weeklyRecap = it) } }
-        ToggleRow("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
     }
-    CalendarsCard(model)
     AccountCard(model)
     DataCard(model)
     AboutCard()
@@ -439,3 +413,38 @@ private fun Stepper(label: String, value: String, step: Int, change: (Int) -> Un
 
 /** An hour as the settings show it, "07:00". */
 private fun hourText(hour: Int) = "${hour.toString().padStart(2, '0')}:00"
+
+/** Plan's own settings (Modules, Plan, Settings): the focus defaults, the first day of the week and the phone's calendars. */
+@Composable
+internal fun PlanSettings(model: AppModel) {
+    val store = model.store
+    val settings = model.data.settings
+    SettingsGroup("Focus") {
+        ToggleRow("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
+        Stepper("Usual focus length", "${settings.defaultFocusMinutes} min", 5) { by ->
+            store.changeSettings { s -> s.copy(defaultFocusMinutes = (s.defaultFocusMinutes + by).coerceIn(FocusRules.RETRY_MINUTES, FocusRules.MAX_MINUTES)) }
+        }
+    }
+    SettingsGroup("Week") {
+        ToggleRow("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
+    }
+    CalendarsCard(model)
+}
+
+/** Care's own settings (Modules, Care, Settings): its optional cloud copy. Care's reminders are in Me, Settings, Notifications. */
+@Composable
+internal fun CareSettings(model: AppModel) {
+    SettingsGroup("Cloud copy") { CareCloudRow(model) }
+}
+
+/** World's own settings (Modules, World, Settings). */
+@Composable
+internal fun WorldSettings(model: AppModel) {
+    val settings = model.data.settings
+    SettingsGroup("Animation") {
+        ToggleRow(
+            "Scrolling floors", settings.worldScroll,
+            detail = "The floor of an expedition box slides past while the team walks. Off, the Pokémon still walk but the floor stands still (saves battery). Reduce motion, in Me, Settings, stops both.",
+        ) { model.store.changeSettings { s -> s.copy(worldScroll = it) } }
+    }
+}

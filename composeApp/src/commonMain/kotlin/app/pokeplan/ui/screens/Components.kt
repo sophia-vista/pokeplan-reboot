@@ -123,6 +123,7 @@ fun LocalDate.short(): String = "${dayNames[dayOfWeek.ordinal]} $dayOfMonth ${mo
 fun Reward.iconItem(): String? = when (this) {
     is Reward.Candies -> if (type == CandyType.SUPER) "super-candy" else "rare-candy"
     is Reward.Coins -> "amulet-coin"
+    is Reward.Poke -> "heart-scale"
     is Reward.ItemDrop -> itemId
     is Reward.Evs -> "protein"
     is Reward.Friendship -> "friend-ball"
