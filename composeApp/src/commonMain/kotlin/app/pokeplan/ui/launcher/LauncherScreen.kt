@@ -29,6 +29,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import kotlin.math.roundToInt
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -137,6 +140,14 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var pickingTown by remember { mutableStateOf(false) }
     var menuMon by remember { mutableStateOf<OwnedPokemon?>(null) }
     var settingsOpen by remember { mutableStateOf(false) }
+    // The app list slides in from the right: 1 is off the screen, 0 is in place. A drag from the edge moves it with the finger; letting go settles it.
+    val reveal = remember { androidx.compose.animation.core.Animatable(1f) }
+    var settle by remember { mutableStateOf(0) }
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    LaunchedEffect(listOpen, settle) {
+        val to = if (listOpen) 0f else 1f
+        if (data.settings.reduceMotion) reveal.snapTo(to) else reveal.animateTo(to, androidx.compose.animation.core.tween(220, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+    }
     var listHidden by remember { mutableStateOf(false) }
     // The Home button always comes back to the home page.
     LaunchedEffect(homePresses) {
@@ -151,15 +162,18 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
                 BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else listOpen = false }
                 HomePage(model, apps, prefs, isDefault, host, pixel, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
-                // Drag in from the right edge to open every app (All apps does the same for anyone who does not know the gesture).
-                if (prefs.edgeDrag) Box(
-                    Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(24.dp).pointerInput(Unit) {
-                        var total = 0f
-                        detectHorizontalDragGestures(onDragStart = { total = 0f }, onDragEnd = { if (total < -60f) listOpen = true }) { _, dx -> total += dx }
+                // Drag in from the right edge: the app list follows the finger, and settles open or shut when it lets go.
+                val widthPx = maxWidth.value * LocalDensity.current.density
+                if (prefs.edgeDrag && !listOpen) Box(
+                    Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(24.dp).pointerInput(widthPx) {
+                        detectHorizontalDragGestures(
+                            onDragEnd = { listOpen = reveal.value < 0.5f; settle++ },
+                            onDragCancel = { listOpen = false; settle++ },
+                        ) { _, dx -> scope.launch { reveal.snapTo((reveal.value + dx / widthPx).coerceIn(0f, 1f)) } }
                     },
                 )
-                AnimatedVisibility(listOpen, enter = slideInVertically { it / 4 } + fadeIn(), exit = slideOutVertically { it / 4 } + fadeOut()) {
-                    AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key }, onTown = { settingsOpen = true }, startHidden = listHidden)
+                if (reveal.value < 1f) Box(Modifier.fillMaxSize().offset { IntOffset((reveal.value * widthPx).roundToInt(), 0) }) {
+                    AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key }, onTown = { settingsOpen = true }, startHidden = listHidden, pixel = pixel)
                 }
                 menuMon?.let { mon -> PokemonMenu(mon, mon.id == model.data.player.buddy?.id, pixel, onOpen = { host.openPokemon(mon.id); menuMon = null }, onBuddy = { model.store.setBuddy(mon.id); menuMon = null }, onClose = { menuMon = null }) }
                 if (settingsOpen) LauncherSettings(
@@ -261,7 +275,7 @@ private sealed interface ListRow {
 /** Every app A to Z over the wallpaper, blurred and darkened (the blur shows from Android 12; the dark veil always). */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
-internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: LauncherHost, onClose: () -> Unit, onHold: (LauncherApp) -> Unit, onTown: () -> Unit = {}, startHidden: Boolean = false) {
+internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: LauncherHost, onClose: () -> Unit, onHold: (LauncherApp) -> Unit, onTown: () -> Unit = {}, startHidden: Boolean = false, pixel: Int = 2) {
     var query by remember { mutableStateOf("") }
     var category by remember { mutableStateOf<AppCategory?>(null) }
     var showHidden by remember { mutableStateOf(startHidden) }
@@ -293,38 +307,35 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
                     )
                 }
                 Box(Modifier.height(Spacing.Target).clip(rowShape).clickable(role = Role.Button, onClickLabel = "Launcher settings", onClick = onTown).padding(horizontal = Spacing.S), contentAlignment = Alignment.Center) {
-                    Text("Settings", style = MaterialTheme.typography.labelLarge, color = Color.White)
+                    PmdText("Settings", pixel)
                 }
                 Box(Modifier.height(Spacing.Target).clip(rowShape).clickable(role = Role.Button, onClick = onClose).padding(horizontal = Spacing.S), contentAlignment = Alignment.Center) {
-                    Text("Close", style = MaterialTheme.typography.labelLarge, color = Color.White)
+                    PmdText("Close", pixel)
                 }
             }
             LazyRow(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = Spacing.Page), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                item { Chip("All", "", category == null && !showHidden) { category = null; showHidden = false } }
-                items(categories) { (c, n) -> Chip(c.label, "$n", category == c && !showHidden, icon = c.icon) { category = c; showHidden = false } }
-                if (anyHidden) item { Chip("Hidden", "", showHidden) { showHidden = true; category = null } }
+                item { Chip("All", "", category == null && !showHidden, pixel) { category = null; showHidden = false } }
+                items(categories) { (c, n) -> Chip(c.label, "$n", category == c && !showHidden, pixel, icon = c.icon) { category = c; showHidden = false } }
+                if (anyHidden) item { Chip("Hidden", "", showHidden, pixel) { showHidden = true; category = null } }
             }
             Box(Modifier.weight(1f).fillMaxWidth()) {
-                if (rows.isEmpty()) Text(
-                    if (query.isBlank()) "No apps here." else "No app matches \"${query.trim()}\".",
-                    style = MaterialTheme.typography.bodyMedium, color = soft, modifier = Modifier.align(Alignment.Center),
-                )
+                if (rows.isEmpty()) PmdText(if (query.isBlank()) "No apps here" else "No app matches " + query.trim(), pixel, Modifier.align(Alignment.Center), alpha = 0.7f)
                 LazyColumn(Modifier.fillMaxSize(), state = listState, contentPadding = PaddingValues(start = Spacing.Page, end = 40.dp, top = Spacing.S, bottom = Spacing.L)) {
                     items(rows, key = { row -> when (row) { is ListRow.Header -> "#h${row.letter}"; is ListRow.Entry -> row.app.key } }) { row ->
                         when (row) {
-                            is ListRow.Header -> Text(row.letter.toString(), style = MaterialTheme.typography.titleSmall, color = soft, modifier = Modifier.padding(top = Spacing.M, bottom = Spacing.XS, start = Spacing.XS))
+                            is ListRow.Header -> PmdText(row.letter.toString(), pixel, Modifier.padding(top = Spacing.M, bottom = Spacing.XS, start = Spacing.XS), alpha = 0.7f)
                             is ListRow.Entry -> Row(
                                 Modifier.fillMaxWidth().clip(rowShape).combinedClickable(role = Role.Button, onLongClick = { onHold(row.app) }, onClick = { host.open(row.app.key) })
                                     .padding(vertical = Spacing.S, horizontal = Spacing.XS),
                                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
                             ) {
                                 AppIcon(host, row.app.key, 40.dp)
-                                Text(row.app.label, style = MaterialTheme.typography.bodyLarge, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                                PmdText(row.app.label, pixel, Modifier.weight(1f))
                             }
                         }
                     }
                 }
-                if (sections && rows.size > 12) LetterScroller(LauncherList.letters(shown).map { it.first }, Modifier.align(Alignment.CenterEnd)) { letter ->
+                if (sections && rows.size > 12) LetterScroller(LauncherList.letters(shown).map { it.first }, pixel, Modifier.align(Alignment.CenterEnd)) { letter ->
                     val at = rows.indexOfFirst { it is ListRow.Header && it.letter == letter }
                     if (at >= 0) scope.launch { listState.scrollToItem(at) }
                 }
@@ -334,7 +345,7 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
 }
 
 @Composable
-private fun Chip(label: String, count: String, selected: Boolean, icon: String? = null, onClick: () -> Unit) {
+private fun Chip(label: String, count: String, selected: Boolean, pixel: Int, icon: String? = null, onClick: () -> Unit) {
     val shape = RoundedCornerShape(50)
     Row(
         Modifier.height(36.dp).clip(shape).background(if (selected) Color.White else Color.White.copy(alpha = 0.14f), shape)
@@ -342,13 +353,13 @@ private fun Chip(label: String, count: String, selected: Boolean, icon: String? 
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
     ) {
         if (icon != null) ItemIcon(icon, size = 20.dp, description = null)
-        Text(if (count.isEmpty()) label else "$label $count", style = MaterialTheme.typography.labelMedium, color = if (selected) Pixel.Outline else Color.White, maxLines = 1)
+        PmdText(if (count.isEmpty()) label else "$label $count", pixel, onLight = selected)
     }
 }
 
 /** The strip of letters on the right edge: touch or drag along it to jump to a letter. */
 @Composable
-private fun LetterScroller(letters: List<Char>, modifier: Modifier, onLetter: (Char) -> Unit) {
+private fun LetterScroller(letters: List<Char>, pixel: Int, modifier: Modifier, onLetter: (Char) -> Unit) {
     if (letters.isEmpty()) return
     var height by remember { mutableStateOf(1f) }
     var last by remember { mutableStateOf<Char?>(null) }
@@ -363,7 +374,7 @@ private fun LetterScroller(letters: List<Char>, modifier: Modifier, onLetter: (C
             .pointerInput(letters) { detectTapGestures { pick(it.y); last = null } },
         verticalArrangement = Arrangement.SpaceEvenly, horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        letters.forEach { Text(it.toString(), style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.8f)) }
+        letters.forEach { PmdText(it.toString(), pixel, alpha = 0.85f) }
     }
 }
 

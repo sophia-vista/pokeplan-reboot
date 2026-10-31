@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.69.0
+
+- Launcher: the app list now comes in from the right. Dragging in from the right edge pulls it across with your finger and it settles open or shut when you let go; All apps and Close slide it the same way (it stays put under Reduce motion).
+- Launcher: the app list's letters, names, categories and buttons are in the dialogue font.
+- Launcher: the town's Pokémon have more room to walk (the ground is taller) and no side walls: one that walks off an edge comes back in at the other.
+
 ## 0.68.0
 
 - Launcher settings: All apps has a Settings button that opens a dialogue box with the town (the picture or the scene), how many Pokémon live in it (8, 16 or 24), whether they walk about, whether the status box shows, whether dragging in from the right edge opens the app list, your hidden apps (opens the list on them), forgetting your pins and icons, and the Android home-app setting. All of it stays on the device.
