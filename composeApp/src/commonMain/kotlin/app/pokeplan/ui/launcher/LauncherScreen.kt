@@ -136,30 +136,38 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var sheetKey by remember { mutableStateOf<String?>(null) }
     var pickingTown by remember { mutableStateOf(false) }
     var menuMon by remember { mutableStateOf<OwnedPokemon?>(null) }
+    var settingsOpen by remember { mutableStateOf(false) }
+    var listHidden by remember { mutableStateOf(false) }
     // The Home button always comes back to the home page.
     LaunchedEffect(homePresses) {
-        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null }
+        if (homePresses > 0) { listOpen = false; sheetKey = null; pickingTown = false; menuMon = null; settingsOpen = false }
     }
     val sheetApp = sheetKey?.let { key -> apps.firstOrNull { it.key == key } }
     PixelTheme(dark) {
         CompositionLocalProvider(LocalReduceMotion provides data.settings.reduceMotion) {
             androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 val pixel = townScale(maxWidth.value * LocalDensity.current.density)
-                Town(model, prefs.scene, active, onMenu = { menuMon = it }, modifier = Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onLongPress = { pickingTown = true }) })
+                Town(model, prefs.scene, active && prefs.walking, onMenu = { menuMon = it }, size = prefs.townSize, modifier = Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onLongPress = { pickingTown = true }) })
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
-                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (sheetApp != null) sheetKey = null else listOpen = false }
+                BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else listOpen = false }
                 HomePage(model, apps, prefs, isDefault, host, pixel, onAllApps = { listOpen = true }, onHold = { sheetKey = it.key })
                 // Drag in from the right edge to open every app (All apps does the same for anyone who does not know the gesture).
-                Box(
+                if (prefs.edgeDrag) Box(
                     Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(24.dp).pointerInput(Unit) {
                         var total = 0f
                         detectHorizontalDragGestures(onDragStart = { total = 0f }, onDragEnd = { if (total < -60f) listOpen = true }) { _, dx -> total += dx }
                     },
                 )
                 AnimatedVisibility(listOpen, enter = slideInVertically { it / 4 } + fadeIn(), exit = slideOutVertically { it / 4 } + fadeOut()) {
-                    AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key }, onTown = { listOpen = false; pickingTown = true })
+                    AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key }, onTown = { settingsOpen = true }, startHidden = listHidden)
                 }
                 menuMon?.let { mon -> PokemonMenu(mon, mon.id == model.data.player.buddy?.id, pixel, onOpen = { host.openPokemon(mon.id); menuMon = null }, onBuddy = { model.store.setBuddy(mon.id); menuMon = null }, onClose = { menuMon = null }) }
+                if (settingsOpen) LauncherSettings(
+                    prefs, onPrefs, isDefault, apps.count { it.key in prefs.hidden }, pixel, host,
+                    onTown = { settingsOpen = false; listOpen = false; pickingTown = true },
+                    onHidden = { settingsOpen = false; listHidden = true; listOpen = true },
+                    onClose = { settingsOpen = false },
+                )
                 if (pickingTown) TownPicker(prefs.scene, onPick = { onPrefs(prefs.withScene(it)); pickingTown = false }, onClose = { pickingTown = false })
                 if (sheetApp != null) AppSheet(sheetApp, prefs, onPrefs, onClose = { sheetKey = null }, host = host)
             }
@@ -181,7 +189,7 @@ private fun HomePage(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPr
     val density = LocalDensity.current.density
     val gap = Modifier.padding(horizontal = (6 * pixel / density).dp)
     Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = Spacing.M, vertical = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        if (data.onboarded && buddy != null) PmdBox(pixel, Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Open PokéLife") { host.openApp(Place.HOME) }, inset = 1) {
+        if (data.onboarded && buddy != null && prefs.showStatus) PmdBox(pixel, Modifier.fillMaxWidth().clickable(role = Role.Button, onClickLabel = "Open PokéLife") { host.openApp(Place.HOME) }, inset = 1) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 PmdText("${buddy.nickname}  Lv. ${buddy.level}", pixel, gap)
                 Box(Modifier.weight(1f))
@@ -253,10 +261,10 @@ private sealed interface ListRow {
 /** Every app A to Z over the wallpaper, blurred and darkened (the blur shows from Android 12; the dark veil always). */
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
-internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: LauncherHost, onClose: () -> Unit, onHold: (LauncherApp) -> Unit, onTown: () -> Unit = {}) {
+internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: LauncherHost, onClose: () -> Unit, onHold: (LauncherApp) -> Unit, onTown: () -> Unit = {}, startHidden: Boolean = false) {
     var query by remember { mutableStateOf("") }
     var category by remember { mutableStateOf<AppCategory?>(null) }
-    var showHidden by remember { mutableStateOf(false) }
+    var showHidden by remember { mutableStateOf(startHidden) }
     val categories = LauncherList.categories(apps, prefs)
     // A category that emptied (its last app moved or hidden) falls back to all apps.
     if (category != null && categories.none { it.first == category }) category = null
@@ -284,8 +292,8 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
                         textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White), cursorBrush = SolidColor(Color.White),
                     )
                 }
-                Box(Modifier.height(Spacing.Target).clip(rowShape).clickable(role = Role.Button, onClickLabel = "Change the town", onClick = onTown).padding(horizontal = Spacing.S), contentAlignment = Alignment.Center) {
-                    Text("Town", style = MaterialTheme.typography.labelLarge, color = Color.White)
+                Box(Modifier.height(Spacing.Target).clip(rowShape).clickable(role = Role.Button, onClickLabel = "Launcher settings", onClick = onTown).padding(horizontal = Spacing.S), contentAlignment = Alignment.Center) {
+                    Text("Settings", style = MaterialTheme.typography.labelLarge, color = Color.White)
                 }
                 Box(Modifier.height(Spacing.Target).clip(rowShape).clickable(role = Role.Button, onClick = onClose).padding(horizontal = Spacing.S), contentAlignment = Alignment.Center) {
                     Text("Close", style = MaterialTheme.typography.labelLarge, color = Color.White)
@@ -463,6 +471,35 @@ internal fun PokemonMenu(mon: OwnedPokemon, isBuddy: Boolean, pixel: Int, onOpen
                 PmdMenuLine("Open profile", pixel, onClick = onOpen)
                 if (!isBuddy) PmdMenuLine("Make buddy", pixel, onClick = onBuddy)
                 PmdMenuLine("Close", pixel, dim = true, onClick = onClose)
+            }
+        }
+    }
+}
+
+/** The launcher's own settings, as a dialogue box: what the home page shows, the town, hidden apps and the home-app choice. All of it stays on the device. */
+@Composable
+internal fun LauncherSettings(
+    prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, isDefault: Boolean, hiddenCount: Int, pixel: Int, host: LauncherHost,
+    onTown: () -> Unit, onHidden: () -> Unit, onClose: () -> Unit,
+) {
+    val none = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+    fun onOff(on: Boolean) = if (on) "On" else "Off"
+    Box(Modifier.fillMaxSize().background(Pixel.Scrim.copy(alpha = 0.5f)).clickable(indication = null, interactionSource = none, onClick = onClose), contentAlignment = Alignment.Center) {
+        PmdBox(pixel, Modifier.padding(horizontal = Spacing.L).fillMaxWidth().clickable(indication = null, interactionSource = none) {}) {
+            Column(Modifier.heightIn(max = 560.dp).verticalScroll(rememberScrollState())) {
+                PmdMenuLine("Launcher settings", pixel, dim = true) {}
+                PmdRule(pixel)
+                PmdMenuLine("Town: ${(TownScenes.all.firstOrNull { it.first == prefs.scene } ?: TownScenes.all.first()).second}", pixel, onClick = onTown)
+                PmdMenuLine("Pokémon in the town: ${prefs.townSize}", pixel) { onPrefs(prefs.nextTownSize()) }
+                PmdMenuLine("Pokémon walk about: ${onOff(prefs.walking)}", pixel) { onPrefs(prefs.withWalking(!prefs.walking)) }
+                PmdMenuLine("Status box: ${onOff(prefs.showStatus)}", pixel) { onPrefs(prefs.withShowStatus(!prefs.showStatus)) }
+                PmdMenuLine("Drag in from the right: ${onOff(prefs.edgeDrag)}", pixel) { onPrefs(prefs.withEdgeDrag(!prefs.edgeDrag)) }
+                PmdRule(pixel)
+                if (hiddenCount > 0) PmdMenuLine("Hidden apps: $hiddenCount", pixel, onClick = onHidden)
+                PmdMenuLine("Forget pins and icons", pixel, dim = prefs.pinned.isEmpty() && prefs.icons.isEmpty()) { onPrefs(prefs.withoutPins()) }
+                PmdMenuLine(if (isDefault) "Home app settings" else "Make PokéLife your home app", pixel) { host.openHomeSettings() }
+                PmdRule(pixel)
+                PmdMenuLine("Close", pixel, center = true, dim = true, onClick = onClose)
             }
         }
     }

@@ -76,7 +76,23 @@ data class LauncherPrefs(
     val scene: String = TownScenes.DEFAULT,
     /** An app's icon on the home page when it is not the app's own logo: a real game item (see [LauncherIcons]). */
     val icons: Map<String, String> = emptyMap(),
+    /** Whether the town's Pokémon walk about (off: they stand still). */
+    val walking: Boolean = true,
+    /** How many Pokémon live in the town: 8, 16 or 24. */
+    val townSize: Int = 24,
+    /** Whether the status box (the companion and the collection) shows at the top of the home page. */
+    val showStatus: Boolean = true,
+    /** Whether dragging in from the right edge opens the app list. */
+    val edgeDrag: Boolean = true,
 ) {
+    fun withWalking(on: Boolean) = copy(walking = on)
+    fun withShowStatus(on: Boolean) = copy(showStatus = on)
+    fun withEdgeDrag(on: Boolean) = copy(edgeDrag = on)
+    /** The next town size: 8, then 16, then 24, then 8 again. */
+    fun nextTownSize() = copy(townSize = when (townSize) { 8 -> 16; 16 -> 24; else -> 8 })
+    /** Pins and their icons forgotten; hidden apps and the other choices kept. */
+    fun withoutPins() = copy(pinned = emptyList(), icons = emptyMap())
+
     fun withIcon(key: String, item: String?) = if (item == null) copy(icons = icons - key) else if (item in LauncherIcons.items) copy(icons = icons + (key to item)) else this
 
     fun withScene(name: String) = if (name in TownScenes.all.map { it.first }) copy(scene = name) else this
@@ -96,6 +112,10 @@ data class LauncherPrefs(
     /** One text for a `SharedPreferences` string: a line per choice, `P key`, `H key`, `M key<TAB>CATEGORY`, `I key<TAB>item` or `S scene`. */
     fun encode(): String = buildString {
         if (scene != TownScenes.DEFAULT) append("S ").append(scene).append('\n')
+        if (!walking) append("K walking\t0\n")
+        if (townSize != 24) append("K townSize\t").append(townSize).append('\n')
+        if (!showStatus) append("K showStatus\t0\n")
+        if (!edgeDrag) append("K edgeDrag\t0\n")
         pinned.forEach { append("P ").append(it).append('\n') }
         hidden.sorted().forEach { append("H ").append(it).append('\n') }
         moved.entries.sortedBy { it.key }.forEach { (key, category) -> append("M ").append(key).append('\t').append(category.name).append('\n') }
@@ -113,6 +133,7 @@ data class LauncherPrefs(
                     'P' -> prefs.pin(rest)
                     'H' -> prefs.copy(hidden = prefs.hidden + rest)
                     'S' -> prefs.withScene(rest)
+                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> prefs } }
                     'I' -> rest.lastIndexOf('\t').let { at -> if (at > 0) prefs.withIcon(rest.substring(0, at), rest.substring(at + 1)) else prefs }
                     'M' -> {
                         val at = rest.lastIndexOf('\t')

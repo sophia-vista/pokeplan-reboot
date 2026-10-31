@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.68.0
+
+- Launcher settings: All apps has a Settings button that opens a dialogue box with the town (the picture or the scene), how many Pokémon live in it (8, 16 or 24), whether they walk about, whether the status box shows, whether dragging in from the right edge opens the app list, your hidden apps (opens the list on them), forgetting your pins and icons, and the Android home-app setting. All of it stays on the device.
+
 ## 0.67.0
 
 - The whole app uses the game's dialogue box as its card: cards, list rows, menu cards and the Home region cards are drawn with a thin version of the launcher's frame (a pale hairline, a blue band, an inner line, rounded corners) around the usual surface, in the light and the dark theme. Each module has its own colour: Plan's pages and cards are red, Care's green, and the menu cards wear their own tint (the coloured bar down the left edge of the Home cards is gone).
