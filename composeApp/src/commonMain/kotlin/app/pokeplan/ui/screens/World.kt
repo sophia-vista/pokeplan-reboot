@@ -377,7 +377,7 @@ private fun WorldTeamsView(model: AppModel) {
                 Text("Team ${team.id}", style = MaterialTheme.typography.titleSmall)
                 val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
                 if (members.isEmpty()) Text("No one yet.", style = MaterialTheme.typography.bodyMedium)
-                else FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                else if (team.expedition == null) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     members.forEach { p -> AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = 48.dp, animate = false) }
                 }
                 val trip = team.expedition
@@ -386,6 +386,7 @@ private fun WorldTeamsView(model: AppModel) {
                     if (dungeon != null) {
                         val floor = trip.floorsClimbed % dungeon.floors
                         val per = WorldSim.floorMillis(dungeon, WorldSim.power(members, dungeon), world.guardianDone)
+                        DungeonStrip(dungeon.id, members, "${dungeon.name}, floor ${floor + 1}", animate = !model.data.settings.reduceMotion)
                         Text("Exploring ${dungeon.name}: floor ${floor + 1} of ${dungeon.floors}", style = MaterialTheme.typography.bodyLarge)
                         PixelBar(floor.toFloat() / dungeon.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "floor ${floor + 1} of ${dungeon.floors}")
                         Text("A floor takes about ${per / 1000 / 60} min ${per / 1000 % 60} s. It keeps going while you are away, up to 12 hours.", style = MaterialTheme.typography.bodyMedium)
