@@ -47,7 +47,7 @@ class ScreenshotTest {
     }
 
     private fun env(model: AppModel, prefs: app.pokeplan.ui.launcher.LauncherPrefs = app.pokeplan.ui.launcher.LauncherPrefs()) = app.pokeplan.ui.launcher.WidgetEnv(
-        model, fakeApps, prefs, fakeHost, null, 2, app.pokeplan.ui.launcher.TodayState(model.store.today), {}, {}, {}, {}, {},
+        model, fakeApps, prefs, fakeHost, null, 2, app.pokeplan.ui.launcher.TodayState(model.store.today), {}, {}, {}, {}, {}, {},
     )
 
     private val clock = object : Clock {
@@ -700,7 +700,7 @@ class ScreenshotTest {
         render("launcher-folders") { PixelTheme { app.pokeplan.ui.launcher.FoldersPage(fakeApps, withFolder, {}, fakeHost, null, {}, {}, 2) } }
         render("launcher-folder") { PixelTheme { app.pokeplan.ui.launcher.FoldersPage(fakeApps, withFolder, {}, fakeHost, "Work", {}, {}, 2) } }
         val folderWidgets = app.pokeplan.ui.launcher.LauncherPrefs().addFolderWidget("Work").addToFolder("Work", "pkg.Phone").addToFolder("Work", "pkg.Messages").addFolderWidget("Play")
-        render("launcher-widgets") { PixelTheme { app.pokeplan.ui.launcher.WidgetsPage(folderWidgets, {}, 2, {}) } }
+        render("launcher-widgets") { PixelTheme { app.pokeplan.ui.launcher.WidgetsPage(folderWidgets, {}, fakeHost, 2, {}) } }
         render("launcher-phone-folders", width = 923, height = 1990, density = 2.625f) {
             app.pokeplan.ui.launcher.LauncherScreen(AppModel(phone), fakeApps, folderWidgets, {}, isDefault = true, phone = fakeHost)
         }

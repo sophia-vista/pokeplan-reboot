@@ -41,7 +41,7 @@ import kotlinx.datetime.plus
 /** What every widget needs from the launcher: the model, the apps, the prefs, the phone, the forecast and what to do on a tap. */
 internal class WidgetEnv(
     val model: AppModel, val apps: List<LauncherApp>, val prefs: LauncherPrefs, val host: LauncherHost, val forecast: Forecast?, val pixel: Int,
-    val today: TodayState, val onAllApps: () -> Unit, val onFolders: () -> Unit, val onOpenFolder: (String) -> Unit, val onForecast: () -> Unit, val onHold: (LauncherApp) -> Unit,
+    val today: TodayState, val onAllApps: () -> Unit, val onFolders: () -> Unit, val onWidgets: () -> Unit, val onOpenFolder: (String) -> Unit, val onForecast: () -> Unit, val onHold: (LauncherApp) -> Unit,
 )
 
 /** The month and day the calendar and agenda widgets share, so choosing a day in one shows its agenda in the other. */
@@ -68,6 +68,7 @@ internal fun LauncherWidget(slot: WidgetSlot, env: WidgetEnv) {
         WidgetKind.CALENDAR -> CalendarWidget(env, env.today)
         WidgetKind.AGENDA -> AgendaWidget(env, env.today)
         WidgetKind.FORECAST -> ForecastWidget(env)
+        WidgetKind.ANDROID -> slot.arg.toIntOrNull()?.let { id -> PmdBox(env.pixel, Modifier.fillMaxWidth()) { env.host.HostedWidget(id, Modifier.fillMaxWidth()) } }
     }
 }
 
@@ -157,6 +158,7 @@ private fun ActionsWidget(env: WidgetEnv) {
         Row(Modifier.fillMaxWidth()) {
             PmdMenuLine(if (env.prefs.folders.isEmpty()) "Folders" else "Folders ${env.prefs.folders.size}", env.pixel, Modifier.weight(1f), center = true, onClick = env.onFolders)
             PmdMenuLine("All apps", env.pixel, Modifier.weight(1f), center = true, onClick = env.onAllApps)
+            PmdMenuLine("Widgets", env.pixel, Modifier.weight(1f), center = true, onClick = env.onWidgets)
         }
     }
 }

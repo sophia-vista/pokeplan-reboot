@@ -13,6 +13,8 @@ enum class WidgetArea(val label: String) { HOME_TOP("Top of the home page"), HOM
 enum class WidgetKind(val label: String) {
     CLOCK("Date and time"), STATUS("Companion"), NAV("Shortcuts"), PINNED("Favorites"), OFTEN("Often used"), FOLDER("Folder"),
     ACTIONS("App buttons"), CALENDAR("Calendar"), AGENDA("Agenda and tasks"), FORECAST("Forecast"),
+    /** A widget from another app, hosted by the launcher; the slot's argument is its Android widget id. */
+    ANDROID("Android widget"),
 }
 
 /** One widget on a page: its [kind], in an [area], with a folder's name as [arg] for a folder widget. The order of the slots is the order on screen. */

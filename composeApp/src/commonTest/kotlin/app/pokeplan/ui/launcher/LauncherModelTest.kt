@@ -239,3 +239,15 @@ class LauncherWidgetsTest {
         assertEquals(LauncherPrefs(), LauncherPrefs.decode("G NOWHERE\tCLOCK\t\nG TODAY\tNOPE\t\n").copy(layout = null))
     }
 }
+
+class LauncherHostedWidgetTest {
+    @Test
+    fun androidWidgetsKeepTheirIdsAndOrder() {
+        val first = WidgetSlot(WidgetArea.TODAY, WidgetKind.ANDROID, "12")
+        val second = WidgetSlot(WidgetArea.TODAY, WidgetKind.ANDROID, "15")
+        val prefs = LauncherPrefs().addWidget(first).addWidget(second).addWidget(first).moveWidget(second, -1)
+        assertEquals(listOf("15", "12"), prefs.widgetsIn(WidgetArea.TODAY).filter { it.kind == WidgetKind.ANDROID }.map { it.arg })
+        assertEquals(prefs, LauncherPrefs.decode(prefs.encode()))
+        assertEquals(listOf("15"), prefs.removeWidget(first).widgetsIn(WidgetArea.TODAY).filter { it.kind == WidgetKind.ANDROID }.map { it.arg })
+    }
+}
