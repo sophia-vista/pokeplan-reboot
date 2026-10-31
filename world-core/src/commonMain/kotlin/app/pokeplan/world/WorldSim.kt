@@ -16,6 +16,7 @@ sealed interface WorldEvent {
     data class Treasure(val tier: Int) : WorldEvent
     data class Milestone(val dungeonId: String, val floor: Int, val reward: MilestoneReward) : WorldEvent
     data class Cleared(val dungeonId: String) : WorldEvent
+    data class MissionDone(val missionId: String) : WorldEvent
 }
 
 /** What settling did: the new data and, per team, the floors climbed and what happened. */
@@ -95,7 +96,9 @@ object WorldSim {
         var d = data
         events += WorldEvent.FloorCleared(dungeon.id, floor)
         d = d.copy(xp = d.xp + XP_BASE + floor, deepest = d.deepest + (dungeon.id to maxOf(floor, d.deepest[dungeon.id] ?: 0)))
+        var berries = 0
         if (random.nextInt(100) < BERRY_PERCENT) {
+            berries = 1
             val flavor = listOf("sweet", "dry", "sour", "spicy", "bitter").random(random)
             val berry = Items.berry(flavor)
             events += WorldEvent.Item(berry, 1)
@@ -123,6 +126,7 @@ object WorldSim {
                 )
             }
         }
+        d = Missions.advance(d, dungeon.id, floor, berries, at, events)
         if (floor == dungeon.floors) {
             events += WorldEvent.Cleared(dungeon.id)
             d = d.copy(clears = d.clears + (dungeon.id to (d.clears[dungeon.id] ?: 0) + 1))

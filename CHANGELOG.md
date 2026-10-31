@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.84.0
+
+- World missions and rescues (`docs/world.md`, section 8): a Missions section in World, open with story chapter 2 (Bronze rank and one dungeon clear). Take up to three jobs from the board, then send a team where they point. Explore jobs finish when a team reaches the named floor, Find-items jobs count berries, and a rescue leaves the lost Pokémon (Vulpix, Marill, Eevee) among your Finds to recruit, once only. Finished jobs are claimed for Poké, Exploration XP and sometimes an item. Ordinary jobs repeat; missing a day loses nothing. Nine jobs for now; Escort, Deliver, Defeat and daily/weekly jobs are not built.
+
 ## 0.83.1
 
 - World economy simulation (`./gradlew :world-core:simulateWorldEconomy` writes `docs/world-economy-report.md`). The first guesses paid far too fast (a floor every 1 to 5 minutes, 20 to 50 Pokémon found a day on a team that stays out, Diamond rank in 23 days), so floors now take 6 times as long (30, 48 and 72 minutes at base), the find chance is 3% and the treasure chance 6%. A typical player (two opens a day) now gets roughly 1 find a day, Gold in about 4 weeks and Platinum in about 3 months.

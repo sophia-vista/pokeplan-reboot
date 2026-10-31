@@ -42,6 +42,10 @@ data class WorldData(
     /** The species found so far (the research notebook's start): each counts once. */
     val discovered: Set<Int> = emptySet(),
     val storyChapter: Int = 0,
+    /** The jobs taken from the mission board, with their progress. */
+    val missions: List<MissionProgress> = emptyList(),
+    /** The one-time jobs (rescues) already claimed. */
+    val missionsDone: Set<String> = emptySet(),
     /** When the team list was last settled, for the "while you were away" line. */
     val lastSeenAt: Long = 0,
 ) {
@@ -87,6 +91,31 @@ data class WorldData(
 
     /** Removes the find at [index] (it was recruited), counting its species as discovered. */
     fun withoutFind(index: Int): WorldData = copy(finds = finds.filterIndexed { i, _ -> i != index })
+
+    /** Takes a job from the board; null when it is not offered or [Missions.MAX_ACTIVE] are already held. */
+    fun acceptMission(id: String): WorldData? {
+        val m = Missions.byId(id) ?: return null
+        if (m !in Missions.available(this) || missions.size >= Missions.MAX_ACTIVE) return null
+        return copy(missions = missions + MissionProgress(m.id))
+    }
+
+    /** Gives up a job that is not finished yet (a finished one is claimed instead). */
+    fun abandonMission(id: String): WorldData? {
+        val p = missions.firstOrNull { it.id == id } ?: return null
+        if (p.done) return null
+        return copy(missions = missions - p)
+    }
+
+    /** Claims a finished job's reward (Poké, Exploration XP, an item) and clears it; null when it is not finished. */
+    fun claimMission(id: String): WorldData? {
+        val p = missions.firstOrNull { it.id == id && it.done } ?: return null
+        val m = Missions.byId(id) ?: return copy(missions = missions - p)
+        val bag = m.itemId?.let { items + (it to (items[it] ?: 0) + m.itemCount) } ?: items
+        return copy(
+            missions = missions - p, poke = poke + m.poke, xp = xp + m.xp, items = bag,
+            missionsDone = if (m.once) missionsDone + m.id else missionsDone,
+        )
+    }
 
     internal fun withTeam(team: WorldTeam) = replace(team)
 }
