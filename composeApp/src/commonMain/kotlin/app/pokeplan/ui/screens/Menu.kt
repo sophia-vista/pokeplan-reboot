@@ -55,7 +55,8 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
 
 /** One entry of a tab's menu: a real item icon, a title, a line of detail, and an optional count badge. */
-data class MenuEntry(val key: String, val icon: String, val title: String, val detail: String, val badge: Int = 0, val tint: Color = Pixel.Blue)
+/** One card of a menu. [detail] is an optional caption: leave it empty when the title says enough (not every card needs one). */
+data class MenuEntry(val key: String, val icon: String, val title: String, val detail: String = "", val badge: Int = 0, val tint: Color = Pixel.Blue)
 
 private val menuShape = DialogueShape
 
@@ -94,12 +95,12 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
             picture()
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 PixelTitle(entry.title)
-                Text(entry.detail, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
+                if (entry.detail.isNotEmpty()) Text(entry.detail, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
             }
         } else Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             picture()
             PixelTitle(entry.title)
-            Text(entry.detail, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, maxLines = 2)
+            if (entry.detail.isNotEmpty()) Text(entry.detail, style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, maxLines = 2)
         }
         if (entry.badge > 0) {
             Box(Modifier.align(Alignment.TopEnd).size(26.dp).background(Pixel.Red, CircleShape), contentAlignment = Alignment.Center) {

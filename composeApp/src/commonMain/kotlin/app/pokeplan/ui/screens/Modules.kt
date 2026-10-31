@@ -71,8 +71,10 @@ private fun ModulesMenu(model: AppModel) {
                     if (!model.data.settings.careModule) null else MenuEntry(
                         Module.CARE.name, Module.CARE.icon, Module.CARE.label, if (routinesLeft == 0) "routines and calm" else if (routinesLeft == 1) "1 routine today" else "$routinesLeft routines today", tint = Module.CARE.look.accent,
                     ),
+                    // Not a region: a hub of handy tools (docs/ecosystem.md, Pokégear) that pays nothing and is always available.
+                    MenuEntry("GEAR", "explorer-kit", "Pokégear", tint = Pixel.Blue),
                 ),
-            ) { key -> model.module = Module.valueOf(key) }
+            ) { key -> if (key == "GEAR") model.gearOpen = true else model.module = Module.valueOf(key) }
             Text(
                 "Each module is one part of your day. Your party, Pokédex and Bag are shared by all of them, under Pokémon." +
                     if (model.data.settings.careModule) "" else " Care is switched off in Me, Settings.",

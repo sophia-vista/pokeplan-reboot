@@ -99,13 +99,11 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     override fun onStart() {
         super.onStart()
         active = true
-        try { cameras.registerTorchCallback(torchWatcher, null) } catch (e: Exception) { }
         try { widgetHost.startListening() } catch (e: Exception) { /* a widget host that cannot listen just shows what it has */ }
     }
 
     override fun onStop() {
         active = false
-        try { cameras.unregisterTorchCallback(torchWatcher) } catch (e: Exception) { }
         try { widgetHost.stopListening() } catch (e: Exception) { }
         super.onStop()
     }
@@ -292,51 +290,6 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     override suspend fun forecast(place: app.pokeplan.ui.launcher.GeoPlace) = weather.forecast(place)
 
     override suspend fun searchPlaces(query: String) = weather.search(query)
-
-    // The flashlight: the first camera that has a flash; its state is followed by a callback so the switch always shows the truth. Needs no permission.
-    private val cameras by lazy { getSystemService(Context.CAMERA_SERVICE) as android.hardware.camera2.CameraManager }
-    private val torchCamera: String? by lazy {
-        try {
-            cameras.cameraIdList.firstOrNull { id -> cameras.getCameraCharacteristics(id).get(android.hardware.camera2.CameraCharacteristics.FLASH_INFO_AVAILABLE) == true }
-        } catch (e: Exception) {
-            null
-        }
-    }
-    private var torchIsOn = false
-    private val torchWatcher = object : android.hardware.camera2.CameraManager.TorchCallback() {
-        override fun onTorchModeChanged(cameraId: String, enabled: Boolean) { if (cameraId == torchCamera) torchIsOn = enabled }
-    }
-
-    override fun hasTorch(): Boolean = torchCamera != null
-
-    override fun torchOn(): Boolean = torchIsOn
-
-    override fun setTorch(on: Boolean): Boolean {
-        val id = torchCamera ?: return false
-        try {
-            cameras.setTorchMode(id, on)
-            torchIsOn = on
-        } catch (e: Exception) {
-            // The camera is in use by an app: the flashlight stays as it was.
-        }
-        return torchIsOn
-    }
-
-    override fun openUtility(utility: app.pokeplan.ui.launcher.Utility) {
-        val intent = when (utility) {
-            app.pokeplan.ui.launcher.Utility.INTERNET -> Intent(if (android.os.Build.VERSION.SDK_INT >= 29) Settings.Panel.ACTION_INTERNET_CONNECTIVITY else Settings.ACTION_WIRELESS_SETTINGS)
-            app.pokeplan.ui.launcher.Utility.VOLUME -> Intent(if (android.os.Build.VERSION.SDK_INT >= 29) Settings.Panel.ACTION_VOLUME else Settings.ACTION_SOUND_SETTINGS)
-            app.pokeplan.ui.launcher.Utility.BLUETOOTH -> Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-            app.pokeplan.ui.launcher.Utility.DISPLAY -> Intent(Settings.ACTION_DISPLAY_SETTINGS)
-            app.pokeplan.ui.launcher.Utility.BATTERY -> Intent(Settings.ACTION_BATTERY_SAVER_SETTINGS)
-            app.pokeplan.ui.launcher.Utility.ALARMS -> Intent(android.provider.AlarmClock.ACTION_SHOW_ALARMS)
-        }
-        try {
-            startActivity(intent)
-        } catch (e: Exception) {
-            startActivity(Intent(Settings.ACTION_SETTINGS))
-        }
-    }
 
     override fun powerSaving(): Boolean = (getSystemService(Context.POWER_SERVICE) as android.os.PowerManager).isPowerSaveMode
 

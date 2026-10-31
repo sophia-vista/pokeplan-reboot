@@ -19,6 +19,7 @@ import app.pokeplan.core.pokemon.ItemCategory
 import app.pokeplan.core.pokemon.ItemEffects
 import app.pokeplan.core.pokemon.ItemUse
 import app.pokeplan.core.pokemon.Items
+import app.pokeplan.core.pokemon.GearTool
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.PerkBonuses
@@ -1096,6 +1097,41 @@ class GameStore(
     fun isFavorite(id: String): Boolean = id in data.favorites
 
     /** Stars or unstars a Pokémon; a starred one cannot be transferred. */
+    // ----- Pokégear: tools and their helper Pokémon (cosmetic: nothing here pays, records effort or reaches the server) -----
+
+    /** The owned Pokémon who can help [tool], the friendliest first (then the higher level, then by id so it is stable). */
+    fun gearCandidates(tool: GearTool): List<OwnedPokemon> =
+        data.player.pokemon.filter { tool.helps(it.speciesId) }.sortedWith(compareByDescending<OwnedPokemon> { it.friendship }.thenByDescending { it.level }.thenBy { it.id })
+
+    /** Who helps [tool] now: the one the player chose (while they still own them), else the best owned who can help, else a Ranger loaner, else no one. */
+    fun gearHelper(tool: GearTool): GearHelper {
+        val chosen = data.gearHelpers[tool.name]?.let { id -> data.player.pokemon.firstOrNull { it.id == id && tool.helps(it.speciesId) } }
+        val owned = chosen ?: gearCandidates(tool).firstOrNull()
+        return when {
+            owned != null -> GearHelper.Owned(owned)
+            tool.name in data.gearLoans -> GearHelper.Loaner(tool.loaner)
+            else -> GearHelper.None
+        }
+    }
+
+    /** Makes [pokemonId] the helper of [tool]; false if they are not owned or cannot help it. One Pokémon may help several tools. */
+    fun assignGearHelper(tool: GearTool, pokemonId: String): Boolean {
+        val mon = data.player.pokemon.firstOrNull { it.id == pokemonId } ?: return false
+        if (!tool.helps(mon.speciesId)) return false
+        update { it.copy(gearHelpers = it.gearHelpers + (tool.name to pokemonId)) }
+        return true
+    }
+
+    /** Forgets the chosen helper, so the best owned one (or the loaner) helps again. */
+    fun clearGearHelper(tool: GearTool) = update { it.copy(gearHelpers = it.gearHelpers - tool.name) }
+
+    /** A Ranger request succeeded: the tool gets its loaner. It stays a loan (never owned, never in the Dex) until an owned Pokémon can help. */
+    fun lendGearHelper(tool: GearTool) = update { it.copy(gearLoans = it.gearLoans + tool.name) }
+
+    fun setPickerOptions(options: List<String>) = update { it.copy(pickerOptions = options.map { o -> o.trim() }.filter { o -> o.isNotEmpty() }.distinct().take(MAX_PICKER_OPTIONS)) }
+
+    fun saveGearRates(rates: GearRates) = update { it.copy(gearRates = rates) }
+
     fun toggleFavorite(id: String) = update { d -> d.copy(favorites = if (id in d.favorites) d.favorites - id else d.favorites + id) }
 
     /** Sends a duplicate away for Rare Candies and coins. Returns false if it may not be transferred (or is starred). */
@@ -1223,6 +1259,8 @@ class GameStore(
     fun buddyBerry(): String? = berries().keys.minOrNull()
 
     companion object {
+        const val MAX_PICKER_OPTIONS = 30
+
         /** The welcome-back gift after a week or more away. *(tune)* */
         const val WELCOME_BACK_RARE_CANDIES = 5
         const val WELCOME_BACK_BERRIES = 2
@@ -1268,4 +1306,11 @@ class GameStore(
 
         val starters: List<Int> = starterGroups.flatMap { it.second }
     }
+}
+
+/** Who helps a Pokégear tool: an owned Pokémon, a loaner from a Ranger request (only its species, it is never owned), or no one. */
+sealed interface GearHelper {
+    data class Owned(val pokemon: OwnedPokemon) : GearHelper
+    data class Loaner(val speciesId: Int) : GearHelper
+    data object None : GearHelper
 }

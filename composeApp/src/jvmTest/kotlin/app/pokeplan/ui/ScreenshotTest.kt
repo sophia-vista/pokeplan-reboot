@@ -58,6 +58,20 @@ class ScreenshotTest {
     private fun started(): GameStore = GameStore(MemoryStorage(), clock).also { it.start("Sophia", 25) }
 
     @Test
+    fun pokegear() {
+        val store = started()
+        store.grantPokemon(181, "test")
+        store.lendGearHelper(app.pokeplan.core.pokemon.GearTool.CALCULATOR)
+        store.setPickerOptions(listOf("Pizza", "Sushi", "Tacos"))
+        store.saveGearRates(app.pokeplan.app.GearRates("2026-10-30", mapOf("USD" to 1.0, "EUR" to 0.86, "JPY" to 152.3, "PHP" to 58.1, "GBP" to 0.75)))
+        val model = AppModel(store)
+        render("gear-menu") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.GearScreen(model) {} } } }
+        app.pokeplan.core.pokemon.GearTool.entries.forEach { tool ->
+            render("gear-${tool.name.lowercase()}") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.GearScreen(model, start = tool) {} } } }
+        }
+    }
+
+    @Test
     fun onboarding() = render("onboarding") { App(MemoryStorage(), focusTab = true) }
 
     @Test
@@ -709,7 +723,6 @@ class ScreenshotTest {
         render("launcher-buddy") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { androidx.compose.foundation.layout.Column(Modifier.padding(20.dp)) {
             app.pokeplan.ui.launcher.LauncherWidget(app.pokeplan.ui.launcher.WidgetSlot(app.pokeplan.ui.launcher.WidgetArea.HOME_TOP, app.pokeplan.ui.launcher.WidgetKind.BUDDY), env(AppModel(phone)).let { e -> app.pokeplan.ui.launcher.WidgetEnv(e.model, e.apps, e.prefs, e.host, null, 2, e.today, moody, false, false, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}) })
         } } } }
-        render("launcher-utilities") { PixelTheme { app.pokeplan.ui.launcher.UtilitiesPage(fakeHost, 2, {}) } }
         render("launcher-towns") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.TownPicker("meadow", {}, {}) } } }
         render("launcher-pokemon-menu") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.PokemonMenu(started().data.player.buddy!!, false, 2, {}, {}, {}) } } }
         render("launcher-settings") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.launcher.LauncherSettings(AppModel(started()), app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone"), {}, false, 2, 2, fakeHost, {}, {}, {}, {}, {}) } } }

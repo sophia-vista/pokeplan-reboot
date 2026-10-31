@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.81.0
+
+- Pokégear: a hub of handy tools with helper Pokémon, in Modules (the Pokégear card) and from the launcher (the Pokégear button, which replaces the phone Utilities screen of 0.80.0). The tools: **Flashlight** (the phone's torch on Android, a white screen elsewhere), **Calculator** (a pocket calculator, and a unit converter for length, mass, volume, speed and temperature), **Currency** (the European Central Bank's daily rates through Frankfurter, kept for offline use), **Picker** (choose one from a list you type, kept on the device) and **Coin toss**. Every tool works from the first day and pays nothing.
+- Pokégear: each tool has a helper Pokémon, which is flavour only: its sprite beside the tool, and one emoji when the tool is used. The helpers are Mareep, Flaaffy and Ampharos for the Flashlight; Porygon, Porygon2 and Porygon-Z for the Calculator; Meowth, Persian and Perrserker for Currency; Cleffa, Clefairy and Clefable for the Picker; Gimmighoul and Gholdengo for the Coin toss. Any owned one can help (the friendliest by default; Change helper chooses; one Pokémon may help several tools).
+- Pokégear: with no one to help, Ask a Ranger plays a Capture Styler: draw loops around the roaming loaner (2 to 4 by its rarity, faster if its Speed is high; slow with Reduce motion). It lends a hand to that tool as a loan, never joining your party, PC or Dex, until you own a Pokémon who can help.
+- Not yet: helpers that learn a tool's move (the Dex has no moves), and Android widgets for the flashlight and the coin toss.
+- Menus: a card's caption is optional, and the Pokégear, Settings and Help cards have none (their titles say enough).
+- Friends is switched off in the Me menu for now (the screens and the server side are kept; `FRIENDS_ENABLED` in `Me.kt` brings it back).
+
 ## 0.80.0
 
 - Launcher: battery saver (Launcher settings → Battery saver: Off, Automatic or Always). While it is on, the town's Pokémon stand still, the weather and the clock's seconds stop, nothing blurs or animates, and the launcher checks the clock, the battery and the forecast less often. Automatic turns it on at 20% or lower when not charging, or whenever the phone's own power saving is on. The clock widget says "Saver" beside the charge.
