@@ -66,6 +66,19 @@ enum class Sfx(val file: String) {
     CALM_BREAK_START("calm-start"),
     CALM_BREAK_END("calm-end"),
 
+    // Emotes, for the buddy's reactions.
+    DAMAGE("damage"),
+    SURPRISE("surprise"),
+    CONFUSION_STATUS("confusion-status"),
+    QUICK_ESCAPE("quick-escape"),
+    SHOCK("shock"),
+    URGENT_SHOCK("urgent-shock"),
+    CURIOUS("curious"),
+    CONFUSED("confused"),
+    SAD("sad"),
+    MAD("mad"),
+    GREAT_SHOCK("great-shock"),
+
     /** Notification sounds (the channel needs them as res/raw files, not through this player). */
     REMINDER("reminder"),
     TIMER_DONE("timer-done"),

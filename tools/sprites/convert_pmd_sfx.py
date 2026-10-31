@@ -4,7 +4,7 @@
 Usage: python3 -I tools/sprites/convert_pmd_sfx.py <folder with songNNN.mp3>
 
 The dump is 478 unlabelled songNNN.mp3 files (not in the repo; the owner has the zip). SOUNDS maps our name (the Sfx enum in
-composeApp, Cries.kt) to the song number: 301, 302, 303, 331, 200 to 204, 207, 332, 333, 337 and 342 were named by the owner, the rest were picked by their
+composeApp, Cries.kt) to the song number: 301, 302, 303, 331, 200 to 204, 207, 332, 333, 337, 342, 344, 356, 406, 421, 455, 457, 466, 468, 470, 471 and 473 were named by the owner, the rest were picked by their
 length and pitch contour and may need swapping after a listen. Each becomes a small mono Ogg Vorbis file, peak-normalised
 so the quiet ones are not lost. Needs ffmpeg and numpy.
 """
@@ -35,13 +35,25 @@ SOUNDS = {
     'habit-tick': 311,
     'focus-start': 414,
     'focus-end': 200,  # default success
-    'egg-get': 421,
+    'egg-get': 478,
     'level-up': 216,
     'rank-up': 201,  # super success
     'candy': 332,  # money
     'item-get': 203,  # got something good
     'unlock': 204,  # unlocked something
     'calm-start': 353,
+    # Emotes, for the buddy's reactions.
+    'damage': 344,
+    'surprise': 356,  # mild surprise
+    'confusion-status': 406,
+    'quick-escape': 421,
+    'shock': 455,
+    'urgent-shock': 457,
+    'curious': 466,  # curious / suspicion
+    'confused': 468,
+    'sad': 470,  # "oh." (the teardrop)
+    'mad': 471,
+    'great-shock': 473,
     'calm-end': 202,  # mellow success
     'reminder': 207,
     'timer-done': 207,
