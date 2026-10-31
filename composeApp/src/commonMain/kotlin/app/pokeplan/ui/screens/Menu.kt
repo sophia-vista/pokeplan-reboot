@@ -43,7 +43,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.ItemIcon
+import app.pokeplan.ui.theme.DialogueShape
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.dialogueBox
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
@@ -51,7 +53,7 @@ import app.pokeplan.ui.theme.focusRing
 /** One entry of a tab's menu: a real item icon, a title, a line of detail, and an optional count badge. */
 data class MenuEntry(val key: String, val icon: String, val title: String, val detail: String, val badge: Int = 0, val tint: Color = Pixel.Blue)
 
-private val menuShape = RoundedCornerShape(16.dp)
+private val menuShape = DialogueShape
 
 /** The menu of a tab: big cards, two to a row, like the start menu of the games. */
 @Composable
@@ -70,8 +72,7 @@ fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
 private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false, onClick: () -> Unit) {
     Box(
         modifier
-            .background(Pixel.Panel, menuShape)
-            .border(1.dp, Pixel.Border, menuShape)
+            .dialogueBox()
             .clip(menuShape)
             .focusRing(menuShape)
             .clickable(role = Role.Button, onClick = onClick)

@@ -186,15 +186,14 @@ fun PixelTheme(dark: Boolean = false, content: @Composable () -> Unit) {
 
 private val cardShape = RoundedCornerShape(Spacing.CardRadius)
 
-/** The basic card: white surface, 16 dp corners, a thin border, no shadow and no coloured edge. */
+/** The basic card of the app: a dialogue box (the game's blue frame around [Pixel.Panel]), with 16 dp of room inside. */
 @Composable
 fun TextBox(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Box(
         modifier
             .fillMaxWidth()
-            .background(Pixel.Panel, cardShape)
-            .border(BorderStroke(1.dp, Pixel.Border), cardShape)
-            .clip(cardShape)
+            .dialogueBox()
+            .clip(DialogueShape)
             .padding(Spacing.L),
     ) { content() }
 }

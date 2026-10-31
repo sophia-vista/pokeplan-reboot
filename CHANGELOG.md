@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.67.0
+
+- The whole app uses the game's dialogue box as its card: cards, list rows, menu cards and the Home region cards are drawn with a thin version of the launcher's frame (a pale hairline, a blue band, an inner line, rounded corners) around the usual surface, in the light and the dark theme. The dialogue font and the see-through black fill stay in the launcher, where the text is short; the app's long text keeps its readable fonts.
+
 ## 0.66.1
 
 - Launcher: the dialogue boxes are drawn like the game's menu boxes: a pale hairline, a thin blue band at the top and bottom that is thicker at the sides, a deep-blue line, rounded corners, and a see-through black inside so the town shows behind the words. The text in them is in the Pokémon dialogue font only, centred in its line, and every line starts the same distance in. Long names are cut with "..." and a mark the font lacks becomes a look-alike or "?".

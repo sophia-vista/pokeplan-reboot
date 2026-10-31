@@ -218,12 +218,11 @@ fun ListRow(
     highlight: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val shape = RoundedCornerShape(Spacing.CardRadius)
+    val shape = DialogueShape
     Row(
         modifier
             .fillMaxWidth()
-            .background(Pixel.Panel, shape)
-            .border(BorderStroke(1.dp, Pixel.Border), shape)
+            .dialogueBox()
             .clip(shape)
             .let {
                 when {

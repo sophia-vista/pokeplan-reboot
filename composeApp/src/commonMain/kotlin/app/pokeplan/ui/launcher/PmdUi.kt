@@ -39,7 +39,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import app.pokeplan.ui.theme.DialogueColors
 import app.pokeplan.ui.theme.Pixel
+import app.pokeplan.ui.theme.dialogueFrame
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -136,11 +138,11 @@ internal fun PmdText(text: String, pixel: Int, modifier: Modifier = Modifier, al
 
 internal object PmdPalette {
     /** The pale hairline on the outside of the frame. */
-    val Edge = Color(0xFFA8C0E0)
+    val Edge = DialogueColors.Edge
     /** The frame's main band. */
-    val Band = Color(0xFF6080F8)
+    val Band = DialogueColors.Band
     /** The one-pixel line between the band and the inside. */
-    val Deep = Color(0xFF4820F8)
+    val Deep = DialogueColors.Deep
     /** The inside: black, see-through, so the town shows behind the words. */
     val Fill = Color(0xA6000010)
     /** Behind a town while its tiles load. */
@@ -171,32 +173,7 @@ internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = P
 private const val TOP = 3
 private const val SIDE = 7
 
-/** A rectangle with stair-stepped (rounded) corners: [insets] is how far in each row from the corner starts, ending in 0. */
-private fun DrawScope.stairRect(p: Float, l: Float, t: Float, r: Float, b: Float, insets: IntArray): Path = Path().apply {
-    val n = insets.size
-    moveTo(l + insets[0] * p, t)
-    for (k in 0 until n) { lineTo(r - insets[k] * p, t + k * p); lineTo(r - insets[k] * p, t + (k + 1) * p) }
-    for (k in n - 1 downTo 0) { lineTo(r - insets[k] * p, b - (k + 1) * p); lineTo(r - insets[k] * p, b - k * p) }
-    for (k in 0 until n) { lineTo(l + insets[k] * p, b - k * p); lineTo(l + insets[k] * p, b - (k + 1) * p) }
-    for (k in n - 1 downTo 0) { lineTo(l + insets[k] * p, t + (k + 1) * p); lineTo(l + insets[k] * p, t + k * p) }
-    close()
-}
-
-private fun DrawScope.pmdFrame(pixel: Int, tone: PmdTone) {
-    val p = pixel.toFloat()
-    val w = size.width
-    val h = size.height
-    val outer = stairRect(p, 0f, 0f, w, h, intArrayOf(2, 1, 0))
-    val band = stairRect(p, p, p, w - p, h - p, intArrayOf(1, 0))
-    val deep = stairRect(p, 6 * p, 2 * p, w - 6 * p, h - 2 * p, intArrayOf(1, 0))
-    val fill = stairRect(p, 7 * p, 3 * p, w - 7 * p, h - 3 * p, intArrayOf(0))
-    // Each layer is a ring (the shape minus the next one in), so the translucent fill sits over the town, not over a coat of paint.
-    fun ring(color: Color, big: Path, small: Path) = drawPath(Path().apply { fillType = PathFillType.EvenOdd; addPath(big); addPath(small) }, color)
-    ring(tone.edge, outer, band)
-    ring(tone.band, band, deep)
-    ring(tone.deep, deep, fill)
-    drawPath(fill, PmdPalette.Fill)
-}
+private fun DrawScope.pmdFrame(pixel: Int, tone: PmdTone) = dialogueFrame(pixel.toFloat(), PmdPalette.Fill, sideBand = 5, topBand = 1, edge = tone.edge, band = tone.band, deep = tone.deep)
 
 /** One line of a dialogue menu: a touch target at least 48 dp tall with [text] in it, a small cursor in front when [selected]. */
 @OptIn(ExperimentalFoundationApi::class)

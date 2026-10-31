@@ -5,12 +5,15 @@ The rules the screens follow, so a change is made once. The tokens live in code 
 change as any token, component or rule it describes. Approved in the 0.64.0 design audit.
 
 ## 1. Two registers
-- **Utility** (the app: every screen under the four tabs): calm cards on the page background, rounded 16 dp, one thin
-  border, no shadow. Components: `TextBox`, `ListRow`, `PixelButton`, `MenuGrid`.
+- **Utility** (the app: every screen under the four tabs): cards drawn as dialogue boxes: `Pixel.Panel` inside a thin version of the
+  game's frame (`Modifier.dialogueBox()`: hairline, band 2 px at the sides and 1 at the top and bottom, a muted inner line, 2 dp art
+  pixels, 6 dp corners), no shadow, no padding added (the card's own 16 dp keeps content clear). Components: `TextBox`, `ListRow`,
+  `MenuGrid`, `PixelButton`.
 - **World** (the Android launcher home only): the game's dialogue box: a see-through black panel (`PmdPalette.Fill`) in a rounded frame of
   a pale hairline (`#A8C0E0`), a blue band (`#6080F8`, 1 px at the top and bottom, 5 px at the sides) and a deep line (`#4820F8`), drawn at
   the town's pixel scale in the dialogue font. Components: `PmdBox`, `PmdMenuLine`, `PmdButton`, `PmdRule`.
-- A screen belongs to one register. Do not put a dialogue box in the app or a card on the launcher home.
+- Both registers share one frame (`theme/DialogueFrame.kt`). The world register adds the see-through black fill, the thick side band and the
+  dialogue font; the utility register keeps the readable fonts and the page colours. A screen belongs to one register.
 
 ## 2. Colour (`Pixel`)
 | Token | Light | Dark | Use |
@@ -40,7 +43,7 @@ change as any token, component or rule it describes. Approved in the 0.64.0 desi
 - World register spacing: text starts 9 art pixels inside the fill (3 for the box's own inset, 6 for the line, where the cursor goes); rules and buttons run to the 3.
 
 ## 5. Shape and elevation
-- Cards 16 dp radius (`Spacing.CardRadius`), controls 12 dp, pills fully round. No shadows. World register: pixel notches, no radius.
+- Dialogue boxes `DialogueShape` (6 dp, matching the frame's stair-stepped corners); header bands and other surfaces 16 dp (`Spacing.CardRadius`), controls 12 dp, pills fully round. No shadows.
 
 ## 6. Components and states
 Every interactive component has: default, pressed, focused, disabled.

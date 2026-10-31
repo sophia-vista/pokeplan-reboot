@@ -62,6 +62,9 @@ import app.pokeplan.ui.Place
 import app.pokeplan.ui.theme.ExpBar
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
+import androidx.compose.ui.geometry.Offset
+import app.pokeplan.ui.theme.dialogueBox
+import app.pokeplan.ui.theme.DialogueShape
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.RankBadge
@@ -127,13 +130,13 @@ private fun RegionCard(
     name: String, icon: String, look: RegionLook, darkness: Float, lead: OwnedPokemon?, leadLine: String, status: String,
     still: Boolean, onOpen: () -> Unit, step: @Composable () -> Unit,
 ) {
-    val shape = RoundedCornerShape(Spacing.CardRadius)
+    val shape = DialogueShape
     Column(
-        Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)
-            .drawBehind { drawRect(look.accent, size = Size(4.dp.toPx(), size.height)) },
+        Modifier.fillMaxWidth().dialogueBox().clip(shape)
+            .drawBehind { drawRect(look.accent, Offset(8.dp.toPx(), 6.dp.toPx()), Size(3.dp.toPx(), size.height - 12.dp.toPx())) },
     ) {
         Row(
-            Modifier.fillMaxWidth().clickable(onClickLabel = "Open $name", role = Role.Button, onClick = onOpen).padding(Spacing.M),
+            Modifier.fillMaxWidth().clickable(onClickLabel = "Open $name", role = Role.Button, onClick = onOpen).padding(horizontal = Spacing.L, vertical = Spacing.M),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             val window = RoundedCornerShape(Spacing.M)
@@ -149,8 +152,8 @@ private fun RegionCard(
             }
             Text("›", style = MaterialTheme.typography.titleLarge, color = Pixel.InkSoft)
         }
-        Box(Modifier.fillMaxWidth().height(1.dp).background(Pixel.Border))
-        Box(Modifier.fillMaxWidth().padding(Spacing.M)) { step() }
+        Box(Modifier.fillMaxWidth().padding(horizontal = Spacing.S).height(1.dp).background(Pixel.Border))
+        Box(Modifier.fillMaxWidth().padding(horizontal = Spacing.L, vertical = Spacing.M)) { step() }
     }
 }
 
