@@ -29,6 +29,12 @@ data class DungeonDef(
     val wild: List<WildEntry>,
     val milestones: Map<Int, MilestoneReward>,
     val canon: Boolean = true,
+    /** The story chapter that must be open to enter. */
+    val chapter: Int = 1,
+    /** The last floor of the Guardian's dungeon: clearing it completes the story once. */
+    val guardian: Boolean = false,
+    /** Opens only after the story is complete (a Distortion Dungeon). */
+    val postStory: Boolean = false,
 )
 
 /** The first three dungeons (the MVP's world map): Tiny Woods, Thunderwave Cave and Mt. Steel, from Explorers of Sky. *(tune)* */
@@ -51,6 +57,42 @@ object Dungeons {
             baseFloorSeconds = 4320, needs = ExplorerRank.BRONZE,
             wild = listOf(WildEntry(74, 5), WildEntry(95, 3, fromFloor = 3), WildEntry(66, 4), WildEntry(227, 1, fromFloor = 7), WildEntry(81, 3), WildEntry(208, 1, fromFloor = 8)),
             milestones = mapOf(5 to MilestoneReward(Items.berry("spicy"), 2), 10 to MilestoneReward(Items.RARE_CANDY, 3, poke = 400)),
+        ),
+        DungeonDef(
+            "waterfall-cave", "Waterfall Cave", WorldRegion.AQUATIC, floors = 12, favored = setOf(PokemonType.WATER, PokemonType.ICE, PokemonType.GROUND),
+            baseFloorSeconds = 5400, needs = ExplorerRank.SILVER, chapter = 3, canon = true,
+            wild = listOf(WildEntry(54, 5), WildEntry(60, 5), WildEntry(118, 4), WildEntry(129, 3), WildEntry(194, 4, fromFloor = 3), WildEntry(131, 1, fromFloor = 9)),
+            milestones = mapOf(6 to MilestoneReward(Items.berry("sour"), 3), 12 to MilestoneReward(Items.RARE_CANDY, 3, poke = 700)),
+        ),
+        DungeonDef(
+            "glacier-palace", "Glacier Palace", WorldRegion.FROZEN, floors = 14, favored = setOf(PokemonType.ICE, PokemonType.WATER, PokemonType.STEEL),
+            baseFloorSeconds = 7200, needs = ExplorerRank.GOLD, chapter = 4, canon = false,
+            wild = listOf(WildEntry(220, 5), WildEntry(361, 5), WildEntry(215, 3, fromFloor = 4), WildEntry(225, 3), WildEntry(363, 4), WildEntry(362, 1, fromFloor = 10)),
+            milestones = mapOf(7 to MilestoneReward(Items.berry("bitter"), 3), 14 to MilestoneReward(Items.RARE_CANDY, 4, poke = 1_000)),
+        ),
+        DungeonDef(
+            "ancient-ruins", "Ancient Ruins", WorldRegion.ANCIENT, floors = 16, favored = setOf(PokemonType.ROCK, PokemonType.PSYCHIC, PokemonType.GROUND),
+            baseFloorSeconds = 9000, needs = ExplorerRank.PLATINUM, chapter = 5, canon = false,
+            wild = listOf(WildEntry(177, 5), WildEntry(343, 5), WildEntry(63, 3, fromFloor = 3), WildEntry(347, 3, fromFloor = 5), WildEntry(345, 3, fromFloor = 5), WildEntry(138, 2, fromFloor = 7), WildEntry(140, 2, fromFloor = 7), WildEntry(246, 1, fromFloor = 12)),
+            milestones = mapOf(8 to MilestoneReward(Items.berry("dry"), 4), 16 to MilestoneReward(Items.RARE_CANDY, 5, poke = 1_500)),
+        ),
+        DungeonDef(
+            "sky-tower", "Sky Tower", WorldRegion.SKY, floors = 18, favored = setOf(PokemonType.FLYING, PokemonType.DRAGON, PokemonType.PSYCHIC),
+            baseFloorSeconds = 10800, needs = ExplorerRank.PLATINUM, chapter = 5, canon = true,
+            wild = listOf(WildEntry(276, 5), WildEntry(278, 5), WildEntry(333, 4), WildEntry(371, 2, fromFloor = 6), WildEntry(334, 1, fromFloor = 12), WildEntry(147, 1, fromFloor = 14)),
+            milestones = mapOf(9 to MilestoneReward(Items.berry("spicy"), 4), 18 to MilestoneReward(Items.RARE_CANDY, 6, poke = 2_000)),
+        ),
+        DungeonDef(
+            "temporal-tower", "Temporal Tower", WorldRegion.OTHERWORLDLY, floors = 20, favored = setOf(PokemonType.PSYCHIC, PokemonType.GHOST, PokemonType.DRAGON, PokemonType.STEEL),
+            baseFloorSeconds = 14400, needs = ExplorerRank.DIAMOND, chapter = 6, canon = true, guardian = true,
+            wild = listOf(WildEntry(92, 5), WildEntry(355, 4), WildEntry(353, 4), WildEntry(200, 3, fromFloor = 5), WildEntry(374, 2, fromFloor = 8), WildEntry(436, 3, fromFloor = 8)),
+            milestones = mapOf(10 to MilestoneReward(Items.berry("sweet"), 5), 20 to MilestoneReward(Items.RARE_CANDY, 8, poke = 4_000)),
+        ),
+        DungeonDef(
+            "distortion-rift", "Distortion Rift", WorldRegion.OTHERWORLDLY, floors = 25, favored = setOf(PokemonType.PSYCHIC, PokemonType.GHOST, PokemonType.DARK, PokemonType.DRAGON),
+            baseFloorSeconds = 18000, needs = ExplorerRank.DIAMOND, chapter = 6, canon = false, postStory = true,
+            wild = listOf(WildEntry(147, 4), WildEntry(246, 4), WildEntry(374, 4), WildEntry(371, 3), WildEntry(443, 3, fromFloor = 8), WildEntry(633, 3, fromFloor = 8)),
+            milestones = mapOf(13 to MilestoneReward(Items.berry("bitter"), 5), 25 to MilestoneReward(Items.RARE_CANDY, 10, poke = 8_000)),
         ),
     )
 

@@ -17,6 +17,8 @@ sealed interface WorldEvent {
     data class Milestone(val dungeonId: String, val floor: Int, val reward: MilestoneReward) : WorldEvent
     data class Cleared(val dungeonId: String) : WorldEvent
     data class MissionDone(val missionId: String) : WorldEvent
+    /** The Guardian was faced: the story is complete. */
+    data object GuardianFaced : WorldEvent
 }
 
 /** What settling did: the new data and, per team, the floors climbed and what happened. */
@@ -56,10 +58,11 @@ object WorldSim {
         }
 
     /** How long a floor takes a team of [power], in milliseconds: faster as the power grows, never under a quarter of the base. */
-    fun floorMillis(dungeon: DungeonDef, power: Double): Long {
+    fun floorMillis(dungeon: DungeonDef, power: Double, mastery: Boolean = false): Long {
         val base = dungeon.baseFloorSeconds * 1000L
         val factor = 1.0 + power / 100.0
-        return maxOf(base / 4, (base / factor).toLong())
+        val millis = maxOf(base / 4, (base / factor).toLong())
+        return if (mastery) millis * 9 / 10 else millis
     }
 
     /**
@@ -74,7 +77,7 @@ object WorldSim {
             val dungeon = Dungeons.byId(trip.dungeonId) ?: continue
             val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
             if (members.isEmpty()) continue
-            val per = floorMillis(dungeon, power(members, dungeon))
+            val per = floorMillis(dungeon, power(members, dungeon), data.guardianDone)
             val until = min(now, trip.settledTo + MAX_AWAY_MILLIS)
             val floors = ((until - trip.settledTo) / per).toInt()
             if (floors <= 0) continue
@@ -94,8 +97,9 @@ object WorldSim {
         val floor = index % dungeon.floors + 1
         val random = Random(seed(teamId, trip, index))
         var d = data
+        val brewed = at < d.brewUntil
         events += WorldEvent.FloorCleared(dungeon.id, floor)
-        d = d.copy(xp = d.xp + (XP_BASE + floor) * (10 + d.facilityLevel(Facility.LAB)) / 10, deepest = d.deepest + (dungeon.id to maxOf(floor, d.deepest[dungeon.id] ?: 0)))
+        d = d.copy(xp = d.xp + (XP_BASE + floor) * (10 + d.facilityLevel(Facility.LAB) + if (brewed) 3 else 0) / 10, deepest = d.deepest + (dungeon.id to maxOf(floor, d.deepest[dungeon.id] ?: 0)))
         var berries = 0
         if (random.nextInt(100) < BERRY_PERCENT + d.skillLevel(WorldSkill.FORAGING)) {
             berries = 1
@@ -107,12 +111,12 @@ object WorldSim {
         val poke = (5 + floor * 2 + random.nextInt(5)) * (100 + 2 * d.skillLevel(WorldSkill.EXPLORATION)) / 100
         events += WorldEvent.Poke(poke)
         d = d.copy(poke = d.poke + poke)
-        if (random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP)) {
+        if (random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP) + if (brewed) 5 else 0) {
             val tier = if (floor >= dungeon.floors - 1) 3 else if (floor >= dungeon.floors / 2) 2 else 1
             events += WorldEvent.Treasure(tier)
             d = d.copy(treasure = d.treasure + (tier to (d.treasure[tier] ?: 0) + 1))
         }
-        findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * d.skillLevel(WorldSkill.SCOUTING))?.let { species ->
+        findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * d.skillLevel(WorldSkill.SCOUTING) + if (brewed) 10 else 0)?.let { species ->
             events += WorldEvent.Found(species, dungeon.id, floor)
             d = d.copy(finds = d.finds + Find(species, dungeon.id, floor, at), discovered = d.discovered + species).withSkillXp(WorldSkill.SCOUTING, 20)
         }
@@ -128,6 +132,10 @@ object WorldSim {
         }
         d = d.withSkillXp(WorldSkill.EXPLORATION, 1).withSkillXp(WorldSkill.SCOUTING, 1).withSkillXp(WorldSkill.FORAGING, berries)
         d = Missions.advance(d, dungeon.id, floor, berries, at, events)
+        if (floor == dungeon.floors && dungeon.guardian && !d.guardianDone) {
+            events += WorldEvent.GuardianFaced
+            d = d.copy(guardianDone = true)
+        }
         if (floor == dungeon.floors) {
             events += WorldEvent.Cleared(dungeon.id)
             d = d.copy(clears = d.clears + (dungeon.id to (d.clears[dungeon.id] ?: 0) + 1))

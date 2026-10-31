@@ -7,46 +7,88 @@ Nothing here pays through the server reward engine; items go to the Bag, Poké s
 
 | Dungeon | Team | Floors/h | Cleared/day | XP/h | Poké/h | Berries/h | Boxes/h | Finds/day |
 |---|---|---|---|---|---|---|---|---|
-| Tiny Woods (5 fl) | 2 × Lv 5 | 2.2 | 10.5 | 15.4 | 28.6 | 1.5 | 0.15 | 1.71 |
-| Tiny Woods (5 fl) | 2 × Lv 20 | 2.8 | 13.4 | 19.6 | 36.6 | 1.8 | 0.19 | 2.00 |
-| Tiny Woods (5 fl) | 4 × Lv 20 | 3.6 | 17.3 | 25.2 | 47.0 | 2.4 | 0.26 | 3.00 |
-| Tiny Woods (5 fl) | 4 × Lv 50 | 6.0 | 28.8 | 42.0 | 78.3 | 4.1 | 0.40 | 3.86 |
-| Thunderwave Cave (8 fl) | 2 × Lv 5 | 1.4 | 4.2 | 11.8 | 22.2 | 1.0 | 0.05 | 1.43 |
-| Thunderwave Cave (8 fl) | 2 × Lv 20 | 1.8 | 5.5 | 15.6 | 29.3 | 1.3 | 0.09 | 2.14 |
-| Thunderwave Cave (8 fl) | 4 × Lv 20 | 2.4 | 7.3 | 20.8 | 38.9 | 1.8 | 0.10 | 3.29 |
-| Thunderwave Cave (8 fl) | 4 × Lv 50 | 4.3 | 12.8 | 36.1 | 67.6 | 3.1 | 0.27 | 4.57 |
-| Mt. Steel (10 fl) | 2 × Lv 5 | 0.9 | 2.2 | 8.7 | 16.6 | 0.7 | 0.08 | 0.14 |
-| Mt. Steel (10 fl) | 2 × Lv 20 | 1.2 | 2.9 | 11.3 | 21.7 | 0.9 | 0.08 | 0.43 |
-| Mt. Steel (10 fl) | 4 × Lv 20 | 1.6 | 3.8 | 14.8 | 28.3 | 1.1 | 0.13 | 1.00 |
-| Mt. Steel (10 fl) | 4 × Lv 50 | 2.7 | 6.4 | 25.3 | 48.3 | 1.9 | 0.20 | 2.14 |
+| Tiny Woods (5 fl) | 2 × Lv 5 | 2.4 | 11.7 | 17.1 | 31.9 | 1.6 | 0.17 | 2.57 |
+| Tiny Woods (5 fl) | 2 × Lv 20 | 3.1 | 14.9 | 21.7 | 41.0 | 2.1 | 0.21 | 3.00 |
+| Tiny Woods (5 fl) | 4 × Lv 20 | 4.0 | 19.2 | 28.0 | 53.3 | 2.7 | 0.28 | 4.00 |
+| Tiny Woods (5 fl) | 4 × Lv 50 | 6.7 | 32.0 | 46.7 | 90.1 | 4.8 | 0.46 | 6.57 |
+| Thunderwave Cave (8 fl) | 2 × Lv 5 | 1.6 | 4.7 | 13.2 | 24.7 | 1.1 | 0.08 | 1.71 |
+| Thunderwave Cave (8 fl) | 2 × Lv 20 | 2.1 | 6.2 | 17.4 | 32.9 | 1.5 | 0.09 | 2.29 |
+| Thunderwave Cave (8 fl) | 4 × Lv 20 | 2.7 | 8.2 | 23.1 | 43.8 | 2.0 | 0.14 | 2.86 |
+| Thunderwave Cave (8 fl) | 4 × Lv 50 | 4.7 | 14.2 | 40.1 | 77.4 | 3.5 | 0.28 | 5.14 |
+| Mt. Steel (10 fl) | 2 × Lv 5 | 1.0 | 2.5 | 9.7 | 18.5 | 0.7 | 0.08 | 0.29 |
+| Mt. Steel (10 fl) | 2 × Lv 20 | 1.3 | 3.2 | 12.6 | 24.2 | 1.0 | 0.10 | 0.43 |
+| Mt. Steel (10 fl) | 4 × Lv 20 | 1.7 | 4.2 | 16.5 | 31.7 | 1.3 | 0.14 | 0.71 |
+| Mt. Steel (10 fl) | 4 × Lv 50 | 3.0 | 7.1 | 28.0 | 54.4 | 2.1 | 0.21 | 1.57 |
+| Waterfall Cave (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.5 | 16.4 | 0.6 | 0.09 | 0.57 |
+| Waterfall Cave (12 fl) | 2 × Lv 20 | 1.1 | 2.1 | 11.2 | 21.5 | 0.8 | 0.11 | 0.86 |
+| Waterfall Cave (12 fl) | 4 × Lv 20 | 1.4 | 2.8 | 14.5 | 27.9 | 1.0 | 0.13 | 1.43 |
+| Waterfall Cave (12 fl) | 4 × Lv 50 | 2.4 | 4.7 | 24.8 | 48.4 | 1.8 | 0.21 | 2.29 |
+| Glacier Palace (14 fl) | 2 × Lv 5 | 0.6 | 1.0 | 6.9 | 13.1 | 0.4 | 0.04 | 0.57 |
+| Glacier Palace (14 fl) | 2 × Lv 20 | 0.8 | 1.3 | 8.8 | 16.8 | 0.5 | 0.04 | 0.57 |
+| Glacier Palace (14 fl) | 4 × Lv 20 | 1.0 | 1.7 | 11.5 | 22.1 | 0.7 | 0.07 | 0.86 |
+| Glacier Palace (14 fl) | 4 × Lv 50 | 1.7 | 2.9 | 19.2 | 37.2 | 1.2 | 0.13 | 1.14 |
+| Ancient Ruins (16 fl) | 2 × Lv 5 | 0.5 | 0.7 | 6.0 | 11.6 | 0.4 | 0.05 | 0.29 |
+| Ancient Ruins (16 fl) | 2 × Lv 20 | 0.6 | 1.0 | 7.8 | 14.9 | 0.5 | 0.05 | 0.43 |
+| Ancient Ruins (16 fl) | 4 × Lv 20 | 0.8 | 1.3 | 10.3 | 19.7 | 0.6 | 0.07 | 0.43 |
+| Ancient Ruins (16 fl) | 4 × Lv 50 | 1.4 | 2.1 | 17.6 | 34.0 | 1.1 | 0.08 | 1.00 |
+| Sky Tower (18 fl) | 2 × Lv 5 | 0.4 | 0.5 | 5.3 | 10.1 | 0.3 | 0.05 | 0.43 |
+| Sky Tower (18 fl) | 2 × Lv 20 | 0.5 | 0.7 | 6.9 | 13.1 | 0.4 | 0.05 | 1.14 |
+| Sky Tower (18 fl) | 4 × Lv 20 | 0.7 | 0.9 | 8.8 | 17.0 | 0.5 | 0.06 | 1.29 |
+| Sky Tower (18 fl) | 4 × Lv 50 | 1.1 | 1.5 | 14.7 | 28.6 | 0.8 | 0.07 | 1.57 |
+| Temporal Tower (20 fl) | 2 × Lv 5 | 0.3 | 0.4 | 4.1 | 7.8 | 0.2 | 0.01 | 0.29 |
+| Temporal Tower (20 fl) | 2 × Lv 20 | 0.4 | 0.5 | 5.4 | 10.3 | 0.3 | 0.01 | 0.29 |
+| Temporal Tower (20 fl) | 4 × Lv 20 | 0.5 | 0.6 | 7.1 | 13.5 | 0.3 | 0.02 | 0.43 |
+| Temporal Tower (20 fl) | 4 × Lv 50 | 0.8 | 1.0 | 12.1 | 23.4 | 0.6 | 0.05 | 0.71 |
+| Distortion Rift (25 fl) | 2 × Lv 5 | 0.2 | 0.2 | 3.7 | 7.1 | 0.2 | 0.02 | 0.14 |
+| Distortion Rift (25 fl) | 2 × Lv 20 | 0.3 | 0.3 | 5.1 | 9.9 | 0.2 | 0.02 | 0.14 |
+| Distortion Rift (25 fl) | 4 × Lv 20 | 0.4 | 0.4 | 6.4 | 12.4 | 0.3 | 0.02 | 0.29 |
+| Distortion Rift (25 fl) | 4 × Lv 50 | 0.7 | 0.6 | 10.9 | 21.2 | 0.5 | 0.03 | 0.57 |
 
 ## One team over a career (best open dungeon; the 12 h away cap applies per open)
 
 | Opens | Team | Span | XP | Rank | Poké | Finds waiting | Rare Candies | Boxes |
 |---|---|---|---|---|---|---|---|---|
-| 1/day | 2 × Lv 10 | 30 d | 3520 | Silver | 7362 | 15 | 6 | 22 |
+| 1/day | 2 × Lv 10 | 30 d | 3179 | Silver | 7501 | 8 | 9 | 22 |
 |  | first reached |  | Normal d1, Bronze d2, Silver d13 |  |  |  |  |  |
-| 1/day | 2 × Lv 10 | 120 d | 13780 | Gold | 26851 | 46 | 6 | 102 |
-|  | first reached |  | Normal d1, Bronze d2, Silver d13, Gold d52 |  |  |  |  |  |
-| 1/day | 4 × Lv 30 | 30 d | 6687 | Gold | 13180 | 19 | 4 | 54 |
-|  | first reached |  | Bronze d1, Silver d7, Gold d27 |  |  |  |  |  |
-| 1/day | 4 × Lv 30 | 120 d | 26352 | Platinum | 50411 | 85 | 4 | 159 |
-|  | first reached |  | Bronze d1, Silver d7, Gold d27, Platinum d91 |  |  |  |  |  |
-| 2/day | 2 × Lv 10 | 30 d | 6940 | Gold | 13883 | 20 | 6 | 51 |
-|  | first reached |  | Bronze d1, Silver d7, Gold d26 |  |  |  |  |  |
-| 2/day | 2 × Lv 10 | 120 d | 27460 | Platinum | 52751 | 90 | 6 | 164 |
-|  | first reached |  | Bronze d1, Silver d7, Gold d26, Platinum d88 |  |  |  |  |  |
-| 2/day | 4 × Lv 30 | 30 d | 13242 | Gold | 25523 | 40 | 4 | 81 |
-|  | first reached |  | Bronze d1, Silver d4, Gold d14 |  |  |  |  |  |
-| 2/day | 4 × Lv 30 | 120 d | 52572 | Platinum | 99979 | 153 | 4 | 332 |
-|  | first reached |  | Bronze d1, Silver d4, Gold d14, Platinum d46 |  |  |  |  |  |
-| 4/day | 2 × Lv 10 | 30 d | 7024 | Gold | 14032 | 19 | 6 | 52 |
-|  | first reached |  | Bronze d1, Silver d7, Gold d26 |  |  |  |  |  |
-| 4/day | 2 × Lv 10 | 120 d | 27886 | Platinum | 53551 | 90 | 6 | 165 |
-|  | first reached |  | Bronze d1, Silver d7, Gold d26, Platinum d86 |  |  |  |  |  |
-| 4/day | 4 × Lv 30 | 30 d | 13315 | Gold | 25878 | 40 | 6 | 81 |
-|  | first reached |  | Bronze d1, Silver d4, Gold d14 |  |  |  |  |  |
-| 4/day | 4 × Lv 30 | 120 d | 52983 | Platinum | 100958 | 156 | 6 | 336 |
-|  | first reached |  | Bronze d1, Silver d4, Gold d14, Platinum d46 |  |  |  |  |  |
+| 1/day | 2 × Lv 10 | 120 d | 10844 | Gold | 24012 | 35 | 13 | 71 |
+|  | first reached |  | Normal d1, Bronze d2, Silver d13, Gold d60 |  |  |  |  |  |
+| 1/day | 4 × Lv 30 | 30 d | 5993 | Silver | 12906 | 34 | 7 | 48 |
+|  | first reached |  | Bronze d1, Silver d7 |  |  |  |  |  |
+| 1/day | 4 × Lv 30 | 120 d | 19483 | Gold | 42031 | 99 | 11 | 122 |
+|  | first reached |  | Bronze d1, Silver d7, Gold d31 |  |  |  |  |  |
+| 2/day | 2 × Lv 10 | 30 d | 6014 | Gold | 13164 | 21 | 9 | 48 |
+|  | first reached |  | Bronze d1, Silver d7, Gold d30 |  |  |  |  |  |
+| 2/day | 2 × Lv 10 | 120 d | 20309 | Platinum | 46147 | 80 | 19 | 127 |
+|  | first reached |  | Bronze d1, Silver d7, Gold d30, Platinum d117 |  |  |  |  |  |
+| 2/day | 4 × Lv 30 | 30 d | 10529 | Gold | 23179 | 61 | 11 | 65 |
+|  | first reached |  | Bronze d1, Silver d4, Gold d16 |  |  |  |  |  |
+| 2/day | 4 × Lv 30 | 120 d | 32569 | Platinum | 72864 | 173 | 17 | 184 |
+|  | first reached |  | Bronze d1, Silver d4, Gold d16, Platinum d62 |  |  |  |  |  |
+| 4/day | 2 × Lv 10 | 30 d | 6288 | Gold | 14716 | 35 | 13 | 47 |
+|  | first reached |  | Bronze d1, Silver d7, Gold d29 |  |  |  |  |  |
+| 4/day | 2 × Lv 10 | 120 d | 20907 | Platinum | 47510 | 106 | 19 | 110 |
+|  | first reached |  | Bronze d1, Silver d7, Gold d29, Platinum d113 |  |  |  |  |  |
+| 4/day | 4 × Lv 30 | 30 d | 10619 | Gold | 23535 | 34 | 13 | 66 |
+|  | first reached |  | Bronze d1, Silver d4, Gold d15 |  |  |  |  |  |
+| 4/day | 4 × Lv 30 | 120 d | 34003 | Platinum | 76317 | 134 | 19 | 171 |
+|  | first reached |  | Bronze d1, Silver d4, Gold d15, Platinum d61 |  |  |  |  |  |
+
+## A year of play (one team; missions, research, facilities, Café and shop played)
+
+Rare Candies: **free** is milestones, jobs and research; **boxes** is the expected value of the treasure boxes opened (silver 0.15, gold 0.35 each); **bought** is the shop.
+
+| Player | Rank | XP | Species found | Free candies | Box candies | Bought | Poké earned | Facilities | Shop | Jobs claimed | Skills (E/F/S) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1/day, 2 × Lv 10 | Diamond | 90184 | 39 | 34 | 41 | 10 | 174744 | 121000 | 47500 | 218 | 10/8/10 |
+| 2/day, 4 × Lv 30 | Diamond | 258607 | 49 | 82 | 134 | 33 | 484342 | 121000 | 346500 | 474 | 10/10/10 |
+| 2/day, 4 × Lv 30, Café | Diamond | 295962 | 49 | 88 | 164 | 36 | 542222 | 121000 | 405000 | 584 | 10/10/10 |
+| 4/day, 4 × Lv 30, Café | Diamond | 276663 | 48 | 85 | 124 | 34 | 497972 | 121000 | 365500 | 566 | 10/10/10 |
+
+### When things happen (day number)
+
+- **1/day, 2 × Lv 10:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d2, Rank Bronze d4, Story chapter 2 d4, Tiny Woods cleared d5, Mt. Steel cleared d7, Rank Silver d8, Story chapter 3 d8, Waterfall Cave cleared d11, Rank Gold d24, Story chapter 4 d24, Glacier Palace cleared d26, Rank Platinum d80, Story chapter 5 d80, Sky Tower cleared d85, Ancient Ruins cleared d116, Camp maxed d144, Rank Diamond d241, Story chapter 6 d241, Research Lab maxed d241
+- **2/day, 4 × Lv 30:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Rank Bronze d2, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 3 d3, Mt. Steel cleared d3, Waterfall Cave cleared d4, Rank Gold d8, Story chapter 4 d8, Glacier Palace cleared d9, Rank Platinum d28, Story chapter 5 d28, Ancient Ruins cleared d31, Sky Tower cleared d32, Camp maxed d47, Rank Diamond d80, Story chapter 6 d80, Guardian faced d82, Temporal Tower cleared d82, Research Lab maxed d82, Distortion Rift cleared d84
+- **2/day, 4 × Lv 30, Café:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Rank Bronze d2, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 3 d3, Mt. Steel cleared d3, Waterfall Cave cleared d4, Rank Gold d8, Story chapter 4 d8, Glacier Palace cleared d9, Rank Platinum d27, Story chapter 5 d27, Ancient Ruins cleared d30, Sky Tower cleared d31, Camp maxed d48, Rank Diamond d76, Story chapter 6 d76, Guardian faced d79, Temporal Tower cleared d79, Research Lab maxed d79, Distortion Rift cleared d87
+- **4/day, 4 × Lv 30, Café:** Rank Bronze d1, Story chapter 2 d1, Tiny Woods cleared d1, Thunderwave Cave cleared d1, Rank Silver d2, Story chapter 3 d2, Mt. Steel cleared d2, Waterfall Cave cleared d3, Rank Gold d7, Story chapter 4 d7, Glacier Palace cleared d8, Rank Platinum d26, Story chapter 5 d26, Ancient Ruins cleared d28, Sky Tower cleared d29, Camp maxed d45, Rank Diamond d74, Story chapter 6 d74, Guardian faced d76, Temporal Tower cleared d76, Distortion Rift cleared d78, Research Lab maxed d78
 
 Rank XP: Normal 0, Bronze 300, Silver 1500, Gold 6000, Platinum 20000, Diamond 60000.
