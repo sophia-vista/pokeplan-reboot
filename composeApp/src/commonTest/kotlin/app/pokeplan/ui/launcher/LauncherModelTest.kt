@@ -251,3 +251,29 @@ class LauncherHostedWidgetTest {
         assertEquals(listOf("15"), prefs.removeWidget(first).widgetsIn(WidgetArea.TODAY).filter { it.kind == WidgetKind.ANDROID }.map { it.arg })
     }
 }
+
+class LauncherEditWidgetsTest {
+    @Test
+    fun widgetsResizeAndKeepTheirSizeThroughTheRoundTrip() {
+        val pinned = WidgetSlot(WidgetArea.HOME_BOTTOM, WidgetKind.PINNED)
+        val prefs = LauncherPrefs().resizeWidget(pinned, WidgetSize.SMALL)
+        assertEquals(WidgetSize.SMALL, prefs.widgets.first { it.kind == WidgetKind.PINNED }.size)
+        assertEquals(prefs, LauncherPrefs.decode(prefs.encode()))
+        assertEquals(WidgetSize.LARGE, WidgetSize.SMALL.next().next())
+        assertEquals(prefs, prefs.addWidget(pinned))
+        assertEquals(0, prefs.removeWidget(pinned).widgets.count { it.kind == WidgetKind.PINNED })
+    }
+
+    @Test
+    fun dragPastTheEndMovesAWidgetToTheOtherPartOfTheHomePage() {
+        var prefs = LauncherPrefs()
+        val status = WidgetSlot(WidgetArea.HOME_TOP, WidgetKind.STATUS)
+        prefs = prefs.moveWidget(status, 1)
+        assertEquals(WidgetArea.HOME_BOTTOM, prefs.widgets.first { it.kind == WidgetKind.STATUS }.area)
+        assertEquals(WidgetKind.STATUS, prefs.widgetsIn(WidgetArea.HOME_BOTTOM).first().kind)
+        prefs = prefs.moveWidget(prefs.widgets.first { it.kind == WidgetKind.STATUS }, -1)
+        assertEquals(listOf(WidgetKind.CLOCK, WidgetKind.STATUS), prefs.widgetsIn(WidgetArea.HOME_TOP).map { it.kind })
+        val calendar = WidgetSlot(WidgetArea.TODAY, WidgetKind.CALENDAR)
+        assertEquals(prefs, prefs.moveWidget(calendar, -1))
+    }
+}

@@ -14,11 +14,21 @@ enum class WidgetKind(val label: String) {
     CLOCK("Date and time"), STATUS("Companion"), NAV("Shortcuts"), PINNED("Favorites"), OFTEN("Often used"), FOLDER("Folder"),
     ACTIONS("App buttons"), CALENDAR("Calendar"), AGENDA("Agenda and tasks"), FORECAST("Forecast"),
     /** A widget from another app, hosted by the launcher; the slot's argument is its Android widget id. */
-    ANDROID("Android widget"),
+    ANDROID("Android widget");
+
+    /** Whether the widget has sizes: the apps widgets show 1, 2 or all rows, the calendar one week or the month, the agenda 3, 6 or all items, the forecast 0, 3 or 4 days, an Android widget its height times 1, 1.5 or 2. */
+    val resizable: Boolean get() = this in setOf(PINNED, OFTEN, FOLDER, CALENDAR, AGENDA, FORECAST, ANDROID)
 }
 
-/** One widget on a page: its [kind], in an [area], with a folder's name as [arg] for a folder widget. The order of the slots is the order on screen. */
-data class WidgetSlot(val area: WidgetArea, val kind: WidgetKind, val arg: String = "") {
+/** How much of itself a widget shows: a few rows, more, or everything. What that means depends on the widget (see [WidgetKind.resizable]). */
+enum class WidgetSize(val label: String) { SMALL("Small"), MEDIUM("Medium"), LARGE("Large");
+    fun next() = entries[(ordinal + 1) % entries.size]
+}
+
+/** One widget on a page: its [kind], in an [area], with a folder's name as [arg] for a folder widget, shown at a [size]. The order of the slots is the order on screen. */
+data class WidgetSlot(val area: WidgetArea, val kind: WidgetKind, val arg: String = "", val size: WidgetSize = WidgetSize.LARGE) {
+    /** The same widget whatever its size: the identity of a slot. */
+    fun sameAs(o: WidgetSlot) = area == o.area && kind == o.kind && arg == o.arg
     /** What to call it: a folder widget by its folder. */
     val title: String get() = if (kind == WidgetKind.FOLDER) arg else kind.label
 }
@@ -157,21 +167,37 @@ data class LauncherPrefs(
     /** Adds a widget at the end of its area; a folder widget needs an existing folder, and no widget is added twice. */
     fun addWidget(slot: WidgetSlot): LauncherPrefs {
         if (slot.kind == WidgetKind.FOLDER && folders.none { it.name == slot.arg }) return this
-        if (widgets.contains(slot)) return this
+        if (widgets.any { it.sameAs(slot) }) return this
         return withWidgets(widgets + slot)
     }
 
-    fun removeWidget(slot: WidgetSlot): LauncherPrefs = withWidgets(widgets - slot)
+    fun removeWidget(slot: WidgetSlot): LauncherPrefs = withWidgets(widgets.filterNot { it.sameAs(slot) })
+
+    fun resizeWidget(slot: WidgetSlot, size: WidgetSize): LauncherPrefs = withWidgets(widgets.map { if (it.sameAs(slot)) it.copy(size = size) else it })
 
     /** Moves a widget one place up (-1) or down (+1) among the widgets of its area. */
     fun moveWidget(slot: WidgetSlot, by: Int): LauncherPrefs {
         val inArea = widgetsIn(slot.area)
-        val at = inArea.indexOf(slot)
+        val at = inArea.indexOfFirst { it.sameAs(slot) }
         val to = at + by
-        if (at < 0 || to !in inArea.indices) return this
-        val reordered = inArea.toMutableList().apply { removeAt(at); add(to, slot) }
+        if (at < 0) return this
+        if (to !in inArea.indices) return moveAcross(inArea[at], by)
+        val reordered = inArea.toMutableList().apply { val moved = removeAt(at); add(to, moved) }
         val queue = reordered.iterator()
         return withWidgets(widgets.map { if (it.area == slot.area) queue.next() else it })
+    }
+
+    /** Past the last widget at the top of the home page a widget goes to the bottom's first place, and past the first at the bottom to the top's last. The Today page is its own. */
+    private fun moveAcross(slot: WidgetSlot, by: Int): LauncherPrefs {
+        val to = when {
+            slot.area == WidgetArea.HOME_TOP && by > 0 -> WidgetArea.HOME_BOTTOM
+            slot.area == WidgetArea.HOME_BOTTOM && by < 0 -> WidgetArea.HOME_TOP
+            else -> return this
+        }
+        val rest = widgets.filterNot { it.sameAs(slot) }
+        val moved = slot.copy(area = to)
+        val at = if (to == WidgetArea.HOME_BOTTOM) rest.indexOfFirst { it.area == WidgetArea.HOME_BOTTOM }.let { if (it < 0) rest.size else it } else rest.indexOfLast { it.area == WidgetArea.HOME_TOP } + 1
+        return withWidgets(rest.toMutableList().apply { add(at, moved) })
     }
 
     fun withWalking(on: Boolean) = copy(walking = on)
@@ -251,7 +277,7 @@ data class LauncherPrefs(
         if (fahrenheit) append("K fahrenheit\t1\n")
         place?.let { append("W ").append(it.name.replace('\t', ' ')).append('\t').append(it.latitude).append('\t').append(it.longitude).append('\n') }
         launches.entries.sortedBy { it.key }.forEach { (key, count) -> append("L ").append(key).append('\t').append(count).append('\n') }
-        layout?.let { l -> if (l.isEmpty()) append("G -\n") else l.forEach { append("G ").append(it.area.name).append('\t').append(it.kind.name).append('\t').append(it.arg.replace('\t', ' ')).append('\n') } }
+        layout?.let { l -> if (l.isEmpty()) append("G -\n") else l.forEach { append("G ").append(it.area.name).append('\t').append(it.kind.name).append('\t').append(it.arg.replace('\t', ' ')).append('\t').append(it.size.name).append('\n') } }
         folders.forEach { f -> append("F ").append(f.name.replace('\t', ' ')); f.apps.forEach { append('\t').append(it) }; append('\n') }
         pinned.forEach { append("P ").append(it).append('\n') }
         hidden.sorted().forEach { append("H ").append(it).append('\n') }
@@ -277,7 +303,7 @@ data class LauncherPrefs(
                     'G' -> if (rest == "-") prefs.copy(layout = prefs.layout ?: emptyList()) else rest.split('\t').let { f ->
                         val area = WidgetArea.entries.firstOrNull { it.name == f[0] }
                         val kind = f.getOrNull(1)?.let { n -> WidgetKind.entries.firstOrNull { it.name == n } }
-                        if (area == null || kind == null) prefs else prefs.copy(layout = (prefs.layout ?: emptyList()) + WidgetSlot(area, kind, f.getOrElse(2) { "" }))
+                        if (area == null || kind == null) prefs else prefs.copy(layout = (prefs.layout ?: emptyList()) + WidgetSlot(area, kind, f.getOrElse(2) { "" }, WidgetSize.entries.firstOrNull { it.name == f.getOrNull(3) } ?: WidgetSize.LARGE))
                     }
                     'I' -> rest.lastIndexOf('\t').let { at -> if (at > 0) prefs.withIcon(rest.substring(0, at), rest.substring(at + 1)) else prefs }
                     'M' -> {
