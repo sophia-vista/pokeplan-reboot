@@ -29,4 +29,44 @@ enum class Sfx(val file: String) {
 
     /** The Pokémon Center jingle: an evolution's "Congratulations!". */
     POKEMON_CENTER("pokemon-center"),
+
+    // The Mystery Dungeon UI sounds, cut by tools/sprites/convert_pmd_sfx.py. The first four were named by the owner.
+    /** Moving or tapping a card, tab or row; also the switches and the letter scroller's tick. */
+    CURSOR("cursor"),
+    CONFIRM("confirm"),
+    BACK("back"),
+    ERROR("error"),
+
+    // The launcher.
+    DRAWER_OPEN("drawer-open"),
+    DRAWER_CLOSE("drawer-close"),
+    LONG_PRESS("long-press"),
+    PIN("pin"),
+    UNPIN("unpin"),
+    HIDE("hide"),
+    MOVE_PICKUP("move-pickup"),
+    MOVE_DROP("move-drop"),
+    UNINSTALL_WARN("uninstall-warn"),
+
+    /** Home pressed during a focus session sends you back to Focus. */
+    FOCUS_LOCK("focus-lock"),
+
+    // Game moments.
+    HABIT_TICK("habit-tick"),
+    FOCUS_START("focus-start"),
+    FOCUS_END("focus-end"),
+    EGG_GET("egg-get"),
+    LEVEL_UP("level-up"),
+    RANK_UP("rank-up"),
+    CANDY("candy"),
+    ITEM_GET("item-get"),
+
+    /** Unlocked something: a new Dex entry, an evolution, a region. */
+    UNLOCK("unlock"),
+    CALM_BREAK_START("calm-start"),
+    CALM_BREAK_END("calm-end"),
+
+    /** Notification sounds (the channel needs them as res/raw files, not through this player). */
+    REMINDER("reminder"),
+    TIMER_DONE("timer-done"),
 }
