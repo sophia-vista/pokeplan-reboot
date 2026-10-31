@@ -58,10 +58,10 @@ private suspend fun face(formId: Int, shiny: Boolean, emotion: Emotion): Face? {
 /**
  * A Pokémon's face, as the Mystery Dungeon games show one beside a text box: its SpriteCollab portrait for [emotion] (its
  * Normal face where it has no such one) at a whole-number scale in a thin frame. Forms without a portrait, and shinies
- * without their own, show the still [Sprite] instead.
+ * without their own, show the still [Sprite] instead. With [framed] off the face fills its space with no line around it.
  */
 @Composable
-fun Portrait(formId: Int, shiny: Boolean, description: String, modifier: Modifier = Modifier, emotion: Emotion = Emotion.NORMAL, size: Dp = 64.dp) {
+fun Portrait(formId: Int, shiny: Boolean, description: String, modifier: Modifier = Modifier, emotion: Emotion = Emotion.NORMAL, size: Dp = 64.dp, framed: Boolean = true) {
     val face by produceState<Pair<Any, Face?>?>(null, formId, shiny, emotion) { value = Triple(formId, shiny, emotion) to face(formId, shiny, emotion) }
     val loaded = face?.takeIf { it.first == Triple(formId, shiny, emotion) }
     val f = loaded?.second
@@ -72,7 +72,8 @@ fun Portrait(formId: Int, shiny: Boolean, description: String, modifier: Modifie
     val frame = Pixel.Outline
     Canvas(modifier.size(size).semantics { contentDescription = description }) {
         if (f == null) return@Canvas
-        val border = 2.dp.toPx().coerceAtLeast(1f)
+        // Inside a frame of its own (a dialogue box), the face fills its space and draws no line of its own.
+        val border = if (framed) 2.dp.toPx().coerceAtLeast(1f) else 0f
         val scale = ((kotlin.math.min(this.size.width, this.size.height) - 2 * border) / PORTRAIT_PIXELS).toInt().coerceAtLeast(1)
         val side = PORTRAIT_PIXELS * scale
         val left = ((this.size.width - side) / 2).toInt()
@@ -82,6 +83,6 @@ fun Portrait(formId: Int, shiny: Boolean, description: String, modifier: Modifie
             dstOffset = IntOffset(left, top), dstSize = IntSize(side, side), filterQuality = FilterQuality.None,
         )
         // The frame is UI chrome, drawn around the portrait's own pixels as in the games' dialogue boxes.
-        drawRect(frame, Offset(left - border / 2, top - border / 2), Size(side + border, side + border), style = Stroke(border))
+        if (framed) drawRect(frame, Offset(left - border / 2, top - border / 2), Size(side + border, side + border), style = Stroke(border))
     }
 }

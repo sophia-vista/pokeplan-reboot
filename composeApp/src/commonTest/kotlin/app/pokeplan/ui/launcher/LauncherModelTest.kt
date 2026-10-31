@@ -208,9 +208,9 @@ class LauncherWidgetsTest {
     @Test
     fun startsWithTheDefaultsAndFollowsTheOldSwitches() {
         val prefs = LauncherPrefs()
-        assertEquals(listOf(WidgetKind.CLOCK, WidgetKind.STATUS), prefs.widgetsIn(WidgetArea.HOME_TOP).map { it.kind })
+        assertEquals(listOf(WidgetKind.CLOCK, WidgetKind.BUDDY), prefs.widgetsIn(WidgetArea.HOME_TOP).map { it.kind })
         assertEquals(listOf(WidgetKind.CALENDAR, WidgetKind.AGENDA), prefs.widgetsIn(WidgetArea.TODAY).map { it.kind })
-        assertEquals(listOf(WidgetKind.STATUS), prefs.withShowClock(false).widgetsIn(WidgetArea.HOME_TOP).map { it.kind })
+        assertEquals(listOf(WidgetKind.BUDDY), prefs.withShowClock(false).widgetsIn(WidgetArea.HOME_TOP).map { it.kind })
         assertEquals("", prefs.encode())
     }
 
@@ -267,12 +267,12 @@ class LauncherEditWidgetsTest {
     @Test
     fun dragPastTheEndMovesAWidgetToTheOtherPartOfTheHomePage() {
         var prefs = LauncherPrefs()
-        val status = WidgetSlot(WidgetArea.HOME_TOP, WidgetKind.STATUS)
+        val status = WidgetSlot(WidgetArea.HOME_TOP, WidgetKind.BUDDY)
         prefs = prefs.moveWidget(status, 1)
-        assertEquals(WidgetArea.HOME_BOTTOM, prefs.widgets.first { it.kind == WidgetKind.STATUS }.area)
-        assertEquals(WidgetKind.STATUS, prefs.widgetsIn(WidgetArea.HOME_BOTTOM).first().kind)
-        prefs = prefs.moveWidget(prefs.widgets.first { it.kind == WidgetKind.STATUS }, -1)
-        assertEquals(listOf(WidgetKind.CLOCK, WidgetKind.STATUS), prefs.widgetsIn(WidgetArea.HOME_TOP).map { it.kind })
+        assertEquals(WidgetArea.HOME_BOTTOM, prefs.widgets.first { it.kind == WidgetKind.BUDDY }.area)
+        assertEquals(WidgetKind.BUDDY, prefs.widgetsIn(WidgetArea.HOME_BOTTOM).first().kind)
+        prefs = prefs.moveWidget(prefs.widgets.first { it.kind == WidgetKind.BUDDY }, -1)
+        assertEquals(listOf(WidgetKind.CLOCK, WidgetKind.BUDDY), prefs.widgetsIn(WidgetArea.HOME_TOP).map { it.kind })
         val calendar = WidgetSlot(WidgetArea.TODAY, WidgetKind.CALENDAR)
         assertEquals(prefs, prefs.moveWidget(calendar, -1))
     }

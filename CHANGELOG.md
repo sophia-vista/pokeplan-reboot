@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.79.0
+
+- Launcher: the Buddy widget, with portraits and no words. It shows the buddy's PMD portrait in a pixel frame with its name and level (or "Focusing"), and replaces the Companion box on a launcher that has not changed its widgets (Companion is still there to add: it has the weather). Tap the portrait for its cry and a smile. The portraits are bigger (the face at twice the town's pixel scale, so it stays crisp), fill their pixel frames with no gap inside, and sit flush against the sides of the screen with no page margin; the name box is as tall as the portrait.
+- Launcher: when the buddy meets another Pokémon in the town, that Pokémon's portrait appears beside it and both faces change with what happens: a greeting is calm, then startled, then happy and joyous; a quarrel is determined and startled; being startled together is both startled. A few seconds later the faces go calm and the visitor leaves.
+
 ## 0.78.0
 
 - Launcher: more space between an app's icon and its name.

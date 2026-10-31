@@ -79,12 +79,13 @@ internal enum class PmdTone(val edge: Color, val band: Color, val deep: Color) {
  * [inset] is the room, in art pixels, between the frame and what is inside (rules and buttons run to it; text lines add 6 more, where the cursor goes, so text is 9 in). The frame is drawn in code (UI chrome).
  */
 @Composable
-internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = PmdTone.BLUE, inset: Int = 3, content: @Composable BoxScope.() -> Unit) {
+internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = PmdTone.BLUE, inset: Int = 3, compact: Boolean = false, content: @Composable BoxScope.() -> Unit) {
     val density = LocalDensity.current.density
     Box(
         modifier.entrance().drawBehind { pmdFrame(pixel, tone) }
             // Room inside the frame is the design system's own (Spacing.BoxX and BoxY, 24 and 18 dp), never less than the frame itself needs.
-            .padding(horizontal = maxOf(((SIDE + inset) * pixel / density).dp, Spacing.BoxX), vertical = maxOf(((TOP + inset) * pixel / density).dp, Spacing.BoxY)),
+            // A compact box (a portrait's frame) keeps only the frame's own room.
+            .padding(horizontal = ((SIDE + inset) * pixel / density).dp.let { if (compact) it else maxOf(it, Spacing.BoxX) }, vertical = ((TOP + inset) * pixel / density).dp.let { if (compact) it else maxOf(it, Spacing.BoxY) }),
         content = content,
     )
 }

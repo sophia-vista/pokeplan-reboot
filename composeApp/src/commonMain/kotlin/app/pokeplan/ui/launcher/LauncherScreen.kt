@@ -212,6 +212,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     // Editing the widgets on the screen (hold one): drag, resize, remove; page swipes are off meanwhile.
     var editing by remember { mutableStateOf(false) }
     val todayState = remember { TodayState(model.store.today) }
+    val mood = remember { BuddyMood() }
     var folderName by remember { mutableStateOf<String?>(null) }
     var forecastOpen by remember { mutableStateOf(false) }
     var placeOpen by remember { mutableStateOf(false) }
@@ -249,7 +250,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
             androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize().background(Pixel.Paper)) {
                 val pixel = townScale(maxWidth.value * LocalDensity.current.density)
                 val env = WidgetEnv(
-                    model, apps, prefs, host, forecast, pixel, todayState, editing, onPrefs, onEdit = { editing = true }, onDone = { editing = false }, onAllApps = { listOpen = true }, onFolders = { foldersOpen = true }, onWidgets = { widgetsOpen = true; editing = false },
+                    model, apps, prefs, host, forecast, pixel, todayState, mood, editing, onPrefs, onEdit = { editing = true }, onDone = { editing = false }, onAllApps = { listOpen = true }, onFolders = { foldersOpen = true }, onWidgets = { widgetsOpen = true; editing = false },
                     onOpenFolder = { folderName = it; foldersOpen = true }, onForecast = { forecastOpen = true }, onHold = { sheetKey = it.key },
                 )
                 // Two pages side by side: the town with its boxes, and Today (a calendar and the day's agenda and tasks). The town is two screens wide, so its Pokémon can wander over to Today (but only on the main screen can they be touched or meet). Swipe across, or press Home to come back.
@@ -271,7 +272,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     ),
                 ) {
                     Town(
-                        model, prefs.scene, active && prefs.walking, onMenu = { menuMon = it }, size = prefs.townSize, weather = if (prefs.weather == Weather.LIVE) forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR else prefs.weather, screens = 2, interactive = page.value < 0.02f, gather = gather,
+                        model, prefs.scene, active && prefs.walking, onMenu = { menuMon = it }, size = prefs.townSize, mood = mood, weather = if (prefs.weather == Weather.LIVE) forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR else prefs.weather, screens = 2, interactive = page.value < 0.02f, gather = gather,
                         modifier = Modifier.layout { measurable, constraints ->
                             // Two screens wide, placed from the left edge and slid by the page (a required size would be centred instead).
                             val placeable = measurable.measure(androidx.compose.ui.unit.Constraints.fixed(constraints.maxWidth * 2, constraints.maxHeight))
@@ -350,8 +351,8 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
 @Composable
 private fun HomePage(env: WidgetEnv, isDefault: Boolean) {
     val data = env.model.data
-    Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        if (env.editing) EditToolbar(env)
+    Column(Modifier.fillMaxSize().safeDrawingPadding().padding(vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        if (env.editing) EditToolbar(env, Modifier.padding(horizontal = Spacing.Page))
         env.prefs.widgetsIn(WidgetArea.HOME_TOP).forEach { slot -> androidx.compose.runtime.key(slot.kind, slot.arg) { LauncherWidget(slot, env) } }
         // The bottom widgets sit at the foot of the screen, and scroll when they are more than fit.
         Box(Modifier.weight(1f).fillMaxWidth()) {
@@ -361,7 +362,7 @@ private fun HomePage(env: WidgetEnv, isDefault: Boolean) {
                     !isDefault -> "Make PokéLife your home app" to env.host::openHomeSettings
                     else -> null
                 }
-                if (note != null) PmdBox(env.pixel, Modifier.fillMaxWidth(), inset = 1) { PmdMenuLine(note.first, env.pixel, onClick = note.second) }
+                if (note != null) PmdBox(env.pixel, Modifier.fillMaxWidth().padding(horizontal = Spacing.Page), inset = 1) { PmdMenuLine(note.first, env.pixel, onClick = note.second) }
                 env.prefs.widgetsIn(WidgetArea.HOME_BOTTOM).forEach { slot -> androidx.compose.runtime.key(slot.kind, slot.arg) { LauncherWidget(slot, env) } }
             }
         }
