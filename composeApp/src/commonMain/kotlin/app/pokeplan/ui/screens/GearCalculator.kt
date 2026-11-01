@@ -25,6 +25,7 @@ import app.pokeplan.ui.gear.CalcResult
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
@@ -96,7 +97,7 @@ internal fun CalculatorTool(model: AppModel, onUse: () -> Unit) {
                 Text("Angles in ${if (gear.calcDegrees) "degrees" else "radians"}. Memory: ${CalcEngine.format(gear.calcMemory)}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelButton("Copy", { clipboard.setText(AnnotatedString(liveValue?.text ?: expr)) }, Modifier.weight(1f), Pixel.InkSoft, compact = true, enabled = expr.isNotBlank())
+                PixelIconButton("copy", "Copy", { clipboard.setText(AnnotatedString(liveValue?.text ?: expr)) }, Modifier.weight(1f), Pixel.InkSoft, enabled = expr.isNotBlank())
                 PixelButton(if (gear.calcHistoryOn) "History on" else "History off", { store.changeGear { it.copy(calcHistoryOn = !it.calcHistoryOn) } }, Modifier.weight(1f), if (gear.calcHistoryOn) Pixel.Green else Pixel.InkSoft, compact = true)
             }
             Text(if (gear.calcHistoryOn) "The last sums are kept on this phone only." else "Nothing is kept unless you turn the history on.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)

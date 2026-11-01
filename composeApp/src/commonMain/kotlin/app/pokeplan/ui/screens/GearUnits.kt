@@ -26,6 +26,7 @@ import app.pokeplan.ui.gear.UnitCatalog
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
@@ -83,7 +84,7 @@ internal fun UnitsTool(model: AppModel, onUse: () -> Unit) {
                 OptionPicker("To", category.units.map { "${it.symbol} (${it.name})" }, toIndex, Modifier.weight(1f), short = category.units.map { it.symbol }) { toIndex = it }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelButton("Swap", { val f = fromIndex; fromIndex = toIndex; toIndex = f; onUse() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                PixelIconButton("repeat", "Swap", { val f = fromIndex; fromIndex = toIndex; toIndex = f; onUse() }, Modifier.weight(1f), Pixel.InkSoft)
                 val starred = pairId in gear.unitFavorites
                 PixelButton(if (starred) "Starred" else "Star this pair", { store.changeGear { g -> g.copy(unitFavorites = if (starred) g.unitFavorites - pairId else (g.unitFavorites + pairId).takeLast(20)) } }, Modifier.weight(1f), if (starred) Pixel.Green else Pixel.InkSoft, compact = true)
             }
@@ -95,7 +96,7 @@ internal fun UnitsTool(model: AppModel, onUse: () -> Unit) {
             )
             listOf(from, to).distinct().filter { it.note.isNotEmpty() }.forEach { Text("${it.symbol}: ${it.note}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelButton("Copy", { shown?.let { clipboard.setText(AnnotatedString("$it ${to.symbol}")) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true, enabled = shown != null)
+                PixelIconButton("copy", "Copy", { shown?.let { clipboard.setText(AnnotatedString("$it ${to.symbol}")) } }, Modifier.weight(1f), Pixel.InkSoft, enabled = shown != null)
                 PixelButton(if (all) "Hide the rest" else "Every unit", { all = !all }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
             if (all && parsed != null) category.units.filter { it != from }.forEach { u ->
