@@ -26,7 +26,18 @@ object Story {
     const val GUARDIAN_BONUS = "Temporal Mastery: every expedition climbs 10% faster"
 
     /** The chapters of [layer]'s story. */
-    fun chaptersOf(layer: WorldLayer): List<Chapter> = if (layer == WorldLayer.HOME) chapters else KantoStory.chapters
+    fun chaptersOf(layer: WorldLayer): List<Chapter> = when (layer) {
+        WorldLayer.HOME -> chapters
+        WorldLayer.KANTO -> KantoStory.chapters
+        WorldLayer.JOHTO -> JohtoStory.chapters
+    }
+
+    /** What the Guardian of [layer] gives once its story is complete. */
+    fun guardianBonus(layer: WorldLayer): String = when (layer) {
+        WorldLayer.HOME -> GUARDIAN_BONUS
+        WorldLayer.KANTO -> KantoStory.GUARDIAN_BONUS
+        WorldLayer.JOHTO -> JohtoStory.GUARDIAN_BONUS
+    }
 
     /** How many different dungeons of [layer] have been cleared (repeating one counts once, so a cheap dungeon cannot be farmed for chapters). */
     fun dungeonsCleared(data: WorldData, layer: WorldLayer = WorldLayer.HOME): Int = Dungeons.of(layer).count { (data.clears[it.id] ?: 0) > 0 }

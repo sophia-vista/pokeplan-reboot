@@ -79,6 +79,42 @@ Nothing here pays through the server reward engine; items go to the Bag, Poké s
 | Cerulean Cave (20 fl) | 2 × Lv 20 | 0.4 | 0.5 | 5.4 | 10.3 | 0.3 | 0.01 | 0.14 |
 | Cerulean Cave (20 fl) | 4 × Lv 20 | 0.5 | 0.6 | 7.1 | 13.5 | 0.4 | 0.01 | 0.14 |
 | Cerulean Cave (20 fl) | 4 × Lv 50 | 0.8 | 1.0 | 12.1 | 23.3 | 0.6 | 0.04 | 0.86 |
+| Sprout Tower (5 fl) | 2 × Lv 5 | 2.4 | 11.7 | 17.1 | 31.9 | 1.7 | 0.18 | 2.14 |
+| Sprout Tower (5 fl) | 2 × Lv 20 | 3.1 | 14.9 | 21.7 | 40.7 | 2.2 | 0.22 | 2.86 |
+| Sprout Tower (5 fl) | 4 × Lv 20 | 4.0 | 19.2 | 28.0 | 52.8 | 2.8 | 0.29 | 4.00 |
+| Sprout Tower (5 fl) | 4 × Lv 50 | 6.7 | 32.0 | 46.7 | 89.6 | 4.8 | 0.48 | 7.71 |
+| Ilex Forest (8 fl) | 2 × Lv 5 | 1.5 | 4.6 | 13.0 | 24.4 | 1.0 | 0.10 | 0.86 |
+| Ilex Forest (8 fl) | 2 × Lv 20 | 1.9 | 5.8 | 16.5 | 31.1 | 1.3 | 0.14 | 1.00 |
+| Ilex Forest (8 fl) | 4 × Lv 20 | 2.5 | 7.5 | 21.2 | 40.2 | 1.7 | 0.17 | 1.00 |
+| Ilex Forest (8 fl) | 4 × Lv 50 | 4.2 | 12.5 | 35.4 | 67.8 | 3.0 | 0.26 | 1.57 |
+| Union Cave (10 fl) | 2 × Lv 5 | 1.0 | 2.5 | 9.7 | 18.5 | 0.7 | 0.07 | 0.86 |
+| Union Cave (10 fl) | 2 × Lv 20 | 1.3 | 3.2 | 12.6 | 24.1 | 0.9 | 0.10 | 1.43 |
+| Union Cave (10 fl) | 4 × Lv 20 | 1.7 | 4.2 | 16.5 | 31.5 | 1.3 | 0.13 | 1.57 |
+| Union Cave (10 fl) | 4 × Lv 50 | 3.0 | 7.1 | 28.0 | 54.2 | 2.2 | 0.20 | 2.57 |
+| Ruins of Alph (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.5 | 16.2 | 0.7 | 0.02 | 0.86 |
+| Ruins of Alph (12 fl) | 2 × Lv 20 | 1.1 | 2.1 | 11.2 | 21.2 | 0.8 | 0.04 | 1.29 |
+| Ruins of Alph (12 fl) | 4 × Lv 20 | 1.4 | 2.8 | 14.5 | 27.6 | 1.1 | 0.05 | 1.43 |
+| Ruins of Alph (12 fl) | 4 × Lv 50 | 2.4 | 4.7 | 24.8 | 47.8 | 1.8 | 0.10 | 2.43 |
+| Slowpoke Well (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.4 | 16.2 | 0.6 | 0.04 | 0.57 |
+| Slowpoke Well (12 fl) | 2 × Lv 20 | 1.0 | 2.1 | 10.8 | 20.7 | 0.7 | 0.05 | 0.86 |
+| Slowpoke Well (12 fl) | 4 × Lv 20 | 1.3 | 2.7 | 13.9 | 26.7 | 0.9 | 0.07 | 1.14 |
+| Slowpoke Well (12 fl) | 4 × Lv 50 | 2.2 | 4.4 | 23.3 | 45.0 | 1.6 | 0.15 | 2.14 |
+| Mt. Mortar (14 fl) | 2 × Lv 5 | 0.6 | 1.1 | 6.9 | 13.2 | 0.4 | 0.05 | 0.71 |
+| Mt. Mortar (14 fl) | 2 × Lv 20 | 0.8 | 1.4 | 9.0 | 17.4 | 0.6 | 0.06 | 0.86 |
+| Mt. Mortar (14 fl) | 4 × Lv 20 | 1.0 | 1.8 | 11.8 | 22.8 | 0.7 | 0.09 | 1.14 |
+| Mt. Mortar (14 fl) | 4 × Lv 50 | 1.8 | 3.0 | 20.3 | 39.4 | 1.3 | 0.14 | 1.57 |
+| Burned Tower (16 fl) | 2 × Lv 5 | 0.5 | 0.7 | 6.0 | 11.5 | 0.4 | 0.02 | 0.29 |
+| Burned Tower (16 fl) | 2 × Lv 20 | 0.6 | 0.9 | 7.5 | 14.5 | 0.4 | 0.02 | 0.43 |
+| Burned Tower (16 fl) | 4 × Lv 20 | 0.8 | 1.2 | 9.8 | 18.8 | 0.6 | 0.02 | 0.86 |
+| Burned Tower (16 fl) | 4 × Lv 50 | 1.3 | 2.0 | 16.7 | 32.3 | 0.9 | 0.07 | 1.57 |
+| Whirl Islands (18 fl) | 2 × Lv 5 | 0.4 | 0.5 | 5.3 | 10.3 | 0.3 | 0.04 | 0.14 |
+| Whirl Islands (18 fl) | 2 × Lv 20 | 0.5 | 0.7 | 6.9 | 13.3 | 0.3 | 0.05 | 0.14 |
+| Whirl Islands (18 fl) | 4 × Lv 20 | 0.7 | 0.9 | 8.8 | 17.1 | 0.5 | 0.05 | 0.14 |
+| Whirl Islands (18 fl) | 4 × Lv 50 | 1.1 | 1.5 | 14.7 | 28.5 | 0.7 | 0.09 | 0.71 |
+| Tin Tower (20 fl) | 2 × Lv 5 | 0.3 | 0.4 | 4.1 | 7.8 | 0.2 | 0.03 | 0.29 |
+| Tin Tower (20 fl) | 2 × Lv 20 | 0.4 | 0.5 | 5.4 | 10.3 | 0.2 | 0.04 | 0.43 |
+| Tin Tower (20 fl) | 4 × Lv 20 | 0.5 | 0.6 | 7.1 | 13.6 | 0.3 | 0.04 | 0.43 |
+| Tin Tower (20 fl) | 4 × Lv 50 | 0.8 | 1.0 | 12.1 | 23.3 | 0.6 | 0.07 | 0.86 |
 
 The Kanto layer's dungeons are in the same table, so their Poké, XP and finds per hour can be compared with the home layer's at the same rank gate (Viridian Forest and Mt. Moon with Tiny Woods and Thunderwave Cave; Cerulean Cave with the Temporal Tower). The careers and the year below follow the home layer only.
 

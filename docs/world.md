@@ -783,7 +783,7 @@ The brief makes a region a *journey across its real map*, not a list of dungeons
 - **Sprites, cries and portraits:** SpriteCollab and the existing assets, as for every Pokémon.
 
 ### Status (0.99.0)
-Built: the layer (`WorldLayer`, `DungeonDef.layer`, the Map switch), the nine dungeons, the story chapters, the five legendary quests and their boosts, the map picture and markers, and the economy run. Not built: settlements and routes as nodes of the map, fog of war, Kanto jobs on the mission board, the Sevii Islands and postgame floors, Kanto story text beyond the chapter summaries, and the Guardian slot bonuses per module. The marker positions are read by eye from the picture and may need nudging after a device test.
+Built (Kanto, with Johto after it): the layer (`WorldLayer`, `DungeonDef.layer`, the Map switch), the nine dungeons, the story chapters, the five legendary quests and their boosts, the map picture and markers, and the economy run. Not built: settlements and routes as nodes of the map, fog of war, Kanto jobs on the mission board, the Sevii Islands and postgame floors, Kanto story text beyond the chapter summaries, and the Guardian slot bonuses per module. The marker positions are read by eye from the picture and may need nudging after a device test.
 
 ### Build order (one PR each, combined where small)
 1. `WorldLayer`, `DungeonDef.layer`, the layer switch and per-layer story; no Kanto content yet. Saves load unchanged.
@@ -795,3 +795,7 @@ Built: the layer (`WorldLayer`, `DungeonDef.layer`, the Map switch), the nine du
 ### Open questions for the owner
 - The Kanto map picture: official art, to be found (see the art line above).
 - Which bonus does each Kanto Guardian give in which module (Mewtwo in Care? Plan?)? Settled when the Guardians are built, with the Guardian slot rules.
+
+## Johto, the second region layer (built in 0.100.0)
+
+Same shape as Kanto (the layer rules above). **Map:** the Johto map of Pokémon Crystal's Pokégear (`assets/world/map-johto.png`, 144 x 128, built by `tools/sprites/fetch_johto_map.py` from pret/pokecrystal's tiles, tilemap and palettes; marker positions read by eye). **Dungeons:** Sprout Tower, Ilex Forest, Union Cave, Ruins of Alph, Slowpoke Well, Mt. Mortar, Burned Tower, Whirl Islands and Tin Tower (the Guardian's), with wild tables from the Johto regional dex (the Johto species and the Kanto ones that live there). **Story:** "The Sacred Balance", five chapters (New Bark Town, Old Stories, Echoes of Alph, The Burned Tower, The Rainbow Wings). **Legendary quests, both Guardians of Johto:** Lugia (the Whirl Islands cleared three times; Water and Flying dungeons of Johto 10% faster) and Ho-Oh (the top floor of the Tin Tower; a little more treasure and finds in Johto). The three beasts and Celebi are side legendaries of the modules, not Johto quests (decision 8, docs/ecosystem.md). Not built, as for Kanto: settlements and routes, fog of war, Johto jobs, Kanto's Johto-side extras (Mt. Silver, Lake of Rage) and postgame.

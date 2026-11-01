@@ -49,7 +49,7 @@ fun RewardBox(model: AppModel) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         if (r is Reward.Hatched) AnimatedSprite(r.pokemon.form.id, r.pokemon.isShiny, r.pokemon.nickname, size = 72.dp, animate = !model.data.settings.reduceMotion, ground = 4.dp)
                         else r.iconItem()?.let { ItemIcon(it, size = 32.dp) }
-                        Text(r.describe(), style = MaterialTheme.typography.bodyLarge)
+                        Text(r.describe(entry.source), style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             }

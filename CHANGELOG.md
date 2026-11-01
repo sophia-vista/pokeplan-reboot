@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.100.0
+
+- **World: the Johto layer** (open from the first day, third button on the Map's layer switch): nine dungeons from Gold, Silver, Crystal, HeartGold and SoulSilver (Sprout Tower, Ilex Forest, Union Cave, Ruins of Alph, Slowpoke Well, Mt. Mortar, Burned Tower, Whirl Islands, Tin Tower), wild Pokémon from the Johto Pokédex, the Johto map of Pokémon Crystal's Pokégear (`assets/world/map-johto.png`, built by `tools/sprites/fetch_johto_map.py`) with a marker on each, and its own five-chapter story, "The Sacred Balance". Legendary quests, both Guardians of Johto: Lugia after three clears of the Whirl Islands, Ho-Oh at the top of the Tin Tower. Legendary boosts are data now (`LegendQuest.types`, `findPermille`, `treasurePercent`). New layer buttons wrap onto a second line when narrow.
+- Home and the reward history say that a Pokémon from World "joined you" instead of that an egg hatched (the Recently list, the reward box and World's own history).
+
 ## 0.99.0
 
 - **World: the Kanto layer.** The Map screen has a layer switch (the Mystery Dungeon world and Kanto, both open from the first day). Kanto has nine dungeons from Red, Blue, FireRed and LeafGreen (Viridian Forest, Mt. Moon, Rock Tunnel, Pokémon Tower, Power Plant, Seafoam Islands, Mt. Ember, Victory Road, Cerulean Cave), each with wild Pokémon from the Kanto Pokédex (found only there), its own rank gate and milestone rewards, the official FireRed and LeafGreen map with a marker on each, and its own five-chapter story, "The Genetic Crisis". Clears in one layer do not advance the other layer's story.
