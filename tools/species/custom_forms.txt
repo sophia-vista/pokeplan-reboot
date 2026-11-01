@@ -1,0 +1,5 @@
+# Forms that are not in PokeAPI's dataset, appended to the Dex by generate.py and to the sprite manifest by tools/sprites/fetch.py.
+# id|identifier|speciesId|kind|name|types|hp,atk,def,spa,spd,spe|abilities|hidden ability
+# Ids start at 20000, clear of PokeAPI's (about 10000 to 10350). The identifier ends with the SpriteCollab form name so
+# tools/sprites/fetch_pmd.py finds its sprites. Base stats are Dialga's: Primal Dialga has no official ones.
+20001|dialga-primal|483|ALTERNATE|Primal Dialga|steel,dragon|100,120,120,150,100,90|Pressure|Telepathy

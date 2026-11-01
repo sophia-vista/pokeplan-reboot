@@ -283,8 +283,9 @@ internal data class MapMarker(val id: String, val x: Int, val y: Int, val state:
  * width allows, without smoothing.
  */
 @Composable
-internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: String?, onSelect: (String) -> Unit) {
-    val name = "map-${stage.coerceIn(1, 8)}"
+internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: String?, onSelect: (String) -> Unit, mapName: String? = null, pictureW: Float = MAP_W, pictureH: Float = MAP_H) {
+    // [mapName] names another map (the Kanto layer's own, assets/world/map-kanto.png); the home map is map-1 to map-8, uncovered by [stage].
+    val name = mapName ?: "map-${stage.coerceIn(1, 8)}"
     val image by produceState(worldArt[name], name) {
         if (value == null) {
             value = orNull { Res.readBytes("files/world/$name.png").decodeToImageBitmap() }
@@ -294,10 +295,10 @@ internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: Str
     val density = LocalDensity.current
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val widthPx = with(density) { maxWidth.toPx() }
-        val scale = if (widthPx >= MAP_W) kotlin.math.floor(widthPx / MAP_W) else widthPx / MAP_W
-        val drawnW = MAP_W * scale
+        val scale = if (widthPx >= pictureW) kotlin.math.floor(widthPx / pictureW) else widthPx / pictureW
+        val drawnW = pictureW * scale
         val left = (widthPx - drawnW) / 2f
-        val heightDp = with(density) { (MAP_H * scale).toDp() }
+        val heightDp = with(density) { (pictureH * scale).toDp() }
         Canvas(
             Modifier.fillMaxWidth().height(heightDp).border(2.dp, Pixel.Ink)
                 .semantics { contentDescription = "World map with ${markers.size} dungeons: ${markers.count { it.state == MarkerState.CLEARED }} cleared, ${markers.count { it.state == MarkerState.OPEN }} open. The list below has every dungeon." }
@@ -313,7 +314,7 @@ internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: Str
                 },
         ) {
             val picture = image ?: return@Canvas drawRect(Color(0xFFD9A05B))
-            drawImage(picture, dstOffset = IntOffset(left.toInt(), 0), dstSize = IntSize((MAP_W * scale).toInt(), (MAP_H * scale).toInt()), filterQuality = if (scale >= 1f) FilterQuality.None else FilterQuality.Medium)
+            drawImage(picture, dstOffset = IntOffset(left.toInt(), 0), dstSize = IntSize((pictureW * scale).toInt(), (pictureH * scale).toInt()), filterQuality = if (scale >= 1f) FilterQuality.None else FilterQuality.Medium)
             val r = max(5.dp.toPx(), 3.5f * scale)
             for (m in markers) {
                 val c = Offset(left + m.x * scale, m.y * scale)

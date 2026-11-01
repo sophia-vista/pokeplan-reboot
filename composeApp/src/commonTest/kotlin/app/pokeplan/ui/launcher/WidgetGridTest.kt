@@ -51,10 +51,10 @@ class WidgetGridTest {
     fun resizingStaysBetweenTheLimitsAndBumpsTheRest() {
         val cal = w(WidgetKind.CALENDAR, 0, 0, 4, 6)
         val agenda = w(WidgetKind.AGENDA, 0, 6, 4, 6)
-        val big = WidgetGrid.resize(listOf(cal, agenda), cal, 9, 9)
+        val big = WidgetGrid.resize(listOf(cal, agenda), cal, 12, 12)
         val c = big.first { it.kind == WidgetKind.CALENDAR }
-        assertEquals(4 to 8, c.w to c.h, "the calendar is at most 4 by 8")
-        assertEquals(8, big.first { it.kind == WidgetKind.AGENDA }.row)
+        assertEquals(4 to 10, c.w to c.h, "the calendar is at most 4 by 10")
+        assertEquals(10, big.first { it.kind == WidgetKind.AGENDA }.row)
         val small = WidgetGrid.resize(listOf(cal), cal, 1, 1).single()
         assertEquals(4 to 4, small.w to small.h, "and at least 4 by 4")
         assertTrue(noOverlap(big))

@@ -61,6 +61,9 @@ import app.pokeplan.world.MissionKind
 import app.pokeplan.world.Missions
 import app.pokeplan.world.ExplorerRank
 import app.pokeplan.world.Story
+import app.pokeplan.world.KantoStory
+import app.pokeplan.world.Legends
+import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.WorldEvent
 import app.pokeplan.world.WorldSim
 import app.pokeplan.world.WorldTeam
@@ -137,7 +140,7 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
                     }
                 }
             }
-            WorldBanner("town", "Exploration team", "${Dungeons.all.count { world.rank >= it.needs && Story.opened(world) >= it.chapter }} of ${Dungeons.all.size} dungeons open")
+            WorldBanner("town", "Exploration team", "${Dungeons.all.count { world.rank >= it.needs && Story.opened(world, it.layer) >= it.chapter }} of ${Dungeons.all.size} dungeons open")
             MenuGrid(
                 listOf(
                     MenuEntry(WorldSection.MAP.name, WorldSection.MAP.icon, WorldSection.MAP.label, "${Dungeons.all.size} dungeons", tint = Module.WORLD.look.accent),
@@ -168,10 +171,13 @@ private fun RankCard(model: AppModel) {
                 PixelBar(((world.xp - rank.points).toFloat() / (next.points - rank.points)).coerceIn(0f, 1f), Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "${world.xp} of ${next.points} to ${next.label}")
                 Text("${world.xp} of ${next.points} to ${next.label} rank", style = MaterialTheme.typography.bodyMedium)
             } else Text("Top rank reached.", style = MaterialTheme.typography.bodyMedium)
-            val opened = Story.opened(world)
-            Text("Story: chapter $opened, ${Story.chapters[opened - 1].title}", style = MaterialTheme.typography.bodyLarge)
-            if (Story.complete(world)) Text("The story is complete. ${Story.GUARDIAN_BONUS}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
-            Story.next(world)?.let { Text("Next: ${it.title} (${it.needsRank.label} rank, ${it.needsDungeons} different dungeons cleared)", style = MaterialTheme.typography.bodyMedium) }
+            val layer = model.worldLayer
+            val chapters = Story.chaptersOf(layer)
+            val opened = Story.opened(world, layer)
+            Text("${layer.label} story: chapter $opened, ${chapters[opened - 1].title}", style = MaterialTheme.typography.bodyLarge)
+            Text(chapters[opened - 1].summary, style = MaterialTheme.typography.bodyMedium)
+            if (Story.complete(world, layer)) Text("The story is complete. ${if (layer == WorldLayer.HOME) Story.GUARDIAN_BONUS else KantoStory.GUARDIAN_BONUS}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+            Story.next(world, layer)?.let { Text("Next: ${it.title} (${it.needsRank.label} rank, ${it.needsDungeons} different ${layer.label} dungeons cleared)", style = MaterialTheme.typography.bodyMedium) }
             Text("Poké: ${world.poke}", style = MaterialTheme.typography.bodyMedium)
         }
     }
@@ -185,22 +191,35 @@ private fun WorldMapView(model: AppModel) {
     val ready = world.slots().filter { it.members.isNotEmpty() && it.expedition == null }
     // The map: more of it is uncovered with each dungeon cleared; a tap on a marker brings that dungeon to the top of the list.
     var selected by remember { mutableStateOf<String?>(null) }
-    val clearedCount = world.clears.count { it.value > 0 }
+    val layer = model.worldLayer
+    val dungeons = Dungeons.of(layer)
+    val clearedCount = dungeons.count { (world.clears[it.id] ?: 0) > 0 }
+    // The layer switch: every layer is open from the first day.
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        WorldLayer.entries.forEach { l ->
+            PixelButton(l.label, { model.worldLayer = l; selected = null }, color = if (l == layer) Module.WORLD.look.accent else Pixel.InkSoft, compact = true)
+        }
+    }
+    Text(layer.blurb, style = MaterialTheme.typography.bodyMedium)
+    val spots = if (layer == WorldLayer.KANTO) kantoSpots else mapSpots
     WorldMapPicture(
         stage = 1 + clearedCount,
-        markers = Dungeons.all.mapNotNull { d ->
-            mapSpots[d.id]?.let { (x, y) ->
-                val open = world.rank >= d.needs && Story.opened(world) >= d.chapter && !(d.postStory && !world.guardianDone)
+        markers = dungeons.mapNotNull { d ->
+            spots[d.id]?.let { (x, y) ->
+                val open = world.rank >= d.needs && Story.opened(world, layer) >= d.chapter && !(d.postStory && !world.layerDone(layer))
                 MapMarker(d.id, x, y, if ((world.clears[d.id] ?: 0) > 0) MarkerState.CLEARED else if (open) MarkerState.OPEN else MarkerState.LOCKED)
             }
         },
         selected = selected, onSelect = { selected = it },
+        mapName = if (layer == WorldLayer.KANTO) "map-kanto" else null,
+        pictureW = if (layer == WorldLayer.KANTO) 192f else 504f, pictureH = if (layer == WorldLayer.KANTO) 128f else 336f,
     )
-    Text(selected?.let { id -> Dungeons.byId(id)?.let { "${it.name}, ${it.region.label}" } } ?: "$clearedCount of ${Dungeons.all.size} dungeons cleared. Tap a marker.", style = MaterialTheme.typography.bodyLarge)
-    Dungeons.all.sortedByDescending { it.id == selected }.forEach { d ->
+    Text(selected?.let { id -> Dungeons.byId(id)?.let { "${it.name}, ${it.region.label}" } } ?: "$clearedCount of ${dungeons.size} dungeons cleared. Tap a marker.", style = MaterialTheme.typography.bodyLarge)
+    LegendsCard(model, layer)
+    dungeons.sortedByDescending { it.id == selected }.forEach { d ->
         val rankOk = world.rank >= d.needs
-        val chapterShut = Story.opened(world) < d.chapter
-        val storyShut = d.postStory && !world.guardianDone
+        val chapterShut = Story.opened(world, layer) < d.chapter
+        val storyShut = d.postStory && !world.layerDone(layer)
         val open = rankOk && !chapterShut && !storyShut
         val deepest = world.deepest[d.id] ?: 0
         val wild = d.wild.sortedByDescending { it.weight }.map { it.speciesId }.distinct().take(4)
@@ -219,7 +238,7 @@ private fun WorldMapView(model: AppModel) {
                 when {
                     storyShut -> Text("Opens when the story is complete.", style = MaterialTheme.typography.bodyMedium, color = warn)
                     !rankOk -> Text("Needs ${d.needs.label} rank.", style = MaterialTheme.typography.bodyMedium, color = warn)
-                    chapterShut -> Text("Needs story chapter ${d.chapter}: ${Story.chapters[d.chapter - 1].title}.", style = MaterialTheme.typography.bodyMedium, color = warn)
+                    chapterShut -> Text("Needs story chapter ${d.chapter}: ${Story.chaptersOf(layer)[d.chapter - 1].title}.", style = MaterialTheme.typography.bodyMedium, color = warn)
                     ready.isEmpty() && world.slots().any { it.expedition == null } ->
                         PixelButton("Send my strongest", { model.store.worldQuickSend(d.id) }, color = Module.WORLD.look.accent, compact = true)
                     ready.isEmpty() -> Text("Every team is out. Recall one in Expeditions.", style = MaterialTheme.typography.bodyMedium)
@@ -227,7 +246,7 @@ private fun WorldMapView(model: AppModel) {
                         // Why a team suits the place: how long a floor takes it, and how many of its members are of a favoured type.
                         ready.forEach { team ->
                             val members = team.members.mapNotNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } }
-                            val fit = WorldSim.suitability(d, members, world.guardianDone)
+                            val fit = WorldSim.suitability(d, members, world.guardianDone, world.legendFaster(d))
                             Text("Team ${team.id}: a floor takes about ${fit.floorMillis / 60_000} min; ${fit.favored} of ${fit.size} like this place.", style = MaterialTheme.typography.bodyMedium)
                         }
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -246,6 +265,43 @@ private val mapSpots = mapOf(
     "glacier-palace" to (107 to 291), "ancient-ruins" to (411 to 227), "sky-tower" to (459 to 43), "temporal-tower" to (59 to 179),
     "distortion-rift" to (83 to 75),
 )
+
+/** Where each Kanto dungeon is on the Kanto map picture (192 x 128 pixels), read from its towns and routes. */
+private val kantoSpots = mapOf(
+    "viridian-forest" to (44 to 68), "mt-moon" to (82 to 44), "rock-tunnel" to (153 to 52), "pokemon-tower" to (156 to 67),
+    "power-plant" to (150 to 80), "seafoam-islands" to (72 to 121), "mt-ember" to (40 to 122), "victory-road" to (28 to 62),
+    "cerulean-cave" to (136 to 40),
+)
+
+/** The legendary quests of [layer]: what each asks and how far it is, and the ones already given. */
+@Composable
+private fun LegendsCard(model: AppModel, layer: WorldLayer) {
+    val quests = Legends.of(layer)
+    if (quests.isEmpty()) return
+    val world = model.data.world
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("Legendary quests", style = MaterialTheme.typography.titleSmall)
+            quests.forEach { q ->
+                val done = world.hasLegend(q.id)
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    AnimatedSprite(Dex.defaultForm(q.speciesId).id, false, q.name, size = 48.dp, animate = false)
+                    Column(Modifier.weight(1f)) {
+                        Text(q.name, style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            when {
+                                done -> "Joined your Guardians."
+                                q.afterGuardian && !world.layerDone(layer) -> "Face the Guardian of ${layer.label} first. ${q.blurb}"
+                                else -> "${q.blurb} (${Legends.progress(world, q)} of ${q.clears})"
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
 
 private fun missionIcon(kind: MissionKind): String = when (kind) {
     MissionKind.EXPLORE -> "town-map"
@@ -474,7 +530,7 @@ private fun WorldTeamsView(model: AppModel) {
                     val dungeon = Dungeons.byId(trip.dungeonId)
                     if (dungeon != null) {
                         val floor = trip.floorsClimbed % dungeon.floors
-                        val per = WorldSim.floorMillis(dungeon, WorldSim.power(members, dungeon), world.guardianDone)
+                        val per = WorldSim.floorMillis(dungeon, WorldSim.power(members, dungeon), world.guardianDone, world.legendFaster(dungeon))
                         Text("Exploring ${dungeon.name}: floor ${floor + 1} of ${dungeon.floors}", style = MaterialTheme.typography.bodyLarge)
                         PixelBar(floor.toFloat() / dungeon.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "floor ${floor + 1} of ${dungeon.floors}")
                         Text("A floor takes about ${per / 1000 / 60} min ${per / 1000 % 60} s. It keeps going while you are away, up to 12 hours.", style = MaterialTheme.typography.bodyMedium)

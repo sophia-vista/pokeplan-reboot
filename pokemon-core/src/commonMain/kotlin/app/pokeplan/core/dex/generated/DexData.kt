@@ -2389,6 +2389,7 @@ internal val DEX_FORMS: List<String> = listOf(
 10324|tatsugiri-stretchy-mega|978|MEGA|Mega Tatsugiri|dragon,water|68,65,90,135,125,92|-|-
 10325|baxcalibur-mega|998|MEGA|Mega Baxcalibur|dragon,ice|115,175,117,105,101,87|Thermal Exchange|-
 10326|meowstic-female-mega|678|MEGA|Mega Meowstic|psychic|74,48,76,143,101,124|Trace|-
+20001|dialga-primal|483|ALTERNATE|Primal Dialga|steel,dragon|100,120,120,150,100,90|Pressure|Telepathy
 """,
 )
 

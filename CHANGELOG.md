@@ -5,6 +5,19 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.99.0
+
+- **World: the Kanto layer.** The Map screen has a layer switch (the Mystery Dungeon world and Kanto, both open from the first day). Kanto has nine dungeons from Red, Blue, FireRed and LeafGreen (Viridian Forest, Mt. Moon, Rock Tunnel, Pokémon Tower, Power Plant, Seafoam Islands, Mt. Ember, Victory Road, Cerulean Cave), each with wild Pokémon from the Kanto Pokédex (found only there), its own rank gate and milestone rewards, the official FireRed and LeafGreen map with a marker on each, and its own five-chapter story, "The Genetic Crisis". Clears in one layer do not advance the other layer's story.
+- **Legendary quests (Kanto):** Zapdos (Power Plant), Articuno (Seafoam Islands) and Moltres (Mt. Ember) join your Guardians after three clears of their dungeon; Mewtwo joins when Cerulean Cave's last floor is reached (Kanto's Guardian) and Mew after three clears of it. Each given once, with a reward line in the log. A bird makes the Kanto dungeons that favour its type 10% faster; Mewtwo adds a little to the chance of a find in Kanto, Mew to the chance of a treasure box. The quests are listed under the Kanto map.
+- New save fields with defaults (`layersDone`, `legends`), so old saves load. The home layer's numbers are unchanged (checked with `simulateWorldEconomy`; the report lists Kanto's dungeons beside the home ones).
+- Launcher Calendar widget: the rows fit the box (they were a fixed 48 dp, so six weeks overflowed the largest box and the top row of buttons was cut off); when the box is too short for the whole month, only the weeks around the chosen day are shown. The header is "Prev", a short month and year, and "Next" so none is cut; the widget can now be 10 rows tall (was 8), and new ones start 8 tall.
+
+## 0.98.0
+
+- Primal Dialga is its own Dex form (`dialga-primal`, id 20001, an alternate form of species 483), separate from Dialga, for the home layer's Temporal Tower Guardian. PokeAPI has no such form, so it is listed in the new `tools/species/custom_forms.txt`, which `generate.py` adds to the Dex and `tools/sprites/fetch.py` to the sprite manifest. Its sprites and portrait are SpriteCollab's "Primal" ones (credited to Chunsoft); base stats are Dialga's, as there are no official ones. The Temporal Tower Guardian now gives Primal Dialga (`Story.GUARDIAN_FORM`; `GameStore.grantPokemon` takes an optional form). Players who already received Dialga keep it.
+- `assets/world/map-kanto.png`: the official FireRed and LeafGreen Kanto region map, built from the game's tiles by `tools/sprites/fetch_kanto_map.py`, for the coming Kanto layer of World. Not used by any screen yet.
+- Docs: the World regions decisions (all nine mainline regions in order, each region's box legendaries as quests and Guardians, side legendaries as module Guardians, one layer each, Hisui as its own layer with the Origin-form items and Arceus) are in `docs/ecosystem.md`.
+
 ## 0.97.0
 
 - World job alert (Android): a notification when an exploring team finishes a job on the mission board ("A World job is done", or how many are ready), opening World. The moment is forecast from the team's pace (`WorldSim.jobsDoneAt`, tested against a real settle: not a millisecond before, done at it); one alarm is kept for the earliest, and World is settled when it goes off. Berry jobs have no forecast. A switch in Settings ("World job alert", on). New settings field with a default, so old saves load.

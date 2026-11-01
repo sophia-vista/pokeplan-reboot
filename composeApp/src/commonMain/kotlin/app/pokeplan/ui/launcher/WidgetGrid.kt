@@ -21,7 +21,7 @@ fun WidgetKind.limits(): WidgetLimits = when (this) {
     WidgetKind.NAV -> WidgetLimits(2, 2, 4, 4, 4, 3)
     WidgetKind.PINNED, WidgetKind.OFTEN, WidgetKind.FOLDER -> WidgetLimits(2, 2, 4, 8, 4, 3)
     WidgetKind.ACTIONS -> WidgetLimits(2, 2, 4, 4, 4, 3)
-    WidgetKind.CALENDAR -> WidgetLimits(4, 4, 4, 8, 4, 6)
+    WidgetKind.CALENDAR -> WidgetLimits(4, 4, 4, 10, 4, 8)
     WidgetKind.AGENDA -> WidgetLimits(2, 4, 4, 12, 4, 6)
     WidgetKind.FORECAST -> WidgetLimits(2, 2, 4, 6, 4, 3)
     WidgetKind.ANDROID -> WidgetLimits(1, 2, 4, 16, 4, 4)

@@ -1040,8 +1040,8 @@ class GameStore(
     fun unslotGuardian(id: String) = update { d -> d.copy(player = d.player.copy(guardians = d.player.guardians - id)) }
 
     /** Gives the player a Pokémon outright (a quest reward). It goes to the Guardian collection if it is a legendary or mythical. */
-    fun grantPokemon(speciesId: Int, source: String, how: Origin.How = Origin.How.QUEST): OwnedPokemon {
-        val option = HatchOption(speciesId, Dex.defaultForm(speciesId).identifier)
+    fun grantPokemon(speciesId: Int, source: String, how: Origin.How = Origin.How.QUEST, form: String? = null): OwnedPokemon {
+        val option = HatchOption(speciesId, form ?: Dex.defaultForm(speciesId).identifier)
         val p = Hatching.create(newId(), option, OwnedPokemon.PARTY_SIZE, nowMillis, 60, rng).copy(inParty = false)
         update { d ->
             log(source, listOf(Reward.Hatched(p, fromTask = false)),
@@ -1119,19 +1119,32 @@ class GameStore(
         if (kept !== data.world) update { it.copy(world = kept) }
         val before = data.world
         val report = WorldSim.settle(before, data.player.pokemon, nowMillis)
-        if (report.isEmpty) return null
+        if (report.isEmpty) { worldLegends(); return null }
         update { it.copy(world = report.data) }
         worldPaid("World: exploring", before)
         worldGuardian()
+        worldLegends()
         return report
     }
 
-    /** The story's end: the Guardian, Dialga, joins the Guardian collection once (docs/world.md, section 15). The mastery bonus is [app.pokeplan.world.Story.GUARDIAN_BONUS]. */
+    /** The story's end: the Guardian, Primal Dialga, joins the Guardian collection once (docs/world.md, section 15). The mastery bonus is [app.pokeplan.world.Story.GUARDIAN_BONUS]. */
     private fun worldGuardian() {
         val w = data.world
         if (!w.guardianDone || w.guardianGranted) return
         update { it.copy(world = it.world.copy(guardianGranted = true)) }
-        grantPokemon(app.pokeplan.world.Story.GUARDIAN_SPECIES, WORLD_SOURCE)
+        grantPokemon(app.pokeplan.world.Story.GUARDIAN_SPECIES, WORLD_SOURCE, form = app.pokeplan.world.Story.GUARDIAN_FORM)
+    }
+
+    /**
+     * The legendary quests of the layers (docs/ecosystem.md, "World regions"): each Pokémon whose quest is met (its dungeon cleared enough
+     * times, and for the end of a layer's story its Guardian faced) joins the Guardian collection once. They are not eggs; the reward line
+     * is in the log.
+     */
+    private fun worldLegends() {
+        for (quest in app.pokeplan.world.Legends.ready(data.world)) {
+            update { it.copy(world = it.world.copy(legends = it.world.legends + quest.id)) }
+            grantPokemon(quest.speciesId, WORLD_SOURCE)
+        }
     }
 
     /**

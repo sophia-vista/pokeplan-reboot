@@ -166,6 +166,14 @@ def main():
         form_lines.append('|'.join([str(pid), ident, str(sid), kind, clean(name),
                                     ','.join(types[pid]) or '-', statstr, abil, hid]))
 
+    # Forms that PokeAPI does not have (tools/species/custom_forms.txt)
+    with open(os.path.join(ROOT, 'tools/species/custom_forms.txt'), encoding='utf-8') as fh:
+        for line in fh:
+            if line.strip() and not line.startswith('#'):
+                parts = line.rstrip('\n').split('|')
+                assert len(parts) == 9 and int(parts[0]) not in pokemon, line
+                form_lines.append('|'.join(parts))
+
     # ---- evolutions
     evo_best = {}
     for r in R('pokemon_evolution'):

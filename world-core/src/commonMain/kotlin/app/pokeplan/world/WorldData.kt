@@ -69,8 +69,25 @@ data class WorldData(
     val missionsDone: Set<String> = emptySet(),
     /** When the team list was last settled, for the "while you were away" line. */
     val lastSeenAt: Long = 0,
+    /** The layers other than the home one whose Guardian has been faced, by [WorldLayer.id]. */
+    val layersDone: Set<String> = emptySet(),
+    /** The legendary quests whose Pokémon has been given, by [LegendQuest.id]. */
+    val legends: Set<String> = emptySet(),
 ) {
     val rank: ExplorerRank get() = ExplorerRank.at(xp)
+
+    /** Whether [layer]'s Guardian has been faced (its story is complete). */
+    fun layerDone(layer: WorldLayer): Boolean = if (layer == WorldLayer.HOME) guardianDone else layer.id in layersDone
+
+    /** Whether the legendary quest [id]'s Pokémon has been given. */
+    fun hasLegend(id: String): Boolean = id in legends
+
+    /**
+     * How much faster floors are in [dungeon] from the legendaries given for its layer, in percent: each Kanto bird makes the dungeons
+     * that favour its type quicker. The home Guardian's 10% is separate (`mastery`).
+     */
+    fun legendFaster(dungeon: DungeonDef): Int =
+        Legends.of(dungeon.layer).filter { it.id in legends && it.type != null && it.type in dungeon.favored }.size * Legends.BIRD_FASTER_PERCENT
 
     companion object { const val JOURNAL_SIZE = 40 }
 
@@ -101,7 +118,7 @@ data class WorldData(
     fun start(id: Int, dungeonId: String, now: Long): WorldData? {
         val team = team(id) ?: return null
         val dungeon = Dungeons.byId(dungeonId) ?: return null
-        if (team.members.isEmpty() || team.expedition != null || rank < dungeon.needs || Story.opened(this) < dungeon.chapter || (dungeon.postStory && !guardianDone)) return null
+        if (team.members.isEmpty() || team.expedition != null || rank < dungeon.needs || Story.opened(this, dungeon.layer) < dungeon.chapter || (dungeon.postStory && !layerDone(dungeon.layer))) return null
         return replace(team.copy(expedition = Expedition(dungeonId, now, now)))
     }
 

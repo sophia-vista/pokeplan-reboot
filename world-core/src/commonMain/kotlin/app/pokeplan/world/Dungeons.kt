@@ -33,13 +33,21 @@ data class DungeonDef(
     val chapter: Int = 1,
     /** The last floor of the Guardian's dungeon: clearing it completes the story once. */
     val guardian: Boolean = false,
-    /** Opens only after the story is complete (a Distortion Dungeon). */
+    /** Opens only after the story of its layer is complete (a Distortion Dungeon). */
     val postStory: Boolean = false,
+    /** The layer of the map this dungeon is in; [chapter] and [guardian] are about that layer's story. */
+    val layer: WorldLayer = WorldLayer.HOME,
 )
 
 /** The first three dungeons (the MVP's world map): Tiny Woods, Thunderwave Cave and Mt. Steel, from Explorers of Sky. *(tune)* */
 object Dungeons {
-    val all: List<DungeonDef> = listOf(
+    /** Every dungeon of every layer, the home layer first. */
+    val all: List<DungeonDef> by lazy { home + KantoDungeons.all }
+
+    /** The dungeons of one layer, in the order the map lists them. */
+    fun of(layer: WorldLayer): List<DungeonDef> = all.filter { it.layer == layer }
+
+    val home: List<DungeonDef> = listOf(
         DungeonDef(
             "tiny-woods", "Tiny Woods", WorldRegion.GREENLANDS, floors = 5, favored = setOf(PokemonType.GRASS, PokemonType.BUG, PokemonType.FLYING),
             baseFloorSeconds = 1800, needs = ExplorerRank.NORMAL,
@@ -96,7 +104,7 @@ object Dungeons {
         ),
     )
 
-    private val byId = all.associateBy { it.id }
+    private val byId: Map<String, DungeonDef> by lazy { all.associateBy { it.id } }
 
     fun byId(id: String): DungeonDef? = byId[id]
 }
