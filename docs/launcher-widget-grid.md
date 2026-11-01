@@ -15,7 +15,7 @@ Owner's request (31 Oct 2026): launcher widgets with drag and drop and resize, l
   old `layout` as a grid meanwhile). A damaged line is skipped. The old `G` lines are still read and written.
 
 ## Built (0.91.0): the grid is drawn
-`launcher/GridPage.kt` draws `gridWidgets` in cells (4 columns, rows of `WidgetGrid.ROW_DP` = 40 dp, so the old stack of about 17 rows fits one screen), each widget's body clipped to its cells and told its old size from its height (`asSlot`). Behind "Widget grid (preview)" in Launcher settings (`LauncherPrefs.gridMode`, off). The old widget bodies are not yet adapted to narrow or short cells (they clip).
+`launcher/GridPage.kt` draws `gridWidgets` in cells (4 columns, rows of `WidgetGrid.ROW_DP` = 36 dp, so the old stack of about 17 rows fits one screen), each widget's body clipped to its cells and told its old size from its height (`asSlot`). Behind "Widget grid (preview)" in Launcher settings (`LauncherPrefs.gridMode`, off). The old widget bodies are not yet adapted to narrow or short cells (they clip).
 
 ## Built (0.92.0): edit mode on the grid
 Long-press a widget (`GridCanvas`): frames, drag to move (snaps on release, a yellow frame shows the landing cell), a corner square to resize (`WidgetGrid.droppedAt`, `resizedTo`), X to remove, accessibility actions for every gesture. `LauncherPrefs.addWidget`/`removeWidget`/`removeGridWidget` keep the grid and the old layout together. `ScreenshotTest.launcherGridEdit` drags and resizes with real pointer events.
