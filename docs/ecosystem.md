@@ -432,7 +432,16 @@ What the atlas suggests, to settle with the owner (not decided):
 - **Size.** About 45 places; with three to five dungeons each, the dungeon count would go from 9 to well over a hundred. That is a multi-year content plan, so the order and a first small set matter more than the full list.
 - **Species per place.** The mainline regions have regional dexes in the data; the spin-off settings and the Mystery Dungeon continents have no species list yet (they would be curated like a module region, with no overlap rules needed because World's finds are not a module region).
 
-Questions for the owner: (1) the order of regions, and whether the first one is Kanto or a new, smaller start; (2) how many dungeons per region; (3) whether a region's Pokémon are found only in that region, or also in the home region at low odds; (4) whether the legendary of a region is a Guardian reward at the end of that region (like Dialga) or a quest; (5) whether World regions replace the current nine-dungeon map or sit beside it as the "home" region. Art is the open cost: each region needs a map picture and tilesets (the tilesets for many Explorers of Sky dungeons are already in `assets/tiles`; the Sky, Silver Trench and other sheets the owner has supplied are listed in `docs/assets.md`).
+#### Decisions (owner, 1 November 2026)
+
+1. **The Mystery Dungeon world is the main map** (the "home" layer): what World is today. The mainline regions and the spin-off settings are layers added beside it, with a switch on the Map screen; nothing existing is replaced.
+2. **Eight to nine dungeons per region.** A region is a full map of its own (about the size of the home layer, which has nine), not a short add-on.
+3. **A region's Pokémon are found in that region, following its regional dex** (the retired regional dexes, still generated, are the wild tables). No leakage into the home layer.
+4. **Each region has a main legendary, and it is a quest, not a Guardian reward:** the regional story runs towards it (Mewtwo in Kanto; Ho-Oh and Lugia in Johto; and so on, each region's own). It uses the shared quest framework's legendary quests. A region's *Guardian* (the story boss that gives the permanent boost, like Dialga) is separate.
+5. **The special spaces are Guardian-tier places inside their region** (Hyperspace Lumiose in Kalos, Ultra Space and Ultra Megalopolis in Alola, Terarium and Area Zero in Paldea, the Battle Zone in Sinnoh, and so on), opened by that region's story, like the Distortion Rift after the Temporal Tower.
+6. **The spin-off layer starts with the Ranger regions and Orre** (Fiore, Almia and Oblivia from the Ranger games; Orre from Colosseum and XD), after the mainline regions are under way. The other settings stay on the list.
+
+Still open: the order of the mainline regions after Kanto and Johto, each region's Guardian, whether the Mystery Dungeon continents (Air, Grass, Mist and the rest) are one layer or become their own maps, and the art (a map picture and tilesets per region; the tilesets the owner has supplied are in `docs/assets.md`).
 
 ### Ideas parked
 

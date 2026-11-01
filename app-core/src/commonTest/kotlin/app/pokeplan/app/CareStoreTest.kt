@@ -76,6 +76,25 @@ class CareStoreTest {
     }
 
     @Test
+    fun aHalfWrittenJournalEntryIsKeptAcrossARestartAndClearedWhenSaved() {
+        val s = setup()
+        s.care.setJournalDraft("Today I felt")
+        val again = CareStore(s.storage, s.clock, s.game, utc, rng = Random(3))
+        assertEquals("Today I felt", again.data.journalDraft, "the draft is on disk")
+        assertEquals("", s.care.write("Today I felt calm.")?.let { s.care.data.journalDraft }, "saving the entry clears the draft")
+    }
+
+    @Test
+    fun aDraftChangingNeverMarksCareForTheCloud() {
+        val s = setup()
+        s.care.setCloudSync(true)
+        val before = s.care.data
+        s.care.setJournalDraft("typing...")
+        assertEquals(before.cloud, s.care.data.cloud, "no upload is queued by typing")
+        assertEquals(before.copy(journalDraft = "typing..."), s.care.data)
+    }
+
+    @Test
     fun aRoutinePaysOnceADayAndUndoNeverPaysTwice() {
         val s = setup()
         val water = s.care.addRoutine("Drink water")
