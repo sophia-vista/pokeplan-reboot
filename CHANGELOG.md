@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.94.3
+
+- Audit: a screenshot test (`ScreenshotTest.largeTextPlaces`) renders Home, Plan, Planner, Focus, Care, Pokémon, Me and World at 130% system text; all eight were looked at and nothing is clipped or overlapping.
+
 ## 0.94.2
 
 - Plan usability, Phase 3 (finished): checked against the code and the audit's three points. Quick Add: shows what it understood and keeps the time (0.90.6). Inbox vs Today: the Inbox is the tasks in no list and Today is what is planned for today, with "Move to" on every task; nothing to change. A way to plan on the calendar without dragging: tap a task in "To plan", then tap an hour (with a panel to nudge by 15 minutes, set the length or take the time away) already existed; it is now covered by a test with real taps (`DayPlanTapTest`), and the "To plan" row fades at its right edge when more tasks are past it, so a clipped chip reads as "scroll for more".
@@ -66,10 +70,6 @@ release always has the newest merge).
 
 - Design system: one key for every control. Buttons, tabs, filter chips, category chips, the day and week arrows and the Day/Week/Month switch are all the same stair-cornered pixel key with the same states (resting, hovered with a mouse, pressed, selected, focused, disabled, loading) and the same 48 dp touch target; the table is in `docs/ui-ux-brief.md` section 5.1 and the code in `theme/Controls.kt`. Choice rows, notices and stat chips share the outline; text fields take the dialogue corner, the blue focus colour and the app's font for labels and error text (they showed the system font). Tabs and chips are filled when selected, as before, but no longer rounded; the arrows are keys, not bare symbols.
 - A component gallery in the screenshot test renders every control in every state, light, dark and at 130% text.
-
-## 0.90.2
-
-- Audit: a screenshot test (`ScreenshotTest.largeTextPlaces`) renders Home, Plan, Planner, Focus, Care, Pokémon, Me and World at 130% system text; all eight were looked at and nothing is clipped or overlapping.
 
 ## 0.90.1
 
