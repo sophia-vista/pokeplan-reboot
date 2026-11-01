@@ -726,3 +726,60 @@ What the code does now, against this concept (details: `CHANGELOG.md`, rules: `d
 ## Regions of the games (decided in outline, 1 November 2026)
 
 The Mystery Dungeon world is the main map. Beside it, as layers behind a switch on the Map screen: the nine mainline regions (Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea; eight to nine dungeons each, wild tables from the region's regional dex, Guardians per region that are its main legendaries, each reached by a quest, one layer each, built in release order, the special spaces as Guardian-tier places in their region), then the spin-off settings, starting with the Ranger regions and Orre. The owner's atlas, the decisions and what is still open are in `docs/ecosystem.md`, "World regions". Not built; the dungeons that exist (Tiny Woods to the Distortion Rift) are the home layer.
+
+## Kanto, the first region layer (design, 1 November 2026)
+
+Kanto is the first mainline layer beside the Mystery Dungeon home layer (decisions in `docs/ecosystem.md`, "World regions"). Everything below is a starting design; numbers marked *(tune)* are checked with `:world-core:simulateWorldEconomy` before the release.
+
+### Layer rules
+- **A layer is data, not a new game.** `WorldLayer` (home, Kanto, ...) is a new field on `DungeonDef`, and each layer has its own map picture, its own story chapters and its own Guardians. One layer is shown at a time behind a switch on the Map screen; teams, the Bag, rank, Poké and the Camp stay shared (one trainer).
+- **Kanto opens when the home story reaches its second chapter *(tune)*,** so nobody meets it before they know the loop. It stays open once reached. Its dungeons have their own rank gates, starting at Normal.
+- **Wild tables follow the Kanto regional dex** (species 1 to 151, plus Meltan-line species are not included). A Kanto species is found only in Kanto, so the collection fills region by region. The tables are written by hand per dungeon from the species' habitats in the games, not generated.
+- **Recruiting, not eggs:** finds join through the same recruit flow as the home layer.
+- **No change to the home layer** and nothing existing moves.
+
+### The nine dungeons
+Floors and floor time rise from route to endgame like the home layer's (Tiny Woods 5 floors at 30 min to the Temporal Tower's 20 at 4 h) *(tune)*. Favoured types decide who explores faster. "Quest" means a legendary quest ends there.
+
+| # | Dungeon | Kind | Floors | Rank | Favoured | Notes |
+|---|---|---|---|---|---|---|
+| 1 | Viridian Forest | Greenlands | 5 | Normal | Bug, Grass, Flying | Weedle, Caterpie lines, Pikachu from floor 4 |
+| 2 | Mt. Moon | Underground | 8 | Normal | Rock, Fairy-feel (Normal), Ground | Zubat, Geodude, Clefairy; moon-stone items on the last floors |
+| 3 | Rock Tunnel | Underground | 10 | Bronze | Rock, Ground, Fighting | Dark cave, Machop and Onix |
+| 4 | Pokémon Tower | Ancient | 12 | Silver | Ghost, Psychic | Gastly line; the Pokémon Tower's spirits |
+| 5 | Power Plant | Underground | 12 | Silver | Electric, Steel | **Zapdos quest**, Voltorb, Magnemite |
+| 6 | Seafoam Islands | Aquatic / Frozen | 14 | Gold | Water, Ice | **Articuno quest**, Seel, Dewgong, Slowpoke |
+| 7 | Mt. Ember (Pokémon Mansion upstairs) | Mountains | 16 | Gold | Fire, Rock | **Moltres quest**, Growlithe, Ponyta, Magmar |
+| 8 | Victory Road | Mountains | 18 | Platinum | Fighting, Rock, Dragon | The road to the League; Dragonair from floor 12 |
+| 9 | Cerulean Cave | Otherworldly | 20 | Diamond | Psychic, Dark-feel (Ghost), Dragon | **Mewtwo, the Guardian**; post-story floors beyond |
+
+Five more can follow from the regional dex without changing the shape: Diglett's Cave, Safari Zone (a Camp-like place), Cinnabar's Lab, the Sevii Islands (a late area, Kanto's "extra" region) and the Power Plant's deeper floors.
+
+### Story and quests
+Kanto's story is a chain of chapters like the home layer's (`Story.chapters`, one list per layer), each opened by rank and by dungeons cleared:
+1. **The League road:** clear the forest, Mt. Moon and Rock Tunnel.
+2. **Spirits:** Pokémon Tower. The ghost Gastly line and Marowak's spirit give the first chapter text.
+3. **The birds:** Power Plant, Seafoam Islands and Mt. Ember. Each ends in its **legendary quest** (Zapdos, Articuno, Moltres), which uses the shared quest framework (docs/world.md section 8): a requirement (clear it a number of times, field a team of a given type) then the Pokémon joins the Guardian collection.
+4. **Victory Road:** the way to Cerulean Cave.
+5. **The Guardian:** Cerulean Cave to its last floor, where Mewtwo waits. Mewtwo is a Guardian of Kanto and joins the Guardian collection once, like Primal Dialga does for the home layer. Mew stays a **side legendary** (a module's Guardian, not Kanto's).
+
+All four are Guardians of Kanto (decision 8); the boost of each is **Kanto-wide only** and small, so they add up inside the existing cap on Guardian effects *(tune)*:
+- Mewtwo, Psychic Mastery: expeditions in Kanto find recruits slightly more often.
+- Articuno, Zapdos, Moltres: their types explore Kanto faster (ice and water, electric, fire).
+
+### Art
+- **Map picture:** one for Kanto, in the style of the `map-1..8` stages. Real assets only (the art rule): the town map of the games or a Mystery Dungeon style crop. This is the main thing the owner supplies or we find. Until then the layer ships with the home layer's picture and markers laid on a scene backdrop.
+- **Tilesets:** the Explorers of Sky sheets already in `assets/tiles/` cover every kind needed (Apple Woods or Lush Prairie for the forest; Crystal Cave for Mt. Moon; Beach Cave for Seafoam; Deep Sealed Ruin for the tower). No new sheet is required for the first release.
+- **Sprites, cries and portraits:** SpriteCollab and the existing assets, as for every Pokémon.
+
+### Build order (one PR each, combined where small)
+1. `WorldLayer`, `DungeonDef.layer`, the layer switch and per-layer story; no Kanto content yet. Saves load unchanged.
+2. The nine dungeons, wild tables and milestone rewards; economy run (`simulateWorldEconomy`, compare Kanto with the home layer: Poké and Rare Candy per hour must not exceed the home layer's endgame).
+3. The story chapters, the bird quests and the Mewtwo Guardian with its boost; tests (a settle that reaches each quest, the Guardian granted once).
+4. Map picture and tiles, and the 130% text size check on the new screens.
+5. `docs/economy.md`, `docs/world.md` status and `CHANGELOG.md`; bump `RewardRules.VERSION` only if World pays through a new source.
+
+### Open questions for the owner
+- Is the Kanto map picture to be taken from the games, or supplied by the owner?
+- Should Kanto's quests need the home-layer story first (assumed: chapter 2 of the home story), or open from the first day?
+- Kanto-only boosts as above, or may a Kanto Guardian also help other layers a little?
