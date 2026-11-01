@@ -456,6 +456,20 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.Cutscene.Evolve(before, before.evolvedInto(5, "charmeleon"))
     }
 
+    /** Whole app places at the system's largest text (130%): looked at for clipped or overlapping text. */
+    @Test
+    fun largeTextPlaces() {
+        listOf("home" to Place.HOME, "plan" to Place.PLAN, "planner" to Place.PLANNER, "focus" to Place.FOCUS, "care" to Place.CARE, "pokemon" to Place.COLLECTION, "me" to Place.ME, "world" to Place.WORLD).forEach { (name, place) ->
+            val store = storeWithTeam()
+            store.addTask("Write the report for the quarterly meeting with a long title that wraps", Rank.B, planned = store.today, estimateMinutes = 45)
+            store.addTask("Reply to mail", Rank.E, planned = store.today)
+            store.markRewardsSeen()
+            store.markVersionSeen(AppVersion.NAME)
+            val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
+            render("xl-$name", fontScale = 1.3f) { App(storage, focusTab = true, start = place) }
+        }
+    }
+
     private fun dark(name: String, place: Place) {
         val store = storeWithTeam()
         store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 45)
