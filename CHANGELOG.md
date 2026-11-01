@@ -67,6 +67,10 @@ release always has the newest merge).
 - Design system: one key for every control. Buttons, tabs, filter chips, category chips, the day and week arrows and the Day/Week/Month switch are all the same stair-cornered pixel key with the same states (resting, hovered with a mouse, pressed, selected, focused, disabled, loading) and the same 48 dp touch target; the table is in `docs/ui-ux-brief.md` section 5.1 and the code in `theme/Controls.kt`. Choice rows, notices and stat chips share the outline; text fields take the dialogue corner, the blue focus colour and the app's font for labels and error text (they showed the system font). Tabs and chips are filled when selected, as before, but no longer rounded; the arrows are keys, not bare symbols.
 - A component gallery in the screenshot test renders every control in every state, light, dark and at 130% text.
 
+## 0.90.2
+
+- Audit: a screenshot test (`ScreenshotTest.largeTextPlaces`) renders Home, Plan, Planner, Focus, Care, Pokémon, Me and World at 130% system text; all eight were looked at and nothing is clipped or overlapping.
+
 ## 0.90.1
 
 - Care routines can be edited: tap a routine, then Edit to change its name, time and days (what it earned and the days it was done stay, and editing never lets today pay again). The time and days controls are shared with the add form. Tested in the store and rendered at 130% text.
