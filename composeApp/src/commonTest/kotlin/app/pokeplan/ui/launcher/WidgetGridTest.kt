@@ -199,7 +199,8 @@ class WidgetPagesTest {
         assertEquals(2, three.deleteLastPage().pages)
         assertEquals(2, base.deleteLastPage().pages)
         val busy = three.addGridWidget(WidgetPage.PAGE3, WidgetKind.FORECAST)
-        assertEquals(3, busy.deleteLastPage().pages, "not while a widget is on it")
+        assertEquals(2, busy.deleteLastPage().pages, "a page with a widget goes too; the widget moves to the page before it")
+        assertTrue(busy.deleteLastPage().gridWidgets.any { it.kind == WidgetKind.FORECAST })
     }
 
     @Test
