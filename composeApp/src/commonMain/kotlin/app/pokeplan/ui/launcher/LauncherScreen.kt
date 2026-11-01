@@ -426,17 +426,17 @@ private fun HomePage(env: WidgetEnv, isDefault: Boolean) {
 /** A pinned app on the home page: its logo (or the game item chosen for it) over its name; tap opens it, press and hold manages it. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-internal fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixel: Int, modifier: Modifier, onHold: () -> Unit) {
+internal fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixel: Int, modifier: Modifier, onHold: () -> Unit, showLabel: Boolean = true) {
     val ui = LocalUiSound.current
     val density = LocalDensity.current.density
     val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Column(
-        modifier.pressScale(source).defaultMinSize(minHeight = 72.dp).focusRing(rowShape, Color.White).combinedClickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onLongClick = { ui(Sfx.LONG_PRESS); onHold() }, onClick = { ui(Sfx.CONFIRM); host.open(app.key) })
+        modifier.pressScale(source).defaultMinSize(minHeight = if (showLabel) 72.dp else Spacing.Target).focusRing(rowShape, Color.White).combinedClickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onLongClick = { ui(Sfx.LONG_PRESS); onHold() }, onClick = { ui(Sfx.CONFIRM); host.open(app.key) })
             .semantics(mergeDescendants = true) {}.padding(vertical = Spacing.S),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
         if (item != null) ItemIcon(item, size = 40.dp, description = null) else AppIcon(host, app.key, 40.dp)
-        Box(Modifier.padding(top = Spacing.M).padding(horizontal = (1 * pixel / density).dp)) { PmdText(app.label, pixel) }
+        if (showLabel) Box(Modifier.padding(top = Spacing.M).padding(horizontal = (1 * pixel / density).dp)) { PmdText(app.label, pixel) }
     }
 }
 

@@ -8,16 +8,12 @@ release always has the newest merge).
 ## 0.96.1
 
 - World, the dungeon pictures (the Map's cards and the Teams scene) centre their Pokémon along the strip; they were bunched to the left.
+- Launcher widget grid, less tall: rows are 36 dp (were 40), and a widget's text is centred in its frame (it hugged the top, leaving the empty space below). Inside a grid box the room above and below is whatever the cells leave, so nothing is cut off at the default sizes (checked in `launcher-grid.png`).
+- World recruits are not eggs: recruiting a find (or receiving the World's Guardian) no longer plays the full-screen "hatched from the Egg!" scene, and the buddy no longer reacts as if an egg hatched. The Pokémon is still added as before, and its reward line is in the log. Eggs hatching from Focus, tasks and Care are unchanged.
 
 ## 0.96.0
 
 - Moves in the Dex (owner's decision d16): `tools/species/generate.py` now also writes every move (919: type, category, power, PP, accuracy, priority, generation) and each form's learnset from the newest game it appears in (level-up with levels, egg, tutor, machine). `Dex.move(id or identifier)`, `Dex.learnset(form or species)` and `Dex.movesOfType(type)` read them; Mega and Gigantamax forms use their species' set. No gameplay uses them yet; they unblock move-based skills and Pokégear helpers. `DexData.kt` grows by about 410 KB.
-## 0.95.2
-
-- Launcher widget grid, less tall: rows are 36 dp (were 40), and a widget's text is centred in its frame (it hugged the top, leaving the empty space below). Inside a grid box the room above and below is whatever the cells leave, so nothing is cut off at the default sizes (checked in `launcher-grid.png`).
-## 0.95.3
-
-- World recruits are not eggs: recruiting a find (or receiving the World's Guardian) no longer plays the full-screen "hatched from the Egg!" scene, and the buddy no longer reacts as if an egg hatched. The Pokémon is still added as before, and its reward line is in the log. Eggs hatching from Focus, tasks and Care are unchanged.
 
 ## 0.95.1
 
