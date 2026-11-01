@@ -8,6 +8,7 @@ release always has the newest merge).
 ## 0.94.4
 
 - First-use states (audit): a screenshot test renders every landing page for a brand-new player. World's menu now opens with a "Start here" card that says what World is and sends your strongest Pokémon into Tiny Woods in one tap; Care's landing puts Today (and "Add a routine") right under the scene instead of below six empty party slots, with the visitors and the party after the menu; the Pokémon tab says where the next Pokémon come from while you have only one.
+- Care audit pass (`docs/audit-2026-10-31.md`): a half-written journal entry now survives leaving the screen or the tab (it was lost), and a test shows a routine's reminder follows an edit. The rest of Care checked out against the audit (privacy of the Care event, reminders and their Done action, calm break under Reduce motion, explicit skill practice, opt-in cloud copy with delete-on-off).
 
 ## 0.94.3
 

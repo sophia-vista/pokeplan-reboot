@@ -190,6 +190,9 @@ class AppModel(
     var careSection: CareSection? by mutableStateOf(null)
     var worldSection: WorldSection? by mutableStateOf(null)
 
+    /** The journal entry being written in Care, kept while the player looks elsewhere in the app (not saved to disk until saved as an entry). */
+    var journalDraft: String by mutableStateOf("")
+
     /** The clock World's screens read (the store's, refreshed every few seconds while a World screen is open), so lists that depend on the day or a brew follow it. */
     var worldNow: Long by mutableStateOf(0L)
 

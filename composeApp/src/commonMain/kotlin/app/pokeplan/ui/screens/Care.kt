@@ -668,7 +668,8 @@ private fun JournalView(model: AppModel) {
     val care = model.care
     val data = model.careData
     val prompt = care.prompt()
-    var text by remember { mutableStateOf("") }
+    // The half-written entry lives in the model, so leaving the screen (or a tab) and coming back finds it still there.
+    var text by model::journalDraft
     var answering by remember { mutableStateOf<String?>(null) }
     var tags by remember { mutableStateOf(emptySet<String>()) }
     var query by remember { mutableStateOf("") }
