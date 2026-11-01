@@ -52,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
@@ -620,7 +621,9 @@ private fun TrayGroup(label: String?, tasks: List<Task>, picked: String?, pick: 
     if (tasks.isEmpty()) return
     if (label != null) Text(label, style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
     // One row that scrolls sideways, so a long tray never pushes the hours off the screen.
-    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+    val scroll = rememberScrollState()
+    Box {
+    Row(Modifier.horizontalScroll(scroll), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         tasks.forEach { t -> key(t.id) {
             val anchor = remember { Anchor() }
             TrayChip(
@@ -635,6 +638,9 @@ private fun TrayGroup(label: String?, tasks: List<Task>, picked: String?, pick: 
                     ),
             )
         } }
+    }
+    // More chips past the edge: the last one fades out, so a clipped chip reads as "scroll for more", not as a mistake.
+    if (scroll.canScrollForward) Box(Modifier.align(Alignment.CenterEnd).width(32.dp).height(Spacing.Target).background(Brush.horizontalGradient(listOf(Color.Transparent, Pixel.Panel))))
     }
 }
 
