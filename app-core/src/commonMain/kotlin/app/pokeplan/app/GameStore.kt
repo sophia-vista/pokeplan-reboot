@@ -1131,7 +1131,7 @@ class GameStore(
         val w = data.world
         if (!w.guardianDone || w.guardianGranted) return
         update { it.copy(world = it.world.copy(guardianGranted = true)) }
-        grantPokemon(app.pokeplan.world.Story.GUARDIAN_SPECIES, "World")
+        grantPokemon(app.pokeplan.world.Story.GUARDIAN_SPECIES, WORLD_SOURCE)
     }
 
     /**
@@ -1196,7 +1196,7 @@ class GameStore(
     /** Recruits the find at [index] into the shared collection: the same persistent Pokémon as any other (docs/world.md, section 12). Null when there is none. */
     fun worldRecruit(index: Int): OwnedPokemon? {
         val find = data.world.finds.getOrNull(index) ?: return null
-        val mon = grantPokemon(find.speciesId, "World", Origin.How.WORLD)
+        val mon = grantPokemon(find.speciesId, WORLD_SOURCE, Origin.How.WORLD)
         update { it.copy(world = it.world.withoutFind(index)) }
         return mon
     }
@@ -1371,7 +1371,8 @@ class GameStore(
         // On Care's screens only Care's own moments count (a routine, a calm break, a skill, a friend made).
         val recent = data.rewardLog.filter { nowMillis - it.atMillis < EVENT_MILLIS && (!care || it.source.startsWith(CARE_LOG_PREFIX)) }
         val latest = recent.lastOrNull() ?: return null
-        val hatches = recent.flatMap { e -> e.rewards.filterIsInstance<Reward.Hatched>() }
+        // A Pokémon the World gives is not an egg hatching, so it is not a hatch moment.
+        val hatches = recent.filter { it.source != WORLD_SOURCE }.flatMap { e -> e.rewards.filterIsInstance<Reward.Hatched>() }
         val event = when {
             hatches.any { it.pokemon.isShiny } -> BuddyEvent.SHINY
             hatches.isNotEmpty() -> BuddyEvent.HATCHED
@@ -1470,6 +1471,9 @@ class GameStore(
     fun buddyBerry(): String? = berries().keys.minOrNull()
 
     companion object {
+        /** The reward-log source of what World gives (a recruit, the Guardian): not an egg, so no hatch scene or hatch reaction. */
+        const val WORLD_SOURCE = "World"
+
         const val MAX_PICKER_OPTIONS = 30
 
         /** The welcome-back gift after a week or more away. *(tune)* */
