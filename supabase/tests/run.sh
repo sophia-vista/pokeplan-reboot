@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
-# Runs the migrations and SQL tests on a throwaway PostgreSQL. Needs PostgreSQL 15+ binaries (default: /usr/lib/postgresql/16/bin).
+# Runs the migrations and SQL tests on a throwaway PostgreSQL. Needs PostgreSQL 15+ binaries: PGBIN if set, else the newest
+# /usr/lib/postgresql/*/bin, else wherever initdb is on the PATH (the CI runner image changes which version it ships).
 #   supabase/tests/run.sh
 set -euo pipefail
 
-PGBIN="${PGBIN:-/usr/lib/postgresql/16/bin}"
+find_pgbin() {
+  local newest
+  newest="$(ls -d /usr/lib/postgresql/*/bin 2>/dev/null | sort -V | tail -n 1 || true)"
+  if [ -n "$newest" ] && [ -x "$newest/initdb" ]; then echo "$newest"; return; fi
+  if command -v initdb >/dev/null 2>&1; then dirname "$(readlink -f "$(command -v initdb)")"; return; fi
+  if command -v pg_config >/dev/null 2>&1 && [ -x "$(pg_config --bindir)/initdb" ]; then pg_config --bindir; return; fi
+}
+PGBIN="${PGBIN:-$(find_pgbin)}"
+[ -n "$PGBIN" ] && [ -x "$PGBIN/initdb" ] || { echo "PostgreSQL 15+ binaries not found: install postgresql or set PGBIN" >&2; exit 127; }
+echo "using PostgreSQL binaries in $PGBIN"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
 WORK="$(mktemp -d)"
