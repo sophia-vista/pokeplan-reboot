@@ -84,7 +84,7 @@ internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelField(text, { text = it.take(40) }, Modifier.fillMaxWidth(), singleLine = true, label = "Add something to pick from")
-            PixelIconButton("plus", "Add", { store.setPickerOptions(options + text); text = "" }, Modifier.fillMaxWidth(), Pixel.InkSoft, enabled = text.isNotBlank() && options.size < GameStore.MAX_PICKER_OPTIONS)
+            PixelIconButton("plus", "Add", { store.setPickerOptions(options + text); text = "" }, Pixel.InkSoft, enabled = text.isNotBlank() && options.size < GameStore.MAX_PICKER_OPTIONS)
             options.forEachIndexed { i, option ->
                 if (editing == i) {
                     PixelField(editText, { editText = it.take(40) }, Modifier.fillMaxWidth(), singleLine = true, label = "Change it")
@@ -94,21 +94,21 @@ internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
                             if (new.isNotEmpty() && (new == option || new !in options)) { store.setPickerOptions(options.toMutableList().also { it[i] = new }); if (new != option) moveWeights(option, new) }
                             editing = null
                         }, Modifier.weight(1f), Pixel.Blue, compact = true)
-                        PixelIconButton("close", "Cancel", { editing = null }, Modifier.weight(1f), Pixel.InkSoft)
+                        PixelIconButton("close", "Cancel", { editing = null }, Pixel.InkSoft)
                     }
                 } else {
                     val weight = Randomizer.weightOf(option, gear.pickerWeights)
                     Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                         Text(option + if (weight > 1) "  (x$weight)" else "", Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodyLarge)
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                            PixelIconButton("pencil", "Edit", { editing = i; editText = option }, Modifier.weight(1f), Pixel.InkSoft)
-                            PixelIconButton("arrow-up", "Up", { if (i > 0) store.setPickerOptions(options.toMutableList().also { it.add(i - 1, it.removeAt(i)) }) }, Modifier.weight(1f), Pixel.InkSoft, enabled = i > 0)
-                            PixelIconButton("arrow-down", "Down", { if (i < options.lastIndex) store.setPickerOptions(options.toMutableList().also { it.add(i + 1, it.removeAt(i)) }) }, Modifier.weight(1f), Pixel.InkSoft, enabled = i < options.lastIndex)
+                            PixelIconButton("pencil", "Edit", { editing = i; editText = option }, Pixel.InkSoft)
+                            PixelIconButton("arrow-up", "Up", { if (i > 0) store.setPickerOptions(options.toMutableList().also { it.add(i - 1, it.removeAt(i)) }) }, Pixel.InkSoft, enabled = i > 0)
+                            PixelIconButton("arrow-down", "Down", { if (i < options.lastIndex) store.setPickerOptions(options.toMutableList().also { it.add(i + 1, it.removeAt(i)) }) }, Pixel.InkSoft, enabled = i < options.lastIndex)
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                            PixelIconButton("minus", "Less likely", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights + (option to (weight - 1).coerceAtLeast(1))) } }, Modifier.weight(1.3f), Pixel.InkSoft, enabled = weight > 1)
-                            PixelIconButton("plus", "More", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights + (option to (weight + 1).coerceAtMost(Randomizer.MAX_WEIGHT))) } }, Modifier.weight(1f), Pixel.InkSoft, enabled = weight < Randomizer.MAX_WEIGHT)
-                            PixelIconButton("trash", "Remove", { store.setPickerOptions(options - option); store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights - option) } }, Modifier.weight(1f), Pixel.InkSoft)
+                            PixelIconButton("minus", "Less likely", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights + (option to (weight - 1).coerceAtLeast(1))) } }, Pixel.InkSoft, enabled = weight > 1)
+                            PixelIconButton("plus", "More", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights + (option to (weight + 1).coerceAtMost(Randomizer.MAX_WEIGHT))) } }, Pixel.InkSoft, enabled = weight < Randomizer.MAX_WEIGHT)
+                            PixelIconButton("trash", "Remove", { store.setPickerOptions(options - option); store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights - option) } }, Pixel.InkSoft)
                         }
                     }
                 }

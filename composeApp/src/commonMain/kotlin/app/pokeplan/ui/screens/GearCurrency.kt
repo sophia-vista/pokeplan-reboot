@@ -89,7 +89,7 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
             PixelField(text, { text = it.take(20); onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "Amount in ${from} (a number or a sum)")
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelButton(from, { choosing = if (choosing == "from") null else "from"; query = "" }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelIconButton("repeat", "Swap", { val f = from; from = to; to = f; savePair(from, to); onUse() }, Modifier.weight(1f), Pixel.Blue)
+                PixelIconButton("repeat", "Swap", { val f = from; from = to; to = f; savePair(from, to); onUse() }, Pixel.Blue)
                 PixelButton(to, { choosing = if (choosing == "to") null else "to"; query = "" }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
             Text("${Currencies.label(from)} to ${Currencies.label(to)}. Tap a code to change it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -113,7 +113,7 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PixelField(manualText, { manualText = it.take(14) }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Your rate")
                         PixelButton("Use", { manualText.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 && it.isFinite() }?.let { v -> store.changeGear { g -> g.copy(manualRates = g.manualRates + (other to v)) } } }, Modifier.weight(0.5f), Pixel.Blue, compact = true)
-                        PixelIconButton("close", "Clear", { manualText = ""; store.changeGear { g -> g.copy(manualRates = g.manualRates - other) } }, Modifier.weight(0.5f), Pixel.InkSoft)
+                        PixelIconButton("close", "Clear", { manualText = ""; store.changeGear { g -> g.copy(manualRates = g.manualRates - other) } }, Pixel.InkSoft)
                     }
                 }
             }
@@ -124,7 +124,7 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
                 Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Text(if (amount == null || r == null) "$code: ?" else Currencies.format(amount * r, code), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
                     PixelButton("Show", { to = code; savePair(from, to) }, Modifier.weight(0.4f), Pixel.InkSoft, compact = true)
-                    PixelIconButton("trash", "Drop", { store.changeGear { g -> g.copy(currencyBoard = g.currencyBoard - code) } }, Modifier.weight(0.4f), Pixel.InkSoft)
+                    PixelIconButton("trash", "Drop", { store.changeGear { g -> g.copy(currencyBoard = g.currencyBoard - code) } }, Pixel.InkSoft)
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {

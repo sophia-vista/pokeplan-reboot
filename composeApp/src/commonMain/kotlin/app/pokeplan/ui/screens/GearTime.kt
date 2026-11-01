@@ -55,7 +55,7 @@ internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Time is up: ${ringing.joinToString(", ") { it.label }}", style = MaterialTheme.typography.titleSmall, color = Pixel.Red)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelIconButton("stop", "Stop", { store.timersDismissFinished(); onUse() }, Modifier.weight(1f), Pixel.Red)
+                PixelIconButton("stop", "Stop", { store.timersDismissFinished(); onUse() }, Pixel.Red)
                 PixelButton("+1 min", { ringing.forEach { store.timerAddTime(it.id, 60_000) }; onUse() }, Modifier.weight(1f), Pixel.Blue, compact = true)
             }
         }
@@ -67,13 +67,13 @@ internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
                 Text(formatTimer(t.leftAt(now)), style = MaterialTheme.typography.headlineMedium, color = if (t.running) Pixel.Ink else Pixel.InkSoft)
                 Text(if (t.running) "Running" else if (t.paused) "Paused" else "Ready: ${formatTimer(t.durationMs)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    if (t.running) PixelIconButton("pause", "Pause", { store.timerPause(t.id); onUse() }, Modifier.weight(1f), Pixel.InkSoft)
+                    if (t.running) PixelIconButton("pause", "Pause", { store.timerPause(t.id); onUse() }, Pixel.InkSoft)
                     else PixelButton(if (t.paused) "Resume" else "Start", { store.timerStart(t.id); onUse() }, Modifier.weight(1f), Pixel.Blue, compact = true)
                     PixelButton("+1 min", { store.timerAddTime(t.id, 60_000); onUse() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    PixelIconButton("reload", "Reset", { store.timerReset(t.id) }, Modifier.weight(1f), Pixel.InkSoft)
-                    PixelIconButton("trash", "Delete", { store.timerRemove(t.id) }, Modifier.weight(1f), Pixel.InkSoft)
+                    PixelIconButton("reload", "Reset", { store.timerReset(t.id) }, Pixel.InkSoft)
+                    PixelIconButton("trash", "Delete", { store.timerRemove(t.id) }, Pixel.InkSoft)
                 }
             }
         }
@@ -111,10 +111,10 @@ internal fun StopwatchTool(model: AppModel, onUse: () -> Unit) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(formatStopwatch(elapsed), Modifier.fillMaxWidth(), style = MaterialTheme.typography.headlineLarge, maxLines = 1)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                if (watch.running) PixelIconButton("pause", "Pause", { store.stopwatchPause(); onUse() }, Modifier.weight(1f), Pixel.InkSoft)
+                if (watch.running) PixelIconButton("pause", "Pause", { store.stopwatchPause(); onUse() }, Pixel.InkSoft)
                 else PixelButton(if (watch.accumulatedMs > 0) "Resume" else "Start", { store.stopwatchStart(); onUse() }, Modifier.weight(1f), Pixel.Blue, compact = true)
                 PixelButton("Lap", { store.stopwatchLap(); onUse() }, Modifier.weight(1f), Pixel.Blue, compact = true, enabled = watch.running)
-                PixelIconButton("reload", "Reset", { store.stopwatchReset() }, Modifier.weight(1f), Pixel.InkSoft, enabled = watch.running || watch.accumulatedMs > 0 || watch.laps.isNotEmpty())
+                PixelIconButton("reload", "Reset", { store.stopwatchReset() }, Pixel.InkSoft, enabled = watch.running || watch.accumulatedMs > 0 || watch.laps.isNotEmpty())
             }
             if (splits.isNotEmpty()) {
                 val fastest = splits.min()

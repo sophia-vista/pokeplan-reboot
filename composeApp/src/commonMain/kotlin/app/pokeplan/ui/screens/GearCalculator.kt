@@ -97,7 +97,7 @@ internal fun CalculatorTool(model: AppModel, onUse: () -> Unit) {
                 Text("Angles in ${if (gear.calcDegrees) "degrees" else "radians"}. Memory: ${CalcEngine.format(gear.calcMemory)}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelIconButton("copy", "Copy", { clipboard.setText(AnnotatedString(liveValue?.text ?: expr)) }, Modifier.weight(1f), Pixel.InkSoft, enabled = expr.isNotBlank())
+                PixelIconButton("copy", "Copy", { clipboard.setText(AnnotatedString(liveValue?.text ?: expr)) }, Pixel.InkSoft, enabled = expr.isNotBlank())
                 PixelButton(if (gear.calcHistoryOn) "History on" else "History off", { store.changeGear { it.copy(calcHistoryOn = !it.calcHistoryOn) } }, Modifier.weight(1f), if (gear.calcHistoryOn) Pixel.Green else Pixel.InkSoft, compact = true)
             }
             Text(if (gear.calcHistoryOn) "The last sums are kept on this phone only." else "Nothing is kept unless you turn the history on.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)

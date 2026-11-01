@@ -248,8 +248,8 @@ fun PixelIconButton(
     enabled: Boolean = true,
 ) {
     PixelKey(
-        onClick, modifier.semantics { contentDescription = description }, key = color, enabled = enabled, compact = true,
-        horizontal = 8.dp, sound = app.pokeplan.ui.Sfx.CONFIRM,
+        onClick, modifier.width(Spacing.Target).semantics { contentDescription = description }, key = color, enabled = enabled, compact = true,
+        horizontal = 0.dp, sound = app.pokeplan.ui.Sfx.CONFIRM,
     ) { look -> app.pokeplan.ui.Glyph(glyph, look.ink, size = 20.dp) }
 }
 
