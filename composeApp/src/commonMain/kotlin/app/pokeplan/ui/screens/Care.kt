@@ -124,10 +124,9 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
+            // What to do comes before the party and the visitors: a new player sees "Add a routine" without scrolling past six empty slots.
             CareBuddy(model, openPokemon)
             RewardBox(model)
-            CarePartyPanel(model, openPokemon)
-            VisitorsCard(model)
             SectionLabel("Today", icon = CareSection.ROUTINES.icon)
             if (today.isEmpty()) {
                 EmptyState(
@@ -148,6 +147,8 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                     MenuEntry(CareSection.SETTINGS.name, CareSection.SETTINGS.icon, "Settings", "cloud copy", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.careSection = CareSection.valueOf(key) }
+            VisitorsCard(model)
+            CarePartyPanel(model, openPokemon)
         }
     }
 }
@@ -667,7 +668,8 @@ private fun JournalView(model: AppModel) {
     val care = model.care
     val data = model.careData
     val prompt = care.prompt()
-    var text by remember { mutableStateOf("") }
+    // The half-written entry lives in the model, so leaving the screen (or a tab) and coming back finds it still there.
+    var text by model::journalDraft
     var answering by remember { mutableStateOf<String?>(null) }
     var tags by remember { mutableStateOf(emptySet<String>()) }
     var query by remember { mutableStateOf("") }

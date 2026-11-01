@@ -112,16 +112,28 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.WORLD.label, subtitle = "Rank: ${world.rank.label}", onBack = onBack, color = Module.WORLD.look.header)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            // The next thing worth doing, and why (the first open dungeon not cleared, else what the nearest closed one waits for).
-            val next = app.pokeplan.world.WorldGuide.nextStep(world)
-            TextBox {
-                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Text("Next up", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    Text(next.title, style = MaterialTheme.typography.titleSmall)
-                    Text(next.reason, style = MaterialTheme.typography.bodyMedium)
-                    val target = next.dungeonId
-                    if (target != null && world.slots().any { it.expedition == null }) {
-                        PixelButton("Send my strongest", { model.store.worldQuickSend(target) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+            // The first time: say what World is and give the one thing to do; after that, the next thing worth doing and why
+            // (the first open dungeon not cleared, else what the nearest closed one waits for).
+            val firstTime = world.teams.none { it.expedition != null || it.members.isNotEmpty() } && world.clears.isEmpty()
+            if (firstTime) {
+                TextBox {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        Text("Start here", style = MaterialTheme.typography.titleSmall)
+                        Text("Send a team of your Pokémon into a dungeon. They climb its floors on their own, even while you are away, and bring back berries, treasure and Pokémon who want to join you.", style = MaterialTheme.typography.bodyLarge)
+                        PixelButton("Send my strongest into Tiny Woods", { model.store.worldQuickSend("tiny-woods") }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+                    }
+                }
+            } else {
+                val next = app.pokeplan.world.WorldGuide.nextStep(world)
+                TextBox {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        Text("Next up", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                        Text(next.title, style = MaterialTheme.typography.titleSmall)
+                        Text(next.reason, style = MaterialTheme.typography.bodyMedium)
+                        val target = next.dungeonId
+                        if (target != null && world.slots().any { it.expedition == null }) {
+                            PixelButton("Send my strongest", { model.store.worldQuickSend(target) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+                        }
                     }
                 }
             }

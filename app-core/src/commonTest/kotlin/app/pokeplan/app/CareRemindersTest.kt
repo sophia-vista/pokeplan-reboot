@@ -38,6 +38,18 @@ class CareRemindersTest {
     }
 
     @Test
+    fun editingARoutineMovesItsReminderAndDropsDaysItIsNoLongerFor() {
+        val edited = water.copy(time = LocalTime(11, 30), days = setOf(DayOfWeek.TUESDAY))
+        val care = CareData(routines = listOf(edited))
+        val r = CareReminders.upcoming(care, app, now, utc)
+        assertEquals(listOf(monday.plusDays(1)), r.map { it.day }.distinct().take(1), "today (a Monday) is no longer one of its days")
+        assertEquals(at(monday.plusDays(1), 11, 30), r.first().atMillis, "and it goes off at the new time")
+        // A reminder already set for the old plan is dropped when it fires.
+        assertFalse(CareReminders.stillWanted(care, app, "w", monday))
+        assertTrue(CareReminders.stillWanted(care, app, "w", monday.plusDays(1)))
+    }
+
+    @Test
     fun aRoutineDoneTodayOrPutAwayStaysQuiet() {
         val care = CareData(routines = listOf(water.complete(monday), walk.copy(archived = true)))
         val r = CareReminders.upcoming(care, app, now, utc)

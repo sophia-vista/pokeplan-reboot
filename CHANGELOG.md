@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.95.0
+
+- World, clearer (audit Phase 5, first slice): the landing opens with "Next up" after your first trip (the first open dungeon you have not cleared, or what the nearest closed one is waiting for, with a one-tap "Send my strongest"); each open dungeon on the map says, for every team that is ready, how long a floor takes it and how many of its members like the place; and the expedition log is kept in the save (finds, milestones, clears, finished jobs, the Guardian; a dungeon cleared again and again in one stretch is one line, "(3 times)"), so it is still there after a night away. The save gains a `journal` list with a default, so old saves load.
+
+## 0.94.4
+
+- First-use states (audit): a screenshot test renders every landing page for a brand-new player. World's menu now opens with a "Start here" card that says what World is and sends your strongest Pokémon into Tiny Woods in one tap; Care's landing puts Today (and "Add a routine") right under the scene instead of below six empty party slots, with the visitors and the party after the menu; the Pokémon tab says where the next Pokémon come from while you have only one.
+- Care audit pass (`docs/audit-2026-10-31.md`): a half-written journal entry now survives leaving the screen or the tab (it was lost), and a test shows a routine's reminder follows an edit. The rest of Care checked out against the audit (privacy of the Care event, reminders and their Done action, calm break under Reduce motion, explicit skill practice, opt-in cloud copy with delete-on-off).
+
 ## 0.94.3
 
 - Audit: a screenshot test (`ScreenshotTest.largeTextPlaces`) renders Home, Plan, Planner, Focus, Care, Pokémon, Me and World at 130% system text; all eight were looked at and nothing is clipped or overlapping.
