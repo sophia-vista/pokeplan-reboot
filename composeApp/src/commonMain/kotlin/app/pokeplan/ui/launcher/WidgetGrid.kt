@@ -4,7 +4,7 @@ import kotlin.math.roundToInt
 
 /**
  * The pages widgets can stand on: the home page (over the town), Today, and up to three pages of the user's own (Page 3 to 5),
- * made and deleted in edit mode. Pages are saved by name; how many exist is [LauncherPrefs.pages].
+ * made and deleted in edit mode. Pages are saved by name; their order (any of the user's own may stand left of Home) is [LauncherPrefs.pageOrder].
  */
 enum class WidgetPage(val label: String) {
     HOME("Home"), TODAY("Today"), PAGE3("Page 3"), PAGE4("Page 4"), PAGE5("Page 5");

@@ -8,6 +8,7 @@ release always has the newest merge).
 ## 0.101.0
 
 - **World: the Hoenn layer** (fourth button on the Map's layer switch, open from the first day): nine dungeons from Ruby, Sapphire, Emerald, Omega Ruby and Alpha Sapphire (Petalburg Woods, Granite Cave, Meteor Falls, Mt. Chimney, Shoal Cave, Seafloor Cavern, Cave of Origin, Victory Road, Sky Pillar), wild Pokémon from the Hoenn Pokédex, the Hoenn map of Pokémon Emerald's PokéNav (`assets/world/map-hoenn.png`, built by `tools/sprites/fetch_hoenn_map.py`) with a marker on each, and its own five-chapter story, "The Primal Awakening". Legendary quests, all Guardians of Hoenn: Groudon and Kyogre after three clears of Mt. Chimney and the Seafloor Cavern, Rayquaza at the top of the Sky Pillar.
+- Launcher pages: a page of your own can now stand at the left of Home (edit mode on the grid: "Left+" adds one at the left end, "Right+" at the right end, as "Page+" did), and any empty page of your own can be removed with "Page-" while you are on it, not only the last one. Home and Today stay. The pages' order is saved by name (the usual order is still saved as a count, so older saves load), and swiping, the page dots, dragging a widget to the next page and the Home button all follow it.
 
 ## 0.100.0
 

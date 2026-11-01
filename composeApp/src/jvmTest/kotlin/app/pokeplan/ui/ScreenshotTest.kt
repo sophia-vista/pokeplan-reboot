@@ -1054,13 +1054,14 @@ class ScreenshotTest {
         val store = started()
         val model = AppModel(store)
         val prefs = app.pokeplan.ui.launcher.LauncherPrefs().withPages(3)
-        for ((name, scale) in listOf("launcher-edit-bar" to 1f, "launcher-edit-bar-xl" to 1.3f)) {
+        // On Home the bar offers a page at the left or the right end; on an empty page of the user's own it offers to remove it.
+        for ((name, scale, shown) in listOf(Triple("launcher-edit-bar", 1f, app.pokeplan.ui.launcher.WidgetPage.PAGE3), Triple("launcher-edit-bar-xl", 1.3f, app.pokeplan.ui.launcher.WidgetPage.PAGE3), Triple("launcher-edit-bar-home", 1f, app.pokeplan.ui.launcher.WidgetPage.HOME), Triple("launcher-edit-bar-home-xl", 1.3f, app.pokeplan.ui.launcher.WidgetPage.HOME))) {
             val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, true, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, pages = 3)
             render(name, height = 900, fontScale = scale) {
                 PixelTheme {
                     Box(Modifier.fillMaxSize().background(Pixel.Night), contentAlignment = androidx.compose.ui.Alignment.BottomCenter) {
                         app.pokeplan.ui.launcher.GridHomePage(env, null)
-                        app.pokeplan.ui.launcher.GridEditBar(env, app.pokeplan.ui.launcher.WidgetPage.PAGE3)
+                        app.pokeplan.ui.launcher.GridEditBar(env, shown)
                     }
                 }
             }
