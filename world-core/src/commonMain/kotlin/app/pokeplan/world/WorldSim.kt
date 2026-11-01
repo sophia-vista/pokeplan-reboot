@@ -21,6 +21,9 @@ sealed interface WorldEvent {
     data object GuardianFaced : WorldEvent
 }
 
+/** A team's fit for a dungeon (see [WorldSim.suitability]). */
+data class Suitability(val floorMillis: Long, val favored: Int, val size: Int)
+
 /** What settling did: the new data and, per team, the floors climbed and what happened. */
 data class WorldReport(val data: WorldData, val perTeam: Map<Int, List<WorldEvent>>) {
     val events: List<WorldEvent> get() = perTeam.values.flatten()
@@ -94,8 +97,26 @@ object WorldSim {
             out = out.withTeam(current.copy(expedition = trip.copy(settledTo = settled, floorsClimbed = trip.floorsClimbed + floors)))
             perTeam[team.id] = events
         }
-        return WorldReport(out.copy(lastSeenAt = now), perTeam)
+        val lines = perTeam.flatMap { (teamId, events) -> events.mapNotNull { journalLine(teamId, it, now) } }
+        return WorldReport(out.copy(lastSeenAt = now, journal = (out.journal + lines).takeLast(WorldData.JOURNAL_SIZE)), perTeam)
     }
+
+    /** What the player reads in the expedition log for [event], or null for the many floors that are not worth a line. */
+    private fun journalLine(teamId: Int, event: WorldEvent, now: Long): JournalLine? {
+        val text = when (event) {
+            is WorldEvent.Found -> "Team $teamId met a ${Dex.species(event.speciesId).name} on floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name}."
+            is WorldEvent.Milestone -> "Team $teamId reached floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name} and was rewarded."
+            is WorldEvent.Cleared -> "Team $teamId cleared ${Dungeons.byId(event.dungeonId)?.name}."
+            is WorldEvent.MissionDone -> "A job is done: ${Missions.byId(event.missionId)?.title}. Claim it on the board."
+            WorldEvent.GuardianFaced -> "The Guardian was faced. The story is complete."
+            else -> return null
+        }
+        return JournalLine(now, text)
+    }
+
+    /** What a team of [members] brings to [dungeon]: how long a floor takes it, and how many of its members are of a favoured type. */
+    fun suitability(dungeon: DungeonDef, members: List<OwnedPokemon>, mastery: Boolean = false): Suitability =
+        Suitability(floorMillis(dungeon, power(members, dungeon), mastery), members.count { p -> p.form.types.any { it in dungeon.favored } }, members.size)
 
     /** One floor climbed: the floor number in the dungeon is its index modulo the floors, so a cleared dungeon starts again. */
     private fun climb(data: WorldData, teamId: Int, trip: Expedition, dungeon: DungeonDef, index: Int, at: Long, teamSize: Int, power: Double, perk: Map<WorldSkill, Int>, events: MutableList<WorldEvent>): WorldData {

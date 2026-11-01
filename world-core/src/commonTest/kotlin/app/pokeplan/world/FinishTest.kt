@@ -190,3 +190,45 @@ class AbilityPerksTest {
 
 /** Seven different dungeons cleared: every chapter that rank allows. */
 private val SEVEN = listOf("tiny-woods", "thunderwave-cave", "mt-steel", "waterfall-cave", "glacier-palace", "ancient-ruins", "sky-tower").associateWith { 1 }
+
+class GuideAndLogTest {
+    private fun mon(id: String, species: Int, level: Int) = Hatching.create(id, HatchOption(species, Dex.defaultForm(species).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = level)
+
+    @Test
+    fun theNextStepFollowsProgress() {
+        assertEquals("Explore Tiny Woods", WorldGuide.nextStep(WorldData()).title)
+        val cleared = WorldData(clears = mapOf("tiny-woods" to 1))
+        assertEquals("Explore Thunderwave Cave", WorldGuide.nextStep(cleared).title)
+        // Everything open is cleared: the next closed one says what it waits for.
+        val twoCleared = WorldData(clears = mapOf("tiny-woods" to 1, "thunderwave-cave" to 1))
+        val step = WorldGuide.nextStep(twoCleared)
+        assertEquals("Work towards Mt. Steel", step.title)
+        assertTrue("Bronze" in step.reason && "Exploration XP" in step.reason, step.reason)
+        val all = WorldData(xp = 1_000_000, guardianDone = true, clears = Dungeons.all.associate { it.id to 1 })
+        assertEquals("Everything is cleared", WorldGuide.nextStep(all).title)
+    }
+
+    @Test
+    fun aTeamsFitIsItsSpeedAndHowManyAreFavoured() {
+        val woods = Dungeons.byId("tiny-woods")!!
+        val grass = mon("a", 1, 20)   // Bulbasaur: Grass, favoured in the woods
+        val rock = mon("b", 74, 20)   // Geodude: not
+        val fit = WorldSim.suitability(woods, listOf(grass, rock))
+        assertEquals(1, fit.favored)
+        assertEquals(2, fit.size)
+        assertTrue(fit.floorMillis < woods.baseFloorSeconds * 1000L)
+        assertTrue(WorldSim.suitability(woods, listOf(grass, grass.copy(id = "c"))).floorMillis < fit.floorMillis, "two favoured are quicker")
+    }
+
+    @Test
+    fun theExpeditionLogKeepsTheLatestLinesWithFindsAndClears() {
+        val roster = listOf(mon("a", 25, 30), mon("b", 74, 30), mon("c", 10, 30), mon("d", 1, 30))
+        val trip = WorldData().assign(1, listOf("a", "b", "c", "d"))!!.start(1, "tiny-woods", 0L)!!
+        val d = WorldSim.settle(trip, roster, 12L * 3_600_000).data
+        assertTrue(d.journal.any { it.text.contains("cleared Tiny Woods") })
+        assertTrue(d.journal.all { it.at == 12L * 3_600_000 })
+        var more = d
+        repeat(6) { i -> more = WorldSim.settle(more, roster, (13L + i * 12) * 3_600_000).data }
+        assertTrue(more.journal.size <= WorldData.JOURNAL_SIZE)
+    }
+}
