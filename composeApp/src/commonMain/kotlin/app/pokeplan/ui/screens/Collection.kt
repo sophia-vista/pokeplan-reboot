@@ -1,6 +1,7 @@
 package app.pokeplan.ui.screens
 
 import app.pokeplan.ui.theme.Spacing
+import app.pokeplan.ui.theme.TextBox
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.Arrangement
@@ -96,6 +97,15 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                 ScreenHeader("Pokémon", subtitle = "${player.pokemon.size} owned, ${player.caught.size} seen", icon = "poke-ball")
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M)) {
                     val ready = store.activeQuests.count { store.questReady(it) }
+                    // A new player has one Pokémon: say where the next ones come from.
+                    if (player.pokemon.size <= 1) {
+                        TextBox(Modifier.padding(bottom = Spacing.M)) {
+                            Text(
+                                "Your collection grows as you go: finish a focus session or your tasks and eggs hatch into new Pokémon, and Care and World bring their own.",
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
+                        }
+                    }
                     MenuGrid(
                         listOfNotNull(
                             MenuEntry("PARTY", "premier-ball", "Party", "${player.party.size} of 6", tint = Pixel.Red),

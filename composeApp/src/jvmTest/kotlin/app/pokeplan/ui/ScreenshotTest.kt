@@ -470,6 +470,18 @@ class ScreenshotTest {
         }
     }
 
+    /** A brand-new player with nothing yet: every landing page must say what it is and what to do first. */
+    @Test
+    fun emptyStates() {
+        listOf("home" to Place.HOME, "planner" to Place.PLANNER, "focus" to Place.FOCUS, "care" to Place.CARE, "pokemon" to Place.COLLECTION, "world" to Place.WORLD, "me" to Place.ME).forEach { (name, place) ->
+            val store = started()
+            store.markRewardsSeen()
+            store.markVersionSeen(AppVersion.NAME)
+            val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
+            render("empty-$name") { App(storage, focusTab = true, start = place) }
+        }
+    }
+
     private fun dark(name: String, place: Place) {
         val store = storeWithTeam()
         store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 45)
