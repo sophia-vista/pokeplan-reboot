@@ -186,6 +186,9 @@ data class GearData(
     /** The screen light: colour name, brightness 0.1 to 1. */
     val lightColor: String = "white",
     val lightBrightness: Float = 1f,
+    /** The World clock's places (zone ids, in order; empty: the first time it opens it shows a few) and the pressure at sea level the Barometer uses for height, in hPa. */
+    val clockZones: List<String> = emptyList(),
+    val seaLevelHpa: Float = 1013.25f,
 ) {
     companion object {
         const val MAX_RECENTS = 6

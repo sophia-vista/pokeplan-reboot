@@ -47,6 +47,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.RankBadge
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.Spacing
@@ -428,7 +429,7 @@ internal fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
-                PixelButton("Add", ::add, color = Pixel.Red, enabled = text.isNotBlank())
+                PixelIconButton("plus", "Add", ::add, Pixel.Red, enabled = text.isNotBlank())
             }
             // What the line was understood as, so a typed "tomorrow 5pm #Social !B" is never a guess (Tesler: the app does the parsing, and shows it).
             val parsed = QuickAdd.parse(text, model.store.today)
@@ -486,7 +487,7 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                     if (line.isNotEmpty()) Text(if (shownList != null) "· $line" else line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
             }
-            if (task.state == TaskState.OPEN) PixelButton("Done", { model.completeTask(task.id) }, color = Pixel.Green, compact = true)
+            if (task.state == TaskState.OPEN) PixelIconButton("check", "Done", { model.completeTask(task.id) }, Pixel.Green)
             else PixelButton("Reopen", { store.reopen(task.id) }, color = Pixel.InkSoft, compact = true)
         }
         if (expanded) {
@@ -516,7 +517,7 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                             PixelButton("+5", { minutes += 5 }, color = Pixel.InkSoft, compact = true)
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                            PixelButton("Save", {
+                            PixelIconButton("check", "Save", {
                                 store.updateTask(
                                     task.copy(
                                         title = title.trim().ifEmpty { task.title }, rank = rank, estimateMinutes = minutes.takeIf { it > 0 },
@@ -525,8 +526,8 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                                     ),
                                 )
                                 editing = false
-                            }, Modifier.weight(1f), Pixel.Green, compact = true)
-                            PixelButton("Cancel", { editing = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                            }, Pixel.Green)
+                            PixelIconButton("close", "Cancel", { editing = false }, Pixel.InkSoft)
                         }
                     } else {
                         if (task.notes.isNotBlank()) Text(task.notes, style = MaterialTheme.typography.bodyLarge)
@@ -546,7 +547,7 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                                         keyboardActions = KeyboardActions(onDone = { if (step.isNotBlank()) { store.addSubtask(task.id, step); step = "" } }),
                                     )
-                                    PixelButton("Add", { store.addSubtask(task.id, step); step = "" }, enabled = step.isNotBlank(), compact = true)
+                                    PixelIconButton("plus", "Add", { store.addSubtask(task.id, step); step = "" }, Pixel.InkSoft, enabled = step.isNotBlank())
                                 }
                             }
                             FieldLabel("Move to")
@@ -569,9 +570,9 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                             RepeatRow(model, task)
                             HorizontalDivider(color = Pixel.Border)
                             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                                PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                                PixelIconButton("pencil", "Edit", { editing = true }, Pixel.InkSoft)
                                 PixelButton("Won't do", { store.wontDo(task.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                                PixelButton("Delete", { store.deleteTask(task.id); onDeleted() }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                                PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.Danger)
                             }
                         }
                     }

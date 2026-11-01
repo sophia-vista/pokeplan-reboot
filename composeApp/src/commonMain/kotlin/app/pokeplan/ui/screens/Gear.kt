@@ -104,6 +104,12 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
                 GearTool.UNITS -> UnitsTool(model, onUse)
                 GearTool.TIMER -> TimerTool(model, onUse)
                 GearTool.STOPWATCH -> StopwatchTool(model, onUse)
+                GearTool.EVERYDAY -> EverydayTool(model, onUse)
+                GearTool.WORLD_CLOCK -> WorldClockTool(model, onUse)
+                GearTool.COMPASS -> CompassTool(model, onUse)
+                GearTool.LEVEL -> LevelTool(model, onUse)
+                GearTool.BAROMETER -> BarometerTool(model, onUse)
+                GearTool.DEVICE -> DeviceTool(model)
             }
         }
     }
@@ -192,4 +198,10 @@ private fun reactionFor(tool: GearTool): String = when (tool) {
     GearTool.UNITS -> "📏"
     GearTool.TIMER -> "⏰"
     GearTool.STOPWATCH -> "⏱"
+    GearTool.EVERYDAY -> "🧾"
+    GearTool.WORLD_CLOCK -> "🌍"
+    GearTool.COMPASS -> "🧭"
+    GearTool.LEVEL -> "📐"
+    GearTool.BAROMETER -> "🌤"
+    GearTool.DEVICE -> "📱"
 }

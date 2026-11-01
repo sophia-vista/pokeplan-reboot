@@ -48,6 +48,7 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.datetime.DatePeriod
@@ -73,8 +74,8 @@ internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit,
             if (draft.allDay) {
                 DaySpanPicker(draft.day, draft.lastDay, { change(draft.movedTo(it)) }) { change(draft.copy(lastDay = it)) }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    PixelButton("Add", add, color = Pixel.Green, enabled = draft.title.isNotBlank(), compact = true)
-                    PixelButton("Cancel", cancel, color = Pixel.InkSoft, compact = true)
+                    PixelIconButton("plus", "Add", add, Pixel.Green, enabled = draft.title.isNotBlank())
+                    PixelIconButton("close", "Cancel", cancel, Pixel.InkSoft)
                 }
                 return@Column
             }
@@ -88,8 +89,8 @@ internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit,
                 PixelButton("+15", { change(draft.copy(start = shifted(at, 15).let { it.hour * 60 + it.minute }).let { it.copy(minutes = PlanEvent.fit(it.start, it.minutes)) }) }, color = Pixel.InkSoft, compact = true)
                 PixelButton("Shorter", { change(draft.copy(minutes = PlanEvent.fit(draft.start, draft.minutes - DayTimeline.SNAP_MINUTES))) }, color = Pixel.InkSoft, enabled = draft.minutes > DayTimeline.SNAP_MINUTES, compact = true)
                 PixelButton("Longer", { change(draft.copy(minutes = PlanEvent.fit(draft.start, draft.minutes + DayTimeline.SNAP_MINUTES))) }, color = Pixel.InkSoft, compact = true)
-                PixelButton("Add", add, color = Pixel.Green, enabled = draft.title.isNotBlank(), compact = true)
-                PixelButton("Cancel", cancel, color = Pixel.InkSoft, compact = true)
+                PixelIconButton("plus", "Add", add, Pixel.Green, enabled = draft.title.isNotBlank())
+                PixelIconButton("close", "Cancel", cancel, Pixel.InkSoft)
             }
         }
     }
@@ -120,7 +121,7 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, follow
                 if (repeats) {
                     PixelButton("Delete this one", { store.deleteOccurrence(event.id); close() }, color = Pixel.Red, compact = true)
                     PixelButton("Delete all", { store.deleteEvent(event.id); close() }, color = Pixel.Red, compact = true)
-                } else PixelButton("Delete", { store.deleteEvent(event.id); close() }, color = Pixel.Red, compact = true)
+                } else PixelIconButton("trash", "Delete", { store.deleteEvent(event.id); close() }, Pixel.Red)
             }
             if (event.allDay) {
                 DaySpanPicker(event.day, event.endDay, { follow(store.updateEvent(event.id, day = it)) }) { store.updateEvent(event.id, lastDay = it) }
@@ -128,7 +129,7 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, follow
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     PixelButton("At a time", { store.updateEvent(event.id, allDay = false); close() }, color = Pixel.InkSoft, compact = true)
                     deletes()
-                    PixelButton("Done", { store.updateEvent(event.id, title = title); close() }, color = Pixel.Green, compact = true)
+                    PixelIconButton("check", "Done", { store.updateEvent(event.id, title = title); close() }, Pixel.Green)
                 }
                 return@Column
             }
@@ -145,7 +146,7 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, follow
                 PixelButton("Longer", { store.updateEvent(event.id, minutes = event.minutes + DayTimeline.SNAP_MINUTES) }, color = Pixel.InkSoft, compact = true)
                 PixelButton("All day", { store.updateEvent(event.id, allDay = true) }, color = Pixel.InkSoft, compact = true)
                 deletes()
-                PixelButton("Done", { store.updateEvent(event.id, title = title); close() }, color = Pixel.Green, compact = true)
+                PixelIconButton("check", "Done", { store.updateEvent(event.id, title = title); close() }, Pixel.Green)
             }
         }
     }

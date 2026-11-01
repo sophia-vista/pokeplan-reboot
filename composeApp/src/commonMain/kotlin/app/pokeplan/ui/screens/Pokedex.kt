@@ -62,6 +62,7 @@ import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.quietClickable
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.TextBox
@@ -235,8 +236,8 @@ internal fun DexEntryScreen(model: AppModel, rows: List<Pair<Int, SpeciesInfo>>,
                 Sprite(form.id, false, s.name, Modifier.align(Alignment.Center), size = 160.dp, silhouette = Pixel.Shade)
             }
             if (at >= 0 && found.size > 1) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
-                PixelButton("Previous", { open(found[at - 1]) }, Modifier.weight(1f), Pixel.InkSoft, enabled = at > 0, compact = true)
-                PixelButton("Next", { open(found[at + 1]) }, Modifier.weight(1f), Pixel.InkSoft, enabled = at < found.size - 1, compact = true)
+                PixelIconButton("arrow-left", "Previous", { open(found[at - 1]) }, Pixel.InkSoft, enabled = at > 0)
+                PixelIconButton("arrow-right", "Next", { open(found[at + 1]) }, Pixel.InkSoft, enabled = at < found.size - 1)
             }
 
             if (state.caught) {

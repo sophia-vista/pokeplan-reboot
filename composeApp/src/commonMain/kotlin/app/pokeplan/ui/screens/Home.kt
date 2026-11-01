@@ -71,6 +71,7 @@ import app.pokeplan.ui.theme.frameToneOf
 import app.pokeplan.ui.theme.DialogueShape
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.RankBadge
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.SectionLabel
@@ -317,7 +318,7 @@ internal fun NextUp(task: Task, onDone: () -> Unit, onFocus: (() -> Unit)?, onCh
                 RankBadge(task.rank)
                 Text(listOf(task.rank.title, taskMeta(task)).filter { it.isNotEmpty() }.joinToString(", "), style = MaterialTheme.typography.bodyMedium)
             }
-            PixelButton("Done", onDone, Modifier.fillMaxWidth(), Pixel.Green)
+            PixelIconButton("check", "Done", onDone, Pixel.Green)
             if (onFocus != null || onChoose != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth()) {
                 if (onFocus != null) PixelButton("Focus on this", onFocus, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 if (onChoose != null) PixelButton(if (picked) "Pick another" else "Pick for me", onChoose, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -331,7 +332,7 @@ internal fun NextUp(task: Task, onDone: () -> Unit, onFocus: (() -> Unit)?, onCh
 fun TaskRow(task: Task, onDone: () -> Unit) {
     ListRow(
         lead = { RankBadge(task.rank) },
-        trail = { PixelButton("Done", onDone, color = Pixel.Green, compact = true) },
+        trail = { PixelIconButton("check", "Done", onDone, Pixel.Green) },
     ) {
         Text(task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 4)
         val meta = taskMeta(task)
@@ -394,7 +395,7 @@ private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
                             model.effect(Sfx.FOCUS_START); store.startFocus(FocusRules.justFiveMinutes().minutesRoundedUp, deepFocus = false, taskId = oldest.id)
                             go(Place.FOCUS)
                         }, color = Pixel.Blue, compact = true)
-                        else -> PixelButton("Done", { if (store.completeMiniQuest(q.id)) model.effect(Sfx.HEAL) }, color = Pixel.Green, compact = true)
+                        else -> PixelIconButton("check", "Done", { if (store.completeMiniQuest(q.id)) model.effect(Sfx.HEAL) }, Pixel.Green)
                     }
                 }
             }

@@ -149,6 +149,9 @@ From the owner's regional story brief:
 - **Side legendaries** (Mew, the three beasts, Celebi, Latias and Latios, Jirachi, Deoxys, the regis and the like) are *not* regional quests: each is a Guardian featured by a module, as the lake trio are for Plan.
 - A new module (Grow, then Home) will get its own featured legendary and its own optional World moments.
 
+### 5.4a Phase 2 status (0.109.0)
+Built: team names and six accent colours, saved teams (six presets, applied in one tap), a typed expedition log with a filter. Also built: 24 regional jobs for the three layers, the notebook by region and the Guardian line on the Legendary quests card. Phase 2 is complete apart from device checks; Phase 3 (floor events, move-based skills) and the Sinnoh layer are next.
+
 ### 5.5 Quality and unfinished edges
 - Marker positions on the three region maps are read by eye and need a device check.
 - The job alarm and notification have not been tried on a device.

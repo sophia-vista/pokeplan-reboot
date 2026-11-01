@@ -46,6 +46,13 @@ import app.pokeplan.ui.Emotion
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.theme.ChoiceRow
 import app.pokeplan.ui.theme.FieldLabel
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.Role
+import app.pokeplan.ui.theme.PixelField
+import app.pokeplan.ui.theme.PixelIconButton
+import app.pokeplan.world.WorldData
+import app.pokeplan.world.JournalLine
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
@@ -341,7 +348,15 @@ private fun LegendsCard(model: AppModel, layer: WorldLayer) {
                         Text(q.name, style = MaterialTheme.typography.bodyLarge)
                         Text(
                             when {
-                                done -> "Joined your Guardians."
+                                done -> {
+                                    val mon = model.data.player.pokemon.firstOrNull { it.speciesId == q.speciesId }
+                                    when {
+                                        mon == null -> "Joined your Guardians (no longer in your collection)."
+                                        mon.id in model.data.player.guardians -> "Joined you, and slotted as a Guardian too."
+                                        mon.id in model.data.world.assigned -> "Joined you and is out exploring with a team."
+                                        else -> "Joined you. Slot it as a Guardian in Pokémon to add its Guardian perks."
+                                    }
+                                }
                                 q.afterGuardian && !world.layerDone(layer) -> if (q.clears == 1) q.blurb else "Face the Guardian of ${layer.label} first. ${q.blurb}"
                                 else -> "${q.blurb} (${Legends.progress(world, q)} of ${q.clears})"
                             },
@@ -419,7 +434,15 @@ private fun WorldMissionsView(model: AppModel) {
     }
     FieldLabel("On the board")
     val board = Missions.board(world, model.worldNow.takeIf { it > 0 } ?: store.nowMillis, store.utcOffsetMillis)
-    val offered = board.filter { it.state == Missions.BoardState.AVAILABLE }
+    val available = board.filter { it.state == Missions.BoardState.AVAILABLE }
+    // Jobs are grouped by region: all of them, or one region's.
+    var region by remember { mutableStateOf<app.pokeplan.world.WorldLayer?>(null) }
+    val regions = available.map { Missions.layerOf(it.mission) }.distinct()
+    if (regions.size > 1) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        TabButton("All", region == null, { region = null })
+        regions.forEach { r -> TabButton(r.label, region == r, { region = r }) }
+    }
+    val offered = available.filter { region == null || Missions.layerOf(it.mission) == region }
     if (offered.isEmpty()) Text("Nothing new for your rank right now.", style = MaterialTheme.typography.bodyMedium)
     offered.forEach { entry ->
         val m = entry.mission
@@ -505,6 +528,7 @@ private fun WorldBaseView(model: AppModel) {
             }
         }
     }
+    NotebookCard(model)
     WorldBanner("cafe", "Spinda's Café", "A brew for the road", sky = Color(0xFF29180F), top = true, height = 150.dp)
     var steam by remember { mutableStateOf(0) }
     val play = !(model.data.settings.reduceMotion || model.powerSaving)
@@ -547,7 +571,7 @@ private fun WorldBaseView(model: AppModel) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 app.pokeplan.world.SwapShop.flavors.forEach { f -> PixelButton(f, { swapTo = f }, color = if (swapTo == f) Module.WORLD.look.accent else Pixel.InkSoft, compact = true) }
             }
-            PixelButton("Swap", { swapMessage = if (store.worldSwap(swapFrom, swapTo)) "Swapped." else "Pick two flavours, and have ${app.pokeplan.world.SwapShop.GIVE} to give." }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+            PixelIconButton("repeat", "Swap", { swapMessage = if (store.worldSwap(swapFrom, swapTo)) "Swapped." else "Pick two flavours, and have ${app.pokeplan.world.SwapShop.GIVE} to give." }, Module.WORLD.look.accent)
             if (swapMessage.isNotEmpty()) Text(swapMessage, style = MaterialTheme.typography.bodyMedium)
         }
     }
@@ -586,7 +610,10 @@ private fun WorldTeamsView(model: AppModel) {
         // A team that is out is shown in a box made of its dungeon's own tiles; any other team in a plain one.
         val body: @Composable () -> Unit = {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Text("Team ${team.id}", style = MaterialTheme.typography.titleSmall)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Box(Modifier.size(14.dp).background(teamAccent(team.accent)))
+                    Text(team.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+                }
                 if (members.isEmpty()) Text("No one yet.", style = MaterialTheme.typography.bodyMedium)
                 else if (team.expedition == null) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     members.forEach { p -> AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = 48.dp, animate = false) }
@@ -614,6 +641,31 @@ private fun WorldTeamsView(model: AppModel) {
                                 Text("${p.nickname}, level ${p.level}", style = MaterialTheme.typography.bodyLarge)
                             }
                         }
+                        // A name, an accent colour and saved teams: put one together again in a tap.
+                        var name by remember(team.id, team.name) { mutableStateOf(team.name) }
+                        FieldLabel("Name (up to ${WorldTeam.NAME_MAX} letters)")
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                            PixelField(name, { name = it.take(WorldTeam.NAME_MAX) }, Modifier.weight(1f), singleLine = true, placeholder = "Team ${team.id}")
+                            PixelIconButton("check", "Save the name", { store.worldRenameTeam(team.id, name) }, Pixel.Green, enabled = name.trim() != team.name)
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            repeat(WorldTeam.ACCENTS) { i ->
+                                Box(
+                                    Modifier.size(Spacing.Target).clickable(role = Role.Button, onClickLabel = "Colour ${i + 1}") { store.worldRecolourTeam(team.id, i) }.padding(10.dp)
+                                        .background(teamAccent(i)).then(if (i == team.accent) Modifier.border(2.dp, Pixel.Ink) else Modifier),
+                                )
+                            }
+                        }
+                        if (world.presets.isNotEmpty()) {
+                            FieldLabel("Saved teams")
+                            world.presets.forEach { pre ->
+                                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                                    PixelButton("${pre.name} (${pre.members.size})", { if (store.worldApplyPreset(team.id, pre.name)) editing = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                                    PixelIconButton("trash", "Delete ${pre.name}", { store.worldDeletePreset(pre.name) })
+                                }
+                            }
+                        }
+                        if (team.members.isNotEmpty() && world.presets.size < WorldData.MAX_PRESETS + 1) PixelButton("Save this team as a preset", { store.worldSavePreset(team.id, team.title) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                         PixelButton("Save the team", { if (store.worldAssign(team.id, picked)) editing = false }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
                     }
                 }
@@ -621,11 +673,20 @@ private fun WorldTeamsView(model: AppModel) {
         }
         if (outAt != null) TileBox(outAt.id, members.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !model.data.settings.reduceMotion, scrolls = model.data.settings.worldScroll, content = body) else TextBox { body() }
     }
-    // The expedition log: what the teams found and did, kept (newest first) so it is still there after a night away.
+    // The expedition log: what the teams found and did, kept (newest first) so it is still there after a night away; filter it by kind.
     if (world.journal.isNotEmpty()) TextBox {
+        var kind by remember { mutableStateOf<String?>(null) }
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             FieldLabel("Expedition log")
-            world.journal.takeLast(8).reversed().forEach { line -> Text(line.text, style = MaterialTheme.typography.bodyMedium) }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                TabButton("All", kind == null, { kind = null })
+                JournalLine.KINDS.filter { k -> world.journal.any { it.kind == k } }.forEach { k -> TabButton(journalKindLabel(k), kind == k, { kind = k }) }
+            }
+            val lines = world.journal.filter { kind == null || it.kind == kind }
+            if (lines.isEmpty()) Text("Nothing of that kind yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            lines.takeLast(if (kind == null) 8 else 20).reversed().forEach { line ->
+                Text(if (line.place.isNotEmpty() && kind != null) "${line.text} (${line.place})" else line.text, style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
     Text("Explore dungeons on the World map, then recall a team any time; nothing it found is lost.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -752,5 +813,57 @@ private fun WorldBagView(model: AppModel) {
     if (message.isNotEmpty()) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         Text(message, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
         FxBurst("sparkle", sparkle, 40.dp, play = !(model.data.settings.reduceMotion || model.powerSaving))
+    }
+}
+
+/** A team's accent colour by number (the six a team can choose from). */
+private fun teamAccent(i: Int): androidx.compose.ui.graphics.Color = when (i) {
+    1 -> Pixel.Green
+    2 -> Pixel.Red
+    3 -> Pixel.Yellow
+    4 -> Pixel.Pink
+    5 -> Pixel.Teal
+    else -> Pixel.Blue
+}
+
+private fun journalKindLabel(kind: String) = when (kind) {
+    JournalLine.KIND_FIND -> "Finds"
+    JournalLine.KIND_CLEAR -> "Clears"
+    JournalLine.KIND_MILESTONE -> "Milestones"
+    JournalLine.KIND_JOB -> "Jobs"
+    JournalLine.KIND_GUARDIAN -> "Guardians"
+    else -> "Notes"
+}
+
+/** The research notebook by region: each layer's species as sprites, met ones in colour, unmet ones as shadows, with a tick for those you own. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun NotebookCard(model: AppModel) {
+    val world = model.data.world
+    val owned = remember(model.data.player.pokemon) { model.data.player.pokemon.map { it.speciesId }.toSet() }
+    val layers = app.pokeplan.world.WorldLayer.entries.filter { app.pokeplan.world.Notebook.species(it).isNotEmpty() }
+    var layer by remember { mutableStateOf(layers.first()) }
+    FieldLabel("Notebook")
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                layers.forEach { l ->
+                    val (met, all) = app.pokeplan.world.Notebook.progress(l, world)
+                    TabButton("${l.label} $met/$all", layer == l, { layer = l })
+                }
+            }
+            val entries = app.pokeplan.world.Notebook.of(layer, world, owned)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                entries.forEach { e ->
+                    Box(Modifier.size(48.dp)) {
+                        val name = app.pokeplan.core.dex.Dex.species(e.speciesId).name
+                        AnimatedSprite(Dex.defaultForm(e.speciesId).id, false, if (e.met) name else "Not met yet", size = 48.dp, animate = false)
+                        if (!e.met) Box(Modifier.size(48.dp).background(Pixel.Panel.copy(alpha = 0.85f)))
+                        if (e.owned) app.pokeplan.ui.Glyph("check", Pixel.Green, Modifier.align(Alignment.BottomEnd), size = 16.dp)
+                    }
+                }
+            }
+            Text("Met: species your teams have found or rescued here. A tick: you have one in your collection.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        }
     }
 }

@@ -166,7 +166,13 @@ private fun ClockWidget(env: WidgetEnv) {
             // Narrower than the screen the date gives way to the time, and the battery to a wider place.
             PmdText(if (cells.w >= 3) "${formatDate(now.date, env.prefs.dateStyle)}   $time" else time, env.pixel, gap)
             Box(Modifier.weight(1f))
-            if (cells.w >= 4) battery?.let { PmdText((if (it.charging) "Charging " else if (env.saver) "Saver " else "Battery ") + it.percent, env.pixel, gap, alpha = 0.75f) }
+            // A glyph says what the number is: a bolt while charging, a low battery in the saver, a battery otherwise.
+            if (cells.w >= 4) battery?.let {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    app.pokeplan.ui.Glyph(if (it.charging) "zap" else if (env.saver) "battery-low" else "battery", Color.White.copy(alpha = 0.75f), size = 20.dp, description = if (it.charging) "Charging" else if (env.saver) "Battery saver" else "Battery")
+                    PmdText(it.percent.toString(), env.pixel, gap, alpha = 0.75f)
+                }
+            }
         }
     }
 }

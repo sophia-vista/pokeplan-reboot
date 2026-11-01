@@ -89,11 +89,11 @@ internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
                 if (editing == i) {
                     PixelField(editText, { editText = it.take(40) }, Modifier.fillMaxWidth(), singleLine = true, label = "Change it")
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PixelButton("Save", {
+                        PixelIconButton("check", "Save", {
                             val new = editText.trim()
                             if (new.isNotEmpty() && (new == option || new !in options)) { store.setPickerOptions(options.toMutableList().also { it[i] = new }); if (new != option) moveWeights(option, new) }
                             editing = null
-                        }, Modifier.weight(1f), Pixel.Blue, compact = true)
+                        }, Pixel.Blue)
                         PixelIconButton("close", "Cancel", { editing = null }, Pixel.InkSoft)
                     }
                 } else {

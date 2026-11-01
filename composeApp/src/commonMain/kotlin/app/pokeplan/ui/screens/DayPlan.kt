@@ -87,6 +87,7 @@ import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelKey
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.coroutines.Dispatchers
@@ -590,7 +591,7 @@ private fun PickedPanel(model: AppModel, task: Task, days: List<LocalDate>, clos
                     PixelButton("Longer", { store.setEstimate(task.id, length + DayTimeline.SNAP_MINUTES) }, color = Pixel.InkSoft, compact = true)
                     PixelButton("No time", { store.setPlannedTime(task.id, null); close() }, color = Pixel.InkSoft, compact = true)
                 }
-                PixelButton("Cancel", close, color = Pixel.InkSoft, compact = true)
+                PixelIconButton("close", "Cancel", close, Pixel.InkSoft)
             }
         }
     }

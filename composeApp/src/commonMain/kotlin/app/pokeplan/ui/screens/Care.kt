@@ -66,6 +66,7 @@ import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
@@ -277,8 +278,8 @@ private fun RoutineRow(model: AppModel, routine: Routine, onOpen: (() -> Unit)? 
         trail = {
             when {
                 routine.archived || !due -> Unit
-                doneToday -> PixelButton("Undo", { care.undoRoutine(routine.id) }, color = Pixel.InkSoft, compact = true)
-                else -> PixelButton("Done", { model.effect(Sfx.SELECT); model.haptic(); care.completeRoutine(routine.id) }, color = Pixel.Green, compact = true)
+                doneToday -> PixelIconButton("undo", "Undo", { care.undoRoutine(routine.id) }, Pixel.InkSoft)
+                else -> PixelIconButton("check", "Done", { model.effect(Sfx.SELECT); model.haptic(); care.completeRoutine(routine.id) }, Pixel.Green)
             }
         },
     ) {
@@ -325,7 +326,7 @@ private fun RoutinesView(model: AppModel) {
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
-                PixelButton("Add", ::add, color = Pixel.Green, enabled = title.isNotBlank())
+                PixelIconButton("plus", "Add", ::add, Pixel.Green, enabled = title.isNotBlank())
             }
             PixelButton(if (more) "Fewer options" else "A time, and which days", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) RoutineFields(time, { time = it }, days, { days = it })
@@ -390,8 +391,8 @@ internal fun RoutineOptions(model: AppModel, routine: Routine, startEditing: Boo
                 )
                 RoutineFields(time, { time = it }, days, { days = it })
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    PixelButton("Save", { model.care.updateRoutine(routine.copy(title = title.trim(), time = time, days = days)); editing = false; onDone() }, Modifier.weight(1f), Pixel.Green, enabled = title.isNotBlank(), compact = true)
-                    PixelButton("Cancel", { editing = false; title = routine.title; time = routine.time; days = routine.days }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelIconButton("check", "Save", { model.care.updateRoutine(routine.copy(title = title.trim(), time = time, days = days)); editing = false; onDone() }, Pixel.Green, enabled = title.isNotBlank())
+                    PixelIconButton("close", "Cancel", { editing = false; title = routine.title; time = routine.time; days = routine.days }, Pixel.InkSoft)
                 }
             }
         }
@@ -400,12 +401,12 @@ internal fun RoutineOptions(model: AppModel, routine: Routine, startEditing: Boo
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
         if (asking) {
             Text("Delete it and its history?", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
-            PixelButton("Delete", { model.care.deleteRoutine(routine.id); onDone() }, color = Pixel.Danger, compact = true)
+            PixelIconButton("trash", "Delete", { model.care.deleteRoutine(routine.id); onDone() }, Pixel.Danger)
             PixelButton("Keep", { asking = false }, color = Pixel.InkSoft, compact = true)
         } else {
-            PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.Blue, compact = true)
+            PixelIconButton("pencil", "Edit", { editing = true }, Pixel.Blue)
             PixelButton(if (routine.archived) "Bring back" else "Put away", { model.care.archiveRoutine(routine.id, !routine.archived); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-            PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            PixelIconButton("trash", "Delete", { asking = true }, Pixel.InkSoft)
         }
     }
 }
@@ -567,7 +568,7 @@ private fun DiaryView(model: AppModel) {
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
-                PixelButton("Add", ::add, color = Pixel.InkSoft, enabled = newUrge.isNotBlank(), compact = true)
+                PixelIconButton("plus", "Add", ::add, Pixel.InkSoft, enabled = newUrge.isNotBlank())
             }
         }
     }
@@ -599,7 +600,7 @@ private fun DiaryView(model: AppModel) {
     val past = data.diary.filter { it.day != care.today }.sortedByDescending { it.day }.take(14)
     if (past.isNotEmpty()) SectionLabel("Earlier cards")
     past.forEach { c ->
-        ListRow(trail = { PixelButton("Delete", { care.deleteDiary(c.id) }, color = Pixel.InkSoft, compact = true) }) {
+        ListRow(trail = { PixelIconButton("trash", "Delete", { care.deleteDiary(c.id) }, Pixel.InkSoft) }) {
             Text(c.day.short(), style = MaterialTheme.typography.bodyLarge)
             val strongest = c.feelings.entries.sortedByDescending { it.value }.filter { it.value > 0 }.take(3)
             if (strongest.isNotEmpty()) Text(strongest.joinToString(", ") { "${it.key.label} ${it.value}" }, style = MaterialTheme.typography.bodyMedium)
@@ -716,7 +717,7 @@ private fun JournalView(model: AppModel) {
     val entries = care.searchJournal(query).take(30)
     if (data.journal.isNotEmpty() && entries.isEmpty()) EmptyState("Nothing found", "No entry has \"${query.trim()}\" in it.", icon = CareSection.JOURNAL.icon)
     entries.forEach { e ->
-        ListRow(trail = { PixelButton("Delete", { care.deleteEntry(e.id) }, color = Pixel.InkSoft, compact = true) }) {
+        ListRow(trail = { PixelIconButton("trash", "Delete", { care.deleteEntry(e.id) }, Pixel.InkSoft) }) {
             Text(e.day.short(), style = MaterialTheme.typography.bodyMedium)
             e.promptId?.let { Prompts.byId(it) }?.let { Text(it.text, style = MaterialTheme.typography.bodyMedium) }
             Text(e.text, style = MaterialTheme.typography.bodyLarge, maxLines = 8, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)

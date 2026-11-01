@@ -30,6 +30,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.datetime.LocalDate
@@ -166,11 +167,11 @@ private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit
                     if (list == null) done(store.addList(name, color, icon)?.id)
                     else { store.updateList(list.copy(name = name, color = color, icon = icon)); done(list.id) }
                 }, Modifier.weight(1f), Pixel.Green, enabled = name.isNotBlank(), compact = true)
-                PixelButton("Cancel", { done(list?.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                PixelIconButton("close", "Cancel", { done(list?.id) }, Pixel.InkSoft)
             }
             if (list != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelButton(if (list.archived) "Unarchive" else "Archive", { store.updateList(list.copy(archived = !list.archived)); done(list.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelButton("Delete", { store.deleteList(list.id); done(null) }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                PixelIconButton("trash", "Delete", { store.deleteList(list.id); done(null) }, Pixel.Danger)
             }
             if (list != null) Text("Deleting a list moves its tasks to the Inbox.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }

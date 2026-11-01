@@ -4,7 +4,23 @@ import kotlinx.serialization.Serializable
 
 /** One line of the expedition log: what happened and when (milliseconds). */
 @Serializable
-data class JournalLine(val at: Long, val text: String)
+data class JournalLine(val at: Long, val text: String, val kind: String = KIND_NOTE, val place: String = "") {
+    companion object {
+        /** An old line, or anything else without a kind. */
+        const val KIND_NOTE = "note"
+        const val KIND_FIND = "find"
+        const val KIND_MILESTONE = "milestone"
+        const val KIND_CLEAR = "clear"
+        const val KIND_JOB = "job"
+        const val KIND_GUARDIAN = "guardian"
+        /** The kinds in the order the Journal's filter shows them. */
+        val KINDS = listOf(KIND_FIND, KIND_CLEAR, KIND_MILESTONE, KIND_JOB, KIND_GUARDIAN)
+    }
+}
+
+/** A saved team: a name and who was on it (by Pokémon id), to put together again in one tap. */
+@Serializable
+data class TeamPreset(val name: String, val members: List<String>)
 
 /** An expedition under way: the dungeon, when it began, and how far settling has got (so a floor is never counted twice). */
 @Serializable
@@ -15,8 +31,19 @@ data class Expedition(val dungeonId: String, val startedAt: Long, val settledTo:
  * one team at a time (docs/world.md, section 6): assigned, it cannot join another until recalled.
  */
 @Serializable
-data class WorldTeam(val id: Int, val members: List<String> = emptyList(), val expedition: Expedition? = null) {
-    companion object { const val MAX_MEMBERS = 4 }
+data class WorldTeam(
+    val id: Int, val members: List<String> = emptyList(), val expedition: Expedition? = null,
+    /** What the player called it (empty: "Team 1"), and its accent, an index into [ACCENTS]. */
+    val name: String = "", val accent: Int = 0,
+) {
+    /** What to call it on screen. */
+    val title: String get() = name.ifBlank { "Team $id" }
+
+    companion object {
+        const val MAX_MEMBERS = 4
+        const val NAME_MAX = 16
+        const val ACCENTS = 6
+    }
 }
 
 /** A Pokémon the exploring found, waiting to be recruited into the shared collection (an Exploration Find). */
@@ -73,6 +100,10 @@ data class WorldData(
     val layersDone: Set<String> = emptySet(),
     /** The legendary quests whose Pokémon has been given, by [LegendQuest.id]. */
     val legends: Set<String> = emptySet(),
+    /** The shape of this save (for later migrations): 1 since Phase 2 added team names, presets and the typed journal. */
+    val worldVersion: Int = 1,
+    /** Saved teams, up to [MAX_PRESETS]. */
+    val presets: List<TeamPreset> = emptyList(),
 ) {
     val rank: ExplorerRank get() = ExplorerRank.at(xp)
 
@@ -97,7 +128,40 @@ data class WorldData(
     /** More chance of a treasure box on a floor of [dungeon]'s layer from the legendaries given there, in percent. */
     fun legendTreasurePercent(dungeon: DungeonDef): Int = given(dungeon.layer).sumOf { it.treasurePercent }
 
-    companion object { const val JOURNAL_SIZE = 40 }
+    companion object { const val JOURNAL_SIZE = 40; const val MAX_PRESETS = 6 }
+
+    /** Names team [id] (cleaned up and cut to [WorldTeam.NAME_MAX]; empty goes back to "Team n"). Null for a slot the rank has not opened. */
+    fun renameTeam(id: Int, name: String): WorldData? {
+        if (id !in 1..teamSlots) return null
+        val clean = name.trim().replace(Regex("\\s+"), " ").take(WorldTeam.NAME_MAX)
+        return replace((team(id) ?: WorldTeam(id)).copy(name = clean))
+    }
+
+    /** Gives team [id] the accent number [accent] (0 until [WorldTeam.ACCENTS]). */
+    fun recolourTeam(id: Int, accent: Int): WorldData? {
+        if (id !in 1..teamSlots || accent !in 0 until WorldTeam.ACCENTS) return null
+        return replace((team(id) ?: WorldTeam(id)).copy(accent = accent))
+    }
+
+    /** Saves [members] under [name] (the same name replaces; the newest [MAX_PRESETS] stay). Null when there is no name or nobody. */
+    fun savePreset(name: String, members: List<String>): WorldData? {
+        val clean = name.trim().replace(Regex("\\s+"), " ").take(WorldTeam.NAME_MAX)
+        if (clean.isEmpty() || members.isEmpty()) return null
+        return copy(presets = (presets.filter { it.name != clean } + TeamPreset(clean, members.distinct().take(WorldTeam.MAX_MEMBERS))).takeLast(MAX_PRESETS))
+    }
+
+    fun deletePreset(name: String): WorldData = copy(presets = presets.filter { it.name != name })
+
+    /**
+     * Puts a saved team on team [id]: those of its members that are still [owned] and not on another team (a Pokémon traded away, or
+     * busy elsewhere, is left out). Null when the preset is unknown, nobody is left, or the team cannot be changed.
+     */
+    fun applyPreset(id: Int, name: String, owned: Set<String>): WorldData? {
+        val preset = presets.firstOrNull { it.name == name } ?: return null
+        val others = teams.filter { it.id != id }.flatMap { it.members }.toSet()
+        val usable = preset.members.filter { it in owned && it !in others }
+        return if (usable.isEmpty()) null else assign(id, usable)
+    }
 
     /** How many teams the rank allows. */
     val teamSlots: Int get() = rank.teamSlots

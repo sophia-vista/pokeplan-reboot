@@ -79,6 +79,7 @@ import app.pokeplan.ui.hasAction
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.Spacing
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -400,7 +401,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
             Play.entries.forEach { kind ->
                 PixelButton(kind.label, { play = if (play == kind) null else kind }, color = if (play == kind) Pixel.Blue else Pixel.Green, compact = true)
             }
-            PixelButton("Done", { say(null); onClose() }, color = Pixel.InkSoft, compact = true)
+            PixelIconButton("check", "Done", { say(null); onClose() }, Pixel.InkSoft)
         }
     }
 }

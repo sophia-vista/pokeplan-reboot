@@ -13,6 +13,7 @@ import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.TextBox
 
 @Composable
@@ -40,7 +41,7 @@ internal fun GuardiansView(model: AppModel, open: (String) -> Unit) {
             ListRow(
                 lead = { Sprite(g.form.id, g.isShiny, g.nickname, size = 64.dp) },
                 onClick = { open(g.id) },
-                trail = { PixelButton("Remove", { store.unslotGuardian(g.id) }, color = Pixel.InkSoft, compact = true) },
+                trail = { PixelIconButton("trash", "Remove", { store.unslotGuardian(g.id) }, Pixel.InkSoft) },
             ) {
                 Text(g.nickname, style = MaterialTheme.typography.titleMedium)
                 Text(perkText(g), style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)

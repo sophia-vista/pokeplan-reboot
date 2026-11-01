@@ -52,6 +52,7 @@ import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.quietClickable
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.RegionLook
@@ -254,9 +255,9 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
 @Composable
 private fun PcBoxBar(at: Int, boxes: Int, go: (Int) -> Unit) {
     Row(Modifier.fillMaxWidth().padding(vertical = Spacing.XS), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-        PixelButton("Previous", { go(at - 1) }, Modifier.weight(1f), Pixel.InkSoft, enabled = at > 0, compact = true)
+        PixelIconButton("arrow-left", "Previous", { go(at - 1) }, Pixel.InkSoft, enabled = at > 0)
         Text("Box ${at + 1} of $boxes", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
-        PixelButton("Next", { go(at + 1) }, Modifier.weight(1f), Pixel.InkSoft, enabled = at < boxes - 1, compact = true)
+        PixelIconButton("arrow-right", "Next", { go(at + 1) }, Pixel.InkSoft, enabled = at < boxes - 1)
     }
 }
 

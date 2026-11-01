@@ -4,7 +4,7 @@ import app.pokeplan.core.pokemon.GearTool
 import kotlin.math.abs
 
 /** The groups of tools on the Pokégear's home. */
-enum class ToolCategory(val label: String) { CALCULATE("Calculate"), CONVERT("Convert"), TIME("Time"), LIGHT("Light"), CHOOSE("Choose") }
+enum class ToolCategory(val label: String) { CALCULATE("Calculate"), CONVERT("Convert"), TIME("Time"), LIGHT("Light"), CHOOSE("Choose"), MEASURE("Measure") }
 
 /** A tool as the home lists it: its [category], a short [description] and the words people look for it by ([keywords]). Bundled, so searching needs no network. */
 class ToolInfo(val tool: GearTool, val category: ToolCategory, val description: String, val keywords: List<String>)
@@ -22,6 +22,12 @@ object ToolCatalog {
         ToolInfo(GearTool.STOPWATCH, ToolCategory.TIME, "Time something, with laps", listOf("laps", "lap", "race", "split", "timing", "run")),
         ToolInfo(GearTool.FLASHLIGHT, ToolCategory.LIGHT, "The phone's torch, a screen light and an SOS signal", listOf("torch", "light", "lamp", "night", "dark", "sos", "red", "screen light")),
         ToolInfo(GearTool.PICKER, ToolCategory.CHOOSE, "Pick from your list, with weights", listOf("choose", "decide", "random", "list", "dinner", "who", "draw", "shuffle", "lottery", "eat")),
+        ToolInfo(GearTool.EVERYDAY, ToolCategory.CALCULATE, "Tip and split, percent, sale and tax, a loan, savings, trip cost", listOf("tip", "split", "bill", "restaurant", "discount", "sale", "tax", "vat", "loan", "mortgage", "interest", "savings", "fuel", "gas", "petrol", "trip", "percent")),
+        ToolInfo(GearTool.WORLD_CLOCK, ToolCategory.TIME, "The time in other places, a time converted, and date sums", listOf("time zone", "timezone", "zone", "tokyo", "london", "new york", "utc", "gmt", "date", "days", "countdown", "difference", "jet lag", "meeting")),
+        ToolInfo(GearTool.COMPASS, ToolCategory.MEASURE, "Which way you are facing, from the magnetic sensor", listOf("direction", "north", "heading", "bearing", "magnetic", "navigate", "sensor")),
+        ToolInfo(GearTool.LEVEL, ToolCategory.MEASURE, "How far from flat the phone lies, in degrees", listOf("flat", "tilt", "spirit level", "bubble", "angle", "incline", "slope", "sensor", "shelf", "picture")),
+        ToolInfo(GearTool.BAROMETER, ToolCategory.MEASURE, "Air pressure and a rough height", listOf("pressure", "weather", "altitude", "height", "hpa", "elevation", "sensor", "storm")),
+        ToolInfo(GearTool.DEVICE, ToolCategory.MEASURE, "What this phone can do for the Pokégear", listOf("sensors", "hardware", "capabilities", "permissions", "check", "support", "gps", "nfc", "camera", "battery")),
         ToolInfo(GearTool.COIN, ToolCategory.CHOOSE, "Heads or tails, and dice", listOf("flip", "toss", "heads", "tails", "dice", "die", "roll", "d20", "d6", "random")),
     )
 

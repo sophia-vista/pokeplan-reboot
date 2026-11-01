@@ -31,6 +31,7 @@ import app.pokeplan.ui.gear.Sos
 import app.pokeplan.ui.theme.FieldLabel
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.coroutines.delay
@@ -101,7 +102,7 @@ internal fun FlashlightTool(model: AppModel, onUse: () -> Unit) {
                     PixelButton("Brighter", { store.changeGear { it.copy(lightBrightness = (it.lightBrightness + 0.15f).coerceAtMost(1f)) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
                 Text(color.note.ifEmpty { "Brightness here dims the picture; the phone's own brightness is set in its settings." }, style = MaterialTheme.typography.bodyMedium, color = Color.White)
-                PixelButton("Close", { screen = false }, Modifier.fillMaxWidth(), Pixel.Red, compact = true)
+                PixelIconButton("close", "Close", { screen = false }, Pixel.Red)
             }
         }
     }
