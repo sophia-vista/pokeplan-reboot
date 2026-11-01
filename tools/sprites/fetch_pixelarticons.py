@@ -11,7 +11,10 @@ from PIL import Image, ImageChops, ImageDraw
 COMMIT = "c9ecc2da61afde85dbe539025e3d931c6152ad75"
 NAMES = ["arrow-left", "arrow-right", "arrow-up", "arrow-down", "pencil", "copy", "trash", "plus", "minus", "close",
          "check", "play", "pause", "reload", "undo", "search", "star", "stop", "chevron-left", "chevron-right",
-         "chevron-up", "chevron-down", "more-horizontal", "flag", "repeat", "clipboard"]
+         "chevron-up", "chevron-down", "more-horizontal", "flag", "repeat", "clipboard",
+         "volume-2", "bell", "sun", "moon", "user", "cloud", "home", "sliders", "layout", "grid-2x2-2", "hand", "pointer",
+         "drag-and-drop", "eye", "thermometer", "calendar", "clock", "battery", "map", "heart", "zap", "settings-cog",
+         "cursor-minimal", "power", "shield", "download", "upload", "info-box", "lock", "vibrate", "languages", "globe", "eye-off", "map-pin", "music"]
 SS = 8
 
 def subpaths(d):

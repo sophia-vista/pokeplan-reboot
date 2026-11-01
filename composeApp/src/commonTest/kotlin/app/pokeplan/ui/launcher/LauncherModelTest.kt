@@ -367,3 +367,26 @@ class CalculatorTest {
         assertEquals("Error", Calculator.format(Double.POSITIVE_INFINITY))
     }
 }
+
+class LauncherGestureTest {
+    @Test fun gesturesHaveUsualJobsAndOldSwitchesStillCount() {
+        val p = LauncherPrefs()
+        assertEquals(GestureAction.APPS, p.action(GestureTrigger.EDGE_DRAG))
+        assertEquals(GestureAction.GATHER, p.action(GestureTrigger.TRIPLE_TAP))
+        assertEquals(GestureAction.NONE, p.action(GestureTrigger.DOUBLE_TAP))
+        // A save from before the choices: the old off switches mean "nothing".
+        val old = LauncherPrefs.decode("K edgeDrag\t0\nK gatherTap\t0\n")
+        assertEquals(GestureAction.NONE, old.action(GestureTrigger.EDGE_DRAG))
+        assertEquals(GestureAction.NONE, old.action(GestureTrigger.TRIPLE_TAP))
+    }
+
+    @Test fun aGestureCanBeGivenAnotherJobAndItIsSaved() {
+        val p = LauncherPrefs().withGesture(GestureTrigger.DOUBLE_TAP, GestureAction.GEAR).withGesture(GestureTrigger.TRIPLE_TAP, GestureAction.NONE)
+        assertEquals(GestureAction.GEAR, p.action(GestureTrigger.DOUBLE_TAP))
+        val back = LauncherPrefs.decode(p.encode())
+        assertEquals(GestureAction.GEAR, back.action(GestureTrigger.DOUBLE_TAP))
+        assertEquals(GestureAction.NONE, back.action(GestureTrigger.TRIPLE_TAP))
+        // A job it does not know is ignored, not a crash.
+        assertEquals(GestureAction.NONE, LauncherPrefs.decode("K gesture.DOUBLE_TAP\tFLY\nK gesture.SHAKE\tAPPS\n").action(GestureTrigger.DOUBLE_TAP))
+    }
+}
