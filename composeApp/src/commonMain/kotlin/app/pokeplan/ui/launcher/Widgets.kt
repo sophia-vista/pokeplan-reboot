@@ -53,6 +53,8 @@ internal val LocalCells = androidx.compose.runtime.staticCompositionLocalOf { Ce
 internal class WidgetEnv(
     val model: AppModel, val apps: List<LauncherApp>, val prefs: LauncherPrefs, val host: LauncherHost, val forecast: Forecast?, val pixel: Int,
     val today: TodayState, val mood: BuddyMood, val saver: Boolean, val editing: Boolean, val onPrefs: (LauncherPrefs) -> Unit, val onEdit: () -> Unit, val onDone: () -> Unit, val onAllApps: () -> Unit, val onFolders: () -> Unit, val onWidgets: () -> Unit, val onGear: () -> Unit, val onOpenFolder: (String) -> Unit, val onForecast: () -> Unit, val onHold: (LauncherApp) -> Unit,
+    /** How many pages the launcher has, and a way to show one of them (by its place in the row). */
+    val pages: Int = 2, val goToPage: (Int) -> Unit = {},
 )
 
 /** The month and day the calendar and agenda widgets share, so choosing a day in one shows its agenda in the other. */

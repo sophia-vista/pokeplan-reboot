@@ -47,7 +47,8 @@ internal fun WidgetsPage(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit,
                     PmdMenuLine("Widgets", pixel, dim = true) {}
                 }
             }
-            WidgetArea.entries.forEach { area ->
+            if (prefs.gridMode) GridSections(prefs, onPrefs, host, pixel)
+            else WidgetArea.entries.forEach { area ->
                 val slots = prefs.widgetsIn(area)
                 PmdBox(pixel, Modifier.fillMaxWidth()) {
                     Column(Modifier.fillMaxWidth()) {
@@ -95,4 +96,50 @@ private fun Action(label: String, enabled: Boolean, pixel: Int, onClick: () -> U
         Modifier.height(Spacing.Target).let { if (enabled) it.clickable(role = Role.Button, onClickLabel = label, onClick = onClick) else it }.padding(horizontal = Spacing.S),
         contentAlignment = Alignment.Center,
     ) { PmdText(label, pixel, alpha = if (enabled) 0.9f else 0.3f) }
+}
+
+/** The grid's widgets listed by page: each with Remove (moving and resizing are done on the page itself), and Add a widget to put one more on that page. */
+@Composable
+private fun GridSections(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit, host: LauncherHost, pixel: Int) {
+    val density = LocalDensity.current.density
+    val pad = pmdRowPad(pixel, density)
+    var adding by remember { mutableStateOf<WidgetPage?>(null) }
+    var name by remember { mutableStateOf("") }
+    prefs.pageList.forEach { page ->
+        val here = WidgetGrid.onPage(prefs.gridWidgets, page).sortedWith(compareBy({ it.row }, { it.col }))
+        PmdBox(pixel, Modifier.fillMaxWidth()) {
+            Column(Modifier.fillMaxWidth()) {
+                PmdText(page.label, pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M), alpha = 0.75f)
+                PmdRule(pixel)
+                if (here.isEmpty()) PmdText("No widgets here", pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M), alpha = 0.7f)
+                here.forEach { w ->
+                    Row(Modifier.fillMaxWidth().height(Spacing.Target), verticalAlignment = Alignment.CenterVertically) {
+                        val title = if (w.kind == WidgetKind.ANDROID) w.arg.toIntOrNull()?.let { host.widgetLabel(it) } ?: w.kind.label else if (w.kind == WidgetKind.FOLDER) w.arg else w.kind.label
+                        PmdText(title, pixel, Modifier.weight(1f).padding(horizontal = pad))
+                        Action("Remove", enabled = true, pixel) { if (w.kind == WidgetKind.ANDROID) w.arg.toIntOrNull()?.let { host.releaseWidget(it) }; onPrefs(prefs.removeGridWidget(w)) }
+                    }
+                }
+                PmdRule(pixel)
+                PmdMenuLine(if (adding == page) "Close" else "Add a widget", pixel, center = true) { adding = if (adding == page) null else page }
+                if (adding == page) {
+                    val placed = prefs.gridWidgets.map { it.kind to it.arg }.toSet()
+                    WidgetKind.entries.filter { it != WidgetKind.FOLDER && it != WidgetKind.ANDROID && (it to "") !in placed }.forEach { kind ->
+                        PmdMenuLine(kind.label, pixel) { onPrefs(prefs.addGridWidget(page, kind)); adding = null }
+                    }
+                    PmdMenuLine("Android widget from another app", pixel) { adding = null; host.pickWidget { id -> onPrefs(prefs.addGridWidget(page, WidgetKind.ANDROID, id.toString())) } }
+                    prefs.folders.filter { (WidgetKind.FOLDER to it.name) !in placed }.forEach { f ->
+                        PmdMenuLine("Folder: ${f.name}", pixel) { onPrefs(prefs.addGridWidget(page, WidgetKind.FOLDER, f.name)); adding = null }
+                    }
+                    Column(Modifier.padding(top = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        PmdField(name, { name = it.take(Folder.MAX_NAME) }, "New folder name")
+                        PmdMenuLine("Make the folder widget", pixel, dim = name.isBlank()) {
+                            val made = prefs.addFolder(name)
+                            onPrefs(made.addGridWidget(page, WidgetKind.FOLDER, name.trim().take(Folder.MAX_NAME)))
+                            name = ""; adding = null
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
