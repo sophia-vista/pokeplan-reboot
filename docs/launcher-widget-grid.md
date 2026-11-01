@@ -23,8 +23,11 @@ Long-press a widget (`GridCanvas`): frames, drag to move (snaps on release, a ye
 ## Built (0.93.0): the grid is the default
 Bodies adapt through `LocalCells` (clock, shortcuts, app buttons) and `LocalGridFill` (the frame fills its cells, content is clipped inside); `LauncherPrefs.gridMode` is true by default and the Launcher settings switch returns to the list.
 
+## Built (0.94.0): pages and live preview
+`WidgetPage` is HOME, TODAY and PAGE3 to PAGE5; `LauncherPrefs.pages` (saved `K pages`) says how many exist. `GridCanvas` previews every drag and resize live (the others slide), a dragged widget held at a screen edge hops pages (`moveGridWidgetToPage`, which makes the page when needed), the edit bar has New page and Delete this page. `LauncherScreen` slides any number of pages.
+
 ## Still to build (in this order)
-0. Drag to the other page at the screen edge; live preview of what a drop bumps.
+0. (done: pages, live preview) Drag to the other page at the screen edge; live preview of what a drop bumps.
 1. **Adapt the bodies:** a half-width widget shows one column of its content; a short one fewer rows; then make the grid the default.
 2. **Edit mode like Smart Launcher:** long-press a widget to lift it (a little scale and shadow), drag it anywhere (a ghost
    of the drop cell, widgets bump down live), drop; a frame with corner handles to resize in whole cells with the limits as

@@ -17,6 +17,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import app.pokeplan.ui.screens.LocalReduceMotion
+import kotlinx.coroutines.delay
+import androidx.compose.foundation.layout.Row
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.animateDpAsState
 import app.pokeplan.ui.theme.PmdText
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.semantics.semantics
@@ -46,44 +53,80 @@ import app.pokeplan.ui.theme.Spacing
 /** Space kept round each widget inside its cells, so neighbours never touch. */
 private val CELL_GAP = 4.dp
 
-/** A finger on a widget being edited: moving it, or (resize) pulling its corner; [dx] and [dy] are how far it has gone, in px. */
-private data class Gesture(val widget: GridWidget, val resize: Boolean, val dx: Float = 0f, val dy: Float = 0f)
+/** A finger on a widget being edited: moving it, or (resize) pulling its corner; [dx] and [dy] are how far it has gone, in px, and [startX] where in the widget it took hold. */
+private data class Gesture(val widget: GridWidget, val resize: Boolean, val startX: Float = 0f, val dx: Float = 0f, val dy: Float = 0f)
+
+/** How close to a side of the screen a dragged widget must be, and for how long, to hop to the next page. */
+private val EDGE_ZONE = 40.dp
+private const val EDGE_DWELL_MS = 450L
 
 /**
  * A page's widgets laid on the grid ([WidgetGrid]): each in its own cells (a fifth of the width wide, [WidgetGrid.ROW_DP] tall
  * rows), clipped to them, the town or the page showing through the empty cells. Scrolls when the widgets run past the screen.
  *
- * Editing (long-press a widget): each widget gets a frame. Drag it anywhere and it snaps to the cell under it when you let go
- * (anything in the way moves down); pull the corner square to resize in whole cells, between the kind's limits; the X removes
- * it. A yellow frame shows where it will land. Every one of those also has an accessibility action, so no gesture is the only way.
+ * Editing (long-press a widget): each widget gets a frame. Drag it anywhere: the others slide out of the way as you go (a live
+ * preview of the drop), a yellow frame shows the cell it will land on, and it snaps there when you let go. Hold it at either
+ * side of the screen and it hops to the next page (past the last page, to a new one). Pull the corner square to resize in whole
+ * cells, between the kind's limits, with the others making way the same way; the X removes it. Every one of those also has an
+ * accessibility action, so no gesture is the only way.
  */
 @Composable
 internal fun GridCanvas(env: WidgetEnv, page: WidgetPage, modifier: Modifier = Modifier) {
     val all = env.prefs.gridWidgets
-    val widgets = WidgetGrid.onPage(all, page)
     val density = LocalDensity.current
+    val calm = LocalReduceMotion.current
     var gesture by remember { mutableStateOf<Gesture?>(null) }
     val current by rememberUpdatedState(all)
+    val live by rememberUpdatedState(env)
     BoxWithConstraints(modifier.fillMaxWidth()) {
         val inset = Spacing.Page - CELL_GAP
         val column = (maxWidth - inset * 2) / WidgetGrid.COLUMNS
         val row = WidgetGrid.ROW_DP.dp
         val colPx = with(density) { column.toPx() }
         val rowPx = with(density) { row.toPx() }
-        fun commit(next: List<GridWidget>) = env.onPrefs(env.prefs.withGrid(next))
-        // The canvas is a row taller than its lowest widget while editing, so there is always a free place to drop one lower.
-        val rows = WidgetGrid.rows(widgets, page) + if (env.editing) 2 else 0
+        val widthPx = with(density) { maxWidth.toPx() }
+        fun commit(next: List<GridWidget>) = live.onPrefs(live.prefs.withGrid(next))
+        // What the page would look like if the finger let go now: the others make way for the widget.
+        val shown = gesture?.let { g ->
+            val at = current.firstOrNull { it.sameAs(g.widget) } ?: g.widget
+            if (g.resize) WidgetGrid.resizedTo(at, g.dx, g.dy, colPx, rowPx).let { (w, h) -> WidgetGrid.resize(current, at, w, h) }
+            else WidgetGrid.droppedAt(at, g.dx, g.dy, colPx, rowPx).let { (c, r) -> WidgetGrid.move(current, at, c, r) }
+        } ?: all
+        val onThis = WidgetGrid.onPage(shown, page)
+        // Held at a side of the screen, a dragged widget hops to the neighbouring page.
+        val side = gesture?.takeIf { !it.resize }?.let { g ->
+            val at = current.firstOrNull { it.sameAs(g.widget) } ?: g.widget
+            val x = with(density) { (inset + column * at.col + CELL_GAP).toPx() } + g.startX + g.dx
+            val zone = with(density) { EDGE_ZONE.toPx() }
+            if (x < zone && page.ordinal > 0) -1 else if (x > widthPx - zone && page.ordinal < WidgetPage.MAX - 1) 1 else 0
+        } ?: 0
+        LaunchedEffect(side, gesture?.widget?.kind) {
+            val g = gesture
+            if (side != 0 && g != null) {
+                delay(EDGE_DWELL_MS)
+                val target = WidgetPage.entries[page.ordinal + side]
+                live.onPrefs(live.prefs.moveGridWidgetToPage(g.widget, target))
+                gesture = null
+                live.goToPage(target.ordinal)
+            }
+        }
+        // The canvas is two rows taller than its lowest widget while editing, so there is always a free place to drop one lower.
+        val rows = WidgetGrid.rows(onThis, page) + if (env.editing) 2 else 0
         Box(Modifier.fillMaxWidth().height(row * rows)) {
             gesture?.let { g ->
                 val target = if (g.resize) WidgetGrid.resizedTo(g.widget, g.dx, g.dy, colPx, rowPx).let { (w, h) -> g.widget.copy(w = w, h = h) }
                 else WidgetGrid.droppedAt(g.widget, g.dx, g.dy, colPx, rowPx).let { (c, r) -> g.widget.copy(col = c, row = r) }
                 Box(Modifier.offset(inset + column * target.col, row * target.row).size(column * target.w, row * target.h).padding(CELL_GAP).border(2.dp, Pixel.Yellow))
             }
-            widgets.forEach { w ->
+            onThis.forEach { w ->
                 key(w.kind, w.arg) {
                     val g = gesture?.takeIf { it.widget.sameAs(w) }
+                    // The widget under the finger stays where it was and follows the finger; the others slide to where they will be.
+                    val home = if (g != null && !g.resize) current.firstOrNull { it.sameAs(w) } ?: w else w
+                    val x by animateDpAsState(inset + column * home.col, if (calm || g != null) snap() else tween(140))
+                    val y by animateDpAsState(row * home.row, if (calm || g != null) snap() else tween(140))
                     Box(
-                        Modifier.offset(inset + column * w.col, row * w.row).size(column * w.w, row * w.h)
+                        Modifier.offset(x, y).size(column * w.w, row * w.h)
                             .zIndex(if (g != null) 2f else 0f)
                             .graphicsLayer { if (g != null && !g.resize) { translationX = g.dx; translationY = g.dy } }
                             .padding(CELL_GAP),
@@ -97,7 +140,7 @@ internal fun GridCanvas(env: WidgetEnv, page: WidgetPage, modifier: Modifier = M
                         }
                         if (env.editing) EditFrame(
                             w, env,
-                            onStart = { resize -> gesture = Gesture(w, resize) },
+                            onStart = { resize, startX -> gesture = Gesture(w, resize, startX) },
                             onDrag = { dx, dy -> gesture = gesture?.let { it.copy(dx = it.dx + dx, dy = it.dy + dy) } },
                             onEnd = {
                                 gesture?.let { done ->
@@ -110,10 +153,15 @@ internal fun GridCanvas(env: WidgetEnv, page: WidgetPage, modifier: Modifier = M
                             onCancel = { gesture = null },
                             nudge = { dc, dr -> commit(WidgetGrid.move(current, w, w.col + dc, w.row + dr)) },
                             grow = { dw, dh -> commit(WidgetGrid.resize(current, w, w.w + dw, w.h + dh)) },
+                            toPage = { dir ->
+                                val to = page.ordinal + dir
+                                if (to in 0 until WidgetPage.MAX) { live.onPrefs(live.prefs.moveGridWidgetToPage(w, WidgetPage.entries[to])); live.goToPage(to) }
+                            },
                         )
                     }
                 }
             }
+            if (env.editing && onThis.isEmpty()) PmdText("An empty page: Add widget, or drag one here", env.pixel, Modifier.padding(Spacing.Page), alpha = 0.8f)
         }
     }
 }
@@ -121,8 +169,8 @@ internal fun GridCanvas(env: WidgetEnv, page: WidgetPage, modifier: Modifier = M
 /** The frame of a widget being edited: drag anywhere on it to move, the corner square to resize, the X to remove. */
 @Composable
 private fun EditFrame(
-    w: GridWidget, env: WidgetEnv, onStart: (resize: Boolean) -> Unit, onDrag: (Float, Float) -> Unit, onEnd: () -> Unit, onCancel: () -> Unit,
-    nudge: (Int, Int) -> Unit, grow: (Int, Int) -> Unit,
+    w: GridWidget, env: WidgetEnv, onStart: (resize: Boolean, startX: Float) -> Unit, onDrag: (Float, Float) -> Unit, onEnd: () -> Unit, onCancel: () -> Unit,
+    nudge: (Int, Int) -> Unit, grow: (Int, Int) -> Unit, toPage: (Int) -> Unit,
 ) {
     val slot = w.asSlot()
     val title = if (w.kind == WidgetKind.ANDROID) env.host.widgetLabel(w.arg.toIntOrNull() ?: -1) ?: slot.title else slot.title
@@ -130,12 +178,13 @@ private fun EditFrame(
     Box(Modifier.fillMaxSize()) {
         Box(
             Modifier.fillMaxSize().border(2.dp, Color.White.copy(alpha = 0.7f)).background(Color.White.copy(alpha = 0.10f))
-                .pointerInput(w.kind, w.arg) { detectDragGestures(onDragStart = { onStart(false) }, onDragEnd = onEnd, onDragCancel = onCancel) { change, amount -> change.consume(); onDrag(amount.x, amount.y) } }
+                .pointerInput(w.kind, w.arg) { detectDragGestures(onDragStart = { onStart(false, it.x) }, onDragEnd = onEnd, onDragCancel = onCancel) { change, amount -> change.consume(); onDrag(amount.x, amount.y) } }
                 .semantics {
                     contentDescription = "$title, ${w.w} by ${w.h} cells"
                     customActions = listOf(
                         action("Move up") { nudge(0, -1) }, action("Move down") { nudge(0, 1) }, action("Move left") { nudge(-1, 0) }, action("Move right") { nudge(1, 0) },
                         action("Wider") { grow(1, 0) }, action("Narrower") { grow(-1, 0) }, action("Taller") { grow(0, 1) }, action("Shorter") { grow(0, -1) },
+                        action("To the next page") { toPage(1) }, action("To the previous page") { toPage(-1) },
                         action("Remove") { removeIt(env, w) },
                     )
                 },
@@ -148,7 +197,7 @@ private fun EditFrame(
         // Resize, bottom right: a square to pull.
         Box(
             Modifier.align(Alignment.BottomEnd).size(Spacing.Target)
-                .pointerInput(w.kind, w.arg) { detectDragGestures(onDragStart = { onStart(true) }, onDragEnd = onEnd, onDragCancel = onCancel) { change, amount -> change.consume(); onDrag(amount.x, amount.y) } }
+                .pointerInput(w.kind, w.arg) { detectDragGestures(onDragStart = { onStart(true, it.x) }, onDragEnd = onEnd, onDragCancel = onCancel) { change, amount -> change.consume(); onDrag(amount.x, amount.y) } }
                 .semantics { contentDescription = "Resize $title" },
             contentAlignment = Alignment.Center,
         ) { Box(Modifier.size(16.dp).border(2.dp, Pixel.Yellow).background(Pixel.Night.copy(alpha = 0.6f))) }
@@ -160,23 +209,40 @@ private fun removeIt(env: WidgetEnv, w: GridWidget) {
     env.onPrefs(env.prefs.removeGridWidget(w))
 }
 
+/**
+ * The bar shown while editing the grid: Add (the widget list), Page+ (a new page), Page- (deletes the last page when it is empty) and Done.
+ * It floats at the foot of the screen over the pages instead of standing in them, so entering edit mode moves nothing.
+ */
+@Composable
+internal fun GridEditBar(env: WidgetEnv, page: WidgetPage, modifier: Modifier = Modifier) {
+    PmdBox(env.pixel, modifier.fillMaxWidth().padding(horizontal = Spacing.Page).padding(bottom = Spacing.S), inset = 1) {
+        Row(Modifier.fillMaxWidth()) {
+            PmdMenuLine("Add", env.pixel, Modifier.weight(1f), center = true, onClick = env.onWidgets)
+            val last = env.pages - 1
+            // On the last page, when it is empty, a new page would only be another empty one: the bar offers to delete it instead (at most three buttons, so the names fit).
+            val deletable = page.ordinal == last && page.ordinal >= WidgetPage.MIN && env.prefs.pageIsEmpty(page)
+            if (deletable) PmdMenuLine("Page-", env.pixel, Modifier.weight(1f), center = true) { env.onPrefs(env.prefs.deleteLastPage()); env.goToPage(last - 1) }
+            else if (env.pages < WidgetPage.MAX) PmdMenuLine("Page+", env.pixel, Modifier.weight(1f), center = true) { env.onPrefs(env.prefs.withPages(env.pages + 1)); env.goToPage(env.pages) }
+            PmdMenuLine("Done", env.pixel, Modifier.weight(1f), center = true, onClick = env.onDone)
+        }
+    }
+}
+
 /** The home page on the grid: the widgets over the town, scrolling when they are taller than the screen. */
 @Composable
 internal fun GridHomePage(env: WidgetEnv, note: Pair<String, () -> Unit>?) {
     Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(vertical = Spacing.L)) {
         if (note != null) PmdBox(env.pixel, Modifier.fillMaxWidth().padding(horizontal = Spacing.Page).padding(bottom = Spacing.M), inset = 1) { PmdMenuLine(note.first, env.pixel, onClick = note.second) }
-        if (env.editing) EditToolbar(env, Modifier.padding(horizontal = Spacing.Page).padding(bottom = Spacing.M))
         GridCanvas(env, WidgetPage.HOME)
     }
 }
 
-/** Today on the grid. */
+/** Any page after the home page on the grid: Today, or one of the user's own. */
 @Composable
-internal fun GridTodayPage(env: WidgetEnv) {
+internal fun GridSidePage(env: WidgetEnv, page: WidgetPage) {
     Box(Modifier.fillMaxSize().background(Pixel.Night.copy(alpha = 0.5f)).safeDrawingPadding()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(top = Spacing.XXL, bottom = Spacing.XL)) {
-            if (env.editing) EditToolbar(env, Modifier.padding(horizontal = Spacing.Page).padding(bottom = Spacing.M))
-            GridCanvas(env, WidgetPage.TODAY)
+            GridCanvas(env, page)
         }
     }
 }

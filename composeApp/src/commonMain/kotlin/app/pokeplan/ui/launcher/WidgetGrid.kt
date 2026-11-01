@@ -2,8 +2,15 @@ package app.pokeplan.ui.launcher
 
 import kotlin.math.roundToInt
 
-/** The two pages widgets can stand on: the home page (over the town) and Today. */
-enum class WidgetPage { HOME, TODAY }
+/**
+ * The pages widgets can stand on: the home page (over the town), Today, and up to three pages of the user's own (Page 3 to 5),
+ * made and deleted in edit mode. Pages are saved by name; how many exist is [LauncherPrefs.pages].
+ */
+enum class WidgetPage(val label: String) {
+    HOME("Home"), TODAY("Today"), PAGE3("Page 3"), PAGE4("Page 4"), PAGE5("Page 5");
+
+    companion object { const val MAX = 5; const val MIN = 2 }
+}
 
 /** How small, how large and how big at first a widget of a kind may be, in grid cells (4 columns wide; a row is [WidgetGrid.ROW_DP] tall, so heights are in rows). */
 class WidgetLimits(val minW: Int, val minH: Int, val maxW: Int, val maxH: Int, val defW: Int, val defH: Int)
@@ -98,6 +105,16 @@ object WidgetGrid {
     fun resize(all: List<GridWidget>, widget: GridWidget, w: Int, h: Int): List<GridWidget> {
         val current = all.firstOrNull { it.sameAs(widget) } ?: return all
         return settle(all, clamped(current.copy(w = w, h = h)))
+    }
+
+    /**
+     * Moves [widget] to [page], keeping its column and row where they fit (anything it lands on goes down). Its identity
+     * includes its page, so the old copy is taken out first.
+     */
+    fun toPage(all: List<GridWidget>, widget: GridWidget, page: WidgetPage): List<GridWidget> {
+        val current = all.firstOrNull { it.sameAs(widget) } ?: return all
+        if (current.page == page) return all
+        return settle(all.filterNot { it.sameAs(current) }, clamped(current.copy(page = page)))
     }
 
     /** The cell a widget lands on when a finger has carried it ([dxPx], [dyPx]) from where it stood, on a grid of [colPx] by [rowPx] cells. */

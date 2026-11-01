@@ -169,3 +169,48 @@ class WidgetGridDragTest {
         assertTrue(dropped.widgets.none { it.kind == WidgetKind.NAV })
     }
 }
+
+class WidgetPagesTest {
+    private val base get() = LauncherPrefs().withGrid(WidgetGrid.fromSlots(defaultWidgets()))
+
+    @Test
+    fun aWidgetMovesToAnotherPageAndAnythingItLandsOnGoesDown() {
+        val agenda = base.grid!!.first { it.kind == WidgetKind.AGENDA }
+        val moved = base.moveGridWidgetToPage(agenda, WidgetPage.HOME)
+        val home = WidgetGrid.onPage(moved.grid!!, WidgetPage.HOME)
+        assertTrue(home.any { it.kind == WidgetKind.AGENDA })
+        assertTrue(home.indices.all { i -> home.indices.none { j -> i != j && home[i].overlaps(home[j]) } })
+        assertEquals(WidgetArea.HOME_BOTTOM, moved.widgets.first { it.kind == WidgetKind.AGENDA }.area, "the old list follows")
+    }
+
+    @Test
+    fun movingPastTheLastPageMakesANewOne() {
+        val nav = base.grid!!.first { it.kind == WidgetKind.NAV }
+        val moved = base.moveGridWidgetToPage(nav, WidgetPage.PAGE3)
+        assertEquals(3, moved.pages)
+        assertEquals(listOf(WidgetPage.HOME, WidgetPage.TODAY, WidgetPage.PAGE3), moved.pageList)
+        assertTrue(moved.grid!!.any { it.kind == WidgetKind.NAV && it.page == WidgetPage.PAGE3 })
+        assertTrue(moved.widgets.none { it.kind == WidgetKind.NAV }, "the list has no such page")
+    }
+
+    @Test
+    fun anEmptyLastPageCanBeDeletedButNeverTheFirstTwo() {
+        val three = base.withPages(3)
+        assertEquals(2, three.deleteLastPage().pages)
+        assertEquals(2, base.deleteLastPage().pages)
+        val busy = three.addGridWidget(WidgetPage.PAGE3, WidgetKind.FORECAST)
+        assertEquals(3, busy.deleteLastPage().pages, "not while a widget is on it")
+    }
+
+    @Test
+    fun addingToAPageAndTheSavedPageCount() {
+        val added = base.withPages(4).addGridWidget(WidgetPage.PAGE4, WidgetKind.FORECAST)
+        assertTrue(added.grid!!.any { it.page == WidgetPage.PAGE4 && it.kind == WidgetKind.FORECAST })
+        assertEquals(added.grid, added.addGridWidget(WidgetPage.TODAY, WidgetKind.FORECAST).grid, "a widget is on one page only")
+        val back = LauncherPrefs.decode(added.encode())
+        assertEquals(4, back.pages)
+        assertEquals(added.grid, back.grid)
+        assertEquals(5, base.withPages(99).pages)
+        assertEquals(2, base.withPages(0).pages)
+    }
+}

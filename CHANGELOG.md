@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.94.0
+
+- Launcher pages: make your own pages and drag widgets between them. Edit mode (long-press a widget) has a bar that floats at the foot of the screen over the page (entering edit mode moves nothing): Add, Page+ (a new page; up to five pages: Home, Today and three of your own), Page- (deletes the last page when it is empty, in place of Page+) and Done. Hold a dragged widget at either side of the screen for half a second and it hops to the next page (past the last page, onto a new one) and the launcher goes there; each widget also has "To the next page" and "To the previous page" accessibility actions. Swiping, the page dots and Home work for any number of pages, and the town is as wide as the pages so Pokémon can wander across all of them. The Widgets list (Launcher settings) shows the grid by page.
+- Live preview while dragging or resizing: the other widgets slide out of the way as you go, showing exactly where everything will be when you let go (still at once with Reduce motion), as well as the yellow landing frame.
+
 ## 0.93.0
 
 - Launcher widget grid is on by default (Launcher settings → "Widget grid (drag, resize)" goes back to the old list). Your layout is converted in the same order; widgets that are half width or short now reshape instead of being cut off badly: the clock shows the time alone, Shortcuts show pictures only, App buttons go one to a line, and every widget's frame is as tall as its cells, with what does not fit cut off inside it. Tested at the smallest size of every kind (`launcherGridSizes`).
