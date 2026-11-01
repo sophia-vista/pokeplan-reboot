@@ -26,6 +26,27 @@ sealed interface WorldEvent {
 /** A team's fit for a dungeon (see [WorldSim.suitability]). */
 data class Suitability(val floorMillis: Long, val favored: Int, val size: Int)
 
+/**
+ * How long a floor takes a team, step by step, from the same numbers [WorldSim.floorMillis] uses (so what the player reads is what happens).
+ * [skillHelp] is what the members' abilities add to World's skills (more berries, finds or Poké); it does not change [floorMillis].
+ */
+data class SpeedExplanation(
+    val levels: Int,
+    val favoredMembers: Int,
+    /** The extra power from members of a favoured type: 20% of their levels. */
+    val favoredBonus: Double,
+    val power: Double,
+    val baseMillis: Long,
+    /** The time after power alone, never under a quarter of [baseMillis]. */
+    val afterPowerMillis: Long,
+    val atMinimum: Boolean,
+    /** Temporal Mastery (the home Guardian) and the legendaries given for the layer, in percent faster. */
+    val masteryPercent: Int,
+    val legendPercent: Int,
+    val floorMillis: Long,
+    val skillHelp: Map<WorldSkill, Int>,
+)
+
 /** What settling did: the new data and, per team, the floors climbed and what happened. */
 data class WorldReport(val data: WorldData, val perTeam: Map<Int, List<WorldEvent>>) {
     val events: List<WorldEvent> get() = perTeam.values.flatten()
@@ -149,6 +170,22 @@ object WorldSim {
             else -> return null
         }
         return JournalLine(now, text)
+    }
+
+    /** The speed of a team of [members] in [dungeon] for [data] explained in steps; [SpeedExplanation.floorMillis] equals what [floorMillis] gives. */
+    fun explainSpeed(dungeon: DungeonDef, members: List<OwnedPokemon>, data: WorldData): SpeedExplanation {
+        val power = power(members, dungeon)
+        val base = dungeon.baseFloorSeconds * 1000L
+        val afterPower = maxOf(base / 4, (base / (1.0 + power / 100.0)).toLong())
+        val favored = members.filter { p -> p.form.types.any { it in dungeon.favored } }
+        val legend = data.legendFaster(dungeon).coerceAtMost(50)
+        return SpeedExplanation(
+            levels = members.sumOf { it.level }, favoredMembers = favored.size, favoredBonus = favored.sumOf { it.level } * 0.2, power = power,
+            baseMillis = base, afterPowerMillis = afterPower, atMinimum = afterPower == base / 4,
+            masteryPercent = if (data.guardianDone) 10 else 0, legendPercent = legend,
+            floorMillis = floorMillis(dungeon, power, data.guardianDone, data.legendFaster(dungeon)),
+            skillHelp = WorldSkill.entries.associateWith { AbilityPerks.bonus(members.map { it.ability }, it) }.filterValues { it > 0 },
+        )
     }
 
     /** What a team of [members] brings to [dungeon]: how long a floor takes it, and how many of its members are of a favoured type. */

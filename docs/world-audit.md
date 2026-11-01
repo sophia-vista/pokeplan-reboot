@@ -183,3 +183,5 @@ Do not start Phase 1 step 5 (the picker's Guardian filter) before decision 1.
 6. **Markers use shapes as well as colour** (diamond, circle with a tick, square, circle with an arrow, red ring for a Guardian), with a legend line under the map and a screen-reader summary that counts the explored ones. Done.
 7. **Plan has no quest for a legendary World gives** (option A, owner): done species by species (`Legends.coveredSpecies`, applied in `Quests.all`); the rest keep theirs until a layer gives them.
 8. **Device checks** (map markers, job alarm, widget, launcher pages): with the owner.
+
+**Phase 1 progress (0.104.0).** Done: idle Guardians and the 20-strongest picker (1, 2), the landing's next step per layer (4), every lock reason (5), shaped markers (6), the all-teams overview, the "how fast" explanation (3) and the legendary bonus text. Still to do in Phase 1: the landing redesign around one primary action, the expedition report on return, the rank card's "what the next rank opens", the mission board's states and previews, and the device checks.

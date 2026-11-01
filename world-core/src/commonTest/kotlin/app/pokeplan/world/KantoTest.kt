@@ -136,3 +136,36 @@ class LockReasonsTest {
         assertTrue(WorldGuide.lockReasons(WorldData(), Dungeons.byId("tiny-woods")!!).isEmpty())
     }
 }
+
+class SpeedExplanationTest {
+    private fun mon(id: String, species: Int, level: Int) =
+        Hatching.create(id, HatchOption(species, Dex.defaultForm(species).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = level)
+
+    @Test
+    fun theExplanationGivesTheSameFloorTimeAsTheSimulation() {
+        val members = listOf(mon("a", 25, 40), mon("b", 74, 30), mon("c", 10, 20))
+        for (d in Dungeons.all) for (data in listOf(WorldData(), WorldData(guardianDone = true, legends = setOf("kanto-zapdos", "kanto-moltres", "johto-lugia")))) {
+            val e = WorldSim.explainSpeed(d, members, data)
+            assertEquals(WorldSim.floorMillis(d, WorldSim.power(members, d), data.guardianDone, data.legendFaster(d)), e.floorMillis, d.id)
+            assertEquals(90, e.levels)
+            assertEquals(e.levels + e.favoredBonus, e.power, 1e-9, d.id)
+        }
+        // A strong team reaches the floor of a quarter of the base time and is told so.
+        val strong = listOf(mon("a", 25, 100), mon("b", 74, 100), mon("c", 10, 100), mon("d", 1, 100))
+        val tiny = WorldSim.explainSpeed(Dungeons.byId("tiny-woods")!!, strong, WorldData())
+        assertTrue(tiny.atMinimum && tiny.afterPowerMillis == tiny.baseMillis / 4)
+        // Abilities help skills, not floor time: only a skill list, and no change to the time.
+        assertTrue(tiny.skillHelp.values.all { it in 1..AbilityPerks.MAX_BONUS })
+    }
+}
+
+class LegendBonusTextTest {
+    @Test
+    fun theBonusTextSaysWhatTheNumbersDo() {
+        val text = Legends.byId("johto-ho-oh")!!.bonusText()
+        assertTrue("0.5% more chance of a wild Pokémon" in text && "3% more chance of a treasure box" in text && text.endsWith("in Johto."), text)
+        val lugia = Legends.byId("johto-lugia")!!.bonusText()
+        assertTrue("Water and Flying-favouring dungeons climb ${Legends.FASTER_PERCENT}% faster" in lugia, lugia)
+        Legends.all.forEach { assertTrue(it.bonusText() != "No bonus.", it.id) }
+    }
+}

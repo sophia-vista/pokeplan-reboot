@@ -23,6 +23,16 @@ data class LegendQuest(
     val treasurePercent: Int = 0,
 )
 
+/** What a legendary of a layer gives, in words, from the same numbers the simulation uses: where it applies and how much. */
+fun LegendQuest.bonusText(): String {
+    val parts = buildList {
+        if (types.isNotEmpty()) add("${types.joinToString(" and ") { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } }}-favouring dungeons climb ${Legends.FASTER_PERCENT}% faster")
+        if (findPermille > 0) add("${findPermille / 10.0}% more chance of a wild Pokémon on a floor")
+        if (treasurePercent > 0) add("${treasurePercent}% more chance of a treasure box")
+    }
+    return if (parts.isEmpty()) "No bonus." else parts.joinToString("; ") + " in ${layer.label}."
+}
+
 object Legends {
     /** How much faster a floor is in a dungeon of the layer that favours a given legendary's type: percent, for each one. *(tune)* */
     const val FASTER_PERCENT = 10

@@ -62,6 +62,7 @@ import app.pokeplan.world.Missions
 import app.pokeplan.world.ExplorerRank
 import app.pokeplan.world.Story
 import app.pokeplan.world.Legends
+import app.pokeplan.world.bonusText
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.WorldEvent
 import app.pokeplan.world.WorldSim
@@ -316,6 +317,7 @@ private fun LegendsCard(model: AppModel, layer: WorldLayer) {
                             },
                             style = MaterialTheme.typography.bodyMedium,
                         )
+                        Text("Gives: ${q.bonusText()}${if (done) "" else " (once it joins you)"}", style = MaterialTheme.typography.bodyMedium, color = if (done) Pixel.Green else Pixel.InkSoft)
                     }
                 }
             }
@@ -532,6 +534,7 @@ private fun WorldTeamsView(model: AppModel) {
     val store = model.store
     val world = model.data.world
     val roster = model.data.player.pokemon
+    ExpeditionOverview(model)
     world.slots().forEach { team ->
         var editing by remember(team.id) { mutableStateOf(false) }
         var picked by remember(team.id, team.members) { mutableStateOf(team.members) }
@@ -555,6 +558,7 @@ private fun WorldTeamsView(model: AppModel) {
                         PixelBar(floor.toFloat() / dungeon.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "floor ${floor + 1} of ${dungeon.floors}")
                         Text("A floor takes about ${per / 1000 / 60} min ${per / 1000 % 60} s. It keeps going while you are away, up to 12 hours.", style = MaterialTheme.typography.bodyMedium)
                     }
+                    if (outAt != null) SpeedExplainer(members, outAt, world)
                     PixelButton("Recall", { store.worldRecall(team.id) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 } else {
                     PixelButton(if (editing) "Close" else "Choose the team", { editing = !editing }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)

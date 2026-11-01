@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.104.0
+
+- **World, Expeditions:** an "All teams" card at the top says what every team is doing (where, which floor, who is on it, or ready or empty) and how many Pokémon are waiting to be recruited. A team that is out has a **"How fast?"** button that shows its floor time in steps from the real numbers: the team's levels, the +20% of the levels of members of a favoured type, the power, the base time divided by 1 + power/100 (never under a quarter), Temporal Mastery and the region's legendaries, and the result; abilities are listed as help for skills, not speed (`WorldSim.explainSpeed`, tested to equal the real floor time).
+- **World, Map:** each legendary quest says what it gives and where ("Water and Flying-favouring dungeons climb 10% faster in Johto"), from the same numbers the simulation uses.
+
 ## 0.103.0
 
 - **Plan has no quest for the legendaries World gives.** Zapdos, Articuno, Moltres, Mewtwo, Mew, Lugia, Ho-Oh, Groudon, Kyogre and Rayquaza now come only from World's region quests; their Plan quests are gone from the quest list (a Plan quest already finished stays finished and its Pokémon owned; one in progress for such a species goes away). Every other legendary and mythical keeps its Plan quest until a World layer gives it, one species at a time (`Legends.coveredSpecies`).
