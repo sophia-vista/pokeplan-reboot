@@ -1,9 +1,18 @@
 name: CI
 
 # Pull requests only: a merge to main was already tested on its PR, and the Latest APK workflow still builds main. Actions
-# minutes are limited on this private repository, so main is not tested a second time.
+# minutes are limited on this private repository, so main is not tested a second time, a PR that changes only text is not
+# tested at all, and every job below is one the PR needs (each job also costs at least a minute to start).
 on:
   pull_request:
+    # Docs, notes and the old app do not change what these checks look at. VERSION and CHANGELOG changes still run them when
+    # they arrive with code; a PR that changes only .md files has nothing to test.
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+      - ".claude/**"
+      - ".idea/**"
+      - "legacy-android/**"
 
 # A new push to a PR cancels the run still going for the push before it.
 concurrency:
@@ -14,54 +23,77 @@ jobs:
   test:
     name: Tests and builds
     runs-on: ubuntu-latest
+    # A run that hangs must not eat the month's minutes: the whole job normally takes about ten.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      # The cheap checks come first, so a PR that breaks one stops before the ten minute Gradle build.
       - name: VERSION is MAJOR.MINOR.PATCH
         run: grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' VERSION
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: The Pokédex data is up to date
+        run: |
+          python3 -I tools/species/generate.py
+          git diff --exit-code -- pokemon-core/src/commonMain/kotlin/app/pokeplan/core/dex/generated
+      # The runner image does not always ship PostgreSQL: install it when no server binaries are there.
+      - name: PostgreSQL, if the image has none
+        run: |
+          if ! ls /usr/lib/postgresql/*/bin/initdb >/dev/null 2>&1 && ! command -v initdb >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y postgresql postgresql-contrib
+          fi
+      - name: The Supabase migrations and SQL tests
+        run: supabase/tests/run.sh
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
+        env:
+          # The same cache key as the Latest APK workflow, so a PR starts from what the last merge to main downloaded and compiled
+          # instead of from nothing (a PR can read main's caches but not write them).
+          GRADLE_BUILD_ACTION_CACHE_KEY_PREFIX: pokeplan
+          GRADLE_BUILD_ACTION_CACHE_KEY_JOB: gradle
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Unit tests (JVM) and the web and JavaScript builds
         run: ./gradlew jvmTest compileKotlinWasmJs jsProductionLibraryCompileSync :composeApp:compileKotlinJvm --no-daemon
-      - name: Android debug app
+      # Compiling the Android app costs about as much as packaging it (most of it is compiling the shared modules a second time), so
+      # it is done only when the PR can break it: it touches the Android app, an Android source set or the Gradle setup, or has the
+      # "android" or "apk" label. Changes to shared code are already compiled for the JVM and the web above; every merge to main is
+      # built and published as a release, which would show anything else.
+      - name: Does this PR touch the Android app?
+        id: android
+        run: |
+          git fetch --no-tags --depth=1 origin "${{ github.event.pull_request.base.sha }}"
+          if git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD | grep -Eq '^(androidApp/|.*/src/androidMain/|gradle/|[^/]*\.gradle\.kts$|[^/]*/build\.gradle\.kts$|gradle\.properties$)'; then
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Android app compiles
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'apk') && (steps.android.outputs.needed == 'true' || contains(github.event.pull_request.labels.*.name, 'android')) }}
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          ./gradlew :androidApp:compileDebugKotlin --no-daemon
+      - name: Android debug app (label "apk")
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'apk') }}
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
           ./gradlew :androidApp:assembleDebug --no-daemon
       - name: Keep the APK
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'apk') }}
         uses: actions/upload-artifact@v4
         # A convenience, not a check: a full artifact storage quota must not fail the PR or skip the checks below.
         continue-on-error: true
         with:
           name: pokeplan-debug-apk
           path: androidApp/build/outputs/apk/debug/androidApp-debug.apk
-          retention-days: 7
+          retention-days: 3
       - name: The compiled engine matches the JVM (Node)
         run: node tools/server/smoke.mjs pokemon-core/build/compileSync/js/main/productionLibrary/kotlin
       - name: The reward function's logic (Node)
         run: node --experimental-strip-types supabase/functions/reward/core.test.ts
-
-  supabase:
-    name: Supabase schema
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Migrations and SQL tests (PostgreSQL 16)
-        run: supabase/tests/run.sh
-
-  data:
-    name: Generated data is up to date
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Regenerate the Pokédex data
-        run: python3 -I tools/species/generate.py
-      - name: Fail if it changed
-        run: git diff --exit-code -- pokemon-core/src/commonMain/kotlin/app/pokeplan/core/dex/generated
