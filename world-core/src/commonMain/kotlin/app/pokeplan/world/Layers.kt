@@ -17,6 +17,7 @@ enum class WorldLayer(
     HOME("home", "Mystery Dungeon world", "Explorers' guilds, strange dungeons and a time Guardian."),
     KANTO("kanto", "Kanto", "The Genetic Crisis: Team Rocket's experiments, the legendary birds, Mewtwo and Mew.", "map-kanto", 192, 128),
     JOHTO("johto", "Johto", "The Sacred Balance: the burned tower, the sky and the sea, Ho-Oh and Lugia.", "map-johto", 144, 128),
+    HOENN("hoenn", "Hoenn", "The Primal Awakening: Team Magma and Team Aqua, Groudon, Kyogre and Rayquaza.", "map-hoenn", 256, 152),
     ;
 
     companion object {

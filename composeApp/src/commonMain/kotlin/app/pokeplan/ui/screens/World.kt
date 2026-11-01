@@ -200,7 +200,7 @@ private fun WorldMapView(model: AppModel) {
         }
     }
     Text(layer.blurb, style = MaterialTheme.typography.bodyMedium)
-    val spots = when (layer) { WorldLayer.HOME -> mapSpots; WorldLayer.KANTO -> kantoSpots; WorldLayer.JOHTO -> johtoSpots }
+    val spots = when (layer) { WorldLayer.HOME -> mapSpots; WorldLayer.KANTO -> kantoSpots; WorldLayer.JOHTO -> johtoSpots; WorldLayer.HOENN -> hoennSpots }
     WorldMapPicture(
         stage = 1 + clearedCount,
         markers = dungeons.mapNotNull { d ->
@@ -276,6 +276,13 @@ private val johtoSpots = mapOf(
     "sprout-tower" to (76 to 52), "ilex-forest" to (44 to 52), "union-cave" to (20 to 84), "ruins-of-alph" to (68 to 68),
     "slowpoke-well" to (44 to 84), "mt-mortar" to (76 to 36), "burned-tower" to (60 to 36), "whirl-islands" to (20 to 108),
     "tin-tower" to (70 to 24),
+)
+
+/** Where each Hoenn dungeon is on the Hoenn map picture (256 x 152 pixels), read from its towns and landmarks. */
+private val hoennSpots = mapOf(
+    "petalburg-woods" to (16 to 77), "granite-cave" to (27 to 128), "meteor-falls" to (50 to 26), "mt-chimney" to (66 to 31),
+    "shoal-cave" to (168 to 44), "seafloor-cavern" to (195 to 48), "cave-of-origin" to (180 to 75), "victory-road-hoenn" to (228 to 80),
+    "sky-pillar" to (160 to 100),
 )
 
 /** The legendary quests of [layer]: what each asks and how far it is, and the ones already given. */

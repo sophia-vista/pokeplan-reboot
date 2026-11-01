@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.101.0
+
+- **World: the Hoenn layer** (fourth button on the Map's layer switch, open from the first day): nine dungeons from Ruby, Sapphire, Emerald, Omega Ruby and Alpha Sapphire (Petalburg Woods, Granite Cave, Meteor Falls, Mt. Chimney, Shoal Cave, Seafloor Cavern, Cave of Origin, Victory Road, Sky Pillar), wild Pokémon from the Hoenn Pokédex, the Hoenn map of Pokémon Emerald's PokéNav (`assets/world/map-hoenn.png`, built by `tools/sprites/fetch_hoenn_map.py`) with a marker on each, and its own five-chapter story, "The Primal Awakening". Legendary quests, all Guardians of Hoenn: Groudon and Kyogre after three clears of Mt. Chimney and the Seafloor Cavern, Rayquaza at the top of the Sky Pillar.
+
 ## 0.100.0
 
 - **World: the Johto layer** (open from the first day, third button on the Map's layer switch): nine dungeons from Gold, Silver, Crystal, HeartGold and SoulSilver (Sprout Tower, Ilex Forest, Union Cave, Ruins of Alph, Slowpoke Well, Mt. Mortar, Burned Tower, Whirl Islands, Tin Tower), wild Pokémon from the Johto Pokédex, the Johto map of Pokémon Crystal's Pokégear (`assets/world/map-johto.png`, built by `tools/sprites/fetch_johto_map.py`) with a marker on each, and its own five-chapter story, "The Sacred Balance". Legendary quests, both Guardians of Johto: Lugia after three clears of the Whirl Islands, Ho-Oh at the top of the Tin Tower. Legendary boosts are data now (`LegendQuest.types`, `findPermille`, `treasurePercent`). New layer buttons wrap onto a second line when narrow.

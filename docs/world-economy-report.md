@@ -115,6 +115,42 @@ Nothing here pays through the server reward engine; items go to the Bag, Poké s
 | Tin Tower (20 fl) | 2 × Lv 20 | 0.4 | 0.5 | 5.4 | 10.3 | 0.2 | 0.04 | 0.43 |
 | Tin Tower (20 fl) | 4 × Lv 20 | 0.5 | 0.6 | 7.1 | 13.6 | 0.3 | 0.04 | 0.43 |
 | Tin Tower (20 fl) | 4 × Lv 50 | 0.8 | 1.0 | 12.1 | 23.3 | 0.6 | 0.07 | 0.86 |
+| Petalburg Woods (5 fl) | 2 × Lv 5 | 2.4 | 11.7 | 17.1 | 31.7 | 1.8 | 0.13 | 2.71 |
+| Petalburg Woods (5 fl) | 2 × Lv 20 | 3.1 | 14.9 | 21.7 | 40.4 | 2.3 | 0.16 | 4.14 |
+| Petalburg Woods (5 fl) | 4 × Lv 20 | 4.0 | 19.2 | 28.0 | 52.2 | 2.9 | 0.24 | 4.71 |
+| Petalburg Woods (5 fl) | 4 × Lv 50 | 6.7 | 32.0 | 46.7 | 89.3 | 4.9 | 0.38 | 8.57 |
+| Granite Cave (8 fl) | 2 × Lv 5 | 1.5 | 4.6 | 13.1 | 24.8 | 1.1 | 0.10 | 0.57 |
+| Granite Cave (8 fl) | 2 × Lv 20 | 2.0 | 6.0 | 17.0 | 32.3 | 1.4 | 0.13 | 1.00 |
+| Granite Cave (8 fl) | 4 × Lv 20 | 2.6 | 7.8 | 22.1 | 42.3 | 1.9 | 0.14 | 1.71 |
+| Granite Cave (8 fl) | 4 × Lv 50 | 4.4 | 13.3 | 37.7 | 73.1 | 3.3 | 0.26 | 3.43 |
+| Meteor Falls (10 fl) | 2 × Lv 5 | 1.0 | 2.5 | 9.7 | 18.4 | 0.7 | 0.06 | 0.43 |
+| Meteor Falls (10 fl) | 2 × Lv 20 | 1.3 | 3.2 | 12.6 | 24.1 | 0.9 | 0.08 | 0.57 |
+| Meteor Falls (10 fl) | 4 × Lv 20 | 1.7 | 4.2 | 16.5 | 31.6 | 1.2 | 0.10 | 0.71 |
+| Meteor Falls (10 fl) | 4 × Lv 50 | 3.0 | 7.1 | 28.0 | 54.3 | 2.1 | 0.17 | 2.00 |
+| Mt. Chimney (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.5 | 16.3 | 0.6 | 0.07 | 0.29 |
+| Mt. Chimney (12 fl) | 2 × Lv 20 | 1.1 | 2.1 | 11.2 | 21.5 | 0.7 | 0.09 | 0.71 |
+| Mt. Chimney (12 fl) | 4 × Lv 20 | 1.4 | 2.8 | 14.5 | 27.8 | 0.9 | 0.13 | 1.43 |
+| Mt. Chimney (12 fl) | 4 × Lv 50 | 2.4 | 4.7 | 24.8 | 48.0 | 1.7 | 0.21 | 3.14 |
+| Shoal Cave (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.4 | 16.1 | 0.6 | 0.05 | 0.43 |
+| Shoal Cave (12 fl) | 2 × Lv 20 | 1.0 | 2.1 | 10.8 | 20.6 | 0.8 | 0.05 | 0.71 |
+| Shoal Cave (12 fl) | 4 × Lv 20 | 1.3 | 2.7 | 13.9 | 26.7 | 1.0 | 0.08 | 0.71 |
+| Shoal Cave (12 fl) | 4 × Lv 50 | 2.2 | 4.4 | 23.3 | 44.8 | 1.6 | 0.16 | 1.43 |
+| Seafloor Cavern (14 fl) | 2 × Lv 5 | 0.6 | 1.0 | 6.9 | 13.2 | 0.4 | 0.02 | 0.71 |
+| Seafloor Cavern (14 fl) | 2 × Lv 20 | 0.8 | 1.3 | 8.8 | 16.9 | 0.6 | 0.05 | 1.00 |
+| Seafloor Cavern (14 fl) | 4 × Lv 20 | 1.0 | 1.7 | 11.5 | 22.1 | 0.7 | 0.07 | 1.29 |
+| Seafloor Cavern (14 fl) | 4 × Lv 50 | 1.7 | 2.9 | 19.2 | 37.0 | 1.1 | 0.08 | 2.14 |
+| Cave of Origin (16 fl) | 2 × Lv 5 | 0.5 | 0.7 | 6.0 | 11.6 | 0.3 | 0.05 | 0.43 |
+| Cave of Origin (16 fl) | 2 × Lv 20 | 0.6 | 1.0 | 7.8 | 15.0 | 0.4 | 0.07 | 0.57 |
+| Cave of Origin (16 fl) | 4 × Lv 20 | 0.8 | 1.3 | 10.3 | 19.8 | 0.6 | 0.08 | 0.71 |
+| Cave of Origin (16 fl) | 4 × Lv 50 | 1.4 | 2.1 | 17.6 | 34.3 | 1.0 | 0.11 | 0.86 |
+| Victory Road (Hoenn) (18 fl) | 2 × Lv 5 | 0.4 | 0.5 | 5.4 | 10.5 | 0.3 | 0.02 | 0.14 |
+| Victory Road (Hoenn) (18 fl) | 2 × Lv 20 | 0.5 | 0.7 | 7.1 | 13.7 | 0.4 | 0.02 | 0.14 |
+| Victory Road (Hoenn) (18 fl) | 4 × Lv 20 | 0.7 | 0.9 | 9.1 | 17.5 | 0.5 | 0.03 | 0.57 |
+| Victory Road (Hoenn) (18 fl) | 4 × Lv 50 | 1.2 | 1.6 | 15.9 | 31.0 | 0.8 | 0.07 | 1.57 |
+| Sky Pillar (20 fl) | 2 × Lv 5 | 0.3 | 0.4 | 4.1 | 7.9 | 0.2 | 0.01 | 0.14 |
+| Sky Pillar (20 fl) | 2 × Lv 20 | 0.4 | 0.5 | 5.4 | 10.4 | 0.3 | 0.02 | 0.14 |
+| Sky Pillar (20 fl) | 4 × Lv 20 | 0.5 | 0.6 | 7.1 | 13.6 | 0.3 | 0.02 | 0.29 |
+| Sky Pillar (20 fl) | 4 × Lv 50 | 0.8 | 1.0 | 12.1 | 23.4 | 0.5 | 0.03 | 0.29 |
 
 The Kanto layer's dungeons are in the same table, so their Poké, XP and finds per hour can be compared with the home layer's at the same rank gate (Viridian Forest and Mt. Moon with Tiny Woods and Thunderwave Cave; Cerulean Cave with the Temporal Tower). The careers and the year below follow the home layer only.
 
