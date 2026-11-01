@@ -45,6 +45,28 @@ class WorldStoreTest {
     }
 
     @Test
+    fun kantosLegendsJoinTheCollectionOnceWhenTheirQuestsAreMet() {
+        val storage = MemoryStorage()
+        val first = GameStore(storage, Clock(), TimeZone.UTC, Random(5)).also { it.start("Sophia", 25) }
+        // Zapdos (the Power Plant cleared three times) and Mewtwo (the Guardian faced) are met; Articuno is not.
+        val world = app.pokeplan.world.WorldData(
+            xp = 1_000_000, clears = mapOf("power-plant" to 3, "seafoam-islands" to 1, "cerulean-cave" to 1), layersDone = setOf("kanto"),
+        )
+        val json = kotlinx.serialization.json.Json { encodeDefaults = true; ignoreUnknownKeys = true }
+        storage.text = json.encodeToString(AppData.serializer(), first.data.copy(world = world))
+        val store = GameStore(storage, Clock(), TimeZone.UTC, Random(5))
+        store.worldSettle()
+        val owned = store.data.player.pokemon.map { it.speciesId }
+        assertTrue(145 in owned && 150 in owned, "Zapdos and Mewtwo joined")
+        assertFalse(144 in owned || 151 in owned, "Articuno and Mew are not met yet")
+        assertEquals(setOf("kanto-zapdos", "kanto-mewtwo"), store.data.world.legends)
+        val count = store.data.player.pokemon.size
+        store.worldSettle()
+        assertEquals(count, store.data.player.pokemon.size, "given once")
+        assertTrue(store.data.rewardLog.any { it.source == GameStore.WORLD_SOURCE })
+    }
+
+    @Test
     fun aWorldRecruitIsNotAnEggHatching() {
         val store = store(Clock())
         store.grantPokemon(25, GameStore.WORLD_SOURCE, Origin.How.WORLD)

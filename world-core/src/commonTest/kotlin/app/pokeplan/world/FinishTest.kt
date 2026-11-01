@@ -25,9 +25,9 @@ class FinishTest {
             d.wild.forEach { assertNotNull(Dex.speciesOrNull(it.speciesId), "${d.id} ${it.speciesId}") }
             assertTrue(d.wild.any { HatchRules.rarity(it.speciesId) != null }, d.id)
             d.milestones.keys.forEach { assertTrue(it in 1..d.floors, d.id) }
-            assertTrue(d.chapter in 1..Story.chapters.size)
+            assertTrue(d.chapter in 1..Story.chaptersOf(d.layer).size)
         }
-        assertEquals(1, Dungeons.all.count { it.guardian })
+        WorldLayer.entries.forEach { layer -> assertEquals(1, Dungeons.of(layer).count { it.guardian }, layer.id) }
         assertEquals(8, WorldRegion.entries.size)
     }
 

@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.99.0
+
+- **World: the Kanto layer.** The Map screen has a layer switch (the Mystery Dungeon world and Kanto, both open from the first day). Kanto has nine dungeons from Red, Blue, FireRed and LeafGreen (Viridian Forest, Mt. Moon, Rock Tunnel, Pokémon Tower, Power Plant, Seafoam Islands, Mt. Ember, Victory Road, Cerulean Cave), each with wild Pokémon from the Kanto Pokédex (found only there), its own rank gate and milestone rewards, the official FireRed and LeafGreen map with a marker on each, and its own five-chapter story, "The Genetic Crisis". Clears in one layer do not advance the other layer's story.
+- **Legendary quests (Kanto):** Zapdos (Power Plant), Articuno (Seafoam Islands) and Moltres (Mt. Ember) join your Guardians after three clears of their dungeon; Mewtwo joins when Cerulean Cave's last floor is reached (Kanto's Guardian) and Mew after three clears of it. Each given once, with a reward line in the log. A bird makes the Kanto dungeons that favour its type 10% faster; Mewtwo adds a little to the chance of a find in Kanto, Mew to the chance of a treasure box. The quests are listed under the Kanto map.
+- New save fields with defaults (`layersDone`, `legends`), so old saves load. The home layer's numbers are unchanged (checked with `simulateWorldEconomy`; the report lists Kanto's dungeons beside the home ones).
+- Launcher Calendar widget: the rows fit the box (they were a fixed 48 dp, so six weeks overflowed the largest box and the top row of buttons was cut off); when the box is too short for the whole month, only the weeks around the chosen day are shown. The header is "Prev", a short month and year, and "Next" so none is cut; the widget can now be 10 rows tall (was 8), and new ones start 8 tall.
+
 ## 0.98.0
 
 - Primal Dialga is its own Dex form (`dialga-primal`, id 20001, an alternate form of species 483), separate from Dialga, for the home layer's Temporal Tower Guardian. PokeAPI has no such form, so it is listed in the new `tools/species/custom_forms.txt`, which `generate.py` adds to the Dex and `tools/sprites/fetch.py` to the sprite manifest. Its sprites and portrait are SpriteCollab's "Primal" ones (credited to Chunsoft); base stats are Dialga's, as there are no official ones. The Temporal Tower Guardian now gives Primal Dialga (`Story.GUARDIAN_FORM`; `GameStore.grantPokemon` takes an optional form). Players who already received Dialga keep it.

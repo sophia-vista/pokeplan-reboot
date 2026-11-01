@@ -25,15 +25,19 @@ object Story {
     const val GUARDIAN_FORM = "dialga-primal"
     const val GUARDIAN_BONUS = "Temporal Mastery: every expedition climbs 10% faster"
 
-    /** How many chapters are open for [data]: each needs its rank and enough different dungeons cleared (repeating one counts once, so a cheap dungeon cannot be farmed for chapters). */
-    /** How many different dungeons have been cleared. */
-    fun dungeonsCleared(data: WorldData): Int = data.clears.count { c -> c.value > 0 }
+    /** The chapters of [layer]'s story. */
+    fun chaptersOf(layer: WorldLayer): List<Chapter> = if (layer == WorldLayer.HOME) chapters else KantoStory.chapters
 
-    fun opened(data: WorldData): Int = chapters.count { data.rank >= it.needsRank && data.clears.count { c -> c.value > 0 } >= it.needsDungeons }
+    /** How many different dungeons of [layer] have been cleared (repeating one counts once, so a cheap dungeon cannot be farmed for chapters). */
+    fun dungeonsCleared(data: WorldData, layer: WorldLayer = WorldLayer.HOME): Int = Dungeons.of(layer).count { (data.clears[it.id] ?: 0) > 0 }
 
-    /** The story is complete when the Guardian has been faced. */
-    fun complete(data: WorldData): Boolean = data.guardianDone
+    /** How many chapters of [layer]'s story are open for [data]: each needs its rank and enough different dungeons of the layer cleared. */
+    fun opened(data: WorldData, layer: WorldLayer = WorldLayer.HOME): Int =
+        chaptersOf(layer).count { data.rank >= it.needsRank && dungeonsCleared(data, layer) >= it.needsDungeons }
 
-    /** The next chapter that is not open yet, or null at the end. */
-    fun next(data: WorldData): Chapter? = chapters.getOrNull(opened(data))
+    /** The layer's story is complete when its Guardian has been faced. */
+    fun complete(data: WorldData, layer: WorldLayer = WorldLayer.HOME): Boolean = data.layerDone(layer)
+
+    /** The next chapter of [layer] that is not open yet, or null at the end. */
+    fun next(data: WorldData, layer: WorldLayer = WorldLayer.HOME): Chapter? = chaptersOf(layer).getOrNull(opened(data, layer))
 }

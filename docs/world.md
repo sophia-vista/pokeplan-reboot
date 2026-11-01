@@ -782,6 +782,9 @@ The brief makes a region a *journey across its real map*, not a list of dungeons
 - **Tilesets:** the Explorers of Sky sheets already in `assets/tiles/` cover every kind needed (Apple Woods or Lush Prairie for the forest; Crystal Cave for Mt. Moon; Beach Cave for Seafoam; Deep Sealed Ruin for the tower). No new sheet is required for the first release.
 - **Sprites, cries and portraits:** SpriteCollab and the existing assets, as for every Pokémon.
 
+### Status (0.99.0)
+Built: the layer (`WorldLayer`, `DungeonDef.layer`, the Map switch), the nine dungeons, the story chapters, the five legendary quests and their boosts, the map picture and markers, and the economy run. Not built: settlements and routes as nodes of the map, fog of war, Kanto jobs on the mission board, the Sevii Islands and postgame floors, Kanto story text beyond the chapter summaries, and the Guardian slot bonuses per module. The marker positions are read by eye from the picture and may need nudging after a device test.
+
 ### Build order (one PR each, combined where small)
 1. `WorldLayer`, `DungeonDef.layer`, the layer switch and per-layer story; no Kanto content yet. Saves load unchanged.
 2. The nine dungeons, wild tables and milestone rewards; economy run (`simulateWorldEconomy`, compare Kanto with the home layer: Poké and Rare Candy per hour must not exceed the home layer's endgame).

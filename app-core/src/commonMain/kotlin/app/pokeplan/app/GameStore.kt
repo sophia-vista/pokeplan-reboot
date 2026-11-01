@@ -1119,10 +1119,11 @@ class GameStore(
         if (kept !== data.world) update { it.copy(world = kept) }
         val before = data.world
         val report = WorldSim.settle(before, data.player.pokemon, nowMillis)
-        if (report.isEmpty) return null
+        if (report.isEmpty) { worldLegends(); return null }
         update { it.copy(world = report.data) }
         worldPaid("World: exploring", before)
         worldGuardian()
+        worldLegends()
         return report
     }
 
@@ -1132,6 +1133,18 @@ class GameStore(
         if (!w.guardianDone || w.guardianGranted) return
         update { it.copy(world = it.world.copy(guardianGranted = true)) }
         grantPokemon(app.pokeplan.world.Story.GUARDIAN_SPECIES, WORLD_SOURCE, form = app.pokeplan.world.Story.GUARDIAN_FORM)
+    }
+
+    /**
+     * The legendary quests of the layers (docs/ecosystem.md, "World regions"): each Pokémon whose quest is met (its dungeon cleared enough
+     * times, and for the end of a layer's story its Guardian faced) joins the Guardian collection once. They are not eggs; the reward line
+     * is in the log.
+     */
+    private fun worldLegends() {
+        for (quest in app.pokeplan.world.Legends.ready(data.world)) {
+            update { it.copy(world = it.world.copy(legends = it.world.legends + quest.id)) }
+            grantPokemon(quest.speciesId, WORLD_SOURCE)
+        }
     }
 
     /**

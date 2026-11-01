@@ -43,6 +43,44 @@ Nothing here pays through the server reward engine; items go to the Bag, Poké s
 | Distortion Rift (25 fl) | 2 × Lv 20 | 0.3 | 0.3 | 5.1 | 9.9 | 0.2 | 0.02 | 0.14 |
 | Distortion Rift (25 fl) | 4 × Lv 20 | 0.4 | 0.4 | 6.4 | 12.4 | 0.3 | 0.02 | 0.29 |
 | Distortion Rift (25 fl) | 4 × Lv 50 | 0.7 | 0.6 | 10.9 | 21.2 | 0.5 | 0.03 | 0.57 |
+| Viridian Forest (5 fl) | 2 × Lv 5 | 2.4 | 11.7 | 17.1 | 31.7 | 1.7 | 0.14 | 1.86 |
+| Viridian Forest (5 fl) | 2 × Lv 20 | 3.1 | 14.9 | 21.7 | 40.3 | 2.2 | 0.20 | 2.14 |
+| Viridian Forest (5 fl) | 4 × Lv 20 | 4.0 | 19.2 | 28.0 | 52.4 | 2.8 | 0.23 | 2.71 |
+| Viridian Forest (5 fl) | 4 × Lv 50 | 6.7 | 32.0 | 46.7 | 89.3 | 4.8 | 0.36 | 6.14 |
+| Mt. Moon (8 fl) | 2 × Lv 5 | 1.5 | 4.6 | 13.1 | 24.7 | 1.1 | 0.09 | 0.71 |
+| Mt. Moon (8 fl) | 2 × Lv 20 | 2.0 | 6.0 | 17.0 | 32.3 | 1.4 | 0.10 | 1.43 |
+| Mt. Moon (8 fl) | 4 × Lv 20 | 2.6 | 7.8 | 22.1 | 42.2 | 1.9 | 0.14 | 1.86 |
+| Mt. Moon (8 fl) | 4 × Lv 50 | 4.4 | 13.3 | 37.7 | 73.0 | 3.3 | 0.23 | 3.43 |
+| Rock Tunnel (10 fl) | 2 × Lv 5 | 1.0 | 2.5 | 9.7 | 18.4 | 0.7 | 0.07 | 1.00 |
+| Rock Tunnel (10 fl) | 2 × Lv 20 | 1.3 | 3.2 | 12.6 | 23.8 | 0.9 | 0.09 | 1.29 |
+| Rock Tunnel (10 fl) | 4 × Lv 20 | 1.7 | 4.2 | 16.5 | 31.3 | 1.2 | 0.11 | 1.29 |
+| Rock Tunnel (10 fl) | 4 × Lv 50 | 3.0 | 7.1 | 28.0 | 54.0 | 2.1 | 0.16 | 3.29 |
+| Pokémon Tower (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.4 | 15.8 | 0.6 | 0.07 | 0.86 |
+| Pokémon Tower (12 fl) | 2 × Lv 20 | 1.0 | 2.1 | 10.8 | 20.3 | 0.7 | 0.08 | 0.86 |
+| Pokémon Tower (12 fl) | 4 × Lv 20 | 1.3 | 2.7 | 13.9 | 26.4 | 1.0 | 0.09 | 1.57 |
+| Pokémon Tower (12 fl) | 4 × Lv 50 | 2.2 | 4.4 | 23.3 | 44.8 | 1.6 | 0.14 | 2.43 |
+| Power Plant (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.5 | 16.1 | 0.6 | 0.04 | 1.29 |
+| Power Plant (12 fl) | 2 × Lv 20 | 1.1 | 2.1 | 11.2 | 21.2 | 0.8 | 0.05 | 1.71 |
+| Power Plant (12 fl) | 4 × Lv 20 | 1.4 | 2.8 | 14.5 | 27.7 | 1.0 | 0.07 | 2.43 |
+| Power Plant (12 fl) | 4 × Lv 50 | 2.4 | 4.7 | 24.8 | 48.0 | 1.7 | 0.15 | 3.86 |
+| Seafoam Islands (14 fl) | 2 × Lv 5 | 0.6 | 1.0 | 6.9 | 13.0 | 0.4 | 0.05 | 0.29 |
+| Seafoam Islands (14 fl) | 2 × Lv 20 | 0.8 | 1.3 | 8.8 | 16.8 | 0.5 | 0.08 | 0.43 |
+| Seafoam Islands (14 fl) | 4 × Lv 20 | 1.0 | 1.7 | 11.5 | 22.1 | 0.7 | 0.09 | 0.57 |
+| Seafoam Islands (14 fl) | 4 × Lv 50 | 1.7 | 2.9 | 19.2 | 37.1 | 1.2 | 0.13 | 1.57 |
+| Mt. Ember (16 fl) | 2 × Lv 5 | 0.5 | 0.7 | 6.0 | 11.7 | 0.3 | 0.03 | 0.29 |
+| Mt. Ember (16 fl) | 2 × Lv 20 | 0.6 | 1.0 | 7.8 | 15.1 | 0.4 | 0.04 | 0.43 |
+| Mt. Ember (16 fl) | 4 × Lv 20 | 0.8 | 1.3 | 10.3 | 19.9 | 0.5 | 0.05 | 0.43 |
+| Mt. Ember (16 fl) | 4 × Lv 50 | 1.4 | 2.1 | 17.6 | 34.4 | 1.0 | 0.08 | 0.71 |
+| Victory Road (18 fl) | 2 × Lv 5 | 0.4 | 0.5 | 5.4 | 10.5 | 0.3 | 0.02 | 0.14 |
+| Victory Road (18 fl) | 2 × Lv 20 | 0.5 | 0.7 | 7.1 | 13.7 | 0.4 | 0.02 | 0.14 |
+| Victory Road (18 fl) | 4 × Lv 20 | 0.7 | 0.9 | 9.1 | 17.6 | 0.5 | 0.04 | 0.14 |
+| Victory Road (18 fl) | 4 × Lv 50 | 1.2 | 1.6 | 15.9 | 31.1 | 0.8 | 0.08 | 0.43 |
+| Cerulean Cave (20 fl) | 2 × Lv 5 | 0.3 | 0.4 | 4.1 | 7.9 | 0.2 | 0.01 | 0.14 |
+| Cerulean Cave (20 fl) | 2 × Lv 20 | 0.4 | 0.5 | 5.4 | 10.3 | 0.3 | 0.01 | 0.14 |
+| Cerulean Cave (20 fl) | 4 × Lv 20 | 0.5 | 0.6 | 7.1 | 13.5 | 0.4 | 0.01 | 0.14 |
+| Cerulean Cave (20 fl) | 4 × Lv 50 | 0.8 | 1.0 | 12.1 | 23.3 | 0.6 | 0.04 | 0.86 |
+
+The Kanto layer's dungeons are in the same table, so their Poké, XP and finds per hour can be compared with the home layer's at the same rank gate (Viridian Forest and Mt. Moon with Tiny Woods and Thunderwave Cave; Cerulean Cave with the Temporal Tower). The careers and the year below follow the home layer only.
 
 ## One team over a career (best open dungeon; the 12 h away cap applies per open)
 

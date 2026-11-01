@@ -116,6 +116,12 @@ class ScreenshotTest {
             model.worldSection = section
             render("world-${section.name.lowercase()}") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
         }
+        // The Kanto layer of the map: its own picture, story and legendary quests.
+        model.worldSection = app.pokeplan.ui.screens.WorldSection.MAP
+        model.worldLayer = app.pokeplan.world.WorldLayer.KANTO
+        render("world-map-kanto") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
+        render("world-xl-map-kanto", fontScale = 1.3f) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
+        model.worldLayer = app.pokeplan.world.WorldLayer.HOME
         // The same screens with the system text at 130%: nothing may be clipped or pushed out of its box.
         app.pokeplan.ui.screens.WorldSection.entries.forEach { section ->
             model.worldSection = section
@@ -992,7 +998,7 @@ class ScreenshotTest {
             app.pokeplan.ui.launcher.WidgetKind.ACTIONS, app.pokeplan.ui.launcher.WidgetKind.CALENDAR, app.pokeplan.ui.launcher.WidgetKind.AGENDA,
             app.pokeplan.ui.launcher.WidgetKind.FORECAST,
         )
-        val sizes = listOf(1 to 1, 1 to 2, 2 to 1, 2 to 2, 4 to 2, 2 to 3, 4 to 3, 4 to 4, 4 to 6)
+        val sizes = listOf(1 to 1, 1 to 2, 2 to 1, 2 to 2, 4 to 2, 2 to 3, 4 to 3, 4 to 4, 4 to 6, 4 to 8, 4 to 10)
         for (k in kinds) for ((w, h) in sizes) {
             val l = k.limits()
             if (w !in l.minW..l.maxW || h !in l.minH..l.maxH) continue

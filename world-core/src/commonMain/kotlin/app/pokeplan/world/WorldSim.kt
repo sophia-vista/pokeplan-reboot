@@ -19,6 +19,8 @@ sealed interface WorldEvent {
     data class MissionDone(val missionId: String) : WorldEvent
     /** The Guardian was faced: the story is complete. */
     data object GuardianFaced : WorldEvent
+    /** The Guardian of another layer was faced: that layer's story is complete. */
+    data class LayerGuardianFaced(val layer: WorldLayer) : WorldEvent
 }
 
 /** A team's fit for a dungeon (see [WorldSim.suitability]). */
@@ -61,11 +63,12 @@ object WorldSim {
         }
 
     /** How long a floor takes a team of [power], in milliseconds: faster as the power grows, never under a quarter of the base. */
-    fun floorMillis(dungeon: DungeonDef, power: Double, mastery: Boolean = false): Long {
+    fun floorMillis(dungeon: DungeonDef, power: Double, mastery: Boolean = false, fasterPercent: Int = 0): Long {
         val base = dungeon.baseFloorSeconds * 1000L
         val factor = 1.0 + power / 100.0
         val millis = maxOf(base / 4, (base / factor).toLong())
-        return if (mastery) millis * 9 / 10 else millis
+        val withMastery = if (mastery) millis * 9 / 10 else millis
+        return if (fasterPercent > 0) withMastery * (100 - fasterPercent.coerceAtMost(50)) / 100 else withMastery
     }
 
     /**
@@ -85,7 +88,7 @@ object WorldSim {
                 out = out.withTeam((out.team(team.id) ?: team).copy(expedition = trip.copy(settledTo = now)))
                 continue
             }
-            val per = floorMillis(dungeon, power(members, dungeon), data.guardianDone)
+            val per = floorMillis(dungeon, power(members, dungeon), data.guardianDone, data.legendFaster(dungeon))
             val until = min(now, trip.settledTo + MAX_AWAY_MILLIS)
             val floors = ((until - trip.settledTo) / per).toInt()
             if (floors <= 0) continue
@@ -127,7 +130,7 @@ object WorldSim {
                 // The next floor to climb is index floorsClimbed; floors rise to the top of the dungeon, then start again at 1.
                 val next = trip.floorsClimbed % dungeon.floors
                 val floors = maxOf(0, m.floor - 1 - next) + 1
-                val at = trip.settledTo + floors * floorMillis(dungeon, power, data.guardianDone)
+                val at = trip.settledTo + floors * floorMillis(dungeon, power, data.guardianDone, data.legendFaster(dungeon))
                 if (out[m.id]?.let { it <= at } != true) out[m.id] = at
             }
         }
@@ -142,14 +145,15 @@ object WorldSim {
             is WorldEvent.Cleared -> "Team $teamId cleared ${Dungeons.byId(event.dungeonId)?.name}."
             is WorldEvent.MissionDone -> "A job is done: ${Missions.byId(event.missionId)?.title}. Claim it on the board."
             WorldEvent.GuardianFaced -> "The Guardian was faced. The story is complete."
+            is WorldEvent.LayerGuardianFaced -> "The Guardian of ${event.layer.label} was faced. Its story is complete."
             else -> return null
         }
         return JournalLine(now, text)
     }
 
     /** What a team of [members] brings to [dungeon]: how long a floor takes it, and how many of its members are of a favoured type. */
-    fun suitability(dungeon: DungeonDef, members: List<OwnedPokemon>, mastery: Boolean = false): Suitability =
-        Suitability(floorMillis(dungeon, power(members, dungeon), mastery), members.count { p -> p.form.types.any { it in dungeon.favored } }, members.size)
+    fun suitability(dungeon: DungeonDef, members: List<OwnedPokemon>, mastery: Boolean = false, fasterPercent: Int = 0): Suitability =
+        Suitability(floorMillis(dungeon, power(members, dungeon), mastery, fasterPercent), members.count { p -> p.form.types.any { it in dungeon.favored } }, members.size)
 
     /** One floor climbed: the floor number in the dungeon is its index modulo the floors, so a cleared dungeon starts again. */
     private fun climb(data: WorldData, teamId: Int, trip: Expedition, dungeon: DungeonDef, index: Int, at: Long, teamSize: Int, power: Double, perk: Map<WorldSkill, Int>, events: MutableList<WorldEvent>): WorldData {
@@ -170,12 +174,13 @@ object WorldSim {
         val poke = (5 + floor * 2 + random.nextInt(5)) * (100 + 2 * (d.skillLevel(WorldSkill.EXPLORATION) + perk.getValue(WorldSkill.EXPLORATION))) / 100
         events += WorldEvent.Poke(poke)
         d = d.copy(poke = d.poke + poke)
-        if (random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP) + if (brewed) 5 else 0) {
+        val legend = dungeon.layer != WorldLayer.HOME
+        if (random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP) + (if (brewed) 5 else 0) + (if (legend && d.hasLegend("kanto-mew")) Legends.MEW_TREASURE_PERCENT else 0)) {
             val tier = if (floor >= dungeon.floors - 1) 3 else if (floor >= dungeon.floors / 2) 2 else 1
             events += WorldEvent.Treasure(tier)
             d = d.copy(treasure = d.treasure + (tier to (d.treasure[tier] ?: 0) + 1))
         }
-        findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * (d.skillLevel(WorldSkill.SCOUTING) + perk.getValue(WorldSkill.SCOUTING)) + if (brewed) 10 else 0)?.let { species ->
+        findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * (d.skillLevel(WorldSkill.SCOUTING) + perk.getValue(WorldSkill.SCOUTING)) + (if (brewed) 10 else 0) + (if (legend && d.hasLegend("kanto-mewtwo")) Legends.MEWTWO_FIND_PERMILLE else 0))?.let { species ->
             events += WorldEvent.Found(species, dungeon.id, floor)
             d = d.copy(finds = d.finds + Find(species, dungeon.id, floor, at), discovered = d.discovered + species).withSkillXp(WorldSkill.SCOUTING, 20)
         }
@@ -191,9 +196,14 @@ object WorldSim {
         }
         d = d.withSkillXp(WorldSkill.EXPLORATION, 1).withSkillXp(WorldSkill.SCOUTING, 1).withSkillXp(WorldSkill.FORAGING, berries)
         d = Missions.advance(d, dungeon.id, floor, berries, at, teamSize, power, events)
-        if (floor == dungeon.floors && dungeon.guardian && !d.guardianDone) {
-            events += WorldEvent.GuardianFaced
-            d = d.copy(guardianDone = true)
+        if (floor == dungeon.floors && dungeon.guardian && !d.layerDone(dungeon.layer)) {
+            if (dungeon.layer == WorldLayer.HOME) {
+                events += WorldEvent.GuardianFaced
+                d = d.copy(guardianDone = true)
+            } else {
+                events += WorldEvent.LayerGuardianFaced(dungeon.layer)
+                d = d.copy(layersDone = d.layersDone + dungeon.layer.id)
+            }
         }
         if (floor == dungeon.floors) {
             events += WorldEvent.Cleared(dungeon.id)

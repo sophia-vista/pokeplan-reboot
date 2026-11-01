@@ -70,14 +70,14 @@ private fun career(opens: Int, size: Int, level: Int, days: Int): List<String> {
         repeat(opens) {
             now += gap
             data = WorldSim.settle(data, roster, now).data
-            val best = Dungeons.all.filter { data.rank >= it.needs }.last().id
+            val best = Dungeons.home.filter { data.rank >= it.needs }.last().id
             if (best != dungeon || data.team(1)?.expedition == null) {
                 dungeon = best
                 data = (data.recall(1) ?: data).start(1, dungeon, now) ?: data
             }
         }
         rankDay.putIfAbsent(data.rank, d + 1)
-        Dungeons.all.forEach { if (data.clears[it.id] != null) unlocked.putIfAbsent(it.id, d + 1) }
+        Dungeons.home.forEach { if (data.clears[it.id] != null) unlocked.putIfAbsent(it.id, d + 1) }
     }
     val lines = mutableListOf<String>()
     lines += "| ${opens}/day | $size × Lv $level | ${days} d | ${data.xp} | ${data.rank.label} | ${data.poke} | ${data.finds.size} | ${data.items.filterKeys { it.contains("rare") }.values.sum()} | ${data.treasure.values.sum()} |"
@@ -119,7 +119,7 @@ private fun journey(opens: Int, size: Int, level: Int, days: Int, cafe: Boolean,
     val gap = DAY / opens
     var now = 0L
     var current: String? = null
-    fun bestDungeon(): String? = Dungeons.all.reversed().firstOrNull { (data.recall(1) ?: data).start(1, it.id, now) != null }?.id
+    fun bestDungeon(): String? = Dungeons.home.reversed().firstOrNull { (data.recall(1) ?: data).start(1, it.id, now) != null }?.id
     repeat(days) { d ->
         repeat(opens) {
             now += gap
@@ -182,7 +182,7 @@ private fun journey(opens: Int, size: Int, level: Int, days: Int, cafe: Boolean,
         j.mark("Story chapter ${Story.opened(data)}", day)
         if (data.guardianDone) j.mark("Guardian faced", day)
         if (WorldSkill.entries.all { data.skillLevel(it) >= WorldSkill.MAX_LEVEL }) j.mark("All skills at the top", day)
-        Dungeons.all.forEach { dg -> if ((data.clears[dg.id] ?: 0) > 0) j.mark("${dg.name} cleared", day) }
+        Dungeons.home.forEach { dg -> if ((data.clears[dg.id] ?: 0) > 0) j.mark("${dg.name} cleared", day) }
         Facility.entries.forEach { f -> if (data.facilityLevel(f) >= Facility.MAX_LEVEL) j.mark("${f.label} maxed", day) }
     }
     j.data = data
@@ -198,6 +198,7 @@ fun main(args: Array<String>) {
         fun h(v: Int) = "%.1f".format(v / hours)
         out.append("| ${dg.name} (${dg.floors} fl) | $size × Lv $lv | ${h(t.floors)} | ${"%.1f".format(t.floors / hours * 24 / dg.floors)} | ${h(t.xp)} | ${h(t.poke)} | ${h(t.berries)} | ${"%.2f".format(t.treasure / hours)} | ${"%.2f".format(t.finds / hours * 24)} |\n")
     }
+    out.append("\nThe Kanto layer's dungeons are in the same table, so their Poké, XP and finds per hour can be compared with the home layer's at the same rank gate (Viridian Forest and Mt. Moon with Tiny Woods and Thunderwave Cave; Cerulean Cave with the Temporal Tower). The careers and the year below follow the home layer only.\n")
     out.append("\n## One team over a career (best open dungeon; the 12 h away cap applies per open)\n\n")
     out.append("| Opens | Team | Span | XP | Rank | Poké | Finds waiting | Rare Candies | Boxes |\n|---|---|---|---|---|---|---|---|---|\n")
     for (opens in listOf(1, 2, 4)) for ((size, lv) in listOf(2 to 10, 4 to 30)) for (d in listOf(30, 120)) career(opens, size, lv, d).forEach { out.append(it).append('\n') }

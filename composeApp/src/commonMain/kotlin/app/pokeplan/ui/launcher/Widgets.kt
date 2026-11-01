@@ -309,9 +309,9 @@ private fun CalendarWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) 
     PmdBox(pixel, Modifier.fillMaxWidth()) {
         Column(Modifier.fillMaxWidth()) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                PmdMenuLine("Prev", pixel, Modifier.weight(1f), center = true) { state.month = state.month.plus(DatePeriod(months = -1)) }
-                Box(Modifier.weight(2f), contentAlignment = Alignment.Center) { PmdText("${monthName(state.month.month)} ${state.month.year}", pixel) }
-                PmdMenuLine("Next", pixel, Modifier.weight(1f), center = true) { state.month = state.month.plus(DatePeriod(months = 1)) }
+                PmdMenuLine("Prev", pixel, Modifier.weight(1f).semantics { contentDescription = "Previous month" }, center = true) { state.month = state.month.plus(DatePeriod(months = -1)) }
+                Box(Modifier.weight(2f), contentAlignment = Alignment.Center) { PmdText("${monthName(state.month.month).take(3)} ${state.month.year}", pixel) }
+                PmdMenuLine("Next", pixel, Modifier.weight(1f).semantics { contentDescription = "Next month" }, center = true) { state.month = state.month.plus(DatePeriod(months = 1)) }
             }
             PmdRule(pixel)
             Row(Modifier.fillMaxWidth().padding(top = Spacing.S)) {
@@ -320,16 +320,23 @@ private fun CalendarWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) 
             // Weeks start on Sunday or Monday as chosen; the first row is padded with the end of the month before.
             val lead = weekDays(env.prefs.sundayFirst).indexOf(state.month.dayOfWeek)
             val days = (0 until 42).map { state.month.plus(DatePeriod(days = it - lead)) }
-            // Small shows only the week of the chosen day (or the month's first week when another month is showing).
-            val weeks = days.chunked(7).filter { w -> w.any { it.month == state.month.month } }.let { all ->
-                if (size == WidgetSize.SMALL) listOf(all.firstOrNull { state.day in it } ?: all.first()) else all
-            }
+            // The rows are as tall as the box leaves room for (a box holds [WidgetGrid.ROW_DP] per cell; the header, the rule and the weekday
+            // names take about 104 dp): at most Target, at least 24 dp. When even the smallest rows do not all fit, only the weeks around the
+            // chosen day (or the month's first week when another month is showing) are shown, so nothing is cut off at any size.
+            val all = days.chunked(7).filter { w -> w.any { it.month == state.month.month } }
+            val room = (LocalCells.current.h * WidgetGrid.ROW_DP - 104).coerceAtLeast(24)
+            val fit = maxOf(1, room / 24)
+            val shown = minOf(all.size, fit, if (size == WidgetSize.SMALL) 1 else all.size)
+            val centre = all.indexOfFirst { state.day in it }.coerceAtLeast(0)
+            val first = (centre - shown / 2).coerceIn(0, all.size - shown)
+            val weeks = all.subList(first, first + shown)
+            val rowHeight = (room / shown).coerceIn(24, 48).dp
             weeks.forEach { week ->
                 Row(Modifier.fillMaxWidth()) {
                     week.forEach { d ->
                         val inMonth = d.month == state.month.month
                         Box(
-                            Modifier.weight(1f).height(Spacing.Target)
+                            Modifier.weight(1f).height(rowHeight)
                                 .background(if (d == today) Pixel.Red else if (d == state.day) Color.White.copy(alpha = 0.22f) else Color.Transparent)
                                 .clickable(role = Role.Button, onClickLabel = "Show ${d.day} ${monthName(d.month)}") { state.day = d; if (!inMonth) state.month = LocalDate(d.year, d.month, 1) }
                                 .semantics { contentDescription = "${d.day} ${monthName(d.month)}" + if (busy(d)) ", has plans" else "" },
