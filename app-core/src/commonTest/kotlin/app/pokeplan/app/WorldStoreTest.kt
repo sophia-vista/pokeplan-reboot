@@ -37,6 +37,14 @@ class WorldStoreTest {
     }
 
     @Test
+    fun grantPokemonCanGiveASpecificForm() {
+        val store = store(Clock())
+        val primal = store.grantPokemon(app.pokeplan.world.Story.GUARDIAN_SPECIES, GameStore.WORLD_SOURCE, Origin.How.WORLD, app.pokeplan.world.Story.GUARDIAN_FORM)
+        assertEquals("dialga-primal", primal.formIdentifier)
+        assertEquals("dialga", store.grantPokemon(483, "test").formIdentifier, "without a form it is the default one")
+    }
+
+    @Test
     fun aWorldRecruitIsNotAnEggHatching() {
         val store = store(Clock())
         store.grantPokemon(25, GameStore.WORLD_SOURCE, Origin.How.WORLD)

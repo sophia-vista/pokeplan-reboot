@@ -7,7 +7,7 @@ release always has the newest merge).
 
 ## 0.98.0
 
-- Primal Dialga is its own Dex form (`dialga-primal`, id 20001, an alternate form of species 483), separate from Dialga, for the home layer's Temporal Tower Guardian. PokeAPI has no such form, so it is listed in the new `tools/species/custom_forms.txt`, which `generate.py` adds to the Dex and `tools/sprites/fetch.py` to the sprite manifest. Its sprites and portrait are SpriteCollab's "Primal" ones (credited to Chunsoft); base stats are Dialga's, as there are no official ones. Nothing uses it yet: `Story.GUARDIAN_SPECIES` still gives Dialga.
+- Primal Dialga is its own Dex form (`dialga-primal`, id 20001, an alternate form of species 483), separate from Dialga, for the home layer's Temporal Tower Guardian. PokeAPI has no such form, so it is listed in the new `tools/species/custom_forms.txt`, which `generate.py` adds to the Dex and `tools/sprites/fetch.py` to the sprite manifest. Its sprites and portrait are SpriteCollab's "Primal" ones (credited to Chunsoft); base stats are Dialga's, as there are no official ones. The Temporal Tower Guardian now gives Primal Dialga (`Story.GUARDIAN_FORM`; `GameStore.grantPokemon` takes an optional form). Players who already received Dialga keep it.
 - Docs: the World regions decisions (all nine mainline regions in order, each region's box legendaries as quests and Guardians, side legendaries as module Guardians, one layer each, Hisui as its own layer with the Origin-form items and Arceus) are in `docs/ecosystem.md`.
 
 ## 0.97.0
