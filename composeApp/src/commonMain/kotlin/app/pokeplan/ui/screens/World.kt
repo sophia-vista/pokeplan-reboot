@@ -670,7 +670,7 @@ private fun WorldBagView(model: AppModel) {
             Text("Everything the dungeons bring back goes straight to your Bag and into your reward history.", style = MaterialTheme.typography.bodyMedium)
             // The latest World entries of the reward history, so what a trip brought is still there after it.
             model.data.rewardLog.filter { it.source.startsWith("World") }.takeLast(4).reversed().forEach { entry ->
-                Text("${entry.source.removePrefix("World: ")}: ${entry.rewards.joinToString { it.describe() }}", style = MaterialTheme.typography.bodyMedium)
+                Text("${entry.source.removePrefix("World: ")}: ${entry.rewards.joinToString { it.describe(entry.source) }}", style = MaterialTheme.typography.bodyMedium)
             }
             if (world.treasure.isEmpty()) Text("No treasure boxes waiting.", style = MaterialTheme.typography.bodyMedium)
             world.treasure.entries.sortedBy { it.key }.forEach { (tier, n) ->
