@@ -137,6 +137,12 @@ class GameStoreTest {
         assertEquals(listOf("Sushi", "Ramen"), s.data.pickerOptions)
         // The player's own export still has the list, and never the rate cache.
         assertTrue(s.exportJson().contains("Sushi") && !s.exportJson().contains("gearRates"))
+        // What the Pokégear tools remember (favourites, timers, history) is device-only too, and in the player's own export.
+        s.changeGear { it.copy(favorites = listOf("TIMER"), calcHistory = listOf("2+2=4"), calcHistoryOn = true) }
+        assertTrue("gear" !in s.cloudDocument() && !s.cloudDocument().toString().contains("2+2=4"))
+        assertTrue(s.adoptCloud(s.cloudDocument(), 7))
+        assertEquals(listOf("2+2=4"), s.data.gear.calcHistory, "adopting the cloud save keeps this device's tool data")
+        assertTrue(s.exportJson().contains("2+2=4"))
     }
 
     @Test

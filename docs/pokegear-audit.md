@@ -54,3 +54,16 @@ Exit criteria for the phase are in section 17 of the specification: common jobs 
 ## 5. Questions for the owner that this audit does not settle
 
 The seven decisions above are assumed from the specification's defaults. Beyond them: whether the first Phase 1 change should be the Pokégear home and shell (recommended, because it gives every later tool a place) or the calculator; and whether `pokelife://gear/<tool>` deep links should come in Phase 1 or with the widgets.
+
+## 6. Phase 1 status (0.107.0)
+
+Done, each with tests on its pure logic and a screenshot at normal and 130% text:
+
+1. **Pokégear home and tool shell:** `ToolCatalog` (categories, descriptions, synonyms, typo-tolerant search, favourites and recents first), the home (search, favourites, used lately, groups), a shared top line with a star, the helper as a small strip ("Show" opens the full bar; the choice is kept).
+2. **Calculator:** `CalcEngine` (precedence, brackets, unary minus, percent as a shop calculator reads it, factorial, functions, degrees or radians, errors that say what is wrong, 12 significant digits so `0.1 + 0.2` is 0.3), memory, an opt-in history, copy. The old `Calculator` keypad class is no longer used by any screen (the launcher never used it; only Pokégear did); it stays until Phase 4's "remove dead code after reference checks".
+3. **Units:** `UnitCatalog` (16 kinds, over 110 units, stable ids `kind:symbol`, affine and nonlinear conversions, units that are easy to mistake carry a note, no volume-to-weight conversion at all), search, swap, every unit at once, starred pairs, decimals.
+4. **Currency:** `Currencies` (names, aliases, minor units), `Travel.estimate` (reference estimate, the rate offered, the fees, apart), a home currency (PHP), a board, a manual rate.
+5. **Timer and stopwatch:** `GearTimers` (pure rules on the saved data), saved timers, an Android alarm (`AppAlerts.Kind.TIMER`) and a notification with Stop and +1 min (`TimerActionReceiver`, each acts only on timers still ringing). Reward-neutral. The stopwatch stores its start in clock time and never counts a clock set back as time lost; a monotonic source across process death is not available to common code, so across a restart it uses the clock.
+6. **Picker and dice:** `Randomizer` (weighted choice, several without repeats, the last pick left out, dice up to 20 of 2 to 1000 sides with a modifier), editing in place, reordering, an opt-in history, a line that this is not secure randomness. The flashlight's screen light (four colours, brightness by dimming the picture) and an SOS signal that exists only on request, with a warning, on the torch, never with Reduce motion on, never faster than one change in 250 ms, for at most five minutes.
+
+**Limits to know:** screen brightness is the picture dimmed, not the phone's brightness (that needs an Android window call); the notification asks for permission the first time a timer is started (as the reminders do); the rate service gives daily reference rates only (no history, charts or alerts: a second provider would be needed); the world clock and time zone converter, the everyday calculators (tax, tip, loan, dates) and unit conversions by ingredient are Phase 2. Phase 1 has not been run on a device.

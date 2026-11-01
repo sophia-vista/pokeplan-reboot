@@ -119,7 +119,7 @@ class MainActivity : ComponentActivity() {
         val zone = TimeZone.currentSystemDefault()
         val upcoming = data.upcomingReminders(now, zone)
         val alerts = AppAlerts.plan(data, now, zone)
-        if (upcoming.isNotEmpty() || alerts.sessionId != null || data.activeDays.isNotEmpty()) askForNotifications()
+        if (upcoming.isNotEmpty() || alerts.sessionId != null || alerts.timer != null || data.activeDays.isNotEmpty()) askForNotifications()
         val signature = listOf(upcoming.map { it.taskId to it.atMillis }, alerts).hashCode()
         if (signature == reminderSignature) return
         reminderSignature = signature

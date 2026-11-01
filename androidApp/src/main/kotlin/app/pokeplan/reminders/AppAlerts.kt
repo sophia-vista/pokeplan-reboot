@@ -11,6 +11,7 @@ import android.content.Intent
 import app.pokeplan.MainActivity
 import app.pokeplan.app.AppData
 import app.pokeplan.app.FocusAlert
+import app.pokeplan.app.GearTimers
 import app.pokeplan.app.Nudges
 import app.pokeplan.app.WorldAlerts
 import app.pokeplan.plan.FocusSession
@@ -41,6 +42,9 @@ object AppAlerts {
 
         /** A World job an exploring team finishes: set for the earliest, checked against the settled World when it goes off. */
         JOB(9107, Channels.WORLD_JOBS, 7107),
+
+        /** A Pokégear timer running out: set for the earliest running one, the notification says which have finished. */
+        TIMER(9108, Channels.GEAR_TIMERS, 7108),
     }
 
     const val ACTION_ALERT = "app.pokeplan.reminders.ALERT"
@@ -48,7 +52,7 @@ object AppAlerts {
     const val EXTRA_SESSION = "session"
 
     /** What the alarms should be: when each one goes off, and the running session they belong to. Equal plans need no new alarms. */
-    data class Plan(val halfway: Long?, val end: Long?, val sessionId: String?, val streak: Long?, val recap: Long?, val job: Long? = null)
+    data class Plan(val halfway: Long?, val end: Long?, val sessionId: String?, val streak: Long?, val recap: Long?, val job: Long? = null, val timer: Long? = null)
 
     fun plan(data: AppData, nowMillis: Long, zone: TimeZone): Plan {
         val alerts = Nudges.focusAlerts(data.focus, data.settings, nowMillis)
@@ -59,6 +63,7 @@ object AppAlerts {
             streak = Nudges.nextStreakCheck(data, nowMillis, zone),
             recap = Nudges.nextRecap(data, nowMillis, zone),
             job = WorldAlerts.nextJobDone(data, nowMillis),
+            timer = GearTimers.nextEnd(data, nowMillis),
         )
     }
 
@@ -71,6 +76,7 @@ object AppAlerts {
         set(context, alarms, Kind.STREAK, plan.streak, null, exact = false)
         set(context, alarms, Kind.RECAP, plan.recap, null, exact = false)
         set(context, alarms, Kind.JOB, plan.job, null, exact = false)
+        set(context, alarms, Kind.TIMER, plan.timer, null, exact = true)
     }
 
     fun rescheduleFromSave(context: Context) {
@@ -102,6 +108,7 @@ object AppAlerts {
         manager.createNotificationChannel(NotificationChannel(Channels.FOCUS_END, "Focus time is up", NotificationManager.IMPORTANCE_DEFAULT).withGameSound(context))
         manager.createNotificationChannel(NotificationChannel(Channels.EVENING_NUDGES, "Streak and weekly recap", NotificationManager.IMPORTANCE_DEFAULT))
         manager.createNotificationChannel(NotificationChannel(Channels.WORLD_JOBS, "Finished World jobs", NotificationManager.IMPORTANCE_DEFAULT))
+        manager.createNotificationChannel(NotificationChannel(Channels.GEAR_TIMERS, "Pokégear timers", NotificationManager.IMPORTANCE_HIGH).withGameSound(context))
         return manager
     }
 
@@ -121,6 +128,30 @@ object AppAlerts {
             .apply { if (kind == Kind.HALFWAY) setOnlyAlertOnce(true) }
             .build()
         notifySafely(context, kind.notificationId, notification)
+    }
+
+    const val ACTION_TIMER_STOP = "app.pokeplan.reminders.TIMER_STOP"
+    const val ACTION_TIMER_PLUS = "app.pokeplan.reminders.TIMER_PLUS"
+
+    /** The notification of timers that ran out ([labels]): Stop and +1 min, each a broadcast that only acts on timers still ringing, so a second tap changes nothing. */
+    fun showTimers(context: Context, labels: List<String>) {
+        channels(context) ?: return
+        fun action(code: Int, name: String) = PendingIntent.getBroadcast(context, code, Intent(context, TimerActionReceiver::class.java).setAction(name), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val open = PendingIntent.getActivity(
+            context, Kind.TIMER.code, Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, Place.GEAR.name),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val notification = Notification.Builder(context, Kind.TIMER.channel)
+            .setSmallIcon(notificationIcon(context, "timer-ball"))
+            .setContentTitle(if (labels.size == 1) "Time is up: ${labels.first()}" else "${labels.size} timers are done")
+            .setContentText(if (labels.size == 1) "Your Pokégear timer has run out." else labels.joinToString(", "))
+            .setCategory(Notification.CATEGORY_ALARM)
+            .setContentIntent(open)
+            .setAutoCancel(true)
+            .addAction(Notification.Action.Builder(null, "Stop", action(Kind.TIMER.code + 1000, ACTION_TIMER_STOP)).build())
+            .addAction(Notification.Action.Builder(null, "+1 min", action(Kind.TIMER.code + 2000, ACTION_TIMER_PLUS)).build())
+            .build()
+        notifySafely(context, Kind.TIMER.notificationId, notification)
     }
 
     fun cancel(context: Context, kind: Kind) {
@@ -170,6 +201,12 @@ class NudgeReceiver : BroadcastReceiver() {
                     Nudges.weeklyRecap(data, now, zone)?.let { AppAlerts.show(context, AppAlerts.Kind.RECAP, it.title, it.body, Place.ME.name) }
                 }
             }
+            AppAlerts.Kind.TIMER -> {
+                // Mark what ran out and announce every timer that is still ringing (the player may have stopped one in the app already).
+                store.timersTick()
+                val ringing = store.data.gear.timers.filter { it.finished }.map { it.label }
+                if (ringing.isNotEmpty()) AppAlerts.showTimers(context, ringing)
+            }
             AppAlerts.Kind.JOB -> {
                 // The alarm is for the moment a team finishes a job: settle World, then announce only jobs that really are done and unclaimed.
                 if (data.settings.worldJobAlerts) {
@@ -192,5 +229,23 @@ class NudgeReceiver : BroadcastReceiver() {
         val alarms = context.getSystemService(AlarmManager::class.java) ?: return true
         AppAlerts.set(context, alarms, later, session.startedAtMillis + session.pausedMillis + session.durationMillis + 60_000L, null, exact = false)
         return true
+    }
+}
+
+/** A tap on Stop or +1 min in a timer's notification. Each acts only on timers that are still ringing, so a repeated tap does nothing more. */
+class TimerActionReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        val app = context.applicationContext
+        val action = intent.action ?: return
+        doAsync {
+            val store = widgetStore(app)
+            val ringing = store.data.gear.timers.filter { it.finished }
+            when (action) {
+                AppAlerts.ACTION_TIMER_STOP -> store.timersDismissFinished()
+                AppAlerts.ACTION_TIMER_PLUS -> ringing.forEach { store.timerAddTime(it.id, 60_000) }
+            }
+            AppAlerts.cancel(app, AppAlerts.Kind.TIMER)
+            AppAlerts.rescheduleFromSave(app)
+        }
     }
 }
