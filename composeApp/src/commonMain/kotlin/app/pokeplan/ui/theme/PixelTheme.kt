@@ -243,9 +243,9 @@ fun PixelIconButton(
     glyph: String,
     description: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
     color: Color = Pixel.InkSoft,
     enabled: Boolean = true,
+    modifier: Modifier = Modifier,
 ) {
     PixelKey(
         onClick, modifier.width(Spacing.Target).semantics { contentDescription = description }, key = color, enabled = enabled, compact = true,
