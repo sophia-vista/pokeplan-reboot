@@ -761,11 +761,21 @@ Kanto's story is a chain of chapters like the home layer's (`Story.chapters`, on
 2. **Spirits:** Pokémon Tower. The ghost Gastly line and Marowak's spirit give the first chapter text.
 3. **The birds:** Power Plant, Seafoam Islands and Mt. Ember. Each ends in its **legendary quest** (Zapdos, Articuno, Moltres), which uses the shared quest framework (docs/world.md section 8): a requirement (clear it a number of times, field a team of a given type) then the Pokémon joins the Guardian collection.
 4. **Victory Road:** the way to Cerulean Cave.
-5. **The Guardian:** Cerulean Cave to its last floor, where Mewtwo waits. Mewtwo is a Guardian of Kanto and joins the Guardian collection once, like Primal Dialga does for the home layer. Mew stays a **side legendary** (a module's Guardian, not Kanto's).
+5. **The Guardian:** Cerulean Cave to its last floor, where Mewtwo waits. Mewtwo is a Guardian of Kanto and joins the Guardian collection once, like Primal Dialga does for the home layer. Mew is central to Kanto's story too (the brief below: "Mewtwo / Mew"), so it is a second Kanto quest and Guardian, found through the Cerulean Cave story's Rocket thread and earned after Mewtwo.
 
-All four are Guardians of Kanto (decision 8); the boost of each is **Kanto-wide only** and small, so they add up inside the existing cap on Guardian effects *(tune)*:
-- Mewtwo, Psychic Mastery: expeditions in Kanto find recruits slightly more often.
+All five are Guardians of Kanto (decision 8); the boost of each is **Kanto-wide only** and small, so they add up inside the existing cap on Guardian effects *(tune)*:
+- Mewtwo, Psychic Mastery, and Mew (a small boost to finding Pokémon of any type): expeditions in Kanto find recruits slightly more often.
 - Articuno, Zapdos, Moltres: their types explore Kanto faster (ice and water, electric, fire).
+
+### Journey and story (from `docs/regional-storylines.md`, the owner's brief of 1 November 2026)
+The brief makes a region a *journey across its real map*, not a list of dungeons. For Kanto that means the map has more than the nine dungeons:
+- **Nodes:** settlements (Pallet Town, Viridian, Pewter, Cerulean, Vermilion, Lavender, Celadon, Fuchsia, Saffron, Cinnabar), routes between them, and the nine dungeons above. A settlement is a rest stop with a few characters, a shop-like service and a small quest board; a route only connects. Geography follows the games.
+- **Fog of war:** undiscovered nodes are hidden; reaching a node reveals its neighbours. Visited places can be revisited.
+- **Two tracks:** the **story** unlocks the major destinations in order; **exploration** reveals optional places and finds and never blocks the story. Finishing Kanto does not need a full Kanto dex or every dungeon.
+- **Story, "The Genetic Crisis"** in the brief's five parts: Arrival (Pallet Town), Investigation (Viridian Forest, Mt. Moon, Rocket's presence), Awakening (the birds, the Pokémon Tower's spirits, the Mansion's notes), Confrontation (Silph Co. and Giovanni, Victory Road), Resolution (Cerulean Cave, Mewtwo, Mew). The chapter count is flexible. The legendary is felt from the start (signs: strange Pokémon behaviour in the forest, dreams, sightings), then mythology, then the encounter.
+- **Activity progression (proposed, to settle):** module quests and tasks do not make a separate tracker; they feed *travel*. A real action that already pays through an effort event (`CareEvent`, the Plan reward events, docs/ecosystem.md section 5) also adds travel steps, which move the team's journey to the next node and open the expedition at it. No module is required for any chapter, and a missed day loses nothing. World's offline exploration by teams stays as it is (dungeons run on their own); travel steps only open nodes.
+- **Completion:** story completion gives the Kanto Guardians and boosts above, plus postgame (Cerulean Cave's deeper floors, the Sevii Islands). Collection completion is a separate, optional goal.
+- Different from my first draft: Mew is central, and the map has settlements and routes. The brief's other regions stay as planned in `docs/regional-storylines.md` and `docs/ecosystem.md`; where they differ (Hisui, Paldea's Terapagos, the Mystery Dungeon continents' legendaries) the owner's decisions in `docs/ecosystem.md` win until changed.
 
 ### Art
 - **Map picture:** one for Kanto, in the style of the `map-1..8` stages. Real assets only (the art rule): the town map of the games or a Mystery Dungeon style crop. This is the main thing the owner supplies or we find. Until then the layer ships with the home layer's picture and markers laid on a scene backdrop.
@@ -783,3 +793,4 @@ All four are Guardians of Kanto (decision 8); the boost of each is **Kanto-wide 
 - Is the Kanto map picture to be taken from the games, or supplied by the owner?
 - Should Kanto's quests need the home-layer story first (assumed: chapter 2 of the home story), or open from the first day?
 - Kanto-only boosts as above, or may a Kanto Guardian also help other layers a little?
+- Do module activities feed travel steps (as proposed above), or should the journey advance only through World's own teams?

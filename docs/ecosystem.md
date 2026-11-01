@@ -470,6 +470,8 @@ More decisions (owner, 1 November 2026):
 
 9. **One layer per region.** Each mainline region is its own layer behind the Map switch. The Mystery Dungeon continents (Air, Grass, Mist and the rest) are likewise one layer each, not one shared map.
 
+The owner's story brief for every region (journey across the real map, five-part story, module activity feeding travel, rewards) is `docs/regional-storylines.md`.
+
 Still open: the art (a map picture and tilesets per region; the tilesets the owner has supplied are in `docs/assets.md`), and whether the spin-off settings follow the same one-layer-each rule (assumed yes).
 
 ### Ideas parked
