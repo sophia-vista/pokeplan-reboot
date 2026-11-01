@@ -60,6 +60,7 @@ import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.world.Dungeons
+import app.pokeplan.world.FloorEvents
 import app.pokeplan.world.AbilityPerks
 import app.pokeplan.world.Facility
 import app.pokeplan.world.Research
@@ -689,6 +690,10 @@ private fun WorldTeamsView(model: AppModel) {
             }
         }
     }
+    Text(
+        "Side paths: about one floor in ten has something a field move can open (Cut, Surf, Rock Smash, Strength, Flash, Dig, Fly), found by a Pokémon of level ${FloorEvents.MIN_LEVEL} or more that can learn the move. It adds a small bonus; a team that cannot open one goes around and loses nothing.",
+        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+    )
     Text("Explore dungeons on the World map, then recall a team any time; nothing it found is lost.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
@@ -830,6 +835,7 @@ private fun journalKindLabel(kind: String) = when (kind) {
     JournalLine.KIND_FIND -> "Finds"
     JournalLine.KIND_CLEAR -> "Clears"
     JournalLine.KIND_MILESTONE -> "Milestones"
+    JournalLine.KIND_EVENT -> "Events"
     JournalLine.KIND_JOB -> "Jobs"
     JournalLine.KIND_GUARDIAN -> "Guardians"
     else -> "Notes"
