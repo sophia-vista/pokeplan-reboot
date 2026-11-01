@@ -5,6 +5,26 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.107.0
+
+- **Pokégear is a toolbox now: eight tools**, with a home that has search, favourites, the tools you used lately and groups. Every tool page has what it is for and a star, and the helper Pokémon is a small strip (tap Show for the full bar, and it stays as you left it). Nothing a tool does pays or records anything else.
+- **Small controls use Pixelarticons** (MIT, `assets/pixelarticons/`) instead of words: edit, up, down, more, less, remove, copy, swap, reset, pause, stop and close are icon keys with a spoken label. The Pokémon item icons stay the main icons of the tools.
+- **Calculator:** type or tap a whole sum with brackets (`2 + 3 × 4` is 14), percentages as a shop calculator reads them (`200 + 10%` is 220), a scientific panel (sin, cos, tan, their inverses, ln, log, sqrt, factorial, π, degrees or radians), a memory and a history you can turn on (kept on this phone only), and a copy button. Errors say what is wrong.
+- **Units** (new, split from the calculator): 16 kinds and over 110 units, searched by name, symbol or alias, swap, every unit at once, starred pairs, decimals; US and imperial gallons, cups and spoons are named; decimal and binary data units and bits and bytes are kept apart; volume is never turned into weight.
+- **Currency:** the Philippine peso is the home currency (changeable), search by name or code, a board of the currencies you watch, a rate of your own (what a money changer offered) and "what it really costs" with the reference, the rate you were offered and the fees apart; yen and won show no decimals.
+- **Timer and stopwatch** (new): several named timers that keep running when the app is closed and ring with a notification (Stop, +1 min); a stopwatch with laps, fastest, slowest and average.
+- **Picker:** edit in place, reorder, weights, several picks without repeats, skip the last pick, shuffle, an optional history. **Coin and dice:** d4 to d100, several dice, your own roll (`2d6+3`), an optional history.
+- **Flashlight:** a screen light with colours (white, warm, red, amber) and brightness, and an SOS signal for the torch on request only (not with Reduce motion on, at most five minutes).
+- New save fields are device-only with defaults, so older saves load. Docs: `docs/pokegear-audit.md` (Phase 1 status and limits) and the Pokégear section of `docs/ecosystem.md`.
+
+## 0.106.0
+
+- **Pokégear privacy fix.** The Picker's list was documented as never leaving the device but was part of the cloud save for a signed-in player (together with the currency rate cache). Both are now device-only: not in the cloud document, kept when a cloud save is adopted (even from an older upload that carries them), and "Export my data" still has the Picker list. A copy uploaded earlier is replaced at the next upload.
+- **Currency tool:** one HTTP client for as long as the tool is open (it made a new one on every entry and never closed it), with timeouts and a status check; the rates are validated (base, date, codes, finite positive numbers) and normalised to the dollar; the tool says where the rates are from and how old they are, and that they are reference rates, not a bank's. A failed fetch says why and keeps the cached rates.
+- **Flashlight:** the state is the hardware's (every flash camera is tried, a torch callback shows a change by another app or the system at once), and a light this app turned on is turned off when the tool is left or the app stops.
+- A capability layer for later hardware tools (`DeviceCapabilities`): the Android app asks the phone what sensors, camera features and permissions it really has, other platforms say nothing is available. No tool uses it yet; nothing is started or asked for.
+- Docs: `docs/pokegear-audit.md` (the audit and the plan for Phase 1) and the Pokégear section of `docs/ecosystem.md` corrected (five tools; no timer or stopwatch yet).
+
 ## 0.105.0
 
 - **World landing, rebuilt around one action.** From the top: your rank (with what the next rank opens), what your teams brought back since you last looked, **one big button for what is worth doing now** (recruit the Pokémon waiting, claim a finished job, send a team to the next dungeon of the layer on show, or look in on teams that are all out), all teams at a glance (where, which floor, jobs, Finds), the layer's story, the world picture, then four places (Map, Expeditions, Missions, Base) with Finds and Bag, Skills, Camp and Settings as small buttons below.

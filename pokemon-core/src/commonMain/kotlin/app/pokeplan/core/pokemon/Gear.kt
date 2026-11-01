@@ -11,10 +11,15 @@ package app.pokeplan.core.pokemon
  */
 enum class GearTool(val label: String, val blurb: String, val icon: String, val signature: Set<Int>, val loaner: Int, val move: String) {
     FLASHLIGHT("Flashlight", "Light for the dark", "thunder-stone", setOf(179, 180, 181), 181, "Flash"),
-    CALCULATOR("Calculator", "Sums and unit conversions", "link-cord", setOf(137, 233, 474), 137, "Conversion"),
+    CALCULATOR("Calculator", "Sums, percentages and everyday maths", "link-cord", setOf(137, 233, 474), 137, "Conversion"),
     CURRENCY("Currency", "Convert money at today's rates", "amulet-coin", setOf(52, 53, 863), 52, "Pay Day"),
     PICKER("Picker", "Pick one thing from a list", "star-piece", setOf(173, 35, 36), 35, "Metronome"),
-    COIN("Coin toss", "Heads or tails", "bottle-cap", setOf(999, 1000), 999, "Make It Rain");
+    COIN("Coin and dice", "Heads or tails, and dice", "bottle-cap", setOf(999, 1000), 999, "Make It Rain"),
+
+    // Added with the utility suite (0.107.0): their names are saved with the helpers, so they are only ever added at the end.
+    UNITS("Units", "Convert lengths, weights and more", "scope-lens", setOf(81, 82, 462), 81, "Magnet Rise"),
+    TIMER("Timer", "Count down to the moment", "timer-ball", setOf(358, 433), 433, "Perish Song"),
+    STOPWATCH("Stopwatch", "Time it, with laps", "exp-share", setOf(290, 291), 291, "Quick Attack");
 
     /** Whether a Pokémon of [speciesId] can help this tool. */
     fun helps(speciesId: Int): Boolean = speciesId in signature

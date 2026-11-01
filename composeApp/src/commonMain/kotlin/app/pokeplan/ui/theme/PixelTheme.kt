@@ -237,6 +237,22 @@ fun PixelButton(
     }
 }
 
+/** A key that shows a Pixelarticons [glyph] instead of a word ([description] is what a screen reader says). */
+@Composable
+fun PixelIconButton(
+    glyph: String,
+    description: String,
+    onClick: () -> Unit,
+    color: Color = Pixel.InkSoft,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier,
+) {
+    PixelKey(
+        onClick, modifier.width(Spacing.Target).semantics { contentDescription = description }, key = color, enabled = enabled, compact = true,
+        horizontal = 0.dp, sound = app.pokeplan.ui.Sfx.CONFIRM,
+    ) { look -> app.pokeplan.ui.Glyph(glyph, look.ink, size = 20.dp) }
+}
+
 /** Three pixels that blink in turn: a button waiting for something. Still when Reduce motion is on. */
 @Composable
 private fun LoadingPixels(color: Color) {

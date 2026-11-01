@@ -115,6 +115,8 @@ class AppModel(
     val careSync: CareSync? = null,
     /** The phone's flashlight for the Pokégear; null where there is none (the tool then lights the screen). */
     val torch: Torch? = null,
+    /** What this device can do for the Pokégear's hardware tools, found out at run time; [NoCapabilities] where there is no hardware tool (desktop, web). */
+    val capabilities: app.pokeplan.ui.gear.DeviceCapabilities = app.pokeplan.ui.gear.NoCapabilities,
 ) {
     /** Whether the Pokégear is open: a screen over whichever tab is showing, reached from the button at the top of every tab. */
     var gearOpen: Boolean by mutableStateOf(false)
@@ -268,6 +270,7 @@ fun App(
     calendars: CalendarSource? = null,
     phone: PhoneState? = null,
     torch: Torch? = null,
+    capabilities: app.pokeplan.ui.gear.DeviceCapabilities = app.pokeplan.ui.gear.NoCapabilities,
     /** Called after every change to the saved data (the Android app uses it to keep its widgets up to date). */
     onDataChanged: ((AppData) -> Unit)? = null,
     /** Called after every change to Care's save (the Android app keeps routine reminders and the Care widget up to date). */
@@ -282,7 +285,7 @@ fun App(
         val care = CareStore(careStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val sync = client?.let { SyncManager(store, it) }
         val careSync = if (client != null && sync != null) CareSync(care, client) { sync.session() } else null
-        AppModel(store, motion, sync, client?.let { SocialClient(it) }, cries, haptics, files, calendars, phone, care, careSync, torch).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
+        AppModel(store, motion, sync, client?.let { SocialClient(it) }, cries, haptics, files, calendars, phone, care, careSync, torch, capabilities).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
     }
     // The phone's power saver is read now and then; World's animations stand still while it is on.
     LaunchedEffect(model) { while (true) { model.powerSaving = phone?.powerSaving == true; kotlinx.coroutines.delay(30_000) } }

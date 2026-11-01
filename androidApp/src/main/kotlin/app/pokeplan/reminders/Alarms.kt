@@ -21,6 +21,7 @@ internal object Channels {
     const val FOCUS_END = "focus-end-2"
     const val EVENING_NUDGES = "evening-nudges"
     const val WORLD_JOBS = "world-jobs"
+    const val GEAR_TIMERS = "gear-timers"
     const val TASK_REMINDERS = "task-reminders-2"
     const val CARE_ROUTINES = "care-routines-2"
 }

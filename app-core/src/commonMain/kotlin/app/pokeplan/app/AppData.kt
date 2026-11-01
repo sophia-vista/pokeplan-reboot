@@ -79,9 +79,11 @@ data class AppData(
     val gearHelpers: Map<String, String> = emptyMap(),
     /** The Pokégear tools that have a loaner from a Ranger request (it helps until an owned Pokémon can). Cosmetic; stays on this device's save. */
     val gearLoans: Set<String> = emptySet(),
-    /** The list the Picker chooses from; never synced or sent anywhere. */
+    /** The list the Picker chooses from; never synced or sent anywhere (it is in [app.pokeplan.app.GameStore.DEVICE_ONLY], so the cloud document leaves it out and an adopted cloud save keeps this device's list). */
     val pickerOptions: List<String> = emptyList(),
-    /** The last exchange rates the Currency tool fetched, kept for offline use. */
+    /** What the Pokégear tools remember: favourites, recents, currency choices, timers, the stopwatch, picker weights. Never synced (see [app.pokeplan.app.GameStore.DEVICE_ONLY]). */
+    val gear: GearData = GearData(),
+    /** The last exchange rates the Currency tool fetched, kept for offline use. Public reference data fetched again on demand, so it stays on this device (in [app.pokeplan.app.GameStore.DEVICE_ONLY]). */
     val gearRates: GearRates? = null,
     /** Where each Pokémon came from, by Pokémon id, for its detail page; Pokémon from before 0.51.0 have none. */
     val origins: Map<String, Origin> = emptyMap(),
@@ -109,9 +111,95 @@ data class AppData(
 @Serializable
 enum class ThemeMode(val label: String) { SYSTEM("Match phone"), LIGHT("Light"), DARK("Dark") }
 
-/** Exchange rates: units of each currency for one US dollar, on [date] (`2026-10-31`), as the rates service reported them. */
+/** One Pokégear timer: a [label], its [durationMs], and where it is. */
 @Serializable
-data class GearRates(val date: String, val perUsd: Map<String, Double>)
+data class GearTimer(
+    val id: String,
+    val label: String,
+    val durationMs: Long,
+    /** While running, the clock time it ends at (milliseconds); 0 otherwise. */
+    val endsAt: Long = 0,
+    /** While paused, how much is left; -1 when it is not paused. */
+    val pausedLeftMs: Long = -1,
+    /** Set when it ran out, until the player dismisses it. */
+    val finished: Boolean = false,
+) {
+    val running: Boolean get() = endsAt > 0 && !finished
+    val paused: Boolean get() = pausedLeftMs >= 0 && !finished
+
+    /** What is left at [now]: the whole duration when idle, the paused amount when paused, the time to the end when running (never below 0). */
+    fun leftAt(now: Long): Long = when {
+        finished -> 0
+        running -> (endsAt - now).coerceAtLeast(0)
+        paused -> pausedLeftMs
+        else -> durationMs
+    }
+}
+
+/** The Pokégear stopwatch: time gathered while stopped runs, and the laps (each the total at that moment). */
+@Serializable
+data class GearStopwatch(
+    val accumulatedMs: Long = 0,
+    /** The clock time the current run began at; 0 while stopped. */
+    val runningSince: Long = 0,
+    val laps: List<Long> = emptyList(),
+) {
+    val running: Boolean get() = runningSince > 0
+
+    /** The elapsed time at [now]: what was gathered plus the current run (never counting a clock set back as time lost). */
+    fun elapsedAt(now: Long): Long = accumulatedMs + if (running) (now - runningSince).coerceAtLeast(0) else 0
+}
+
+/** Everything the Pokégear tools remember apart from the helpers and the Picker's list. Device-only; every field has a default so older saves load. */
+@Serializable
+data class GearData(
+    /** Favourite tools, by [app.pokeplan.core.pokemon.GearTool] name, and the ones used last (newest first). */
+    val favorites: List<String> = emptyList(),
+    val recents: List<String> = emptyList(),
+    /** Whether the helper Pokémon is shown in full (false: a small strip that can be opened). */
+    val helperCompact: Boolean = true,
+    /** The currency amounts are shown in first, the ones on the board, and the pair last used. */
+    val homeCurrency: String = "PHP",
+    val currencyBoard: List<String> = listOf("USD", "JPY", "EUR", "KRW", "CNY"),
+    val currencyPair: String = "",
+    /** Rates the player entered (a money changer's quote), by currency code, in units of that currency per one unit of the home currency. */
+    val manualRates: Map<String, Double> = emptyMap(),
+    /** Percent and fixed fee for the "what it really costs" mode, kept for next time. */
+    val feePercent: Double = 0.0,
+    val feeFixed: Double = 0.0,
+    /** Unit pairs the player starred (`category:from>to`), the last category, and how many decimals results show. */
+    val unitFavorites: List<String> = emptyList(),
+    val unitCategory: String = "length",
+    val unitDecimals: Int = 6,
+    /** The calculator's history (kept only when [calcHistoryOn]), its memory slot and whether angles are in degrees. */
+    val calcHistory: List<String> = emptyList(),
+    val calcHistoryOn: Boolean = false,
+    val calcMemory: Double = 0.0,
+    val calcDegrees: Boolean = true,
+    val timers: List<GearTimer> = emptyList(),
+    val stopwatch: GearStopwatch = GearStopwatch(),
+    /** Weights of the Picker's options (an option with none weighs 1) and what it chose lately (kept only when [pickerHistoryOn]). */
+    val pickerWeights: Map<String, Int> = emptyMap(),
+    val pickerHistory: List<String> = emptyList(),
+    val pickerHistoryOn: Boolean = false,
+    val diceHistory: List<String> = emptyList(),
+    /** The screen light: colour name, brightness 0.1 to 1. */
+    val lightColor: String = "white",
+    val lightBrightness: Float = 1f,
+) {
+    companion object {
+        const val MAX_RECENTS = 6
+        const val MAX_HISTORY = 30
+    }
+}
+
+/**
+ * Exchange rates: units of each currency for one US dollar, on [date] (`2026-10-31`), as the rates service reported them (normalised to the
+ * dollar whatever base the service used). [fetchedAtMillis] is when this device got them (0 for a cache from before it was kept) and [source]
+ * says where they are from. These are reference rates, not what a bank, card or money changer gives.
+ */
+@Serializable
+data class GearRates(val date: String, val perUsd: Map<String, Double>, val fetchedAtMillis: Long = 0, val source: String = "")
 
 @Serializable
 data class Settings(

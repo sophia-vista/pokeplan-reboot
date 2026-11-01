@@ -55,6 +55,24 @@ fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp, de
 }
 
 /**
+ * A simple control glyph from Pixelarticons (MIT, assets/pixelarticons; arrows, edit, copy, trash...), tinted with [tint].
+ * Pokémon item icons stay the main icons ([ItemIcon]); these stand in for words on small controls.
+ */
+@Composable
+fun Glyph(name: String, tint: Color, modifier: Modifier = Modifier, size: Dp = 24.dp, description: String? = null) {
+    val path = "files/pixelarticons/$name.png"
+    val bitmap by produceState(cache[path], path) {
+        if (value == null) {
+            value = orNull { Res.readBytes(path).decodeToImageBitmap() }
+            cache[path] = value
+        }
+    }
+    Box(modifier.size(size)) {
+        bitmap?.let { Image(it, description, Modifier.size(size), contentScale = ContentScale.Fit, filterQuality = FilterQuality.None, colorFilter = ColorFilter.tint(tint)) }
+    }
+}
+
+/**
  * A Pokémon sprite by form number, scaled without blur so the pixels stay crisp: the first frame of its Mystery Dungeon
  * style sprite (SpriteCollab) where there is one, else its still sprite.
  */

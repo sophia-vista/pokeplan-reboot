@@ -158,7 +158,9 @@ class GameStore(
     /** Everything PokéPlan keeps on this device, as readable JSON, without the sign-in tokens. */
     fun exportJson(): String {
         val pretty = Json(json) { prettyPrint = true }
-        return pretty.encodeToString(JsonObject.serializer(), cloudDocument())
+        // The player's own data, so the Picker's list is in it; the sign-in, the tickets, the calendars shown and the public rate cache are not.
+        val full = json.encodeToJsonElement(AppData.serializer(), data.copy(account = null, eggTickets = EggTickets(), shownCalendars = emptySet(), gearRates = null)) as JsonObject
+        return pretty.encodeToString(JsonObject.serializer(), JsonObject(full.filterKeys { it !in EXPORT_LEFT_OUT }))
     }
 
     /** Erases this device's save: back to the welcome screen. A signed-in account must be signed out or deleted first. */
@@ -177,7 +179,7 @@ class GameStore(
     // The Modules setting is gone from Settings: Care is always shown, so a save that switched it off is switched back on when loaded.
     private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true))
 
-    private fun AppData.cloudPart(): AppData = copy(account = null, eggTickets = EggTickets(), shownCalendars = emptySet())
+    private fun AppData.cloudPart(): AppData = copy(account = null, eggTickets = EggTickets(), shownCalendars = emptySet(), pickerOptions = emptyList(), gearRates = null, gear = GearData())
 
     /** Shows or hides calendar events from this phone's calendars on the day timeline. */
     fun setShownCalendars(ids: Set<Long>) = update { it.copy(shownCalendars = ids) }
@@ -195,7 +197,7 @@ class GameStore(
         update { d ->
             incoming.copy(
                 account = d.account?.copy(version = version, unsynced = false, syncedAtMillis = nowMillis),
-                eggTickets = d.eggTickets, shownCalendars = d.shownCalendars,
+                eggTickets = d.eggTickets, shownCalendars = d.shownCalendars, pickerOptions = d.pickerOptions, gearRates = d.gearRates, gear = d.gear,
             )
         }
         return true
@@ -1379,6 +1381,43 @@ class GameStore(
 
     fun saveGearRates(rates: GearRates) = update { it.copy(gearRates = rates) }
 
+    /** Changes what the Pokégear tools remember. Device-only; changes nothing else and pays nothing. */
+    fun changeGear(change: (GearData) -> GearData) = update { it.copy(gear = change(it.gear)) }
+
+    // --- Pokégear timers and stopwatch (docs/pokegear-audit.md): utilities that pay nothing ---------------------------------
+
+    fun timerAdd(label: String, durationMs: Long): GearTimer? {
+        val id = newId()
+        val next = GearTimers.add(data.gear, id, label, durationMs) ?: return null
+        update { it.copy(gear = next) }
+        return next.timers.first { it.id == id }
+    }
+
+    fun timerStart(id: String) = changeGear { GearTimers.start(it, id, nowMillis) }
+    fun timerPause(id: String) = changeGear { GearTimers.pause(it, id, nowMillis) }
+    fun timerAddTime(id: String, ms: Long) = changeGear { GearTimers.addTime(it, id, ms, nowMillis) }
+    fun timerReset(id: String) = changeGear { GearTimers.reset(it, id) }
+    fun timerRemove(id: String) = changeGear { GearTimers.remove(it, id) }
+    fun timersDismissFinished() = changeGear { GearTimers.dismissFinished(it) }
+
+    /** Marks the timers that ran out as finished and returns them (the screen and the notification call this; calling it again returns none). */
+    fun timersTick(): List<GearTimer> {
+        val (next, ran) = GearTimers.tick(data.gear, nowMillis)
+        if (ran.isNotEmpty()) update { it.copy(gear = next) }
+        return ran
+    }
+
+    fun stopwatchStart() = changeGear { GearTimers.stopwatchStart(it, nowMillis) }
+    fun stopwatchPause() = changeGear { GearTimers.stopwatchPause(it, nowMillis) }
+    fun stopwatchLap() = changeGear { GearTimers.stopwatchLap(it, nowMillis) }
+    fun stopwatchReset() = changeGear { GearTimers.stopwatchReset(it) }
+
+    /** Notes that [tool] was opened: it goes to the front of the recents (a short list), nothing more. */
+    fun gearUsed(tool: GearTool) = changeGear { g -> g.copy(recents = (listOf(tool.name) + g.recents.filter { it != tool.name }).take(GearData.MAX_RECENTS)) }
+
+    /** Stars or unstars a tool. */
+    fun gearFavorite(tool: GearTool, on: Boolean) = changeGear { g -> g.copy(favorites = if (on) (g.favorites.filter { it != tool.name } + tool.name) else g.favorites - tool.name) }
+
     fun toggleFavorite(id: String) = update { d -> d.copy(favorites = if (id in d.favorites) d.favorites - id else d.favorites + id) }
 
     /** Sends a duplicate away for Rare Candies and coins. Returns false if it may not be transferred (or is starred). */
@@ -1542,7 +1581,10 @@ class GameStore(
         ).mapValues { CARE_LOG_PREFIX + it.value }
 
         /** Parts of the save that stay on this device: never uploaded, kept when the cloud save is adopted (see [cloudPart] and [adoptCloud]). */
-        internal val DEVICE_ONLY = setOf("account", "eggTickets", "shownCalendars")
+        internal val DEVICE_ONLY = setOf("account", "eggTickets", "shownCalendars", "pickerOptions", "gearRates", "gear")
+
+        /** What the "Export my data" file leaves out: the same as [DEVICE_ONLY] except the Picker's list and what the Pokégear tools remember, which are the player's own data. */
+        private val EXPORT_LEFT_OUT = DEVICE_ONLY - setOf("pickerOptions", "gear")
 
         // "kind" because the rewards have a field called "type" (the same setting the reward engine uses over JSON).
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true; classDiscriminator = "kind" }

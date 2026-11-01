@@ -120,6 +120,32 @@ class GameStoreTest {
     }
 
     @Test
+    fun theCloudNeverSeesThePickersListNorTheRateCacheAndAdoptingKeepsThisDevicesCopy() {
+        val (s, _) = started()
+        s.setPickerOptions(listOf("Sushi", "Ramen"))
+        s.saveGearRates(app.pokeplan.app.GearRates("2026-11-01", mapOf("USD" to 1.0, "PHP" to 58.0)))
+        val doc = s.cloudDocument()
+        assertTrue("pickerOptions" !in doc && "gearRates" !in doc, "nothing private or cached is uploaded: ${doc.keys}")
+        assertTrue(!doc.toString().contains("Sushi"), "not even inside another field")
+        // Adopting a cloud save (which never has them) keeps this device's list and rates.
+        assertTrue(s.adoptCloud(doc, 5))
+        assertEquals(listOf("Sushi", "Ramen"), s.data.pickerOptions)
+        assertEquals(58.0, s.data.gearRates!!.perUsd["PHP"])
+        // A cloud document that did carry the keys (an older upload) does not overwrite them either.
+        val old = kotlinx.serialization.json.JsonObject(doc + mapOf("pickerOptions" to kotlinx.serialization.json.JsonArray(listOf(kotlinx.serialization.json.JsonPrimitive("Old")))))
+        assertTrue(s.adoptCloud(old, 6))
+        assertEquals(listOf("Sushi", "Ramen"), s.data.pickerOptions)
+        // The player's own export still has the list, and never the rate cache.
+        assertTrue(s.exportJson().contains("Sushi") && !s.exportJson().contains("gearRates"))
+        // What the Pokégear tools remember (favourites, timers, history) is device-only too, and in the player's own export.
+        s.changeGear { it.copy(favorites = listOf("TIMER"), calcHistory = listOf("2+2=4"), calcHistoryOn = true) }
+        assertTrue("gear" !in s.cloudDocument() && !s.cloudDocument().toString().contains("2+2=4"))
+        assertTrue(s.adoptCloud(s.cloudDocument(), 7))
+        assertEquals(listOf("2+2=4"), s.data.gear.calcHistory, "adopting the cloud save keeps this device's tool data")
+        assertTrue(s.exportJson().contains("2+2=4"))
+    }
+
+    @Test
     fun anUnreadableCloudSaveChangesNothing() {
         val (s, _) = started()
         val before = s.data
