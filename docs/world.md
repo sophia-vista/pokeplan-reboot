@@ -718,6 +718,6 @@ What the code does now, against this concept (details: `CHANGELOG.md`, rules: `d
 | 16 Post-story | One Distortion Rift | Modifiers, more dungeons |
 
 
-## Regions of the games (proposal, November 2026)
+## Regions of the games (decided in outline, 1 November 2026)
 
-Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar and Paldea as the places of World's map, in the order the owner chooses, each with dungeons of the environment kinds in section 14, wild tables from its regional dex, a story chapter to open it and its own Guardian. The owner's full atlas of places (mainline regions with their extra areas, the spin-off settings and the Mystery Dungeon continents), the shape, the questions for the owner and what the code already has are in `docs/ecosystem.md`, "World regions". Not built; the dungeons that exist (Tiny Woods to the Distortion Rift) would become the home region.
+The Mystery Dungeon world is the main map. Beside it, as layers behind a switch on the Map screen: the nine mainline regions (Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea; eight to nine dungeons each, wild tables from the region's regional dex, a main legendary quest per region, the special spaces as Guardian-tier places in their region), then the spin-off settings, starting with the Ranger regions and Orre. The owner's atlas, the decisions and what is still open are in `docs/ecosystem.md`, "World regions". Not built; the dungeons that exist (Tiny Woods to the Distortion Rift) are the home layer.

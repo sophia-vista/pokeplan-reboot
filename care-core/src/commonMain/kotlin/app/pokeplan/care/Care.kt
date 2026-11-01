@@ -105,6 +105,8 @@ data class CareData(
     val breaks: List<CalmBreak> = emptyList(),
     val practices: List<SkillPractice> = emptyList(),
     val journal: List<JournalEntry> = emptyList(),
+    /** The journal entry being written and not saved yet, kept so a half-written entry survives the app being closed. */
+    val journalDraft: String = "",
     /** Prompts skipped today, so the next one comes up. */
     val skippedPrompts: Map<LocalDate, Int> = emptyMap(),
     /** The weeks (their first day) whose "kept a rhythm" milestone has paid. */

@@ -670,6 +670,9 @@ private fun JournalView(model: AppModel) {
     val prompt = care.prompt()
     // The half-written entry lives in the model, so leaving the screen (or a tab) and coming back finds it still there.
     var text by model::journalDraft
+    // The draft is also kept in Care's save (a moment after you stop typing), so it is there after the app is closed.
+    LaunchedEffect(Unit) { if (model.journalDraft.isEmpty() && data.journalDraft.isNotEmpty()) model.journalDraft = data.journalDraft }
+    LaunchedEffect(model.journalDraft) { kotlinx.coroutines.delay(1_200); care.setJournalDraft(model.journalDraft) }
     var answering by remember { mutableStateOf<String?>(null) }
     var tags by remember { mutableStateOf(emptySet<String>()) }
     var query by remember { mutableStateOf("") }
