@@ -105,11 +105,14 @@ Opens at story chapter 2 of the home layer. Up to 3 jobs held at once; a job tha
 ### 4.8 Bag and treasure
 - Treasure boxes (plain, silver, gold) are opened into the Bag; berries and Rare Candies land in the shared Bag directly.
 
-### 4.9 Settings and surfaces
+### 4.9 The landing
+Rank card (with what the next rank opens), the "since you last looked" report, one primary action (recruit, claim, explore the next dungeon of the layer on show, or look at the teams), all teams at a glance, the layer's story, then Map, Expeditions, Missions and Base, with Finds and Bag, Skills, Camp and Settings as small buttons.
+
+### 4.10 Settings and surfaces
 - World animation switch; the job-done alert switch; an Android World widget; the World Place for shortcuts and notifications.
 - Reduce motion and large text are respected (130% text is checked in the screenshot tests).
 
-### 4.10 The layers' stories and Guardians (built)
+### 4.11 The layers' stories and Guardians (built)
 - **Home layer:** six chapters ("A New Explorer" to "The Great Disturbance"), ending in the Temporal Tower and **Primal Dialga**, the Guardian (its own Dex form, separate from Dialga). It gives the **Temporal Mastery**: every expedition climbs 10% faster. A post-story dungeon, the **Distortion Rift**, opens afterwards.
 - **Kanto, Johto, Hoenn:** five chapters each and their legendary quests (section 7).
 - A layer's story chapters open by rank and by how many different dungeons **of that layer** have been cleared; clears in one layer do not advance another's.
@@ -299,7 +302,7 @@ Each region's story follows the brief's five parts (Arrival, Investigation, Awak
 
 **Side legendaries (module Guardians, not regional quests):** Mew (World also uses it as a Kanto quest), the three beasts, Celebi, Latias and Latios, Jirachi, Deoxys, the regis, Victini, the swords of justice, the forces of nature, Darkrai, Shaymin, the lake trio (already Plan's), Diancie, Hoopa, Volcanion, the guardian deities, the Ultra Beasts, the Crown Tundra legendaries, the Treasures of Ruin, Ogerpon. Which module features which one is decided with each module.
 
-**Overlap with Plan's quests (a known issue, partly handled).** Plan already has a quest for *every* legendary and mythical (Deep Focus sessions, hard tasks, active days, a share of the regional dex). So a World quest can give a Pokémon the player already earned there. Fixed in World: a legendary already owned is **not given twice**, the World quest still counts as done and its boost applies. Not yet decided: the Plan side could hide or mark a legendary World has already given, and the two paths could be described to the player as two ways to the same Pokémon.
+**Plan's quests (decided 1 November 2026).** Plan used to have a quest for every legendary and mythical (Deep Focus sessions, hard tasks, active days). From 0.103.0 Plan has **no quest for the species World gives**: Zapdos, Articuno, Moltres, Mewtwo, Mew, Lugia, Ho-Oh, Groudon, Kyogre and Rayquaza (`Legends.coveredSpecies`); a Plan quest already finished stays finished and its Pokémon owned, one in progress for such a species goes away. Every other legendary and mythical keeps its Plan quest until a World layer (or a module's own arc) gives it, and then its Plan quest is removed the same way (the list is `Legends.all`). A World quest also never gives a legendary the player already owns (it still counts, so its boost applies).
 
 ---
 
@@ -326,12 +329,11 @@ Each region's story follows the brief's five parts (Arrival, Investigation, Awak
 9. Official game map art for each region.
 10. A Guardian can join a World team while it is idle (not on a team, not slotted as a Guardian).
 11. The team picker shows the 20 strongest idle Pokémon; the landing's next step and a dungeon's locked reasons follow the layer on show and list every unmet requirement.
-12. Plan will have no legendary quests of its own (decided 1 November 2026; how to stage the removal is open).
+12. Plan has no quest for a legendary World gives (decided 1 November 2026, option A: removed species by species as each layer is built).
 
 ## 10. Open questions
 
 - How the boosts of several Guardians in one region combine (assumed: they add within the existing cap on Guardian effects), and which Guardian helps which module.
-- Whether Plan's quests should hide or mark a legendary World has given.
 - Which module features which side legendary.
 - Whether spin-off layers follow the same one-layer-each rule (assumed yes).
 - The marker positions on the region maps, and a device test of the job alarm.

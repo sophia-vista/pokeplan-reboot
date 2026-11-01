@@ -19,8 +19,11 @@ class QuestsTest {
     private val zone = TimeZone.UTC
 
     @Test
-    fun everyLegendaryClassAndMythicalSpeciesHasExactlyOneQuest() {
-        val special = Dex.species.filter { it.isSpecial }
+    fun everyLegendaryClassAndMythicalSpeciesHasExactlyOneQuestExceptTheOnesWorldGives() {
+        val covered = app.pokeplan.world.Legends.coveredSpecies
+        assertTrue(covered.isNotEmpty() && covered.all { Dex.species(it).isSpecial })
+        covered.forEach { assertNull(Quests.forSpecies(it), "World gives ${Dex.species(it).name}, so Plan has no quest for it") }
+        val special = Dex.species.filter { it.isSpecial && it.id !in covered }
         assertTrue(special.size > 60, "the data has ${special.size} special species")
         assertEquals(special.map { it.id }.toSet(), Quests.all.map { it.speciesId }.toSet())
         assertEquals(special.size, Quests.all.size)
@@ -33,7 +36,7 @@ class QuestsTest {
 
     @Test
     fun mythicalsGetLongTermQuestsAvailableEarly() {
-        for (s in Dex.mythicals) {
+        for (s in Dex.mythicals.filter { it.id !in app.pokeplan.world.Legends.coveredSpecies }) {
             val q = assertNotNull(Quests.forSpecies(s.id), s.name)
             if (q.id in setOf("uxie", "mesprit", "azelf")) continue
             assertTrue(q.longTerm, s.name)
@@ -54,7 +57,7 @@ class QuestsTest {
 
     @Test
     fun aQuestIsLockedUntilTheRankAndDexShareAreReached() {
-        val legendary = Dex.species.first { it.isLegendary && !it.isMythical && Quests.forSpecies(it.id)!!.dexRegion != null && Quests.forSpecies(it.id)!!.dexShare > 0 }
+        val legendary = Dex.species.first { it.isLegendary && !it.isMythical && Quests.forSpecies(it.id) != null && Quests.forSpecies(it.id)!!.dexRegion != null && Quests.forSpecies(it.id)!!.dexShare > 0 }
         val q = Quests.forSpecies(legendary.id)!!
         val fresh = AppData()
         assertNotNull(Quests.lockedReason(q, fresh))

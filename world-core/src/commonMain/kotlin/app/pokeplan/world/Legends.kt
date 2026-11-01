@@ -23,6 +23,16 @@ data class LegendQuest(
     val treasurePercent: Int = 0,
 )
 
+/** What a legendary of a layer gives, in words, from the same numbers the simulation uses: where it applies and how much. */
+fun LegendQuest.bonusText(): String {
+    val parts = buildList {
+        if (types.isNotEmpty()) add("${types.joinToString(" and ") { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } }}-favouring dungeons climb ${Legends.FASTER_PERCENT}% faster")
+        if (findPermille > 0) add("${findPermille / 10.0}% more chance of a wild Pokémon on a floor")
+        if (treasurePercent > 0) add("${treasurePercent}% more chance of a treasure box")
+    }
+    return if (parts.isEmpty()) "No bonus." else parts.joinToString("; ") + " in ${layer.label}."
+}
+
 object Legends {
     /** How much faster a floor is in a dungeon of the layer that favours a given legendary's type: percent, for each one. *(tune)* */
     const val FASTER_PERCENT = 10
@@ -39,6 +49,9 @@ object Legends {
         LegendQuest("hoenn-kyogre", 382, "Kyogre", WorldLayer.HOENN, "seafloor-cavern", 3, false, "The sea's ancient Pokémon sleeps beneath the Seafloor Cavern. Clear it three times.", setOf(PokemonType.WATER)),
         LegendQuest("hoenn-rayquaza", 384, "Rayquaza", WorldLayer.HOENN, "sky-pillar", 1, true, "Hoenn's Guardian waits at the top of the Sky Pillar.", setOf(PokemonType.FLYING, PokemonType.DRAGON), findPermille = 5),
     )
+
+    /** The species World gives through its own quests: Plan has no quest for them (a decision of 1 November 2026: Plan keeps the rest until a region or module gives them). */
+    val coveredSpecies: Set<Int> by lazy { all.map { it.speciesId }.toSet() }
 
     fun of(layer: WorldLayer): List<LegendQuest> = all.filter { it.layer == layer }
 

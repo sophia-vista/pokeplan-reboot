@@ -39,8 +39,8 @@ internal fun QuestsView(model: AppModel) {
 
     TextBox {
         Text(
-            "Each legendary and mythical Pokémon has a quest that fills in as you keep doing what you already do. " +
-                "No deadlines, up to ${Quests.MAX_ACTIVE} at a time.",
+            "Each legendary and mythical Pokémon listed here has a quest that fills in as you keep doing what you already do. " +
+                "No deadlines, up to ${Quests.MAX_ACTIVE} at a time. The ones that belong to a region of the World game (Kanto, Johto and Hoenn so far) come from that region's quests there.",
             style = MaterialTheme.typography.bodyLarge,
         )
     }

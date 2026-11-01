@@ -101,6 +101,30 @@ class WorldStoreTest {
     }
 
     @Test
+    fun theReportCollectsEverySettleUntilItIsDismissed() {
+        val clock = Clock()
+        val store = store(clock)
+        assertNull(store.worldReport(), "nothing yet")
+        store.worldAssign(1, listOf(store.data.player.pokemon.first().id))
+        store.worldStart(1, "tiny-woods")
+        clock.millis += 3L * 60 * 60 * 1000
+        store.worldSettle()
+        val first = assertNotNull(store.worldReport())
+        clock.millis += 3L * 60 * 60 * 1000
+        store.worldSettle()
+        val both = assertNotNull(store.worldReport())
+        assertTrue(both.floors > first.floors && both.xp > first.xp, "the second settle adds to the first")
+        assertEquals(store.data.world.xp, both.xp, "all the XP so far came since the start")
+        // Reading it changes nothing; dismissing clears it, and the Bag and the reward log are untouched by both.
+        val bag = store.data.player.inventory.counts.values.sum()
+        val log = store.data.rewardLog.size
+        store.worldReportDismiss()
+        assertNull(store.worldReport())
+        assertEquals(bag, store.data.player.inventory.counts.values.sum())
+        assertEquals(log, store.data.rewardLog.size)
+    }
+
+    @Test
     fun aWorldRecruitIsNotAnEggHatching() {
         val store = store(Clock())
         store.grantPokemon(25, GameStore.WORLD_SOURCE, Origin.How.WORLD)

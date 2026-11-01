@@ -22,6 +22,7 @@ import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.GearTool
 import app.pokeplan.world.Missions
 import app.pokeplan.world.WorldReport
+import app.pokeplan.world.ReportSummary
 import app.pokeplan.world.WorldSim
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.PartyIds
@@ -1114,6 +1115,14 @@ class GameStore(
     /** Stars or unstars a Pokémon; a starred one cannot be transferred. */
     // ----- World: the dungeon game (docs/world.md). Its rules are in world-core; this keeps its save and moves what it finds into the shared collection and Bag -----
 
+    /** What the teams brought back since the player last dismissed the report (kept in memory only: the reward log is the record), or null when nothing came. */
+    private var worldSummary: ReportSummary? = null
+
+    fun worldReport(): ReportSummary? = worldSummary?.takeIf { !it.isEmpty }
+
+    /** The player has read the report: it starts again from nothing. */
+    fun worldReportDismiss() { worldSummary = null }
+
     /** Settles every World team to now (floors climbed, finds, items) and returns what happened, or null when nothing did. */
     fun worldSettle(): WorldReport? {
         // A Pokémon transferred away leaves its team (an empty team comes home), so no slot is held by someone who is gone.
@@ -1123,6 +1132,7 @@ class GameStore(
         val report = WorldSim.settle(before, data.player.pokemon, nowMillis)
         if (report.isEmpty) { worldLegends(); return null }
         update { it.copy(world = report.data) }
+        worldSummary = (worldSummary ?: ReportSummary()) + ReportSummary.of(report, report.data.xp - before.xp)
         worldPaid("World: exploring", before)
         worldGuardian()
         worldLegends()
