@@ -82,12 +82,20 @@ data class WorldData(
     /** Whether the legendary quest [id]'s Pokémon has been given. */
     fun hasLegend(id: String): Boolean = id in legends
 
+    /** The legendaries given for [layer]'s quests. */
+    private fun given(layer: WorldLayer): List<LegendQuest> = Legends.of(layer).filter { it.id in legends }
+
     /**
-     * How much faster floors are in [dungeon] from the legendaries given for its layer, in percent: each Kanto bird makes the dungeons
-     * that favour its type quicker. The home Guardian's 10% is separate (`mastery`).
+     * How much faster floors are in [dungeon] from the legendaries given for its layer, in percent: each one whose types include one the
+     * dungeon favours (the Kanto birds, Lugia). The home Guardian's 10% is separate (`mastery`).
      */
-    fun legendFaster(dungeon: DungeonDef): Int =
-        Legends.of(dungeon.layer).filter { it.id in legends && it.type != null && it.type in dungeon.favored }.size * Legends.BIRD_FASTER_PERCENT
+    fun legendFaster(dungeon: DungeonDef): Int = given(dungeon.layer).count { q -> q.types.any { it in dungeon.favored } } * Legends.FASTER_PERCENT
+
+    /** More chance of a find on a floor of [dungeon]'s layer from the legendaries given there, in permille. */
+    fun legendFindPermille(dungeon: DungeonDef): Int = given(dungeon.layer).sumOf { it.findPermille }
+
+    /** More chance of a treasure box on a floor of [dungeon]'s layer from the legendaries given there, in percent. */
+    fun legendTreasurePercent(dungeon: DungeonDef): Int = given(dungeon.layer).sumOf { it.treasurePercent }
 
     companion object { const val JOURNAL_SIZE = 40 }
 

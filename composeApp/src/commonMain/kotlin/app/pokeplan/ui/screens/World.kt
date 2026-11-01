@@ -61,7 +61,6 @@ import app.pokeplan.world.MissionKind
 import app.pokeplan.world.Missions
 import app.pokeplan.world.ExplorerRank
 import app.pokeplan.world.Story
-import app.pokeplan.world.KantoStory
 import app.pokeplan.world.Legends
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.WorldEvent
@@ -176,7 +175,7 @@ private fun RankCard(model: AppModel) {
             val opened = Story.opened(world, layer)
             Text("${layer.label} story: chapter $opened, ${chapters[opened - 1].title}", style = MaterialTheme.typography.bodyLarge)
             Text(chapters[opened - 1].summary, style = MaterialTheme.typography.bodyMedium)
-            if (Story.complete(world, layer)) Text("The story is complete. ${if (layer == WorldLayer.HOME) Story.GUARDIAN_BONUS else KantoStory.GUARDIAN_BONUS}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+            if (Story.complete(world, layer)) Text("The story is complete. ${Story.guardianBonus(layer)}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             Story.next(world, layer)?.let { Text("Next: ${it.title} (${it.needsRank.label} rank, ${it.needsDungeons} different ${layer.label} dungeons cleared)", style = MaterialTheme.typography.bodyMedium) }
             Text("Poké: ${world.poke}", style = MaterialTheme.typography.bodyMedium)
         }
@@ -195,13 +194,13 @@ private fun WorldMapView(model: AppModel) {
     val dungeons = Dungeons.of(layer)
     val clearedCount = dungeons.count { (world.clears[it.id] ?: 0) > 0 }
     // The layer switch: every layer is open from the first day.
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         WorldLayer.entries.forEach { l ->
             PixelButton(l.label, { model.worldLayer = l; selected = null }, color = if (l == layer) Module.WORLD.look.accent else Pixel.InkSoft, compact = true)
         }
     }
     Text(layer.blurb, style = MaterialTheme.typography.bodyMedium)
-    val spots = if (layer == WorldLayer.KANTO) kantoSpots else mapSpots
+    val spots = when (layer) { WorldLayer.HOME -> mapSpots; WorldLayer.KANTO -> kantoSpots; WorldLayer.JOHTO -> johtoSpots }
     WorldMapPicture(
         stage = 1 + clearedCount,
         markers = dungeons.mapNotNull { d ->
@@ -211,8 +210,7 @@ private fun WorldMapView(model: AppModel) {
             }
         },
         selected = selected, onSelect = { selected = it },
-        mapName = if (layer == WorldLayer.KANTO) "map-kanto" else null,
-        pictureW = if (layer == WorldLayer.KANTO) 192f else 504f, pictureH = if (layer == WorldLayer.KANTO) 128f else 336f,
+        mapName = layer.mapName, pictureW = layer.mapWidth.toFloat(), pictureH = layer.mapHeight.toFloat(),
     )
     Text(selected?.let { id -> Dungeons.byId(id)?.let { "${it.name}, ${it.region.label}" } } ?: "$clearedCount of ${dungeons.size} dungeons cleared. Tap a marker.", style = MaterialTheme.typography.bodyLarge)
     LegendsCard(model, layer)
@@ -273,6 +271,13 @@ private val kantoSpots = mapOf(
     "cerulean-cave" to (136 to 40),
 )
 
+/** Where each Johto dungeon is on the Johto map picture (144 x 128 pixels), read from its towns and landmarks. */
+private val johtoSpots = mapOf(
+    "sprout-tower" to (76 to 52), "ilex-forest" to (44 to 52), "union-cave" to (20 to 84), "ruins-of-alph" to (68 to 68),
+    "slowpoke-well" to (44 to 84), "mt-mortar" to (76 to 36), "burned-tower" to (60 to 36), "whirl-islands" to (20 to 108),
+    "tin-tower" to (70 to 24),
+)
+
 /** The legendary quests of [layer]: what each asks and how far it is, and the ones already given. */
 @Composable
 private fun LegendsCard(model: AppModel, layer: WorldLayer) {
@@ -291,7 +296,7 @@ private fun LegendsCard(model: AppModel, layer: WorldLayer) {
                         Text(
                             when {
                                 done -> "Joined your Guardians."
-                                q.afterGuardian && !world.layerDone(layer) -> "Face the Guardian of ${layer.label} first. ${q.blurb}"
+                                q.afterGuardian && !world.layerDone(layer) -> if (q.clears == 1) q.blurb else "Face the Guardian of ${layer.label} first. ${q.blurb}"
                                 else -> "${q.blurb} (${Legends.progress(world, q)} of ${q.clears})"
                             },
                             style = MaterialTheme.typography.bodyMedium,

@@ -174,13 +174,12 @@ object WorldSim {
         val poke = (5 + floor * 2 + random.nextInt(5)) * (100 + 2 * (d.skillLevel(WorldSkill.EXPLORATION) + perk.getValue(WorldSkill.EXPLORATION))) / 100
         events += WorldEvent.Poke(poke)
         d = d.copy(poke = d.poke + poke)
-        val legend = dungeon.layer != WorldLayer.HOME
-        if (random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP) + (if (brewed) 5 else 0) + (if (legend && d.hasLegend("kanto-mew")) Legends.MEW_TREASURE_PERCENT else 0)) {
+        if (random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP) + (if (brewed) 5 else 0) + d.legendTreasurePercent(dungeon)) {
             val tier = if (floor >= dungeon.floors - 1) 3 else if (floor >= dungeon.floors / 2) 2 else 1
             events += WorldEvent.Treasure(tier)
             d = d.copy(treasure = d.treasure + (tier to (d.treasure[tier] ?: 0) + 1))
         }
-        findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * (d.skillLevel(WorldSkill.SCOUTING) + perk.getValue(WorldSkill.SCOUTING)) + (if (brewed) 10 else 0) + (if (legend && d.hasLegend("kanto-mewtwo")) Legends.MEWTWO_FIND_PERMILLE else 0))?.let { species ->
+        findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * (d.skillLevel(WorldSkill.SCOUTING) + perk.getValue(WorldSkill.SCOUTING)) + (if (brewed) 10 else 0) + d.legendFindPermille(dungeon))?.let { species ->
             events += WorldEvent.Found(species, dungeon.id, floor)
             d = d.copy(finds = d.finds + Find(species, dungeon.id, floor, at), discovered = d.discovered + species).withSkillXp(WorldSkill.SCOUTING, 20)
         }

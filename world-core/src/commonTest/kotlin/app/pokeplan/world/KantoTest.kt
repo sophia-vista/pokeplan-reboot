@@ -80,7 +80,7 @@ class KantoTest {
         val plant = Dungeons.byId("power-plant")!!
         val moon = Dungeons.byId("mt-moon")!!
         val zapdos = WorldData(legends = setOf("kanto-zapdos"))
-        assertEquals(Legends.BIRD_FASTER_PERCENT, zapdos.legendFaster(plant))
+        assertEquals(Legends.FASTER_PERCENT, zapdos.legendFaster(plant))
         assertEquals(0, zapdos.legendFaster(moon), "Mt. Moon does not favour Electric")
         assertEquals(0, zapdos.legendFaster(Dungeons.byId("thunderwave-cave")!!), "the home layer is not helped")
         assertEquals(WorldSim.floorMillis(plant, 100.0) * 9 / 10, WorldSim.floorMillis(plant, 100.0, fasterPercent = 10))
