@@ -67,6 +67,21 @@ class WorldStoreTest {
     }
 
     @Test
+    fun aLegendAlreadyOwnedFromAPlanQuestIsNotGivenTwiceButStillCounts() {
+        val storage = MemoryStorage()
+        val first = GameStore(storage, Clock(), TimeZone.UTC, Random(5)).also { it.start("Sophia", 25) }
+        val world = app.pokeplan.world.WorldData(xp = 1_000_000, clears = mapOf("cerulean-cave" to 1), layersDone = setOf("kanto"))
+        val json = kotlinx.serialization.json.Json { encodeDefaults = true; ignoreUnknownKeys = true }
+        storage.text = json.encodeToString(AppData.serializer(), first.data.copy(world = world))
+        val store = GameStore(storage, Clock(), TimeZone.UTC, Random(5))
+        // Mewtwo came from the Plan side's quest first.
+        store.grantPokemon(150, "Quest: Earn the trust of Mewtwo")
+        store.worldSettle()
+        assertEquals(1, store.data.player.pokemon.count { it.speciesId == 150 }, "still one Mewtwo")
+        assertTrue(store.data.world.hasLegend("kanto-mewtwo"), "the World quest counts, so its boost applies")
+    }
+
+    @Test
     fun aWorldRecruitIsNotAnEggHatching() {
         val store = store(Clock())
         store.grantPokemon(25, GameStore.WORLD_SOURCE, Origin.How.WORLD)

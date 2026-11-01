@@ -1143,7 +1143,9 @@ class GameStore(
     private fun worldLegends() {
         for (quest in app.pokeplan.world.Legends.ready(data.world)) {
             update { it.copy(world = it.world.copy(legends = it.world.legends + quest.id)) }
-            grantPokemon(quest.speciesId, WORLD_SOURCE)
+            // Every legendary also has a quest in the Plan side's quest list (Quests): a Pokémon already owned from there is not given twice,
+            // and the quest still counts as done in World, so its boost for the layer applies either way.
+            if (data.player.pokemon.none { it.speciesId == quest.speciesId }) grantPokemon(quest.speciesId, WORLD_SOURCE)
         }
     }
 
