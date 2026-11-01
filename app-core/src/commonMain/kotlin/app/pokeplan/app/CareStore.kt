@@ -275,8 +275,17 @@ class CareStore(
     fun write(text: String, promptId: String? = null, tags: Set<String> = emptySet()): JournalEntry? {
         if (text.isBlank()) return null
         val entry = JournalEntry(newId(), nowMillis, today, text.trim(), promptId, tags.map { it.trim() }.filter { it.isNotEmpty() }.toSet())
-        update { it.copy(journal = it.journal + entry) }
+        update { it.copy(journal = it.journal + entry, journalDraft = "") }
         return entry
+    }
+
+    /**
+     * Keeps the half-written journal entry on the device so it survives the app being closed. It is written straight to the save
+     * without marking Care as changed for the cloud: a draft changing as you type is not worth an upload.
+     */
+    fun setJournalDraft(text: String) {
+        if (text == data.journalDraft) return
+        document.write(data.copy(journalDraft = text.take(5_000)))
     }
 
     fun editEntry(id: String, text: String) {
