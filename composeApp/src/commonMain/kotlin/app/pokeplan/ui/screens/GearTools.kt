@@ -41,6 +41,7 @@ import androidx.compose.ui.window.DialogProperties
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.gear.RatesClient
+import app.pokeplan.ui.gear.ratesFreshness
 import app.pokeplan.ui.gear.Units
 import app.pokeplan.ui.gear.convertCurrency
 import app.pokeplan.ui.launcher.Calculator
@@ -62,9 +63,12 @@ import kotlin.random.Random
 @Composable
 internal fun FlashlightTool(model: AppModel, onUse: () -> Unit) {
     val torch = model.torch?.takeIf { it.available() }
-    var on by remember { mutableStateOf(false) }
-    // Leaving the tool turns the light off, so it is never left on by accident.
-    DisposableEffect(torch) { onDispose { if (on) torch?.set(false) } }
+    var on by remember { mutableStateOf(torch?.isOn() == true) }
+    // The light's state is the hardware's: another app or the system switching it shows here at once. Leaving the tool turns it off, so it is never left on by accident.
+    DisposableEffect(torch) {
+        val stop = torch?.observe { on = it }
+        onDispose { stop?.invoke(); torch?.release() }
+    }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Text(if (torch != null) "The phone's flashlight." else "This device has no flashlight, so the screen lights up white.", style = MaterialTheme.typography.bodyLarge)
@@ -184,11 +188,14 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
     val today = model.store.today.toString()
     var status by remember { mutableStateOf("") }
     val client = remember { RatesClient() }
+    // One client for as long as the tool is open, closed when it is left.
+    DisposableEffect(client) { onDispose { client.close() } }
     val scope = rememberCoroutineScope()
     fun refresh() = scope.launch {
         status = "Fetching today's rates"
-        val fresh = client.latest()
-        if (fresh != null) { model.store.saveGearRates(fresh); status = "" } else status = "Offline: showing the last rates"
+        val fresh = client.latest(model.store.nowMillis)
+        // A failed fetch never touches the rates already kept.
+        if (fresh != null) { model.store.saveGearRates(fresh); status = "" } else status = (client.lastError ?: "Offline") + (if (rates != null) " Showing the last rates." else "")
     }
     LaunchedEffect(Unit) { if (rates == null || rates.date < today.take(10)) refresh() }
     TextBox {
@@ -215,7 +222,7 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
                 OptionPicker("To", codes, toIndex, Modifier.weight(1f)) { toIndex = it }
             }
             Text(if (result == null) "Type a number" else "${twoDecimals(amount!!)} ${codes[fromIndex]} = ${twoDecimals(result)} ${codes[toIndex]}", style = MaterialTheme.typography.titleMedium)
-            Text(if (status.isNotEmpty()) status else "Rates of ${rates.date}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Text(if (status.isNotEmpty()) status else ratesFreshness(rates, model.store.nowMillis), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             PixelButton("Refresh rates", { refresh() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
     }

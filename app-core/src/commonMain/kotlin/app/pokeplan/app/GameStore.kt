@@ -158,7 +158,9 @@ class GameStore(
     /** Everything PokéPlan keeps on this device, as readable JSON, without the sign-in tokens. */
     fun exportJson(): String {
         val pretty = Json(json) { prettyPrint = true }
-        return pretty.encodeToString(JsonObject.serializer(), cloudDocument())
+        // The player's own data, so the Picker's list is in it; the sign-in, the tickets, the calendars shown and the public rate cache are not.
+        val full = json.encodeToJsonElement(AppData.serializer(), data.copy(account = null, eggTickets = EggTickets(), shownCalendars = emptySet(), gearRates = null)) as JsonObject
+        return pretty.encodeToString(JsonObject.serializer(), JsonObject(full.filterKeys { it !in EXPORT_LEFT_OUT }))
     }
 
     /** Erases this device's save: back to the welcome screen. A signed-in account must be signed out or deleted first. */
@@ -177,7 +179,7 @@ class GameStore(
     // The Modules setting is gone from Settings: Care is always shown, so a save that switched it off is switched back on when loaded.
     private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true))
 
-    private fun AppData.cloudPart(): AppData = copy(account = null, eggTickets = EggTickets(), shownCalendars = emptySet())
+    private fun AppData.cloudPart(): AppData = copy(account = null, eggTickets = EggTickets(), shownCalendars = emptySet(), pickerOptions = emptyList(), gearRates = null)
 
     /** Shows or hides calendar events from this phone's calendars on the day timeline. */
     fun setShownCalendars(ids: Set<Long>) = update { it.copy(shownCalendars = ids) }
@@ -195,7 +197,7 @@ class GameStore(
         update { d ->
             incoming.copy(
                 account = d.account?.copy(version = version, unsynced = false, syncedAtMillis = nowMillis),
-                eggTickets = d.eggTickets, shownCalendars = d.shownCalendars,
+                eggTickets = d.eggTickets, shownCalendars = d.shownCalendars, pickerOptions = d.pickerOptions, gearRates = d.gearRates,
             )
         }
         return true
@@ -1542,7 +1544,10 @@ class GameStore(
         ).mapValues { CARE_LOG_PREFIX + it.value }
 
         /** Parts of the save that stay on this device: never uploaded, kept when the cloud save is adopted (see [cloudPart] and [adoptCloud]). */
-        internal val DEVICE_ONLY = setOf("account", "eggTickets", "shownCalendars")
+        internal val DEVICE_ONLY = setOf("account", "eggTickets", "shownCalendars", "pickerOptions", "gearRates")
+
+        /** What the "Export my data" file leaves out: the same as [DEVICE_ONLY] except the Picker's list, which is the player's own data. */
+        private val EXPORT_LEFT_OUT = DEVICE_ONLY - "pickerOptions"
 
         // "kind" because the rewards have a field called "type" (the same setting the reward engine uses over JSON).
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true; classDiscriminator = "kind" }

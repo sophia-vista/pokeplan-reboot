@@ -79,9 +79,9 @@ data class AppData(
     val gearHelpers: Map<String, String> = emptyMap(),
     /** The Pokégear tools that have a loaner from a Ranger request (it helps until an owned Pokémon can). Cosmetic; stays on this device's save. */
     val gearLoans: Set<String> = emptySet(),
-    /** The list the Picker chooses from; never synced or sent anywhere. */
+    /** The list the Picker chooses from; never synced or sent anywhere (it is in [app.pokeplan.app.GameStore.DEVICE_ONLY], so the cloud document leaves it out and an adopted cloud save keeps this device's list). */
     val pickerOptions: List<String> = emptyList(),
-    /** The last exchange rates the Currency tool fetched, kept for offline use. */
+    /** The last exchange rates the Currency tool fetched, kept for offline use. Public reference data fetched again on demand, so it stays on this device (in [app.pokeplan.app.GameStore.DEVICE_ONLY]). */
     val gearRates: GearRates? = null,
     /** Where each Pokémon came from, by Pokémon id, for its detail page; Pokémon from before 0.51.0 have none. */
     val origins: Map<String, Origin> = emptyMap(),
@@ -109,9 +109,13 @@ data class AppData(
 @Serializable
 enum class ThemeMode(val label: String) { SYSTEM("Match phone"), LIGHT("Light"), DARK("Dark") }
 
-/** Exchange rates: units of each currency for one US dollar, on [date] (`2026-10-31`), as the rates service reported them. */
+/**
+ * Exchange rates: units of each currency for one US dollar, on [date] (`2026-10-31`), as the rates service reported them (normalised to the
+ * dollar whatever base the service used). [fetchedAtMillis] is when this device got them (0 for a cache from before it was kept) and [source]
+ * says where they are from. These are reference rates, not what a bank, card or money changer gives.
+ */
 @Serializable
-data class GearRates(val date: String, val perUsd: Map<String, Double>)
+data class GearRates(val date: String, val perUsd: Map<String, Double>, val fetchedAtMillis: Long = 0, val source: String = "")
 
 @Serializable
 data class Settings(

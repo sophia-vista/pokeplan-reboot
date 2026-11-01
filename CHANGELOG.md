@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.106.0
+
+- **Pokégear privacy fix.** The Picker's list was documented as never leaving the device but was part of the cloud save for a signed-in player (together with the currency rate cache). Both are now device-only: not in the cloud document, kept when a cloud save is adopted (even from an older upload that carries them), and "Export my data" still has the Picker list. A copy uploaded earlier is replaced at the next upload.
+- **Currency tool:** one HTTP client for as long as the tool is open (it made a new one on every entry and never closed it), with timeouts and a status check; the rates are validated (base, date, codes, finite positive numbers) and normalised to the dollar; the tool says where the rates are from and how old they are, and that they are reference rates, not a bank's. A failed fetch says why and keeps the cached rates.
+- **Flashlight:** the state is the hardware's (every flash camera is tried, a torch callback shows a change by another app or the system at once), and a light this app turned on is turned off when the tool is left or the app stops.
+- A capability layer for later hardware tools (`DeviceCapabilities`): the Android app asks the phone what sensors, camera features and permissions it really has, other platforms say nothing is available. No tool uses it yet; nothing is started or asked for.
+- Docs: `docs/pokegear-audit.md` (the audit and the plan for Phase 1) and the Pokégear section of `docs/ecosystem.md` corrected (five tools; no timer or stopwatch yet).
+
 ## 0.105.0
 
 - **World landing, rebuilt around one action.** From the top: your rank (with what the next rank opens), what your teams brought back since you last looked, **one big button for what is worth doing now** (recruit the Pokémon waiting, claim a finished job, send a team to the next dungeon of the layer on show, or look in on teams that are all out), all teams at a glance (where, which floor, jobs, Finds), the layer's story, the world picture, then four places (Map, Expeditions, Missions, Base) with Finds and Bag, Skills, Camp and Settings as small buttons below.

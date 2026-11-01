@@ -51,6 +51,9 @@ class MainActivity : ComponentActivity() {
     private var careWidgetSignature: Int? = null
     private var routineRefresh: Job? = null
 
+    /** One flashlight for the activity: its state is kept true by a callback, and it is turned off when the activity stops. */
+    private val torch by lazy { AndroidTorch(this) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // The red header colour runs under the status bar (light icons) and the white tab bar under the navigation bar (dark icons).
@@ -68,7 +71,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             App(
                 storage, careStorage = careStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = AndroidTorch(this), onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onDark = ::matchSystemBars,
+                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onDark = ::matchSystemBars,
             )
         }
     }
@@ -199,6 +202,7 @@ class MainActivity : ComponentActivity() {
 
     /** Leaving the app: bring the widgets up to date with what just happened. */
     override fun onStop() {
+        torch.release()
         super.onStop()
         lifecycleScope.launch { announceBuddyEvent(applicationContext) }
     }
