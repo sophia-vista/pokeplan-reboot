@@ -23,6 +23,9 @@ import app.pokeplan.world.SpeedExplanation
 import app.pokeplan.world.WorldData
 import app.pokeplan.world.WorldSim
 
+/** A number with one decimal ("152.4"), without `String.format`, which the web build does not have. */
+internal fun oneDecimal(x: Double): String = (kotlin.math.round(x * 10) / 10.0).toString()
+
 /** "12 min 30 s", "45 s": a duration in words. */
 internal fun durationText(millis: Long): String {
     val seconds = millis / 1000
@@ -32,8 +35,8 @@ internal fun durationText(millis: Long): String {
 /** The steps of [SpeedExplanation] as plain lines, in the order the numbers are used. Abilities are listed last, as help for skills and not for speed. */
 internal fun speedLines(e: SpeedExplanation): List<String> = buildList {
     add("Levels of the team: ${e.levels}.")
-    add(if (e.favoredMembers == 0) "No one is of a type this place favours (+0)." else "${e.favoredMembers} of the team ${if (e.favoredMembers == 1) "is" else "are"} of a favoured type: +20% of their levels, +${"%.1f".format(e.favoredBonus)}.")
-    add("Power: ${"%.1f".format(e.power)}. A floor takes the base time (${durationText(e.baseMillis)}) divided by 1 + power/100, so ${durationText(e.afterPowerMillis)}${if (e.atMinimum) ", the shortest it can be (a quarter of the base)" else ""}.")
+    add(if (e.favoredMembers == 0) "No one is of a type this place favours (+0)." else "${e.favoredMembers} of the team ${if (e.favoredMembers == 1) "is" else "are"} of a favoured type: +20% of their levels, +${oneDecimal(e.favoredBonus)}.")
+    add("Power: ${oneDecimal(e.power)}. A floor takes the base time (${durationText(e.baseMillis)}) divided by 1 + power/100, so ${durationText(e.afterPowerMillis)}${if (e.atMinimum) ", the shortest it can be (a quarter of the base)" else ""}.")
     if (e.masteryPercent > 0) add("Temporal Mastery: ${e.masteryPercent}% faster.")
     if (e.legendPercent > 0) add("Legendary Guardians of this region: ${e.legendPercent}% faster.")
     add("Result: a floor takes about ${durationText(e.floorMillis)}.")
