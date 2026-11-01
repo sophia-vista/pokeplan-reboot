@@ -199,7 +199,8 @@ class WidgetPagesTest {
         assertEquals(2, three.deleteLastPage().pages)
         assertEquals(2, base.deleteLastPage().pages)
         val busy = three.addGridWidget(WidgetPage.PAGE3, WidgetKind.FORECAST)
-        assertEquals(3, busy.deleteLastPage().pages, "not while a widget is on it")
+        assertEquals(2, busy.deleteLastPage().pages, "a page with a widget goes too; the widget moves to the page before it")
+        assertTrue(busy.deleteLastPage().gridWidgets.any { it.kind == WidgetKind.FORECAST })
     }
 
     @Test
@@ -230,8 +231,11 @@ class WidgetPagesTest {
         assertEquals(both, both.deletePage(WidgetPage.HOME))
         assertEquals(both, both.deletePage(WidgetPage.TODAY))
         val busy = both.addGridWidget(WidgetPage.PAGE3, WidgetKind.FORECAST)
-        assertEquals(busy, busy.deletePage(WidgetPage.PAGE3), "not while a widget is on it")
-        assertFalse(busy.canDeletePage(WidgetPage.PAGE3))
+        // A page with widgets can go too: they move to the page beside it.
+        assertTrue(busy.canDeletePage(WidgetPage.PAGE3))
+        val gone = busy.deletePage(WidgetPage.PAGE3)
+        assertEquals(listOf(WidgetPage.HOME, WidgetPage.TODAY, WidgetPage.PAGE4), gone.pageOrder)
+        assertTrue(gone.gridWidgets.any { it.kind == WidgetKind.FORECAST && it.page == WidgetPage.HOME }, "the widget went to the page after it (the first page has none before)")
         // Three of the user's own at most; a widget can move to a page left of Home.
         assertEquals(WidgetPage.MAX, both.addPage(left = true).pages)
         assertEquals(WidgetPage.MAX, both.addPage(left = true).addPage(left = false).pages)

@@ -54,6 +54,7 @@ import kotlin.math.roundToInt
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -91,6 +92,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.ThemeMode
 import androidx.compose.foundation.layout.widthIn
@@ -218,17 +220,30 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     // Three quick taps send every Pokémon to the main screen: each tap within 600 ms of the one before counts, and a third gathers them.
     var gather by remember { androidx.compose.runtime.mutableIntStateOf(0) }
     var taps by remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    val tapper = remember { TownTapper() }
     var lastTap by remember { mutableStateOf<kotlin.time.TimeMark?>(null) }
-    fun countTap() {
-        if (!prefs.gatherTap) return
-        taps = if (lastTap?.let { it.elapsedNow() < 600.milliseconds } == true) taps + 1 else 1
-        lastTap = kotlin.time.TimeSource.Monotonic.markNow()
-        if (taps >= 3) { gather++; taps = 0 }
-    }
     var sheetKey by remember { mutableStateOf<String?>(null) }
     var pickingTown by remember { mutableStateOf(false) }
     var menuMon by remember { mutableStateOf<OwnedPokemon?>(null) }
     var settingsOpen by remember { mutableStateOf(false) }
+    /** Does what the user set a gesture to do. */
+    fun runAction(action: GestureAction) {
+        when (action) {
+            GestureAction.NONE -> {}
+            GestureAction.APPS -> listOpen = true
+            GestureAction.GATHER -> gather++
+            GestureAction.POKELIFE -> host.openApp(Place.HOME)
+            GestureAction.GEAR -> host.openApp(Place.GEAR)
+            GestureAction.SETTINGS -> settingsOpen = true
+        }
+    }
+    fun countTap() {
+        val job = prefs.action(GestureTrigger.TRIPLE_TAP)
+        if (job == GestureAction.NONE) return
+        taps = if (lastTap?.let { it.elapsedNow() < 600.milliseconds } == true) taps + 1 else 1
+        lastTap = kotlin.time.TimeSource.Monotonic.markNow()
+        if (taps >= 3) { runAction(job); taps = 0 }
+    }
     var foldersOpen by remember { mutableStateOf(false) }
     var widgetsOpen by remember { mutableStateOf(false) }
     // Editing the widgets on the screen (hold one): drag, resize, remove; page swipes are off meanwhile.
@@ -297,9 +312,30 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 )
                 // Two pages side by side: the town with its boxes, and Today (a calendar and the day's agenda and tasks). The town is two screens wide, so its Pokémon can wander over to Today (but only on the main screen can they be touched or meet). Swipe across, or press Home to come back.
                 val widthPx0 = maxWidth.value * LocalDensity.current.density
+                // Where widgets cover the town, so the Pokémon prefer to walk where they can be seen (on the grid; the old stacked layout has none).
+                val topInset = with(LocalDensity.current) { androidx.compose.foundation.layout.WindowInsets.Companion.safeDrawing.getTop(this).toDp() }
+                val avoidRects = if (!prefs.gridMode) emptyList() else {
+                    val inset = Spacing.Page - CELL_GAP
+                    val column = (maxWidth - inset * 2) / WidgetGrid.COLUMNS
+                    order.flatMapIndexed { i, pg ->
+                        val top = topInset + if (pg == WidgetPage.HOME) Spacing.L else Spacing.XXL
+                        WidgetGrid.onPage(prefs.gridWidgets, pg).map { w ->
+                            androidx.compose.ui.geometry.Rect(
+                                i + (inset + column * w.col) / maxWidth, (top + WidgetGrid.ROW_DP.dp * w.row) / maxHeight,
+                                i + (inset + column * w.right) / maxWidth, (top + WidgetGrid.ROW_DP.dp * w.bottom) / maxHeight,
+                            )
+                        }
+                    }
+                }
                 LaunchedEffect(homePresses) { if (homePresses > 0) page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) }
                 Box(
-                    Modifier.fillMaxSize().pointerInput(prefs.gatherTap) { detectTapGestures(onTap = { countTap() }) }.draggable(
+                    Modifier.fillMaxSize().pointerInput(prefs.gestures, prefs.gatherTap) {
+                        // The widget pages are drawn over the town and swallow touches meant for the Pokémon below, so a tap that lands on one is handed to the town here.
+                        val double = prefs.action(GestureTrigger.DOUBLE_TAP)
+                        detectTapGestures(onDoubleTap = if (double == GestureAction.NONE) null else ({ at ->
+                            if (abs(page.value) < 0.02f && !editing && !tapper.hit(Offset(at.x + (page.value + left) * widthPx0, at.y))) runAction(double)
+                        }), onTap = { at -> if (abs(page.value) >= 0.02f || editing || !tapper.hit(Offset(at.x + (page.value + left) * widthPx0, at.y))) countTap() })
+                    }.draggable(
                         enabled = prefs.pageSwipe && !editing,
                         orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
                         state = androidx.compose.foundation.gestures.rememberDraggableState { dx -> scope.launch { page.snapTo(rubberPage(page.value - dx / widthPx0, right.toFloat(), -left.toFloat())) } },
@@ -314,13 +350,12 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     ),
                 ) {
                     Town(
-                        model, prefs.scene, active && prefs.walking && !saver, onMenu = { menuMon = it }, size = prefs.townSize, mood = mood, weather = if (prefs.weather == Weather.LIVE) forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR else prefs.weather, screens = right + 1, interactive = abs(page.value) < 0.02f, gather = gather,
+                        model, prefs.scene, active && prefs.walking && !saver, onMenu = { menuMon = it }, size = prefs.townSize, mood = mood, weather = if (prefs.weather == Weather.LIVE) forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR else prefs.weather, screens = pageCount, home = left, avoid = avoidRects, tapper = tapper, interactive = abs(page.value) < 0.02f, gather = gather,
                         modifier = Modifier.layout { measurable, constraints ->
                             // As many screens wide as there are pages, placed from the left edge and slid by the page (a required size would be centred instead).
-                            val placeable = measurable.measure(androidx.compose.ui.unit.Constraints.fixed(constraints.maxWidth * (right + 1), constraints.maxHeight))
-                            layout(constraints.maxWidth, constraints.maxHeight) { placeable.place((-page.value * constraints.maxWidth).roundToInt(), 0) }
-                        }
-                            .then(if (abs(page.value) < 0.02f) Modifier.pointerInput(prefs.gatherTap) { detectTapGestures(onTap = { countTap() }) } else Modifier),
+                            val placeable = measurable.measure(androidx.compose.ui.unit.Constraints.fixed(constraints.maxWidth * pageCount, constraints.maxHeight))
+                            layout(constraints.maxWidth, constraints.maxHeight) { placeable.place((-(page.value + left) * constraints.maxWidth).roundToInt(), 0) }
+                        },
                     )
                     Box(Modifier.fillMaxSize().graphicsLayer { translationX = -page.value * widthPx0 }) {
                         if (prefs.gridMode) GridHomePage(env, when {
@@ -352,7 +387,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 val widthPx = maxWidth.value * LocalDensity.current.density
                 // Where the finger would have the list (past either end it keeps going, but the list stretches only a little: rubber).
                 var pulled by remember { mutableStateOf(1f) }
-                if (prefs.edgeDrag && !listOpen) Box(
+                if (prefs.action(GestureTrigger.EDGE_DRAG) == GestureAction.APPS && !listOpen) Box(
                     Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(24.dp).draggable(
                         orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
                         state = androidx.compose.foundation.gestures.rememberDraggableState { dx ->
@@ -369,6 +404,19 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                         },
                     ),
                 )
+                // Set to do something else, the same edge strip runs that job when the finger has gone a good way in.
+                val edgeJob = prefs.action(GestureTrigger.EDGE_DRAG)
+                if (edgeJob != GestureAction.APPS && edgeJob != GestureAction.NONE && !listOpen) {
+                    var travelled by remember { mutableStateOf(0f) }
+                    Box(
+                        Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(24.dp).draggable(
+                            orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
+                            state = androidx.compose.foundation.gestures.rememberDraggableState { dx -> travelled += dx },
+                            onDragStarted = { travelled = 0f },
+                            onDragStopped = { if (travelled < -widthPx * 0.2f) runAction(edgeJob); travelled = 0f },
+                        ),
+                    )
+                }
                 // The list comes in from the right and into focus: a short glide (56 dp, not the whole width) while it fades in and its blur clears, following the finger or the spring.
                 val shown = (1f - reveal.value).coerceIn(0f, 1f)
                 if (reveal.value < 1f) Box(
@@ -747,52 +795,61 @@ internal fun LauncherSettings(
                 Column {
                     PmdMenuLine("Back", pixel, onClick = onClose)
                     PmdRule(pixel)
-                    PmdMenuLine("Launcher settings", pixel, dim = true, icon = "explorer-kit") {}
+                    PmdMenuLine("Launcher settings", pixel, dim = true, icon = "pa-sliders") {}
                 }
             }
-            PmdBox(pixel, Modifier.fillMaxWidth()) {
-                Column {
-                    PmdMenuLine("Town: ${(TownScenes.all.firstOrNull { it.first == prefs.scene } ?: TownScenes.all.first()).second}", pixel, icon = "town-map", onClick = onTown)
-                    PmdMenuLine("Pokémon in the town: ${prefs.townSize}", pixel, icon = "friend-ball") { onPrefs(prefs.nextTownSize()) }
-                    PmdMenuLine("Weather: ${prefs.weather.label}", pixel, icon = "sun-stone") { onPrefs(prefs.nextWeather()) }
-                    PmdMenuLine("Pokémon walk about: ${onOff(prefs.walking)}", pixel, icon = "exp-share") { onPrefs(prefs.withWalking(!prefs.walking)) }
-                    PmdMenuLine("Widgets: ${prefs.widgets.size}", pixel, icon = "storage-key", onClick = onWidgets)
-                    PmdMenuLine("Date: ${prefs.dateStyle.label}", pixel, icon = "oaks-letter") { onPrefs(prefs.nextDateStyle()) }
-                    PmdMenuLine("Clock: ${if (prefs.hour12) "12 hour" else "24 hour"}", pixel, icon = "timer-ball") { onPrefs(prefs.withHour12(!prefs.hour12)) }
-                    PmdMenuLine("Battery saver: ${prefs.batterySaver.label}", pixel, icon = "leftovers") { onPrefs(prefs.nextBatterySaver()) }
-                    PmdMenuLine("Seconds: ${onOff(prefs.showSeconds)}", pixel, icon = "star-piece") { onPrefs(prefs.withShowSeconds(!prefs.showSeconds)) }
-                    PmdMenuLine("Calendar weeks start on ${if (prefs.sundayFirst) "Sunday" else "Monday"}", pixel, icon = "journal") { onPrefs(prefs.withSundayFirst(!prefs.sundayFirst)) }
+            // The settings come in sections, each under its own heading with a glyph, so one is found by what it is about.
+            @Composable
+            fun Section(title: String, glyph: String, content: @Composable () -> Unit) {
+                PmdBox(pixel, Modifier.fillMaxWidth()) {
+                    Column {
+                        PmdMenuLine(title, pixel, dim = true, icon = "pa-$glyph") {}
+                        PmdRule(pixel)
+                        content()
+                    }
                 }
             }
-            PmdBox(pixel, Modifier.fillMaxWidth()) {
-                Column {
-                    PmdMenuLine("Gestures", pixel, dim = true, icon = "scope-lens") {}
-                    PmdRule(pixel)
-                    PmdMenuLine("Drag in from the right for apps: ${onOff(prefs.edgeDrag)}", pixel, icon = "link-cord") { onPrefs(prefs.withEdgeDrag(!prefs.edgeDrag)) }
-                    PmdMenuLine("Swipe across for Today: ${onOff(prefs.pageSwipe)}", pixel, icon = "lunar-wing") { onPrefs(prefs.withPageSwipe(!prefs.pageSwipe)) }
-                    PmdMenuLine("Tap three times to gather: ${onOff(prefs.gatherTap)}", pixel, icon = "heart-scale") { onPrefs(prefs.withGatherTap(!prefs.gatherTap)) }
-                    PmdMenuLine("Widget grid (drag, resize): ${onOff(prefs.gridMode)}", pixel, icon = "town-map") { onPrefs(prefs.withGridMode(!prefs.gridMode)) }
-                }
+            Section("Town", "map") {
+                PmdMenuLine("Scene: ${(TownScenes.all.firstOrNull { it.first == prefs.scene } ?: TownScenes.all.first()).second}", pixel, icon = "pa-layout", onClick = onTown)
+                PmdMenuLine("Pokémon in the town: ${prefs.townSize}", pixel, icon = "pa-heart") { onPrefs(prefs.nextTownSize()) }
+                PmdMenuLine("Pokémon walk about: ${onOff(prefs.walking)}", pixel, icon = "pa-zap") { onPrefs(prefs.withWalking(!prefs.walking)) }
+                PmdMenuLine("Weather: ${prefs.weather.label}", pixel, icon = "pa-cloud") { onPrefs(prefs.nextWeather()) }
             }
-            PmdBox(pixel, Modifier.fillMaxWidth()) {
-                Column {
-                    PmdMenuLine("Weather place: ${prefs.place?.name ?: "not set"}", pixel, icon = "water-stone", onClick = onPlace)
-                    PmdMenuLine("Temperature: ${if (prefs.fahrenheit) "Fahrenheit" else "Celsius"}", pixel, icon = "fire-stone") { onPrefs(prefs.withFahrenheit(!prefs.fahrenheit)) }
-                }
+            Section("Home screen", "home") {
+                PmdMenuLine("Widgets: ${prefs.widgets.size}", pixel, icon = "pa-grid-2x2-2", onClick = onWidgets)
+                PmdMenuLine("Widget grid (drag, resize): ${onOff(prefs.gridMode)}", pixel, icon = "pa-drag-and-drop") { onPrefs(prefs.withGridMode(!prefs.gridMode)) }
+                PmdMenuLine("Swipe across between pages: ${onOff(prefs.pageSwipe)}", pixel, icon = "pa-sliders") { onPrefs(prefs.withPageSwipe(!prefs.pageSwipe)) }
             }
-            PmdBox(pixel, Modifier.fillMaxWidth()) {
-                Column {
-                    PmdVolume("Sound effects", "gb-sounds", effects, pixel, onChange = { v -> model.store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }, onDone = { model.effect(Sfx.CONFIRM) })
-                    PmdRule(pixel)
-                    PmdVolume("Pokémon cries", "soothe-bell", cries, pixel, onChange = { v -> model.store.changeSettings { s -> s.copy(criesVolume = v, sound = true) } }, onDone = { model.cry(model.data.player.buddy?.speciesId ?: 25) })
+            // A gesture and its job: tap one to give it the next job on its list. The edge drag follows the finger and opens the app list; the others run the job the moment they are made.
+            Section("Gestures", "hand") {
+                GestureTrigger.entries.forEach { trigger ->
+                    PmdMenuLine("${trigger.label}: ${prefs.action(trigger).label}", pixel, icon = "pa-pointer") {
+                        val jobs = trigger.actions
+                        onPrefs(prefs.withGesture(trigger, jobs[(jobs.indexOf(prefs.action(trigger)) + 1) % jobs.size]))
+                    }
                 }
+                PmdMenuLine("Tap a gesture to give it the next job.", pixel, dim = true) {}
             }
-            PmdBox(pixel, Modifier.fillMaxWidth()) {
-                Column {
-                    if (hiddenCount > 0) PmdMenuLine("Hidden apps: $hiddenCount", pixel, icon = "scroll-of-darkness", onClick = onHidden)
-                    PmdMenuLine("Forget pins and icons", pixel, dim = prefs.pinned.isEmpty() && prefs.icons.isEmpty(), icon = "cracked-pot") { onPrefs(prefs.withoutPins()) }
-                    PmdMenuLine(if (isDefault) "Home app settings" else "Make PokéLife your home app", pixel, icon = "master-ball") { host.openHomeSettings() }
-                }
+            Section("Time and date", "clock") {
+                PmdMenuLine("Date: ${prefs.dateStyle.label}", pixel, icon = "pa-calendar") { onPrefs(prefs.nextDateStyle()) }
+                PmdMenuLine("Clock: ${if (prefs.hour12) "12 hour" else "24 hour"}", pixel, icon = "pa-clock") { onPrefs(prefs.withHour12(!prefs.hour12)) }
+                PmdMenuLine("Seconds: ${onOff(prefs.showSeconds)}", pixel, icon = "pa-eye") { onPrefs(prefs.withShowSeconds(!prefs.showSeconds)) }
+                PmdMenuLine("Calendar weeks start on ${if (prefs.sundayFirst) "Sunday" else "Monday"}", pixel, icon = "pa-calendar") { onPrefs(prefs.withSundayFirst(!prefs.sundayFirst)) }
+                PmdMenuLine("Weather place: ${prefs.place?.name ?: "not set"}", pixel, icon = "pa-map-pin", onClick = onPlace)
+                PmdMenuLine("Temperature: ${if (prefs.fahrenheit) "Fahrenheit" else "Celsius"}", pixel, icon = "pa-thermometer") { onPrefs(prefs.withFahrenheit(!prefs.fahrenheit)) }
+            }
+            Section("Battery", "battery") {
+                PmdMenuLine("Battery saver: ${prefs.batterySaver.label}", pixel, icon = "pa-battery") { onPrefs(prefs.nextBatterySaver()) }
+            }
+            Section("Sound", "volume-2") {
+                PmdVolume("Sound effects", "pa-volume-2", effects, pixel, onChange = { v -> model.store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }, onDone = { model.effect(Sfx.CONFIRM) })
+                PmdRule(pixel)
+                PmdVolume("Pokémon cries", "pa-music", cries, pixel, onChange = { v -> model.store.changeSettings { s -> s.copy(criesVolume = v, sound = true) } }, onDone = { model.cry(model.data.player.buddy?.speciesId ?: 25) })
+            }
+            Section("Apps", "layout") {
+                if (hiddenCount > 0) PmdMenuLine("Hidden apps: $hiddenCount", pixel, icon = "pa-eye-off", onClick = onHidden)
+                PmdMenuLine("Forget pins and icons", pixel, dim = prefs.pinned.isEmpty() && prefs.icons.isEmpty(), icon = "pa-trash") { onPrefs(prefs.withoutPins()) }
+                PmdMenuLine(if (isDefault) "Home app settings" else "Make PokéLife your home app", pixel, icon = "pa-settings-cog") { host.openHomeSettings() }
             }
         }
     }
@@ -817,6 +874,7 @@ private fun PmdVolume(label: String, icon: String, value: Int, pixel: Int, onCha
     Column(Modifier.fillMaxWidth().padding(vertical = Spacing.S)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = pad), horizontalArrangement = Arrangement.SpaceBetween) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy((3 * pixel / density).dp)) {
+                if (icon.startsWith("pa-")) app.pokeplan.ui.Glyph(icon.removePrefix("pa-"), Color.White, size = 24.dp) else
                 app.pokeplan.ui.ItemIcon(icon, size = (9 * pixel / density).dp.coerceAtLeast(24.dp), description = null)
                 PmdText(label, pixel)
             }

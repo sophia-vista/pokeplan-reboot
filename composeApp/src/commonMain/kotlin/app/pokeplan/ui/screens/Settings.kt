@@ -65,7 +65,7 @@ internal fun SettingsView(model: AppModel) {
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Trainer name")
+            GlyphTitle("Trainer name", "user")
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 val changed = name.isNotBlank() && name.trim() != model.data.trainerName
                 PixelField(
@@ -78,12 +78,12 @@ internal fun SettingsView(model: AppModel) {
         }
     }
     // Settings come in small groups, one card each, so a setting is found by its group rather than by reading a long list.
-    SettingsGroup("Sound and touch") {
+    SettingsGroup("Sound and touch", "volume-2") {
         VolumeRow("Sound effects", settings.effectsVolume) { v -> store.changeSettings { s -> s.copy(effectsVolume = v, sound = true) } }
         VolumeRow("Pokémon cries", if (settings.criesVolume < 0) settings.effectsVolume else settings.criesVolume) { v -> store.changeSettings { s -> s.copy(criesVolume = v, sound = true) } }
         ToggleRow("Vibration", settings.haptics) { store.changeSettings { s -> s.copy(haptics = it) } }
     }
-    SettingsGroup("Look") {
+    SettingsGroup("Look", "sun") {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             ThemeMode.entries.forEach { mode -> TabButton(mode.label, settings.theme == mode, { store.changeSettings { s -> s.copy(theme = mode) } }) }
         }
@@ -96,7 +96,7 @@ internal fun SettingsView(model: AppModel) {
         if (choosing) app.pokeplan.ui.BackgroundChoices(settings.appBackground, store.now.hour, store.now.minute, Pixel.dark) { name -> store.changeSettings { s -> s.copy(appBackground = name) } }
         ToggleRow("Reduce motion", settings.reduceMotion, detail = "Sprites stand still, nothing wobbles and screens switch without sliding.") { store.changeSettings { s -> s.copy(reduceMotion = it) } }
     }
-    SettingsGroup("Notifications") {
+    SettingsGroup("Notifications", "bell") {
         ToggleRow(
             "Routine reminders", model.careData.settings.reminders,
             detail = "Care: a gentle note at a routine's own time, once, with Done. Routines with no time never remind.",
@@ -140,7 +140,7 @@ private fun CalendarsCard(model: AppModel) {
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Calendars")
+            GlyphTitle("Calendars", "calendar")
             Text(
                 "Show events from this phone's calendars, Google Calendar included, on Planner → Calendar. They're read-only and never pay.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
@@ -172,7 +172,7 @@ private fun DataCard(model: AppModel) {
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Your data")
+            GlyphTitle("Your data", "download")
             model.files?.let { files ->
                 PixelButton("Export my data", { note = files.save("pokeplan-export-${store.today}.json", store.exportJson()) }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
                 PixelButton("Export Care data", { note = files.save("pokeplan-care-${store.today}.json", model.care.exportJson()) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
@@ -257,7 +257,7 @@ private fun VolumeRow(label: String, value: Int, onChange: (Int) -> Unit) {
 private fun AboutCard() {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-            PixelTitle("About")
+            GlyphTitle("About", "info-box")
             Text("PokéLife ${AppVersion.display}", style = MaterialTheme.typography.bodyLarge)
             Text(
                 "A private fan project. Pokémon names, sprites and sounds belong to Nintendo, Game Freak and The Pokémon Company.",
@@ -280,7 +280,7 @@ private fun AccountCard(model: AppModel) {
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Account")
+            GlyphTitle("Account", "lock")
             when {
                 sync == null -> Text(
                     "Online features are off in this build. Progress is saved on this device only.",
@@ -393,10 +393,13 @@ private fun CareCloudRow(model: AppModel) {
 
 /** One group of settings in its own card, under a small heading. */
 @Composable
-private fun SettingsGroup(title: String, content: @Composable () -> Unit) {
+private fun SettingsGroup(title: String, glyph: String? = null, content: @Composable () -> Unit) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                if (glyph != null) app.pokeplan.ui.Glyph(glyph, Pixel.Ink, description = null)
+                Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+            }
             content()
         }
     }
@@ -423,13 +426,13 @@ private fun hourText(hour: Int) = "${hour.toString().padStart(2, '0')}:00"
 internal fun PlanSettings(model: AppModel) {
     val store = model.store
     val settings = model.data.settings
-    SettingsGroup("Focus") {
+    SettingsGroup("Focus", "clock") {
         ToggleRow("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
         Stepper("Usual focus length", "${settings.defaultFocusMinutes} min", 5) { by ->
             store.changeSettings { s -> s.copy(defaultFocusMinutes = (s.defaultFocusMinutes + by).coerceIn(FocusRules.RETRY_MINUTES, FocusRules.MAX_MINUTES)) }
         }
     }
-    SettingsGroup("Week") {
+    SettingsGroup("Week", "calendar") {
         ToggleRow("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
     }
     CalendarsCard(model)
@@ -438,17 +441,26 @@ internal fun PlanSettings(model: AppModel) {
 /** Care's own settings (Modules, Care, Settings): its optional cloud copy. Care's reminders are in Me, Settings, Notifications. */
 @Composable
 internal fun CareSettings(model: AppModel) {
-    SettingsGroup("Cloud copy") { CareCloudRow(model) }
+    SettingsGroup("Cloud copy", "cloud") { CareCloudRow(model) }
 }
 
 /** World's own settings (Modules, World, Settings). */
 @Composable
 internal fun WorldSettings(model: AppModel) {
     val settings = model.data.settings
-    SettingsGroup("Animation") {
+    SettingsGroup("Animation", "zap") {
         ToggleRow(
             "Scrolling floors", settings.worldScroll,
             detail = "The floor of an expedition box slides past while the team walks. Off, the Pokémon still walk but the floor stands still (saves battery). Reduce motion, in Me, Settings, stops both.",
         ) { model.store.changeSettings { s -> s.copy(worldScroll = it) } }
+    }
+}
+
+/** A card's title with a small Pixelarticons glyph in front of it. */
+@Composable
+private fun GlyphTitle(text: String, glyph: String) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        app.pokeplan.ui.Glyph(glyph, Pixel.Ink, description = null)
+        PixelTitle(text)
     }
 }

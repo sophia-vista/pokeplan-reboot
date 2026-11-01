@@ -157,6 +157,8 @@ data class LauncherPrefs(
     val pageSwipe: Boolean = true,
     /** Whether three quick taps send every Pokémon to the main screen. */
     val gatherTap: Boolean = true,
+    /** What each gesture does when the user chose something other than its usual job (see [action]). */
+    val gestures: Map<GestureTrigger, GestureAction> = emptyMap(),
     /** Draws the widgets on the grid (the Smart Launcher style canvas: drag, resize, half widths) instead of the old stacked list; on since 0.93.0, and the switch in Launcher settings goes back to the list (docs/launcher-widget-grid.md). */
     val gridMode: Boolean = true,
     /**
@@ -260,6 +262,17 @@ data class LauncherPrefs(
     fun withSundayFirst(on: Boolean) = copy(sundayFirst = on)
     fun withPageSwipe(on: Boolean) = copy(pageSwipe = on)
     fun withGatherTap(on: Boolean) = copy(gatherTap = on)
+
+    /** What [trigger] does: the user's choice, or its usual job (the old on/off switches still count: off is nothing). */
+    fun action(trigger: GestureTrigger): GestureAction = gestures[trigger] ?: when (trigger) {
+        GestureTrigger.EDGE_DRAG -> if (edgeDrag) GestureAction.APPS else GestureAction.NONE
+        GestureTrigger.TRIPLE_TAP -> if (gatherTap) GestureAction.GATHER else GestureAction.NONE
+        GestureTrigger.DOUBLE_TAP -> GestureAction.NONE
+    }
+
+    /** Makes [trigger] do [action] (only what the trigger can do: the edge drag is the one that follows the finger, so it can open the app list). */
+    fun withGesture(trigger: GestureTrigger, action: GestureAction): LauncherPrefs =
+        if (action in trigger.actions) copy(gestures = gestures + (trigger to action)) else this
     fun withGridMode(on: Boolean) = copy(gridMode = on)
     /** How many pages there are. */
     val pages: Int get() = pageOrder.size
@@ -286,11 +299,18 @@ data class LauncherPrefs(
         return copy(pageOrder = if (left) listOf(fresh) + pageOrder else pageOrder + fresh)
     }
 
-    /** Whether [page] can be removed: one of the user's own with nothing on it (Home and Today stay). */
-    fun canDeletePage(page: WidgetPage): Boolean = page in pageOrder && page.ordinal >= WidgetPage.MIN && pageIsEmpty(page)
+    /** Whether [page] can be removed: any page of the user's own, empty or not (Home and Today stay). */
+    fun canDeletePage(page: WidgetPage): Boolean = page in pageOrder && page.ordinal >= WidgetPage.MIN
 
-    /** Removes [page] when [canDeletePage]. */
-    fun deletePage(page: WidgetPage): LauncherPrefs = if (canDeletePage(page)) copy(pageOrder = pageOrder - page) else this
+    /** Removes [page] when [canDeletePage]; what is on it moves to the page next to it (the one before, or the one after for the first), so nothing is lost. */
+    fun deletePage(page: WidgetPage): LauncherPrefs {
+        if (!canDeletePage(page)) return this
+        val at = pageOrder.indexOf(page)
+        val heir = pageOrder[if (at > 0) at - 1 else at + 1]
+        var next = this
+        WidgetGrid.onPage(gridWidgets, page).forEach { next = next.moveGridWidgetToPage(it, heir) }
+        return next.copy(pageOrder = next.pageOrder - page)
+    }
 
     private fun areaOf(page: WidgetPage) = if (page == WidgetPage.TODAY) WidgetArea.TODAY else WidgetArea.HOME_BOTTOM
 
@@ -397,6 +417,7 @@ data class LauncherPrefs(
         if (!sundayFirst) append("K sundayFirst\t0\n")
         if (!pageSwipe) append("K pageSwipe\t0\n")
         if (!gatherTap) append("K gatherTap\t0\n")
+        gestures.entries.sortedBy { it.key.ordinal }.forEach { (t, a) -> append("K gesture.").append(t.name).append('\t').append(a.name).append('\n') }
         if (!gridMode) append("K gridMode\t0\n")
         // The usual order (Home, Today, then Page 3 and on) is saved as a count, as it always was; any other order by name.
         if (pageOrder != WidgetPage.entries.take(pageOrder.size)) append("K pageOrder\t").append(pageOrder.joinToString(",") { it.name }).append('\n')
@@ -426,7 +447,7 @@ data class LauncherPrefs(
                     'P' -> prefs.pin(rest)
                     'H' -> prefs.copy(hidden = prefs.hidden + rest)
                     'S' -> prefs.withScene(rest)
-                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.LIVE); "fahrenheit" -> prefs.withFahrenheit(f[1] != "0"); "pageSwipe" -> prefs.withPageSwipe(f[1] != "0"); "batterySaver" -> prefs.copy(batterySaver = BatterySaver.entries.firstOrNull { it.name == f[1] } ?: BatterySaver.AUTO); "dateStyle" -> prefs.copy(dateStyle = DateStyle.entries.firstOrNull { it.name == f[1] } ?: DateStyle.SHORT); "hour12" -> prefs.withHour12(f[1] != "0"); "showSeconds" -> prefs.withShowSeconds(f[1] != "0"); "sundayFirst" -> prefs.withSundayFirst(f[1] != "0"); "gatherTap" -> prefs.withGatherTap(f[1] != "0"); "gridMode" -> prefs.withGridMode(f[1] != "0"); "pages" -> prefs.withPages(f[1].toIntOrNull() ?: WidgetPage.MIN); "pageOrder" -> f[1].split(',').mapNotNull { n -> WidgetPage.entries.firstOrNull { it.name == n } }.let { o -> if (o.distinct().size == o.size && WidgetPage.HOME in o && WidgetPage.TODAY in o && o.size <= WidgetPage.MAX) prefs.copy(pageOrder = o) else prefs }; "showClock" -> prefs.withShowClock(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> prefs } }
+                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.LIVE); "fahrenheit" -> prefs.withFahrenheit(f[1] != "0"); "pageSwipe" -> prefs.withPageSwipe(f[1] != "0"); "batterySaver" -> prefs.copy(batterySaver = BatterySaver.entries.firstOrNull { it.name == f[1] } ?: BatterySaver.AUTO); "dateStyle" -> prefs.copy(dateStyle = DateStyle.entries.firstOrNull { it.name == f[1] } ?: DateStyle.SHORT); "hour12" -> prefs.withHour12(f[1] != "0"); "showSeconds" -> prefs.withShowSeconds(f[1] != "0"); "sundayFirst" -> prefs.withSundayFirst(f[1] != "0"); "gatherTap" -> prefs.withGatherTap(f[1] != "0"); "gridMode" -> prefs.withGridMode(f[1] != "0"); "pages" -> prefs.withPages(f[1].toIntOrNull() ?: WidgetPage.MIN); "pageOrder" -> f[1].split(',').mapNotNull { n -> WidgetPage.entries.firstOrNull { it.name == n } }.let { o -> if (o.distinct().size == o.size && WidgetPage.HOME in o && WidgetPage.TODAY in o && o.size <= WidgetPage.MAX) prefs.copy(pageOrder = o) else prefs }; "showClock" -> prefs.withShowClock(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> if (f[0].startsWith("gesture.")) GestureTrigger.entries.firstOrNull { it.name == f[0].removePrefix("gesture.") }?.let { t -> GestureAction.entries.firstOrNull { it.name == f[1] }?.let { a -> prefs.withGesture(t, a) } } ?: prefs else prefs } }
                     'W' -> rest.split('\t').let { f -> val lat = f.getOrNull(1)?.toDoubleOrNull(); val lon = f.getOrNull(2)?.toDoubleOrNull(); if (f.size == 3 && f[0].isNotBlank() && lat != null && lon != null) prefs.withPlace(GeoPlace(f[0], lat, lon)) else prefs }
                     'L' -> rest.lastIndexOf('\t').let { at -> val count = if (at > 0) rest.substring(at + 1).toIntOrNull() else null; if (count != null && count > 0) prefs.copy(launches = prefs.launches + (rest.substring(0, at) to count)) else prefs }
                     'F' -> rest.split('\t').let { f -> if (f[0].isBlank()) prefs else prefs.addFolder(f[0]).let { made -> f.drop(1).filter { it.isNotBlank() }.fold(made) { acc, key -> acc.addToFolder(f[0].trim().take(Folder.MAX_NAME), key) } } }
@@ -540,4 +561,17 @@ object LauncherIcons {
 
     /** The icon names that can be picked, those of the Pokémon games' bag first and then the Mystery Dungeon 2 items sheet. */
     val all: List<String> get() = items
+}
+
+
+/** What a launcher gesture can be set to do. */
+enum class GestureAction(val label: String) {
+    NONE("Nothing"), APPS("Open the app list"), GATHER("Gather the Pokémon"), POKELIFE("Open PokéLife"), GEAR("Open the Pokégear"), SETTINGS("Launcher settings"),
+}
+
+/** The gestures that can be given a job, each with the jobs it offers. */
+enum class GestureTrigger(val label: String, val actions: List<GestureAction>) {
+    EDGE_DRAG("Drag in from the right edge", GestureAction.entries),
+    TRIPLE_TAP("Tap three times", GestureAction.entries),
+    DOUBLE_TAP("Double tap empty space", GestureAction.entries),
 }

@@ -132,7 +132,9 @@ internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier
         if (icon == null) PmdText(text, pixel, Modifier.padding(horizontal = pmdRowPad(pixel, density)), alpha = if (dim) 0.75f else 1f)
         // With an icon, a real item picture (a small bag or ball for the setting) leads the line and the words follow it.
         else Row(Modifier.padding(horizontal = pmdRowPad(pixel, density)), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy((3 * pixel / density).dp)) {
-            app.pokeplan.ui.ItemIcon(icon, size = (9 * pixel / density).dp.coerceAtLeast(24.dp), description = null, modifier = Modifier.alpha(if (dim) 0.75f else 1f))
+            // "pa-name" is a Pixelarticons glyph (assets/pixelarticons) in the menu's white; anything else is an item picture.
+            if (icon.startsWith("pa-")) app.pokeplan.ui.Glyph(icon.removePrefix("pa-"), Color.White, size = 24.dp, modifier = Modifier.alpha(if (dim) 0.75f else 1f))
+            else app.pokeplan.ui.ItemIcon(icon, size = (9 * pixel / density).dp.coerceAtLeast(24.dp), description = null, modifier = Modifier.alpha(if (dim) 0.75f else 1f))
             PmdText(text, pixel, alpha = if (dim) 0.75f else 1f)
         }
     }

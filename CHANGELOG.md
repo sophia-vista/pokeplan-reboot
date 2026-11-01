@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.108.0
+
+- **Launcher: pages and Pokémon.** Any page of your own can be removed, with widgets on it (they move to the page beside it). The page left of Home now has the town behind it, like the others. Pokémon prefer to walk where no widget covers them (grid layout). Pokémon cries are back on tap: the widget pages over the town had been swallowing the touch, so the launcher now hands the tap to the Pokémon under it.
+- **Launcher settings in sections** (Town, Home screen, Gestures, Time and date, Battery, Sound, Apps), each with a Pixelarticons glyph. **Gestures have jobs:** drag in from the right edge, tap three times and double tap empty space can each be set to nothing, the app list, gather the Pokémon, open PokéLife, open the Pokégear or the launcher settings.
+- In-app Settings groups and cards have Pixelarticons glyphs in their headings.
+
 ## 0.107.0
 
 - **Pokégear is a toolbox now: eight tools**, with a home that has search, favourites, the tools you used lately and groups. Every tool page has what it is for and a star, and the helper Pokémon is a small strip (tap Show for the full bar, and it stays as you left it). Nothing a tool does pays or records anything else.

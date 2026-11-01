@@ -51,7 +51,7 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.Spacing
 
 /** Space kept round each widget inside its cells, so neighbours never touch. */
-private val CELL_GAP = 4.dp
+internal val CELL_GAP = 4.dp
 
 /** A finger on a widget being edited: moving it, or (resize) pulling its corner; [dx] and [dy] are how far it has gone, in px, and [startX] where in the widget it took hold. */
 private data class Gesture(val widget: GridWidget, val resize: Boolean, val startX: Float = 0f, val dx: Float = 0f, val dy: Float = 0f)
@@ -212,7 +212,7 @@ private fun removeIt(env: WidgetEnv, w: GridWidget) {
 
 /**
  * The bar shown while editing the grid: Add (the widget list), a new page at the left end or the right end ("Left+" and
- * "Right+", on a second line), Page- (removes the page being shown when it is one of the user's own and empty) and Done. It floats at the foot of the
+ * "Right+", on a second line), Page- (removes the page being shown when it is one of the user's own; its widgets move to the page beside it) and Done. It floats at the foot of the
  * screen over the pages instead of standing in them, so entering edit mode moves nothing.
  */
 @Composable
@@ -221,7 +221,7 @@ internal fun GridEditBar(env: WidgetEnv, page: WidgetPage, modifier: Modifier = 
         Column(Modifier.fillMaxWidth()) {
             Row(Modifier.fillMaxWidth()) {
                 PmdMenuLine("Add", env.pixel, Modifier.weight(1f), center = true, onClick = env.onWidgets)
-                // On an empty page of the user's own the bar offers to remove it (and not to add another).
+                // On a page of the user's own the bar offers to remove it.
                 if (env.prefs.canDeletePage(page)) {
                     val at = env.prefs.pageOrder.indexOf(page)
                     PmdMenuLine("Page-", env.pixel, Modifier.weight(1f), center = true) {
@@ -234,7 +234,7 @@ internal fun GridEditBar(env: WidgetEnv, page: WidgetPage, modifier: Modifier = 
                 PmdMenuLine("Done", env.pixel, Modifier.weight(1f), center = true, onClick = env.onDone)
             }
             // A new page at the left end or the right end, on a second line so the names fit at any text size.
-            if (env.pages < WidgetPage.MAX && !env.prefs.canDeletePage(page)) Row(Modifier.fillMaxWidth()) {
+            if (env.pages < WidgetPage.MAX) Row(Modifier.fillMaxWidth()) {
                 PmdMenuLine("Left+", env.pixel, Modifier.weight(1f), center = true) { env.onPrefs(env.prefs.addPage(left = true)); env.goToPage(0) }
                 PmdMenuLine("Right+", env.pixel, Modifier.weight(1f), center = true) { env.onPrefs(env.prefs.addPage(left = false)); env.goToPage(env.pages) }
             }
