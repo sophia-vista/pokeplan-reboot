@@ -115,6 +115,7 @@ internal fun SettingsView(model: AppModel) {
         }
         ToggleRow("Focus halfway alert", settings.focusHalfway, detail = "A quiet note halfway through sessions of 15 minutes or more.") { store.changeSettings { s -> s.copy(focusHalfway = it) } }
         ToggleRow("Focus end alert", settings.focusEnd, detail = "When a session's time is up. These two are the only notifications during focus.") { store.changeSettings { s -> s.copy(focusEnd = it) } }
+        ToggleRow("World job alert", settings.worldJobAlerts, detail = "When an exploring team finishes a job on the mission board, so it is ready to claim.") { store.changeSettings { s -> s.copy(worldJobAlerts = it) } }
         ToggleRow("Streak reminder", settings.streakReminder, detail = "In the evening, if nothing has counted yet today and you have a streak going.") { store.changeSettings { s -> s.copy(streakReminder = it) } }
         if (settings.streakReminder) {
             Stepper("Streak reminder at", hourText(settings.streakReminderHour), 1) { by ->

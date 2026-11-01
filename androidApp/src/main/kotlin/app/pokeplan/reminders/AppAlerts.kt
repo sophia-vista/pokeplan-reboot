@@ -12,6 +12,7 @@ import app.pokeplan.MainActivity
 import app.pokeplan.app.AppData
 import app.pokeplan.app.FocusAlert
 import app.pokeplan.app.Nudges
+import app.pokeplan.app.WorldAlerts
 import app.pokeplan.plan.FocusSession
 import app.pokeplan.plan.Phase
 import app.pokeplan.ui.Place
@@ -37,6 +38,9 @@ object AppAlerts {
         /** A streak reminder or recap that came due during a focus session and waits for its end. */
         STREAK_LATER(9105, Channels.EVENING_NUDGES, 7103),
         RECAP_LATER(9106, Channels.EVENING_NUDGES, 7104),
+
+        /** A World job an exploring team finishes: set for the earliest, checked against the settled World when it goes off. */
+        JOB(9107, Channels.WORLD_JOBS, 7107),
     }
 
     const val ACTION_ALERT = "app.pokeplan.reminders.ALERT"
@@ -44,7 +48,7 @@ object AppAlerts {
     const val EXTRA_SESSION = "session"
 
     /** What the alarms should be: when each one goes off, and the running session they belong to. Equal plans need no new alarms. */
-    data class Plan(val halfway: Long?, val end: Long?, val sessionId: String?, val streak: Long?, val recap: Long?)
+    data class Plan(val halfway: Long?, val end: Long?, val sessionId: String?, val streak: Long?, val recap: Long?, val job: Long? = null)
 
     fun plan(data: AppData, nowMillis: Long, zone: TimeZone): Plan {
         val alerts = Nudges.focusAlerts(data.focus, data.settings, nowMillis)
@@ -54,6 +58,7 @@ object AppAlerts {
             sessionId = data.focus?.takeIf { !it.isFinished }?.id,
             streak = Nudges.nextStreakCheck(data, nowMillis, zone),
             recap = Nudges.nextRecap(data, nowMillis, zone),
+            job = WorldAlerts.nextJobDone(data, nowMillis),
         )
     }
 
@@ -65,6 +70,7 @@ object AppAlerts {
         set(context, alarms, Kind.END, plan.end, plan.sessionId, exact = true)
         set(context, alarms, Kind.STREAK, plan.streak, null, exact = false)
         set(context, alarms, Kind.RECAP, plan.recap, null, exact = false)
+        set(context, alarms, Kind.JOB, plan.job, null, exact = false)
     }
 
     fun rescheduleFromSave(context: Context) {
@@ -95,6 +101,7 @@ object AppAlerts {
         manager.retireOldChannels()
         manager.createNotificationChannel(NotificationChannel(Channels.FOCUS_END, "Focus time is up", NotificationManager.IMPORTANCE_DEFAULT).withGameSound(context))
         manager.createNotificationChannel(NotificationChannel(Channels.EVENING_NUDGES, "Streak and weekly recap", NotificationManager.IMPORTANCE_DEFAULT))
+        manager.createNotificationChannel(NotificationChannel(Channels.WORLD_JOBS, "Finished World jobs", NotificationManager.IMPORTANCE_DEFAULT))
         return manager
     }
 
@@ -161,6 +168,17 @@ class NudgeReceiver : BroadcastReceiver() {
             AppAlerts.Kind.RECAP, AppAlerts.Kind.RECAP_LATER -> {
                 if (!deferDuringFocus(context, kind, session)) {
                     Nudges.weeklyRecap(data, now, zone)?.let { AppAlerts.show(context, AppAlerts.Kind.RECAP, it.title, it.body, Place.ME.name) }
+                }
+            }
+            AppAlerts.Kind.JOB -> {
+                // The alarm is for the moment a team finishes a job: settle World, then announce only jobs that really are done and unclaimed.
+                if (data.settings.worldJobAlerts) {
+                    store.worldSettle()
+                    val done = store.data.world.missions.filter { it.done }.mapNotNull { app.pokeplan.world.Missions.byId(it.id)?.title }
+                    if (done.isNotEmpty()) {
+                        val text = if (done.size == 1) "${done.first()}. Claim it on the mission board." else "${done.size} jobs are ready to claim on the mission board."
+                        AppAlerts.show(context, kind, "A World job is done", text, Place.WORLD.name)
+                    }
                 }
             }
         }

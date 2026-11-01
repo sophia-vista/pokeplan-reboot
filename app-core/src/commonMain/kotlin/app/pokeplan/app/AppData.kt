@@ -143,6 +143,8 @@ data class Settings(
     val focusHalfway: Boolean = true,
     /** A notification when a focus session's time is up (Android). */
     val focusEnd: Boolean = true,
+    /** A notification when a World job is done, so there is something to claim (Android). */
+    val worldJobAlerts: Boolean = true,
     /** An evening reminder when nothing has counted today and a streak is running (Android). */
     val streakReminder: Boolean = true,
     /** The hour of that reminder, local time. */

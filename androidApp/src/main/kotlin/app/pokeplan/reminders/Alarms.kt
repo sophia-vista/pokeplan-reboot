@@ -20,6 +20,7 @@ internal object Channels {
     // The ones with the game's notification sound are "-2": a channel keeps its sound for good, so a new id gives the old installs the new one.
     const val FOCUS_END = "focus-end-2"
     const val EVENING_NUDGES = "evening-nudges"
+    const val WORLD_JOBS = "world-jobs"
     const val TASK_REMINDERS = "task-reminders-2"
     const val CARE_ROUTINES = "care-routines-2"
 }

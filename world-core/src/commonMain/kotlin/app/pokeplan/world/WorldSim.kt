@@ -106,6 +106,34 @@ object WorldSim {
         return WorldReport(out.copy(lastSeenAt = now, journal = (out.journal + lines).takeLast(WorldData.JOURNAL_SIZE)), perTeam)
     }
 
+    /**
+     * When each accepted, unfinished job will be done if its team keeps exploring, by job id: the moment a team in the job's
+     * dungeon climbs to the job's floor (and meets its team size or power). A job no team can finish, and a [MissionKind.COLLECT]
+     * job (it depends on what the floors give), has no entry. This is what the "job done" alarm is set for; the alarm settles
+     * World, and only a job that really is done is announced.
+     */
+    fun jobsDoneAt(data: WorldData, roster: List<OwnedPokemon>): Map<String, Long> {
+        val out = mutableMapOf<String, Long>()
+        for (p in data.missions) {
+            if (p.done) continue
+            val m = Missions.byId(p.id) ?: continue
+            val dungeon = m.dungeonId?.let { Dungeons.byId(it) } ?: continue
+            for (team in data.teams) {
+                val trip = team.expedition?.takeIf { it.dungeonId == dungeon.id } ?: continue
+                val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
+                if (members.isEmpty()) continue
+                val power = power(members, dungeon)
+                if ((m.kind == MissionKind.ESCORT && members.size < m.count) || (m.kind == MissionKind.DEFEAT && power < m.count)) continue
+                // The next floor to climb is index floorsClimbed; floors rise to the top of the dungeon, then start again at 1.
+                val next = trip.floorsClimbed % dungeon.floors
+                val floors = maxOf(0, m.floor - 1 - next) + 1
+                val at = trip.settledTo + floors * floorMillis(dungeon, power, data.guardianDone)
+                if (out[m.id]?.let { it <= at } != true) out[m.id] = at
+            }
+        }
+        return out
+    }
+
     /** What the player reads in the expedition log for [event], or null for the many floors that are not worth a line. */
     private fun journalLine(teamId: Int, event: WorldEvent, now: Long): JournalLine? {
         val text = when (event) {

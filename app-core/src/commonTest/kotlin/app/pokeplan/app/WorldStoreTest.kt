@@ -47,6 +47,21 @@ class WorldStoreTest {
     }
 
     @Test
+    fun theJobAlertIsSetForTheFirstJobAndCanBeSwitchedOff() {
+        val clock = Clock()
+        val store = store(clock)
+        val mon = store.data.player.pokemon.first().id
+        val trip = app.pokeplan.world.Expedition("tiny-woods", clock.millis, clock.millis)
+        val world = app.pokeplan.world.WorldData(xp = 400, clears = mapOf("tiny-woods" to 1))
+            .acceptMission("explore-woods-3")!!.copy(teams = listOf(app.pokeplan.world.WorldTeam(1, listOf(mon), trip)))
+        val data = store.data.copy(world = world)
+        val at = assertNotNull(WorldAlerts.nextJobDone(data, clock.millis), "an exploring team will finish the job")
+        assertTrue(at > clock.millis)
+        assertNull(WorldAlerts.nextJobDone(data.copy(settings = data.settings.copy(worldJobAlerts = false)), clock.millis), "switched off")
+        assertNull(WorldAlerts.nextJobDone(data, at), "nothing is due after it")
+    }
+
+    @Test
     fun worldPaysStraightIntoTheBagAndTheRewardLog() {
         val clock = Clock()
         val store = store(clock)
