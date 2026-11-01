@@ -44,6 +44,7 @@ import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -199,7 +200,7 @@ internal fun GoalsView(model: AppModel) {
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
-                PixelButton("Add", ::add, enabled = title.isNotBlank())
+                PixelIconButton("plus", "Add", ::add, Pixel.InkSoft, enabled = title.isNotBlank())
             }
             PixelButton(if (more) "Fewer options" else "Category and target date", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
@@ -235,7 +236,7 @@ internal fun GoalsView(model: AppModel) {
                 g.milestones.forEach { m ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Text(m.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (m.isDone) Pixel.InkSoft else Pixel.Ink)
-                        if (!m.isDone) PixelButton("Done", { store.completeMilestone(g.id, m.id) }, color = Pixel.Green, compact = true)
+                        if (!m.isDone) PixelIconButton("check", "Done", { store.completeMilestone(g.id, m.id) }, Pixel.Green)
                     }
                 }
                 var step by remember(g.id) { mutableStateOf("") }
@@ -246,7 +247,7 @@ internal fun GoalsView(model: AppModel) {
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { if (step.isNotBlank()) { store.addMilestone(g.id, step); step = "" } }),
                     )
-                    PixelButton("Add", { store.addMilestone(g.id, step); step = "" }, enabled = step.isNotBlank(), compact = true)
+                    PixelIconButton("plus", "Add", { store.addMilestone(g.id, step); step = "" }, Pixel.InkSoft, enabled = step.isNotBlank())
                 }
             }
         }

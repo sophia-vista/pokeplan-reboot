@@ -55,6 +55,7 @@ import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.TextBox
 
 @Composable
@@ -73,7 +74,7 @@ internal fun SettingsView(model: AppModel) {
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { if (changed) store.rename(name) }),
                 )
-                PixelButton("Save", { store.rename(name) }, color = Pixel.Green, enabled = name.isNotBlank() && name.trim() != model.data.trainerName, compact = true)
+                PixelIconButton("check", "Save", { store.rename(name) }, Pixel.Green, enabled = name.isNotBlank() && name.trim() != model.data.trainerName)
             }
         }
     }
@@ -200,7 +201,7 @@ private fun DataCard(model: AppModel) {
                         style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger,
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PixelButton("Erase", {
+                        PixelIconButton("trash", "Erase", {
                             busy = true
                             scope.launch {
                                 // The cloud copy goes first, so a failure leaves everything as it was.
@@ -210,14 +211,14 @@ private fun DataCard(model: AppModel) {
                                 busy = false
                                 asking = null
                             }
-                        }, Modifier.weight(1f), Pixel.Danger, enabled = !busy, compact = true)
+                        }, Pixel.Danger, enabled = !busy)
                         PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }
                 "device" -> {
                     Text("Erase this device? Every task, Pokémon, setting and Care entry here is removed and the app starts over. This cannot be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PixelButton("Erase", { store.eraseDevice(); model.care.erase(); asking = null }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                        PixelIconButton("trash", "Erase", { store.eraseDevice(); model.care.erase(); asking = null }, Pixel.Danger)
                         PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }

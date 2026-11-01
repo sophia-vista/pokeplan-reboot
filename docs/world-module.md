@@ -150,7 +150,7 @@ From the owner's regional story brief:
 - A new module (Grow, then Home) will get its own featured legendary and its own optional World moments.
 
 ### 5.4a Phase 2 status (0.109.0)
-Built: team names and six accent colours, saved teams (six presets, applied in one tap), a typed expedition log with a filter. Still planned: regional jobs for the three built layers, a per-region notebook of discovered and recruited species, the Guardian journal.
+Built: team names and six accent colours, saved teams (six presets, applied in one tap), a typed expedition log with a filter. Also built: 24 regional jobs for the three layers, the notebook by region and the Guardian line on the Legendary quests card. Phase 2 is complete apart from device checks; Phase 3 (floor events, move-based skills) and the Sinnoh layer are next.
 
 ### 5.5 Quality and unfinished edges
 - Marker positions on the three region maps are read by eye and need a device check.

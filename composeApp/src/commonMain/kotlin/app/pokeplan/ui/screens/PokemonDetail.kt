@@ -51,6 +51,7 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.quietClickable
 import app.pokeplan.ui.theme.ScreenHeader
 import app.pokeplan.ui.theme.TextBox
@@ -170,7 +171,7 @@ private fun IdentityBox(model: AppModel, p: OwnedPokemon) {
                     nickname, { nickname = it.take(20) }, Modifier.weight(1f), singleLine = true,
                     placeholder = p.species.name,
                 )
-                PixelButton("Save", { store.rename(p.id, nickname); renaming = false }, color = Pixel.Green, compact = true)
+                PixelIconButton("check", "Save", { store.rename(p.id, nickname); renaming = false }, Pixel.Green)
             }
         }
     }

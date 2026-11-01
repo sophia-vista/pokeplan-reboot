@@ -33,6 +33,7 @@ import app.pokeplan.ui.describe
 import app.pokeplan.ui.theme.GameBox
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.datetime.LocalDate
 
@@ -102,7 +103,7 @@ fun UndoBar(model: AppModel, modifier: Modifier = Modifier) {
         rows.forEach { (label, undo) ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
                 Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = Pixel.OnInk, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                PixelButton("Undo", undo, Modifier.padding(vertical = Spacing.XS), Pixel.Blue, compact = true)
+                PixelIconButton("undo", "Undo", undo, Pixel.Blue)
             }
         }
     }

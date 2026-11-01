@@ -8,6 +8,8 @@ release always has the newest merge).
 ## 0.109.0
 
 - **World, Phase 2 (first part).** Teams can be **named** (up to 16 letters) and given one of six **accent colours**; the Expedition log and reports use the name. **Saved teams:** save who is on a team as a preset (six kept) and put it back in a tap; a Pokémon since traded away, slotted as a Guardian or busy on another team is left out. The **expedition log is typed** (finds, clears, milestones, jobs, Guardians) with a filter and, under a filter, the place; old lines show as plain notes. The World save gained `worldVersion` (1). All new fields have defaults, so older saves load unchanged.
+- **World, Phase 2 (rest).** **24 regional jobs** on the mission board for Kanto, Johto and Hoenn (explore, escort, defeat and one rescue each region: Clefairy, Slowpoke, Spheal), filtered by region, open only while the region's story lets a team into the dungeon. A **notebook by region** (Research): each layer's species as sprites, shadows for the ones not met, a tick for those you own. The Legendary quests card now says whether a Guardian that joined you is placed, exploring or idle.
+- **Small controls are icons everywhere.** Delete, Remove, Edit, Add, Cancel, Done, Save, Undo, Previous, Next and the like are Pixelarticons keys with a spoken label in every screen; the launcher's clock widget shows a battery glyph (a bolt while charging, a low battery in the saver) with the percentage instead of the word.
 
 ## 0.108.0
 

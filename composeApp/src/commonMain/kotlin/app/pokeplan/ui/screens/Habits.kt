@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.RankBadge
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
@@ -84,7 +85,7 @@ internal fun HabitsView(model: AppModel) {
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
-                PixelButton("Add", ::add, color = Pixel.Red, enabled = ready)
+                PixelIconButton("plus", "Add", ::add, Pixel.Red, enabled = ready)
             }
             PixelButton(if (more) "Fewer options" else "How often, and what kind", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
@@ -125,8 +126,8 @@ internal fun HabitsView(model: AppModel) {
         ListRow(
             lead = { RankBadge(h.rank) },
             trail = {
-                if (doneToday) PixelButton("Undo", { store.undoHabit(h.id) }, color = Pixel.InkSoft, compact = true)
-                else PixelButton("Done", { model.effect(Sfx.HABIT_TICK); store.completeHabit(h.id) }, color = Pixel.Green, compact = true)
+                if (doneToday) PixelIconButton("undo", "Undo", { store.undoHabit(h.id) }, Pixel.InkSoft)
+                else PixelIconButton("check", "Done", { model.effect(Sfx.HABIT_TICK); store.completeHabit(h.id) }, Pixel.Green)
             },
         ) {
             Text(h.title, style = MaterialTheme.typography.bodyLarge)

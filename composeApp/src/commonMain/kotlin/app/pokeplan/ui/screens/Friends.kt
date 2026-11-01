@@ -31,6 +31,7 @@ import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.coroutines.launch
@@ -89,7 +90,7 @@ fun FriendsView(model: AppModel) {
                 friendCode, { friendCode = it.uppercase().take(12) }, Modifier.weight(1f), singleLine = true,
                 placeholder = "A friend's code",
             )
-            PixelButton("Add", { val c = friendCode; friendCode = ""; act("Request sent.") { social.addFriend(it, c) } }, enabled = friendCode.isNotBlank(), compact = true)
+            PixelIconButton("plus", "Add", { val c = friendCode; friendCode = ""; act("Request sent.") { social.addFriend(it, c) } }, Pixel.InkSoft, enabled = friendCode.isNotBlank())
         }
     }
     message?.let { TextBox { Text(it, style = MaterialTheme.typography.bodyLarge) } }
@@ -145,11 +146,11 @@ fun FriendsView(model: AppModel) {
             trail = {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     if (removing == f.userId) {
-                        PixelButton("Remove", { removing = null; act { social.removeFriend(it, f.userId) } }, color = Pixel.Danger, compact = true)
+                        PixelIconButton("trash", "Remove", { removing = null; act { social.removeFriend(it, f.userId) } }, Pixel.Danger)
                         PixelButton("Keep", { removing = null }, color = Pixel.InkSoft, compact = true)
                     } else {
                         PixelButton("Gift", { act("Gift sent!") { social.sendGift(it, f.userId) } }, color = Pixel.Blue, compact = true)
-                        PixelButton("Remove", { removing = f.userId }, color = Pixel.InkSoft, compact = true)
+                        PixelIconButton("trash", "Remove", { removing = f.userId }, Pixel.InkSoft)
                     }
                 }
             },
