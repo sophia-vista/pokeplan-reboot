@@ -2,6 +2,10 @@ package app.pokeplan.world
 
 import kotlinx.serialization.Serializable
 
+/** One line of the expedition log: what happened and when (milliseconds). */
+@Serializable
+data class JournalLine(val at: Long, val text: String)
+
 /** An expedition under way: the dungeon, when it began, and how far settling has got (so a floor is never counted twice). */
 @Serializable
 data class Expedition(val dungeonId: String, val startedAt: Long, val settledTo: Long, val floorsClimbed: Int = 0)
@@ -51,6 +55,8 @@ data class WorldData(
     val shopCandies: Int = 0,
     /** For a daily or weekly job, the day number it was last claimed. */
     val missionClaimedDay: Map<String, Long> = emptyMap(),
+    /** The expedition log: finds, milestones, clears, finished jobs, newest last, the latest [JOURNAL_SIZE] kept. */
+    val journal: List<JournalLine> = emptyList(),
     /** Skill XP by [WorldSkill] name. */
     val skillXp: Map<String, Int> = emptyMap(),
     /** Facility levels by [Facility] name. */
@@ -65,6 +71,8 @@ data class WorldData(
     val lastSeenAt: Long = 0,
 ) {
     val rank: ExplorerRank get() = ExplorerRank.at(xp)
+
+    companion object { const val JOURNAL_SIZE = 40 }
 
     /** How many teams the rank allows. */
     val teamSlots: Int get() = rank.teamSlots

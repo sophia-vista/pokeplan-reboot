@@ -25,6 +25,9 @@ object Story {
     const val GUARDIAN_BONUS = "Temporal Mastery: every expedition climbs 10% faster"
 
     /** How many chapters are open for [data]: each needs its rank and enough different dungeons cleared (repeating one counts once, so a cheap dungeon cannot be farmed for chapters). */
+    /** How many different dungeons have been cleared. */
+    fun dungeonsCleared(data: WorldData): Int = data.clears.count { c -> c.value > 0 }
+
     fun opened(data: WorldData): Int = chapters.count { data.rank >= it.needsRank && data.clears.count { c -> c.value > 0 } >= it.needsDungeons }
 
     /** The story is complete when the Guardian has been faced. */
