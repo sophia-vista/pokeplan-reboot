@@ -46,6 +46,13 @@ import app.pokeplan.ui.Emotion
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.theme.ChoiceRow
 import app.pokeplan.ui.theme.FieldLabel
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.Role
+import app.pokeplan.ui.theme.PixelField
+import app.pokeplan.ui.theme.PixelIconButton
+import app.pokeplan.world.WorldData
+import app.pokeplan.world.JournalLine
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
@@ -586,7 +593,10 @@ private fun WorldTeamsView(model: AppModel) {
         // A team that is out is shown in a box made of its dungeon's own tiles; any other team in a plain one.
         val body: @Composable () -> Unit = {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Text("Team ${team.id}", style = MaterialTheme.typography.titleSmall)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Box(Modifier.size(14.dp).background(teamAccent(team.accent)))
+                    Text(team.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+                }
                 if (members.isEmpty()) Text("No one yet.", style = MaterialTheme.typography.bodyMedium)
                 else if (team.expedition == null) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     members.forEach { p -> AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = 48.dp, animate = false) }
@@ -614,6 +624,31 @@ private fun WorldTeamsView(model: AppModel) {
                                 Text("${p.nickname}, level ${p.level}", style = MaterialTheme.typography.bodyLarge)
                             }
                         }
+                        // A name, an accent colour and saved teams: put one together again in a tap.
+                        var name by remember(team.id, team.name) { mutableStateOf(team.name) }
+                        FieldLabel("Name (up to ${WorldTeam.NAME_MAX} letters)")
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                            PixelField(name, { name = it.take(WorldTeam.NAME_MAX) }, Modifier.weight(1f), singleLine = true, placeholder = "Team ${team.id}")
+                            PixelIconButton("check", "Save the name", { store.worldRenameTeam(team.id, name) }, Pixel.Green, enabled = name.trim() != team.name)
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            repeat(WorldTeam.ACCENTS) { i ->
+                                Box(
+                                    Modifier.size(Spacing.Target).clickable(role = Role.Button, onClickLabel = "Colour ${i + 1}") { store.worldRecolourTeam(team.id, i) }.padding(10.dp)
+                                        .background(teamAccent(i)).then(if (i == team.accent) Modifier.border(2.dp, Pixel.Ink) else Modifier),
+                                )
+                            }
+                        }
+                        if (world.presets.isNotEmpty()) {
+                            FieldLabel("Saved teams")
+                            world.presets.forEach { pre ->
+                                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                                    PixelButton("${pre.name} (${pre.members.size})", { if (store.worldApplyPreset(team.id, pre.name)) editing = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                                    PixelIconButton("trash", "Delete ${pre.name}", { store.worldDeletePreset(pre.name) })
+                                }
+                            }
+                        }
+                        if (team.members.isNotEmpty() && world.presets.size < WorldData.MAX_PRESETS + 1) PixelButton("Save this team as a preset", { store.worldSavePreset(team.id, team.title) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                         PixelButton("Save the team", { if (store.worldAssign(team.id, picked)) editing = false }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
                     }
                 }
@@ -621,11 +656,20 @@ private fun WorldTeamsView(model: AppModel) {
         }
         if (outAt != null) TileBox(outAt.id, members.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !model.data.settings.reduceMotion, scrolls = model.data.settings.worldScroll, content = body) else TextBox { body() }
     }
-    // The expedition log: what the teams found and did, kept (newest first) so it is still there after a night away.
+    // The expedition log: what the teams found and did, kept (newest first) so it is still there after a night away; filter it by kind.
     if (world.journal.isNotEmpty()) TextBox {
+        var kind by remember { mutableStateOf<String?>(null) }
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             FieldLabel("Expedition log")
-            world.journal.takeLast(8).reversed().forEach { line -> Text(line.text, style = MaterialTheme.typography.bodyMedium) }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                TabButton("All", kind == null, { kind = null })
+                JournalLine.KINDS.filter { k -> world.journal.any { it.kind == k } }.forEach { k -> TabButton(journalKindLabel(k), kind == k, { kind = k }) }
+            }
+            val lines = world.journal.filter { kind == null || it.kind == kind }
+            if (lines.isEmpty()) Text("Nothing of that kind yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            lines.takeLast(if (kind == null) 8 else 20).reversed().forEach { line ->
+                Text(if (line.place.isNotEmpty() && kind != null) "${line.text} (${line.place})" else line.text, style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
     Text("Explore dungeons on the World map, then recall a team any time; nothing it found is lost.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -753,4 +797,23 @@ private fun WorldBagView(model: AppModel) {
         Text(message, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
         FxBurst("sparkle", sparkle, 40.dp, play = !(model.data.settings.reduceMotion || model.powerSaving))
     }
+}
+
+/** A team's accent colour by number (the six a team can choose from). */
+private fun teamAccent(i: Int): androidx.compose.ui.graphics.Color = when (i) {
+    1 -> Pixel.Green
+    2 -> Pixel.Red
+    3 -> Pixel.Yellow
+    4 -> Pixel.Pink
+    5 -> Pixel.Teal
+    else -> Pixel.Blue
+}
+
+private fun journalKindLabel(kind: String) = when (kind) {
+    JournalLine.KIND_FIND -> "Finds"
+    JournalLine.KIND_CLEAR -> "Clears"
+    JournalLine.KIND_MILESTONE -> "Milestones"
+    JournalLine.KIND_JOB -> "Jobs"
+    JournalLine.KIND_GUARDIAN -> "Guardians"
+    else -> "Notes"
 }

@@ -122,7 +122,7 @@ object WorldSim {
             perTeam[team.id] = events
         }
         // A dungeon cleared again and again in one stretch is one line ("... (3 times)"), not three.
-        val lines = perTeam.flatMap { (teamId, events) -> events.mapNotNull { journalLine(teamId, it, now) } }
+        val lines = perTeam.flatMap { (teamId, events) -> events.mapNotNull { journalLine(out.team(teamId)?.title ?: "Team $teamId", it, now) } }
             .fold(mutableListOf<Pair<JournalLine, Int>>()) { acc, l ->
                 if (acc.lastOrNull()?.first?.text == l.text) acc[acc.lastIndex] = acc.last().first to acc.last().second + 1 else acc += l to 1
                 acc
@@ -159,17 +159,19 @@ object WorldSim {
     }
 
     /** What the player reads in the expedition log for [event], or null for the many floors that are not worth a line. */
-    private fun journalLine(teamId: Int, event: WorldEvent, now: Long): JournalLine? {
+    private fun journalLine(title: String, event: WorldEvent, now: Long): JournalLine? {
+        var kind = JournalLine.KIND_NOTE
+        var place = ""
         val text = when (event) {
-            is WorldEvent.Found -> "Team $teamId met a ${Dex.species(event.speciesId).name} on floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name}."
-            is WorldEvent.Milestone -> "Team $teamId reached floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name} and was rewarded."
-            is WorldEvent.Cleared -> "Team $teamId cleared ${Dungeons.byId(event.dungeonId)?.name}."
-            is WorldEvent.MissionDone -> "A job is done: ${Missions.byId(event.missionId)?.title}. Claim it on the board."
-            WorldEvent.GuardianFaced -> "The Guardian was faced. The story is complete."
-            is WorldEvent.LayerGuardianFaced -> "The Guardian of ${event.layer.label} was faced. Its story is complete."
+            is WorldEvent.Found -> { kind = JournalLine.KIND_FIND; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title met a ${Dex.species(event.speciesId).name} on floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name}." }
+            is WorldEvent.Milestone -> { kind = JournalLine.KIND_MILESTONE; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title reached floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name} and was rewarded." }
+            is WorldEvent.Cleared -> { kind = JournalLine.KIND_CLEAR; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title cleared ${Dungeons.byId(event.dungeonId)?.name}." }
+            is WorldEvent.MissionDone -> { kind = JournalLine.KIND_JOB; "A job is done: ${Missions.byId(event.missionId)?.title}. Claim it on the board." }
+            WorldEvent.GuardianFaced -> { kind = JournalLine.KIND_GUARDIAN; "The Guardian was faced. The story is complete." }
+            is WorldEvent.LayerGuardianFaced -> { kind = JournalLine.KIND_GUARDIAN; "The Guardian of ${event.layer.label} was faced. Its story is complete." }
             else -> return null
         }
-        return JournalLine(now, text)
+        return JournalLine(now, text, kind, place)
     }
 
     /** The speed of a team of [members] in [dungeon] for [data] explained in steps; [SpeedExplanation.floorMillis] equals what [floorMillis] gives. */

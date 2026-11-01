@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.109.0
+
+- **World, Phase 2 (first part).** Teams can be **named** (up to 16 letters) and given one of six **accent colours**; the Expedition log and reports use the name. **Saved teams:** save who is on a team as a preset (six kept) and put it back in a tap; a Pokémon since traded away, slotted as a Guardian or busy on another team is left out. The **expedition log is typed** (finds, clears, milestones, jobs, Guardians) with a filter and, under a filter, the place; old lines show as plain notes. The World save gained `worldVersion` (1). All new fields have defaults, so older saves load unchanged.
+
 ## 0.108.0
 
 - **Launcher: pages and Pokémon.** Any page of your own can be removed, with widgets on it (they move to the page beside it). The page left of Home now has the town behind it, like the others. Pokémon prefer to walk where no widget covers them (grid layout). Pokémon cries are back on tap: the widget pages over the town had been swallowing the touch, so the launcher now hands the tap to the Pokémon under it.

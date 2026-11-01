@@ -1195,6 +1195,38 @@ class GameStore(
         return true
     }
 
+    /** Names World team [team] (empty goes back to "Team n"). */
+    fun worldRenameTeam(team: Int, name: String): Boolean {
+        val next = data.world.renameTeam(team, name) ?: return false
+        update { it.copy(world = next) }
+        return true
+    }
+
+    /** Gives World team [team] the accent number [accent]. */
+    fun worldRecolourTeam(team: Int, accent: Int): Boolean {
+        val next = data.world.recolourTeam(team, accent) ?: return false
+        update { it.copy(world = next) }
+        return true
+    }
+
+    /** Saves who is on World team [team] as a preset called [name]. */
+    fun worldSavePreset(team: Int, name: String): Boolean {
+        val members = data.world.team(team)?.members ?: return false
+        val next = data.world.savePreset(name, members) ?: return false
+        update { it.copy(world = next) }
+        return true
+    }
+
+    fun worldDeletePreset(name: String) = update { it.copy(world = it.world.deletePreset(name)) }
+
+    /** Puts the preset [name] on World team [team]: whoever of it is still owned, idle and not slotted as a Guardian. */
+    fun worldApplyPreset(team: Int, name: String): Boolean {
+        val owned = data.player.pokemon.map { it.id }.toSet() - data.player.guardians.toSet()
+        val next = data.world.applyPreset(team, name, owned) ?: return false
+        update { it.copy(world = next) }
+        return true
+    }
+
     fun worldStart(team: Int, dungeonId: String): Boolean {
         worldSettle()
         val next = data.world.start(team, dungeonId, nowMillis) ?: return false
