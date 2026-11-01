@@ -734,7 +734,7 @@ Kanto is the first mainline layer beside the Mystery Dungeon home layer (decisio
 ### Layer rules
 - **A layer is data, not a new game.** `WorldLayer` (home, Kanto, ...) is a new field on `DungeonDef`, and each layer has its own map picture, its own story chapters and its own Guardians. One layer is shown at a time behind a switch on the Map screen; teams, the Bag, rank, Poké and the Camp stay shared (one trainer).
 - **Kanto opens when the home story reaches its second chapter *(tune)*,** so nobody meets it before they know the loop. It stays open once reached. Its dungeons have their own rank gates, starting at Normal.
-- **Wild tables follow the Kanto regional dex** (species 1 to 151, plus Meltan-line species are not included). A Kanto species is found only in Kanto, so the collection fills region by region. The tables are written by hand per dungeon from the species' habitats in the games, not generated.
+- **Wild tables follow the Kanto regional dex** (species 1 to 151). A Kanto species is found only in Kanto, so the collection fills region by region. The tables are written by hand per dungeon from the species' habitats in the games, not generated.
 - **Recruiting, not eggs:** finds join through the same recruit flow as the home layer.
 - **No change to the home layer** and nothing existing moves.
 
@@ -744,14 +744,14 @@ Floors and floor time rise from route to endgame like the home layer's (Tiny Woo
 | # | Dungeon | Kind | Floors | Rank | Favoured | Notes |
 |---|---|---|---|---|---|---|
 | 1 | Viridian Forest | Greenlands | 5 | Normal | Bug, Grass, Flying | Weedle, Caterpie lines, Pikachu from floor 4 |
-| 2 | Mt. Moon | Underground | 8 | Normal | Rock, Fairy-feel (Normal), Ground | Zubat, Geodude, Clefairy; moon-stone items on the last floors |
+| 2 | Mt. Moon | Underground | 8 | Normal | Rock, Normal, Ground | Zubat, Geodude, Clefairy; moon-stone items on the last floors |
 | 3 | Rock Tunnel | Underground | 10 | Bronze | Rock, Ground, Fighting | Dark cave, Machop and Onix |
 | 4 | Pokémon Tower | Ancient | 12 | Silver | Ghost, Psychic | Gastly line; the Pokémon Tower's spirits |
 | 5 | Power Plant | Underground | 12 | Silver | Electric, Steel | **Zapdos quest**, Voltorb, Magnemite |
 | 6 | Seafoam Islands | Aquatic / Frozen | 14 | Gold | Water, Ice | **Articuno quest**, Seel, Dewgong, Slowpoke |
 | 7 | Mt. Ember (Pokémon Mansion upstairs) | Mountains | 16 | Gold | Fire, Rock | **Moltres quest**, Growlithe, Ponyta, Magmar |
 | 8 | Victory Road | Mountains | 18 | Platinum | Fighting, Rock, Dragon | The road to the League; Dragonair from floor 12 |
-| 9 | Cerulean Cave | Otherworldly | 20 | Diamond | Psychic, Dark-feel (Ghost), Dragon | **Mewtwo, the Guardian**; post-story floors beyond |
+| 9 | Cerulean Cave | Otherworldly | 20 | Diamond | Psychic, Ghost, Dragon | **Mewtwo, the Guardian**; post-story floors beyond |
 
 Five more can follow from the regional dex without changing the shape: Diglett's Cave, Safari Zone (a Camp-like place), Cinnabar's Lab, the Sevii Islands (a late area, Kanto's "extra" region) and the Power Plant's deeper floors.
 
