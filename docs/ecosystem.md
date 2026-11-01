@@ -343,11 +343,96 @@ the parser matches the real format.
 11. **Health** *(blueprint phase 4)*: Move, Fitness, Nutrition and Recovery as one region with manual logging first, then the Huawei export importer and Health Connect (section 6).
 12. **PokéLife Habitat** *(blueprint phase 5)*: the live wallpaper, one environment first, with a day and night cycle, idle animations and chosen companions; shared by all regions' themes; a static fallback and a battery mode.
 13. **Explore, then Finance** *(blueprint phase 6)*, with strong privacy and security; **Connect** and the rest of the companion layer (Quick Settings tiles, lock screen where supported, sharing, a wearable study for the Huawei Watch Fit 4 Pro, more wallpaper environments) *(phase 7)*.
-14. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
+14. **World regions** *(owner's idea, November 2026; proposed, not built)*: the game regions Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar and Paldea become the places of World's map, one after another, so the retired regional dexes have somewhere to live again ("World regions" below). The first region is an expansion of the map World already has, not a new module.
+15. **Later:** weekly contests, trading, co-op focus, Secret Base, photo mode, and the standalone dungeon game.
 
 ### World: the dungeon game *(owner, 0.83.0; spec: docs/world.md)*
 
 World is the Pokémon Mystery Dungeon style dungeon game, the game-like module of PokéLife: expedition teams explore dungeons on their own (offline too), bring back items, treasure and Pokémon to recruit (Exploration Finds), and raise an exploration rank; a story ends in a Guardian. It is not the same thing as the **Explore** module above (trips, places and a travel journal), which keeps its name. **Built in 0.83.0 (P0 core and screens):** `world-core` (three dungeons, teams, a deterministic simulation so offline progress equals staying, finds, items, treasure, rank, the story chapters as data), its save in `AppData.world`, and the Modules → World screens (World map, Expeditions, Camp, Finds and Bag). Numbers are starting values to tune (floor time, find chance, rank points). Not yet: missions and rescues, skills, camps as places, facilities, research, equipment, the quest engine hooks and the Guardian fight.
+
+### World regions *(owner's idea, November 2026; a proposal until the owner settles the questions)*
+
+The nine game regions (Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea) were retired from PokéPlan in 0.44.0 on the understanding that they fold into the dungeon game (section 4, "Module regions"). World is that game, so this is where they come back, as the places of its map rather than as hatching regions.
+
+What the code already has to build on: the regional dexes are still generated (`Region` values and the generated species lists), so each region's wild species are known; `DungeonDef` has a `region` (today one of eight environment kinds: Greenlands, Mountains, Underground, Aquatic, Frozen, Ancient, Sky, Otherworldly), a rank and story-chapter gate and a wild table; the world map is a picture with markers (`WorldMapPicture`) and the story, Guardian and economy simulation are data-driven.
+
+A first shape to react to (nothing here is decided):
+- **A game region is a continent of the map**, with its own picture and markers, three to five dungeons of the existing environment kinds (Kanto: a wood, a cave, a mountain, a sea cave, a tower), wild tables made from that region's regional dex (a region's Pokémon are found only there, so the shared collection and the dex fill region by region), and one mid-point and one end dungeon like the first map's.
+- **Kanto first**, then the others in release order, one region per release, each with its own economy-simulation run before it ships (docs/world-economy-report.md) so the new floors do not change the pacing of the old ones.
+- **Rank and story gate the order**: a region opens when the one before it is cleared (a story chapter each), not by module usage; everything stays open to all once reached, like module regions.
+- **Each region's Guardian** is that region's legendary or mythical (Mewtwo, Lugia or Ho-Oh, Rayquaza, ...), with the shared quest framework's permanent boost for the region, as with the current Temporal Tower (Dialga, 10% faster floors); the current nine dungeons become the "home" region.
+- **No change to Plan, Care or the hatching regions**: Pokémon already hatched from a retired region keep their origin, and nobody loses anything.
+
+#### The Pokémon world atlas *(the owner's list, November 2026)*
+
+The owner's tree of every place World could one day have. It is a list of settings, not a build order; each top-level place would be a map of its own (a picture, a few dungeons, a story chapter and a Guardian), and the sub-places would be dungeons or areas inside it.
+
+```
+POKEMON WORLD ATLAS
+├── MAINLINE WORLD
+│   ├── Kanto
+│   │   └── Sevii Islands
+│   ├── Johto
+│   ├── Hoenn
+│   ├── Sinnoh
+│   │   ├── Hisui (Historical)
+│   │   └── Battle Zone
+│   ├── Unova
+│   ├── Kalos
+│   │   └── Hyperspace Lumiose
+│   ├── Alola
+│   │   ├── Ultra Space
+│   │   └── Ultra Megalopolis
+│   ├── Galar
+│   │   ├── Isle of Armor
+│   │   └── Crown Tundra
+│   └── Paldea
+│       ├── Kitakami
+│       ├── Blueberry Academy
+│       │   └── Terarium
+│       └── Area Zero
+├── SPIN-OFF WORLD
+│   ├── Orre
+│   ├── Fiore
+│   ├── Almia
+│   ├── Oblivia
+│   ├── Ransei
+│   ├── Ferrum
+│   ├── Lental
+│   ├── Pasio
+│   ├── Aeos Island
+│   └── OTHER SETTINGS
+│       ├── Holon
+│       ├── TCG Islands
+│       ├── Pokémon Island
+│       ├── Mintale Town
+│       ├── PokéPark
+│       ├── Pokétopia
+│       ├── Carmonte Island
+│       ├── Tumblecube Island
+│       ├── Ryme City
+│       ├── Toyland
+│       └── Think Town
+└── MYSTERY DUNGEON WORLD
+    ├── Air Continent
+    ├── Grass Continent
+    ├── Mist Continent
+    ├── Water Continent
+    ├── Sand Continent
+    ├── Mystery Continent
+    ├── Sea of Wonders
+    └── OTHER WORLDS
+        └── Voidlands
+```
+
+What the atlas suggests, to settle with the owner (not decided):
+- **Three layers of the map.** The Mystery Dungeon world is where World already is (its nine dungeons are Mystery Dungeon style), so it is the natural *home* layer; the mainline regions are the layer that brings back the retired regional dexes (nine regions, each with extra areas such as the Sevii Islands, the Isle of Armor, Crown Tundra, Kitakami, the Blueberry Academy and Area Zero, which fit as late dungeons of their region); the spin-off world is the largest and least certain layer (about twenty settings), a long-term list to take from one by one.
+- **The special spaces** (Hyperspace Lumiose, Ultra Space, Ultra Megalopolis, Battle Zone, Terarium, Area Zero, Voidlands) read as post-story or Guardian-tier places, like the Temporal Tower and the Distortion Rift today, rather than as ordinary regions.
+- **Hisui as "historical"** suggests its own era marker on the map and its Hisuian forms, which the Dex already has.
+- **Size.** About 45 places; with three to five dungeons each, the dungeon count would go from 9 to well over a hundred. That is a multi-year content plan, so the order and a first small set matter more than the full list.
+- **Species per place.** The mainline regions have regional dexes in the data; the spin-off settings and the Mystery Dungeon continents have no species list yet (they would be curated like a module region, with no overlap rules needed because World's finds are not a module region).
+
+Questions for the owner: (1) the order of regions, and whether the first one is Kanto or a new, smaller start; (2) how many dungeons per region; (3) whether a region's Pokémon are found only in that region, or also in the home region at low odds; (4) whether the legendary of a region is a Guardian reward at the end of that region (like Dialga) or a quest; (5) whether World regions replace the current nine-dungeon map or sit beside it as the "home" region. Art is the open cost: each region needs a map picture and tilesets (the tilesets for many Explorers of Sky dungeons are already in `assets/tiles`; the Sky, Silver Trench and other sheets the owner has supplied are listed in `docs/assets.md`).
 
 ### Ideas parked
 

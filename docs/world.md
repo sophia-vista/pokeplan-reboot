@@ -716,3 +716,8 @@ What the code does now, against this concept (details: `CHANGELOG.md`, rules: `d
 | 14 Map | The world map with markers, eight reveal stages | Regions beyond the nine dungeons |
 | 15 Story and Guardian | Six chapters, Temporal Tower, Dialga and the 10% mastery, Distortion Rift | Story text and scenes |
 | 16 Post-story | One Distortion Rift | Modifiers, more dungeons |
+
+
+## Regions of the games (proposal, November 2026)
+
+Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar and Paldea as the places of World's map, in the order the owner chooses, each with dungeons of the environment kinds in section 14, wild tables from its regional dex, a story chapter to open it and its own Guardian. The owner's full atlas of places (mainline regions with their extra areas, the spin-off settings and the Mystery Dungeon continents), the shape, the questions for the owner and what the code already has are in `docs/ecosystem.md`, "World regions". Not built; the dungeons that exist (Tiny Woods to the Distortion Rift) would become the home region.
