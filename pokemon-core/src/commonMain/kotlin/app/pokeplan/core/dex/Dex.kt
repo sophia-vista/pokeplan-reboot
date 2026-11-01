@@ -26,6 +26,30 @@ object Dex {
     /** Species that have a Hisuian form in the Hisui dex (used to pick the Hisuian variant in Sinnoh). */
     internal val hisuiSpecies: Set<Int> by lazy { regionData.getValue("HISUI").toSet() }
 
+    val moves: List<MoveInfo> by lazy { DexParser.moves() }
+    private val movesById: Map<Int, MoveInfo> by lazy { moves.associateBy { it.id } }
+    private val movesByIdentifier: Map<String, MoveInfo> by lazy { moves.associateBy { it.identifier } }
+    private val learnsets: Map<Int, Learnset> by lazy { DexParser.learnsets() }
+
+    fun move(id: Int): MoveInfo? = movesById[id]
+
+    /** A move by its identifier, such as `"flamethrower"` or `"will-o-wisp"`. */
+    fun move(identifier: String): MoveInfo? = movesByIdentifier[identifier]
+
+    /**
+     * What [form] learns. A Mega or Gigantamax form uses its species' default form (the data holds only the old games'
+     * rows for them), as does a form with no moves of its own; a form with none anywhere has [Learnset.EMPTY].
+     */
+    fun learnset(form: FormInfo): Learnset {
+        val own = if (form.kind == FormKind.MEGA || form.kind == FormKind.GMAX) null else learnsets[form.id]
+        return own ?: learnsets[defaultForm(form.speciesId).id] ?: Learnset.EMPTY
+    }
+
+    fun learnset(speciesId: Int): Learnset = learnset(defaultForm(speciesId))
+
+    /** Moves of [type], strongest first. */
+    fun movesOfType(type: PokemonType): List<MoveInfo> = moves.filter { it.type == type }.sortedByDescending { it.power ?: 0 }
+
     fun species(id: Int): SpeciesInfo = speciesById.getValue(id)
 
     fun speciesOrNull(id: Int): SpeciesInfo? = speciesById[id]

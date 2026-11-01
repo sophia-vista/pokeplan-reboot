@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.96.0
+
+- Moves in the Dex (owner's decision d16): `tools/species/generate.py` now also writes every move (919: type, category, power, PP, accuracy, priority, generation) and each form's learnset from the newest game it appears in (level-up with levels, egg, tutor, machine). `Dex.move(id or identifier)`, `Dex.learnset(form or species)` and `Dex.movesOfType(type)` read them; Mega and Gigantamax forms use their species' set. No gameplay uses them yet; they unblock move-based skills and Pokégear helpers. `DexData.kt` grows by about 410 KB.
+
 ## 0.95.0
 
 - World, clearer (audit Phase 5, first slice): the landing opens with "Next up" after your first trip (the first open dungeon you have not cleared, or what the nearest closed one is waiting for, with a one-tap "Send my strongest"); each open dungeon on the map says, for every team that is ready, how long a floor takes it and how many of its members like the place; and the expedition log is kept in the save (finds, milestones, clears, finished jobs, the Guardian; a dungeon cleared again and again in one stretch is one line, "(3 times)"), so it is still there after a night away. The save gains a `journal` list with a default, so old saves load.
