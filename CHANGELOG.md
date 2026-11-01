@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.94.4
+
+- First-use states (audit): a screenshot test renders every landing page for a brand-new player. World's menu now opens with a "Start here" card that says what World is and sends your strongest Pokémon into Tiny Woods in one tap; Care's landing puts Today (and "Add a routine") right under the scene instead of below six empty party slots, with the visitors and the party after the menu; the Pokémon tab says where the next Pokémon come from while you have only one.
+
 ## 0.94.3
 
 - Audit: a screenshot test (`ScreenshotTest.largeTextPlaces`) renders Home, Plan, Planner, Focus, Care, Pokémon, Me and World at 130% system text; all eight were looked at and nothing is clipped or overlapping.

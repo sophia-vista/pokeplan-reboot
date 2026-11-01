@@ -112,6 +112,16 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.WORLD.label, subtitle = "Rank: ${world.rank.label}", onBack = onBack, color = Module.WORLD.look.header)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            // The first time: say what World is and give the one thing to do.
+            if (world.teams.none { it.expedition != null || it.members.isNotEmpty() } && world.clears.isEmpty()) {
+                TextBox {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        Text("Start here", style = MaterialTheme.typography.titleSmall)
+                        Text("Send a team of your Pokémon into a dungeon. They climb its floors on their own, even while you are away, and bring back berries, treasure and Pokémon who want to join you.", style = MaterialTheme.typography.bodyLarge)
+                        PixelButton("Send my strongest into Tiny Woods", { model.store.worldQuickSend("tiny-woods") }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+                    }
+                }
+            }
             WorldBanner("town", "Exploration team", "${Dungeons.all.count { world.rank >= it.needs && Story.opened(world) >= it.chapter }} of ${Dungeons.all.size} dungeons open")
             MenuGrid(
                 listOf(
