@@ -105,11 +105,14 @@ Opens at story chapter 2 of the home layer. Up to 3 jobs held at once; a job tha
 ### 4.8 Bag and treasure
 - Treasure boxes (plain, silver, gold) are opened into the Bag; berries and Rare Candies land in the shared Bag directly.
 
-### 4.9 Settings and surfaces
+### 4.9 The landing
+Rank card (with what the next rank opens), the "since you last looked" report, one primary action (recruit, claim, explore the next dungeon of the layer on show, or look at the teams), all teams at a glance, the layer's story, then Map, Expeditions, Missions and Base, with Finds and Bag, Skills, Camp and Settings as small buttons.
+
+### 4.10 Settings and surfaces
 - World animation switch; the job-done alert switch; an Android World widget; the World Place for shortcuts and notifications.
 - Reduce motion and large text are respected (130% text is checked in the screenshot tests).
 
-### 4.10 The layers' stories and Guardians (built)
+### 4.11 The layers' stories and Guardians (built)
 - **Home layer:** six chapters ("A New Explorer" to "The Great Disturbance"), ending in the Temporal Tower and **Primal Dialga**, the Guardian (its own Dex form, separate from Dialga). It gives the **Temporal Mastery**: every expedition climbs 10% faster. A post-story dungeon, the **Distortion Rift**, opens afterwards.
 - **Kanto, Johto, Hoenn:** five chapters each and their legendary quests (section 7).
 - A layer's story chapters open by rank and by how many different dungeons **of that layer** have been cleared; clears in one layer do not advance another's.

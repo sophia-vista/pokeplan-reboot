@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.105.0
+
+- **World landing, rebuilt around one action.** From the top: your rank (with what the next rank opens), what your teams brought back since you last looked, **one big button for what is worth doing now** (recruit the Pokémon waiting, claim a finished job, send a team to the next dungeon of the layer on show, or look in on teams that are all out), all teams at a glance (where, which floor, jobs, Finds), the layer's story, the world picture, then four places (Map, Expeditions, Missions, Base) with Finds and Bag, Skills, Camp and Settings as small buttons below.
+- **"Since you last looked" report** on the landing and the Expeditions screen: floors climbed and where, what every floor gave (Exploration XP and Poké), the milestones reached (fixed rewards), what was found by chance (berries, treasure boxes), dungeons cleared, jobs done, a Guardian faced, and the Pokémon waiting in Finds. Berries, Poké and items are already in the Bag; Pokémon stay in Finds until you recruit them. Dismiss with OK. It is built from the same events as the reward history, kept in memory only and never pays anything (`ReportSummary`).
+- **Rank card** says what the next rank opens (teams and dungeons).
+- **Mission board:** each job says where it is and how often it comes back (one time, daily, weekly or every 14 days) and shows its reward; a job you cannot take is not hidden but listed under "Not available now" with why (rank, a wait, or done for good); with three jobs held the Take buttons say why they are off.
+- The story card shows how many different dungeons of the layer you have cleared against what the next chapter needs.
+
 ## 0.104.0
 
 - **World, Expeditions:** an "All teams" card at the top says what every team is doing (where, which floor, who is on it, or ready or empty) and how many Pokémon are waiting to be recruited. A team that is out has a **"How fast?"** button that shows its floor time in steps from the real numbers: the team's levels, the +20% of the levels of members of a favoured type, the power, the base time divided by 1 + power/100 (never under a quarter), Temporal Mastery and the region's legendaries, and the result; abilities are listed as help for skills, not speed (`WorldSim.explainSpeed`, tested to equal the real floor time).

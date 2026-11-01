@@ -77,6 +77,36 @@ object Missions {
                 (m.period == 0 || data.missionClaimedDay[m.id].let { it == null || day(now, utcOffsetMillis) - it >= m.period })
         }
 
+    /** A job's place on the board for the player: can it be taken, is it held or done, or why not. */
+    enum class BoardState { AVAILABLE, HELD, DONE, UNAVAILABLE }
+
+    /** One line of the board: the job, its [state] and, when it cannot be taken, the [reason]; [repeats] says how often it comes back. */
+    data class BoardEntry(val mission: MissionDef, val state: BoardState, val reason: String? = null) {
+        val repeats: String get() = when (mission.period) { 0 -> "One time"; 1 -> "Daily"; 7 -> "Weekly"; else -> "Repeats every ${mission.period} days" }
+    }
+
+    /**
+     * The whole board for [data] at [now], every job with its state: held (taken, not done), done (to claim), available, or unavailable with
+     * the reason (rank not reached, a one-time job already done, or the days before a repeatable one comes back). Empty when the board is shut.
+     */
+    fun board(data: WorldData, now: Long = data.lastSeenAt, utcOffsetMillis: Long = 0): List<BoardEntry> {
+        if (!boardOpen(data)) return emptyList()
+        return all.map { m ->
+            val held = data.missions.firstOrNull { it.id == m.id }
+            val claimed = data.missionClaimedDay[m.id]
+            when {
+                held != null -> BoardEntry(m, if (held.done) BoardState.DONE else BoardState.HELD)
+                m.once && m.id in data.missionsDone -> BoardEntry(m, BoardState.UNAVAILABLE, "Done for good.")
+                data.rank < m.needs -> BoardEntry(m, BoardState.UNAVAILABLE, "Needs ${m.needs.label} rank.")
+                m.period > 0 && claimed != null && day(now, utcOffsetMillis) - claimed < m.period -> {
+                    val left = (m.period - (day(now, utcOffsetMillis) - claimed)).toInt()
+                    BoardEntry(m, BoardState.UNAVAILABLE, "Back in $left ${if (left == 1) "day" else "days"}.")
+                }
+                else -> BoardEntry(m, BoardState.AVAILABLE)
+            }
+        }
+    }
+
     /** The day number World thinks it is: the last time it settled, in whole days. */
     fun day(data: WorldData): Long = data.lastSeenAt / 86_400_000L
 

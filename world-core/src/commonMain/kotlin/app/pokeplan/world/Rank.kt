@@ -21,4 +21,14 @@ enum class ExplorerRank(val label: String, val points: Int, val teamSlots: Int) 
 
     /** The next rank, or null at the top. */
     fun next(): ExplorerRank? = entries.getOrNull(ordinal + 1)
+
+    /** What reaching the next rank opens, as phrases to follow "opens": more teams, and the dungeons (of every layer) that ask for it. Empty at the top rank. */
+    fun nextRankOpens(): List<String> {
+        val next = next() ?: return emptyList()
+        return buildList {
+            if (next.teamSlots > teamSlots) add("${next.teamSlots} expedition teams (now $teamSlots)")
+            val places = Dungeons.all.filter { it.needs == next }
+            if (places.isNotEmpty()) add("the dungeons ${places.joinToString(", ") { it.name }}")
+        }
+    }
 }

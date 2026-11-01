@@ -133,6 +133,23 @@ class ScreenshotTest {
         }
     }
 
+    /** The mission board once it is open: a held job, a finished one, the available jobs with where and how often, and the ones that cannot be taken, with why. */
+    @Test
+    fun worldMissionBoard() {
+        val base = started()
+        val world = app.pokeplan.world.WorldData(
+            xp = 400, clears = mapOf("tiny-woods" to 1),
+            missions = listOf(app.pokeplan.world.MissionProgress("explore-woods-3"), app.pokeplan.world.MissionProgress("gather-10", 10, true)),
+            missionsDone = setOf("rescue-vulpix"),
+        )
+        val store = GameStore(MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), base.data.copy(world = world))), clock)
+        val model = AppModel(store)
+        model.worldSection = app.pokeplan.ui.screens.WorldSection.MISSIONS
+        for ((name, scale) in listOf("world-board" to 1f, "world-board-xl" to 1.3f)) {
+            render(name, height = 1700, fontScale = scale) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
+        }
+    }
+
     /** The recruiting scene: the question, then the welcome. */
     @Test
     fun worldRecruit() {

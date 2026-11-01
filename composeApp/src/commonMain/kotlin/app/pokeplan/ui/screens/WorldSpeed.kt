@@ -19,6 +19,7 @@ import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.world.DungeonDef
 import app.pokeplan.world.Dungeons
+import app.pokeplan.world.Missions
 import app.pokeplan.world.SpeedExplanation
 import app.pokeplan.world.WorldData
 import app.pokeplan.world.WorldSim
@@ -75,11 +76,53 @@ internal fun ExpeditionOverview(model: AppModel) {
                 }
                 Text("Team ${team.id}: $line", style = MaterialTheme.typography.bodyMedium)
             }
+            if (Missions.boardOpen(world)) {
+                val ready = world.missions.count { it.done }
+                Text("Jobs: ${world.missions.size} of ${Missions.MAX_ACTIVE} taken" + if (ready > 0) ", $ready ready to claim." else ".", style = MaterialTheme.typography.bodyMedium, color = if (ready > 0) Pixel.Green else Pixel.InkSoft)
+            }
             val waiting = world.finds.size
             Text(
                 if (waiting == 0) "No Pokémon are waiting to be recruited." else "$waiting ${if (waiting == 1) "Pokémon is" else "Pokémon are"} waiting to be recruited: open Finds and Bag.",
                 style = MaterialTheme.typography.bodyMedium, color = if (waiting == 0) Pixel.InkSoft else Pixel.Green,
             )
+        }
+    }
+}
+
+/**
+ * What the teams brought back since the player last looked, in three kinds so a chance is never read as a promise: what every floor gives,
+ * the fixed milestone rewards, and the chance finds. Berries, Poké and milestone items are already in the Bag; Pokémon wait in Finds.
+ * Shown until dismissed; not saved (the reward log is the record).
+ */
+@Composable
+internal fun WorldReportCard(model: AppModel) {
+    val report = model.store.worldReport() ?: return
+    var gone by remember(report) { mutableStateOf(false) }
+    if (gone) return
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("Since you last looked", style = MaterialTheme.typography.titleSmall)
+            val where = report.byDungeon.entries.joinToString(", ") { (id, n) -> "${Dungeons.byId(id)?.name ?: id} $n" }
+            Text("${report.floors} ${if (report.floors == 1) "floor" else "floors"} climbed ($where).", style = MaterialTheme.typography.bodyMedium)
+            Text("Every floor: ${report.xp} Exploration XP and ${report.poke} Poké.", style = MaterialTheme.typography.bodyMedium)
+            if (report.milestones.isNotEmpty()) Text(
+                "Milestones (first time on a floor): " + report.milestones.joinToString("; ") { (id, r) ->
+                    "${Dungeons.byId(id)?.name ?: id}: " + listOfNotNull(r.itemId?.let { "${app.pokeplan.core.pokemon.Items.name(it)} x${r.count}" }, r.poke.takeIf { it > 0 }?.let { "$it Poké" }).joinToString(", ")
+                },
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            val chance = buildList {
+                if (report.berries > 0) add("${report.berries} ${if (report.berries == 1) "berry" else "berries"}")
+                val boxes = report.treasure.values.sum()
+                if (boxes > 0) add("$boxes treasure ${if (boxes == 1) "box" else "boxes"} (to open in Finds and Bag)")
+            }
+            if (chance.isNotEmpty()) Text("Found by chance: ${chance.joinToString(", ")}.", style = MaterialTheme.typography.bodyMedium)
+            if (report.cleared.isNotEmpty()) Text("Cleared: ${report.cleared.distinct().joinToString(", ") { Dungeons.byId(it)?.name ?: it }}.", style = MaterialTheme.typography.bodyMedium)
+            if (report.jobsDone.isNotEmpty()) Text("Jobs done: ${report.jobsDone.joinToString(", ") { app.pokeplan.world.Missions.byId(it)?.title ?: it }}. Claim them on the board.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+            if (report.guardianFaced) Text("A Guardian was faced. Its story is complete.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+            if (report.finds.isNotEmpty()) Text("Waiting to be recruited: ${report.finds.joinToString(", ") { app.pokeplan.core.dex.Dex.species(it).name }}. They stay in Finds until you decide.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+            Text("Berries, Poké and the items above are already in your Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            PixelButton("OK", { model.store.worldReportDismiss(); gone = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
     }
 }
