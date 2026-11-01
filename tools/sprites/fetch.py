@@ -53,7 +53,11 @@ def pokemon_rows():
     if not os.path.exists(path):
         sys.exit('Run tools/species/generate.py first; it downloads the dataset into tools/species/cache.')
     with open(path, encoding='utf-8', newline='') as fh:
-        return [(int(r['id']), r['identifier']) for r in csv.DictReader(fh)]
+        rows = [(int(r['id']), r['identifier']) for r in csv.DictReader(fh)]
+    # Forms PokeAPI lacks (no PokeAPI sprite, so the manifest lists them with no variants)
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'species', 'custom_forms.txt'), encoding='utf-8') as fh:
+        rows += [(int(l.split('|')[0]), l.split('|')[1]) for l in fh if l.strip() and not l.startswith('#')]
+    return rows
 
 
 def fetch_one(pid):
