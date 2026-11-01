@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.110.0
+
+- **Pokégear, the specialist toolbox (Phase 2): six new tools** (fourteen in all), with a new Measure group on the home. **Everyday sums:** tip and split, percent (of, what percent, change), sale and tax, a loan's monthly payment, savings growth, trip cost. **World clock:** the time in places you choose (28 bundled, daylight saving included), a time at home converted to the others, and date sums (days from today, a date plus days, the weekday and day of the year). **Compass, Level and Barometer** read the phone's own sensors only while the tool is open: the compass is tilt-compensated and smoothed, the level shows the angle on both axes with a "call this flat" for sloped surfaces, the barometer shows hPa and a rough height against a sea-level pressure you can set. Each says plainly when the phone has no such sensor. **Device check** lists what this phone can do and which permission each thing needs, without starting or asking for anything. The device-only Pokégear state gained the clock's places and the sea-level pressure.
+- Not in this release (they need the camera, the microphone or a permission flow that has to be tried on a phone): GPS waypoints, the sound meter, the QR scanner and generator, the document scanner, and the network check.
+
 ## 0.109.0
 
 - **World, Phase 2 (first part).** Teams can be **named** (up to 16 letters) and given one of six **accent colours**; the Expedition log and reports use the name. **Saved teams:** save who is on a team as a preset (six kept) and put it back in a tap; a Pokémon since traded away, slotted as a Guardian or busy on another team is left out. The **expedition log is typed** (finds, clears, milestones, jobs, Guardians) with a filter and, under a filter, the place; old lines show as plain notes. The World save gained `worldVersion` (1). All new fields have defaults, so older saves load unchanged.

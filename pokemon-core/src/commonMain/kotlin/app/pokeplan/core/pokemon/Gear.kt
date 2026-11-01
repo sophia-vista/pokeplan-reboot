@@ -19,7 +19,15 @@ enum class GearTool(val label: String, val blurb: String, val icon: String, val 
     // Added with the utility suite (0.107.0): their names are saved with the helpers, so they are only ever added at the end.
     UNITS("Units", "Convert lengths, weights and more", "scope-lens", setOf(81, 82, 462), 81, "Magnet Rise"),
     TIMER("Timer", "Count down to the moment", "timer-ball", setOf(358, 433), 433, "Perish Song"),
-    STOPWATCH("Stopwatch", "Time it, with laps", "exp-share", setOf(290, 291), 291, "Quick Attack");
+    STOPWATCH("Stopwatch", "Time it, with laps", "exp-share", setOf(290, 291), 291, "Quick Attack"),
+
+    // Added with the specialist toolbox (0.110.0).
+    EVERYDAY("Everyday sums", "Tips, discounts, loans and trip costs", "lucky-egg", setOf(113, 242, 440), 113, "Softboiled"),
+    WORLD_CLOCK("World clock", "The time elsewhere, and date sums", "dawn-stone", setOf(163, 164), 163, "Foresight"),
+    COMPASS("Compass", "Which way you are facing", "explorer-kit", setOf(21, 22), 21, "Fly"),
+    LEVEL("Level", "Is it flat? Tilt in degrees", "moon-stone", setOf(436, 437), 436, "Gyro Ball"),
+    BAROMETER("Barometer", "Air pressure and a rough height", "water-stone", setOf(351, 334), 351, "Weather Ball"),
+    DEVICE("Device check", "What this phone can do for the Pokégear", "shiny-stone", setOf(479), 479, "Thunder Wave");
 
     /** Whether a Pokémon of [speciesId] can help this tool. */
     fun helps(speciesId: Int): Boolean = speciesId in signature
