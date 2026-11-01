@@ -363,6 +363,75 @@ A first shape to react to (nothing here is decided):
 - **Each region's Guardian** is that region's legendary or mythical (Mewtwo, Lugia or Ho-Oh, Rayquaza, ...), with the shared quest framework's permanent boost for the region, as with the current Temporal Tower (Dialga, 10% faster floors); the current nine dungeons become the "home" region.
 - **No change to Plan, Care or the hatching regions**: Pokémon already hatched from a retired region keep their origin, and nobody loses anything.
 
+#### The Pokémon world atlas *(the owner's list, November 2026)*
+
+The owner's tree of every place World could one day have. It is a list of settings, not a build order; each top-level place would be a map of its own (a picture, a few dungeons, a story chapter and a Guardian), and the sub-places would be dungeons or areas inside it.
+
+```
+POKEMON WORLD ATLAS
+├── MAINLINE WORLD
+│   ├── Kanto
+│   │   └── Sevii Islands
+│   ├── Johto
+│   ├── Hoenn
+│   ├── Sinnoh
+│   │   ├── Hisui (Historical)
+│   │   └── Battle Zone
+│   ├── Unova
+│   ├── Kalos
+│   │   └── Hyperspace Lumiose
+│   ├── Alola
+│   │   ├── Ultra Space
+│   │   └── Ultra Megalopolis
+│   ├── Galar
+│   │   ├── Isle of Armor
+│   │   └── Crown Tundra
+│   └── Paldea
+│       ├── Kitakami
+│       ├── Blueberry Academy
+│       │   └── Terarium
+│       └── Area Zero
+├── SPIN-OFF WORLD
+│   ├── Orre
+│   ├── Fiore
+│   ├── Almia
+│   ├── Oblivia
+│   ├── Ransei
+│   ├── Ferrum
+│   ├── Lental
+│   ├── Pasio
+│   ├── Aeos Island
+│   └── OTHER SETTINGS
+│       ├── Holon
+│       ├── TCG Islands
+│       ├── Pokémon Island
+│       ├── Mintale Town
+│       ├── PokéPark
+│       ├── Pokétopia
+│       ├── Carmonte Island
+│       ├── Tumblecube Island
+│       ├── Ryme City
+│       ├── Toyland
+│       └── Think Town
+└── MYSTERY DUNGEON WORLD
+    ├── Air Continent
+    ├── Grass Continent
+    ├── Mist Continent
+    ├── Water Continent
+    ├── Sand Continent
+    ├── Mystery Continent
+    ├── Sea of Wonders
+    └── OTHER WORLDS
+        └── Voidlands
+```
+
+What the atlas suggests, to settle with the owner (not decided):
+- **Three layers of the map.** The Mystery Dungeon world is where World already is (its nine dungeons are Mystery Dungeon style), so it is the natural *home* layer; the mainline regions are the layer that brings back the retired regional dexes (nine regions, each with extra areas such as the Sevii Islands, the Isle of Armor, Crown Tundra, Kitakami, the Blueberry Academy and Area Zero, which fit as late dungeons of their region); the spin-off world is the largest and least certain layer (about twenty settings), a long-term list to take from one by one.
+- **The special spaces** (Hyperspace Lumiose, Ultra Space, Ultra Megalopolis, Battle Zone, Terarium, Area Zero, Voidlands) read as post-story or Guardian-tier places, like the Temporal Tower and the Distortion Rift today, rather than as ordinary regions.
+- **Hisui as "historical"** suggests its own era marker on the map and its Hisuian forms, which the Dex already has.
+- **Size.** About 45 places; with three to five dungeons each, the dungeon count would go from 9 to well over a hundred. That is a multi-year content plan, so the order and a first small set matter more than the full list.
+- **Species per place.** The mainline regions have regional dexes in the data; the spin-off settings and the Mystery Dungeon continents have no species list yet (they would be curated like a module region, with no overlap rules needed because World's finds are not a module region).
+
 Questions for the owner: (1) the order of regions, and whether the first one is Kanto or a new, smaller start; (2) how many dungeons per region; (3) whether a region's Pokémon are found only in that region, or also in the home region at low odds; (4) whether the legendary of a region is a Guardian reward at the end of that region (like Dialga) or a quest; (5) whether World regions replace the current nine-dungeon map or sit beside it as the "home" region. Art is the open cost: each region needs a map picture and tilesets (the tilesets for many Explorers of Sky dungeons are already in `assets/tiles`; the Sky, Silver Trench and other sheets the owner has supplied are listed in `docs/assets.md`).
 
 ### Ideas parked
