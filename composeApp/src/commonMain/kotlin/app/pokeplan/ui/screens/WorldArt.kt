@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.Dp
@@ -270,11 +271,14 @@ internal fun CampYard(level: Int, residents: List<TileWalker>, animate: Boolean)
 
 private const val YARD_ROWS = 5
 
-/** What a dungeon's marker on the world map says: open and not cleared, cleared at least once, or not yet open. */
-internal enum class MarkerState { OPEN, CLEARED, LOCKED }
+/**
+ * What a dungeon's marker on the world map says: open and not cleared, cleared at least once, not yet open, or a team is exploring it.
+ * Each has its own shape as well as its colour (a diamond, a circle with a tick, a square, a circle with an arrow).
+ */
+internal enum class MarkerState { OPEN, CLEARED, LOCKED, EXPLORING }
 
-/** A dungeon's place on the world map (in pixels of the 504 x 336 picture) and its state. */
-internal data class MapMarker(val id: String, val x: Int, val y: Int, val state: MarkerState)
+/** A dungeon's place on the world map (in pixels of the map picture), its state, and whether it holds a Guardian (a red ring). */
+internal data class MapMarker(val id: String, val x: Int, val y: Int, val state: MarkerState, val guardian: Boolean = false)
 
 /**
  * The world map of the dungeon games (assets/world/map-1 to map-8: the same map with more of it uncovered each time, the way the
@@ -301,7 +305,7 @@ internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: Str
         val heightDp = with(density) { (pictureH * scale).toDp() }
         Canvas(
             Modifier.fillMaxWidth().height(heightDp).border(2.dp, Pixel.Ink)
-                .semantics { contentDescription = "World map with ${markers.size} dungeons: ${markers.count { it.state == MarkerState.CLEARED }} cleared, ${markers.count { it.state == MarkerState.OPEN }} open. The list below has every dungeon." }
+                .semantics { contentDescription = "World map with ${markers.size} dungeons: ${markers.count { it.state == MarkerState.CLEARED }} cleared, ${markers.count { it.state == MarkerState.OPEN }} open, ${markers.count { it.state == MarkerState.EXPLORING }} being explored. The list below has every dungeon." }
                 .pointerInput(markers, scale, left) {
                     detectTapGestures { tap ->
                         val reach = 24.dp.toPx()
@@ -316,12 +320,38 @@ internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: Str
             val picture = image ?: return@Canvas drawRect(Color(0xFFD9A05B))
             drawImage(picture, dstOffset = IntOffset(left.toInt(), 0), dstSize = IntSize((pictureW * scale).toInt(), (pictureH * scale).toInt()), filterQuality = if (scale >= 1f) FilterQuality.None else FilterQuality.Medium)
             val r = max(5.dp.toPx(), 3.5f * scale)
+            val ink = Color(0xFF1B2230)
             for (m in markers) {
                 val c = Offset(left + m.x * scale, m.y * scale)
-                val fill = when (m.state) { MarkerState.OPEN -> Color(0xFFFFD33D); MarkerState.CLEARED -> Color(0xFF4CAF50); MarkerState.LOCKED -> Color(0xFF8E8E93) }
-                if (m.id == selected) drawCircle(Color.White, r + 4.dp.toPx(), c)
-                drawCircle(Color(0xFF1B2230), r + 2.dp.toPx(), c)
-                drawCircle(fill, r, c)
+                val fill = when (m.state) { MarkerState.OPEN -> Color(0xFFFFD33D); MarkerState.CLEARED -> Color(0xFF4CAF50); MarkerState.LOCKED -> Color(0xFF8E8E93); MarkerState.EXPLORING -> Color(0xFF4A90E2) }
+                if (m.id == selected) drawCircle(Color.White, r + 6.dp.toPx(), c)
+                if (m.guardian) drawCircle(Color(0xFFE53935), r + 4.dp.toPx(), c, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx()))
+                when (m.state) {
+                    // A diamond: open.
+                    MarkerState.OPEN -> {
+                        val d = Path().apply { moveTo(c.x, c.y - r - 2.dp.toPx()); lineTo(c.x + r + 2.dp.toPx(), c.y); lineTo(c.x, c.y + r + 2.dp.toPx()); lineTo(c.x - r - 2.dp.toPx(), c.y); close() }
+                        drawPath(d, ink)
+                        val inner = Path().apply { moveTo(c.x, c.y - r); lineTo(c.x + r, c.y); lineTo(c.x, c.y + r); lineTo(c.x - r, c.y); close() }
+                        drawPath(inner, fill)
+                    }
+                    // A circle with a tick: cleared.
+                    MarkerState.CLEARED -> {
+                        drawCircle(ink, r + 2.dp.toPx(), c); drawCircle(fill, r, c)
+                        val tick = Path().apply { moveTo(c.x - r * 0.5f, c.y); lineTo(c.x - r * 0.1f, c.y + r * 0.45f); lineTo(c.x + r * 0.55f, c.y - r * 0.4f) }
+                        drawPath(tick, Color.White, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx()))
+                    }
+                    // A square: not open yet.
+                    MarkerState.LOCKED -> {
+                        drawRect(ink, Offset(c.x - r - 2.dp.toPx(), c.y - r - 2.dp.toPx()), androidx.compose.ui.geometry.Size((r + 2.dp.toPx()) * 2, (r + 2.dp.toPx()) * 2))
+                        drawRect(fill, Offset(c.x - r, c.y - r), androidx.compose.ui.geometry.Size(r * 2, r * 2))
+                    }
+                    // A circle with an arrow: a team is there.
+                    MarkerState.EXPLORING -> {
+                        drawCircle(ink, r + 2.dp.toPx(), c); drawCircle(fill, r, c)
+                        val arrow = Path().apply { moveTo(c.x - r * 0.3f, c.y - r * 0.5f); lineTo(c.x + r * 0.55f, c.y); lineTo(c.x - r * 0.3f, c.y + r * 0.5f); close() }
+                        drawPath(arrow, Color.White)
+                    }
+                }
             }
         }
     }

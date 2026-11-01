@@ -82,6 +82,25 @@ class WorldStoreTest {
     }
 
     @Test
+    fun anIdleGuardianCanExploreButNotOneOnATeamTwice() {
+        val store = store(Clock())
+        val mewtwo = store.grantPokemon(150, "Quest: test")
+        assertTrue(store.worldIdle().any { it.id == mewtwo.id }, "an idle Guardian is free to explore")
+        assertTrue(store.worldAssign(1, listOf(mewtwo.id)), "a Guardian can be put on a team")
+        assertTrue(store.worldIdle().none { it.id == mewtwo.id }, "and is busy there")
+        assertFalse(store.slotGuardian(mewtwo.id), "a Guardian on a team is not slotted behind the player's back")
+        assertEquals(setOf(mewtwo.id), store.data.world.assigned)
+    }
+
+    @Test
+    fun theIdleListIsStrongestFirst() {
+        val store = store(Clock())
+        repeat(5) { store.grantPokemon(10 + it, "test") }
+        val idle = store.worldIdle()
+        assertEquals(idle.sortedByDescending { it.level }.map { it.level }, idle.map { it.level })
+    }
+
+    @Test
     fun aWorldRecruitIsNotAnEggHatching() {
         val store = store(Clock())
         store.grantPokemon(25, GameStore.WORLD_SOURCE, Origin.How.WORLD)

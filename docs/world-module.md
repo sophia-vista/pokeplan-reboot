@@ -324,6 +324,9 @@ Each region's story follows the brief's five parts (Arrival, Investigation, Awak
 7. The journey advances only through World's teams; modules do not feed travel.
 8. In World, Pokémon come from recruiting, never eggs.
 9. Official game map art for each region.
+10. A Guardian can join a World team while it is idle (not on a team, not slotted as a Guardian).
+11. The team picker shows the 20 strongest idle Pokémon; the landing's next step and a dungeon's locked reasons follow the layer on show and list every unmet requirement.
+12. Plan will have no legendary quests of its own (decided 1 November 2026; how to stage the removal is open).
 
 ## 10. Open questions
 

@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.102.0
+
+- **World teams:** a Guardian (legendary or mythical) can join a team while it is idle, like any other Pokémon; one that is slotted as a Guardian cannot, and a Guardian on a team cannot be slotted until it is recalled. "Send my strongest" takes the strongest idle Pokémon. The team picker shows the team's own members and the 20 strongest idle Pokémon (it showed the strongest 40, Guardians included, whatever they were doing).
+- **World landing:** "Next up" is for the layer on show (it always spoke of the Mystery Dungeon world), with the layer buttons right there.
+- **Locked dungeons** list every requirement not met yet, each with how far along you are (rank XP, the story chapter's rank and number of different dungeons cleared, the story itself), not only the first.
+- **World map markers** have a shape as well as a colour: a diamond (open), a circle with a tick (cleared), a square (not open yet), a circle with an arrow (a team is there), and a red ring around a Guardian's dungeon, with a line under the map saying so.
+- Docs: `docs/world-audit.md` (the World audit and the owner's answers) and `docs/world-module.md`.
+
 ## 0.101.0
 
 - **World: the Hoenn layer** (fourth button on the Map's layer switch, open from the first day): nine dungeons from Ruby, Sapphire, Emerald, Omega Ruby and Alpha Sapphire (Petalburg Woods, Granite Cave, Meteor Falls, Mt. Chimney, Shoal Cave, Seafloor Cavern, Cave of Origin, Victory Road, Sky Pillar), wild Pokémon from the Hoenn Pokédex, the Hoenn map of Pokémon Emerald's PokéNav (`assets/world/map-hoenn.png`, built by `tools/sprites/fetch_hoenn_map.py`) with a marker on each, and its own five-chapter story, "The Primal Awakening". Legendary quests, all Guardians of Hoenn: Groudon and Kyogre after three clears of Mt. Chimney and the Seafloor Cavern, Rayquaza at the top of the Sky Pillar.

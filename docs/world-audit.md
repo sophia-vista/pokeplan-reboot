@@ -170,3 +170,18 @@ Phase 1 files touched: `world-core` `WorldGuide.kt`, `Legends.kt` (bonus text); 
 8. Physical-device results for the markers, alarm and widget.
 
 Do not start Phase 1 step 5 (the picker's Guardian filter) before decision 1.
+
+---
+
+## 9. Owner's answers (1 November 2026) and what was done
+
+1. **Guardians may join a team when idle** (not on a team and not slotted as a Guardian). Done: `GameStore.worldIdle()`; the picker and "Send my strongest" use it; `worldAssign` refuses a slotted Guardian; `slotGuardian` refuses one that is on a team (nothing is moved behind the player's back).
+2. **The picker shows the 20 strongest idle Pokémon** (plus the team's own members and whatever is picked, so they can be taken off). Done.
+3. **Abilities are not part of floor speed.** Agreed; the "how fast" explanation (Phase 1, step 5) will say so.
+4. **The landing's "Next up" follows the layer on show**, with the layer buttons on the landing. Done.
+5. **Every unmet requirement is listed on a locked dungeon**, with how far along it is. Done: `WorldGuide.lockReasons`.
+6. **Markers use shapes as well as colour** (diamond, circle with a tick, square, circle with an arrow, red ring for a Guardian), with a legend line under the map and a screen-reader summary that counts the explored ones. Done.
+7. **Plan has no legendary quests any more.** Not done yet; see "Open" below.
+8. **Device checks** (map markers, job alarm, widget, launcher pages): with the owner.
+
+**Open (7).** Removing Plan's legendary quests (`app-core/.../quest/Quests.kt`, `screens/Quests.kt`, `claimQuest`, the Collection link, the tests) leaves every legendary and mythical without a way to be earned until a World layer (or a module's own arc) gives it: World has four layers today, so for now only Kanto, Johto and Hoenn's legendaries (and Primal Dialga) would be obtainable, and the lake trio, Plan's own patrons, would have no route. Quests in progress would be lost (finished ones stay owned). Decision needed on how to stage that (see the chat).

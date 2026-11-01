@@ -126,10 +126,12 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
                     }
                 }
             } else {
-                val next = app.pokeplan.world.WorldGuide.nextStep(world)
+                val layer = model.worldLayer
+                val next = app.pokeplan.world.WorldGuide.nextStep(world, layer)
                 TextBox {
                     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        Text("Next up", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                        WorldLayerSwitch(model)
+                        Text("Next up in ${layer.label}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                         Text(next.title, style = MaterialTheme.typography.titleSmall)
                         Text(next.reason, style = MaterialTheme.typography.bodyMedium)
                         val target = next.dungeonId
@@ -194,11 +196,7 @@ private fun WorldMapView(model: AppModel) {
     val dungeons = Dungeons.of(layer)
     val clearedCount = dungeons.count { (world.clears[it.id] ?: 0) > 0 }
     // The layer switch: every layer is open from the first day.
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        WorldLayer.entries.forEach { l ->
-            PixelButton(l.label, { model.worldLayer = l; selected = null }, color = if (l == layer) Module.WORLD.look.accent else Pixel.InkSoft, compact = true)
-        }
-    }
+    WorldLayerSwitch(model) { selected = null }
     Text(layer.blurb, style = MaterialTheme.typography.bodyMedium)
     val spots = when (layer) { WorldLayer.HOME -> mapSpots; WorldLayer.KANTO -> kantoSpots; WorldLayer.JOHTO -> johtoSpots; WorldLayer.HOENN -> hoennSpots }
     WorldMapPicture(
@@ -206,19 +204,18 @@ private fun WorldMapView(model: AppModel) {
         markers = dungeons.mapNotNull { d ->
             spots[d.id]?.let { (x, y) ->
                 val open = world.rank >= d.needs && Story.opened(world, layer) >= d.chapter && !(d.postStory && !world.layerDone(layer))
-                MapMarker(d.id, x, y, if ((world.clears[d.id] ?: 0) > 0) MarkerState.CLEARED else if (open) MarkerState.OPEN else MarkerState.LOCKED)
+                val exploring = world.teams.any { it.expedition?.dungeonId == d.id }
+                MapMarker(d.id, x, y, if (exploring) MarkerState.EXPLORING else if ((world.clears[d.id] ?: 0) > 0) MarkerState.CLEARED else if (open) MarkerState.OPEN else MarkerState.LOCKED, guardian = d.guardian)
             }
         },
         selected = selected, onSelect = { selected = it },
         mapName = layer.mapName, pictureW = layer.mapWidth.toFloat(), pictureH = layer.mapHeight.toFloat(),
     )
     Text(selected?.let { id -> Dungeons.byId(id)?.let { "${it.name}, ${it.region.label}" } } ?: "$clearedCount of ${dungeons.size} dungeons cleared. Tap a marker.", style = MaterialTheme.typography.bodyLarge)
+    Text("Diamond: open. Circle with a tick: cleared. Square: not open yet. Circle with an arrow: a team is there. Red ring: a Guardian.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     LegendsCard(model, layer)
     dungeons.sortedByDescending { it.id == selected }.forEach { d ->
-        val rankOk = world.rank >= d.needs
-        val chapterShut = Story.opened(world, layer) < d.chapter
-        val storyShut = d.postStory && !world.layerDone(layer)
-        val open = rankOk && !chapterShut && !storyShut
+        val open = app.pokeplan.world.WorldGuide.lockReasons(world, d).isEmpty()
         val deepest = world.deepest[d.id] ?: 0
         val wild = d.wild.sortedByDescending { it.weight }.map { it.speciesId }.distinct().take(4)
             .map { TileWalker(Dex.defaultForm(it).id, false, Dex.species(it).name, sample = true) }
@@ -233,10 +230,10 @@ private fun WorldMapView(model: AppModel) {
                 PixelBar(deepest.toFloat() / d.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "deepest floor $deepest of ${d.floors}")
                 Text("Deepest floor $deepest of ${d.floors}, cleared ${world.clears[d.id] ?: 0} times", style = MaterialTheme.typography.bodyMedium)
                 val warn = Color(0xFFFFB4A8)
+                // Every requirement not met yet, each on its own line with how far along it is.
+                val reasons = app.pokeplan.world.WorldGuide.lockReasons(world, d)
                 when {
-                    storyShut -> Text("Opens when the story is complete.", style = MaterialTheme.typography.bodyMedium, color = warn)
-                    !rankOk -> Text("Needs ${d.needs.label} rank.", style = MaterialTheme.typography.bodyMedium, color = warn)
-                    chapterShut -> Text("Needs story chapter ${d.chapter}: ${Story.chaptersOf(layer)[d.chapter - 1].title}.", style = MaterialTheme.typography.bodyMedium, color = warn)
+                    reasons.isNotEmpty() -> reasons.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = warn) }
                     ready.isEmpty() && world.slots().any { it.expedition == null } ->
                         PixelButton("Send my strongest", { model.store.worldQuickSend(d.id) }, color = Module.WORLD.look.accent, compact = true)
                     ready.isEmpty() -> Text("Every team is out. Recall one in Expeditions.", style = MaterialTheme.typography.bodyMedium)
@@ -263,6 +260,17 @@ private val mapSpots = mapOf(
     "glacier-palace" to (107 to 291), "ancient-ruins" to (411 to 227), "sky-tower" to (459 to 43), "temporal-tower" to (59 to 179),
     "distortion-rift" to (83 to 75),
 )
+
+/** The layer buttons (every layer is open from the first day): the one on show is lit; [onChange] runs after a switch. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun WorldLayerSwitch(model: AppModel, onChange: () -> Unit = {}) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        WorldLayer.entries.forEach { l ->
+            PixelButton(l.label, { model.worldLayer = l; onChange() }, color = if (l == model.worldLayer) Module.WORLD.look.accent else Pixel.InkSoft, compact = true)
+        }
+    }
+}
 
 /** Where each Kanto dungeon is on the Kanto map picture (192 x 128 pixels), read from its towns and routes. */
 private val kantoSpots = mapOf(
@@ -551,9 +559,10 @@ private fun WorldTeamsView(model: AppModel) {
                 } else {
                     PixelButton(if (editing) "Close" else "Choose the team", { editing = !editing }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     if (editing) {
-                        FieldLabel("Up to ${WorldTeam.MAX_MEMBERS} Pokémon, none on another team")
-                        val others = world.teams.filter { it.id != team.id }.flatMap { it.members }.toSet()
-                        roster.filter { it.id !in others }.sortedByDescending { it.level }.take(40).forEach { p ->
+                        FieldLabel("Up to ${WorldTeam.MAX_MEMBERS} Pokémon: this team and the 20 strongest idle ones (not on a team, not slotted as a Guardian)")
+                        // This team's own members and what is picked stay on the list so they can be taken off; the rest is the 20 strongest idle Pokémon.
+                        val shown = (roster.filter { it.id in team.members || it.id in picked } + store.worldIdle().take(20)).distinctBy { it.id }
+                        shown.forEach { p ->
                             ChoiceRow(selected = p.id in picked, onClick = { picked = if (p.id in picked) picked - p.id else if (picked.size < WorldTeam.MAX_MEMBERS) picked + p.id else picked }, lead = { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = 40.dp, animate = false) }) {
                                 Text("${p.nickname}, level ${p.level}", style = MaterialTheme.typography.bodyLarge)
                             }
