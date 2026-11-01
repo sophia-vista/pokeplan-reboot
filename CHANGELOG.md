@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.103.0
+
+- **Plan has no quest for the legendaries World gives.** Zapdos, Articuno, Moltres, Mewtwo, Mew, Lugia, Ho-Oh, Groudon, Kyogre and Rayquaza now come only from World's region quests; their Plan quests are gone from the quest list (a Plan quest already finished stays finished and its Pokémon owned; one in progress for such a species goes away). Every other legendary and mythical keeps its Plan quest until a World layer gives it, one species at a time (`Legends.coveredSpecies`).
+
 ## 0.102.0
 
 - **World teams:** a Guardian (legendary or mythical) can join a team while it is idle, like any other Pokémon; one that is slotted as a Guardian cannot, and a Guardian on a team cannot be slotted until it is recalled. "Send my strongest" takes the strongest idle Pokémon. The team picker shows the team's own members and the 20 strongest idle Pokémon (it showed the strongest 40, Guardians included, whatever they were doing).

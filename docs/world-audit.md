@@ -181,7 +181,5 @@ Do not start Phase 1 step 5 (the picker's Guardian filter) before decision 1.
 4. **The landing's "Next up" follows the layer on show**, with the layer buttons on the landing. Done.
 5. **Every unmet requirement is listed on a locked dungeon**, with how far along it is. Done: `WorldGuide.lockReasons`.
 6. **Markers use shapes as well as colour** (diamond, circle with a tick, square, circle with an arrow, red ring for a Guardian), with a legend line under the map and a screen-reader summary that counts the explored ones. Done.
-7. **Plan has no legendary quests any more.** Not done yet; see "Open" below.
+7. **Plan has no quest for a legendary World gives** (option A, owner): done species by species (`Legends.coveredSpecies`, applied in `Quests.all`); the rest keep theirs until a layer gives them.
 8. **Device checks** (map markers, job alarm, widget, launcher pages): with the owner.
-
-**Open (7).** Removing Plan's legendary quests (`app-core/.../quest/Quests.kt`, `screens/Quests.kt`, `claimQuest`, the Collection link, the tests) leaves every legendary and mythical without a way to be earned until a World layer (or a module's own arc) gives it: World has four layers today, so for now only Kanto, Johto and Hoenn's legendaries (and Primal Dialga) would be obtainable, and the lake trio, Plan's own patrons, would have no route. Quests in progress would be lost (finished ones stay owned). Decision needed on how to stage that (see the chat).

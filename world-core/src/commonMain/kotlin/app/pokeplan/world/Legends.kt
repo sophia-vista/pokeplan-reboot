@@ -40,6 +40,9 @@ object Legends {
         LegendQuest("hoenn-rayquaza", 384, "Rayquaza", WorldLayer.HOENN, "sky-pillar", 1, true, "Hoenn's Guardian waits at the top of the Sky Pillar.", setOf(PokemonType.FLYING, PokemonType.DRAGON), findPermille = 5),
     )
 
+    /** The species World gives through its own quests: Plan has no quest for them (a decision of 1 November 2026: Plan keeps the rest until a region or module gives them). */
+    val coveredSpecies: Set<Int> by lazy { all.map { it.speciesId }.toSet() }
+
     fun of(layer: WorldLayer): List<LegendQuest> = all.filter { it.layer == layer }
 
     fun byId(id: String): LegendQuest? = all.firstOrNull { it.id == id }

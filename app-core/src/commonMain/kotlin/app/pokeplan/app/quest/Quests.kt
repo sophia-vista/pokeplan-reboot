@@ -46,7 +46,7 @@ data class Quest(
     val longTerm: Boolean = false,
 )
 
-/** Every legendary-class and mythical species has a quest. See "Legendaries and mythicals" in docs/design.md. Numbers are *(tune)*. */
+/** Every legendary-class and mythical species has a quest, except the ones World gives (`Legends.coveredSpecies`). See "Legendaries and mythicals" in docs/design.md. Numbers are *(tune)*. */
 object Quests {
     /** Quests in progress at once, so nobody is buried in them. */
     const val MAX_ACTIVE = 3
@@ -75,7 +75,8 @@ object Quests {
     val all: List<Quest> by lazy {
         val regionOf = mutableMapOf<Int, Region>()
         for (region in Region.entries.filter { it.released }) for (s in Dex.regionDex(region)) if (s.id !in regionOf) regionOf[s.id] = region
-        Dex.species.filter { it.isSpecial }.map { s ->
+        // The legendaries World gives through its own quests (Kanto, Johto and Hoenn so far) are not Plan's any more; a quest already finished for one of them stays finished and its Pokémon owned.
+        Dex.species.filter { it.isSpecial && it.id !in app.pokeplan.world.Legends.coveredSpecies }.map { s ->
             val name = s.name
             lakeTrio[s.identifier]?.copy(speciesId = s.id, dexRegion = Region.PLAN)
                 ?: if (s.isMythical) Quest(
