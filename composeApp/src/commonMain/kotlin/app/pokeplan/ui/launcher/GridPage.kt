@@ -98,16 +98,16 @@ internal fun GridCanvas(env: WidgetEnv, page: WidgetPage, modifier: Modifier = M
             val at = current.firstOrNull { it.sameAs(g.widget) } ?: g.widget
             val x = with(density) { (inset + column * at.col + CELL_GAP).toPx() } + g.startX + g.dx
             val zone = with(density) { EDGE_ZONE.toPx() }
-            if (x < zone && page.ordinal > 0) -1 else if (x > widthPx - zone && page.ordinal < WidgetPage.MAX - 1) 1 else 0
+            if (x < zone && live.prefs.pageOrder.indexOf(page) > 0) -1 else if (x > widthPx - zone && live.prefs.pageOrder.indexOf(page) < live.prefs.pageOrder.size - 1) 1 else 0
         } ?: 0
         LaunchedEffect(side, gesture?.widget?.kind) {
             val g = gesture
             if (side != 0 && g != null) {
                 delay(EDGE_DWELL_MS)
-                val target = WidgetPage.entries[page.ordinal + side]
+                val target = live.prefs.pageOrder[live.prefs.pageOrder.indexOf(page) + side]
                 live.onPrefs(live.prefs.moveGridWidgetToPage(g.widget, target))
                 gesture = null
-                live.goToPage(target.ordinal)
+                live.goToPage(live.prefs.pageOrder.indexOf(target))
             }
         }
         // The canvas is two rows taller than its lowest widget while editing, so there is always a free place to drop one lower.
@@ -154,8 +154,9 @@ internal fun GridCanvas(env: WidgetEnv, page: WidgetPage, modifier: Modifier = M
                             nudge = { dc, dr -> commit(WidgetGrid.move(current, w, w.col + dc, w.row + dr)) },
                             grow = { dw, dh -> commit(WidgetGrid.resize(current, w, w.w + dw, w.h + dh)) },
                             toPage = { dir ->
-                                val to = page.ordinal + dir
-                                if (to in 0 until WidgetPage.MAX) { live.onPrefs(live.prefs.moveGridWidgetToPage(w, WidgetPage.entries[to])); live.goToPage(to) }
+                                val order = live.prefs.pageOrder
+                                val to = order.indexOf(page) + dir
+                                if (to in order.indices) { live.onPrefs(live.prefs.moveGridWidgetToPage(w, order[to])); live.goToPage(to) }
                             },
                         )
                     }
@@ -210,20 +211,33 @@ private fun removeIt(env: WidgetEnv, w: GridWidget) {
 }
 
 /**
- * The bar shown while editing the grid: Add (the widget list), Page+ (a new page), Page- (deletes the last page when it is empty) and Done.
- * It floats at the foot of the screen over the pages instead of standing in them, so entering edit mode moves nothing.
+ * The bar shown while editing the grid: Add (the widget list), a new page at the left end or the right end ("Left+" and
+ * "Right+", on a second line), Page- (removes the page being shown when it is one of the user's own and empty) and Done. It floats at the foot of the
+ * screen over the pages instead of standing in them, so entering edit mode moves nothing.
  */
 @Composable
 internal fun GridEditBar(env: WidgetEnv, page: WidgetPage, modifier: Modifier = Modifier) {
     PmdBox(env.pixel, modifier.fillMaxWidth().padding(horizontal = Spacing.Page).padding(bottom = Spacing.S), inset = 1) {
-        Row(Modifier.fillMaxWidth()) {
-            PmdMenuLine("Add", env.pixel, Modifier.weight(1f), center = true, onClick = env.onWidgets)
-            val last = env.pages - 1
-            // On the last page, when it is empty, a new page would only be another empty one: the bar offers to delete it instead (at most three buttons, so the names fit).
-            val deletable = page.ordinal == last && page.ordinal >= WidgetPage.MIN && env.prefs.pageIsEmpty(page)
-            if (deletable) PmdMenuLine("Page-", env.pixel, Modifier.weight(1f), center = true) { env.onPrefs(env.prefs.deleteLastPage()); env.goToPage(last - 1) }
-            else if (env.pages < WidgetPage.MAX) PmdMenuLine("Page+", env.pixel, Modifier.weight(1f), center = true) { env.onPrefs(env.prefs.withPages(env.pages + 1)); env.goToPage(env.pages) }
-            PmdMenuLine("Done", env.pixel, Modifier.weight(1f), center = true, onClick = env.onDone)
+        Column(Modifier.fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth()) {
+                PmdMenuLine("Add", env.pixel, Modifier.weight(1f), center = true, onClick = env.onWidgets)
+                // On an empty page of the user's own the bar offers to remove it (and not to add another).
+                if (env.prefs.canDeletePage(page)) {
+                    val at = env.prefs.pageOrder.indexOf(page)
+                    PmdMenuLine("Page-", env.pixel, Modifier.weight(1f), center = true) {
+                        val next = env.prefs.deletePage(page)
+                        env.onPrefs(next)
+                        // The page that took its place (or the one before it, at the end).
+                        env.goToPage(at.coerceAtMost(next.pageOrder.size - 1))
+                    }
+                }
+                PmdMenuLine("Done", env.pixel, Modifier.weight(1f), center = true, onClick = env.onDone)
+            }
+            // A new page at the left end or the right end, on a second line so the names fit at any text size.
+            if (env.pages < WidgetPage.MAX && !env.prefs.canDeletePage(page)) Row(Modifier.fillMaxWidth()) {
+                PmdMenuLine("Left+", env.pixel, Modifier.weight(1f), center = true) { env.onPrefs(env.prefs.addPage(left = true)); env.goToPage(0) }
+                PmdMenuLine("Right+", env.pixel, Modifier.weight(1f), center = true) { env.onPrefs(env.prefs.addPage(left = false)); env.goToPage(env.pages) }
+            }
         }
     }
 }

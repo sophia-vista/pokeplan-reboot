@@ -35,6 +35,9 @@ object Legends {
         LegendQuest("kanto-mew", 151, "Mew", WorldLayer.KANTO, "cerulean-cave", 3, true, "Where Mewtwo came from. Clear Cerulean Cave three times once its Guardian has been faced.", treasurePercent = 3),
         LegendQuest("johto-lugia", 249, "Lugia", WorldLayer.JOHTO, "whirl-islands", 3, false, "The guardian of the sea sleeps in the deepest Whirl Islands cave. Clear it three times.", setOf(PokemonType.WATER, PokemonType.FLYING)),
         LegendQuest("johto-ho-oh", 250, "Ho-Oh", WorldLayer.JOHTO, "tin-tower", 1, true, "Johto's Guardian waits on the top floor of the Tin Tower.", treasurePercent = 3, findPermille = 5),
+        LegendQuest("hoenn-groudon", 383, "Groudon", WorldLayer.HOENN, "mt-chimney", 3, false, "The land's ancient Pokémon stirs under Mt. Chimney. Clear it three times.", setOf(PokemonType.GROUND, PokemonType.FIRE)),
+        LegendQuest("hoenn-kyogre", 382, "Kyogre", WorldLayer.HOENN, "seafloor-cavern", 3, false, "The sea's ancient Pokémon sleeps beneath the Seafloor Cavern. Clear it three times.", setOf(PokemonType.WATER)),
+        LegendQuest("hoenn-rayquaza", 384, "Rayquaza", WorldLayer.HOENN, "sky-pillar", 1, true, "Hoenn's Guardian waits at the top of the Sky Pillar.", setOf(PokemonType.FLYING, PokemonType.DRAGON), findPermille = 5),
     )
 
     fun of(layer: WorldLayer): List<LegendQuest> = all.filter { it.layer == layer }

@@ -115,3 +115,24 @@ class KantoTest {
         assertEquals("Explore Tiny Woods", WorldGuide.nextStep(WorldData()).title, "the home layer's guide is unchanged")
     }
 }
+
+class LockReasonsTest {
+    @Test
+    fun everyUnmetRequirementIsListedNotOnlyTheFirst() {
+        val cave = Dungeons.byId("cerulean-cave")!!
+        val fresh = WorldGuide.lockReasons(WorldData(), cave)
+        assertEquals(2, fresh.size, fresh.toString())
+        assertTrue("Diamond rank" in fresh[0] && "60000" in fresh[0], fresh[0])
+        assertTrue("story chapter 5" in fresh[1] && "Platinum rank" in fresh[1] && "8 different Kanto dungeons cleared (you have 0)" in fresh[1], fresh[1])
+        // The Distortion Rift also waits for the story itself.
+        val rift = WorldGuide.lockReasons(WorldData(), Dungeons.byId("distortion-rift")!!)
+        assertEquals(3, rift.size, rift.toString())
+        assertTrue("story of Mystery Dungeon world is complete" in rift[2], rift[2])
+        // Met requirements drop out; an open dungeon has none.
+        val partway = WorldData(xp = 60_000, clears = Dungeons.of(WorldLayer.KANTO).take(3).associate { it.id to 1 })
+        val left = WorldGuide.lockReasons(partway, cave)
+        assertEquals(1, left.size)
+        assertTrue("5 more" !in left[0] && "(you have 3)" in left[0], left[0])
+        assertTrue(WorldGuide.lockReasons(WorldData(), Dungeons.byId("tiny-woods")!!).isEmpty())
+    }
+}

@@ -159,8 +159,11 @@ data class LauncherPrefs(
     val gatherTap: Boolean = true,
     /** Draws the widgets on the grid (the Smart Launcher style canvas: drag, resize, half widths) instead of the old stacked list; on since 0.93.0, and the switch in Launcher settings goes back to the list (docs/launcher-widget-grid.md). */
     val gridMode: Boolean = true,
-    /** How many pages the launcher has: the home page, Today and up to three of the user's own ([WidgetPage]); only the grid has more than two. */
-    val pages: Int = WidgetPage.MIN,
+    /**
+     * The pages from left to right: always the home page and Today, and up to three of the user's own ([WidgetPage]), each of which can
+     * stand left of Home or after Today; only the grid has more than two. Starts as Home, Today.
+     */
+    val pageOrder: List<WidgetPage> = WidgetPage.entries.take(WidgetPage.MIN),
     /** Whether the box with the date, the time and the battery shows at the top of the home page. */
     val showClock: Boolean = true,
     /** The weather over the town: one of the Mystery Dungeon effects, or [Weather.LIVE], which follows the forecast for the chosen place (a clear sky without one). */
@@ -258,10 +261,36 @@ data class LauncherPrefs(
     fun withPageSwipe(on: Boolean) = copy(pageSwipe = on)
     fun withGatherTap(on: Boolean) = copy(gatherTap = on)
     fun withGridMode(on: Boolean) = copy(gridMode = on)
-    fun withPages(n: Int) = copy(pages = n.coerceIn(WidgetPage.MIN, WidgetPage.MAX))
+    /** How many pages there are. */
+    val pages: Int get() = pageOrder.size
+
+    /** Grows to [n] pages (new ones at the right end) or shrinks to [n] (the user's own pages from the right end); always between [WidgetPage.MIN] and [WidgetPage.MAX]. */
+    fun withPages(n: Int): LauncherPrefs {
+        val want = n.coerceIn(WidgetPage.MIN, WidgetPage.MAX)
+        var order = pageOrder
+        while (order.size < want) order = order + (WidgetPage.entries.first { it !in order })
+        while (order.size > want) order = order - order.last { it.ordinal >= WidgetPage.MIN }
+        return copy(pageOrder = order)
+    }
 
     /** The pages in order, as many as there are. */
-    val pageList: List<WidgetPage> get() = WidgetPage.entries.take(pages)
+    val pageList: List<WidgetPage> get() = pageOrder
+
+    /** Where Home stands in [pageList]: the number of pages to its left. */
+    val homeIndex: Int get() = pageOrder.indexOf(WidgetPage.HOME)
+
+    /** Adds a page of the user's own, at the left of Home's neighbours ([left]: the far left end) or the right end; not past [WidgetPage.MAX]. */
+    fun addPage(left: Boolean): LauncherPrefs {
+        if (pageOrder.size >= WidgetPage.MAX) return this
+        val fresh = WidgetPage.entries.first { it !in pageOrder }
+        return copy(pageOrder = if (left) listOf(fresh) + pageOrder else pageOrder + fresh)
+    }
+
+    /** Whether [page] can be removed: one of the user's own with nothing on it (Home and Today stay). */
+    fun canDeletePage(page: WidgetPage): Boolean = page in pageOrder && page.ordinal >= WidgetPage.MIN && pageIsEmpty(page)
+
+    /** Removes [page] when [canDeletePage]. */
+    fun deletePage(page: WidgetPage): LauncherPrefs = if (canDeletePage(page)) copy(pageOrder = pageOrder - page) else this
 
     private fun areaOf(page: WidgetPage) = if (page == WidgetPage.TODAY) WidgetArea.TODAY else WidgetArea.HOME_BOTTOM
 
@@ -280,7 +309,7 @@ data class LauncherPrefs(
 
     /** Moves a widget to another page (making the page first when [page] is past the last one), keeping the old layout's twin of it in step. */
     fun moveGridWidgetToPage(widget: GridWidget, page: WidgetPage): LauncherPrefs {
-        val grown = if (page.ordinal >= pages) withPages(page.ordinal + 1) else this
+        val grown = if (page !in pageOrder) copy(pageOrder = pageOrder + page) else this
         val base = grown.withGrid(WidgetGrid.toPage(grown.gridWidgets, widget, page))
         val twin = base.widgets.firstOrNull { it.kind == widget.kind && it.arg == widget.arg }
         return when {
@@ -295,7 +324,7 @@ data class LauncherPrefs(
     fun pageIsEmpty(page: WidgetPage) = WidgetGrid.onPage(gridWidgets, page).isEmpty()
 
     /** Takes away the last page when it is one of the user's own and empty. */
-    fun deleteLastPage(): LauncherPrefs = if (pages > WidgetPage.MIN && pageIsEmpty(WidgetPage.entries[pages - 1])) withPages(pages - 1) else this
+    fun deleteLastPage(): LauncherPrefs = deletePage(pageOrder.last())
     fun withShowClock(on: Boolean) = copy(showClock = on)
     fun withPlace(place: GeoPlace?) = copy(place = place)
     fun withFahrenheit(on: Boolean) = copy(fahrenheit = on)
@@ -369,7 +398,9 @@ data class LauncherPrefs(
         if (!pageSwipe) append("K pageSwipe\t0\n")
         if (!gatherTap) append("K gatherTap\t0\n")
         if (!gridMode) append("K gridMode\t0\n")
-        if (pages != WidgetPage.MIN) append("K pages\t").append(pages).append('\n')
+        // The usual order (Home, Today, then Page 3 and on) is saved as a count, as it always was; any other order by name.
+        if (pageOrder != WidgetPage.entries.take(pageOrder.size)) append("K pageOrder\t").append(pageOrder.joinToString(",") { it.name }).append('\n')
+        else if (pages != WidgetPage.MIN) append("K pages\t").append(pages).append('\n')
         if (!showClock) append("K showClock\t0\n")
         if (weather != Weather.LIVE) append("K weather\t").append(weather.name).append('\n')
         if (fahrenheit) append("K fahrenheit\t1\n")
@@ -395,7 +426,7 @@ data class LauncherPrefs(
                     'P' -> prefs.pin(rest)
                     'H' -> prefs.copy(hidden = prefs.hidden + rest)
                     'S' -> prefs.withScene(rest)
-                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.LIVE); "fahrenheit" -> prefs.withFahrenheit(f[1] != "0"); "pageSwipe" -> prefs.withPageSwipe(f[1] != "0"); "batterySaver" -> prefs.copy(batterySaver = BatterySaver.entries.firstOrNull { it.name == f[1] } ?: BatterySaver.AUTO); "dateStyle" -> prefs.copy(dateStyle = DateStyle.entries.firstOrNull { it.name == f[1] } ?: DateStyle.SHORT); "hour12" -> prefs.withHour12(f[1] != "0"); "showSeconds" -> prefs.withShowSeconds(f[1] != "0"); "sundayFirst" -> prefs.withSundayFirst(f[1] != "0"); "gatherTap" -> prefs.withGatherTap(f[1] != "0"); "gridMode" -> prefs.withGridMode(f[1] != "0"); "pages" -> prefs.withPages(f[1].toIntOrNull() ?: WidgetPage.MIN); "showClock" -> prefs.withShowClock(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> prefs } }
+                    'K' -> rest.split('\t').let { f -> if (f.size != 2) prefs else when (f[0]) { "walking" -> prefs.withWalking(f[1] != "0"); "showStatus" -> prefs.withShowStatus(f[1] != "0"); "edgeDrag" -> prefs.withEdgeDrag(f[1] != "0"); "weather" -> prefs.copy(weather = Weather.entries.firstOrNull { it.name == f[1] } ?: Weather.LIVE); "fahrenheit" -> prefs.withFahrenheit(f[1] != "0"); "pageSwipe" -> prefs.withPageSwipe(f[1] != "0"); "batterySaver" -> prefs.copy(batterySaver = BatterySaver.entries.firstOrNull { it.name == f[1] } ?: BatterySaver.AUTO); "dateStyle" -> prefs.copy(dateStyle = DateStyle.entries.firstOrNull { it.name == f[1] } ?: DateStyle.SHORT); "hour12" -> prefs.withHour12(f[1] != "0"); "showSeconds" -> prefs.withShowSeconds(f[1] != "0"); "sundayFirst" -> prefs.withSundayFirst(f[1] != "0"); "gatherTap" -> prefs.withGatherTap(f[1] != "0"); "gridMode" -> prefs.withGridMode(f[1] != "0"); "pages" -> prefs.withPages(f[1].toIntOrNull() ?: WidgetPage.MIN); "pageOrder" -> f[1].split(',').mapNotNull { n -> WidgetPage.entries.firstOrNull { it.name == n } }.let { o -> if (o.distinct().size == o.size && WidgetPage.HOME in o && WidgetPage.TODAY in o && o.size <= WidgetPage.MAX) prefs.copy(pageOrder = o) else prefs }; "showClock" -> prefs.withShowClock(f[1] != "0"); "townSize" -> prefs.copy(townSize = f[1].toIntOrNull()?.takeIf { it in listOf(8, 16, 24) } ?: 24); else -> prefs } }
                     'W' -> rest.split('\t').let { f -> val lat = f.getOrNull(1)?.toDoubleOrNull(); val lon = f.getOrNull(2)?.toDoubleOrNull(); if (f.size == 3 && f[0].isNotBlank() && lat != null && lon != null) prefs.withPlace(GeoPlace(f[0], lat, lon)) else prefs }
                     'L' -> rest.lastIndexOf('\t').let { at -> val count = if (at > 0) rest.substring(at + 1).toIntOrNull() else null; if (count != null && count > 0) prefs.copy(launches = prefs.launches + (rest.substring(0, at) to count)) else prefs }
                     'F' -> rest.split('\t').let { f -> if (f[0].isBlank()) prefs else prefs.addFolder(f[0]).let { made -> f.drop(1).filter { it.isNotBlank() }.fold(made) { acc, key -> acc.addToFolder(f[0].trim().take(Folder.MAX_NAME), key) } } }

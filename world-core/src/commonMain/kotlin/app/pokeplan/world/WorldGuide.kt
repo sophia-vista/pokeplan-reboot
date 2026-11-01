@@ -9,6 +9,26 @@ data class NextStep(val title: String, val reason: String, val dungeonId: String
  * Plain data in, plain words out, so it is tested without a screen.
  */
 object WorldGuide {
+    /**
+     * Every requirement of [dungeon] the player has not met yet, each in words with how far along it is (empty when the dungeon is open):
+     * the rank, the story chapter of its layer (its own rank and how many different dungeons of the layer are cleared) and, for a
+     * place after the story, the story itself. All are listed, not only the first.
+     */
+    fun lockReasons(data: WorldData, dungeon: DungeonDef): List<String> = buildList {
+        if (data.rank < dungeon.needs) add("Needs ${dungeon.needs.label} rank: ${dungeon.needs.points - data.xp} more Exploration XP (you have ${data.xp} of ${dungeon.needs.points}).")
+        val layer = dungeon.layer
+        if (Story.opened(data, layer) < dungeon.chapter) {
+            val chapter = Story.chaptersOf(layer)[dungeon.chapter - 1]
+            val cleared = Story.dungeonsCleared(data, layer)
+            val parts = buildList {
+                if (data.rank < chapter.needsRank) add("${chapter.needsRank.label} rank")
+                if (cleared < chapter.needsDungeons) add("${chapter.needsDungeons} different ${layer.label} dungeons cleared (you have $cleared)")
+            }
+            add("Needs story chapter ${dungeon.chapter}, ${chapter.title}: ${parts.joinToString(" and ")}.")
+        }
+        if (dungeon.postStory && !data.layerDone(layer)) add("Opens when the story of ${layer.label} is complete.")
+    }
+
     fun nextStep(data: WorldData, layer: WorldLayer = WorldLayer.HOME): NextStep {
         val dungeons = Dungeons.of(layer)
         fun isOpen(d: DungeonDef) = data.rank >= d.needs && Story.opened(data, layer) >= d.chapter && !(d.postStory && !data.layerDone(layer))

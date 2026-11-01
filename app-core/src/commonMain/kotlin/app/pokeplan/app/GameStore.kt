@@ -1029,10 +1029,12 @@ class GameStore(
     /** Owned legendaries and mythicals, slotted or not. */
     val guardianCandidates: List<OwnedPokemon> get() = data.player.pokemon.filter(Guardians::canBe)
 
-    /** Puts a Guardian in a free slot. Returns false if it is not a Guardian, is already slotted, or every slot is taken. */
+    /** Puts a Guardian in a free slot. Returns false if it is not a Guardian, is already slotted, is on a World team, or every slot is taken. */
     fun slotGuardian(id: String): Boolean {
         val p = pokemon(id)
         if (!Guardians.canBe(p) || id in data.player.guardians || data.player.guardians.size >= guardianSlots) return false
+        // A Guardian on a World team is busy: it is slotted only when it is idle (it is not moved off the team behind the player's back).
+        if (id in data.world.assigned) return false
         update { d -> d.copy(player = d.player.copy(guardians = d.player.guardians + id)) }
         return true
     }
@@ -1143,7 +1145,9 @@ class GameStore(
     private fun worldLegends() {
         for (quest in app.pokeplan.world.Legends.ready(data.world)) {
             update { it.copy(world = it.world.copy(legends = it.world.legends + quest.id)) }
-            grantPokemon(quest.speciesId, WORLD_SOURCE)
+            // Every legendary also has a quest in the Plan side's quest list (Quests): a Pokémon already owned from there is not given twice,
+            // and the quest still counts as done in World, so its boost for the layer applies either way.
+            if (data.player.pokemon.none { it.speciesId == quest.speciesId }) grantPokemon(quest.speciesId, WORLD_SOURCE)
         }
     }
 
@@ -1172,6 +1176,8 @@ class GameStore(
     /** Sets who is on World team [team]; false when the rank, the team or the Pokémon do not allow it. */
     fun worldAssign(team: Int, members: List<String>): Boolean {
         if (members.any { id -> data.player.pokemon.none { it.id == id } }) return false
+        // A Guardian can explore while it is idle; one slotted as a Guardian is busy there.
+        if (members.any { it in data.player.guardians }) return false
         val next = data.world.assign(team, members) ?: return false
         update { it.copy(world = next) }
         return true
@@ -1186,19 +1192,26 @@ class GameStore(
 
     /**
      * Sends the strongest free Pokémon to [dungeonId] in one step: the first team slot that is not out takes the (up to four) highest
-     * level Pokémon no team has (Guardians and Pokémon already on a team stay out of it), keeping its members if it already has some.
+     * level Pokémon that are idle (see [worldIdle]), keeping its members if it already has some.
      * False when every team is out, no one is free, or the dungeon is not open.
      */
     fun worldQuickSend(dungeonId: String): Boolean {
         worldSettle()
         val slot = data.world.slots().firstOrNull { it.expedition == null } ?: return false
         if (slot.members.isEmpty()) {
-            val free = data.player.pokemon.filter { it.id !in data.world.assigned && !app.pokeplan.core.pokemon.Guardians.canBe(it) }
-                .sortedWith(compareByDescending<OwnedPokemon> { it.level }.thenBy { it.id }).take(app.pokeplan.world.WorldTeam.MAX_MEMBERS)
+            val free = worldIdle().take(app.pokeplan.world.WorldTeam.MAX_MEMBERS)
             if (free.isEmpty() || !worldAssign(slot.id, free.map { it.id })) return false
         }
         return worldStart(slot.id, dungeonId)
     }
+
+    /**
+     * The Pokémon free to join a World team, strongest first: not on any team and not slotted as a Guardian. A Guardian (a legendary or
+     * mythical) is included while it is idle.
+     */
+    fun worldIdle(): List<OwnedPokemon> = data.player.pokemon
+        .filter { it.id !in data.world.assigned && it.id !in data.player.guardians }
+        .sortedWith(compareByDescending<OwnedPokemon> { it.level }.thenBy { it.id })
 
     /** Brings a team home after settling what it found. */
     fun worldRecall(team: Int) {
