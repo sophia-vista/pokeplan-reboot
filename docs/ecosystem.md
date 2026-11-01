@@ -437,28 +437,33 @@ What the atlas suggests, to settle with the owner (not decided):
 1. **The Mystery Dungeon world is the main map** (the "home" layer): what World is today. The mainline regions and the spin-off settings are layers added beside it, with a switch on the Map screen; nothing existing is replaced.
 2. **Eight to nine dungeons per region.** A region is a full map of its own (about the size of the home layer, which has nine), not a short add-on.
 3. **A region's Pokémon are found in that region, following its regional dex** (the retired regional dexes, still generated, are the wild tables). No leakage into the home layer.
-4. **Each region's Guardian is its main legendary** (the one its story ends on), reached through the regional story as a legendary quest from the shared quest framework (updated 1 November 2026: it was "a quest, not a Guardian reward" until the owner said the Guardian is the main region legendary). The Guardian gives the region's permanent boost, like Dialga does for the home layer. The region's other box legendaries are separate legendary quests of the same region.
+4. **Each region's Guardians are its main legendaries** (all of its box legendaries), each reached through the regional story as a legendary quest from the shared quest framework (updated 1 November 2026: it was "a quest, not a Guardian reward" until the owner said the Guardian is the main region legendary). Each Guardian gives the region's permanent boost, like Dialga does for the home layer (decision 8). The region's other box legendaries are separate legendary quests of the same region.
 5. **The special spaces are Guardian-tier places inside their region** (Hyperspace Lumiose in Kalos, Ultra Space and Ultra Megalopolis in Alola, Terarium and Area Zero in Paldea, the Battle Zone in Sinnoh, and so on), opened by that region's story, like the Distortion Rift after the Temporal Tower.
 6. **The spin-off layer starts with the Ranger regions and Orre** (Fiore, Almia and Oblivia from the Ranger games; Orre from Colosseum and XD), after the mainline regions are under way. The other settings stay on the list.
 
 More decisions (owner, 1 November 2026):
 
 7. **All mainline regions are built, in release order:** Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea, one region per release, each with its own `:world-core:simulateWorldEconomy` run first. The extra areas of a region (Sevii Islands, Isle of Armor, Crown Tundra, Kitakami, Blueberry Academy, Area Zero) are late dungeons of that region. Hisui comes after Paldea as the historical era *(proposed)*.
-8. **A region can have several main quests, and every box legendary of its games is one** (owner, 1 November 2026): both version legendaries are in the story, not one of them. The region's **Guardian** (the permanent boost, like Dialga) is its main legendary, the one the story ends on, and it is a legendary quest like the others (decision 4). Proposed, to correct before each region is built:
+8. **Every legendary and mythical can be a Guardian; where it guards depends on its kind** (owner, 1 November 2026):
+   - **Main legendaries guard their home region.** A region has several main quests, and every box legendary of its games is one (both version legendaries are in the story, not one of them). Each is a legendary quest (decision 4) and becomes a Guardian of that region, with that region's permanent boost (like Dialga for the home layer).
+   - **Side legendaries are featured in modules** (the lake trio for Plan, the next ones for Care, Grow and Home as each module is designed, section 10), and guard there, not in a region.
+   - The rule that Guardians are legendary and mythical only is unchanged.
 
-| Region | Main quests (box legendaries) | Guardian *(proposed)*, the story's end | Other legendary quests |
-|---|---|---|---|
-| Kanto | Mewtwo (and Mew), Articuno, Zapdos, Moltres | Mewtwo | Mew |
-| Johto | Ho-Oh, Lugia | Ho-Oh | the three beasts, Celebi |
-| Hoenn | Groudon, Kyogre, Rayquaza | Rayquaza | the regis, Latias and Latios, Jirachi, Deoxys |
-| Sinnoh | Dialga, Palkia, Giratina, Arceus | Arceus (Dialga already guards the home layer, so it is a quest here) | the lake trio, Darkrai, Shaymin |
-| Unova | Reshiram, Zekrom, Kyurem | Kyurem | Victini, the swords of justice, the forces of nature |
-| Kalos | Xerneas, Yveltal, Zygarde | Zygarde | Diancie, Hoopa, Volcanion |
-| Alola | Solgaleo, Lunala, Necrozma | Necrozma | the guardian deities, the Ultra Beasts |
-| Galar | Zacian, Zamazenta, Eternatus | Eternatus | the Crown Tundra legendaries |
-| Paldea | Koraidon, Miraidon, Terapagos | Terapagos *(or Koraidon and Miraidon)* | the Treasures of Ruin, Ogerpon |
+   Proposed main legendaries per region, to correct before each region is built:
 
-Open for the owner: whether only the final main legendary gives the boost (assumed), or each box legendary gives a smaller one.
+| Region | Main quests, each a Guardian of the region *(proposed)* | Side legendaries (module Guardians, not regional) |
+|---|---|---|
+| Kanto | Mewtwo, Articuno, Zapdos, Moltres | Mew |
+| Johto | Ho-Oh, Lugia | the three beasts, Celebi |
+| Hoenn | Groudon, Kyogre, Rayquaza | the regis, Latias and Latios, Jirachi, Deoxys |
+| Sinnoh | Palkia, Giratina, Arceus (Dialga already guards the home layer) | the lake trio (Plan), Darkrai, Shaymin |
+| Unova | Reshiram, Zekrom, Kyurem | Victini, the swords of justice, the forces of nature |
+| Kalos | Xerneas, Yveltal, Zygarde | Diancie, Hoopa, Volcanion |
+| Alola | Solgaleo, Lunala, Necrozma | the guardian deities, the Ultra Beasts |
+| Galar | Zacian, Zamazenta, Eternatus | the Crown Tundra legendaries |
+| Paldea | Koraidon, Miraidon, Terapagos | the Treasures of Ruin, Ogerpon |
+
+   Open for the owner: how the boosts of several Guardians in one region combine (assumed: they add up inside the existing cap on Guardian effects, section 10), and which module features which side legendary.
 
 9. **One layer per region.** Each mainline region is its own layer behind the Map switch. The Mystery Dungeon continents (Air, Grass, Mist and the rest) are likewise one layer each, not one shared map.
 
