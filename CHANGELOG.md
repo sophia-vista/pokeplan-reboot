@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.94.2
+
+- Plan usability, Phase 3 (finished): checked against the code and the audit's three points. Quick Add: shows what it understood and keeps the time (0.90.6). Inbox vs Today: the Inbox is the tasks in no list and Today is what is planned for today, with "Move to" on every task; nothing to change. A way to plan on the calendar without dragging: tap a task in "To plan", then tap an hour (with a panel to nudge by 15 minutes, set the length or take the time away) already existed; it is now covered by a test with real taps (`DayPlanTapTest`), and the "To plan" row fades at its right edge when more tasks are past it, so a clipped chip reads as "scroll for more".
+
 ## 0.94.1
 
 - Back chains are tested with real taps (`BackChainTest`): the test presses the header's Back button in an offscreen screen and checks where it lands. Every Plan section, the Planner (a view, then its menu, then Plan), Focus, every Care section, every World section, the four Pokémon sections and Me's sections go back to their menu, and each module's menu goes back to Modules. All pass; no behaviour changed.
