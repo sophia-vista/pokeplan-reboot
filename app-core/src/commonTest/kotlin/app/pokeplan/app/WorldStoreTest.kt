@@ -37,6 +37,16 @@ class WorldStoreTest {
     }
 
     @Test
+    fun aWorldRecruitIsNotAnEggHatching() {
+        val store = store(Clock())
+        store.grantPokemon(25, GameStore.WORLD_SOURCE, Origin.How.WORLD)
+        assertTrue(store.buddyEvent()?.event != BuddyEvent.HATCHED, "a recruit is not a hatch moment")
+        val other = store(Clock())
+        other.grantPokemon(25, "test")
+        assertEquals(BuddyEvent.HATCHED, other.buddyEvent()?.event, "any other grant still is")
+    }
+
+    @Test
     fun worldPaysStraightIntoTheBagAndTheRewardLog() {
         val clock = Clock()
         val store = store(clock)

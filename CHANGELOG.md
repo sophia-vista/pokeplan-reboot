@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.95.3
+
+- World recruits are not eggs: recruiting a find (or receiving the World's Guardian) no longer plays the full-screen "hatched from the Egg!" scene, and the buddy no longer reacts as if an egg hatched. The Pokémon is still added as before, and its reward line is in the log. Eggs hatching from Focus, tasks and Care are unchanged.
+
 ## 0.95.1
 
 - Care: the journal draft is kept across an app restart (saved after a short pause, cleared when the entry is written). The owner's World regions decisions and the merge rule for failures outside a PR are recorded in the docs.
