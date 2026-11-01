@@ -447,6 +447,7 @@ More decisions (owner, 1 November 2026):
 8. **Every legendary and mythical can be a Guardian; where it guards depends on its kind** (owner, 1 November 2026):
    - **Main legendaries guard their home region.** A region has several main quests, and every box legendary of its games is one (both version legendaries are in the story, not one of them). Each is a legendary quest (decision 4) and becomes a Guardian of that region, with that region's permanent boost (like Dialga for the home layer).
    - **Side legendaries are featured in modules** (the lake trio for Plan, the next ones for Care, Grow and Home as each module is designed, section 10), and guard there, not in a region.
+   - **Dialga is a Sinnoh and Hisui Guardian, and Primal Dialga is a separate one** (owner, 1 November 2026): the home layer's Temporal Tower Guardian is Primal Dialga, a different creature from Dialga. *Code today:* `Story.GUARDIAN` is "Primal Dialga" but it gives species 483 (Dialga), because the Dex has no Primal form; to keep them apart, Primal Dialga needs its own Dex entry (a form with the Primal sprite from SpriteCollab if it exists) before Sinnoh ships, and Sinnoh's Dialga quest then pays the real Dialga. Hisui shares Dialga with Sinnoh (Origin forms as Hisui's own quests).
    - The rule that Guardians are legendary and mythical only is unchanged.
 
    Proposed main legendaries per region, to correct before each region is built:
@@ -456,7 +457,7 @@ More decisions (owner, 1 November 2026):
 | Kanto | Mewtwo, Articuno, Zapdos, Moltres | Mew |
 | Johto | Ho-Oh, Lugia | the three beasts, Celebi |
 | Hoenn | Groudon, Kyogre, Rayquaza | the regis, Latias and Latios, Jirachi, Deoxys |
-| Sinnoh | Palkia, Giratina, Arceus (Dialga already guards the home layer) | the lake trio (Plan), Darkrai, Shaymin |
+| Sinnoh (and Hisui) | Dialga, Palkia, Giratina, Arceus (Primal Dialga, not Dialga, guards the home layer) | the lake trio (Plan), Darkrai, Shaymin |
 | Unova | Reshiram, Zekrom, Kyurem | Victini, the swords of justice, the forces of nature |
 | Kalos | Xerneas, Yveltal, Zygarde | Diancie, Hoopa, Volcanion |
 | Alola | Solgaleo, Lunala, Necrozma | the guardian deities, the Ultra Beasts |
