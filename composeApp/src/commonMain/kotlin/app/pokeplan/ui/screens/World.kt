@@ -112,6 +112,19 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.WORLD.label, subtitle = "Rank: ${world.rank.label}", onBack = onBack, color = Module.WORLD.look.header)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            // The next thing worth doing, and why (the first open dungeon not cleared, else what the nearest closed one waits for).
+            val next = app.pokeplan.world.WorldGuide.nextStep(world)
+            TextBox {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Text("Next up", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    Text(next.title, style = MaterialTheme.typography.titleSmall)
+                    Text(next.reason, style = MaterialTheme.typography.bodyMedium)
+                    val target = next.dungeonId
+                    if (target != null && world.slots().any { it.expedition == null }) {
+                        PixelButton("Send my strongest", { model.store.worldQuickSend(target) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+                    }
+                }
+            }
             WorldBanner("town", "Exploration team", "${Dungeons.all.count { world.rank >= it.needs && Story.opened(world) >= it.chapter }} of ${Dungeons.all.size} dungeons open")
             MenuGrid(
                 listOf(
@@ -198,8 +211,16 @@ private fun WorldMapView(model: AppModel) {
                     ready.isEmpty() && world.slots().any { it.expedition == null } ->
                         PixelButton("Send my strongest", { model.store.worldQuickSend(d.id) }, color = Module.WORLD.look.accent, compact = true)
                     ready.isEmpty() -> Text("Every team is out. Recall one in Expeditions.", style = MaterialTheme.typography.bodyMedium)
-                    else -> FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        ready.forEach { team -> PixelButton("Send team ${team.id}", { model.store.worldStart(team.id, d.id) }, color = Module.WORLD.look.accent, compact = true) }
+                    else -> {
+                        // Why a team suits the place: how long a floor takes it, and how many of its members are of a favoured type.
+                        ready.forEach { team ->
+                            val members = team.members.mapNotNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } }
+                            val fit = WorldSim.suitability(d, members, world.guardianDone)
+                            Text("Team ${team.id}: a floor takes about ${fit.floorMillis / 60_000} min; ${fit.favored} of ${fit.size} like this place.", style = MaterialTheme.typography.bodyMedium)
+                        }
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            ready.forEach { team -> PixelButton("Send team ${team.id}", { model.store.worldStart(team.id, d.id) }, color = Module.WORLD.look.accent, compact = true) }
+                        }
                     }
                 }
             }
@@ -423,12 +444,6 @@ private fun WorldTeamsView(model: AppModel) {
     val store = model.store
     val world = model.data.world
     val roster = model.data.player.pokemon
-    var report by remember { mutableStateOf<List<String>>(emptyList()) }
-    // What the latest settles reported, in a few plain lines.
-    LaunchedEffect(world.xp) {
-        val f = world.finds.lastOrNull()
-        if (f != null) report = listOf("Found a ${Dex.species(f.speciesId).name} on floor ${f.floor} of ${Dungeons.byId(f.dungeonId)?.name}.") + report.take(4)
-    }
     world.slots().forEach { team ->
         var editing by remember(team.id) { mutableStateOf(false) }
         var picked by remember(team.id, team.members) { mutableStateOf(team.members) }
@@ -470,7 +485,13 @@ private fun WorldTeamsView(model: AppModel) {
         }
         if (outAt != null) TileBox(outAt.id, members.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !model.data.settings.reduceMotion, scrolls = model.data.settings.worldScroll, content = body) else TextBox { body() }
     }
-    if (report.isNotEmpty()) TextBox { Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) { FieldLabel("Lately"); report.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) } } }
+    // The expedition log: what the teams found and did, kept (newest first) so it is still there after a night away.
+    if (world.journal.isNotEmpty()) TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            FieldLabel("Expedition log")
+            world.journal.takeLast(8).reversed().forEach { line -> Text(line.text, style = MaterialTheme.typography.bodyMedium) }
+        }
+    }
     Text("Explore dungeons on the World map, then recall a team any time; nothing it found is lost.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 

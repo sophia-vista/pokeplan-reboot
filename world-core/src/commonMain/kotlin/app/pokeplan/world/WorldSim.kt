@@ -97,7 +97,12 @@ object WorldSim {
             out = out.withTeam(current.copy(expedition = trip.copy(settledTo = settled, floorsClimbed = trip.floorsClimbed + floors)))
             perTeam[team.id] = events
         }
+        // A dungeon cleared again and again in one stretch is one line ("... (3 times)"), not three.
         val lines = perTeam.flatMap { (teamId, events) -> events.mapNotNull { journalLine(teamId, it, now) } }
+            .fold(mutableListOf<Pair<JournalLine, Int>>()) { acc, l ->
+                if (acc.lastOrNull()?.first?.text == l.text) acc[acc.lastIndex] = acc.last().first to acc.last().second + 1 else acc += l to 1
+                acc
+            }.map { (l, n) -> if (n > 1) l.copy(text = l.text.removeSuffix(".") + " ($n times).") else l }
         return WorldReport(out.copy(lastSeenAt = now, journal = (out.journal + lines).takeLast(WorldData.JOURNAL_SIZE)), perTeam)
     }
 

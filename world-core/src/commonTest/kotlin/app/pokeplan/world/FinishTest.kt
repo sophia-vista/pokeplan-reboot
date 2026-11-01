@@ -226,6 +226,8 @@ class GuideAndLogTest {
         val trip = WorldData().assign(1, listOf("a", "b", "c", "d"))!!.start(1, "tiny-woods", 0L)!!
         val d = WorldSim.settle(trip, roster, 12L * 3_600_000).data
         assertTrue(d.journal.any { it.text.contains("cleared Tiny Woods") })
+        assertTrue(d.journal.zipWithNext().none { (x, y) -> x.text == y.text }, "repeated clears are one line")
+        assertTrue(d.journal.any { it.text.contains("cleared Tiny Woods (") && it.text.endsWith("times).") }, d.journal.map { it.text }.toString())
         assertTrue(d.journal.all { it.at == 12L * 3_600_000 })
         var more = d
         repeat(6) { i -> more = WorldSim.settle(more, roster, (13L + i * 12) * 3_600_000).data }
