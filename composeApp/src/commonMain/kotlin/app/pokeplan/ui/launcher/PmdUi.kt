@@ -94,8 +94,8 @@ internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = P
             // A compact box (a portrait's frame) keeps only the frame's own room.
             .padding(horizontal = ((SIDE + inset) * pixel / density).dp.let { if (compact) it else maxOf(it, Spacing.BoxX) }, vertical = ((TOP + inset) * pixel / density).dp.let { if (compact) it else maxOf(it, Spacing.BoxY) }),
         content = if (!fill) content else { {
-            // On the widget grid the frame is as tall as its cells, and what does not fit is cut off inside it, never squeezed.
-            Box(Modifier.fillMaxSize().clipToBounds()) { Box(Modifier.fillMaxWidth().wrapContentHeight(Alignment.Top, unbounded = true)) { content() } }
+            // On the widget grid the frame is as tall as its cells, and what does not fit is cut off inside it, never squeezed; the content sits in the middle, so a box taller than its lines has the same room above and below.
+            Box(Modifier.fillMaxSize().clipToBounds()) { Box(Modifier.fillMaxWidth().wrapContentHeight(Alignment.CenterVertically, unbounded = true)) { content() } }
         } },
     )
 }
