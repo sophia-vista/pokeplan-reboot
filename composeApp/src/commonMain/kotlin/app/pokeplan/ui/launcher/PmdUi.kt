@@ -91,11 +91,11 @@ internal fun PmdBox(pixel: Int, modifier: Modifier = Modifier, tone: PmdTone = P
     Box(
         modifier.then(if (fill) Modifier.fillMaxHeight() else Modifier).entrance().drawBehind { pmdFrame(pixel, tone) }
             // Room inside the frame is the design system's own (Spacing.BoxX and BoxY, 24 and 18 dp), never less than the frame itself needs.
-            // A compact box (a portrait's frame) keeps only the frame's own room.
-            .padding(horizontal = ((SIDE + inset) * pixel / density).dp.let { if (compact) it else maxOf(it, Spacing.BoxX) }, vertical = ((TOP + inset) * pixel / density).dp.let { if (compact) it else maxOf(it, Spacing.BoxY) }),
+            // A compact box (a portrait's frame) keeps only the frame's own room, and so does a box on the widget grid: its content is centred in the cells, so the room above and below is whatever the cells leave, never more than they have.
+            .padding(horizontal = ((SIDE + inset) * pixel / density).dp.let { if (compact) it else maxOf(it, Spacing.BoxX) }, vertical = ((TOP + inset) * pixel / density).dp.let { if (compact || fill) it else maxOf(it, Spacing.BoxY) }),
         content = if (!fill) content else { {
-            // On the widget grid the frame is as tall as its cells, and what does not fit is cut off inside it, never squeezed.
-            Box(Modifier.fillMaxSize().clipToBounds()) { Box(Modifier.fillMaxWidth().wrapContentHeight(Alignment.Top, unbounded = true)) { content() } }
+            // On the widget grid the frame is as tall as its cells, and what does not fit is cut off inside it, never squeezed; the content sits in the middle, so a box taller than its lines has the same room above and below.
+            Box(Modifier.fillMaxSize().clipToBounds(), contentAlignment = Alignment.CenterStart) { Box(Modifier.fillMaxWidth().wrapContentHeight(Alignment.CenterVertically, unbounded = true)) { content() } }
         } },
     )
 }

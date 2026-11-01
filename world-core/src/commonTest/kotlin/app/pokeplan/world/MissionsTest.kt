@@ -33,6 +33,25 @@ class MissionsTest {
     }
 
     @Test
+    fun aJobIsDoneExactlyWhenTheForecastSays() {
+        val trip = Expedition("tiny-woods", startedAt = 0, settledTo = 0)
+        val d = open.acceptMission("explore-woods-3")!!.copy(teams = listOf(WorldTeam(1, listOf("a", "b"), trip)))
+        val at = assertNotNull(WorldSim.jobsDoneAt(d, roster)["explore-woods-3"])
+        assertTrue(at > 0)
+        assertTrue(WorldSim.settle(d, roster, at - 1).data.missions.none { it.done }, "not a moment before")
+        assertTrue(WorldSim.settle(d, roster, at).data.missions.single().done, "done at the forecast moment")
+    }
+
+    @Test
+    fun noForecastWithoutATeamInTheRightDungeonOrForBerryJobs() {
+        val elsewhere = WorldTeam(1, listOf("a"), Expedition("thunderwave-cave", 0, 0))
+        val d = open.acceptMission("explore-woods-3")!!.acceptMission("gather-10")!!.copy(teams = listOf(elsewhere))
+        assertTrue(WorldSim.jobsDoneAt(d, roster).isEmpty())
+        val home = d.copy(teams = listOf(WorldTeam(1, listOf("a"), Expedition("tiny-woods", 0, 0))))
+        assertEquals(setOf("explore-woods-3"), WorldSim.jobsDoneAt(home, roster).keys, "berries depend on the finds, so no forecast")
+    }
+
+    @Test
     fun atMostThreeJobsAtOnce() {
         var d = open
         listOf("explore-woods-3", "explore-woods-5", "gather-10").forEach { d = d.acceptMission(it)!! }

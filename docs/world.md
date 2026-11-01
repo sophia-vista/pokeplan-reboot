@@ -235,6 +235,11 @@ Missions can be assigned to available teams and completed passively
 where appropriate. Short jobs should provide quick rewards; longer jobs
 should offer larger rewards or meaningful discoveries.
 
+**Finished-job notification (0.97.0, Android):** when a team that is exploring a job's dungeon will climb to the job's floor,
+an alarm is set for that moment (`WorldSim.jobsDoneAt`, `WorldAlerts.nextJobDone`; Settings → "World job alert", on by
+default). When it goes off World is settled and a notification names the finished job (or says how many are ready) and opens
+World. Berry jobs depend on what the floors give, so they have no forecast and are only seen when World next settles.
+
 ### Shared quest framework requirements
 
 The common quest engine should support: - Prerequisites and

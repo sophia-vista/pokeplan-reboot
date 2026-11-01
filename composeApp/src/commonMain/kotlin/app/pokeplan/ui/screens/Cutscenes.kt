@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.app.GameStore
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -69,7 +70,8 @@ private val FlashGold = Color(0xFFFFE27A)
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun CutsceneHost(model: AppModel) {
-    val waiting = model.data.rewardLog.filter { !it.seen }
+    // A Pokémon the World gives (a recruit, the Guardian) did not hatch from an egg, so it gets no hatch scene.
+    val waiting = model.data.rewardLog.filter { !it.seen && it.source != GameStore.WORLD_SOURCE }
         .flatMap { it.rewards.filterIsInstance<Reward.Hatched>() }
         .firstOrNull { it.pokemon.id !in model.playedHatches }
     val idle = model.cutscene == null

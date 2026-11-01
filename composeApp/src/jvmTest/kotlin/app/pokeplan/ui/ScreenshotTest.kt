@@ -38,7 +38,7 @@ import kotlin.test.assertTrue
  */
 @OptIn(ExperimentalComposeUiApi::class)
 class ScreenshotTest {
-    private fun render(name: String, frames: Int = 60, fontScale: Float = 1f, height: Int = 1080, width: Int = 540, density: Float = 1.5f, content: @Composable () -> Unit) {
+    private fun render(name: String, frames: Int = 60, fontScale: Float = 1f, height: Int = 1080, width: Int = 540, density: Float = 1.5f, minBytes: Int = 5_000, content: @Composable () -> Unit) {
         val scene = ImageComposeScene(width = width, height = height, density = Density(density, fontScale)) { content() }
         var nanos = 0L
         // Sprites load asynchronously, so draw a few frames with a short wait between them.
@@ -49,7 +49,7 @@ class ScreenshotTest {
         }
         val bytes = scene.render(nanos).encodeToData(EncodedImageFormat.PNG)!!.bytes
         File("build/screenshots/$name.png").apply { parentFile.mkdirs() }.writeBytes(bytes)
-        assertTrue(bytes.size > 5_000, "$name drew almost nothing")
+        assertTrue(bytes.size > minBytes, "$name drew almost nothing")
         scene.close()
     }
 
@@ -976,6 +976,31 @@ class ScreenshotTest {
             val prefs = app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages").pin("pkg.Camera").pin("pkg.Maps").withGridMode(true).withGrid(grid)
             val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, false, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
             render("grid-sizes-$name", height = 1500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { app.pokeplan.ui.launcher.GridHomePage(env, null) } } }
+        }
+    }
+
+    /** Every widget kind at each size its limits allow (2x2, 4x2, 2x3, 4x3, 4x4 ...), one image per size, to look for clipped or off-centre text. */
+    @Test
+    fun launcherGridSizeMatrix() {
+        val store = started()
+        listOf(1, 4, 7, 39, 52).forEach { store.grantPokemon(it, "test") }
+        store.addTask("Write the report", Rank.B, planned = store.today)
+        val model = AppModel(store)
+        val kinds = listOf(
+            app.pokeplan.ui.launcher.WidgetKind.CLOCK, app.pokeplan.ui.launcher.WidgetKind.STATUS, app.pokeplan.ui.launcher.WidgetKind.BUDDY,
+            app.pokeplan.ui.launcher.WidgetKind.NAV, app.pokeplan.ui.launcher.WidgetKind.PINNED, app.pokeplan.ui.launcher.WidgetKind.OFTEN,
+            app.pokeplan.ui.launcher.WidgetKind.ACTIONS, app.pokeplan.ui.launcher.WidgetKind.CALENDAR, app.pokeplan.ui.launcher.WidgetKind.AGENDA,
+            app.pokeplan.ui.launcher.WidgetKind.FORECAST,
+        )
+        val sizes = listOf(1 to 1, 1 to 2, 2 to 1, 2 to 2, 4 to 2, 2 to 3, 4 to 3, 4 to 4, 4 to 6)
+        for (k in kinds) for ((w, h) in sizes) {
+            val l = k.limits()
+            if (w !in l.minW..l.maxW || h !in l.minH..l.maxH) continue
+            val grid = listOf(app.pokeplan.ui.launcher.GridWidget(app.pokeplan.ui.launcher.WidgetPage.HOME, k, "", 0, 0, w, h))
+            val prefs = app.pokeplan.ui.launcher.LauncherPrefs().pin("pkg.Phone").pin("pkg.Messages").pin("pkg.Camera").pin("pkg.Maps").withGridMode(true).withGrid(grid)
+            val env = app.pokeplan.ui.launcher.WidgetEnv(model, fakeApps, prefs, fakeHost, null, 3, app.pokeplan.ui.launcher.TodayState(store.today), app.pokeplan.ui.launcher.BuddyMood(), false, false, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+            val rows = app.pokeplan.ui.launcher.WidgetGrid.ROW_DP * h + 16
+            render("gridsize-${k.name.lowercase()}-${w}x$h", frames = 8, height = (rows * 1.5f).toInt(), minBytes = 500) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Night)) { app.pokeplan.ui.launcher.GridHomePage(env, null) } } }
         }
     }
 

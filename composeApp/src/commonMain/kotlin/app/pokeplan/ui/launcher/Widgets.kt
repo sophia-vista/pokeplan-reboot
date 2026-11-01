@@ -228,15 +228,22 @@ private fun AppsWidget(title: String, apps: List<LauncherApp>, env: WidgetEnv, s
             if (apps.isEmpty()) PmdText(hint, env.pixel, Modifier.padding(horizontal = pad, vertical = Spacing.M), alpha = 0.7f)
             else Column(Modifier.fillMaxWidth()) {
                 // Small shows one row of apps, medium two, large all of them (and the rest, on a smaller size, are counted).
-                val rows = apps.chunked(4)
-                val shown = when (size) { WidgetSize.SMALL -> 1; WidgetSize.MEDIUM -> 2; WidgetSize.LARGE -> rows.size }
+                // Half the screen holds two to a row, and a box too short for a name shows the pictures alone.
+                val cells = LocalCells.current
+                val perRow = if (cells.narrow) 2 else 4
+                val labels = cells.h >= 3
+                val rows = apps.chunked(perRow)
+                val asked = when (size) { WidgetSize.SMALL -> 1; WidgetSize.MEDIUM -> 2; WidgetSize.LARGE -> rows.size }
+                // On the grid only as many rows as the box is tall enough for (a row of apps is 80 dp with names, 56 without).
+                val fit = ((cells.h * WidgetGrid.ROW_DP - 22) / if (labels) 80 else 56).coerceAtLeast(1)
+                val shown = minOf(asked, fit)
                 rows.take(shown).forEach { row ->
                     Row(Modifier.fillMaxWidth()) {
-                        row.forEach { app -> PinnedApp(app, icons[app.key], env.host, env.pixel, Modifier.weight(1f), onHold = { env.onHold(app) }) }
-                        repeat(4 - row.size) { Box(Modifier.weight(1f)) }
+                        row.forEach { app -> PinnedApp(app, icons[app.key], env.host, env.pixel, Modifier.weight(1f), onHold = { env.onHold(app) }, showLabel = labels) }
+                        repeat(perRow - row.size) { Box(Modifier.weight(1f)) }
                     }
                 }
-                if (rows.size > shown) PmdText("${apps.size - rows.take(shown).sumOf { it.size }} more", env.pixel, Modifier.padding(horizontal = pad, vertical = Spacing.S), alpha = 0.7f)
+                if (rows.size > shown && cells.h >= 4) PmdText("${apps.size - rows.take(shown).sumOf { it.size }} more", env.pixel, Modifier.padding(horizontal = pad, vertical = Spacing.S), alpha = 0.7f)
             }
         }
     }
