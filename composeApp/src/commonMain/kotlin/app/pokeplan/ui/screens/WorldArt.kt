@@ -138,7 +138,8 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
     }
     val density = LocalDensity.current
     BoxWithConstraints(modifier.fillMaxWidth()) {
-        val widthPx = with(density) { (maxWidth - FRAME * 2).toPx() }
+        val stripWidth = maxWidth - FRAME * 2
+        val widthPx = with(density) { stripWidth.toPx() }
         val pixel = (widthPx / (TILE_PX * 8)).toInt().coerceAtLeast(1)
         val tilePx = TILE_PX * pixel
         val tile = with(density) { tilePx.toDp() }
@@ -168,10 +169,12 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
                 val shown = walkers.take(4)
                 val size = tile * 1.5f
                 val step = tile * 1.3f
+                // The group is centred along the strip, whatever its size (the leader still on the right).
+                val left = ((stripWidth - (step * (shown.size - 1) + size)) / 2).coerceAtLeast(0.dp)
                 shown.forEachIndexed { i, p ->
                     val order = shown.size - 1 - i
                     val feet = tile * (if (i % 2 == 0) 2.2f else 2.9f)
-                    Box(Modifier.offset(x = step * order + tile * 0.3f, y = feet - size)) {
+                    Box(Modifier.offset(x = left + step * order, y = feet - size)) {
                         // A sample (the wild Pokémon of a dungeon on the map) is a dark shape standing still: it is a hint, not someone you have.
                         if (p.sample) app.pokeplan.ui.Sprite(p.formId, p.shiny, p.name, size = size, silhouette = Color.Black.copy(alpha = 0.85f))
                         else app.pokeplan.ui.AnimatedSprite(p.formId, p.shiny, p.name, size = size, animate = animate, ground = 0.dp, action = app.pokeplan.ui.SpriteAction.WALK_SIDE)
