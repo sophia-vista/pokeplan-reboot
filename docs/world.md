@@ -733,7 +733,7 @@ Kanto is the first mainline layer beside the Mystery Dungeon home layer (decisio
 
 ### Layer rules
 - **A layer is data, not a new game.** `WorldLayer` (home, Kanto, ...) is a new field on `DungeonDef`, and each layer has its own map picture, its own story chapters and its own Guardians. One layer is shown at a time behind a switch on the Map screen; teams, the Bag, rank, Poké and the Camp stay shared (one trainer).
-- **Kanto opens when the home story reaches its second chapter *(tune)*,** so nobody meets it before they know the loop. It stays open once reached. Its dungeons have their own rank gates, starting at Normal.
+- **Kanto, and every other layer, is open on day one** (owner, 1 November 2026); no layer waits for another's story. Each dungeon inside a layer keeps its own rank gate, starting at Normal, so the order is the player's choice.
 - **Wild tables follow the Kanto regional dex** (species 1 to 151). A Kanto species is found only in Kanto, so the collection fills region by region. The tables are written by hand per dungeon from the species' habitats in the games, not generated.
 - **Recruiting, not eggs:** finds join through the same recruit flow as the home layer.
 - **No change to the home layer** and nothing existing moves.
@@ -763,7 +763,7 @@ Kanto's story is a chain of chapters like the home layer's (`Story.chapters`, on
 4. **Victory Road:** the way to Cerulean Cave.
 5. **The Guardian:** Cerulean Cave to its last floor, where Mewtwo waits. Mewtwo is a Guardian of Kanto and joins the Guardian collection once, like Primal Dialga does for the home layer. Mew is central to Kanto's story too (the brief below: "Mewtwo / Mew"), so it is a second Kanto quest and Guardian, found through the Cerulean Cave story's Rocket thread and earned after Mewtwo.
 
-All five are Guardians of Kanto (decision 8); the boost of each is **Kanto-wide only** and small, so they add up inside the existing cap on Guardian effects *(tune)*:
+All five are Guardians of Kanto (decision 8); the boost of each is small and applies in Kanto; **a Guardian can also help other places, depending on the module it is placed in** (owner, 1 November 2026): slotted in a module (the Guardian slot, docs/ecosystem.md section 10) it gives that module a matching bonus, within the existing cap on Guardian effects *(tune)*:
 - Mewtwo, Psychic Mastery, and Mew (a small boost to finding Pokémon of any type): expeditions in Kanto find recruits slightly more often.
 - Articuno, Zapdos, Moltres: their types explore Kanto faster (ice and water, electric, fire).
 
@@ -773,12 +773,12 @@ The brief makes a region a *journey across its real map*, not a list of dungeons
 - **Fog of war:** undiscovered nodes are hidden; reaching a node reveals its neighbours. Visited places can be revisited.
 - **Two tracks:** the **story** unlocks the major destinations in order; **exploration** reveals optional places and finds and never blocks the story. Finishing Kanto does not need a full Kanto dex or every dungeon.
 - **Story, "The Genetic Crisis"** in the brief's five parts: Arrival (Pallet Town), Investigation (Viridian Forest, Mt. Moon, Rocket's presence), Awakening (the birds, the Pokémon Tower's spirits, the Mansion's notes), Confrontation (Silph Co. and Giovanni, Victory Road), Resolution (Cerulean Cave, Mewtwo, Mew). The chapter count is flexible. The legendary is felt from the start (signs: strange Pokémon behaviour in the forest, dreams, sightings), then mythology, then the encounter.
-- **Activity progression (proposed, to settle):** module quests and tasks do not make a separate tracker; they feed *travel*. A real action that already pays through an effort event (`CareEvent`, the Plan reward events, docs/ecosystem.md section 5) also adds travel steps, which move the team's journey to the next node and open the expedition at it. No module is required for any chapter, and a missed day loses nothing. World's offline exploration by teams stays as it is (dungeons run on their own); travel steps only open nodes.
+- **The journey advances only through World's teams** (owner, 1 November 2026): module quests and tasks do not feed travel. A team's exploration (online or offline, deterministic) clears dungeons and opens the next node, so the brief's "activity progression" is World's own loop; modules reach it through the shared Bag, Poké and Guardians, as before. No module is required and a missed day loses nothing.
 - **Completion:** story completion gives the Kanto Guardians and boosts above, plus postgame (Cerulean Cave's deeper floors, the Sevii Islands). Collection completion is a separate, optional goal.
 - Different from my first draft: Mew is central, and the map has settlements and routes. The brief's other regions stay as planned in `docs/regional-storylines.md` and `docs/ecosystem.md`; where they differ (Hisui, Paldea's Terapagos, the Mystery Dungeon continents' legendaries) the owner's decisions in `docs/ecosystem.md` win until changed.
 
 ### Art
-- **Map picture:** one for Kanto, in the style of the `map-1..8` stages. Real assets only (the art rule): the town map of the games or a Mystery Dungeon style crop. This is the main thing the owner supplies or we find. Until then the layer ships with the home layer's picture and markers laid on a scene backdrop.
+- **Map picture (found):** the official FireRed and LeafGreen Kanto region map, `assets/world/map-kanto.png` (192 x 128), built from the game's own tiles by `tools/sprites/fetch_kanto_map.py`. It is small, so it is drawn at an integer scale with no smoothing; the fog of war and the node markers are laid over it in code. It shows the nine cities and the routes but not every place of the story, so the markers use positions read from it. Kanto's story art, rooms and tiles stay the Mystery Dungeon sheets.
 - **Tilesets:** the Explorers of Sky sheets already in `assets/tiles/` cover every kind needed (Apple Woods or Lush Prairie for the forest; Crystal Cave for Mt. Moon; Beach Cave for Seafoam; Deep Sealed Ruin for the tower). No new sheet is required for the first release.
 - **Sprites, cries and portraits:** SpriteCollab and the existing assets, as for every Pokémon.
 
@@ -790,7 +790,5 @@ The brief makes a region a *journey across its real map*, not a list of dungeons
 5. `docs/economy.md`, `docs/world.md` status and `CHANGELOG.md`; bump `RewardRules.VERSION` only if World pays through a new source.
 
 ### Open questions for the owner
-- Is the Kanto map picture to be taken from the games, or supplied by the owner?
-- Should Kanto's quests need the home-layer story first (assumed: chapter 2 of the home story), or open from the first day?
-- Kanto-only boosts as above, or may a Kanto Guardian also help other layers a little?
-- Do module activities feed travel steps (as proposed above), or should the journey advance only through World's own teams?
+- The Kanto map picture: official art, to be found (see the art line above).
+- Which bonus does each Kanto Guardian give in which module (Mewtwo in Care? Plan?)? Settled when the Guardians are built, with the Guardian slot rules.
