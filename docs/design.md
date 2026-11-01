@@ -404,6 +404,7 @@ The cloud save is Plan's own data (`plan.saves`, without the game state). Every 
 
 - Per-species base stats, abilities, types, evolutions and forms for **every species through Gen 9**, generated at build time from a public dataset (needs the build environment to reach it). Species use National Dex numbers; each module region keeps its own local numbering.
 - Regional dex lists for all regions, as lists of National Dex numbers.
+- **Moves (done, 0.96.0):** all 919 standard-type moves (type, category, power, PP, accuracy, priority, generation) and, for each form, what it learns from the newest game it appears in, by level-up (with level), egg, tutor and machine (`Dex.move`, `Dex.learnset`, `Dex.movesOfType`). Mega and Gigantamax forms use their species' set. Nothing in the game uses them yet: they are for move-based skills and Pokégear helpers that learn a tool's move.
 - A rarity for every species, assigned by rule (see Roster).
 - Ability → perk table, type → perk table, item table, all as plain data with tests.
 

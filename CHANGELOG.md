@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.96.0
+
+- Moves in the Dex (owner's decision d16): `tools/species/generate.py` now also writes every move (919: type, category, power, PP, accuracy, priority, generation) and each form's learnset from the newest game it appears in (level-up with levels, egg, tutor, machine). `Dex.move(id or identifier)`, `Dex.learnset(form or species)` and `Dex.movesOfType(type)` read them; Mega and Gigantamax forms use their species' set. No gameplay uses them yet; they unblock move-based skills and Pokégear helpers. `DexData.kt` grows by about 410 KB.
+
 ## 0.95.1
 
 - Care: the journal draft is kept across an app restart (saved after a short pause, cleared when the entry is written). The owner's World regions decisions and the merge rule for failures outside a PR are recorded in the docs.

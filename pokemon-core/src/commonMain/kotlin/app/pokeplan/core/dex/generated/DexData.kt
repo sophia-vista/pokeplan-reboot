@@ -3972,3 +3972,2211 @@ internal val DEX_ENTRIES: List<String> = listOf(
 1025|Its peach-shaped shell serves as storage for a potent poison. It makes poisonous mochi and serves them to people and Pokémon.
 """,
 )
+
+internal val DEX_MOVES: List<String> = listOf(
+    """1|pound|Pound|normal|PHYSICAL|40|35|100|0|1
+2|karate-chop|Karate Chop|fighting|PHYSICAL|50|25|100|0|1
+3|double-slap|Double Slap|normal|PHYSICAL|15|10|85|0|1
+4|comet-punch|Comet Punch|normal|PHYSICAL|18|15|85|0|1
+5|mega-punch|Mega Punch|normal|PHYSICAL|80|20|85|0|1
+6|pay-day|Pay Day|normal|PHYSICAL|40|20|100|0|1
+7|fire-punch|Fire Punch|fire|PHYSICAL|75|15|100|0|1
+8|ice-punch|Ice Punch|ice|PHYSICAL|75|15|100|0|1
+9|thunder-punch|Thunder Punch|electric|PHYSICAL|75|15|100|0|1
+10|scratch|Scratch|normal|PHYSICAL|40|35|100|0|1
+11|vice-grip|Vise Grip|normal|PHYSICAL|55|30|100|0|1
+12|guillotine|Guillotine|normal|PHYSICAL|-|5|30|0|1
+13|razor-wind|Razor Wind|normal|SPECIAL|80|10|100|0|1
+14|swords-dance|Swords Dance|normal|STATUS|-|20|-|0|1
+15|cut|Cut|normal|PHYSICAL|50|30|95|0|1
+16|gust|Gust|flying|SPECIAL|40|35|100|0|1
+17|wing-attack|Wing Attack|flying|PHYSICAL|60|35|100|0|1
+18|whirlwind|Whirlwind|normal|STATUS|-|20|-|-6|1
+19|fly|Fly|flying|PHYSICAL|90|15|95|0|1
+20|bind|Bind|normal|PHYSICAL|15|20|85|0|1
+21|slam|Slam|normal|PHYSICAL|80|20|75|0|1
+22|vine-whip|Vine Whip|grass|PHYSICAL|45|25|100|0|1
+23|stomp|Stomp|normal|PHYSICAL|65|20|100|0|1
+24|double-kick|Double Kick|fighting|PHYSICAL|30|30|100|0|1
+25|mega-kick|Mega Kick|normal|PHYSICAL|120|5|75|0|1
+26|jump-kick|Jump Kick|fighting|PHYSICAL|100|10|95|0|1
+27|rolling-kick|Rolling Kick|fighting|PHYSICAL|60|15|85|0|1
+28|sand-attack|Sand Attack|ground|STATUS|-|15|100|0|1
+29|headbutt|Headbutt|normal|PHYSICAL|70|15|100|0|1
+30|horn-attack|Horn Attack|normal|PHYSICAL|65|25|100|0|1
+31|fury-attack|Fury Attack|normal|PHYSICAL|15|20|85|0|1
+32|horn-drill|Horn Drill|normal|PHYSICAL|-|5|30|0|1
+33|tackle|Tackle|normal|PHYSICAL|40|35|100|0|1
+34|body-slam|Body Slam|normal|PHYSICAL|85|15|100|0|1
+35|wrap|Wrap|normal|PHYSICAL|15|20|90|0|1
+36|take-down|Take Down|normal|PHYSICAL|90|20|85|0|1
+37|thrash|Thrash|normal|PHYSICAL|120|10|100|0|1
+38|double-edge|Double-Edge|normal|PHYSICAL|120|15|100|0|1
+39|tail-whip|Tail Whip|normal|STATUS|-|30|100|0|1
+40|poison-sting|Poison Sting|poison|PHYSICAL|15|35|100|0|1
+41|twineedle|Twineedle|bug|PHYSICAL|25|20|100|0|1
+42|pin-missile|Pin Missile|bug|PHYSICAL|25|20|95|0|1
+43|leer|Leer|normal|STATUS|-|30|100|0|1
+44|bite|Bite|dark|PHYSICAL|60|25|100|0|1
+45|growl|Growl|normal|STATUS|-|40|100|0|1
+46|roar|Roar|normal|STATUS|-|20|-|-6|1
+47|sing|Sing|normal|STATUS|-|15|55|0|1
+48|supersonic|Supersonic|normal|STATUS|-|20|55|0|1
+49|sonic-boom|Sonic Boom|normal|SPECIAL|-|20|90|0|1
+50|disable|Disable|normal|STATUS|-|20|100|0|1
+51|acid|Acid|poison|SPECIAL|40|30|100|0|1
+52|ember|Ember|fire|SPECIAL|40|25|100|0|1
+53|flamethrower|Flamethrower|fire|SPECIAL|90|15|100|0|1
+54|mist|Mist|ice|STATUS|-|30|-|0|1
+55|water-gun|Water Gun|water|SPECIAL|40|25|100|0|1
+56|hydro-pump|Hydro Pump|water|SPECIAL|110|5|80|0|1
+57|surf|Surf|water|SPECIAL|90|15|100|0|1
+58|ice-beam|Ice Beam|ice|SPECIAL|90|10|100|0|1
+59|blizzard|Blizzard|ice|SPECIAL|110|5|70|0|1
+60|psybeam|Psybeam|psychic|SPECIAL|65|20|100|0|1
+61|bubble-beam|Bubble Beam|water|SPECIAL|65|20|100|0|1
+62|aurora-beam|Aurora Beam|ice|SPECIAL|65|20|100|0|1
+63|hyper-beam|Hyper Beam|normal|SPECIAL|150|5|90|0|1
+64|peck|Peck|flying|PHYSICAL|35|35|100|0|1
+65|drill-peck|Drill Peck|flying|PHYSICAL|80|20|100|0|1
+66|submission|Submission|fighting|PHYSICAL|80|20|80|0|1
+67|low-kick|Low Kick|fighting|PHYSICAL|-|20|100|0|1
+68|counter|Counter|fighting|PHYSICAL|-|20|100|-5|1
+69|seismic-toss|Seismic Toss|fighting|PHYSICAL|-|20|100|0|1
+70|strength|Strength|normal|PHYSICAL|80|15|100|0|1
+71|absorb|Absorb|grass|SPECIAL|20|25|100|0|1
+72|mega-drain|Mega Drain|grass|SPECIAL|40|15|100|0|1
+73|leech-seed|Leech Seed|grass|STATUS|-|10|90|0|1
+74|growth|Growth|normal|STATUS|-|20|-|0|1
+75|razor-leaf|Razor Leaf|grass|PHYSICAL|55|25|95|0|1
+76|solar-beam|Solar Beam|grass|SPECIAL|120|10|100|0|1
+77|poison-powder|Poison Powder|poison|STATUS|-|35|75|0|1
+78|stun-spore|Stun Spore|grass|STATUS|-|30|75|0|1
+79|sleep-powder|Sleep Powder|grass|STATUS|-|15|75|0|1
+80|petal-dance|Petal Dance|grass|SPECIAL|120|10|100|0|1
+81|string-shot|String Shot|bug|STATUS|-|40|95|0|1
+82|dragon-rage|Dragon Rage|dragon|SPECIAL|-|10|100|0|1
+83|fire-spin|Fire Spin|fire|SPECIAL|35|15|85|0|1
+84|thunder-shock|Thunder Shock|electric|SPECIAL|40|30|100|0|1
+85|thunderbolt|Thunderbolt|electric|SPECIAL|90|15|100|0|1
+86|thunder-wave|Thunder Wave|electric|STATUS|-|20|90|0|1
+87|thunder|Thunder|electric|SPECIAL|110|10|70|0|1
+88|rock-throw|Rock Throw|rock|PHYSICAL|50|15|90|0|1
+89|earthquake|Earthquake|ground|PHYSICAL|100|10|100|0|1
+90|fissure|Fissure|ground|PHYSICAL|-|5|30|0|1
+91|dig|Dig|ground|PHYSICAL|80|10|100|0|1
+92|toxic|Toxic|poison|STATUS|-|10|90|0|1
+93|confusion|Confusion|psychic|SPECIAL|50|25|100|0|1
+94|psychic|Psychic|psychic|SPECIAL|90|10|100|0|1
+95|hypnosis|Hypnosis|psychic|STATUS|-|20|60|0|1
+96|meditate|Meditate|psychic|STATUS|-|40|-|0|1
+97|agility|Agility|psychic|STATUS|-|30|-|0|1
+98|quick-attack|Quick Attack|normal|PHYSICAL|40|30|100|1|1
+99|rage|Rage|normal|PHYSICAL|20|20|100|0|1
+100|teleport|Teleport|psychic|STATUS|-|20|-|-6|1
+101|night-shade|Night Shade|ghost|SPECIAL|-|15|100|0|1
+102|mimic|Mimic|normal|STATUS|-|10|-|0|1
+103|screech|Screech|normal|STATUS|-|40|85|0|1
+104|double-team|Double Team|normal|STATUS|-|15|-|0|1
+105|recover|Recover|normal|STATUS|-|5|-|0|1
+106|harden|Harden|normal|STATUS|-|30|-|0|1
+107|minimize|Minimize|normal|STATUS|-|10|-|0|1
+108|smokescreen|Smokescreen|normal|STATUS|-|20|100|0|1
+109|confuse-ray|Confuse Ray|ghost|STATUS|-|10|100|0|1
+110|withdraw|Withdraw|water|STATUS|-|40|-|0|1
+111|defense-curl|Defense Curl|normal|STATUS|-|40|-|0|1
+112|barrier|Barrier|psychic|STATUS|-|20|-|0|1
+113|light-screen|Light Screen|psychic|STATUS|-|30|-|0|1
+114|haze|Haze|ice|STATUS|-|30|-|0|1
+115|reflect|Reflect|psychic|STATUS|-|20|-|0|1
+116|focus-energy|Focus Energy|normal|STATUS|-|30|-|0|1
+117|bide|Bide|normal|PHYSICAL|-|10|-|1|1
+118|metronome|Metronome|normal|STATUS|-|10|-|0|1
+119|mirror-move|Mirror Move|flying|STATUS|-|20|-|0|1
+120|self-destruct|Self-Destruct|normal|PHYSICAL|200|5|100|0|1
+121|egg-bomb|Egg Bomb|normal|PHYSICAL|100|10|75|0|1
+122|lick|Lick|ghost|PHYSICAL|30|30|100|0|1
+123|smog|Smog|poison|SPECIAL|30|20|70|0|1
+124|sludge|Sludge|poison|SPECIAL|65|20|100|0|1
+125|bone-club|Bone Club|ground|PHYSICAL|65|20|85|0|1
+126|fire-blast|Fire Blast|fire|SPECIAL|110|5|85|0|1
+127|waterfall|Waterfall|water|PHYSICAL|80|15|100|0|1
+128|clamp|Clamp|water|PHYSICAL|35|15|85|0|1
+129|swift|Swift|normal|SPECIAL|60|20|-|0|1
+130|skull-bash|Skull Bash|normal|PHYSICAL|130|10|100|0|1
+131|spike-cannon|Spike Cannon|normal|PHYSICAL|20|15|100|0|1
+132|constrict|Constrict|normal|PHYSICAL|10|35|100|0|1
+133|amnesia|Amnesia|psychic|STATUS|-|20|-|0|1
+134|kinesis|Kinesis|psychic|STATUS|-|15|80|0|1
+135|soft-boiled|Soft-Boiled|normal|STATUS|-|5|-|0|1
+136|high-jump-kick|High Jump Kick|fighting|PHYSICAL|130|10|90|0|1
+137|glare|Glare|normal|STATUS|-|30|100|0|1
+138|dream-eater|Dream Eater|psychic|SPECIAL|100|15|100|0|1
+139|poison-gas|Poison Gas|poison|STATUS|-|40|90|0|1
+140|barrage|Barrage|normal|PHYSICAL|15|20|85|0|1
+141|leech-life|Leech Life|bug|PHYSICAL|80|10|100|0|1
+142|lovely-kiss|Lovely Kiss|normal|STATUS|-|10|75|0|1
+143|sky-attack|Sky Attack|flying|PHYSICAL|140|5|90|0|1
+144|transform|Transform|normal|STATUS|-|10|-|0|1
+145|bubble|Bubble|water|SPECIAL|40|30|100|0|1
+146|dizzy-punch|Dizzy Punch|normal|PHYSICAL|70|10|100|0|1
+147|spore|Spore|grass|STATUS|-|15|100|0|1
+148|flash|Flash|normal|STATUS|-|20|100|0|1
+149|psywave|Psywave|psychic|SPECIAL|-|15|100|0|1
+150|splash|Splash|normal|STATUS|-|40|-|0|1
+151|acid-armor|Acid Armor|poison|STATUS|-|20|-|0|1
+152|crabhammer|Crabhammer|water|PHYSICAL|100|10|90|0|1
+153|explosion|Explosion|normal|PHYSICAL|250|5|100|0|1
+154|fury-swipes|Fury Swipes|normal|PHYSICAL|18|15|80|0|1
+155|bonemerang|Bonemerang|ground|PHYSICAL|50|10|90|0|1
+156|rest|Rest|psychic|STATUS|-|5|-|0|1
+157|rock-slide|Rock Slide|rock|PHYSICAL|75|10|90|0|1
+158|hyper-fang|Hyper Fang|normal|PHYSICAL|80|15|90|0|1
+159|sharpen|Sharpen|normal|STATUS|-|30|-|0|1
+160|conversion|Conversion|normal|STATUS|-|30|-|0|1
+161|tri-attack|Tri Attack|normal|SPECIAL|80|10|100|0|1
+162|super-fang|Super Fang|normal|PHYSICAL|-|10|90|0|1
+163|slash|Slash|normal|PHYSICAL|70|20|100|0|1
+164|substitute|Substitute|normal|STATUS|-|10|-|0|1
+165|struggle|Struggle|normal|PHYSICAL|50|1|-|0|1
+166|sketch|Sketch|normal|STATUS|-|1|-|0|2
+167|triple-kick|Triple Kick|fighting|PHYSICAL|10|10|90|0|2
+168|thief|Thief|dark|PHYSICAL|60|25|100|0|2
+169|spider-web|Spider Web|bug|STATUS|-|10|-|0|2
+170|mind-reader|Mind Reader|normal|STATUS|-|5|-|0|2
+171|nightmare|Nightmare|ghost|STATUS|-|15|100|0|2
+172|flame-wheel|Flame Wheel|fire|PHYSICAL|60|25|100|0|2
+173|snore|Snore|normal|SPECIAL|50|15|100|0|2
+174|curse|Curse|ghost|STATUS|-|10|-|0|2
+175|flail|Flail|normal|PHYSICAL|-|15|100|0|2
+176|conversion-2|Conversion 2|normal|STATUS|-|30|-|0|2
+177|aeroblast|Aeroblast|flying|SPECIAL|100|5|95|0|2
+178|cotton-spore|Cotton Spore|grass|STATUS|-|40|100|0|2
+179|reversal|Reversal|fighting|PHYSICAL|-|15|100|0|2
+180|spite|Spite|ghost|STATUS|-|10|100|0|2
+181|powder-snow|Powder Snow|ice|SPECIAL|40|25|100|0|2
+182|protect|Protect|normal|STATUS|-|10|-|4|2
+183|mach-punch|Mach Punch|fighting|PHYSICAL|40|30|100|1|2
+184|scary-face|Scary Face|normal|STATUS|-|10|100|0|2
+185|feint-attack|Feint Attack|dark|PHYSICAL|60|20|-|0|2
+186|sweet-kiss|Sweet Kiss|fairy|STATUS|-|10|75|0|2
+187|belly-drum|Belly Drum|normal|STATUS|-|10|-|0|2
+188|sludge-bomb|Sludge Bomb|poison|SPECIAL|90|10|100|0|2
+189|mud-slap|Mud-Slap|ground|SPECIAL|20|10|100|0|2
+190|octazooka|Octazooka|water|SPECIAL|65|10|85|0|2
+191|spikes|Spikes|ground|STATUS|-|20|-|0|2
+192|zap-cannon|Zap Cannon|electric|SPECIAL|120|5|50|0|2
+193|foresight|Foresight|normal|STATUS|-|40|-|0|2
+194|destiny-bond|Destiny Bond|ghost|STATUS|-|5|-|0|2
+195|perish-song|Perish Song|normal|STATUS|-|5|-|0|2
+196|icy-wind|Icy Wind|ice|SPECIAL|55|15|95|0|2
+197|detect|Detect|fighting|STATUS|-|5|-|4|2
+198|bone-rush|Bone Rush|ground|PHYSICAL|25|10|90|0|2
+199|lock-on|Lock-On|normal|STATUS|-|5|-|0|2
+200|outrage|Outrage|dragon|PHYSICAL|120|10|100|0|2
+201|sandstorm|Sandstorm|rock|STATUS|-|10|-|0|2
+202|giga-drain|Giga Drain|grass|SPECIAL|75|10|100|0|2
+203|endure|Endure|normal|STATUS|-|10|-|4|2
+204|charm|Charm|fairy|STATUS|-|20|100|0|2
+205|rollout|Rollout|rock|PHYSICAL|30|20|90|0|2
+206|false-swipe|False Swipe|normal|PHYSICAL|40|40|100|0|2
+207|swagger|Swagger|normal|STATUS|-|15|85|0|2
+208|milk-drink|Milk Drink|normal|STATUS|-|5|-|0|2
+209|spark|Spark|electric|PHYSICAL|65|20|100|0|2
+210|fury-cutter|Fury Cutter|bug|PHYSICAL|40|20|95|0|2
+211|steel-wing|Steel Wing|steel|PHYSICAL|70|25|90|0|2
+212|mean-look|Mean Look|normal|STATUS|-|5|-|0|2
+213|attract|Attract|normal|STATUS|-|15|100|0|2
+214|sleep-talk|Sleep Talk|normal|STATUS|-|10|-|0|2
+215|heal-bell|Heal Bell|normal|STATUS|-|5|-|0|2
+216|return|Return|normal|PHYSICAL|-|20|100|0|2
+217|present|Present|normal|PHYSICAL|-|15|90|0|2
+218|frustration|Frustration|normal|PHYSICAL|-|20|100|0|2
+219|safeguard|Safeguard|normal|STATUS|-|25|-|0|2
+220|pain-split|Pain Split|normal|STATUS|-|20|-|0|2
+221|sacred-fire|Sacred Fire|fire|PHYSICAL|100|5|95|0|2
+222|magnitude|Magnitude|ground|PHYSICAL|-|30|100|0|2
+223|dynamic-punch|Dynamic Punch|fighting|PHYSICAL|100|5|50|0|2
+224|megahorn|Megahorn|bug|PHYSICAL|120|10|85|0|2
+225|dragon-breath|Dragon Breath|dragon|SPECIAL|60|20|100|0|2
+226|baton-pass|Baton Pass|normal|STATUS|-|40|-|0|2
+227|encore|Encore|normal|STATUS|-|5|100|0|2
+228|pursuit|Pursuit|dark|PHYSICAL|40|20|100|0|2
+229|rapid-spin|Rapid Spin|normal|PHYSICAL|50|40|100|0|2
+230|sweet-scent|Sweet Scent|normal|STATUS|-|20|100|0|2
+231|iron-tail|Iron Tail|steel|PHYSICAL|100|15|75|0|2
+232|metal-claw|Metal Claw|steel|PHYSICAL|50|35|95|0|2
+233|vital-throw|Vital Throw|fighting|PHYSICAL|70|10|-|-1|2
+234|morning-sun|Morning Sun|normal|STATUS|-|5|-|0|2
+235|synthesis|Synthesis|grass|STATUS|-|5|-|0|2
+236|moonlight|Moonlight|fairy|STATUS|-|5|-|0|2
+237|hidden-power|Hidden Power|normal|SPECIAL|60|15|100|0|2
+238|cross-chop|Cross Chop|fighting|PHYSICAL|100|5|80|0|2
+239|twister|Twister|dragon|SPECIAL|40|20|100|0|2
+240|rain-dance|Rain Dance|water|STATUS|-|5|-|0|2
+241|sunny-day|Sunny Day|fire|STATUS|-|5|-|0|2
+242|crunch|Crunch|dark|PHYSICAL|80|15|100|0|2
+243|mirror-coat|Mirror Coat|psychic|SPECIAL|-|20|100|-5|2
+244|psych-up|Psych Up|normal|STATUS|-|10|-|0|2
+245|extreme-speed|Extreme Speed|normal|PHYSICAL|80|5|100|2|2
+246|ancient-power|Ancient Power|rock|SPECIAL|60|5|100|0|2
+247|shadow-ball|Shadow Ball|ghost|SPECIAL|80|15|100|0|2
+248|future-sight|Future Sight|psychic|SPECIAL|120|10|100|0|2
+249|rock-smash|Rock Smash|fighting|PHYSICAL|40|15|100|0|2
+250|whirlpool|Whirlpool|water|SPECIAL|35|15|85|0|2
+251|beat-up|Beat Up|dark|PHYSICAL|-|10|100|0|2
+252|fake-out|Fake Out|normal|PHYSICAL|40|10|100|3|3
+253|uproar|Uproar|normal|SPECIAL|90|10|100|0|3
+254|stockpile|Stockpile|normal|STATUS|-|20|-|0|3
+255|spit-up|Spit Up|normal|SPECIAL|-|10|100|0|3
+256|swallow|Swallow|normal|STATUS|-|10|-|0|3
+257|heat-wave|Heat Wave|fire|SPECIAL|95|10|90|0|3
+258|hail|Hail|ice|STATUS|-|10|-|0|3
+259|torment|Torment|dark|STATUS|-|15|100|0|3
+260|flatter|Flatter|dark|STATUS|-|15|100|0|3
+261|will-o-wisp|Will-O-Wisp|fire|STATUS|-|15|85|0|3
+262|memento|Memento|dark|STATUS|-|10|100|0|3
+263|facade|Facade|normal|PHYSICAL|70|20|100|0|3
+264|focus-punch|Focus Punch|fighting|PHYSICAL|150|20|100|-3|3
+265|smelling-salts|Smelling Salts|normal|PHYSICAL|70|10|100|0|3
+266|follow-me|Follow Me|normal|STATUS|-|20|-|2|3
+267|nature-power|Nature Power|normal|STATUS|-|20|-|0|3
+268|charge|Charge|electric|STATUS|-|20|-|0|3
+269|taunt|Taunt|dark|STATUS|-|20|100|0|3
+270|helping-hand|Helping Hand|normal|STATUS|-|20|-|5|3
+271|trick|Trick|psychic|STATUS|-|10|100|0|3
+272|role-play|Role Play|psychic|STATUS|-|10|-|0|3
+273|wish|Wish|normal|STATUS|-|10|-|0|3
+274|assist|Assist|normal|STATUS|-|20|-|0|3
+275|ingrain|Ingrain|grass|STATUS|-|20|-|0|3
+276|superpower|Superpower|fighting|PHYSICAL|120|5|100|0|3
+277|magic-coat|Magic Coat|psychic|STATUS|-|15|-|4|3
+278|recycle|Recycle|normal|STATUS|-|10|-|0|3
+279|revenge|Revenge|fighting|PHYSICAL|60|10|100|-4|3
+280|brick-break|Brick Break|fighting|PHYSICAL|75|15|100|0|3
+281|yawn|Yawn|normal|STATUS|-|10|-|0|3
+282|knock-off|Knock Off|dark|PHYSICAL|65|20|100|0|3
+283|endeavor|Endeavor|normal|PHYSICAL|-|5|100|0|3
+284|eruption|Eruption|fire|SPECIAL|150|5|100|0|3
+285|skill-swap|Skill Swap|psychic|STATUS|-|10|-|0|3
+286|imprison|Imprison|psychic|STATUS|-|10|-|0|3
+287|refresh|Refresh|normal|STATUS|-|20|-|0|3
+288|grudge|Grudge|ghost|STATUS|-|5|-|0|3
+289|snatch|Snatch|dark|STATUS|-|10|-|4|3
+290|secret-power|Secret Power|normal|PHYSICAL|70|20|100|0|3
+291|dive|Dive|water|PHYSICAL|80|10|100|0|3
+292|arm-thrust|Arm Thrust|fighting|PHYSICAL|15|20|100|0|3
+293|camouflage|Camouflage|normal|STATUS|-|20|-|0|3
+294|tail-glow|Tail Glow|bug|STATUS|-|20|-|0|3
+295|luster-purge|Luster Purge|psychic|SPECIAL|95|5|100|0|3
+296|mist-ball|Mist Ball|psychic|SPECIAL|95|5|100|0|3
+297|feather-dance|Feather Dance|flying|STATUS|-|15|100|0|3
+298|teeter-dance|Teeter Dance|normal|STATUS|-|20|100|0|3
+299|blaze-kick|Blaze Kick|fire|PHYSICAL|85|10|90|0|3
+300|mud-sport|Mud Sport|ground|STATUS|-|15|-|0|3
+301|ice-ball|Ice Ball|ice|PHYSICAL|30|20|90|0|3
+302|needle-arm|Needle Arm|grass|PHYSICAL|60|15|100|0|3
+303|slack-off|Slack Off|normal|STATUS|-|5|-|0|3
+304|hyper-voice|Hyper Voice|normal|SPECIAL|90|10|100|0|3
+305|poison-fang|Poison Fang|poison|PHYSICAL|50|15|100|0|3
+306|crush-claw|Crush Claw|normal|PHYSICAL|75|10|95|0|3
+307|blast-burn|Blast Burn|fire|SPECIAL|150|5|90|0|3
+308|hydro-cannon|Hydro Cannon|water|SPECIAL|150|5|90|0|3
+309|meteor-mash|Meteor Mash|steel|PHYSICAL|90|10|90|0|3
+310|astonish|Astonish|ghost|PHYSICAL|30|15|100|0|3
+311|weather-ball|Weather Ball|normal|SPECIAL|50|10|100|0|3
+312|aromatherapy|Aromatherapy|grass|STATUS|-|5|-|0|3
+313|fake-tears|Fake Tears|dark|STATUS|-|20|100|0|3
+314|air-cutter|Air Cutter|flying|SPECIAL|60|25|95|0|3
+315|overheat|Overheat|fire|SPECIAL|130|5|90|0|3
+316|odor-sleuth|Odor Sleuth|normal|STATUS|-|40|-|0|3
+317|rock-tomb|Rock Tomb|rock|PHYSICAL|60|15|95|0|3
+318|silver-wind|Silver Wind|bug|SPECIAL|60|5|100|0|3
+319|metal-sound|Metal Sound|steel|STATUS|-|40|85|0|3
+320|grass-whistle|Grass Whistle|grass|STATUS|-|15|55|0|3
+321|tickle|Tickle|normal|STATUS|-|20|100|0|3
+322|cosmic-power|Cosmic Power|psychic|STATUS|-|20|-|0|3
+323|water-spout|Water Spout|water|SPECIAL|150|5|100|0|3
+324|signal-beam|Signal Beam|bug|SPECIAL|75|15|100|0|3
+325|shadow-punch|Shadow Punch|ghost|PHYSICAL|60|20|-|0|3
+326|extrasensory|Extrasensory|psychic|SPECIAL|80|20|100|0|3
+327|sky-uppercut|Sky Uppercut|fighting|PHYSICAL|85|15|90|0|3
+328|sand-tomb|Sand Tomb|ground|PHYSICAL|35|15|85|0|3
+329|sheer-cold|Sheer Cold|ice|SPECIAL|-|5|30|0|3
+330|muddy-water|Muddy Water|water|SPECIAL|90|10|85|0|3
+331|bullet-seed|Bullet Seed|grass|PHYSICAL|25|30|100|0|3
+332|aerial-ace|Aerial Ace|flying|PHYSICAL|60|20|-|0|3
+333|icicle-spear|Icicle Spear|ice|PHYSICAL|25|30|100|0|3
+334|iron-defense|Iron Defense|steel|STATUS|-|15|-|0|3
+335|block|Block|normal|STATUS|-|5|-|0|3
+336|howl|Howl|normal|STATUS|-|40|-|0|3
+337|dragon-claw|Dragon Claw|dragon|PHYSICAL|80|15|100|0|3
+338|frenzy-plant|Frenzy Plant|grass|SPECIAL|150|5|90|0|3
+339|bulk-up|Bulk Up|fighting|STATUS|-|20|-|0|3
+340|bounce|Bounce|flying|PHYSICAL|85|5|85|0|3
+341|mud-shot|Mud Shot|ground|SPECIAL|55|15|95|0|3
+342|poison-tail|Poison Tail|poison|PHYSICAL|50|25|100|0|3
+343|covet|Covet|normal|PHYSICAL|60|25|100|0|3
+344|volt-tackle|Volt Tackle|electric|PHYSICAL|120|15|100|0|3
+345|magical-leaf|Magical Leaf|grass|SPECIAL|60|20|-|0|3
+346|water-sport|Water Sport|water|STATUS|-|15|-|0|3
+347|calm-mind|Calm Mind|psychic|STATUS|-|20|-|0|3
+348|leaf-blade|Leaf Blade|grass|PHYSICAL|90|15|100|0|3
+349|dragon-dance|Dragon Dance|dragon|STATUS|-|20|-|0|3
+350|rock-blast|Rock Blast|rock|PHYSICAL|25|10|90|0|3
+351|shock-wave|Shock Wave|electric|SPECIAL|60|20|-|0|3
+352|water-pulse|Water Pulse|water|SPECIAL|60|20|100|0|3
+353|doom-desire|Doom Desire|steel|SPECIAL|140|5|100|0|3
+354|psycho-boost|Psycho Boost|psychic|SPECIAL|140|5|90|0|3
+355|roost|Roost|flying|STATUS|-|5|-|0|4
+356|gravity|Gravity|psychic|STATUS|-|5|-|0|4
+357|miracle-eye|Miracle Eye|psychic|STATUS|-|40|-|0|4
+358|wake-up-slap|Wake-Up Slap|fighting|PHYSICAL|70|10|100|0|4
+359|hammer-arm|Hammer Arm|fighting|PHYSICAL|100|10|90|0|4
+360|gyro-ball|Gyro Ball|steel|PHYSICAL|-|5|100|0|4
+361|healing-wish|Healing Wish|psychic|STATUS|-|10|-|0|4
+362|brine|Brine|water|SPECIAL|65|10|100|0|4
+363|natural-gift|Natural Gift|normal|PHYSICAL|-|15|100|0|4
+364|feint|Feint|normal|PHYSICAL|30|10|100|2|4
+365|pluck|Pluck|flying|PHYSICAL|60|20|100|0|4
+366|tailwind|Tailwind|flying|STATUS|-|15|-|0|4
+367|acupressure|Acupressure|normal|STATUS|-|30|-|0|4
+368|metal-burst|Metal Burst|steel|PHYSICAL|-|10|100|0|4
+369|u-turn|U-turn|bug|PHYSICAL|70|20|100|0|4
+370|close-combat|Close Combat|fighting|PHYSICAL|120|5|100|0|4
+371|payback|Payback|dark|PHYSICAL|50|10|100|0|4
+372|assurance|Assurance|dark|PHYSICAL|60|10|100|0|4
+373|embargo|Embargo|dark|STATUS|-|15|100|0|4
+374|fling|Fling|dark|PHYSICAL|-|10|100|0|4
+375|psycho-shift|Psycho Shift|psychic|STATUS|-|10|100|0|4
+376|trump-card|Trump Card|normal|SPECIAL|-|5|-|0|4
+377|heal-block|Heal Block|psychic|STATUS|-|15|100|0|4
+378|wring-out|Wring Out|normal|SPECIAL|-|5|100|0|4
+379|power-trick|Power Trick|psychic|STATUS|-|10|-|0|4
+380|gastro-acid|Gastro Acid|poison|STATUS|-|10|100|0|4
+381|lucky-chant|Lucky Chant|normal|STATUS|-|30|-|0|4
+382|me-first|Me First|normal|STATUS|-|20|-|0|4
+383|copycat|Copycat|normal|STATUS|-|20|-|0|4
+384|power-swap|Power Swap|psychic|STATUS|-|10|-|0|4
+385|guard-swap|Guard Swap|psychic|STATUS|-|10|-|0|4
+386|punishment|Punishment|dark|PHYSICAL|-|5|100|0|4
+387|last-resort|Last Resort|normal|PHYSICAL|140|5|100|0|4
+388|worry-seed|Worry Seed|grass|STATUS|-|10|100|0|4
+389|sucker-punch|Sucker Punch|dark|PHYSICAL|70|5|100|1|4
+390|toxic-spikes|Toxic Spikes|poison|STATUS|-|20|-|0|4
+391|heart-swap|Heart Swap|psychic|STATUS|-|10|-|0|4
+392|aqua-ring|Aqua Ring|water|STATUS|-|20|-|0|4
+393|magnet-rise|Magnet Rise|electric|STATUS|-|10|-|0|4
+394|flare-blitz|Flare Blitz|fire|PHYSICAL|120|15|100|0|4
+395|force-palm|Force Palm|fighting|PHYSICAL|60|10|100|0|4
+396|aura-sphere|Aura Sphere|fighting|SPECIAL|80|20|-|0|4
+397|rock-polish|Rock Polish|rock|STATUS|-|20|-|0|4
+398|poison-jab|Poison Jab|poison|PHYSICAL|80|20|100|0|4
+399|dark-pulse|Dark Pulse|dark|SPECIAL|80|15|100|0|4
+400|night-slash|Night Slash|dark|PHYSICAL|70|15|100|0|4
+401|aqua-tail|Aqua Tail|water|PHYSICAL|90|10|90|0|4
+402|seed-bomb|Seed Bomb|grass|PHYSICAL|80|15|100|0|4
+403|air-slash|Air Slash|flying|SPECIAL|75|15|95|0|4
+404|x-scissor|X-Scissor|bug|PHYSICAL|80|15|100|0|4
+405|bug-buzz|Bug Buzz|bug|SPECIAL|90|10|100|0|4
+406|dragon-pulse|Dragon Pulse|dragon|SPECIAL|85|10|100|0|4
+407|dragon-rush|Dragon Rush|dragon|PHYSICAL|100|10|75|0|4
+408|power-gem|Power Gem|rock|SPECIAL|80|20|100|0|4
+409|drain-punch|Drain Punch|fighting|PHYSICAL|75|10|100|0|4
+410|vacuum-wave|Vacuum Wave|fighting|SPECIAL|40|30|100|1|4
+411|focus-blast|Focus Blast|fighting|SPECIAL|120|5|70|0|4
+412|energy-ball|Energy Ball|grass|SPECIAL|90|10|100|0|4
+413|brave-bird|Brave Bird|flying|PHYSICAL|120|15|100|0|4
+414|earth-power|Earth Power|ground|SPECIAL|90|10|100|0|4
+415|switcheroo|Switcheroo|dark|STATUS|-|10|100|0|4
+416|giga-impact|Giga Impact|normal|PHYSICAL|150|5|90|0|4
+417|nasty-plot|Nasty Plot|dark|STATUS|-|20|-|0|4
+418|bullet-punch|Bullet Punch|steel|PHYSICAL|40|30|100|1|4
+419|avalanche|Avalanche|ice|PHYSICAL|60|10|100|-4|4
+420|ice-shard|Ice Shard|ice|PHYSICAL|40|30|100|1|4
+421|shadow-claw|Shadow Claw|ghost|PHYSICAL|70|15|100|0|4
+422|thunder-fang|Thunder Fang|electric|PHYSICAL|65|15|95|0|4
+423|ice-fang|Ice Fang|ice|PHYSICAL|65|15|95|0|4
+424|fire-fang|Fire Fang|fire|PHYSICAL|65|15|95|0|4
+425|shadow-sneak|Shadow Sneak|ghost|PHYSICAL|40|30|100|1|4
+426|mud-bomb|Mud Bomb|ground|SPECIAL|65|10|85|0|4
+427|psycho-cut|Psycho Cut|psychic|PHYSICAL|70|20|100|0|4
+428|zen-headbutt|Zen Headbutt|psychic|PHYSICAL|80|15|90|0|4
+429|mirror-shot|Mirror Shot|steel|SPECIAL|65|10|85|0|4
+430|flash-cannon|Flash Cannon|steel|SPECIAL|80|10|100|0|4
+431|rock-climb|Rock Climb|normal|PHYSICAL|90|20|85|0|4
+432|defog|Defog|flying|STATUS|-|15|-|0|4
+433|trick-room|Trick Room|psychic|STATUS|-|5|-|-7|4
+434|draco-meteor|Draco Meteor|dragon|SPECIAL|130|5|90|0|4
+435|discharge|Discharge|electric|SPECIAL|80|15|100|0|4
+436|lava-plume|Lava Plume|fire|SPECIAL|80|15|100|0|4
+437|leaf-storm|Leaf Storm|grass|SPECIAL|130|5|90|0|4
+438|power-whip|Power Whip|grass|PHYSICAL|120|10|85|0|4
+439|rock-wrecker|Rock Wrecker|rock|PHYSICAL|150|5|90|0|4
+440|cross-poison|Cross Poison|poison|PHYSICAL|70|20|100|0|4
+441|gunk-shot|Gunk Shot|poison|PHYSICAL|120|5|80|0|4
+442|iron-head|Iron Head|steel|PHYSICAL|80|15|100|0|4
+443|magnet-bomb|Magnet Bomb|steel|PHYSICAL|60|20|-|0|4
+444|stone-edge|Stone Edge|rock|PHYSICAL|100|5|80|0|4
+445|captivate|Captivate|normal|STATUS|-|20|100|0|4
+446|stealth-rock|Stealth Rock|rock|STATUS|-|20|-|0|4
+447|grass-knot|Grass Knot|grass|SPECIAL|-|20|100|0|4
+448|chatter|Chatter|flying|SPECIAL|65|20|100|0|4
+449|judgment|Judgment|normal|SPECIAL|100|10|100|0|4
+450|bug-bite|Bug Bite|bug|PHYSICAL|60|20|100|0|4
+451|charge-beam|Charge Beam|electric|SPECIAL|50|10|90|0|4
+452|wood-hammer|Wood Hammer|grass|PHYSICAL|120|15|100|0|4
+453|aqua-jet|Aqua Jet|water|PHYSICAL|40|20|100|1|4
+454|attack-order|Attack Order|bug|PHYSICAL|90|15|100|0|4
+455|defend-order|Defend Order|bug|STATUS|-|10|-|0|4
+456|heal-order|Heal Order|bug|STATUS|-|10|-|0|4
+457|head-smash|Head Smash|rock|PHYSICAL|150|5|80|0|4
+458|double-hit|Double Hit|normal|PHYSICAL|35|10|90|0|4
+459|roar-of-time|Roar of Time|dragon|SPECIAL|150|5|90|0|4
+460|spacial-rend|Spacial Rend|dragon|SPECIAL|100|5|95|0|4
+461|lunar-dance|Lunar Dance|psychic|STATUS|-|10|-|0|4
+462|crush-grip|Crush Grip|normal|PHYSICAL|-|5|100|0|4
+463|magma-storm|Magma Storm|fire|SPECIAL|100|5|75|0|4
+464|dark-void|Dark Void|dark|STATUS|-|10|50|0|4
+465|seed-flare|Seed Flare|grass|SPECIAL|120|5|85|0|4
+466|ominous-wind|Ominous Wind|ghost|SPECIAL|60|5|100|0|4
+467|shadow-force|Shadow Force|ghost|PHYSICAL|120|5|100|0|4
+468|hone-claws|Hone Claws|dark|STATUS|-|15|-|0|5
+469|wide-guard|Wide Guard|rock|STATUS|-|10|-|3|5
+470|guard-split|Guard Split|psychic|STATUS|-|10|-|0|5
+471|power-split|Power Split|psychic|STATUS|-|10|-|0|5
+472|wonder-room|Wonder Room|psychic|STATUS|-|10|-|0|5
+473|psyshock|Psyshock|psychic|SPECIAL|80|10|100|0|5
+474|venoshock|Venoshock|poison|SPECIAL|65|10|100|0|5
+475|autotomize|Autotomize|steel|STATUS|-|15|-|0|5
+476|rage-powder|Rage Powder|bug|STATUS|-|20|-|2|5
+477|telekinesis|Telekinesis|psychic|STATUS|-|15|-|0|5
+478|magic-room|Magic Room|psychic|STATUS|-|10|-|0|5
+479|smack-down|Smack Down|rock|PHYSICAL|50|15|100|0|5
+480|storm-throw|Storm Throw|fighting|PHYSICAL|60|10|100|0|5
+481|flame-burst|Flame Burst|fire|SPECIAL|70|15|100|0|5
+482|sludge-wave|Sludge Wave|poison|SPECIAL|95|10|100|0|5
+483|quiver-dance|Quiver Dance|bug|STATUS|-|20|-|0|5
+484|heavy-slam|Heavy Slam|steel|PHYSICAL|-|10|100|0|5
+485|synchronoise|Synchronoise|psychic|SPECIAL|120|10|100|0|5
+486|electro-ball|Electro Ball|electric|SPECIAL|-|10|100|0|5
+487|soak|Soak|water|STATUS|-|20|100|0|5
+488|flame-charge|Flame Charge|fire|PHYSICAL|50|20|100|0|5
+489|coil|Coil|poison|STATUS|-|20|-|0|5
+490|low-sweep|Low Sweep|fighting|PHYSICAL|65|20|100|0|5
+491|acid-spray|Acid Spray|poison|SPECIAL|40|20|100|0|5
+492|foul-play|Foul Play|dark|PHYSICAL|95|15|100|0|5
+493|simple-beam|Simple Beam|normal|STATUS|-|15|100|0|5
+494|entrainment|Entrainment|normal|STATUS|-|15|100|0|5
+495|after-you|After You|normal|STATUS|-|15|-|0|5
+496|round|Round|normal|SPECIAL|60|15|100|0|5
+497|echoed-voice|Echoed Voice|normal|SPECIAL|40|15|100|0|5
+498|chip-away|Chip Away|normal|PHYSICAL|70|20|100|0|5
+499|clear-smog|Clear Smog|poison|SPECIAL|50|15|-|0|5
+500|stored-power|Stored Power|psychic|SPECIAL|20|10|100|0|5
+501|quick-guard|Quick Guard|fighting|STATUS|-|15|-|3|5
+502|ally-switch|Ally Switch|psychic|STATUS|-|15|-|2|5
+503|scald|Scald|water|SPECIAL|80|15|100|0|5
+504|shell-smash|Shell Smash|normal|STATUS|-|15|-|0|5
+505|heal-pulse|Heal Pulse|psychic|STATUS|-|10|-|0|5
+506|hex|Hex|ghost|SPECIAL|65|10|100|0|5
+507|sky-drop|Sky Drop|flying|PHYSICAL|60|10|100|0|5
+508|shift-gear|Shift Gear|steel|STATUS|-|10|-|0|5
+509|circle-throw|Circle Throw|fighting|PHYSICAL|60|10|90|-6|5
+510|incinerate|Incinerate|fire|SPECIAL|60|15|100|0|5
+511|quash|Quash|dark|STATUS|-|15|100|0|5
+512|acrobatics|Acrobatics|flying|PHYSICAL|55|15|100|0|5
+513|reflect-type|Reflect Type|normal|STATUS|-|15|-|0|5
+514|retaliate|Retaliate|normal|PHYSICAL|70|5|100|0|5
+515|final-gambit|Final Gambit|fighting|SPECIAL|-|5|100|0|5
+516|bestow|Bestow|normal|STATUS|-|15|-|0|5
+517|inferno|Inferno|fire|SPECIAL|100|5|50|0|5
+518|water-pledge|Water Pledge|water|SPECIAL|80|10|100|0|5
+519|fire-pledge|Fire Pledge|fire|SPECIAL|80|10|100|0|5
+520|grass-pledge|Grass Pledge|grass|SPECIAL|80|10|100|0|5
+521|volt-switch|Volt Switch|electric|SPECIAL|70|20|100|0|5
+522|struggle-bug|Struggle Bug|bug|SPECIAL|50|20|100|0|5
+523|bulldoze|Bulldoze|ground|PHYSICAL|60|20|100|0|5
+524|frost-breath|Frost Breath|ice|SPECIAL|60|10|90|0|5
+525|dragon-tail|Dragon Tail|dragon|PHYSICAL|60|10|90|-6|5
+526|work-up|Work Up|normal|STATUS|-|30|-|0|5
+527|electroweb|Electroweb|electric|SPECIAL|55|15|95|0|5
+528|wild-charge|Wild Charge|electric|PHYSICAL|90|15|100|0|5
+529|drill-run|Drill Run|ground|PHYSICAL|80|10|95|0|5
+530|dual-chop|Dual Chop|dragon|PHYSICAL|40|15|90|0|5
+531|heart-stamp|Heart Stamp|psychic|PHYSICAL|60|25|100|0|5
+532|horn-leech|Horn Leech|grass|PHYSICAL|75|10|100|0|5
+533|sacred-sword|Sacred Sword|fighting|PHYSICAL|90|15|100|0|5
+534|razor-shell|Razor Shell|water|PHYSICAL|75|10|95|0|5
+535|heat-crash|Heat Crash|fire|PHYSICAL|-|10|100|0|5
+536|leaf-tornado|Leaf Tornado|grass|SPECIAL|65|10|90|0|5
+537|steamroller|Steamroller|bug|PHYSICAL|65|20|100|0|5
+538|cotton-guard|Cotton Guard|grass|STATUS|-|10|-|0|5
+539|night-daze|Night Daze|dark|SPECIAL|85|10|95|0|5
+540|psystrike|Psystrike|psychic|SPECIAL|100|10|100|0|5
+541|tail-slap|Tail Slap|normal|PHYSICAL|25|10|85|0|5
+""",
+    """542|hurricane|Hurricane|flying|SPECIAL|110|10|70|0|5
+543|head-charge|Head Charge|normal|PHYSICAL|120|15|100|0|5
+544|gear-grind|Gear Grind|steel|PHYSICAL|50|15|85|0|5
+545|searing-shot|Searing Shot|fire|SPECIAL|100|5|100|0|5
+546|techno-blast|Techno Blast|normal|SPECIAL|120|5|100|0|5
+547|relic-song|Relic Song|normal|SPECIAL|75|10|100|0|5
+548|secret-sword|Secret Sword|fighting|SPECIAL|85|10|100|0|5
+549|glaciate|Glaciate|ice|SPECIAL|65|10|95|0|5
+550|bolt-strike|Bolt Strike|electric|PHYSICAL|130|5|85|0|5
+551|blue-flare|Blue Flare|fire|SPECIAL|130|5|85|0|5
+552|fiery-dance|Fiery Dance|fire|SPECIAL|80|10|100|0|5
+553|freeze-shock|Freeze Shock|ice|PHYSICAL|140|5|90|0|5
+554|ice-burn|Ice Burn|ice|SPECIAL|140|5|90|0|5
+555|snarl|Snarl|dark|SPECIAL|55|15|95|0|5
+556|icicle-crash|Icicle Crash|ice|PHYSICAL|85|10|90|0|5
+557|v-create|V-create|fire|PHYSICAL|180|5|95|0|5
+558|fusion-flare|Fusion Flare|fire|SPECIAL|100|5|100|0|5
+559|fusion-bolt|Fusion Bolt|electric|PHYSICAL|100|5|100|0|5
+560|flying-press|Flying Press|fighting|PHYSICAL|100|10|95|0|6
+561|mat-block|Mat Block|fighting|STATUS|-|10|-|0|6
+562|belch|Belch|poison|SPECIAL|120|10|90|0|6
+563|rototiller|Rototiller|ground|STATUS|-|10|-|0|6
+564|sticky-web|Sticky Web|bug|STATUS|-|20|-|0|6
+565|fell-stinger|Fell Stinger|bug|PHYSICAL|50|25|100|0|6
+566|phantom-force|Phantom Force|ghost|PHYSICAL|90|10|100|0|6
+567|trick-or-treat|Trick-or-Treat|ghost|STATUS|-|20|100|0|6
+568|noble-roar|Noble Roar|normal|STATUS|-|30|100|0|6
+569|ion-deluge|Ion Deluge|electric|STATUS|-|25|-|1|6
+570|parabolic-charge|Parabolic Charge|electric|SPECIAL|65|20|100|0|6
+571|forests-curse|Forest’s Curse|grass|STATUS|-|20|100|0|6
+572|petal-blizzard|Petal Blizzard|grass|PHYSICAL|90|15|100|0|6
+573|freeze-dry|Freeze-Dry|ice|SPECIAL|70|20|100|0|6
+574|disarming-voice|Disarming Voice|fairy|SPECIAL|40|15|-|0|6
+575|parting-shot|Parting Shot|dark|STATUS|-|20|100|0|6
+576|topsy-turvy|Topsy-Turvy|dark|STATUS|-|20|-|0|6
+577|draining-kiss|Draining Kiss|fairy|SPECIAL|50|10|100|0|6
+578|crafty-shield|Crafty Shield|fairy|STATUS|-|10|-|3|6
+579|flower-shield|Flower Shield|fairy|STATUS|-|10|-|0|6
+580|grassy-terrain|Grassy Terrain|grass|STATUS|-|10|-|0|6
+581|misty-terrain|Misty Terrain|fairy|STATUS|-|10|-|0|6
+582|electrify|Electrify|electric|STATUS|-|20|-|0|6
+583|play-rough|Play Rough|fairy|PHYSICAL|90|10|90|0|6
+584|fairy-wind|Fairy Wind|fairy|SPECIAL|40|30|100|0|6
+585|moonblast|Moonblast|fairy|SPECIAL|95|15|100|0|6
+586|boomburst|Boomburst|normal|SPECIAL|140|10|100|0|6
+587|fairy-lock|Fairy Lock|fairy|STATUS|-|10|-|0|6
+588|kings-shield|King’s Shield|steel|STATUS|-|10|-|4|6
+589|play-nice|Play Nice|normal|STATUS|-|20|-|0|6
+590|confide|Confide|normal|STATUS|-|20|-|0|6
+591|diamond-storm|Diamond Storm|rock|PHYSICAL|100|5|95|0|6
+592|steam-eruption|Steam Eruption|water|SPECIAL|110|5|95|0|6
+593|hyperspace-hole|Hyperspace Hole|psychic|SPECIAL|80|5|-|0|6
+594|water-shuriken|Water Shuriken|water|SPECIAL|15|20|100|1|6
+595|mystical-fire|Mystical Fire|fire|SPECIAL|75|10|100|0|6
+596|spiky-shield|Spiky Shield|grass|STATUS|-|10|-|4|6
+597|aromatic-mist|Aromatic Mist|fairy|STATUS|-|20|-|0|6
+598|eerie-impulse|Eerie Impulse|electric|STATUS|-|15|100|0|6
+599|venom-drench|Venom Drench|poison|STATUS|-|20|100|0|6
+600|powder|Powder|bug|STATUS|-|20|100|1|6
+601|geomancy|Geomancy|fairy|STATUS|-|10|-|0|6
+602|magnetic-flux|Magnetic Flux|electric|STATUS|-|20|-|0|6
+603|happy-hour|Happy Hour|normal|STATUS|-|30|-|0|6
+604|electric-terrain|Electric Terrain|electric|STATUS|-|10|-|0|6
+605|dazzling-gleam|Dazzling Gleam|fairy|SPECIAL|80|10|100|0|6
+606|celebrate|Celebrate|normal|STATUS|-|40|-|0|6
+607|hold-hands|Hold Hands|normal|STATUS|-|40|-|0|6
+608|baby-doll-eyes|Baby-Doll Eyes|fairy|STATUS|-|30|100|1|6
+609|nuzzle|Nuzzle|electric|PHYSICAL|20|20|100|0|6
+610|hold-back|Hold Back|normal|PHYSICAL|40|40|100|0|6
+611|infestation|Infestation|bug|SPECIAL|20|20|100|0|6
+612|power-up-punch|Power-Up Punch|fighting|PHYSICAL|40|20|100|0|6
+613|oblivion-wing|Oblivion Wing|flying|SPECIAL|80|10|100|0|6
+614|thousand-arrows|Thousand Arrows|ground|PHYSICAL|90|10|100|0|6
+615|thousand-waves|Thousand Waves|ground|PHYSICAL|90|10|100|0|6
+616|lands-wrath|Land’s Wrath|ground|PHYSICAL|90|10|100|0|6
+617|light-of-ruin|Light of Ruin|fairy|SPECIAL|140|5|90|0|6
+618|origin-pulse|Origin Pulse|water|SPECIAL|110|10|85|0|6
+619|precipice-blades|Precipice Blades|ground|PHYSICAL|120|10|85|0|6
+620|dragon-ascent|Dragon Ascent|flying|PHYSICAL|120|5|100|0|6
+621|hyperspace-fury|Hyperspace Fury|dark|PHYSICAL|100|5|-|0|6
+622|breakneck-blitz--physical|Breakneck Blitz|normal|PHYSICAL|-|1|-|0|7
+623|breakneck-blitz--special|Breakneck Blitz|normal|SPECIAL|-|1|-|0|7
+624|all-out-pummeling--physical|All-Out Pummeling|fighting|PHYSICAL|-|1|-|0|7
+625|all-out-pummeling--special|All-Out Pummeling|fighting|SPECIAL|-|1|-|0|7
+626|supersonic-skystrike--physical|Supersonic Skystrike|flying|PHYSICAL|-|1|-|0|7
+627|supersonic-skystrike--special|Supersonic Skystrike|flying|SPECIAL|-|1|-|0|7
+628|acid-downpour--physical|Acid Downpour|poison|PHYSICAL|-|1|-|0|7
+629|acid-downpour--special|Acid Downpour|poison|SPECIAL|-|1|-|0|7
+630|tectonic-rage--physical|Tectonic Rage|ground|PHYSICAL|-|1|-|0|7
+631|tectonic-rage--special|Tectonic Rage|ground|SPECIAL|-|1|-|0|7
+632|continental-crush--physical|Continental Crush|rock|PHYSICAL|-|1|-|0|7
+633|continental-crush--special|Continental Crush|rock|SPECIAL|-|1|-|0|7
+634|savage-spin-out--physical|Savage Spin-Out|bug|PHYSICAL|-|1|-|0|7
+635|savage-spin-out--special|Savage Spin-Out|bug|SPECIAL|-|1|-|0|7
+636|never-ending-nightmare--physical|Never-Ending Nightmare|ghost|PHYSICAL|-|1|-|0|7
+637|never-ending-nightmare--special|Never-Ending Nightmare|ghost|SPECIAL|-|1|-|0|7
+638|corkscrew-crash--physical|Corkscrew Crash|steel|PHYSICAL|-|1|-|0|7
+639|corkscrew-crash--special|Corkscrew Crash|steel|SPECIAL|-|1|-|0|7
+640|inferno-overdrive--physical|Inferno Overdrive|fire|PHYSICAL|-|1|-|0|7
+641|inferno-overdrive--special|Inferno Overdrive|fire|SPECIAL|-|1|-|0|7
+642|hydro-vortex--physical|Hydro Vortex|water|PHYSICAL|-|1|-|0|7
+643|hydro-vortex--special|Hydro Vortex|water|SPECIAL|-|1|-|0|7
+644|bloom-doom--physical|Bloom Doom|grass|PHYSICAL|-|1|-|0|7
+645|bloom-doom--special|Bloom Doom|grass|SPECIAL|-|1|-|0|7
+646|gigavolt-havoc--physical|Gigavolt Havoc|electric|PHYSICAL|-|1|-|0|7
+647|gigavolt-havoc--special|Gigavolt Havoc|electric|SPECIAL|-|1|-|0|7
+648|shattered-psyche--physical|Shattered Psyche|psychic|PHYSICAL|-|1|-|0|7
+649|shattered-psyche--special|Shattered Psyche|psychic|SPECIAL|-|1|-|0|7
+650|subzero-slammer--physical|Subzero Slammer|ice|PHYSICAL|-|1|-|0|7
+651|subzero-slammer--special|Subzero Slammer|ice|SPECIAL|-|1|-|0|7
+652|devastating-drake--physical|Devastating Drake|dragon|PHYSICAL|-|1|-|0|7
+653|devastating-drake--special|Devastating Drake|dragon|SPECIAL|-|1|-|0|7
+654|black-hole-eclipse--physical|Black Hole Eclipse|dark|PHYSICAL|-|1|-|0|7
+655|black-hole-eclipse--special|Black Hole Eclipse|dark|SPECIAL|-|1|-|0|7
+656|twinkle-tackle--physical|Twinkle Tackle|fairy|PHYSICAL|-|1|-|0|7
+657|twinkle-tackle--special|Twinkle Tackle|fairy|SPECIAL|-|1|-|0|7
+658|catastropika|Catastropika|electric|PHYSICAL|210|1|-|0|7
+659|shore-up|Shore Up|ground|STATUS|-|5|-|0|7
+660|first-impression|First Impression|bug|PHYSICAL|90|10|100|2|7
+661|baneful-bunker|Baneful Bunker|poison|STATUS|-|10|-|4|7
+662|spirit-shackle|Spirit Shackle|ghost|PHYSICAL|80|10|100|0|7
+663|darkest-lariat|Darkest Lariat|dark|PHYSICAL|85|10|100|0|7
+664|sparkling-aria|Sparkling Aria|water|SPECIAL|90|10|100|0|7
+665|ice-hammer|Ice Hammer|ice|PHYSICAL|100|10|90|0|7
+666|floral-healing|Floral Healing|fairy|STATUS|-|10|-|0|7
+667|high-horsepower|High Horsepower|ground|PHYSICAL|95|10|95|0|7
+668|strength-sap|Strength Sap|grass|STATUS|-|10|100|0|7
+669|solar-blade|Solar Blade|grass|PHYSICAL|125|10|100|0|7
+670|leafage|Leafage|grass|PHYSICAL|40|40|100|0|7
+671|spotlight|Spotlight|normal|STATUS|-|15|-|3|7
+672|toxic-thread|Toxic Thread|poison|STATUS|-|20|100|0|7
+673|laser-focus|Laser Focus|normal|STATUS|-|30|-|0|7
+674|gear-up|Gear Up|steel|STATUS|-|20|-|0|7
+675|throat-chop|Throat Chop|dark|PHYSICAL|80|15|100|0|7
+676|pollen-puff|Pollen Puff|bug|SPECIAL|90|15|100|0|7
+677|anchor-shot|Anchor Shot|steel|PHYSICAL|80|20|100|0|7
+678|psychic-terrain|Psychic Terrain|psychic|STATUS|-|10|-|0|7
+679|lunge|Lunge|bug|PHYSICAL|80|15|100|0|7
+680|fire-lash|Fire Lash|fire|PHYSICAL|80|15|100|0|7
+681|power-trip|Power Trip|dark|PHYSICAL|20|10|100|0|7
+682|burn-up|Burn Up|fire|SPECIAL|130|5|100|0|7
+683|speed-swap|Speed Swap|psychic|STATUS|-|10|-|0|7
+684|smart-strike|Smart Strike|steel|PHYSICAL|70|10|-|0|7
+685|purify|Purify|poison|STATUS|-|20|-|0|7
+686|revelation-dance|Revelation Dance|normal|SPECIAL|90|15|100|0|7
+687|core-enforcer|Core Enforcer|dragon|SPECIAL|100|10|100|0|7
+688|trop-kick|Trop Kick|grass|PHYSICAL|70|15|100|0|7
+689|instruct|Instruct|psychic|STATUS|-|15|-|0|7
+690|beak-blast|Beak Blast|flying|PHYSICAL|100|15|100|-3|7
+691|clanging-scales|Clanging Scales|dragon|SPECIAL|110|5|100|0|7
+692|dragon-hammer|Dragon Hammer|dragon|PHYSICAL|90|15|100|0|7
+693|brutal-swing|Brutal Swing|dark|PHYSICAL|60|20|100|0|7
+694|aurora-veil|Aurora Veil|ice|STATUS|-|20|-|0|7
+695|sinister-arrow-raid|Sinister Arrow Raid|ghost|PHYSICAL|180|1|-|0|7
+696|malicious-moonsault|Malicious Moonsault|dark|PHYSICAL|180|1|-|0|7
+697|oceanic-operetta|Oceanic Operetta|water|SPECIAL|195|1|-|0|7
+698|guardian-of-alola|Guardian of Alola|fairy|SPECIAL|-|1|-|0|7
+699|soul-stealing-7-star-strike|Soul-Stealing 7-Star Strike|ghost|PHYSICAL|195|1|-|0|7
+700|stoked-sparksurfer|Stoked Sparksurfer|electric|SPECIAL|175|1|-|0|7
+701|pulverizing-pancake|Pulverizing Pancake|normal|PHYSICAL|210|1|-|0|7
+702|extreme-evoboost|Extreme Evoboost|normal|STATUS|-|1|-|0|7
+703|genesis-supernova|Genesis Supernova|psychic|SPECIAL|185|1|-|0|7
+704|shell-trap|Shell Trap|fire|SPECIAL|150|5|100|-3|7
+705|fleur-cannon|Fleur Cannon|fairy|SPECIAL|130|5|90|0|7
+706|psychic-fangs|Psychic Fangs|psychic|PHYSICAL|85|10|100|0|7
+707|stomping-tantrum|Stomping Tantrum|ground|PHYSICAL|75|10|100|0|7
+708|shadow-bone|Shadow Bone|ghost|PHYSICAL|85|10|100|0|7
+709|accelerock|Accelerock|rock|PHYSICAL|40|20|100|1|7
+710|liquidation|Liquidation|water|PHYSICAL|85|10|100|0|7
+711|prismatic-laser|Prismatic Laser|psychic|SPECIAL|160|10|100|0|7
+712|spectral-thief|Spectral Thief|ghost|PHYSICAL|90|10|100|0|7
+713|sunsteel-strike|Sunsteel Strike|steel|PHYSICAL|100|5|100|0|7
+714|moongeist-beam|Moongeist Beam|ghost|SPECIAL|100|5|100|0|7
+715|tearful-look|Tearful Look|normal|STATUS|-|20|-|0|7
+716|zing-zap|Zing Zap|electric|PHYSICAL|80|10|100|0|7
+717|natures-madness|Nature’s Madness|fairy|SPECIAL|-|10|90|0|7
+718|multi-attack|Multi-Attack|normal|PHYSICAL|120|10|100|0|7
+719|10-000-000-volt-thunderbolt|10,000,000 Volt Thunderbolt|electric|SPECIAL|195|1|-|0|7
+720|mind-blown|Mind Blown|fire|SPECIAL|150|5|100|0|7
+721|plasma-fists|Plasma Fists|electric|PHYSICAL|100|15|100|0|7
+722|photon-geyser|Photon Geyser|psychic|SPECIAL|100|5|100|0|7
+723|light-that-burns-the-sky|Light That Burns the Sky|psychic|SPECIAL|200|1|-|0|7
+724|searing-sunraze-smash|Searing Sunraze Smash|steel|PHYSICAL|200|1|-|0|7
+725|menacing-moonraze-maelstrom|Menacing Moonraze Maelstrom|ghost|SPECIAL|200|1|-|0|7
+726|lets-snuggle-forever|Let’s Snuggle Forever|fairy|PHYSICAL|190|1|-|0|7
+727|splintered-stormshards|Splintered Stormshards|rock|PHYSICAL|190|1|-|0|7
+728|clangorous-soulblaze|Clangorous Soulblaze|dragon|SPECIAL|185|1|-|0|7
+729|zippy-zap|Zippy Zap|electric|PHYSICAL|80|10|100|2|7
+730|splishy-splash|Splishy Splash|water|SPECIAL|90|15|100|0|7
+731|floaty-fall|Floaty Fall|flying|PHYSICAL|90|15|95|0|7
+732|pika-papow|Pika Papow|electric|SPECIAL|-|20|-|0|7
+733|bouncy-bubble|Bouncy Bubble|water|SPECIAL|60|20|100|0|7
+734|buzzy-buzz|Buzzy Buzz|electric|SPECIAL|60|20|100|0|7
+735|sizzly-slide|Sizzly Slide|fire|PHYSICAL|60|20|100|0|7
+736|glitzy-glow|Glitzy Glow|psychic|SPECIAL|80|15|95|0|7
+737|baddy-bad|Baddy Bad|dark|SPECIAL|80|15|95|0|7
+738|sappy-seed|Sappy Seed|grass|PHYSICAL|100|10|90|0|7
+739|freezy-frost|Freezy Frost|ice|SPECIAL|100|10|90|0|7
+740|sparkly-swirl|Sparkly Swirl|fairy|SPECIAL|120|5|85|0|7
+741|veevee-volley|Veevee Volley|normal|PHYSICAL|-|20|-|0|7
+742|double-iron-bash|Double Iron Bash|steel|PHYSICAL|60|5|100|0|7
+743|max-guard|Max Guard|normal|STATUS|-|10|-|4|8
+744|dynamax-cannon|Dynamax Cannon|dragon|SPECIAL|100|5|100|0|8
+745|snipe-shot|Snipe Shot|water|SPECIAL|80|15|100|0|8
+746|jaw-lock|Jaw Lock|dark|PHYSICAL|80|10|100|0|8
+747|stuff-cheeks|Stuff Cheeks|normal|STATUS|-|10|-|0|8
+748|no-retreat|No Retreat|fighting|STATUS|-|5|-|0|8
+749|tar-shot|Tar Shot|rock|STATUS|-|15|100|0|8
+750|magic-powder|Magic Powder|psychic|STATUS|-|20|100|0|8
+751|dragon-darts|Dragon Darts|dragon|PHYSICAL|50|10|100|0|8
+752|teatime|Teatime|normal|STATUS|-|10|-|0|8
+753|octolock|Octolock|fighting|STATUS|-|15|100|0|8
+754|bolt-beak|Bolt Beak|electric|PHYSICAL|85|10|100|0|8
+755|fishious-rend|Fishious Rend|water|PHYSICAL|85|10|100|0|8
+756|court-change|Court Change|normal|STATUS|-|10|100|0|8
+757|max-flare|Max Flare|fire|PHYSICAL|100|10|-|0|8
+758|max-flutterby|Max Flutterby|bug|PHYSICAL|10|10|-|0|8
+759|max-lightning|Max Lightning|electric|PHYSICAL|10|10|-|0|8
+760|max-strike|Max Strike|normal|PHYSICAL|10|10|-|0|8
+761|max-knuckle|Max Knuckle|fighting|PHYSICAL|10|10|-|0|8
+762|max-phantasm|Max Phantasm|ghost|PHYSICAL|10|10|-|0|8
+763|max-hailstorm|Max Hailstorm|ice|PHYSICAL|10|10|-|0|8
+764|max-ooze|Max Ooze|poison|PHYSICAL|10|10|-|0|8
+765|max-geyser|Max Geyser|water|PHYSICAL|10|10|-|0|8
+766|max-airstream|Max Airstream|flying|PHYSICAL|10|10|-|0|8
+767|max-starfall|Max Starfall|fairy|PHYSICAL|10|10|-|0|8
+768|max-wyrmwind|Max Wyrmwind|dragon|PHYSICAL|10|10|-|0|8
+769|max-mindstorm|Max Mindstorm|psychic|PHYSICAL|10|10|-|0|8
+770|max-rockfall|Max Rockfall|rock|PHYSICAL|10|10|-|0|8
+771|max-quake|Max Quake|ground|PHYSICAL|10|10|-|0|8
+772|max-darkness|Max Darkness|dark|PHYSICAL|10|10|-|0|8
+773|max-overgrowth|Max Overgrowth|grass|PHYSICAL|10|10|-|0|8
+774|max-steelspike|Max Steelspike|steel|PHYSICAL|10|10|-|0|8
+775|clangorous-soul|Clangorous Soul|dragon|STATUS|-|5|100|0|8
+776|body-press|Body Press|fighting|PHYSICAL|80|10|100|0|8
+777|decorate|Decorate|fairy|STATUS|-|15|-|0|8
+778|drum-beating|Drum Beating|grass|PHYSICAL|80|10|100|0|8
+779|snap-trap|Snap Trap|grass|PHYSICAL|35|15|100|0|8
+780|pyro-ball|Pyro Ball|fire|PHYSICAL|120|5|90|0|8
+781|behemoth-blade|Behemoth Blade|steel|PHYSICAL|100|5|100|0|8
+782|behemoth-bash|Behemoth Bash|steel|PHYSICAL|100|5|100|0|8
+783|aura-wheel|Aura Wheel|electric|PHYSICAL|110|10|100|0|8
+784|breaking-swipe|Breaking Swipe|dragon|PHYSICAL|60|15|100|0|8
+785|branch-poke|Branch Poke|grass|PHYSICAL|40|40|100|0|8
+786|overdrive|Overdrive|electric|SPECIAL|80|10|100|0|8
+787|apple-acid|Apple Acid|grass|SPECIAL|80|10|100|0|8
+788|grav-apple|Grav Apple|grass|PHYSICAL|80|10|100|0|8
+789|spirit-break|Spirit Break|fairy|PHYSICAL|75|15|100|0|8
+790|strange-steam|Strange Steam|fairy|SPECIAL|90|10|95|0|8
+791|life-dew|Life Dew|water|STATUS|-|10|-|0|8
+792|obstruct|Obstruct|dark|STATUS|-|10|100|4|8
+793|false-surrender|False Surrender|dark|PHYSICAL|80|10|-|0|8
+794|meteor-assault|Meteor Assault|fighting|PHYSICAL|150|5|100|0|8
+795|eternabeam|Eternabeam|dragon|SPECIAL|160|5|90|0|8
+796|steel-beam|Steel Beam|steel|SPECIAL|140|5|95|0|8
+797|expanding-force|Expanding Force|psychic|SPECIAL|80|10|100|0|8
+798|steel-roller|Steel Roller|steel|PHYSICAL|130|5|100|0|8
+799|scale-shot|Scale Shot|dragon|PHYSICAL|25|20|90|0|8
+800|meteor-beam|Meteor Beam|rock|SPECIAL|120|10|90|0|8
+801|shell-side-arm|Shell Side Arm|poison|SPECIAL|90|10|100|0|8
+802|misty-explosion|Misty Explosion|fairy|SPECIAL|100|5|100|0|8
+803|grassy-glide|Grassy Glide|grass|PHYSICAL|55|20|100|0|8
+804|rising-voltage|Rising Voltage|electric|SPECIAL|70|20|100|0|8
+805|terrain-pulse|Terrain Pulse|normal|SPECIAL|50|10|100|0|8
+806|skitter-smack|Skitter Smack|bug|PHYSICAL|70|10|90|0|8
+807|burning-jealousy|Burning Jealousy|fire|SPECIAL|70|5|100|0|8
+808|lash-out|Lash Out|dark|PHYSICAL|75|5|100|0|8
+809|poltergeist|Poltergeist|ghost|PHYSICAL|110|5|90|0|8
+810|corrosive-gas|Corrosive Gas|poison|STATUS|-|40|100|0|8
+811|coaching|Coaching|fighting|STATUS|-|10|-|0|8
+812|flip-turn|Flip Turn|water|PHYSICAL|60|20|100|0|8
+813|triple-axel|Triple Axel|ice|PHYSICAL|20|10|90|0|8
+814|dual-wingbeat|Dual Wingbeat|flying|PHYSICAL|40|10|90|0|8
+815|scorching-sands|Scorching Sands|ground|SPECIAL|70|10|100|0|8
+816|jungle-healing|Jungle Healing|grass|STATUS|-|10|-|0|8
+817|wicked-blow|Wicked Blow|dark|PHYSICAL|75|5|100|0|8
+818|surging-strikes|Surging Strikes|water|PHYSICAL|25|5|100|0|8
+819|thunder-cage|Thunder Cage|electric|SPECIAL|80|15|90|0|8
+820|dragon-energy|Dragon Energy|dragon|SPECIAL|150|5|100|0|8
+821|freezing-glare|Freezing Glare|psychic|SPECIAL|90|10|100|0|8
+822|fiery-wrath|Fiery Wrath|dark|SPECIAL|90|10|100|0|8
+823|thunderous-kick|Thunderous Kick|fighting|PHYSICAL|90|10|100|0|8
+824|glacial-lance|Glacial Lance|ice|PHYSICAL|120|5|100|0|8
+825|astral-barrage|Astral Barrage|ghost|SPECIAL|120|5|100|0|8
+826|eerie-spell|Eerie Spell|psychic|SPECIAL|80|5|100|0|8
+827|dire-claw|Dire Claw|poison|PHYSICAL|80|15|100|0|8
+828|psyshield-bash|Psyshield Bash|psychic|PHYSICAL|70|10|90|0|8
+829|power-shift|Power Shift|normal|STATUS|0|10|-|0|8
+830|stone-axe|Stone Axe|rock|PHYSICAL|65|15|90|0|8
+831|springtide-storm|Springtide Storm|fairy|SPECIAL|100|5|80|0|8
+832|mystical-power|Mystical Power|psychic|SPECIAL|70|10|90|0|8
+833|raging-fury|Raging Fury|fire|PHYSICAL|120|10|100|0|8
+834|wave-crash|Wave Crash|water|PHYSICAL|120|10|100|0|8
+835|chloroblast|Chloroblast|grass|SPECIAL|150|5|95|0|8
+836|mountain-gale|Mountain Gale|ice|PHYSICAL|100|10|85|0|8
+837|victory-dance|Victory Dance|fighting|STATUS|0|10|-|0|8
+838|headlong-rush|Headlong Rush|ground|PHYSICAL|120|5|100|0|8
+839|barb-barrage|Barb Barrage|poison|PHYSICAL|60|10|100|0|8
+840|esper-wing|Esper Wing|psychic|SPECIAL|80|10|100|0|8
+841|bitter-malice|Bitter Malice|ghost|SPECIAL|75|10|100|0|8
+842|shelter|Shelter|steel|STATUS|0|10|-|0|8
+843|triple-arrows|Triple Arrows|fighting|PHYSICAL|90|10|100|0|8
+844|infernal-parade|Infernal Parade|ghost|SPECIAL|60|15|100|0|8
+845|ceaseless-edge|Ceaseless Edge|dark|PHYSICAL|65|15|90|0|8
+846|bleakwind-storm|Bleakwind Storm|flying|SPECIAL|100|10|80|0|8
+847|wildbolt-storm|Wildbolt Storm|electric|SPECIAL|100|10|80|0|8
+848|sandsear-storm|Sandsear Storm|ground|SPECIAL|100|10|80|0|8
+849|lunar-blessing|Lunar Blessing|psychic|STATUS|0|5|-|0|8
+850|take-heart|Take Heart|psychic|STATUS|0|10|-|0|8
+851|tera-blast|Tera Blast|normal|SPECIAL|80|10|100|0|9
+852|silk-trap|Silk Trap|bug|STATUS|0|10|-|4|9
+853|axe-kick|Axe Kick|fighting|PHYSICAL|120|10|90|0|9
+854|last-respects|Last Respects|ghost|PHYSICAL|50|10|100|0|9
+855|lumina-crash|Lumina Crash|psychic|SPECIAL|80|10|100|0|9
+856|order-up|Order Up|dragon|PHYSICAL|80|10|100|0|9
+857|jet-punch|Jet Punch|water|PHYSICAL|60|15|100|1|9
+858|spicy-extract|Spicy Extract|grass|STATUS|0|15|-|0|9
+859|spin-out|Spin Out|steel|PHYSICAL|100|5|100|0|9
+860|population-bomb|Population Bomb|normal|PHYSICAL|20|10|90|0|9
+861|ice-spinner|Ice Spinner|ice|PHYSICAL|80|15|100|0|9
+862|glaive-rush|Glaive Rush|dragon|PHYSICAL|120|5|100|0|9
+863|revival-blessing|Revival Blessing|normal|STATUS|0|1|-|0|9
+864|salt-cure|Salt Cure|rock|PHYSICAL|40|15|100|0|9
+865|triple-dive|Triple Dive|water|PHYSICAL|30|10|95|0|9
+866|mortal-spin|Mortal Spin|poison|PHYSICAL|30|15|100|0|9
+867|doodle|Doodle|normal|STATUS|0|10|100|0|9
+868|fillet-away|Fillet Away|normal|STATUS|0|10|-|0|9
+869|kowtow-cleave|Kowtow Cleave|dark|PHYSICAL|85|10|-|0|9
+870|flower-trick|Flower Trick|grass|PHYSICAL|70|10|-|0|9
+871|torch-song|Torch Song|fire|SPECIAL|80|10|100|0|9
+872|aqua-step|Aqua Step|water|PHYSICAL|80|10|100|0|9
+873|raging-bull|Raging Bull|normal|PHYSICAL|90|10|100|0|9
+874|make-it-rain|Make It Rain|steel|SPECIAL|120|5|100|0|9
+875|psyblade|Psyblade|psychic|PHYSICAL|80|15|100|0|9
+876|hydro-steam|Hydro Steam|water|SPECIAL|80|15|100|0|9
+877|ruination|Ruination|dark|SPECIAL|1|10|90|0|9
+878|collision-course|Collision Course|fighting|PHYSICAL|100|5|100|0|9
+879|electro-drift|Electro Drift|electric|SPECIAL|100|5|100|0|9
+880|shed-tail|Shed Tail|normal|STATUS|0|10|-|0|9
+881|chilly-reception|Chilly Reception|ice|STATUS|0|10|-|0|9
+882|tidy-up|Tidy Up|normal|STATUS|0|10|-|0|9
+883|snowscape|Snowscape|ice|STATUS|0|10|-|0|9
+884|pounce|Pounce|bug|PHYSICAL|50|20|100|0|9
+885|trailblaze|Trailblaze|grass|PHYSICAL|50|20|100|0|9
+886|chilling-water|Chilling Water|water|SPECIAL|50|20|100|0|9
+887|hyper-drill|Hyper Drill|normal|PHYSICAL|100|5|100|0|9
+888|twin-beam|Twin Beam|psychic|SPECIAL|40|10|100|0|9
+889|rage-fist|Rage Fist|ghost|PHYSICAL|50|10|100|0|9
+890|armor-cannon|Armor Cannon|fire|SPECIAL|120|5|100|0|9
+891|bitter-blade|Bitter Blade|fire|PHYSICAL|90|10|100|0|9
+892|double-shock|Double Shock|electric|PHYSICAL|120|5|100|0|9
+893|gigaton-hammer|Gigaton Hammer|steel|PHYSICAL|160|5|100|0|9
+894|comeuppance|Comeuppance|dark|PHYSICAL|1|10|100|0|9
+895|aqua-cutter|Aqua Cutter|water|PHYSICAL|70|20|100|0|9
+896|blazing-torque|Blazing Torque|fire|PHYSICAL|80|10|100|0|9
+897|wicked-torque|Wicked Torque|dark|PHYSICAL|80|10|100|0|9
+898|noxious-torque|Noxious Torque|poison|PHYSICAL|100|10|100|0|9
+899|combat-torque|Combat Torque|fighting|PHYSICAL|100|10|100|0|9
+900|magical-torque|Magical Torque|fairy|PHYSICAL|100|10|100|0|9
+901|blood-moon|Blood Moon|normal|SPECIAL|140|5|100|0|9
+902|matcha-gotcha|Matcha Gotcha|grass|SPECIAL|80|15|90|0|9
+903|syrup-bomb|Syrup Bomb|grass|SPECIAL|60|10|85|0|9
+904|ivy-cudgel|Ivy Cudgel|grass|PHYSICAL|100|10|100|0|9
+905|electro-shot|Electro Shot|electric|SPECIAL|130|10|100|0|9
+906|tera-starstorm|Tera Starstorm|normal|SPECIAL|120|5|100|0|9
+907|fickle-beam|Fickle Beam|dragon|SPECIAL|80|5|100|0|9
+908|burning-bulwark|Burning Bulwark|fire|STATUS|0|10|0|4|9
+909|thunderclap|Thunderclap|electric|SPECIAL|70|5|100|1|9
+910|mighty-cleave|Mighty Cleave|rock|PHYSICAL|95|5|100|0|9
+911|tachyon-cutter|Tachyon Cutter|steel|SPECIAL|50|10|0|0|9
+912|hard-press|Hard Press|steel|PHYSICAL|0|10|100|0|9
+913|dragon-cheer|Dragon Cheer|dragon|STATUS|0|15|0|0|9
+914|alluring-voice|Alluring Voice|fairy|SPECIAL|80|10|100|0|9
+915|temper-flare|Temper Flare|fire|PHYSICAL|75|10|100|0|9
+916|supercell-slam|Supercell Slam|electric|PHYSICAL|100|15|95|0|9
+917|psychic-noise|Psychic Noise|psychic|SPECIAL|75|10|100|0|9
+918|upper-hand|Upper Hand|fighting|PHYSICAL|65|15|100|3|9
+919|malignant-chain|Malignant Chain|poison|SPECIAL|100|5|100|0|9
+""",
+)
+
+internal val DEX_LEARNSETS: List<String> = listOf(
+    """1|33@1,45@1,22@3,74@6,73@9,75@12,77@15,79@15,402@18,36@21,230@24,235@27,388@30,438@33,76@36|80,92,174,275|-|14,34,36,38,76,92,156,164,174,182,188,202,203,204,206,214,241,263,270,282,311,331,345,402,412,437,447,474,491,520,580,803,851,885
+2|22@1,33@1,45@1,74@1,73@9,75@12,77@15,79@15,402@20,36@25,230@30,235@35,388@40,438@45,76@50|80,92,174,275|-|14,34,36,38,46,76,92,156,164,174,182,188,202,203,204,206,214,241,263,270,282,311,331,345,402,412,437,447,474,491,520,580,803,851,885
+3|572@0,74@1,80@1,22@1,33@1,45@1,73@9,75@12,79@15,77@15,402@20,36@25,230@30,235@37,388@44,438@51,76@58|80,92,174,275|-|14,34,36,38,46,63,76,89,92,133,156,164,174,182,184,188,202,203,204,206,214,241,263,270,282,311,331,338,345,398,402,412,414,416,437,447,474,491,520,523,572,580,707,803,851,885
+4|10@1,45@1,52@4,108@8,225@12,424@17,163@20,53@24,184@28,83@32,517@36,394@40|44,68,187,231,232,246,407,525|-|7,9,14,34,36,46,53,83,91,126,129,156,157,164,182,184,200,203,206,214,232,241,242,257,261,263,264,270,280,311,315,317,337,349,374,394,406,411,421,424,488,519,525,784,851,915
+5|10@1,45@1,52@1,108@1,225@12,424@19,163@24,53@30,184@37,517@48,394@54|44,68,187,231,232,246,407,525|-|7,9,14,34,36,46,53,83,91,126,129,156,157,164,182,184,200,203,206,214,241,242,257,261,263,264,270,280,311,315,317,337,349,374,394,406,411,421,424,488,519,525,784,851,915
+6|403@0,10@1,45@1,52@1,108@1,257@1,337@1,225@12,424@19,163@24,53@30,184@39,83@46,517@54,394@62|44,68,187,231,232,246,407,525|-|7,9,14,19,34,36,38,46,53,63,76,83,89,91,126,129,156,157,164,182,184,200,201,203,214,241,242,257,261,263,264,270,280,307,311,314,315,317,332,337,349,374,394,403,406,411,416,421,424,488,512,519,523,525,535,542,784,815,851,913,915
+7|33@1,39@1,55@3,110@6,229@9,44@12,352@15,182@18,240@21,401@24,504@27,334@30,56@33,834@36|54,175,243,252,281,323,392,453,791|-|8,34,36,38,56,57,58,59,91,114,156,164,182,196,203,214,240,250,263,264,270,280,311,330,334,341,352,360,374,428,518,710,812,851,861,886
+8|33@1,39@1,55@1,110@1,229@9,44@12,352@15,182@20,240@25,401@30,504@35,334@40,56@45,834@50|54,175,243,252,281,323,392,453,791|-|8,34,36,38,56,57,58,59,91,114,156,164,182,196,203,214,240,250,263,264,270,280,311,330,334,341,352,360,374,428,518,710,812,851,861,886
+9|430@0,33@1,39@1,55@1,110@1,229@9,44@12,352@15,182@20,240@25,401@30,504@35,334@42,56@49,834@56|54,175,243,252,281,323,392,453,791|-|8,34,36,38,46,56,57,58,59,63,89,91,114,156,157,164,182,184,196,203,214,240,242,250,263,264,270,280,308,311,317,330,334,341,352,360,374,396,399,406,411,416,419,428,430,479,518,710,776,812,851,861,886
+10|81@1,33@1,450@9|-|-|-
+11|106@0,106@1|-|-|-
+12|16@0,450@1,16@1,106@1,81@1,33@1,48@4,93@8,77@12,79@12,78@12,60@16,18@20,403@24,219@28,405@32,366@36,476@40,483@44|-|-|63,76,94,104,138,148,156,164,168,182,202,203,207,213,214,219,240,241,244,247,263,285,332,355,369,405,412,416,432
+13|40@1,81@1,450@9|-|-|-
+14|106@0,106@1|-|-|-
+15|31@0,450@1,31@1,106@1,40@1,81@1,210@11,673@14,40@17,116@20,474@23,372@26,390@29,42@32,398@35,97@38,283@41,565@44|-|-|14,15,63,76,104,148,156,164,168,182,188,202,203,206,207,213,214,241,249,263,280,332,355,369,371,398,404,416,432
+16|33@1,28@5,16@9,98@13,18@17,239@21,297@25,97@29,17@33,355@37,366@41,332@45,403@49,542@53|253,314,403,413|-|19,104,156,164,168,182,203,207,211,213,214,240,241,263,332,355,365,369,432,526
+17|16@1,28@1,33@1,28@5,16@9,98@13,18@17,239@22,297@27,97@32,17@37,355@42,366@47,332@52,403@57,542@62|-|-|19,104,156,164,168,182,203,207,211,213,214,240,241,263,332,355,365,369,432,526
+18|16@1,542@1,98@1,28@1,33@1,28@5,16@9,98@13,18@17,239@22,297@27,97@32,17@38,355@44,366@50,332@56,403@62,542@68|-|-|19,63,104,156,164,168,182,203,207,211,213,214,240,241,263,332,355,365,369,416,432,526
+19|33@1,39@1,98@4,116@7,44@10,673@13,36@16,372@19,242@22,389@25,162@28,38@31,283@34|44,68,103,154,172,179,253,279,387,515|-|15,58,59,85,86,87,91,104,156,164,168,182,188,203,207,213,214,231,240,241,247,249,263,269,351,365,447,451,526
+20|184@0,116@1,98@1,184@1,14@1,33@1,39@1,98@4,116@7,44@10,673@13,36@16,372@19,242@24,389@29,162@34,38@39,283@44|-|-|14,15,46,58,59,63,70,85,86,87,91,104,156,164,168,182,188,203,207,213,214,231,240,241,247,249,263,269,351,365,416,447,451,526
+21|45@1,64@1,43@4,372@8,31@11,332@15,17@18,36@22,97@25,116@29,355@32,65@36|18,98,143,161,184,253,297,310|-|19,104,156,164,168,182,203,206,207,211,213,214,240,241,263,332,355,365,369,432,526
+22|529@1,45@1,43@1,64@1,365@1,43@4,372@8,31@11,332@15,17@18,36@23,97@27,116@32,355@36,65@41,529@45|-|-|19,63,104,156,164,168,182,203,206,207,211,213,214,240,241,263,332,355,365,369,416,432,526
+23|35@1,43@1,40@4,44@9,137@12,103@17,51@20,256@25,254@25,255@25,491@28,188@33,380@36,562@38,114@41,489@44,441@49|180,184,305,342,389,415|-|36,38,89,91,92,114,141,156,157,164,168,180,182,184,188,189,202,203,214,240,241,242,263,282,317,341,342,390,398,399,402,424,441,474,482,491,555,706,799,806,808,851,885
+24|242@0,35@1,40@1,43@1,44@1,424@1,423@1,422@1,137@12,103@17,51@20,256@27,254@27,255@27,491@32,188@39,380@44,562@48,114@51,489@56,441@63|180,184,305,342,389,415|-|34,36,38,63,89,91,92,114,141,156,157,164,168,180,182,184,188,189,202,203,214,220,240,241,242,263,282,317,341,342,390,398,399,402,416,422,423,424,441,474,482,491,523,525,555,675,706,707,784,799,806,808,851,885
+25|609@1,417@1,204@1,186@1,589@1,98@1,39@1,84@1,45@1,86@4,104@8,486@12,364@16,209@20,97@24,231@28,435@32,85@36,113@40,87@44|-|-|9,34,36,57,85,86,87,91,97,113,115,129,156,164,168,179,182,203,204,214,227,240,263,264,268,270,280,282,283,313,374,417,447,451,486,521,527,528,574,577,583,598,604,851,885,914,918
+26|9@0,486@1,435@1,417@1,364@1,231@1,209@1,204@1,186@1,589@1,609@1,98@1,97@1,87@1,86@1,84@1,45@1,39@1,104@1,113@1,85@5|-|-|9,34,36,57,63,85,86,87,91,97,113,115,129,156,164,168,179,182,203,204,214,227,240,263,264,268,270,280,282,283,374,411,416,417,447,451,486,521,527,528,574,577,583,598,604,851,885,914,918
+27|10@1,111@1,40@3,28@6,205@9,210@12,229@15,523@18,129@21,154@24,97@27,163@30,91@33,360@36,14@39,201@42,89@45|68,175,189,232,400,468|-|14,34,36,38,67,89,91,97,129,133,141,156,157,162,164,168,174,182,189,191,201,203,206,214,232,241,263,264,280,282,283,317,328,332,341,360,374,398,404,414,421,444,446,479,523,667,675,707,815,851
+28|10@1,306@1,28@1,40@1,111@1,205@9,210@12,229@15,523@18,129@21,154@26,328@31,163@36,91@41,360@46,14@51,201@56,89@61|68,175,189,232,400,468|-|14,34,36,38,63,67,89,91,97,129,133,141,156,157,162,164,168,174,182,189,191,201,203,206,214,232,241,263,264,280,282,283,317,328,332,341,360,374,398,404,411,414,416,421,441,444,446,479,523,529,667,675,707,815,851
+29|45@1,40@1,10@5,39@10,154@15,390@20,24@25,44@30,270@35,92@40,260@45,242@50,414@55|36,48,50,68,116,130,204,251,305,342,599|-|15,58,59,70,85,87,91,92,104,156,164,168,182,188,203,207,213,214,231,240,241,249,263,332,351,352,398,421
+30|45@1,40@1,10@1,39@1,154@15,390@22,24@29,44@36,270@43,92@50,260@57,242@64,414@71|-|-|15,58,59,70,85,87,91,92,104,156,164,168,182,188,203,207,213,214,231,240,241,249,263,332,351,352,398,421
+31|276@0,44@1,242@1,24@1,414@1,260@1,154@1,45@1,270@1,40@1,10@1,482@1,276@1,39@1,92@1,390@1|-|-|15,46,53,57,58,59,63,70,85,87,89,91,92,104,126,156,157,164,168,182,188,201,203,207,213,214,231,240,241,247,249,259,263,264,269,280,317,332,351,352,374,398,406,411,416,419,421,431,444,446,523
+32|43@1,40@1,64@5,116@10,31@15,390@20,24@25,30@30,270@35,92@40,260@45,398@50,414@55|32,36,37,48,50,68,93,133,251,342,389,457,599|-|15,58,59,70,85,87,91,92,104,156,164,168,182,188,203,207,213,214,231,240,241,249,263,351,352,398,421
+33|116@1,43@1,64@1,40@1,31@15,390@22,24@29,30@36,270@43,92@50,260@57,398@64,414@71|-|-|15,58,59,70,85,87,91,92,104,156,164,168,182,188,203,207,213,214,231,240,241,249,263,351,352,398,421
+34|224@0,24@1,414@1,260@1,116@1,31@1,270@1,30@1,43@1,224@1,64@1,398@1,40@1,482@1,92@1,390@1|-|-|15,46,53,57,58,59,63,70,85,87,89,91,92,104,126,156,157,164,168,182,188,201,203,207,213,214,231,240,241,247,249,259,263,264,269,280,317,351,352,374,398,406,411,416,419,421,431,444,446,523
+35|1@1,45@1,47@1,111@1,574@1,150@1,186@1,204@1,383@1,500@4,227@8,495@12,791@16,118@20,236@24,356@28,309@32,266@36,322@40,585@44,361@48|217,273,321,505|-|7,8,9,34,36,38,53,58,59,60,76,85,86,87,91,94,101,113,115,118,126,129,133,156,164,168,182,196,203,204,214,226,227,240,241,244,247,253,263,264,270,271,280,282,283,285,286,304,313,345,347,352,356,374,409,428,446,447,451,473,500,574,577,581,583,605,800,802,814,851,886,914
+36|118@1,309@1,585@1,791@1|1,45,47,111,150,186,204,217,227,236,266,273,321,322,356,361,383,495,500,505,574|-|7,8,9,34,36,38,53,58,59,60,63,76,85,86,87,91,94,101,113,115,118,126,129,133,156,164,168,182,196,203,204,214,226,227,240,241,244,247,248,253,263,264,270,271,280,282,283,285,286,304,313,345,347,352,356,374,409,411,416,428,446,447,451,473,500,574,577,581,583,605,800,802,814,851,886,914
+37|39@1,52@1,50@4,98@8,180@12,510@16,109@20,261@24,326@28,53@32,286@36,83@40,219@44,517@48,126@52|46,95,175,262,336,361,488,608|-|34,36,38,46,53,83,91,97,109,126,129,156,164,180,182,203,204,214,220,226,227,241,244,257,261,263,270,286,311,315,394,399,412,417,428,488,492,506,555,807,851
+38|98@1,53@1,39@1|46,95,175,262,336,361,488,608|-|34,36,38,46,53,63,76,83,91,97,101,109,126,129,156,164,180,182,203,204,214,220,226,227,241,244,247,257,261,263,270,286,311,313,315,347,394,399,412,416,417,428,473,488,492,500,506,555,807,815,851
+39|574@1,383@1,186@1,111@1,204@1,47@1,50@1,1@1,497@4,343@8,254@12,255@12,256@12,496@16,156@20,34@24,102@28,360@32,304@36,38@44|-|-|7,8,9,34,36,38,53,58,59,76,85,86,87,91,94,113,115,118,126,129,133,156,164,168,182,196,201,203,204,214,220,226,227,240,241,244,247,253,263,264,269,270,280,282,283,285,304,313,345,347,352,356,360,374,399,409,412,417,428,446,447,473,500,528,574,577,581,583,605,776,802,851,861,885,886,914,917
+40|254@1,497@1,496@1,383@1,360@1,343@1,304@1,256@1,255@1,574@1,1@1,186@1,156@1,111@1,102@1,50@1,47@1,38@1,34@1,204@1,583@5|-|-|7,8,9,34,36,38,53,58,59,63,76,85,86,87,91,94,113,115,118,126,129,133,156,164,168,182,196,201,203,204,214,220,226,227,240,241,244,247,253,263,264,269,270,280,282,283,285,304,313,345,347,352,356,360,374,399,409,411,412,416,417,428,446,447,473,500,528,574,577,581,583,605,776,797,802,851,861,885,886,914,917
+41|16@1,95@6,44@11,314@18,440@25,403@34,141@43|-|-|-
+42|16@1,95@6,44@11,314@18,440@25,403@34,141@43|-|-|-
+43|71@1,74@1,51@4,230@8,72@12,77@14,78@16,79@18,202@20,92@24,585@28,580@32,236@36,80@40|73,75,175,235,275,298,321,495,668|-|14,76,92,156,164,182,188,202,203,204,214,241,263,270,331,345,402,412,437,447,474,491,580,803,851,885
+44|51@1,71@1,74@1,230@1,72@12,77@14,78@16,79@18,202@20,92@26,585@32,580@38,236@44,80@50|73,75,175,235,275,298,321,495,668|-|14,76,92,156,164,182,188,202,203,204,214,241,263,270,331,345,402,412,437,447,474,491,572,580,676,803,851,885
+45|572@0,51@1,71@1,72@1,74@1,77@1,78@1,79@1,80@1,92@1,202@1,230@1,236@1,580@1,585@1|73,75,175,235,275,298,321,495,668|-|14,34,63,76,92,156,164,182,188,202,203,204,214,241,263,270,311,331,345,374,402,412,416,437,447,474,482,491,572,580,605,669,676,803,851,885
+46|71@1,78@5,77@9,474@15,163@21,147@29,404@37,412@47|-|-|-
+47|71@1,78@5,77@9,474@15,163@21,147@29,404@37,412@47|-|-|-
+48|33@1,50@1,48@5,93@11,77@13,60@17,78@23,405@25,79@29,141@35,428@37,305@41,94@47|97,103,226,234,390,450,474,476|-|36,60,76,92,94,97,101,109,129,141,156,164,168,182,188,202,203,214,226,241,263,283,285,390,405,412,428,450,474,491,522,679,806,851,884,917
+49|403@0,33@1,48@1,50@1,483@1,93@11,77@13,60@17,78@23,405@25,79@29,141@37,428@41,305@47,94@55|-|-|36,38,60,63,76,92,94,97,101,109,129,141,156,164,168,182,188,202,203,214,226,241,263,283,285,314,369,390,403,405,412,416,428,450,474,482,491,512,522,679,806,851,884,917
+50|10@1,28@1,45@4,310@8,189@12,523@16,389@20,163@24,201@28,91@32,414@36,89@40,90@44|29,246,262,468,515|-|14,34,36,38,89,91,97,156,157,164,168,174,179,182,188,189,201,203,204,214,241,253,263,270,283,317,328,341,350,414,421,444,446,479,492,523,675,707,815,851
+51|328@0,10@1,28@1,45@1,161@1,310@1,400@1,189@12,523@16,389@20,163@24,201@30,91@36,414@42,89@48,90@54|-|-|14,34,36,38,63,89,91,97,156,157,164,168,174,179,182,188,189,201,203,204,214,241,253,263,283,317,328,341,350,414,416,421,444,446,479,482,492,523,675,707,815,851
+52|45@1,252@1,364@4,10@8,6@12,44@16,269@20,372@24,154@29,103@32,163@36,417@40,583@44|39,95,175,180,343,387|-|34,36,38,85,86,87,91,97,129,133,156,164,168,180,182,196,203,204,206,214,220,232,240,241,244,247,263,269,270,282,283,304,313,332,369,399,402,408,417,421,441,492,555,583,675,808,851,885,886
+53|408@0,10@1,45@1,252@1,364@1,415@1,6@12,44@16,269@20,372@24,154@31,103@36,163@42,417@48,583@54|-|-|34,36,38,46,63,85,86,87,91,97,129,133,156,164,168,180,182,196,203,204,206,214,220,232,240,241,244,247,263,269,270,282,283,304,313,332,369,399,402,408,416,417,421,441,492,555,583,675,806,808,851,885,886
+54|10@1,39@1,55@3,93@6,154@9,352@12,50@15,428@18,103@21,401@24,487@27,244@30,133@34,472@39|60,95,109,238,281,493,499|-|8,34,36,38,56,57,58,59,60,67,91,94,109,113,114,118,127,129,133,156,164,168,182,196,203,214,227,240,244,250,263,264,269,270,280,282,283,285,330,341,347,352,374,410,417,421,428,473,490,710,812,851,885,886,917
+55|10@1,39@1,55@1,93@1,453@1,154@9,352@12,50@15,428@18,103@21,401@24,487@27,244@30,133@36,56@40,472@45|-|-|8,34,36,38,56,57,58,59,60,63,67,91,94,109,113,114,118,127,129,133,156,164,168,182,196,203,214,227,240,244,248,250,263,264,269,270,280,282,283,285,330,341,347,352,374,408,410,411,416,417,421,428,447,473,490,710,812,851,885,886,917
+56|10@1,43@1,116@1,343@1,154@5,67@8,69@12,207@17,238@22,372@26,37@29,370@33,103@36,707@40,200@44,515@48|68,174,180,227,251,400|-|7,8,9,34,36,38,67,85,89,91,118,129,156,157,164,168,174,179,180,182,184,200,203,214,227,240,241,253,263,264,269,270,280,283,315,317,339,369,370,374,398,402,409,411,421,441,444,490,512,523,675,707,808,851
+57|10@1,43@1,374@1,116@1,154@5,67@8,69@15,207@17,238@22,372@26,37@30,889@35,370@39,103@44,707@48,200@53,515@57|-|-|7,8,9,34,36,38,63,67,85,87,89,91,118,129,156,157,164,168,174,179,180,182,184,200,203,214,227,240,241,253,263,264,269,270,280,283,315,317,339,369,370,374,398,402,409,410,411,416,421,441,444,446,479,490,512,523,675,707,808,851
+58|43@1,52@1,336@4,44@8,172@12,270@16,97@20,424@24,514@28,242@32,36@36,53@40,46@44,583@48,179@52,394@56|24,37,38,234,343,833|-|34,36,38,46,53,83,91,97,126,129,156,164,168,174,179,182,184,200,203,204,214,241,242,257,261,263,270,315,370,394,422,424,488,528,555,583,706,851,915
+59|245@0,583@1,424@1,394@1,336@1,270@1,242@1,514@1,179@1,97@1,52@1,46@1,44@1,43@1,172@1,36@1,53@5|-|-|34,36,38,46,53,63,76,83,91,97,126,129,156,164,168,174,179,182,184,200,203,204,214,241,242,257,261,263,270,304,315,332,370,394,406,416,422,424,442,488,523,528,535,555,583,706,815,851,915
+60|55@1,95@1,1@6,341@12,61@18,240@24,34@30,414@36,56@42,187@48,38@54|54,150,283,330,352|-|34,36,38,56,57,58,59,67,91,94,114,127,129,133,156,164,168,182,189,196,203,214,227,240,250,263,264,270,283,311,330,341,352,414,523,710,851,886
+61|1@1,55@1,95@1,341@1,61@18,240@24,34@32,414@40,56@48,187@56,38@66|54,150,283,330,352|-|8,34,36,38,56,57,58,59,67,89,91,94,114,118,127,129,133,156,164,168,182,189,196,203,214,227,240,244,250,263,264,270,280,283,311,330,341,352,374,414,490,523,710,851,886
+62|223@0,34@1,61@1,95@1|1,38,54,55,56,150,187,240,283,330,341,352,414,509|-|8,34,36,38,56,57,58,59,63,67,89,91,94,114,118,127,129,133,156,157,164,168,179,182,184,189,196,203,214,226,227,240,244,250,263,264,269,270,280,282,283,311,317,330,339,341,352,370,374,398,409,410,411,414,416,490,523,667,675,710,811,851,886,918
+63|100@1|-|-|-
+64|93@0,100@1,95@6,347@11,427@18,428@25,105@34,94@43|-|-|-
+65|100@1,93@6,95@6,347@11,427@18,428@25,105@34,94@43|-|-|-
+66|33@1,249@6,418@11,458@18,183@22,339@25,38@34,370@43|-|-|-
+67|33@1,249@6,418@11,458@18,183@22,339@25,38@34,370@43|-|-|-
+68|33@1,249@6,418@11,458@18,183@22,339@25,409@30,38@34,370@43|-|-|-
+69|22@1,74@7,35@11,79@13,77@15,78@17,51@23,282@27,230@29,380@35,75@39,398@41,21@47,438@52|235,275,321,388,389,499,668|-|14,76,92,115,141,156,164,168,182,188,202,203,214,227,241,263,282,311,331,345,398,402,412,437,447,474,482,491,580,679,803,851,884,885
+70|22@1,35@1,74@1,79@13,77@15,78@17,51@24,282@29,230@32,380@39,75@44,398@47,21@54,438@58|235,275,321,388,389,499,668|-|14,34,76,92,115,129,141,156,164,168,182,188,202,203,214,227,241,263,282,311,331,345,398,402,412,437,447,450,474,482,491,580,679,803,851,884,885
+71|437@0,22@1,75@1,79@1,230@1,348@44|235,254,255,256,275,321,380,388,389,438,499,668|-|14,34,63,76,92,115,129,141,156,164,168,182,184,188,202,203,214,227,241,263,282,311,331,345,398,402,412,416,437,447,450,474,482,491,580,679,803,851,884,885
+72|40@1,55@1,51@4,35@8,48@12,352@16,103@20,61@24,506@28,151@32,398@36,57@40,482@44,56@48|62,109,114,229,243,282,321,367,392|-|14,56,57,58,59,92,109,114,129,156,164,168,182,188,196,202,203,214,240,250,263,282,330,341,352,390,398,441,474,482,491,506,605,675,710,812,851,884,886
+73|35@1,40@1,51@1,55@1,513@1,48@12,352@16,103@20,61@24,506@28,151@34,398@40,57@46,482@52,56@58|62,109,114,229,243,282,321,367,392|-|14,56,57,58,59,63,92,109,114,129,156,164,168,182,184,188,196,202,203,214,240,250,263,282,311,330,341,352,390,398,416,441,474,482,491,506,605,675,710,806,812,851,884,886
+74|33@1,111@1,397@6,205@10,523@12,88@16,479@18,120@24,446@28,350@30,89@34,153@36,38@40,444@42|5,174,175,223,335,359,469|-|7,9,34,36,38,53,89,91,118,126,156,157,164,174,182,184,189,201,203,214,241,263,264,280,317,334,341,350,360,374,414,444,446,479,523,667,707,851
+75|33@1,111@1,397@1,205@10,523@12,88@16,479@18,120@24,446@30,350@34,89@40,153@44,38@50,444@54|5,174,175,223,335,359,469|-|7,9,34,36,38,53,89,91,118,126,156,157,164,174,182,184,189,201,203,214,241,263,264,280,317,334,341,350,360,374,411,414,442,444,446,479,484,523,667,707,776,851,912
+76|33@1,111@1,397@1,484@1,88@16,479@18,523@22,120@24,446@30,350@34,89@40,153@44,38@50,444@54|5,174,175,223,335,359,469|-|7,9,34,36,38,46,53,63,89,91,118,126,156,157,164,174,182,184,189,201,203,214,241,263,264,280,317,334,341,350,360,374,411,414,416,442,444,446,479,484,523,667,707,776,851,912
+77|33@1,52@5,458@9,172@15,95@21,126@29,38@37,394@47|-|-|-
+78|33@1,52@5,458@9,172@15,95@21,126@29,38@37,394@47|-|-|-
+79|33@1,174@1,45@3,55@6,281@9,93@12,50@15,352@18,29@21,428@24,133@27,57@30,303@33,94@36,244@39,240@42,505@45|23,187,335,562|-|34,36,53,56,57,58,59,60,86,89,91,94,113,126,127,129,133,156,164,174,182,196,203,214,240,241,244,247,250,263,270,271,285,286,311,341,347,352,419,428,433,447,473,492,500,523,678,710,797,851,883,886
+80|110@1,33@1,45@1,55@1,174@1,281@9,93@12,50@15,352@18,29@21,428@24,133@27,57@30,303@33,94@36,244@41,240@46,505@51|248|-|8,34,36,53,56,57,58,59,60,63,86,89,91,94,113,118,126,127,129,133,156,164,174,182,196,203,214,240,241,244,247,248,250,263,264,270,271,280,285,286,311,330,334,341,347,352,374,409,411,416,417,419,428,433,447,473,492,500,503,523,678,710,776,797,851,883,886,917
+81|33@1,84@1,48@4,86@8,486@12,360@16,209@20,103@24,393@28,430@32,435@36,319@40,113@44,199@48,192@52|153,527|-|36,85,86,87,109,113,115,129,156,164,182,201,203,214,240,241,263,268,270,319,334,356,360,430,442,451,484,486,521,527,528,598,604,796,851
+82|161@0,86@1,604@1,33@1,48@1,84@1,486@12,360@16,209@20,103@24,393@28,430@34,435@40,319@46,113@52,199@58,192@64|-|-|36,63,85,86,87,109,113,115,129,156,164,182,201,203,214,240,241,263,268,270,319,334,356,360,430,442,451,484,486,521,527,528,598,604,796,851
+83|64@1,28@1,43@5,210@10,15@15,332@20,314@25,282@30,206@35,163@40,14@45,403@50,348@55,97@60,413@65|16,98,143,174,175,189,279,297,343,348,364,400,493,515|-|14,15,19,104,156,164,168,182,203,206,207,211,213,214,231,241,244,263,332,355,365,369,398,432,526
+84|45@1,64@1,98@5,31@9,365@14,458@19,97@23,253@27,367@30,14@33,65@36,283@39,37@43|18,143,175,372|-|14,34,36,38,67,97,129,156,164,168,182,189,203,214,226,240,241,253,263,270,282,283,297,332,366,413,512,675,679,851
+85|161@0,45@1,64@1,98@1,31@12,365@15,458@19,97@23,253@26,367@30,14@34,65@38,283@43,37@50|18,143,175,372|-|14,19,34,36,38,63,67,97,129,156,164,168,182,184,189,203,214,226,240,241,253,263,269,270,282,283,297,332,366,413,416,512,529,675,679,707,851,884,885
+86|29@1,45@3,204@7,196@11,227@13,420@17,156@21,392@23,62@27,453@31,362@33,36@37,291@41,401@43,58@47,219@51,883@53|32,50,122,195,252,254,255,256,494,562|-|34,36,38,56,57,58,59,114,127,156,164,168,174,182,196,203,204,214,227,240,250,253,263,270,311,330,333,352,374,419,529,684,812,813,851,861,883,886
+87|329@0,29@1,45@1,196@1,227@13,420@17,156@21,392@23,62@27,453@31,362@33,36@39,291@45,401@49,58@55,219@61,883@65|32,50,122,195,252,254,255,256,494,562|-|34,36,38,56,57,58,59,63,114,127,156,164,168,174,182,196,203,204,214,227,240,250,253,263,270,282,283,311,330,333,352,374,416,419,529,583,684,710,812,813,851,861,883,886,914
+88|1@1,139@1,106@4,189@7,50@12,124@15,341@18,107@21,92@26,188@29,482@32,103@37,441@40,151@43,562@46,262@48|114,174,212,254,255,256,325,425,491|-|7,8,9,34,36,53,85,87,91,92,109,114,118,126,156,157,164,168,174,182,184,188,189,201,202,203,214,220,240,241,247,263,269,270,286,317,341,374,398,409,428,441,474,482,491,506,851
+89|1@1,106@1,139@1,189@1,50@12,124@15,341@18,107@21,92@26,188@29,482@32,103@37,441@40,151@46,562@52,262@57|-|-|7,8,9,34,36,53,63,85,87,91,92,109,114,118,126,129,156,157,164,168,174,180,182,184,188,189,201,202,203,214,220,240,241,247,263,264,269,270,280,282,286,317,341,374,390,398,399,409,411,416,428,441,474,482,491,506,679,808,851
+90|33@1,55@1,110@4,420@8,43@12,250@16,48@20,62@24,182@28,534@32,334@36,58@40,504@44,56@48|61,352,392,791|-|36,56,57,58,59,127,129,156,164,182,191,196,203,214,240,250,263,270,333,334,341,350,352,390,419,710,851,861,883,886
+91|333@0,556@1,504@1,420@1,390@1,334@1,250@1,191@1,182@1,110@1,62@1,58@1,56@1,55@1,48@1,43@1,33@1,534@5|-|-|34,36,56,57,58,59,63,113,127,129,156,164,182,184,191,196,203,214,240,250,263,270,311,333,334,341,350,352,390,398,416,419,529,684,710,851,861,883,886
+92|109@1,122@1,95@4,212@8,371@12,180@16,174@20,506@24,101@28,389@32,399@36,247@40,194@44,138@48|50,92,114,123,195,310,499,513|-|7,8,9,85,87,92,94,101,109,114,156,164,168,174,180,182,184,188,196,202,203,214,220,240,241,244,247,261,263,269,271,285,286,398,399,412,417,433,441,474,482,491,492,506,605,806,809,851
+93|325@0,95@1,109@1,122@1,212@1,371@12,180@16,174@20,506@24,101@30,389@36,399@42,247@48,194@54,138@60|-|-|7,8,9,85,87,92,94,101,109,114,118,156,164,168,174,180,182,184,188,196,202,203,214,220,227,240,241,244,247,261,263,269,271,285,286,374,390,398,399,411,412,417,421,433,441,474,482,491,492,506,566,605,806,809,851
+94|212@1,325@1,513@1,195@1,122@1,109@1,95@1,371@12,180@16,174@20,506@24,101@30,389@36,399@42,247@48,194@54,138@60|-|-|7,8,9,34,63,85,86,87,92,94,101,109,114,118,156,164,168,174,180,182,184,188,196,202,203,214,220,227,240,241,244,247,261,263,264,269,271,280,282,285,286,374,390,398,399,409,411,412,416,417,421,433,441,474,482,491,492,506,566,605,806,809,851,917
+95|205@1,33@6,523@11,157@18,446@25,667@34,231@43|-|-|-
+96|1@1,95@1,50@5,93@9,29@13,139@17,60@21,244@25,428@29,207@33,94@37,417@41,473@45,248@49|7,8,9,260,272,385,427,471|-|7,8,9,34,36,38,60,67,86,92,94,101,113,114,115,118,129,156,164,168,174,182,203,214,227,240,241,244,247,248,263,264,269,270,271,280,282,283,285,286,347,374,409,411,417,428,433,447,473,490,492,500,577,605,678,797,851,885,917
+97|1@1,50@1,93@1,95@1,415@1,29@13,139@17,60@21,244@25,428@32,207@37,94@42,417@47,473@51,248@56|-|-|7,8,9,34,36,38,60,63,67,86,92,94,101,109,113,114,115,118,129,156,164,168,174,182,184,203,214,226,227,240,241,244,247,248,263,264,269,270,271,280,282,283,285,286,347,374,409,411,416,417,428,433,447,473,490,492,500,506,577,605,678,776,797,851,885,917
+98|43@1,55@1,106@4,232@8,341@12,182@16,61@20,23@24,175@29,534@32,21@36,14@40,152@44,12@48|21,97,114,133,163,175,246,282,321,359,400,502|-|14,15,57,58,59,70,91,104,156,157,164,168,182,203,206,207,213,214,240,249,258,263,280,317,352,362,374,404,503
+99|359@1,106@1,43@1,232@1,55@1,469@1,341@12,182@16,61@20,23@24,175@31,534@36,21@42,14@48,152@54,12@60|-|-|14,15,57,58,59,63,70,91,104,156,157,164,168,182,203,206,207,213,214,240,249,258,263,280,317,352,362,374,404,416,503
+100|268@1,33@1,84@4,598@6,209@9,205@11,103@13,451@16,129@20,486@22,120@26,113@29,393@34,435@37,153@41,360@46,243@50|278,319|-|36,38,85,86,87,97,113,129,156,164,168,182,203,214,240,263,268,269,270,319,360,451,486,492,521,527,528,598,604,851
+101|598@1,268@1,602@1,33@1,84@1,209@9,205@11,103@13,451@16,129@20,486@22,120@26,113@29,393@36,435@41,153@47,360@54,243@58|-|-|36,38,63,85,86,87,97,113,129,156,164,168,174,182,184,203,214,240,263,268,269,270,319,360,416,451,486,492,521,527,528,598,604,851,916
+102|71@1,95@1,115@5,73@10,72@15,93@20,235@25,331@30,202@35,326@40,253@45,388@50,76@55|77,78,79,174,236,246,275,335|-|14,60,76,94,113,115,156,164,168,174,182,188,202,203,214,241,244,253,263,270,271,285,286,331,402,412,428,437,447,473,500,580,803,851,917
+103|23@0,437@1,402@1,388@1,331@1,326@1,253@1,235@1,473@1,115@1,95@1,93@1,76@1,73@1,72@1,71@1,452@1,202@1|-|-|14,34,36,38,60,63,67,76,89,94,113,115,156,164,168,174,182,188,202,203,214,241,244,248,253,263,270,271,285,286,331,345,347,356,402,412,416,428,433,437,447,473,500,523,580,678,707,797,803,851,917
+104|45@1,189@1,39@4,206@8,29@12,514@16,374@20,707@24,198@29,116@32,283@36,155@40,37@44,38@48|24,43,103,130,174,187,195,197,246,442|-|14,53,58,59,70,89,91,104,126,156,157,164,168,182,201,203,206,207,213,214,231,241,249,263,264,280,317,332,374,431,446,523
+105|206@1,45@1,189@1,39@1,29@12,514@16,374@20,707@24,198@31,116@36,283@42,155@48,37@54,38@60|-|-|14,53,58,59,63,70,89,91,104,126,156,157,164,168,182,201,203,206,207,213,214,231,241,249,263,264,280,317,332,374,411,416,431,444,446,523
+106|280@0,252@1,33@1,270@1,116@1,490@1,24@4,67@8,203@12,389@16,469@21,299@24,364@28,25@32,370@36,179@40,136@44,853@50|68,136,183,229,364,410,418|-|14,34,36,38,67,89,118,129,156,157,164,168,179,182,184,189,203,214,226,240,241,253,263,269,270,280,282,283,317,339,370,374,396,398,410,411,416,444,490,523,675,679,707,811,851,918
+107|409@0,364@1,33@1,270@1,252@1,116@1,183@4,410@8,197@12,418@16,501@21,9@24,8@24,7@24,97@28,5@32,370@36,68@40,264@44|68,136,183,229,364,410,418|-|7,8,9,14,34,36,38,67,89,97,118,129,156,157,164,168,179,182,184,189,203,214,226,227,240,241,253,263,264,269,270,280,282,283,317,339,370,374,396,398,409,410,411,416,444,490,523,675,811,851,885,918
+108|33@1,156@6,523@11,428@18,38@25,205@34,416@43|-|-|-
+109|33@1,139@1,123@4,108@8,499@12,372@16,124@20,114@24,120@28,188@32,92@36,562@40,153@44,262@48,194@52|174,180,220,254,255,256|-|34,36,53,60,85,87,92,114,126,156,164,168,174,180,182,184,188,203,214,220,240,241,247,261,263,269,360,390,399,441,474,482,491,851
+110|458@0,33@1,108@1,123@1,139@1,257@1,499@12,372@16,124@20,114@24,120@28,188@32,92@38,562@44,153@50,262@56,194@62|-|-|34,36,53,60,63,85,87,92,114,126,156,164,168,174,180,182,184,188,203,214,220,240,241,247,257,261,263,269,360,390,399,416,441,474,482,491,851
+111|33@1,39@1,479@5,523@10,30@15,184@20,23@25,350@30,529@35,36@40,89@45,444@50,224@55,32@60|68,174,368,397,407,470|-|14,34,36,38,46,53,58,59,85,87,89,91,126,156,157,164,168,174,179,182,184,189,196,201,203,214,240,241,242,253,263,283,317,341,350,398,406,414,422,423,424,444,446,479,484,523,529,667,684,707,776,815,851,916
+112|359@0,33@1,39@1,479@1,523@1,30@15,184@20,23@25,350@30,529@35,36@40,89@47,444@54,224@61,32@68|68,174,368,397,407,470|-|7,8,9,14,34,36,38,46,53,56,57,58,59,63,85,87,89,91,126,156,157,164,168,174,179,182,184,189,196,200,201,203,214,240,241,242,253,263,264,270,280,283,317,334,341,350,374,398,406,411,414,416,419,421,422,423,424,444,446,479,484,523,529,535,667,684,707,776,784,800,815,851,916
+113|204@1,383@1,343@1,574@1,186@1,1@1,111@1,39@4,497@8,791@12,47@16,374@20,36@24,505@28,270@32,113@36,38@40,135@44,387@48,361@52|69,215,217,356|-|7,8,9,34,36,38,53,58,59,63,76,85,86,87,89,94,113,118,126,129,156,157,164,168,182,196,201,203,204,214,240,241,247,263,270,280,283,285,304,317,347,352,356,374,409,411,416,428,446,447,500,523,528,574,604,605,707,851,883,885,886
+114|71@1,78@6,77@11,491@15,458@18,412@25,246@34,79@43|-|-|-
+""",
+    """115|1@1,39@1,45@4,252@8,44@12,23@16,116@20,29@24,389@28,458@32,242@36,203@40,179@44,200@48,387@52|23,38,50,68,116,253,283,306,359,509|-|15,46,53,57,58,59,63,70,76,85,87,89,91,104,126,156,157,164,168,182,201,203,207,213,214,219,231,240,241,247,249,258,263,264,280,317,332,351,352,374,409,411,416,419,421,431,523,526
+116|43@1,55@1,108@5,239@10,116@15,225@20,61@25,97@30,352@35,406@40,56@45,349@50,240@55|50,62,150,175,499|-|56,57,58,59,97,127,129,156,164,182,196,200,203,214,240,250,263,311,330,349,352,406,430,710,799,812,851,886
+117|43@1,55@1,108@1,239@1,116@15,225@20,61@25,97@30,352@37,406@44,56@51,349@58,240@65|50,62,150,175,499|-|56,57,58,59,63,97,127,129,156,164,182,184,196,200,203,214,240,250,263,311,330,349,352,406,416,430,710,799,812,851,883,886
+118|64@1,39@1,48@5,352@10,30@15,97@20,392@25,175@30,127@35,487@40,224@45,32@50|34,56,60,114,130,189,341,367,401|-|14,57,58,59,104,127,156,164,182,203,207,213,214,240,258,263,352,398,503
+119|64@1,48@1,39@1,352@1,30@15,97@20,392@25,175@30,127@37,487@44,224@51,32@58|-|-|14,57,58,59,63,104,127,156,164,182,203,207,213,214,240,258,263,352,398,416,503
+120|106@1,33@1,55@4,109@8,229@12,107@16,129@20,60@24,362@28,113@32,408@36,94@40,57@44,105@48,322@52,56@56|-|-|57,58,59,85,86,87,94,104,113,115,127,148,156,164,182,203,207,214,240,244,258,263,278,352,360,362,430,503,605
+121|362@1,109@1,322@1,106@1,56@1,113@1,107@1,408@1,60@1,94@1,229@1,105@1,57@1,129@1,33@1,55@1|-|-|57,58,59,63,85,86,87,94,104,113,115,127,138,148,156,164,182,203,207,214,240,244,258,263,278,285,352,360,362,416,419,430,433,447,503,605
+122|93@1,95@6,334@11,428@18,102@25,94@34,347@43,605@46|-|-|-
+123|43@1,98@1,210@4,206@8,17@12,104@16,458@20,163@24,116@28,97@32,403@36,404@40,14@44|68,364,400,432,501|-|14,36,63,97,113,129,156,164,168,179,182,184,203,206,214,226,240,241,263,270,280,314,332,366,369,370,403,404,405,410,416,450,512,522,679,806,814,851,884,885
+124|383@1,122@1,1@1,181@1,186@1,93@12,343@16,47@20,313@24,8@28,94@34,142@40,212@46,195@52,59@58|-|-|58,59,63,94,104,113,115,138,148,156,164,168,182,203,207,213,214,240,244,247,258,259,263,264,269,278,280,285,347,352,371,374,409,411,412,416,417,419,433,447
+125|43@1,84@1,98@1,268@1,129@12,351@16,86@20,103@24,9@28,435@34,67@40,85@46,113@52,87@58,416@64|223,238,264,266,359,364|-|7,8,9,34,36,38,63,67,85,86,87,94,113,118,129,156,164,168,182,203,214,240,253,263,264,268,269,270,280,282,319,339,374,411,416,451,486,490,521,527,528,598,604,851,885,916
+126|43@1,52@1,108@1,123@1,499@12,172@16,109@20,184@24,7@28,436@34,67@40,53@46,241@52,126@58,63@64|183,187,223,238,264,266,562|-|7,9,34,36,38,46,53,63,67,83,94,109,118,126,156,164,168,174,182,184,203,214,241,253,257,261,263,264,269,270,280,282,315,374,394,398,411,416,488,490,491,535,807,815,851,915
+127|106@1,11@1,116@4,20@8,69@12,450@16,480@20,458@24,233@28,404@32,70@36,14@40,66@44,12@48,276@52|31,37,98,175,276,364,370,450|-|14,15,63,70,89,91,104,156,157,164,168,182,203,206,207,213,214,240,241,249,263,264,280,317,339,374,404,411,416,431,444,446,523
+128|33@1,39@1,526@5,371@10,372@15,30@20,184@25,428@30,873@35,156@40,207@45,37@50,38@55,416@60|174,283|-|34,36,38,53,57,58,59,63,76,85,87,89,91,126,156,157,164,168,174,179,182,184,196,200,201,203,214,240,241,247,263,270,283,317,370,416,428,442,444,523,528,667,675,684,707,808,851,885
+129|150@1,33@15,175@25|-|-|-
+130|44@0,33@1,43@1,239@1,150@1,175@1,250@4,423@8,362@12,184@16,127@21,242@24,240@28,401@32,349@36,56@40,542@44,37@48,63@52|-|-|34,36,38,46,53,56,57,58,59,63,85,86,87,89,126,127,156,164,180,182,184,196,200,201,203,214,240,241,242,250,263,269,270,283,330,349,352,399,406,416,419,423,442,444,503,523,525,542,799,808,851,886,913,915
+131|45@1,55@1,47@5,54@10,791@15,420@20,109@25,352@30,362@35,34@40,58@45,240@50,56@55,195@60,329@65|32,90,174,246,321,573,664|-|34,36,38,56,57,58,59,63,85,87,89,94,109,114,115,127,156,164,174,182,196,200,203,204,214,240,250,263,270,304,311,330,333,349,352,406,416,419,428,442,523,529,574,684,710,776,851,883,886,913,914,917
+132|144@1|-|-|-
+133|33@1,39@1,45@1,270@1,343@1,28@5,98@10,608@15,129@20,44@25,383@30,226@35,36@40,204@45,38@50,387@55|24,174,175,189,197,273,281,321|-|34,36,38,46,91,129,156,164,174,182,189,203,204,214,226,240,241,247,263,270,304,311,313,347,500,851,885,914
+134|55@0,33@1,36@1,38@1,39@1,44@1,45@1,383@1,343@1,270@1,129@1,226@1,204@1,28@5,98@10,608@15,114@20,352@25,62@30,392@35,330@40,151@45,56@50,387@55|-|-|34,36,38,46,56,57,58,59,63,91,114,127,129,156,164,174,182,189,196,203,204,214,226,240,241,247,250,263,270,304,311,313,330,347,352,416,500,503,710,812,851,885,886,914
+135|84@0,226@1,129@1,270@1,343@1,204@1,44@1,45@1,39@1,38@1,36@1,33@1,383@1,28@5,98@10,608@15,86@20,24@25,422@30,42@35,435@40,97@45,87@50,387@55|-|-|34,36,38,46,63,85,86,87,91,97,113,129,156,164,174,182,189,203,204,206,214,226,240,241,247,263,268,270,304,311,313,319,347,416,422,486,500,521,527,528,598,604,851,885,914
+136|52@0,129@1,33@1,36@1,38@1,39@1,383@1,45@1,343@1,270@1,226@1,204@1,28@5,98@10,608@15,123@20,44@25,424@30,83@35,436@40,184@45,394@50,387@55|-|-|34,36,38,46,53,63,83,91,126,129,156,164,174,182,184,189,203,204,214,226,240,241,247,257,261,263,270,283,304,311,313,315,347,394,416,424,500,807,815,851,885,914,915
+137|33@1,160@1,278@5,393@10,84@15,60@20,176@25,97@30,105@35,435@40,161@45,38@50,199@55,192@60|-|-|36,38,58,59,60,63,76,85,86,87,94,97,129,156,164,168,182,196,203,214,240,241,247,263,268,271,356,416,428,433,451,473,492,527,598,851
+138|20@1,110@1,205@5,28@10,55@15,43@20,341@25,246@30,362@35,182@41,350@45,57@50,504@55,56@60|21,44,48,61,62,114,191,250,282,321,330,390,513|-|57,58,59,104,127,156,157,164,168,182,201,203,207,213,214,240,249,258,263,317,352,360,362,397,446,503
+139|242@0,20@1,242@1,205@1,28@1,110@1,55@15,43@20,341@25,246@30,362@35,182@43,350@49,57@56,504@63,56@70|-|-|57,58,59,63,104,127,156,157,164,168,182,201,203,207,213,214,240,249,258,263,317,352,360,362,397,416,431,444,446,503
+140|71@1,106@1,10@5,28@10,453@15,43@20,341@25,246@30,362@35,182@41,141@45,710@50,319@55,444@60|36,61,62,72,103,109,175,196,229,282,341|-|57,58,59,91,104,127,156,157,164,168,182,201,202,203,207,213,214,240,249,258,263,317,332,352,362,397,444,446,503
+141|163@0,71@1,364@1,106@1,400@1,28@1,10@1,163@1,453@15,43@20,341@25,246@30,362@35,182@43,141@49,710@56,319@63,444@70|-|-|14,15,57,58,59,63,91,104,127,156,157,164,168,182,201,202,203,207,213,214,240,249,258,263,280,317,332,352,362,397,404,416,431,444,446,503
+142|246@1,44@1,48@5,17@10,184@15,157@20,46@25,242@30,442@35,36@40,444@45,97@50,63@55,416@60|18,174,225,366,372,469|-|19,46,53,63,70,89,104,126,156,157,164,168,182,201,203,207,211,213,214,231,240,241,249,259,263,269,317,332,337,355,371,397,406,416,432,444,446,523
+143|33@1,387@1,256@1,103@1,111@1,118@1,122@1,374@1,278@1,254@1,175@1,343@1,335@1,281@12,44@16,173@20,214@20,156@20,242@24,34@28,484@32,133@36,667@40,359@44,187@48,562@52,416@56|38,68,90,174,562|-|7,8,9,34,36,38,53,57,58,59,63,76,85,87,89,91,118,126,133,156,157,164,174,182,189,196,200,201,203,204,214,227,240,241,242,247,253,263,264,270,280,304,317,374,402,411,416,428,441,442,479,484,523,528,535,667,707,776,851,885,886,912,916
+144|16@1,54@1,181@5,115@10,420@15,97@20,246@25,366@30,573@35,355@40,58@45,883@50,542@55,114@60,59@65,329@70|-|-|19,36,38,46,58,59,63,97,113,114,115,129,156,164,182,196,201,203,214,240,241,263,270,297,311,314,332,333,352,366,369,403,413,416,419,542,813,814,851,861,883
+145|64@1,86@1,84@5,113@10,365@15,97@20,246@25,268@30,65@35,355@40,435@45,240@50,87@55,197@60,602@65,192@70|-|-|19,36,63,85,86,87,97,113,129,156,164,182,201,203,214,226,240,241,257,263,268,270,311,314,319,332,366,369,413,416,486,512,521,528,542,598,604,814,851,916
+146|16@1,43@1,52@5,219@10,17@15,97@20,246@25,510@30,403@35,355@40,257@45,241@50,542@55,203@60,315@65,143@70|-|-|19,36,38,46,53,63,76,83,97,126,129,156,164,182,201,203,214,240,241,257,261,263,270,311,314,315,332,366,369,394,403,413,416,488,512,542,807,814,815,851,915
+147|35@1,43@1,239@5,86@10,525@15,97@20,21@25,401@31,407@35,219@40,240@45,349@50,200@55,63@60|48,54,225,245,352,453|-|34,36,53,56,57,58,59,63,83,85,86,87,97,113,114,126,127,129,156,164,182,196,200,203,214,240,241,263,270,349,352,406,416,434,442,525,784,799,851,886,913
+148|35@1,43@1,86@1,239@1,525@15,97@20,21@25,401@33,407@39,219@46,240@53,349@60,200@67,63@74|-|-|34,36,53,56,57,58,59,63,83,85,86,87,97,113,114,126,127,129,156,164,182,196,200,203,214,240,241,263,270,311,349,352,406,416,434,442,525,784,799,851,886,913
+149|542@0,355@1,245@1,239@1,86@1,7@1,35@1,17@1,9@1,43@1,525@15,97@20,21@25,401@33,407@39,200@41,219@46,240@53,349@62,63@80|-|-|7,8,9,19,34,36,46,53,56,57,58,59,63,67,83,85,86,87,89,97,113,114,118,126,127,129,156,157,164,182,184,196,200,201,203,214,227,240,241,257,263,264,270,280,311,314,317,332,337,349,352,366,374,403,406,411,416,434,442,444,523,525,542,707,776,784,799,851,861,883,886,913
+150|50@1,93@1,129@1,791@1,246@8,427@16,219@24,133@32,396@40,94@48,384@56,385@56,54@64,540@72,105@80,248@88|-|-|7,8,9,34,36,38,53,58,59,60,63,67,76,85,86,87,89,94,97,101,109,113,115,118,126,129,133,156,157,164,174,179,180,182,184,196,201,203,214,240,241,244,247,248,261,263,264,269,270,271,280,282,285,286,311,317,339,347,356,374,396,398,399,408,409,411,412,414,416,417,419,428,433,444,447,473,486,490,492,500,506,523,542,678,707,797,808,851,885,886,917
+151|1@1,513@1,133@10,226@20,246@30,791@40,417@50,118@60,286@70,144@80,396@90,94@100|-|-|7,8,9,14,19,34,36,38,46,53,56,57,58,59,60,63,67,76,83,85,86,87,89,91,92,94,97,101,109,113,114,115,118,126,127,129,133,141,156,157,162,164,168,174,179,180,182,184,188,189,191,196,200,201,202,203,204,206,214,220,226,227,232,240,241,242,244,247,248,250,253,257,261,263,264,268,269,270,271,280,282,283,285,286,297,304,307,308,311,313,314,315,317,319,328,330,331,332,333,334,337,338,339,341,342,345,347,349,350,352,356,360,366,369,370,374,390,394,396,398,399,402,403,404,405,406,408,409,410,411,412,413,414,416,417,419,421,422,423,424,428,430,433,434,437,441,442,444,446,447,450,451,473,474,479,482,484,486,488,490,491,492,500,503,506,512,518,519,520,521,522,523,525,527,528,529,535,542,555,566,572,574,577,580,581,583,598,604,605,667,669,675,676,678,679,684,706,707,710,776,784,796,797,799,800,802,803,806,807,808,809,811,812,813,814,815,851,861,883,884,885,886,912,913,914,915,916,917,918
+152|33@1,45@1,75@6,77@9,235@12,115@17,345@20,73@23,230@28,113@31,34@34,219@39,202@42,76@45|22,68,175,246,275,505|-|14,34,36,38,76,113,115,156,164,174,182,189,202,203,204,214,227,241,263,270,313,331,345,402,412,437,447,520,580,669,803,851,885
+153|33@1,45@1,75@1,77@1,235@12,115@18,345@22,73@26,230@32,113@36,34@40,219@46,202@50,76@54|22,68,175,246,275,505|-|14,34,36,38,76,113,115,156,164,174,182,189,202,203,204,214,227,241,263,270,282,313,331,345,402,412,437,447,520,580,669,707,803,851,885
+154|80@0,33@1,45@1,75@1,77@1,572@1,235@12,115@18,345@22,73@26,230@34,113@40,34@46,219@54,202@60,76@65|22,68,175,246,275,505|-|14,34,36,38,63,76,89,113,115,156,164,174,182,189,200,202,203,204,214,227,241,263,270,282,283,311,313,331,338,345,402,412,416,428,437,447,520,523,525,572,580,669,707,776,803,851,885
+155|33@1,43@1,108@6,52@10,98@13,172@19,111@22,488@28,129@31,436@37,53@40,517@46,205@49,38@55,315@58,284@64|24,174,179,326,336,343|-|34,36,38,46,53,83,91,126,129,156,164,174,179,182,203,214,241,257,261,263,315,332,394,424,428,442,488,519,528,583,807,851,915
+156|33@1,43@1,108@1,52@10,98@13,172@20,111@24,129@31,488@35,436@42,53@46,517@53,205@57,38@64,315@68,284@75|24,174,179,326,336,343|-|34,36,38,46,53,83,91,126,129,156,164,174,179,182,203,214,241,257,261,263,280,283,315,332,394,424,428,442,488,519,528,583,807,851,915
+157|33@1,38@1,43@1,52@1,360@1,108@1,284@1,98@13,172@20,111@24,129@31,488@35,436@43,53@48,517@56,205@61,315@74|24,174,179,326,336,343|-|7,9,34,36,38,46,53,63,67,76,83,89,91,101,109,126,129,156,157,164,174,179,180,182,203,214,241,247,257,261,263,264,270,280,283,307,315,317,332,347,360,374,394,411,416,421,424,428,442,488,506,519,523,528,583,675,707,807,809,815,851,915
+158|10@1,43@1,55@6,44@9,184@13,423@19,175@22,242@27,163@30,103@33,37@37,401@41,276@45,56@50|68,246,260,335,453|-|8,14,36,38,56,57,58,59,67,91,127,156,157,164,168,174,180,182,184,189,196,203,214,232,240,242,250,253,263,264,280,283,313,317,330,332,337,349,352,374,421,423,518,710,784,812,851,885,886
+159|10@1,43@1,55@1,44@13,184@15,423@21,175@24,242@30,163@34,103@37,37@42,401@47,276@50,56@55|68,246,260,335,453|-|8,14,36,38,46,56,57,58,59,67,91,127,156,157,164,168,174,180,182,184,189,196,203,214,232,240,242,250,253,263,264,280,283,313,317,330,332,337,349,352,374,421,423,518,706,710,784,812,851,885,886
+160|10@1,43@1,55@1,97@1,44@13,184@15,423@21,175@24,242@32,163@37,103@44,37@51,401@59,276@65,56@70|68,246,260,335,453|-|8,14,34,36,38,46,56,57,58,59,63,67,89,91,97,127,156,157,164,168,174,180,182,184,189,196,200,203,214,232,240,242,250,253,263,264,270,280,283,308,313,317,330,332,337,349,352,374,411,416,419,421,423,518,523,525,555,706,707,710,784,799,808,812,851,885,886
+161|10@1,111@4,98@7,154@13,270@16,266@19,21@25,156@28,389@31,133@36,226@39,38@42,304@47|116,163,179,387,608,882|-|7,8,9,34,36,38,53,57,58,59,76,85,87,91,129,133,156,162,164,168,179,182,203,204,214,226,240,241,247,253,263,264,270,271,280,282,283,304,352,369,374,402,421,447,451,583,851,885,886
+162|97@0,10@1,98@1,111@1,489@1,154@13,270@17,266@21,21@28,156@32,389@36,133@42,226@46,38@50,304@56|116,163,179,387,608,882|-|7,8,9,34,36,38,53,57,58,59,63,76,85,87,91,97,129,133,156,162,164,168,179,182,203,204,214,226,240,241,247,253,263,264,270,271,280,282,283,304,352,369,374,402,411,416,421,428,447,451,583,851,885,886
+163|45@1,64@1,33@3,497@6,93@9,115@12,432@15,403@18,326@21,36@24,253@27,355@30,585@33,95@36,138@39|17,18,48,101,297|-|19,36,60,94,97,101,109,114,115,129,133,156,164,168,180,182,203,214,240,241,244,247,253,257,263,285,286,297,304,314,332,347,366,403,413,417,428,500,512,542,814,851
+164|33@1,45@1,64@1,143@1,497@1,93@9,115@12,403@18,326@23,36@28,253@33,355@38,585@43,95@48,138@53|17,18,48,101,297|-|19,34,36,38,60,63,94,97,101,109,114,115,129,133,156,164,168,174,180,182,184,203,214,240,241,244,247,248,253,257,263,285,286,297,304,314,332,347,366,403,413,416,417,428,500,512,542,814,851,917
+165|33@1,48@5,129@8,113@12,115@12,219@12,183@15,355@19,522@22,226@26,97@29,405@33,403@36,38@40|60,68,103,227,282,366,450|-|14,76,91,104,113,115,148,156,164,168,182,202,203,207,213,214,219,241,263,264,280,332,355,369,374,405,409
+166|48@1,129@1,33@1,48@5,129@8,113@12,115@12,219@12,183@15,355@20,522@24,226@29,97@33,405@38,403@42,38@47|-|-|14,63,70,76,91,104,113,115,148,156,164,168,182,202,203,207,213,214,219,241,249,263,264,280,332,355,369,374,405,409,411,416
+167|40@1,81@1,71@5,611@8,184@12,101@15,425@19,154@22,389@26,97@29,42@33,94@36,398@40,440@44,564@47,672@51|50,224,400,476,679|-|76,91,92,94,97,101,141,156,164,168,180,182,184,188,202,203,214,226,241,263,282,390,398,404,405,450,474,482,491,492,506,522,527,679,806,851,884,885
+168|14@0,40@1,565@1,71@1,81@1,450@1,116@1,611@8,184@12,101@15,425@19,154@23,389@28,97@31,42@35,94@41,398@46,440@50,564@54,672@59|50,224,400,476,679|-|14,63,76,91,92,94,97,101,141,156,164,168,180,182,184,188,202,203,214,226,241,263,282,390,398,404,405,416,450,474,482,491,492,506,522,527,675,679,684,806,851,884,885
+169|16@1,95@6,44@11,314@18,440@25,403@34,141@43|-|-|-
+170|48@1,55@1,486@4,86@8,61@12,109@16,209@20,268@24,435@28,392@32,175@36,36@40,56@44|54,60,352,389,487|-|36,38,56,57,58,59,60,85,86,87,97,109,127,133,156,164,174,182,196,203,214,240,250,263,268,330,352,451,486,503,521,527,528,598,604,605,710,812,851,886
+171|256@0,255@0,254@0,598@1,48@1,55@1,86@1,486@1,61@12,109@16,209@20,268@24,435@30,392@36,175@42,36@48,56@54|54,60,352,389,487|-|36,38,56,57,58,59,60,63,85,86,87,97,109,127,133,156,164,174,182,196,203,214,240,250,263,268,330,352,416,451,486,503,521,527,528,598,604,605,710,812,851,886
+172|39@1,84@1,589@4,186@8,609@12,417@16,204@20|175,217,252,268,273,321,574|-|9,34,36,57,85,86,87,113,115,129,156,164,179,182,203,204,214,227,240,263,268,270,374,417,447,486,521,527,528,574,583,604,851,885
+173|1@1,150@1,383@1,47@4,186@8,574@12,227@16,204@20|217,273,321,505|-|34,53,60,76,86,91,94,113,115,118,126,129,133,156,164,182,196,203,204,214,227,240,241,247,253,263,270,271,283,304,313,345,347,352,356,374,428,447,473,500,574,577,581,583,605,851,886,914
+174|1@1,47@1,383@1,111@4,186@8,574@12,50@16,204@20|195,205,217,273,343,356,387,505|-|34,36,38,53,76,86,91,94,113,115,126,129,156,164,182,196,203,204,214,220,227,240,241,244,247,263,270,283,304,313,356,374,447,528,574,577,581,583,605,851,885,914
+175|33@1,584@6,577@11,347@18,608@25,326@34,585@43|-|-|-
+176|314@0,33@1,584@6,577@11,347@18,403@25,608@25,326@34,585@43|-|-|-
+177|43@1,64@1,500@5,100@10,109@15,101@20,375@26,384@30,385@35,94@35,273@40,248@45|65,98,114,297,389,428,493,502|-|76,86,94,104,113,115,138,148,156,164,168,182,202,203,207,211,213,214,240,241,244,247,263,285,332,347,355,365,369,433,447,605
+178|403@0,403@1,43@1,64@1,500@1,366@1,100@1,109@15,101@20,375@28,385@34,384@34,94@41,273@48,248@55|-|-|19,63,76,86,94,104,113,115,138,148,156,164,168,182,202,203,207,211,213,214,240,241,244,247,263,285,332,347,355,365,369,416,432,433,447,605
+179|33@1,45@1,86@4,84@8,178@11,268@15,36@18,486@22,109@25,408@29,435@32,538@36,605@39,113@43,87@46|97,260,495,527,598,604|-|34,36,38,85,86,87,91,97,109,113,115,156,164,182,203,214,240,241,263,268,270,283,408,451,486,521,527,528,598,604,605,851,885
+180|33@1,45@1,84@6,86@9,178@11,268@16,36@20,486@25,109@29,408@34,435@38,538@43,605@47,113@52,87@56|-|-|7,8,9,34,36,38,46,67,85,86,87,91,97,109,113,115,129,156,164,182,203,214,240,241,263,264,268,270,280,283,374,408,451,486,521,527,528,598,604,605,851,885
+181|9@0,7@1,33@1,45@1,84@1,86@1,406@1,602@1,192@1,178@11,268@16,36@20,486@25,109@29,408@35,435@40,538@46,605@51,113@57,87@62|-|-|7,8,9,34,36,38,46,63,67,85,86,87,91,97,109,113,115,129,156,164,182,200,203,214,240,241,263,264,268,270,280,283,374,406,408,411,416,451,486,521,523,525,527,528,598,604,605,707,784,800,851,885,913,916
+182|572@0,51@1,71@1,72@1,74@1,77@1,78@1,79@1,80@1,92@1,202@1,230@1,236@1,483@1,580@1,585@1|73,75,175,235,275,298,321,495,668|-|14,63,76,92,156,164,182,188,202,203,204,214,226,227,241,253,263,270,283,311,331,345,374,402,409,412,416,437,447,474,491,572,580,583,605,669,676,803,813,851,885
+183|33@1,270@1,39@1,55@1,205@1,111@1,61@6,204@9,21@12,340@15,401@19,583@21,392@24,240@27,56@30,38@33,276@36|-|-|8,34,36,38,56,57,58,59,91,113,118,127,129,133,156,164,182,189,196,203,204,214,227,240,250,263,264,270,280,282,304,313,330,341,352,374,447,523,574,577,581,583,710,802,851,861,883,885,886,914
+184|33@1,270@1,39@1,55@1,205@1,111@1,61@6,204@9,21@12,340@15,401@21,583@25,392@30,240@35,56@40,38@45,276@50|-|-|8,34,36,38,56,57,58,59,63,91,113,118,127,129,133,156,164,182,189,196,203,204,214,227,240,250,263,264,270,280,282,304,313,330,341,352,374,411,416,447,523,574,577,581,583,710,802,851,861,883,885,886,914
+185|21@0,452@1,444@1,383@1,359@1,175@1,313@1,88@1,335@12,102@16,317@20,715@24,389@28,157@32,67@36,68@40,38@44,457@48|-|-|7,8,9,34,36,38,63,67,89,91,156,157,164,168,174,182,189,191,201,203,214,241,244,263,264,269,270,280,283,313,317,328,334,341,347,350,374,408,409,414,416,444,446,447,479,490,492,523,667,707,776,800,851,885
+186|340@0,1@1,56@1,187@1,240@1|34,38,54,55,61,95,150,195,207,283,304,330,341,352,414|-|8,34,36,38,56,57,58,59,63,67,89,91,94,114,118,127,129,133,156,164,168,182,189,196,203,214,227,240,244,250,263,264,270,280,283,304,311,330,341,352,374,411,414,416,490,523,710,851,886
+187|150@1,33@1,39@4,71@6,584@8,77@10,78@10,79@10,331@12,235@15,73@19,72@22,512@24,178@27,369@29,202@32,340@35,262@38|227,388,402,415,476,538,580,668|-|14,36,38,76,113,115,156,164,168,182,202,203,204,214,226,227,240,241,263,270,331,332,345,366,369,374,402,412,437,447,512,580,605,676,679,851,885
+188|150@1,39@1,71@1,235@1,33@8,584@10,77@12,78@12,79@12,331@15,73@20,72@24,512@28,178@31,369@34,202@37,340@41,262@44|-|-|14,36,38,76,113,115,156,164,168,182,202,203,204,214,226,227,241,263,270,283,331,332,345,366,369,374,402,412,437,447,512,580,605,676,679,851,885
+189|150@1,39@1,71@1,235@1,33@8,584@10,77@12,78@12,79@12,331@15,73@20,72@24,512@30,178@35,369@39,202@43,340@49,262@55|-|-|14,36,38,63,76,113,115,156,164,168,182,202,203,204,214,226,227,240,241,263,270,283,331,332,345,366,369,374,402,412,416,437,447,512,580,605,676,679,851,885
+190|10@1,39@1,28@4,310@8,226@11,321@15,154@18,129@22,103@25,97@29,458@32,374@36,417@39,387@43|21,68,231,251,252,340,343,415,501|-|7,8,9,36,38,67,76,85,86,87,91,97,118,129,156,164,168,180,182,189,203,214,226,240,241,247,263,264,269,270,280,282,283,332,341,352,369,374,402,417,421,441,447,479,490,492,512,675,851,885,886,918
+191|33@1,74@1,71@7,72@10,75@16,388@19,202@22,283@25,235@28,76@31,38@34,241@36,402@39|73,174,227,234,275,580|-|36,38,76,113,156,164,174,182,202,203,214,227,240,241,263,270,283,311,331,345,402,412,414,437,447,580,851,885
+192|1@1,33@1,74@1,275@4,71@7,72@10,73@13,75@16,388@19,202@22,331@25,80@28,76@31,38@34,241@39,437@43,572@50|-|-|14,36,38,63,76,113,156,164,174,182,188,202,203,214,227,240,241,263,270,283,311,331,345,402,412,414,416,437,447,572,580,605,803,851,885
+193|33@1,98@6,104@11,314@14,197@17,48@22,253@27,450@30,246@33,95@38,17@43,103@46,369@49,403@54,405@57|18,38,364|-|14,36,38,76,94,129,141,156,164,168,179,182,202,203,214,241,244,247,253,263,314,332,366,369,403,405,450,522,679,806,851,884,917
+194|39@1,55@1,240@4,341@8,54@12,114@12,21@16,281@21,401@24,330@28,133@32,92@36,89@40|24,68,105,174,246,254,255,256,491,495|-|34,36,38,56,57,58,59,89,91,92,114,127,133,156,157,164,174,182,188,189,191,196,201,203,214,227,240,250,263,270,317,330,341,352,414,419,444,446,482,491,523,707,710,851,883,885,886
+195|39@1,55@1,240@1,341@1,54@12,114@12,21@16,281@23,401@28,330@34,133@40,92@46,89@52|-|-|8,34,36,38,56,57,58,59,63,89,91,92,114,127,133,156,157,164,168,174,182,188,189,191,196,201,203,214,227,240,250,263,264,270,280,317,330,341,352,374,390,409,411,414,416,419,444,446,482,491,523,598,667,707,710,776,851,883,885,886
+196|93@0,33@1,36@1,38@1,39@1,44@1,45@1,383@1,343@1,270@1,204@1,226@1,28@5,98@10,608@15,129@20,60@25,234@30,384@35,94@40,244@45,248@50,387@55|-|-|34,36,38,46,60,63,86,91,94,109,113,115,129,156,164,174,182,189,203,204,214,226,240,241,244,247,248,263,270,271,285,286,304,311,313,345,347,356,408,416,428,433,447,473,500,577,605,678,706,797,851,885,914,917
+197|555@0,204@1,33@1,36@1,38@1,39@1,44@1,45@1,383@1,343@1,270@1,129@1,226@1,28@5,98@10,608@15,109@20,372@25,236@30,385@35,399@40,103@45,212@50,387@55|-|-|34,36,38,46,63,86,91,92,94,109,113,115,129,156,164,168,174,180,182,184,203,204,214,226,240,241,242,244,247,263,269,270,285,304,311,313,347,399,416,492,500,555,675,808,851,885,914
+198|64@1,310@1,16@5,114@11,17@15,101@21,372@25,269@31,212@35,492@40,389@50,259@55,511@60|18,65,103,109,143,195,260,297,413|-|19,36,38,63,86,94,101,109,114,156,164,168,180,182,184,189,196,203,214,240,241,247,253,257,263,269,297,314,332,347,366,369,399,403,413,416,417,492,506,512,542,555,808,814,851,917
+199|174@1,33@1,45@1,55@1,408@1,417@1,207@1,281@9,93@12,50@15,352@18,29@21,133@27,57@30,303@33,94@36,244@39,240@42,505@45|248,881|-|7,8,9,34,36,53,56,57,58,59,60,63,86,89,91,94,113,115,118,126,127,129,133,156,157,164,174,182,196,203,214,240,241,244,247,248,250,263,264,271,280,285,286,311,317,330,334,341,347,352,374,408,409,411,416,417,419,428,433,447,473,492,500,503,523,678,710,797,851,883,886,917
+200|45@1,93@1,310@10,109@14,212@19,506@23,60@28,220@32,371@37,247@41,195@46,408@50|103,174,180,194,262,286,389,425,472|-|60,63,85,86,87,94,101,109,129,156,164,168,174,180,182,184,196,203,204,214,220,240,241,244,247,248,261,263,269,270,271,285,286,304,313,345,347,399,408,412,416,417,433,447,451,473,492,500,506,566,577,605,807,809,851,883,917
+201|237@1|-|-|-
+202|68@0,194@0,243@0,219@0,133@1,204@1,68@1,194@1,227@1,243@1,219@1,150@1|-|-|219
+203|33@1,45@1,310@1,384@1,385@1,93@5,372@10,23@14,60@19,97@23,458@28,888@32,242@37,226@41,417@46,94@50|24,36,212,243,248,251,253,273,502|-|34,36,38,60,63,67,85,86,87,89,94,97,109,113,115,129,133,156,164,168,182,203,214,226,240,241,242,244,247,248,253,263,270,271,283,285,286,304,347,356,412,416,417,428,433,447,451,473,492,500,523,605,667,678,706,707,797,851,885,917
+204|33@1,182@1,120@6,450@9,36@12,229@17,205@20,174@23,191@28,371@31,153@34,334@39,360@42,38@45|42,68,129,175,328,379,390|-|34,36,38,76,91,113,115,129,156,157,164,174,179,182,191,201,202,203,214,220,240,241,263,270,317,328,334,350,356,360,390,398,402,405,446,450,474,522,523,529,679,851,861,884
+205|484@0,393@1,390@1,450@1,182@1,192@1,120@1,33@1,36@12,229@17,205@20,174@23,191@28,371@32,153@36,334@42,360@46,38@50|-|-|34,36,38,63,76,86,89,91,113,115,129,156,157,164,174,179,182,191,201,202,203,214,220,240,241,263,270,317,319,328,334,350,356,360,390,398,402,405,414,416,430,442,444,446,450,474,484,521,522,523,529,679,684,776,796,851,861,884,912
+206|111@1,175@1,189@4,205@8,137@12,103@16,246@20,529@24,281@28,887@32,355@36,407@40,489@44,38@48,283@52|29,44,174,310,387,401|-|34,36,38,53,58,59,63,76,85,87,89,91,92,97,126,133,156,157,164,168,174,180,182,184,189,201,203,214,220,226,240,241,244,247,253,263,270,283,304,317,341,342,347,360,398,403,414,416,428,444,446,500,506,523,528,529,679,684,707,784,799,806,851,861,884,886
+207|40@1,28@4,106@7,282@10,98@13,210@16,342@19,512@22,163@27,369@30,103@35,404@40,152@45,14@50|17,38,68,364,400,440|-|14,36,38,89,92,97,129,156,157,164,168,182,184,188,189,191,201,203,206,214,226,232,240,241,242,263,269,280,282,317,328,332,341,342,366,369,374,390,398,399,404,414,422,423,424,441,444,446,474,512,522,523,667,675,679,706,784,799,806,814,851
+208|205@1,33@6,523@11,157@18,446@25,667@34,231@43|-|-|-
+209|33@1,39@1,45@1,184@1,204@1,422@1,423@1,424@1,44@7,122@13,29@19,46@25,387@31,583@37,371@43,242@49|68,102,173,217,514|-|7,8,9,34,36,38,46,53,67,76,85,86,87,89,91,118,126,156,162,164,168,174,179,180,182,184,188,189,203,204,214,227,240,241,242,247,253,263,264,269,270,280,283,304,313,315,339,352,370,374,422,423,424,523,528,555,583,605,706,707,808,851,885,915
+210|200@1,33@1,39@1,45@1,423@1,184@1,424@1,204@1,422@1,44@7,122@13,29@19,46@27,387@35,583@43,371@51,242@59|68,102,173,217,514|-|7,8,9,34,36,38,46,53,63,67,76,85,86,87,89,91,118,126,156,157,162,164,168,174,179,180,182,184,188,189,200,203,204,214,227,240,241,242,247,253,263,264,269,270,280,283,304,313,315,317,339,352,370,374,411,416,422,423,424,444,490,523,528,555,583,605,706,707,808,851,885,915
+211|33@1,40@1,106@4,55@8,565@12,107@16,191@20,362@24,398@28,42@32,390@36,254@40,255@40,92@44,401@48,367@52,194@56|48,61,114,120,175,310,352,453,491,839|-|14,36,38,56,57,58,59,86,92,97,114,127,129,156,164,174,179,180,182,184,188,191,196,203,214,220,240,242,247,250,263,269,341,342,352,360,390,398,416,441,474,482,491,506,675,710,799,812,851,886
+212|418@0,206@1,17@1,43@1,97@1,98@1,403@1,210@1,232@12,104@16,458@20,163@24,116@28,334@32,442@36,404@40,14@44|-|-|14,36,38,63,97,113,129,156,164,168,174,179,182,184,201,203,206,214,226,232,240,241,263,270,280,282,314,332,334,366,369,370,374,403,404,405,410,416,430,442,450,512,522,679,796,806,814,851,884,885,912
+213|110@1,35@1,205@5,522@10,88@15,219@20,156@25,450@30,470@35,471@35,157@40,380@45,564@50,379@55,444@60,504@65|51,111,189,230,270,282,328,343,350,367,515,611|-|70,89,91,92,104,148,156,157,164,182,188,201,203,207,213,214,219,241,249,263,317,360,397,444,446,523
+214|33@1,43@1,292@1,31@5,203@10,332@15,30@20,68@25,280@30,42@35,675@40,37@45,14@50,224@55,370@60|38,69,106,175,364,400|-|14,34,36,38,63,67,89,91,156,157,164,168,174,179,182,191,203,206,214,240,241,263,264,270,280,282,283,317,331,332,334,339,350,370,374,405,410,411,416,421,444,450,479,522,523,667,675,679,684,806,811,851,884,885,918
+215|10@1,43@1,269@6,98@12,232@18,196@24,154@30,468@36,251@42,97@48,103@54,163@60|44,68,180,252,364,420,458,556|-|8,14,36,57,58,59,67,91,97,129,156,164,168,179,180,182,184,196,203,206,214,232,240,241,247,263,264,269,270,280,282,313,332,333,347,352,374,398,399,404,416,417,419,421,490,492,555,675,808,813,851,883,885,918
+""",
+    """216|10@1,122@1,343@1,374@1,608@1,154@8,371@13,230@17,163@22,589@25,583@29,204@33,156@37,173@37,37@41|38,68,69,187,210,232,238,242,281,313,370,400|-|7,8,9,14,34,36,38,67,89,91,118,129,156,157,164,168,182,203,204,214,232,240,241,242,253,263,264,269,270,280,304,313,317,332,339,370,374,402,419,421,441,479,523,583,851,885
+217|10@1,43@1,122@1,313@1,343@1,154@8,371@13,230@17,163@22,589@25,583@29,184@35,156@41,173@41,667@48,37@56,359@64|-|-|7,8,9,14,34,36,38,63,67,89,91,118,129,156,157,164,168,182,184,203,204,214,232,240,241,242,253,263,264,269,270,280,304,313,317,332,339,370,374,402,416,419,421,441,444,479,523,583,667,675,707,851,885
+218|123@1,281@1,52@6,88@8,106@13,499@20,246@22,510@27,157@29,436@34,133@36,34@41,105@43,53@48,414@50|108,151,174,205,254,262,385,517|-|34,36,53,83,89,113,115,126,133,156,157,164,174,182,189,201,203,214,220,241,257,261,263,315,317,334,341,350,408,414,444,446,479,488,523,535,667,851,915
+219|504@0,52@1,88@1,123@1,281@1,414@1,106@13,499@20,246@22,510@27,157@29,436@34,133@36,34@43,105@47,53@54|108,151,174,205,254,262,385,517|-|34,36,53,63,76,83,89,113,115,126,133,156,157,164,174,182,189,201,203,214,220,241,257,261,263,315,317,328,334,341,350,360,394,408,414,416,444,446,479,488,523,535,707,807,815,851,915
+220|33@1,189@1,181@5,175@10,420@15,54@20,203@25,196@30,133@35,36@40,89@45,59@50|38,44,90,174,246,556,573|-|34,36,38,46,58,59,89,91,114,133,156,157,164,174,179,182,184,189,196,201,203,204,214,240,263,283,317,328,333,341,414,419,423,444,446,479,523,667,707,851,883,885
+221|423@0,33@1,175@1,181@1,189@1,246@1,420@15,54@20,203@25,196@30,133@37,36@44,89@51,59@58,37@65|38,44,90,174,246,556,573|-|34,36,38,46,58,59,63,89,91,114,133,156,157,164,174,179,182,184,189,196,201,203,204,214,240,263,283,317,328,333,341,414,416,419,423,444,446,479,523,667,675,707,851,883,885
+222|106@1,33@1,55@5,392@10,203@15,246@20,61@25,175@30,791@35,408@40,414@45,105@50,243@55|54,103,109,133,174,267,275,333,392,457,710|-|57,58,59,70,89,91,94,104,113,115,153,156,157,164,182,201,203,207,213,214,219,240,241,247,249,258,263,317,347,352,362,397,444,446,503,523
+223|145@1,491@6,451@11,352@18,58@25,56@34,63@43|-|-|-
+224|190@0,145@1,491@6,451@11,352@18,58@25,56@34,63@43|-|-|-
+225|217@1,65@25|62,68,98,150,194,229,252,262,420,573,694|-|8,19,34,36,58,59,63,97,114,129,156,164,168,179,182,191,196,203,214,226,240,263,264,270,280,283,297,311,314,332,333,352,366,374,402,403,413,416,419,441,492,512,529,813,814,851,861,883,885,886
+226|33@1,145@5,332@9,352@15,403@21,355@29,56@37,38@47|-|-|-
+227|43@1,64@1,28@4,31@8,232@12,97@16,17@20,163@24,211@28,371@32,65@36,319@40,191@44,334@48,413@52|18,143,174,314,355,364,400|-|14,19,36,46,63,97,129,156,157,164,168,174,179,182,191,196,201,203,214,232,241,263,269,314,317,319,328,332,334,366,399,403,404,413,416,430,442,446,529,542,776,796,814,851
+228|43@1,52@1,336@4,123@8,46@13,44@16,510@20,251@25,424@28,259@32,894@37,492@40,53@44,242@49,417@52,517@56|68,83,179,180,194,364,389,422|-|34,36,38,46,53,76,83,92,126,156,162,164,168,179,180,182,184,188,189,203,214,220,240,241,242,247,257,261,263,269,270,304,315,341,394,399,417,422,424,488,492,555,706,807,808,851,885,915
+229|43@1,52@1,123@1,422@1,336@1,417@1,46@13,44@16,510@20,251@26,424@30,259@35,894@41,492@45,53@50,242@56,517@62|-|-|34,36,38,46,53,63,76,83,92,126,156,162,164,168,179,180,182,184,188,189,203,214,220,240,241,242,247,257,261,263,269,270,283,304,315,341,394,399,416,417,422,424,488,492,555,675,706,807,808,851,885,915
+230|43@1,55@1,108@1,239@1,250@1,281@1,116@15,225@20,61@25,97@30,352@37,406@44,56@51,349@58,240@65,834@72|50,62,150,175,499|-|34,36,38,56,57,58,59,63,97,127,129,156,164,182,184,196,200,203,214,240,250,263,311,330,349,352,406,416,430,434,442,503,542,710,784,799,812,851,883,886
+231|33@1,45@1,111@1,175@6,205@10,523@15,203@19,21@24,36@28,204@33,387@37,38@42|34,68,90,116,173,246,283,420,457,484,583,667|-|34,36,38,46,89,91,156,157,164,168,174,182,189,201,203,204,214,227,240,241,263,270,282,283,304,317,328,341,402,414,441,442,444,446,479,484,523,583,667,707,851,885
+232|31@0,30@1,45@1,111@1,422@1,424@1,523@1,229@6,205@10,372@15,282@19,21@24,707@30,184@37,89@43,416@50|-|-|34,36,38,46,63,89,91,156,157,164,168,174,182,184,189,201,203,204,214,227,240,241,263,270,282,283,304,317,328,334,341,360,398,402,414,416,422,423,424,441,442,444,446,479,484,523,583,667,675,684,707,776,851,861,885
+233|33@1,111@1,160@1,278@1,393@1,84@15,60@20,176@25,97@30,105@35,435@40,161@45,199@50,192@55,63@60|-|-|36,38,58,59,60,63,76,85,86,87,94,97,129,156,164,168,182,196,203,214,240,241,247,263,268,271,356,416,428,433,451,473,492,527,598,851
+234|33@1,43@3,310@7,95@10,23@13,28@16,36@21,109@23,347@27,272@32,428@37,286@49,38@55|24,37,44,50,180,224,326,828|-|34,36,38,46,60,63,76,85,86,87,89,91,94,97,109,113,115,129,156,164,168,174,180,182,184,203,214,240,241,244,247,248,253,263,270,271,285,286,347,356,412,414,416,428,433,451,473,500,523,528,675,679,851,885
+235|166@1|-|-|-
+236|33@1,116@1,252@1,270@1|68,136,183,229,364,410,418|-|34,36,67,129,156,157,164,168,182,203,214,240,241,253,263,270,280,339,410,490,523,851,918
+237|167@0,33@1,364@1,270@1,116@1,252@1,98@4,360@8,197@12,229@16,469@21,501@21,389@24,97@28,91@32,370@36,68@40,283@44|68,136,183,229,364,410,418|-|34,36,38,67,89,91,97,129,156,157,164,168,179,182,201,203,214,226,240,241,253,263,270,280,283,332,339,360,370,410,411,416,444,490,523,529,811,813,851,861,918
+238|122@1,1@1,181@4,383@8,93@12,343@16,47@20,313@24,8@28,94@32,186@36,212@40,195@44,59@48|8,252,272,273|-|58,59,94,104,113,115,138,148,156,164,168,182,203,207,213,214,240,244,247,258,263,278,285,347,352,371,374,417,419,433,447
+239|43@1,98@1,84@4,268@8,129@12,351@16,86@20,103@24,9@28,435@32,67@36,85@40,113@44,87@48|223,238,264,266,359,364|-|7,8,9,34,36,38,67,85,86,87,94,113,129,156,164,168,182,203,214,240,253,263,264,268,269,270,280,282,319,374,411,451,486,521,527,528,598,604,851,885,916
+240|43@1,123@1,52@4,108@8,499@12,172@16,109@20,184@24,7@28,436@32,67@36,53@40,241@44,126@48|183,187,223,238,264,266,562|-|7,9,34,36,38,53,67,83,94,109,126,156,164,168,174,182,184,203,214,241,257,261,263,264,270,280,315,374,394,398,488,491,807,851,915
+241|45@1,33@1,205@5,111@10,23@15,215@20,29@25,428@30,208@35,34@40,583@45,204@50,667@55|38,69,174,179,217,270,359,562|-|57,58,59,63,70,76,85,86,87,89,104,156,157,164,182,201,203,207,213,214,231,240,241,244,247,249,263,264,280,317,351,352,360,374,411,416,446,523,526
+242|204@1,383@1,343@1,574@1,186@1,1@1,111@1,39@4,497@8,791@12,47@16,374@20,36@24,505@28,270@32,113@36,38@40,135@44,387@48,361@52|69,215,217,356|-|7,8,9,34,36,38,53,58,59,63,76,85,86,87,89,94,113,118,126,129,156,157,164,168,182,196,201,203,204,214,240,241,244,247,263,264,270,271,280,283,285,304,317,347,352,356,374,409,411,416,419,428,446,447,500,523,528,574,604,605,707,851,883,885,886,914
+243|43@1,268@1,245@1,84@1,98@1,209@6,44@12,347@18,46@24,422@30,336@36,242@42,326@48,435@54,115@60,240@66,87@72,192@78|-|-|34,36,38,46,63,85,86,87,97,113,115,129,156,164,182,184,189,201,203,214,240,241,242,247,263,268,270,311,347,396,416,422,442,451,486,503,521,527,528,555,598,604,675,851,885,916
+244|23@1,43@1,52@1,108@1,172@6,44@12,347@18,46@24,424@30,184@36,242@42,326@48,436@54,207@60,241@66,126@72,284@78|221,245|-|34,36,38,46,53,63,76,83,91,97,126,129,156,164,179,182,184,201,203,214,240,241,242,247,257,261,263,270,311,315,347,394,416,424,442,444,488,523,555,707,815,851,885
+245|16@1,43@1,54@1,55@1,352@6,44@12,347@18,46@24,423@30,366@36,242@42,326@48,57@54,243@60,240@66,56@72,59@78|245,329|-|34,36,38,46,56,57,58,59,63,97,127,129,156,164,182,196,201,203,214,240,242,247,250,263,270,311,347,352,366,403,416,419,423,442,503,555,710,851,883,885,886
+246|33@1,43@1,88@3,371@6,44@9,184@12,157@15,707@18,103@21,479@24,242@27,89@31,444@33,37@36,201@39,63@42|23,116,174,200,246,334,349,372,442|-|34,36,38,63,89,91,156,157,164,174,180,182,184,189,200,201,203,214,240,241,242,263,269,270,280,317,328,334,341,349,350,399,414,416,442,444,446,479,523,555,707,851
+247|334@0,33@1,371@1,43@1,88@1,44@9,184@12,157@15,707@18,103@21,479@24,242@27,89@33,444@37,37@42,201@47,63@52|-|-|34,36,38,63,89,91,156,157,164,174,180,182,184,189,200,201,203,214,240,241,242,263,269,270,280,317,328,332,334,341,349,350,399,414,416,442,444,446,479,523,555,667,707,808,851
+248|33@1,424@1,43@1,423@1,88@1,422@1,399@1,371@1,334@1,44@9,184@12,157@15,707@18,103@21,479@24,242@27,89@33,444@37,37@42,201@47,63@52,416@59|-|-|7,8,9,34,36,38,46,53,56,57,58,59,63,67,85,86,87,89,91,126,156,157,164,174,180,182,184,189,196,200,201,203,214,240,241,242,263,264,269,270,280,282,317,328,330,332,334,337,341,349,350,374,399,406,408,411,414,416,419,421,422,423,424,442,444,446,479,484,492,523,525,555,667,707,776,784,808,851,912
+249|16@1,18@1,246@1,311@1,54@9,219@18,347@27,326@36,105@45,177@54,240@63,56@72,248@81,143@90|407|-|19,34,36,38,56,57,58,59,63,85,87,89,94,113,115,127,129,156,164,174,182,184,196,201,202,203,214,240,241,244,247,248,250,263,270,271,285,286,304,311,314,332,347,352,366,403,406,413,414,416,419,428,442,451,473,512,525,542,710,799,814,851,886,917
+250|16@1,18@1,246@1,311@1,791@9,219@18,347@27,326@36,105@45,221@54,241@63,126@72,248@81,143@90,315@99|-|-|19,34,36,38,53,63,76,83,85,87,89,94,113,115,126,129,156,164,182,201,202,203,214,240,241,244,247,248,257,261,263,270,286,304,311,314,315,332,347,366,394,403,413,414,416,428,442,451,488,542,814,815,851
+251|93@1,215@1,345@10,226@20,246@30,791@40,73@50,105@60,248@70,361@80,437@90,195@100|-|-|14,15,63,76,86,94,104,113,115,138,148,156,164,182,201,202,203,207,214,219,240,241,244,247,263,285,332,347,351,352,369,374,412,416,417,433,446,447,451,605
+252|1@1,43@1,670@3,98@6,72@9,197@12,501@15,372@18,202@21,21@24,104@27,412@30,103@33,283@36,437@39|24,71,73,163,225,235,388,400|-|9,14,36,67,76,91,97,129,156,157,164,168,182,202,203,214,241,242,263,270,280,283,317,331,332,345,374,402,409,412,437,447,512,520,525,580,784,803,851,885,918
+253|1@1,43@1,98@1,670@1,72@9,197@12,501@15,372@20,202@25,21@30,104@35,348@40,103@45,283@50,437@55|24,71,73,163,206,210,225,235,388,400,404,412|-|9,14,36,67,76,91,97,129,156,157,164,168,182,202,203,206,214,241,242,263,264,270,280,283,317,331,332,345,374,402,404,409,410,412,437,447,490,512,520,525,580,784,803,851,885,918
+254|348@0,1@1,43@1,98@1,670@1,72@5,197@12,501@15,372@20,202@25,21@30,104@35,103@42,283@49,437@56|24,71,73,163,206,210,225,235,388,400,404,412,880|-|9,14,34,36,38,46,63,67,76,89,91,97,129,156,157,164,168,182,200,202,203,206,214,241,242,263,264,270,280,283,317,331,332,337,338,345,349,374,402,404,406,409,410,411,412,416,437,447,490,512,520,523,525,580,669,675,784,799,803,851,885,913,918
+255|10@1,45@1,52@3,98@6,488@9,197@12,28@15,332@18,163@21,340@24,116@27,53@30,297@33,179@36,394@39|64,68,306,364,387,400|-|14,34,36,38,53,67,83,91,97,126,129,156,157,164,174,179,182,203,214,226,241,253,257,261,263,270,297,315,317,332,394,421,488,519,851,915
+256|24@0,10@1,45@1,52@1,98@1,488@9,197@12,28@15,332@20,163@25,340@30,116@35,299@40,339@45,179@50,394@55|53,64,68,297,306,364,387,400|-|7,9,14,34,36,38,53,67,83,91,97,126,129,156,157,164,168,174,179,182,203,214,226,241,253,257,261,263,264,270,280,297,315,317,332,339,370,374,394,398,410,411,421,488,490,519,811,851,915
+257|299@0,10@1,24@1,45@1,98@1,488@9,197@12,28@15,332@20,163@25,340@30,116@35,339@42,179@49,394@56,413@63|7,52,53,64,68,297,306,364,387,400|-|7,9,14,34,36,38,46,53,63,67,76,83,89,91,97,126,129,156,157,164,168,174,179,182,189,203,214,226,241,253,257,261,263,264,270,280,282,297,307,315,317,332,339,369,370,374,394,396,398,410,411,413,416,421,444,488,490,512,519,523,535,811,815,851,915,918
+258|33@1,45@1,55@3,249@6,88@9,182@12,48@15,352@18,157@21,36@24,133@27,57@30,103@33,283@36,56@39|23,38,44,68,124,174,189,243,246,281,469|-|34,36,38,46,56,57,58,59,67,91,127,133,156,157,164,174,182,189,196,203,214,240,250,253,263,283,317,330,341,352,414,419,482,518,710,851,886
+259|341@0,33@1,45@1,55@1,88@9,182@12,48@15,352@20,157@25,36@30,133@35,330@40,103@45,283@50,56@55|23,38,44,68,124,174,189,243,246,249,281,469|-|8,34,36,38,46,56,57,58,59,67,89,91,127,133,156,157,164,174,182,189,196,203,214,240,250,253,263,264,270,280,283,317,328,330,341,352,374,414,419,446,482,518,523,710,851,886
+260|33@1,45@1,55@1,341@1,88@9,182@12,48@15,352@20,157@25,36@30,133@35,330@42,103@49,283@56,56@63|23,38,44,57,68,89,124,174,189,243,246,249,281,359,469|-|8,34,36,38,46,56,57,58,59,63,67,89,91,127,133,156,157,164,174,182,184,189,196,200,203,214,240,250,253,263,264,270,280,282,283,308,311,317,328,330,339,341,352,374,398,411,414,416,419,444,446,479,482,518,523,667,707,710,776,812,851,886,912
+261|33@1,336@4,28@7,44@10,43@13,46@16,207@19,372@22,184@25,269@28,242@31,281@34,36@36,389@40,583@44|305,310,343|-|36,38,46,91,156,162,164,168,180,182,184,189,203,204,214,240,241,242,247,253,263,269,270,283,304,399,417,422,423,424,492,555,583,706,808,851,885
+262|555@0,242@1,424@1,423@1,422@1,168@1,28@1,44@1,33@1,336@13,43@13,46@16,207@20,372@24,184@28,269@36,281@44,36@48,389@52,583@56|305,310,343|-|34,36,38,46,63,91,156,162,164,168,180,182,184,189,203,204,214,240,241,242,247,253,263,269,270,283,304,399,416,417,422,423,424,492,555,583,675,706,808,851,885
+263|45@1,33@1,28@3,39@6,343@9,29@12,608@15,42@18,156@21,36@24,374@27,175@30,187@33,38@36|189,204,245,270,271,321,493|-|15,57,58,59,85,86,87,91,104,156,164,168,182,203,207,213,214,231,240,241,247,249,263,351,352,374,447,451,526
+264|163@0,608@1,45@1,42@1,28@1,163@1,415@1,33@1,39@1,343@9,29@12,468@15,154@18,156@23,36@28,374@33,175@38,187@43,38@48|-|-|15,46,57,58,59,63,70,85,86,87,91,104,156,164,168,182,203,207,213,214,231,240,241,247,249,263,351,352,374,416,421,447,451,526
+265|40@1,33@6|-|-|-
+266|334@0,40@1,33@6|-|-|-
+267|314@0,40@1,33@6,334@6,78@11,318@18,474@25,403@34,405@43|-|-|-
+268|334@0,40@1,33@6|-|-|-
+269|93@0,40@1,33@6,334@6,77@11,318@18,474@25,326@34,405@43|-|-|-
+270|45@1,310@1,71@3,55@6,54@9,72@12,175@16,61@20,73@24,202@28,240@33,428@38,412@43|68,75,230,235,298,321|-|14,34,36,38,57,58,59,76,156,164,168,182,196,202,203,214,240,241,250,253,263,311,330,331,345,352,402,412,428,447,574,580,803,851,885,886
+271|45@1,55@1,310@1,298@1,71@1,282@1,252@1,175@1,54@9,72@12,154@18,61@24,73@30,202@36,428@50,412@57,56@64|68,75,230,235,298,321|-|7,8,9,14,34,36,38,56,57,58,59,76,118,127,156,164,168,182,196,202,203,214,227,240,241,250,253,263,280,282,304,311,330,331,341,345,352,374,402,409,412,428,447,574,580,803,851,885,886
+272|252@1,240@1,61@1|45,54,55,56,68,71,72,75,154,175,230,235,282,298,310,321,412,428|-|7,8,9,14,34,36,38,56,57,58,59,63,76,118,127,129,133,156,164,168,182,196,202,203,214,227,240,241,250,253,263,264,280,282,304,311,330,331,341,345,352,374,402,409,411,412,416,428,437,447,574,580,803,851,861,885,886
+273|33@1,106@1,71@3,310@6,74@9,205@12,72@15,371@18,29@21,241@24,235@27,389@30,153@33|36,73,98,388,400,432|-|34,36,38,76,91,133,156,164,174,180,182,202,203,206,214,240,241,247,263,283,331,345,402,412,417,437,447,492,580,803,851,885
+274|75@0,33@1,71@1,106@1,153@1,207@1,314@1,252@1,259@1,310@1,74@9,205@12,72@18,371@24,235@30,241@36,326@43,389@50,348@57|36,73,98,388,400,432|-|14,34,36,38,67,76,91,129,133,156,157,164,168,174,180,182,184,202,203,206,214,240,241,244,247,253,263,280,282,283,311,314,317,331,345,374,399,402,412,417,437,447,490,492,555,580,669,803,808,851,885,886
+275|348@0,241@1,314@1,371@1,542@1|18,33,36,71,72,73,74,75,98,106,153,205,207,235,251,252,259,310,326,388,389,400,432|-|14,34,36,38,63,67,76,91,109,129,133,156,157,164,168,174,179,180,182,184,196,202,203,206,214,240,241,244,247,253,257,261,263,269,280,282,283,286,311,314,317,331,332,345,366,374,390,399,402,403,404,410,411,412,416,417,437,447,490,492,506,542,555,572,580,669,675,803,808,851,885,886,918
+276|45@1,64@1,116@5,98@9,17@13,104@17,332@21,501@25,97@29,403@33,283@37,413@41,179@45|18,48,143,413,542,586|-|19,104,156,164,168,182,203,207,211,213,214,240,241,263,332,355,365,369,432,526
+277|403@1,413@1,116@1,45@1,64@1,365@1,98@1,116@5,98@9,17@13,104@17,332@21,501@27,97@33,403@39,283@45,413@51,179@57|-|-|19,63,104,156,164,168,182,203,207,211,213,214,240,241,263,332,355,365,369,416,432,526
+278|45@1,55@1,98@5,48@10,17@15,352@20,97@26,403@30,54@35,355@40,542@45|16,239,282,314,332,392,469,487|-|19,36,56,57,58,59,97,127,129,156,164,168,182,196,203,214,240,250,263,270,282,297,314,330,332,352,366,369,403,413,512,542,710,814,851,883,886
+279|45@1,48@1,403@1,55@1,366@1,97@1,98@1,182@1,487@1,17@15,352@20,254@28,255@28,256@28,374@34,54@41,355@48,542@55,56@62|469|-|19,34,36,56,57,58,59,63,97,127,129,156,164,168,182,196,203,214,240,250,263,270,282,297,311,314,330,332,352,366,369,374,402,403,413,416,441,512,542,710,814,851,883,886
+280|45@1,574@1,104@3,93@6,95@9,577@12,100@15,60@18,791@21,204@24,347@27,94@30,505@33,138@36,248@39|50,109,194,212,262,282,425,595|-|7,8,9,34,60,85,86,94,109,113,115,118,129,156,164,168,182,196,203,204,214,220,227,240,241,244,247,248,261,263,269,270,271,282,285,286,304,345,347,374,428,433,447,451,473,500,574,577,581,605,678,797,851,914
+281|45@1,93@1,104@1,574@1,95@9,577@12,100@15,60@18,791@23,204@28,347@33,94@38,505@43,138@48,248@53|-|-|7,8,9,34,60,63,85,86,94,109,113,115,118,129,156,164,168,182,196,203,204,214,220,227,240,241,244,247,248,261,263,269,270,271,282,285,286,304,345,347,374,428,433,447,451,473,500,574,577,581,605,678,797,813,851,914
+282|605@0,45@1,93@1,595@1,104@1,581@1,204@1,574@1,361@1,505@1,95@9,577@12,100@15,60@18,791@23,273@28,347@35,94@42,585@49,138@56,248@63|-|-|7,8,9,34,60,63,85,86,94,101,109,113,115,118,129,156,164,168,182,196,203,204,214,220,227,240,241,244,247,248,261,263,269,270,271,282,285,286,304,345,347,356,374,396,410,411,412,416,428,433,447,451,473,500,574,577,581,605,678,797,802,813,851,914,917
+283|55@1,98@6,230@9,487@14,61@17,97@22,54@25,114@25,226@35,564@38|56,60,341,450,453,471,565,679|-|36,56,57,58,59,60,76,97,114,127,141,156,164,168,182,189,196,202,203,214,226,240,241,244,247,263,270,341,352,405,450,512,522,679,710,806,851,884,886
+284|18@1,55@1,98@1,230@1,487@1,16@17,184@22,314@22,78@26,403@32,202@38,405@44,483@52|-|-|36,56,57,58,59,60,63,76,97,114,127,129,141,156,164,168,182,184,189,196,202,203,214,226,240,241,244,247,263,270,311,314,332,341,352,366,369,403,405,412,416,450,492,512,522,542,679,710,806,814,851,884,886
+285|33@1,71@1,78@5,73@8,72@12,29@15,77@19,202@26,74@29,92@33,402@36,147@40|204,270,313,388|-|34,36,76,92,129,156,164,182,188,202,203,204,206,214,240,241,263,270,313,331,345,402,409,412,428,441,447,474,580,851,884
+286|183@0,78@1,33@1,71@1,73@1,74@1,77@1,92@1,72@12,29@15,364@19,68@22,395@28,388@33,280@39,402@44,223@50,264@55|-|-|9,14,34,36,63,67,76,91,92,129,156,157,164,179,182,188,189,202,203,204,206,214,240,241,263,264,270,280,313,317,331,332,339,341,345,370,374,398,402,409,411,412,416,428,437,441,444,447,474,490,523,580,851,884
+287|10@1,281@1,227@6,303@9,29@14,133@17,343@22,675@25,68@30,175@33,583@38|34,163,173,174,306,321,359,400,495|-|7,8,9,34,36,53,58,59,76,85,87,118,126,133,156,157,164,168,174,182,189,196,203,206,214,227,232,240,241,247,263,264,270,280,317,332,339,341,374,398,402,404,421,428,441,583,675,851,886
+288|10@1,116@1,227@1,253@1,154@14,203@17,163@23,675@27,68@33,264@37,179@43|-|-|7,8,9,34,36,38,46,53,58,59,67,76,85,86,87,89,91,118,126,133,156,157,164,168,174,179,182,184,189,196,200,203,206,214,227,232,240,241,247,253,263,264,269,270,280,282,283,304,317,332,339,341,374,398,402,404,409,411,421,428,441,490,523,583,675,707,808,851,885,886
+289|207@0,10@1,227@1,281@1,303@1,389@1,133@17,343@23,675@27,68@33,175@39,374@45,25@52,359@63|-|-|7,8,9,34,36,38,46,53,58,59,63,67,76,85,86,87,89,91,118,126,133,156,157,164,168,174,179,182,184,189,196,200,203,206,214,227,232,240,241,247,253,263,264,269,270,280,282,283,304,317,332,339,341,374,398,402,404,409,411,416,421,428,441,479,484,490,523,528,583,667,675,707,776,808,851,884,885,886,912
+290|28@1,10@1,106@5,206@10,189@15,71@21,232@25,154@30,170@35,91@40|16,175,400,450,515|-|15,76,91,104,148,156,164,182,201,202,203,206,207,214,241,247,263,332,404,405
+291|104@0,210@0,103@0,332@1,226@1,91@1,104@1,206@1,210@1,106@1,232@1,189@1,28@1,10@1,103@1,97@15,71@23,450@29,154@36,170@43,163@50,14@57,404@64|-|-|14,15,63,76,91,104,148,156,164,168,182,201,202,203,206,207,214,241,247,263,332,355,369,404,405,416,432
+292|91@1,206@1,288@1,106@1,232@1,189@1,28@1,10@1,421@1,109@15,71@23,425@29,154@36,170@43,247@50,180@57,566@64|-|-|15,63,76,91,104,138,148,156,164,168,182,201,202,203,206,207,214,241,247,261,263,332,404,405,416,421
+293|310@1,1@1,497@5,336@10,156@15,214@15,23@21,46@25,48@30,253@35,103@40,304@45|18,36,108,173,283,313,326,359,509,574|-|46,53,58,59,76,104,126,156,164,182,203,207,213,214,240,241,247,263,351,352,374,526
+294|44@0,310@1,44@1,497@1,336@1,1@1,156@15,214@15,23@23,46@29,48@36,253@43,103@50,304@57|-|-|46,53,58,59,70,76,89,104,126,156,157,164,182,203,207,213,214,240,241,247,249,259,263,269,280,315,317,351,352,374,523,526
+295|242@0,310@1,44@1,242@1,497@1,424@1,336@1,423@1,1@1,422@1,156@15,214@15,23@23,46@29,48@36,253@45,103@54,304@63,586@72,63@81|-|-|46,53,57,58,59,63,70,76,89,104,126,156,157,164,182,203,207,213,214,240,241,247,249,259,263,269,280,315,317,351,352,374,411,416,419,431,523,526
+296|33@1,116@1,28@4,292@7,252@10,395@13,18@16,282@19,339@22,187@25,197@28,69@31,264@34,203@37,370@40,179@43,484@46|68,223,238,270,364,418,469|-|7,8,9,34,36,38,57,67,89,91,118,129,156,157,164,168,179,182,189,203,214,240,241,263,264,269,270,280,282,317,339,341,370,374,398,409,410,411,428,444,479,484,490,523,707,776,811,851,886,918
+297|28@1,33@1,116@1,362@1,292@1,252@10,395@13,18@16,282@19,339@22,187@26,197@30,69@34,264@38,203@42,370@46,179@50,484@54,838@60|-|-|7,8,9,34,36,38,57,63,67,89,91,118,129,156,157,164,168,174,179,182,184,189,203,214,240,241,263,264,269,270,280,282,317,339,341,370,374,398,409,410,411,416,428,442,444,479,484,490,523,675,707,776,808,811,851,886,918
+298|39@1,55@1,150@1,270@3,61@6,204@9,21@12,340@15|47,48,187,195,217,321,383,453,487|-|34,36,57,58,59,113,127,156,164,182,189,196,203,204,214,227,240,263,270,304,313,341,577,851,914
+299|33@1,106@4,335@7,88@10,86@13,156@16,209@19,157@22,408@25,350@28,435@31,201@34,414@37,444@40,192@43,199@43|38,205,457,469|-|7,8,9,34,36,38,85,86,87,89,156,157,164,174,182,201,203,214,220,241,263,269,270,317,328,334,350,356,408,414,430,444,446,479,484,521,523,605,667,707,776,796,800,851
+300|252@1,45@1,39@1,33@4,47@7,213@10,574@13,154@16,383@19,371@22,204@25,263@31,343@34,215@37,38@40,608@43,583@46|226,252,253,270,273,313,321,322,387,389,428,493|-|58,59,76,85,86,87,91,104,138,148,156,164,182,203,207,213,214,219,231,240,241,244,247,263,347,351,352,371,417,447,451,526
+301|213@1,608@1,204@1,383@1,343@1,574@1,38@1,263@1,252@1,154@1,45@1,215@1,371@1,583@1,47@1,33@1,39@1|-|-|58,59,63,70,76,85,86,87,91,104,138,148,156,164,182,203,207,213,214,219,231,240,241,244,247,249,263,347,351,352,371,416,417,447,451,526
+302|10@1,43@1,310@3,425@9,252@12,50@15,197@18,101@21,154@24,282@27,511@30,421@33,212@36,408@39,428@42,247@45,492@48|105,259,260,364,368,389|-|7,8,9,34,36,60,63,67,86,91,94,101,109,113,115,118,156,164,168,180,182,189,196,202,203,214,220,227,232,240,241,244,247,261,263,264,269,270,271,280,282,285,286,317,332,339,341,347,356,360,374,398,399,404,408,409,412,416,417,421,428,490,492,506,555,566,605,675,806,808,809,851
+303|310@1,45@1,584@4,226@8,44@12,255@16,254@16,256@16,389@20,334@24,242@28,230@32,442@36,269@40,313@44,583@48|21,69,246,305,321,368,385,389,422,423,424,581,612|-|14,53,58,63,70,76,104,126,156,157,164,182,188,201,203,206,207,213,214,240,241,247,249,259,263,264,269,280,317,371,374,399,411,416,430,444,446,447,451
+304|106@1,33@1,232@4,317@8,46@12,29@16,182@20,157@24,442@28,319@33,36@36,475@40,231@44,334@48,484@52,38@56,368@60|23,34,103,174,179,189,276,283,407,442,457|-|15,46,70,89,91,104,156,157,164,182,201,203,207,213,214,231,240,241,249,263,317,332,351,352,397,421,446,523
+305|106@1,232@1,317@1,33@1,46@12,29@16,182@20,157@24,442@28,319@35,36@40,475@46,231@52,334@58,484@64,38@70,368@76|-|-|15,46,70,89,91,104,156,157,164,182,201,203,207,213,214,231,240,241,249,263,317,332,351,352,397,421,444,446,523
+306|106@1,232@1,317@1,33@1,46@12,29@16,182@20,157@24,442@28,319@35,36@40,475@48,231@56,334@64,484@72,38@80,368@88|-|-|15,46,53,57,58,59,63,70,76,85,86,87,89,91,104,126,156,157,164,182,201,203,207,213,214,231,240,241,249,263,264,269,280,317,332,337,351,352,371,374,397,399,406,411,416,419,421,430,431,444,446,523
+307|93@1,526@1,197@9,203@12,364@15,395@17,60@20,347@23,428@25,136@28,244@31,367@33,379@36,179@39,105@41,68@44|7,8,9,223,226,252,384,385,418,427,501|-|7,8,9,34,36,60,67,94,101,113,115,118,129,156,157,164,168,179,182,203,214,220,226,240,241,244,247,263,264,269,270,271,280,285,286,317,332,339,347,370,374,398,409,411,428,433,447,473,490,500,678,797,851,885,918
+308|7@1,8@1,9@1,526@1,197@1,93@1,203@12,364@15,395@17,60@20,347@23,428@25,136@28,244@31,367@33,379@36,105@47,68@53,853@53|-|-|7,8,9,34,36,60,63,67,94,101,113,115,118,129,156,157,164,168,179,182,203,214,220,226,240,241,244,247,263,264,269,270,271,280,285,286,317,332,339,347,356,370,374,396,398,409,410,411,412,416,428,433,447,473,490,500,678,797,851,885,918
+309|33@1,86@1,43@4,336@8,98@12,351@16,44@20,422@24,46@28,435@32,268@36,528@40,87@44|29,129,174,209,242,253,415,422,423,424,435,486,598|-|46,53,70,85,86,87,104,113,148,156,164,168,182,203,207,213,214,231,240,263,351,451,521,555
+310|424@1,336@1,43@1,33@1,86@1,98@12,351@16,44@20,422@24,46@30,435@36,268@42,528@48,87@54,604@60|-|-|46,53,63,70,85,86,87,104,113,148,156,164,168,182,203,207,213,214,231,240,263,315,351,416,451,521,555
+311|98@1,589@1,45@1,86@1,270@4,209@7,227@10,415@13,129@16,486@19,383@22,268@26,435@31,226@34,97@37,387@40,87@43,417@46,494@49|47,186,204,273,609|-|9,85,86,87,97,113,129,156,162,164,182,189,203,204,214,226,227,240,253,263,268,270,283,285,313,374,417,447,451,486,521,527,528,583,598,604,851,885,914
+312|98@1,589@1,45@1,86@1,270@4,209@7,227@10,415@13,129@16,486@19,383@22,268@26,435@31,226@34,97@37,387@40,87@43,417@46,494@49|47,186,204,273,313,609|-|9,85,86,87,97,113,129,156,162,164,182,189,203,204,214,226,227,240,253,263,268,270,283,313,374,417,447,451,486,521,527,528,583,604,851,885,914
+313|33@1,104@5,109@8,98@12,522@15,236@19,294@22,182@26,428@29,270@33,405@36,583@40,38@43,611@47|68,69,207,355|-|8,9,34,36,38,76,86,87,109,113,118,129,156,164,168,182,189,202,203,214,226,227,240,241,247,263,264,269,270,271,280,283,314,332,352,366,369,374,403,405,428,450,451,512,522,583,605,679,806,851,884,885,886
+314|33@1,589@1,230@5,204@9,98@12,522@15,236@19,273@22,227@26,260@29,428@33,270@36,405@40,583@43,611@47|74,213,355|-|8,9,36,38,76,85,86,87,109,113,118,129,156,164,168,182,189,202,203,204,214,226,227,240,241,244,247,263,264,270,271,280,283,313,314,332,352,366,369,374,403,405,428,450,451,512,522,574,577,583,605,806,851,884,885
+315|40@1,71@6,77@11,78@18,474@25,398@34,412@43,80@52|-|-|-
+316|1@1,281@5,139@8,124@10,133@12,491@17,227@20,92@25,254@28,255@28,256@28,188@33,380@36,562@41,220@44,441@49|123,151,174,189,194,499,747|-|7,8,9,14,34,36,58,76,86,92,133,156,164,168,174,182,188,189,202,203,214,220,227,240,241,247,263,270,331,341,352,374,390,398,402,441,474,482,491,851
+317|34@0,1@1,124@1,139@1,281@1,441@1,133@12,491@17,227@20,92@25,254@30,255@30,256@30,188@37,380@42,562@49|-|-|7,8,9,14,34,36,38,58,63,76,86,89,92,118,133,156,164,168,174,182,188,189,202,203,214,220,227,240,241,247,263,270,280,282,331,341,352,374,390,398,402,416,428,441,474,482,491,523,776,851
+318|453@1,43@1,305@4,116@8,184@12,44@16,423@20,103@24,207@28,242@32,97@36,710@40,36@44|37,38,56,129,194,246|-|57,58,59,104,127,156,164,168,182,203,207,213,214,240,258,259,263,269,352,362,371,399,503,555
+319|163@0,453@1,116@1,43@1,400@1,305@1,163@1,184@12,44@16,423@20,103@24,207@28,242@34,97@40,710@46,36@52|-|-|46,57,58,59,63,70,89,104,127,156,164,168,182,203,207,213,214,240,249,258,259,263,269,317,352,362,371,398,399,416,419,503,523,555
+320|150@1,45@3,310@6,55@12,54@15,352@18,484@21,362@24,250@27,291@30,340@33,34@36,156@39,133@42,56@45,323@48|34,37,38,90,111,173,174,205,321,392,428,487,499|-|46,57,58,59,70,89,104,127,156,164,182,203,207,213,214,240,249,258,263,317,352,362,419,503,523
+""",
+    """321|310@1,45@1,568@1,487@1,150@1,55@1,54@15,352@18,484@21,362@24,250@27,291@30,340@33,34@36,156@39,133@44,56@49,323@54|-|-|46,57,58,59,63,70,89,104,127,156,164,182,203,207,213,214,240,249,258,263,317,352,362,416,419,503,523
+322|33@1,45@1,52@5,116@8,523@12,510@15,133@19,436@22,414@26,174@29,36@31,89@40,53@43,38@47|23,34,74,111,184,205,246,254,255,256,257,281,336,442,484|-|34,36,38,46,53,83,89,91,126,133,156,157,164,174,182,184,189,201,203,204,214,240,241,257,261,263,270,283,315,317,341,394,414,428,430,442,444,446,484,488,523,535,667,707,776,808,815,851,885,915
+323|157@0,33@1,45@1,52@1,90@1,116@1,284@1,523@12,510@15,133@19,436@22,414@26,174@29,36@31,281@39,89@46|-|-|34,36,38,46,53,63,76,83,89,91,126,133,156,157,164,174,182,184,189,201,203,204,214,240,241,257,261,263,270,283,315,317,341,394,414,416,428,430,442,444,446,479,484,488,523,535,667,707,776,808,815,851,885,915
+324|52@1,123@1,110@4,229@8,108@12,499@16,172@20,182@24,436@28,34@32,334@36,53@40,174@44,257@48,133@52,517@56,504@60,284@64|90,175,246,281|-|34,36,38,53,63,76,83,89,126,133,156,157,164,174,182,188,201,203,214,241,257,261,263,270,311,315,317,334,360,394,414,416,428,444,446,484,488,523,535,707,776,807,815,851,915
+325|150@1,93@7,45@10,60@14,244@18,109@22,156@29,408@29,173@33,473@38,371@40,94@44,340@50|18,133,243,248,271,326,428,493|-|34,36,60,86,94,101,109,113,115,129,133,156,164,168,182,196,203,214,227,240,241,244,247,248,253,263,269,270,271,283,285,286,347,408,428,430,433,447,451,473,500,555,605,678,679,797,851,883,885,886
+326|298@0,60@1,93@1,150@1,562@1,244@18,109@22,428@26,408@29,156@35,173@35,473@42,371@46,94@52,340@60|-|-|7,8,9,34,36,60,63,67,86,91,94,101,109,113,115,118,129,133,156,164,168,182,189,196,203,214,227,240,241,244,247,248,253,263,264,269,270,271,280,283,285,286,304,341,347,374,402,408,409,411,412,414,416,417,428,430,433,447,451,473,490,500,523,555,605,678,679,707,776,797,851,883,885,886,917
+327|33@1,383@5,298@10,60@14,95@19,34@23,389@28,298@32,253@37,244@41,38@46,175@50,37@55|50,196,226,227,229,252,271,272,273,313,375,427,470|-|70,91,94,104,138,148,156,157,164,168,182,203,207,213,214,219,240,241,244,247,249,263,264,278,280,285,317,347,351,352,374,409,433,526
+328|28@1,310@1,44@8,189@12,328@16,523@20,91@24,242@28,201@32,414@36,89@40,276@44,90@48|16,98,175,210,364,450,660|-|34,36,63,89,91,156,157,164,182,189,201,202,203,214,241,242,263,317,328,341,414,444,446,450,522,523,815,851
+329|225@0,28@1,44@1,91@1,189@12,328@16,525@20,103@24,405@28,201@32,414@38,89@44,253@50,407@56,586@62|16,48,90,98,175,210,242,276,310,364,450,523,660|-|19,34,36,63,76,89,91,129,156,157,164,182,189,200,201,202,203,214,241,242,253,257,263,314,317,328,332,337,341,366,369,403,405,406,414,416,434,444,446,450,522,523,525,675,814,815,851
+330|337@0,28@1,48@1,225@1,523@1,189@12,328@16,525@20,103@24,405@28,201@32,414@38,89@44,253@52,407@60,586@68|16,44,90,91,98,175,210,242,276,310,349,364,450,660|-|7,9,19,34,36,38,53,63,76,83,89,91,97,126,129,156,157,164,182,189,200,201,202,203,214,241,242,253,257,263,270,314,317,328,332,337,341,349,366,369,403,405,406,410,414,416,434,444,446,450,522,523,525,675,784,799,814,815,851,913,914,917
+331|40@1,43@1,71@4,74@7,73@10,28@13,331@16,681@19,275@22,371@26,191@30,389@34,42@38,412@42,178@46,201@50,194@54|50,51,68,298,335,415,562,565|-|9,14,34,36,67,76,91,129,156,164,168,174,180,182,184,191,201,202,203,214,227,240,241,263,264,270,280,283,331,345,374,390,398,399,402,409,412,417,437,447,474,492,523,580,675,803,806,851,885
+332|596@0,40@1,43@1,71@1,74@1,194@1,73@10,28@13,331@16,681@19,275@22,371@26,191@30,389@35,42@38,412@44,178@49,201@54|-|-|9,14,34,36,63,67,76,91,129,156,164,168,174,180,182,184,191,201,202,203,214,227,240,241,247,263,264,269,270,280,282,283,331,345,374,390,398,399,402,409,411,412,416,417,428,437,447,474,492,523,580,675,679,707,803,806,808,851,885
+333|45@1,64@1,574@4,54@8,31@12,496@16,225@20,219@24,47@28,538@32,36@36,585@40,195@44|114,297,310,355,366,407,432|-|19,34,36,58,76,97,114,129,156,164,168,182,203,214,240,241,257,263,270,283,297,304,332,366,406,413,512,542,574,583,605,814,851,885,913
+334|406@0,45@1,54@1,64@1,365@1,574@1,31@12,496@16,225@20,219@24,47@28,538@32,36@38,585@44,195@50,143@56|-|-|19,34,36,38,46,53,58,63,76,83,89,97,114,126,129,156,164,168,182,200,203,214,240,241,257,261,263,270,283,297,304,311,332,337,349,366,406,413,416,434,512,523,542,574,583,605,784,814,851,883,885,913,914
+335|10@1,43@1,98@5,210@8,232@12,468@15,163@19,681@22,306@26,206@29,415@33,197@36,404@40,269@43,14@47,370@50|24,50,68,154,174,175,187,364,400,458,501,515|-|7,8,9,14,34,36,38,46,53,57,58,59,63,67,76,85,86,87,91,97,126,129,156,157,164,168,174,179,182,196,203,206,214,226,232,240,241,247,263,264,269,270,280,282,283,317,332,370,374,396,398,402,404,411,416,421,428,441,447,490,675,851,918
+336|35@1,207@1,44@4,122@6,342@9,364@11,103@14,137@19,305@21,474@24,380@29,398@31,114@34,242@39,562@41,489@44,188@46|34,184,254,255,256,372,400,415,515|-|14,34,36,38,53,63,89,91,92,114,156,164,168,174,179,182,184,188,202,203,214,240,241,242,263,269,270,280,282,283,342,398,399,402,404,416,422,423,424,428,441,442,474,482,491,523,555,675,706,784,806,808,851,884,885
+337|93@1,106@1,585@1,236@1,88@1,33@1,95@5,397@10,157@15,473@20,322@25,94@30,444@35,248@40,478@45,153@50|-|-|58,59,63,89,94,104,113,115,138,148,153,156,157,164,182,201,203,207,214,219,240,244,247,258,263,278,285,317,347,360,397,416,417,433,444,446,447,451,523
+338|93@1,394@1,106@1,234@1,88@1,33@1,95@5,397@10,157@15,428@20,322@25,94@30,444@35,76@40,472@45,153@50|-|-|14,53,63,76,89,94,104,113,115,126,138,148,153,156,157,164,182,201,203,207,214,219,240,241,244,247,261,263,278,285,315,317,347,360,397,416,433,444,446,447,451,523
+339|55@1,189@1,156@6,173@6,352@12,133@18,401@24,330@31,89@36,248@42,90@48|36,37,175,209|-|36,38,56,57,58,59,89,127,129,133,156,157,164,182,189,196,200,201,203,214,240,241,248,250,263,270,317,330,341,349,352,414,428,444,446,523,667,707,710,851,886
+340|37@0,55@1,156@1,173@1,189@1,321@1,428@1,562@1,352@12,133@18,401@24,330@33,89@40,248@48,90@56|-|-|34,36,38,56,57,58,59,63,89,127,129,133,156,157,164,174,182,184,189,191,196,200,201,203,214,240,241,248,250,263,270,311,317,328,330,341,349,352,414,416,428,444,446,523,667,707,710,851,886
+341|55@1,106@1,43@4,269@8,61@12,282@16,458@20,182@24,400@28,534@32,14@36,242@40,152@44,283@48,12@52|38,163,232,246,415,453|-|14,34,36,38,56,57,58,59,91,127,156,157,164,168,182,188,196,203,206,214,232,240,242,250,263,269,280,282,283,317,330,334,341,349,352,374,404,710,851,886
+342|129@0,43@1,55@1,106@1,269@1,61@12,282@16,458@20,182@24,400@28,534@34,14@40,242@46,152@52,283@58,12@64|38,163,232,246,415,453|-|14,34,36,38,56,57,58,59,63,91,127,129,156,157,164,168,180,182,184,188,196,203,206,214,232,240,242,250,263,269,280,282,283,317,330,334,341,349,352,370,374,399,404,416,417,419,482,555,710,808,851,886,912
+343|106@1,189@1,229@3,93@6,317@9,379@12,60@15,246@18,286@21,322@24,326@27,414@30,120@33,470@36,471@36,201@39,153@42|-|-|58,76,89,91,94,104,113,115,138,148,153,156,157,164,182,201,203,207,214,219,240,241,244,247,263,278,285,317,347,360,397,433,446,447,451,523,605
+344|63@0,93@1,106@1,63@1,189@1,229@1,100@1,317@9,379@12,60@15,246@18,286@21,322@24,326@27,414@30,120@33,470@38,471@38,201@43,153@48|-|-|58,63,70,76,89,91,94,104,113,115,138,148,153,156,157,164,182,201,203,207,214,219,240,241,244,247,249,263,278,285,317,347,360,397,416,417,433,444,446,447,451,523,605
+345|310@1,35@1,51@4,109@8,275@12,246@16,72@20,362@24,133@28,380@32,202@36,255@41,254@41,256@41,412@44|20,72,105,174,243,321|-|14,76,104,148,156,157,164,182,188,201,202,203,207,213,214,241,263,317,331,362,397,412,446,447
+346|51@1,310@1,109@1,73@1,35@1,275@12,246@16,72@20,362@24,133@28,380@32,202@36,255@43,254@43,256@43,412@48|-|-|14,63,70,76,89,91,104,148,156,157,164,182,188,201,202,203,207,213,214,241,249,263,317,331,362,397,412,416,444,446,447,523
+347|210@1,106@1,55@4,479@8,232@12,246@16,450@20,362@24,163@28,306@32,350@36,182@41,404@44|28,103,174,229,282,334,440,453|-|14,15,91,104,156,157,164,182,201,203,206,207,213,214,241,249,263,280,317,332,352,362,397,404,446
+348|210@1,106@1,479@1,55@1,232@12,246@16,450@20,362@24,163@28,306@32,350@36,182@43,404@48|-|-|14,15,63,70,89,91,104,156,157,164,182,201,203,206,207,213,214,231,241,249,263,280,317,332,352,362,397,404,416,421,430,444,446,523
+349|150@1,33@15,175@25|54,95,109,114,225,243,321|-|38,57,58,59,109,113,114,127,129,156,164,182,196,203,214,240,250,263,330,341,352,406,799,851,886
+350|352@0,33@1,35@1,55@1,150@1,175@1,574@4,239@8,392@12,213@16,791@20,525@24,105@28,401@32,219@36,57@40,240@44,489@48,56@52|54,95,109,114,225,243,321|-|34,36,38,56,57,58,59,63,109,113,114,127,129,156,164,182,196,203,214,240,244,250,263,270,286,311,330,341,349,352,406,416,419,442,503,523,525,574,577,784,799,806,812,813,851,886,913,914
+351|33@1,52@10,181@10,55@10,29@15,258@20,240@20,241@20,311@25,59@35,126@35,56@35,542@45|50,133,248,322,385,499,506,513|-|53,58,59,76,85,86,87,104,126,148,156,164,168,182,201,203,207,213,214,240,241,244,247,258,263,351,352,412,419,503,526
+352|310@1,122@1,10@1,39@1,168@1,20@4,425@7,364@10,154@13,50@16,60@18,246@21,163@25,197@30,421@33,103@38,164@42,389@46,492@50|50,105,252,271,277,492,612|-|15,53,58,59,70,76,85,86,87,91,104,126,148,156,157,164,168,182,203,207,213,214,231,240,241,244,247,249,263,264,278,280,285,317,332,351,352,374,409,417,421,433,446,447,451,526
+353|310@1,103@4,101@7,180@10,261@16,425@19,506@22,174@26,247@30,272@34,389@38,271@42,566@48|50,109,194,286,441|-|60,85,86,87,94,101,109,118,156,164,168,174,180,182,184,196,203,214,220,227,240,241,244,247,261,263,269,270,271,285,286,347,399,417,433,441,451,492,506,566,605,806,808,809,851,884
+354|282@0,101@1,103@1,180@1,261@16,425@19,506@22,174@26,247@30,272@34,389@40,271@46,566@53|-|-|14,60,63,85,86,87,94,101,109,118,156,164,168,174,180,182,184,196,203,214,220,227,240,241,244,247,261,263,269,270,271,282,285,286,347,374,399,416,417,421,433,441,451,492,506,566,605,675,806,807,808,809,851,884,885
+355|43@1,310@1,50@4,425@8,109@12,101@16,371@20,261@24,212@28,506@32,174@36,247@40,248@44|114,220,262|-|58,59,94,101,109,114,141,156,164,168,174,180,182,196,203,214,220,240,241,244,247,248,261,263,269,270,271,285,286,347,356,374,399,433,451,506,566,806,809,851
+356|325@0,7@1,8@1,9@1,20@1,43@1,50@1,425@1,356@1,310@1,109@12,101@16,371@20,261@24,212@28,506@32,174@36,247@42,248@48|114,220,262|-|7,8,9,34,58,59,63,94,101,109,114,118,141,156,164,168,174,180,182,196,203,214,220,240,241,244,247,248,261,263,264,269,270,271,280,285,286,347,356,374,399,416,433,451,506,566,806,809,851
+357|16@1,43@1,74@1,75@1,437@1,230@6,23@10,345@16,18@21,469@30,403@36,34@41,200@46,235@50,76@56|21,29,73,174,348,349|-|14,19,34,36,38,46,63,76,89,156,164,174,180,182,200,202,203,214,240,241,263,270,314,331,332,345,349,366,369,402,403,406,412,416,428,437,447,523,525,542,572,580,669,707,776,814,851,885
+358|35@1,45@1,93@1,310@1,361@1,281@13,500@16,36@19,326@22,215@27,253@32,219@37,38@42,505@47|50,95,105,174,273,278,322,502|-|36,38,60,86,94,113,115,129,156,164,174,182,196,203,204,214,226,227,240,241,244,247,248,253,263,269,270,271,282,285,286,304,313,347,356,412,428,433,447,451,473,500,555,574,577,605,797,851,917
+359|43@1,98@1,104@5,282@10,197@15,269@20,163@25,400@30,116@35,389@40,14@45,248@50,195@55|38,44,174,195,212,224,226,277,364,372,389,428,506,583|-|14,15,53,58,59,63,70,85,86,87,104,126,138,148,156,157,164,168,182,201,203,206,207,213,214,231,240,241,244,247,249,258,259,261,263,269,317,332,347,351,352,371,399,404,416,421,444,451,555
+360|133@1,204@1,68@1,194@1,227@1,243@1,219@1,150@1|-|-|219
+361|29@1,181@1,310@1,43@5,104@10,420@15,182@20,196@25,524@30,44@35,423@40,883@45,311@50,242@55,59@60|50,205,335,415,556|-|34,36,58,59,113,156,164,180,182,191,196,203,214,240,242,247,263,270,311,313,333,352,419,423,506,851,861,883,885,886
+362|573@0,29@1,43@1,104@1,181@1,310@1,329@1,420@15,182@20,196@25,524@30,44@35,423@40,883@47,311@54,242@61,59@68|-|-|34,36,58,59,63,89,113,156,164,180,182,184,191,196,203,214,240,242,247,263,269,270,311,313,333,352,360,399,416,419,423,442,492,506,523,851,861,883,885,886
+363|205@1,181@6,352@11,156@18,710@25,58@34,59@43|-|-|-
+364|205@1,181@6,352@11,156@18,710@25,58@34,59@43|-|-|-
+365|205@1,181@6,352@11,156@18,710@25,58@34,59@43|-|-|-
+366|334@1,55@1,250@1,504@50|34,48,109,330,392|-|57,58,59,104,127,156,164,182,203,207,213,214,240,258,263,352,362,503
+367|44@1,334@1,504@1,55@1,250@1,103@5,184@9,240@11,352@14,423@16,362@19,389@23,291@26,226@29,242@34,401@39,489@45,56@50|-|-|57,58,59,63,104,127,156,164,182,203,207,213,214,240,258,263,317,352,362,416,503
+368|93@1,334@1,504@1,55@1,250@1,240@5,97@9,577@11,352@14,133@16,392@19,219@23,291@26,226@29,94@34,401@39,489@45,56@50|-|-|57,58,59,63,94,104,127,156,164,182,203,207,213,214,219,240,244,247,258,263,352,362,416,503
+369|106@1,33@1,55@5,246@10,281@15,291@20,36@25,401@30,156@35,175@40,56@45,38@50,457@55|130,133,173,189,330,341,401,428|-|57,58,59,63,89,104,127,156,157,164,182,201,203,207,213,214,219,240,244,249,258,263,317,347,352,362,397,416,444,446,503,523
+370|33@1,204@1,55@4,97@7,273@13,352@17,213@20,577@22,175@26,186@31,36@34,608@37,392@40,487@42,56@46,219@49|48,150,453,494|-|36,56,57,58,59,97,127,156,164,182,196,203,204,214,240,244,250,263,283,352,577,710,799,812,851,883
+371|43@1,52@1,44@5,225@10,29@15,184@20,242@25,337@31,428@35,116@40,53@45,200@50,38@55|37,111,239,407|-|34,36,38,46,53,56,83,126,156,157,164,182,184,189,200,203,214,240,241,242,263,270,280,304,317,334,337,349,406,421,422,424,428,434,442,525,851,913
+372|182@0,43@1,44@1,52@1,225@1,29@15,184@20,242@25,337@33,428@39,116@46,53@53,200@60,38@67|-|-|34,36,38,46,53,56,83,126,156,157,164,182,184,189,200,203,214,240,241,242,263,270,280,304,317,334,337,349,406,421,422,424,428,434,442,525,851,913,915
+373|19@0,355@1,225@1,525@1,52@1,814@1,43@1,44@1,182@1,29@15,184@20,242@25,337@33,428@39,116@46,53@55,38@73|-|-|19,34,36,38,46,53,56,63,83,89,126,129,156,157,164,182,184,189,200,203,214,240,241,242,257,263,270,280,304,317,332,334,337,349,366,403,406,416,421,422,424,428,434,442,444,523,525,542,706,784,814,851,913,915
+374|33@1|-|-|36,334,428,442,796,851
+375|93@0,232@0,33@1,418@1,468@1,428@6,393@12,430@18,36@26,94@34,184@42,309@50,334@58,97@66,63@74|-|-|8,9,34,36,38,63,89,94,97,113,115,129,156,157,164,182,184,188,196,201,203,214,232,240,241,244,247,248,263,264,271,280,317,332,334,356,360,416,428,430,442,446,447,473,484,523,796,797,800,851,885,912,917
+376|359@0,33@1,93@1,232@1,418@1,428@6,393@12,430@16,36@26,94@34,184@42,309@52,334@62,97@72,63@82|153,468|-|8,9,34,36,38,63,89,94,97,113,115,129,156,157,164,182,184,188,189,196,201,203,214,232,240,241,244,247,248,263,264,271,280,282,317,332,334,356,360,416,421,428,430,442,444,446,447,473,484,523,706,707,776,796,797,800,851,885,912,917
+377|88@1,451@1,523@6,246@12,23@18,157@24,174@30,334@36,359@42,444@48,276@54,199@60,192@66,63@72,153@78|-|-|7,8,9,34,36,38,63,85,86,87,89,91,156,157,164,174,182,201,203,214,241,263,264,280,317,328,334,350,356,374,408,409,411,414,416,430,442,444,446,451,479,484,523,707,776,800,851,912
+378|196@1,451@1,523@6,246@12,23@18,58@24,174@30,133@36,359@42,59@48,276@54,199@60,192@66,63@72,153@78|-|-|8,9,34,58,59,63,85,86,87,89,133,156,157,164,174,182,196,203,214,240,263,264,280,317,333,356,374,411,416,419,430,442,451,484,523,707,776,851,861,883
+379|232@1,451@1,523@6,246@12,23@18,430@24,442@24,174@30,133@36,334@36,359@42,484@48,276@54,199@60,192@66,63@72,153@78|-|-|8,9,34,36,38,63,85,86,87,89,133,156,157,164,174,182,201,203,214,232,240,241,263,264,280,317,319,328,334,356,374,411,416,421,430,442,446,451,484,523,707,776,796,800,851,861,912
+380|204@1,500@1,270@5,105@10,93@15,366@20,225@25,273@30,296@35,428@40,406@45,505@50,513@55,94@60,470@65,361@70|-|-|19,34,36,38,46,57,58,63,76,85,86,87,89,94,97,113,115,127,129,156,164,182,196,200,201,203,204,214,226,240,241,244,247,248,250,263,270,271,311,314,332,337,347,349,352,366,396,403,406,412,416,421,428,434,447,451,473,500,523,574,577,710,784,799,814,851,886,913,914
+381|349@1,500@1,270@5,105@10,93@15,366@20,225@25,502@30,295@35,428@40,406@45,505@50,493@55,94@60,471@65,262@70|-|-|19,34,36,38,46,57,58,63,76,85,86,87,89,94,97,113,115,127,129,156,164,182,196,200,201,203,214,226,240,241,244,247,248,263,270,271,311,314,332,337,347,349,352,366,396,403,406,412,416,421,428,434,447,451,473,500,523,710,784,799,812,814,851,886,913,917
+382|34@1,184@1,246@1,352@1,618@1,401@9,347@18,330@27,58@36,329@45,392@54,56@72,38@81,323@90|-|-|34,36,38,46,56,57,58,59,63,85,86,87,89,127,156,157,164,182,184,196,203,214,240,250,263,270,280,317,330,347,352,416,419,442,484,523,710,851,886
+383|184@1,246@1,341@1,436@1,619@1,414@9,339@18,89@27,359@36,90@45,156@54,126@72,76@81,284@90|-|-|7,9,14,34,36,38,46,53,63,76,85,86,87,89,91,126,156,157,164,182,184,189,191,201,203,214,232,241,242,257,261,263,264,270,280,315,317,328,332,337,339,341,350,374,406,411,414,416,421,424,428,442,444,446,479,484,523,535,667,707,776,815,851
+384|184@1,239@1,246@1,403@1,620@1,242@9,349@18,245@27,406@36,304@45,156@54,19@63,542@72,200@81,63@90|-|-|14,19,34,36,38,46,53,56,57,58,59,63,76,85,86,87,89,126,127,129,156,157,164,182,184,196,200,201,203,214,240,241,242,250,263,270,280,304,315,317,332,337,339,349,360,366,369,374,403,406,411,412,414,416,419,421,434,442,444,446,523,525,528,542,784,799,800,851,913
+385|93@1,273@1,129@7,791@21,428@28,356@35,94@42,309@49,361@56,156@63,248@70,38@77,322@84,387@91,353@98|-|-|7,8,9,34,38,60,63,85,86,87,94,109,113,115,118,129,133,156,164,182,189,196,201,203,204,214,226,227,240,241,244,247,248,263,270,271,285,286,313,319,334,347,352,356,369,374,396,409,412,416,428,430,433,442,446,447,451,473,500,583,605,796,797,800,851,917
+386|35@1,43@1,101@7,100@13,282@19,473@25,94@31,356@37,285@43,428@49,322@55,105@61,354@67,63@73|-|-|7,8,9,36,58,60,63,67,76,85,86,87,94,97,101,113,115,129,156,157,164,182,184,196,203,214,220,240,241,244,247,248,263,271,280,282,285,286,317,332,347,352,356,374,398,399,409,411,412,416,417,428,430,433,446,447,451,473,490,500,675,678,707,797,800,851,917
+387|33@1,110@5,71@9,75@13,174@17,44@21,72@25,73@29,235@33,242@37,202@41,437@45|37,38,74,254,255,256,276,321,388,469,504|-|14,34,36,38,46,76,113,115,133,156,164,174,182,189,202,203,214,241,242,263,328,331,341,345,402,412,414,428,437,442,446,447,479,484,520,523,580,803,851,885
+388|33@1,71@1,110@1,75@13,174@17,44@22,72@27,73@32,235@37,242@42,202@47,437@52|37,38,74,254,255,256,276,321,388,469,504|-|14,34,36,38,46,76,113,115,133,156,164,174,182,189,202,203,214,241,242,263,328,331,341,345,402,412,414,428,437,442,446,447,479,484,520,523,580,803,851,885
+389|89@0,33@1,71@1,75@1,110@1,452@1,174@17,44@22,72@27,73@33,235@39,242@45,202@51,437@57,838@63|37,38,74,254,255,256,276,321,388,469,504|-|14,34,36,38,46,63,76,89,113,115,133,156,157,164,174,182,184,189,200,201,202,203,214,241,242,263,304,317,328,331,334,338,341,345,350,402,412,414,416,428,437,442,444,446,447,479,484,520,523,580,667,707,776,803,815,851,885,912
+390|10@1,43@1,52@7,269@9,154@15,172@17,417@23,259@25,263@31,83@33,512@39,303@41,53@47|7,9,24,68,116,227,252,257,270,415|-|7,9,14,36,38,53,67,83,91,97,118,126,129,156,157,164,168,182,189,203,214,227,241,244,253,257,261,263,264,269,270,280,282,283,313,315,317,339,369,374,394,398,410,417,421,428,441,446,447,488,490,512,519,807,851,915
+391|183@0,10@1,43@1,52@1,269@9,154@16,172@19,364@26,259@29,370@36,83@39,512@46,303@49,394@56|7,9,24,68,116,227,252,257,270,415|-|7,9,14,36,38,53,67,83,91,97,118,126,129,156,157,164,168,179,182,189,203,214,227,241,244,253,257,261,263,264,269,270,280,282,283,313,315,317,339,369,370,374,394,398,409,410,411,417,421,428,441,446,447,479,488,490,512,519,807,808,851,915,918
+392|370@0,10@1,43@1,52@1,183@1,154@16,172@19,364@26,259@29,83@42,394@47,512@52,347@58,833@65|7,9,24,68,116,227,252,257,269,270,303,415|-|7,9,14,34,36,38,46,53,63,67,76,83,89,91,97,118,126,129,156,157,164,168,179,182,184,189,203,214,227,241,244,253,257,261,263,264,269,270,280,282,283,307,313,315,317,332,339,347,369,370,374,394,396,398,409,410,411,416,417,421,428,441,444,446,447,479,488,490,512,519,523,675,807,808,811,815,851,915,918
+393|1@1,45@4,55@8,204@11,64@15,61@18,207@22,31@25,362@29,250@32,54@36,65@39,56@43|48,173,281,297,355,392,681|-|56,57,58,59,97,114,127,129,156,164,182,196,203,204,214,240,244,250,263,270,280,297,311,317,332,352,374,447,518,574,710,812,813,851,861,883,886
+394|232@0,33@1,45@1,55@1,64@15,61@19,207@24,31@28,362@33,250@37,54@42,65@46,56@50|48,173,281,297,355,392,681|-|36,38,56,57,58,59,97,114,127,129,156,164,182,196,203,204,214,232,240,244,250,263,270,280,297,311,317,332,352,374,421,447,518,574,710,812,813,851,861,883,886
+395|453@0,33@1,45@1,55@1,232@1,14@11,64@15,61@19,207@24,31@28,362@33,250@39,54@46,65@52,56@59,834@66|48,173,281,297,355,392,681|-|14,34,36,38,46,56,57,58,59,63,89,97,114,127,129,156,157,164,182,184,189,196,203,204,206,214,232,240,244,250,253,263,270,280,282,297,308,311,314,317,319,332,334,352,374,403,410,416,419,421,430,446,447,518,523,574,675,710,796,808,812,813,814,851,861,883,886
+396|33@1,45@1,98@5,17@9,104@13,283@17,18@21,332@25,36@29,97@33,413@37,515@41|28,31,38,253,297,310|-|19,36,38,97,129,156,164,168,182,203,214,240,241,253,257,263,270,283,297,314,332,366,369,403,413,512,542,814,851
+397|33@1,45@1,98@1,17@9,104@13,283@18,18@23,332@28,36@33,97@38,413@43,515@48|-|-|19,36,38,97,129,156,164,168,182,203,214,240,241,253,257,263,270,283,297,314,332,366,369,403,413,512,542,814,851
+398|370@0,17@1,33@1,45@1,98@1,104@13,283@18,18@23,332@28,36@33,97@41,413@49,515@57|-|-|19,36,38,63,97,129,156,164,168,182,203,214,240,241,253,257,263,270,283,297,314,332,366,369,370,403,413,416,512,522,542,814,851
+399|205@1,33@5,44@10,156@16,242@23,14@31,38@40|-|-|-
+400|352@0,205@1,33@5,44@10,156@16,242@23,401@23,14@31,38@40|-|-|-
+401|33@1,45@1,522@6,450@16|-|-|283,450,522,679,806,851
+402|210@0,33@1,45@1,71@14,47@18,116@22,163@26,404@30,103@34,565@36,269@38,400@42,564@44,405@46,195@50|-|-|14,36,63,141,156,164,182,202,203,206,214,226,240,241,253,263,269,270,280,282,283,304,332,404,405,416,450,522,675,679,806,851,884,885
+403|33@1,43@1,84@4,268@8,44@12,209@16,46@20,521@24,184@28,86@32,242@36,435@40,207@44,528@48|24,36,98,336,351,400,608|-|36,38,46,85,86,87,109,113,129,156,164,168,182,184,203,214,240,241,242,263,268,270,313,422,423,424,451,486,521,527,528,555,583,598,604,706,851,885
+404|33@1,43@1,84@1,268@1,44@12,209@18,46@24,521@31,184@36,86@42,242@48,435@54,207@60,528@68|-|-|36,38,46,85,86,87,109,113,129,156,164,168,182,184,203,214,240,241,242,263,268,270,313,422,423,424,451,486,521,527,528,555,583,598,604,706,851,885
+405|33@1,43@1,84@1,268@1,604@1,44@12,209@18,46@24,521@33,184@40,86@48,242@56,435@64,207@72,528@80|-|-|34,36,38,46,63,85,86,87,97,109,113,129,156,164,168,182,184,203,214,240,241,242,263,268,270,313,416,422,423,424,451,486,521,527,528,555,583,598,604,675,706,851,885,916
+406|40@1,71@6,77@11,78@18,474@25,398@34,412@43,80@52|-|-|-
+407|40@1,71@6,77@11,78@18,474@25,398@34,412@43,80@52|-|-|-
+408|29@1,43@1,116@6,249@10,36@15,184@19,372@24,21@28,246@33,428@37,103@42,457@46|18,23,37,359|-|7,9,14,34,36,38,46,53,58,59,85,87,89,91,126,156,157,164,168,174,182,184,189,201,203,214,240,241,242,253,263,283,317,350,374,406,414,428,442,444,446,479,523,707,851,885,913
+409|283@0,29@1,43@1,116@1,249@10,36@15,184@19,372@24,21@28,246@36,428@43,103@51,457@58|18,23,37,359|-|7,9,14,34,36,38,46,53,57,58,59,63,85,87,89,91,126,156,157,164,168,174,182,184,189,200,201,203,214,240,241,242,253,263,264,280,283,317,337,350,374,406,411,414,416,419,428,442,444,446,479,484,523,525,707,776,784,851,885,913,916
+410|33@1,182@1,269@6,319@10,36@15,334@19,207@24,246@28,203@33,368@37,442@42,484@46|29,68,90,103,116,470|-|34,36,38,46,53,58,59,85,87,89,91,126,156,157,164,174,182,184,189,201,203,214,240,241,263,269,317,319,328,334,350,408,414,430,442,444,446,479,484,523,707,796,815,851,885,912
+411|335@0,33@1,182@1,269@1,319@1,36@15,334@19,207@24,246@28,203@36,368@43,442@51,484@58|29,68,90,103,116,469,470|-|34,36,38,46,53,58,59,63,85,87,89,91,115,126,156,157,164,174,179,182,184,189,200,201,203,214,240,241,263,269,317,319,328,334,350,408,414,416,419,430,442,444,446,479,484,492,523,707,776,796,800,815,851,885,912
+412|522@1|-|-|-
+413|522@1,16@6,93@11,318@18,412@25,94@34,405@43|-|63,94,156,247,345,412,416|-
+414|522@1,16@6,93@11,318@18,403@25,94@34,405@43|-|-|-
+415|16@1,230@1,450@1,522@1|-|-|214,283,405,450,522,679,806,851
+416|163@0,230@1,522@1,450@1,16@1,109@1,40@1,210@4,597@8,565@12,154@16,207@20,355@24,403@28,408@32,92@36,454@40,455@40,194@44|-|-|36,63,92,97,109,129,156,164,168,179,180,182,184,188,191,203,214,240,241,263,269,270,283,332,369,374,390,403,404,405,408,416,450,474,506,512,522,542,676,679,806,814,851,884,917
+417|45@1,84@1,98@5,204@9,209@13,203@17,609@19,129@21,486@25,186@29,86@33,162@37,435@41,387@45,87@49|39,44,111,175,205,260,266,268,313,343,608|-|9,36,63,85,86,87,91,97,113,129,156,162,164,168,182,189,203,204,214,227,240,241,253,263,268,270,283,313,332,341,369,374,402,416,422,441,447,451,486,521,527,528,583,598,604,851,885,914
+418|33@1,45@4,487@7,98@11,55@15,44@18,129@21,453@24,458@27,250@31,710@35,401@38,97@41,56@45,834@49|29,154,163,189,210,226,270,392|-|8,36,46,56,57,58,59,67,91,97,127,129,156,164,168,182,189,196,203,214,226,240,242,250,263,264,269,270,280,317,339,352,374,423,490,710,812,851,861,886
+419|45@1,98@1,242@1,423@1,487@1,55@15,44@18,129@21,453@24,458@29,250@35,710@41,401@46,97@51,56@57,834@62|-|-|8,34,36,38,46,56,57,58,59,63,67,91,97,118,127,129,156,164,168,182,184,189,196,203,214,226,240,242,250,263,264,269,270,280,317,330,339,352,374,411,416,423,490,555,710,812,851,861,886
+420|71@1,33@5,78@9,577@15,412@21,79@29,38@37,80@47|-|-|-
+421|71@1,33@5,78@9,577@15,412@21,79@29,38@37,80@47|-|-|-
+422|55@1,189@1,106@5,105@10,352@15,246@20,34@25,330@31,414@35,240@40,262@45|54,68,124,151,174,243,254,255,256,281,499|-|34,36,56,57,58,59,127,133,156,157,164,174,182,189,196,201,203,214,220,240,250,263,270,317,330,341,352,414,444,446,523,710,806,851,883,886
+423|55@1,105@1,106@1,189@1,352@15,246@20,34@25,330@33,414@39,240@46,262@53|-|-|34,36,56,57,58,59,63,89,91,127,133,156,157,164,174,182,188,189,191,196,201,203,214,220,240,250,263,270,311,317,328,330,341,350,352,414,416,444,446,482,523,707,710,806,851,883,886
+424|10@1,28@1,39@1,310@1,226@11,321@15,154@18,129@22,103@25,97@29,458@32,374@36,417@39,387@43|21,68,231,251,252,340,343,415,501|-|7,8,9,36,38,63,67,76,85,86,87,91,97,118,129,156,164,168,180,182,189,203,214,226,240,241,247,263,264,269,270,280,282,283,332,341,352,369,374,402,416,417,421,441,447,479,490,492,512,675,813,851,885,886,918
+425|107@1,310@1,16@4,116@8,371@12,506@16,247@20,254@24,255@24,256@24,120@29,194@32,226@36,366@40,153@44|50,95,114,262,432,499|-|19,60,85,86,87,94,101,114,129,133,156,164,168,174,180,182,196,203,214,220,226,240,241,247,261,263,270,271,282,285,286,311,314,332,347,360,366,433,500,506,512,566,851,915
+426|566@0,310@1,668@1,16@1,116@1,107@1,371@12,506@16,247@20,254@24,255@24,256@24,120@31,194@36,226@42,366@48,153@54|-|-|19,34,60,63,85,86,87,94,101,114,129,133,156,164,168,174,180,182,196,203,214,220,226,240,241,247,261,263,270,271,282,285,286,311,314,332,347,360,366,374,403,416,433,500,506,512,566,851,915
+427|98@1,608@5,129@10,577@16,458@23,583@31,38@40|-|-|-
+428|98@1,183@1,608@5,129@10,577@16,458@23,583@31,38@40,370@40|-|-|-
+429|45@1,180@1,310@1,345@1,408@1,566@1,595@1|-|-|60,63,85,86,87,94,101,109,129,156,164,168,174,180,182,184,196,203,204,214,220,240,241,244,247,248,261,263,269,270,271,285,286,304,313,345,347,399,408,412,416,417,433,447,451,473,492,500,506,566,577,605,807,808,809,851,883,917
+430|17@1,114@1,310@1,389@1,400@1,511@1,207@25,417@35,492@45,399@55,894@65|-|-|19,36,38,63,86,94,101,109,114,156,164,168,180,182,184,189,196,203,214,240,241,244,247,253,257,263,269,270,283,297,314,332,347,366,369,399,403,413,416,417,492,506,512,542,555,808,814,851,886,917
+431|33@1,95@5,417@10,163@16,400@23,583@31,38@40|-|-|-
+432|33@1,95@5,417@10,163@16,400@23,583@31,38@40|-|-|-
+433|35@1,45@4,310@7,93@10,281@13,387@16,494@19,253@32|50,95,105,174,273,278,322,502|-|38,86,94,113,115,156,164,174,182,196,203,214,226,240,241,244,247,248,253,263,269,270,271,282,285,304,347,356,412,428,433,447,451,473,500,605,851,917
+""",
+    """434|10@1,139@1,364@3,108@6,491@9,154@12,116@15,44@18,474@21,103@24,92@27,389@30,262@33,400@36,562@39,153@42|38,43,114,123,163,310|-|34,36,38,46,53,91,92,114,126,129,156,164,168,182,184,188,203,214,240,241,242,247,263,269,270,282,342,390,398,399,417,421,441,474,482,491,492,506,555,583,675,808,851,885,915
+435|53@0,10@1,108@1,139@1,364@1,154@12,116@15,44@18,474@21,103@24,92@27,389@30,262@33,400@38,562@43,153@48|-|-|34,36,38,46,53,63,83,91,92,114,126,129,156,162,164,168,182,184,188,203,214,240,241,242,247,263,269,270,282,283,342,390,398,399,416,417,421,441,474,482,491,492,506,555,583,675,807,808,851,885,915
+436|33@1,93@1,109@4,371@8,286@12,360@16,95@20,219@24,326@28,484@32,334@36,319@40,248@44|278,356|-|34,36,76,89,94,109,113,115,156,157,164,182,201,203,214,240,241,244,247,248,263,270,271,285,286,317,319,334,347,350,356,360,408,428,430,433,442,446,447,451,473,484,500,506,523,678,707,796,797,851,861
+437|335@0,33@1,93@1,109@1,311@1,371@1,241@1,286@12,360@16,95@20,219@24,326@28,484@32,334@38,319@44,248@50,240@56|-|-|34,36,60,63,76,89,94,101,109,113,115,156,157,164,182,201,203,214,240,241,244,247,248,263,270,271,285,286,311,317,319,334,347,350,356,360,408,416,428,430,433,442,446,447,451,473,484,500,506,523,678,707,776,796,797,800,851,861,912,917
+438|313@1,383@1,175@4,88@8,335@12,102@16,317@20,715@24,389@28,157@32,67@36,68@40,38@44|29,106,111,174,205,397|-|34,36,38,67,89,91,156,157,164,168,174,182,189,191,201,203,214,241,244,263,270,280,313,317,328,341,347,350,408,414,444,446,447,479,492,523,707,851,885
+439|93@1,95@6,334@11,428@18,102@25,94@34,347@43|-|-|-
+440|1@1,383@1,111@4,186@8,574@12,343@16,204@20|69,215,217,356|-|36,76,86,94,113,118,156,164,182,196,203,204,214,240,241,247,263,270,304,356,374,428,447,500,574,851,883
+441|16@1,129@6,314@11,355@18,403@25,102@30,417@34,583@43,542@52|-|-|-
+442|101@1,109@1,425@5,180@10,371@15,417@20,506@25,262@30,389@35,174@40,247@45,399@50,95@55,138@60|50,108,194,220,502|-|34,60,63,92,94,101,109,156,164,168,174,180,182,184,196,203,214,220,240,241,247,261,263,269,270,271,285,286,317,347,399,416,417,433,473,492,500,506,555,566,807,808,809,851
+443|33@1,328@1,28@6,225@12,523@18,44@25,163@30,337@36,91@42,201@48,36@54,407@60|37,38,232,239|-|14,34,36,38,53,89,91,126,129,156,157,164,182,184,200,201,203,206,214,232,240,241,263,270,317,328,337,341,406,414,421,422,424,434,442,444,446,523,525,799,815,851,913
+444|28@1,33@1,225@1,328@1,523@18,44@27,163@34,337@42,91@50,201@58,36@66,407@74|-|-|14,34,36,38,53,89,91,126,129,156,157,164,182,184,200,201,203,206,214,232,240,241,242,263,270,317,328,332,337,341,406,408,414,421,422,424,434,442,444,446,523,525,784,799,815,851,913
+445|242@0,28@1,33@1,225@1,328@1,523@18,44@27,163@34,337@42,91@52,201@62,36@72,407@82|-|-|14,34,36,38,53,57,63,89,91,126,129,156,157,164,182,184,191,200,201,203,206,214,232,240,241,242,263,270,280,317,328,332,337,341,374,398,406,408,414,416,421,422,424,434,442,444,446,523,525,707,710,784,799,815,851,913
+446|33@1,122@1,111@4,278@8,343@12,44@16,254@20,256@20,103@24,34@28,374@32,133@36,118@40,175@44,187@48,387@52|38,68,90,174,562|-|7,8,9,34,36,38,53,57,58,59,76,85,87,89,91,118,126,133,156,157,164,174,182,189,196,201,203,204,214,227,240,241,242,247,253,263,264,270,280,304,317,374,402,416,428,441,523,707,851,885,886
+447|98@1,203@1,364@4,232@8,68@12,526@16,249@20,410@24,103@28,501@32,395@36,14@40,270@44,383@48,515@52,179@56|44,136,197,238,336,418,509|-|8,9,14,36,67,89,91,97,129,156,157,164,179,182,203,214,232,240,241,242,244,263,264,270,280,317,332,339,370,374,398,409,410,411,417,421,428,490,523,811,851,885,918
+448|396@0,383@1,364@1,270@1,249@1,232@1,410@1,197@1,179@1,103@1,98@1,515@1,791@1,68@12,526@16,395@20,347@24,319@28,501@32,198@36,14@40,505@44,309@48,406@52,245@56,370@60|-|-|8,9,14,34,36,46,63,67,89,91,94,97,118,129,156,157,164,179,182,184,203,214,232,240,241,242,244,247,263,264,270,280,317,319,332,334,339,347,352,370,374,396,398,399,406,409,410,411,416,417,421,428,430,444,490,523,796,811,851,885,918
+449|28@1,33@1,44@4,281@8,328@12,91@16,242@20,201@24,36@28,46@32,156@36,89@40,38@44,90@48,303@52|18,174,254,255,256|-|34,36,38,46,89,91,133,156,157,164,174,182,189,201,203,214,241,242,263,270,317,328,330,341,414,422,423,424,444,446,523,667,707,776,815,851
+450|424@1,422@1,281@1,423@1,28@1,33@1,44@1,328@12,91@16,242@20,201@24,36@28,46@32,156@38,89@44,38@50,90@56,303@62|-|-|34,36,38,46,63,89,91,133,156,157,164,174,182,189,201,203,214,241,242,263,270,304,317,328,330,341,414,416,422,423,424,442,444,446,484,523,667,707,776,815,851,912
+451|40@1,44@6,474@11,440@18,14@25,404@34,242@43|-|-|-
+452|40@1,44@6,474@11,440@18,14@25,404@34,242@43|-|-|-
+453|40@1,189@1,310@4,269@8,260@12,67@16,474@20,389@24,207@28,398@32,92@36,417@40,188@44,562@48|29,68,223,238,252,364,410,418,501|-|8,9,36,67,89,91,92,156,157,162,164,168,179,180,182,184,188,189,196,203,214,226,227,240,241,247,263,264,269,270,280,282,317,332,339,341,374,398,404,409,410,411,417,421,441,474,482,490,491,492,523,808,811,851,886,918
+454|40@1,189@1,269@1,310@1,260@12,67@16,474@20,389@24,207@28,398@32,92@36,417@42,188@48,562@54|-|-|8,9,14,36,63,67,89,91,92,156,157,162,164,168,179,180,182,184,188,189,196,203,214,226,227,240,241,247,263,264,269,270,280,282,317,332,339,341,370,374,398,399,404,409,410,411,416,417,421,441,444,474,482,490,491,492,523,675,808,811,851,886,918
+455|71@1,491@6,44@11,78@18,242@25,79@34,412@43|-|-|-
+456|1@1,55@6,240@13,16@17,352@22,213@26,219@29,392@33,250@38,369@42,340@45,366@49,487@54|60,62,97,109,175,186,204,321,401|-|36,56,57,58,59,60,97,109,127,129,156,164,168,182,196,203,204,214,240,244,250,263,270,352,366,369,512,605,812,851,886,914
+457|1@1,16@1,55@1,487@1,240@13,352@22,213@26,219@29,392@35,250@42,369@48,340@53,366@59|-|-|36,56,57,58,59,60,63,97,109,127,129,156,164,168,182,196,203,204,214,227,240,244,250,263,270,314,352,366,369,403,416,512,605,812,851,886,914
+458|33@1,145@5,332@9,352@15,403@21,355@29,56@37,38@47|-|-|-
+459|43@1,181@1,670@5,54@10,420@15,75@20,196@25,207@30,275@35,452@41,59@45,329@50|23,38,73,74,311|-|8,14,34,36,38,58,59,76,156,164,174,182,189,196,202,203,214,240,263,270,311,331,333,345,352,402,412,419,437,447,803,851,861,883,885,886
+460|8@0,43@1,54@1,181@1,670@1,694@1,420@15,75@20,196@25,207@30,275@35,452@43,59@49,329@56|-|-|8,14,34,36,38,58,59,63,67,76,89,156,157,164,174,182,184,189,196,200,202,203,214,240,263,264,270,280,311,317,331,333,345,352,374,402,411,412,414,416,419,437,447,523,707,776,803,851,861,883,885,886,912
+461|10@1,43@1,97@1,98@1,372@1,269@1,163@1,251@1,420@1,232@18,196@24,154@30,468@36,374@42,417@48,103@54,400@60,399@66|-|-|8,14,36,57,58,59,63,67,91,97,118,129,156,164,168,180,182,184,196,203,206,214,226,232,240,241,247,263,264,269,270,280,282,313,332,333,347,352,374,398,399,404,411,416,417,419,421,490,492,555,675,808,813,851,861,883,885,886,918
+462|604@1,243@1,602@1,161@1,33@1,86@1,84@1,48@1,486@12,360@16,209@20,103@24,393@28,430@34,435@40,319@46,113@52,199@58,192@64|-|-|34,36,38,63,85,86,87,109,113,115,129,156,164,182,201,203,214,240,241,263,268,270,319,334,356,360,416,430,442,451,484,486,521,527,528,598,604,776,796,851,912,916
+463|33@1,156@6,523@11,428@18,38@25,205@34,416@43|-|-|-
+464|33@1,39@1,359@1,479@1,523@1,30@15,184@20,23@25,350@30,529@35,36@40,89@47,444@54,224@61,32@68,439@75|68,174,368,397,407,470|-|7,8,9,14,34,36,38,46,53,56,57,58,59,63,85,87,89,91,126,156,157,164,168,174,179,182,184,189,196,200,201,203,214,232,240,241,242,253,263,264,270,280,283,317,334,341,350,374,398,406,411,414,416,419,421,422,423,424,430,442,444,446,479,484,523,525,529,535,667,684,707,776,784,800,815,851,915,916
+465|71@1,78@6,77@11,491@15,458@18,412@25,246@34,79@43,188@52|-|-|-
+466|43@1,84@1,98@1,268@1,129@12,351@16,86@20,103@24,9@28,435@34,67@40,85@46,113@52,87@58,416@64|223,238,264,266,359,364|-|7,8,9,34,36,38,53,63,67,85,86,87,89,91,94,113,115,118,129,156,157,164,168,182,203,214,240,253,263,264,268,269,270,280,282,311,317,319,339,374,411,416,451,486,490,521,523,527,528,598,604,707,851,885,916
+467|43@1,52@1,108@1,123@1,499@12,172@16,109@20,184@24,7@28,436@34,67@40,53@46,241@52,126@58,63@64|183,187,223,238,264,266,562|-|7,9,34,36,38,46,53,63,67,76,83,85,89,94,109,118,126,156,157,164,168,174,182,184,203,214,241,253,257,261,263,264,269,270,280,282,304,311,315,317,374,394,398,411,416,488,490,491,523,535,707,807,815,851,915
+468|33@1,584@6,314@11,577@11,347@18,403@25,608@25,326@34,585@43|-|-|-
+469|33@1,104@1,400@1,403@1,405@1,98@14,197@17,48@22,253@27,450@30,246@33,364@38,163@43,103@46,369@49|18,38,364|-|14,36,38,63,76,94,129,141,156,164,168,179,182,184,202,203,214,241,242,244,247,253,263,314,332,366,369,403,405,416,450,522,679,806,814,851,884,917
+470|75@0,129@1,33@1,36@1,38@1,39@1,44@1,45@1,383@1,343@1,270@1,204@1,226@1,28@5,98@10,608@15,73@20,345@25,235@30,241@35,202@40,14@45,348@50,387@55|-|-|14,34,36,38,46,63,76,91,129,156,164,174,182,189,202,203,204,214,226,240,241,247,263,270,282,304,311,313,331,332,341,345,347,402,404,412,416,437,447,500,669,803,851,885,914
+471|196@0,204@1,33@1,36@1,38@1,39@1,45@1,129@1,383@1,343@1,226@1,270@1,28@5,98@10,608@15,420@20,44@25,423@30,883@35,573@40,243@45,59@50,387@55|-|-|34,36,38,46,58,59,63,91,114,129,156,164,174,182,189,196,203,204,214,226,240,241,247,263,270,304,311,313,333,341,347,352,356,416,419,423,500,813,851,883,886,914
+472|28@1,106@1,398@1,422@1,423@1,424@1,98@13,210@16,282@19,512@22,400@27,369@30,103@35,404@40,152@45,14@50|17,38,68,364,400,440|-|14,36,38,63,89,92,97,129,156,157,164,168,182,184,188,189,191,201,203,206,214,226,232,240,241,242,263,269,280,282,317,328,332,341,342,366,369,374,390,398,399,404,414,416,422,423,424,441,444,446,474,512,522,523,667,675,679,706,784,799,806,814,851
+473|458@0,33@1,175@1,181@1,189@1,246@1,423@1,420@15,54@20,203@25,196@30,133@37,36@44,89@51,59@58,37@65|38,44,90,174,246,556,573|-|34,36,38,46,58,59,63,89,91,114,115,133,156,157,164,174,179,182,184,189,196,201,203,204,214,240,263,282,283,317,328,333,341,350,414,416,419,423,442,444,446,479,484,523,667,675,707,776,851,883,885,912
+474|160@1,417@1,393@1,278@1,433@1,111@1,33@1,84@15,60@20,176@25,97@30,105@35,435@40,161@45,38@50,199@55,192@60,63@65|-|-|36,38,58,59,60,63,76,85,86,87,94,97,129,156,164,168,182,196,203,214,240,241,247,253,263,268,271,356,399,416,417,428,433,451,473,492,527,598,851
+475|163@0,400@1,286@1,791@1,248@1,210@1,533@1,204@1,574@1,347@1,348@1,104@1,577@1,95@1,94@1,93@1,60@1,45@1,43@1,138@1,895@1,270@9,364@12,100@15,332@18,206@23,182@28,14@35,427@42,505@49,469@56,501@56,370@63|-|-|7,8,9,14,34,36,60,63,67,85,86,89,94,97,101,109,113,115,129,156,157,164,168,179,182,196,203,204,206,214,220,227,240,241,244,247,248,261,263,264,269,270,271,280,282,285,286,304,317,332,339,345,347,370,374,396,398,403,404,409,410,411,412,416,421,428,433,444,447,451,473,490,500,506,523,574,577,581,605,669,675,678,797,811,813,851,914,918
+476|161@0,602@1,393@1,356@1,335@1,469@1,334@1,33@1,86@13,156@16,209@19,157@22,408@25,350@28,435@31,201@34,414@37,444@40,192@43,199@43|38,205,457,469|-|7,8,9,34,36,38,63,85,86,87,89,156,157,164,174,182,201,203,214,220,241,263,269,270,317,319,328,334,350,356,408,414,416,430,442,444,446,479,484,521,523,605,667,707,776,796,800,851,912,916
+477|7@1,8@1,9@1,20@1,43@1,50@1,425@1,356@1,325@1,310@1,109@12,101@16,371@20,261@24,212@28,506@32,174@36,247@42,248@48,194@54|114,220,262|-|7,8,9,34,58,59,63,89,94,101,109,114,118,129,141,156,157,164,168,174,180,182,196,203,214,220,240,241,244,247,248,261,263,264,269,270,271,280,285,286,317,347,356,374,399,411,416,433,451,506,566,806,809,851,912
+478|506@0,242@1,423@1,310@1,194@1,182@1,29@1,104@1,44@1,43@1,181@1,420@15,577@20,196@25,524@30,109@35,883@40,261@47,694@54,247@61,59@68|-|-|8,34,36,58,59,63,85,86,87,94,101,109,113,114,115,156,164,174,180,182,184,191,196,203,204,214,220,240,242,244,247,261,263,269,270,271,286,311,313,333,352,374,416,419,423,506,577,809,813,851,861,883,886
+479|104@1,310@1,84@5,109@10,268@15,486@20,86@25,351@30,506@35,164@40,271@45,435@50,253@55|-|-|85,86,87,101,109,113,115,129,156,164,168,180,182,203,214,220,240,241,247,253,261,263,268,270,271,304,399,417,451,486,492,500,506,521,527,598,604,809,851
+480|93@1,156@1,129@7,203@14,60@21,286@28,326@35,133@42,94@49,281@56,248@63,175@70,262@77,832@84|-|-|7,8,9,60,63,76,85,86,87,94,109,113,115,118,129,133,156,164,182,189,201,202,203,214,220,226,227,240,241,244,247,248,263,270,271,282,285,286,347,352,369,374,409,412,416,417,428,433,446,447,451,473,492,500,512,577,583,605,797,851,917
+481|93@1,156@1,129@7,182@14,60@21,286@28,326@35,204@42,94@49,260@56,248@63,383@70,361@77,832@84|-|-|7,8,9,38,58,59,60,63,85,86,87,94,109,113,115,118,129,156,164,182,201,203,204,214,220,226,227,240,241,244,247,248,263,270,271,282,285,286,347,352,369,374,409,412,416,417,428,433,446,447,451,473,500,512,577,583,605,797,851,917
+482|93@1,156@1,129@7,197@14,60@21,286@28,326@35,417@42,94@49,253@56,248@63,387@70,153@77,832@84|-|-|7,8,9,38,53,60,63,85,86,87,94,113,115,118,126,129,156,164,182,189,201,203,214,226,227,240,241,244,247,248,253,263,269,270,271,282,283,285,286,347,352,369,374,409,412,416,417,428,433,446,447,451,473,500,512,577,583,605,797,851
+483|184@1,232@1,225@8,246@16,163@24,430@32,337@40,396@48,408@56,368@64,414@72,231@80,459@88|-|-|34,36,46,53,58,59,63,85,86,87,89,126,129,156,157,164,182,184,200,201,203,214,232,240,241,244,263,271,280,304,315,317,319,334,337,339,356,396,406,408,411,414,416,421,430,433,434,442,444,446,484,523,525,707,776,784,796,799,851
+484|184@1,352@1,225@8,246@16,163@24,392@32,396@48,408@56,401@64,414@72,460@80,56@88|-|-|34,36,46,53,56,57,58,59,63,85,86,87,89,126,127,129,156,157,164,182,184,196,200,201,203,214,240,241,244,250,263,271,280,304,317,332,337,339,352,356,374,396,406,408,411,414,416,419,421,433,434,444,484,523,525,707,710,776,784,799,814,851,883,886
+485|43@1,83@1,232@6,246@12,424@18,184@24,442@30,242@36,436@42,319@48,414@54,257@60,444@66,463@72|-|-|34,36,53,63,76,83,89,91,126,156,157,164,182,184,201,203,214,232,241,242,257,261,263,269,315,317,319,334,350,394,399,406,408,414,416,424,430,442,444,446,484,488,523,535,679,707,776,796,807,815,851,884,912
+486|1@1,109@1,371@6,263@12,23@18,182@24,282@30,5@36,776@42,469@48,428@54,484@60,359@66,416@72,462@78|-|-|7,8,9,34,38,63,85,86,87,89,109,156,157,164,182,196,203,214,240,241,263,264,280,282,317,356,374,409,411,414,416,419,428,442,444,479,484,523,535,667,707,776,851,912
+487|425@1,432@1,225@7,246@14,506@21,163@28,184@35,421@42,220@49,396@56,337@63,414@70,467@77,194@84|-|-|19,34,36,46,63,85,86,87,89,94,109,129,156,164,174,180,182,184,196,200,203,214,220,240,241,247,261,263,304,337,347,356,396,399,406,412,414,416,421,434,442,444,506,523,525,566,784,806,809,814,851
+488|93@1,104@1,54@6,62@12,60@18,502@24,163@30,427@36,236@42,219@48,94@54,585@60,248@66,461@72,849@72|-|-|34,58,60,63,76,85,86,87,94,109,113,115,129,156,164,182,184,189,196,203,214,240,241,244,247,248,263,270,271,285,347,356,408,412,416,428,433,447,451,473,500,605,678,797,851
+489|55@1,204@9,48@16,61@24,151@31,250@39,352@46,392@54,291@61,240@69,850@75|-|-|56,57,58,59,114,127,129,156,164,182,196,203,204,214,226,240,244,250,263,270,282,311,352,369,374,428,447,503,574,605,710,812,851,886,914
+490|55@1,294@1,391@1,204@9,48@16,61@24,151@31,250@39,352@46,392@54,291@61,240@69,850@76|-|-|56,57,58,59,60,63,94,113,114,115,127,129,156,164,182,189,196,203,204,214,226,240,244,247,250,263,270,282,285,311,313,347,352,369,374,412,416,428,447,500,503,574,605,710,812,851,886,914
+491|50@1,98@11,95@20,389@29,101@38,104@47,114@57,464@66,417@75,138@84,399@93|-|-|14,58,59,63,86,87,94,101,109,114,129,156,157,164,168,174,180,182,184,188,196,203,214,240,241,244,247,261,263,264,269,271,280,282,317,347,374,398,399,404,409,411,416,417,421,451,473,492,506,555,675,808,851
+492|74@1,345@10,73@19,235@28,230@37,583@46,388@55,580@64,412@73,186@82,361@91,465@100|-|-|14,36,38,63,76,94,129,156,164,182,202,203,214,226,241,244,263,283,314,331,345,366,402,403,412,414,416,428,437,447,572,574,580,583,605,803,851,885
+493|69@1,322@1,356@10,414@20,304@30,245@40,361@50,248@60,105@70,63@80,195@90,449@100|-|-|14,19,34,36,38,46,53,56,57,58,59,63,76,85,86,87,89,94,97,109,113,115,126,127,129,156,157,164,182,184,188,196,200,201,202,203,214,240,241,244,247,248,257,261,263,269,271,280,286,304,315,317,331,334,337,339,345,347,349,352,356,366,394,396,398,399,403,404,405,406,408,411,412,414,416,419,421,428,430,433,434,441,442,444,446,447,451,473,484,491,492,500,506,523,525,528,542,555,566,580,581,604,605,678,707,710,776,796,800,815,851,885,886,916
+494|557@1,98@1,488@1,93@1,116@1,526@7,510@14,500@21,29@28,203@35,428@42,517@49,179@56,545@63,38@70,394@77,315@84,515@91|-|797,815|5,7,9,25,53,63,76,83,85,86,87,94,113,116,126,129,156,164,173,179,182,203,214,219,226,227,241,247,248,253,257,261,263,269,270,271,280,285,299,315,340,369,374,384,385,394,411,412,416,428,433,447,473,496,500,526,528,595,605,683
+495|33@1,43@4,22@7,35@10,74@13,345@16,73@19,72@22,21@25,348@28,489@31,202@34,380@37,437@40|137,212,230,231,235,239,243|-|14,36,38,76,113,115,129,156,164,182,202,203,214,241,263,269,270,282,331,332,345,347,402,412,437,447,520,572,580,803,851,885
+496|22@1,33@1,35@1,43@1,74@13,345@16,73@20,72@24,21@28,348@32,489@36,202@40,380@44,437@48|137,212,230,231,235,239,243|-|14,36,38,76,113,115,129,156,164,182,202,203,214,241,263,269,270,282,331,332,345,347,402,412,437,447,520,572,580,803,851,885
+497|22@1,33@1,35@1,43@1,74@13,345@16,73@20,72@24,21@28,348@32,489@38,202@44,380@50,437@56|137,212,230,231,235,239,243|-|14,34,36,38,63,76,113,115,129,156,164,182,184,200,202,203,214,241,263,269,270,282,331,332,338,345,347,402,406,412,416,437,447,520,525,572,580,784,799,803,851,885
+498|33@1,39@3,52@7,203@9,111@13,488@15,123@19,205@21,36@25,535@27,372@31,53@33,457@37,46@39,394@43|37,276,281,389|-|7,34,36,38,46,53,76,83,91,126,156,164,174,182,189,203,214,241,257,261,263,269,270,283,315,317,360,394,428,447,484,488,519,528,535,707,851,885,915
+499|292@0,33@1,39@1,52@1,203@1,111@13,488@15,123@20,205@23,36@28,535@31,372@36,53@39,457@44,46@47,394@52|37,276,281,389|-|7,9,34,36,38,46,53,67,76,83,91,126,156,157,164,174,179,182,184,189,203,214,241,257,261,263,264,269,270,280,282,283,315,317,339,360,370,374,394,398,409,411,428,444,447,484,488,490,519,523,528,535,667,707,811,851,885,915
+500|33@1,39@1,52@1,292@1,111@13,488@15,123@20,205@23,36@28,535@31,372@38,53@43,457@50,46@55,394@62|37,203,276,281,359,389|-|7,9,34,36,38,46,53,63,67,76,83,89,91,126,156,157,164,174,179,182,184,189,203,214,241,257,261,263,264,269,270,280,282,283,307,315,317,339,360,370,374,394,398,409,411,416,428,442,444,447,479,484,488,490,503,519,523,528,535,667,707,776,811,851,885,912,915
+501|33@1,39@5,55@7,487@11,116@13,534@17,210@19,352@23,332@25,453@29,227@31,401@35,514@37,14@41,56@43|103,197,282,383,400,403,533,895|-|14,36,56,57,58,59,91,127,129,156,164,168,182,196,203,206,214,227,240,250,263,269,270,282,332,352,374,403,404,419,447,518,710,812,851,883,886
+502|33@1,39@1,55@1,487@1,116@13,534@18,210@21,352@26,332@29,453@34,227@37,401@42,514@45,14@50,56@53|103,197,282,383,400,403,533,895|-|14,36,56,57,58,59,91,127,129,156,164,168,182,196,203,206,214,227,240,250,263,269,270,280,282,332,352,374,403,404,410,419,447,518,710,812,851,883,886
+503|163@0,224@1,33@1,39@1,55@1,487@1,116@13,534@18,210@21,352@25,332@29,453@34,227@39,401@46,514@51,14@58,56@63|103,197,282,383,400,403,533,895|-|14,34,36,56,57,58,59,63,91,127,129,156,164,168,182,184,196,203,206,214,227,240,250,263,269,270,280,282,308,332,352,374,399,403,404,410,416,419,447,518,523,529,555,675,684,710,808,812,851,883,886,918
+504|33@1,43@3,44@6,117@8,197@11,28@13,242@16,95@18,162@21,495@23,116@26,526@28,158@31,417@33,212@36,226@38,21@41|103,175,193,228,231,279,331,372,715|67,162,173,231,270,283,343,351,387,401,402,428,441,495,673|14,85,92,104,156,164,182,207,213,214,216,218,237,240,241,247,263,374,447,496,526,590
+505|109@0,109@1,563@1,33@1,43@1,44@1,67@1,43@3,44@6,117@8,197@11,28@13,242@16,95@18,162@22,495@25,116@29,244@32,158@36,417@39,212@43,226@46,21@50|-|7,8,9,67,162,173,231,264,270,282,283,324,343,351,387,401,402,428,441,495,673,707|14,53,63,85,86,87,92,104,113,138,156,164,182,207,213,214,216,218,237,240,241,244,247,263,374,411,416,447,496,526,590
+506|33@1,43@1,526@4,44@8,514@12,608@17,583@20,242@24,36@28,270@32,179@36,46@40,387@44,416@48|122,189,281,336,343,495|-|85,86,91,156,164,173,179,182,203,204,213,214,240,241,242,247,253,263,270,304,317,371,416,422,423,424,496,514,526,528,555,583,706
+507|33@1,43@1,526@1,44@1,514@12,608@19,583@24,242@30,36@36,270@42,179@48,46@54,387@60,416@66|-|-|57,85,86,91,156,164,173,179,182,203,204,213,214,240,241,242,247,253,263,270,304,317,371,416,422,423,424,496,514,526,528,555,583,706
+508|423@1,424@1,422@1,33@1,43@1,526@1,44@1,514@12,608@19,583@24,242@30,36@38,270@46,179@54,46@62,387@70,416@78|-|-|57,63,85,86,87,91,156,164,173,179,182,203,204,213,214,240,241,242,247,253,263,270,276,304,317,371,416,422,423,424,442,496,514,526,528,555,583,706,707
+509|10@1,45@1,28@4,252@5,154@12,259@16,372@21,468@24,389@28,417@32,400@36,583@40|98,104,163,281,343,383|808|6,86,103,129,156,164,168,173,182,203,204,213,214,226,227,231,240,241,247,263,269,271,304,313,369,371,372,399,402,417,421,441,447,492,496,555,583
+510|10@1,45@1,28@1,252@1,154@12,259@16,372@23,468@28,389@34,417@40,400@46,583@52|-|806,807,808|6,63,86,103,129,156,164,168,173,182,203,204,213,214,226,227,231,240,241,247,263,269,271,304,313,369,371,372,399,402,416,417,421,427,441,447,492,496,555,583,675
+511|10@1,589@1,43@4,122@7,22@10,154@13,73@16,44@19,402@22,259@25,374@28,512@31,447@34,278@37,363@40,242@43|67,272,310,320,321,331,343,345,417,437,574,596|67,173,202,231,235,253,264,270,272,278,282,283,343,380,388,402,441,520|76,92,104,156,164,168,182,207,213,214,216,218,237,241,259,263,267,269,317,371,374,412,421,447,490,496,512,526,590
+512|43@1,122@1,154@1,402@1|-|67,173,202,231,235,253,264,270,272,276,278,282,283,343,380,388,402,441,520,675|63,76,92,104,156,157,164,168,182,207,213,214,216,218,237,241,259,263,267,269,280,317,371,374,411,412,416,421,447,490,496,512,526,590
+513|10@1,589@1,43@4,122@7,510@10,154@13,281@16,44@19,481@22,133@25,374@28,512@31,126@34,278@37,363@40,242@43|7,67,83,214,257,272,310,321,343,394,417,562,574|7,67,173,231,253,257,264,270,272,278,282,283,343,380,441,519|53,76,92,104,126,156,164,168,182,207,213,214,216,218,237,241,259,261,263,269,315,317,371,374,421,447,488,490,496,512,526,590
+514|43@1,122@1,154@1,481@1|-|7,67,173,231,253,257,264,270,272,276,278,282,283,343,380,441,519,675|53,63,76,92,104,126,156,157,164,168,182,207,213,214,216,218,237,241,259,261,263,269,280,315,317,371,374,411,416,421,447,488,490,496,512,526,590
+515|10@1,589@1,43@4,122@7,55@10,154@13,346@16,44@19,503@22,269@25,374@28,512@31,362@34,278@37,363@40,242@43|56,67,272,300,310,321,343,392,401,417,574|8,67,173,196,231,253,264,270,272,278,282,283,343,352,380,401,441,518|57,58,59,92,104,127,156,164,168,182,207,213,214,216,218,237,240,258,259,263,269,317,371,374,421,447,490,496,503,512,526,590
+516|43@1,122@1,154@1,503@1|-|8,67,173,196,231,253,264,270,272,276,278,282,283,343,352,380,401,441,518,675|57,58,59,63,92,104,127,156,157,164,168,182,207,213,214,216,218,237,240,258,259,263,269,280,317,371,374,411,416,421,447,490,496,503,512,526,590
+517|500@1,111@1,95@4,60@8,286@12,236@16,277@20,428@24,347@28,281@32,94@36,585@40,138@44,248@48,472@52|174,361|797|86,94,113,115,129,133,156,157,164,173,182,203,213,214,219,240,247,248,263,270,271,285,286,317,347,360,384,385,412,428,433,472,473,496,500,502,605
+518|678@1,286@1,236@1,277@1,428@1,347@1,281@1,94@1,585@1,138@1,248@1,472@1,500@1,111@1,95@1,60@1|-|797,802|63,86,94,113,115,129,133,156,157,164,173,182,203,213,214,219,240,247,248,263,270,271,285,286,317,347,360,384,385,412,416,428,433,472,473,496,500,502,605,678
+519|16@1,45@1,43@4,98@8,269@12,314@16,207@20,297@24,197@28,403@32,355@36,366@40,143@44|95,234,273,400,432|814|19,97,116,129,156,164,173,182,203,211,213,214,240,241,253,257,263,269,369,403,496,526
+520|16@1,45@1,43@1,98@1,269@12,314@16,207@20,297@26,197@34,403@38,355@44,366@50,143@56|-|814|19,97,116,129,156,164,173,182,203,211,213,214,240,241,253,257,263,269,369,403,496,526
+521|16@1,45@1,43@1,98@1,269@12,314@16,207@20,297@26,197@36,403@42,355@50,366@58,143@66|-|814|19,63,97,116,129,156,164,173,182,203,211,213,214,240,241,253,257,263,269,369,403,413,416,496,526,542
+522|98@1,39@4,268@8,351@11,86@15,488@18,209@22,23@25,435@29,97@33,528@35,37@40|24,28,103,364|-|34,36,38,67,85,86,87,97,113,129,156,164,182,203,214,226,240,241,253,263,268,270,283,451,486,488,521,527,528,598,604,684,851,885,916
+523|39@1,86@1,98@1,268@1,351@11,488@18,209@25,23@31,435@36,97@42,528@47,37@53|24,28,103,364|-|34,36,38,46,63,67,85,86,87,97,113,129,156,164,182,203,214,226,240,241,253,263,268,269,270,283,315,416,451,486,488,521,523,527,528,598,604,667,684,851,885,916
+524|28@1,33@1,106@4,446@8,189@12,479@16,334@20,29@24,157@28,350@32,201@36,444@40,153@44|36,174,356,469,475|800|89,156,157,164,173,182,201,203,213,214,263,317,328,334,350,414,430,444,446,484,496,523,776
+525|408@0,408@1,28@1,33@1,106@1,446@1,189@12,479@16,334@20,29@24,157@30,350@36,201@42,444@48,153@54|-|800|89,156,157,164,173,182,201,203,213,214,263,317,328,334,350,408,414,430,444,446,484,496,523,707,776
+526|408@1,28@1,33@1,106@1,446@1,189@12,479@16,334@20,29@24,157@30,350@36,201@42,444@48,153@54|-|800|63,76,89,120,156,157,164,173,182,201,203,213,214,263,276,311,317,328,334,350,408,414,416,430,442,444,446,484,496,523,675,707,776
+527|16@1,213@1,93@5,283@10,314@15,286@20,372@25,133@30,403@35,94@40,347@45,248@50,493@55|48,260,282,355,375|797,814|19,86,94,113,115,129,133,156,164,168,173,182,202,203,204,211,213,214,219,226,240,247,248,253,257,263,269,270,271,285,286,313,347,360,369,372,403,412,417,427,428,433,473,496,500,502,512,599,683
+528|16@1,213@1,93@1,283@1,314@15,286@20,372@25,133@30,403@35,94@40,347@45,248@50,493@55|-|797,814|19,63,86,94,113,115,129,133,156,164,168,173,182,202,203,204,211,213,214,219,226,240,247,248,253,257,263,269,270,271,285,286,313,347,360,369,372,403,412,416,417,427,428,433,473,496,500,502,512,599,683,706
+529|189@1,229@1,10@4,468@8,154@12,232@16,201@20,306@24,157@28,91@32,14@36,529@40,89@44,90@48|163,319|-|14,36,38,89,91,156,157,164,174,182,189,201,203,214,232,241,263,270,280,317,319,328,332,334,341,374,398,404,414,421,446,523,529,667,707,815,851
+530|32@0,10@1,189@1,229@1,468@1,154@12,232@16,201@20,306@24,157@28,91@34,14@40,529@46,89@52,90@58|163,319|-|14,34,36,38,63,89,91,156,157,164,174,182,184,189,201,203,214,232,241,263,270,280,317,319,328,332,334,341,350,374,398,404,411,414,416,421,442,446,523,529,667,675,684,707,796,815,851
+531|1@1,589@1,574@4,608@9,270@12,45@16,428@20,791@24,495@28,36@32,493@36,304@40,505@44,38@48,494@52,581@56,387@60|186,273,281,361|-|5,7,8,9,25,34,53,57,58,59,63,67,76,85,86,87,91,94,113,115,126,133,156,164,173,182,196,203,213,214,219,227,231,240,241,247,253,263,270,285,304,347,374,409,416,428,433,447,473,496,502,514,526,528,577,581,605,675,707
+532|1@1,43@1,67@4,88@8,116@12,339@16,157@20,21@24,184@28,223@32,359@36,444@40,276@44,264@48|68,183,197,432,469|-|7,8,9,36,38,67,91,156,157,164,168,174,179,182,184,203,214,240,241,263,264,269,270,280,282,317,339,370,374,398,409,411,444,447,479,490,811,851
+533|1@1,43@1,67@1,88@1,116@12,339@16,157@20,21@24,184@30,223@36,359@42,444@48,276@54,264@60|68,183,197,432,469|-|7,8,9,36,38,67,91,156,157,164,168,174,179,182,184,203,214,240,241,263,264,269,270,280,282,317,339,370,374,398,409,411,444,447,479,490,667,811,851
+534|1@1,43@1,67@1,88@1,116@12,339@16,157@20,21@24,184@30,223@36,359@42,444@48,276@54,264@60|68,183,197,432,469|-|7,8,9,34,36,38,63,67,89,91,156,157,164,168,174,179,182,184,203,214,240,241,263,264,269,270,280,282,317,339,350,370,374,398,409,411,416,444,447,479,490,523,667,707,811,851,912,918
+535|497@1,45@1,51@4,48@8,341@12,496@16,61@20,175@24,253@28,392@32,304@36,330@40,240@44,56@48|54,92,189,352|-|56,57,103,156,164,173,182,188,196,203,213,214,240,253,258,263,304,311,330,340,341,414,482,496,503,599
+536|497@1,45@1,51@1,48@1,341@12,496@16,61@20,175@24,253@30,392@37,304@42,330@48,240@54,56@60|-|-|56,57,103,156,164,173,182,188,196,203,213,214,240,253,258,263,304,311,330,340,341,414,438,446,482,496,503,523,599
+""",
+    """537|409@0,409@1,380@1,497@1,45@1,51@1,48@1,341@12,496@16,61@20,175@24,253@30,392@39,304@46,330@54,240@62,56@70|-|-|5,8,25,56,57,63,67,89,91,103,156,157,164,173,182,188,196,203,213,214,240,253,258,263,280,291,304,311,317,330,340,341,371,374,398,409,411,414,416,438,446,447,474,482,496,503,523,599,707,710
+538|20@1,43@1,116@5,509@10,469@15,279@20,339@25,480@30,233@35,69@40,203@45,179@50,276@55|-|811|5,7,8,9,25,34,67,89,91,116,156,157,164,173,179,182,184,203,213,214,240,241,263,269,270,276,279,280,317,339,371,374,398,411,416,428,444,447,490,496,514,523,526,707
+539|249@1,43@1,116@5,24@10,501@15,490@20,339@25,514@30,280@35,68@40,203@45,179@50,370@55|-|811|5,7,8,9,25,67,89,91,116,156,157,164,173,179,182,184,203,213,214,240,241,263,269,270,276,279,280,317,339,370,371,374,398,411,416,428,444,447,490,496,514,523,526,675
+540|33@1,81@1,450@8,75@15,522@22,203@29,564@31,405@36,175@43|103,173,235,388,415|-|36,76,156,164,182,202,203,204,214,226,240,241,263,334,345,402,405,412,447,450,522,527,580,679,803,806,851,884,885
+541|182@0,33@1,75@1,81@1,450@1,522@22,203@29,564@31,405@36,175@43|103,173,235,388,415|-|36,76,113,156,164,182,202,203,204,214,226,240,241,263,334,345,402,405,412,447,450,522,527,580,679,803,806,851,884,885
+542|163@0,33@1,75@1,81@1,206@1,522@22,565@29,270@32,348@36,404@39,494@43,14@46,437@50|103,173,235,388,415,450|-|14,36,63,67,76,97,113,115,156,164,182,202,203,204,206,214,226,240,241,263,270,282,331,334,345,347,398,402,403,404,405,412,416,421,437,447,450,522,527,580,675,676,679,803,806,813,851,884,885
+543|40@1,111@1,205@4,182@8,342@12,103@16,450@20,474@24,36@28,97@32,92@36,599@40,38@44|44,210|798,806|42,76,97,103,156,164,173,182,188,191,203,213,214,241,263,334,360,371,390,398,474,496,506,599
+544|334@0,334@1,40@1,111@1,205@1,182@1,342@12,103@16,450@20,474@26,36@32,97@38,92@44,599@50,38@56|-|798,806|42,76,97,103,156,164,173,182,188,191,203,213,214,241,263,334,360,371,390,398,474,496,506,599
+545|334@1,226@1,40@1,111@1,205@1,182@1,342@12,103@16,450@20,474@26,36@34,97@42,92@50,599@58,38@66,224@74|-|798,806|14,42,63,76,89,91,97,103,156,157,164,173,182,188,191,203,213,214,224,226,231,241,263,276,317,334,360,371,372,390,398,404,416,440,474,496,506,523,599,675,684,707
+546|270@1,71@1,584@3,78@6,72@12,75@15,74@18,77@21,202@24,204@27,73@30,178@33,412@36,241@39,283@42,538@45,76@48|251,262,321,388,415|-|76,129,156,164,182,202,203,204,214,227,241,263,269,270,283,313,402,412,447,580,581,605,803,851
+547|585@1,542@1,538@1,412@1,366@1,283@1,270@1,262@1,241@1,204@1,202@1,178@1,78@1,77@1,76@1,75@1,74@1,73@1,72@1,71@1,584@1,16@1|251,262,321,388,415|-|63,76,94,113,129,156,164,168,182,202,203,204,214,227,241,247,263,269,270,283,313,366,369,374,402,412,416,433,447,542,580,581,583,605,803,851
+548|71@1,74@1,270@3,78@6,72@9,204@12,345@15,79@18,202@21,73@24,495@27,412@30,235@33,241@36,494@39,437@42|230,275,361,388|-|76,156,164,182,202,203,204,214,227,241,263,270,331,345,402,412,437,447,676,803,851,885
+549|80@0,572@1,494@1,483@1,437@1,412@1,298@1,270@1,241@1,235@1,204@1,202@1,79@1,78@1,74@1,73@1,72@1,495@1,71@1,345@5|-|-|14,63,76,113,156,164,182,202,203,204,214,227,241,244,263,270,311,331,345,402,412,416,437,447,572,580,669,676,803,851,885,914
+550|39@1,55@1,33@4,175@8,453@12,44@16,184@20,29@24,487@28,242@32,36@36,515@40,834@44,37@48,38@52,457@56|61,283|-|36,38,56,57,58,59,63,97,127,129,156,164,179,182,184,196,203,214,240,242,250,263,269,283,330,341,352,416,423,428,706,710,799,812,851,883,886
+551|43@1,681@1,28@3,468@6,328@9,184@12,44@15,259@18,91@21,207@24,242@27,201@30,492@33,89@36,37@39|38,68,180,401|-|34,36,38,46,89,91,156,157,164,168,174,180,182,184,188,189,201,203,214,242,263,269,270,280,317,328,341,374,399,414,421,422,424,444,446,447,492,523,555,707,806,808,815,851
+552|28@1,43@1,468@1,681@1,328@9,184@12,44@15,259@18,91@21,207@24,242@27,201@32,492@35,89@42,37@47|-|-|34,36,38,46,67,89,91,156,157,164,168,174,180,182,184,188,189,201,203,214,242,263,264,269,270,280,282,283,317,328,332,337,341,374,399,414,421,422,424,444,446,447,490,492,523,525,555,707,784,799,806,808,815,851
+553|28@1,43@1,468@1,681@1,328@9,184@12,44@15,259@18,91@21,207@24,242@27,201@32,492@35,89@44,37@51,200@58|-|-|34,36,38,46,63,67,89,91,156,157,164,168,174,180,182,184,188,189,200,201,203,214,242,263,264,269,270,280,282,283,317,328,332,337,339,341,370,374,399,406,411,414,416,421,422,424,441,444,446,447,479,490,492,523,525,555,667,675,707,784,799,806,808,815,851
+554|52@1,33@1,269@4,44@8,510@12,526@16,424@20,29@24,7@28,253@32,187@36,394@40,37@44,276@48|36,172,264,281,326,359|-|5,7,25,53,76,83,91,116,126,156,157,164,168,173,182,203,213,214,227,241,253,257,261,263,269,276,280,315,317,360,369,374,394,424,428,447,496,526
+555|359@0,359@1,52@1,33@1,269@1,44@1,510@12,526@16,424@20,29@24,7@28,253@32,187@38,394@44,37@50,276@56|-|797,807,808|5,7,25,34,53,63,76,83,89,91,94,116,126,156,157,164,168,173,179,182,203,213,214,227,241,248,253,257,261,263,269,271,276,280,315,317,334,339,360,369,371,374,384,385,394,411,416,424,428,442,444,447,496,523,526,595,776
+556|596@1,64@1,71@1,495@1,275@1,74@4,72@8,73@12,389@16,42@20,202@24,230@28,235@32,572@36,178@40,241@44,76@48,367@52,80@56,538@60|388,452|803|42,76,103,156,164,173,182,191,202,203,213,214,219,240,241,253,263,270,304,311,331,340,372,398,402,409,412,437,447,496,580,675
+557|210@1,28@1,110@4,479@8,450@12,175@16,163@20,157@24,446@28,350@32,404@36,397@40,504@44,439@48|68,174,282,335,400,469|806|14,76,89,91,156,157,164,173,182,191,201,203,213,214,263,317,328,334,350,398,404,421,444,446,496,523
+558|210@1,28@1,110@1,479@1,450@12,175@16,163@20,157@24,446@28,350@32,404@38,397@44,504@50,439@56|-|800,806|14,63,76,89,91,156,157,164,173,182,191,201,203,213,214,263,317,328,334,350,398,404,416,421,444,446,484,496,523,669,707,776
+559|43@1,67@1,371@4,29@8,28@12,263@16,259@20,251@24,184@28,280@32,207@36,242@40,136@44,264@48,457@52|68,197,252,501|-|7,8,9,36,38,46,67,91,133,156,157,162,164,168,174,182,184,188,203,214,227,240,241,242,253,263,264,269,270,280,282,283,313,317,334,337,339,349,370,374,398,399,406,409,411,428,442,444,447,479,490,491,492,525,555,675,808,811,851,885,918
+560|29@1,43@1,67@1,371@1,28@12,263@16,259@20,251@24,184@28,280@32,207@36,242@42,136@48,264@54,457@60|68,197,252,501|-|7,8,9,14,34,36,38,46,63,67,91,118,133,156,157,162,164,168,174,179,180,182,184,188,200,203,214,227,240,241,242,253,263,264,269,270,280,282,283,313,317,334,337,339,349,370,374,398,399,406,409,411,416,428,442,444,447,479,490,491,492,525,555,675,808,811,851,885,918
+561|16@1,93@1,356@5,95@10,314@15,60@20,18@25,322@30,403@35,94@40,366@45,113@50,115@50,143@55,285@60|246,355,375|797,814|19,58,63,76,86,94,113,115,129,156,164,168,173,182,196,203,211,213,214,219,240,247,248,257,263,271,285,286,322,347,384,399,403,412,416,427,428,430,433,473,478,496,500,605,683
+562|310@1,182@1,114@4,101@8,50@12,261@16,578@20,506@24,212@28,288@32,174@36,247@40,399@44,471@48,470@48,194@52|262|809|94,156,164,168,173,182,203,213,214,219,240,247,261,263,271,285,286,313,334,347,371,390,399,412,417,428,433,472,496,502,506
+563|421@0,421@1,184@1,310@1,182@1,114@1,101@1,50@12,261@16,578@20,506@24,212@28,288@32,174@38,247@44,399@50,471@56,470@56,194@62|-|809|63,94,156,164,168,173,182,184,203,213,214,219,240,247,261,263,271,279,285,286,313,334,347,371,384,385,390,399,412,416,417,421,428,433,447,472,496,502,506,566,776
+564|55@1,110@1,182@3,453@6,479@9,246@12,44@15,469@18,362@21,157@24,242@27,174@30,334@33,401@36,240@39,56@42,504@45|21,88,205,282,335,352|800|34,56,57,58,59,89,91,127,156,157,164,173,182,196,201,203,213,214,231,240,242,250,263,291,317,330,334,341,350,362,385,414,428,444,446,496,503,523,710
+565|55@1,110@1,182@1,453@1,479@9,246@12,44@15,469@18,362@21,157@24,242@27,174@30,334@33,401@36,240@41,56@46,504@51|-|800|34,56,57,58,59,63,67,89,91,127,156,157,164,173,182,196,201,203,213,214,231,240,242,250,263,276,291,317,330,334,341,350,362,385,411,414,416,428,442,444,446,496,503,523,534,710
+566|98@1,43@1,88@3,17@6,225@9,246@12,365@15,501@18,369@21,157@24,184@27,242@30,97@33,366@36,337@39,37@42,283@45|44,104,282,415,432,457|800,808,814|89,91,97,129,156,157,164,173,182,184,201,203,211,213,214,231,242,253,257,263,269,317,334,337,340,350,369,372,406,414,421,428,444,446,496,502,512,523
+567|98@1,43@1,88@1,17@1,225@9,246@12,365@15,501@18,369@21,157@24,184@27,242@30,97@33,366@36,337@41,37@46,283@51|-|800,808,814|19,63,89,91,97,129,156,157,164,173,182,184,200,201,203,211,213,214,231,242,253,257,263,269,317,334,337,340,350,369,372,403,406,411,414,416,421,428,444,446,496,502,512,523
+568|1@1,139@1,278@3,491@6,133@9,499@12,390@15,124@18,254@21,256@21,36@24,188@27,92@30,562@33,220@37,441@39,153@42|28,114,174,205,475|810|120,133,156,164,168,173,182,188,191,202,203,213,214,240,241,263,350,371,390,399,402,409,441,474,482,496,599
+569|1@1,36@1,232@1,139@1,278@1,491@1,133@9,499@12,390@15,124@18,254@21,256@21,34@24,188@27,92@30,562@33,220@39,441@43,153@48|-|810|34,63,76,85,94,103,120,133,156,164,168,173,182,188,191,202,203,213,214,240,241,263,350,371,374,390,399,402,409,411,416,440,441,474,482,496,599,707,776
+570|10@1,43@1,259@4,468@8,154@12,184@16,269@20,282@24,313@28,97@32,286@36,539@40,417@44,492@48|68,197,262,326,383,389|-|14,36,46,91,97,101,109,129,156,164,168,180,182,184,188,203,214,220,227,240,241,244,247,263,269,270,271,282,286,304,313,347,369,374,399,417,421,447,492,506,555,806,807,808,851
+571|400@0,10@1,43@1,259@1,369@1,468@1,154@12,269@20,282@24,313@28,97@34,286@40,539@46,417@52,492@58|-|-|14,34,36,46,53,63,67,91,92,94,97,101,109,129,156,164,168,180,182,184,188,203,214,220,240,241,242,244,247,263,269,270,271,280,282,286,304,313,332,347,369,374,399,411,416,417,421,447,490,492,506,555,675,806,807,808,851
+572|1@1,608@1,270@4,497@8,47@12,204@16,129@20,227@24,495@28,541@32,321@36,21@40,304@44,387@48|39,175,282,401,882|-|36,85,86,91,129,156,162,164,168,182,189,203,204,214,226,227,240,241,253,263,270,282,283,304,313,331,347,369,374,402,441,447,583,605,813,851,885,886,914
+573|541@0,1@1,47@1,204@1,331@1|21,39,129,175,227,270,282,304,321,350,387,401,495,497,608,882|-|36,38,63,85,86,87,91,113,129,156,162,164,168,182,189,203,204,214,226,227,240,241,253,263,270,282,283,304,313,331,347,350,369,374,402,411,416,441,447,583,605,813,851,861,885,886,914
+574|1@1,93@1,589@4,321@8,60@12,204@16,473@20,95@24,313@28,244@33,94@36,260@40,248@44,478@48|212,243,252,259,505|-|60,85,86,94,113,115,129,156,157,164,168,182,203,204,214,240,244,247,248,263,269,270,271,285,286,313,317,347,356,374,399,412,417,428,433,447,473,492,500,678,797,851,917
+575|1@1,93@1,321@1,589@1,60@12,204@16,473@20,95@24,313@28,244@35,260@46,248@52,478@58|-|-|60,85,86,94,113,115,118,129,156,157,164,168,182,203,204,214,240,244,247,248,263,269,270,271,285,286,313,317,347,356,374,399,412,417,428,433,447,473,492,500,678,797,851,917
+576|93@1,321@1,589@1,1@1,60@12,204@16,473@20,95@24,313@28,244@35,94@40,260@48,248@56,478@64|-|-|34,60,63,85,86,94,113,115,118,129,156,157,164,168,182,203,204,214,240,244,247,248,263,269,270,271,280,285,286,313,317,347,356,374,399,411,412,416,417,428,433,447,473,490,492,500,678,797,851,917
+577|93@1,182@1,105@4,283@8,60@12,204@16,473@20,113@24,115@24,502@28,220@33,94@36,285@40,248@44,472@48|109,151,310|-|60,86,87,94,101,109,113,115,129,156,157,164,182,203,204,214,220,227,240,241,244,247,248,263,270,271,283,285,286,317,334,347,356,360,412,428,430,433,473,500,678,797,851
+578|93@1,105@1,182@1,283@1,60@12,204@16,473@20,113@24,115@24,502@28,220@35,94@40,285@46,248@52,472@58|109,151,310|-|60,86,87,94,101,109,113,115,129,156,157,164,182,203,204,214,220,227,240,241,244,247,248,263,270,271,283,285,286,317,334,347,356,360,412,428,430,433,473,500,678,797,851
+579|359@0,93@1,105@1,182@1,283@1,60@12,204@16,473@20,113@24,115@24,502@28,220@35,94@40,285@48,248@56,472@64|109,151,310|-|7,8,9,34,60,63,86,87,94,101,109,113,115,129,156,157,164,182,203,204,214,220,227,240,241,244,247,248,263,264,270,271,282,283,285,286,317,334,347,356,360,374,409,411,412,416,428,430,433,447,473,500,678,797,851,917
+580|55@1,432@6,17@9,352@13,332@15,61@19,297@21,392@24,403@27,355@30,240@34,366@37,413@41,542@46|16,211,283,291,362,453|-|19,38,57,58,129,156,164,182,196,203,214,240,250,263,270,283,297,314,332,352,366,403,413,542,574,710,851,885,886
+581|17@1,55@1,432@1,352@13,332@15,61@19,297@21,392@24,403@27,355@30,240@34,366@40,413@47,542@55|16,211,283,291,362,453|-|19,38,56,57,58,63,129,156,164,182,196,203,214,240,250,263,270,282,283,297,311,314,332,352,366,403,413,416,512,542,574,710,812,851,885,886,914
+582|310@1,106@1,269@4,54@8,196@12,419@16,258@20,333@24,253@28,151@32,243@36,58@40,59@44,329@48|153,393,420,475,556,694|-|58,59,113,120,156,164,173,182,196,203,213,214,240,253,258,263,269,286,304,333,334,419,430,496,502
+583|310@1,106@1,269@1,54@1,196@12,419@16,258@20,333@24,253@28,151@32,243@38,58@44,59@50,329@56|-|-|58,59,113,120,156,164,173,182,196,203,213,214,240,253,258,263,269,286,304,333,334,419,430,496,502
+584|311@1,556@1,573@1,310@1,106@1,269@1,54@1,196@12,419@16,258@20,333@24,253@28,151@32,243@38,58@44,59@52,329@60|-|-|58,59,63,113,120,156,164,173,182,196,203,213,214,240,251,253,258,263,269,286,304,311,333,334,416,419,430,496,502
+585|33@1,45@4,28@7,24@10,73@13,331@16,36@20,428@24,412@28,204@32,38@37,76@42|29,97,214,226,235,313,388|-|34,36,38,76,86,91,97,113,156,164,182,202,203,204,214,226,240,241,247,263,270,283,313,331,345,402,412,428,437,447,523,528,580,583,803,851,885
+586|532@0,28@1,33@1,45@1,224@1,24@10,73@13,331@16,36@20,428@24,412@28,204@36,38@44,76@52|-|-|14,34,36,38,63,76,86,91,97,113,156,164,174,182,202,203,204,214,226,240,241,247,263,270,283,313,331,345,402,412,416,428,437,447,523,528,572,580,583,667,675,684,707,803,851,885
+587|609@1,39@1,104@5,98@10,84@15,268@20,512@25,209@30,227@35,521@40,113@45,435@50,97@55|310,321,343,351,355,432|804,814|76,85,86,87,97,113,129,156,164,173,182,203,204,213,214,226,227,231,240,263,269,270,369,374,403,412,486,496,512,521,527,528,598,683
+588|64@1,43@1,210@4,203@8,206@12,491@16,29@20,175@24,184@28,404@32,14@36,36@40,405@44,38@48|68,163,282,400,450|-|14,103,156,164,173,182,184,202,203,206,213,214,224,227,240,263,334,398,404,405,412,496,529
+589|565@1,203@1,175@1,184@1,36@1,38@1,64@1,43@1,210@1,501@1,206@12,491@16,29@20,179@24,334@28,404@32,14@36,442@40,405@44,416@48,368@52|-|796|14,63,97,103,156,164,173,179,182,184,202,203,206,213,214,224,227,240,263,269,279,334,370,398,404,405,411,412,416,442,496,529,534,684,693
+590|71@1,310@1,74@4,78@8,72@12,235@16,499@20,230@24,202@28,275@32,92@36,476@40,76@44,147@48|77,111,205,388|-|34,76,92,156,164,182,188,202,203,214,240,241,263,331,345,402,412,437,447,474,492,580,676,851
+591|71@1,74@1,78@1,310@1,72@12,235@16,499@20,230@24,202@28,275@32,92@36,476@42,76@48,147@54|-|-|34,63,76,92,156,164,182,184,188,202,203,214,240,241,263,331,345,402,412,416,437,447,474,492,506,580,676,707,851
+592|71@1,55@1,40@4,101@8,352@12,240@16,506@20,362@24,105@28,247@32,250@36,56@41,194@44,323@48|54,61,109,151,220,668|809|56,57,58,59,94,127,156,164,173,182,188,196,202,203,213,214,219,240,247,250,258,261,263,269,271,286,291,362,399,412,433,482,496,503,506,605
+593|151@1,71@1,55@1,40@1,101@1,352@12,240@16,506@20,362@24,105@28,247@32,250@36,56@43,194@48,323@54|-|809|56,57,58,59,63,94,127,156,164,173,182,188,196,202,203,213,214,219,240,247,250,258,261,263,269,271,286,291,330,362,399,412,416,433,482,496,503,506,605
+594|1@1,589@1,392@5,453@9,270@13,469@13,182@21,352@25,361@29,487@33,273@37,362@41,219@45,250@49,56@55|54,203,220,243,321,340|-|34,36,56,57,58,59,63,94,113,127,156,164,182,196,203,214,220,226,240,247,250,263,270,285,347,352,416,428,503,512,581,583,710,799,812,851,883,886,914
+595|71@1,210@1,527@4,450@8,81@12,86@16,486@20,97@24,389@28,163@32,435@37,103@40,380@44,405@48|40,104,522,611,679|-|85,86,87,97,113,129,141,156,164,168,182,202,203,214,240,263,270,398,404,405,412,450,451,486,521,522,527,528,679,806,851,884
+596|564@0,71@1,210@1,450@1,527@1,81@12,86@16,486@20,97@24,389@28,163@32,435@39,103@44,380@50,405@56|40,104,522,611,679|-|63,85,86,87,97,113,129,141,156,164,168,182,202,203,214,240,263,268,270,398,404,405,412,416,450,451,486,521,522,527,528,675,679,806,851,884
+597|33@1,106@1,232@5,42@10,275@15,430@20,442@25,120@30,334@35,174@41,360@45,153@50|73,92,282,356,491|796,798|42,76,85,86,120,156,164,173,182,191,202,203,213,214,241,263,279,331,334,360,371,372,398,402,412,430,442,446,496
+598|438@0,438@1,33@1,106@1,232@1,42@1,275@15,430@20,442@25,120@30,334@35,174@43,360@49,153@56|-|796,798|14,42,63,76,85,86,87,120,156,164,173,182,191,201,202,203,213,214,241,263,279,331,334,360,371,372,398,402,412,416,421,430,438,442,446,447,484,496,523,693,776
+599|84@1,11@1,20@4,268@8,451@12,319@16,475@20,435@24,103@28,544@32,199@36,508@40,192@44,63@48|-|796,798,804|63,85,86,103,156,164,173,182,201,203,214,253,263,334,372,408,430,496,521,528
+600|84@1,11@1,20@1,268@1,451@12,319@16,475@20,435@24,103@28,544@32,199@36,508@42,192@48,63@54|-|796,798,804|63,85,86,103,156,164,173,182,201,203,214,253,263,334,372,408,430,496,502,521,528
+601|674@1,602@1,84@1,11@1,20@1,268@1,451@12,319@16,475@20,435@24,103@28,544@32,199@36,508@42,192@48,63@56,604@64|-|796,798,804|63,85,86,87,103,156,164,173,182,201,203,214,253,263,334,372,408,416,430,433,496,502,521,528,604
+602|33@1,86@1,209@1,451@1|-|-|86,268,282,451,851
+603|242@0,29@1,86@1,209@1,451@1,20@9,51@19,435@29,85@44,491@49,489@54,528@59,380@64,192@69,37@74|-|-|34,36,85,86,87,113,156,162,164,182,184,202,203,214,240,242,263,268,282,369,422,430,451,486,491,512,521,527,528,598,604,675,679,851
+604|29@1,37@1,51@1,192@1,242@1,306@1,380@1,435@1,489@1,528@5|-|-|7,9,34,36,53,63,85,86,87,109,113,129,156,157,162,164,182,184,200,202,203,214,240,241,242,263,264,268,280,282,317,337,339,369,370,406,409,416,422,428,430,447,451,484,486,491,506,512,521,523,525,527,528,598,604,675,679,707,710,776,851,916
+605|93@1,45@1,286@6,100@12,60@18,471@24,470@24,29@30,428@36,105@43,347@48,472@54,94@60|50,194,244,310|797,800|85,86,94,97,103,113,115,156,157,164,168,173,182,203,211,213,214,219,240,247,253,263,271,285,286,317,322,347,384,385,399,412,417,428,433,472,473,496,500,502
+606|678@1,93@1,45@1,286@1,100@1,60@18,471@24,470@24,29@30,428@36,105@45,347@52,472@60,94@68|-|797,800|63,85,86,94,97,103,113,115,156,157,161,164,168,173,182,203,211,213,214,219,240,247,248,253,263,271,285,286,317,322,347,384,385,399,412,416,417,428,430,433,472,473,496,500,502,678
+607|123@1,310@1,52@4,107@8,109@12,506@16,261@20,83@24,101@28,174@32,247@36,517@40,286@44,220@48,315@52,262@56|114,151,471,499|-|53,76,83,94,101,109,114,126,156,164,168,174,180,182,203,214,220,241,244,247,257,261,263,269,271,286,315,347,394,399,412,433,488,506,806,807,809,851,915
+608|52@1,107@1,123@1,310@1,109@12,506@16,261@20,83@24,101@28,174@32,247@36,517@40,286@46,220@52,315@58,262@64|114,151,471,499|-|53,76,83,94,101,109,114,126,156,164,168,174,180,182,203,214,220,241,244,247,257,261,263,269,271,286,315,347,394,399,412,433,488,506,806,807,808,809,851,915
+609|52@1,83@1,101@1,107@1,109@1,123@1,174@1,220@1,247@1,261@1,262@1,286@1,310@1,315@1,506@1,517@1|114,151,471,499|-|53,63,76,83,94,101,109,114,126,156,164,168,174,180,182,203,214,220,241,244,247,257,261,263,269,271,286,315,347,394,399,412,416,433,488,506,806,807,808,809,851,885,915
+610|10@1,43@1,44@3,206@6,372@9,269@12,163@15,337@18,184@21,242@24,349@27,784@30,116@33,406@36,14@39,200@42,12@45,416@48|68,231,283,400,401,660|-|14,36,38,46,57,91,129,156,164,179,182,184,200,203,206,214,240,241,242,263,269,280,283,317,332,337,349,374,398,404,406,416,421,434,442,523,525,555,707,784,799,851,885,913
+611|10@1,43@1,44@1,206@1,372@9,269@12,163@15,337@18,184@21,242@24,349@27,784@30,116@33,406@36,14@41,200@46,12@51,416@56|-|-|14,36,38,46,57,67,91,129,156,164,179,182,184,200,203,206,214,240,241,242,263,269,280,283,317,332,337,349,374,398,404,406,416,421,434,442,523,525,555,707,784,799,851,885,913
+612|10@1,43@1,44@1,206@1,372@9,269@12,163@15,337@18,184@21,242@24,349@27,784@30,116@33,406@36,14@41,200@46,12@53,416@60|-|-|14,34,36,38,46,57,63,67,89,91,129,156,157,164,179,182,184,200,203,206,214,240,241,242,263,269,280,283,317,332,337,349,370,374,398,404,406,411,416,421,434,442,447,490,523,525,555,707,784,799,851,885,913
+613|45@1,181@1,203@3,154@6,196@9,589@12,362@15,524@18,163@21,175@24,204@27,883@30,37@33,156@36,59@39,329@42|264,281,400|-|8,34,36,57,58,59,67,91,156,157,164,168,182,189,196,203,204,214,227,232,240,242,263,264,269,283,317,332,333,341,352,374,404,419,421,423,447,484,523,555,583,710,776,851,883,885,886
+614|556@0,203@1,45@1,154@1,181@1,204@1,453@1,196@9,589@12,362@15,524@18,163@21,175@24,207@27,883@30,37@33,156@36,59@41,329@46,276@51|-|-|8,14,34,36,38,46,57,58,59,63,67,89,91,156,157,164,168,174,179,182,184,189,196,203,204,214,227,232,240,242,263,264,269,280,283,317,332,333,339,341,352,370,374,404,411,416,419,421,423,444,447,484,523,555,583,675,710,776,851,883,885,886,912
+615|20@1,420@1,109@4,229@8,196@12,54@16,114@16,246@20,62@24,163@28,400@32,573@36,113@40,115@40,105@44,58@48,151@52,76@56,329@60|153,524,694|-|34,36,58,59,63,76,109,113,114,115,156,164,182,184,196,203,214,240,263,333,334,352,398,416,419,430,512,813,851,861,883,886
+616|71@1,182@1,51@4,174@8,72@12,522@16,281@20,151@24,202@28,385@32,34@36,105@40,405@44,515@48|38,170,364,470|806|34,141,156,164,173,182,188,191,202,203,213,214,226,227,240,263,341,385,390,405,412,474,496
+617|594@1,51@1,174@1,281@1,151@1,385@1,34@1,71@1,104@1,491@1,98@1,72@12,522@16,129@20,97@24,202@28,384@32,369@36,105@40,405@44,515@48,92@52|-|806|34,63,97,129,141,156,164,173,179,182,188,191,201,202,203,213,214,226,227,240,263,341,369,384,385,390,405,409,411,412,416,474,496,599
+618|189@1,33@1,55@1,84@1,203@5,341@10,279@15,268@20,389@25,604@30,340@35,330@40,435@45,175@50,90@55|174,180,209,220,281,310,513|808|57,85,86,87,89,91,156,157,164,173,182,188,201,203,213,214,240,253,263,279,317,330,340,341,371,414,444,446,482,492,496,503,523,527,598,604,707
+619|1@1,197@1,252@5,179@10,154@15,501@20,395@25,369@30,409@35,468@40,396@45,340@51,347@55,136@60|264,282,364|-|14,36,67,91,97,129,156,164,179,182,203,214,226,240,241,244,263,264,269,270,280,282,317,332,339,347,369,370,374,396,398,409,411,444,447,490,512,811,851,885,918
+620|1@1,179@1,197@1,252@1,501@1,154@15,469@20,395@25,369@30,409@35,468@40,396@45,340@53,347@59,136@66|264,282,364|-|14,36,38,63,67,91,97,129,156,164,179,182,203,214,226,240,241,244,263,264,269,270,280,282,317,332,339,347,369,370,374,396,398,409,410,411,416,444,447,490,512,811,813,851,861,885,918
+621|10@1,43@1,44@5,525@10,232@15,184@20,163@25,337@30,468@35,242@40,442@45,200@50,276@55|137,342,389,400|434,799,808,814|5,7,9,34,53,57,63,89,91,156,157,164,173,182,184,188,200,203,213,214,231,240,241,242,257,263,269,276,279,317,337,371,374,399,406,411,416,421,422,424,430,441,442,446,496,514,523,555,707
+622|189@1,310@1,111@4,1@8,325@12,174@16,101@20,707@24,334@28,5@32,247@36,484@40,566@44,359@48,89@52,223@56|-|-|7,8,9,34,36,38,58,67,89,91,94,101,109,115,156,157,164,168,174,182,189,196,201,203,214,240,241,244,247,263,264,270,280,282,286,317,334,356,360,374,409,411,414,446,447,479,484,490,506,523,566,707,809,815,851
+623|1@1,111@1,310@1,667@1,325@12,174@16,101@20,707@24,334@28,5@32,247@36,484@40,566@46,359@52,89@58,223@64|189,264|-|7,8,9,19,34,36,38,58,63,67,76,85,89,91,94,101,109,115,156,157,164,168,174,182,189,196,201,203,214,240,241,244,247,263,264,270,271,280,282,286,317,334,356,360,370,374,409,411,414,416,428,430,444,446,447,451,479,484,490,506,523,535,566,667,707,776,809,815,851,912
+624|10@1,43@1,210@5,232@10,259@15,184@20,372@25,319@30,163@35,400@40,334@45,514@50,442@55,14@60,12@65|29,212,389,501|-|14,36,67,86,91,156,164,168,180,182,184,201,203,206,214,232,240,263,269,280,317,319,332,334,374,398,399,403,404,421,430,442,444,446,447,490,492,555,796,808,851
+625|10@1,43@1,210@1,232@1,368@1,259@15,184@20,372@25,319@30,163@35,400@40,334@45,514@50,442@57,14@64,12@71|-|-|14,36,63,67,86,91,156,164,168,179,180,182,184,201,203,206,214,232,240,263,269,280,317,319,332,334,374,398,399,403,404,411,416,421,430,442,444,446,447,490,492,555,675,796,808,851
+626|33@1,43@1,116@5,31@10,279@15,184@20,30@25,179@30,675@35,543@40,14@45,224@50,416@55|23,29,130,189,283,538,562|808|14,34,57,89,116,133,156,157,164,173,179,182,184,200,203,213,214,224,240,241,253,263,269,276,279,317,341,370,371,372,398,416,428,442,444,496,514,523,526,528,667,675,684,707
+627|43@1,64@1,468@6,17@12,366@18,184@24,332@30,163@36,18@42,306@48,403@55,432@60,37@66,413@72|249,355|-|19,34,36,38,97,129,156,157,164,182,184,203,214,240,241,257,263,270,297,314,317,332,339,366,369,370,403,413,421,428,512,542,814,851
+628|276@0,17@1,43@1,64@1,143@1,468@1,366@18,184@24,332@30,163@36,18@42,306@48,403@57,432@64,37@72|-|-|19,34,36,38,63,97,129,156,157,164,179,182,184,203,214,232,240,241,257,263,270,297,314,317,332,339,366,369,370,403,413,416,421,428,442,512,542,814,851
+629|16@1,43@1,260@6,365@12,366@18,282@24,334@30,18@36,403@42,399@48,417@54,432@60,213@66,413@72|92,212,355|-|19,36,38,92,129,156,164,168,180,182,184,203,214,240,241,244,247,253,257,263,269,282,297,313,314,317,334,366,369,399,403,413,417,492,555,675,808,814,851
+630|198@0,16@1,43@1,92@1,143@1,365@1,260@1,366@18,282@24,334@30,18@36,403@42,399@48,417@57,432@64,213@72,413@80|92,212,355|-|19,36,38,63,92,129,156,164,168,180,182,184,201,203,214,240,241,244,247,253,257,263,269,282,297,313,314,317,332,334,366,369,399,403,413,416,417,492,512,542,555,675,808,814,851
+631|122@1,33@1,154@5,510@10,450@15,254@20,256@20,255@20,163@25,20@30,680@35,468@40,133@45,83@50,517@55,394@60|174,321,389,400,562|807,815|7,9,34,53,67,76,83,91,126,133,156,164,168,173,182,202,203,213,214,240,241,257,261,263,269,276,315,317,374,394,409,411,416,421,496,675,693,707
+632|210@1,28@1,11@4,232@8,251@12,450@16,44@20,97@24,91@28,404@32,242@36,319@40,442@44,494@48,334@52,12@56|175,368,522,611,660|796,806|86,91,97,103,156,157,164,173,182,201,203,213,214,226,242,251,263,270,276,317,334,404,412,416,421,422,430,442,444,496,514,707
+633|33@1,116@1,225@4,44@8,46@12,372@16,29@20,526@24,21@28,242@32,184@36,406@40,34@44,304@48,407@52,417@56,200@60|310,457,458,562|-|34,36,46,86,156,164,168,180,182,184,200,203,214,240,241,242,244,263,269,304,399,406,414,417,422,423,424,428,434,525,555,851,913
+634|33@1,44@1,116@1,225@1,458@1,46@12,372@16,29@20,526@24,21@28,242@32,184@36,406@40,34@44,304@48,407@54,417@60,200@66|-|-|34,36,46,86,156,164,168,180,182,184,200,203,214,240,241,242,244,263,269,270,304,399,406,414,417,422,423,424,428,434,525,555,707,808,851,913
+635|33@1,44@1,225@1,116@1,161@1,458@1,46@12,372@16,29@20,526@24,21@28,242@32,184@36,406@40,34@44,304@48,407@54,417@60,200@68,63@76|-|-|19,34,36,46,53,56,57,63,83,86,89,115,126,156,157,164,168,180,182,184,200,203,214,240,241,242,244,257,263,269,270,304,317,349,366,369,399,406,411,414,416,417,422,423,424,428,430,434,444,446,512,523,525,555,675,707,784,799,808,814,851,913
+636|52@1,81@1,488@6,522@12,172@18,450@24,103@30,141@36,405@42,36@48,133@54,38@60,394@66|37,71,106,234|-|34,36,38,53,76,83,94,113,126,133,141,156,164,182,202,203,214,241,257,261,263,315,347,369,394,405,428,450,488,512,522,528,679,806,851,884,885
+637|483@0,552@1,522@1,488@1,394@1,83@1,16@1,52@1,38@1,36@1,18@1,81@1,172@18,450@24,103@30,141@36,405@42,257@48,133@54,542@62,126@70,476@78|-|-|19,34,36,38,53,63,76,83,94,113,126,133,141,156,164,182,202,203,214,240,241,257,261,263,314,315,347,366,369,394,398,403,405,416,428,450,488,512,522,528,542,679,806,814,851,884,885
+638|43@1,98@1,270@1,526@1,232@7,501@14,24@21,514@28,368@35,36@42,533@49,14@56,442@63,370@70|-|-|14,34,36,38,46,63,86,115,129,156,164,179,182,184,201,203,206,214,232,240,241,244,263,269,270,280,319,332,334,347,370,396,398,403,404,410,411,416,428,430,442,444,446,484,521,684,776,796,811,851,918
+639|43@1,98@1,270@1,526@1,479@7,501@14,24@21,514@28,157@35,36@42,533@49,14@56,444@63,370@70|-|-|14,34,36,38,46,63,89,115,129,156,157,164,179,182,184,201,203,206,214,244,263,269,270,280,317,332,347,350,370,396,398,403,404,411,414,416,428,442,444,446,479,523,667,684,707,811,851,918
+640|43@1,98@1,270@1,526@1,345@7,501@14,24@21,514@28,202@35,235@42,533@49,14@56,348@63,370@70|36|-|14,34,36,38,46,63,76,113,115,129,156,164,179,182,184,202,203,206,214,241,244,263,269,270,280,331,332,345,347,370,396,402,403,404,410,411,412,416,428,437,444,447,669,684,803,811,851,885,918
+""",
+    """641|16@1,310@1,43@5,207@10,44@15,314@20,97@25,366@30,403@35,242@40,326@45,253@50,359@55,240@60,542@65,37@70,846@77|-|-|19,34,36,63,94,97,118,156,164,168,179,182,184,188,196,201,203,214,240,241,242,253,257,263,269,280,282,311,314,339,366,369,374,399,403,411,416,417,447,479,482,492,512,542,808,851,883,886
+642|84@1,310@1,43@5,207@10,44@15,351@20,97@25,268@30,521@35,242@40,435@45,253@50,359@55,240@60,87@65,37@70,847@75|-|-|9,19,34,36,63,85,86,87,94,97,156,164,168,182,184,188,203,214,240,241,242,253,263,268,269,280,282,311,339,369,374,399,411,416,417,428,430,447,451,479,482,486,492,512,521,527,528,555,598,604,684,808,851,916
+643|225@1,246@1,424@1,568@1,163@8,242@16,326@24,406@32,53@40,558@48,304@56,126@64,286@72,200@80,551@88|-|-|19,34,36,38,46,53,63,76,83,94,113,115,126,129,156,157,164,182,184,200,203,214,240,241,242,247,257,261,263,270,286,304,311,315,317,337,349,366,374,394,406,411,414,416,421,424,428,434,444,488,525,535,776,784,799,814,815,851,913
+644|225@1,246@1,422@1,568@1,163@8,242@16,428@24,337@32,85@40,559@48,304@56,87@64,286@72,200@80,550@88|-|-|9,19,34,36,38,46,63,85,86,87,94,113,114,115,129,156,157,164,182,184,200,203,214,240,241,242,247,263,264,268,270,280,286,304,311,317,337,349,366,374,406,411,414,416,421,422,428,430,434,444,446,451,486,521,525,528,604,776,784,799,814,851,913,916
+645|479@1,328@1,43@5,335@10,523@15,317@20,286@30,157@35,414@40,326@45,444@50,359@55,201@60,89@65,200@70,90@75,848@80|-|-|14,19,34,36,63,89,91,94,156,157,164,182,184,188,189,200,201,203,214,240,241,242,263,269,280,286,311,317,328,339,341,347,356,369,374,411,414,416,417,444,446,447,479,482,523,707,815,851
+646|225@1,246@1,568@1,573@1,163@8,283@16,406@24,58@32,304@40,184@48,59@56,286@64,200@72,549@80,329@88|-|-|19,34,36,46,58,59,63,94,113,115,129,156,157,164,182,184,196,200,203,214,240,241,247,263,270,283,286,304,311,317,332,333,337,349,374,406,411,414,416,419,421,423,428,430,434,442,444,525,776,784,799,814,851,883,913
+647|43@1,270@1,453@1,526@1,548@1,61@7,501@14,24@21,514@28,401@35,36@42,533@49,14@56,56@63,370@70|-|-|14,36,38,46,56,57,63,67,115,129,156,164,179,182,196,203,206,214,220,226,240,241,244,263,269,270,280,330,332,347,352,370,396,398,403,404,410,411,416,444,684,710,811,812,851,885,886,918
+648|47@1,93@1,98@1,496@1,298@21,512@26,60@31,497@36,369@43,547@50,94@57,304@64,272@71,370@78,195@85|-|-|7,8,9,14,60,63,67,85,86,87,94,113,118,129,156,164,179,182,203,204,214,226,240,241,244,247,263,264,270,271,280,282,285,304,313,347,356,369,370,374,409,411,412,416,421,428,433,444,447,473,490,512,574,583,605,811,813,851,914
+649|210@1,98@1,103@7,232@14,565@21,488@28,319@35,404@42,393@49,405@56,493@63,192@70,199@77,546@84,120@91|-|796|19,53,58,59,63,76,85,86,87,94,103,113,115,120,129,141,156,161,164,173,182,202,203,214,263,299,334,369,372,399,404,405,412,416,421,428,430,441,442,496,502,527
+650|22@1,45@1,205@8,44@11,73@15,42@18,36@27,402@32,341@35,34@42,220@45,452@48|162,174,187,191,235,469,501|-|9,34,36,46,67,76,91,115,129,156,157,162,164,174,182,191,202,203,214,220,232,240,241,263,264,270,280,283,317,331,332,341,345,374,398,402,409,412,421,428,437,442,447,520,523,580,707,803,851,885
+651|22@1,45@1,205@8,44@11,73@15,402@20,42@24,36@29,341@34,339@38,34@43,220@47,452@53|162,174,187,191,235,469,501|-|9,34,36,46,67,76,91,115,129,156,157,162,164,174,182,191,202,203,214,220,232,240,241,263,264,269,270,280,283,317,331,332,334,339,341,345,360,374,398,402,409,412,421,428,437,442,444,447,490,520,523,580,707,803,851,885
+652|596@0,364@1,359@1,45@1,205@1,33@1,22@1,44@11,73@15,42@19,36@29,402@35,341@41,339@48,34@54,220@60,452@66,416@78|162,174,187,191,235,469,501|-|9,14,34,36,38,46,63,67,76,89,91,115,129,156,157,162,164,174,179,182,184,189,191,202,203,214,220,232,240,241,242,263,264,269,270,280,282,283,317,331,332,334,337,338,339,341,345,360,370,374,398,402,409,411,412,416,421,428,437,442,444,447,479,490,520,523,580,667,707,776,803,811,851,885
+653|10@1,39@1,52@5,336@11,488@14,60@17,83@20,113@25,473@31,53@35,261@38,94@41,241@43,126@48|95,257,273,383,478|-|36,53,60,76,83,94,97,113,126,129,156,164,168,182,189,203,204,214,227,240,241,257,261,263,270,271,285,286,315,341,347,394,433,447,473,488,492,500,519,678,807,851
+654|10@1,39@1,52@1,336@11,488@14,60@18,83@22,113@28,473@36,53@41,261@45,94@49,241@52,478@56,126@59|95,257,273,383,478|-|7,9,36,53,60,67,76,83,94,97,113,126,129,156,164,168,182,189,203,204,214,227,240,241,257,261,263,270,271,285,286,315,341,347,394,428,433,447,473,488,492,500,519,678,807,851
+655|595@0,415@1,336@1,272@1,248@1,247@1,10@1,52@1,39@1,488@14,60@18,83@22,113@28,473@38,53@45,261@51,94@57,241@62,478@68,126@74|95,257,273,383,478|-|7,9,36,53,60,63,67,76,83,94,97,101,109,113,115,118,126,129,156,164,168,182,189,203,204,214,227,240,241,244,247,248,257,261,263,270,271,285,286,304,307,315,341,347,394,411,416,417,428,433,447,473,488,492,500,506,519,605,678,797,807,815,851,917
+656|1@1,45@1,55@5,98@8,122@10,352@14,108@18,496@21,374@25,479@29,164@35,340@39,104@43,56@48|68,191,390,415,514|-|36,56,57,58,59,91,127,129,156,157,164,168,182,189,191,196,203,206,214,240,263,269,270,317,332,341,352,369,374,390,447,479,512,518,710,851,883,885,886
+657|1@1,45@1,55@1,98@8,122@10,352@14,108@19,496@23,374@28,479@33,164@40,340@45,104@50,56@56|68,191,390,415,514|-|8,14,36,56,57,58,59,67,91,127,129,156,157,164,168,182,189,191,196,203,206,214,240,263,269,270,317,332,341,352,369,374,390,441,447,479,512,518,710,851,883,885,886
+658|594@0,400@1,272@1,114@1,1@1,55@1,45@1,98@1,122@10,352@14,108@19,425@23,191@28,332@33,164@42,326@49,104@56,56@68|68,191,390,415,514|-|8,14,36,56,57,58,59,63,67,91,114,127,129,156,157,164,168,182,189,191,196,203,206,214,240,263,269,270,280,308,311,317,332,341,352,369,374,390,399,416,441,447,479,482,490,512,518,710,851,883,885,886,918
+659|189@1,43@1,33@3,673@6,98@9,341@12,175@15,24@18,523@21,91@24,340@27,36@30,14@33,89@36,162@39|111,205|-|14,57,89,91,97,156,157,164,168,173,182,188,191,201,203,213,214,231,263,280,317,339,340,341,369,371,374,442,444,447,496,523,526,528
+660|189@1,43@1,33@1,673@1,98@9,341@12,175@15,24@18,523@23,91@28,340@33,36@38,14@43,89@48,162@53,359@58|-|815|5,7,8,9,14,25,34,57,63,67,89,91,97,156,157,164,168,173,182,188,191,201,203,213,214,231,253,263,276,280,317,328,339,340,341,369,371,374,414,416,441,442,444,447,492,496,523,526,528,667,693,707
+661|45@1,64@1,98@5,52@10,175@15,512@20,97@25,332@30,366@35,211@40,355@45,19@50|432,488,501|-|14,19,36,38,97,129,156,164,168,182,203,214,240,241,257,263,269,297,314,315,332,366,369,394,403,413,488,512,542,814,851
+662|488@0,45@1,52@1,64@1,98@1,364@1,175@15,512@22,97@29,332@36,366@43,211@50,355@57,19@64|-|-|14,19,36,38,53,83,97,126,129,156,164,168,182,203,214,240,241,257,261,263,269,297,314,315,332,366,369,394,403,413,488,512,542,814,851,915
+663|45@1,52@1,64@1,98@1,364@1,394@1,488@1,175@15,512@22,97@29,332@38,366@47,211@56,355@65,19@74,413@83|-|-|14,19,36,38,53,63,76,83,97,126,129,156,164,168,182,203,214,240,241,257,261,263,269,297,314,315,332,339,366,369,394,403,413,416,488,512,542,814,851,915,918
+664|33@1,81@1,78@6,450@15|77,476|-|450,522,851,884
+665|182@0,106@1|-|-|182,334,450,522,851,884
+666|16@0,77@1,78@1,79@1,522@1,113@12,60@17,48@21,577@25,219@31,405@35,483@45,542@50|-|-|60,63,76,94,109,113,129,156,164,168,182,202,203,214,240,241,263,311,314,334,366,369,403,405,412,416,450,512,522,542,577,676,806,851,884
+667|33@1,43@1,52@5,526@8,29@11,568@15,36@20,424@23,283@28,497@33,53@36,242@39,304@43,510@46,315@50|83,281,394,494|-|34,36,38,46,53,76,83,91,126,129,156,164,168,182,189,203,214,240,241,242,257,261,263,269,270,283,304,315,394,422,424,488,512,523,528,555,706,851,885
+668|33@1,43@1,52@1,63@1,526@1,29@11,568@15,36@20,424@23,283@28,497@33,53@38,242@42,304@48,510@51,315@57|-|-|34,36,38,46,53,63,76,83,91,126,129,156,164,168,182,189,203,214,240,241,242,257,261,263,269,270,283,304,315,394,399,416,422,424,488,512,523,528,555,706,807,851,885,915
+669|22@1,33@1,584@6,219@10,75@15,273@20,345@22,580@24,572@28,235@33,581@37,585@41,80@45,76@48|283,383,715|-|76,94,113,129,156,164,182,202,203,204,214,226,240,241,263,270,283,345,347,402,412,447,500,572,574,577,580,581,605,676,851,885,886,914
+670|22@1,33@1,584@1,219@10,75@15,273@20,345@25,580@27,572@33,235@38,581@43,585@46,80@51,76@58|-|-|76,94,113,118,129,156,164,182,202,203,204,214,226,240,241,263,270,271,283,285,345,347,402,412,447,500,572,574,577,580,581,605,676,851,885,886,914
+671|76@1,80@1,219@1,235@1,273@1,345@1,447@1,572@1,574@1,580@1,581@1,585@5|-|-|63,76,94,113,118,129,156,164,182,202,203,204,214,226,240,241,263,270,271,283,285,345,347,402,412,416,447,500,572,574,577,580,581,605,676,802,851,885,886,914,917
+672|33@1,74@1,22@7,39@9,73@12,75@13,388@16,235@20,36@22,523@26,402@30,339@34,38@38,532@42,348@45|111,205,208,580|-|34,36,38,46,57,76,91,156,157,164,182,189,202,203,214,240,241,263,270,280,283,331,339,341,345,402,412,428,437,447,523,528,580,583,707,803,851,885
+673|332@0,89@1,74@1,39@1,22@1,33@1,73@12,75@13,388@16,235@20,36@22,523@26,402@30,339@34,38@40,532@47,348@55,208@58|-|-|34,36,38,46,57,63,76,89,91,156,157,164,182,189,202,203,214,240,241,263,270,280,283,331,332,339,341,345,402,412,416,428,437,447,523,528,580,583,667,675,707,803,851,885
+674|33@1,43@1,292@4,269@8,509@12,490@16,526@20,163@24,233@28,242@33,34@36,575@40,494@44|69,480,501,511,681|808,811|5,7,8,9,14,25,34,57,67,91,156,157,164,173,182,188,203,206,213,214,240,241,242,253,263,269,270,276,280,304,317,339,371,374,399,409,421,428,441,442,444,447,490,492,496,514,523,526
+675|400@0,400@1,418@1,33@1,43@1,292@1,269@1,509@12,490@16,526@20,163@24,233@28,242@35,34@40,575@46,494@52,359@58|-|808,811|5,7,8,9,14,25,34,57,63,67,89,91,116,156,157,164,168,173,179,182,184,188,200,203,206,213,214,240,241,242,251,253,263,269,270,276,279,280,304,317,337,339,370,371,374,398,399,404,409,411,416,421,428,441,442,444,447,490,492,496,514,523,526,555,663,675,707
+676|33@1,45@1,28@5,608@9,29@12,39@15,44@22,316@27,514@33,36@35,204@38,389@42,538@48|102,272,287,445,526|173,231,253,270,272,283,304,387,428|46,57,86,92,104,156,164,182,207,213,214,216,218,237,240,241,263,369,399,416,447,451,496,497,526,528,555,590
+677|10@1,43@1,252@3,574@6,93@9,343@18,60@21,113@30,115@30,473@33|281,321|-|60,85,86,94,113,115,129,156,164,182,203,204,214,240,241,244,247,263,270,271,285,313,347,356,399,412,417,428,433,451,473,574,583,797,851,917
+678|212@1,574@1,252@1,10@1,43@1,93@9,270@12,204@15,343@18,60@21,389@24,272@29,113@34,115@34,473@39,286@44,501@49,94@54,581@59|281,321|-|60,63,85,86,91,94,113,115,129,156,164,182,203,204,214,226,240,241,244,247,263,270,271,285,286,313,347,356,399,412,416,417,428,433,451,473,500,574,581,583,678,797,851,885,914,917
+679|33@1,210@1,425@4,475@8,332@12,319@16,163@20,400@24,514@28,334@32,442@36,379@40,14@44,533@48|194,335,469|796|14,103,115,156,157,164,173,179,182,203,206,213,214,240,263,280,334,360,370,421,427,430,442,496,514,669,693
+680|33@1,210@1,425@1,475@1,332@12,319@16,163@20,400@24,514@28,334@32,442@38,379@44,14@50,533@56|-|796|14,103,115,156,157,164,173,179,182,203,206,213,214,240,263,280,334,360,370,421,427,430,442,496,514,669,693
+681|588@0,588@1,457@1,332@1,319@1,163@1,400@1,514@1,334@1,442@1,379@1,14@1,533@1,33@1,210@1,425@1,475@1|-|796|14,63,103,115,156,157,164,173,179,182,203,206,213,214,240,241,247,263,280,334,360,370,403,416,421,427,430,442,496,514,669,693
+682|584@1,230@1,186@3,497@6,577@9,312@12,577@15,213@18,175@21,581@24,94@27,204@30,347@33,585@36,285@39|50,273,495|802|85,94,113,115,156,164,173,182,203,204,213,214,227,240,241,263,270,285,313,347,360,412,417,430,433,496,502,577,581,605
+683|597@1,505@1,584@1,230@1,186@1,497@1,574@9,312@12,577@15,213@18,175@21,581@24,94@27,204@30,347@33,585@36,285@39,244@42|-|802|63,85,87,94,113,115,118,156,164,173,182,203,204,213,214,227,240,241,263,270,285,313,347,360,409,412,416,417,430,433,473,496,502,577,581,605
+684|33@1,230@1,589@3,584@6,312@9,577@12,313@15,496@18,81@21,178@24,412@27,273@30,583@33,538@36,283@39|281,383,495,564|802|53,57,85,94,113,133,156,164,168,173,182,203,204,213,214,219,240,241,263,270,313,347,412,496,577,583,605
+685|33@1,230@1,589@1,584@1,312@9,577@12,313@15,496@18,81@21,178@24,412@27,273@30,583@33,538@36,283@39,564@42|-|802|53,57,63,85,87,94,113,118,133,156,164,168,173,182,203,204,213,214,219,240,241,263,270,313,347,409,412,416,496,577,583,605
+686|33@1,64@1,95@3,35@6,371@9,365@12,60@15,207@18,163@21,400@24,427@27,415@31,492@33,576@36,276@39|50,194,367|-|53,60,85,94,113,115,129,156,157,164,168,180,182,203,214,226,240,241,244,248,263,269,270,271,282,285,313,332,347,356,374,399,417,433,473,492,500,679,710,797,808,851
+687|33@1,35@1,64@1,95@1,179@1,371@9,365@12,60@15,207@18,163@21,400@24,427@27,415@33,492@37,576@42,276@47|50,194,367|-|53,60,63,85,94,113,115,129,156,157,164,168,179,180,182,184,203,214,226,240,241,244,248,263,269,270,271,282,285,313,332,347,356,374,399,416,417,433,473,492,500,675,679,710,797,808,851,885,917
+688|189@1,10@1,110@4,55@8,210@12,154@16,246@20,397@24,163@28,468@32,534@36,504@40,238@44|28,400,415|-|14,57,58,59,89,91,103,156,157,164,168,173,182,188,196,201,203,206,213,214,219,240,251,253,263,269,270,280,317,334,341,350,371,372,374,398,404,421,444,446,447,482,496,503,523,534,710
+689|130@1,189@1,10@1,110@1,55@1,210@12,154@16,246@20,397@24,163@28,468@32,534@36,504@42,238@48,444@54|-|800|14,57,58,59,63,67,89,91,103,156,157,164,168,173,182,188,196,201,203,206,213,214,219,240,250,251,253,263,269,270,276,280,291,317,330,334,337,339,341,350,371,372,374,398,404,411,414,416,421,444,446,447,482,496,503,523,534,693,710
+690|33@1,108@1,51@5,55@10,39@15,104@20,342@25,352@30,92@35,406@40,401@45,188@50,56@55|114,151,239,525|-|36,56,57,85,92,114,127,156,164,168,180,182,184,188,189,196,200,203,214,240,247,250,263,330,341,342,352,390,406,441,474,482,491,525,583,710,799,812,851,883,886
+691|33@1,51@1,55@1,108@1,39@15,104@20,342@25,352@30,92@35,406@40,401@45,188@52,56@59,200@66|-|-|36,56,57,63,85,87,92,114,127,156,164,168,180,182,184,188,189,196,200,203,214,240,247,250,263,330,341,342,352,390,406,411,416,434,441,474,482,491,503,583,710,799,812,851,883,886
+692|55@1,150@1,175@10,453@15,479@20,468@25,352@30,14@35,396@40,340@45,330@50,152@55|61,401,494|-|14,36,56,57,58,59,127,156,157,164,168,182,189,196,203,214,240,263,270,311,330,341,352,369,396,399,406,430,474,479,482,710,812,851,884,886
+693|55@1,150@1,175@1,399@1,406@1,505@1,453@15,479@20,468@25,352@30,14@35,396@42,340@49,330@56,152@63|-|-|14,34,36,56,57,58,59,63,127,156,157,164,168,182,184,188,189,196,203,214,240,247,263,270,311,330,341,352,369,396,399,406,411,416,430,474,479,482,710,812,851,884,886
+694|189@1,39@1,1@4,84@8,98@12,268@16,523@20,521@24,570@28,86@32,85@36,582@40,87@44|137,407,525|799,804|57,85,86,87,91,97,113,129,156,157,164,173,182,201,203,213,214,231,240,263,317,369,399,447,486,490,496,502,521,523,527,528,604
+695|598@1,435@1,98@1,268@1,523@1,521@1,570@1,86@1,85@1,582@1,87@1,189@1,39@1,1@1,84@1|-|799,804|5,7,9,25,57,63,67,76,85,86,87,91,97,113,129,156,157,164,173,182,201,203,213,214,231,240,241,263,304,311,317,369,399,406,411,416,447,486,490,496,502,521,523,527,528,598,604,693,784
+696|33@1,39@1,46@4,246@8,204@12,44@16,525@20,23@24,157@28,242@32,337@36,37@40,89@44,32@48|88,174,305,397|434,799,800,808|34,89,91,156,157,164,173,182,184,200,201,203,204,213,214,231,241,242,263,276,280,304,317,334,337,349,350,370,372,399,406,414,422,423,424,428,442,444,446,496,523,583,706,707
+697|33@1,39@1,46@1,246@1,204@12,44@16,525@20,23@24,157@28,242@32,337@36,37@42,89@48,32@54,416@60,457@66|-|434,799,800,808|34,63,89,91,156,157,164,173,182,184,200,201,203,204,213,214,231,241,242,263,276,280,304,317,334,337,349,350,370,372,399,406,414,416,422,423,424,428,442,444,446,496,523,583,667,693,706,707,784
+698|181@1,45@1,227@4,246@8,196@12,496@16,54@20,62@24,86@28,267@32,573@36,58@40,113@44,258@48,59@52,63@56|36,88,114,243,435,694|800|34,58,59,63,85,86,113,115,156,157,164,173,182,196,200,201,203,213,214,219,227,231,240,258,263,304,311,317,334,341,347,350,399,414,419,428,430,442,444,446,496,523
+699|181@1,45@1,227@1,246@1,196@12,496@16,54@20,62@24,86@28,267@32,573@36,58@42,113@48,258@54,59@60,63@66|-|800|34,58,59,63,85,86,87,89,94,113,115,156,157,164,173,182,196,200,201,203,213,214,219,227,231,240,258,263,304,311,317,333,334,341,347,350,399,414,416,419,428,430,442,444,446,496,523
+700|574@0,226@1,33@1,36@1,38@1,39@1,44@1,45@1,383@1,343@1,204@1,270@1,28@5,98@10,608@15,129@20,113@25,577@30,581@35,285@40,244@45,585@50,387@55|-|-|34,36,38,46,63,91,94,113,115,129,156,164,174,182,203,204,214,226,240,241,244,247,263,270,285,304,311,313,345,347,416,473,500,574,577,581,583,605,802,851,885,914
+701|33@1,468@1,17@4,197@8,332@12,227@16,297@20,280@24,340@28,269@32,355@36,14@40,560@44,136@48,283@52,143@56|212,238,364,432,494,501|-|7,9,14,19,34,36,63,67,91,97,129,156,157,164,168,179,182,203,206,214,226,227,240,241,253,263,264,269,270,280,283,297,317,332,339,369,370,374,398,404,409,411,413,416,428,442,444,447,490,512,675,679,776,811,814,851,885,918
+702|39@1,609@1,33@5,268@10,84@15,204@20,570@25,521@30,156@35,173@35,435@40,583@45,162@50,494@55,87@60|343,393,715|-|9,36,63,85,86,87,91,97,113,129,156,162,164,168,182,203,204,214,240,241,263,268,270,283,369,374,402,416,447,451,486,521,527,528,577,581,583,598,604,605,851,885
+703|33@1,106@1,470@5,479@10,175@15,246@20,397@25,113@30,157@35,285@40,408@45,446@50,585@55,444@60|-|-|34,36,38,63,94,113,115,156,157,164,182,191,201,203,204,214,240,241,244,263,283,285,317,328,334,347,350,356,360,408,414,416,430,433,442,444,446,479,484,581,605,707,776,800,802,851
+704|33@1,71@1,55@5,225@10,182@15,175@20,352@25,240@30,406@35,174@41,34@45,330@50|68,791|-|34,36,85,156,157,164,174,182,188,200,203,204,214,240,241,263,330,341,352,406,434,482,806,851,886
+705|491@0,33@1,55@1,71@1,151@1,225@1,182@15,175@20,352@25,240@30,406@35,174@43,34@49,330@56|-|-|34,36,58,59,85,87,92,156,157,164,174,182,188,200,203,204,214,240,241,263,330,341,352,406,434,482,491,806,851,886
+706|401@0,715@1,364@1,342@1,491@1,225@1,33@1,71@1,55@1,182@15,175@20,352@25,240@30,174@43,34@49,330@58,438@67|-|-|7,9,34,36,53,56,57,58,59,63,85,87,89,92,126,156,157,164,174,182,188,200,203,204,214,240,241,263,264,282,311,330,337,341,342,352,406,411,416,434,482,491,503,523,525,707,776,784,806,851,886,913
+707|310@1,33@4,584@8,259@12,587@16,319@20,577@24,278@28,286@32,430@36,583@40,478@44,492@48,387@52|393,415|-|63,86,94,113,115,129,156,164,168,182,191,201,203,214,240,241,244,263,286,319,334,347,416,430,433,473,492,500,577,581,583,605,796,806,851
+708|33@1,310@1,785@4,73@8,109@12,261@16,506@20,74@24,532@28,174@32,566@36,275@40,452@44,194@48,571@52|50,389,502|-|76,91,94,101,109,115,156,157,164,168,174,180,182,202,203,214,220,240,241,244,247,261,263,271,285,286,345,398,399,402,412,421,433,447,492,506,523,566,580,803,806,808,809,851,885
+709|421@0,33@1,73@1,310@1,785@1,109@12,261@16,506@20,74@24,532@28,174@32,566@36,275@40,452@44,194@48,571@52|50,389,502|-|36,63,76,89,91,92,94,101,109,114,115,156,157,164,168,174,180,182,184,202,203,214,220,240,241,244,247,261,263,271,282,285,286,345,347,398,399,402,404,409,411,412,416,421,433,437,447,492,506,523,566,580,803,806,807,808,809,851,885,917
+710|567@1,310@1,425@4,109@8,567@12,75@12,73@16,331@20,567@24,184@24,388@28,402@32,567@36,247@36,271@40,220@44|50,174,194|803,806,809|53,76,94,113,126,156,157,164,168,173,182,184,188,202,203,213,214,219,241,247,261,263,271,285,286,331,360,399,402,412,433,447,492,496,502,506,595
+711|153@1,585@1,567@1,310@1,425@1,109@1,567@12,75@12,73@16,331@20,567@24,184@24,388@28,402@32,567@36,247@36,271@40,220@44,566@48|-|803,806,809|53,63,76,94,113,126,156,157,164,168,173,182,184,188,202,203,213,214,219,241,247,261,263,271,285,286,331,360,399,402,411,412,416,417,433,438,447,492,496,502,506,566,595,693
+712|106@1,229@1,33@3,181@6,174@9,196@12,182@15,419@18,44@21,423@24,334@27,105@30,242@33,36@36,59@39,38@42|54,243,694|-|34,36,38,58,59,156,157,164,174,182,196,203,214,240,242,263,317,333,334,360,419,423,444,523,851,861,883,886
+713|34@0,181@1,229@1,469@1,106@1,33@1,174@9,196@12,182@15,419@18,44@21,423@24,334@27,105@30,242@33,36@36,59@41,38@46,556@51|-|-|34,36,38,56,57,58,59,63,89,156,157,164,174,182,184,196,203,214,240,242,263,317,333,334,360,416,419,423,430,442,444,484,523,667,707,776,851,861,883,886
+714|33@1,71@1,16@4,48@8,104@12,17@16,44@20,314@24,18@28,162@32,403@36,103@40,355@44,366@49,542@52|407,432|-|19,36,76,94,97,129,141,156,162,164,168,182,200,203,214,241,247,253,257,263,269,280,304,314,332,337,366,369,399,403,404,406,421,434,512,528,542,814,851
+715|406@0,16@1,236@1,33@1,71@1,48@1,104@12,17@16,44@20,314@24,18@28,162@32,403@36,103@40,355@44,366@51,542@56,586@62|-|-|19,34,36,38,53,63,76,94,97,129,141,156,162,164,168,182,184,200,203,214,241,247,253,257,263,269,280,304,314,332,337,349,352,366,369,399,403,404,406,411,416,421,434,512,525,528,542,784,814,851,913,917
+716|33@1,356@1,113@5,62@10,267@15,400@20,312@25,244@30,532@35,581@40,275@45,36@50,601@55,585@60,505@65,224@70,370@75,200@80,416@85|-|802,805|34,63,85,86,87,94,113,115,129,156,157,164,173,182,200,203,214,224,240,241,258,263,304,347,370,411,416,428,430,447,472,473,496,577,581,583,605,684
+717|16@1,104@1,269@5,555@10,50@15,389@20,366@25,355@30,403@35,399@40,94@45,613@50,566@55,492@60,407@65,542@70,411@75,143@80,63@85|-|808,814|19,34,63,94,129,156,157,164,168,173,182,203,211,214,240,241,247,257,263,269,304,337,369,371,399,403,411,416,421,428,492,496,512,542,555,566
+718|614@1,615@1,687@1,20@1,523@1,225@1,44@1,114@8,91@16,219@24,242@32,406@40,616@48,137@56,201@64,489@72,89@80,200@88|-|434,799,806,815|34,63,89,91,129,156,157,164,173,179,182,200,201,203,214,219,231,241,242,263,276,280,304,349,371,406,411,414,416,428,444,447,482,496,514,523,667,707,784
+719|33@1,106@1,591@1,470@7,479@14,175@21,246@28,397@35,113@42,157@49,285@56,408@63,446@70,585@77,444@84|-|-|34,36,63,94,113,115,118,129,133,156,157,164,182,191,201,203,204,214,226,227,240,241,244,263,270,283,285,313,317,328,334,347,356,360,408,414,416,430,433,444,446,473,479,500,523,577,583,605,776,800,802,815,851,883
+720|93@1,502@1,194@1,310@6,271@10,113@15,60@19,285@25,470@29,471@29,566@35,428@46,433@50,472@50,247@55,417@68,94@75,593@85|-|-|7,8,9,36,60,63,85,86,94,113,115,129,156,164,168,182,184,201,203,214,240,241,244,247,248,263,264,269,271,280,282,285,317,347,356,374,399,409,411,412,416,417,428,433,441,447,473,492,566,675,678,797,806,808,851,917
+721|592@1,55@1,83@1,43@6,311@12,488@18,352@24,184@30,510@36,23@42,503@48,36@54,54@60,114@60,56@66,394@78,315@84,153@90|-|-|34,36,38,46,53,56,63,76,83,89,91,114,126,156,157,164,182,184,188,201,203,214,240,241,257,261,263,269,280,311,315,317,341,352,360,374,394,411,414,416,422,424,430,444,479,482,484,488,503,523,528,535,581,707,710,776,815,851
+722|33@1,45@1,670@3,310@6,64@9,425@12,75@15,235@18,365@21,417@24,389@27,348@30,297@33,413@36|104,109,282,355,432|-|14,36,76,101,109,113,114,129,156,164,182,202,203,206,214,240,241,263,270,282,297,314,331,332,345,402,403,412,413,417,421,437,447,520,580,803,814,851,885
+723|33@1,45@1,310@1,670@1,64@9,425@12,75@15,235@20,365@25,417@30,389@35,348@40,297@45,413@50|104,109,282,355,432|-|14,36,76,101,109,113,114,129,156,164,182,202,203,206,214,226,240,241,263,270,282,297,314,331,332,345,366,402,403,412,413,417,421,437,447,520,580,803,814,851,885
+724|662@0,670@1,566@1,437@1,369@1,310@1,33@1,180@1,45@1,64@9,425@12,75@15,235@20,365@25,417@30,389@37,348@44,297@51,413@58|104,109,282,355,432|-|14,36,63,67,76,101,109,113,114,129,156,164,174,179,180,182,184,202,203,206,214,226,240,241,247,263,264,269,270,280,282,286,297,314,317,331,332,338,339,345,366,369,370,396,402,403,411,412,413,416,417,421,437,447,479,490,506,512,520,542,566,580,669,803,806,809,811,814,851,885,918
+725|10@1,45@1,52@3,122@6,46@9,154@12,44@15,24@18,424@21,184@24,207@27,53@30,37@33,394@36|252,575,681|-|14,34,36,38,46,53,83,126,141,156,164,182,184,200,203,214,241,242,257,261,263,269,270,283,315,339,369,394,417,421,424,488,512,519,851,885,915
+726|10@1,45@1,52@1,122@1,46@9,154@12,44@15,24@20,424@25,184@30,207@35,53@40,37@45,394@50|252,575,681|-|14,34,36,38,46,53,83,126,141,156,164,182,184,200,203,214,241,242,257,261,263,269,270,283,315,339,369,394,417,421,424,488,512,519,851,885,915
+727|663@0,52@1,122@1,238@1,339@1,46@9,154@12,44@15,24@20,424@25,184@30,207@32,53@44,37@51,394@58|10,45,252,575,675,681|-|7,9,14,34,36,38,46,53,63,67,83,89,126,141,156,164,168,179,182,184,200,203,214,226,241,242,257,261,263,264,269,270,280,282,283,307,315,332,339,369,370,374,394,399,409,411,416,417,421,424,442,488,490,512,519,523,535,555,675,707,807,808,815,851,885,915
+728|1@1,45@1,55@3,574@6,453@9,608@12,196@15,47@18,61@21,227@24,581@27,304@30,585@33,56@36|195,392,791|-|56,57,58,59,127,129,133,156,164,182,196,203,204,214,227,240,250,253,263,270,304,352,512,518,574,577,581,583,812,813,851,861,886
+729|1@1,45@1,55@1,574@1,453@9,608@12,196@15,47@20,61@25,227@30,581@35,304@40,585@45,56@50|195,392,791|-|34,56,57,58,59,127,129,133,156,164,182,196,203,204,214,227,240,250,253,263,270,304,352,512,518,574,577,581,583,812,813,851,861,886
+730|664@0,1@1,45@1,55@1,574@1,453@9,608@12,196@15,47@20,61@25,227@30,581@37,304@44,585@51,56@58|195,392,791|-|34,56,57,58,59,63,94,113,114,115,127,129,133,156,164,182,196,203,204,214,227,240,244,247,250,253,263,270,304,308,311,347,352,412,416,500,512,518,574,577,581,583,605,710,802,812,813,851,861,883,886,914,917
+731|64@1,45@3,497@7,249@9,48@13,365@15,355@19,31@21,103@25,65@27,331@31,297@33,304@37|143,441,586|-|14,19,36,156,164,168,182,203,214,241,253,257,263,270,280,282,283,297,304,314,331,332,366,369,403,413,441,479,488,512,814,851
+732|45@1,64@1,249@1,350@1,48@13,365@16,355@21,31@24,103@29,65@32,331@37,297@40,304@45|143,441,497,586|-|14,19,36,129,156,164,168,182,203,214,241,253,257,263,270,280,282,283,297,304,314,331,332,350,366,369,403,413,441,479,488,512,814,851
+733|690@0,45@1,64@1,249@1,350@1,497@1,48@13,365@16,355@21,31@24,103@30,65@34,331@40,297@44,304@50|143,441,586|-|14,19,36,63,129,156,164,168,182,184,203,214,227,241,244,253,257,263,270,280,282,283,297,304,314,315,331,332,350,366,369,402,403,413,416,430,441,479,488,512,542,675,814,851,915
+734|33@1,43@3,371@7,28@10,526@13,44@19,189@22,162@25,36@28,184@31,242@34,281@37,37@40,156@43|283,387,422,423,424|-|36,38,91,156,162,164,168,179,182,184,189,201,203,214,240,241,242,263,269,270,283,317,341,369,402,422,423,424,428,523,528,706,707,851,885,886
+735|28@1,33@1,43@1,371@1,526@13,44@19,189@23,162@27,36@31,184@35,242@39,281@43,37@47,156@52|-|-|7,8,9,34,36,38,46,63,89,91,156,162,164,168,174,179,182,184,189,201,203,214,240,241,242,263,264,269,270,282,283,317,341,369,374,402,416,422,423,424,428,442,490,523,528,706,707,851,885,886
+736|11@1,189@1,81@5,450@10,44@15,209@21,564@25,404@30,242@35,91@40|106,435|-|36,85,86,91,113,156,164,182,189,203,214,226,240,242,263,268,341,398,404,450,451,521,522,527,528,604,679,806,851,884
+737|268@0,11@1,81@1,189@1,450@1,44@15,209@23,564@29,404@36,242@43,91@50,334@57,435@64|106,435|-|36,85,86,87,91,113,156,164,182,189,203,214,226,240,242,263,268,334,341,398,404,450,451,486,521,522,527,528,598,604,679,806,851,884
+738|85@0,81@1,242@1,268@1,435@1,44@15,209@23,564@29,405@36,12@43,19@50,97@57,192@64|11,91,106,189,334,404,435,450|-|19,36,63,76,85,86,87,91,97,113,129,156,164,182,189,203,214,226,240,242,263,268,334,341,398,403,404,405,412,416,430,450,451,486,512,521,522,523,527,528,598,604,679,806,851,884,916
+739|249@5,43@9,61@13,182@17,280@22,21@25,371@29,179@33,152@37,334@42,223@45,370@49|264,276,283,469|-|8,9,34,36,89,91,129,133,156,157,164,168,179,182,189,203,214,240,241,263,264,270,280,282,283,317,334,339,341,370,374,409,411,428,441,442,523,707,710,811,851,886,918
+740|8@0,43@1,182@1,249@1,61@17,280@22,21@25,419@29,179@33,665@37,334@42,223@45,370@49|-|-|8,9,34,36,58,59,63,89,91,129,133,156,157,164,168,179,182,184,189,196,203,214,240,241,263,264,270,280,282,283,317,334,339,341,370,374,409,411,416,419,428,441,442,523,707,710,776,811,851,861,883,886,912,918
+741|1@1,45@4,64@6,270@10,314@13,226@16,297@20,512@23,298@26,355@30,260@33,403@36,686@40,97@43,542@47|213,219,365,432,483|-|14,19,36,97,129,156,164,179,182,196,201,203,204,214,226,240,241,244,263,269,270,297,314,332,347,366,369,403,512,542,814,851,885,914
+""",
+    """742|71@1,584@1,78@6,230@12,577@18,522@24,343@30,415@36,605@42,405@48,483@54|564,585,597|-|94,113,115,129,141,156,164,168,182,203,204,214,226,241,244,263,270,271,285,286,313,345,347,366,369,405,412,447,450,512,522,577,583,605,676,806,851,884,885
+743|676@0,71@1,78@1,230@1,584@1,577@18,522@24,343@32,415@40,605@48,405@56,483@64|564,585,597|-|36,63,76,94,97,113,115,129,141,156,164,168,182,203,204,214,226,241,244,263,270,271,285,286,313,345,347,366,369,405,412,416,447,450,500,512,522,577,583,605,676,679,806,814,851,884,885,914,917
+744|33@1,43@1,28@4,104@8,88@12,336@16,44@20,317@24,46@28,157@32,242@36,184@40,446@44,444@48|37,283,387|-|14,34,36,38,46,91,156,157,164,182,184,189,201,203,204,214,242,263,269,270,283,304,317,334,414,422,424,428,442,444,446,523,555,583,706,707,851,885
+745|389@0,709@1,501@1,104@1,98@1,28@1,43@1,33@1,88@12,336@16,44@20,317@24,46@30,157@36,242@42,184@48,446@54,444@60|-|-|14,34,36,38,46,91,97,129,156,157,164,182,184,189,201,203,204,214,241,242,263,269,270,280,283,304,317,334,339,350,370,414,416,422,424,428,442,444,446,523,529,555,583,706,707,851,885
+746|55@1,45@1,270@4,251@8,362@12,715@16,291@20,487@24,253@28,401@32,392@36,283@40,56@44,38@48|36,54,352|799,812|56,57,58,89,127,156,164,173,182,203,213,214,231,240,250,251,253,258,263,270,291,330,341,362,369,496,503,523,710
+747|40@1,64@1,469@5,44@10,474@15,105@20,42@25,390@30,710@35,491@40,398@45,92@50|114,254,255,256,611|-|56,57,58,59,92,114,156,164,182,188,196,203,214,220,240,263,330,334,341,352,390,398,441,474,482,491,679,710,851,861,884,886
+748|661@0,40@1,44@1,64@1,469@1,474@15,105@20,42@25,390@30,710@35,491@42,398@49,92@56|-|-|34,56,57,58,59,63,92,114,156,164,182,184,188,196,203,214,220,240,263,330,334,341,352,390,398,416,441,474,479,482,491,506,679,710,851,861,884,886
+749|189@1,249@1,334@4,24@8,523@12,23@16,70@20,68@24,667@28,484@32,89@36,25@40,276@44|38,46,90,283,479|-|34,36,38,46,67,89,156,157,164,174,182,189,201,203,214,241,263,283,317,328,334,370,414,442,444,446,479,484,490,523,667,707,851
+750|24@1,189@1,249@1,334@1,523@12,23@16,70@20,68@24,667@28,484@34,89@40,25@46,276@52|-|-|34,36,38,46,63,67,89,156,157,164,174,182,184,189,201,203,214,241,263,283,317,328,334,341,370,411,414,416,442,444,446,479,484,490,523,667,707,776,808,851
+751|55@1,611@1,450@4,44@8,61@12,392@16,29@20,242@24,487@28,494@32,679@36,710@40,141@44,243@48|254,255,471,564|-|56,57,58,59,127,141,156,164,182,196,202,203,214,240,242,263,283,334,352,398,404,405,450,679,710,806,851,884,885,886
+752|44@1,55@1,450@1,469@1,611@1,61@12,392@16,29@20,242@26,487@32,494@38,679@44,710@50,141@56,243@62|254,255,471,564|-|34,56,57,58,59,63,115,127,141,156,164,182,184,196,202,203,214,240,242,263,283,334,352,398,404,405,416,450,679,710,806,851,884,885,886
+753|210@1,670@1,74@5,275@10,75@15,230@20,163@25,404@30,235@35,348@40,241@45,76@50|388,432|-|14,36,76,141,156,164,182,202,203,206,214,241,263,311,331,345,374,402,404,412,437,447,450,572,580,803,806,851,885
+754|572@0,74@1,76@1,210@1,275@1,400@1,670@1,75@15,230@20,163@25,404@30,235@37,348@44,241@51,669@63|-|-|14,36,63,76,141,156,164,182,184,202,203,206,214,240,241,263,280,282,311,331,345,374,398,402,404,412,416,437,447,450,490,572,580,669,676,803,806,851,885
+755|71@1,310@1,109@4,275@8,72@12,79@16,236@20,668@25,202@28,605@32,147@36,585@40,138@44|73,74,77,78|-|76,86,113,133,156,164,173,182,188,202,203,213,214,219,241,263,402,412,447,472,478,496,577,605,676
+756|71@1,310@1,109@1,275@1,72@12,79@16,236@20,668@27,202@32,605@38,147@44,585@50,138@56|-|-|63,76,86,113,133,156,164,173,182,188,202,203,213,214,219,240,241,263,311,402,409,412,416,447,472,478,496,577,605,676
+757|10@1,139@1,123@5,52@10,305@15,230@20,417@25,510@30,474@35,406@40,53@45,92@50,283@55|28,189,252,562|-|36,53,86,92,97,126,129,141,156,164,168,182,184,188,189,203,214,241,257,261,263,269,270,282,283,315,337,342,374,390,394,398,406,417,421,424,441,474,482,491,492,799,806,807,851,885,915
+758|680@0,283@1,282@1,259@1,207@1,139@1,227@1,52@1,50@1,10@1,123@1,1@1,305@15,230@20,417@25,510@30,474@37,406@44,53@51,92@58|-|-|34,36,53,63,86,92,97,126,129,141,156,164,168,182,184,188,189,203,214,227,241,257,261,263,269,270,282,283,304,313,315,337,342,349,374,390,394,398,406,416,417,421,424,441,474,482,491,492,512,784,799,806,807,851,885,913,915
+759|33@1,43@1,608@4,371@8,693@12,203@16,70@20,36@24,175@28,359@32,37@36,220@40,38@44,276@48|23,111,205,395|811|5,8,9,14,25,89,156,157,164,173,182,203,204,213,214,263,269,276,280,317,339,371,374,411,428,442,490,496,523,526,693,707
+760|20@0,20@1,33@1,43@1,608@1,371@1,693@12,203@16,70@20,36@24,175@30,359@36,37@42,220@48,38@54,276@60|-|811|5,8,9,14,25,34,63,67,89,156,157,164,173,179,182,203,204,213,214,263,269,276,279,280,317,337,339,370,371,374,409,411,416,421,428,442,490,496,523,526,663,667,693,707,776
+761|150@1,589@4,229@8,75@12,230@16,345@20,175@24,298@28,597@32|235,283,367|-|36,76,113,115,129,156,164,182,202,203,204,214,241,263,270,283,331,345,402,412,428,437,447,577,580,583,605,803,851,885
+762|75@1,150@1,175@1,229@1,589@1,230@16,345@22,23@28,298@34,597@40,437@46|-|-|36,76,113,115,129,156,164,182,202,203,204,214,241,263,270,283,331,345,374,402,412,428,437,447,490,572,577,580,583,605,803,813,851,885
+763|688@0,75@1,150@1,175@1,207@1,229@1,438@1,589@1,230@16,345@22,23@28,298@34,597@40,437@46,136@58|-|-|36,63,67,76,113,115,129,156,164,182,202,203,204,214,241,263,269,270,282,283,331,345,369,374,402,412,416,428,437,447,490,512,572,577,580,583,605,669,803,813,851,885
+764|35@1,74@1,22@3,270@6,577@9,204@12,345@15,235@18,73@21,447@24,186@27,666@30,572@33,20@36,583@39,230@42,80@45,580@48|388,495|-|63,76,113,129,133,156,164,168,182,202,203,204,214,220,227,241,244,263,269,270,271,282,331,345,347,366,369,374,402,412,433,447,500,512,572,574,577,580,583,605,676,803,851,885,914
+765|93@1,269@1,495@5,347@10,500@15,244@20,511@25,417@30,428@35,433@40,94@45,689@50,492@55,248@60|138,281,326,387|-|34,36,60,63,85,87,89,94,113,115,129,156,157,164,182,184,203,214,220,227,240,241,244,247,248,263,269,271,280,282,283,285,286,304,347,356,374,411,412,416,417,428,433,451,473,492,500,523,678,797,851,885,886,917
+766|33@1,43@1,249@5,116@10,251@15,184@20,36@25,374@30,339@35,37@40,38@45,370@50,179@55,416@60|68,69,98,282,364,501|-|34,36,38,63,67,89,156,157,164,168,174,179,182,184,203,214,220,226,240,241,247,253,263,264,269,280,282,317,339,360,369,370,374,402,409,410,411,412,416,441,442,447,479,490,512,523,527,811,851,885,886,918
+767|522@1,28@1,111@1|106,205,232,453,469|806|57,103,127,129,141,156,164,173,182,191,203,213,214,240,258,263,269,341,372,405,496,503
+768|660@0,660@1,522@1,28@1,111@1,180@1,249@4,210@8,341@12,450@16,334@20,389@24,163@28,534@32,42@36,14@40,710@44|-|806|14,42,57,58,59,63,103,127,129,141,156,157,164,173,182,188,191,196,203,206,213,214,240,258,263,269,280,291,317,330,334,339,341,370,371,372,374,398,399,404,405,411,416,421,442,474,482,496,503,529,534,555,675,710
+769|71@1,106@1,310@5,328@10,72@15,28@20,523@25,95@30,202@35,334@40,247@45,414@50,659@55,201@60|174,194,246,254,255,256|-|89,94,101,109,133,156,157,164,174,180,182,184,188,189,201,202,203,214,220,240,241,247,263,271,285,286,317,328,334,341,356,374,412,414,430,444,446,506,523,809,815,851,886
+770|71@1,106@1,310@1,328@1,72@15,28@20,523@25,95@30,202@35,334@40,247@47,414@54,659@61,201@68|-|-|34,63,89,94,101,109,133,156,157,164,174,180,182,184,188,189,201,202,203,214,220,240,241,247,263,271,285,286,317,328,334,341,356,374,412,414,416,430,444,446,506,523,809,815,851,886
+771|226@1,106@1,270@5,269@10,219@15,68@20,685@25,174@30,380@35,220@40,105@45,487@50,92@55,262@60|180,207,243,321|-|103,113,115,156,164,182,203,213,214,219,226,240,258,269,270,599
+772|33@1,286@1,332@5,184@10,458@15,319@20,306@25,403@30,161@35,404@40,442@45,36@50,38@55|-|805|14,63,86,129,156,157,161,164,173,182,184,196,201,203,214,240,241,258,263,286,334,337,369,371,403,404,416,421,442,496,526
+773|718@0,718@1,153@1,422@1,423@1,424@1,305@1,286@1,442@1,33@1,44@1,332@1,184@1,458@15,319@20,306@25,403@30,161@35,404@40,242@45,36@50,38@55,575@60|-|434,518,519,520,796,805|14,53,57,58,63,85,86,120,129,156,157,161,164,173,179,182,184,196,200,201,203,211,214,240,241,242,247,257,258,263,286,304,334,337,369,371,403,404,416,421,422,423,424,428,430,442,496,526,555,706
+774|33@1,111@3,205@8,109@10,129@15,246@17,120@22,446@24,36@29,397@31,322@36,408@38,38@43,504@45,153@50|-|-|36,38,63,76,89,94,109,113,115,129,156,157,164,182,201,203,214,263,283,317,347,350,356,360,369,408,414,416,428,442,444,446,451,512,523,605,800,815,851
+775|111@1,205@1,254@6,255@6,256@6,229@11,281@16,21@21,175@26,389@31,244@36,452@41,37@46|47,204,273,276,583|-|14,34,36,38,63,67,89,157,162,164,168,174,179,182,203,204,214,232,240,241,244,263,280,282,283,317,339,347,369,374,402,416,421,428,441,442,490,512,523,583,707,851,861,885
+776|123@1,33@1,52@4,182@8,203@12,175@16,510@20,334@24,406@28,34@32,53@36,704@40,504@44,315@48,153@52|174,229,457,469|434,799,807,808,815|5,25,34,53,63,76,83,89,126,156,164,173,182,200,203,213,214,231,241,253,257,261,263,269,279,304,315,317,334,337,339,371,374,406,411,416,430,442,444,474,484,496,523,526,535,693,707,776
+777|609@1,33@1,111@5,268@10,84@15,565@20,209@25,42@30,393@35,716@40,435@45,604@50,528@55,596@60|175,217,252,273,321,574|796,798,804|42,63,85,86,87,97,115,129,156,164,168,173,179,182,203,213,214,227,231,263,270,340,360,369,371,372,374,398,416,428,442,447,486,496,521,526,527,528,598,604
+778|10@1,150@1,310@1,383@1,452@1,425@6,104@12,608@18,102@24,468@30,163@36,421@42,204@48,583@54,220@60|174,194|-|14,36,63,85,86,87,94,101,109,113,141,156,164,168,174,180,182,202,203,204,214,220,240,241,244,247,261,263,269,271,339,374,399,404,409,416,421,433,506,566,577,581,583,605,807,851,884,885
+779|55@1,310@4,93@9,44@12,453@17,50@20,473@25,242@28,401@33,103@36,706@41,834@44|162,305,352,423|-|14,36,56,57,58,59,63,94,97,113,115,127,156,162,164,182,184,196,203,214,220,240,242,250,263,269,339,347,352,416,423,433,473,474,678,706,710,797,812,851,886,917
+780|589@1,497@1,239@5,182@10,137@15,219@20,225@25,326@30,406@35,113@40,19@45,304@50,200@55|54,321,407|434,799,808|19,53,56,57,58,59,63,76,85,86,87,89,113,126,129,133,156,157,164,173,182,196,200,203,211,213,214,219,240,241,247,253,257,263,270,276,304,337,347,349,374,406,411,412,416,421,447,496,523,526,542,555,583,707,784
+781|71@1,229@1,310@4,35@8,72@12,74@16,360@20,415@24,202@28,250@32,484@36,21@40,247@44,319@48,677@52,412@56,566@60,438@64|-|798,803,809|14,56,57,63,76,89,156,157,164,168,173,182,202,203,214,240,241,247,250,263,270,280,330,334,360,362,371,372,412,416,421,430,438,442,447,482,484,496,502,506,523,566,669,693,710,776
+782|33@1,43@1,182@4,525@8,184@12,29@16,526@20,103@24,334@28,337@32,568@36,349@40,200@44|68,225,264|-|14,34,36,46,67,89,156,157,164,179,182,184,200,201,203,206,214,263,264,269,280,317,334,337,339,349,404,406,411,421,434,442,523,525,784,799,851,913
+783|33@1,43@1,182@1,525@1,184@12,29@16,526@20,103@24,334@28,337@32,568@38,349@44,200@50,370@56|68,225,264|-|14,34,36,38,46,67,89,156,157,164,179,182,184,200,201,203,206,214,232,241,263,264,269,280,317,332,334,337,339,349,370,374,404,406,409,410,411,421,434,442,523,525,675,784,799,811,851,913,918
+784|691@0,33@1,43@1,182@1,525@1,184@12,29@16,526@20,103@24,334@28,337@32,568@38,349@44,200@52,370@60,775@68,586@76|68,187,225,264|-|7,8,9,14,34,36,38,46,53,63,67,89,156,157,164,179,182,184,200,201,203,206,214,232,240,241,263,264,269,270,280,283,304,317,319,332,334,337,339,349,370,374,396,398,404,406,409,410,411,416,421,430,434,442,446,523,525,675,707,776,784,799,811,851,913,918
+785|98@1,84@1,110@5,584@10,206@15,209@20,351@25,268@30,97@35,103@40,435@45,212@50,717@55,528@60,413@65,384@70,604@75|-|-|9,19,63,85,86,87,97,103,113,115,129,156,164,168,173,182,203,206,211,214,219,240,263,269,304,334,347,369,372,384,413,416,442,447,486,496,500,512,521,526,527,528,598,604,605
+786|310@1,93@1,110@5,312@10,577@15,60@20,260@25,597@30,230@35,326@40,473@45,212@50,717@55,585@60,321@65,285@70,678@75|-|-|63,85,87,94,113,115,156,164,168,173,182,203,204,214,219,241,247,248,263,269,285,334,347,374,384,385,411,412,416,427,447,472,473,478,496,500,502,577,583,605,678,683
+787|670@1,249@1,110@5,50@10,73@15,72@20,18@25,30@30,184@35,532@40,428@45,212@50,717@55,452@60,224@65,130@70,580@75|-|-|5,14,63,76,113,115,156,157,164,173,182,184,202,203,206,214,219,224,241,263,269,276,279,280,317,331,334,339,347,370,371,374,384,385,402,411,412,416,428,444,447,496,500,526,555,580,605,663,667,684,693
+788|574@1,55@1,110@5,54@10,114@10,392@15,352@20,362@25,432@30,505@35,57@40,330@45,212@50,717@55,585@60,56@65,487@70,581@75|-|-|8,56,57,58,59,63,113,115,127,156,164,173,182,196,203,214,219,240,247,250,263,269,271,291,330,334,347,362,374,385,416,447,472,478,496,500,503,577,581,583,605,684
+789|150@1,100@1|-|-|-
+790|322@0,100@1|-|-|-
+791|713@0,100@1,232@1,322@1,568@1,442@7,319@14,428@21,430@28,234@35,242@42,368@49,528@56,76@63,394@70,469@77,416@84|-|-|34,36,38,46,53,63,76,83,85,87,89,94,97,113,115,126,129,156,157,164,182,184,200,203,214,232,241,242,244,248,263,270,282,283,304,317,319,334,347,360,370,394,411,416,428,430,433,442,444,473,484,488,523,528,535,555,706,796,797,800,851
+792|714@0,93@1,95@1,100@1,322@1,101@7,109@14,403@21,247@28,236@35,539@42,94@49,585@56,566@63,138@70,469@77|-|-|19,58,59,63,76,85,87,94,97,101,109,113,115,129,156,164,180,182,184,196,203,214,240,241,244,247,248,257,261,263,270,271,332,347,366,403,411,416,421,433,451,473,506,512,566,605,797,800,809,814,851
+793|35@1,1@1,51@5,321@10,491@15,499@20,471@25,470@25,474@30,29@35,390@40,599@45,408@50,446@55,243@60,472@65,457@70|-|800,810|34,85,86,87,94,113,156,157,164,173,182,188,201,203,214,219,263,317,390,398,408,428,433,440,441,442,446,447,472,473,474,482,492,496,502,506,599,605,693
+794|612@1,106@1,269@5,565@10,233@15,339@20,203@25,179@30,5@35,679@40,116@45,223@50,68@55,359@60,276@65,264@70|-|811,814|5,8,9,34,89,116,141,156,157,164,173,179,182,200,203,206,214,263,269,276,279,280,317,339,340,360,370,371,374,398,409,416,442,444,490,496,523,526,663,667,707
+795|364@1,229@1,43@5,501@10,450@15,67@20,24@25,167@30,23@35,97@40,679@45,340@50,683@55,405@60,483@65,136@70|-|806,811,813|58,59,63,67,97,129,156,164,173,182,196,200,203,206,214,263,269,280,340,369,370,372,374,398,405,411,416,490,492,496,527,529,675,683
+796|35@1,84@1,268@5,86@10,275@15,209@20,351@25,95@30,598@35,9@40,435@45,393@50,85@55,604@60,438@65,192@70|-|804|9,63,76,85,86,87,113,115,156,164,173,182,203,214,240,241,263,347,374,412,416,438,447,486,496,521,527,528,598,604,605,693
+797|71@1,33@1,106@5,469@10,72@15,479@20,275@25,475@30,202@35,430@40,319@45,334@50,73@55,484@60,38@65,130@70|-|796,798,800|19,34,53,63,76,89,120,126,156,157,164,173,182,202,203,214,224,263,276,334,360,402,403,412,416,428,430,442,444,447,484,496,512,523,684,693,707
+798|210@1,410@1,75@5,206@10,15@15,314@20,332@25,197@30,400@35,235@40,673@45,432@50,348@55,533@60,14@65,12@70|-|796|14,103,156,164,173,182,202,203,206,214,280,334,347,348,403,404,416,427,496,669,684
+799|44@1,525@1,256@5,254@5,282@10,23@15,707@20,469@25,242@30,34@35,380@40,359@45,484@50,407@55,562@60,37@65,416@70|-|434,798,808,810|5,25,34,53,63,89,126,133,156,157,164,168,173,182,188,200,203,214,231,242,257,263,280,317,334,337,360,371,374,398,399,406,409,416,421,442,444,482,484,496,523,535,555,667,693,707,776
+800|93@1,232@1,234@1,236@1,451@1,446@8,163@16,400@24,427@32,500@40,350@48,334@56,408@64,722@72,356@80,711@88|-|-|14,34,63,76,89,94,113,115,129,156,157,164,168,182,184,200,201,203,214,232,241,248,257,263,280,282,286,304,317,332,334,347,349,350,356,360,374,399,404,406,408,414,416,421,430,433,442,444,446,451,473,500,523,684,706,797,800,851
+801|360@1,270@1,111@6,205@12,334@18,602@24,60@30,62@36,199@42,508@48,271@54,442@60,396@66,430@72,220@78,192@84,705@90|-|-|34,36,58,60,63,76,85,86,94,97,109,113,115,129,156,164,182,191,203,206,214,220,226,227,241,247,263,270,271,280,285,286,319,334,347,356,360,396,411,412,416,428,430,433,442,447,451,473,484,486,500,521,527,574,577,581,583,598,605,796,802,851,861,883
+802|9@1,7@1,8@1,383@1,425@1,364@1,68@1,272@9,325@18,395@27,372@36,389@45,409@54,244@63,712@72,673@81,283@90,370@99|-|806,809,811|5,7,8,9,25,63,67,97,129,156,157,164,168,173,179,182,200,203,206,214,247,261,263,276,279,280,299,317,339,340,347,370,371,372,374,396,398,409,411,416,421,428,442,444,447,490,492,496,506,512,526,566,675
+803|406@1,64@1,45@1,270@1,51@1,31@7,565@14,204@21,474@28,599@35,417@42,398@49,380@56,92@63|-|-|42,156,164,173,182,188,203,204,214,231,253,263,270,390,398,406,417,441,474,482,496,599
+804|314@0,314@1,403@1,406@1,64@1,45@1,270@1,51@1,31@7,565@14,204@21,474@28,599@35,417@42,398@49,380@56,92@63,407@70|-|434,799,814|19,42,53,63,85,126,129,141,156,164,168,173,182,188,191,200,203,204,214,231,253,257,263,270,337,349,369,372,390,398,399,403,404,406,416,417,421,440,441,474,482,496,502,506,512,555,599,675,684,784
+805|33@1,106@1,88@5,182@10,23@15,335@20,157@25,469@30,475@35,350@40,393@45,334@50,442@55,36@60,446@65,38@70|-|796,798,800|25,34,89,113,115,156,157,164,173,182,201,203,214,219,263,276,285,317,334,350,360,416,428,430,433,442,444,446,472,478,484,496,502,523,535,667,693,707,776
+806|310@1,83@1,113@5,52@10,101@15,109@20,277@25,510@30,95@35,595@40,247@45,347@50,261@55,271@60,126@65,720@70|-|797|7,53,63,76,83,94,113,120,126,156,164,168,173,182,203,214,227,241,247,253,257,261,263,269,271,315,347,350,371,374,399,421,428,473,492,496,500,595
+807|612@1,252@1,10@1,98@1,555@1,209@1,154@8,501@16,163@24,521@32,268@40,9@48,468@56,435@64,528@72,97@80,721@88,370@96|-|804,811|5,6,7,9,25,63,67,85,86,87,97,129,156,164,173,179,182,184,200,203,206,214,231,263,269,270,276,279,280,299,339,340,347,370,372,374,396,409,411,416,447,486,490,496,512,521,526,527,528,555,583,604,675,693
+808|84@1,106@1,39@8,29@16,86@24,151@32,430@40|-|796|85,86,156,164,173,182,203,214,263,334,360,430,496
+809|9@0,9@1,84@1,106@1,39@1,29@1,86@24,151@32,430@40,5@48,182@56,435@64,223@72,276@80,742@88,63@96|-|796,798|5,8,9,25,34,58,63,76,85,86,87,89,120,156,157,164,173,182,203,214,263,276,280,317,334,360,416,430,442,484,496,604,663,667,693,776
+810|10@1,45@1,785@6,269@8,75@12,103@17,282@20,21@24,253@28,452@32,283@36|70,73,74,252,359,388|-|14,34,36,67,76,129,156,164,168,182,202,203,206,214,241,253,263,269,282,283,331,345,369,374,402,409,412,437,447,512,520,580,669,803,851,885
+811|458@0,10@1,45@1,269@1,785@1,75@12,103@19,282@24,21@30,253@36,452@42,283@48|70,73,74,252,359,388|-|14,34,36,38,67,76,129,156,164,168,182,184,202,203,206,214,241,253,263,269,282,283,331,345,369,374,402,409,412,437,447,512,520,580,669,803,851,885
+812|778@0,10@1,45@1,269@1,458@1,568@1,580@1,785@1,75@12,103@19,282@24,21@30,253@38,452@46,283@54,586@62|70,73,74,252,359,388|-|14,34,36,38,63,67,76,89,129,156,164,168,182,184,202,203,206,214,241,253,263,264,269,280,282,283,304,331,338,339,341,345,369,374,402,409,411,412,414,416,437,447,490,512,520,523,555,580,667,669,707,776,803,851,885
+813|33@1,45@1,52@6,98@8,24@12,488@17,97@20,29@24,68@28,340@32,38@36|28,136,162,389|-|36,38,53,67,83,97,126,129,156,162,164,179,182,203,214,226,241,257,263,269,270,315,369,394,424,441,486,488,490,512,519,807,851,885,915
+814|33@1,45@1,52@1,98@1,24@12,488@19,97@24,29@30,68@36,340@42,38@48|28,136,162,389|-|14,36,38,53,67,83,97,126,129,156,162,164,179,182,203,214,226,241,257,263,269,270,311,315,339,341,369,394,424,441,486,488,490,512,519,807,851,885,915
+815|780@0,33@1,45@1,52@1,98@1,364@1,24@12,488@19,97@24,29@30,68@38,340@46,38@54,756@62|28,136,162,389|-|7,14,36,38,53,63,67,83,97,126,129,156,162,164,179,182,189,203,214,226,241,247,257,261,263,269,270,307,311,315,339,341,369,374,394,411,416,424,428,441,442,479,486,488,490,512,519,555,807,811,815,851,885,915
+816|1@1,45@1,55@6,20@8,352@12,715@17,389@20,369@24,710@28,487@32,240@36|54,104,114,392,420,453,565|-|36,56,57,113,114,115,127,129,156,164,182,203,214,240,250,263,311,330,341,352,369,518,710,851,886
+817|1@1,20@1,45@1,55@1,352@12,715@19,389@24,369@30,710@36,487@42,240@48|54,104,114,392,420,453,565|-|36,56,57,113,114,115,127,129,156,164,182,203,214,226,240,250,263,311,330,341,352,369,374,518,710,851,886
+818|745@0,1@1,20@1,45@1,55@1,512@1,352@12,715@19,389@24,369@30,710@38,487@46,240@54,56@62|54,104,114,392,420,453,565|-|14,36,56,57,58,59,63,97,113,114,115,118,127,129,156,164,182,196,203,214,226,240,244,247,250,263,269,308,311,314,330,333,341,352,369,374,399,403,410,416,479,503,512,518,710,784,806,812,851,883,886
+819|33@1,39@1,44@5,747@10,254@15,255@15,256@15,34@20,156@25,68@30,331@35,162@40,562@45|111,187,205,387|-|34,36,38,91,133,156,162,164,168,174,182,189,203,214,242,263,283,304,331,341,360,374,402,851,885
+820|343@0,33@1,39@1,44@1,747@1,254@15,255@15,256@15,34@20,156@27,68@34,331@41,162@48,562@55|-|-|14,34,36,38,63,89,91,133,156,162,164,168,174,182,189,203,214,240,241,242,263,282,283,304,331,341,360,374,402,416,422,423,424,523,528,667,706,707,776,851
+821|43@1,64@1,681@4,468@8,31@12,365@16,269@20,184@24,65@28,207@32,413@36|28,143,180,249,355,366,432|-|19,36,97,129,156,164,168,179,180,182,184,203,214,263,269,313,314,332,366,369,403,413,417,814,851
+822|43@1,64@1,468@1,681@1,31@12,365@16,269@22,184@28,65@34,207@40,413@46|-|-|19,36,97,129,156,164,168,179,180,182,184,203,214,241,263,269,313,314,332,366,369,403,413,417,542,814,851
+823|211@0,43@1,64@1,103@1,319@1,334@1,468@1,681@1,31@12,365@16,269@22,184@28,65@34,207@42,413@50|28,143,180,249,355,366,432|-|19,34,36,38,63,97,113,115,129,156,164,168,174,179,180,182,184,203,214,232,240,241,263,269,313,314,319,332,334,339,366,369,403,413,416,417,430,442,484,542,776,796,814,851
+824|522@1|48,105,564,611|-|-
+825|115@0,113@0,93@0,115@1,113@1,93@1,522@1|-|797|76,94,113,115,141,156,164,173,182,203,213,214,219,247,248,263,270,271,285,286,334,347,371,384,385,405,412,428,433,472,473,478,496,500,502,678,776
+826|115@1,113@1,93@1,522@1,109@4,277@8,97@12,60@16,95@20,502@24,405@28,243@32,94@36,495@40,347@44,678@48|-|797|63,76,94,97,113,115,141,156,164,173,182,202,203,213,214,219,226,247,248,263,270,271,285,286,334,347,369,371,384,385,405,412,416,427,428,433,472,473,478,496,500,502,678,776
+827|98@1,39@1,251@4,468@8,555@12,372@16,417@20,389@24,400@28,541@32,492@36|259,282,336,501|808|91,97,103,129,156,164,168,173,182,203,213,214,226,251,263,269,313,341,372,417,492,496,541,555,583
+828|168@0,168@1,98@1,39@1,251@1,468@1,555@12,372@16,417@22,389@28,400@34,541@40,492@46,575@52|-|807,808|63,91,94,97,103,129,156,164,168,173,182,203,213,214,226,242,247,251,263,269,313,341,369,372,399,416,417,421,422,423,424,447,492,496,512,541,555,583
+829|670@1,47@1,229@4,230@8,75@12,496@16,536@21,235@24,304@28,312@32,437@36|73,74,77,78,79,388|803|76,113,156,164,173,182,202,203,204,213,214,241,263,270,304,331,345,412,437,447,496,580,676
+830|178@0,178@1,670@1,47@1,229@1,230@1,75@12,496@16,536@23,235@28,304@34,312@40,437@46,538@52|-|803|63,76,113,156,164,173,182,202,203,204,213,214,241,263,270,304,311,331,345,402,412,416,437,447,496,580,676
+831|33@1,45@1,111@4,383@8,470@12,24@16,29@21,36@25,385@28,179@32,538@36,38@40|23,68,207|803|86,97,156,164,173,179,182,203,213,214,263,371,385,486,496,528
+832|33@1,45@1,111@1,383@1,470@12,24@16,29@21,36@27,385@32,179@38,538@44,38@50,387@56|-|803|14,25,34,63,86,97,156,164,173,179,182,203,213,214,226,263,340,371,385,416,428,486,496,514,528,776
+833|33@1,55@1,44@7,182@14,29@21,68@28,746@35,710@42,34@49|380,504,525|-|34,36,56,57,127,156,164,182,184,203,206,214,240,242,250,263,341,352,398,423,525,707,710,806,851,886
+834|317@0,33@1,44@1,55@1,182@1,242@1,397@1,534@1,29@21,68@30,746@39,710@48,34@57,457@66|-|-|14,34,36,38,56,57,58,59,63,89,91,127,156,157,162,164,182,184,201,203,206,214,240,242,250,263,317,328,330,334,341,350,352,398,414,416,423,444,446,523,667,675,684,707,710,776,800,806,851,861,886
+835|33@1,39@1,609@5,44@10,46@15,209@20,204@26,242@30,268@35,528@40,583@45|28,38,336,435,488|804|85,86,87,91,129,156,164,173,182,203,204,213,214,242,253,263,270,422,424,486,496,521,528,555,583
+836|582@1,33@1,39@1,609@1,44@1,46@15,209@20,204@28,242@34,268@41,528@48,583@55,604@62|-|804|63,85,86,87,91,97,116,129,156,164,173,182,203,204,213,214,242,253,263,270,304,339,416,422,424,486,496,521,528,555,583,598,604,706
+837|33@1,108@1,229@5,479@10,397@15,246@20,510@25,446@30,535@35,350@40|153,189,335|-|34,36,91,115,156,157,164,174,182,189,191,201,203,214,261,263,317,328,334,350,360,408,442,444,446,479,523,535,800,851,915
+838|488@0,33@1,108@1,229@1,479@1,397@15,246@20,510@27,446@35,535@41,350@48,444@55|-|-|34,36,53,83,91,115,126,156,157,164,174,182,189,191,201,203,214,241,257,261,263,315,317,328,334,350,360,394,408,442,444,446,479,484,488,503,523,535,776,800,815,851,915
+839|749@0,33@1,108@1,229@1,479@1,488@1,397@15,246@20,510@27,446@37,535@45,350@54,444@63|-|-|7,34,36,53,63,76,83,89,91,115,126,156,157,164,174,182,191,201,203,214,241,257,261,263,315,317,328,334,350,360,394,408,414,416,442,444,446,479,484,488,503,523,535,667,776,800,815,851,915
+840|310@1,110@1|111,205,278,389|-|851,884
+841|17@0,310@1,239@1,110@1,278@1,74@1,491@4,512@8,73@12,182@16,225@20,349@24,406@28,788@32,334@36,19@40,407@44|-|-|19,36,63,76,156,164,182,184,200,202,203,214,241,263,283,331,332,334,345,349,369,402,403,406,412,416,434,437,447,484,491,512,580,803,814,851,884,885
+842|29@0,310@1,74@1,278@1,110@1,230@1,174@4,23@8,73@12,182@16,331@20,105@24,787@28,34@32,334@36,406@40,412@44|-|-|34,36,63,76,89,113,115,133,156,164,174,182,200,202,203,214,240,241,263,270,331,334,345,360,402,406,412,416,428,434,437,442,447,484,523,525,580,667,707,776,803,851,884,885
+843|28@1,35@1,107@5,693@10,523@15,29@20,137@25,91@30,201@35,21@40,489@45,328@50|189,342,387,407,562|-|34,36,89,91,156,157,164,182,184,189,201,203,214,263,317,328,341,342,350,414,444,446,523,529,799,806,815,851
+844|28@1,35@1,107@1,693@1,523@15,29@20,137@25,91@30,201@35,21@42,489@49,328@51|-|-|34,36,63,89,91,156,157,164,182,184,189,200,201,203,214,263,283,317,328,334,341,342,350,414,416,422,424,428,442,444,446,523,529,542,667,776,799,806,815,851
+845|64@1,254@1,255@1,256@1,55@7,31@14,365@21,291@28,65@35,133@42,37@49,56@56|297,332,355,392,432,562,895|-|19,36,56,57,58,59,63,97,133,156,164,168,179,182,196,203,214,240,250,253,263,283,297,311,314,332,352,366,403,413,416,512,542,675,710,814,851,884,886
+846|64@1,453@1,31@6,44@12,97@18,291@24,116@30,242@36,710@42,38@48|37,163,367,400|-|36,38,56,57,97,127,129,156,164,182,203,214,240,242,250,263,280,352,370,423,529,675,706,710,799,812,851,886
+847|31@1,44@1,64@1,453@1,675@1,97@18,291@24,116@32,242@40,710@48,38@56|-|-|36,38,56,57,58,59,63,97,127,129,156,164,182,184,203,214,240,242,250,263,280,352,370,398,416,423,529,675,706,710,799,812,851,886
+848|45@1,51@1,175@1,562@1,609@1,715@1|283,319|-|156,164,182,203,204,214,227,263,283,319,851
+849|209@0,43@1,45@1,51@1,84@1,609@1,568@1,175@1,562@1,715@1,491@1,268@4,351@8,184@12,269@16,103@24,207@28,92@32,435@36,398@40,786@44,586@48,508@52|-|-|7,9,36,63,85,86,87,92,118,129,156,164,168,182,184,188,203,204,214,227,240,241,253,263,268,269,270,280,283,304,319,342,374,390,398,409,416,422,441,451,474,482,486,491,500,506,521,527,528,555,598,604,675,851,885,917
+850|52@1,108@1,35@5,44@10,172@15,450@20,489@25,21@30,83@35,242@40,680@45,679@50,682@55|111,205,282,522|806,815|83,141,156,164,173,182,203,213,214,241,242,257,263,405,438,474,496,503,535,693
+851|517@1,52@1,108@1,35@1,44@1,172@15,450@20,489@25,21@32,83@39,242@46,680@53,679@60,682@67|-|806,815|53,63,76,83,126,141,156,164,173,182,203,213,214,241,242,257,261,263,315,394,404,405,416,422,424,438,474,496,503,535,595,693
+852|249@1,43@1,364@5,20@10,197@15,280@20,339@25,66@30,269@35,179@40,276@45|69,220,389,487,509,612|811|5,8,34,127,156,164,173,179,182,203,213,214,263,269,276,279,280,291,330,339,341,362,370,371,411,496,514,526,710
+853|753@0,753@1,190@1,249@1,43@1,364@1,20@1,197@15,280@20,339@25,66@30,269@35,179@40,276@45,576@50|-|806,811|5,8,34,56,57,63,91,127,156,164,173,179,182,184,203,213,214,250,263,269,276,279,280,291,330,339,341,362,370,371,409,411,416,496,514,526,693,707,710
+854|110@1,310@1,597@6,72@12,389@24,230@30,202@36,417@42,247@48,262@54,504@60|502|-|60,94,101,109,118,156,164,174,180,182,202,203,214,226,247,261,263,271,285,286,345,347,399,417,433,473,492,500,506,566,809,851
+""",
+    """855|752@0,72@1,110@1,310@1,597@1,668@1,182@18,389@24,230@30,202@36,417@42,247@48,262@54,504@60,174@66|-|-|60,63,94,101,109,113,115,118,156,164,174,180,182,202,203,214,220,226,247,261,263,271,285,286,345,347,399,416,417,433,473,492,500,506,566,809,851
+856|93@1,589@1,791@5,574@10,597@15,60@20,505@25,605@30,347@35,94@40,361@45|495,511,595,609|-|60,86,94,113,115,118,129,156,164,182,202,203,204,214,226,244,248,263,270,271,285,286,345,347,399,433,473,500,574,577,581,583,605,678,797,851
+857|693@0,93@1,574@1,589@1,791@1,597@15,60@20,505@25,605@30,347@37,94@44,361@51|-|-|60,86,94,113,115,118,129,156,164,182,202,203,204,214,226,244,248,263,270,271,285,286,345,347,399,433,473,500,574,577,581,583,605,678,797,851
+858|427@0,93@1,574@1,589@1,693@1,791@1,597@15,60@20,505@25,605@30,347@37,94@46,361@55,750@64|-|-|14,60,63,86,94,97,113,115,118,129,156,164,182,202,203,204,214,220,226,244,247,248,263,270,271,285,286,345,347,356,399,416,421,433,473,500,574,577,581,583,605,678,797,802,851,917
+859|252@1,590@1,44@4,260@8,313@12,372@16,207@20,389@24,259@28,399@33,417@36,583@40,492@44|575|-|36,67,86,113,115,118,141,156,164,168,182,184,203,214,263,269,271,313,374,399,409,417,492,577,581,583,605,675,807,808,851,885,886
+860|793@0,44@1,252@1,260@1,590@1,313@12,372@16,207@20,389@24,259@28,399@35,417@40,583@46,492@52|-|-|36,67,86,113,115,118,141,156,164,168,182,184,203,214,263,269,271,286,313,374,399,409,417,421,492,577,581,583,605,675,807,808,851,885,886
+861|789@0,793@1,590@1,339@1,44@1,252@1,260@1,313@12,372@16,207@20,389@24,259@28,399@35,417@40,583@48,492@56,359@64|-|-|7,8,9,34,36,63,67,86,113,115,118,141,156,164,168,182,184,203,214,242,263,264,269,271,280,286,313,339,374,399,409,411,416,417,421,490,492,577,581,583,605,675,707,776,807,808,851,885,886
+862|792@0,792@1,238@1,66@1,400@1,415@1,42@1,608@1,33@1,43@1,28@1,122@1,555@9,29@12,468@15,154@18,156@23,36@28,184@35,68@42,269@49,38@56|-|808|5,7,8,9,25,34,42,57,58,59,63,67,85,86,87,91,103,116,129,156,164,168,173,179,182,184,196,203,213,214,231,240,241,247,250,263,269,270,271,279,280,304,313,334,339,341,370,371,372,374,402,404,416,421,440,441,447,496,514,526,555,675,707,776
+863|442@0,10@1,45@1,252@1,334@1,368@1,468@1,6@12,232@16,269@20,207@24,154@31,103@36,163@42,319@48,37@54|-|-|14,34,36,38,63,85,87,91,118,133,156,164,168,174,180,182,203,204,206,214,226,232,240,241,242,247,263,269,270,280,282,283,304,313,319,334,360,369,370,374,399,402,404,416,417,421,441,442,446,484,492,583,675,796,808,851,885,886
+864|195@1,33@1,106@1,310@1,50@1,180@15,246@20,506@25,174@30,668@35,408@40,101@45,288@50,243@55|-|800,807,809|34,42,56,57,58,59,63,89,91,94,103,113,115,120,133,141,156,157,164,173,182,196,201,202,203,213,214,219,240,241,247,250,258,261,263,279,317,333,334,347,350,362,408,414,416,444,446,496,503,506,523,675,707,710
+865|334@0,334@1,660@1,64@1,28@1,43@1,210@1,249@15,693@20,197@25,282@30,432@35,280@40,14@45,21@50,348@55,515@60,413@65,794@70|-|803,811,814|14,34,116,156,164,173,182,203,211,213,214,241,263,270,276,279,280,334,348,370,372,398,413,496,514,526,669,675,693
+866|313@1,303@1,495@1,335@1,383@1,227@1,272@1,182@1,278@1,102@1,113@1,115@1,219@1,605@1,581@1,1@1,229@1,226@1,420@1,93@12,502@16,196@20,24@24,60@28,95@32,243@36,389@40,573@44,94@48,298@52|-|797,813|5,8,25,34,58,59,63,76,85,86,87,94,103,113,115,118,156,164,168,173,182,196,203,204,213,214,219,226,227,240,241,247,248,253,258,263,269,270,271,280,285,313,333,334,347,371,374,384,385,409,411,412,416,417,419,428,433,447,472,473,478,492,496,500,502,581,605,678,707
+867|421@0,421@1,184@1,310@1,182@1,114@1,101@1,50@12,693@16,578@20,506@24,212@28,21@32,174@38,247@44,89@50,471@56,470@56,194@62|-|809|63,89,94,133,156,157,164,168,173,182,184,201,203,213,214,219,240,247,261,263,269,271,279,285,286,313,317,328,334,347,350,371,384,385,390,399,406,412,414,416,417,421,428,433,444,446,447,472,496,502,506,523,566,693,776
+868|33@1,597@1,186@5,230@10,577@15,204@20,213@25,151@30,605@35,105@40,581@45,494@50|387,608|-|156,164,182,203,204,214,263,270,500,577,581,605,851
+869|777@0,33@1,186@1,230@1,597@1,577@15,204@20,213@25,151@30,605@35,105@40,581@45,494@50|387,608|-|63,76,94,113,118,156,164,182,202,203,204,214,220,227,244,263,270,283,286,313,345,347,374,409,412,416,473,500,574,577,581,583,605,802,851,914
+870|33@1,182@1,249@5,116@10,29@15,339@20,203@25,179@30,660@35,748@40,334@45,370@50,224@55,68@60|-|-|14,34,36,63,97,156,157,164,179,182,203,206,214,240,241,244,253,263,270,280,282,283,317,334,339,370,398,411,416,428,442,667,675,679,684,776,811,851,885,918
+871|64@1,84@1,55@5,268@10,31@15,209@20,61@25,105@30,174@35,604@40,398@45,716@50,367@55,435@60|262,389|-|34,36,56,57,63,85,86,87,129,156,164,174,179,182,191,203,214,220,240,263,268,330,390,398,416,451,474,486,503,506,527,528,604,675,710,851,886,916
+872|522@1,181@1|243,450,584|-|156,164,182,196,214,263,333,405,450,522,679,806,851,884
+873|196@0,522@1,181@1,213@1,270@1,78@4,611@8,54@12,432@16,297@21,62@24,883@28,405@32,694@36,59@40,366@44,469@48,483@52|-|-|36,58,59,63,113,115,129,141,156,164,182,196,202,203,214,263,270,286,297,311,333,347,366,369,403,405,416,419,450,512,522,542,583,605,679,806,813,851,861,883,884
+874|88@1,335@1,397@6,317@12,356@18,23@24,446@30,157@36,34@42,469@48,484@54,444@60,25@66|174,246|-|34,36,63,67,89,156,157,164,174,182,201,203,214,241,244,263,283,286,317,328,334,350,356,408,414,416,444,446,479,484,490,523,535,667,707,776,800,851,912
+875|33@1,181@1,54@6,311@12,196@18,29@24,133@30,573@36,883@42,694@48,57@54,59@60|38,187,392,457,487,556|-|8,34,36,38,56,57,58,59,63,97,115,127,133,156,164,179,182,196,203,214,240,250,263,297,311,333,334,352,416,419,428,442,710,812,851,861,883,886
+876|500@1,589@1,227@5,574@10,60@15,270@20,495@25,361@30,94@35,347@40,471@45,678@50,387@55|244,252,326|-|34,36,60,94,118,129,156,164,182,203,214,227,244,247,263,270,271,285,286,304,345,347,356,409,412,428,433,473,500,574,577,583,605,678,797,851,917
+877|39@1,84@1,43@5,681@10,98@15,260@20,44@25,209@30,259@35,97@40,331@45,242@50,783@55,37@60|162,207,229,252,268,321,511,575|-|9,36,38,85,86,87,97,129,156,162,164,168,179,180,182,184,200,203,214,226,242,253,263,268,269,280,282,283,313,331,374,399,402,417,422,423,424,451,486,492,521,527,528,555,598,604,706,707,808,851
+878|33@1,45@1,205@5,249@10,523@15,23@20,334@25,91@30,70@35,442@40,583@45,667@50,276@55|18,21,38,90,111,174,207,562|-|34,36,38,89,91,156,157,164,174,182,201,203,214,263,280,283,317,334,341,350,374,414,428,430,442,444,446,484,523,583,667,707,776,796,851
+879|484@0,33@1,45@1,205@1,249@1,523@15,23@20,334@25,91@30,70@37,442@44,583@51,667@58,276@65|-|-|34,36,38,63,89,91,156,157,164,174,182,200,201,203,214,263,269,280,282,283,317,334,341,350,374,414,416,428,430,442,444,446,479,484,523,535,555,583,667,707,776,796,851,912,916
+880|33@1,84@1,268@7,332@14,246@21,365@28,525@35,23@42,21@49,435@56,754@63,406@70,407@77|-|434,800,804|5,9,25,34,53,63,67,83,85,86,87,89,126,156,157,164,173,182,200,203,214,231,240,241,263,269,317,337,350,406,414,416,422,424,444,486,496,523,528,667,693,707,784
+881|181@1,84@1,268@7,497@14,246@21,365@28,419@35,573@42,21@49,435@56,754@63,556@70,59@77|-|800,804|5,9,25,34,56,57,58,59,63,67,85,86,87,156,157,164,173,182,196,203,214,231,240,258,263,269,304,317,333,350,371,416,419,422,423,444,486,496,523,528,707
+882|33@1,55@1,182@7,693@14,246@21,44@28,225@35,23@42,162@49,242@56,755@63,406@70,407@77|-|434,800|25,34,56,57,63,67,89,127,141,156,157,164,173,182,200,203,214,240,242,250,263,291,317,350,362,406,414,416,423,428,442,444,496,503,523,693,706,707,710
+883|181@1,55@1,182@7,196@14,246@21,44@28,694@35,573@42,162@49,242@56,755@63,556@70,59@77|-|800|34,56,57,58,59,63,127,156,157,164,173,182,196,203,214,240,242,250,258,263,291,317,333,334,350,362,416,419,423,428,442,444,496,706,710
+884|43@1,232@1,249@6,468@12,319@18,784@24,525@30,334@36,116@42,337@48,430@54,368@60,63@66|163,243,400|-|14,34,36,38,46,63,76,85,86,87,113,115,156,157,164,182,184,200,203,214,232,263,280,317,319,334,337,360,399,406,416,430,434,442,444,446,484,492,525,555,776,784,796,851,913
+885|44@1,98@1,310@1,611@1|50,104,109,174,389,525|-|86,109,129,156,164,174,182,203,214,226,263,270,434,525,851
+886|406@0,611@1,44@1,98@1,310@1,199@6,372@12,506@18,97@24,458@30,369@36,349@42,566@48,36@54,407@61,38@66,387@72|-|-|36,38,53,56,57,85,86,87,97,101,113,115,126,129,156,164,168,174,182,200,203,214,226,241,247,261,263,270,349,369,406,434,506,512,525,566,706,784,851,884,913
+887|751@0,44@1,98@1,225@1,310@1,611@1,199@6,372@12,506@18,97@24,458@30,369@36,349@42,566@48,36@54,407@63,38@70,387@78|-|-|19,34,36,38,53,56,57,63,76,85,86,87,97,101,113,115,126,129,156,164,168,174,182,200,203,214,226,241,247,261,263,270,337,349,369,406,416,434,506,512,525,566,706,784,851,884,913
+888|44@1,98@1,232@1,336@1,501@1,533@1,163@11,14@22,442@33,568@44,242@55,585@66,370@77,416@88|-|-|14,34,36,63,91,97,129,156,164,179,182,184,203,206,214,232,242,263,270,280,286,304,334,370,398,403,411,416,422,423,424,430,442,528,555,581,583,605,669,706,796,851,885
+889|44@1,98@1,232@1,336@1,469@1,163@11,334@22,442@33,368@44,242@55,585@66,370@77,416@88|-|-|34,36,46,63,76,91,97,113,115,129,156,164,179,182,184,201,203,214,232,240,241,242,263,270,280,286,304,334,370,411,416,422,423,424,430,442,444,484,528,555,583,605,706,776,796,811,851,885
+890|97@1,109@1,342@1,525@1,92@8,474@16,349@24,440@32,406@40,53@48,744@56,322@64,105@72,63@80,200@88|-|-|19,34,36,53,63,76,83,92,97,109,113,115,126,156,164,182,184,188,200,203,214,240,241,247,263,342,349,356,390,398,406,416,430,434,441,474,482,525,800,851
+891|43@1,249@1,203@4,116@8,332@12,184@16,29@20,280@24,197@28,339@32,442@36,223@40,68@44,370@48,264@52|-|-|7,8,9,14,34,36,38,67,91,156,164,179,182,184,203,214,232,263,264,270,280,332,339,369,370,374,428,442,490,512,851
+892|817@0,203@1,389@1,249@1,43@1,116@1,332@12,184@16,29@20,280@24,197@28,339@32,442@36,223@40,68@44,370@48,264@52|-|-|7,8,9,14,34,36,38,46,67,91,129,156,157,164,179,182,184,203,206,214,232,242,263,264,269,270,280,317,332,334,339,369,370,374,396,398,399,409,411,416,428,442,444,490,492,512,555,675,776,808,811,851,885
+893|10@1,20@1,43@6,22@12,74@18,154@24,184@30,447@36,44@42,369@48,207@54,412@60,235@66,359@72,37@78,438@84,816@90|-|-|14,34,36,38,46,63,67,76,91,129,156,157,164,168,182,184,202,203,214,227,241,242,263,264,269,270,280,282,304,317,331,332,339,341,345,369,370,374,399,402,409,412,416,417,437,447,490,512,555,572,580,669,675,707,803,808,851,885
+894|84@1,229@1,527@6,246@12,351@18,86@24,245@30,819@36,85@42,393@48,37@54,199@60,192@66,63@72,153@78|-|-|34,36,63,85,86,87,97,113,115,129,156,164,182,203,214,240,263,268,416,451,486,512,521,527,528,598,604,851,916
+895|239@1,44@6,246@12,225@18,242@30,337@36,359@42,349@48,37@54,116@60,820@66,63@72,153@78|-|-|34,36,63,89,113,115,129,156,164,179,182,200,203,214,242,263,337,349,406,414,416,422,423,424,434,784,799,851,913
+896|33@1,39@1,24@6,419@12,23@18,259@24,54@30,556@36,36@42,334@48,37@54,269@60,38@66,14@72|-|-|14,34,36,38,46,58,59,63,156,164,174,182,184,196,200,203,214,242,263,269,334,341,370,416,419,428,484,523,555,667,675,684,707,776,808,851,883,885
+897|33@1,39@1,24@6,506@12,23@18,109@24,114@30,247@36,36@42,97@48,37@54,50@60,38@66,417@72|-|-|34,36,38,63,94,97,101,109,114,129,156,164,174,182,184,203,214,220,242,247,261,263,269,341,347,399,416,417,492,506,523,555,566,577,707,808,809,851
+898|1@1,72@1,74@1,93@1,791@8,202@16,473@24,270@32,580@40,678@40,412@48,94@56,73@64,505@72,76@80,248@88|-|-|36,60,63,76,94,97,113,115,118,129,156,164,182,184,202,203,214,226,227,241,244,248,263,270,271,285,286,331,341,345,347,356,402,412,416,428,433,437,447,473,500,555,577,580,669,676,678,776,797,851
+899|828@0,33@1,43@3,310@7,95@10,23@13,28@16,36@21,109@23,347@27,272@32,428@37,286@49,38@55,224@62|-|-|34,36,38,46,60,63,76,85,86,87,89,91,94,97,109,113,115,129,156,164,168,174,180,182,184,203,214,240,241,244,247,248,253,263,270,271,285,286,347,356,412,414,416,428,433,451,473,500,523,528,667,675,679,797,851,885,917
+900|830@0,43@1,98@1,210@4,206@8,479@12,104@16,458@20,163@24,116@28,97@32,157@36,404@40,14@44|-|-|14,36,38,63,97,113,129,156,157,164,168,179,182,184,201,203,206,214,226,241,263,270,280,314,317,332,350,366,369,370,403,404,405,410,416,444,446,450,479,512,522,679,806,814,851,884,885
+901|838@0,313@1,343@1,10@1,43@1,122@1,154@8,371@13,230@17,163@22,589@25,583@29,184@35,156@41,173@41,667@48,37@56,359@64|-|-|7,8,9,14,34,36,38,46,63,67,89,91,118,129,156,157,164,168,174,182,184,203,204,214,232,240,241,242,253,263,264,269,270,280,304,313,317,332,339,370,374,402,409,410,414,416,419,421,441,444,479,484,523,583,667,675,707,776,851,885,912,916
+902|247@1,39@1,55@1,566@1,33@4,175@8,453@12,44@16,184@20,29@24,487@28,242@32,36@36,253@40,834@44,37@48,38@52,457@56|283,854|-|36,38,56,57,58,59,63,97,101,109,127,156,164,180,182,184,196,200,214,220,240,242,247,250,253,263,283,330,341,352,416,423,506,566,706,710,799,812,851,883,886
+903|827@0,10@1,43@1,249@1,374@1,269@6,98@12,232@18,398@24,280@30,468@36,163@42,97@48,103@54,370@60|-|-|7,14,36,63,67,91,92,97,129,156,157,164,168,179,180,182,188,203,206,214,232,240,241,247,263,264,269,280,317,332,339,342,347,369,370,374,390,398,404,410,411,416,417,421,441,447,474,482,490,491,512,675,808,811,851,885,918
+904|33@1,40@1,106@4,44@8,565@12,107@16,191@20,362@24,839@28,42@32,390@36,254@40,255@40,92@44,242@48,367@52,194@56|-|-|14,36,38,56,57,58,59,63,92,97,114,127,156,164,174,179,180,182,184,188,191,196,203,214,220,240,242,247,263,269,341,342,360,390,398,399,416,441,474,482,675,684,710,799,808,851,886
+905|310@1,584@1,259@5,260@10,239@15,577@20,334@25,286@30,595@35,605@40,326@45,253@50,276@55,361@60,585@65,200@70,831@75|-|-|19,34,36,63,94,97,156,164,182,184,188,200,203,214,240,241,244,253,263,269,286,311,334,347,366,411,414,416,428,442,447,574,577,580,581,583,605,802,851,914
+906|10@1,39@1,670@1,44@7,468@10,345@13,98@15,402@17,369@21,388@25,163@28,412@32,583@36|73,383,389,502,572|-|36,76,97,129,156,164,182,189,202,203,204,214,263,269,270,313,331,345,369,402,412,417,421,437,447,512,520,572,574,580,583,803,851,885
+907|10@1,39@1,670@1,44@7,468@10,345@13,98@15,402@20,369@24,388@28,163@33,412@38,583@42,437@46|-|-|9,36,67,76,97,129,156,164,182,189,202,203,204,214,263,269,270,313,331,332,345,369,374,402,412,417,421,437,447,490,512,520,572,574,580,583,803,851,885
+908|870@0,670@1,10@1,39@1,44@7,468@10,345@13,98@15,402@20,369@24,388@29,163@33,400@38,412@42,583@47,282@52,580@58,437@64|104,271|-|9,36,63,67,76,97,129,156,164,168,182,189,191,202,203,204,214,244,247,263,269,270,271,280,282,285,313,331,332,338,345,369,374,390,396,399,402,408,412,416,417,421,433,437,447,490,492,512,520,572,574,580,583,675,676,803,808,813,851,885,886
+909|33@1,43@1,52@1,496@7,44@12,510@15,281@17,555@21,46@25,53@28,304@32,126@36|174,227,303,562|-|34,36,46,53,83,91,126,156,164,174,182,189,200,203,214,227,241,242,257,261,263,270,304,315,394,402,422,424,428,488,519,555,574,707,851,915
+910|33@1,43@1,52@1,122@7,496@10,44@12,281@15,510@17,555@24,46@28,53@32,304@38,261@42,126@47|-|-|34,36,46,53,83,91,126,156,164,174,182,189,200,203,214,241,242,257,261,263,270,304,315,394,402,422,424,428,488,519,555,574,707,851,915
+911|871@0,52@1,33@1,43@1,122@7,496@10,184@12,44@15,510@17,555@24,46@28,53@32,247@38,304@42,261@47,506@47,126@58,315@64|47|-|34,36,46,53,63,76,83,89,91,101,126,156,164,174,182,184,189,200,203,214,227,241,242,247,257,261,263,270,286,304,307,315,394,402,414,416,421,422,424,428,488,506,519,535,555,574,707,809,815,851,914,915
+912|1@1,45@1,55@1,526@7,17@10,453@13,458@17,895@21,403@24,116@28,512@31,710@35|197,229,355,387|-|36,56,57,67,129,156,182,203,226,227,240,244,250,263,270,314,332,403,413,512,518,574,581,710,851,886
+913|1@1,45@1,55@1,458@1,526@7,17@10,453@13,352@17,490@19,895@23,403@27,116@32,512@38,710@43,297@48|-|-|36,56,57,67,129,156,182,203,226,227,240,244,250,263,270,297,314,332,352,403,413,490,512,518,574,581,710,812,813,851,886
+914|872@0,1@1,45@1,55@1,458@1,526@7,17@10,453@13,352@17,490@17,895@21,403@27,116@32,25@38,512@43,710@47,297@52,370@58,834@64|68|-|14,36,56,57,63,67,97,129,156,164,179,182,196,203,214,226,227,240,244,250,263,269,270,280,282,283,297,308,314,332,339,352,369,370,374,403,413,416,490,512,518,542,574,581,710,811,812,813,851,861,886,918
+915|33@1,39@1,574@5,497@8,341@12,343@15,91@17,29@21,281@24,36@27,526@30,253@32,38@35|254,255,256,283,747|-|34,36,38,91,156,162,164,168,174,182,189,203,214,240,241,253,263,270,283,304,331,341,402,428,442,523,574,583,851,885,886
+916|33@1,39@1,574@5,497@8,341@12,343@15,91@17,29@23,36@26,281@27,526@34,253@38,38@42,414@48,562@54|-|-|34,36,38,63,91,156,162,164,168,174,182,189,203,214,240,241,253,263,270,283,304,331,341,402,412,414,416,428,442,523,574,583,667,707,776,808,851,885,886
+917|33@1,81@1,522@5,372@8,364@11,450@14,335@18,68@22,29@25,564@29,380@33,509@36,675@40,806@44|262,389,660,679|-|34,36,141,156,164,168,182,191,202,203,206,214,240,241,263,282,331,390,398,404,405,421,447,450,522,675,679,806,851,884,885
+918|852@0,33@1,81@1,522@5,372@8,364@11,450@14,335@19,68@24,29@28,564@33,380@37,509@41,675@45,806@49|-|-|34,36,67,141,156,164,168,179,182,184,191,202,203,206,214,220,240,241,263,269,280,282,317,331,332,369,374,390,398,404,405,416,421,447,450,522,527,675,679,806,851,884,885,918
+919|33@1,43@1,522@4,310@6,372@9,24@11,103@14,203@18,450@22,364@26,97@30,389@38,660@41|68,806|-|36,97,141,156,164,168,182,203,214,240,241,263,369,404,405,450,522,806,851,884,885
+920|679@0,33@1,43@1,67@1,197@1,522@4,310@6,372@9,24@11,103@14,203@18,450@22,364@28,97@32,675@36,389@40,660@44,340@48,853@53|-|-|14,36,38,67,97,141,156,164,168,179,180,182,184,203,214,240,241,263,269,280,282,332,369,374,399,404,405,416,450,490,522,675,679,806,808,851,884,885
+921|10@1,45@1,84@3,98@6,268@8,609@12,91@15,44@19,209@23,86@27,494@31,21@35,435@38,97@40,528@44|183,186,252,273|-|36,85,86,87,91,97,129,156,162,164,168,182,203,204,214,226,227,232,240,241,242,263,268,270,374,422,451,486,521,527,528,583,598,604,851
+922|292@0,10@1,45@1,84@3,98@6,268@8,609@12,91@15,44@19,209@23,86@27,21@32,494@38,435@42,97@46,528@52|-|-|9,36,67,85,86,87,91,97,129,156,162,164,168,182,203,204,214,226,227,232,240,241,242,263,264,268,270,282,374,422,451,486,490,521,527,528,583,598,604,811,851,918
+923|863@0,10@1,45@1,528@1,84@3,98@6,268@8,609@12,91@15,44@19,209@23,292@25,86@29,21@33,494@39,370@44,435@49,97@54,892@60|-|-|7,8,9,36,38,63,67,85,86,87,91,97,118,129,156,162,164,168,182,203,204,214,226,227,232,240,241,242,263,264,268,270,280,282,317,339,370,374,402,411,416,422,447,451,486,490,521,527,528,583,598,604,675,776,811,851,916,918
+924|1@1,608@1,497@5,270@8,162@11,458@14,331@18,227@22,583@26,304@30,204@33,251@37,383@41,860@46|44,226,321,364,415,495|-|36,38,67,86,91,97,129,156,162,164,168,182,189,203,204,214,226,227,240,241,242,263,269,270,304,313,331,332,341,352,369,402,421,447,490,583,851
+925|1@1,266@1,608@1,882@1,497@5,270@8,162@11,458@14,331@18,227@22,583@29,304@33,204@37,251@41,383@46,860@53|-|-|36,38,63,67,86,91,97,129,156,162,164,168,182,189,203,204,214,227,240,241,242,263,269,270,304,313,331,332,341,352,369,402,416,421,447,490,583,851,885,886
+926|33@1,45@1,122@3,39@6,343@8,44@11,608@15,583@18,526@22,226@26,46@30,38@33,204@36,242@40,387@45|230,273,281,336,383|-|34,36,38,46,91,97,156,164,182,189,203,204,214,226,240,241,242,244,263,270,283,341,422,423,424,555,581,583,605,706,707,851,885,914
+927|33@1,45@1,122@3,39@6,343@8,44@11,608@15,583@18,526@22,226@29,46@33,38@38,204@42,242@47,387@53|-|-|34,36,38,46,63,91,97,156,164,182,184,189,203,204,214,226,240,241,242,244,263,270,283,341,416,422,423,424,555,577,581,583,605,706,707,776,851,885,914
+928|33@1,230@1,71@5,74@7,75@10,270@13,175@16,72@20,580@23,402@27,412@30,73@34,805@38|235,262,311,668|-|76,129,156,164,182,202,203,204,214,241,263,270,311,331,345,402,412,414,437,447,580,669,851,885
+929|33@1,230@1,71@5,74@7,75@10,270@13,175@16,72@20,580@23,402@29,412@34,73@37,805@42|-|-|76,129,156,164,182,202,203,204,214,241,263,270,311,331,345,402,412,414,437,447,580,669,851,885
+930|230@1,243@1,219@1,33@1,71@5,74@7,75@10,270@13,175@16,72@20,580@23,402@29,412@34,73@39,805@46,572@52,80@58|-|-|63,76,113,115,118,129,156,164,182,202,203,204,214,227,241,244,263,270,304,311,331,345,374,402,412,414,416,437,447,572,580,605,669,676,851,885,914
+931|45@1,64@1,102@1,98@6,259@10,332@13,31@17,269@20,253@24,383@27,19@30,263@34,207@38,413@42,355@47,179@52|38,260,515,575|-|19,36,38,63,156,164,168,179,182,184,203,214,241,253,257,263,269,270,283,297,304,313,314,332,366,369,403,413,416,492,542,808,814,851,884
+932|33@1,106@1,88@5,341@7,479@10,397@13,29@16,334@20,105@25,157@30,446@33,484@35,89@40,444@45|90,174,246,408|-|34,36,89,91,156,157,164,174,182,201,203,214,240,241,263,270,334,341,408,414,428,430,442,444,446,479,484,523,707,800,851
+933|864@0,33@1,106@1,88@5,341@7,479@10,397@13,29@16,334@20,105@30,157@34,446@38,484@41,89@45,444@51|-|-|34,36,38,63,89,91,156,157,164,174,182,201,203,214,240,241,263,270,334,341,408,414,416,428,430,442,444,446,479,484,523,707,776,800,851
+934|359@0,335@1,33@1,469@1,106@1,350@1,88@5,341@7,317@10,397@13,29@16,864@24,105@30,157@34,446@40,484@44,89@49,444@54,153@60|-|-|7,8,9,34,36,38,63,89,91,156,157,164,174,182,201,203,214,240,241,263,264,270,280,317,334,341,350,356,374,408,414,416,419,428,430,442,444,446,479,484,523,707,776,800,851,912
+935|43@1,52@1,310@1,499@8,83@12,261@16,101@20,488@24,510@28,436@32|50,180,194|-|36,53,83,101,109,126,164,180,182,203,214,241,257,261,263,270,315,394,488,851
+936|473@0,43@1,52@1,595@1,310@1,469@1,499@8,83@12,261@16,101@20,488@24,510@28,436@32,347@37,502@42,53@48,797@56,890@62|-|-|36,53,60,76,83,94,101,109,113,115,126,156,164,180,182,203,214,241,244,247,257,261,263,269,270,271,311,315,334,347,374,394,396,399,406,411,412,430,433,473,488,491,500,678,797,800,815,851
+937|421@0,43@1,52@1,310@1,499@8,83@12,261@16,101@20,488@24,510@28,436@32,14@37,502@42,891@48,427@56,394@62|400,425,501,669|-|14,36,53,83,101,109,113,115,126,156,164,174,180,182,203,206,214,241,244,247,257,261,263,269,270,280,315,334,337,339,370,374,394,398,404,410,421,442,488,500,506,566,669,675,809,851
+938|33@1,189@1,84@7,55@11,268@17,209@21,341@24,175@25,435@32,311@36,604@40,389@45,192@50|330,487,570|-|85,86,87,109,113,115,129,156,164,182,189,203,214,240,268,304,311,330,341,352,451,486,491,521,527,528,598,604,851,886
+939|33@1,189@1,303@1,84@7,55@11,268@17,209@21,341@24,175@25,435@32,311@36,604@40,389@45,192@50|-|-|63,85,86,87,92,109,113,115,129,156,164,182,189,203,214,240,268,304,311,330,341,352,416,451,486,491,521,527,528,598,604,851,886,916
+940|45@1,64@1,84@4,98@7,365@11,209@15,253@19,355@23,814@27,97@32,521@37,435@43|254,255,256,283,297,311|-|19,36,85,86,87,97,129,156,164,182,203,214,253,263,268,283,297,311,314,332,366,369,403,413,451,486,512,521,527,528,542,598,604,814,851
+941|486@0,45@1,64@1,84@4,98@7,365@11,209@15,253@19,355@24,814@30,97@36,521@43,435@48,542@55|-|-|19,36,63,85,86,87,97,129,156,164,182,184,203,214,253,263,268,283,297,311,314,332,366,369,403,413,416,451,486,512,521,527,528,542,598,604,814,851,916
+942|33@1,43@1,184@1,122@4,555@7,468@10,44@14,46@18,29@22,371@26,242@31,207@35,179@39,746@43,38@49|194,283,514,583|-|34,36,38,46,91,156,164,168,179,182,184,203,204,214,240,241,242,263,269,270,283,313,399,422,423,424,555,583,706,808,851,885
+943|894@0,43@1,184@1,33@1,122@4,555@7,468@10,44@14,46@18,29@22,371@26,242@34,207@39,179@43,746@48,38@55,200@60|-|-|34,36,38,46,63,91,156,164,168,174,179,180,182,184,200,203,204,214,220,240,241,242,263,269,270,283,304,313,399,416,422,423,424,528,555,583,706,808,851,885
+944|10@1,43@1,491@5,44@8,154@8,415@11,305@14,260@18,163@21,369@25,398@29,269@33,164@36,282@40,441@45|92,162,207,383,440,575|-|14,36,38,91,92,118,156,162,164,168,182,188,189,203,214,226,227,240,241,244,263,269,270,282,283,341,369,374,398,417,441,474,482,491,492,512,675,806,851,884,885
+945|867@0,10@1,43@1,491@5,154@8,415@11,305@14,260@18,163@21,369@25,398@33,269@37,164@40,282@45,441@51|-|-|14,36,38,67,91,92,118,156,162,164,168,182,184,188,189,203,214,226,227,240,241,244,263,269,270,282,283,341,342,369,374,398,404,416,417,421,441,474,482,490,491,492,512,675,806,851,884,885
+946|111@1,205@1,310@1,71@5,229@9,331@13,611@17,506@21,72@25,50@29,566@35,202@40,174@45,220@50,438@55|73,251,335,425,668|-|76,101,109,156,164,168,174,180,182,184,191,202,203,214,220,247,263,331,402,412,437,447,506,566,580,803,809,851,884,885
+947|111@1,205@1,310@1,71@5,229@9,331@13,611@17,506@21,72@25,50@29,566@35,202@40,174@45,220@50,438@55|73,251,335,425,668|-|63,76,101,109,156,164,168,174,180,182,184,191,202,203,214,220,247,263,331,402,412,416,437,447,506,566,580,803,806,809,851,884,885
+948|35@1,189@1,71@4,77@8,78@8,48@12,33@15,72@16,103@20,341@24,506@28,402@32,147@36,74@40,202@44,414@48,438@52|73,92,229,243,282,321,367,476|-|76,92,109,113,115,129,156,164,182,184,188,189,191,202,203,214,220,240,269,282,331,341,345,390,402,412,414,430,433,437,447,474,491,492,506,580,605,679,803,851,885
+949|513@1,35@1,189@1,71@4,77@8,78@8,48@12,33@15,72@16,103@20,341@24,506@28,402@34,147@40,74@44,202@48,414@54,438@58|-|-|63,76,92,109,113,115,129,156,164,182,184,188,189,191,202,203,214,220,240,269,282,331,341,345,390,402,412,414,416,430,433,437,447,474,491,492,506,580,605,679,803,806,851,885
+950|88@1,106@6,249@9,317@13,232@17,182@21,350@24,404@29,14@33,175@37,157@42,667@47,334@51,12@56|152,246,282,283|-|14,34,36,63,91,156,157,164,168,179,182,184,189,201,203,214,232,240,241,263,270,280,282,283,317,334,341,350,374,404,408,414,416,421,444,446,479,523,667,675,707,800,806,851,885,915
+951|43@1,670@1,44@4,74@10,75@13,241@17,331@21,29@24,428@28,242@38,402@44,76@48|73,205,275,388,476|-|36,76,156,162,164,168,182,201,202,203,214,241,242,263,270,283,331,345,402,412,428,437,447,580,707,803,851,885
+952|53@0,858@0,43@1,424@1,670@1,44@4,74@10,75@13,241@17,331@21,29@24,428@28,388@33,242@38,402@44,76@48,315@48|-|-|36,53,63,76,126,156,162,164,168,182,184,201,202,203,214,241,242,261,263,270,283,315,331,345,402,412,416,424,428,437,447,580,707,803,807,808,851,885,915
+953|33@1,111@1,28@4,522@7,205@11,341@15,450@20,36@24,91@29,679@35|105,262,311,322|-|36,91,141,156,164,168,182,188,189,203,214,263,311,317,334,341,374,404,405,441,450,522,679,806,851,884
+954|863@0,33@1,111@1,93@1,28@4,522@7,205@11,60@15,450@20,36@24,326@29,679@35,384@40,385@40,683@40,405@45,94@50|219,244|-|36,60,63,91,94,109,113,115,141,156,164,168,182,188,189,201,203,214,240,241,244,247,248,263,271,285,286,311,317,334,341,347,356,374,404,405,408,412,414,416,428,433,441,450,473,486,500,522,605,678,679,797,806,809,851,884,917
+955|45@1,64@1,93@5,608@8,574@11,98@15,60@19,365@24,97@29,253@34|95,355,502|-|36,60,94,97,109,113,115,129,156,164,168,182,189,201,203,214,226,240,241,253,263,270,271,285,347,369,402,428,433,473,492,500,574,678,851,884
+956|855@0,45@1,64@1,65@1,297@1,93@5,608@8,574@11,98@15,60@19,365@24,97@29,253@34,605@43,94@49,387@54|-|-|34,36,38,60,63,67,94,97,101,109,113,115,129,156,164,168,182,189,201,203,214,226,240,241,244,247,253,263,270,271,285,297,304,332,347,369,402,412,413,416,428,430,433,473,492,500,506,574,605,678,797,851,884
+957|584@1,310@1,608@5,232@8,343@11,249@14,577@17,186@21,693@24,21@27,430@31,583@35,252@39,260@43,806@47,282@52|364,511,665|-|14,86,113,115,118,156,157,164,168,182,203,214,227,232,263,270,282,283,285,313,317,319,374,430,444,446,492,577,583,796,806,851,884
+958|584@1,310@1,608@5,232@8,343@11,249@14,577@17,186@21,693@24,21@27,430@31,583@35,252@39,260@43,806@47,282@52|-|-|14,86,113,115,118,156,157,164,168,182,203,214,227,232,263,270,280,282,283,285,313,317,319,374,430,444,446,492,577,583,796,806,851,884
+959|893@0,584@1,310@1,608@5,232@8,343@11,249@14,577@17,186@21,693@24,21@27,430@31,583@35,252@39,260@43,806@47,282@52|-|-|14,86,113,115,118,156,157,164,168,182,203,214,227,232,263,270,280,282,283,285,313,317,319,374,430,444,446,479,484,492,523,577,583,796,806,851,884,912
+960|28@1,55@1,189@4,35@8,453@12,21@20,352@20,29@24,91@28,389@32,675@36,710@40|262,515|-|36,56,57,58,59,91,97,129,156,164,182,189,201,203,214,240,250,263,270,330,341,352,414,492,523,675,707,710,851,886
+961|28@1,35@1,55@1,189@1,453@12,21@16,352@20,29@24,865@30,91@36,389@42,675@48,710@54|-|-|36,56,57,58,59,63,91,97,129,156,164,182,189,201,203,214,220,240,250,263,270,330,341,352,414,416,492,523,675,707,710,851,886
+""",
+    """962|17@1,43@1,64@1,262@1,468@1,168@7,88@11,18@16,365@20,259@24,317@29,371@36,814@42,157@47,282@53,575@60|143,297,355,389,681|-|19,36,63,157,164,168,174,182,184,196,201,203,214,240,241,244,257,263,269,282,283,297,304,314,317,332,350,366,369,399,403,408,413,416,417,444,446,492,512,529,542,555,808,814,851
+963|48@1,55@1,310@7,116@10,453@13,458@17,291@21,204@25,512@29,227@34,401@39,54@44,56@50|68,114,321,340,586|-|34,36,56,57,58,59,97,114,127,129,156,164,182,196,203,204,214,227,240,244,263,270,352,374,428,512,574,577,710,851,886
+964|812@0,857@1,48@1,55@1,310@7,116@10,453@13,458@17,291@21,204@25,512@29,227@34,401@39,54@44,56@50,264@55,834@61|-|-|8,34,36,56,57,58,59,63,97,114,127,129,156,164,179,182,196,200,203,204,214,227,240,244,250,263,264,269,270,283,304,339,352,370,374,396,409,411,416,428,442,447,512,574,577,675,710,812,851,886,912
+965|122@1,139@1,123@4,269@7,372@10,124@13,360@17,29@21,103@25,442@28,207@32,398@36,253@41,859@46,441@50|92,114,120,259,575|-|34,36,38,92,114,164,168,174,182,184,188,201,203,214,240,241,253,263,269,319,334,360,390,398,428,430,441,442,474,482,491,523,796,851
+966|508@0,393@1,122@1,139@1,123@4,269@7,372@10,124@13,360@17,29@21,103@25,442@28,207@32,398@36,253@46,859@52,441@58|-|-|34,36,38,63,92,114,156,164,168,174,182,184,188,201,203,214,240,241,253,263,269,283,315,319,334,360,390,398,416,428,430,441,442,474,482,484,491,523,667,796,808,851,912,915
+967|33@1,45@1,229@7,269@11,784@14,98@18,44@23,369@27,880@31,337@36,508@40,406@45,38@51,407@57|231,282,401,438|-|34,36,38,63,85,97,156,164,168,182,189,200,203,214,240,241,242,253,263,269,282,283,304,315,332,337,341,369,406,416,422,424,434,442,512,525,528,784,799,851,861,885,913,915,916
+968|33@1,35@1,106@1,189@7,479@12,523@16,442@21,36@26,91@30,201@34,334@38,231@43,89@47,880@52|174,368,489|-|34,36,38,63,89,91,156,157,164,174,182,189,191,201,203,214,263,270,317,319,328,334,341,350,414,416,430,442,446,479,484,523,667,707,776,796,851
+969|88@1,106@1,479@1,491@7,246@11,397@15,446@18,474@22,201@26,120@29,157@33,408@37,151@41,482@46|92,153,262|-|92,109,113,115,156,157,164,182,188,191,201,203,214,240,241,263,317,328,334,341,350,390,408,441,444,446,474,479,482,491,605,800,851
+970|866@0,479@1,596@1,390@1,88@1,106@1,491@7,246@11,397@15,446@18,474@22,201@26,120@29,157@33,408@39,151@44,482@50|-|-|63,76,92,109,113,115,156,157,164,182,188,191,201,203,214,240,241,263,317,328,334,341,350,390,408,412,414,416,430,441,444,446,474,479,482,491,605,800,851
+971|33@1,45@1,122@3,39@6,44@6,46@9,29@12,91@16,156@24,242@28,583@32,270@37,566@41,204@46,38@52|50,194,262,281,336,425,502|-|36,38,46,91,101,109,156,164,168,182,184,189,201,203,204,214,220,240,241,242,247,253,263,270,271,283,341,422,423,424,506,523,555,566,583,706,707,809,851
+972|854@0,33@1,45@1,122@3,39@6,44@6,46@9,29@12,91@16,156@24,242@28,583@36,270@41,566@46,204@51,38@58|-|-|36,38,46,63,91,101,109,156,164,168,182,184,189,201,203,204,214,220,240,241,242,247,253,261,263,270,271,283,341,416,422,423,424,506,523,555,566,583,706,707,776,809,851
+973|64@1,383@1,24@5,197@9,17@12,116@15,67@18,364@21,371@27,355@31,403@35,25@39,469@44,675@48,413@54|104,143,501|-|14,19,36,63,67,97,156,164,168,179,182,203,214,244,263,269,283,297,314,332,339,352,366,369,370,374,403,413,416,490,512,542,675,679,710,814,851,884,886,918
+974|33@1,181@1,45@6,497@9,420@12,156@15,36@19,175@25,419@27,340@31,34@36,133@40,861@44,38@49,59@53|187,276,281,494,556|-|34,36,38,58,59,63,89,133,156,164,174,182,196,203,204,214,240,263,270,282,304,333,352,419,423,484,523,583,667,707,710,776,851,861,883,886
+975|33@1,181@1,45@6,497@9,420@12,156@15,36@19,175@25,419@27,340@31,34@36,133@40,861@44,38@49,59@53|-|-|8,34,36,38,58,59,63,89,133,156,164,174,182,196,203,204,214,240,263,270,282,304,333,352,416,419,423,484,523,583,667,707,710,776,851,861,883,886,912
+976|33@1,453@1,365@7,352@11,116@15,163@20,895@25,868@30,400@35,427@40,710@45,242@50,515@55|37,105|-|34,36,38,56,57,58,59,63,94,97,127,156,164,182,196,203,214,220,240,242,283,352,416,423,428,500,529,678,706,710,797,799,812,851,883,886
+977|33@1,48@1,55@1,321@5,175@10,156@15,214@15,291@20,568@25,487@30,34@35,401@40,240@45,856@50,484@55,38@60,834@65|37,90,174,281|-|34,36,38,56,57,63,89,127,156,157,164,174,182,184,200,203,214,240,242,263,352,416,419,423,428,484,523,707,710,776,851,886
+978|55@1,150@1,106@6,270@12,352@17,487@23,269@28,262@34,330@39,417@43,243@47,406@52|68,226,229|-|36,56,57,63,156,164,182,196,200,203,214,226,240,250,263,269,270,330,349,352,406,416,417,434,679,851,886,913
+979|325@0,10@1,43@1,68@1,374@1,116@1,154@5,67@8,69@12,207@17,238@22,372@26,37@30,889@35,370@39,103@44,707@48,200@53,515@57|-|-|7,8,9,34,36,38,63,67,85,87,89,91,101,118,129,156,157,164,168,174,179,180,182,184,200,203,214,227,240,241,247,253,263,264,269,270,280,283,315,317,339,369,374,398,402,409,410,411,416,421,441,444,446,479,490,512,523,566,675,707,808,811
+980|133@0,39@1,40@1,390@4,341@8,342@12,21@16,281@21,398@24,482@30,224@36,92@40,89@48|-|-|34,36,38,56,57,63,67,89,91,92,114,127,133,156,157,164,174,182,188,189,191,201,203,214,240,263,270,317,330,341,342,352,390,398,414,416,428,441,442,444,446,474,482,484,491,523,667,707,710,776,851,885,886
+981|33@1,45@1,310@1,384@1,385@1,93@5,372@10,23@14,60@19,97@23,458@28,888@32,242@37,226@41,417@46,94@50|-|-|34,36,38,46,60,63,67,85,86,87,89,94,97,101,109,113,115,129,133,156,164,168,174,182,203,214,226,240,241,242,244,247,248,253,263,270,271,283,285,286,304,347,356,412,416,417,428,433,442,447,451,473,492,500,523,605,667,678,706,707,797,851,885,917
+982|111@1,175@1,189@4,205@8,137@12,103@16,246@20,529@24,281@28,887@32,355@36,407@40,489@44,38@48,283@52,542@56,586@62|-|-|34,36,38,53,58,59,63,76,85,87,89,91,92,97,126,133,156,157,164,168,174,180,182,184,189,200,201,203,214,220,226,240,241,244,247,253,263,270,283,304,317,341,342,347,360,366,398,403,414,416,428,444,446,484,500,506,523,525,528,529,542,675,679,684,707,776,784,799,806,814,851,861,884,886
+983|869@0,368@1,232@1,210@1,10@1,43@1,259@15,184@20,372@25,319@30,163@35,400@40,334@45,514@50,442@57,14@64,12@71|-|-|14,36,63,67,86,91,156,164,168,179,180,182,184,201,203,206,214,232,240,263,269,280,317,319,332,334,374,398,399,403,404,411,416,421,428,430,442,444,446,447,490,492,555,675,796,808,851
+984|30@1,111@1,205@1,241@1,523@7,269@14,229@21,280@28,707@35,282@42,89@49,416@56,370@63,283@70,224@77,457@84,838@91|-|-|34,36,38,46,63,89,91,156,157,164,179,182,184,189,201,203,214,241,263,269,280,282,283,317,339,341,370,414,416,422,423,424,428,430,442,444,446,473,479,484,523,583,667,675,684,707,776,851,861,915,916
+985|1@1,47@1,50@1,336@7,568@14,44@21,34@28,156@35,583@42,304@49,706@56,242@63,273@70,360@77,195@84,586@91|241|-|7,8,9,34,36,38,46,53,58,59,60,63,85,86,87,91,94,113,115,118,126,133,156,164,182,184,201,203,214,226,227,240,241,242,244,253,263,270,271,286,304,313,317,339,347,352,360,374,409,411,416,422,423,424,428,433,446,447,473,500,581,583,605,678,706,707,797,802,851,883,917
+986|71@1,74@1,310@1,78@7,72@14,235@21,499@28,371@35,37@42,202@49,389@56,147@63,275@70,476@77,76@91|241|-|34,38,63,76,109,156,164,168,182,184,200,202,203,214,241,242,263,269,331,345,370,399,402,412,414,416,428,437,447,474,506,580,676,707,776,808,851,885
+987|109@1,180@1,310@1,60@7,212@14,262@21,273@28,605@35,247@42,595@49,408@56,473@63,566@70,220@77,585@84,195@91|241|-|60,63,85,86,87,101,109,129,156,164,180,182,196,203,204,214,220,241,247,269,270,286,304,313,345,347,399,408,412,416,433,451,473,500,506,566,574,577,581,605,809,851
+988|16@1,52@1,450@1,77@7,78@7,488@14,23@21,490@28,234@35,679@42,276@49,339@56,814@63,660@70,18@77,141@84,37@91|241|-|34,36,38,63,67,89,141,156,164,174,179,182,201,202,203,214,240,241,257,261,263,280,332,339,369,370,394,405,416,428,450,484,488,490,512,528,535,542,667,679,707,776,806,814,851,885,915
+989|86@1,604@1,48@1,84@1,209@7,523@14,451@21,161@28,103@35,484@42,319@49,435@56,414@63,243@70,356@77,192@84,602@91|241|-|34,36,63,85,86,87,89,113,115,129,156,164,182,191,201,203,214,241,263,268,319,328,334,341,356,408,414,416,430,446,451,484,486,521,523,527,528,598,604,667,707,776,815,851,916
+990|30@1,111@1,205@1,604@1,523@7,229@21,442@28,707@35,282@42,89@49,484@56,528@63,283@70,224@77,416@84,798@91|-|-|34,36,38,63,87,89,156,157,164,182,184,189,201,263,282,283,317,319,334,341,360,414,416,422,423,428,430,442,444,446,484,486,521,523,528,604,667,684,707,776,796,851,861,912,916
+991|217@1,181@7,250@14,36@21,65@28,270@35,573@42,812@49,58@56,97@63,883@70,56@77,694@84,59@91|604|-|8,34,36,56,58,59,63,97,129,156,164,168,182,196,203,214,227,240,250,263,269,270,314,352,369,374,416,419,512,583,604,812,851,861,883,886
+992|28@1,33@1,116@1,292@1,252@7,18@14,9@21,21@28,395@35,69@42,268@49,528@56,370@63,197@70,484@77,187@84,264@91|604|-|7,8,9,14,34,36,38,63,67,85,87,89,118,156,157,164,179,182,184,203,214,263,264,268,280,317,334,370,374,409,411,416,442,484,490,521,523,528,583,604,707,776,851,912,916
+993|604@1,526@1,116@1,161@1,314@1,46@7,372@14,225@21,555@28,242@35,304@42,403@56,282@63,399@70,200@77,406@84,63@91|-|-|19,34,36,38,46,53,56,63,126,156,164,182,184,200,203,214,240,241,242,257,263,269,282,304,314,317,319,366,369,399,403,406,411,414,416,424,428,430,442,451,512,525,542,555,604,675,800,808,814,851,913
+994|16@1,18@1,52@1,491@1,522@7,83@14,36@21,679@28,103@35,435@42,482@49,552@56,319@63,234@70,542@77,405@84,315@91|604|-|36,53,63,76,83,92,94,97,109,113,126,129,156,164,182,203,214,241,257,263,270,315,319,369,390,394,403,405,412,416,430,451,474,482,488,491,512,522,542,604,605,679,800,851,884
+995|88@1,424@1,423@1,334@1,422@1,103@7,317@21,44@28,268@35,157@42,201@49,528@56,42@63,89@70,446@77,444@84,416@91|604|-|7,8,9,14,34,36,38,53,58,59,63,67,85,86,87,89,91,126,156,157,164,174,182,184,191,201,203,232,240,241,242,263,268,269,280,317,328,334,337,349,350,374,408,411,414,416,422,423,424,442,444,446,451,479,484,486,521,523,525,527,528,555,598,604,667,707,776,784,800,851,916
+996|33@1,43@1,525@1,196@6,225@12,116@18,44@24,423@29,337@32,36@36,58@40,242@44,556@48|333,401,407,573|-|14,34,36,58,59,91,156,164,182,196,200,203,214,240,242,263,270,333,337,406,419,423,434,525,851,883
+997|33@1,43@1,525@1,196@6,225@12,116@18,44@24,423@29,36@40,58@45,242@50,556@55|-|-|14,34,36,58,59,91,156,164,182,184,196,200,203,214,240,242,263,270,280,332,333,337,406,419,423,434,442,525,851,883
+998|862@0,883@1,784@1,525@1,420@1,33@1,43@1,196@6,225@12,116@18,44@24,423@29,337@35,36@42,58@48,242@55,556@62|-|-|14,34,36,38,58,59,63,89,91,156,164,182,184,196,200,203,206,214,240,242,263,270,280,332,333,337,349,406,416,419,422,423,428,434,442,523,525,667,707,776,784,799,851,883,913
+999|310@1,33@1|-|-|36,101,109,113,115,156,164,168,182,203,214,247,408,417,506,851
+1000|33@1,310@1,101@7,109@14,164@21,319@28,247@35,105@42,408@49,874@56,417@63,262@70|-|-|9,36,63,67,85,86,87,94,101,109,113,115,156,164,168,182,201,203,214,247,264,271,319,374,408,411,416,417,430,442,451,473,484,486,490,506,605,796,809,851
+1001|71@1,180@1,212@1,321@5,371@10,77@15,78@15,72@20,73@25,74@30,275@35,399@40,202@45,877@50,492@55,438@60,580@65,282@70,437@75|-|-|34,36,63,76,113,115,156,164,180,182,184,189,202,203,214,240,241,263,269,282,331,341,345,399,402,412,416,428,437,447,492,506,555,580,669,676,776,808,851,885
+1002|180@1,181@1,212@1,196@5,371@10,54@15,114@15,420@20,14@25,883@30,400@35,399@40,556@45,877@50,389@55,533@60,105@65,675@70,329@75|-|-|14,36,59,63,114,156,164,180,182,184,196,203,206,214,240,242,263,269,280,332,399,416,419,423,506,512,555,675,706,808,851,861,883
+1003|212@1,328@1,180@1,191@5,371@10,23@15,523@20,18@25,269@30,37@35,399@40,707@45,877@50,675@55,157@60,262@65,89@70,90@75|-|-|34,36,38,63,89,91,156,157,164,180,182,184,189,191,201,203,214,241,263,269,317,328,341,399,414,416,428,444,446,484,506,523,555,675,707,776,808,851
+1004|52@1,180@1,212@1,172@5,371@10,261@15,488@20,510@25,109@30,417@35,399@40,436@45,877@50,340@55,207@60,517@65,262@70,315@75|-|-|36,53,63,83,94,109,113,115,126,156,164,180,182,184,203,214,241,242,257,261,263,269,315,394,399,416,417,428,488,506,555,807,808,851,915
+1005|225@1,43@1,44@1,116@1,510@7,29@14,184@21,337@28,428@35,53@42,400@49,349@56,407@63,19@70,675@77,355@84,38@91|241,746,784,799|-|19,34,36,38,46,53,56,63,83,89,91,126,156,157,164,182,184,200,203,214,232,241,242,257,263,269,280,282,304,332,337,349,366,369,399,403,404,406,416,421,422,424,428,434,442,444,512,525,542,555,675,707,776,784,799,808,851,913
+1006|50@1,104@1,425@1,210@1,95@7,364@14,248@21,605@28,427@35,400@42,348@49,585@56,370@63,282@70,194@77,469@84,501@84,789@91|604|-|7,8,9,14,60,63,67,85,86,94,97,109,113,115,118,129,156,164,179,182,196,203,206,214,227,244,247,248,269,270,271,280,282,285,286,304,332,345,347,370,374,396,398,404,409,410,411,412,416,421,428,433,447,451,473,500,506,581,604,605,675,678,710,797,811,851
+1007|241@1,784@1,249@7,246@14,409@21,280@28,97@35,337@42,53@49,878@56,103@63,68@70,200@77,370@84,394@91,416@98|-|-|14,34,36,38,46,53,63,67,76,83,91,97,126,156,164,179,182,184,189,200,203,214,241,242,253,257,263,264,269,270,280,315,337,339,341,369,370,394,406,409,411,416,421,422,423,424,428,434,442,484,488,490,512,523,525,528,535,555,707,776,784,799,800,814,851,913,915
+1008|84@1,225@1,604@1,351@7,268@14,570@21,435@28,97@35,406@42,879@56,319@63,243@70,200@77,87@84,315@91,63@98|-|-|14,34,36,63,76,85,86,87,97,109,113,115,156,164,182,184,200,203,214,242,263,268,269,270,315,319,337,347,369,406,408,416,428,430,434,451,484,486,512,521,525,528,555,598,604,605,851,913,916
+1009|43@0,46@0,239@0,453@0,44@7,352@14,568@21,225@28,784@35,407@42,876@56,406@63,200@70,53@77,56@84|-|241,468|34,36,38,46,53,56,57,63,67,97,127,129,156,164,182,184,200,203,214,240,241,242,250,263,282,311,337,341,349,352,406,416,424,434,503,542,555,710,784,812,851,886,913
+1010|43@0,98@0,270@0,526@0,345@7,514@14,501@21,400@28,14@35,533@42,348@49,875@56,370@63,286@70,224@77,502@84,669@91|-|511,604|14,36,38,63,76,97,129,156,164,179,182,184,202,203,206,214,263,269,270,280,286,319,332,334,345,347,356,370,403,404,411,412,416,437,447,528,580,604,669,675,678,684,811,851,885
+1011|458@0,110@1,230@1,278@1,310@1,525@4,74@8,225@12,182@16,331@20,903@28,406@32,105@36,412@40,164@44|111,205,278,389,611|-|34,36,63,76,115,156,164,182,200,202,203,214,241,263,331,360,402,406,412,416,434,437,447,450,525,580,676,803,851,884,913
+1012|78@1,110@1,310@1,71@6,791@12,492@18,72@24,506@30,476@36,202@42,247@48,262@54,437@60|-|-|76,101,115,156,164,174,180,182,202,203,214,220,244,247,253,286,334,345,347,412,417,433,437,492,503,506,566,580,809,851
+1013|902@0,78@1,110@1,310@1,71@6,791@12,492@18,72@24,506@30,476@36,668@42,247@48,262@54,437@60|-|-|63,76,101,115,156,164,174,180,182,202,203,214,220,244,247,253,286,334,345,347,412,417,433,437,492,503,506,566,580,809,851
+1014|44@1,67@1,339@1,336@8,305@16,395@24,68@32,398@40,693@48,242@56,276@64,416@72|-|-|7,8,9,34,36,38,46,63,67,91,92,156,164,168,174,179,180,182,184,188,200,203,214,232,242,253,263,264,269,280,282,317,339,342,370,374,398,409,411,416,421,422,423,424,441,442,482,490,555,667,675,706,707,776,808,851,912,918
+1015|10@1,93@1,252@1,260@1,270@8,60@16,499@24,398@32,94@40,482@48,417@56,248@64,575@72|-|-|60,63,92,94,101,109,113,118,129,156,164,168,180,182,188,189,203,214,226,244,247,248,253,263,269,270,271,286,347,369,374,398,411,416,417,421,441,447,473,474,482,491,500,506,678,808,809,851,885,917
+1016|24@1,64@1,139@1,574@1,98@8,213@16,17@24,440@32,541@40,251@48,207@56,260@56,355@64,585@72|-|-|14,19,36,63,92,97,113,129,156,164,168,180,182,188,196,203,204,214,244,247,253,257,263,269,314,332,342,347,366,369,398,399,403,413,416,417,421,441,474,491,506,512,542,574,583,605,808,814,851,914
+1017|22@1,73@1,98@1,266@1,116@6,74@12,21@18,490@24,904@30,675@36,235@42,596@48,438@54,276@60,452@66|24,68,514,532|-|14,36,67,76,156,164,179,182,184,191,201,202,203,204,206,214,227,240,241,263,269,270,280,282,317,331,345,369,374,402,412,416,428,437,447,490,580,583,669,675,707,803,808,851,885
+1018|905@0,43@1,232@1,249@6,468@12,319@18,784@24,525@30,334@36,116@42,337@48,430@54,368@60,63@66|163,243,400|-|14,34,36,38,46,63,76,85,86,87,89,113,115,156,157,164,182,184,200,203,214,232,263,280,317,319,334,337,360,396,399,406,416,430,434,442,444,446,479,484,492,525,555,776,784,796,800,851,912,913
+1019|907@0,110@1,230@1,278@1,310@1,525@4,74@8,225@12,182@16,331@20,903@28,406@32,105@36,412@40,164@44,438@54|111,205,278,281,389,458,611|-|34,36,38,56,63,76,89,115,156,164,174,182,200,202,203,214,240,241,253,263,331,345,360,402,406,412,414,416,417,434,437,447,450,484,525,580,676,776,784,803,851,884,913
+1020|23@1,43@1,510@1,241@1,424@7,336@14,44@21,337@28,306@35,234@42,908@49,407@56,126@63,436@70,200@77,394@84,833@91|24,246,568|-|34,36,38,46,53,63,83,89,126,156,164,179,182,184,200,203,214,241,242,257,263,311,315,337,349,394,406,416,422,424,434,442,444,488,523,525,535,555,684,706,707,784,799,815,851,913,915
+1021|239@1,241@1,351@1,23@1,268@7,225@14,604@21,435@28,525@35,347@42,909@49,692@56,804@63,406@70,192@77,776@84,87@91|246|-|34,36,38,46,63,76,85,86,87,89,156,164,182,184,200,203,214,241,242,263,268,269,304,311,347,406,416,422,434,451,484,486,521,525,527,528,555,598,604,707,776,784,851,913,916
+1022|30@1,43@1,88@1,604@1,98@7,163@14,97@21,427@28,68@35,317@42,533@49,910@56,14@63,224@70,501@77,444@84,416@91|-|-|14,34,36,38,63,89,94,97,156,164,182,184,201,203,214,263,269,280,317,332,334,350,370,398,403,404,416,428,442,444,473,523,528,604,669,675,800,851
+1023|43@1,604@1,93@1,232@1,684@7,163@14,334@21,473@28,427@35,430@42,533@49,911@56,248@63,521@70,501@77,368@84,63@91|-|-|14,34,36,38,63,94,97,156,164,182,184,203,214,232,248,263,280,319,334,347,356,403,404,411,416,428,430,442,473,484,500,521,523,604,669,684,796,797,851,916,917
+1024|110@1,161@1,229@1,246@10,29@20,182@30,414@40,484@50,906@60,38@70,397@80,360@90|-|-|34,36,38,46,53,57,58,63,76,85,87,89,92,156,157,164,182,203,214,240,241,242,263,311,347,352,356,360,394,396,399,405,406,408,412,414,416,428,430,442,444,446,484,500,528,535,605,776,800,815,861,916
+1025|123@1,139@1,262@1,310@1,110@8,194@16,313@24,575@32,247@40,919@48,92@56,417@64,105@72|111,205,212|-|92,101,156,164,174,180,182,188,203,214,247,286,313,417,441,474,482,491,492,506,566,809,851
+10001|35@1,43@1,101@7,100@13,269@19,473@25,94@31,276@37,285@43,428@49,322@55,192@61,354@67,63@73|-|-|7,8,9,36,58,60,63,67,76,85,86,87,94,97,101,113,115,129,156,157,164,182,184,196,203,214,220,240,241,244,247,248,263,269,271,280,282,285,286,317,332,347,352,356,374,398,399,409,411,412,416,417,428,430,433,446,447,451,473,490,500,675,678,707,797,800,851,917
+10002|35@1,43@1,101@7,100@13,282@19,191@25,94@31,182@37,285@43,428@49,133@55,334@55,105@61,354@67,68@73,243@73|-|-|7,8,9,36,58,60,63,67,76,85,86,87,94,97,101,113,115,129,133,156,157,164,182,184,191,196,203,214,220,240,241,244,247,248,263,269,271,280,282,285,286,317,332,334,347,352,356,374,398,399,409,411,412,416,428,430,433,446,447,451,473,490,500,675,678,707,797,800,851,917
+10003|35@1,43@1,101@7,104@13,282@19,473@25,94@31,129@37,285@43,428@49,97@55,105@61,354@67,245@73|-|-|7,8,9,36,58,60,63,67,76,85,86,87,94,97,101,113,115,129,133,156,157,164,182,184,196,203,214,220,240,241,244,247,248,263,269,271,280,282,285,286,317,332,347,352,356,374,398,399,409,411,412,416,417,428,430,433,446,447,451,473,490,500,675,678,707,797,800,851,917
+10004|522@1,16@6,93@11,318@18,414@25,94@34,405@43|-|63,94,156,247,414,416,446,523|-
+10005|522@1,16@6,93@11,318@18,442@25,94@34,405@43|-|63,94,156,247,416,430,442,446,796|-
+10006|74@1,345@10,73@19,98@28,230@37,583@46,388@55,403@64,412@73,186@82,437@91,465@100|-|-|14,36,38,63,76,94,129,156,164,182,202,203,214,226,241,244,263,283,314,331,345,366,402,403,412,414,416,428,437,447,572,574,580,583,605,803,851,885
+10007|425@1,432@1,225@7,246@14,506@21,163@28,184@35,421@42,220@49,396@56,337@63,414@70,467@77,194@84|-|-|19,34,36,46,63,85,86,87,89,94,109,129,156,164,174,180,182,184,196,200,203,214,220,240,241,247,261,263,304,337,347,356,396,399,406,412,414,416,421,434,442,444,506,523,525,566,784,806,809,814,851
+10008|104@1,310@1,84@5,109@10,268@15,486@20,86@25,351@30,506@35,164@40,271@45,435@50,253@55|-|-|85,86,87,101,109,113,115,129,156,164,168,180,182,203,214,220,240,241,247,253,261,263,268,270,271,304,399,417,451,486,492,500,506,521,527,598,604,809,851
+10009|104@1,310@1,84@5,109@10,268@15,486@20,86@25,351@30,506@35,164@40,271@45,435@50,253@55|-|-|85,86,87,101,109,113,115,129,156,164,168,180,182,203,214,220,240,241,247,253,261,263,268,270,271,304,399,417,451,486,492,500,506,521,527,598,604,809,851
+10010|104@1,310@1,84@5,109@10,268@15,486@20,86@25,351@30,506@35,164@40,271@45,435@50,253@55|-|-|85,86,87,101,109,113,115,129,156,164,168,180,182,203,214,220,240,241,247,253,261,263,268,270,271,304,399,417,451,486,492,500,506,521,527,598,604,809,851
+10011|104@1,310@1,84@5,109@10,268@15,486@20,86@25,351@30,506@35,164@40,271@45,435@50,253@55|-|-|85,86,87,101,109,113,115,129,156,164,168,180,182,203,214,220,240,241,247,253,261,263,268,270,271,304,399,417,451,486,492,500,506,521,527,598,604,809,851
+10012|104@1,310@1,84@5,109@10,268@15,486@20,86@25,351@30,506@35,164@40,271@45,435@50,253@55|-|-|85,86,87,101,109,113,115,129,156,164,168,180,182,203,214,220,240,241,247,253,261,263,268,270,271,304,399,417,451,486,492,500,506,521,527,598,604,809,851
+10013|33@1,55@10,52@10,181@10,29@15,240@20,241@20,258@20,311@25,56@35,126@35,59@35,542@45|50,133,248,322,381,385,466,499,506,513|173,196,351,352,366,387,432|53,58,59,76,85,86,87,92,104,126,156,164,168,182,201,207,213,214,216,218,237,240,241,244,247,258,263,412,496,503,526,590
+10014|33@1,55@10,52@10,181@10,29@15,240@20,241@20,258@20,311@25,56@35,126@35,59@35,542@45|50,133,248,322,381,385,466,499,506,513|173,196,351,352,366,387,432|53,58,59,76,85,86,87,92,104,126,156,164,168,182,201,207,213,214,216,218,237,240,241,244,247,258,263,412,496,503,526,590
+10015|33@1,55@10,52@10,181@10,29@15,240@20,241@20,258@20,311@25,56@35,126@35,59@35,542@45|50,133,248,322,381,385,466,499,506,513|173,196,351,352,366,387,432|53,58,59,76,85,86,87,92,104,126,156,164,168,182,201,207,213,214,216,218,237,240,241,244,247,258,263,412,496,503,526,590
+10016|39@1,55@1,33@4,175@8,453@12,44@16,184@20,29@24,487@28,242@32,36@36,515@40,834@44,37@48,38@52,457@56|61,283|-|36,38,56,57,58,59,63,97,127,129,156,164,179,182,184,196,203,214,240,242,250,263,269,283,330,341,352,416,423,428,706,710,799,812,851,883,886
+10017|359@0,359@1,52@1,33@1,269@1,44@1,510@12,526@16,424@20,29@24,7@28,253@32,187@38,394@44,37@50,276@56|-|797,807,808|5,7,25,34,53,63,76,83,89,91,94,116,126,156,157,164,168,173,179,182,203,213,214,227,241,248,253,257,261,263,269,271,276,280,315,317,334,339,360,369,371,374,384,385,394,411,416,424,428,442,444,447,496,523,526,595,776
+10018|47@1,93@1,98@1,496@1,298@21,512@26,60@31,497@36,369@43,547@50,94@57,304@64,272@71,370@78,195@85|-|-|7,8,9,14,60,63,67,85,86,87,94,113,118,129,156,164,179,182,203,204,214,226,240,241,244,247,263,264,270,271,280,282,285,304,313,347,356,369,370,374,409,411,412,416,421,428,433,444,447,473,490,512,574,583,605,811,813,851,914
+10019|16@1,310@1,43@5,207@10,44@15,314@20,97@25,366@30,403@35,242@40,326@45,253@50,359@55,240@60,542@65,37@70,846@77|-|-|19,34,36,63,94,97,118,156,164,168,179,182,184,188,196,201,203,214,240,241,242,253,257,263,269,280,282,311,314,339,366,369,374,399,403,411,416,417,447,479,482,492,512,542,808,851,883,886
+10020|84@1,310@1,43@5,207@10,44@15,351@20,97@25,268@30,521@35,242@40,435@45,253@50,359@55,240@60,87@65,37@70,847@75|-|-|9,19,34,36,63,85,86,87,94,97,156,164,168,182,184,188,203,214,240,241,242,253,263,268,269,280,282,311,339,369,374,399,411,416,417,428,430,447,451,479,482,486,492,512,521,527,528,555,598,604,684,808,851,916
+10021|479@1,328@1,43@5,335@10,523@15,317@20,286@30,157@35,414@40,326@45,444@50,359@55,201@60,89@65,200@70,90@75,848@80|-|-|14,19,34,36,63,89,91,94,156,157,164,182,184,188,189,200,201,203,214,240,241,242,263,269,280,286,311,317,328,339,341,347,356,369,374,411,414,416,417,444,446,447,479,482,523,707,815,851
+10022|225@1,246@1,568@1,573@1,163@8,283@16,406@24,58@32,304@40,559@48,59@56,286@64,200@72,553@80,329@88|-|-|19,34,36,46,58,59,63,94,113,115,129,156,157,164,182,184,196,200,203,214,240,241,247,263,270,283,286,304,311,317,332,333,337,349,374,406,411,414,416,419,421,423,428,430,434,442,444,525,776,784,799,814,851,883,913
+10023|225@1,246@1,568@1,573@1,163@8,283@16,406@24,58@32,304@40,558@48,59@56,286@64,200@72,554@80,329@88|-|-|19,34,36,46,58,59,63,94,113,115,129,156,157,164,182,184,196,200,203,214,240,241,247,263,270,283,286,304,311,317,332,333,337,349,374,406,411,414,416,419,421,423,428,430,434,442,444,525,776,784,799,814,851,883,913
+10024|43@1,270@1,453@1,526@1,548@1,61@7,501@14,24@21,514@28,401@35,36@42,533@49,14@56,56@63,370@70|-|-|14,36,38,46,56,57,63,67,115,129,156,164,179,182,196,203,206,214,220,226,240,241,244,263,269,270,280,330,332,347,352,370,396,398,403,404,410,411,416,444,684,710,811,812,851,885,886,918
+10025|345@1,574@1,252@1,43@1,10@1,93@9,500@12,451@15,343@18,60@21,389@24,272@29,113@34,115@34,473@39,326@44,247@49,94@54,248@59|281,321|-|60,63,85,86,91,94,113,115,129,156,164,182,203,204,214,226,240,241,244,247,248,263,270,271,285,313,345,347,356,399,412,416,417,428,433,451,473,500,574,583,678,797,851,885,914,917
+10026|588@0,588@1,457@1,332@1,319@1,163@1,400@1,514@1,334@1,442@1,379@1,14@1,533@1,33@1,210@1,425@1,475@1|-|796|14,63,103,115,156,157,164,173,179,182,203,206,213,214,240,241,247,263,280,334,360,370,403,416,421,427,430,442,496,514,669,693
+10027|567@1,310@1,425@4,109@8,567@12,75@12,73@16,331@20,567@24,184@24,388@28,402@32,567@36,247@36,271@40,220@44|50,174,194|803,806,809|53,76,94,113,126,156,157,164,168,173,182,184,188,202,203,213,214,219,241,247,261,263,271,285,286,331,360,399,402,412,433,447,492,496,502,506,595
+10028|567@1,310@1,425@4,109@8,567@12,75@12,73@16,331@20,567@24,184@24,388@28,402@32,567@36,247@36,271@40,220@44|50,174,194|803,806,809|53,76,94,113,126,156,157,164,168,173,182,184,188,202,203,213,214,219,241,247,261,263,271,285,286,331,360,399,402,412,433,447,492,496,502,506,595
+10029|567@1,310@1,425@4,109@8,567@12,75@12,73@16,331@20,567@24,184@24,388@28,402@32,567@36,247@36,271@40,220@44|50,174,194|803,806,809|53,76,94,113,126,156,157,164,168,173,182,184,188,202,203,213,214,219,241,247,261,263,271,285,286,331,360,399,402,412,433,447,492,496,502,506,595
+10030|153@1,585@1,567@1,310@1,425@1,109@1,567@12,75@12,73@16,331@20,567@24,184@24,388@28,402@32,567@36,247@36,271@40,220@44,566@48|-|803,806,809|53,63,76,94,113,126,156,157,164,168,173,182,184,188,202,203,213,214,219,241,247,261,263,271,285,286,331,360,399,402,411,412,416,417,433,438,447,492,496,502,506,566,595,693
+10031|153@1,585@1,567@1,310@1,425@1,109@1,567@12,75@12,73@16,331@20,567@24,184@24,388@28,402@32,567@36,247@36,271@40,220@44,566@48|-|803,806,809|53,63,76,94,113,126,156,157,164,168,173,182,184,188,202,203,213,214,219,241,247,261,263,271,285,286,331,360,399,402,411,412,416,417,433,438,447,492,496,502,506,566,595,693
+10032|153@1,585@1,567@1,310@1,425@1,109@1,567@12,75@12,73@16,331@20,567@24,184@24,388@28,402@32,567@36,247@36,271@40,220@44,566@48|-|803,806,809|53,63,76,94,113,126,156,157,164,168,173,182,184,188,202,203,213,214,219,241,247,261,263,271,285,286,331,360,399,402,411,412,416,417,433,438,447,492,496,502,506,566,595,693
+10033|80@0,80@1,133@1,438@1,33@1,45@1,22@1,73@1,22@5,73@9,77@14,79@14,36@22,75@31,74@44,38@58,76@71|-|-|29,63,72,76,89,92,113,115,156,164,182,188,200,263
+10034|17@0,17@1,68@1,242@1,257@1,10@1,45@1,108@1,52@1,45@4,108@9,52@13,154@20,82@26,83@33,163@43,53@54,403@62,394@75|-|-|7,9,19,29,53,63,69,76,89,91,92,115,126,156,157,164,182,200,231,261,263,280,355,406,525
+10035|17@0,17@1,68@1,242@1,257@1,10@1,45@1,108@1,52@1,45@4,108@9,52@13,154@20,82@26,83@33,163@43,53@54,403@62,394@75|-|-|7,9,19,29,53,63,69,76,89,91,92,115,126,156,157,164,182,200,231,261,263,280,355,406,525
+10036|430@1,252@1,453@1,33@1,39@1,145@1,110@1,39@5,145@9,110@14,55@20,44@27,61@33,182@44,29@54,56@65,130@75|-|-|8,29,57,58,59,63,69,89,91,92,115,127,156,157,164,182,200,231,263,280,399,406,430,503,525
+10037|347@0,347@1,134@1,60@1,112@1,227@1,93@1,100@1,50@1,148@1,50@6,148@13,101@19,164@26,115@32,105@39,94@45|-|-|7,8,9,29,63,69,86,91,92,94,100,113,115,138,156,161,164,182,231,247,263,269,347,492,605
+""",
+    """10038|50@1,114@1,95@1,122@1,123@1,109@1,109@5,139@7,101@12,261@14,389@19,92@21,247@30,399@36,138@45|-|-|7,8,9,29,63,69,72,85,87,92,94,120,138,156,164,182,188,247,261,263,269,280,398,399,492,605
+10039|4@1,43@1,252@6,39@11,44@17,99@22,5@28,146@33,242@39,200@44,389@50|-|-|7,8,9,29,53,57,58,59,63,69,76,85,87,89,91,92,126,156,157,164,182,200,231,247,263,270,280
+10040|11@1,116@1,20@4,69@8,106@12,280@16,404@20,66@26,14@32,37@36,276@44,12@50|-|-|29,63,69,89,91,92,156,157,164,182,200,263,270,276,280,339,404,446
+10041|44@0,44@1,37@1,43@1,82@1,20@1,43@6,82@11,20@16,99@21,525@26,127@31,242@36,200@41,56@46,63@51|-|-|29,53,57,58,59,63,85,86,87,89,92,115,126,127,156,164,182,200,231,263,269,399,406,503,525
+10042|17@1,44@1,46@7,48@14,88@21,97@28,242@35,157@42,19@49,36@56,63@63|-|-|19,29,53,63,89,92,115,126,156,157,164,182,231,263,269,355,406,446
+10043|149@1,50@1,93@1,109@1,100@1,54@11,60@22,129@33,133@44,105@55,94@66,112@77,97@88,347@99|-|-|6,7,8,9,29,53,58,59,63,69,76,85,86,87,89,92,94,100,113,115,120,126,138,156,157,161,164,182,231,247,261,263,269,280,339,347,398,492
+10044|149@1,50@1,93@1,109@1,100@1,54@11,60@22,129@33,133@44,105@55,94@66,112@77,97@88,347@99|-|-|6,7,8,9,29,53,58,59,63,69,76,85,86,87,89,92,94,100,113,115,120,126,138,156,157,161,164,182,231,247,261,263,269,280,339,347,398,492
+10045|9@0,9@1,192@1,602@1,569@1,406@1,7@1,33@1,45@1,86@1,84@1,86@4,84@8,178@11,268@16,36@20,486@25,109@29,408@35,435@40,538@46,324@51,113@57,87@62,406@65|-|7,9,173,200,215,231,264,324,351,393,406,495,527,673|63,85,86,87,92,104,113,156,164,182,207,213,214,216,218,219,237,240,263,280,374,411,416,451,496,497,521,523,528,590,693
+10046|364@1,418@1,98@1,43@1,116@5,228@9,206@13,97@17,232@21,210@25,163@29,13@33,334@37,404@41,400@45,458@49,442@50,14@57,364@61|-|173,276,282,334,366,432,442,450,673|14,63,92,104,113,156,164,168,182,201,206,207,211,213,214,216,218,219,237,240,241,263,280,332,355,369,374,404,416,430,474,496,512,590,693
+10047|292@1,331@1,400@1,33@1,43@1,30@1,203@1,364@7,332@10,498@16,68@19,31@25,280@28,42@31,36@34,224@37,370@43,179@46|38,69,106,117,175,224,228,264,279,350|67,173,264,270,282,334,450,675|14,63,89,92,104,156,157,164,168,182,206,207,213,214,216,218,237,240,241,263,280,317,332,339,374,411,416,421,444,474,479,496,523,526,590,693
+10048|517@1,417@1,422@1,43@1,52@1,336@1,123@1,336@4,123@8,46@13,44@16,316@20,251@26,424@30,185@35,373@41,492@45,53@50,242@56,417@60,517@65|-|162,173,180,231,253,257,272,289,304,492,673,675|46,53,63,76,92,104,126,138,156,164,168,182,188,207,213,214,216,218,237,241,247,259,261,263,269,315,371,373,399,416,488,496,555,590
+10049|422@1,423@1,424@1,44@1,43@1,201@1,103@1,201@5,103@10,498@14,157@19,184@23,37@28,399@34,371@41,242@47,89@54,444@63,63@73,416@82|-|7,8,9,67,173,180,200,231,253,264,276,334,335,351,352,401,406,414,442,446,492,707|46,53,57,58,59,63,85,86,87,89,92,104,126,156,157,164,182,201,207,213,214,216,218,237,240,241,259,263,269,280,317,332,337,371,374,397,399,411,416,421,444,479,496,523,525,555,590,693
+10050|299@0,299@1,24@1,394@1,7@1,136@1,10@1,45@1,52@1,28@1,52@5,28@10,64@14,488@20,98@25,339@31,116@37,163@44,413@50,327@57,394@63|-|7,9,67,173,257,264,270,272,276,282,307,340,387,432,519,530,673|14,46,53,63,76,89,92,104,126,156,157,164,182,207,213,214,216,218,237,241,261,263,280,315,317,332,339,374,398,411,416,421,444,488,490,496,497,512,523,526,590
+10051|585@1,500@1,581@1,361@1,45@1,93@1,104@1,100@1,93@4,104@6,100@9,574@11,273@14,345@17,505@19,577@23,347@26,94@31,286@35,248@40,445@44,95@49,138@53,500@58,585@62|-|7,8,9,173,196,215,220,270,271,277,278,285,289,304,324,351,428,472,477,478,502,673|63,85,86,92,94,104,113,115,138,156,164,168,182,207,213,214,216,218,219,237,240,241,244,247,259,261,263,269,347,374,411,412,416,433,447,451,473,496,497,590,605
+10052|583@1,442@1,269@1,45@1,584@1,310@1,313@5,44@9,230@13,11@17,185@21,226@25,242@29,334@33,389@37,254@41,256@41,255@41,442@45,583@49|21,69,246,305,321,368,385,386,389,422,423,424,445,581,612|8,9,162,173,196,220,264,282,289,334,387,393,442,446,492,673|14,53,58,63,76,92,104,126,156,157,164,182,188,201,206,207,213,214,216,218,237,240,241,244,247,259,263,269,280,317,371,373,374,399,411,416,430,444,447,451,496,590
+10053|33@1,106@1,189@1,29@1,189@4,29@7,232@10,317@13,182@16,46@19,442@22,157@25,36@28,319@31,231@35,334@39,38@45,475@51,484@57,368@63|-|7,8,9,67,173,180,196,200,231,253,264,276,283,334,335,351,352,393,401,406,414,442,446,707|46,53,57,58,59,63,76,85,86,87,89,92,104,126,156,157,164,182,201,207,213,214,216,218,237,240,241,263,269,280,317,332,337,371,374,397,399,411,416,421,430,444,479,496,523,525,590,684,693
+10054|428@1,7@1,9@1,8@1,117@1,96@1,93@1,197@1,96@4,93@7,197@9,203@12,364@15,395@17,237@20,347@23,170@25,136@28,244@31,367@33,379@36,179@42,105@47,68@53|-|7,8,9,67,173,220,264,270,271,272,277,278,324,356,409,428,477,673|63,92,94,104,113,115,138,156,157,164,182,207,213,214,216,218,237,240,241,244,247,263,280,317,339,347,374,398,411,412,416,447,473,490,496,526,590
+10055|604@1,424@1,33@1,86@1,43@1,336@1,43@4,336@7,98@10,209@13,316@16,422@19,44@24,435@30,46@36,528@42,268@48,87@54,604@60|-|173,231,253,324,351,393,673|46,53,63,85,86,87,92,104,113,156,164,168,182,207,213,214,216,218,237,240,263,315,416,451,496,521,528,555,590
+10056|566@1,282@1,103@1,101@1,180@1,103@4,101@7,180@10,425@13,261@16,185@19,506@22,174@26,247@30,373@34,389@40,289@46,288@52,271@58,566@64|-|173,180,196,220,271,272,277,282,285,289,351,441,477,478,492,502,675|63,85,86,87,92,94,104,138,156,164,168,182,207,213,214,216,218,237,240,241,244,247,259,261,263,269,347,371,373,374,399,416,421,433,451,496,590,605,611
+10057|195@1,248@1,10@1,364@1,43@1,98@1,43@4,98@7,228@10,269@13,44@16,104@19,163@22,14@25,400@29,197@33,427@37,382@41,389@45,13@49,248@53,195@57|38,174,185,195,212,224,226,277,372,382,386,389,428,506,583|173,180,196,231,272,276,277,282,289,340,351,352,428,492,673,675|14,53,58,59,63,85,86,87,92,104,126,138,156,157,164,168,182,201,206,207,213,214,216,218,237,240,241,244,247,258,259,261,263,269,317,332,347,371,399,404,416,421,444,451,496,497,555,590,693
+10058|242@0,242@1,530@1,424@1,33@1,28@1,82@1,201@1,28@3,82@7,201@13,36@15,328@19,163@28,337@33,91@40,407@55|-|173,200,231,401,406,414,434,442,446,530,673,707|14,46,53,57,63,89,92,104,126,156,157,164,182,201,206,207,213,214,216,218,237,240,241,263,280,317,332,337,374,398,416,421,444,496,523,525,590,693
+10059|396@0,396@1,673@1,193@1,98@1,197@1,232@1,68@6,364@11,612@15,14@19,319@24,198@29,501@33,382@37,526@42,347@47,505@51,370@55,406@60,245@65|-|8,9,67,173,231,264,270,272,334,352,393,406,409,428,530,673|14,46,63,89,92,94,104,156,157,164,182,207,213,214,216,218,237,240,241,247,263,280,317,339,347,371,374,398,399,411,416,421,430,444,490,496,523,526,590
+10060|8@1,181@1,43@1,75@1,196@1,75@5,196@9,320@13,207@17,54@21,420@26,275@31,452@36,59@47,329@58|-|8,173,196,200,202,231,235,264,272,335,352,388,402,707|14,58,59,63,76,89,92,104,113,156,157,164,182,207,213,214,216,218,219,237,240,247,258,263,280,317,374,411,412,416,447,496,523,524,590
+10061|33@1,22@1,584@1,584@6,381@10,75@15,273@20,345@25,580@27,572@33,312@38,581@43,585@46,617@50,80@51,76@58|-|173,202,215,235,270,277,283,343,388,402,495,502|76,92,94,104,156,164,182,207,213,214,216,218,219,237,240,241,263,267,347,412,447,496,497,590,605
+10062|361@1,270@1,273@1,149@1,219@1,346@4,204@7,500@10,287@13,505@16,225@20,296@24,375@28,105@32,513@36,428@41,470@46,94@51,406@56,361@61|-|173,196,200,270,271,272,277,343,351,352,366,387,406,428,432,434,477,478,502,673|19,46,57,58,63,76,85,86,87,89,92,94,104,113,115,127,138,156,164,182,201,207,211,213,214,216,218,219,237,240,241,244,247,263,332,337,347,355,412,416,421,447,451,473,496,523,590
+10063|262@1,270@1,377@1,149@1,219@1,182@4,349@7,500@10,287@13,505@16,225@20,295@24,375@28,105@32,477@36,428@41,471@46,94@51,406@56,262@61|-|173,196,200,270,271,277,351,352,366,387,406,428,432,434,472,477,502,673|19,46,57,58,63,76,85,86,87,89,92,94,104,113,115,127,138,156,164,182,201,207,211,213,214,216,218,219,237,240,241,244,247,263,332,337,347,355,412,416,421,447,451,473,496,523,590
+10064|341@1,359@1,33@1,45@1,55@1,189@1,55@4,189@9,193@12,117@18,426@22,157@28,182@32,330@39,36@44,89@51,283@56,359@63|-|8,67,173,196,200,231,253,264,276,283,308,352,401,414,446,518,707|46,57,58,59,63,89,92,104,127,156,157,164,182,207,213,214,216,218,237,240,258,263,280,317,374,411,416,444,482,496,497,503,523,526,590
+10065|530@0,530@1,210@1,437@1,400@1,1@1,43@1,71@1,98@1,71@5,98@9,72@13,228@18,348@23,97@28,21@33,197@39,404@45,206@51,501@57,437@63,103@69|-|9,67,173,200,202,231,235,264,283,338,388,402,406,409,520,530,673,675|14,46,63,76,89,92,104,156,157,164,182,206,207,213,214,216,218,219,237,241,263,267,280,317,332,337,374,404,411,412,416,447,490,496,512,523,526,590,693
+10066|43@1,10@1,193@4,101@6,310@9,154@11,197@14,425@16,185@19,252@21,386@24,282@26,421@29,109@31,428@34,408@36,247@39,492@41,511@44,212@46|105,212,236,260,271,286,364,368,389,417,445|7,8,9,67,173,180,196,220,264,271,272,277,282,289,324,351,352,356,428,472,477,492,502|92,94,104,138,156,164,168,182,207,213,214,216,218,237,240,241,244,247,259,261,263,269,280,317,332,347,371,373,374,398,399,421,490,496,511,555,590,605
+10067|225@0,225@1,143@1,365@1,64@1,45@1,310@1,47@1,310@3,47@5,31@7,219@9,574@11,54@14,496@17,363@20,36@23,287@26,349@30,538@34,406@40,195@46,585@52,143@59|-|143,173,200,215,231,253,257,304,366,406,432,434,472|19,46,53,58,63,76,89,92,104,126,138,156,164,168,182,207,211,213,214,216,218,219,237,240,241,244,263,332,337,355,416,496,497,523,590,605
+10068|163@0,163@1,500@1,370@1,348@1,400@1,43@1,93@1,104@1,100@1,93@4,104@6,100@9,501@11,210@14,332@17,505@19,469@23,14@26,427@31,270@35,364@40,206@44,182@49,370@53,500@58|-|7,8,9,67,173,220,264,270,271,277,278,282,285,289,304,324,351,409,428,472,477,478,502,530,673,675|14,63,85,86,89,92,94,104,113,115,138,156,157,164,168,182,206,207,213,214,216,218,219,237,240,241,244,247,259,261,263,269,280,317,332,339,347,374,398,404,411,416,433,444,447,451,473,490,496,497,523,526,590,605
+10069|387@1,304@1,581@1,589@1,1@1,45@1,270@1,608@5,287@9,574@13,3@17,213@21,290@25,494@29,36@33,505@37,495@41,493@45,38@49,304@53,387@57|133,186,214,215,227,273,281,361,381,516,577|7,8,9,67,173,196,215,220,231,253,264,270,272,277,282,285,289,304,324,343,356,387,409,428,477,495,502,673,675,707|53,57,58,59,63,76,85,86,87,92,94,104,113,115,126,138,156,164,182,207,213,214,216,218,219,237,240,241,244,247,263,347,374,433,447,451,473,496,497,526,528,590,605
+10070|163@0,163@1,400@1,364@1,43@1,44@1,99@1,116@1,99@4,116@8,453@11,372@15,103@18,207@22,423@25,184@29,305@34,242@40,97@45,130@51,269@56,400@62|-|162,173,180,196,253,340,352,428,710|46,57,58,59,63,89,92,104,127,156,164,168,182,207,213,214,216,218,237,240,258,259,263,269,317,371,398,399,416,496,503,523,555,590
+10071|110@0,110@1,23@1,281@1,33@1,45@1,55@1,45@6,55@12,93@18,50@24,156@30,57@36,94@49,133@62|-|-|6,8,29,53,57,58,59,63,69,86,89,91,92,94,100,113,115,126,138,156,161,164,182,231,247,263,280,347,492,503
+10072|422@1,423@1,424@1,300@1,33@1,106@1,20@1,174@4,88@7,317@10,99@13,446@16,475@19,360@20,479@22,225@25,21@28,103@31,157@34,242@37,231@40,91@43,444@46,38@49,201@52|-|20,173,231,335,393,401,406,414,442,446,707|46,63,89,92,104,153,156,157,164,182,201,207,213,214,216,218,237,241,244,259,263,267,269,317,360,371,397,399,416,430,444,479,496,523,525,590,693
+10073|143@1,257@1,33@1,28@1,16@1,98@1,28@3,16@5,98@9,119@11,17@15,355@17,18@25,97@31,403@43,13@53|-|-|19,29,63,92,115,156,164,182,263,355,369
+10074|573@0,573@1,329@1,181@1,43@1,104@1,420@1,104@5,420@10,196@14,44@19,423@23,29@28,182@32,524@37,242@41,59@48,258@54,329@61|-|162,173,180,196,324,335,352,442,673|58,59,63,89,92,104,113,153,156,164,182,207,213,214,216,218,219,237,240,247,258,259,263,269,360,371,399,416,496,523,524,590
+10075|33@1,106@1,88@1,159@5,479@8,115@12,446@18,470@21,246@27,175@31,285@35,408@40,433@46,444@49,585@50,591@50,113@60,219@70|-|173,215,270,283,285,334,343,356,387,393,414,446,472,477,495|63,92,94,104,113,115,153,156,157,164,182,201,207,214,216,218,219,237,241,244,258,263,267,317,347,360,397,416,433,444,473,479,496,590,605
+10076|359@0,359@1,93@1,232@1,393@1,36@1,228@23,418@26,357@29,428@32,184@35,94@38,97@41,309@44,334@52,63@60|-|8,9,173,196,271,324,334,335,356,393,428,442,446,477,502,673,707|63,89,92,94,104,113,115,153,156,157,164,182,188,201,207,214,216,218,237,240,241,244,247,263,280,317,332,360,397,416,430,447,473,496,523,590
+10077|246@1,352@1,184@5,401@15,34@20,392@30,58@35,618@45,347@50,330@60,329@65,56@75,38@80,323@90|-|173,196,253,324,335,351,352,401,442,710|46,57,58,59,63,85,86,87,89,92,104,127,156,157,164,182,207,214,216,218,219,237,240,244,258,263,280,317,347,416,496,503,523,590
+10078|246@1,341@1,184@5,414@15,436@20,156@30,89@35,619@45,339@50,76@60,90@65,126@75,359@80,284@90|-|7,9,173,231,253,335,351,406,414,442,446,707|14,46,53,63,76,85,86,87,89,92,104,126,156,157,164,182,201,207,214,216,218,219,237,241,244,263,280,315,317,332,337,339,374,397,411,416,421,444,479,496,523,525,590,693
+10079|239@1,184@5,246@15,242@20,403@30,156@35,245@45,406@50,349@60,19@65,304@75,200@80,63@90|-|20,173,196,200,231,253,304,351,352,366,401,406,414,432,434,442,620|14,19,46,53,57,58,59,63,76,85,86,87,89,92,104,126,127,156,157,164,182,201,207,214,216,218,237,240,241,244,263,280,315,317,332,337,339,360,374,411,412,416,421,444,496,497,507,523,525,590,693
+10080|39@1,84@1,45@5,589@7,98@10,486@13,86@18,364@21,104@23,209@26,609@29,435@34,21@37,85@42,97@45,528@50,113@53,87@58|-|9,173,231,264,270,282,324,343,351,393,527|70,85,86,87,91,92,104,113,148,156,164,182,207,213,214,216,218,237,240,249,263,280,290,374,447,451,496,497,521,528,590
+10081|39@1,84@1,45@5,589@7,98@10,486@13,86@18,364@21,104@23,209@26,609@29,435@34,21@37,85@42,97@45,528@50,113@53,87@58|-|9,173,231,264,270,282,324,343,351,393,527|70,85,86,87,91,92,104,113,148,156,164,182,207,213,214,216,218,237,240,249,263,280,290,374,447,451,496,497,521,528,590
+10082|39@1,84@1,45@5,589@7,98@10,486@13,86@18,364@21,104@23,209@26,609@29,435@34,21@37,85@42,97@45,528@50,113@53,87@58|-|9,173,231,264,270,282,324,343,351,393,527|70,85,86,87,91,92,104,113,148,156,164,182,207,213,214,216,218,237,240,249,263,280,290,374,447,451,496,497,521,528,590
+10083|39@1,84@1,45@5,589@7,98@10,486@13,86@18,364@21,104@23,209@26,609@29,435@34,21@37,85@42,97@45,528@50,113@53,87@58|-|9,173,231,264,270,282,324,343,351,393,527|70,85,86,87,91,92,104,113,148,156,164,182,207,213,214,216,218,237,240,249,263,280,290,374,447,451,496,497,521,528,590
+10084|39@1,84@1,45@5,589@7,98@10,486@13,86@18,364@21,104@23,209@26,609@29,435@34,21@37,85@42,97@45,528@50,113@53,87@58|-|9,173,231,264,270,282,324,343,351,393,527|70,85,86,87,91,92,104,113,148,156,164,182,207,213,214,216,218,237,240,249,263,280,290,374,447,451,496,497,521,528,590
+10085|39@1,84@1,45@5,589@7,98@10,486@13,86@18,364@21,104@23,209@26,609@29,435@34,21@37,85@42,97@45,528@50,113@53,87@58|-|9,173,231,264,270,282,324,343,351,393,527|70,85,86,87,91,92,104,113,148,156,164,182,207,213,214,216,218,237,240,249,263,280,290,374,447,451,496,497,521,528,590
+10086|93@1,502@1,194@1,310@6,271@10,113@15,60@19,285@25,470@29,471@29,282@46,433@50,472@50,399@55,94@75,621@85|-|-|7,8,9,36,60,63,85,86,94,113,115,129,156,164,168,182,184,201,203,214,240,241,244,247,248,263,264,269,271,280,282,285,317,347,356,374,399,409,411,412,416,417,428,433,441,447,473,492,566,675,678,797,806,808,851,917
+10087|157@0,157@1,90@1,284@1,45@1,33@1,52@1,116@1,52@5,116@8,222@12,481@15,133@19,436@22,414@26,174@29,36@31,281@39,89@46,284@52,90@59|-|173,257,414,442,446,495,707|46,53,63,76,89,92,104,126,153,156,157,164,182,201,207,213,214,216,218,237,241,261,263,267,315,317,397,416,430,444,488,496,497,523,590
+10088|216@0,216@1,361@1,340@1,563@1,243@1,277@1,111@1,150@1,1@1,193@1,203@6,608@13,98@16,26@23,226@26,97@33,146@36,495@43,204@46,494@53,340@56,361@63,136@66|-|7,8,9,67,173,215,231,253,264,270,277,283,304,340,343,351,352,387,409,495,673|58,59,63,76,85,86,87,92,104,156,164,182,207,213,214,216,218,237,240,241,247,263,374,411,416,447,451,490,496,526,590,693
+10089|19@0,19@1,182@1,525@1,424@1,422@1,99@1,52@1,43@1,44@1,52@4,43@7,44@10,225@13,29@17,116@21,242@25,337@29,428@35,184@42,53@49,38@63|-|173,200,231,257,304,366,401,406,428,432,434,673|19,46,53,63,89,92,104,126,156,157,164,182,207,211,213,214,216,218,237,240,241,263,280,317,332,337,355,416,421,444,496,523,525,590,693
+10090|41@0,41@1,64@1,99@13,31@16,116@19,398@22,97@25,42@28,200@31|-|-|29,63,72,76,92,115,156,164,182,188,200,263,280,355,369,398,404,529
+10091|33@1,39@3,98@6,116@9,44@12,162@15,242@18,158@21,389@24,38@27|-|-|29,58,59,91,92,156,164,182,188,231,247,263,269,369,399
+10092|14@1,68@1,154@1,33@1,39@1,98@1,116@1,39@3,98@6,116@9,44@12,162@15,242@18,158@26,389@34,38@42|-|-|29,58,59,63,91,92,156,164,182,188,231,247,263,269,339,369,399
+10093|184@0,184@1,14@1,33@1,39@1,98@1,116@1,98@4,116@7,44@10,228@13,158@16,372@19,242@24,389@29,162@34,38@39,283@44|-|162,173,196,231,253,282,283,289,343,351,387,428,675,707|14,46,58,59,63,92,104,156,164,168,182,188,207,213,214,216,218,237,240,241,247,259,263,269,339,369,373,399,416,421,447,474,482,496,511,555,590
+10094|609@1,417@1,204@1,186@1,589@1,98@1,39@1,84@1,45@1,86@4,104@8,486@12,364@16,209@20,97@24,231@28,435@32,85@36,113@40,87@44|-|-|9,34,36,57,85,86,87,91,97,113,115,129,156,164,168,179,182,203,204,214,227,240,263,270,280,313,374,417,447,451,486,521,528,574,577,583,598,604,851,885
+10095|609@1,417@1,204@1,186@1,589@1,98@1,39@1,84@1,45@1,86@4,104@8,486@12,364@16,209@20,97@24,231@28,435@32,85@36,113@40,87@44|-|-|9,34,36,57,85,86,87,91,97,113,115,129,156,164,168,179,182,203,204,214,227,240,263,270,280,313,374,417,447,451,486,521,528,574,577,583,598,604,851,885
+10096|609@1,417@1,204@1,186@1,589@1,98@1,39@1,84@1,45@1,86@4,104@8,486@12,364@16,209@20,97@24,231@28,435@32,85@36,113@40,87@44|-|-|9,34,36,57,85,86,87,91,97,113,115,129,156,164,168,179,182,203,204,214,227,240,263,270,280,313,374,417,447,451,486,521,528,574,577,583,598,604,851,885
+10097|609@1,417@1,204@1,186@1,589@1,98@1,39@1,84@1,45@1,86@4,104@8,486@12,364@16,209@20,97@24,231@28,435@32,85@36,113@40,87@44|-|-|9,34,36,57,85,86,87,91,97,113,115,129,156,164,168,179,182,203,204,214,227,240,263,270,280,313,374,417,447,451,486,521,528,574,577,583,598,604,851,885
+10098|609@1,417@1,204@1,186@1,589@1,98@1,39@1,84@1,45@1,86@4,104@8,486@12,364@16,209@20,97@24,231@28,435@32,85@36,113@40,87@44|-|-|9,34,36,57,85,86,87,91,97,113,115,129,156,164,168,179,182,203,204,214,227,240,263,270,280,313,374,417,447,451,486,521,528,574,577,583,598,604,851,885
+10099|609@1,417@1,204@1,186@1,589@1,98@1,39@1,84@1,45@1,86@4,104@8,486@12,364@16,209@20,97@24,231@28,435@32,85@36,113@40,87@44|-|-|9,34,36,57,85,86,87,91,97,113,115,129,156,164,168,179,182,203,204,214,227,240,263,270,280,313,374,417,447,451,486,521,528,574,577,583,598,604,851,885
+10100|94@0,609@1,486@1,435@1,417@1,364@1,231@1,209@1,204@1,186@1,113@1,104@1,98@1,97@1,87@1,86@1,84@1,45@1,589@1,39@1,85@5|-|-|9,34,36,57,63,85,86,87,91,94,97,113,115,129,156,164,168,179,182,203,204,214,227,240,263,264,268,270,280,282,283,285,347,374,411,416,417,447,451,473,486,500,521,527,528,577,583,598,604,678,797,851,885,914,917,918
+10101|111@1,10@1,54@3,181@6,205@9,210@12,229@15,232@18,129@21,154@24,334@27,163@30,442@33,360@36,14@39,883@42,59@45|68,174,175,243,306,400,420,468|-|8,14,34,36,38,58,59,67,89,91,129,133,141,156,157,162,164,168,174,182,196,203,214,232,263,264,280,282,283,317,332,333,334,360,374,398,404,419,421,430,442,446,523,675,796,813,851,861,883
+10102|333@0,14@1,163@1,232@1,556@1|68,174,175,243,306,400,420,468|-|8,14,34,36,38,58,59,63,67,89,91,97,129,133,141,156,157,162,164,168,174,182,191,196,203,206,214,232,263,264,280,282,283,317,332,333,334,360,374,398,404,411,416,419,421,430,442,446,523,529,675,796,813,851,861,883
+10103|39@1,181@1,50@4,420@8,180@12,196@16,109@20,62@24,326@28,58@32,286@36,54@40,694@44,573@48,59@52|46,95,175,336,585,608|-|34,36,38,46,58,59,91,97,109,129,156,164,180,182,196,203,204,214,220,226,227,240,244,263,270,286,311,313,333,399,417,428,492,500,506,574,577,581,583,605,851,883,886
+10104|605@0,39@1,59@1,196@1,286@1|46,95,175,336,585,608|-|34,36,38,46,58,59,63,91,97,109,129,156,164,180,182,196,203,204,214,220,226,227,240,244,263,270,286,311,313,333,347,399,416,417,419,428,473,492,500,506,574,577,581,583,605,813,851,883,886
+10105|28@1,232@1,45@4,310@8,189@12,523@16,389@20,442@24,201@28,91@32,414@36,89@40,90@44|29,37,246,262,319,468,515|-|14,34,36,89,91,97,156,157,164,168,179,182,184,188,189,201,203,204,214,232,241,263,270,317,319,328,334,341,350,414,421,430,442,444,446,479,492,523,707,796,815,851
+10106|328@0,28@1,45@1,161@1,232@1,310@1,400@1,189@12,523@16,389@20,442@24,201@30,91@36,414@42,89@48,90@54|-|-|14,34,36,38,63,89,91,97,156,157,164,168,174,179,182,184,188,189,201,203,204,214,232,241,253,263,270,283,317,319,328,334,341,350,414,416,421,430,442,444,446,479,482,492,523,675,707,796,815,851
+10107|45@1,252@1,364@4,10@8,6@12,44@16,269@20,372@24,154@29,103@32,400@36,417@40,583@44|95,175,180,260,343,575|-|34,36,38,85,86,87,91,97,109,129,133,156,164,168,174,180,182,196,203,204,214,232,240,241,244,247,263,269,270,282,283,304,313,332,369,399,402,408,417,421,441,492,555,583,675,808,851,885,886
+10108|408@0,10@1,45@1,252@1,364@1,415@1,511@1,6@12,44@16,269@20,372@24,154@31,103@36,400@42,417@48,583@54|-|-|34,36,38,46,63,85,86,87,91,97,109,129,133,156,164,168,174,180,182,196,203,204,214,232,240,241,244,247,263,269,270,282,283,304,313,332,369,399,402,408,416,417,421,441,479,492,555,583,675,806,807,808,851,885,886
+10109|33@1,111@1,268@4,397@6,205@10,209@12,88@16,479@18,9@22,120@24,446@28,350@30,435@34,153@36,38@40,444@42|68,103,174,175,192,203,335,469|-|7,9,34,36,38,53,85,86,87,89,91,126,156,157,164,174,182,189,201,203,214,241,263,264,268,280,317,334,341,350,360,374,414,444,446,451,479,521,523,527,528,667,851,916
+10110|33@1,111@1,268@1,397@1,205@10,209@12,88@16,479@18,9@22,120@24,446@30,350@34,435@40,153@44,38@50,444@54|68,103,174,175,192,203,335,469|-|7,9,34,36,38,53,85,86,87,89,91,118,126,156,157,164,174,182,184,189,201,203,214,241,263,264,268,280,317,334,341,350,360,374,411,414,444,446,451,479,521,523,527,528,604,667,707,851,912,916
+10111|33@1,111@1,268@1,397@1,484@1,209@12,88@16,479@18,9@22,120@24,446@30,350@34,435@40,153@44,38@50,444@54|68,103,174,175,192,203,335,469|-|7,9,34,36,38,46,53,63,85,86,87,89,91,118,126,156,157,164,174,182,184,189,201,203,214,241,263,264,268,280,317,334,341,350,360,374,411,414,416,442,444,446,451,479,484,521,523,527,528,604,707,776,800,851,912,916
+10112|1@1,139@1,106@4,44@7,50@12,491@15,305@18,107@21,92@26,282@29,242@32,103@37,441@40,151@43,562@46,262@48|174,180,212,254,255,256,278,372,425,499|-|7,8,9,34,36,53,63,85,87,91,92,118,126,129,156,157,164,168,174,180,182,184,188,189,201,202,203,214,220,240,241,242,247,263,269,270,280,282,286,317,341,374,398,399,409,416,428,441,444,474,482,491,506,555,851
+10113|1@1,44@1,106@1,139@1,50@12,491@15,305@18,107@21,92@26,282@29,242@32,103@37,441@40,151@46,562@52,262@57|-|-|7,8,9,34,36,53,63,85,87,91,92,114,118,126,129,156,157,164,168,174,180,182,184,188,189,201,202,203,214,220,240,241,242,247,263,264,269,270,280,282,286,317,341,374,398,399,409,411,416,428,441,444,474,482,491,506,555,808,851
+10114|692@0,452@1,437@1,402@1,388@1,331@1,326@1,253@1,235@1,202@1,115@1,95@1,93@1,76@1,73@1,72@1,473@1,71@1|-|-|14,34,36,38,53,60,63,67,76,89,94,113,115,156,164,168,174,182,188,200,202,203,214,241,244,253,263,270,271,280,282,285,286,331,345,347,356,402,406,412,416,428,433,434,437,442,447,473,500,523,525,580,678,707,784,803,851,885,913,917
+10115|708@0,206@1,29@1,514@1,116@1,38@1,189@1,45@1,39@1,83@1,172@12,506@16,374@20,707@24,198@31,261@36,283@42,155@48,37@54,394@60|-|807,809,815|5,7,9,14,25,34,53,58,59,63,67,83,85,87,89,91,103,116,126,129,156,157,164,168,173,182,196,200,201,203,206,213,214,231,240,241,247,253,257,261,263,280,286,317,334,374,394,399,411,414,416,442,444,446,496,502,506,514,523,675,693,707
+10116|594@0,594@1,400@1,114@1,272@1,561@1,1@1,45@1,145@1,98@1,145@5,98@8,122@10,352@14,108@19,425@23,191@28,185@33,164@42,326@49,104@56,56@68,114@70,400@77|-|8,67,173,180,196,272,289,308,340,352,441,518|57,58,59,63,92,104,127,156,157,164,168,182,207,213,214,216,218,237,240,263,269,317,332,369,374,399,416,447,479,496,497,503,512,526,590,693
+10117|594@0,400@1,272@1,114@1,1@1,55@1,45@1,98@1,122@10,352@14,108@19,425@23,191@28,332@33,164@42,326@49,104@56,56@68|-|-|8,14,36,56,57,58,59,63,67,91,127,129,156,157,164,168,182,189,191,196,203,206,214,240,263,269,270,280,308,317,332,341,352,369,374,390,399,416,441,447,490,518,710,851,883,885,886
+10118|614@1,615@1,687@1,20@1,523@1,225@1,44@1,114@8,91@16,219@24,242@32,406@40,616@48,137@56,201@64,489@72,89@80,200@88|-|434,799,806,815|34,63,89,91,129,156,157,164,173,179,182,200,201,203,214,219,231,241,242,263,276,280,304,349,371,406,411,414,416,428,444,447,482,496,514,523,667,707,784
+10119|614@1,615@1,687@1,20@1,523@1,225@1,44@1,114@8,91@16,219@24,242@32,406@40,616@48,137@56,201@64,489@72,89@80,200@88|-|434,799,806,815|34,63,89,91,129,156,157,164,173,179,182,200,201,203,214,219,231,241,242,263,276,280,304,349,371,406,411,414,416,428,444,447,482,496,514,523,667,707,784
+10120|614@1,615@1,687@1,20@1,523@1,225@1,44@1,114@8,91@16,219@24,242@32,406@40,616@48,137@56,201@64,489@72,89@80,200@88|-|434,799,806,815|34,63,89,91,129,156,157,164,173,179,182,200,201,203,214,219,231,241,242,263,276,280,304,349,371,406,411,414,416,428,444,447,482,496,514,523,667,707,784
+10121|33@1,43@1,228@1,28@1,43@3,228@7,28@10,316@13,117@16,44@19,189@23,162@27,36@31,184@35,242@39,158@43,281@47,37@51,156@55|-|7,8,9,162,173,231,253,283,335,351,387,428,442,530,707|46,89,92,104,156,164,168,182,201,207,213,214,216,218,237,259,263,269,317,369,371,374,496,497,523,526,590
+10122|85@0,85@1,403@1,268@1,11@1,81@1,189@1,44@1,81@4,189@7,44@10,450@13,209@16,512@19,12@25,405@31,91@37,192@41,97@49|-|173,324,334,351,393,450,527,673|63,76,85,86,87,92,104,113,156,164,182,207,213,214,216,218,237,240,263,355,398,404,412,416,430,451,496,507,512,521,528,590
+10123|1@1,45@4,64@6,270@10,314@13,226@16,297@20,512@23,298@26,355@30,260@33,403@36,686@40,97@43,542@47|213,219,365,432,483|-|14,19,36,97,129,156,164,179,182,196,201,203,204,214,226,240,241,244,263,269,270,297,314,332,347,366,369,403,512,542,814,851,885,914
+10124|1@1,45@4,64@6,270@10,314@13,226@16,297@20,512@23,298@26,355@30,260@33,403@36,686@40,97@43,542@47|213,219,365,432,483|-|14,19,36,97,129,156,164,179,182,196,201,203,204,214,226,240,241,244,263,269,270,297,314,332,347,366,369,403,512,542,814,851,885,914
+10125|1@1,45@4,64@6,270@10,314@13,226@16,297@20,512@23,298@26,355@30,260@33,403@36,686@40,97@43,542@47|213,219,365,432,483|-|14,19,36,97,129,156,164,179,182,196,201,203,204,214,226,240,241,244,263,269,270,297,314,332,347,366,369,403,512,542,814,851,885,914
+10126|68@0,28@1,33@1,43@1,104@1,179@1,203@1,269@1,88@12,336@16,44@20,317@24,46@30,157@36,242@42,184@48,446@54,444@60|-|-|7,9,14,34,36,38,46,91,156,157,164,179,182,184,189,200,201,203,204,214,241,242,263,264,269,270,280,282,283,304,317,334,339,350,370,374,414,416,421,422,424,428,442,444,446,490,492,523,555,583,675,706,707,808,851,885,918
+10127|55@1,45@1,270@4,251@8,362@12,715@16,291@20,487@24,253@28,401@32,392@36,283@40,56@44,38@48|36,54,352|799,812|56,57,58,89,127,156,164,173,182,203,213,214,231,240,250,251,253,258,263,270,291,330,341,362,369,496,503,523,710
+10128|572@0,572@1,404@1,400@1,210@1,670@1,75@1,74@1,670@5,75@10,74@14,275@19,348@23,235@28,163@32,230@40,669@47,241@55|-|173,202,235,276,282,324,388,402,432,450,530,673|14,63,76,92,104,141,156,164,182,206,207,213,214,216,218,219,237,241,263,267,280,332,371,374,398,404,412,416,447,490,496,590
+10129|445@0,445@1,50@1,227@1,259@1,207@1,1@1,139@1,52@1,230@1,52@5,230@8,82@13,123@16,3@21,481@24,92@29,417@32,474@39,53@44,599@51,406@56|-|173,231,257,270,282,289,343,406,441,492,673|53,92,104,126,141,156,164,168,182,188,207,213,214,216,218,237,259,261,263,269,315,337,371,374,398,421,474,482,488,496,512,525,590
+10130|33@1,111@3,205@8,109@10,129@15,246@17,120@22,446@24,36@29,397@31,322@36,408@38,38@43,504@45,153@50|-|-|36,38,63,76,89,94,109,113,115,129,156,157,164,182,201,203,214,263,283,317,347,350,356,360,369,408,414,416,428,442,444,446,451,512,523,605,800,815,851
+""",
+    """10131|33@1,111@3,205@8,109@10,129@15,246@17,120@22,446@24,36@29,397@31,322@36,408@38,38@43,504@45,153@50|-|-|36,38,63,76,89,94,109,113,115,129,156,157,164,182,201,203,214,263,283,317,347,350,356,360,369,408,414,416,428,442,444,446,451,512,523,605,800,815,851
+10132|33@1,111@3,205@8,109@10,129@15,246@17,120@22,446@24,36@29,397@31,322@36,408@38,38@43,504@45,153@50|-|-|36,38,63,76,89,94,109,113,115,129,156,157,164,182,201,203,214,263,283,317,347,350,356,360,369,408,414,416,428,442,444,446,451,512,523,605,800,815,851
+10133|33@1,111@3,205@8,109@10,129@15,246@17,120@22,446@24,36@29,397@31,322@36,408@38,38@43,504@45,153@50|-|-|36,38,63,76,89,94,109,113,115,129,156,157,164,182,201,203,214,263,283,317,347,350,356,360,369,408,414,416,428,442,444,446,451,512,523,605,800,815,851
+10134|33@1,111@3,205@8,109@10,129@15,246@17,120@22,446@24,36@29,397@31,322@36,408@38,38@43,504@45,153@50|-|-|36,38,63,76,89,94,109,113,115,129,156,157,164,182,201,203,214,263,283,317,347,350,356,360,369,408,414,416,428,442,444,446,451,512,523,605,800,815,851
+10135|33@1,111@3,205@8,109@10,129@15,246@17,120@22,446@24,36@29,397@31,322@36,408@38,38@43,504@45,153@50|-|-|36,38,63,76,89,94,109,113,115,129,156,157,164,182,201,203,214,263,283,317,347,350,356,360,369,408,414,416,428,442,444,446,451,512,523,605,800,815,851
+10136|33@1,111@3,205@8,109@10,129@15,246@17,120@22,446@24,36@29,397@31,322@36,408@38,38@43,504@45,153@50|-|-|36,38,63,76,89,94,109,113,115,129,156,157,164,182,201,203,214,263,283,317,347,350,356,360,369,408,414,416,428,442,444,446,451,512,523,605,800,815,851
+10137|33@1,111@3,205@8,109@10,129@15,246@17,120@22,446@24,36@29,397@31,322@36,408@38,38@43,504@45,153@50|-|-|36,38,63,76,89,94,109,113,115,129,156,157,164,182,201,203,214,263,283,317,347,350,356,360,369,408,414,416,428,442,444,446,451,512,523,605,800,815,851
+10138|33@1,111@3,205@8,109@10,129@15,246@17,120@22,446@24,36@29,397@31,322@36,408@38,38@43,504@45,153@50|-|-|36,38,63,76,89,94,109,113,115,129,156,157,164,182,201,203,214,263,283,317,347,350,356,360,369,408,414,416,428,442,444,446,451,512,523,605,800,815,851
+10139|33@1,111@3,205@8,109@10,129@15,246@17,120@22,446@24,36@29,397@31,322@36,408@38,38@43,504@45,153@50|-|-|36,38,63,76,89,94,109,113,115,129,156,157,164,182,201,203,214,263,283,317,347,350,356,360,369,408,414,416,428,442,444,446,451,512,523,605,800,815,851
+10140|33@1,111@3,205@8,109@10,129@15,246@17,120@22,446@24,36@29,397@31,322@36,408@38,38@43,504@45,153@50|-|-|36,38,63,76,89,94,109,113,115,129,156,157,164,182,201,203,214,263,283,317,347,350,356,360,369,408,414,416,428,442,444,446,451,512,523,605,800,815,851
+10141|33@1,111@3,205@8,109@10,129@15,246@17,120@22,446@24,36@29,397@31,322@36,408@38,38@43,504@45,153@50|-|-|36,38,63,76,89,94,109,113,115,129,156,157,164,182,201,203,214,263,283,317,347,350,356,360,369,408,414,416,428,442,444,446,451,512,523,605,800,815,851
+10142|33@1,111@3,205@8,109@10,129@15,246@17,120@22,446@24,36@29,397@31,322@36,408@38,38@43,504@45,153@50|-|-|36,38,63,76,89,94,109,113,115,129,156,157,164,182,201,203,214,263,283,317,347,350,356,360,369,408,414,416,428,442,444,446,451,512,523,605,800,815,851
+10143|10@1,150@1,310@1,383@1,452@1,425@6,104@12,608@18,102@24,468@30,163@36,421@42,204@48,583@54,220@60|-|-|14,36,63,85,86,87,94,101,109,113,141,156,164,168,174,180,182,202,203,204,214,220,240,241,244,247,263,269,271,339,374,399,404,409,416,421,433,506,566,577,581,583,605,807,851,884,885
+10144|452@1,150@1,10@1,310@1,383@1,104@5,608@10,425@14,102@19,185@23,204@28,163@32,421@37,468@41,583@46,220@50|-|173,180,202,220,271,289,343,387,409,477,478,495|14,63,85,86,87,92,94,104,113,138,141,156,164,168,182,207,213,214,216,218,219,237,244,247,261,263,269,339,371,373,374,399,404,421,433,451,496,526,590,605,611
+10145|452@1,150@1,10@1,310@1,383@1,104@5,608@10,425@14,102@19,185@23,204@28,163@32,421@37,468@41,583@46,220@50|-|173,180,202,220,271,289,343,387,409,477,478,495|14,63,85,86,87,92,94,104,113,138,141,156,164,168,182,207,213,214,216,218,219,237,244,247,261,263,269,339,371,373,374,399,404,421,433,451,496,526,590,605,611
+10146|691@0,691@1,327@1,187@1,475@1,33@1,43@1,117@1,182@1,43@5,117@9,182@13,525@17,184@21,29@25,526@29,103@33,334@38,337@43,568@51,349@59,200@67,370@75|-|7,8,9,67,173,200,231,253,264,276,283,304,334,351,352,401,406,409,434,442,446,530,673,707|14,46,53,63,89,92,104,156,157,164,182,201,206,207,213,214,216,218,219,237,263,269,280,317,332,337,339,371,374,397,398,404,411,416,421,430,496,497,523,525,526,590,693
+10147|360@1,270@1,111@6,205@12,334@18,602@24,60@30,62@36,199@42,508@48,271@54,442@60,396@66,430@72,220@78,192@84,705@90|-|-|34,36,58,60,63,76,85,86,94,97,109,113,115,129,156,164,182,191,203,206,214,226,227,241,247,263,270,271,280,285,286,334,347,396,411,412,416,428,430,433,442,447,451,473,484,486,500,521,574,577,581,583,598,605,796,851,861,883
+10148|609@1,417@1,204@1,186@1,589@1,98@1,39@1,84@1,45@1,86@4,104@8,486@12,364@16,209@20,97@24,231@28,435@32,85@36,113@40,87@44|-|-|9,34,36,57,85,86,87,91,97,113,115,129,156,164,168,179,182,203,204,214,227,240,263,270,280,313,374,417,447,451,486,521,528,574,577,583,598,604,851,885
+10149|45@1,39@1,125@1,172@1,39@3,125@7,172@11,43@13,506@17,155@21,261@23,708@27,37@33,374@37,707@43,283@49,394@53,514@59,198@65|-|7,9,67,173,180,196,200,220,231,253,257,264,282,283,334,414,442,446,502,673,675,707|14,53,58,59,63,85,87,89,92,104,126,138,156,157,164,168,182,201,206,207,213,214,216,218,237,240,241,247,261,263,280,317,332,374,399,411,416,444,479,488,496,497,523,590,693
+10150|676@0,676@1,71@1,584@1,78@1,522@1,584@4,78@7,522@10,318@13,577@16,230@21,405@28,605@35,312@42,483@49|-|173,270,271,285,324,343,366,387,432,450,472,477,478,495,502|76,92,94,104,113,115,138,141,156,164,168,182,207,213,214,216,218,219,237,241,244,263,267,332,347,355,369,412,496,512,590,605,611
+10151|33@1,43@1,28@4,104@8,88@12,336@16,44@20,317@24,46@28,157@32,242@36,184@40,446@44,444@48|37,283,387|-|14,34,36,46,91,156,157,164,182,184,189,201,203,204,214,242,263,269,270,304,317,334,414,422,424,428,442,444,446,523,555,583,706,707,851,885
+10152|306@0,709@1,389@1,269@1,203@1,501@1,179@1,104@1,28@1,68@1,43@1,33@1,98@1,88@12,336@16,44@20,317@24,46@30,157@36,242@42,184@48,446@54,444@60|-|-|14,36,38,46,91,156,157,164,179,182,184,200,201,203,204,214,242,263,269,270,280,283,304,317,334,339,350,370,414,416,422,424,428,442,444,446,523,529,555,583,675,706,707,851,885
+10153|469@1,487@1,145@1,611@1,169@1,450@1,611@5,169@8,450@13,61@16,44@21,392@26,141@33,242@38,679@45,243@50,710@57,494@62|-|173,196,202,277,324,334,352,450,472,478,673,710|57,58,59,92,104,115,127,141,156,164,182,207,213,214,216,218,219,237,240,263,398,404,496,503,524,590,611
+10154|33@1,84@1,111@5,205@9,268@13,209@17,609@21,393@25,435@29,716@33,604@37,528@41,42@45,596@49,565@53|41,175,179,217,227,252,273,321,574|162,173,231,270,272,283,340,343,351,356,387,393,428,442,495,527|85,86,87,92,104,115,156,164,168,182,207,213,214,216,218,237,263,360,369,371,374,398,416,447,451,496,521,526,528,590
+10155|93@1,232@1,234@1,236@1,451@1,446@8,163@16,400@24,427@32,500@40,350@48,334@56,408@64,722@72,356@80,711@88|-|-|14,34,63,76,89,94,113,115,129,156,157,164,168,182,184,200,201,203,214,232,241,248,257,263,280,282,286,304,317,332,334,347,349,350,356,360,374,399,404,406,408,414,416,421,430,433,442,444,446,451,473,500,523,684,706,797,800,851
+10156|93@1,232@1,234@1,236@1,451@1,446@8,163@16,400@24,427@32,500@40,350@48,334@56,408@64,722@72,356@80,711@88|-|-|14,34,63,76,89,94,113,115,129,156,157,164,168,182,184,200,201,203,214,232,241,248,257,263,280,282,286,304,317,332,334,347,349,350,356,360,374,399,404,406,408,414,416,421,430,433,442,444,446,451,473,500,523,684,706,797,800,851
+10157|236@1,234@1,451@1,429@1,232@1,93@1,163@7,500@13,350@19,400@23,356@31,427@37,408@43,475@47,722@50,446@53,334@59,378@67,711@73|-|173,200,257,278,282,304,324,334,351,356,393,406,414,442,446,477,502|14,63,76,86,89,92,94,104,113,115,156,157,164,168,182,207,214,216,218,237,263,280,317,332,347,360,373,374,397,399,404,416,421,430,433,444,451,473,496,523,590,684,693
+10158|84@1,45@1,39@3,98@6,24@9,104@12,86@15,113@18,85@21,21@24,97@27,87@30|-|729,730,731|6,9,29,69,85,86,87,91,92,113,115,156,164,182,231,263,270,280,347
+10159|33@1,45@1,39@3,98@6,24@10,28@14,44@17,129@21,36@24,38@28,270@31|-|733,734,735,736,737,738,739,740|6,29,91,92,115,156,164,182,231,247,263,270
+10160|609@1,417@1,204@1,186@1,589@1,98@1,39@1,84@1,45@1,86@4,104@8,486@12,364@16,209@20,97@24,231@28,435@32,85@36,113@40,87@44|-|-|9,34,36,57,85,86,87,91,97,113,115,129,156,164,168,179,182,203,204,214,227,240,263,270,280,313,374,417,447,451,486,521,528,574,577,583,598,604,851,885
+10161|45@1,252@1,468@4,10@8,6@12,232@16,269@20,207@24,154@29,103@32,163@36,319@40,37@44|38,174,175,180,343,400|-|14,34,36,38,85,87,91,118,133,156,164,168,174,180,182,203,204,206,214,232,240,241,242,247,263,269,270,280,282,283,304,313,319,332,334,360,369,374,399,402,404,417,421,430,441,442,446,492,583,675,796,808,851,885
+10162|33@1,45@1,39@5,93@10,584@15,97@20,60@25,23@30,505@35,36@41,605@45,94@50,361@55|24,32,37,38,95,234|797|34,67,94,97,129,156,164,173,182,203,204,213,214,231,248,263,286,340,347,428,496,500,502,528,583,595,605,667
+10163|427@0,427@1,224@1,33@1,98@1,45@1,39@1,93@1,584@15,97@20,60@25,23@30,505@35,36@43,605@49,94@56,361@63|-|797|6,14,34,63,67,94,97,129,156,164,173,182,203,204,213,214,224,226,231,248,263,286,340,347,416,427,428,433,472,478,496,500,502,528,529,581,583,595,605,667,675,678,684
+10164|33@1,174@1,45@3,51@6,281@9,93@12,50@15,352@18,29@21,428@24,133@27,57@30,303@33,94@36,244@39,240@42,505@45|23,187,335,562|-|34,36,53,56,57,58,59,60,86,89,91,94,113,126,127,129,133,156,164,174,182,196,203,214,240,241,244,247,250,263,270,271,285,286,311,341,347,352,419,428,433,447,473,492,500,523,678,710,797,851,883,886
+10165|801@0,33@1,45@1,51@1,110@1,174@1,281@9,93@12,50@15,352@18,29@21,428@24,133@27,57@30,303@33,94@36,244@39,240@42,505@45|-|-|8,34,36,38,53,56,57,58,59,60,63,86,89,91,92,94,113,114,118,126,127,129,133,156,164,174,182,184,188,196,201,203,214,240,241,244,247,250,263,270,271,280,285,286,311,330,334,341,347,350,352,374,398,408,409,411,416,417,419,423,428,433,441,447,473,474,479,482,491,492,500,523,678,710,776,797,851,883,886
+10166|64@1,28@1,43@5,210@10,249@15,693@20,197@25,282@30,432@35,280@40,14@45,21@50,348@55,515@60,413@65|38,68,98,143,174,175,343,364,400,493,501|814|14,34,116,156,164,173,182,203,211,213,214,241,263,270,276,279,280,348,370,372,398,413,496,514,526,669,675,693
+10167|458@0,790@1,432@1,257@1,597@1,139@1,33@1,123@1,114@1,108@1,499@12,372@16,124@20,584@24,120@28,188@32,92@38,562@44,153@50,262@56,194@62,581@68|-|-|34,36,38,53,60,63,85,87,92,114,126,156,164,168,174,180,182,184,188,203,214,220,240,241,247,257,261,263,269,315,360,390,399,416,441,474,482,491,581,583,605,802,851
+10168|383@1,227@1,272@1,182@1,278@1,102@1,113@1,115@1,219@1,605@1,581@1,1@1,229@1,226@1,420@1,93@12,502@16,196@20,24@24,60@28,95@32,243@36,389@40,573@44,94@48,298@52|109,252,321,471|797,813|5,8,25,34,58,59,63,76,85,86,87,94,103,113,115,118,156,164,168,173,182,196,203,204,213,214,219,226,227,240,241,247,248,253,258,263,269,270,271,280,285,333,334,347,371,374,384,385,409,411,412,416,417,419,428,433,447,472,473,478,492,496,500,502,581,605,678,707
+10169|16@1,93@5,115@10,95@15,97@20,246@25,366@30,427@35,105@40,821@45,138@50,542@55,104@60,248@65,433@70|-|-|19,36,60,63,94,97,113,115,129,156,164,182,184,203,214,240,241,247,248,263,270,271,285,286,304,314,347,366,369,403,413,416,433,473,500,542,797,814,851,883,917
+10170|64@1,116@1,249@5,113@10,365@15,97@20,246@25,280@30,65@35,501@40,823@45,339@50,68@55,197@60,370@65,179@70|-|-|19,36,38,63,67,97,113,129,156,164,179,182,184,201,203,214,240,241,263,269,270,280,282,283,332,339,366,369,370,413,416,490,512,542,675,707,811,814,851,885
+10171|16@1,43@1,371@5,219@10,17@15,97@20,246@25,389@30,403@35,495@40,822@45,417@50,542@55,203@60,262@65,143@70|-|-|19,36,63,97,129,156,164,168,180,182,184,201,203,214,220,240,241,247,263,269,270,286,304,332,366,369,399,403,413,416,417,492,506,512,542,555,808,814,851
+10172|826@0,417@1,408@1,174@1,207@1,45@1,33@1,51@1,281@9,93@12,50@15,352@18,29@21,428@24,133@27,57@30,303@33,94@36,244@39,240@42,505@45|92,248,881|-|7,9,34,36,53,56,57,58,59,60,63,86,89,91,92,94,113,118,126,127,129,133,156,164,174,182,184,188,196,203,214,240,241,244,247,248,250,263,269,271,280,285,286,311,330,334,341,347,352,374,390,398,408,409,411,416,417,419,428,433,441,447,473,474,482,490,491,492,500,506,523,555,678,707,710,797,851,886,917
+10173|33@1,106@1,310@5,50@10,180@15,246@20,506@25,174@30,668@35,408@40,101@45,288@50,243@55|109,114,194,267,352,457|800|34,56,57,58,59,89,91,94,103,113,115,120,133,156,157,164,173,182,196,201,202,203,213,214,219,240,241,247,250,258,261,263,317,333,334,347,350,362,408,414,444,446,496,503,506,523,675,707,710
+10174|33@1,43@1,28@3,122@6,555@9,29@12,608@15,42@18,156@21,36@24,184@27,68@30,269@33,38@36|282,501,575|808|34,42,57,58,59,85,86,87,91,103,129,156,164,168,173,182,184,196,203,213,214,231,240,241,247,250,263,269,270,271,304,313,341,371,372,374,402,441,447,496,514,526,555
+10175|400@0,400@1,415@1,42@1,608@1,33@1,43@1,28@1,122@1,555@9,29@12,468@15,154@18,156@23,36@28,184@33,68@38,269@43,38@48|-|808|34,42,57,58,59,63,85,86,87,91,103,129,156,164,168,173,182,184,196,203,213,214,231,240,241,247,250,263,269,270,271,304,313,341,371,372,374,402,416,421,441,447,496,514,526,555,675,707,776
+10176|181@1,33@1,269@4,44@8,419@12,526@16,423@20,29@24,8@28,253@32,187@36,59@40,37@44,276@48|36,172,264,281,359,510,573,612|-|5,7,8,25,53,58,59,76,83,91,116,126,156,157,164,168,173,182,203,213,214,227,241,253,257,261,263,269,276,280,315,317,360,369,374,394,419,423,424,428,447,496,526
+10177|556@0,556@1,181@1,33@1,269@1,44@1,419@12,526@16,423@20,29@24,8@28,253@32,187@38,59@44,37@50,276@56|-|807,808|5,7,8,25,34,53,58,59,63,76,83,89,91,94,116,126,156,157,164,168,173,179,182,203,213,214,227,241,253,257,261,263,269,276,280,315,317,334,339,360,369,371,374,394,411,416,419,423,424,428,442,444,447,496,523,526,776
+10178|556@0,556@1,181@1,33@1,269@1,44@1,419@12,526@16,423@20,29@24,8@28,253@32,187@38,59@44,37@50,276@56|-|807,808|5,7,8,25,34,53,58,59,63,76,83,89,91,94,116,126,156,157,164,168,173,179,182,203,213,214,227,241,253,257,261,263,269,276,280,315,317,334,339,360,369,371,374,394,411,416,419,423,424,428,442,444,447,496,523,526,776
+10179|310@1,182@1,114@4,101@8,50@12,693@16,578@20,506@24,212@28,21@32,174@36,247@40,89@44,471@48,470@48,194@52|262|809|89,94,156,157,164,168,173,182,201,203,213,214,219,240,247,261,263,271,285,286,313,317,334,347,371,390,399,412,414,417,428,433,472,496,502,506,693
+10180|189@1,33@1,55@1,232@1,203@5,341@10,279@15,319@20,389@25,334@30,340@35,330@40,779@45,175@50,90@55|20,68,174,180,220,281,310,513|796,805,808|57,86,89,91,103,156,157,164,173,182,188,201,203,213,214,240,242,253,263,279,317,330,334,340,341,371,414,423,430,444,446,482,492,496,503,523,707
+10181|614@1,615@1,687@1,20@1,523@1,225@1,44@1,114@8,91@16,219@24,242@32,406@40,616@48,137@56,201@64,489@72,89@80,200@88|-|434,799,806,815|34,63,89,91,129,156,157,164,173,179,182,200,201,203,214,219,231,241,242,263,276,280,304,349,371,406,411,414,416,428,444,447,482,496,514,523,667,707,784
+10182|562@1,64@1,254@1,256@1,255@1,55@7,31@14,365@21,291@28,65@35,133@42,37@49,56@56|297,332,355,392,432|814|19,56,57,58,59,63,97,133,156,164,168,173,179,182,196,203,211,213,214,240,250,253,263,276,291,311,372,403,413,416,496,503,542,675,710
+10183|562@1,64@1,254@1,256@1,255@1,55@7,31@14,365@21,291@28,65@35,133@42,37@49,56@56|297,332,355,392,432|814|19,56,57,58,59,63,97,133,156,164,168,173,179,182,196,203,211,213,214,240,250,253,263,276,291,311,372,403,413,416,496,503,542,675,710
+10184|209@0,43@1,45@1,51@1,84@1,609@1,568@1,175@1,562@1,715@1,491@1,268@4,351@8,184@12,269@16,103@24,207@28,92@32,435@36,398@40,786@44,586@48,602@52|-|-|7,9,36,63,85,86,87,92,118,129,156,164,168,182,184,188,203,204,214,227,240,241,253,263,268,269,270,280,283,304,319,342,374,390,398,409,416,422,441,451,474,482,486,491,500,506,521,527,528,555,598,604,675,851,885,917
+10185|33@1,181@1,54@6,311@12,196@18,29@24,133@30,573@36,883@42,694@48,57@54,59@60|38,187,392,457,487,556|-|8,34,36,38,56,57,58,59,63,97,115,127,133,156,164,179,182,196,203,214,240,250,263,297,311,333,334,352,416,419,428,442,710,812,851,861,883,886
+10186|500@1,589@1,226@5,574@10,60@15,270@20,266@25,361@30,94@35,347@40,470@45,678@50|244,252,505|-|34,36,60,94,113,115,118,129,156,164,182,203,204,214,226,244,247,263,270,271,285,286,304,345,347,356,409,412,428,433,473,500,574,577,583,605,678,797,851,917
+10187|39@1,84@1,43@5,681@10,98@15,260@20,44@25,209@30,259@35,97@40,331@45,242@50,783@55,37@60|162,207,229,252,268,321,511,575|-|9,36,38,85,86,87,97,129,156,162,164,168,179,180,182,184,200,203,214,226,242,253,263,268,269,280,282,283,313,331,374,399,402,417,422,423,424,451,486,492,521,527,528,555,598,604,706,707,808,851
+10188|44@1,98@1,232@1,336@1,501@1,533@1,163@11,14@22,442@33,568@44,242@55,585@66,370@77,416@88|-|-|14,34,36,63,91,97,129,156,164,179,182,184,203,206,214,232,242,263,270,280,286,304,334,370,398,403,411,416,422,423,424,430,442,528,555,581,583,605,669,706,796,851,885
+10189|44@1,98@1,232@1,336@1,469@1,163@11,334@22,442@33,368@44,242@55,585@66,370@77,416@88|-|-|34,36,46,63,76,91,97,113,115,129,156,164,179,182,184,201,203,214,232,240,241,242,263,270,280,286,304,334,370,411,416,422,423,424,430,442,444,484,528,555,583,605,706,776,796,851,885
+10190|342@1,109@1,525@1,97@1,92@8,474@16,349@24,440@32,406@40,53@48,744@56,322@64,105@72,63@80,795@88|-|434,800|19,53,63,76,97,103,113,115,156,164,173,182,184,188,203,214,247,263,322,349,371,372,390,398,406,416,430,440,474,482,496,595,599,693
+10191|818@0,203@1,453@1,249@1,43@1,116@1,332@12,184@16,29@20,280@24,197@28,339@32,442@36,223@40,68@44,370@48,264@52|-|-|7,8,9,14,34,36,38,67,91,127,129,156,157,164,179,182,184,203,206,214,240,250,263,264,269,270,280,317,332,334,339,369,370,374,396,398,409,411,416,428,442,444,490,512,710,776,811,851,861,885,886
+10192|10@1,20@1,43@6,22@12,74@18,154@24,184@30,447@36,44@42,369@48,207@54,412@60,235@66,359@72,37@78,438@84,816@90|-|-|14,34,36,46,63,67,76,91,129,156,157,164,168,182,184,202,203,214,227,241,242,263,264,269,270,280,282,304,317,331,332,339,341,345,369,370,374,399,402,409,412,416,417,437,447,490,512,555,580,669,707,803,808,851,885
+10193|824@1,556@1,419@1,334@1,269@1,259@1,93@1,74@1,72@1,1@1,39@1,14@1,38@1,37@1,23@1,36@1,33@1,54@1,24@1,791@8,202@16,473@24,270@32,580@40,678@40,412@48,94@56,73@64,505@72,76@80,248@88|-|-|14,34,36,58,59,60,63,76,94,97,113,115,118,129,156,164,182,184,196,200,202,203,214,226,227,241,242,263,269,270,271,285,286,331,334,341,345,347,370,402,412,416,419,428,433,437,447,473,484,500,523,555,577,580,676,678,684,707,776,851,883,885
+10194|825@1,506@1,417@1,247@1,114@1,109@1,93@1,74@1,72@1,97@1,23@1,24@1,50@1,33@1,36@1,37@1,1@1,38@1,39@1,791@8,202@16,473@24,270@32,580@40,678@40,412@48,94@56,73@64,505@72,76@80,248@88|-|-|34,36,60,63,76,94,97,101,109,113,115,118,129,156,164,182,184,202,203,214,226,227,241,242,247,261,263,269,270,271,285,286,331,341,345,347,399,402,412,416,417,428,433,437,447,473,492,500,506,523,555,566,577,580,676,678,707,851
+10229|43@1,52@1,336@4,44@8,172@12,270@16,424@24,514@28,242@32,36@36,53@40,46@44,157@48,179@52,394@56|24,37,38,234,343,457|-|34,36,38,46,53,83,91,97,126,156,157,164,179,182,184,200,201,203,214,241,242,257,261,263,270,315,317,350,370,394,408,422,424,444,446,479,488,684,706,815,851,915
+10230|245@0,172@1,424@1,394@1,336@1,270@1,242@1,179@1,514@1,36@1,97@1,88@1,52@1,46@1,44@1,43@1,157@1,53@5,833@64|-|-|34,36,38,46,53,63,76,83,91,97,126,156,157,164,168,179,182,184,200,201,203,214,241,242,257,261,263,270,304,315,317,332,350,370,394,406,408,416,422,424,442,444,446,479,488,523,528,535,555,684,706,815,851,915
+10231|268@1,33@1,84@4,78@6,331@9,205@11,103@13,451@16,129@20,486@22,120@26,412@29,402@34,435@34,153@41,360@46,580@50|73,278,388|-|36,38,76,85,86,87,97,115,129,156,164,168,182,202,203,214,240,263,268,269,331,360,402,412,437,447,451,486,492,521,527,528,580,604,803,851
+10232|835@0,268@1,33@1,84@4,78@6,331@9,205@11,103@13,451@16,129@20,486@22,120@26,412@29,402@34,435@34,153@41,360@46,580@50|-|-|36,38,63,76,85,86,87,97,115,129,156,164,168,174,182,184,202,203,214,240,263,268,269,331,360,402,412,416,437,447,451,486,492,521,527,528,580,604,803,851,916
+10233|844@0,360@1,284@1,108@1,33@1,52@1,43@1,38@1,98@13,172@20,111@24,129@31,488@35,436@43,53@48,517@56,205@61,315@74|-|-|7,9,34,36,38,46,53,63,67,76,83,89,91,101,109,126,129,156,157,164,174,179,180,182,203,214,241,247,257,261,263,264,280,283,307,315,332,347,360,394,411,416,421,424,428,442,488,506,519,523,528,583,707,807,809,851,915
+10234|33@1,40@1,106@4,44@8,565@12,107@16,191@20,362@24,839@28,42@32,390@36,254@40,255@40,92@44,242@48,367@52,194@56|48,61,114,120,175,310,352,401,453,491|-|14,36,38,56,57,58,59,92,97,114,127,129,156,164,174,179,180,182,184,188,191,196,203,214,220,240,242,247,263,269,341,342,352,360,390,398,399,416,441,474,491,506,675,710,799,808,851,886
+10235|10@1,43@1,249@1,269@6,98@12,232@18,398@24,280@30,468@36,163@42,97@48,103@54,370@60|68,252,364,400,415,458,501|-|14,36,67,91,92,97,129,156,164,168,179,180,182,188,203,206,214,232,240,241,247,263,264,269,280,332,339,342,347,370,374,390,398,404,410,411,416,417,421,441,447,474,482,490,491,675,808,811,851,885
+10236|845@0,163@1,389@1,224@1,39@1,33@1,55@1,116@13,534@18,210@21,352@25,332@29,453@34,227@39,401@46,514@51,14@58,56@63|-|-|14,34,36,56,57,58,59,63,91,127,129,156,164,168,182,184,196,203,206,214,227,240,250,263,269,270,280,282,308,332,352,374,399,403,404,410,416,419,447,518,523,529,555,675,684,710,808,812,851,883,886,918
+10237|837@0,298@1,669@1,572@1,495@1,494@1,437@1,432@1,412@1,348@1,345@1,25@1,241@1,235@1,202@1,79@1,78@1,74@1,73@1,72@1,71@1,270@1,853@5|-|-|14,36,63,67,76,118,156,164,182,202,203,204,214,227,240,241,244,263,270,280,311,331,332,345,370,398,402,403,410,412,416,437,447,490,512,542,572,580,669,676,803,811,813,851,861,885,918
+10238|10@1,43@1,259@4,468@8,425@12,174@16,269@20,282@24,180@28,97@32,247@36,841@40,417@44,492@48|197,262,326,894|-|36,46,63,91,97,101,109,129,156,164,168,174,180,182,188,196,203,214,220,240,244,247,261,263,264,269,271,282,286,313,347,369,374,399,416,417,421,492,506,555,566,806,807,808,851,883
+10239|421@0,10@1,43@1,259@1,369@1,468@1,425@12,174@16,269@20,282@24,180@28,97@34,247@40,841@46,417@52,492@58|-|-|14,34,36,46,53,63,67,91,94,97,101,109,129,156,164,168,174,180,182,184,188,196,203,214,220,240,242,244,247,261,263,264,269,270,271,280,282,286,304,313,332,347,369,374,399,411,416,417,421,447,490,492,506,555,566,675,806,807,808,809,851,883
+10240|840@0,468@1,143@1,64@1,276@1,43@1,17@1,366@18,184@24,332@30,163@36,18@42,306@48,403@57,432@64,37@72,542@80|-|-|19,34,36,38,60,63,94,97,101,109,129,156,157,164,179,182,184,196,203,214,232,240,241,244,247,248,257,263,270,297,304,314,317,332,339,347,366,369,370,403,410,413,416,421,428,473,500,512,542,555,605,678,797,814,851,917
+10241|842@0,33@1,55@1,71@1,151@1,225@1,182@15,175@20,352@25,240@30,406@35,174@43,442@49,330@56|-|-|34,36,58,59,85,87,156,157,164,174,182,188,200,201,203,204,214,240,241,263,317,330,341,352,360,406,430,434,442,482,484,491,796,806,851,861,886
+10242|231@0,842@1,491@1,364@1,715@1,225@1,33@1,71@1,55@1,182@15,175@20,352@25,240@30,406@35,174@43,34@49,442@49,330@58,484@67|-|-|7,9,34,36,53,56,57,58,59,63,85,87,89,126,156,157,164,174,182,184,188,200,201,203,204,214,240,241,263,282,311,317,330,337,341,352,360,406,416,430,434,442,482,484,491,523,525,707,776,784,796,806,808,851,861,886,913
+10243|157@0,181@1,229@1,469@1,106@1,33@1,174@9,196@12,182@15,419@18,44@21,423@24,334@27,105@30,242@33,36@36,59@41,38@46,444@51,836@61|-|-|34,36,38,58,59,63,89,91,156,157,164,174,182,184,196,201,203,214,240,242,263,317,333,334,350,360,416,419,423,442,444,446,484,523,667,707,776,800,851,861,883,886,912
+10244|843@0,33@1,45@1,369@1,437@1,670@1,64@9,425@12,75@15,235@20,365@25,339@30,389@37,348@44,297@51,413@58|104,109,282,355,432|-|14,36,63,67,76,101,109,113,114,129,156,164,179,182,184,202,203,206,214,226,240,241,263,264,269,270,280,282,297,314,317,331,332,338,339,345,366,369,370,396,402,403,411,412,413,416,417,421,437,447,479,490,520,580,803,811,814,851,885,918
+10245|184@1,232@1,225@8,246@16,163@24,430@32,337@40,396@48,408@56,368@64,414@72,231@80,459@88|-|-|34,36,53,58,59,63,85,86,87,89,126,129,156,157,164,182,184,200,201,203,214,232,240,241,263,271,280,304,315,317,334,337,339,396,406,408,411,414,416,421,430,433,434,442,444,446,484,523,525,707,776,796,851
+10246|184@1,352@1,225@8,246@16,163@24,392@32,396@48,408@56,401@64,414@72,460@80,56@88|-|-|34,36,53,56,57,58,59,63,85,86,87,89,126,127,129,156,157,164,182,184,196,200,201,203,214,240,241,263,271,280,304,317,332,337,339,352,374,396,406,408,411,414,416,419,421,433,434,444,484,523,525,707,710,776,851,883,886
+10247|39@1,55@1,33@4,175@8,453@12,44@16,184@20,29@24,487@28,242@32,36@36,253@40,834@44,37@48,38@52,457@56|283,854|-|36,38,56,57,58,59,97,127,129,156,164,182,184,196,203,214,240,242,250,263,283,330,341,352,423,428,706,710,799,812,851,883,886
+10248|247@1,39@1,55@1,566@1,33@4,175@8,453@12,44@16,184@20,29@24,487@28,242@32,36@36,253@40,834@44,37@48,38@52,457@56|283,854|-|36,38,56,57,58,59,63,97,101,109,127,156,164,180,182,184,196,200,214,220,240,242,247,250,253,263,283,330,341,352,416,423,506,566,706,710,799,812,851,883,886
+10249|310@1,584@1,259@5,260@10,239@15,577@20,334@25,286@30,595@35,605@40,326@45,253@50,276@55,361@60,585@65,200@70,831@75|-|-|19,34,36,63,94,97,156,164,182,184,188,200,203,214,240,241,244,253,263,269,286,311,334,347,366,411,414,416,428,442,447,574,577,580,581,583,605,802,851,914
+10250|33@1,39@1,526@5,24@10,372@15,29@20,184@25,428@30,873@35,156@40,207@45,37@50,38@55,370@60|174,283|-|34,36,38,57,63,89,91,156,157,164,168,174,179,182,184,200,201,203,214,240,241,263,283,317,339,370,416,428,442,444,523,528,529,667,675,684,707,776,808,851,885
+10251|33@1,39@1,526@5,24@10,488@15,29@20,184@25,428@30,873@35,156@40,207@45,37@50,394@55,370@60|174,283|-|34,36,38,53,63,83,89,91,126,156,157,164,168,174,179,182,184,200,201,203,214,240,241,261,263,283,315,317,339,370,394,416,428,442,444,488,523,528,529,667,684,707,776,808,851,885,915
+10252|33@1,39@1,526@5,24@10,453@15,29@20,184@25,428@30,873@35,156@40,207@45,37@50,834@55,370@60|174,283|-|34,36,38,56,57,63,89,91,156,157,164,168,174,179,182,184,200,201,203,214,240,250,263,283,317,339,352,370,416,428,442,444,523,528,529,667,684,707,710,776,808,851,885,886
+10253|39@1,341@1,33@4,342@8,390@12,21@16,281@21,398@24,482@28,133@32,92@36,89@40|24,54,68,105,114,174,246,254,255,256,491,495|-|34,36,38,56,57,67,89,91,92,114,127,133,156,157,164,174,182,188,189,191,201,203,214,240,263,270,317,341,342,352,390,398,414,441,444,446,474,482,491,523,707,710,776,851,885,886
+10254|33@1,39@1,574@3,497@6,341@9,343@12,91@15,29@17,281@23,36@28,526@30,253@34,38@39,414@45,562@51|-|-|34,36,38,63,91,156,162,164,168,174,182,189,203,214,240,241,253,263,270,283,304,331,341,402,412,414,416,428,442,523,574,583,667,707,776,808,851,885,886
+10255|111@1,175@1,189@4,205@8,137@12,103@16,246@20,529@24,281@28,887@32,355@36,407@40,489@44,38@48,283@52,542@56,586@62|-|-|34,36,38,53,58,59,63,76,85,87,89,91,92,97,126,133,156,157,164,168,174,180,182,184,189,200,201,203,214,220,226,240,241,244,247,253,263,270,283,304,317,341,342,347,360,366,398,403,414,416,428,444,446,484,500,506,523,525,528,529,542,675,679,684,707,776,784,799,806,814,851,861,884,886
+10256|812@0,857@1,48@1,55@1,310@7,116@10,453@13,458@17,291@21,204@25,512@29,227@34,401@39,54@44,56@50,264@55,834@61|-|-|8,34,36,56,57,58,59,63,97,114,127,129,156,164,179,182,196,200,203,204,214,227,240,244,250,263,264,269,270,283,304,339,352,370,374,396,409,411,416,428,442,447,512,574,577,675,710,812,851,886,912
+10257|1@1,266@1,608@1,882@1,497@5,270@8,162@11,458@14,331@18,227@22,583@29,304@33,204@37,251@41,383@46,860@53|-|-|36,38,63,67,86,91,97,129,156,162,164,168,182,189,203,204,214,227,240,241,242,263,269,270,304,313,331,332,341,352,369,402,416,421,447,490,583,851,885,886
+""",
+    """10258|55@1,150@1,106@6,270@12,352@17,487@23,269@28,262@34,330@39,417@43,243@47,406@52|68,226,229|-|36,56,57,63,156,164,182,196,200,203,214,226,240,250,263,269,270,330,349,352,406,416,417,434,679,851,886,913
+10259|55@1,150@1,106@6,270@12,352@17,487@23,269@28,262@34,330@39,417@43,243@47,406@52|68,226,229|-|36,56,57,63,156,164,182,196,200,203,214,226,240,250,263,269,270,330,349,352,406,416,417,434,679,851,886,913
+10260|45@1,64@1,102@1,98@6,259@10,332@13,31@17,269@20,253@24,383@27,19@30,263@34,207@38,413@42,355@47,179@52|38,260,515,575|-|19,36,38,63,156,164,168,179,182,184,203,214,241,253,257,263,269,270,283,297,304,313,314,332,366,369,403,413,416,492,542,808,814,851,884
+10261|45@1,64@1,102@1,98@6,259@10,332@13,31@17,269@20,253@24,383@27,19@30,263@34,207@38,413@42,355@47,179@52|38,260,515,575|-|19,36,38,63,156,164,168,179,182,184,203,214,241,253,257,263,269,270,283,297,304,313,314,332,366,369,403,413,416,492,542,808,814,851,884
+10262|45@1,64@1,102@1,98@6,259@10,332@13,31@17,269@20,253@24,383@27,19@30,263@34,207@38,413@42,355@47,179@52|38,260,515,575|-|19,36,38,63,156,164,168,179,182,184,203,214,241,253,257,263,269,270,283,297,304,313,314,332,366,369,403,413,416,492,542,808,814,851,884
+10263|310@1,33@1|-|-|36,101,109,113,115,156,164,168,182,203,214,247,408,417,506,851
+10264|241@1,784@1,249@7,246@14,409@21,280@28,97@35,337@42,53@49,878@56,103@63,68@70,200@77,370@84,394@91,416@98|-|-|14,34,36,46,53,63,67,76,83,91,97,126,156,164,179,182,184,189,200,203,214,241,242,253,257,263,264,269,270,280,315,337,339,341,369,370,394,406,409,411,416,421,422,423,424,428,434,442,484,488,490,512,523,525,528,535,555,707,776,799,814,851
+10265|241@1,784@1,249@7,246@14,409@21,280@28,97@35,337@42,53@49,878@56,103@63,68@70,200@77,370@84,394@91,416@98|-|-|14,34,36,46,53,63,67,76,83,91,97,126,156,164,179,182,184,189,200,203,214,241,242,253,257,263,264,269,270,280,315,337,339,341,369,370,394,406,409,411,416,421,422,423,424,428,434,442,484,488,490,512,523,525,528,535,555,707,776,799,814,851
+10266|241@1,784@1,249@7,246@14,409@21,280@28,97@35,337@42,53@49,878@56,103@63,68@70,200@77,370@84,394@91,416@98|-|-|14,34,36,46,53,63,67,76,83,91,97,126,156,164,179,182,184,189,200,203,214,241,242,253,257,263,264,269,270,280,315,337,339,341,369,370,394,406,409,411,416,421,422,423,424,428,434,442,484,488,490,512,523,525,528,535,555,707,776,799,814,851
+10267|241@1,784@1,249@7,246@14,409@21,280@28,97@35,337@42,53@49,878@56,103@63,68@70,200@77,370@84,394@91,416@98|-|-|14,34,36,46,53,63,67,76,83,91,97,126,156,164,179,182,184,189,200,203,214,241,242,253,257,263,264,269,270,280,315,337,339,341,369,370,394,406,409,411,416,421,422,423,424,428,434,442,484,488,490,512,523,525,528,535,555,707,776,799,814,851
+10268|84@1,225@1,604@1,351@7,268@14,570@21,435@28,97@35,406@42,879@56,319@63,243@70,200@77,87@84,315@91,63@98|-|-|14,34,36,63,76,85,86,87,97,109,113,115,156,164,182,184,200,203,214,242,263,268,269,270,315,337,347,369,406,408,416,428,430,434,451,484,486,512,521,525,528,555,598,604,605,851
+10269|84@1,225@1,604@1,351@7,268@14,570@21,435@28,97@35,406@42,879@56,319@63,243@70,200@77,87@84,315@91,63@98|-|-|14,34,36,63,76,85,86,87,97,109,113,115,156,164,182,184,200,203,214,242,263,268,269,270,315,337,347,369,406,408,416,428,430,434,451,484,486,512,521,525,528,555,598,604,605,851
+10270|84@1,225@1,604@1,351@7,268@14,570@21,435@28,97@35,406@42,879@56,319@63,243@70,200@77,87@84,315@91,63@98|-|-|14,34,36,63,76,85,86,87,97,109,113,115,156,164,182,184,200,203,214,242,263,268,269,270,315,337,347,369,406,408,416,428,430,434,451,484,486,512,521,525,528,555,598,604,605,851
+10271|84@1,225@1,604@1,351@7,268@14,570@21,435@28,97@35,406@42,879@56,319@63,243@70,200@77,87@84,315@91,63@98|-|-|14,34,36,63,76,85,86,87,97,109,113,115,156,164,182,184,200,203,214,242,263,268,269,270,315,337,347,369,406,408,416,428,430,434,451,484,486,512,521,525,528,555,598,604,605,851
+10272|10@1,43@1,122@1,838@1,154@8,371@13,106@17,163@22,589@25,184@35,156@41,173@41,414@48,585@56,359@64,901@70|236|-|7,8,9,14,34,36,38,46,63,67,89,91,118,129,156,157,164,168,182,184,203,204,214,232,240,241,242,253,263,264,269,270,280,304,313,317,332,339,341,347,370,374,402,409,410,411,414,416,419,421,441,444,479,484,523,555,583,667,707,776,851,885,912
+10273|22@1,73@1,98@1,266@1,116@6,74@12,21@18,490@24,904@30,675@36,235@42,596@48,438@54,276@60,452@66|24,68,514,532|-|14,36,67,76,156,164,179,182,184,191,201,202,203,204,206,214,227,240,241,263,269,270,280,282,317,331,345,369,374,402,412,416,428,437,447,490,580,583,669,675,707,803,808,851,885
+10274|22@1,73@1,98@1,266@1,116@6,74@12,21@18,490@24,904@30,675@36,235@42,596@48,438@54,276@60,452@66|24,68,514,532|-|14,36,67,76,156,164,179,182,184,191,201,202,203,204,206,214,227,240,241,263,269,270,280,282,317,331,345,369,374,402,412,416,428,437,447,490,580,583,669,675,707,803,808,851,885
+10275|22@1,73@1,98@1,266@1,116@6,74@12,21@18,490@24,904@30,675@36,235@42,596@48,438@54,276@60,452@66|24,68,514,532|-|14,36,67,76,156,164,179,182,184,191,201,202,203,204,206,214,227,240,241,263,269,270,280,282,317,331,345,369,374,402,412,416,428,437,447,490,580,583,669,675,707,803,808,851,885
+10276|110@1,161@1,229@1,246@10,29@20,182@30,414@40,484@50,906@60,38@70,397@80,360@90|-|-|34,36,38,46,53,57,58,63,76,85,87,89,92,156,157,164,182,203,214,240,241,242,263,311,347,352,356,360,394,396,399,405,406,408,412,414,416,428,430,442,444,446,484,500,528,535,605,776,800,815,861,916
+10277|110@1,161@1,229@1,246@10,29@20,182@30,414@40,484@50,906@60,38@70,397@80,360@90|-|-|34,36,38,46,53,57,58,63,76,85,87,89,92,156,157,164,182,203,214,240,241,242,263,311,347,352,356,360,394,396,399,405,406,408,412,414,416,428,430,442,444,446,484,500,528,535,605,776,800,815,861,916
+""",
+)

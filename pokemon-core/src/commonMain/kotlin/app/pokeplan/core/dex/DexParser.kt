@@ -3,6 +3,8 @@ package app.pokeplan.core.dex
 import app.pokeplan.core.dex.generated.DEX_ENTRIES
 import app.pokeplan.core.dex.generated.DEX_EVOLUTIONS
 import app.pokeplan.core.dex.generated.DEX_FORMS
+import app.pokeplan.core.dex.generated.DEX_LEARNSETS
+import app.pokeplan.core.dex.generated.DEX_MOVES
 import app.pokeplan.core.dex.generated.DEX_REGIONS
 import app.pokeplan.core.dex.generated.DEX_SPECIES
 
@@ -78,4 +80,29 @@ internal object DexParser {
 
     /** Region name to ordered species ids. Includes the extra "HISUI" list used to pick Hisuian variants. */
     fun regions(): Map<String, List<Int>> = rows(DEX_REGIONS).associate { f -> f[0] to f[1].split(',').map { it.toInt() } }
+
+    fun moves(): List<MoveInfo> = rows(DEX_MOVES).map { f ->
+        MoveInfo(
+            id = f[0].toInt(),
+            identifier = f[1],
+            name = f[2],
+            type = PokemonType.valueOf(f[3].uppercase()),
+            category = MoveCategory.valueOf(f[4]),
+            power = f[5].orNull()?.toInt(),
+            pp = f[6].orNull()?.toInt(),
+            accuracy = f[7].orNull()?.toInt(),
+            priority = f[8].toInt(),
+            generation = f[9].toInt(),
+        )
+    }
+
+    /** Form (Pokémon row) id to its learnset. */
+    fun learnsets(): Map<Int, Learnset> = rows(DEX_LEARNSETS).associate { f ->
+        f[0].toInt() to Learnset(
+            levelUp = list(f[1]).map { it.substringBefore('@').toInt() to it.substringAfter('@').toInt() },
+            egg = list(f[2]).map { it.toInt() },
+            tutor = list(f[3]).map { it.toInt() },
+            machine = list(f[4]).map { it.toInt() },
+        )
+    }
 }
