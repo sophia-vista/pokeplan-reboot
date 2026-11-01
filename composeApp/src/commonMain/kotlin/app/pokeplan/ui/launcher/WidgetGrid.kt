@@ -48,7 +48,7 @@ object WidgetGrid {
     const val COLUMNS = 4
 
     /** One row, in dp: about a twelfth of a phone's width, so the old stacked layout (about 17 rows) fits one screen, and a half-width widget is not tall and thin. */
-    const val ROW_DP = 32
+    const val ROW_DP = 36
 
     fun onPage(all: List<GridWidget>, page: WidgetPage) = all.filter { it.page == page }
 

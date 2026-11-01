@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.95.2
+
+- Launcher widget grid, less tall: rows are 36 dp (were 40), and a widget's text is centred in its frame (it hugged the top, leaving the empty space below). Inside a grid box the room above and below is whatever the cells leave, so nothing is cut off at the default sizes (checked in `launcher-grid.png`).
+
 ## 0.95.1
 
 - Care: the journal draft is kept across an app restart (saved after a short pause, cleared when the entry is written). The owner's World regions decisions and the merge rule for failures outside a PR are recorded in the docs.
