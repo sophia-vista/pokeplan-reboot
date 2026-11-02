@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.117.0
+
+- **Pokégear, the field tools (Phase 2 finished): four more tools** (eighteen in all). **Waypoints:** mark where you are (one location reading when you press the button; it asks for permission the first time and tracks nothing) and see how far and which way each saved place is, with a rename, a copyable map link and delete; places stay on this phone. **Sound meter:** a level in dB (an estimate, with an offset you can tune against a real meter), the quietest, average and loudest, the pitch it hears with its note and a spectrum, only while the tool is open and recording nothing. **QR codes:** make a code from text or a link (drawn in the app, up to 271 bytes, four repair levels; checked against an independent decoder) and scan one with Google's scanner screen (needs Google Play services; it shows the text and never opens a link). **Network check:** how the phone is connected (Wi-Fi, mobile data, metered or not, whether the internet was reached) and a three-request timing test against one small Cloudflare page, with a verdict. The app now declares location and microphone permissions (asked for only when these tools are used) and network state.
+- Not built: the document scanner with text recognition (a Google scanning library and its result plumbing, to be tried on a phone).
+
 ## 0.116.0
 
 - **World: the Story archive** (a small button on the World landing): every rank reached, every story chapter opened (by layer) and every legendary Pokémon that joined, each with a play button to **watch its cutscene again**. Playing one again changes nothing. Chapters not opened yet are not listed, so nothing is given away. **New scene:** a legendary quest completing (Zapdos, Dialga, Giratina...) now plays a scene of its own (the Pokémon and its cry, what it gives), once, like ranks and chapters; a save from before counts the legends it already has as seen.

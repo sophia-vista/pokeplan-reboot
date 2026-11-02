@@ -87,6 +87,10 @@ kotlin {
             implementation(libs.ktor.client.mock)
             implementation(libs.kotlinx.coroutines.test)
         }
+        jvmTest.dependencies {
+            // Only to check the QR generator by reading its codes back with an independent decoder.
+            implementation("com.google.zxing:core:3.5.3")
+        }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.ktor.client.java)
