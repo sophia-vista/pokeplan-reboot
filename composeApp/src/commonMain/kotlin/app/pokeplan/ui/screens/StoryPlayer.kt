@@ -181,41 +181,59 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, modifier: Modifier, 
         onEnd()
     }
 
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+    BoxWithConstraints(modifier) {
+    val widthPx = maxWidth.value * LocalDensity.current.density
+    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         Box(Modifier.weight(1f).fillMaxWidth().clickable(remember { MutableInteractionSource() }, indication = null) { if (typing) fast = true else taps.trySend(Unit) }) {
             when (scene.type) {
-                SceneType.DIALOGUE -> DialogueView(model, scene, state)
+                SceneType.DIALOGUE -> DialogueView(model, scene, state, still)
                 // A stage or a dungeon is a ten by six grid, centred in the space with a black band round it.
                 else -> Box(Modifier.align(Alignment.Center).fillMaxWidth().aspectRatio(GRID_COLUMNS.toFloat() / GRID_ROWS)) { StageView(model, scene, state, positions, walking, still) }
             }
             if (blackout > 0f) Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = blackout)))
         }
         val line = state.line
-        TextBox(Modifier.fillMaxWidth()) {
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                if (line != null) {
-                    speakerName(model, scene, line.who)?.let { Text(fill(model, it), style = MaterialTheme.typography.titleSmall, color = Pixel.Blue) }
-                    Text(shown, Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodyLarge)
-                    Text(if (typing) "" else "Tap to continue", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                } else Text(" ", style = MaterialTheme.typography.bodyLarge)
-            }
+        // The games' dialogue box: a dark box in a blue frame, the speaker's name in yellow and then what is said, in white.
+        val boxPixel = app.pokeplan.ui.launcher.townScale(widthPx)
+        app.pokeplan.ui.launcher.PmdBox(boxPixel, Modifier.fillMaxWidth().height(112.dp)) {
+            val name = line?.who?.let { speakerName(model, scene, it) }?.let { fill(model, it) }
+            Text(
+                androidx.compose.ui.text.buildAnnotatedString {
+                    if (name != null) { pushStyle(androidx.compose.ui.text.SpanStyle(color = Color(0xFFFFE27A))); append("$name: "); pop() }
+                    append(if (line != null) shown else "")
+                },
+                Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodyLarge, color = Color.White,
+            )
         }
+        Text(if (line != null && !typing) "Tap to continue" else " ", Modifier.padding(horizontal = Spacing.S), style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.6f))
         Row(Modifier.fillMaxWidth().padding(bottom = Spacing.S), horizontalArrangement = Arrangement.End) { PixelButton("Skip scene", { skipped = true }, color = Pixel.InkSoft, compact = true) }
+    }
     }
 }
 
-/** A conversation: the background and up to two large portraits, the speaker bright and the other dimmed. */
+/**
+ * A conversation, as the games stage it: the place with the speakers standing in it as sprites, and the speaker's small framed portrait at its
+ * side of the screen, over the scene and just above the dialogue box. Narration shows no portrait.
+ */
 @Composable
-private fun DialogueView(model: AppModel, scene: StoryScene, state: SceneState) {
-    Box(Modifier.fillMaxSize()) {
-        SceneImage(scene.background, Modifier.fillMaxSize(), darkness = 0.15f)
+private fun DialogueView(model: AppModel, scene: StoryScene, state: SceneState, still: Boolean) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val cell = maxWidth / GRID_COLUMNS
+        SceneImage(scene.background, Modifier.fillMaxSize(), darkness = 0.1f)
         val onStage = state.actors.values.toList().take(2)
         onStage.forEachIndexed { i, a ->
             val face = faceOf(model, scene, a.id) ?: return@forEachIndexed
-            val speaking = state.line?.who == a.id
-            val expression = if (speaking) state.line?.expression ?: a.expression else a.expression
-            Box(Modifier.align(if (i == 0) Alignment.BottomStart else Alignment.BottomEnd).padding(horizontal = Spacing.M, vertical = Spacing.S).alpha(if (state.line?.who == null || speaking) 1f else 0.55f)) {
-                Portrait(face.formId, face.shiny, face.name, emotion = emotionOf(expression), size = 160.dp, framed = true)
+            val size = cell * 2.4f
+            Box(Modifier.offset(x = cell * (if (i == 0) 3.0f else 7.0f) - size / 2, y = maxHeight * 0.66f - size)) {
+                AnimatedSprite(face.formId, face.shiny, face.name, size = size, animate = !still, ground = 0.dp, mirror = i == 1)
+            }
+        }
+        val speaker = state.line?.who?.let { who -> onStage.indexOfFirst { it.id == who }.takeIf { it >= 0 }?.let { it to onStage[it] } }
+        speaker?.let { (i, a) ->
+            val face = faceOf(model, scene, a.id) ?: return@let
+            val expression = state.line?.expression ?: a.expression
+            Box(Modifier.align(if (i == 0) Alignment.BottomStart else Alignment.BottomEnd).padding(horizontal = Spacing.S, vertical = Spacing.S)) {
+                Portrait(face.formId, face.shiny, face.name, emotion = emotionOf(expression), size = 88.dp, framed = true)
             }
         }
     }
