@@ -105,6 +105,9 @@ Opens at story chapter 2 of the home layer. Up to 3 jobs held at once; a job tha
 ### 4.8 Bag and treasure
 - Treasure boxes (plain, silver, gold) are opened into the Bag; berries and Rare Candies land in the shared Bag directly.
 
+### 4.8a Cutscenes
+A new rank and each story chapter play a short full-screen scene once (`WorldMoments`, `Cutscene.World`; `WorldData.seenRank` and `seenChapters` remember what was shown, and an old save adopts what it had). A Guardian faced still shows its own card; scenes for the Guardian and the legendary quests are a later addition.
+
 ### 4.9 The landing
 Rank card (with what the next rank opens), the "since you last looked" report, one primary action (recruit, claim, explore the next dungeon of the layer on show, or look at the teams), all teams at a glance, the layer's story, then Map, Expeditions, Missions and Base, with Finds and Bag, Skills, Camp and Settings as small buttons.
 

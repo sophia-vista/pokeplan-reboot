@@ -95,3 +95,34 @@ class DungeonModifierTest {
         assertTrue(pokeOn(bounty) > pokeOn(plain), "a bountiful day pays more")
     }
 }
+
+class WorldMomentsTest {
+    @Test
+    fun anOldSaveAdoptsWhatItReachedAndOnlyNewThingsPlay() {
+        val old = WorldData(xp = 2_000, clears = mapOf("tiny-woods" to 1, "thunderwave-cave" to 1, "mt-steel" to 1))
+        val adopted = WorldMoments.adopted(old)
+        assertEquals(old.rank.ordinal, adopted.seenRank)
+        assertTrue(WorldMoments.pending(adopted).isEmpty(), "nothing replays")
+        assertEquals(adopted, WorldMoments.adopted(adopted), "adopting twice changes nothing")
+        // Rank up: Gold needs 6000.
+        val up = adopted.copy(xp = 6_500)
+        val first = WorldMoments.pending(up).first()
+        assertEquals(WorldMoment.RankUp(ExplorerRank.GOLD), first)
+        assertTrue(WorldMoments.pending(WorldMoments.seen(up, first)).none { it is WorldMoment.RankUp }, "seen once, never again")
+    }
+
+    @Test
+    fun aChapterPlaysOnceInOrderAndRankOpensText() {
+        val base = WorldMoments.adopted(WorldData(xp = 400))
+        val more = base.copy(xp = 1_600, clears = mapOf("tiny-woods" to 1, "thunderwave-cave" to 1, "mt-steel" to 1))
+        val moments = WorldMoments.pending(more)
+        val chapters = moments.filterIsInstance<WorldMoment.ChapterOpened>().map { it.chapter.number }
+        assertEquals(chapters.sorted(), chapters, "in order")
+        assertTrue(chapters.isNotEmpty())
+        var d = more
+        for (m in moments) d = WorldMoments.seen(d, m)
+        assertTrue(WorldMoments.pending(d).isEmpty())
+        assertTrue(WorldMoments.rankOpened(ExplorerRank.SILVER).any { it.contains("teams") }, "Silver opens a third team")
+        assertTrue(WorldMoments.rankOpened(ExplorerRank.NORMAL).isEmpty())
+    }
+}

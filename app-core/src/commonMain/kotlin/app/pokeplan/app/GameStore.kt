@@ -1262,6 +1262,16 @@ class GameStore(
         .filter { it.id !in data.world.assigned && it.id !in data.player.guardians && !(data.settings.worldKeepPartyOut && it.inParty) }
         .sortedWith(compareByDescending<OwnedPokemon> { it.level }.thenBy { it.id })
 
+    /** The next World moment to show (a new rank, a chapter opening) or null; first counts what an older save already reached as seen. */
+    fun worldMoment(): app.pokeplan.world.WorldMoment? {
+        val adopted = app.pokeplan.world.WorldMoments.adopted(data.world)
+        if (adopted != data.world) update { it.copy(world = adopted) }
+        return app.pokeplan.world.WorldMoments.pending(adopted).firstOrNull()
+    }
+
+    /** Counts [moment] as shown, so it plays once. */
+    fun worldMomentSeen(moment: app.pokeplan.world.WorldMoment) = update { it.copy(world = app.pokeplan.world.WorldMoments.seen(it.world, moment)) }
+
     /** Brings a team home after settling what it found. */
     fun worldRecall(team: Int) {
         worldSettle()
