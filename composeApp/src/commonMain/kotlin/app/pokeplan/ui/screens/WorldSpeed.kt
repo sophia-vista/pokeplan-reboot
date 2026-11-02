@@ -119,6 +119,15 @@ internal fun WorldReportCard(model: AppModel) {
             if (chance.isNotEmpty()) Text("Found by chance: ${chance.joinToString(", ")}.", style = MaterialTheme.typography.bodyMedium)
             if (report.cleared.isNotEmpty()) Text("Cleared: ${report.cleared.distinct().joinToString(", ") { Dungeons.byId(it)?.name ?: it }}.", style = MaterialTheme.typography.bodyMedium)
             if (report.jobsDone.isNotEmpty()) Text("Jobs done: ${report.jobsDone.joinToString(", ") { app.pokeplan.world.Missions.byId(it)?.title ?: it }}. Claim them on the board.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+            if (report.eventsOpened > 0 || report.eventsPassed > 0) Text(
+                buildString {
+                    if (report.eventsOpened > 0) append("${report.eventsOpened} side paths opened with field moves")
+                    if (report.eventsOpened > 0 && report.eventsPassed > 0) append("; ")
+                    if (report.eventsPassed > 0) append("${report.eventsPassed} passed by (no one who could open them)")
+                    append(".")
+                },
+                style = MaterialTheme.typography.bodyMedium,
+            )
             if (report.guardianFaced) Text("A Guardian was faced. Its story is complete.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             if (report.finds.isNotEmpty()) Text("Waiting to be recruited: ${report.finds.joinToString(", ") { app.pokeplan.core.dex.Dex.species(it).name }}. They stay in Finds until you decide.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             Text("Berries, Poké and the items above are already in your Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)

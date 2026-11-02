@@ -139,6 +139,7 @@ From the owner's regional story brief:
 - Fuller story text and scenes (today each chapter is a title and a summary).
 
 ### 5.3 Deeper exploration
+**Built (0.111.0): side paths with field moves.** One floor in ten has an event that a Pokémon able to learn Cut, Surf, Rock Smash, Strength, Flash, Dig or Fly (level 10 or more) opens for a small bonus; a team without one passes it by at no cost. Deterministic from (dungeon, team, trip, floor), its own random stream, bonuses only, never needed for story. Code: `FloorEvents`, `FieldMove`. Still planned below: hazards and active choices (a choice must be stored as its own record after the floor, never changing it), team roles, dungeon modifiers.
 - Hazards, active choices and floor events (the dungeon is currently a pure simulation).
 - **Move-based skills:** moves are in the Dex since 0.96.0 (919 moves and every learnset); the concept lets moves act as exploration abilities (Cut, Surf, Flash, Dig, Fly and so on) that open alternate paths.
 - More skills (Mining, Archaeology, Survival, Navigation), held items and moves in the team summary, special jobs and a shared quest engine, Camp as places (Friend Areas), Storage and the Duskull Bank.

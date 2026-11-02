@@ -17,6 +17,8 @@ sealed interface WorldEvent {
     data class Milestone(val dungeonId: String, val floor: Int, val reward: MilestoneReward) : WorldEvent
     data class Cleared(val dungeonId: String) : WorldEvent
     data class MissionDone(val missionId: String) : WorldEvent
+    /** A floor event: [user] opened it (null: the team went around), and [gave] says what it gave. */
+    data class FloorEvent(val kind: FloorEventKind, val dungeonId: String, val floor: Int, val userName: String?, val gave: String) : WorldEvent
     /** The Guardian was faced: the story is complete. */
     data object GuardianFaced : WorldEvent
     /** The Guardian of another layer was faced: that layer's story is complete. */
@@ -114,7 +116,7 @@ object WorldSim {
             val floors = ((until - trip.settledTo) / per).toInt()
             if (floors <= 0) continue
             val events = mutableListOf<WorldEvent>()
-            for (n in 0 until floors) out = climb(out, team.id, trip, dungeon, trip.floorsClimbed + n, trip.settledTo + (n + 1) * per, members.size, power(members, dungeon), WorldSkill.entries.associateWith { AbilityPerks.bonus(members.map { m -> m.ability }, it) }, events)
+            for (n in 0 until floors) out = climb(out, team.id, trip, dungeon, trip.floorsClimbed + n, trip.settledTo + (n + 1) * per, members, power(members, dungeon), WorldSkill.entries.associateWith { AbilityPerks.bonus(members.map { m -> m.ability }, it) }, events)
             // The rest of the time carries over (unless the cap cut it, when the clock jumps to now).
             val settled = if (now - trip.settledTo > MAX_AWAY_MILLIS) now else trip.settledTo + floors * per
             val current = out.team(team.id) ?: team
@@ -166,6 +168,7 @@ object WorldSim {
             is WorldEvent.Found -> { kind = JournalLine.KIND_FIND; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title met a ${Dex.species(event.speciesId).name} on floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name}." }
             is WorldEvent.Milestone -> { kind = JournalLine.KIND_MILESTONE; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title reached floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name} and was rewarded." }
             is WorldEvent.Cleared -> { kind = JournalLine.KIND_CLEAR; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title cleared ${Dungeons.byId(event.dungeonId)?.name}." }
+            is WorldEvent.FloorEvent -> { if (event.userName == null) return null; kind = JournalLine.KIND_EVENT; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "${event.kind.title}: ${event.userName} ${event.kind.opened} on floor ${event.floor} of $place (${event.gave})." }
             is WorldEvent.MissionDone -> { kind = JournalLine.KIND_JOB; "A job is done: ${Missions.byId(event.missionId)?.title}. Claim it on the board." }
             WorldEvent.GuardianFaced -> { kind = JournalLine.KIND_GUARDIAN; "The Guardian was faced. The story is complete." }
             is WorldEvent.LayerGuardianFaced -> { kind = JournalLine.KIND_GUARDIAN; "The Guardian of ${event.layer.label} was faced. Its story is complete." }
@@ -195,7 +198,8 @@ object WorldSim {
         Suitability(floorMillis(dungeon, power(members, dungeon), mastery, fasterPercent), members.count { p -> p.form.types.any { it in dungeon.favored } }, members.size)
 
     /** One floor climbed: the floor number in the dungeon is its index modulo the floors, so a cleared dungeon starts again. */
-    private fun climb(data: WorldData, teamId: Int, trip: Expedition, dungeon: DungeonDef, index: Int, at: Long, teamSize: Int, power: Double, perk: Map<WorldSkill, Int>, events: MutableList<WorldEvent>): WorldData {
+    private fun climb(data: WorldData, teamId: Int, trip: Expedition, dungeon: DungeonDef, index: Int, at: Long, members: List<OwnedPokemon>, power: Double, perk: Map<WorldSkill, Int>, events: MutableList<WorldEvent>): WorldData {
+        val teamSize = members.size
         val floor = index % dungeon.floors + 1
         val random = Random(seed(teamId, trip, index))
         var d = data
@@ -221,6 +225,25 @@ object WorldSim {
         findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * (d.skillLevel(WorldSkill.SCOUTING) + perk.getValue(WorldSkill.SCOUTING)) + (if (brewed) 10 else 0) + d.legendFindPermille(dungeon))?.let { species ->
             events += WorldEvent.Found(species, dungeon.id, floor)
             d = d.copy(finds = d.finds + Find(species, dungeon.id, floor, at), discovered = d.discovered + species).withSkillXp(WorldSkill.SCOUTING, 20)
+        }
+        // A floor event, if the floor has one: a bonus when a team member can open it, nothing lost when none can.
+        FloorEvents.kindAt(teamId, trip, floor, index)?.let { kind ->
+            val user = FloorEvents.opener(kind, members)
+            var gave = ""
+            if (user != null) {
+                val er = Random(eventSeed(teamId, trip, index) + 1)
+                when (kind.reward) {
+                    EventReward.BERRIES -> {
+                        val berry = FloorEvents.berryFor(er)
+                        events += WorldEvent.Item(berry, 2)
+                        d = d.copy(items = d.items + (berry to (d.items[berry] ?: 0) + 2)); gave = "2 berries"
+                    }
+                    EventReward.POKE -> { val p = FloorEvents.poke(floor); events += WorldEvent.Poke(p); d = d.copy(poke = d.poke + p); gave = "$p Poké" }
+                    EventReward.XP -> { val x = FloorEvents.xp(floor); d = d.copy(xp = d.xp + x); gave = "$x XP" }
+                    EventReward.TREASURE -> { val t = FloorEvents.treasureTier(dungeon, floor); events += WorldEvent.Treasure(t); d = d.copy(treasure = d.treasure + (t to (d.treasure[t] ?: 0) + 1)); gave = "a treasure box" }
+                }
+            }
+            events += WorldEvent.FloorEvent(kind, dungeon.id, floor, user?.nickname, gave)
         }
         dungeon.milestones[floor]?.let { reward ->
             val key = "${dungeon.id}:$floor"
@@ -260,6 +283,9 @@ object WorldSim {
         for (entry in pool) { roll -= entry.weight; if (roll < 0) return entry.speciesId }
         return null
     }
+
+    /** A seed for a floor's event, apart from the floor's own so adding events never changes what a floor gave before. */
+    internal fun eventSeed(teamId: Int, trip: Expedition, index: Int): Long = seed(teamId, trip, index) xor 0x5F3759DFL
 
     private fun seed(teamId: Int, trip: Expedition, index: Int): Long = (trip.dungeonId.hashCode().toLong() * 31 + teamId) * 1_000_003L + trip.startedAt * 7 + index
 }
