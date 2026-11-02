@@ -19,6 +19,7 @@ data class SceneState(
     val black: Boolean = false,
     val flags: Set<String> = emptySet(),
     val finished: Boolean = false,
+    val letterbox: Boolean = false,
 ) {
     /** The state after [event], all at once (a walk ends at the last cell of its path). */
     fun apply(event: SceneEvent): SceneState = when (event) {
@@ -43,11 +44,15 @@ data class SceneState(
         is SceneEvent.TakeItem -> copy(items = items - event.itemId)
         is SceneEvent.Emote -> actors[event.who]?.let { copy(actors = actors + (event.who to it.copy(emote = event.mark.takeIf { m -> m.isNotBlank() }))) } ?: this
         is SceneEvent.Flag -> copy(flags = flags + event.name)
+        is SceneEvent.Letterbox -> copy(letterbox = event.on)
+        is SceneEvent.Choice -> event.options.firstOrNull()?.let { copy(flags = flags + it.flag) } ?: this
+        is SceneEvent.Branch -> if (event.flag in flags) event.events.fold(this) { s, e -> s.apply(e) } else this
+        is SceneEvent.Shake, is SceneEvent.Flash, is SceneEvent.Cry, is SceneEvent.Sound -> this
         SceneEvent.End -> copy(finished = true, line = null)
     }
 
     companion object {
-        fun start(scene: StoryScene) = SceneState(background = scene.background)
+        fun start(scene: StoryScene, flags: Set<String> = emptySet()) = SceneState(background = scene.background, flags = flags)
 
         /** The way a step from [from] to [to] faces: sideways when it goes across more than it goes up or down. */
         fun facingOf(from: Pair<Float, Float>, to: Pair<Float, Float>, keep: Facing): Facing {
@@ -60,7 +65,7 @@ data class SceneState(
         }
 
         /** The state at the end of [scene]: every event applied in order, what a skip lands on. */
-        fun finalOf(scene: StoryScene): SceneState = scene.events.fold(start(scene)) { s, e -> s.apply(e) }.copy(line = null, black = false)
+        fun finalOf(scene: StoryScene, flags: Set<String> = emptySet()): SceneState = scene.events.fold(start(scene, flags)) { s, e -> s.apply(e) }.copy(line = null, black = false)
     }
 }
 
@@ -88,6 +93,12 @@ fun StoryScene.problems(): List<String> = buildList {
                 if (type != SceneType.STAGE && type != SceneType.DUNGEON && e.who != null && e.who !in shown) add("$id #$i: ${e.who} speaks while not shown")
             }
             is SceneEvent.Emote -> onStage(e.who)
+            is SceneEvent.Cry -> known(e.who)
+            is SceneEvent.Choice -> {
+                if (e.options.size !in 2..3) add("$id #$i: a choice needs two or three options")
+                if (e.options.any { it.label.length > 40 }) add("$id #$i: a choice label over 40 characters")
+            }
+            is SceneEvent.Branch -> e.events.forEach { n -> if (n is SceneEvent.Say) { n.who?.let { known(it) } ; if (n.text.length > 160) add("$id #$i: a line over 160 characters (keep lines short)") } }
             else -> {}
         }
     }

@@ -67,6 +67,7 @@ import app.pokeplan.world.story.Facing
 import app.pokeplan.world.story.SceneEvent
 import app.pokeplan.world.story.SceneState
 import app.pokeplan.world.story.SceneType
+import app.pokeplan.world.story.StoryChoice
 import app.pokeplan.world.story.StoryEpisode
 import app.pokeplan.world.story.StoryScene
 import kotlinx.coroutines.channels.Channel
@@ -109,8 +110,10 @@ private fun emotionOf(e: Expression): Emotion = when (e) {
  * (a record for the Story archive, never a reward, so replaying changes nothing).
  */
 @Composable
-internal fun StoryPlayer(model: AppModel, episode: StoryEpisode, onClose: () -> Unit) {
-    var index by remember(episode.key) { mutableStateOf(0) }
+internal fun StoryPlayer(model: AppModel, episode: StoryEpisode, onClose: () -> Unit, fromStart: Boolean = false) {
+    var index by remember(episode.key) { mutableStateOf(if (fromStart) 0 else (model.data.world.storyResume[episode.key] ?: 0).coerceIn(0, episode.scenes.lastIndex)) }
+    // The answers given in this watching, kept with the next scene to start from (so leaving mid-episode resumes at the next scene).
+    var flags by remember(episode.key) { mutableStateOf(model.data.world.storyFlags) }
     val scene = episode.scenes.getOrNull(index)
     if (scene == null) { LaunchedEffect(episode.key) { model.store.worldEpisodeDone(episode.key); onClose() }; return }
     Box(Modifier.fillMaxSize().background(Color.Black)) {
@@ -123,8 +126,10 @@ internal fun StoryPlayer(model: AppModel, episode: StoryEpisode, onClose: () -> 
                 PixelIconButton("close", "Leave the story", onClose)
             }
             androidx.compose.runtime.key(scene.id) {
-                SceneRunner(model, scene, Modifier.weight(1f).widthIn(max = 520.dp).fillMaxWidth()) {
+                SceneRunner(model, scene, flags, Modifier.weight(1f).widthIn(max = 520.dp).fillMaxWidth()) { newFlags ->
+                    flags = newFlags
                     model.store.worldSceneDone(scene.id)
+                    if (index + 1 < episode.scenes.size) model.store.worldStoryProgress(episode.key, index + 1, newFlags)
                     index++
                 }
             }
@@ -133,9 +138,13 @@ internal fun StoryPlayer(model: AppModel, episode: StoryEpisode, onClose: () -> 
 }
 
 @Composable
-private fun SceneRunner(model: AppModel, scene: StoryScene, modifier: Modifier, onEnd: () -> Unit) {
+private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<String>, modifier: Modifier, onEnd: (Set<String>) -> Unit) {
     val still = model.data.settings.reduceMotion
-    var state by remember(scene.id) { mutableStateOf(SceneState.start(scene)) }
+    var state by remember(scene.id) { mutableStateOf(SceneState.start(scene, startFlags)) }
+    var question by remember(scene.id) { mutableStateOf<SceneEvent.Choice?>(null) }
+    val answers = remember(scene.id) { Channel<StoryChoice>(Channel.CONFLATED) }
+    var shake by remember(scene.id) { mutableStateOf(0f) }
+    var flash by remember(scene.id) { mutableStateOf(0f) }
     val positions = remember(scene.id) { mutableStateMapOf<String, Offset>() }
     val walking = remember(scene.id) { mutableStateMapOf<String, Facing>() }
     var shown by remember(scene.id) { mutableStateOf("") }
@@ -146,7 +155,7 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, modifier: Modifier, 
     val taps = remember(scene.id) { Channel<Unit>(Channel.CONFLATED) }
 
     LaunchedEffect(scene.id, skipped) {
-        if (skipped) { state = SceneState.finalOf(scene); positions.clear(); walking.clear(); blackout = 0f; onEnd(); return@LaunchedEffect }
+        if (skipped) { val end = SceneState.finalOf(scene, startFlags); state = end; positions.clear(); walking.clear(); blackout = 0f; onEnd(end.flags); return@LaunchedEffect }
         for (e in scene.events) {
             when (e) {
                 is SceneEvent.Show -> { state = state.apply(e); positions[e.who] = Offset(e.x, e.y) }
@@ -175,21 +184,38 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, modifier: Modifier, 
                 is SceneEvent.Fade -> { val target = if (e.toBlack) 1f else 0f; if (still) blackout = target else Animatable(blackout).animateTo(target, tween(e.millis)) { blackout = value }; state = state.apply(e) }
                 is SceneEvent.Emote -> { state = state.apply(e); if (!still) delay(700); state = state.apply(SceneEvent.Emote(e.who, "")) }
                 SceneEvent.End -> { state = state.apply(e) }
+                is SceneEvent.Shake -> if (!still) { for (k in 0 until e.millis / 50) { shake = if (k % 2 == 0) 6f else -6f; delay(50) }; shake = 0f }
+                is SceneEvent.Flash -> if (!still) { flash = 1f; Animatable(1f).animateTo(0f, tween(450)) { flash = value } }
+                is SceneEvent.Cry -> (faceSpecies(scene, e.who) ?: (model.data.player.buddy ?: model.data.player.pokemon.firstOrNull())?.speciesId)?.let { model.cry(it) }
+                is SceneEvent.Sound -> runCatching { app.pokeplan.ui.Sfx.valueOf(e.name) }.getOrNull()?.let { model.effect(it) }
+                is SceneEvent.Choice -> {
+                    e.prompt?.let { state = state.apply(SceneEvent.Say(null, it)); shown = fill(model, it) }
+                    question = e
+                    val picked = answers.receive()
+                    question = null
+                    state = state.apply(SceneEvent.Flag(picked.flag))
+                }
+                is SceneEvent.Branch -> if (e.flag in state.flags) for (n in e.events) {
+                    state = state.apply(n)
+                    if (n is SceneEvent.Say) { shown = fill(model, n.text); taps.receive() }
+                }
                 else -> state = state.apply(e)
             }
         }
-        onEnd()
+        onEnd(state.flags)
     }
 
     BoxWithConstraints(modifier) {
     val widthPx = maxWidth.value * LocalDensity.current.density
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        Box(Modifier.weight(1f).fillMaxWidth().clickable(remember { MutableInteractionSource() }, indication = null) { if (typing) fast = true else taps.trySend(Unit) }) {
+        Box(Modifier.weight(1f).fillMaxWidth().clickable(remember { MutableInteractionSource() }, indication = null) { if (typing) fast = true else if (question == null) taps.trySend(Unit) }) {
             when (scene.type) {
                 SceneType.DIALOGUE -> DialogueView(model, scene, state, still)
+                SceneType.CINEMATIC -> Box(Modifier.fillMaxSize().offset(x = shake.dp)) { CinematicView(model, scene, state, positions, walking, still) }
                 // A stage or a dungeon is a ten by six grid, centred in the space with a black band round it.
                 else -> Box(Modifier.align(Alignment.Center).fillMaxWidth().aspectRatio(GRID_COLUMNS.toFloat() / GRID_ROWS)) { StageView(model, scene, state, positions, walking, still) }
             }
+            if (flash > 0f) Box(Modifier.fillMaxSize().background(Color.White.copy(alpha = flash)))
             if (blackout > 0f) Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = blackout)))
         }
         val line = state.line
@@ -205,7 +231,12 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, modifier: Modifier, 
                 Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.bodyLarge, color = Color.White,
             )
         }
-        Text(if (line != null && !typing) "Tap to continue" else " ", Modifier.padding(horizontal = Spacing.S), style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.6f))
+        question?.let { q ->
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                q.options.forEach { o -> PixelButton(o.label, { answers.trySend(o) }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true) }
+            }
+        }
+        Text(if (line != null && !typing && question == null) "Tap to continue" else " ", Modifier.padding(horizontal = Spacing.S), style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.6f))
         Row(Modifier.fillMaxWidth().padding(bottom = Spacing.S), horizontalArrangement = Arrangement.End) { PixelButton("Skip scene", { skipped = true }, color = Pixel.InkSoft, compact = true) }
     }
     }
@@ -284,5 +315,39 @@ private fun DungeonFloor(dungeonId: String) {
             val x = c * tilePx; val y = r * tilePx
             when { r == 0 -> put(1, 2, x, y); r <= 4 -> put(0, 3, x, y); r == 5 -> put(1, 0, x, y); else -> put(1, 1, x, y) }
         }
+    }
+}
+
+/** The species of a character in a scene (null for the buddy, whose cry is its own: the buddy's form). */
+private fun faceSpecies(scene: StoryScene, who: String): Int? = scene.cast.firstOrNull { it.id == who }?.speciesId
+
+/**
+ * A cinematic: the place with black bars above and below, and the characters drawn large and low, for a legendary's appearance or a villain's
+ * reveal. The same script and sprites as a stage, with a bigger scale and the effects (shake, flash) the runtime plays over it.
+ */
+@Composable
+private fun CinematicView(model: AppModel, scene: StoryScene, state: SceneState, positions: Map<String, Offset>, walking: Map<String, Facing>, still: Boolean) {
+    Box(Modifier.fillMaxSize().background(Color.Black)) {
+        Box(Modifier.align(Alignment.Center).fillMaxWidth().aspectRatio(GRID_COLUMNS.toFloat() / GRID_ROWS)) {
+            if (scene.dungeonId != null) DungeonFloor(scene.dungeonId!!) else SceneImage(scene.background, Modifier.fillMaxSize(), darkness = 0.3f)
+            BoxWithConstraints(Modifier.fillMaxSize()) {
+                val cell = maxWidth / GRID_COLUMNS
+                state.actors.values.sortedBy { positions[it.id]?.y ?: it.y }.forEach { a ->
+                    val face = faceOf(model, scene, a.id) ?: return@forEach
+                    val at = positions[a.id] ?: Offset(a.x, a.y)
+                    // Big ones are named by a leading "big_" in the character id: they fill the frame.
+                    val size = cell * if (a.id.startsWith("big_")) 4.6f else 2.2f
+                    val move = walking[a.id]
+                    Box(Modifier.offset(x = cell * at.x - size / 2, y = cell * at.y - size)) {
+                        AnimatedSprite(
+                            face.formId, face.shiny, face.name, size = size, animate = !still, ground = 0.dp,
+                            action = when (move) { Facing.UP -> SpriteAction.WALK_UP; Facing.DOWN -> SpriteAction.WALK_DOWN; Facing.LEFT, Facing.RIGHT -> SpriteAction.WALK_SIDE; null -> SpriteAction.IDLE },
+                            mirror = move == Facing.LEFT,
+                        )
+                    }
+                }
+            }
+        }
+        if (state.letterbox) { Box(Modifier.align(Alignment.TopCenter).fillMaxWidth().height(36.dp).background(Color.Black)); Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(36.dp).background(Color.Black)) }
     }
 }

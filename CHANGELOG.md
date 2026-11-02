@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.119.0
+
+- **Every chapter is a scene now.** All 26 chapters of the five storylines (Mystery Dungeon, Kanto, Johto, Hoenn, Sinnoh) have an episode of two or more scenes: a conversation, a walk through the chapter's dungeon, and for the big moments a cinematic (Dialga, the three birds, Mewtwo, Lugia, Ho-Oh, Groudon and Kyogre, Rayquaza, Palkia, Giratina). Each region has its own guide, who talks with your buddy (Pelly the Pelipper, Nia the Eevee, Marin the Marill, Cloud the Swablu, Pip the Piplup) and its own villains or elders. The writing is a first pass of mine, made from the chapter summaries; every line is plain text in `world-core/.../story/*Chapters.kt` to rewrite.
+- **Engine finished:** cinematic scenes (black bars, big sprites, shake and flash, Reduce motion aware); cries and sound effects as events; **choices** (two or three answers that only set a flag, never a reward or a lock) and lines that follow them; **resume** (leave an episode and it restarts at the next scene, not from the top; a watched episode replays from its start); and **People you have met** in the Story archive, with their sprites.
+
 ## 0.118.0
 
 - **World story engine, first slice.** Chapters can now be real scenes. A script of typed events (show, move, say, emote, items, fades) plays as a **dialogue** (the scene and large Mystery Dungeon portraits, the speaker bright), a **stage** (sprites walking with their own animations) or a **dungeon walk** (the team crossing a dungeon's own tiles), with tap to advance, Skip scene, and a typewriter that Reduce motion turns off. **Your buddy is the companion** in every scene, whoever it is. The first episode is written: Mystery Dungeon chapter 1, "A New Explorer" (a letter from Pelly the Pelipper, the square, a first walk through Tiny Woods and back to the Guild). It plays when the chapter opens and from the Story archive; chapters without a script still play their title card. Skipping lands on the scene's end state, and scenes watched are recorded for the archive without any reward. Engine, authoring guide and what is still to build: `docs/world-story-engine.md`.

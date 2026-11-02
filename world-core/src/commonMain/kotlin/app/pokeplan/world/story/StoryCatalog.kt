@@ -7,13 +7,20 @@ import app.pokeplan.world.WorldLayer
  * episode plays it, and the same episode replays from the Story archive. Content is data: adding a chapter's scenes does not touch the engine.
  */
 object StoryCatalog {
-    private val episodes: List<StoryEpisode> by lazy { listOf(MysteryDungeonStory.chapter1()) }
+    private val episodes: List<StoryEpisode> by lazy {
+        listOf(MysteryDungeonStory.chapter1()) + MysteryDungeonChapters.all() + KantoChapters.all() + JohtoChapters.all() + HoennChapters.all() + SinnohChapters.all()
+    }
 
     fun all(): List<StoryEpisode> = episodes
 
     fun episodeFor(layer: WorldLayer, chapter: Int): StoryEpisode? = episodes.firstOrNull { it.layer == layer && it.chapter == chapter }
 
     fun scene(id: String): StoryScene? = episodes.flatMap { it.scenes }.firstOrNull { it.id == id }
+
+    /** The Pokémon characters met in the scenes watched ([scenesDone]), by name, first met first: the archive's people index. */
+    fun peopleMet(scenesDone: Set<String>): List<StoryCharacter> =
+        episodes.flatMap { it.scenes }.filter { it.id in scenesDone }.flatMap { it.cast }.filter { it.speciesId != null }.distinctBy { it.id }
+            .map { it.copy(displayName = it.displayName.replace("big_", "")) }
 
     /** Everything wrong with every authored scene (empty when sound). */
     fun problems(): List<String> = episodes.flatMap { ep -> ep.scenes.flatMap { it.problems() } }

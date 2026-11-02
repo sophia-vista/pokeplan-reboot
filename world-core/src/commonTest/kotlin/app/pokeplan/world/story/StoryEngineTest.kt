@@ -19,7 +19,13 @@ class StoryEngineTest {
         val ch1 = StoryCatalog.episodeFor(WorldLayer.HOME, 1)!!
         assertEquals("home:1", ch1.key)
         assertEquals(setOf(SceneType.DIALOGUE, SceneType.STAGE, SceneType.DUNGEON), ch1.scenes.map { it.type }.toSet())
-        assertNull(StoryCatalog.episodeFor(WorldLayer.KANTO, 1), "a chapter with no episode plays its title card")
+        // Every chapter of every layer has its episode, matching the chapter's number and title.
+        for (layer in WorldLayer.entries) for (c in app.pokeplan.world.Story.chaptersOf(layer)) {
+            val ep = StoryCatalog.episodeFor(layer, c.number)
+            assertNotNull(ep, "${layer.id} chapter ${c.number}"); assertEquals(c.title, ep.title, "${layer.id}:${c.number} title")
+        }
+        assertEquals(StoryCatalog.all().size, StoryCatalog.all().map { it.key }.distinct().size)
+        assertNull(StoryCatalog.episodeFor(WorldLayer.KANTO, 99), "no such chapter")
         assertEquals(ch1.scenes.first(), StoryCatalog.scene("home-1-letter"))
     }
 
@@ -46,5 +52,21 @@ class StoryEngineTest {
         assertTrue(problems.any { it.contains("ghost") }); assertTrue(problems.any { it.contains("does not end") }); assertTrue(problems.any { it.contains("before being shown") })
         val long = StoryScene("long", "Long", SceneType.STAGE, "city", listOf(StoryCharacter(BUDDY, "B")), listOf(SceneEvent.Show(BUDDY, 0f, 0f), SceneEvent.Say(BUDDY, "x".repeat(200)), SceneEvent.End))
         assertTrue(long.problems().any { it.contains("160") })
+    }
+
+    @Test
+    fun choicesSetFlagsAndBranchesFollowThem() {
+        val scene = StoryCatalog.scene("home-2-board")!!
+        assertTrue(scene.events.any { it is SceneEvent.Choice } && scene.events.any { it is SceneEvent.Branch })
+        // Skipped, the first answer is taken and its branch applies.
+        val end = SceneState.finalOf(scene)
+        assertTrue("rush" in end.flags && "plan" !in end.flags)
+        // An earlier flag carries into the scene.
+        assertTrue("plan" in SceneState.start(scene, setOf("plan")).flags)
+        val s = SceneState(background = "x").apply(SceneEvent.Letterbox(true)).apply(SceneEvent.Choice(null, listOf(StoryChoice("A", "a"), StoryChoice("B", "b"))))
+        assertTrue(s.letterbox && "a" in s.flags)
+        val bad = StoryScene("c", "C", SceneType.DIALOGUE, "city", listOf(StoryCharacter(BUDDY, "B")), listOf(SceneEvent.Choice(null, listOf(StoryChoice("only", "x"))), SceneEvent.End))
+        assertTrue(bad.problems().any { it.contains("two or three") })
+        assertTrue(StoryCatalog.peopleMet(setOf("home-1-letter")).map { it.displayName } == listOf("Pelly"))
     }
 }
