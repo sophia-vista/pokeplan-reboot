@@ -83,7 +83,7 @@ import kotlinx.coroutines.delay
  * its sections. Its progression (rank, Poké, dungeon depth) is its own; the Pokémon it recruits are the shared collection's.
  */
 enum class WorldSection(val label: String, val icon: String) {
-    MAP("Map", "town-map"), MISSIONS("Missions", "journal"), SKILLS("Skills", "ability-capsule"), BASE("Base", "scope-lens"), TEAMS("Expeditions", "exp-share"), BAG("Finds and Bag", "seal-bag"), SETTINGS("Settings", "storage-key"),
+    MAP("Map", "town-map"), MISSIONS("Missions", "journal"), SKILLS("Skills", "ability-capsule"), BASE("Base", "scope-lens"), ARCHIVE("Story archive", "oaks-letter"), TEAMS("Expeditions", "exp-share"), BAG("Finds and Bag", "seal-bag"), SETTINGS("Settings", "storage-key"),
 }
 
 @Composable
@@ -108,6 +108,7 @@ private fun WorldPage(model: AppModel, section: WorldSection?, openPokemon: (Str
             WorldSection.MISSIONS -> WorldMissionsView(model)
             WorldSection.SKILLS -> WorldSkillsView(model)
             WorldSection.BASE -> WorldBaseView(model)
+            WorldSection.ARCHIVE -> WorldArchiveView(model)
             WorldSection.TEAMS -> WorldTeamsView(model)
             WorldSection.BAG -> WorldBagView(model)
             WorldSection.SETTINGS -> WorldSettings(model)
@@ -153,7 +154,7 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
             ) { key -> model.worldSection = WorldSection.valueOf(key) }
             FieldLabel("More")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                listOf(WorldSection.BAG to if (world.finds.isEmpty()) "Finds and Bag" else "Finds and Bag (${world.finds.size})", WorldSection.SKILLS to "Skills", WorldSection.SETTINGS to "Settings").forEach { (section, label) ->
+                listOf(WorldSection.BAG to if (world.finds.isEmpty()) "Finds and Bag" else "Finds and Bag (${world.finds.size})", WorldSection.SKILLS to "Skills", WorldSection.ARCHIVE to "Story archive", WorldSection.SETTINGS to "Settings").forEach { (section, label) ->
                     PixelButton(label, { model.worldSection = section }, color = Module.WORLD.look.accent, compact = true)
                 }
             }
@@ -905,4 +906,55 @@ private fun rewardText(r: app.pokeplan.world.EventReward): String = when (r) {
     app.pokeplan.world.EventReward.POKE -> "Poké"
     app.pokeplan.world.EventReward.XP -> "Exploration XP"
     app.pokeplan.world.EventReward.TREASURE -> "a treasure box"
+}
+
+// ----- Story archive --------------------------------------------------------------------------------------------------
+
+/**
+ * Every story moment reached, to watch again: the ranks, each layer's chapters and the legendary quests that joined. Playing one again changes
+ * nothing (it is a scene, not a reward). Chapters not opened yet are not listed, so nothing is given away.
+ */
+@Composable
+private fun WorldArchiveView(model: AppModel) {
+    val world = model.data.world
+    val moments = app.pokeplan.world.WorldMoments.reached(world)
+    WorldBanner("guild-room", "Story archive", "${moments.size} moments to watch again", sky = Color(0xFF101038), top = true)
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            FieldLabel("Ranks")
+            moments.filterIsInstance<app.pokeplan.world.WorldMoment.RankUp>().forEach { m ->
+                ArchiveRow("Rank: ${m.rank.label}", "Exploration rank", m, model, icon = m.rank.badge)
+            }
+        }
+    }
+    WorldLayer.entries.forEach { layer ->
+        val here = moments.filter { (it is app.pokeplan.world.WorldMoment.ChapterOpened && it.layer == layer) || (it is app.pokeplan.world.WorldMoment.LegendJoined && it.quest.layer == layer) }
+        if (here.isEmpty()) return@forEach
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                FieldLabel(layer.label)
+                here.forEach { m ->
+                    when (m) {
+                        is app.pokeplan.world.WorldMoment.ChapterOpened -> ArchiveRow("Chapter ${m.chapter.number}: ${m.chapter.title}", m.chapter.summary, m, model, icon = "town-map")
+                        is app.pokeplan.world.WorldMoment.LegendJoined -> ArchiveRow(m.quest.name, "Joined as a Guardian: ${m.quest.bonusText()}.", m, model, icon = null, speciesId = m.quest.speciesId)
+                        else -> {}
+                    }
+                }
+            }
+        }
+    }
+    if (moments.isEmpty()) Text("Nothing yet. Ranks, chapters and legendary Pokémon appear here as you reach them.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+}
+
+@Composable
+private fun ArchiveRow(title: String, detail: String, moment: app.pokeplan.world.WorldMoment, model: AppModel, icon: String?, speciesId: Int? = null) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        if (speciesId != null) AnimatedSprite(Dex.defaultForm(speciesId).id, false, title, size = 40.dp, animate = false)
+        else if (icon != null) ItemIcon(icon, size = 40.dp, description = null)
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Text(detail, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        }
+        PixelIconButton("play", "Watch $title again", { model.cutscene = Cutscene.World(moment) })
+    }
 }

@@ -39,6 +39,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.pokeplan.core.pokemon.OwnedPokemon
+import app.pokeplan.world.bonusText
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.AppModel
@@ -315,6 +316,18 @@ private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMo
                     text = "Your team is now ${rank.label} rank!",
                     detail = if (opens.isEmpty()) null else "This opens ${opens.joinToString("; ")}.",
                     done = done, skip = { done = true }, close = close,
+                )
+            }
+            is app.pokeplan.world.WorldMoment.LegendJoined -> {
+                val q = moment.quest
+                val form = app.pokeplan.core.dex.Dex.defaultForm(q.speciesId)
+                LaunchedEffect(q.id) { model.cry(q.speciesId) }
+                Stage("bw08", 260.dp) {
+                    AnimatedSprite(form.id, false, q.name, Modifier.align(Alignment.Center), size = 176.dp, animate = !still)
+                }
+                SceneText(
+                    text = if (q.afterGuardian) "${q.name} joined you! ${q.layer.label}'s Guardian has answered." else "${q.name} joined you as a Guardian of ${q.layer.label}!",
+                    detail = "It gives: ${q.bonusText()}.", done = done, skip = { done = true }, close = close,
                 )
             }
             is app.pokeplan.world.WorldMoment.ChapterOpened -> {
