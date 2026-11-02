@@ -20,8 +20,8 @@ class NotebookTest {
 
     @Test
     fun regionalJobsAreInRangeAndOnlyOpenWhereTheStoryAllows() {
-        val regional = Missions.all.filter { it.id.startsWith("kanto-") || it.id.startsWith("johto-") || it.id.startsWith("hoenn-") }
-        assertEquals(24, regional.size)
+        val regional = Missions.all.filter { it.id.startsWith("kanto-") || it.id.startsWith("johto-") || it.id.startsWith("hoenn-") || it.id.startsWith("sinnoh-") }
+        assertEquals(32, regional.size)
         for (m in regional) {
             val d = Dungeons.byId(m.dungeonId!!)!!
             assertTrue(m.floor in 1..d.floors, "${m.id} floor within ${d.name}")
