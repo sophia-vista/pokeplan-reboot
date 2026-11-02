@@ -64,7 +64,7 @@ Team speed: a team's power is the sum of its members' levels, with 20% more for 
 ## 4. Features: what exists today (0.101.0)
 
 ### 4.1 The map and its layers
-- A **layer switch** on the Map screen: the **Mystery Dungeon world** (home layer, 9 dungeons), **Kanto**, **Johto** and **Hoenn** (9 dungeons each). All open from the first day. Each layer has its own picture, markers, story and Guardians; teams, rank, Poké and the Bag are shared.
+- A **layer switch** on the Map screen: the **Mystery Dungeon world** (home layer, 9 dungeons), **Kanto**, **Johto**, **Hoenn** and **Sinnoh** (9 dungeons each). All open from the first day. Each layer has its own picture, markers, story and Guardians; teams, rank, Poké and the Bag are shared.
 - Maps: the home layer's own Mystery Dungeon world map (revealed in eight stages as you clear dungeons); the **official game maps** for the others (Kanto: FireRed/LeafGreen; Johto: Crystal's Pokégear; Hoenn: Emerald's PokéNav), built from the games' own tiles. Markers are yellow (open), green (cleared) or grey (not yet open).
 - Each dungeon card is drawn in real Mystery Dungeon tilesets with its wild Pokémon walking the floor; shows floors, rank needed, favoured types, deepest floor, clears, and a button to send your strongest team. A "Next up" suggestion on the World landing says what to do next and why.
 
@@ -117,7 +117,7 @@ Rank card (with what the next rank opens), the "since you last looked" report, o
 
 ### 4.11 The layers' stories and Guardians (built)
 - **Home layer:** six chapters ("A New Explorer" to "The Great Disturbance"), ending in the Temporal Tower and **Primal Dialga**, the Guardian (its own Dex form, separate from Dialga). It gives the **Temporal Mastery**: every expedition climbs 10% faster. A post-story dungeon, the **Distortion Rift**, opens afterwards.
-- **Kanto, Johto, Hoenn:** five chapters each and their legendary quests (section 7).
+- **Kanto, Johto, Hoenn, Sinnoh:** five chapters each and their legendary quests (section 7).
 - A layer's story chapters open by rank and by how many different dungeons **of that layer** have been cleared; clears in one layer do not advance another's.
 
 ---
@@ -127,7 +127,7 @@ Rank card (with what the next rank opens), the "since you last looked" report, o
 Ordered roughly by how close they are. Nothing here is built.
 
 ### 5.1 More regional layers (decided: all mainline regions, in game order, one layer each)
-- **Sinnoh** (Dialga, Palkia, Giratina), **Unova**, **Kalos**, **Alola**, **Galar**, **Paldea**, then **Hisui** as its own historical layer (Arceus, and the items that unlock the Origin forms of Dialga, Palkia and Giratina). One region per release, each with its own economy simulation first (so new floors never change the pacing of old ones).
+- ~~**Sinnoh** (Dialga, Palkia, Giratina)~~ (built, 0.115.0), **Unova**, **Kalos**, **Alola**, **Galar**, **Paldea**, then **Hisui** as its own historical layer (Arceus, and the items that unlock the Origin forms of Dialga, Palkia and Giratina). One region per release, each with its own economy simulation first (so new floors never change the pacing of old ones).
 - A region's extra areas (Sevii Islands, Isle of Armor, Crown Tundra, Kitakami, Blueberry Academy, Area Zero) are late dungeons of that region. The special spaces (Hyperspace Lumiose, Ultra Space and Ultra Megalopolis, the Battle Zone, Terarium, Area Zero) are Guardian-tier places inside their region, opened by its story, like the Distortion Rift.
 - **Mystery Dungeon continents** (Air, Grass, Mist, Water, Sand, Mystery, Sea of Wonders) become layers, one each (decided).
 - **Spin-off layer**, starting with the Ranger regions (Fiore, Almia, Oblivia) and Orre; the owner's atlas lists about twenty more settings as a long-term list.
@@ -293,6 +293,9 @@ Each region's story follows the brief's five parts (Arrival, Investigation, Awak
 | Johto | **Ho-Oh** (the Guardian) | Reach the top floor of the Tin Tower | More treasure and finds |
 | Hoenn | Groudon | Mt. Chimney cleared 3 times | Ground- and Fire-favouring dungeons 10% faster |
 | Hoenn | Kyogre | Seafloor Cavern cleared 3 times | Water-favouring dungeons 10% faster |
+| Sinnoh | Dialga | Mt. Coronet cleared 3 times | Steel-favouring dungeons 10% faster |
+| Sinnoh | Palkia | Spear Pillar cleared 3 times | Water-favouring dungeons 10% faster |
+| Sinnoh | Giratina | The Distortion World, after its Guardian | 3% more treasure boxes (Guardian) |
 | Hoenn | **Rayquaza** (the Guardian) | Reach the top floor of the Sky Pillar | Flying- and Dragon-favouring dungeons 10% faster, a little more finds |
 
 **Planned Guardians** (main quests; each a Guardian of its region):

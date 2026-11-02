@@ -31,6 +31,7 @@ object Story {
         WorldLayer.KANTO -> KantoStory.chapters
         WorldLayer.JOHTO -> JohtoStory.chapters
         WorldLayer.HOENN -> HoennStory.chapters
+        WorldLayer.SINNOH -> SinnohStory.chapters
     }
 
     /** What the Guardian of [layer] gives once its story is complete. */
@@ -39,6 +40,7 @@ object Story {
         WorldLayer.KANTO -> KantoStory.GUARDIAN_BONUS
         WorldLayer.JOHTO -> JohtoStory.GUARDIAN_BONUS
         WorldLayer.HOENN -> HoennStory.GUARDIAN_BONUS
+        WorldLayer.SINNOH -> SinnohStory.GUARDIAN_BONUS
     }
 
     /** How many different dungeons of [layer] have been cleared (repeating one counts once, so a cheap dungeon cannot be farmed for chapters). */

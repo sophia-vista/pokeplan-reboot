@@ -1159,7 +1159,9 @@ class GameStore(
             update { it.copy(world = it.world.copy(legends = it.world.legends + quest.id)) }
             // Every legendary also has a quest in the Plan side's quest list (Quests): a Pokémon already owned from there is not given twice,
             // and the quest still counts as done in World, so its boost for the layer applies either way.
-            if (data.player.pokemon.none { it.speciesId == quest.speciesId }) grantPokemon(quest.speciesId, WORLD_SOURCE)
+            // Dialga is the exception: Primal Dialga (the home Guardian) is a form of its own, so owning it does not stand in for Sinnoh's Dialga.
+            val own = app.pokeplan.core.dex.Dex.defaultForm(quest.speciesId).identifier
+            if (data.player.pokemon.none { it.speciesId == quest.speciesId && it.form.identifier == own }) grantPokemon(quest.speciesId, WORLD_SOURCE)
         }
     }
 

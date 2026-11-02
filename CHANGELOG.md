@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.115.0
+
+- **World: the Sinnoh layer** (fifth button on the Map's layer switch, open from the first day): nine dungeons from Diamond, Pearl and Platinum (Eterna Forest, Oreburgh Mine, Wayward Cave, Old Chateau, Iron Island, Mt. Coronet, Victory Road, Spear Pillar and the Distortion World) with wild tables from the Sinnoh dex, a five-chapter story, "The Distortion of Creation", the Pokémon Platinum Town Map as its picture, and regional jobs, notebook entries, cutscenes, modifiers, hazards and choices like the other layers. **Dialga** (Mt. Coronet cleared three times: Steel-favouring dungeons 10% faster), **Palkia** (Spear Pillar three times: Water-favouring 10% faster) and **Giratina**, Sinnoh's Guardian (the Distortion World once its Guardian has been faced: 3% more treasure) join as Guardians; Plan no longer has quests for them. Primal Dialga, the home Guardian, is a form of its own, so owning it does not stand in for Sinnoh's Dialga.
+
 ## 0.114.0
 
 - **World, Phase 3 finished: hazards and choices.** Four **hazards** join the side paths (toxic fumes, a heat vent, a slick of ice, a crackling field): a team member of the right type weathers it for a small bonus; otherwise the team hurries past and loses nothing. **Choices:** about one floor in twenty-five from the third offers a fork or a spring with two ways on, each a reward (Poké or a treasure box; Experience or berries). The team does not wait: you have 12 hours to answer on the landing or the Expeditions screen, and an unanswered choice takes its first way by itself, so nothing is lost and the app never has to be open. At most three wait at once. Each choice is a record of its own, the reward comes from its own id, so the answer is the same whenever it is given, and a settle split any way is unchanged. Optional team roles, equipment and extra skills were left out: their purpose and balance are not clear yet (docs/world-audit.md).

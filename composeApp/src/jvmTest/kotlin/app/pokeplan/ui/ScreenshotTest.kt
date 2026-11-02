@@ -136,6 +136,8 @@ class ScreenshotTest {
         render("world-map-johto") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
         model.worldLayer = app.pokeplan.world.WorldLayer.HOENN
         render("world-map-hoenn") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
+        model.worldLayer = app.pokeplan.world.WorldLayer.SINNOH
+        render("world-map-sinnoh") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
         model.worldLayer = app.pokeplan.world.WorldLayer.HOME
         // The same screens with the system text at 130%: nothing may be clipped or pushed out of its box.
         app.pokeplan.ui.screens.WorldSection.entries.forEach { section ->

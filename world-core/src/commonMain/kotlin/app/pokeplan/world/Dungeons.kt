@@ -42,7 +42,7 @@ data class DungeonDef(
 /** The first three dungeons (the MVP's world map): Tiny Woods, Thunderwave Cave and Mt. Steel, from Explorers of Sky. *(tune)* */
 object Dungeons {
     /** Every dungeon of every layer, the home layer first. */
-    val all: List<DungeonDef> by lazy { home + KantoDungeons.all + JohtoDungeons.all + HoennDungeons.all }
+    val all: List<DungeonDef> by lazy { home + KantoDungeons.all + JohtoDungeons.all + HoennDungeons.all + SinnohDungeons.all }
 
     /** The dungeons of one layer, in the order the map lists them. */
     fun of(layer: WorldLayer): List<DungeonDef> = all.filter { it.layer == layer }
