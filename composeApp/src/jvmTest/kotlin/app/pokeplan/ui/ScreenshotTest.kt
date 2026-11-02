@@ -65,6 +65,16 @@ class ScreenshotTest {
     private fun started(): GameStore = GameStore(MemoryStorage(), clock).also { it.start("Sophia", 25) }
 
     @Test
+    fun story() {
+        val model = AppModel(started())
+        val episode = app.pokeplan.world.story.StoryCatalog.all().first()
+        // Each scene alone, a few seconds in: its portraits, its stage and its dungeon walk.
+        episode.scenes.forEach { scene ->
+            render("story-${scene.id}", frames = 90) { PixelTheme { app.pokeplan.ui.screens.StoryPlayer(model, episode.copy(scenes = listOf(scene)), {}) } }
+        }
+    }
+
+    @Test
     fun pokegear() {
         val store = started()
         store.grantPokemon(181, "test")

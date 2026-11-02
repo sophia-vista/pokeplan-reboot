@@ -108,6 +108,9 @@ Opens at story chapter 2 of the home layer. Up to 3 jobs held at once; a job tha
 ### 4.8a Cutscenes
 A new rank and each story chapter play a short full-screen scene once (`WorldMoments`, `Cutscene.World`; `WorldData.seenRank` and `seenChapters` remember what was shown, and an old save adopts what it had). A Guardian faced still shows its own card; scenes for the Guardian and the legendary quests are a later addition.
 
+### 4.8c Story scenes
+Chapters with an authored episode play scenes with portraits, a stage and a dungeon walk (`docs/world-story-engine.md`); the rest play their title card.
+
 ### 4.8b Story archive
 A small button on the landing opens the archive (`WorldMoments.reached`): ranks, chapters by layer and legendary quests that joined, each replayable (`Cutscene.World`). A legendary quest has its own scene (`WorldMoment.LegendJoined`, tracked by `WorldData.legendsSeen`, null on older saves so they adopt what they have).
 

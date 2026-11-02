@@ -287,6 +287,11 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
  */
 @Composable
 private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMoment, close: () -> Unit) {
+    // A chapter with an authored episode plays it (portraits, a stage, a dungeon walk); the rest play their title card.
+    if (moment is app.pokeplan.world.WorldMoment.ChapterOpened) {
+        val episode = app.pokeplan.world.story.StoryCatalog.episodeFor(moment.layer, moment.chapter.number)
+        if (episode != null) { StoryPlayer(model, episode, close); return }
+    }
     val still = model.data.settings.reduceMotion
     var done by remember(moment) { mutableStateOf(still) }
     val flash = remember(moment) { Animatable(0f) }

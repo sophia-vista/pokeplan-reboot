@@ -112,6 +112,9 @@ data class WorldData(
     val choices: List<PendingChoice> = emptyList(),
     /** The legendary quests whose scene was shown (null: not recorded yet, an older save adopts the ones it has). */
     val legendsSeen: Set<String>? = null,
+    /** The story scenes and episodes (`<layer>:<chapter>`) watched to the end: the Story archive's record, never a reward gate. */
+    val scenesDone: Set<String> = emptySet(),
+    val episodesDone: Set<String> = emptySet(),
 ) {
     val rank: ExplorerRank get() = ExplorerRank.at(xp)
 
