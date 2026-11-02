@@ -132,6 +132,7 @@ internal fun WorldReportCard(model: AppModel) {
             if (chance.isNotEmpty()) Text("Found by chance: ${chance.joinToString(", ")}.", style = MaterialTheme.typography.bodyMedium)
             if (report.cleared.isNotEmpty()) Text("Cleared: ${report.cleared.distinct().joinToString(", ") { Dungeons.byId(it)?.name ?: it }}.", style = MaterialTheme.typography.bodyMedium)
             if (report.jobsDone.isNotEmpty()) Text("Jobs done: ${report.jobsDone.joinToString(", ") { app.pokeplan.world.Missions.byId(it)?.title ?: it }}. Claim them on the board.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+            if (report.choicesOffered > 0) Text("${report.choicesOffered} ${if (report.choicesOffered == 1) "choice" else "choices"} came up on the way. Answer them below, or the team takes the first way after 12 hours.", style = MaterialTheme.typography.bodyMedium)
             if (report.eventsOpened > 0 || report.eventsPassed > 0) Text(
                 buildString {
                     if (report.eventsOpened > 0) append("${report.eventsOpened} side paths opened with field moves")

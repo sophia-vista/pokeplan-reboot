@@ -18,6 +18,8 @@ sealed interface WorldEvent {
     data class Cleared(val dungeonId: String) : WorldEvent
     data class MissionDone(val missionId: String) : WorldEvent
     /** A floor event: [user] opened it (null: the team went around), and [gave] says what it gave. */
+    /** A floor offered a choice, now waiting for an answer (or the default). */
+    data class ChoiceOffered(val kind: ChoiceKind, val dungeonId: String, val floor: Int) : WorldEvent
     data class FloorEvent(val kind: FloorEventKind, val dungeonId: String, val floor: Int, val userName: String?, val gave: String) : WorldEvent
     /** The Guardian was faced: the story is complete. */
     data object GuardianFaced : WorldEvent
@@ -129,6 +131,7 @@ object WorldSim {
                 if (acc.lastOrNull()?.first?.text == l.text) acc[acc.lastIndex] = acc.last().first to acc.last().second + 1 else acc += l to 1
                 acc
             }.map { (l, n) -> if (n > 1) l.copy(text = l.text.removeSuffix(".") + " ($n times).") else l }
+        out = Choices.expire(out, now)
         return WorldReport(out.copy(lastSeenAt = now, journal = (out.journal + lines).takeLast(WorldData.JOURNAL_SIZE)), perTeam)
     }
 
@@ -227,22 +230,20 @@ object WorldSim {
             events += WorldEvent.Found(species, dungeon.id, floor)
             d = d.copy(finds = d.finds + Find(species, dungeon.id, floor, at), discovered = d.discovered + species).withSkillXp(WorldSkill.SCOUTING, 20)
         }
+        // A floor choice: choices whose time is up (by this floor's own time) take their default first; then this floor may offer one.
+        d = Choices.expire(d, at)
+        Choices.kindAt(teamId, trip, floor, index)?.let { ck ->
+            val pending = PendingChoice(Choices.idFor(teamId, trip, index, dungeon.id), ck.name, dungeon.id, floor, at, at + Choices.WAIT_MILLIS)
+            d = if (d.choices.size >= Choices.MAX_PENDING) Choices.answer(d.copy(choices = d.choices + pending), pending, 0, at) else d.copy(choices = d.choices + pending)
+            events += WorldEvent.ChoiceOffered(ck, dungeon.id, floor)
+        }
         // A floor event, if the floor has one: a bonus when a team member can open it, nothing lost when none can.
         FloorEvents.kindAt(teamId, trip, floor, index)?.let { kind ->
             val user = FloorEvents.opener(kind, members)
             var gave = ""
             if (user != null) {
-                val er = Random(eventSeed(teamId, trip, index) + 1)
-                when (kind.reward) {
-                    EventReward.BERRIES -> {
-                        val berry = FloorEvents.berryFor(er)
-                        events += WorldEvent.Item(berry, 2)
-                        d = d.copy(items = d.items + (berry to (d.items[berry] ?: 0) + 2)); gave = "2 berries"
-                    }
-                    EventReward.POKE -> { val p = FloorEvents.poke(floor); events += WorldEvent.Poke(p); d = d.copy(poke = d.poke + p); gave = "$p Poké" }
-                    EventReward.XP -> { val x = FloorEvents.xp(floor); d = d.copy(xp = d.xp + x); gave = "$x XP" }
-                    EventReward.TREASURE -> { val t = FloorEvents.treasureTier(dungeon, floor); events += WorldEvent.Treasure(t); d = d.copy(treasure = d.treasure + (t to (d.treasure[t] ?: 0) + 1)); gave = "a treasure box" }
-                }
+                val (next, text) = grantEventReward(d, kind.reward, dungeon, floor, Random(eventSeed(teamId, trip, index) + 1), events)
+                d = next; gave = text
             }
             events += WorldEvent.FloorEvent(kind, dungeon.id, floor, user?.nickname, gave)
         }

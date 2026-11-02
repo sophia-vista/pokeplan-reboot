@@ -23,6 +23,8 @@ data class ReportSummary(
     /** Floor events opened by a team member, and how many were passed by. */
     val eventsOpened: Int = 0,
     val eventsPassed: Int = 0,
+    /** Floor choices that came up (waiting for an answer or already answered by the default). */
+    val choicesOffered: Int = 0,
 ) {
     val isEmpty: Boolean get() = floors == 0 && milestones.isEmpty() && finds.isEmpty() && jobsDone.isEmpty() && !guardianFaced
 
@@ -31,7 +33,7 @@ data class ReportSummary(
         xp + o.xp, poke + o.poke, berries + o.berries,
         (treasure.keys + o.treasure.keys).associateWith { (treasure[it] ?: 0) + (o.treasure[it] ?: 0) },
         milestones + o.milestones, finds + o.finds, cleared + o.cleared, jobsDone + o.jobsDone, guardianFaced || o.guardianFaced,
-        eventsOpened + o.eventsOpened, eventsPassed + o.eventsPassed,
+        eventsOpened + o.eventsOpened, eventsPassed + o.eventsPassed, choicesOffered + o.choicesOffered,
     )
 
     companion object {
@@ -47,6 +49,7 @@ data class ReportSummary(
                 is WorldEvent.Found -> s.copy(finds = s.finds + e.speciesId)
                 is WorldEvent.Cleared -> s.copy(cleared = s.cleared + e.dungeonId)
                 is WorldEvent.MissionDone -> s.copy(jobsDone = s.jobsDone + e.missionId)
+                is WorldEvent.ChoiceOffered -> s.copy(choicesOffered = s.choicesOffered + 1)
                 is WorldEvent.FloorEvent -> if (e.userName != null) s.copy(eventsOpened = s.eventsOpened + 1) else s.copy(eventsPassed = s.eventsPassed + 1)
                 WorldEvent.GuardianFaced, is WorldEvent.LayerGuardianFaced -> s.copy(guardianFaced = true)
             }

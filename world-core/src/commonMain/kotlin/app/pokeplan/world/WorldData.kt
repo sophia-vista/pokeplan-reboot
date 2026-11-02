@@ -108,6 +108,8 @@ data class WorldData(
     /** The highest rank whose moment was shown (-1: not recorded yet, an old save adopts what it has) and, by layer id, how many story chapters were shown. */
     val seenRank: Int = -1,
     val seenChapters: Map<String, Int> = emptyMap(),
+    /** Floor choices waiting for an answer (see [Choices]). */
+    val choices: List<PendingChoice> = emptyList(),
 ) {
     val rank: ExplorerRank get() = ExplorerRank.at(xp)
 
@@ -153,6 +155,9 @@ data class WorldData(
         if (clean.isEmpty() || members.isEmpty()) return null
         return copy(presets = (presets.filter { it.name != clean } + TeamPreset(clean, members.distinct().take(WorldTeam.MAX_MEMBERS))).takeLast(MAX_PRESETS))
     }
+
+    /** Answers the waiting choice [id] with [option] (0 or 1); null when there is no such choice. */
+    fun resolveChoice(id: String, option: Int, now: Long): WorldData? = choices.firstOrNull { it.id == id }?.let { Choices.answer(this, it, option, now) }
 
     fun deletePreset(name: String): WorldData = copy(presets = presets.filter { it.name != name })
 
