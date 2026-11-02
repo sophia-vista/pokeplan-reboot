@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.114.0
+
+- **World, Phase 3 finished: hazards and choices.** Four **hazards** join the side paths (toxic fumes, a heat vent, a slick of ice, a crackling field): a team member of the right type weathers it for a small bonus; otherwise the team hurries past and loses nothing. **Choices:** about one floor in twenty-five from the third offers a fork or a spring with two ways on, each a reward (Poké or a treasure box; Experience or berries). The team does not wait: you have 12 hours to answer on the landing or the Expeditions screen, and an unanswered choice takes its first way by itself, so nothing is lost and the app never has to be open. At most three wait at once. Each choice is a record of its own, the reward comes from its own id, so the answer is the same whenever it is given, and a settle split any way is unchanged. Optional team roles, equipment and extra skills were left out: their purpose and balance are not clear yet (docs/world-audit.md).
+
 ## 0.113.0
 
 - **Cutscenes for a new World rank and a new story chapter.** Reaching a new exploration rank plays a gold flash, the rank in big letters with its Mystery Dungeon badge and what it opens (more teams, new dungeons). A story chapter opening plays its place, number and title with its summary and what it brings. They play once each, one at a time, wherever you are in the app (like a hatch), however the progress came (exploring while away, a job, research); a tap skips ahead, and Reduce motion drops the flash. A save from before this counts what it already reached as seen, so nothing replays.

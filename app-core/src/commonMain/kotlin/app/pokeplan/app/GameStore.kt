@@ -1262,6 +1262,14 @@ class GameStore(
         .filter { it.id !in data.world.assigned && it.id !in data.player.guardians && !(data.settings.worldKeepPartyOut && it.inParty) }
         .sortedWith(compareByDescending<OwnedPokemon> { it.level }.thenBy { it.id })
 
+    /** Answers the World choice [id] with [option] (0 or 1), after settling what is due; false when there is no such choice. */
+    fun worldChoose(id: String, option: Int): Boolean {
+        worldSettle()
+        val next = data.world.resolveChoice(id, option, nowMillis) ?: return false
+        update { it.copy(world = next) }
+        return true
+    }
+
     /** The next World moment to show (a new rank, a chapter opening) or null; first counts what an older save already reached as seen. */
     fun worldMoment(): app.pokeplan.world.WorldMoment? {
         val adopted = app.pokeplan.world.WorldMoments.adopted(data.world)

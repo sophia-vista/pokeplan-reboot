@@ -1,6 +1,7 @@
 package app.pokeplan.world
 
 import app.pokeplan.core.dex.Dex
+import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.OwnedPokemon
 import kotlin.random.Random
@@ -18,7 +19,7 @@ enum class FieldMove(val identifier: String, val label: String) {
 enum class EventReward { BERRIES, POKE, XP, TREASURE }
 
 /** The kinds of floor event. [move] null means anyone can take it (a helpful traveller). */
-enum class FloorEventKind(val title: String, val blocked: String, val opened: String, val move: FieldMove?, val reward: EventReward) {
+enum class FloorEventKind(val title: String, val blocked: String, val opened: String, val move: FieldMove?, val reward: EventReward, val types: Set<PokemonType> = emptySet()) {
     THICKET("Overgrown path", "A thicket covers a side path.", "cleared the thicket and found berries", FieldMove.CUT, EventReward.BERRIES),
     STREAM("A stream", "A stream cuts across the floor.", "crossed the stream to a quiet corner", FieldMove.SURF, EventReward.POKE),
     ROCKS("A wall of rock", "A cracked wall hides something.", "smashed the wall and found a hidden room", FieldMove.ROCK_SMASH, EventReward.TREASURE),
@@ -26,6 +27,11 @@ enum class FloorEventKind(val title: String, val blocked: String, val opened: St
     DARK_ROOM("A dark room", "A room is too dark to enter.", "lit the room and learned its secrets", FieldMove.FLASH, EventReward.XP),
     BURROW("A burrow", "A burrow runs under the wall.", "dug through to a shortcut", FieldMove.DIG, EventReward.POKE),
     GAP("A gap in the floor", "A wide gap splits the floor.", "flew across to a ledge", FieldMove.FLY, EventReward.XP),
+    // Hazards: a team with a member of the right type weathers it and gathers something; any other team only hurries past.
+    FUMES("Toxic fumes", "Fumes seep from a crack in the wall.", "weathered the fumes and gathered ore", null, EventReward.POKE, setOf(PokemonType.POISON, PokemonType.STEEL)),
+    VENT("A heat vent", "A vent blasts hot air across the path.", "stood the heat and gathered warm stones", null, EventReward.XP, setOf(PokemonType.FIRE, PokemonType.WATER)),
+    ICE_PATCH("A slick of ice", "The floor is a sheet of ice.", "crossed the ice and found a cache", null, EventReward.BERRIES, setOf(PokemonType.ICE, PokemonType.FLYING)),
+    STATIC("A crackling field", "The air crackles with static.", "shrugged off the static and found a spark stone", null, EventReward.POKE, setOf(PokemonType.GROUND, PokemonType.ELECTRIC)),
     TRAVELLER("A traveller", "A traveller passes by.", "was given berries by a traveller", null, EventReward.BERRIES),
 }
 
@@ -61,8 +67,10 @@ object FloorEvents {
 
     /** The team member who opens [kind]: the first by Pokémon id who can use its move (anyone, for a kind with none). Null when nobody can. */
     fun opener(kind: FloorEventKind, members: List<OwnedPokemon>): OwnedPokemon? {
-        val move = kind.move ?: return members.minByOrNull { it.id }
-        return members.sortedBy { it.id }.firstOrNull { canUse(it, move) }
+        val sorted = members.sortedBy { it.id }
+        kind.move?.let { move -> return sorted.firstOrNull { canUse(it, move) } }
+        if (kind.types.isNotEmpty()) return sorted.firstOrNull { m -> m.form.types.any { it in kind.types } }
+        return sorted.firstOrNull()
     }
 
     /** The reward amounts for an opened event on [floor] of [dungeon]; only the one that matches the kind's [EventReward] is used. */
@@ -72,4 +80,21 @@ object FloorEvents {
 
     /** A berry flavour for an event's berries, from the same seed. */
     fun berryFor(random: Random): String = Items.berry(listOf("sweet", "dry", "sour", "spicy", "bitter").random(random))
+}
+
+/** What a floor event gives, granted into [data] (the same for an event opened on the floor and a choice answered later). Returns the new data and a phrase for the log. */
+internal fun grantEventReward(data: WorldData, reward: EventReward, dungeon: DungeonDef, floor: Int, random: Random, events: MutableList<WorldEvent>? = null): Pair<WorldData, String> {
+    var d = data
+    val gave: String
+    when (reward) {
+        EventReward.BERRIES -> {
+            val berry = FloorEvents.berryFor(random)
+            events?.add(WorldEvent.Item(berry, 2))
+            d = d.copy(items = d.items + (berry to (d.items[berry] ?: 0) + 2)); gave = "2 berries"
+        }
+        EventReward.POKE -> { val p = FloorEvents.poke(floor); events?.add(WorldEvent.Poke(p)); d = d.copy(poke = d.poke + p); gave = "$p Poké" }
+        EventReward.XP -> { val x = FloorEvents.xp(floor); d = d.copy(xp = d.xp + x); gave = "$x XP" }
+        EventReward.TREASURE -> { val t = FloorEvents.treasureTier(dungeon, floor); events?.add(WorldEvent.Treasure(t)); d = d.copy(treasure = d.treasure + (t to (d.treasure[t] ?: 0) + 1)); gave = "a treasure box" }
+    }
+    return d to gave
 }

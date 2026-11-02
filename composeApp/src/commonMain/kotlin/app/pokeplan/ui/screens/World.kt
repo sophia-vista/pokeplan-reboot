@@ -127,6 +127,7 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
             val firstTime = world.teams.none { it.expedition != null || it.members.isNotEmpty() } && world.clears.isEmpty()
             RankCard(model)
             WorldReportCard(model)
+            ChoicesCard(model)
             if (firstTime) {
                 TextBox {
                     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -613,6 +614,7 @@ private fun WorldTeamsView(model: AppModel) {
     val world = model.data.world
     val roster = model.data.player.pokemon
     WorldReportCard(model)
+    ChoicesCard(model)
     ExpeditionOverview(model)
     world.slots().forEach { team ->
         var editing by remember(team.id) { mutableStateOf(false) }
@@ -705,7 +707,7 @@ private fun WorldTeamsView(model: AppModel) {
         }
     }
     Text(
-        "Side paths: about one floor in ten has something a field move can open (Cut, Surf, Rock Smash, Strength, Flash, Dig, Fly), found by a Pokémon of level ${FloorEvents.MIN_LEVEL} or more that can learn the move. It adds a small bonus; a team that cannot open one goes around and loses nothing. Some days a dungeon is also bountiful, in berry season, lucky or curious: a small bonus on its rewards, never a penalty.",
+        "Side paths: about one floor in ten has something a field move can open (Cut, Surf, Rock Smash, Strength, Flash, Dig, Fly), found by a Pokémon of level ${FloorEvents.MIN_LEVEL} or more that can learn the move. It adds a small bonus; a team that cannot open one goes around and loses nothing. A hazard (fumes, a heat vent, ice, static) is weathered by a member of the right type. Now and then the team also comes to a fork and waits for you to pick a way (the first is taken after 12 hours). Some days a dungeon is also bountiful, in berry season, lucky or curious: a small bonus on its rewards, never a penalty.",
         style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
     )
     Text("Explore dungeons on the World map, then recall a team any time; nothing it found is lost.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -865,4 +867,35 @@ private fun NotebookCard(model: AppModel) {
             Text("Met: species your teams have found or rescued here. A tick: you have one in your collection.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
+}
+
+/** Floor choices waiting for an answer: two ways on, each a reward, with the first taken by itself when the time is up. Nothing is lost either way. */
+@Composable
+private fun ChoicesCard(model: AppModel) {
+    val world = model.data.world
+    if (world.choices.isEmpty()) return
+    val now = model.worldNow.takeIf { it > 0 } ?: model.store.nowMillis
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("Your team is waiting for you", style = MaterialTheme.typography.titleSmall)
+            world.choices.forEach { p ->
+                val kind = p.choice ?: return@forEach
+                val place = Dungeons.byId(p.dungeonId)?.name ?: p.dungeonId
+                val left = ((p.expiresAt - now) / 60_000).coerceAtLeast(0)
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    Text("${kind.title}, floor ${p.floor} of $place", style = MaterialTheme.typography.bodyLarge)
+                    Text("${kind.story} Without an answer, in ${left / 60} h ${left % 60} min the team takes the first way. Either way it gives a reward.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    PixelButton("${kind.first.label}: ${rewardText(kind.first.reward)}", { model.store.worldChoose(p.id, 0) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                    PixelButton("${kind.second.label}: ${rewardText(kind.second.reward)}", { model.store.worldChoose(p.id, 1) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+                }
+            }
+        }
+    }
+}
+
+private fun rewardText(r: app.pokeplan.world.EventReward): String = when (r) {
+    app.pokeplan.world.EventReward.BERRIES -> "2 berries"
+    app.pokeplan.world.EventReward.POKE -> "Poké"
+    app.pokeplan.world.EventReward.XP -> "Exploration XP"
+    app.pokeplan.world.EventReward.TREASURE -> "a treasure box"
 }

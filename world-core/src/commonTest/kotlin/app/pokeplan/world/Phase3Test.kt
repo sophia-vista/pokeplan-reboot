@@ -63,7 +63,7 @@ class Phase3Test {
         val a = run(capable); val b = run(none)
         val opened = a.events.filterIsInstance<WorldEvent.FloorEvent>().filter { it.userName != null }
         assertTrue(opened.isNotEmpty(), "a day-long trip with every move has events")
-        assertTrue(b.events.filterIsInstance<WorldEvent.FloorEvent>().all { it.userName == null || it.kind == FloorEventKind.TRAVELLER })
+        assertTrue(b.events.filterIsInstance<WorldEvent.FloorEvent>().all { it.userName == null || it.kind == FloorEventKind.TRAVELLER || it.kind.types.isNotEmpty() })
         assertTrue(a.data.journal.any { it.kind == JournalLine.KIND_EVENT && it.text.contains("floor") })
         assertTrue(ReportSummary.of(a, 0).eventsOpened == opened.size)
         assertTrue(b.data.journal.none { it.kind == JournalLine.KIND_EVENT && it.text.contains("Overgrown") }, "a closed event is not logged")
@@ -124,5 +124,54 @@ class WorldMomentsTest {
         assertTrue(WorldMoments.pending(d).isEmpty())
         assertTrue(WorldMoments.rankOpened(ExplorerRank.SILVER).any { it.contains("teams") }, "Silver opens a third team")
         assertTrue(WorldMoments.rankOpened(ExplorerRank.NORMAL).isEmpty())
+    }
+}
+
+class ChoicesTest {
+    private fun mon(id: String, species: Int, level: Int = 40): OwnedPokemon =
+        Hatching.create(id, HatchOption(species, Dex.defaultForm(species).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = level)
+
+    private val roster = listOf(mon("a", 25), mon("b", 74), mon("c", 1), mon("d", 7))
+    private fun start(at: Long = 1_000L) = WorldData(xp = 1_000_000).assign(1, listOf("a", "b", "c", "d"))!!.start(1, "tiny-woods", at)!!
+
+    @Test
+    fun floorsOfferChoicesNowAndThenAndTheDefaultIsTakenWhenTimeIsUp() {
+        val r = WorldSim.settle(start(), roster, 1_000L + 8 * 3_600_000L)
+        val offered = r.events.filterIsInstance<WorldEvent.ChoiceOffered>()
+        assertTrue(offered.isNotEmpty(), "a long trip offers choices")
+        assertTrue(r.data.choices.size <= Choices.MAX_PENDING, "never more than three wait")
+        // Long after, with nobody answering, every choice has taken its default and nothing is waiting.
+        val later = WorldSim.settle(r.data, roster, 1_000L + 8 * 3_600_000L + Choices.WAIT_MILLIS + 1)
+        assertTrue(later.data.choices.none { it.expiresAt <= 1_000L + 8 * 3_600_000L + Choices.WAIT_MILLIS })
+        assertTrue(later.data.journal.any { it.kind == JournalLine.KIND_EVENT && (it.text.contains("wide, safe path") || it.text.contains("Rest and drink")) }, "the default is in the log")
+    }
+
+    @Test
+    fun anAnswerPaysTheChosenOptionOnceAndNothingIsEverTaken() {
+        val r = WorldSim.settle(start(), roster, 1_000L + 6 * 3_600_000L)
+        val waiting = r.data.choices.firstOrNull() ?: return
+        val before = r.data
+        val answered = before.resolveChoice(waiting.id, 1, 5_000_000L)!!
+        assertTrue(answered.choices.none { it.id == waiting.id }, "it is gone once answered")
+        assertTrue(answered.poke >= before.poke && answered.xp >= before.xp && (answered.items.values.sum() >= before.items.values.sum()) && answered.treasure.values.sum() >= before.treasure.values.sum())
+        assertNull(answered.resolveChoice(waiting.id, 0, 5_000_000L), "answering twice does nothing")
+        val first = before.resolveChoice(waiting.id, 0, 5_000_000L)!!
+        assertEquals(before.resolveChoice(waiting.id, 0, 9_000_000L)!!.poke, first.poke, "the answer's reward does not depend on when it is given")
+    }
+
+    @Test
+    fun aSettleGivesTheSameWhateverWayItIsSplitWithChoicesToo() {
+        val end = 1_000L + 10 * 3_600_000L
+        val once = WorldSim.settle(start(), roster, end).data
+        var split = start()
+        for (t in listOf(1_000L + 2 * 3_600_000L, 1_000L + 2 * 3_600_000L + 5, 1_000L + 6 * 3_600_000L, end)) split = WorldSim.settle(split, roster, t).data
+        assertEquals(once.choices, split.choices); assertEquals(once.poke, split.poke); assertEquals(once.xp, split.xp); assertEquals(once.items, split.items); assertEquals(once.treasure, split.treasure)
+    }
+
+    @Test
+    fun hazardsNeedATypeAndOnlyAdd() {
+        assertNotNull(FloorEvents.opener(FloorEventKind.FUMES, listOf(mon("p", 109))), "Koffing is a Poison type")
+        assertNull(FloorEvents.opener(FloorEventKind.FUMES, listOf(mon("p", 25))), "Pikachu is not")
+        assertNotNull(FloorEvents.opener(FloorEventKind.STATIC, listOf(mon("p", 74))), "Geodude is Ground")
     }
 }
