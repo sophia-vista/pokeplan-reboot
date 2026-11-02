@@ -281,7 +281,7 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
 }
 
 /**
- * A World moment: a new exploration rank (a gold flash, stars for the rank, what it opens) or a story chapter (the place, the chapter, its
+ * A World moment: a new exploration rank (a gold flash, the rank's badge, what it opens) or a story chapter (the place, the chapter, its
  * title and what it brings). Reduce motion skips the flash and the build-up; a tap skips ahead.
  */
 @Composable
@@ -306,9 +306,8 @@ private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMo
                     Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         Text("Exploration rank", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.8f))
                         Text(rank.label, style = MaterialTheme.typography.displaySmall, color = FlashGold)
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                            repeat(rank.ordinal + 1) { ItemIcon("star-piece", size = 32.dp, description = null) }
-                        }
+                        // The games' own rank badge, big.
+                        ItemIcon(rank.badge, size = 96.dp, description = "${rank.label} rank badge")
                     }
                 }
                 val opens = app.pokeplan.world.WorldMoments.rankOpened(rank)

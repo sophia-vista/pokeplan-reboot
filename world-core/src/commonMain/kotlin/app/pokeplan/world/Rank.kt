@@ -14,6 +14,12 @@ enum class ExplorerRank(val label: String, val points: Int, val teamSlots: Int) 
     DIAMOND("Diamond", 60_000, 4),
     ;
 
+    /**
+     * The Mystery Dungeon rank badge for this rank, an item id of the PMD2 item art (assets/pmd-items), in the order the sheet has them
+     * (the winged emblems 197 to 201 and 211): Normal, Bronze, Silver, Gold, Platinum, Diamond. The pictures are the games' own.
+     */
+    val badge: String get() = "pmd2-" + listOf(197, 198, 199, 200, 201, 211)[ordinal.coerceAtMost(5)]
+
     companion object {
         /** The highest rank [points] reaches. */
         fun at(points: Int): ExplorerRank = entries.last { points >= it.points }

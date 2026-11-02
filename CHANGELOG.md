@@ -7,7 +7,7 @@ release always has the newest merge).
 
 ## 0.113.0
 
-- **Cutscenes for a new World rank and a new story chapter.** Reaching a new exploration rank plays a gold flash, the rank in big letters with a star for each rank reached and what it opens (more teams, new dungeons). A story chapter opening plays its place, number and title with its summary and what it brings. They play once each, one at a time, wherever you are in the app (like a hatch), however the progress came (exploring while away, a job, research); a tap skips ahead, and Reduce motion drops the flash. A save from before this counts what it already reached as seen, so nothing replays.
+- **Cutscenes for a new World rank and a new story chapter.** Reaching a new exploration rank plays a gold flash, the rank in big letters with its Mystery Dungeon badge and what it opens (more teams, new dungeons). A story chapter opening plays its place, number and title with its summary and what it brings. They play once each, one at a time, wherever you are in the app (like a hatch), however the progress came (exploring while away, a job, research); a tap skips ahead, and Reduce motion drops the flash. A save from before this counts what it already reached as seen, so nothing replays.
 
 ## 0.112.0
 

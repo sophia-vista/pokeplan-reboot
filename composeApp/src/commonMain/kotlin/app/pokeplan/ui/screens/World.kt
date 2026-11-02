@@ -211,7 +211,10 @@ private fun RankCard(model: AppModel) {
     val next = rank.next()
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Exploration rank: ${rank.label}", style = MaterialTheme.typography.titleSmall)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                ItemIcon(rank.badge, size = 48.dp, description = "${rank.label} rank badge")
+                Text("Exploration rank: ${rank.label}", style = MaterialTheme.typography.titleSmall)
+            }
             if (next != null) {
                 PixelBar(((world.xp - rank.points).toFloat() / (next.points - rank.points)).coerceIn(0f, 1f), Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "${world.xp} of ${next.points} to ${next.label}")
                 Text("${world.xp} of ${next.points} to ${next.label} rank", style = MaterialTheme.typography.bodyMedium)
