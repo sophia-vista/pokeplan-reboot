@@ -206,23 +206,24 @@ object WorldSim {
         val brewed = at < d.brewUntil
         events += WorldEvent.FloorCleared(dungeon.id, floor)
         d = d.copy(xp = d.xp + (XP_BASE + floor) * (10 + d.facilityLevel(Facility.LAB) + if (brewed) 3 else 0) / 10, deepest = d.deepest + (dungeon.id to maxOf(floor, d.deepest[dungeon.id] ?: 0)))
+        val modifier = DungeonModifiers.at(dungeon.id, at)
         var berries = 0
-        if (random.nextInt(100) < BERRY_PERCENT + (d.skillLevel(WorldSkill.FORAGING) + perk.getValue(WorldSkill.FORAGING))) {
+        if (random.nextInt(100) < BERRY_PERCENT + (d.skillLevel(WorldSkill.FORAGING) + perk.getValue(WorldSkill.FORAGING)) + if (modifier == DungeonModifier.BERRY_SEASON) DungeonModifiers.BERRY_POINTS else 0) {
             berries = 1
             val flavor = listOf("sweet", "dry", "sour", "spicy", "bitter").random(random)
             val berry = Items.berry(flavor)
             events += WorldEvent.Item(berry, 1)
             d = d.copy(items = d.items + (berry to (d.items[berry] ?: 0) + 1))
         }
-        val poke = (5 + floor * 2 + random.nextInt(5)) * (100 + 2 * (d.skillLevel(WorldSkill.EXPLORATION) + perk.getValue(WorldSkill.EXPLORATION))) / 100
+        val poke = (5 + floor * 2 + random.nextInt(5)) * (100 + 2 * (d.skillLevel(WorldSkill.EXPLORATION) + perk.getValue(WorldSkill.EXPLORATION)) + if (modifier == DungeonModifier.BOUNTY) DungeonModifiers.POKE_PERCENT else 0) / 100
         events += WorldEvent.Poke(poke)
         d = d.copy(poke = d.poke + poke)
-        if (random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP) + (if (brewed) 5 else 0) + d.legendTreasurePercent(dungeon)) {
+        if (random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP) + (if (brewed) 5 else 0) + (if (modifier == DungeonModifier.LUCKY) DungeonModifiers.TREASURE_POINTS else 0) + d.legendTreasurePercent(dungeon)) {
             val tier = if (floor >= dungeon.floors - 1) 3 else if (floor >= dungeon.floors / 2) 2 else 1
             events += WorldEvent.Treasure(tier)
             d = d.copy(treasure = d.treasure + (tier to (d.treasure[tier] ?: 0) + 1))
         }
-        findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * (d.skillLevel(WorldSkill.SCOUTING) + perk.getValue(WorldSkill.SCOUTING)) + (if (brewed) 10 else 0) + d.legendFindPermille(dungeon))?.let { species ->
+        findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * (d.skillLevel(WorldSkill.SCOUTING) + perk.getValue(WorldSkill.SCOUTING)) + (if (brewed) 10 else 0) + (if (modifier == DungeonModifier.CURIOUS) DungeonModifiers.FIND_PERMILLE else 0) + d.legendFindPermille(dungeon))?.let { species ->
             events += WorldEvent.Found(species, dungeon.id, floor)
             d = d.copy(finds = d.finds + Find(species, dungeon.id, floor, at), discovered = d.discovered + species).withSkillXp(WorldSkill.SCOUTING, 20)
         }

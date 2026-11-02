@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.112.0
+
+- **World, dungeon modifiers (Phase 3).** About a third of the days a dungeon has a small bonus on its rewards: Bountiful (20% more Poké), Berry season (berries easier to find), Lucky day (more treasure boxes) or Curious Pokémon (more finds). It is worked out from the dungeon and the day (UTC) alone, each floor uses the day it was climbed, and it never slows anything or takes anything away. An exploring team's card says what today's modifier is.
+- **Keep party Pokémon out of World** (Settings, Teams, off by default): Pokémon in a module's party are not offered for World teams, Send my strongest passes them by, and they cannot be newly put on a team (one already on a team stays). It is off by default because a new save has only party Pokémon.
+- **World's Camp folded into Base:** the separate Camp button and screen are gone; the Camp upgrade stays in Base with the yard of recruited Pokémon above it.
+
 ## 0.111.0
 
 - **World, Phase 3 (first part): side paths opened with field moves.** About one floor in ten (never the first) has something on it: an overgrown path (Cut), a stream (Surf), a wall of rock (Rock Smash), a heavy boulder (Strength), a dark room (Flash), a burrow (Dig), a gap (Fly) or a traveller who needs nothing. A team member of level 10 or more whose Pokémon can learn the move (from the Dex's learnsets) opens it for a small bonus: berries, Poké, Exploration XP or a treasure box. A team with no one who can goes around and loses nothing, and nothing on the way to a Guardian needs one. Outcomes come from the dungeon, team, trip and floor alone, so a settle is the same however it is split, and they use their own random stream, so no floor's old rewards changed. The expedition log has an Events filter; the return report says how many side paths were opened and how many passed by. Choices, hazards, team roles and dungeon modifiers are still to come.

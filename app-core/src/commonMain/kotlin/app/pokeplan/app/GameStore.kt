@@ -1190,6 +1190,11 @@ class GameStore(
         if (members.any { id -> data.player.pokemon.none { it.id == id } }) return false
         // A Guardian can explore while it is idle; one slotted as a Guardian is busy there.
         if (members.any { it in data.player.guardians }) return false
+        // With "keep party Pokémon out" on, a party member cannot be newly put on a team (one already on it may stay until it is changed).
+        if (data.settings.worldKeepPartyOut) {
+            val already = data.world.team(team)?.members.orEmpty().toSet()
+            if (members.any { id -> id !in already && data.player.pokemon.firstOrNull { it.id == id }?.inParty == true }) return false
+        }
         val next = data.world.assign(team, members) ?: return false
         update { it.copy(world = next) }
         return true
@@ -1221,7 +1226,7 @@ class GameStore(
 
     /** Puts the preset [name] on World team [team]: whoever of it is still owned, idle and not slotted as a Guardian. */
     fun worldApplyPreset(team: Int, name: String): Boolean {
-        val owned = data.player.pokemon.map { it.id }.toSet() - data.player.guardians.toSet()
+        val owned = data.player.pokemon.filter { !(data.settings.worldKeepPartyOut && it.inParty) }.map { it.id }.toSet() - data.player.guardians.toSet()
         val next = data.world.applyPreset(team, name, owned) ?: return false
         update { it.copy(world = next) }
         return true
@@ -1254,7 +1259,7 @@ class GameStore(
      * mythical) is included while it is idle.
      */
     fun worldIdle(): List<OwnedPokemon> = data.player.pokemon
-        .filter { it.id !in data.world.assigned && it.id !in data.player.guardians }
+        .filter { it.id !in data.world.assigned && it.id !in data.player.guardians && !(data.settings.worldKeepPartyOut && it.inParty) }
         .sortedWith(compareByDescending<OwnedPokemon> { it.level }.thenBy { it.id })
 
     /** Brings a team home after settling what it found. */

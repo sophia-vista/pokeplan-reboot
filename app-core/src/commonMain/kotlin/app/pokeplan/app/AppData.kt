@@ -246,6 +246,8 @@ data class Settings(
     val careModule: Boolean = true,
     /** World's expedition boxes scroll their floor while the team walks. */
     val worldScroll: Boolean = true,
+    /** Pokémon in a module's party (Plan's, Care's...) stay out of World teams, so a module's party is never taken away for exploring. */
+    val worldKeepPartyOut: Boolean = false,
 ) {
     /** How loud sound effects play, 0 to 1 (0 when Sound was switched off). */
     val effectsLevel: Float get() = if (sound) effectsVolume / 100f else 0f

@@ -83,7 +83,7 @@ import kotlinx.coroutines.delay
  * its sections. Its progression (rank, Poké, dungeon depth) is its own; the Pokémon it recruits are the shared collection's.
  */
 enum class WorldSection(val label: String, val icon: String) {
-    MAP("Map", "town-map"), MISSIONS("Missions", "journal"), SKILLS("Skills", "ability-capsule"), BASE("Base", "scope-lens"), TEAMS("Expeditions", "exp-share"), CAMP("Camp", "friend-ball"), BAG("Finds and Bag", "seal-bag"), SETTINGS("Settings", "storage-key"),
+    MAP("Map", "town-map"), MISSIONS("Missions", "journal"), SKILLS("Skills", "ability-capsule"), BASE("Base", "scope-lens"), TEAMS("Expeditions", "exp-share"), BAG("Finds and Bag", "seal-bag"), SETTINGS("Settings", "storage-key"),
 }
 
 @Composable
@@ -109,7 +109,6 @@ private fun WorldPage(model: AppModel, section: WorldSection?, openPokemon: (Str
             WorldSection.SKILLS -> WorldSkillsView(model)
             WorldSection.BASE -> WorldBaseView(model)
             WorldSection.TEAMS -> WorldTeamsView(model)
-            WorldSection.CAMP -> WorldCampView(model, openPokemon)
             WorldSection.BAG -> WorldBagView(model)
             WorldSection.SETTINGS -> WorldSettings(model)
         }
@@ -153,7 +152,7 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
             ) { key -> model.worldSection = WorldSection.valueOf(key) }
             FieldLabel("More")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                listOf(WorldSection.BAG to if (world.finds.isEmpty()) "Finds and Bag" else "Finds and Bag (${world.finds.size})", WorldSection.SKILLS to "Skills", WorldSection.CAMP to "Camp", WorldSection.SETTINGS to "Settings").forEach { (section, label) ->
+                listOf(WorldSection.BAG to if (world.finds.isEmpty()) "Finds and Bag" else "Finds and Bag (${world.finds.size})", WorldSection.SKILLS to "Skills", WorldSection.SETTINGS to "Settings").forEach { (section, label) ->
                     PixelButton(label, { model.worldSection = section }, color = Module.WORLD.look.accent, compact = true)
                 }
             }
@@ -506,6 +505,12 @@ private fun WorldBaseView(model: AppModel) {
     FieldLabel("Base")
     Facility.entries.forEach { f ->
         val level = world.facilityLevel(f)
+        // The Camp: the Pokémon recruited from your finds live in its yard (they are in your collection too, with the rest).
+        if (f == Facility.CAMP) {
+            val data = model.data
+            val residents = data.player.pokemon.filter { data.origins[it.id]?.how == Origin.How.WORLD }
+            if (residents.isNotEmpty()) CampYard(level, residents.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !data.settings.reduceMotion)
+        }
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text("${f.label}, level $level of ${Facility.MAX_LEVEL}", style = MaterialTheme.typography.titleSmall)
@@ -626,6 +631,9 @@ private fun WorldTeamsView(model: AppModel) {
                         val floor = trip.floorsClimbed % dungeon.floors
                         val per = WorldSim.floorMillis(dungeon, WorldSim.power(members, dungeon), world.guardianDone, world.legendFaster(dungeon))
                         Text("Exploring ${dungeon.name}: floor ${floor + 1} of ${dungeon.floors}", style = MaterialTheme.typography.bodyLarge)
+                        app.pokeplan.world.DungeonModifiers.at(dungeon.id, model.worldNow.takeIf { it > 0 } ?: store.nowMillis)?.let { m ->
+                            Text("Today here: ${m.title}, ${m.text}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+                        }
                         PixelBar(floor.toFloat() / dungeon.floors, Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "floor ${floor + 1} of ${dungeon.floors}")
                         Text("A floor takes about ${per / 1000 / 60} min ${per / 1000 % 60} s. It keeps going while you are away, up to 12 hours.", style = MaterialTheme.typography.bodyMedium)
                     }
@@ -691,7 +699,7 @@ private fun WorldTeamsView(model: AppModel) {
         }
     }
     Text(
-        "Side paths: about one floor in ten has something a field move can open (Cut, Surf, Rock Smash, Strength, Flash, Dig, Fly), found by a Pokémon of level ${FloorEvents.MIN_LEVEL} or more that can learn the move. It adds a small bonus; a team that cannot open one goes around and loses nothing.",
+        "Side paths: about one floor in ten has something a field move can open (Cut, Surf, Rock Smash, Strength, Flash, Dig, Fly), found by a Pokémon of level ${FloorEvents.MIN_LEVEL} or more that can learn the move. It adds a small bonus; a team that cannot open one goes around and loses nothing. Some days a dungeon is also bountiful, in berry season, lucky or curious: a small bonus on its rewards, never a penalty.",
         style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
     )
     Text("Explore dungeons on the World map, then recall a team any time; nothing it found is lost.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -700,28 +708,6 @@ private fun WorldTeamsView(model: AppModel) {
 // ----- Camp -----------------------------------------------------------------------------------------------------------
 
 @OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun WorldCampView(model: AppModel, openPokemon: (String) -> Unit) {
-    val data = model.data
-    val residents = data.player.pokemon.filter { data.origins[it.id]?.how == Origin.How.WORLD }
-    WorldBanner("cave", "Camp", "${residents.size} resident${if (residents.size == 1) "" else "s"}, camp level ${data.world.facilityLevel(Facility.CAMP)}", sky = Color(0xFF101010), top = true)
-    if (residents.isNotEmpty()) CampYard(data.world.facilityLevel(Facility.CAMP), residents.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !data.settings.reduceMotion)
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Species found exploring: ${data.world.discovered.size}", style = MaterialTheme.typography.titleSmall)
-            if (residents.isEmpty()) Text("Pokémon you recruit from your finds live here, and in your collection.", style = MaterialTheme.typography.bodyMedium)
-            else FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                residents.forEach { p ->
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        androidx.compose.foundation.layout.Box(Modifier.size(72.dp).clickableNoRipple { openPokemon(p.id) }) { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = 72.dp, animate = !data.settings.reduceMotion) }
-                        Text(p.nickname, style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-            }
-        }
-    }
-}
-
 private fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier = this.then(Modifier.clickable(interactionSource = null, indication = null, onClick = onClick))
 
 /** The recruiting scene: the wild Pokémon's face beside the question ([find]), or, once it has joined, beside the welcome ([newcomer]). */
