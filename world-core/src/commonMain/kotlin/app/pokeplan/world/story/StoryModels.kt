@@ -37,8 +37,25 @@ sealed interface SceneEvent {
     /** A small mark over a character (an exclamation, a question). */
     data class Emote(val who: String, val mark: String) : SceneEvent
     data class Flag(val name: String) : SceneEvent
+    /** A brief shake of the picture (an impact, a rumble). Skipped under Reduce motion. */
+    data class Shake(val millis: Int = 450) : SceneEvent
+    /** A flash of white (or black) over the picture. */
+    data class Flash(val white: Boolean = true) : SceneEvent
+    /** Black bars above and below the picture, for a cinematic. */
+    data class Letterbox(val on: Boolean) : SceneEvent
+    /** [who]'s cry (a Pokémon's real cry); nothing for a character with no species. */
+    data class Cry(val who: String) : SceneEvent
+    /** A game sound effect by its name in the app's sound list (SELECT, JUMP, LEVEL_UP, POKEMON_CENTER...). */
+    data class Sound(val name: String) : SceneEvent
+    /** Two or three ways to answer; the one picked sets its flag. Skipped (or never answered), the first is taken. Tone only: never a reward and never a lock. */
+    data class Choice(val prompt: String?, val options: List<StoryChoice>) : SceneEvent
+    /** Plays [events] only if [flag] was set (by a choice or [Flag], in this or an earlier scene). */
+    data class Branch(val flag: String, val events: List<SceneEvent>) : SceneEvent
     data object End : SceneEvent
 }
+
+/** One answer to a [SceneEvent.Choice]: what it says and the flag it sets. */
+data class StoryChoice(val label: String, val flag: String)
 
 /** A scene: its [type], where it happens ([background] a scene image name, or for a DUNGEON scene the [dungeonId] whose tiles it is drawn on), who is in it and what happens. */
 data class StoryScene(

@@ -19,11 +19,18 @@ Add a function to a region's story object (see `MysteryDungeonStory`) that retur
 
 The specification asks for original pixel art and warns against ripped game assets. The project's own rule (the owner's, in CLAUDE.md and docs/assets.md) is the opposite: real game assets only, the PMD SpriteCollab portraits and sprites first, never hand-drawn or generated art. The engine follows the project's rule: portraits, walking sprites, scene backgrounds and dungeon tiles are the existing SpriteCollab and game assets, credited as they are today. Nothing in the engine depends on that choice; a different asset source would only change the resolvers.
 
-## Not built yet (the specification's later priorities)
+## Built since the first slice (0.119.0)
 
-- Cinematic scenes (letterbox, shake, flash, parallax) and the effects set; music and ambience cues (`PlayMusic` and `ShowEffect` events).
-- Resume mid-episode (only finished scenes are recorded; a scene restarts from its beginning).
-- Story choices and flags beyond `Flag`; per-region companion snapshots (the buddy is simply the current one).
-- A Story Journal beyond the existing Story archive (character index, locations, lore); a scene preview tool (the screenshot test renders each scene).
-- The other chapters of every region: Mystery Dungeon 2 to 6, Kanto, Johto, Hoenn and Sinnoh need their scripts (the writing is the owner's; see `docs/world-storylines-current.md`).
-- Tiled maps and an asset manifest for the story; the first slice uses the dungeon tile sheets and scene images already in the game.
+- **Cinematic scenes** (`SceneType.CINEMATIC`): black bars, characters whose id starts with `big_` drawn large, `Shake`, `Flash`, `Letterbox`; Reduce motion skips the motion.
+- **Sound:** `Cry(who)` plays a Pokémon's real cry and `Sound(name)` any game effect from the app's list. There is no music yet: the project has no music assets.
+- **Choices and flags:** `Choice(prompt, options)` (two or three answers that set a flag; skipped, the first is taken) and `Branch(flag, events)`. Flags are kept in `WorldData.storyFlags` and carry into later scenes; they are for callbacks only and never gate a reward or an unlock.
+- **Resume:** `WorldData.storyResume` holds the next scene's index per episode; a watched episode replays from its start.
+- **People you have met** in the Story archive, from the casts of the scenes watched (`StoryCatalog.peopleMet`).
+- **Every chapter written** (first pass): `MysteryDungeonStory` and `MysteryDungeonChapters`, `KantoChapters`, `JohtoChapters`, `HoennChapters`, `SinnohChapters`, built with the writing aid in `ScriptDsl.kt` (`dialogue`, `stage`, `dungeon`, `cinematic` blocks of `say`, `walk`, `shake`, `choice`...). A test checks that every chapter of every layer has an episode with the chapter's number and title, and that every script is sound.
+
+## Not built yet
+
+- Music and ambience (no music assets in the project); a particle-effects set beyond shake and flash.
+- A Tiled map pipeline and a story asset manifest: scenes use the existing dungeon tile sheets and scene images (the dungeon tiles for the non-home layers are the generic sheet).
+- A scene preview tool beyond the Story archive and the screenshot test; a character index with lore text.
+- The rewrite of the first-pass writing, and the new regions' chapters (Unova to Paldea, Hisui): scripts only, no engine work.

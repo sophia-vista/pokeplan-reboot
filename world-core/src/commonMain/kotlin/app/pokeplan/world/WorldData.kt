@@ -115,6 +115,9 @@ data class WorldData(
     /** The story scenes and episodes (`<layer>:<chapter>`) watched to the end: the Story archive's record, never a reward gate. */
     val scenesDone: Set<String> = emptySet(),
     val episodesDone: Set<String> = emptySet(),
+    /** The answers given in story choices (flags, for later callbacks only) and where an unfinished episode left off (the next scene's index, by episode key). */
+    val storyFlags: Set<String> = emptySet(),
+    val storyResume: Map<String, Int> = emptyMap(),
 ) {
     val rank: ExplorerRank get() = ExplorerRank.at(xp)
 

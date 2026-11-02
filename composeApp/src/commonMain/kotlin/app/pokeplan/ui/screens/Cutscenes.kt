@@ -290,7 +290,7 @@ private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMo
     // A chapter with an authored episode plays it (portraits, a stage, a dungeon walk); the rest play their title card.
     if (moment is app.pokeplan.world.WorldMoment.ChapterOpened) {
         val episode = app.pokeplan.world.story.StoryCatalog.episodeFor(moment.layer, moment.chapter.number)
-        if (episode != null) { StoryPlayer(model, episode, close); return }
+        if (episode != null) { StoryPlayer(model, episode, close, fromStart = episode.key in model.data.world.episodesDone); return }
     }
     val still = model.data.settings.reduceMotion
     var done by remember(moment) { mutableStateOf(still) }

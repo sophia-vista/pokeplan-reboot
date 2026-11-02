@@ -72,6 +72,11 @@ class ScreenshotTest {
         episode.scenes.forEach { scene ->
             render("story-${scene.id}", frames = 90) { PixelTheme { app.pokeplan.ui.screens.StoryPlayer(model, episode.copy(scenes = listOf(scene)), {}) } }
         }
+        // A cinematic (a legendary's appearance) and a choice.
+        listOf("kanto-5-cave", "home-6-tower", "home-2-board").forEach { id ->
+            val scene = app.pokeplan.world.story.StoryCatalog.scene(id)!!
+            render("story-$id", frames = 120) { PixelTheme { app.pokeplan.ui.screens.StoryPlayer(model, episode.copy(scenes = listOf(scene)), {}) } }
+        }
     }
 
     @Test

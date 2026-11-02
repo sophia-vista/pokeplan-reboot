@@ -927,6 +927,21 @@ private fun WorldArchiveView(model: AppModel) {
             }
         }
     }
+    // The people met in the scenes watched, with their sprites.
+    val people = app.pokeplan.world.story.StoryCatalog.peopleMet(world.scenesDone)
+    if (people.isNotEmpty()) TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            FieldLabel("People you have met")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                people.forEach { c ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        AnimatedSprite(Dex.defaultForm(c.speciesId!!).id, false, c.displayName, size = 48.dp, animate = false)
+                        Text(c.displayName, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
+    }
     WorldLayer.entries.forEach { layer ->
         val here = moments.filter { (it is app.pokeplan.world.WorldMoment.ChapterOpened && it.layer == layer) || (it is app.pokeplan.world.WorldMoment.LegendJoined && it.quest.layer == layer) }
         if (here.isEmpty()) return@forEach
