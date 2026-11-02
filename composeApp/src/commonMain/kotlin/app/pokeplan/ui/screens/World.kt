@@ -243,7 +243,7 @@ private fun WorldMapView(model: AppModel) {
     // The layer switch: every layer is open from the first day.
     WorldLayerSwitch(model) { selected = null }
     Text(layer.blurb, style = MaterialTheme.typography.bodyMedium)
-    val spots = when (layer) { WorldLayer.HOME -> mapSpots; WorldLayer.KANTO -> kantoSpots; WorldLayer.JOHTO -> johtoSpots; WorldLayer.HOENN -> hoennSpots }
+    val spots = when (layer) { WorldLayer.HOME -> mapSpots; WorldLayer.KANTO -> kantoSpots; WorldLayer.JOHTO -> johtoSpots; WorldLayer.HOENN -> hoennSpots; WorldLayer.SINNOH -> sinnohSpots }
     WorldMapPicture(
         stage = 1 + clearedCount,
         markers = dungeons.mapNotNull { d ->
@@ -332,6 +332,13 @@ private val johtoSpots = mapOf(
 )
 
 /** Where each Hoenn dungeon is on the Hoenn map picture (256 x 152 pixels), read from its towns and landmarks. */
+/** Where each Sinnoh dungeon's marker stands on the Platinum Town Map (240 x 200 pixels), placed by eye from where the games put the places. */
+private val sinnohSpots = mapOf(
+    "eterna-forest" to (42 to 118), "oreburgh-mine" to (75 to 143), "wayward-cave" to (97 to 120), "old-chateau" to (75 to 100),
+    "iron-island" to (26 to 82), "mt-coronet" to (97 to 95), "victory-road-sinnoh" to (210 to 127), "spear-pillar" to (97 to 70),
+    "distortion-world" to (187 to 23),
+)
+
 private val hoennSpots = mapOf(
     "petalburg-woods" to (16 to 77), "granite-cave" to (27 to 128), "meteor-falls" to (50 to 26), "mt-chimney" to (66 to 31),
     "shoal-cave" to (168 to 44), "seafloor-cavern" to (195 to 48), "cave-of-origin" to (180 to 75), "victory-road-hoenn" to (228 to 80),

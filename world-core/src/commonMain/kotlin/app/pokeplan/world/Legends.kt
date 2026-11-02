@@ -47,6 +47,9 @@ object Legends {
         LegendQuest("johto-ho-oh", 250, "Ho-Oh", WorldLayer.JOHTO, "tin-tower", 1, true, "Johto's Guardian waits on the top floor of the Tin Tower.", treasurePercent = 3, findPermille = 5),
         LegendQuest("hoenn-groudon", 383, "Groudon", WorldLayer.HOENN, "mt-chimney", 3, false, "The land's ancient Pokémon stirs under Mt. Chimney. Clear it three times.", setOf(PokemonType.GROUND, PokemonType.FIRE)),
         LegendQuest("hoenn-kyogre", 382, "Kyogre", WorldLayer.HOENN, "seafloor-cavern", 3, false, "The sea's ancient Pokémon sleeps beneath the Seafloor Cavern. Clear it three times.", setOf(PokemonType.WATER)),
+        LegendQuest("sinnoh-dialga", 483, "Dialga", WorldLayer.SINNOH, "mt-coronet", 3, false, "Time itself is thin at the summit of Mt. Coronet. Clear it three times.", setOf(PokemonType.STEEL)),
+        LegendQuest("sinnoh-palkia", 484, "Palkia", WorldLayer.SINNOH, "spear-pillar", 3, false, "Space folds around the Spear Pillar. Clear it three times.", setOf(PokemonType.WATER)),
+        LegendQuest("sinnoh-giratina", 487, "Giratina", WorldLayer.SINNOH, "distortion-world", 1, true, "Sinnoh's Guardian waits in the Distortion World.", setOf(PokemonType.GHOST), treasurePercent = 3),
         LegendQuest("hoenn-rayquaza", 384, "Rayquaza", WorldLayer.HOENN, "sky-pillar", 1, true, "Hoenn's Guardian waits at the top of the Sky Pillar.", setOf(PokemonType.FLYING, PokemonType.DRAGON), findPermille = 5),
     )
 
