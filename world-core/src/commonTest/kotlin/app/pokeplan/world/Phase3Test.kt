@@ -69,3 +69,60 @@ class Phase3Test {
         assertTrue(b.data.journal.none { it.kind == JournalLine.KIND_EVENT && it.text.contains("Overgrown") }, "a closed event is not logged")
     }
 }
+
+class DungeonModifierTest {
+    @Test
+    fun aboutAThirdOfDaysHaveOneAndItIsTheSameAllDay() {
+        val days = (19_000L until 19_000L + 600)
+        val rate = days.count { DungeonModifiers.of("tiny-woods", it) != null } * 100 / days.count()
+        assertTrue(rate in 25..43, "about a third: $rate")
+        assertEquals(DungeonModifiers.of("mt-steel", 19_500), DungeonModifiers.of("mt-steel", 19_500))
+        assertEquals(DungeonModifiers.at("tiny-woods", 19_500L * 86_400_000L), DungeonModifiers.at("tiny-woods", 19_500L * 86_400_000L + 86_399_999L), "the whole UTC day")
+        assertEquals(DungeonModifier.entries.toSet(), days.mapNotNull { DungeonModifiers.of("tiny-woods", it) }.toSet(), "every kind comes up")
+    }
+
+    @Test
+    fun aBountifulDayPaysMoreAndNoDayPaysLess() {
+        val bounty = (19_000L until 25_000L).first { DungeonModifiers.of("tiny-woods", it) == DungeonModifier.BOUNTY }
+        val plain = (19_000L until 25_000L).first { DungeonModifiers.of("tiny-woods", it) == null }
+        fun pokeOn(day: Long): Int {
+            val t0 = day * 86_400_000L + 3_600_000L
+            val mon = Hatching.create("a", HatchOption(25, Dex.defaultForm(25).identifier), 6, 0L, 60, Random(1)).copy(level = 30)
+            val start = WorldData(xp = 100_000).assign(1, listOf("a"))!!.start(1, "tiny-woods", t0)!!
+            val r = WorldSim.settle(start, listOf(mon), t0 + 3 * 3_600_000L)
+            return r.events.filterIsInstance<WorldEvent.Poke>().sumOf { it.amount }
+        }
+        assertTrue(pokeOn(bounty) > pokeOn(plain), "a bountiful day pays more")
+    }
+}
+
+class WorldMomentsTest {
+    @Test
+    fun anOldSaveAdoptsWhatItReachedAndOnlyNewThingsPlay() {
+        val old = WorldData(xp = 2_000, clears = mapOf("tiny-woods" to 1, "thunderwave-cave" to 1, "mt-steel" to 1))
+        val adopted = WorldMoments.adopted(old)
+        assertEquals(old.rank.ordinal, adopted.seenRank)
+        assertTrue(WorldMoments.pending(adopted).isEmpty(), "nothing replays")
+        assertEquals(adopted, WorldMoments.adopted(adopted), "adopting twice changes nothing")
+        // Rank up: Gold needs 6000.
+        val up = adopted.copy(xp = 6_500)
+        val first = WorldMoments.pending(up).first()
+        assertEquals(WorldMoment.RankUp(ExplorerRank.GOLD), first)
+        assertTrue(WorldMoments.pending(WorldMoments.seen(up, first)).none { it is WorldMoment.RankUp }, "seen once, never again")
+    }
+
+    @Test
+    fun aChapterPlaysOnceInOrderAndRankOpensText() {
+        val base = WorldMoments.adopted(WorldData(xp = 400))
+        val more = base.copy(xp = 1_600, clears = mapOf("tiny-woods" to 1, "thunderwave-cave" to 1, "mt-steel" to 1))
+        val moments = WorldMoments.pending(more)
+        val chapters = moments.filterIsInstance<WorldMoment.ChapterOpened>().map { it.chapter.number }
+        assertEquals(chapters.sorted(), chapters, "in order")
+        assertTrue(chapters.isNotEmpty())
+        var d = more
+        for (m in moments) d = WorldMoments.seen(d, m)
+        assertTrue(WorldMoments.pending(d).isEmpty())
+        assertTrue(WorldMoments.rankOpened(ExplorerRank.SILVER).any { it.contains("teams") }, "Silver opens a third team")
+        assertTrue(WorldMoments.rankOpened(ExplorerRank.NORMAL).isEmpty())
+    }
+}

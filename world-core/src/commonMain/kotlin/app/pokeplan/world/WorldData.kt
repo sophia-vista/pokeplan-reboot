@@ -105,6 +105,9 @@ data class WorldData(
     val worldVersion: Int = 1,
     /** Saved teams, up to [MAX_PRESETS]. */
     val presets: List<TeamPreset> = emptyList(),
+    /** The highest rank whose moment was shown (-1: not recorded yet, an old save adopts what it has) and, by layer id, how many story chapters were shown. */
+    val seenRank: Int = -1,
+    val seenChapters: Map<String, Int> = emptyMap(),
 ) {
     val rank: ExplorerRank get() = ExplorerRank.at(xp)
 

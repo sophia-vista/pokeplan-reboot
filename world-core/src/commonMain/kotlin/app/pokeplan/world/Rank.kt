@@ -14,6 +14,12 @@ enum class ExplorerRank(val label: String, val points: Int, val teamSlots: Int) 
     DIAMOND("Diamond", 60_000, 4),
     ;
 
+    /**
+     * The Mystery Dungeon rank badge for this rank, an item id of the PMD2 item art (assets/pmd-items), in the order the sheet has them
+     * (the winged emblems 197 to 201 and 211): Normal, Bronze, Silver, Gold, Platinum, Diamond. The pictures are the games' own.
+     */
+    val badge: String get() = "pmd2-" + listOf(197, 198, 199, 200, 201, 211)[ordinal.coerceAtMost(5)]
+
     companion object {
         /** The highest rank [points] reaches. */
         fun at(points: Int): ExplorerRank = entries.last { points >= it.points }
@@ -31,4 +37,14 @@ enum class ExplorerRank(val label: String, val points: Int, val teamSlots: Int) 
             if (places.isNotEmpty()) add("the dungeons ${places.joinToString(", ") { it.name }}")
         }
     }
+}
+
+/**
+ * Where World uses the Mystery Dungeon item art (assets/pmd-items, drawn by `ItemIcon`): the Poké coin and the treasure boxes by tier
+ * (a red Wonder Box for a plain one, the blue for silver, the striped gold one for gold). Item ids of the PMD2 sheet, in one place.
+ */
+object PmdArt {
+    const val POKE_COIN = "pmd2-072"
+
+    fun treasureBox(tier: Int): String = when (tier) { 1 -> "pmd2-065"; 2 -> "pmd2-067"; else -> "pmd2-066" }
 }

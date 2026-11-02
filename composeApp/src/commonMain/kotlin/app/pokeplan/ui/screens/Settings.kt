@@ -449,6 +449,12 @@ internal fun CareSettings(model: AppModel) {
 @Composable
 internal fun WorldSettings(model: AppModel) {
     val settings = model.data.settings
+    SettingsGroup("Teams", "users") {
+        ToggleRow(
+            "Keep party Pokémon out of World", settings.worldKeepPartyOut,
+            detail = "Pokémon in a module's party (Plan, Care...) are not offered for World teams, and Send my strongest passes them by. One already on a team stays until you change the team.",
+        ) { model.store.changeSettings { s -> s.copy(worldKeepPartyOut = it) } }
+    }
     SettingsGroup("Animation", "zap") {
         ToggleRow(
             "Scrolling floors", settings.worldScroll,

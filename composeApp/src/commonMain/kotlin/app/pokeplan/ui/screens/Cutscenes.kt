@@ -57,6 +57,9 @@ sealed interface Cutscene {
     data class Hatch(val pokemon: OwnedPokemon, val fromTask: Boolean) : Cutscene
 
     data class Evolve(val before: OwnedPokemon, val after: OwnedPokemon) : Cutscene
+
+    /** A World rank reached or a story chapter opened. */
+    data class World(val moment: app.pokeplan.world.WorldMoment) : Cutscene
 }
 
 /** The white of the games' flash, and the gold one a shiny gets instead. */
@@ -81,12 +84,17 @@ fun CutsceneHost(model: AppModel) {
             model.cutscene = Cutscene.Hatch(waiting.pokemon, waiting.fromTask)
         }
     }
+    // A new World rank or story chapter: one at a time, once, when nothing else is playing.
+    LaunchedEffect(model.data.world, idle) {
+        if (idle) model.store.worldMoment()?.let { m -> model.store.worldMomentSeen(m); model.cutscene = Cutscene.World(m) }
+    }
     val scene = model.cutscene ?: return
     val close = { model.cutscene = null }
     BackHandler(enabled = true, onBack = close)
     when (scene) {
         is Cutscene.Hatch -> HatchScene(model, scene, close)
         is Cutscene.Evolve -> EvolutionScene(model, scene, close)
+        is Cutscene.World -> WorldMomentScene(model, scene.moment, close)
     }
 }
 
@@ -269,5 +277,57 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
             text = if (done) "Congratulations! Your ${before.nickname} evolved into ${after.species.name}!" else "What? ${before.nickname} is evolving!",
             detail = null, done = done, skip = { done = true }, close = close,
         )
+    }
+}
+
+/**
+ * A World moment: a new exploration rank (a gold flash, the rank's badge, what it opens) or a story chapter (the place, the chapter, its
+ * title and what it brings). Reduce motion skips the flash and the build-up; a tap skips ahead.
+ */
+@Composable
+private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMoment, close: () -> Unit) {
+    val still = model.data.settings.reduceMotion
+    var done by remember(moment) { mutableStateOf(still) }
+    val flash = remember(moment) { Animatable(0f) }
+    LaunchedEffect(moment) {
+        model.haptic()
+        if (still) { model.effect(Sfx.LEVEL_UP); return@LaunchedEffect }
+        flash.snapTo(1f)
+        model.effect(Sfx.LEVEL_UP)
+        flash.animateTo(0f, tween(900))
+        delay(900)
+        done = true
+    }
+    SceneFrame({ done = true }, flash.value, FlashGold) {
+        when (moment) {
+            is app.pokeplan.world.WorldMoment.RankUp -> {
+                val rank = moment.rank
+                Stage("bw08", 220.dp) {
+                    Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        Text("Exploration rank", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.8f))
+                        Text(rank.label, style = MaterialTheme.typography.displaySmall, color = FlashGold)
+                        // The games' own rank badge, big.
+                        ItemIcon(rank.badge, size = 96.dp, description = "${rank.label} rank badge")
+                    }
+                }
+                val opens = app.pokeplan.world.WorldMoments.rankOpened(rank)
+                SceneText(
+                    text = "Your team is now ${rank.label} rank!",
+                    detail = if (opens.isEmpty()) null else "This opens ${opens.joinToString("; ")}.",
+                    done = done, skip = { done = true }, close = close,
+                )
+            }
+            is app.pokeplan.world.WorldMoment.ChapterOpened -> {
+                val c = moment.chapter
+                Stage("bw08", 220.dp) {
+                    Column(Modifier.align(Alignment.Center).padding(horizontal = Spacing.M), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        Text("${moment.layer.label}, chapter ${c.number}", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.8f))
+                        Text(c.title, style = MaterialTheme.typography.headlineMedium, color = FlashGold, textAlign = TextAlign.Center)
+                        ItemIcon("town-map", size = 48.dp, description = null)
+                    }
+                }
+                SceneText(text = c.summary, detail = if (c.unlocks.isBlank()) null else "New: ${c.unlocks}.", done = done, skip = { done = true }, close = close)
+            }
+        }
     }
 }

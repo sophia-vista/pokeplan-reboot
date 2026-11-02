@@ -82,6 +82,24 @@ class WorldStoreTest {
     }
 
     @Test
+    fun partyPokemonCanBeKeptOutOfWorld() {
+        val store = store(Clock())
+        val starter = store.data.player.pokemon.first()
+        assertTrue(starter.inParty, "the first Pokémon starts in a party")
+        assertTrue(store.worldIdle().any { it.id == starter.id }, "off by default: a party member is free")
+        store.changeSettings { it.copy(worldKeepPartyOut = true) }
+        assertTrue(store.worldIdle().none { it.inParty }, "on: nobody in a party is offered")
+        assertFalse(store.worldAssign(1, listOf(starter.id)), "and a party member cannot be put on a team")
+        assertFalse(store.worldQuickSend("tiny-woods"), "Send my strongest passes them by (here there is no one else)")
+        // Off again: the same team goes through, and turning it on later does not pull a member off a team.
+        store.changeSettings { it.copy(worldKeepPartyOut = false) }
+        assertTrue(store.worldAssign(1, listOf(starter.id)))
+        store.changeSettings { it.copy(worldKeepPartyOut = true) }
+        assertEquals(listOf(starter.id), store.data.world.team(1)!!.members)
+        assertTrue(store.worldAssign(1, listOf(starter.id)), "one already on the team may stay")
+    }
+
+    @Test
     fun anIdleGuardianCanExploreButNotOneOnATeamTwice() {
         val store = store(Clock())
         val mewtwo = store.grantPokemon(150, "Quest: test")

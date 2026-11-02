@@ -2,10 +2,12 @@ package app.pokeplan.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -105,6 +107,17 @@ internal fun WorldReportCard(model: AppModel) {
             val where = report.byDungeon.entries.joinToString(", ") { (id, n) -> "${Dungeons.byId(id)?.name ?: id} $n" }
             Text("${report.floors} ${if (report.floors == 1) "floor" else "floors"} climbed ($where).", style = MaterialTheme.typography.bodyMedium)
             Text("Every floor: ${report.xp} Exploration XP and ${report.poke} Poké.", style = MaterialTheme.typography.bodyMedium)
+            // The haul at a glance, with the games' own art: the coin for Poké and a box for each treasure tier.
+            if (report.poke > 0 || report.treasure.isNotEmpty()) Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                if (report.poke > 0) {
+                    app.pokeplan.ui.ItemIcon(app.pokeplan.world.PmdArt.POKE_COIN, size = 28.dp, description = null)
+                    Text("${report.poke}", style = MaterialTheme.typography.bodyLarge)
+                }
+                report.treasure.entries.sortedBy { it.key }.forEach { (tier, n) ->
+                    app.pokeplan.ui.ItemIcon(app.pokeplan.world.PmdArt.treasureBox(tier.coerceIn(1, 3)), size = 28.dp, description = null)
+                    Text("x$n", style = MaterialTheme.typography.bodyLarge)
+                }
+            }
             if (report.milestones.isNotEmpty()) Text(
                 "Milestones (first time on a floor): " + report.milestones.joinToString("; ") { (id, r) ->
                     "${Dungeons.byId(id)?.name ?: id}: " + listOfNotNull(r.itemId?.let { "${app.pokeplan.core.pokemon.Items.name(it)} x${r.count}" }, r.poke.takeIf { it > 0 }?.let { "$it Poké" }).joinToString(", ")

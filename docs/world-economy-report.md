@@ -7,150 +7,150 @@ Nothing here pays through the server reward engine; items go to the Bag, Poké s
 
 | Dungeon | Team | Floors/h | Cleared/day | XP/h | Poké/h | Berries/h | Boxes/h | Finds/day |
 |---|---|---|---|---|---|---|---|---|
-| Tiny Woods (5 fl) | 2 × Lv 5 | 2.4 | 11.7 | 17.1 | 31.9 | 1.7 | 0.17 | 2.57 |
-| Tiny Woods (5 fl) | 2 × Lv 20 | 3.1 | 14.9 | 21.7 | 42.3 | 2.2 | 0.21 | 3.00 |
-| Tiny Woods (5 fl) | 4 × Lv 20 | 4.0 | 19.2 | 28.0 | 54.9 | 2.8 | 0.28 | 4.00 |
-| Tiny Woods (5 fl) | 4 × Lv 50 | 6.7 | 32.0 | 46.7 | 92.3 | 4.9 | 0.46 | 6.57 |
+| Tiny Woods (5 fl) | 2 × Lv 5 | 2.4 | 11.7 | 17.1 | 31.9 | 1.7 | 0.20 | 2.57 |
+| Tiny Woods (5 fl) | 2 × Lv 20 | 3.1 | 14.9 | 21.7 | 42.3 | 2.2 | 0.24 | 3.00 |
+| Tiny Woods (5 fl) | 4 × Lv 20 | 4.0 | 19.2 | 28.0 | 54.9 | 2.8 | 0.31 | 4.00 |
+| Tiny Woods (5 fl) | 4 × Lv 50 | 6.7 | 32.0 | 46.7 | 92.3 | 4.9 | 0.55 | 6.57 |
 | Thunderwave Cave (8 fl) | 2 × Lv 5 | 1.6 | 4.7 | 13.2 | 24.7 | 1.1 | 0.08 | 1.71 |
 | Thunderwave Cave (8 fl) | 2 × Lv 20 | 2.1 | 6.2 | 17.4 | 34.3 | 1.5 | 0.09 | 2.29 |
 | Thunderwave Cave (8 fl) | 4 × Lv 20 | 2.7 | 8.2 | 23.1 | 45.6 | 2.0 | 0.14 | 2.86 |
 | Thunderwave Cave (8 fl) | 4 × Lv 50 | 4.7 | 14.2 | 40.1 | 80.6 | 3.5 | 0.28 | 5.14 |
-| Mt. Steel (10 fl) | 2 × Lv 5 | 1.0 | 2.5 | 9.7 | 18.5 | 0.8 | 0.08 | 0.29 |
-| Mt. Steel (10 fl) | 2 × Lv 20 | 1.3 | 3.2 | 12.6 | 24.7 | 1.0 | 0.10 | 0.43 |
-| Mt. Steel (10 fl) | 4 × Lv 20 | 1.7 | 4.2 | 16.5 | 32.5 | 1.3 | 0.14 | 0.71 |
-| Mt. Steel (10 fl) | 4 × Lv 50 | 3.0 | 7.1 | 28.0 | 55.7 | 2.2 | 0.21 | 1.57 |
-| Waterfall Cave (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.5 | 16.4 | 0.6 | 0.09 | 0.57 |
-| Waterfall Cave (12 fl) | 2 × Lv 20 | 1.1 | 2.1 | 11.2 | 22.2 | 0.8 | 0.11 | 0.86 |
-| Waterfall Cave (12 fl) | 4 × Lv 20 | 1.4 | 2.8 | 14.5 | 28.6 | 1.0 | 0.13 | 1.43 |
-| Waterfall Cave (12 fl) | 4 × Lv 50 | 2.4 | 4.7 | 24.8 | 49.6 | 1.9 | 0.21 | 2.29 |
+| Mt. Steel (10 fl) | 2 × Lv 5 | 1.0 | 2.5 | 9.7 | 19.0 | 0.8 | 0.08 | 0.29 |
+| Mt. Steel (10 fl) | 2 × Lv 20 | 1.3 | 3.2 | 12.6 | 25.4 | 1.0 | 0.10 | 0.43 |
+| Mt. Steel (10 fl) | 4 × Lv 20 | 1.7 | 4.2 | 16.5 | 33.3 | 1.3 | 0.14 | 0.71 |
+| Mt. Steel (10 fl) | 4 × Lv 50 | 3.0 | 7.1 | 28.0 | 57.3 | 2.2 | 0.21 | 1.57 |
+| Waterfall Cave (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.5 | 16.9 | 0.6 | 0.09 | 0.57 |
+| Waterfall Cave (12 fl) | 2 × Lv 20 | 1.1 | 2.1 | 11.2 | 22.9 | 0.8 | 0.11 | 0.71 |
+| Waterfall Cave (12 fl) | 4 × Lv 20 | 1.4 | 2.8 | 14.5 | 29.4 | 1.1 | 0.13 | 1.29 |
+| Waterfall Cave (12 fl) | 4 × Lv 50 | 2.4 | 4.7 | 24.8 | 51.0 | 1.9 | 0.23 | 2.29 |
 | Glacier Palace (14 fl) | 2 × Lv 5 | 0.6 | 1.0 | 6.9 | 13.1 | 0.4 | 0.04 | 0.57 |
-| Glacier Palace (14 fl) | 2 × Lv 20 | 0.8 | 1.3 | 8.8 | 17.2 | 0.5 | 0.04 | 0.57 |
-| Glacier Palace (14 fl) | 4 × Lv 20 | 1.0 | 1.7 | 11.5 | 22.5 | 0.7 | 0.07 | 0.86 |
+| Glacier Palace (14 fl) | 2 × Lv 20 | 0.8 | 1.3 | 8.8 | 17.2 | 0.6 | 0.08 | 0.71 |
+| Glacier Palace (14 fl) | 4 × Lv 20 | 1.0 | 1.7 | 11.5 | 22.5 | 0.8 | 0.06 | 0.86 |
 | Glacier Palace (14 fl) | 4 × Lv 50 | 1.7 | 2.9 | 19.2 | 38.0 | 1.3 | 0.13 | 1.14 |
-| Ancient Ruins (16 fl) | 2 × Lv 5 | 0.5 | 0.7 | 6.0 | 11.6 | 0.4 | 0.05 | 0.29 |
-| Ancient Ruins (16 fl) | 2 × Lv 20 | 0.6 | 1.0 | 7.8 | 15.3 | 0.5 | 0.05 | 0.43 |
-| Ancient Ruins (16 fl) | 4 × Lv 20 | 0.8 | 1.3 | 10.3 | 20.6 | 0.6 | 0.07 | 0.43 |
-| Ancient Ruins (16 fl) | 4 × Lv 50 | 1.4 | 2.1 | 17.6 | 35.7 | 1.1 | 0.08 | 1.00 |
-| Sky Tower (18 fl) | 2 × Lv 5 | 0.4 | 0.5 | 5.3 | 10.1 | 0.3 | 0.05 | 0.43 |
-| Sky Tower (18 fl) | 2 × Lv 20 | 0.5 | 0.7 | 6.9 | 13.4 | 0.4 | 0.05 | 1.14 |
+| Ancient Ruins (16 fl) | 2 × Lv 5 | 0.5 | 0.7 | 6.0 | 11.9 | 0.4 | 0.05 | 0.29 |
+| Ancient Ruins (16 fl) | 2 × Lv 20 | 0.6 | 1.0 | 7.8 | 15.7 | 0.5 | 0.06 | 0.43 |
+| Ancient Ruins (16 fl) | 4 × Lv 20 | 0.8 | 1.3 | 10.3 | 21.2 | 0.6 | 0.07 | 0.43 |
+| Ancient Ruins (16 fl) | 4 × Lv 50 | 1.4 | 2.1 | 17.6 | 36.7 | 1.1 | 0.08 | 1.00 |
+| Sky Tower (18 fl) | 2 × Lv 5 | 0.4 | 0.5 | 5.3 | 10.1 | 0.3 | 0.06 | 0.43 |
+| Sky Tower (18 fl) | 2 × Lv 20 | 0.5 | 0.7 | 6.9 | 13.4 | 0.4 | 0.06 | 1.14 |
 | Sky Tower (18 fl) | 4 × Lv 20 | 0.7 | 0.9 | 8.8 | 17.3 | 0.5 | 0.06 | 1.29 |
-| Sky Tower (18 fl) | 4 × Lv 50 | 1.1 | 1.5 | 14.7 | 29.3 | 0.9 | 0.07 | 1.57 |
-| Temporal Tower (20 fl) | 2 × Lv 5 | 0.3 | 0.4 | 4.1 | 7.8 | 0.2 | 0.01 | 0.29 |
-| Temporal Tower (20 fl) | 2 × Lv 20 | 0.4 | 0.5 | 5.4 | 10.4 | 0.3 | 0.01 | 0.29 |
-| Temporal Tower (20 fl) | 4 × Lv 20 | 0.5 | 0.6 | 7.1 | 13.6 | 0.3 | 0.02 | 0.43 |
-| Temporal Tower (20 fl) | 4 × Lv 50 | 0.8 | 1.0 | 12.1 | 23.9 | 0.6 | 0.05 | 0.71 |
-| Distortion Rift (25 fl) | 2 × Lv 5 | 0.2 | 0.2 | 3.7 | 7.1 | 0.2 | 0.02 | 0.14 |
-| Distortion Rift (25 fl) | 2 × Lv 20 | 0.3 | 0.3 | 5.1 | 10.0 | 0.2 | 0.02 | 0.14 |
-| Distortion Rift (25 fl) | 4 × Lv 20 | 0.4 | 0.4 | 6.4 | 12.5 | 0.3 | 0.02 | 0.29 |
-| Distortion Rift (25 fl) | 4 × Lv 50 | 0.7 | 0.6 | 10.9 | 21.4 | 0.5 | 0.03 | 0.57 |
-| Viridian Forest (5 fl) | 2 × Lv 5 | 2.4 | 11.7 | 17.1 | 31.7 | 1.7 | 0.14 | 1.86 |
-| Viridian Forest (5 fl) | 2 × Lv 20 | 3.1 | 14.9 | 21.7 | 41.4 | 2.2 | 0.20 | 2.14 |
-| Viridian Forest (5 fl) | 4 × Lv 20 | 4.0 | 19.2 | 28.0 | 54.1 | 2.9 | 0.23 | 2.71 |
-| Viridian Forest (5 fl) | 4 × Lv 50 | 6.7 | 32.0 | 46.7 | 92.1 | 4.9 | 0.36 | 6.14 |
-| Mt. Moon (8 fl) | 2 × Lv 5 | 1.5 | 4.6 | 13.1 | 24.7 | 1.1 | 0.09 | 0.71 |
-| Mt. Moon (8 fl) | 2 × Lv 20 | 2.0 | 6.0 | 17.0 | 33.1 | 1.5 | 0.10 | 1.43 |
-| Mt. Moon (8 fl) | 4 × Lv 20 | 2.6 | 7.8 | 22.1 | 43.6 | 2.0 | 0.14 | 1.86 |
-| Mt. Moon (8 fl) | 4 × Lv 50 | 4.4 | 13.3 | 37.7 | 75.6 | 3.4 | 0.23 | 3.43 |
-| Rock Tunnel (10 fl) | 2 × Lv 5 | 1.0 | 2.5 | 9.7 | 18.4 | 0.7 | 0.07 | 1.00 |
-| Rock Tunnel (10 fl) | 2 × Lv 20 | 1.3 | 3.2 | 12.6 | 24.5 | 0.9 | 0.09 | 1.29 |
-| Rock Tunnel (10 fl) | 4 × Lv 20 | 1.7 | 4.2 | 16.5 | 32.1 | 1.3 | 0.11 | 1.29 |
-| Rock Tunnel (10 fl) | 4 × Lv 50 | 3.0 | 7.1 | 28.0 | 56.9 | 2.2 | 0.16 | 3.29 |
+| Sky Tower (18 fl) | 4 × Lv 50 | 1.1 | 1.5 | 14.7 | 29.3 | 0.9 | 0.08 | 1.71 |
+| Temporal Tower (20 fl) | 2 × Lv 5 | 0.3 | 0.4 | 4.1 | 8.0 | 0.2 | 0.02 | 0.29 |
+| Temporal Tower (20 fl) | 2 × Lv 20 | 0.4 | 0.5 | 5.4 | 10.7 | 0.3 | 0.01 | 0.29 |
+| Temporal Tower (20 fl) | 4 × Lv 20 | 0.5 | 0.6 | 7.1 | 14.1 | 0.4 | 0.02 | 0.43 |
+| Temporal Tower (20 fl) | 4 × Lv 50 | 0.8 | 1.0 | 12.1 | 24.6 | 0.6 | 0.05 | 0.71 |
+| Distortion Rift (25 fl) | 2 × Lv 5 | 0.2 | 0.2 | 3.7 | 7.5 | 0.2 | 0.02 | 0.14 |
+| Distortion Rift (25 fl) | 2 × Lv 20 | 0.3 | 0.3 | 5.1 | 10.3 | 0.2 | 0.02 | 0.14 |
+| Distortion Rift (25 fl) | 4 × Lv 20 | 0.4 | 0.4 | 6.4 | 12.7 | 0.3 | 0.02 | 0.29 |
+| Distortion Rift (25 fl) | 4 × Lv 50 | 0.7 | 0.6 | 10.9 | 21.9 | 0.5 | 0.03 | 0.57 |
+| Viridian Forest (5 fl) | 2 × Lv 5 | 2.4 | 11.7 | 17.1 | 33.5 | 1.8 | 0.14 | 1.86 |
+| Viridian Forest (5 fl) | 2 × Lv 20 | 3.1 | 14.9 | 21.7 | 43.7 | 2.3 | 0.20 | 2.29 |
+| Viridian Forest (5 fl) | 4 × Lv 20 | 4.0 | 19.2 | 28.0 | 57.1 | 3.0 | 0.23 | 3.14 |
+| Viridian Forest (5 fl) | 4 × Lv 50 | 6.7 | 32.0 | 46.7 | 97.1 | 5.2 | 0.37 | 6.29 |
+| Mt. Moon (8 fl) | 2 × Lv 5 | 1.5 | 4.6 | 13.1 | 26.1 | 1.1 | 0.10 | 0.71 |
+| Mt. Moon (8 fl) | 2 × Lv 20 | 2.0 | 6.0 | 17.0 | 34.9 | 1.5 | 0.11 | 1.43 |
+| Mt. Moon (8 fl) | 4 × Lv 20 | 2.6 | 7.8 | 22.1 | 45.9 | 2.0 | 0.16 | 1.86 |
+| Mt. Moon (8 fl) | 4 × Lv 50 | 4.4 | 13.3 | 37.7 | 79.8 | 3.4 | 0.26 | 3.43 |
+| Rock Tunnel (10 fl) | 2 × Lv 5 | 1.0 | 2.5 | 9.7 | 18.8 | 0.7 | 0.06 | 1.00 |
+| Rock Tunnel (10 fl) | 2 × Lv 20 | 1.3 | 3.2 | 12.6 | 25.1 | 1.0 | 0.08 | 1.43 |
+| Rock Tunnel (10 fl) | 4 × Lv 20 | 1.7 | 4.2 | 16.5 | 33.0 | 1.3 | 0.11 | 1.29 |
+| Rock Tunnel (10 fl) | 4 × Lv 50 | 3.0 | 7.1 | 28.0 | 58.2 | 2.3 | 0.17 | 3.29 |
 | Pokémon Tower (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.4 | 15.8 | 0.6 | 0.07 | 0.86 |
 | Pokémon Tower (12 fl) | 2 × Lv 20 | 1.0 | 2.1 | 10.8 | 20.8 | 0.8 | 0.08 | 0.86 |
 | Pokémon Tower (12 fl) | 4 × Lv 20 | 1.3 | 2.7 | 13.9 | 27.3 | 1.0 | 0.09 | 1.57 |
-| Pokémon Tower (12 fl) | 4 × Lv 50 | 2.2 | 4.4 | 23.3 | 45.9 | 1.7 | 0.14 | 2.43 |
-| Power Plant (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.5 | 16.1 | 0.6 | 0.04 | 1.29 |
-| Power Plant (12 fl) | 2 × Lv 20 | 1.1 | 2.1 | 11.2 | 21.7 | 0.8 | 0.05 | 1.71 |
-| Power Plant (12 fl) | 4 × Lv 20 | 1.4 | 2.8 | 14.5 | 28.5 | 1.1 | 0.07 | 2.43 |
-| Power Plant (12 fl) | 4 × Lv 50 | 2.4 | 4.7 | 24.8 | 49.4 | 1.8 | 0.15 | 3.86 |
-| Seafoam Islands (14 fl) | 2 × Lv 5 | 0.6 | 1.0 | 6.9 | 13.0 | 0.5 | 0.05 | 0.29 |
-| Seafoam Islands (14 fl) | 2 × Lv 20 | 0.8 | 1.3 | 8.8 | 16.9 | 0.6 | 0.08 | 0.43 |
-| Seafoam Islands (14 fl) | 4 × Lv 20 | 1.0 | 1.7 | 11.5 | 22.3 | 0.8 | 0.09 | 0.57 |
-| Seafoam Islands (14 fl) | 4 × Lv 50 | 1.7 | 2.9 | 19.2 | 38.1 | 1.2 | 0.13 | 1.57 |
-| Mt. Ember (16 fl) | 2 × Lv 5 | 0.5 | 0.7 | 6.0 | 11.7 | 0.3 | 0.03 | 0.29 |
-| Mt. Ember (16 fl) | 2 × Lv 20 | 0.6 | 1.0 | 7.8 | 15.4 | 0.4 | 0.04 | 0.43 |
-| Mt. Ember (16 fl) | 4 × Lv 20 | 0.8 | 1.3 | 10.3 | 20.2 | 0.6 | 0.05 | 0.43 |
-| Mt. Ember (16 fl) | 4 × Lv 50 | 1.4 | 2.1 | 17.6 | 35.9 | 1.0 | 0.08 | 0.71 |
-| Victory Road (18 fl) | 2 × Lv 5 | 0.4 | 0.5 | 5.4 | 10.5 | 0.3 | 0.02 | 0.14 |
+| Pokémon Tower (12 fl) | 4 × Lv 50 | 2.2 | 4.4 | 23.3 | 45.9 | 1.7 | 0.14 | 2.57 |
+| Power Plant (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.5 | 16.6 | 0.6 | 0.04 | 1.29 |
+| Power Plant (12 fl) | 2 × Lv 20 | 1.1 | 2.1 | 11.2 | 22.3 | 0.8 | 0.05 | 1.71 |
+| Power Plant (12 fl) | 4 × Lv 20 | 1.4 | 2.8 | 14.5 | 29.2 | 1.1 | 0.07 | 2.43 |
+| Power Plant (12 fl) | 4 × Lv 50 | 2.4 | 4.7 | 24.8 | 50.7 | 1.8 | 0.15 | 3.86 |
+| Seafoam Islands (14 fl) | 2 × Lv 5 | 0.6 | 1.0 | 6.9 | 13.3 | 0.5 | 0.06 | 0.29 |
+| Seafoam Islands (14 fl) | 2 × Lv 20 | 0.8 | 1.3 | 8.8 | 17.3 | 0.6 | 0.08 | 0.43 |
+| Seafoam Islands (14 fl) | 4 × Lv 20 | 1.0 | 1.7 | 11.5 | 22.7 | 0.8 | 0.08 | 0.57 |
+| Seafoam Islands (14 fl) | 4 × Lv 50 | 1.7 | 2.9 | 19.2 | 39.0 | 1.3 | 0.14 | 1.71 |
+| Mt. Ember (16 fl) | 2 × Lv 5 | 0.5 | 0.7 | 6.0 | 11.9 | 0.3 | 0.03 | 0.29 |
+| Mt. Ember (16 fl) | 2 × Lv 20 | 0.6 | 1.0 | 7.8 | 15.8 | 0.4 | 0.04 | 0.43 |
+| Mt. Ember (16 fl) | 4 × Lv 20 | 0.8 | 1.3 | 10.3 | 20.7 | 0.6 | 0.05 | 0.43 |
+| Mt. Ember (16 fl) | 4 × Lv 50 | 1.4 | 2.1 | 17.6 | 36.7 | 1.0 | 0.08 | 0.71 |
+| Victory Road (18 fl) | 2 × Lv 5 | 0.4 | 0.5 | 5.4 | 10.5 | 0.3 | 0.03 | 0.14 |
 | Victory Road (18 fl) | 2 × Lv 20 | 0.5 | 0.7 | 7.1 | 14.0 | 0.4 | 0.02 | 0.14 |
-| Victory Road (18 fl) | 4 × Lv 20 | 0.7 | 0.9 | 9.1 | 17.9 | 0.5 | 0.04 | 0.14 |
-| Victory Road (18 fl) | 4 × Lv 50 | 1.2 | 1.6 | 15.9 | 32.6 | 0.8 | 0.08 | 0.43 |
-| Cerulean Cave (20 fl) | 2 × Lv 5 | 0.3 | 0.4 | 4.1 | 7.9 | 0.2 | 0.01 | 0.14 |
-| Cerulean Cave (20 fl) | 2 × Lv 20 | 0.4 | 0.5 | 5.4 | 10.6 | 0.3 | 0.01 | 0.14 |
-| Cerulean Cave (20 fl) | 4 × Lv 20 | 0.5 | 0.6 | 7.1 | 13.9 | 0.4 | 0.01 | 0.14 |
-| Cerulean Cave (20 fl) | 4 × Lv 50 | 0.8 | 1.0 | 12.1 | 23.6 | 0.6 | 0.04 | 0.86 |
-| Sprout Tower (5 fl) | 2 × Lv 5 | 2.4 | 11.7 | 17.1 | 31.9 | 1.7 | 0.18 | 2.14 |
-| Sprout Tower (5 fl) | 2 × Lv 20 | 3.1 | 14.9 | 21.7 | 42.1 | 2.2 | 0.22 | 2.86 |
-| Sprout Tower (5 fl) | 4 × Lv 20 | 4.0 | 19.2 | 28.0 | 54.5 | 2.8 | 0.29 | 4.00 |
-| Sprout Tower (5 fl) | 4 × Lv 50 | 6.7 | 32.0 | 46.7 | 92.6 | 4.9 | 0.48 | 7.71 |
-| Ilex Forest (8 fl) | 2 × Lv 5 | 1.5 | 4.6 | 13.0 | 24.4 | 1.0 | 0.10 | 0.86 |
-| Ilex Forest (8 fl) | 2 × Lv 20 | 1.9 | 5.8 | 16.5 | 32.5 | 1.4 | 0.14 | 1.00 |
-| Ilex Forest (8 fl) | 4 × Lv 20 | 2.5 | 7.5 | 21.2 | 42.2 | 1.7 | 0.17 | 1.00 |
-| Ilex Forest (8 fl) | 4 × Lv 50 | 4.2 | 12.5 | 35.4 | 70.3 | 3.0 | 0.26 | 1.57 |
-| Union Cave (10 fl) | 2 × Lv 5 | 1.0 | 2.5 | 9.7 | 18.5 | 0.8 | 0.07 | 0.86 |
-| Union Cave (10 fl) | 2 × Lv 20 | 1.3 | 3.2 | 12.6 | 25.1 | 1.0 | 0.10 | 1.43 |
-| Union Cave (10 fl) | 4 × Lv 20 | 1.7 | 4.2 | 16.5 | 32.6 | 1.3 | 0.13 | 1.57 |
-| Union Cave (10 fl) | 4 × Lv 50 | 3.0 | 7.1 | 28.0 | 56.4 | 2.3 | 0.20 | 2.57 |
-| Ruins of Alph (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.5 | 16.2 | 0.7 | 0.02 | 0.86 |
-| Ruins of Alph (12 fl) | 2 × Lv 20 | 1.1 | 2.1 | 11.2 | 22.4 | 0.9 | 0.04 | 1.29 |
-| Ruins of Alph (12 fl) | 4 × Lv 20 | 1.4 | 2.8 | 14.5 | 28.7 | 1.1 | 0.05 | 1.43 |
-| Ruins of Alph (12 fl) | 4 × Lv 50 | 2.4 | 4.7 | 24.8 | 49.5 | 1.9 | 0.10 | 2.43 |
+| Victory Road (18 fl) | 4 × Lv 20 | 0.7 | 0.9 | 9.1 | 17.9 | 0.5 | 0.03 | 0.14 |
+| Victory Road (18 fl) | 4 × Lv 50 | 1.2 | 1.6 | 15.9 | 32.5 | 0.9 | 0.08 | 0.43 |
+| Cerulean Cave (20 fl) | 2 × Lv 5 | 0.3 | 0.4 | 4.1 | 8.1 | 0.2 | 0.01 | 0.14 |
+| Cerulean Cave (20 fl) | 2 × Lv 20 | 0.4 | 0.5 | 5.4 | 10.9 | 0.3 | 0.01 | 0.14 |
+| Cerulean Cave (20 fl) | 4 × Lv 20 | 0.5 | 0.6 | 7.1 | 14.4 | 0.4 | 0.01 | 0.14 |
+| Cerulean Cave (20 fl) | 4 × Lv 50 | 0.8 | 1.0 | 12.1 | 24.3 | 0.6 | 0.04 | 0.86 |
+| Sprout Tower (5 fl) | 2 × Lv 5 | 2.4 | 11.7 | 17.1 | 32.9 | 1.7 | 0.23 | 2.43 |
+| Sprout Tower (5 fl) | 2 × Lv 20 | 3.1 | 14.9 | 21.7 | 43.3 | 2.2 | 0.24 | 3.00 |
+| Sprout Tower (5 fl) | 4 × Lv 20 | 4.0 | 19.2 | 28.0 | 56.0 | 2.8 | 0.31 | 4.00 |
+| Sprout Tower (5 fl) | 4 × Lv 50 | 6.7 | 32.0 | 46.7 | 95.1 | 4.9 | 0.54 | 7.71 |
+| Ilex Forest (8 fl) | 2 × Lv 5 | 1.5 | 4.6 | 13.0 | 25.1 | 1.0 | 0.10 | 0.86 |
+| Ilex Forest (8 fl) | 2 × Lv 20 | 1.9 | 5.8 | 16.5 | 33.4 | 1.4 | 0.14 | 1.14 |
+| Ilex Forest (8 fl) | 4 × Lv 20 | 2.5 | 7.5 | 21.2 | 43.3 | 1.7 | 0.17 | 1.14 |
+| Ilex Forest (8 fl) | 4 × Lv 50 | 4.2 | 12.5 | 35.4 | 72.2 | 3.0 | 0.26 | 2.00 |
+| Union Cave (10 fl) | 2 × Lv 5 | 1.0 | 2.5 | 9.7 | 19.6 | 0.8 | 0.07 | 0.86 |
+| Union Cave (10 fl) | 2 × Lv 20 | 1.3 | 3.2 | 12.6 | 26.5 | 1.0 | 0.10 | 1.43 |
+| Union Cave (10 fl) | 4 × Lv 20 | 1.7 | 4.2 | 16.5 | 34.5 | 1.3 | 0.13 | 1.57 |
+| Union Cave (10 fl) | 4 × Lv 50 | 3.0 | 7.1 | 28.0 | 59.5 | 2.3 | 0.20 | 2.57 |
+| Ruins of Alph (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.5 | 16.5 | 0.7 | 0.02 | 0.86 |
+| Ruins of Alph (12 fl) | 2 × Lv 20 | 1.1 | 2.1 | 11.2 | 22.9 | 0.9 | 0.04 | 1.43 |
+| Ruins of Alph (12 fl) | 4 × Lv 20 | 1.4 | 2.8 | 14.5 | 29.3 | 1.2 | 0.05 | 1.71 |
+| Ruins of Alph (12 fl) | 4 × Lv 50 | 2.4 | 4.7 | 24.8 | 50.7 | 1.9 | 0.10 | 2.43 |
 | Slowpoke Well (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.4 | 16.2 | 0.6 | 0.04 | 0.57 |
 | Slowpoke Well (12 fl) | 2 × Lv 20 | 1.0 | 2.1 | 10.8 | 20.7 | 0.8 | 0.05 | 0.86 |
 | Slowpoke Well (12 fl) | 4 × Lv 20 | 1.3 | 2.7 | 13.9 | 26.9 | 1.0 | 0.07 | 1.14 |
 | Slowpoke Well (12 fl) | 4 × Lv 50 | 2.2 | 4.4 | 23.3 | 45.5 | 1.6 | 0.15 | 2.14 |
-| Mt. Mortar (14 fl) | 2 × Lv 5 | 0.6 | 1.1 | 6.9 | 13.2 | 0.5 | 0.05 | 0.71 |
-| Mt. Mortar (14 fl) | 2 × Lv 20 | 0.8 | 1.4 | 9.0 | 17.9 | 0.6 | 0.06 | 0.86 |
-| Mt. Mortar (14 fl) | 4 × Lv 20 | 1.0 | 1.8 | 11.8 | 23.5 | 0.8 | 0.09 | 1.14 |
-| Mt. Mortar (14 fl) | 4 × Lv 50 | 1.8 | 3.0 | 20.3 | 40.7 | 1.3 | 0.14 | 1.57 |
-| Burned Tower (16 fl) | 2 × Lv 5 | 0.5 | 0.7 | 6.0 | 11.5 | 0.4 | 0.02 | 0.29 |
-| Burned Tower (16 fl) | 2 × Lv 20 | 0.6 | 0.9 | 7.5 | 14.9 | 0.4 | 0.02 | 0.43 |
-| Burned Tower (16 fl) | 4 × Lv 20 | 0.8 | 1.2 | 9.8 | 19.5 | 0.6 | 0.02 | 0.86 |
-| Burned Tower (16 fl) | 4 × Lv 50 | 1.3 | 2.0 | 16.7 | 33.4 | 1.0 | 0.07 | 1.57 |
-| Whirl Islands (18 fl) | 2 × Lv 5 | 0.4 | 0.5 | 5.3 | 10.3 | 0.3 | 0.04 | 0.14 |
-| Whirl Islands (18 fl) | 2 × Lv 20 | 0.5 | 0.7 | 6.9 | 13.4 | 0.3 | 0.05 | 0.14 |
-| Whirl Islands (18 fl) | 4 × Lv 20 | 0.7 | 0.9 | 8.8 | 17.5 | 0.5 | 0.05 | 0.14 |
-| Whirl Islands (18 fl) | 4 × Lv 50 | 1.1 | 1.5 | 14.7 | 29.3 | 0.8 | 0.09 | 0.71 |
-| Tin Tower (20 fl) | 2 × Lv 5 | 0.3 | 0.4 | 4.1 | 7.8 | 0.2 | 0.03 | 0.29 |
-| Tin Tower (20 fl) | 2 × Lv 20 | 0.4 | 0.5 | 5.4 | 11.2 | 0.2 | 0.04 | 0.43 |
-| Tin Tower (20 fl) | 4 × Lv 20 | 0.5 | 0.6 | 7.1 | 14.4 | 0.3 | 0.04 | 0.43 |
-| Tin Tower (20 fl) | 4 × Lv 50 | 0.8 | 1.0 | 12.1 | 24.8 | 0.6 | 0.07 | 0.86 |
-| Petalburg Woods (5 fl) | 2 × Lv 5 | 2.4 | 11.7 | 17.1 | 31.7 | 1.8 | 0.13 | 2.71 |
-| Petalburg Woods (5 fl) | 2 × Lv 20 | 3.1 | 14.9 | 21.7 | 41.5 | 2.4 | 0.16 | 4.14 |
-| Petalburg Woods (5 fl) | 4 × Lv 20 | 4.0 | 19.2 | 28.0 | 53.5 | 3.0 | 0.24 | 4.71 |
-| Petalburg Woods (5 fl) | 4 × Lv 50 | 6.7 | 32.0 | 46.7 | 91.5 | 5.0 | 0.38 | 8.57 |
-| Granite Cave (8 fl) | 2 × Lv 5 | 1.5 | 4.6 | 13.1 | 24.8 | 1.2 | 0.10 | 0.57 |
-| Granite Cave (8 fl) | 2 × Lv 20 | 2.0 | 6.0 | 17.0 | 33.0 | 1.5 | 0.13 | 1.00 |
-| Granite Cave (8 fl) | 4 × Lv 20 | 2.6 | 7.8 | 22.1 | 43.7 | 1.9 | 0.14 | 1.71 |
-| Granite Cave (8 fl) | 4 × Lv 50 | 4.4 | 13.3 | 37.7 | 75.5 | 3.5 | 0.26 | 3.43 |
+| Mt. Mortar (14 fl) | 2 × Lv 5 | 0.6 | 1.1 | 6.9 | 13.9 | 0.5 | 0.05 | 0.71 |
+| Mt. Mortar (14 fl) | 2 × Lv 20 | 0.8 | 1.4 | 9.0 | 18.8 | 0.6 | 0.06 | 1.00 |
+| Mt. Mortar (14 fl) | 4 × Lv 20 | 1.0 | 1.8 | 11.8 | 24.8 | 0.8 | 0.08 | 1.29 |
+| Mt. Mortar (14 fl) | 4 × Lv 50 | 1.8 | 3.0 | 20.3 | 42.9 | 1.4 | 0.13 | 1.71 |
+| Burned Tower (16 fl) | 2 × Lv 5 | 0.5 | 0.7 | 6.0 | 12.2 | 0.4 | 0.02 | 0.29 |
+| Burned Tower (16 fl) | 2 × Lv 20 | 0.6 | 0.9 | 7.5 | 15.7 | 0.5 | 0.03 | 0.43 |
+| Burned Tower (16 fl) | 4 × Lv 20 | 0.8 | 1.2 | 9.8 | 20.6 | 0.6 | 0.03 | 0.86 |
+| Burned Tower (16 fl) | 4 × Lv 50 | 1.3 | 2.0 | 16.7 | 35.2 | 1.0 | 0.08 | 1.57 |
+| Whirl Islands (18 fl) | 2 × Lv 5 | 0.4 | 0.5 | 5.3 | 10.9 | 0.3 | 0.04 | 0.14 |
+| Whirl Islands (18 fl) | 2 × Lv 20 | 0.5 | 0.7 | 6.9 | 14.1 | 0.4 | 0.05 | 0.14 |
+| Whirl Islands (18 fl) | 4 × Lv 20 | 0.7 | 0.9 | 8.8 | 18.4 | 0.5 | 0.05 | 0.14 |
+| Whirl Islands (18 fl) | 4 × Lv 50 | 1.1 | 1.5 | 14.7 | 31.0 | 0.8 | 0.10 | 0.71 |
+| Tin Tower (20 fl) | 2 × Lv 5 | 0.3 | 0.4 | 4.1 | 8.2 | 0.2 | 0.03 | 0.29 |
+| Tin Tower (20 fl) | 2 × Lv 20 | 0.4 | 0.5 | 5.4 | 11.9 | 0.2 | 0.04 | 0.43 |
+| Tin Tower (20 fl) | 4 × Lv 20 | 0.5 | 0.6 | 7.1 | 15.2 | 0.3 | 0.04 | 0.43 |
+| Tin Tower (20 fl) | 4 × Lv 50 | 0.8 | 1.0 | 12.1 | 26.2 | 0.6 | 0.08 | 0.86 |
+| Petalburg Woods (5 fl) | 2 × Lv 5 | 2.4 | 11.7 | 17.1 | 32.5 | 1.8 | 0.13 | 2.71 |
+| Petalburg Woods (5 fl) | 2 × Lv 20 | 3.1 | 14.9 | 21.7 | 42.5 | 2.4 | 0.16 | 4.14 |
+| Petalburg Woods (5 fl) | 4 × Lv 20 | 4.0 | 19.2 | 28.0 | 54.8 | 3.0 | 0.24 | 4.71 |
+| Petalburg Woods (5 fl) | 4 × Lv 50 | 6.7 | 32.0 | 46.7 | 93.7 | 5.0 | 0.38 | 8.57 |
+| Granite Cave (8 fl) | 2 × Lv 5 | 1.5 | 4.6 | 13.1 | 24.7 | 1.2 | 0.10 | 0.57 |
+| Granite Cave (8 fl) | 2 × Lv 20 | 2.0 | 6.0 | 17.0 | 33.0 | 1.5 | 0.13 | 1.14 |
+| Granite Cave (8 fl) | 4 × Lv 20 | 2.6 | 7.8 | 22.1 | 43.7 | 2.0 | 0.15 | 1.86 |
+| Granite Cave (8 fl) | 4 × Lv 50 | 4.4 | 13.3 | 37.7 | 75.6 | 3.6 | 0.27 | 3.43 |
 | Meteor Falls (10 fl) | 2 × Lv 5 | 1.0 | 2.5 | 9.7 | 18.4 | 0.7 | 0.06 | 0.43 |
 | Meteor Falls (10 fl) | 2 × Lv 20 | 1.3 | 3.2 | 12.6 | 24.6 | 1.0 | 0.08 | 0.57 |
 | Meteor Falls (10 fl) | 4 × Lv 20 | 1.7 | 4.2 | 16.5 | 32.3 | 1.3 | 0.10 | 0.71 |
-| Meteor Falls (10 fl) | 4 × Lv 50 | 3.0 | 7.1 | 28.0 | 55.8 | 2.2 | 0.17 | 2.00 |
-| Mt. Chimney (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.5 | 16.3 | 0.6 | 0.07 | 0.29 |
-| Mt. Chimney (12 fl) | 2 × Lv 20 | 1.1 | 2.1 | 11.2 | 21.8 | 0.8 | 0.09 | 0.71 |
-| Mt. Chimney (12 fl) | 4 × Lv 20 | 1.4 | 2.8 | 14.5 | 28.6 | 1.0 | 0.13 | 1.43 |
-| Mt. Chimney (12 fl) | 4 × Lv 50 | 2.4 | 4.7 | 24.8 | 50.2 | 1.7 | 0.21 | 3.14 |
-| Shoal Cave (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.4 | 16.1 | 0.6 | 0.05 | 0.43 |
-| Shoal Cave (12 fl) | 2 × Lv 20 | 1.0 | 2.1 | 10.8 | 21.4 | 0.8 | 0.05 | 0.71 |
-| Shoal Cave (12 fl) | 4 × Lv 20 | 1.3 | 2.7 | 13.9 | 27.8 | 1.0 | 0.08 | 0.71 |
-| Shoal Cave (12 fl) | 4 × Lv 50 | 2.2 | 4.4 | 23.3 | 46.6 | 1.7 | 0.16 | 1.43 |
+| Meteor Falls (10 fl) | 4 × Lv 50 | 3.0 | 7.1 | 28.0 | 55.8 | 2.2 | 0.18 | 2.00 |
+| Mt. Chimney (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.5 | 17.2 | 0.6 | 0.07 | 0.43 |
+| Mt. Chimney (12 fl) | 2 × Lv 20 | 1.1 | 2.1 | 11.2 | 23.0 | 0.8 | 0.09 | 0.71 |
+| Mt. Chimney (12 fl) | 4 × Lv 20 | 1.4 | 2.8 | 14.5 | 30.2 | 1.0 | 0.13 | 1.71 |
+| Mt. Chimney (12 fl) | 4 × Lv 50 | 2.4 | 4.7 | 24.8 | 52.9 | 1.7 | 0.21 | 3.57 |
+| Shoal Cave (12 fl) | 2 × Lv 5 | 0.8 | 1.6 | 8.4 | 16.1 | 0.6 | 0.06 | 0.43 |
+| Shoal Cave (12 fl) | 2 × Lv 20 | 1.0 | 2.1 | 10.8 | 21.4 | 0.9 | 0.06 | 0.71 |
+| Shoal Cave (12 fl) | 4 × Lv 20 | 1.3 | 2.7 | 13.9 | 27.8 | 1.0 | 0.09 | 0.71 |
+| Shoal Cave (12 fl) | 4 × Lv 50 | 2.2 | 4.4 | 23.3 | 46.6 | 1.8 | 0.20 | 1.29 |
 | Seafloor Cavern (14 fl) | 2 × Lv 5 | 0.6 | 1.0 | 6.9 | 13.2 | 0.5 | 0.02 | 0.71 |
 | Seafloor Cavern (14 fl) | 2 × Lv 20 | 0.8 | 1.3 | 8.8 | 17.1 | 0.6 | 0.05 | 1.00 |
-| Seafloor Cavern (14 fl) | 4 × Lv 20 | 1.0 | 1.7 | 11.5 | 22.9 | 0.7 | 0.07 | 1.29 |
-| Seafloor Cavern (14 fl) | 4 × Lv 50 | 1.7 | 2.9 | 19.2 | 38.0 | 1.2 | 0.08 | 2.14 |
-| Cave of Origin (16 fl) | 2 × Lv 5 | 0.5 | 0.7 | 6.0 | 11.6 | 0.4 | 0.05 | 0.43 |
-| Cave of Origin (16 fl) | 2 × Lv 20 | 0.6 | 1.0 | 7.8 | 15.4 | 0.5 | 0.07 | 0.57 |
-| Cave of Origin (16 fl) | 4 × Lv 20 | 0.8 | 1.3 | 10.3 | 20.8 | 0.6 | 0.08 | 0.71 |
-| Cave of Origin (16 fl) | 4 × Lv 50 | 1.4 | 2.1 | 17.6 | 35.5 | 1.1 | 0.11 | 0.86 |
-| Victory Road (Hoenn) (18 fl) | 2 × Lv 5 | 0.4 | 0.5 | 5.4 | 10.5 | 0.3 | 0.02 | 0.14 |
-| Victory Road (Hoenn) (18 fl) | 2 × Lv 20 | 0.5 | 0.7 | 7.1 | 13.7 | 0.4 | 0.02 | 0.14 |
-| Victory Road (Hoenn) (18 fl) | 4 × Lv 20 | 0.7 | 0.9 | 9.1 | 17.8 | 0.5 | 0.03 | 0.57 |
-| Victory Road (Hoenn) (18 fl) | 4 × Lv 50 | 1.2 | 1.6 | 15.9 | 31.9 | 0.9 | 0.07 | 1.57 |
-| Sky Pillar (20 fl) | 2 × Lv 5 | 0.3 | 0.4 | 4.1 | 7.9 | 0.2 | 0.01 | 0.14 |
-| Sky Pillar (20 fl) | 2 × Lv 20 | 0.4 | 0.5 | 5.4 | 10.4 | 0.3 | 0.02 | 0.14 |
-| Sky Pillar (20 fl) | 4 × Lv 20 | 0.5 | 0.6 | 7.1 | 13.9 | 0.4 | 0.02 | 0.29 |
-| Sky Pillar (20 fl) | 4 × Lv 50 | 0.8 | 1.0 | 12.1 | 24.3 | 0.6 | 0.03 | 0.29 |
+| Seafloor Cavern (14 fl) | 4 × Lv 20 | 1.0 | 1.7 | 11.5 | 22.9 | 0.8 | 0.08 | 1.14 |
+| Seafloor Cavern (14 fl) | 4 × Lv 50 | 1.7 | 2.9 | 19.2 | 38.0 | 1.2 | 0.10 | 2.29 |
+| Cave of Origin (16 fl) | 2 × Lv 5 | 0.5 | 0.7 | 6.0 | 11.9 | 0.4 | 0.05 | 0.43 |
+| Cave of Origin (16 fl) | 2 × Lv 20 | 0.6 | 1.0 | 7.8 | 15.9 | 0.5 | 0.07 | 0.57 |
+| Cave of Origin (16 fl) | 4 × Lv 20 | 0.8 | 1.3 | 10.3 | 21.3 | 0.6 | 0.08 | 0.71 |
+| Cave of Origin (16 fl) | 4 × Lv 50 | 1.4 | 2.1 | 17.6 | 36.5 | 1.1 | 0.11 | 0.86 |
+| Victory Road (Hoenn) (18 fl) | 2 × Lv 5 | 0.4 | 0.5 | 5.4 | 10.8 | 0.3 | 0.02 | 0.14 |
+| Victory Road (Hoenn) (18 fl) | 2 × Lv 20 | 0.5 | 0.7 | 7.1 | 14.1 | 0.4 | 0.03 | 0.14 |
+| Victory Road (Hoenn) (18 fl) | 4 × Lv 20 | 0.7 | 0.9 | 9.1 | 18.2 | 0.5 | 0.02 | 0.57 |
+| Victory Road (Hoenn) (18 fl) | 4 × Lv 50 | 1.2 | 1.6 | 15.9 | 32.8 | 0.9 | 0.06 | 1.43 |
+| Sky Pillar (20 fl) | 2 × Lv 5 | 0.3 | 0.4 | 4.1 | 8.3 | 0.2 | 0.02 | 0.14 |
+| Sky Pillar (20 fl) | 2 × Lv 20 | 0.4 | 0.5 | 5.4 | 11.2 | 0.3 | 0.02 | 0.14 |
+| Sky Pillar (20 fl) | 4 × Lv 20 | 0.5 | 0.6 | 7.1 | 14.6 | 0.4 | 0.02 | 0.29 |
+| Sky Pillar (20 fl) | 4 × Lv 50 | 0.8 | 1.0 | 12.1 | 25.6 | 0.6 | 0.04 | 0.29 |
 
 The Kanto layer's dungeons are in the same table, so their Poké, XP and finds per hour can be compared with the home layer's at the same rank gate (Viridian Forest and Mt. Moon with Tiny Woods and Thunderwave Cave; Cerulean Cave with the Temporal Tower). The careers and the year below follow the home layer only.
 
@@ -158,29 +158,29 @@ The Kanto layer's dungeons are in the same table, so their Poké, XP and finds p
 
 | Opens | Team | Span | XP | Rank | Poké | Finds waiting | Rare Candies | Boxes |
 |---|---|---|---|---|---|---|---|---|
-| 1/day | 2 × Lv 10 | 30 d | 3179 | Silver | 7759 | 8 | 9 | 22 |
+| 1/day | 2 × Lv 10 | 30 d | 3179 | Silver | 7881 | 8 | 9 | 22 |
 |  | first reached |  | Normal d1, Bronze d2, Silver d13 |  |  |  |  |  |
-| 1/day | 2 × Lv 10 | 120 d | 10844 | Gold | 24779 | 35 | 13 | 71 |
+| 1/day | 2 × Lv 10 | 120 d | 10844 | Gold | 25225 | 34 | 13 | 73 |
 |  | first reached |  | Normal d1, Bronze d2, Silver d13, Gold d60 |  |  |  |  |  |
-| 1/day | 4 × Lv 30 | 30 d | 6687 | Gold | 14001 | 37 | 4 | 53 |
+| 1/day | 4 × Lv 30 | 30 d | 6687 | Gold | 14416 | 38 | 4 | 54 |
 |  | first reached |  | Bronze d1, Silver d7, Gold d27 |  |  |  |  |  |
-| 1/day | 4 × Lv 30 | 120 d | 26352 | Platinum | 56627 | 149 | 4 | 166 |
+| 1/day | 4 × Lv 30 | 120 d | 26352 | Platinum | 57883 | 149 | 4 | 176 |
 |  | first reached |  | Bronze d1, Silver d7, Gold d27, Platinum d91 |  |  |  |  |  |
-| 2/day | 2 × Lv 10 | 30 d | 6014 | Gold | 13500 | 21 | 9 | 48 |
+| 2/day | 2 × Lv 10 | 30 d | 6014 | Gold | 13583 | 22 | 9 | 48 |
 |  | first reached |  | Bronze d1, Silver d7, Gold d30 |  |  |  |  |  |
-| 2/day | 2 × Lv 10 | 120 d | 20309 | Platinum | 47263 | 80 | 19 | 127 |
+| 2/day | 2 × Lv 10 | 120 d | 20309 | Platinum | 47911 | 81 | 19 | 133 |
 |  | first reached |  | Bronze d1, Silver d7, Gold d30, Platinum d117 |  |  |  |  |  |
-| 2/day | 4 × Lv 30 | 30 d | 13242 | Gold | 27658 | 61 | 4 | 81 |
+| 2/day | 4 × Lv 30 | 30 d | 13242 | Gold | 28475 | 63 | 4 | 84 |
 |  | first reached |  | Bronze d1, Silver d4, Gold d14 |  |  |  |  |  |
-| 2/day | 4 × Lv 30 | 120 d | 52572 | Platinum | 116653 | 292 | 4 | 325 |
+| 2/day | 4 × Lv 30 | 120 d | 52572 | Platinum | 119135 | 299 | 4 | 342 |
 |  | first reached |  | Bronze d1, Silver d4, Gold d14, Platinum d46 |  |  |  |  |  |
-| 4/day | 2 × Lv 10 | 30 d | 6288 | Gold | 15102 | 35 | 13 | 47 |
+| 4/day | 2 × Lv 10 | 30 d | 6288 | Gold | 15180 | 35 | 13 | 46 |
 |  | first reached |  | Bronze d1, Silver d7, Gold d29 |  |  |  |  |  |
-| 4/day | 2 × Lv 10 | 120 d | 20907 | Platinum | 48697 | 106 | 19 | 110 |
+| 4/day | 2 × Lv 10 | 120 d | 20907 | Platinum | 49104 | 111 | 19 | 108 |
 |  | first reached |  | Bronze d1, Silver d7, Gold d29, Platinum d113 |  |  |  |  |  |
-| 4/day | 4 × Lv 30 | 30 d | 10619 | Gold | 24328 | 34 | 13 | 66 |
+| 4/day | 4 × Lv 30 | 30 d | 10619 | Gold | 24748 | 35 | 13 | 66 |
 |  | first reached |  | Bronze d1, Silver d4, Gold d15 |  |  |  |  |  |
-| 4/day | 4 × Lv 30 | 120 d | 34003 | Platinum | 79168 | 134 | 19 | 171 |
+| 4/day | 4 × Lv 30 | 120 d | 34003 | Platinum | 80463 | 137 | 19 | 174 |
 |  | first reached |  | Bronze d1, Silver d4, Gold d15, Platinum d61 |  |  |  |  |  |
 
 ## A year of play (one team; missions, research, facilities, Café, Swap Shop, Dojo and shop played)
@@ -189,11 +189,11 @@ Rare Candies: **free** is milestones, jobs and research; **boxes** is the expect
 
 | Player | Rank | XP | Species found | Free candies | Box candies | Bought | Poké earned | Facilities | Shop | Jobs claimed | Skills (E/F/S) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1/day, 2 × Lv 10 | Diamond | 80065 | 48 | 53 | 62 | 9 | 164808 | 121000 | 40500 | 255 | 10/10/10 |
-| 2/day, 4 × Lv 30 | Diamond | 259493 | 64 | 81 | 233 | 33 | 470636 | 121000 | 346500 | 516 | 10/10/10 |
-| 2/day, 4 × Lv 30, Café | Diamond | 268636 | 64 | 81 | 254 | 33 | 470536 | 121000 | 346500 | 515 | 10/10/10 |
-| 4/day, 4 × Lv 30, Café | Diamond | 252216 | 66 | 97 | 184 | 31 | 441849 | 121000 | 310000 | 603 | 10/10/10 |
-| 2/day, 4 × Lv 30, Café, Dojo | Diamond | 268636 | 64 | 81 | 254 | 33 | 470536 | 121000 | 346500 | 515 | 10/10/10 |
+| 1/day, 2 × Lv 10 | Diamond | 78741 | 47 | 53 | 59 | 9 | 162919 | 121000 | 40500 | 249 | 10/10/10 |
+| 2/day, 4 × Lv 30 | Diamond | 259288 | 63 | 80 | 242 | 33 | 473781 | 121000 | 346500 | 517 | 10/10/10 |
+| 2/day, 4 × Lv 30, Café | Diamond | 268438 | 63 | 80 | 260 | 33 | 473681 | 121000 | 346500 | 516 | 10/10/10 |
+| 4/day, 4 × Lv 30, Café | Diamond | 251740 | 62 | 97 | 191 | 31 | 446004 | 121000 | 310000 | 615 | 10/10/10 |
+| 2/day, 4 × Lv 30, Café, Dojo | Diamond | 268438 | 63 | 80 | 260 | 33 | 473681 | 121000 | 346500 | 516 | 10/10/10 |
 
 ### Jobs, the Swap Shop and the Dojo over that year
 
@@ -201,18 +201,18 @@ Jobs: ordinary jobs wait 7 days, daily ones 1. **Job Poké and XP** are what cla
 
 | Player | Jobs claimed | Explore | Find items | Rescue | Deliver | Escort | Defeat | Job Poké | Poké share | Job XP | XP share | Job candies | Delivered | Missed | Swaps | Dojo sessions | Dojo Poké |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1/day, 2 × Lv 10 | 255 | 175 | 42 | 7 | 31 | 0 | 0 | 64470 | 39% | 32331 | 40% | 6 | 31 | 0 | 0 | 0 | 0 |
-| 2/day, 4 × Lv 30 | 516 | 312 | 117 | 7 | 40 | 40 | 0 | 133220 | 28% | 65160 | 25% | 24 | 40 | 0 | 0 | 0 | 0 |
-| 2/day, 4 × Lv 30, Café | 515 | 312 | 116 | 7 | 40 | 40 | 0 | 133120 | 28% | 65120 | 24% | 24 | 40 | 0 | 0 | 0 | 0 |
-| 4/day, 4 × Lv 30, Café | 603 | 343 | 165 | 7 | 44 | 44 | 0 | 158695 | 36% | 76639 | 30% | 40 | 44 | 0 | 0 | 0 | 0 |
-| 2/day, 4 × Lv 30, Café, Dojo | 515 | 312 | 116 | 7 | 40 | 40 | 0 | 133120 | 28% | 65120 | 24% | 24 | 40 | 0 | 0 | 4 | 800 |
+| 1/day, 2 × Lv 10 | 249 | 175 | 40 | 7 | 27 | 0 | 0 | 63875 | 39% | 32034 | 41% | 6 | 27 | 0 | 0 | 0 | 0 |
+| 2/day, 4 × Lv 30 | 517 | 311 | 119 | 7 | 40 | 40 | 0 | 132520 | 28% | 64840 | 25% | 23 | 40 | 0 | 0 | 0 | 0 |
+| 2/day, 4 × Lv 30, Café | 516 | 311 | 118 | 7 | 40 | 40 | 0 | 132420 | 28% | 64800 | 24% | 23 | 40 | 0 | 0 | 0 | 0 |
+| 4/day, 4 × Lv 30, Café | 615 | 349 | 175 | 7 | 42 | 42 | 0 | 160075 | 36% | 77249 | 31% | 40 | 42 | 0 | 0 | 0 | 0 |
+| 2/day, 4 × Lv 30, Café, Dojo | 516 | 311 | 118 | 7 | 40 | 40 | 0 | 132420 | 28% | 64800 | 24% | 23 | 40 | 0 | 0 | 4 | 800 |
 
 ### When things happen (day number)
 
-- **1/day, 2 × Lv 10:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d2, Rank Bronze d4, Story chapter 2 d4, Tiny Woods cleared d5, Mt. Steel cleared d7, Rank Silver d9, Story chapter 3 d9, Waterfall Cave cleared d13, Rank Gold d23, Story chapter 4 d23, Glacier Palace cleared d26, Rank Platinum d78, Story chapter 5 d78, Ancient Ruins cleared d89, Sky Tower cleared d105, Camp maxed d139, Rank Diamond d275, Story chapter 6 d275, Research Lab maxed d276, Guardian faced d286, Temporal Tower cleared d286, All skills at the top d357
-- **2/day, 4 × Lv 30:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Rank Bronze d2, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 3 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d8, Story chapter 4 d8, Glacier Palace cleared d9, Rank Platinum d27, Story chapter 5 d27, Ancient Ruins cleared d30, Sky Tower cleared d32, Camp maxed d45, Research Lab maxed d80, Rank Diamond d83, Story chapter 6 d83, Guardian faced d85, Temporal Tower cleared d85, Distortion Rift cleared d88, All skills at the top d92
-- **2/day, 4 × Lv 30, Café:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Rank Bronze d2, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 3 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d8, Story chapter 4 d8, Glacier Palace cleared d9, Rank Platinum d27, Story chapter 5 d27, Ancient Ruins cleared d30, Sky Tower cleared d32, Camp maxed d45, Rank Diamond d80, Story chapter 6 d80, Research Lab maxed d80, Guardian faced d85, Temporal Tower cleared d85, Distortion Rift cleared d88, All skills at the top d92
-- **4/day, 4 × Lv 30, Café:** Rank Bronze d1, Story chapter 2 d1, Tiny Woods cleared d1, Thunderwave Cave cleared d1, Rank Silver d2, Story chapter 3 d2, Mt. Steel cleared d2, Waterfall Cave cleared d3, Rank Gold d6, Story chapter 4 d6, Glacier Palace cleared d7, Rank Platinum d28, Story chapter 5 d28, Ancient Ruins cleared d30, Sky Tower cleared d31, Camp maxed d48, Rank Diamond d84, Story chapter 6 d84, Guardian faced d85, Temporal Tower cleared d85, Research Lab maxed d85, Distortion Rift cleared d96, All skills at the top d122
-- **2/day, 4 × Lv 30, Café, Dojo:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Rank Bronze d2, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 3 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d8, Story chapter 4 d8, Glacier Palace cleared d9, Rank Platinum d27, Story chapter 5 d27, Ancient Ruins cleared d30, Sky Tower cleared d32, Camp maxed d45, Rank Diamond d80, Story chapter 6 d80, Research Lab maxed d80, All skills at the top d81, Guardian faced d85, Temporal Tower cleared d85, Distortion Rift cleared d88
+- **1/day, 2 × Lv 10:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d2, Rank Bronze d4, Story chapter 2 d4, Tiny Woods cleared d5, Mt. Steel cleared d7, Rank Silver d9, Story chapter 3 d9, Waterfall Cave cleared d13, Rank Gold d23, Story chapter 4 d23, Glacier Palace cleared d26, Rank Platinum d77, Story chapter 5 d77, Ancient Ruins cleared d88, Sky Tower cleared d93, Camp maxed d140, Research Lab maxed d257, Rank Diamond d274, Story chapter 6 d274, Guardian faced d343, Temporal Tower cleared d343, All skills at the top d358
+- **2/day, 4 × Lv 30:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Rank Bronze d2, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 3 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d8, Story chapter 4 d8, Glacier Palace cleared d9, Rank Platinum d27, Story chapter 5 d27, Ancient Ruins cleared d30, Sky Tower cleared d31, Camp maxed d45, Research Lab maxed d82, Rank Diamond d83, Story chapter 6 d83, Guardian faced d86, Temporal Tower cleared d86, Distortion Rift cleared d88, All skills at the top d93
+- **2/day, 4 × Lv 30, Café:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Rank Bronze d2, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 3 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d8, Story chapter 4 d8, Glacier Palace cleared d9, Rank Platinum d26, Story chapter 5 d26, Ancient Ruins cleared d30, Sky Tower cleared d31, Camp maxed d45, Rank Diamond d82, Story chapter 6 d82, Research Lab maxed d82, Guardian faced d86, Temporal Tower cleared d86, Distortion Rift cleared d88, All skills at the top d93
+- **4/day, 4 × Lv 30, Café:** Rank Bronze d1, Story chapter 2 d1, Tiny Woods cleared d1, Thunderwave Cave cleared d1, Rank Silver d2, Story chapter 3 d2, Mt. Steel cleared d2, Waterfall Cave cleared d3, Rank Gold d6, Story chapter 4 d6, Glacier Palace cleared d7, Rank Platinum d28, Story chapter 5 d28, Ancient Ruins cleared d30, Sky Tower cleared d31, Camp maxed d50, Rank Diamond d82, Story chapter 6 d82, Guardian faced d85, Temporal Tower cleared d85, Research Lab maxed d85, Distortion Rift cleared d94, All skills at the top d116
+- **2/day, 4 × Lv 30, Café, Dojo:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Rank Bronze d2, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 3 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d8, Story chapter 4 d8, Glacier Palace cleared d9, Rank Platinum d26, Story chapter 5 d26, Ancient Ruins cleared d30, Sky Tower cleared d31, Camp maxed d45, Rank Diamond d82, Story chapter 6 d82, All skills at the top d82, Research Lab maxed d82, Guardian faced d86, Temporal Tower cleared d86, Distortion Rift cleared d88
 
 Rank XP: Normal 0, Bronze 300, Silver 1500, Gold 6000, Platinum 20000, Diamond 60000.
