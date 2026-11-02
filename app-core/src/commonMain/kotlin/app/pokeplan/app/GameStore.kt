@@ -1272,6 +1272,12 @@ class GameStore(
         return true
     }
 
+    /** Counts a story scene as watched to its end (only the record: replaying grants nothing). */
+    fun worldSceneDone(id: String) { if (id !in data.world.scenesDone) update { it.copy(world = it.world.copy(scenesDone = it.world.scenesDone + id)) } }
+
+    /** Counts a chapter's episode as watched to its end. */
+    fun worldEpisodeDone(key: String) { if (key !in data.world.episodesDone) update { it.copy(world = it.world.copy(episodesDone = it.world.episodesDone + key)) } }
+
     /** The next World moment to show (a new rank, a chapter opening) or null; first counts what an older save already reached as seen. */
     fun worldMoment(): app.pokeplan.world.WorldMoment? {
         val adopted = app.pokeplan.world.WorldMoments.adopted(data.world)
