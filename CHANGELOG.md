@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.116.0
+
+- **World: the Story archive** (a small button on the World landing): every rank reached, every story chapter opened (by layer) and every legendary Pokémon that joined, each with a play button to **watch its cutscene again**. Playing one again changes nothing. Chapters not opened yet are not listed, so nothing is given away. **New scene:** a legendary quest completing (Zapdos, Dialga, Giratina...) now plays a scene of its own (the Pokémon and its cry, what it gives), once, like ranks and chapters; a save from before counts the legends it already has as seen.
+
 ## 0.115.0
 
 - **World: the Sinnoh layer** (fifth button on the Map's layer switch, open from the first day): nine dungeons from Diamond, Pearl and Platinum (Eterna Forest, Oreburgh Mine, Wayward Cave, Old Chateau, Iron Island, Mt. Coronet, Victory Road, Spear Pillar and the Distortion World) with wild tables from the Sinnoh dex, a five-chapter story, "The Distortion of Creation", the Pokémon Platinum Town Map as its picture, and eight regional jobs (Gible to rescue), notebook entries, cutscenes, modifiers, hazards and choices like the other layers. **Dialga** (Mt. Coronet cleared three times: Steel-favouring dungeons 10% faster), **Palkia** (Spear Pillar three times: Water-favouring 10% faster) and **Giratina**, Sinnoh's Guardian (the Distortion World once its Guardian has been faced: 3% more treasure) join as Guardians; Plan no longer has quests for them. Primal Dialga, the home Guardian, is a form of its own, so owning it does not stand in for Sinnoh's Dialga.

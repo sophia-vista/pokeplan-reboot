@@ -175,3 +175,23 @@ class ChoicesTest {
         assertNotNull(FloorEvents.opener(FloorEventKind.STATIC, listOf(mon("p", 74))), "Geodude is Ground")
     }
 }
+
+class StoryArchiveTest {
+    @Test
+    fun theArchiveListsEverythingReachedAndALegendPlaysOnceAfterItJoins() {
+        val data = WorldData(xp = 1_600, clears = mapOf("tiny-woods" to 1, "thunderwave-cave" to 1, "mt-steel" to 1), legends = setOf("kanto-zapdos"))
+        val reached = WorldMoments.reached(data)
+        assertEquals(listOf(ExplorerRank.NORMAL, ExplorerRank.BRONZE, ExplorerRank.SILVER), reached.filterIsInstance<WorldMoment.RankUp>().map { it.rank })
+        assertTrue(reached.filterIsInstance<WorldMoment.ChapterOpened>().all { it.chapter.number <= Story.opened(data, it.layer) })
+        assertTrue(reached.filterIsInstance<WorldMoment.LegendJoined>().any { it.quest.id == "kanto-zapdos" })
+        assertTrue(reached.none { it is WorldMoment.ChapterOpened && it.chapter.number > Story.opened(data, it.layer) }, "no chapter that is not open is listed")
+        // An older save has no record of legends shown: it adopts the ones it has, so nothing replays; a new one then plays once.
+        val adopted = WorldMoments.adopted(data)
+        assertEquals(setOf("kanto-zapdos"), adopted.legendsSeen)
+        assertTrue(WorldMoments.pending(adopted).none { it is WorldMoment.LegendJoined })
+        val more = adopted.copy(legends = adopted.legends + "kanto-articuno")
+        val m = WorldMoments.pending(more).filterIsInstance<WorldMoment.LegendJoined>().single()
+        assertEquals("kanto-articuno", m.quest.id)
+        assertTrue(WorldMoments.pending(WorldMoments.seen(more, m)).none { it is WorldMoment.LegendJoined })
+    }
+}

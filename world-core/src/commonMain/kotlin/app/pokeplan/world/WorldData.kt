@@ -110,6 +110,8 @@ data class WorldData(
     val seenChapters: Map<String, Int> = emptyMap(),
     /** Floor choices waiting for an answer (see [Choices]). */
     val choices: List<PendingChoice> = emptyList(),
+    /** The legendary quests whose scene was shown (null: not recorded yet, an older save adopts the ones it has). */
+    val legendsSeen: Set<String>? = null,
 ) {
     val rank: ExplorerRank get() = ExplorerRank.at(xp)
 
