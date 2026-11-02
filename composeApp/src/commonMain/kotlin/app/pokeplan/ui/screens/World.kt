@@ -220,7 +220,10 @@ private fun RankCard(model: AppModel) {
                 Text("${world.xp} of ${next.points} to ${next.label} rank", style = MaterialTheme.typography.bodyMedium)
                 rank.nextRankOpens().takeIf { it.isNotEmpty() }?.let { Text("${next.label} rank opens ${it.joinToString(" and ")}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             } else Text("Top rank reached.", style = MaterialTheme.typography.bodyMedium)
-            Text("Poké: ${world.poke}", style = MaterialTheme.typography.bodyMedium)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                ItemIcon(app.pokeplan.world.PmdArt.POKE_COIN, size = 24.dp, description = null)
+                Text("Poké: ${world.poke}", style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
 }
@@ -797,7 +800,8 @@ private fun WorldBagView(model: AppModel) {
             }
             if (world.treasure.isEmpty()) Text("No treasure boxes waiting.", style = MaterialTheme.typography.bodyMedium)
             world.treasure.entries.sortedBy { it.key }.forEach { (tier, n) ->
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    ItemIcon(app.pokeplan.world.PmdArt.treasureBox(tier.coerceIn(1, 3)), size = 32.dp, description = null)
                     Text("${listOf("", "Plain", "Silver", "Gold")[tier.coerceIn(1, 3)]} treasure box x$n", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
                     PixelButton("Open", { val found = store.worldOpenTreasure(tier); message = "Inside: " + found.entries.joinToString { (id, c) -> "${Items.name(id)} x$c" }; sparkle++ }, color = Pixel.InkSoft, compact = true)
                 }

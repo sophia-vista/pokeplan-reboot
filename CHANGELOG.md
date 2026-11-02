@@ -9,6 +9,8 @@ release always has the newest merge).
 
 - **Cutscenes for a new World rank and a new story chapter.** Reaching a new exploration rank plays a gold flash, the rank in big letters with its Mystery Dungeon badge and what it opens (more teams, new dungeons). A story chapter opening plays its place, number and title with its summary and what it brings. They play once each, one at a time, wherever you are in the app (like a hatch), however the progress came (exploring while away, a job, research); a tap skips ahead, and Reduce motion drops the flash. A save from before this counts what it already reached as seen, so nothing replays.
 
+- **More of the Mystery Dungeon art in World:** the rank card, the cutscene and the return report use the games' rank badges, the Poké coin and the Wonder Boxes (a red one for a plain treasure box, blue for silver, striped for gold), in the treasure list, the rank card and "Since you last looked". Apples, seeds, gummis, orbs and ribbons are in the same sheet if you want them for other places.
+
 ## 0.112.0
 
 - **World, dungeon modifiers (Phase 3).** About a third of the days a dungeon has a small bonus on its rewards: Bountiful (20% more Poké), Berry season (berries easier to find), Lucky day (more treasure boxes) or Curious Pokémon (more finds). It is worked out from the dungeon and the day (UTC) alone, each floor uses the day it was climbed, and it never slows anything or takes anything away. An exploring team's card says what today's modifier is.

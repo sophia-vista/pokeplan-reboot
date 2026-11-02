@@ -38,3 +38,13 @@ enum class ExplorerRank(val label: String, val points: Int, val teamSlots: Int) 
         }
     }
 }
+
+/**
+ * Where World uses the Mystery Dungeon item art (assets/pmd-items, drawn by `ItemIcon`): the Poké coin and the treasure boxes by tier
+ * (a red Wonder Box for a plain one, the blue for silver, the striped gold one for gold). Item ids of the PMD2 sheet, in one place.
+ */
+object PmdArt {
+    const val POKE_COIN = "pmd2-072"
+
+    fun treasureBox(tier: Int): String = when (tier) { 1 -> "pmd2-065"; 2 -> "pmd2-067"; else -> "pmd2-066" }
+}
