@@ -27,7 +27,13 @@ enum class GearTool(val label: String, val blurb: String, val icon: String, val 
     COMPASS("Compass", "Which way you are facing", "explorer-kit", setOf(21, 22), 21, "Fly"),
     LEVEL("Level", "Is it flat? Tilt in degrees", "moon-stone", setOf(436, 437), 436, "Gyro Ball"),
     BAROMETER("Barometer", "Air pressure and a rough height", "water-stone", setOf(351, 334), 351, "Weather Ball"),
-    DEVICE("Device check", "What this phone can do for the Pokégear", "shiny-stone", setOf(479), 479, "Thunder Wave");
+    DEVICE("Device check", "What this phone can do for the Pokégear", "shiny-stone", setOf(479), 479, "Thunder Wave"),
+
+    // Added with the field tools (0.117.0).
+    WAYPOINTS("Waypoints", "Mark places and find your way back", "dusk-stone", setOf(16, 17, 18), 16, "Gust"),
+    SOUND("Sound meter", "How loud it is, and the pitch", "gb-sounds", setOf(293, 294, 295), 293, "Uproar"),
+    QR("QR codes", "Make a code, or scan one", "fire-stone", setOf(201), 201, "Hidden Power"),
+    NETWORK("Network check", "Is the connection good?", "leaf-stone", setOf(125, 466), 125, "Charge");
 
     /** Whether a Pokémon of [speciesId] can help this tool. */
     fun helps(speciesId: Int): Boolean = speciesId in signature

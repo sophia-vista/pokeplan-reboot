@@ -65,13 +65,15 @@ class MainActivity : ComponentActivity() {
         val storage = saveStorage(this)
         val motion = AccelerometerMotion(this)
         val calendars = AndroidCalendars(this)
+        // The field tools' location, microphone, network and scanner (their permission launchers are registered here, before the activity starts).
+        val gearServices = androidGearServices(this)
         // A widget can open the app on a place ("FOCUS" for the Start focus widget).
         val first = launchFrom(intent)
         val place = first.place ?: Place.HOME
         setContent {
             App(
                 storage, careStorage = careStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = AndroidSensorFeed(this), onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onDark = ::matchSystemBars,
+                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = AndroidSensorFeed(this), services = gearServices, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onDark = ::matchSystemBars,
             )
         }
     }

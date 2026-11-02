@@ -110,6 +110,10 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
                 GearTool.LEVEL -> LevelTool(model, onUse)
                 GearTool.BAROMETER -> BarometerTool(model, onUse)
                 GearTool.DEVICE -> DeviceTool(model)
+                GearTool.WAYPOINTS -> WaypointsTool(model, onUse)
+                GearTool.SOUND -> SoundTool(model, onUse)
+                GearTool.QR -> QrTool(model, onUse)
+                GearTool.NETWORK -> NetworkTool(model, onUse)
             }
         }
     }
@@ -204,4 +208,8 @@ private fun reactionFor(tool: GearTool): String = when (tool) {
     GearTool.LEVEL -> "📐"
     GearTool.BAROMETER -> "🌤"
     GearTool.DEVICE -> "📱"
+    GearTool.WAYPOINTS -> "📍"
+    GearTool.SOUND -> "🔊"
+    GearTool.QR -> "🔳"
+    GearTool.NETWORK -> "📶"
 }

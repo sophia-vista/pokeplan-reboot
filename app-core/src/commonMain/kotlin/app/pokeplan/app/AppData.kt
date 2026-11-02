@@ -189,11 +189,21 @@ data class GearData(
     /** The World clock's places (zone ids, in order; empty: the first time it opens it shows a few) and the pressure at sea level the Barometer uses for height, in hPa. */
     val clockZones: List<String> = emptyList(),
     val seaLevelHpa: Float = 1013.25f,
+    /** The Waypoints tool's saved places (kept on this phone only, never in the cloud save), newest first. */
+    val waypoints: List<Waypoint> = emptyList(),
+    /** The Sound meter's offset: decibels added to the level below full scale to estimate a sound level (a phone microphone is not calibrated). */
+    val soundOffsetDb: Float = 90f,
 ) {
     companion object {
         const val MAX_RECENTS = 6
         const val MAX_HISTORY = 30
     }
+}
+
+/** A place saved from the Waypoints tool: where the phone was, how sure it was, and when. */
+@Serializable
+data class Waypoint(val id: String, val name: String, val latitude: Double, val longitude: Double, val accuracyMeters: Float, val atMillis: Long) {
+    companion object { const val MAX = 30 }
 }
 
 /**
