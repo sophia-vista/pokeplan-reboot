@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.119.1
+
+- **Launcher faster.** Coming back to the home screen (Home, or from an app) no longer redraws every app icon: the app list and its icons are kept when nothing was installed, updated or removed. The app list computes its categories, sections and rows once per change instead of on every frame, and an icon's border colour is worked out once instead of each time it scrolls into view.
+- **Settings and Close in the app list are icons** (a cog and a cross) instead of words.
+
 ## 0.119.0
 
 - **Every chapter is a scene now.** All 26 chapters of the five storylines (Mystery Dungeon, Kanto, Johto, Hoenn, Sinnoh) have an episode of two or more scenes: a conversation, a walk through the chapter's dungeon, and for the big moments a cinematic (Dialga, the three birds, Mewtwo, Lugia, Ho-Oh, Groudon and Kyogre, Rayquaza, Palkia, Giratina). Each region has its own guide, who talks with your buddy (Pelly the Pelipper, Nia the Eevee, Marin the Marill, Cloud the Swablu, Pip the Piplup) and its own villains or elders. The writing is a first pass of mine, made from the chapter summaries; every line is plain text in `world-core/.../story/*Chapters.kt` to rewrite.

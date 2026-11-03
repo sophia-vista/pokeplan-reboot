@@ -66,12 +66,13 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     /** False while the launcher is out of sight, so the town's Pokémon stop walking and the battery is left alone. */
     private var active by mutableStateOf(true)
     private var reloading: Job? = null
+    private var iconsStale = false
     private val icons = object : LruCache<String, ImageBitmap>(256) {}
 
     private val packageChanges = object : LauncherApps.Callback() {
         override fun onPackageRemoved(packageName: String, user: UserHandle) = reloadApps()
-        override fun onPackageAdded(packageName: String, user: UserHandle) = reloadApps()
-        override fun onPackageChanged(packageName: String, user: UserHandle) = reloadApps()
+        override fun onPackageAdded(packageName: String, user: UserHandle) { iconsStale = true; reloadApps() }
+        override fun onPackageChanged(packageName: String, user: UserHandle) { iconsStale = true; reloadApps() }
         override fun onPackagesAvailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) = reloadApps()
         override fun onPackagesUnavailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) = reloadApps()
     }
@@ -154,8 +155,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
                 }
             } ?: return@launch
             entries = found.associateBy { key(it) }
-            icons.evictAll()
-            apps = found.map { info ->
+            val next = found.map { info ->
                 val label = info.label?.toString().orEmpty().ifBlank { info.componentName.packageName }
                 val removable = info.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM == 0 || info.applicationInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0
                 LauncherApp(
@@ -164,6 +164,13 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
                     removable = removable,
                 )
             }
+            // Home and every return to the launcher reload the list: when nothing changed, keep the list and the drawn icons as they are (re-drawing every icon each time was the slowest part of coming back to the home screen).
+            if (next == apps && !iconsStale) return@launch
+            // An updated app may have a new icon; one that stayed the same keeps its picture.
+            val changed = apps.map { it.key }.toSet() != next.map { it.key }.toSet()
+            if (changed || iconsStale) icons.evictAll() else icons.snapshot().keys.filter { it !in entries }.forEach { icons.remove(it) }
+            iconsStale = false
+            apps = next
         }
     }
 
