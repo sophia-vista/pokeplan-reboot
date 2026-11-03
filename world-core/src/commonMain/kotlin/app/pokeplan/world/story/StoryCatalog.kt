@@ -8,7 +8,7 @@ import app.pokeplan.world.WorldLayer
  */
 object StoryCatalog {
     private val episodes: List<StoryEpisode> by lazy {
-        listOf(IntroMewChapter.episode()) + KantoChapters.all() + JohtoChapters.all() + HoennChapters.all() + SinnohChapters.all()
+        listOf(IntroMewChapter.episode()) + RescueChapters.all() + ExplorersChapters.all() + KantoChapters.all() + JohtoChapters.all() + HoennChapters.all() + SinnohChapters.all()
     }
 
     fun all(): List<StoryEpisode> = episodes

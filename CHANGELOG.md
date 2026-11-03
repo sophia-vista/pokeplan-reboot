@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.124.0
+
+- **The Rescue Team and Explorers arcs have their scenes.** Rescue Team plays 20 scenes over its six chapters and Explorers 21 over its eight, from the owner's brief in `docs/world-story-rewrite.md`, each opening with Mew's "memory echo" premise line. They replay from the Story archive. Where a brief dungeon has no entry in the game yet (Frosty Forest, Beach Cave, Drenched Bluff, Crystal Cave, Hidden Land), its scene is staged on a nearby picture; those dungeons and the arcs' own map pictures are still to come.
+
 ## 0.123.0
 
 - **The home layer is gone; World has two optional Mystery Dungeon arcs.** The Mystery Dungeon world is split into **Rescue Team** (Pokémon Square: Tiny Woods, Mt. Steel and the Sky Tower, six chapters, Sky Tower as its Guardian dungeon) and **Explorers** (Treasure Town: Thunderwave Cave, Waterfall Cave, Glacier Palace, Ancient Ruins and the Temporal Tower, eight chapters, Primal Dialga as its Guardian, the Distortion Rift after it). Each is a layer beside Kanto, Johto, Hoenn and Sinnoh. The old six-chapter home story (the temporal saga) is removed; the two arcs' chapters have titles and gates now and their scenes are the next step (`docs/world-story-rewrite.md`).
