@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.120.0
+
+- **Currency is a set of rows you can type in.** Each currency you watch has its own amount: type in any row (a number or a sum) and every other row is worked out from it. Your home currency is the first row; add a currency by name or code, move one up or remove it. "A rate you were offered" and "What it really costs" now follow the row you are typing in (or the first foreign one). The rates, their age and source, the offline cache and the reference-rate note are unchanged, and so is the saved board.
+
 ## 0.119.2
 
 From the deep review of 3 November (its P0 story and dungeon items):
