@@ -123,10 +123,10 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.WORLD.label, subtitle = "Rank: ${world.rank.label}", onBack = onBack, color = Module.WORLD.look.header)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            // The order of the page: the situation (rank, what the teams brought back, what is happening), the one thing worth doing, then
-            // the story and the places to go. The first time, one card says what World is.
+            // The order of the page: where you are and the one thing worth doing (the region, its chapter, the next step), what the teams
+            // are doing and brought back, then the places to go. Rank sits in one quiet strip. The first time, one card says what World is.
             val firstTime = world.teams.none { it.expedition != null || it.members.isNotEmpty() } && world.clears.isEmpty()
-            RankCard(model)
+            RankStrip(model)
             WorldReportCard(model)
             ChoicesCard(model)
             if (firstTime) {
@@ -138,11 +138,9 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
                     }
                 }
             } else {
-                PrimaryActionCard(model)
+                RegionCard(model)
                 ExpeditionOverview(model)
-                StoryCard(model)
             }
-            WorldBanner("town", "Exploration team", "${Dungeons.all.count { world.rank >= it.needs && Story.opened(world, it.layer) >= it.chapter }} of ${Dungeons.all.size} dungeons open")
             // The four places that matter most, big; the rest as small buttons below.
             MenuGrid(
                 listOf(
@@ -162,17 +160,22 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
     }
 }
 
-/** The landing's one big button: what is worth doing now and why (Pokémon to recruit, a job to claim, the next dungeon, or a look at the teams). */
+/**
+ * The landing's main card: the region on show (with its switch), its chapter in one line, what is worth doing now and why (Pokémon to
+ * recruit, a job to claim, the next dungeon, or a look at the teams) with its one button, and what the next chapter asks, quietly.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun PrimaryActionCard(model: AppModel) {
+private fun RegionCard(model: AppModel) {
     val world = model.data.world
     val layer = model.worldLayer
     val action = app.pokeplan.world.WorldGuide.primaryAction(world, layer)
+    val chapters = Story.chaptersOf(layer)
+    val opened = Story.opened(world, layer)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             WorldLayerSwitch(model)
-            Text(if (action.kind == app.pokeplan.world.PrimaryKind.EXPLORE) "Next up in ${layer.label}" else "Next up", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Text("Chapter $opened: ${chapters[opened - 1].title}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Text(action.title, style = MaterialTheme.typography.titleSmall)
             Text(action.reason, style = MaterialTheme.typography.bodyMedium)
             when (action.kind) {
@@ -181,52 +184,29 @@ private fun PrimaryActionCard(model: AppModel) {
                 app.pokeplan.world.PrimaryKind.EXPLORE -> action.dungeonId?.let { id -> PixelButton("Send my strongest", { model.store.worldQuickSend(id) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true) }
                 app.pokeplan.world.PrimaryKind.CONTINUE -> PixelButton("See the teams", { model.worldSection = WorldSection.TEAMS }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
             }
-        }
-    }
-}
-
-/** The story of the layer on show: the chapter, what it says, and what the next one asks. */
-@Composable
-private fun StoryCard(model: AppModel) {
-    val world = model.data.world
-    val layer = model.worldLayer
-    val chapters = Story.chaptersOf(layer)
-    val opened = Story.opened(world, layer)
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("${layer.label} story: chapter $opened, ${chapters[opened - 1].title}", style = MaterialTheme.typography.titleSmall)
-            Text(chapters[opened - 1].summary, style = MaterialTheme.typography.bodyMedium)
-            if (Story.complete(world, layer)) Text("The story is complete. ${Story.guardianBonus(layer)}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+            if (Story.complete(world, layer)) Text("The ${layer.label} story is complete. ${Story.guardianBonus(layer)}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             Story.next(world, layer)?.let {
                 val cleared = Story.dungeonsCleared(world, layer)
-                Text("Next: ${it.title} (${it.needsRank.label} rank, ${it.needsDungeons} different ${layer.label} dungeons cleared: you have $cleared)", style = MaterialTheme.typography.bodyMedium)
+                Text("Next chapter: ${it.title} (${it.needsRank.label} rank, ${it.needsDungeons} ${layer.label} dungeons cleared: $cleared)", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
         }
     }
 }
 
-/** The exploration team's rank: its points towards the next rank, what the next rank opens, and the Poké in hand. */
+/** The exploration team's rank in one quiet strip: badge, rank, the way to the next one, and the Poké in hand. */
 @Composable
-private fun RankCard(model: AppModel) {
+private fun RankStrip(model: AppModel) {
     val world = model.data.world
     val rank = world.rank
     val next = rank.next()
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                ItemIcon(rank.badge, size = 48.dp, description = "${rank.label} rank badge")
-                Text("Exploration rank: ${rank.label}", style = MaterialTheme.typography.titleSmall)
-            }
-            if (next != null) {
-                PixelBar(((world.xp - rank.points).toFloat() / (next.points - rank.points)).coerceIn(0f, 1f), Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "${world.xp} of ${next.points} to ${next.label}")
-                Text("${world.xp} of ${next.points} to ${next.label} rank", style = MaterialTheme.typography.bodyMedium)
-                rank.nextRankOpens().takeIf { it.isNotEmpty() }?.let { Text("${next.label} rank opens ${it.joinToString(" and ")}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
-            } else Text("Top rank reached.", style = MaterialTheme.typography.bodyMedium)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                ItemIcon(app.pokeplan.world.PmdArt.POKE_COIN, size = 24.dp, description = null)
-                Text("Poké: ${world.poke}", style = MaterialTheme.typography.bodyMedium)
-            }
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        ItemIcon(rank.badge, size = 40.dp, description = "${rank.label} rank badge")
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            Text(if (next != null) "${rank.label} rank, ${world.xp} of ${next.points} to ${next.label}" else "${rank.label} rank, the top", style = MaterialTheme.typography.bodyMedium)
+            if (next != null) PixelBar(((world.xp - rank.points).toFloat() / (next.points - rank.points)).coerceIn(0f, 1f), Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "${world.xp} of ${next.points} to ${next.label}")
         }
+        ItemIcon(app.pokeplan.world.PmdArt.POKE_COIN, size = 24.dp, description = null)
+        Text("${world.poke}", style = MaterialTheme.typography.bodyMedium)
     }
 }
 
