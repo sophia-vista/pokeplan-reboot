@@ -77,29 +77,53 @@ fun StoryScene.problems(): List<String> = buildList {
     if (events.count { it == SceneEvent.End } != 1) add("$id: End must appear once, at the end")
     if (type == SceneType.DUNGEON && dungeonId == null) add("$id: a DUNGEON scene needs a dungeonId")
     val shown = mutableSetOf<String>()
-    for ((i, e) in events.withIndex()) {
-        fun known(who: String) { if (who !in ids) add("$id #$i: $who is not in the cast") }
-        fun onStage(who: String) { known(who); if (who !in shown) add("$id #$i: $who is used before being shown") }
-        when (e) {
-            is SceneEvent.Show -> { known(e.who); shown += e.who }
-            is SceneEvent.Hide -> { onStage(e.who); shown -= e.who }
-            is SceneEvent.Express -> onStage(e.who)
-            is SceneEvent.Face -> onStage(e.who)
-            is SceneEvent.Move -> { onStage(e.who); if (e.path.isEmpty()) add("$id #$i: a walk has no path") }
-            is SceneEvent.Say -> {
-                e.who?.let { known(it) }
-                if (e.text.isBlank()) add("$id #$i: an empty line")
-                if (e.text.length > 160) add("$id #$i: a line over 160 characters (keep lines short)")
-                if (type != SceneType.STAGE && type != SceneType.DUNGEON && e.who != null && e.who !in shown) add("$id #$i: ${e.who} speaks while not shown")
+    // One checker for the top level and for the lines inside a Branch, so a branch is held to the same rules.
+    fun check(list: List<SceneEvent>, at: String, inBranch: Boolean) {
+        for ((i, e) in list.withIndex()) {
+            val where = "$id #$at$i"
+            fun known(who: String) { if (who !in ids) add("$where: $who is not in the cast") }
+            fun onStage(who: String) { known(who); if (who !in shown) add("$where: $who is used before being shown") }
+            when (e) {
+                is SceneEvent.Show -> { known(e.who); shown += e.who }
+                is SceneEvent.Hide -> { onStage(e.who); shown -= e.who }
+                is SceneEvent.Express -> onStage(e.who)
+                is SceneEvent.Face -> onStage(e.who)
+                is SceneEvent.Move -> { onStage(e.who); if (e.path.isEmpty()) add("$where: a walk has no path") }
+                is SceneEvent.Say -> {
+                    e.who?.let { known(it) }
+                    if (e.text.isBlank()) add("$where: an empty line")
+                    if (e.text.length > 160) add("$where: a line over 160 characters (keep lines short)")
+                    if (type != SceneType.STAGE && type != SceneType.DUNGEON && e.who != null && e.who !in shown) add("$where: ${e.who} speaks while not shown")
+                }
+                is SceneEvent.Emote -> onStage(e.who)
+                is SceneEvent.Cry -> known(e.who)
+                is SceneEvent.Item -> if (e.itemId.isBlank()) add("$where: an item with no id")
+                is SceneEvent.Choice -> {
+                    if (inBranch) add("$where: a choice inside a branch")
+                    if (e.options.size !in 2..3) add("$where: a choice needs two or three options")
+                    if (e.options.any { it.label.length > 40 }) add("$where: a choice label over 40 characters")
+                    if (e.options.any { it.flag.isBlank() }) add("$where: a choice option sets no flag")
+                }
+                is SceneEvent.Branch -> {
+                    if (inBranch) add("$where: a branch inside a branch")
+                    if (e.flag.isBlank()) add("$where: a branch with no flag")
+                    // The branch may or may not run, so it must leave who is on stage as it found them.
+                    val before = shown.toSet()
+                    check(e.events, "$at$i.", true)
+                    if (shown != before) { add("$where: a branch changes who is on stage (show and hide inside it must cancel out)"); shown.clear(); shown += before }
+                    if (e.events.any { it == SceneEvent.End }) add("$where: End inside a branch")
+                }
+                else -> {}
             }
-            is SceneEvent.Emote -> onStage(e.who)
-            is SceneEvent.Cry -> known(e.who)
-            is SceneEvent.Choice -> {
-                if (e.options.size !in 2..3) add("$id #$i: a choice needs two or three options")
-                if (e.options.any { it.label.length > 40 }) add("$id #$i: a choice label over 40 characters")
-            }
-            is SceneEvent.Branch -> e.events.forEach { n -> if (n is SceneEvent.Say) { n.who?.let { known(it) } ; if (n.text.length > 160) add("$id #$i: a line over 160 characters (keep lines short)") } }
-            else -> {}
         }
+    }
+    check(events, "", false)
+    if (type == SceneType.DIALOGUE) {
+        // A dialogue scene draws at most two characters at once; a third would not appear.
+        val on = mutableSetOf<String>()
+        var most = 0
+        fun count(list: List<SceneEvent>) { for (e in list) when (e) { is SceneEvent.Show -> { on += e.who; most = maxOf(most, on.size) }; is SceneEvent.Hide -> on -= e.who; is SceneEvent.Branch -> count(e.events); else -> {} } }
+        count(events)
+        if (most > 2) add("$id: a dialogue scene shows $most characters at once (two at most; use a STAGE scene)")
     }
 }

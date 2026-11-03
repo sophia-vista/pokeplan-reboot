@@ -83,3 +83,38 @@ object TownLayout {
         return TownMap(cols, rows, cells)
     }
 }
+
+/**
+ * A dungeon floor for a walk or a team's strip, from the same atlas as the town: one row of wall along the top (a pond in
+ * a few places), [floorRows] rows of ground to walk on, then wall below with a few bays of ground cut into it. The floor
+ * rows are always clear, so nobody walks through a wall; the bays, ponds and the ground alternates only break the
+ * repetition. The same [seed] (from the dungeon and the floor) always gives the same floor. Nothing is drawn here: the
+ * tiles are the game's own, picked by [TownMap.atlas].
+ */
+internal object DungeonFloorLayout {
+    fun build(cols: Int, rows: Int, seed: Int, floorRows: Int): TownMap {
+        val random = Random(seed)
+        val cells = Array(cols * rows) { TownCell.GROUND }
+        val below = floorRows + 1
+        for (x in 0 until cols) {
+            cells[x] = TownCell.WALL
+            for (y in below until rows) cells[y * cols + x] = TownCell.WALL
+        }
+        // Bays: ground cut into the wall below (two to four squares wide, never at the map's edge, a square of wall between them).
+        if (below < rows - 1) {
+            var x = 2 + random.nextInt(3)
+            while (x < cols - 5) {
+                val w = 2 + random.nextInt(3)
+                if (random.nextInt(100) < 55) for (c in x until minOf(x + w, cols - 2)) cells[below * cols + c] = TownCell.GROUND
+                x += w + 2 + random.nextInt(4)
+            }
+        }
+        // Ponds in the top wall (three squares wide), now and then.
+        var x = 3 + random.nextInt(4)
+        while (x < cols - 6) {
+            if (random.nextInt(100) < 35) for (c in x until x + 3) cells[c] = TownCell.WATER
+            x += 5 + random.nextInt(6)
+        }
+        return TownMap(cols, rows, cells)
+    }
+}

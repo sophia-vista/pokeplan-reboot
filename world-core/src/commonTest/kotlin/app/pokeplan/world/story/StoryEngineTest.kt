@@ -69,4 +69,27 @@ class StoryEngineTest {
         assertTrue(bad.problems().any { it.contains("two or three") })
         assertTrue(StoryCatalog.peopleMet(setOf("home-1-letter")).map { it.displayName } == listOf("Pelly"))
     }
+
+    private val duo = listOf(buddyCharacter(), npc("a", "Ann", 25), npc("b", "Bo", 133))
+
+    @Test
+    fun branchesAreCheckedLikeTheTopLevel() {
+        val ok = dialogue("t-ok", "t", "bg", duo) { show(BUDDY, 3f, 3f); choice(null, "x" to "fx", "y" to "fy"); branch("fx") { say(BUDDY, "hi") } }
+        assertEquals(emptyList(), ok.problems())
+        val bad = dialogue("t-bad", "t", "bg", duo) {
+            show(BUDDY, 3f, 3f)
+            branch("f") { say("ghost", "boo"); say(BUDDY, "x".repeat(200)); walk("a", 1f to 1f); show("a", 7f, 3f) }
+        }
+        val found = bad.problems().joinToString("\n")
+        assertTrue("ghost is not in the cast" in found, found)
+        assertTrue("over 160" in found, found)
+        assertTrue("a is used before being shown" in found, found)
+        assertTrue("changes who is on stage" in found, found)
+    }
+
+    @Test
+    fun aDialogueShowsAtMostTwoAtOnce() {
+        val three = dialogue("t-3", "t", "bg", duo) { show(BUDDY, 3f, 3f); show("a", 5f, 3f); show("b", 7f, 3f); say(BUDDY, "hi") }
+        assertTrue(three.problems().any { "at most" in it }, three.problems().toString())
+    }
 }
