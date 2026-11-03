@@ -500,8 +500,8 @@ internal fun PinnedApp(app: LauncherApp, item: String?, host: LauncherHost, pixe
 internal fun AppIcon(host: LauncherHost, key: String, size: androidx.compose.ui.unit.Dp) {
     val icon by produceState<ImageBitmap?>(null, key) { value = host.icon(key) }
     val shown = icon
-    // The border is the icon's own edge colour, so it melts into the picture and only the pixel corners show.
-    val edge = remember(shown) { shown?.let { edgeColor(it) } ?: Color.White.copy(alpha = 0.9f) }
+    // The border is the icon's own edge colour, so it melts into the picture and only the pixel corners show. Worked out once per picture (scanning its pixels again on every scroll-in made the list stutter).
+    val edge = remember(shown) { shown?.let { edgeColors.getOrPut(key) { edgeColor(it) } } ?: Color.White.copy(alpha = 0.9f) }
     Box(
         Modifier.size(size).drawWithContent {
             val p = 2.dp.toPx()
@@ -524,6 +524,8 @@ internal fun AppIcon(host: LauncherHost, key: String, size: androidx.compose.ui.
  * each other count as one, and see-through pixels are ignored), averaged; a quiet grey when too little of the edge is
  * solid (an icon that is a shape on nothing).
  */
+private val edgeColors = HashMap<String, Color>()
+
 internal fun edgeColor(image: ImageBitmap): Color {
     val map = image.toPixelMap()
     val buckets = HashMap<Int, IntArray>()
@@ -554,14 +556,14 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
     var query by remember { mutableStateOf("") }
     var category by remember { mutableStateOf<AppCategory?>(null) }
     var showHidden by remember { mutableStateOf(startHidden) }
-    val categories = LauncherList.categories(apps, prefs)
+    val categories = remember(apps, prefs) { LauncherList.categories(apps, prefs) }
     // A category that emptied (its last app moved or hidden) falls back to all apps.
     if (category != null && categories.none { it.first == category }) category = null
     val anyHidden = prefs.hidden.any { key -> apps.any { it.key == key } }
     if (showHidden && !anyHidden) showHidden = false
-    val shown = LauncherList.visible(apps, prefs, query, category, hidden = showHidden)
+    val shown = remember(apps, prefs, query, category, showHidden) { LauncherList.visible(apps, prefs, query, category, hidden = showHidden) }
     val sections = query.isBlank()
-    val rows = if (sections) buildList<ListRow> { shown.forEach { app -> if ((lastOrNull() as? ListRow.Entry)?.app?.letter() != app.letter()) add(ListRow.Header(app.letter())); add(ListRow.Entry(app)) } } else shown.map<LauncherApp, ListRow> { ListRow.Entry(it) }
+    val rows = remember(shown, sections) { if (sections) buildList<ListRow> { shown.forEach { app -> if ((lastOrNull() as? ListRow.Entry)?.app?.letter() != app.letter()) add(ListRow.Header(app.letter())); add(ListRow.Entry(app)) } } else shown.map<LauncherApp, ListRow> { ListRow.Entry(it) } }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     BackHandler(enabled = true) { if (query.isNotEmpty()) query = "" else onClose() }
@@ -581,11 +583,11 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
                         textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White), cursorBrush = SolidColor(Color.White),
                     )
                 }
-                Box(Modifier.height(Spacing.Target).clip(rowShape).clickable(role = Role.Button, onClickLabel = "Launcher settings") { ui(Sfx.CURSOR); onTown() }.padding(horizontal = Spacing.S), contentAlignment = Alignment.Center) {
-                    PmdText("Settings", pixel)
+                Box(Modifier.size(Spacing.Target).clip(rowShape).clickable(role = Role.Button, onClickLabel = "Launcher settings") { ui(Sfx.CURSOR); onTown() }, contentAlignment = Alignment.Center) {
+                    Glyph("settings-cog", Color.White, size = 24.dp, description = "Settings")
                 }
-                Box(Modifier.height(Spacing.Target).clip(rowShape).clickable(role = Role.Button) { ui(Sfx.BACK); onClose() }.padding(horizontal = Spacing.S), contentAlignment = Alignment.Center) {
-                    PmdText("Close", pixel)
+                Box(Modifier.size(Spacing.Target).clip(rowShape).clickable(role = Role.Button, onClickLabel = "Close") { ui(Sfx.BACK); onClose() }, contentAlignment = Alignment.Center) {
+                    Glyph("close", Color.White, size = 24.dp, description = "Close")
                 }
             }
             LazyRow(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = Spacing.Page, vertical = Spacing.XS), horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
