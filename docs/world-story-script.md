@@ -10,91 +10,200 @@ Explorers' guilds, strange dungeons and a time Guardian.
 
 *Summary:* You form an exploration team and begin to explore.
 
-#### Scene: A letter at dawn  
-`home-1-letter` · dialogue · background city · cast: {buddy}, Pelly (Pelipper)
+#### Scene: A very suspicious invitation  
+`intro-mew-1` · stage · background city · cast: {buddy}, Mew (Mew)
 
 - {buddy} appears
-- Pelly appears
-
-*Dawn over the Explorers' Guild. The first mail of the day arrives.*
-
-**Pelly** (happy): Special delivery! A letter for {buddy} and {player}'s team!
-
-**{buddy}** (surprised): A letter for us?
-
-**Pelly** (normal): The Guild is calling for new explorers. Strange things have been stirring in the dungeons.
-
-**{buddy}** (determined): Then let's find out what!
-
-**Pelly** (happy): That is the spirit! Meet me in the square and I will show you where to start.
-
-#### Scene: The square  
-`home-1-square` · stage · background meadow · cast: {buddy}, Pelly (Pelipper)
-
-- {buddy} appears
-- Pelly appears
 - {buddy} walks
 
-**Pelly** (normal): There you are. Every team starts with a first dungeon.
+*{player} and {buddy} are on their way through the settlement when something small and pink darts between them.*
 
-**Pelly** (happy): Tiny Woods is quiet, and the Pokémon there are friendly. Start there.
+- Mew appears
+- Mew: !
+- Mew walks
+- Mew leaves
 
-- {buddy}: !
+*It snatched something on the way past. And it is gone around the corner.*
 
-**{buddy}** (joyous): Tiny Woods! We are ready!
+**{buddy}** (surprised): Hey! That was ours!
 
-- Pelly walks
-- Pelly leaves
+- {buddy} walks
+- Mew appears
+
+*The trail ends at the far end of the lane. The pink Pokémon waves, then ripples into another shape and back again.*
+
+**{buddy}** (surprised): Wait. You were the one who took it?
+
+**Mew** (happy): Mew!
+
+**{buddy}** (angry): Give it back!
+
+*Mew floats backwards toward the edge of town, holding the thing just out of reach. It is very clearly an invitation.*
+
+**{buddy}** (determined): It's a trap.
+
+**{buddy}** (normal): ...We're going, aren't we?
+
+- Mew walks
+- Mew leaves
 - {buddy} walks
 - {buddy} leaves
-#### Scene: Into Tiny Woods  
-`home-1-woods` · dungeon · dungeon tiny-woods · cast: {buddy}, Caterpie (Caterpie)
+#### Scene: First steps outside town  
+`intro-mew-2` · stage · background meadow · cast: {buddy}, Mew (Mew), Sentret (Sentret)
+
+- {buddy} appears
+- {buddy} walks
+- Mew appears
+- Sentret appears
+
+*Mew leads them to a path they have never used. A few small Pokémon stand around a dropped satchel.*
+
+**{buddy}** (normal): Is this what you wanted to show us?
+
+*Mew points at the satchel, then at a narrow way into the Mystery Dungeon beyond.*
+
+**{buddy}** (worried): You want us to go in there?
+
+- Mew: !
+
+**{buddy}** (determined): Fine. But if this is another prank, you're carrying the bag home.
+
+- {buddy} walks
+- {buddy} leaves
+#### Scene: The first expedition  
+`intro-mew-3` · dungeon · dungeon tiny-woods · cast: {buddy}, Mew (Mew), Sentret (Sentret)
 
 - {buddy} appears
 - {buddy} walks
 
-*Tiny Woods. Sunlight comes through the leaves, and something rustles ahead.*
+*The woods are quiet. Sunlight comes down in pieces, and every few steps something small rustles out of the way.*
 
-- {buddy}: !
-- Caterpie appears
-- Caterpie walks
+- Mew appears
+- Sentret appears
+- Sentret walks
 
-**{buddy}** (surprised): A Pokémon! Hello?
+**Sentret** (surprised): Oh! You found my bag! I got split from my group and... and I lost it in the roots.
 
-**Caterpie** (surprised): Oh! I thought you were a big bird. Please don't be one!
+**{buddy}** (worried): So this wasn't just about chasing us. Someone actually needed help.
 
-**{buddy}** (happy): We are an exploration team. We are not here to scare anyone.
+*Mew watches from a low branch, unusually quiet.*
 
-**Caterpie** (happy): Then this is for you. I found it near the roots.
+**{buddy}** (determined): Let's get the satchel back to where it belongs.
 
-- an item lies on the floor (pmd2-021)
 - {buddy} walks
-
-**{buddy}** (joyous): An apple! Thank you!
-
-- Caterpie walks
-- Caterpie leaves
-
-*The little Pokémon say the deeper floors are changing.*
-
-#### Scene: Back at the Guild  
-`home-1-board` · dialogue · background city · cast: {buddy}, Pelly (Pelipper)
+- {buddy} leaves
+#### Scene: A job becomes a promise  
+`intro-mew-4` · stage · background city · cast: {buddy}, Pelly (Pelipper), Mew (Mew), Sentret (Sentret)
 
 - {buddy} appears
 - Pelly appears
+- Mew appears
+- Sentret appears
 
-*Back at the Guild at the end of the day.*
+*Back in town, the satchel's owner is much happier. Pelly, who handles requests for the local exploration centre, has already heard.*
 
-**Pelly** (happy): Word travels fast. Your team's first exploration is already on the board.
+**Pelly** (happy): You two went into the woods, found the owner, and brought the satchel back?
 
-**{buddy}** (surprised): Is it always like this?
+**{buddy}** (normal): We were following a thief.
 
-**Pelly** (normal): No. Something is stirring below, and explorers like you will have to find out what.
+**Pelly** (normal): That is not how I would recommend finding your first job. But it did help someone.
 
-**{buddy}** (determined): Then we will keep exploring.
+**{buddy}** (normal): So this is what exploration teams do? Take requests and help Pokémon?
 
-*Send your team into a dungeon. The deeper they go, the closer you get to the truth.*
+**Pelly** (happy): That is the idea. Rescue, delivery, retrieval, escort, investigation. Some jobs are simple. Some take a whole team.
 
+*Pelly nods toward the request board by the door.*
+
+**Pelly** (normal): You choose what to take. Read the objective and the reward before you set out.
+
+#### Scene: The team  
+`intro-mew-5` · stage · background city · cast: {buddy}, Braviary (Braviary), Mew (Mew)
+
+- {buddy} appears
+- Braviary appears
+- Mew appears
+
+*Braviary reads the team's report in silence. It takes a little while.*
+
+**Braviary** (normal): You went into an unfamiliar dungeon without checking the route, your supplies, or what lived there.
+
+**{buddy}** (worried): We had a reason.
+
+- Mew: !
+
+**Braviary** (normal): I see. The reason appears to be standing right there.
+
+**Braviary** (normal): If you mean to keep exploring, register as a team and learn to prepare.
+
+**Braviary** (normal): Choose who goes, check what they are good at, and make sure the assignment suits them. A bigger team is not automatically a better one.
+
+#### Scene: Mew's real test  
+`intro-mew-6` · dungeon · dungeon tiny-woods · cast: {buddy}, Mew (Mew), Sentret (Sentret)
+
+- {buddy} appears
+- {buddy} walks
+
+*That evening, Mew turns up at the edge of the settlement and splits into copies. One carries a small bundle. Another pretends to be a frightened Pokémon.*
+
+- Mew appears
+
+**{buddy}** (angry): Again?
+
+- Mew walks
+
+**{buddy}** (determined): It's testing us. It wants to see if we chase the first thing we notice.
+
+*The real trail is the one that leaves small things behind. Someone really is lost in all this, and finding them matters more than catching Mew.*
+
+- Sentret appears
+
+**Sentret** (surprised): The pink ones all ran past me! One of them told me to wait here!
+
+**{buddy}** (happy): Wait here a moment longer. We will take you home.
+
+*When the confusion is settled, the copies pop away one by one. The real Mew floats down in front of them.*
+
+**Mew** (happy): Mew!
+
+**{buddy}** (normal): Was that your idea of fun?
+
+- Mew: !
+
+*Mew hands back the first thing it took and bows its head. Then it looks at the pair, a little shyly.*
+
+**{buddy}** (surprised): You're... asking to come with us?
+
+- Mew cries out
+
+**Mew** (joyous): Mew mew!
+
+**{buddy}** (happy): All right. But no stealing our lunch.
+
+*Mew has already noticed the food stall on the way home.*
+
+#### Scene: The adventure board  
+`intro-mew-7` · stage · background city · cast: {buddy}, Pelly (Pelipper), Braviary (Braviary), Mew (Mew)
+
+- {buddy} appears
+- Pelly appears
+- Braviary appears
+- Mew appears
+
+*The team's registration is done. The board now shows work for teams of every rank.*
+
+**Pelly** (happy): Your first proper expedition board. There are jobs here for teams of different ranks.
+
+**Braviary** (normal): Your rank follows your work. Finish assignments, help others, and take on harder places when you are ready.
+
+**{buddy}** (happy): So we can choose where to go?
+
+**Braviary** (normal): Within what your team can do. The world is larger than this settlement. You will find it one expedition at a time.
+
+*Mew taps a notice with its tail. The notice is upside down.*
+
+**{buddy}** (normal): I don't think that's how you read a job.
+
+- Mew: ?
 ### Chapter 2: Requests and Rescues
 
 *Summary:* Pokémon in need of help come to your door.

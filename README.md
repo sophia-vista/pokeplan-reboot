@@ -47,7 +47,7 @@ Needs a JDK 17 to 21; Gradle (9.8) downloads itself. Android also needs an Andro
 ./gradlew :androidApp:assembleDebug          # APK in androidApp/build/outputs/apk/debug/
 ```
 
-`./gradlew :composeApp:jvmTest` also renders screens to `composeApp/build/screenshots/*.png`, so a screen can be looked at without a device. Other tools: `:plan-core:simulateEconomy` and `:world-core:simulateWorldEconomy` (the economy reports in `docs/`).
+`./gradlew :composeApp:jvmTest` also renders screens to `composeApp/build/screenshots/*.png`, so a screen can be looked at without a device. Other tools: `:plan-core:simulateEconomy` and `:world-core:simulateWorldEconomy` (the economy reports in `docs/`), `:world-core:storyScript` (every chapter's story and script as Markdown in `docs/world-story-script.md`).
 
 Every merge to `main` is published as the "Latest build" release with a debug APK (`.github/workflows/release-apk.yml`). Pull requests are tested by `.github/workflows/ci.yml`. The contributor guide for Claude Code sessions, with the branch and PR rules, is [`CLAUDE.md`](CLAUDE.md).
 
