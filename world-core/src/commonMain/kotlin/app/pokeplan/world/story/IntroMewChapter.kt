@@ -1,6 +1,5 @@
 package app.pokeplan.world.story
 
-import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.ANGRY
 import app.pokeplan.world.story.Expression.DETERMINED
 import app.pokeplan.world.story.Expression.HAPPY
@@ -23,7 +22,7 @@ object IntroMewChapter {
     private val sentret = npc("sentret", "Sentret", 161)
 
     fun episode() = StoryEpisode(
-        WorldLayer.HOME, 1, "A New Explorer",
+        null, 1, "A New Explorer",
         listOf(suspiciousInvitation(), firstSteps(), firstExpedition(), jobBecomesPromise(), theTeam(), mewsRealTest(), adventureBoard()),
     )
 

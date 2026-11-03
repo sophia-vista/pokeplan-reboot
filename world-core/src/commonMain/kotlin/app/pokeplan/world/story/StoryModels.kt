@@ -68,7 +68,10 @@ data class StoryScene(
     val dungeonId: String? = null,
 )
 
-/** A chapter's episode: its scenes in order. [key] is "<layer id>:<chapter number>". */
-data class StoryEpisode(val layer: WorldLayer, val chapter: Int, val title: String, val scenes: List<StoryScene>) {
-    val key: String get() = "${layer.id}:$chapter"
+/** A chapter's episode: its scenes in order. [key] is "<layer id>:<chapter number>"; the opening, which belongs to no layer ([layer] null), is "intro:1". */
+data class StoryEpisode(val layer: WorldLayer?, val chapter: Int, val title: String, val scenes: List<StoryScene>) {
+    val key: String get() = "${layer?.id ?: INTRO}:$chapter"
 }
+
+/** The key prefix of the opening episode, which belongs to no layer. */
+const val INTRO = "intro"

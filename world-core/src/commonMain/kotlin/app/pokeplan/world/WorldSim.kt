@@ -260,7 +260,7 @@ object WorldSim {
         d = d.withSkillXp(WorldSkill.EXPLORATION, 1).withSkillXp(WorldSkill.SCOUTING, 1).withSkillXp(WorldSkill.FORAGING, berries)
         d = Missions.advance(d, dungeon.id, floor, berries, at, teamSize, power, events)
         if (floor == dungeon.floors && dungeon.guardian && !d.layerDone(dungeon.layer)) {
-            if (dungeon.layer == WorldLayer.HOME) {
+            if (dungeon.layer == WorldLayer.EXPLORERS) {
                 events += WorldEvent.GuardianFaced
                 d = d.copy(guardianDone = true)
             } else {

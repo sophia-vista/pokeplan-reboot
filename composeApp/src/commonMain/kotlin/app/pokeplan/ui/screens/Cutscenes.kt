@@ -288,6 +288,10 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
 @Composable
 private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMoment, close: () -> Unit) {
     // A chapter with an authored episode plays it (portraits, a stage, a dungeon walk); the rest play their title card.
+    if (moment == app.pokeplan.world.WorldMoment.Welcome) {
+        val intro = app.pokeplan.world.story.StoryCatalog.intro()
+        StoryPlayer(model, intro, close, fromStart = intro.key in model.data.world.episodesDone); return
+    }
     if (moment is app.pokeplan.world.WorldMoment.ChapterOpened) {
         val episode = app.pokeplan.world.story.StoryCatalog.episodeFor(moment.layer, moment.chapter.number)
         if (episode != null) { StoryPlayer(model, episode, close, fromStart = episode.key in model.data.world.episodesDone); return }
@@ -306,6 +310,7 @@ private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMo
     }
     SceneFrame({ done = true }, flash.value, FlashGold) {
         when (moment) {
+            app.pokeplan.world.WorldMoment.Welcome -> {}
             is app.pokeplan.world.WorldMoment.RankUp -> {
                 val rank = moment.rank
                 Stage("bw08", 220.dp) {

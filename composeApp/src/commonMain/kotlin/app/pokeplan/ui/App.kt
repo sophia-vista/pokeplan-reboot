@@ -197,7 +197,7 @@ class AppModel(
     var worldSection: WorldSection? by mutableStateOf(null)
 
     /** The layer of the World map on show (the home map or Kanto). */
-    var worldLayer: app.pokeplan.world.WorldLayer by mutableStateOf(app.pokeplan.world.WorldLayer.HOME)
+    var worldLayer: app.pokeplan.world.WorldLayer by mutableStateOf(app.pokeplan.world.WorldLayer.RESCUE)
 
     /** The journal entry being written in Care, kept while the player looks elsewhere in the app (not saved to disk until saved as an entry). */
     var journalDraft: String by mutableStateOf("")

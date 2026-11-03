@@ -60,7 +60,7 @@ class FinishTest {
             assertEquals(1, r.events.count { it == WorldEvent.GuardianFaced })
         }
         val forced = WorldSim.settle(start.copy(teams = start.teams.map { it.copy(expedition = it.expedition!!.copy(floorsClimbed = d.floors - 1)) }), roster, 12L * 3_600_000)
-        assertTrue(forced.data.guardianDone && Story.complete(forced.data))
+        assertTrue(forced.data.guardianDone && Story.complete(forced.data, WorldLayer.EXPLORERS))
         assertEquals(WorldSim.floorMillis(d, 100.0) * 9 / 10, WorldSim.floorMillis(d, 100.0, mastery = true))
     }
 
@@ -197,11 +197,9 @@ class GuideAndLogTest {
     @Test
     fun theNextStepFollowsProgress() {
         assertEquals("Explore Tiny Woods", WorldGuide.nextStep(WorldData()).title)
-        val cleared = WorldData(clears = mapOf("tiny-woods" to 1))
-        assertEquals("Explore Thunderwave Cave", WorldGuide.nextStep(cleared).title)
         // Everything open is cleared: the next closed one says what it waits for.
-        val twoCleared = WorldData(clears = mapOf("tiny-woods" to 1, "thunderwave-cave" to 1))
-        val step = WorldGuide.nextStep(twoCleared)
+        val cleared = WorldData(clears = mapOf("tiny-woods" to 1))
+        val step = WorldGuide.nextStep(cleared)
         assertEquals("Work towards Mt. Steel", step.title)
         assertTrue("Bronze" in step.reason && "Exploration XP" in step.reason, step.reason)
         val all = WorldData(xp = 1_000_000, guardianDone = true, clears = Dungeons.all.associate { it.id to 1 })

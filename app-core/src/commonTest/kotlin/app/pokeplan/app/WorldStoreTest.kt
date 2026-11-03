@@ -40,16 +40,16 @@ class WorldStoreTest {
     fun mewJoinsOnceWhenTheOpeningIsFinished() {
         val store = store()
         // Finishing the episode without Mew's yes (the flag) gives nothing.
-        store.worldEpisodeDone("home:1")
+        store.worldEpisodeDone("intro:1")
         assertTrue(store.data.world.finds.none { it.speciesId == 151 })
         // With it, Mew waits in Finds, once, however often the episode is finished again.
         val said = setOf(app.pokeplan.world.story.IntroMewChapter.MEW_JOINED)
-        store.worldEpisodeDone("home:1", said)
-        store.worldEpisodeDone("home:1", said)
+        store.worldEpisodeDone("intro:1", said)
+        store.worldEpisodeDone("intro:1", said)
         assertEquals(1, store.data.world.finds.count { it.speciesId == 151 })
         val mew = assertNotNull(store.worldRecruit(store.data.world.finds.indexOfFirst { it.speciesId == 151 }))
         assertEquals(151, mew.speciesId)
-        store.worldEpisodeDone("home:1", said)
+        store.worldEpisodeDone("intro:1", said)
         assertTrue(store.data.world.finds.none { it.speciesId == 151 }, "a replay does not give a second Mew")
     }
 

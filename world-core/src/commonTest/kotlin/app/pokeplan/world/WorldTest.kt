@@ -120,7 +120,7 @@ class WorldTest {
         assertEquals(ExplorerRank.NORMAL, ExplorerRank.at(0))
         assertEquals(ExplorerRank.BRONZE, ExplorerRank.at(300))
         assertEquals(ExplorerRank.DIAMOND, ExplorerRank.at(1_000_000))
-        val silver = WorldData(xp = 1_500)
+        val silver = WorldData(xp = 1_500, clears = mapOf("tiny-woods" to 1))
         assertEquals(3, silver.teamSlots)
         assertNotNull(silver.assign(3, listOf("a"))!!.start(3, "mt-steel", 0L))
     }
@@ -129,7 +129,7 @@ class WorldTest {
     fun theStoryOpensWithRankAndClears() {
         assertEquals(1, Story.opened(WorldData()))
         assertEquals(2, Story.opened(WorldData(xp = 300, clears = mapOf("tiny-woods" to 1))))
-        assertEquals("Requests and Rescues", Story.next(WorldData())!!.title)
+        assertEquals("The World Needs Helping", Story.next(WorldData())!!.title)
         assertNull(Story.next(WorldData(xp = 1_000_000, clears = SEVEN)))
     }
 }

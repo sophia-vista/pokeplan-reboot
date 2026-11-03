@@ -20,7 +20,7 @@ class KantoTest {
     fun kantoHasNineDungeonsWithIdsThatAreUniqueAcrossLayers() {
         assertEquals(9, kanto.size)
         assertEquals(Dungeons.all.size, Dungeons.all.map { it.id }.toSet().size)
-        assertEquals(9, Dungeons.of(WorldLayer.HOME).size, "the home layer is unchanged")
+        assertEquals(9, Dungeons.of(WorldLayer.RESCUE).size + Dungeons.of(WorldLayer.EXPLORERS).size, "the two Mystery Dungeon arcs share the nine old home dungeons")
         assertEquals("cerulean-cave", kanto.single { it.guardian }.id)
     }
 
@@ -33,7 +33,7 @@ class KantoTest {
             assertTrue(d.wild.count { HatchRules.rarity(it.speciesId) != null } >= 4, d.id)
         }
         // A layer's Pokémon do not leak into the home layer.
-        val home = Dungeons.of(WorldLayer.HOME).flatMap { it.wild }.map { it.speciesId }.toSet()
+        val home = (Dungeons.of(WorldLayer.RESCUE) + Dungeons.of(WorldLayer.EXPLORERS)).flatMap { it.wild }.map { it.speciesId }.toSet()
         assertTrue(kanto.flatMap { it.wild }.map { it.speciesId }.toSet().size >= 40)
         assertTrue(home.isNotEmpty())
     }
@@ -51,7 +51,7 @@ class KantoTest {
         assertEquals(1, Story.opened(homeClears, WorldLayer.KANTO))
         val kantoClears = WorldData(xp = 1_000_000, clears = kanto.associate { it.id to 1 })
         assertEquals(KantoStory.chapters.size, Story.opened(kantoClears, WorldLayer.KANTO))
-        assertEquals(1, Story.opened(kantoClears, WorldLayer.HOME))
+        assertEquals(1, Story.opened(kantoClears, WorldLayer.EXPLORERS))
     }
 
     @Test
@@ -127,7 +127,7 @@ class LockReasonsTest {
         // The Distortion Rift also waits for the story itself.
         val rift = WorldGuide.lockReasons(WorldData(), Dungeons.byId("distortion-rift")!!)
         assertEquals(3, rift.size, rift.toString())
-        assertTrue("story of Mystery Dungeon world is complete" in rift[2], rift[2])
+        assertTrue("story of Explorers is complete" in rift[2], rift[2])
         // Met requirements drop out; an open dungeon has none.
         val partway = WorldData(xp = 60_000, clears = Dungeons.of(WorldLayer.KANTO).take(3).associate { it.id to 1 })
         val left = WorldGuide.lockReasons(partway, cave)

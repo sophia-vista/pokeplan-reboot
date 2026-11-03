@@ -73,7 +73,7 @@ class ScreenshotTest {
             render("story-${scene.id}", frames = 90) { PixelTheme { app.pokeplan.ui.screens.StoryPlayer(model, episode.copy(scenes = listOf(scene)), {}) } }
         }
         // A cinematic (a legendary's appearance) and a choice.
-        listOf("kanto-5-cave", "home-6-tower", "home-2-board", "intro-mew-1", "intro-mew-3", "intro-mew-5").forEach { id ->
+        listOf("kanto-5-cave", "kanto-4-camp", "intro-mew-1", "intro-mew-3", "intro-mew-5").forEach { id ->
             val scene = app.pokeplan.world.story.StoryCatalog.scene(id)!!
             render("story-$id", frames = 120) { PixelTheme { app.pokeplan.ui.screens.StoryPlayer(model, episode.copy(scenes = listOf(scene)), {}) } }
         }
@@ -153,7 +153,7 @@ class ScreenshotTest {
         render("world-map-hoenn") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
         model.worldLayer = app.pokeplan.world.WorldLayer.SINNOH
         render("world-map-sinnoh") { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
-        model.worldLayer = app.pokeplan.world.WorldLayer.HOME
+        model.worldLayer = app.pokeplan.world.WorldLayer.RESCUE
         // The same screens with the system text at 130%: nothing may be clipped or pushed out of its box.
         app.pokeplan.ui.screens.WorldSection.entries.forEach { section ->
             model.worldSection = section
