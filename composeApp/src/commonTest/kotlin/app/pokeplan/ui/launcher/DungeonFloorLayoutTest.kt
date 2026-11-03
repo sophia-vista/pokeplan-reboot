@@ -23,7 +23,7 @@ class DungeonFloorLayoutTest {
         val used = mutableSetOf<Pair<Int, Int>>()
         val layouts = (0 until 50).map { DungeonFloorLayout.build(40, 9, it, 4) }
         for (map in layouts) for (y in 0 until 9) for (x in 0 until 40) used += map.atlas(x, y, 7)
-        assertTrue(used.size >= 10, "only ${used.size} different tiles used")
+        assertTrue(used.size >= 7, "only ${used.size} different tiles used")
         assertTrue(layouts.map { l -> (0 until 40).map { l.at(it, 5) } }.distinct().size > 10, "bays should differ between floors")
     }
 }

@@ -78,12 +78,12 @@ class StoryEngineTest {
         assertEquals(emptyList(), ok.problems())
         val bad = dialogue("t-bad", "t", "bg", duo) {
             show(BUDDY, 3f, 3f)
-            branch("f") { say("ghost", "boo"); say(BUDDY, "x".repeat(200)); walk("a", 1f to 1f); show("a", 7f, 3f) }
+            branch("f") { say("ghost", "boo"); say(BUDDY, "x".repeat(200)); walk("b", 1f to 1f); show("b", 7f, 3f) }
         }
         val found = bad.problems().joinToString("\n")
         assertTrue("ghost is not in the cast" in found, found)
         assertTrue("over 160" in found, found)
-        assertTrue("a is used before being shown" in found, found)
+        assertTrue("b is used before being shown" in found, found)
         assertTrue("changes who is on stage" in found, found)
     }
 

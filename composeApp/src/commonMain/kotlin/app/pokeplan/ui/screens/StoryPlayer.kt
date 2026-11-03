@@ -301,6 +301,7 @@ private fun DungeonFloor(dungeonId: String) {
     val tiles = dungeonTiles(dungeonId)
     val atlas by produceState<ImageBitmap?>(null, tiles) { value = orNull { Res.readBytes("files/tiles/$tiles.png").decodeToImageBitmap() } }
     val tileSize = 24
+    val alternates = remember(atlas) { atlas?.let { app.pokeplan.ui.launcher.alternatesFit(it) } ?: booleanArrayOf(true, false, false) }
     Canvas(Modifier.fillMaxSize()) {
         val image = atlas ?: return@Canvas drawRect(Color(0xFF2A2A2A))
         val pixel = (size.width / (tileSize * GRID_COLUMNS)).toInt().coerceAtLeast(1)
@@ -310,11 +311,12 @@ private fun DungeonFloor(dungeonId: String) {
         fun put(ax: Int, ay: Int, x: Int, y: Int) =
             drawImage(image, IntOffset(ax * tileSize, ay * tileSize), IntSize(tileSize, tileSize), IntOffset(x, y), IntSize(tilePx, tilePx), filterQuality = FilterQuality.None)
         val seed = dungeonId.hashCode()
+        val fit = alternates
         val map = app.pokeplan.ui.launcher.DungeonFloorLayout.build(cols, rows, seed, floorRows = 4)
         // Centred on a whole tile, like the town, so the same columns show whatever the width.
         val shift = ((cols * tilePx - size.width) / 2).toInt() / pixel * pixel
         for (r in 0 until rows) for (c in 0 until cols) {
-            val (ax, ay) = map.atlas(c, r, seed)
+            val (ax, ay) = map.atlas(c, r, seed).let { t -> if (t.second == 3 && !fit[t.first]) 0 to 3 else t }
             put(ax, ay, c * tilePx - shift, r * tilePx)
         }
     }

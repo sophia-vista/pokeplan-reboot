@@ -134,6 +134,7 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
             tileAtlases[tiles] = value
         }
     }
+    val alternates = remember(atlas) { atlas?.let { app.pokeplan.ui.launcher.alternatesFit(it) } ?: booleanArrayOf(true, false, false) }
     var seconds by remember { mutableFloatStateOf(0f) }
     LaunchedEffect(animate && scrolls) {
         if (animate && scrolls) { val start = withFrameNanos { it }; while (true) withFrameNanos { seconds = (it - start) / 1_000_000_000f } }
@@ -159,11 +160,12 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
                         drawImage(image, IntOffset(ax * TILE_PX, ay * TILE_PX), IntSize(TILE_PX, TILE_PX), IntOffset(x, y), IntSize(tilePx, tilePx), filterQuality = FilterQuality.None)
                     // The floor: the dungeon's own layout, 40 squares wide and repeated along the strip (the ponds and bays sit well inside, so the wrap shows no seam).
                     val seed = dungeonId.hashCode()
+                    val fit = alternates
                     val map = layouts.getOrPut(seed to rows) { app.pokeplan.ui.launcher.DungeonFloorLayout.build(40, rows, seed, STRIP_ROWS) }
                     for (r in 0 until rows) for (c in -1..cols) {
                         val x = c * tilePx - scroll
                         val scrolled = (((c + scrollTiles) % 40) + 40) % 40
-                        val (ax, ay) = map.atlas(scrolled, r, seed)
+                        val (ax, ay) = map.atlas(scrolled, r, seed).let { t -> if (t.second == 3 && !fit[t.first]) 0 to 3 else t }
                         put(ax, ay, x, r * tilePx)
                     }
                     drawRect(Color(0xB3141C28), Offset(0f, (STRIP_ROWS + 2) * tilePx.toFloat()), Size(size.width, size.height))
