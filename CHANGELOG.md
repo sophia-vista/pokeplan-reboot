@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.119.2
+
+From the deep review of 3 November (its P0 story and dungeon items):
+
+- **Story branches play like everything else.** Inside a "if you chose this" line, a walk, a cry, a sound, a shake, a flash, a wait, a fade or an emote now plays (before, only the words did, so a character could jump and an effect was lost). The checker also looks inside branches now: unknown or unshown characters, empty paths, long lines, a choice or End inside a branch, and a branch that leaves someone on or off stage, are reported. A dialogue scene that shows three characters at once is reported too (it draws two).
+- **Dungeon floors use the tileset's layout** instead of a repeated four-tile strip: the story walks and the team strips draw a wall along the top, a clear floor, and wall below with bays of ground cut into it (different on each dungeon), with the ground alternates scattered over the floor only where a tileset's alternate really is ground (a few tilesets' are pits or water and are left out).
+
 ## 0.119.1
 
 - **Launcher faster.** Coming back to the home screen (Home, or from an app) no longer redraws every app icon: the app list and its icons are kept when nothing was installed, updated or removed. The app list computes its categories, sections and rows once per change instead of on every frame, and an icon's border colour is worked out once instead of each time it scrolls into view.

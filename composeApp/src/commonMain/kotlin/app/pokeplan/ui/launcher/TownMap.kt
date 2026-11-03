@@ -1,5 +1,6 @@
 package app.pokeplan.ui.launcher
 
+import androidx.compose.ui.graphics.toPixelMap
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -82,4 +83,51 @@ object TownLayout {
         }
         return TownMap(cols, rows, cells)
     }
+}
+
+/**
+ * A dungeon floor for a walk or a team's strip, from the same atlas as the town: one row of wall along the top, [floorRows] rows of ground to walk on, then wall below with a few bays of ground cut into it. The floor
+ * rows are always clear, so nobody walks through a wall; the bays and the ground alternates only break the
+ * repetition (no ponds: not every tileset's water is fit to show). The same [seed] (from the dungeon and the floor) always gives the same floor. Nothing is drawn here: the
+ * tiles are the game's own, picked by [TownMap.atlas].
+ */
+internal object DungeonFloorLayout {
+    fun build(cols: Int, rows: Int, seed: Int, floorRows: Int): TownMap {
+        val random = Random(seed)
+        val cells = Array(cols * rows) { TownCell.GROUND }
+        val below = floorRows + 1
+        for (x in 0 until cols) {
+            cells[x] = TownCell.WALL
+            for (y in below until rows) cells[y * cols + x] = TownCell.WALL
+        }
+        // Bays: ground cut into the wall below (two to four squares wide, never at the map's edge, a square of wall between them).
+        if (below < rows - 1) {
+            var x = 2 + random.nextInt(3)
+            while (x < cols - 5) {
+                val w = 2 + random.nextInt(3)
+                if (random.nextInt(100) < 55) for (c in x until minOf(x + w, cols - 2)) cells[below * cols + c] = TownCell.GROUND
+                x += w + 2 + random.nextInt(4)
+            }
+        }
+        return TownMap(cols, rows, cells)
+    }
+}
+
+/**
+ * Whether each ground alternate of an atlas (row 3, columns 1 and 2) is close enough to the plain ground tile to be
+ * scattered over a floor: a few tilesets' alternates are a different thing (a pit, a patch of water) and would look
+ * like holes. Worked out from the pixels, once per atlas.
+ */
+internal fun alternatesFit(image: androidx.compose.ui.graphics.ImageBitmap): BooleanArray {
+    val map = image.toPixelMap()
+    if (map.height < 96 || map.width < 72) return booleanArrayOf(true, false, false)
+    fun difference(column: Int): Float {
+        var sum = 0f
+        for (y in 0 until 24) for (x in 0 until 24) {
+            val a = map[x, 72 + y]; val b = map[column * 24 + x, 72 + y]
+            sum += kotlin.math.abs(a.red - b.red) + kotlin.math.abs(a.green - b.green) + kotlin.math.abs(a.blue - b.blue)
+        }
+        return sum / (24 * 24 * 3) * 255f
+    }
+    return booleanArrayOf(true, difference(1) < 20f, difference(2) < 20f)
 }
