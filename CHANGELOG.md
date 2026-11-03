@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.121.0
+
+- **A simpler World landing.** The page now reads top to bottom as: your rank in one quiet strip (badge, progress, Poké), what the teams brought back (shorter: no repeated "every floor" and "already in your Bag" lines), the one card for the region on show (its switch, the chapter, what is worth doing now with its one button, and what the next chapter asks, quietly), the teams out, then the places to go. The separate rank card, story card and "Exploration team" banner are gone; nothing they showed is lost (the story is in the Story archive, the rank on the strip).
+
 ## 0.119.2
 
 From the deep review of 3 November (its P0 story and dungeon items):
