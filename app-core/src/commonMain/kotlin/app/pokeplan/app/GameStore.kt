@@ -1276,7 +1276,14 @@ class GameStore(
     fun worldSceneDone(id: String) { if (id !in data.world.scenesDone) update { it.copy(world = it.world.copy(scenesDone = it.world.scenesDone + id)) } }
 
     /** Counts a chapter's episode as watched to its end (and forgets where it left off). */
-    fun worldEpisodeDone(key: String) { if (key !in data.world.episodesDone || key in data.world.storyResume) update { it.copy(world = it.world.copy(episodesDone = it.world.episodesDone + key, storyResume = it.world.storyResume - key)) } }
+    fun worldEpisodeDone(key: String, flags: Set<String> = emptySet()) {
+        if (key !in data.world.episodesDone || key in data.world.storyResume || !data.world.storyFlags.containsAll(flags)) update { it.copy(world = it.world.copy(episodesDone = it.world.episodesDone + key, storyResume = it.world.storyResume - key, storyFlags = it.world.storyFlags + flags)) }
+        // Mew keeps its word: having agreed to join in the opening, it waits in Finds, once (the gift flag stops a replay from giving a second).
+        val world = data.world
+        if (key == "home:1" && app.pokeplan.world.story.IntroMewChapter.MEW_JOINED in world.storyFlags && MEW_GIFT !in world.storyFlags) {
+            update { it.copy(world = it.world.copy(storyFlags = it.world.storyFlags + MEW_GIFT, finds = it.world.finds + app.pokeplan.world.Find(151, "tiny-woods", 1, nowMillis))) }
+        }
+    }
 
     /** Notes the story flags set so far (answers to choices) and the next scene of an unfinished episode, so it can start there next time. */
     fun worldStoryProgress(key: String, nextScene: Int, flags: Set<String>) {
@@ -1616,6 +1623,7 @@ class GameStore(
     companion object {
         /** The reward-log source of what World gives (a recruit, the Guardian): not an egg, so no hatch scene or hatch reaction. */
         const val WORLD_SOURCE = "World"
+        const val MEW_GIFT = "gift-mew"
 
         const val MAX_PICKER_OPTIONS = 30
 

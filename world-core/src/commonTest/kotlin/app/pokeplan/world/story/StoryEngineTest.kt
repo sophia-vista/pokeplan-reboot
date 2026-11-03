@@ -18,7 +18,7 @@ class StoryEngineTest {
         }
         val ch1 = StoryCatalog.episodeFor(WorldLayer.HOME, 1)!!
         assertEquals("home:1", ch1.key)
-        assertEquals(setOf(SceneType.DIALOGUE, SceneType.STAGE, SceneType.DUNGEON), ch1.scenes.map { it.type }.toSet())
+        assertEquals(setOf(SceneType.STAGE, SceneType.DUNGEON), ch1.scenes.map { it.type }.toSet())
         // Every chapter of every layer has its episode, matching the chapter's number and title.
         for (layer in WorldLayer.entries) for (c in app.pokeplan.world.Story.chaptersOf(layer)) {
             val ep = StoryCatalog.episodeFor(layer, c.number)
@@ -26,17 +26,17 @@ class StoryEngineTest {
         }
         assertEquals(StoryCatalog.all().size, StoryCatalog.all().map { it.key }.distinct().size)
         assertNull(StoryCatalog.episodeFor(WorldLayer.KANTO, 99), "no such chapter")
-        assertEquals(ch1.scenes.first(), StoryCatalog.scene("home-1-letter"))
+        assertEquals(ch1.scenes.first(), StoryCatalog.scene("intro-mew-1"))
     }
 
     @Test
     fun skippingLandsOnTheSameStateAsPlayingEveryEvent() {
-        val scene = StoryCatalog.scene("home-1-woods")!!
+        val scene = StoryCatalog.scene("intro-mew-3")!!
         val end = SceneState.finalOf(scene)
-        assertNull(end.line); assertTrue(end.finished.not() || end.finished)
-        assertTrue("caterpie" !in end.actors, "who left is gone")
-        assertEquals(5.4f, end.actors.getValue(BUDDY).x); assertEquals(3.2f, end.actors.getValue(BUDDY).y)
-        assertTrue(end.items.isEmpty(), "the apple was taken")
+        assertNull(end.line)
+        assertTrue(BUDDY !in end.actors, "who walked off is gone")
+        assertTrue("mew" in end.actors && "sentret" in end.actors, "who stayed is still there")
+        assertTrue(IntroMewChapter.MEW_JOINED in SceneState.finalOf(StoryCatalog.scene("intro-mew-6")!!).flags, "Mew agrees to join in the last test")
         // A walk faces the way it goes: east, then south-west to the apple.
         val mid = SceneState.start(scene).apply(SceneEvent.Show(BUDDY, 0f, 0f)).apply(SceneEvent.Move(BUDDY, listOf(3f to 0f)))
         assertEquals(Facing.RIGHT, mid.actors.getValue(BUDDY).facing)
@@ -67,7 +67,7 @@ class StoryEngineTest {
         assertTrue(s.letterbox && "a" in s.flags)
         val bad = StoryScene("c", "C", SceneType.DIALOGUE, "city", listOf(StoryCharacter(BUDDY, "B")), listOf(SceneEvent.Choice(null, listOf(StoryChoice("only", "x"))), SceneEvent.End))
         assertTrue(bad.problems().any { it.contains("two or three") })
-        assertTrue(StoryCatalog.peopleMet(setOf("home-1-letter")).map { it.displayName } == listOf("Pelly"))
+        assertTrue(StoryCatalog.peopleMet(setOf("intro-mew-4")).map { it.displayName } == listOf("Pelly", "Mew", "Sentret"))
     }
 
     private val duo = listOf(buddyCharacter(), npc("a", "Ann", 25), npc("b", "Bo", 133))

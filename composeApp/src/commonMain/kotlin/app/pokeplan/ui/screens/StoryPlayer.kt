@@ -115,7 +115,7 @@ internal fun StoryPlayer(model: AppModel, episode: StoryEpisode, onClose: () -> 
     // The answers given in this watching, kept with the next scene to start from (so leaving mid-episode resumes at the next scene).
     var flags by remember(episode.key) { mutableStateOf(model.data.world.storyFlags) }
     val scene = episode.scenes.getOrNull(index)
-    if (scene == null) { LaunchedEffect(episode.key) { model.store.worldEpisodeDone(episode.key); onClose() }; return }
+    if (scene == null) { LaunchedEffect(episode.key) { model.store.worldEpisodeDone(episode.key, flags); onClose() }; return }
     Box(Modifier.fillMaxSize().background(Color.Black)) {
         Column(Modifier.safeDrawingPadding().fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(Modifier.fillMaxWidth().padding(horizontal = Spacing.M, vertical = Spacing.S), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
