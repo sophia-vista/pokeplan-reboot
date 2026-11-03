@@ -276,19 +276,26 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     override fun widgetLabel(id: Int): String? = widgetManager.getAppWidgetInfo(id)?.loadLabel(packageManager)
 
     @androidx.compose.runtime.Composable
-    override fun HostedWidget(id: Int, size: Int, modifier: androidx.compose.ui.Modifier) {
+    override fun HostedWidget(id: Int, size: Int, widthDp: Int, heightDp: Int, modifier: androidx.compose.ui.Modifier) {
         val info = widgetManager.getAppWidgetInfo(id) ?: return
-        // Small is the height the widget asks for, medium one and a half times that, large twice.
-        val height = (info.minHeight.coerceAtLeast(48) * (1f + size.coerceIn(0, 2) / 2f)).toInt().coerceAtMost(640)
+        // On the grid the widget is told the room its cells really give it. In a list it has the height it asks for, times 1, 1.5 or 2 for small, medium and large.
+        val onGrid = heightDp > 0 && widthDp > 0
+        val height = if (onGrid) heightDp else (info.minHeight.coerceAtLeast(48) * (1f + size.coerceIn(0, 2) / 2f)).toInt().coerceAtMost(640)
         androidx.compose.ui.viewinterop.AndroidView(
             factory = { context ->
                 widgetHost.createView(context, id, info).apply {
                     setAppWidget(id, info)
-                    layoutParams = android.view.ViewGroup.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, (height * context.resources.displayMetrics.density).toInt())
+                    layoutParams = android.view.ViewGroup.LayoutParams(
+                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                        if (onGrid) android.view.ViewGroup.LayoutParams.MATCH_PARENT else (height * context.resources.displayMetrics.density).toInt(),
+                    )
                 }
             },
             modifier = modifier,
-            update = { view -> view.updateAppWidgetSize(null, info.minWidth, info.minHeight, info.minWidth * 2, height) },
+            update = { view ->
+                if (onGrid) view.updateAppWidgetSize(null, widthDp, heightDp, widthDp, heightDp)
+                else view.updateAppWidgetSize(null, info.minWidth, info.minHeight, info.minWidth * 2, height)
+            },
         )
     }
 

@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.119.3
+
+- **Other apps' widgets fit their cells.** On the launcher's widget grid, a widget from another app gets exactly the room its cells give it (before, it was told a width and height from the old small, medium and large sizes, so after a resize it could be clipped, show empty space or lay out for the wrong size) and has no frame of ours around it. In the older list layout nothing changes.
+
 ## 0.119.2
 
 From the deep review of 3 November (its P0 story and dungeon items):
