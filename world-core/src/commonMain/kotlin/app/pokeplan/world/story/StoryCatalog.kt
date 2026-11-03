@@ -8,10 +8,13 @@ import app.pokeplan.world.WorldLayer
  */
 object StoryCatalog {
     private val episodes: List<StoryEpisode> by lazy {
-        listOf(IntroMewChapter.episode()) + MysteryDungeonChapters.all() + KantoChapters.all() + JohtoChapters.all() + HoennChapters.all() + SinnohChapters.all()
+        listOf(IntroMewChapter.episode()) + KantoChapters.all() + JohtoChapters.all() + HoennChapters.all() + SinnohChapters.all()
     }
 
     fun all(): List<StoryEpisode> = episodes
+
+    /** The opening, which belongs to no layer. */
+    fun intro(): StoryEpisode = episodes.first { it.layer == null }
 
     fun episodeFor(layer: WorldLayer, chapter: Int): StoryEpisode? = episodes.firstOrNull { it.layer == layer && it.chapter == chapter }
 

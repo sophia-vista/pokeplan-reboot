@@ -98,12 +98,12 @@ object Missions {
     private val byId = all.associateBy { it.id }
 
     /** The region a job belongs to: its dungeon's layer, or the home region for a job that is not tied to a dungeon (berries). */
-    fun layerOf(m: MissionDef): WorldLayer = m.dungeonId?.let { Dungeons.byId(it)?.layer } ?: WorldLayer.HOME
+    fun layerOf(m: MissionDef): WorldLayer = m.dungeonId?.let { Dungeons.byId(it)?.layer } ?: WorldLayer.RESCUE
 
     fun byId(id: String): MissionDef? = byId[id]
 
     /** Whether the board is open at all for [data]. */
-    fun boardOpen(data: WorldData): Boolean = Story.opened(data) >= BOARD_CHAPTER
+    fun boardOpen(data: WorldData): Boolean = Story.opened(data, WorldLayer.RESCUE) >= BOARD_CHAPTER || Story.opened(data, WorldLayer.EXPLORERS) >= BOARD_CHAPTER
 
     /** Whether a team could enter [m]'s dungeon now (its story chapter is open and a post-story place is unlocked); jobs with no dungeon are always open. */
     fun dungeonOpen(data: WorldData, m: MissionDef): Boolean {

@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.123.0
+
+- **The home layer is gone; World has two optional Mystery Dungeon arcs.** The Mystery Dungeon world is split into **Rescue Team** (Pokémon Square: Tiny Woods, Mt. Steel and the Sky Tower, six chapters, Sky Tower as its Guardian dungeon) and **Explorers** (Treasure Town: Thunderwave Cave, Waterfall Cave, Glacier Palace, Ancient Ruins and the Temporal Tower, eight chapters, Primal Dialga as its Guardian, the Distortion Rift after it). Each is a layer beside Kanto, Johto, Hoenn and Sinnoh. The old six-chapter home story (the temporal saga) is removed; the two arcs' chapters have titles and gates now and their scenes are the next step (`docs/world-story-rewrite.md`).
+- **The opening belongs to no layer.** Mew's Unofficial Welcome plays first on a new save (and is listed in the Story archive under "The opening"). A save that watched the old opening counts it as watched; its dungeon clears, rank, Guardian and everything else are kept (the dungeons keep their ids). The missions board opens with chapter 2 of either arc.
+- Not in this change: the arcs' own scenes and extra dungeons (Frosty Forest, Beach Cave and the rest), and arc-specific map pictures (both arcs use the stage map for now).
+
 ## 0.122.0
 
 - **World opens with Mew's prank.** The first World story is now "Mew's Unofficial Welcome" (seven scenes, from the owner's rewrite brief in `docs/world-story-rewrite.md`): a pink thief, a chase out of town, a short first dungeon, a job that becomes a promise, Braviary on preparing a team, Mew's real test at dusk, and the expedition board. It replaces the old guild-letter chapter 1. At the end Mew asks to join and waits in **Finds** to be recruited, once (replaying the episode never gives a second Mew). The scene ids are now `intro-mew-*`; chapters 2 to 6 of the home story are unchanged for now.

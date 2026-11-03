@@ -122,7 +122,7 @@ data class WorldData(
     val rank: ExplorerRank get() = ExplorerRank.at(xp)
 
     /** Whether [layer]'s Guardian has been faced (its story is complete). */
-    fun layerDone(layer: WorldLayer): Boolean = if (layer == WorldLayer.HOME) guardianDone else layer.id in layersDone
+    fun layerDone(layer: WorldLayer): Boolean = if (layer == WorldLayer.EXPLORERS) guardianDone else layer.id in layersDone
 
     /** Whether the legendary quest [id]'s Pokémon has been given. */
     fun hasLegend(id: String): Boolean = id in legends

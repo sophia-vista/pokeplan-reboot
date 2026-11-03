@@ -19,7 +19,7 @@ object WorldGuide {
      * The landing's primary action, in this order: Pokémon waiting to be recruited, a finished job to claim, a free team to send to the
      * next dungeon of [layer] (see [nextStep]), else everything is out exploring (go and look). Plain data in, words out.
      */
-    fun primaryAction(data: WorldData, layer: WorldLayer = WorldLayer.HOME): PrimaryAction {
+    fun primaryAction(data: WorldData, layer: WorldLayer = WorldLayer.RESCUE): PrimaryAction {
         val finds = data.finds.size
         if (finds > 0) return PrimaryAction(PrimaryKind.REVIEW_FINDS, "Recruit ${if (finds == 1) "a new friend" else "$finds new friends"}", "${if (finds == 1) "A Pokémon is" else "$finds Pokémon are"} waiting to join you. They stay in Finds until you decide.")
         val done = data.missions.count { it.done }
@@ -51,7 +51,7 @@ object WorldGuide {
         if (dungeon.postStory && !data.layerDone(layer)) add("Opens when the story of ${layer.label} is complete.")
     }
 
-    fun nextStep(data: WorldData, layer: WorldLayer = WorldLayer.HOME): NextStep {
+    fun nextStep(data: WorldData, layer: WorldLayer = WorldLayer.RESCUE): NextStep {
         val dungeons = Dungeons.of(layer)
         fun isOpen(d: DungeonDef) = data.rank >= d.needs && Story.opened(data, layer) >= d.chapter && !(d.postStory && !data.layerDone(layer))
         dungeons.firstOrNull { isOpen(it) && (data.clears[it.id] ?: 0) == 0 }?.let { d ->

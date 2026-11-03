@@ -224,7 +224,7 @@ private fun WorldMapView(model: AppModel) {
     // The layer switch: every layer is open from the first day.
     WorldLayerSwitch(model) { selected = null }
     Text(layer.blurb, style = MaterialTheme.typography.bodyMedium)
-    val spots = when (layer) { WorldLayer.HOME -> mapSpots; WorldLayer.KANTO -> kantoSpots; WorldLayer.JOHTO -> johtoSpots; WorldLayer.HOENN -> hoennSpots; WorldLayer.SINNOH -> sinnohSpots }
+    val spots = when (layer) { WorldLayer.RESCUE, WorldLayer.EXPLORERS -> mapSpots; WorldLayer.KANTO -> kantoSpots; WorldLayer.JOHTO -> johtoSpots; WorldLayer.HOENN -> hoennSpots; WorldLayer.SINNOH -> sinnohSpots }
     WorldMapPicture(
         stage = 1 + clearedCount,
         markers = dungeons.mapNotNull { d ->
@@ -901,6 +901,10 @@ private fun WorldArchiveView(model: AppModel) {
     WorldBanner("guild-room", "Story archive", "${moments.size} moments to watch again", sky = Color(0xFF101038), top = true)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            if (moments.any { it == app.pokeplan.world.WorldMoment.Welcome }) {
+                FieldLabel("The opening")
+                ArchiveRow("Mew's Unofficial Welcome", "How the team began", app.pokeplan.world.WorldMoment.Welcome, model, icon = "town-map")
+            }
             FieldLabel("Ranks")
             moments.filterIsInstance<app.pokeplan.world.WorldMoment.RankUp>().forEach { m ->
                 ArchiveRow("Rank: ${m.rank.label}", "Exploration rank", m, model, icon = m.rank.badge)

@@ -98,8 +98,26 @@ class DungeonModifierTest {
 
 class WorldMomentsTest {
     @Test
+    fun aSaveFromTheHomeLayerKeepsItsProgressAndItsOpening() {
+        val home = WorldData(
+            xp = 2_000, guardianDone = true, clears = mapOf("tiny-woods" to 1, "temporal-tower" to 1),
+            episodesDone = setOf("home:1", "home:2", "kanto:1"), storyResume = mapOf("home:3" to 1, "kanto:2" to 1), seenChapters = mapOf("home" to 4, "kanto" to 1),
+        )
+        val migrated = WorldMoments.migratedFromHome(home)
+        // The opening counts as the new opening; the old chapters 2 to 6 are gone; everything else stays.
+        assertEquals(setOf("intro:1", "kanto:1"), migrated.episodesDone)
+        assertEquals(mapOf("kanto:2" to 1), migrated.storyResume)
+        assertEquals(mapOf("kanto" to 1), migrated.seenChapters)
+        assertTrue(migrated.guardianDone && migrated.layerDone(WorldLayer.EXPLORERS) && migrated.clears == home.clears)
+        assertEquals(migrated, WorldMoments.migratedFromHome(migrated), "migrating twice changes nothing")
+        assertTrue(WorldMoment.Welcome !in WorldMoments.pending(WorldMoments.adopted(home)), "a player who watched the old opening is not shown the new one again")
+        // One who never did is shown it first.
+        assertEquals(WorldMoment.Welcome, WorldMoments.pending(WorldMoments.adopted(WorldData())).first())
+    }
+
+    @Test
     fun anOldSaveAdoptsWhatItReachedAndOnlyNewThingsPlay() {
-        val old = WorldData(xp = 2_000, clears = mapOf("tiny-woods" to 1, "thunderwave-cave" to 1, "mt-steel" to 1))
+        val old = WorldData(xp = 2_000, clears = mapOf("tiny-woods" to 1, "thunderwave-cave" to 1, "mt-steel" to 1), episodesDone = setOf("intro:1"))
         val adopted = WorldMoments.adopted(old)
         assertEquals(old.rank.ordinal, adopted.seenRank)
         assertTrue(WorldMoments.pending(adopted).isEmpty(), "nothing replays")
@@ -113,11 +131,11 @@ class WorldMomentsTest {
 
     @Test
     fun aChapterPlaysOnceInOrderAndRankOpensText() {
-        val base = WorldMoments.adopted(WorldData(xp = 400))
+        val base = WorldMoments.adopted(WorldData(xp = 400, episodesDone = setOf("intro:1")))
         val more = base.copy(xp = 1_600, clears = mapOf("tiny-woods" to 1, "thunderwave-cave" to 1, "mt-steel" to 1))
         val moments = WorldMoments.pending(more)
         val chapters = moments.filterIsInstance<WorldMoment.ChapterOpened>().map { it.chapter.number }
-        assertEquals(chapters.sorted(), chapters, "in order")
+        moments.filterIsInstance<WorldMoment.ChapterOpened>().groupBy { it.layer }.forEach { (layer, ms) -> assertEquals(ms.map { it.chapter.number }.sorted(), ms.map { it.chapter.number }, "${layer.id} in order") }
         assertTrue(chapters.isNotEmpty())
         var d = more
         for (m in moments) d = WorldMoments.seen(d, m)

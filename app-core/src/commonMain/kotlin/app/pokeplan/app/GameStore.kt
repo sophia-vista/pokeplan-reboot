@@ -1280,7 +1280,7 @@ class GameStore(
         if (key !in data.world.episodesDone || key in data.world.storyResume || !data.world.storyFlags.containsAll(flags)) update { it.copy(world = it.world.copy(episodesDone = it.world.episodesDone + key, storyResume = it.world.storyResume - key, storyFlags = it.world.storyFlags + flags)) }
         // Mew keeps its word: having agreed to join in the opening, it waits in Finds, once (the gift flag stops a replay from giving a second).
         val world = data.world
-        if (key == "home:1" && app.pokeplan.world.story.IntroMewChapter.MEW_JOINED in world.storyFlags && MEW_GIFT !in world.storyFlags) {
+        if (key == app.pokeplan.world.WorldMoments.INTRO_KEY && app.pokeplan.world.story.IntroMewChapter.MEW_JOINED in world.storyFlags && MEW_GIFT !in world.storyFlags) {
             update { it.copy(world = it.world.copy(storyFlags = it.world.storyFlags + MEW_GIFT, finds = it.world.finds + app.pokeplan.world.Find(151, "tiny-woods", 1, nowMillis))) }
         }
     }

@@ -36,12 +36,12 @@ data class DungeonDef(
     /** Opens only after the story of its layer is complete (a Distortion Dungeon). */
     val postStory: Boolean = false,
     /** The layer of the map this dungeon is in; [chapter] and [guardian] are about that layer's story. */
-    val layer: WorldLayer = WorldLayer.HOME,
+    val layer: WorldLayer = WorldLayer.EXPLORERS,
 )
 
 /** The first three dungeons (the MVP's world map): Tiny Woods, Thunderwave Cave and Mt. Steel, from Explorers of Sky. *(tune)* */
 object Dungeons {
-    /** Every dungeon of every layer, the home layer first. */
+    /** Every dungeon of every layer, the two Mystery Dungeon arcs first. */
     val all: List<DungeonDef> by lazy { home + KantoDungeons.all + JohtoDungeons.all + HoennDungeons.all + SinnohDungeons.all }
 
     /** The dungeons of one layer, in the order the map lists them. */
@@ -50,7 +50,7 @@ object Dungeons {
     val home: List<DungeonDef> = listOf(
         DungeonDef(
             "tiny-woods", "Tiny Woods", WorldRegion.GREENLANDS, floors = 5, favored = setOf(PokemonType.GRASS, PokemonType.BUG, PokemonType.FLYING),
-            baseFloorSeconds = 1800, needs = ExplorerRank.NORMAL,
+            baseFloorSeconds = 1800, needs = ExplorerRank.NORMAL, layer = WorldLayer.RESCUE,
             wild = listOf(WildEntry(10, 5), WildEntry(13, 5), WildEntry(16, 5), WildEntry(19, 4), WildEntry(43, 3, fromFloor = 2), WildEntry(191, 2, fromFloor = 3), WildEntry(25, 1, fromFloor = 4)),
             milestones = mapOf(3 to MilestoneReward(Items.berry("sweet"), 2), 5 to MilestoneReward(Items.RARE_CANDY, 1, poke = 100)),
         ),
@@ -62,7 +62,7 @@ object Dungeons {
         ),
         DungeonDef(
             "mt-steel", "Mt. Steel", WorldRegion.MOUNTAINS, floors = 10, favored = setOf(PokemonType.STEEL, PokemonType.ROCK, PokemonType.FIGHTING),
-            baseFloorSeconds = 4320, needs = ExplorerRank.BRONZE,
+            baseFloorSeconds = 4320, needs = ExplorerRank.BRONZE, chapter = 2, layer = WorldLayer.RESCUE,
             wild = listOf(WildEntry(74, 5), WildEntry(95, 3, fromFloor = 3), WildEntry(66, 4), WildEntry(227, 1, fromFloor = 7), WildEntry(81, 3), WildEntry(208, 1, fromFloor = 8)),
             milestones = mapOf(5 to MilestoneReward(Items.berry("spicy"), 2), 10 to MilestoneReward(Items.RARE_CANDY, 3, poke = 400)),
         ),
@@ -86,19 +86,19 @@ object Dungeons {
         ),
         DungeonDef(
             "sky-tower", "Sky Tower", WorldRegion.SKY, floors = 18, favored = setOf(PokemonType.FLYING, PokemonType.DRAGON, PokemonType.PSYCHIC),
-            baseFloorSeconds = 10800, needs = ExplorerRank.PLATINUM, chapter = 5, canon = true,
+            baseFloorSeconds = 10800, needs = ExplorerRank.PLATINUM, chapter = 5, canon = true, guardian = true, layer = WorldLayer.RESCUE,
             wild = listOf(WildEntry(276, 5), WildEntry(278, 5), WildEntry(333, 4), WildEntry(371, 2, fromFloor = 6), WildEntry(334, 1, fromFloor = 12), WildEntry(147, 1, fromFloor = 14)),
             milestones = mapOf(9 to MilestoneReward(Items.berry("spicy"), 4), 18 to MilestoneReward(Items.RARE_CANDY, 6, poke = 2_000)),
         ),
         DungeonDef(
             "temporal-tower", "Temporal Tower", WorldRegion.OTHERWORLDLY, floors = 20, favored = setOf(PokemonType.PSYCHIC, PokemonType.GHOST, PokemonType.DRAGON, PokemonType.STEEL),
-            baseFloorSeconds = 14400, needs = ExplorerRank.DIAMOND, chapter = 6, canon = true, guardian = true,
+            baseFloorSeconds = 14400, needs = ExplorerRank.DIAMOND, chapter = 7, canon = true, guardian = true,
             wild = listOf(WildEntry(92, 5), WildEntry(355, 4), WildEntry(353, 4), WildEntry(200, 3, fromFloor = 5), WildEntry(374, 2, fromFloor = 8), WildEntry(436, 3, fromFloor = 8)),
             milestones = mapOf(10 to MilestoneReward(Items.berry("sweet"), 5), 20 to MilestoneReward(Items.RARE_CANDY, 8, poke = 4_000)),
         ),
         DungeonDef(
             "distortion-rift", "Distortion Rift", WorldRegion.OTHERWORLDLY, floors = 25, favored = setOf(PokemonType.PSYCHIC, PokemonType.GHOST, PokemonType.DARK, PokemonType.DRAGON),
-            baseFloorSeconds = 18000, needs = ExplorerRank.DIAMOND, chapter = 6, canon = false, postStory = true,
+            baseFloorSeconds = 18000, needs = ExplorerRank.DIAMOND, chapter = 7, canon = false, postStory = true,
             wild = listOf(WildEntry(147, 4), WildEntry(246, 4), WildEntry(374, 4), WildEntry(371, 3), WildEntry(443, 3, fromFloor = 8), WildEntry(633, 3, fromFloor = 8)),
             milestones = mapOf(13 to MilestoneReward(Items.berry("bitter"), 5), 25 to MilestoneReward(Items.RARE_CANDY, 10, poke = 8_000)),
         ),
