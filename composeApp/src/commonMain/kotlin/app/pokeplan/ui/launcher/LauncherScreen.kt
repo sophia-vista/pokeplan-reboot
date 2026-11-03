@@ -147,9 +147,13 @@ interface LauncherHost {
     suspend fun forecast(place: GeoPlace): Forecast? = null
     /** Places that match [query], for choosing where the forecast is for. */
     suspend fun searchPlaces(query: String): List<GeoPlace> = emptyList()
-    /** Shows another app's widget, by its Android widget id, at the width it is given and a height of its own times 1, 1.5 or 2 for [size] 0, 1 or 2. Only a phone can; elsewhere it shows nothing. */
+    /**
+     * Shows another app's widget, by its Android widget id. On the widget grid [widthDp] and [heightDp] are the room its
+     * cells really give it, and the widget is told exactly that; in a list ([heightDp] 0) it has the width it is given
+     * and a height of its own times 1, 1.5 or 2 for [size] 0, 1 or 2. Only a phone can; elsewhere it shows nothing.
+     */
     @Composable
-    fun HostedWidget(id: Int, size: Int, modifier: Modifier) {}
+    fun HostedWidget(id: Int, size: Int, widthDp: Int, heightDp: Int, modifier: Modifier) {}
     /** Asks the user to choose a widget from the installed apps; [onPicked] gets its id, or is not called if they cancel. */
     fun pickWidget(onPicked: (Int) -> Unit) {}
     /** Lets go of a widget's id when its slot is removed. */

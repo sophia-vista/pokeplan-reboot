@@ -37,8 +37,8 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.daysUntil
 
 /**
- * The currency converter: your home currency first (the Philippine peso until you change it), search by name or code, a swap, a board of the
- * currencies you watch, a rate of your own (what a money changer offered) and a "what it really costs" panel that keeps the reference rate, the
+ * The currency converter: a row for each currency you watch (your home currency first, the Philippine peso until you change it), each one an
+ * amount you can type in, so typing in any row works out all the others; add a currency by name or code, move or remove one, a rate of your own (what a money changer offered) and a "what it really costs" panel that keeps the reference rate, the
  * rate you were offered and the fees apart. Rates are the European Central Bank's daily reference rates, kept for offline use with their age
  * and source shown (and a warning when they are old); they are not what a bank, card or changer gives, and the screen says so.
  */
@@ -69,67 +69,61 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
             }
             return@TextBox
         }
-        val codes = remember(rates) { rates.perUsd.keys.toList() }
-        var from by remember { mutableStateOf(gear.currencyPair.substringBefore('>', home).ifEmpty { home }.takeIf { it in rates.perUsd } ?: home) }
-        var to by remember { mutableStateOf(gear.currencyPair.substringAfter('>', "").ifEmpty { gear.currencyBoard.firstOrNull() ?: "USD" }.takeIf { it in rates.perUsd } ?: "USD") }
+                val codes = remember(rates) { rates.perUsd.keys.toList() }
+        val rows = Currencies.rows(home, gear.currencyBoard, rates.perUsd.keys)
+        // One amount is being typed, in one currency: every other row is worked out from it (so rounding never drifts between rows).
+        var active by remember { mutableStateOf(rows.firstOrNull() ?: home) }
         var text by remember { mutableStateOf("1000") }
-        var choosing by remember { mutableStateOf<String?>(null) }
+        var adding by remember { mutableStateOf(false) }
         var query by remember { mutableStateOf("") }
         var showCost by remember { mutableStateOf(false) }
-        var manualText by remember(to) { mutableStateOf(gear.manualRates[to]?.let { CalcEngine.format(it) } ?: "") }
+        if (active !in rows && rows.isNotEmpty()) active = rows.first()
         val amount = (CalcEngine.evaluate(text.replace(',', '.')) as? CalcResult.Value)?.value
-        val rate = Currencies.rate(from, to, rates, home, gear.manualRates)
-        val usingManual = (from == home && gear.manualRates[to] != null) || (to == home && gear.manualRates[from] != null)
+        // The foreign currency for the fees and your own rate: the row being typed in, or else the first that is not home.
+        val foreign = active.takeIf { it != home } ?: rows.firstOrNull { it != home } ?: active
+        var manualText by remember(foreign) { mutableStateOf(gear.manualRates[foreign]?.let { CalcEngine.format(it) } ?: "") }
         val age = runCatching { LocalDate.parse(rates.date).daysUntil(store.today) }.getOrNull()
-        fun savePair(f: String, t: String) { store.changeGear { it.copy(currencyPair = "$f>$t") } }
+        fun saveBoard(next: List<String>) { store.changeGear { it.copy(currencyBoard = next.filter { c -> c != it.homeCurrency }.distinct().take(12)) } }
 
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(status.ifEmpty { ratesFreshness(rates, store.nowMillis) }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             if (age != null && age > 5) Text("These rates are $age days old. Refresh when you are online before you rely on them.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
-            PixelField(text, { text = it.take(20); onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "Amount in ${from} (a number or a sum)")
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelButton(from, { choosing = if (choosing == "from") null else "from"; query = "" }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelIconButton("repeat", "Swap", { val f = from; from = to; to = f; savePair(from, to); onUse() }, Pixel.Blue)
-                PixelButton(to, { choosing = if (choosing == "to") null else "to"; query = "" }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-            }
-            Text("${Currencies.label(from)} to ${Currencies.label(to)}. Tap a code to change it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            if (choosing != null) {
-                PixelField(query, { query = it.take(24) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search a currency (yen, rmb, peso, usd)")
-                Currencies.search(query, codes).take(8).forEach { c ->
-                    PixelButton(Currencies.label(c.code), { if (choosing == "from") from = c.code else to = c.code; choosing = null; savePair(from, to); onUse() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+
+            rows.forEachIndexed { i, code ->
+                val r = Currencies.rate(active, code, rates, home, gear.manualRates)
+                val shown = if (code == active) text else if (amount == null || r == null) "" else Currencies.plain(amount * r, code)
+                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelField(
+                        shown, { active = code; text = it.take(20); onUse() }, Modifier.weight(1f), singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
+                        label = Currencies.label(code) + if (code == home) " (home)" else "",
+                    )
+                    if (i > 0 && code != home) PixelIconButton("arrow-up", "Move $code up", { saveBoard(rows.filter { it != home }.toMutableList().also { l -> val at = l.indexOf(code); if (at > 0) { l.removeAt(at); l.add(at - 1, code) } }) }, Pixel.InkSoft)
+                    if (code != home) PixelIconButton("trash", "Remove $code", { saveBoard(rows.filter { it != home && it != code }) }, Pixel.InkSoft)
                 }
             }
-            Text(
-                if (amount == null || rate == null) "Type an amount" else "${Currencies.format(amount, from)} = ${Currencies.format(amount * rate, to)}",
-                style = MaterialTheme.typography.titleMedium,
-            )
-            if (rate != null) Text("1 $from = ${CalcEngine.formatSignificant(rate, 6)} $to${if (usingManual) " (your rate)" else " (reference rate)"}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            if (foreign != home) Currencies.rate(home, foreign, rates, home, gear.manualRates)?.let { r ->
+                Text("1 $home = ${CalcEngine.formatSignificant(r, 6)} $foreign${if (gear.manualRates[foreign] != null) " (your rate)" else " (reference rate)"}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelButton(if (adding) "Cancel" else "Add a currency", { adding = !adding; query = "" }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                PixelButton(if (active == home) "$active is home" else "Make $active home", { store.changeGear { it.copy(homeCurrency = active) } }, Modifier.weight(1f), if (active == home) Pixel.Green else Pixel.InkSoft, compact = true, enabled = active != home)
+            }
+            if (adding) {
+                PixelField(query, { query = it.take(24) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search a currency (yen, rmb, peso, usd)")
+                Currencies.search(query, codes).filter { it.code !in rows }.take(8).forEach { c ->
+                    PixelButton(Currencies.label(c.code), { saveBoard(gear.currencyBoard + c.code); active = c.code; adding = false; onUse() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                }
+            }
 
             // Your own rate for the home pair: what the changer offered, in units of the other currency per one of the home currency.
-            if (from == home || to == home) {
-                val other = if (from == home) to else from
-                if (other != home) {
-                    FieldLabel("A rate you were offered ($other per 1 $home)")
-                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PixelField(manualText, { manualText = it.take(14) }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Your rate")
-                        PixelButton("Use", { manualText.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 && it.isFinite() }?.let { v -> store.changeGear { g -> g.copy(manualRates = g.manualRates + (other to v)) } } }, Modifier.weight(0.5f), Pixel.Blue, compact = true)
-                        PixelIconButton("close", "Clear", { manualText = ""; store.changeGear { g -> g.copy(manualRates = g.manualRates - other) } }, Pixel.InkSoft)
-                    }
+            if (foreign != home) {
+                FieldLabel("A rate you were offered ($foreign per 1 $home)")
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelField(manualText, { manualText = it.take(14) }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Your rate")
+                    PixelButton("Use", { manualText.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 && it.isFinite() }?.let { v -> store.changeGear { g -> g.copy(manualRates = g.manualRates + (foreign to v)) } } }, Modifier.weight(0.5f), Pixel.Blue, compact = true)
+                    PixelIconButton("close", "Clear", { manualText = ""; store.changeGear { g -> g.copy(manualRates = g.manualRates - foreign) } }, Pixel.InkSoft)
                 }
-            }
-
-            FieldLabel("Your board, for ${amount?.let { Currencies.format(it, from) } ?: "an amount"}")
-            gear.currencyBoard.filter { it != from && it in rates.perUsd }.forEach { code ->
-                val r = Currencies.rate(from, code, rates, home, gear.manualRates)
-                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Text(if (amount == null || r == null) "$code: ?" else Currencies.format(amount * r, code), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                    PixelButton("Show", { to = code; savePair(from, to) }, Modifier.weight(0.4f), Pixel.InkSoft, compact = true)
-                    PixelIconButton("trash", "Drop", { store.changeGear { g -> g.copy(currencyBoard = g.currencyBoard - code) } }, Pixel.InkSoft)
-                }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelButton("Add $to", { store.changeGear { g -> if (to in g.currencyBoard || to == from) g else g.copy(currencyBoard = (g.currencyBoard + to).takeLast(12)) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelButton(if (from == home) "$from is home" else "Make $from home", { store.changeGear { it.copy(homeCurrency = from) } }, Modifier.weight(1f), if (from == home) Pixel.Green else Pixel.InkSoft, compact = true, enabled = from != home)
             }
 
             PixelButton(if (showCost) "Hide what it really costs" else "What it really costs", { showCost = !showCost }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
@@ -137,7 +131,6 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
                 var priceText by remember { mutableStateOf("") }
                 var percentText by remember { mutableStateOf(if (gear.feePercent > 0) CalcEngine.format(gear.feePercent) else "") }
                 var fixedText by remember { mutableStateOf(if (gear.feeFixed > 0) CalcEngine.format(gear.feeFixed) else "") }
-                val foreign = to
                 Text("A price in $foreign, paid with $home: the reference estimate against the rate you were offered and the fees.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 PixelField(priceText, { priceText = it.take(14) }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Price in $foreign")
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
