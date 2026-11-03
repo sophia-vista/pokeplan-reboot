@@ -3,7 +3,7 @@ package app.pokeplan.world.story
 import app.pokeplan.world.WorldLayer
 import app.pokeplan.world.story.Expression.*
 
-/** The Mystery Dungeon world, chapters 2 to 6 (chapter 1 is in [MysteryDungeonStory]). Pelly the Pelipper is the Guild's postmaster; the buddy is the companion. */
+/** The Mystery Dungeon world, chapters 2 to 6 (chapter 1 is [IntroMewChapter]). Pelly the Pelipper is the Guild's postmaster; the buddy is the companion. */
 internal object MysteryDungeonChapters {
     private val buddy = buddyCharacter()
     private val pelly = npc("pelly", "Pelly", 279)
