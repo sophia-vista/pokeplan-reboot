@@ -1,32 +1,65 @@
-# PokéLife (formerly PokéPlan): Gotta Plan 'em All!
+# PokéLife
 
-*PokéLife is a Pokémon world for real life, made of modules that are each their own region: Plan (PokéPlan, the planner and focus timer below) and Care, with Grow and Home to come. The app was renamed in 0.47.0; the text below describes the original PokéPlan app.*
-<img src="https://user-images.githubusercontent.com/75743382/132638099-15cb3985-b189-4a7a-9e91-fd6035649498.png" width="200">
-PokéPlan is a productivity application that encourages its users to be productive and organized while having fun. This application incentivizes users to achieve their goals by adding Pokémon elements to their life: for example, finishing tasks rewards the user with Pokémon Eggs and Rare Candies. Eggs can be hatched by staying focused on a task and avoiding distractions for a certain amount of time while Rare Candies are used to level up and evolve Pokémon. The overall goal of this application is to collect all the available Pokémon, all while helping the user to stay motivated and productive in real life.
+A fun productivity, growth and self-improvement app for Pokémon lovers. Finish a focus timer and an Egg hatches; finish tasks, habits and goals and earn candies and items that level up and evolve your Pokémon. The app is a family of small modules, each its own "region", around one shared collection of Pokémon.
 
-## Focus Timer
-<img src="https://user-images.githubusercontent.com/75743382/132640430-f389a7a9-ccf1-43af-ae42-2ce743105819.png" width="200"><img src="https://user-images.githubusercontent.com/75743382/132639456-6d68252e-ad35-435b-a7b7-a332007a7c32.png" width="200"><img src="https://user-images.githubusercontent.com/75743382/132639574-b0c63ec0-52ed-4ae4-9479-98cd6ae548c4.png" width="200"><img src="https://user-images.githubusercontent.com/75743382/132640260-2421fa25-59f3-4ef7-a4a4-e8716b6fc6f5.png" width="200">
+*PokéLife was called PokéPlan until 0.47.0. PokéPlan is now the name of its Plan module. The code packages (`app.pokeplan.*`), this repository and the Android application id keep the old name.*
 
-The user can set a focus timer (in minutes) that would count down to zero. Finishing the time without leaving the application would allow the user to hatch a Pokémon Egg. The longer the timer is, the higher the chance for the user to hatch a rare Pokémon.
+**Status:** a private project in active development (version in [`VERSION`](VERSION), history in [`CHANGELOG.md`](CHANGELOG.md)). It is not published: the art is the owner's private-use collection and part of it is licensed for non-commercial use only (see [Assets and credits](#assets-and-credits)).
 
-Additionally, the user may toggle ‘Deep Focus Mode’ where in addition to not leaving the application, the user may not touch or move the phone. This would also increase the chances of hatching a rare Pokémon.
+## What is in it
 
-## Task Planner
-<img src="https://user-images.githubusercontent.com/75743382/132639127-25843fbc-8626-4a30-8fb4-6b02bffcebf1.png" width="200"><img src="https://user-images.githubusercontent.com/75743382/132638871-aef65716-6b4b-4ef6-8633-2d621a72e9a9.png" width="200"><img src="https://user-images.githubusercontent.com/75743382/132638994-e2aa0694-1d06-4685-a84d-d46a704142f9.png" width="200"><img src="https://user-images.githubusercontent.com/75743382/132640543-445a90c7-ad68-4cb7-b9c8-4d3396002be4.png" width="200">
+| Module | What it is |
+|---|---|
+| **Plan** (PokéPlan) | A planner with a focus timer at its centre: Focus (eggs, Deep Focus), tasks with reminders, lists, habits, goals, a day planner and a review. |
+| **Care** | Gentle self-care: routines, calm breaks, a daily diary card, skills, a journal and trends. Private by design: what you write never earns anything. |
+| **World** | A Pokémon Mystery Dungeon style adventure. Send expedition teams into dungeons; they climb floors on their own, offline too, and bring back items, treasure and Pokémon to recruit. Five regions (the Mystery Dungeon home world, Kanto, Johto, Hoenn, Sinnoh) with a story told as scenes. |
+| **Pokégear** | Everyday tools with a helper Pokémon: calculator, currency and unit converters, timers, world clock, compass, level, sound meter, QR, flashlight and more, all useful without any game. |
+| **Launcher** | An optional Android home screen: widget grid, other apps' widgets, a town where your Pokémon walk about, weather, folders and an app list. |
+| **Shared** | Home (your buddy), the Pokédex and collection (the National Dex with Mystery Dungeon sprites), the Bag, Pokémon care (candies, friendship, evolution), and Me. |
 
-The user may view all the tasks that they have added. Users have the choice to see all the pending tasks or to filter the tasks to be shown based on their category. A user may also choose to modify or delete an existing task. 
+Rules of the game are written down: [`docs/design.md`](docs/design.md) (what to build), [`docs/economy.md`](docs/economy.md) (every reward, sink and cap), [`docs/ecosystem.md`](docs/ecosystem.md) (the modules and the roadmap), [`docs/world.md`](docs/world.md) and [`docs/world-story-engine.md`](docs/world-story-engine.md).
 
-In creating a task, the user would be asked to provide the name, category, an optional due date, and the priority level of the task. The priority level of a task ranges from 1 (which signifies the most important task) to 5. Finishing a task with a higher priority level would result in better rewards.
+## How it is built
 
-## Pokedex
-<img src="https://user-images.githubusercontent.com/75743382/132638398-dc5d751a-2984-42d0-a13e-705cb323afa1.png" width="300"><img src="https://user-images.githubusercontent.com/75743382/132640717-7c29e55b-63f4-4ae7-88aa-0ce424f0beb7.png" width="300">
+A Kotlin Multiplatform rewrite (Android, desktop and web) with a Supabase backend. Compose Multiplatform draws one UI for all targets in a Game Boy Advance and Mystery Dungeon style; the art is real game art only (nothing is hand-drawn or generated).
 
-The user would be able to see the list of all available Pokémon in the application. However, they would only be able to view the information of the Pokémon that they already have.
+| Folder | Role |
+|---|---|
+| `pokemon-core/` | The Pokémon side: the Dex, rewards, items, hatching, evolution. No UI. |
+| `plan-core/`, `care-core/`, `world-core/` | Each module's own rules, no UI. |
+| `app-core/` | The rules engine (`GameStore`), the saved shape (`AppData`) and cloud sync. |
+| `composeApp/` | The shared Compose UI. |
+| `androidApp/` | The Android host: widgets, launcher, reminders, sensors, torch. |
+| `supabase/` | The backend: migrations, SQL tests, the reward Edge Function. |
+| `assets/`, `tools/` | The game art and the scripts that fetch it. |
+| `legacy-android/` | The original Java app, the reference for the old rules. No longer developed. |
 
-## Pokemon Party
+The modules stay independent: one reward owner per real-world action, and Care and World never reach into Plan's internals. The save is one JSON document that older versions load unchanged (new fields always have defaults).
 
-<img src="https://user-images.githubusercontent.com/75743382/132641033-76feca7e-f1e1-4ee6-bb88-0e69e019bac7.png" width="200"><img src="https://user-images.githubusercontent.com/75743382/132641173-9aad888f-f088-4174-b679-73b1624cd86a.png" width="200"><img src="https://user-images.githubusercontent.com/75743382/132641257-050a5c6f-e6e6-4a9a-a7cc-f5fac64cc182.png" width="200">
+## Building
 
-The Pokémon Party is a group of Pokémon that is visible on the Home Screen. These Pokémon can be interacted with, or more specifically, can be fed Rare Candies and Super Candies.
+Needs a JDK 17 to 21; Gradle (9.8) downloads itself. Android also needs an Android SDK with `platforms;android-37.0` (`sdk.dir` in `local.properties` or `ANDROID_HOME`).
 
-In the absence of the traditional Pokémon battling system, Rare Candies and Super Candies are used to level up and evolve your Pokémon respectively. Ten (10) Rare Candies are used to level up a Pokémon, while only one (1) Super Candy is needed for evolution. Pokémon can only evolve at specific levels, each different per species.
+```sh
+./gradlew jvmTest compileKotlinWasmJs        # tests and the web compile check
+./gradlew :composeApp:run                    # desktop
+./gradlew :composeApp:wasmJsBrowserDevelopmentRun   # web
+./gradlew :androidApp:assembleDebug          # APK in androidApp/build/outputs/apk/debug/
+```
+
+`./gradlew :composeApp:jvmTest` also renders screens to `composeApp/build/screenshots/*.png`, so a screen can be looked at without a device. Other tools: `:plan-core:simulateEconomy` and `:world-core:simulateWorldEconomy` (the economy reports in `docs/`), `:world-core:storyScript` (every chapter's story and script as Markdown in `docs/world-story-script.md`).
+
+Every merge to `main` is published as the "Latest build" release with a debug APK (`.github/workflows/release-apk.yml`). Pull requests are tested by `.github/workflows/ci.yml`. The contributor guide for Claude Code sessions, with the branch and PR rules, is [`CLAUDE.md`](CLAUDE.md).
+
+## Assets and credits
+
+Pokémon sprites, portraits and animations are from the [PMD SpriteCollab](https://github.com/PMDCollab/SpriteCollab) (CC BY-NC 4.0: non-commercial, credit the artists; each artist is named under the Pokédex entry), with mainline sprites from PokeAPI as the fallback. Dungeon tiles, world art, item icons and sound effects are from the Pokémon Mystery Dungeon games, ripped and shared by the community; the font is from [hexparrot/pokemon-assets](https://github.com/hexparrot/pokemon-assets) (MIT); control glyphs are [Pixelarticons](https://github.com/halfmage/pixelarticons) (MIT). Every source, licence and fetch script is listed in [`docs/assets.md`](docs/assets.md). Pokémon and Pokémon Mystery Dungeon are trademarks of Nintendo, Game Freak, Creatures and Spike Chunsoft; this is an unofficial fan project and is not affiliated with them.
+
+## Before any public release
+
+- The APK is signed with the committed `androidApp/pokeplan-debug.keystore`. Move the signing key to protected CI secrets (and rotate it) first.
+- Review each asset family's licence in `docs/assets.md`: much of the art is for private use only.
+
+## The original app
+
+PokéPlan began as a native Android (Java) app made by a pair for a mobile development course: a focus timer that hatches Eggs, a task planner whose finished tasks pay Rare and Super Candies, a Pokédex and a Pokémon party. It lives on in [`legacy-android/`](legacy-android/) as the reference for the old rules.

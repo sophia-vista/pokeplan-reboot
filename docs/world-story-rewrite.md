@@ -17,6 +17,20 @@ Pokémon-led.
 
 ------------------------------------------------------------------------
 
+# Restructure plan (owner decisions, 3 November 2026)
+
+Decisions: **(1) The home layer is deleted completely.** The Mew opening becomes a standalone episode, and the old home dungeons, chapters 2 to 6 and temporal story go. **(2) The first two arcs to build are the two PMD arcs**, Rescue Team (6 chapters) and Explorers (8 chapters), each its own optional layer with its own chapters, dungeons, map and Guardian, in place of home. **(3) Mew and every Mythical are Guardians** (`Guardians.canBe`: slotted by rank, never sent on expeditions). Mew joins the collection at the end of the opening (as now) and is slotted when the rank has a slot (first slot at rank index 4); the line and the recruit card say it joins as the team's Guardian. No change to Guardian numbers.
+
+Work list, in order (one PR each, tests green, the story-engine and Dungeons tests updated alongside):
+1. **Layers.** `Layers.kt`: remove `HOME`; add `RESCUE("rescue", "Rescue Team")` and `EXPLORERS("explorers", "Explorers")` with their map pictures (the home layer's eight `map-N` stages become one of them or are reused as a picture). `Story.chaptersOf`, `guardianBonus`, `WorldGuide`, `Missions.layerOf`, `WorldSim` line about the home layer's Guardian, `WorldData.layerDone` (`guardianDone` for home), the World screens' `when (layer)` (map spots), `AppModel.worldLayer`'s default.
+2. **Dungeons.** Split `Dungeons.home` between the two arcs by the brief (Rescue: Tiny Woods, Frosty Forest, Sky Tower and the places the six chapters name; Explorers: Beach Cave, Drenched Bluff, Treasure-town dungeons, Temporal Tower and the rest); keep every dungeon id unchanged so clears, missions and teams in old saves still resolve.
+3. **Save migration.** `WorldData` keys by layer id: map `clears`, `layersDone`, `guardianDone`, `episodesDone` (`home:N`), `scenesDone` (`home-*`), `storyResume` and `WorldMoments` for the removed layer to the new ids or drop them (never pay a reward twice: rewards come from chapter unlocks, so migrated chapters count as already opened). Old saves must load; add a test that decodes a save with `home` data.
+4. **Story catalog.** Delete `MysteryDungeonChapters.kt`; add `RescueChapters.kt` (chapters 1 to 6 from this brief, scene ids `rescue-N-*` as written) and `ExplorersChapters.kt` (chapters 1 to 8, `explorers-N-*`); `IntroMewChapter` loses its layer (a standalone `intro` episode: the catalog and archive need a layer-less entry). Mew's 'witness' framing (a memory echo) is a premise line of each arc's first scene; `{player}` stays a name in text until the engine can put the player's Pokémon on stage.
+5. **Guide, map and archive** show the two arcs as optional layers; nothing in them gates ordinary exploration.
+
+Read the Explorers chapters 4 to 8 (lines from "The Thief of Time" on) in full before writing them; chapters 1 to 3 and the Rescue Team arc are above.
+
+
 # Narrative direction
 
 ## The actual premise
