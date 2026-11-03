@@ -36,3 +36,13 @@ tasks.register<JavaExec>("simulateWorldEconomy") {
     mainClass.set("app.pokeplan.world.tools.WorldEconomySimulatorKt")
     args(rootProject.file("docs/world-economy-report.md").absolutePath)
 }
+
+// Writes every chapter's summary and the scenes' scripts as readable Markdown: docs/world-story-script.md.
+tasks.register<JavaExec>("storyScript") {
+    group = "tools"
+    val main = kotlin.targets.getByName("jvm").compilations.getByName("main")
+    dependsOn(main.compileTaskProvider)
+    classpath = files(main.output.allOutputs, main.runtimeDependencyFiles)
+    mainClass.set("app.pokeplan.world.tools.StoryScriptExportKt")
+    args(rootProject.file("docs/world-story-script.md").absolutePath)
+}
