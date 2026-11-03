@@ -105,8 +105,7 @@ internal fun WorldReportCard(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Since you last looked", style = MaterialTheme.typography.titleSmall)
             val where = report.byDungeon.entries.joinToString(", ") { (id, n) -> "${Dungeons.byId(id)?.name ?: id} $n" }
-            Text("${report.floors} ${if (report.floors == 1) "floor" else "floors"} climbed ($where).", style = MaterialTheme.typography.bodyMedium)
-            Text("Every floor: ${report.xp} Exploration XP and ${report.poke} Poké.", style = MaterialTheme.typography.bodyMedium)
+            Text("${report.floors} ${if (report.floors == 1) "floor" else "floors"} climbed ($where), ${report.xp} Exploration XP.", style = MaterialTheme.typography.bodyMedium)
             // The haul at a glance, with the games' own art: the coin for Poké and a box for each treasure tier.
             if (report.poke > 0 || report.treasure.isNotEmpty()) Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 if (report.poke > 0) {
@@ -119,7 +118,7 @@ internal fun WorldReportCard(model: AppModel) {
                 }
             }
             if (report.milestones.isNotEmpty()) Text(
-                "Milestones (first time on a floor): " + report.milestones.joinToString("; ") { (id, r) ->
+                "First time on a floor: " + report.milestones.joinToString("; ") { (id, r) ->
                     "${Dungeons.byId(id)?.name ?: id}: " + listOfNotNull(r.itemId?.let { "${app.pokeplan.core.pokemon.Items.name(it)} x${r.count}" }, r.poke.takeIf { it > 0 }?.let { "$it Poké" }).joinToString(", ")
                 },
                 style = MaterialTheme.typography.bodyMedium,
@@ -129,10 +128,9 @@ internal fun WorldReportCard(model: AppModel) {
                 val boxes = report.treasure.values.sum()
                 if (boxes > 0) add("$boxes treasure ${if (boxes == 1) "box" else "boxes"} (to open in Finds and Bag)")
             }
-            if (chance.isNotEmpty()) Text("Found by chance: ${chance.joinToString(", ")}.", style = MaterialTheme.typography.bodyMedium)
+            if (chance.isNotEmpty()) Text("Also found: ${chance.joinToString(", ")}.", style = MaterialTheme.typography.bodyMedium)
             if (report.cleared.isNotEmpty()) Text("Cleared: ${report.cleared.distinct().joinToString(", ") { Dungeons.byId(it)?.name ?: it }}.", style = MaterialTheme.typography.bodyMedium)
             if (report.jobsDone.isNotEmpty()) Text("Jobs done: ${report.jobsDone.joinToString(", ") { app.pokeplan.world.Missions.byId(it)?.title ?: it }}. Claim them on the board.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
-            if (report.choicesOffered > 0) Text("${report.choicesOffered} ${if (report.choicesOffered == 1) "choice" else "choices"} came up on the way. Answer them below, or the team takes the first way after 12 hours.", style = MaterialTheme.typography.bodyMedium)
             if (report.eventsOpened > 0 || report.eventsPassed > 0) Text(
                 buildString {
                     if (report.eventsOpened > 0) append("${report.eventsOpened} side paths opened with field moves")
@@ -144,7 +142,6 @@ internal fun WorldReportCard(model: AppModel) {
             )
             if (report.guardianFaced) Text("A Guardian was faced. Its story is complete.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             if (report.finds.isNotEmpty()) Text("Waiting to be recruited: ${report.finds.joinToString(", ") { app.pokeplan.core.dex.Dex.species(it).name }}. They stay in Finds until you decide.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
-            Text("Berries, Poké and the items above are already in your Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             PixelButton("OK", { model.store.worldReportDismiss(); gone = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
     }
