@@ -102,6 +102,7 @@ import app.pokeplan.ui.entrance
 import app.pokeplan.ui.LocalUiSound
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.ItemIcon
+import app.pokeplan.ui.Glyph
 import app.pokeplan.ui.SceneImage
 import androidx.compose.ui.draw.blur
 import androidx.compose.foundation.Image
