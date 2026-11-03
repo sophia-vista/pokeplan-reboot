@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -146,7 +147,14 @@ internal fun WidgetBody(slot: WidgetSlot, env: WidgetEnv) {
         WidgetKind.CALENDAR -> CalendarWidget(env, env.today, slot.size)
         WidgetKind.AGENDA -> AgendaWidget(env, env.today, slot.size)
         WidgetKind.FORECAST -> ForecastWidget(env, slot.size)
-        WidgetKind.ANDROID -> slot.arg.toIntOrNull()?.let { id -> PmdBox(env.pixel, Modifier.fillMaxWidth()) { env.host.HostedWidget(id, slot.size.ordinal, Modifier.fillMaxWidth()) } }
+        WidgetKind.ANDROID -> slot.arg.toIntOrNull()?.let { id ->
+            if (LocalGridFill.current) {
+                // On the grid the provider gets exactly the cells' room, with no frame of ours around it, and is told that size.
+                androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
+                    env.host.HostedWidget(id, slot.size.ordinal, maxWidth.value.toInt(), maxHeight.value.toInt(), Modifier.fillMaxSize())
+                }
+            } else PmdBox(env.pixel, Modifier.fillMaxWidth()) { env.host.HostedWidget(id, slot.size.ordinal, 0, 0, Modifier.fillMaxWidth()) }
+        }
     }
 }
 
