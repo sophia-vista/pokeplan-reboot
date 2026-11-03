@@ -5,6 +5,21 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.122.0
+
+- **World opens with Mew's prank.** The first World story is now "Mew's Unofficial Welcome" (seven scenes, from the owner's rewrite brief in `docs/world-story-rewrite.md`): a pink thief, a chase out of town, a short first dungeon, a job that becomes a promise, Braviary on preparing a team, Mew's real test at dusk, and the expedition board. It replaces the old guild-letter chapter 1. At the end Mew asks to join and waits in **Finds** to be recruited, once (replaying the episode never gives a second Mew). The scene ids are now `intro-mew-*`; chapters 2 to 6 of the home story are unchanged for now.
+- The story script export (`:world-core:storyScript`) and the rest of the brief (Mythical follow-ups, the Rescue Team and Explorers arcs, the regions) are still to be ported; the brief's status line says which.
+
+## 0.121.0
+
+- **A simpler World landing.** The page now reads top to bottom as: your rank in one quiet strip (badge, progress, Poké), what the teams brought back (shorter: no repeated "every floor" and "already in your Bag" lines), the one card for the region on show (its switch, the chapter, what is worth doing now with its one button, and what the next chapter asks, quietly), the teams out, then the places to go. The separate rank card, story card and "Exploration team" banner are gone; nothing they showed is lost (the story is in the Story archive, the rank on the strip).
+## 0.120.0
+
+- **Currency is a set of rows you can type in.** Each currency you watch has its own amount: type in any row (a number or a sum) and every other row is worked out from it. Your home currency is the first row; add a currency by name or code, move one up or remove it. "A rate you were offered" and "What it really costs" now follow the row you are typing in (or the first foreign one). The rates, their age and source, the offline cache and the reference-rate note are unchanged, and so is the saved board.
+## 0.119.3
+
+- **Other apps' widgets fit their cells.** On the launcher's widget grid, a widget from another app gets exactly the room its cells give it (before, it was told a width and height from the old small, medium and large sizes, so after a resize it could be clipped, show empty space or lay out for the wrong size) and has no frame of ours around it. In the older list layout nothing changes.
+
 ## 0.119.2
 
 From the deep review of 3 November (its P0 story and dungeon items):

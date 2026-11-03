@@ -20,6 +20,7 @@ internal class Script {
     fun flash() { events += SceneEvent.Flash() }
     fun cry(who: String) { events += SceneEvent.Cry(who) }
     fun sound(name: String) { events += SceneEvent.Sound(name) }
+    fun flag(name: String) { events += SceneEvent.Flag(name) }
     fun item(itemId: String, x: Float, y: Float) { events += SceneEvent.Item(itemId, x, y) }
     fun take(itemId: String) { events += SceneEvent.TakeItem(itemId) }
 

@@ -75,6 +75,21 @@ object Currencies {
         return (if (amount < 0 && rounded != 0.0) "-" else "") + grouped + fraction + " " + code
     }
 
+    /** [amount] of [code] as plain digits for an editable field: rounded to the currency's minor units, no grouping, no code, no trailing zeros ("1234.5", "1000"). */
+    fun plain(amount: Double, code: String): String {
+        val places = byCode[code]?.minorUnits ?: 2
+        val scale = 10.0.pow(places)
+        val rounded = round(abs(amount) * scale) / scale
+        val whole = rounded.toLong()
+        val fraction = if (places == 0) "" else round((rounded - whole) * scale).toLong().toString().padStart(places, '0').trimEnd('0')
+        return (if (amount < 0 && rounded != 0.0) "-" else "") + whole + (if (fraction.isEmpty()) "" else ".$fraction")
+    }
+
+    /**
+     * The currencies on the converter's rows, in order: the home currency first, then the board, each once, only those that have a rate.
+     */
+    fun rows(home: String, board: List<String>, known: Collection<String>): List<String> = (listOf(home) + board).distinct().filter { it in known }
+
     /**
      * How many units of [to] one unit of [from] buys. A rate the player entered by hand wins when one of the two is the [home] currency and the
      * other has a manual rate (the manual rate is units of that currency per one of home); otherwise the reference rates through the dollar. Null when
