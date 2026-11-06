@@ -10,7 +10,7 @@ Status uses the guide's vocabulary (Planned, Partial, Blocked, Done with evidenc
 
 | ID | Item | Depends on | Status |
 |---|---|---|---|
-| REP-001 | Record the baseline build: commit, command (`./gradlew jvmTest compileKotlinWasmJs`), environment, result | none | See the guide, section 3.1 |
+| REP-001 | Record the baseline build: commit, command (`./gradlew jvmTest compileKotlinWasmJs`), environment, result | none | Done: JVM tests and the wasm compile pass (816 tests, 0 failures); see the guide, section 3.1 |
 | REP-002 | Map the existing test files to the module contracts they protect; find which screenshot tests compare images and which only assert drawing | REP-001 | Done as an inventory (`evidence/REP-002-test-inventory.md`): the screenshot test only asserts that something was drawn; `androidApp` has no tests |
 | REP-003 | Inventory every persisted save shape (`AppData`, `CareStore`, widget access to `save.json`), cloud path and manifest permission; commit representative save fixtures | none | Partial: inventory done (`evidence/REP-003-baseline-inventory.md`); fixtures and device permission check still to do |
 | REP-004 | Inspect live Actions storage (caches, artifacts, release assets) before any cleanup; the 3-day artifact retention in `ci.yml` is already short | none | Partial: the latest `main` run (206) has no artifacts, and the repository has about 30 versioned releases plus the rolling `latest`, each with an APK (release assets do not count toward Actions storage). Cache sizes cannot be read with the available tools: check Settings > Actions > Caches on GitHub before deleting anything |

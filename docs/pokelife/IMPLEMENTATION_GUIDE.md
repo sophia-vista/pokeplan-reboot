@@ -92,7 +92,7 @@ The docs were imported into the repository at `docs/pokelife/`, and the real che
 - The checkout has about 90 `*Test*.kt` files outside `legacy-android/` (the archive audit counted 89).
 - `ci.yml` keeps its artifact for 3 days; no workflow has a standalone `actions/cache` step (Gradle caching comes from `setup-gradle`).
 - The signing key is `androidApp/pokeplan-debug.keystore`, committed on purpose and shared by every build; `CLAUDE.md` already notes that it must move to a secret before any public release (REP-005).
-- **Baseline test run (REP-001):** not recorded yet. `./gradlew jvmTest compileKotlinWasmJs` was started on this checkout and its result will replace this line. Until then no passing test run is claimed.
+- **Baseline test run (REP-001):** **passed.** `./gradlew jvmTest compileKotlinWasmJs --console=plain` at commit `2b22975d` (the `main` baseline; this branch only adds documents) in the cloud sandbox (JDK 21): `BUILD SUCCESSFUL in 13m 12s`. The JVM test reports show 816 tests, 0 failures, 0 errors, 0 skipped (pokemon-core 167, plan-core 134, care-core 8, world-core 90, app-core 200, composeApp 217). Not covered: the wasm tests (compile only), any Android build or instrumented test, and any device run. The screenshot tests in this count only check that something was drawn (`evidence/REP-002-test-inventory.md`). Status: Tested (JVM), not Device-verified.
 
 ### Build/test execution limitation (archive audit)
 
