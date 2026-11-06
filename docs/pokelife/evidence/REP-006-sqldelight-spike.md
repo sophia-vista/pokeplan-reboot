@@ -36,4 +36,4 @@ The spike's schema is a small slice of the target model (owned Pokémon, module 
 
 ## 4. Recommendation
 
-Proceed with SQLDelight on SQLite for REP-007 and REP-008. Before relying on it for the release gate, run the Android-only checks in section 3 on a device (a small instrumented test in `androidApp` or this module). Keep `db-spike` as the seed of the data module or delete it when REP-008 starts; it is not wired into the app.
+Proceed with SQLDelight on SQLite for REP-007 and REP-008. Before relying on it for the release gate, run the Android-only checks in section 3 on a device (a small instrumented test in `androidApp` or this module). `db-spike` became the `:data` module in REP-008 (the spike's schema and tests were replaced by the real ones); it is not wired into the app.
