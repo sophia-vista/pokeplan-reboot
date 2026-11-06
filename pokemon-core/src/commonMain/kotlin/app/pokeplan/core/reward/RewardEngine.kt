@@ -28,6 +28,7 @@ import kotlin.random.Random
 @Serializable
 data class PlayerState(
     val pokemon: List<OwnedPokemon> = emptyList(),
+    /** The global buddy: the main companion, shown across the app. Cosmetic: it never changes a reward (docs/pokelife POKEMON_ECOSYSTEM.md, section 2.3). */
     val buddyId: String? = null,
     val inventory: Inventory = Inventory(),
     val coins: Int = 0,
@@ -39,15 +40,35 @@ data class PlayerState(
     val caught: Set<Int> = emptySet(),
     /** Ids of the Pokémon slotted as Guardians (legendaries and mythicals), at most as many as the rank has slots. */
     val guardians: List<String> = emptyList(),
-    /** The lead of Care's party (its buddy); null until the player sets one, and Care then warms [buddy] as before. */
+    /** The lead of Care's party (slot 1); null means its first member. */
     val careLeadId: String? = null,
+    /** The lead of Plan's party (slot 1); null means its first member. Before roles were split (0) this was the buddy; see [rolesVersion]. */
+    val planLeadId: String? = null,
+    /** 0 for a save from before the buddy and the party leads were separate roles; 1 once [planLeadId] has been set from the old buddy. */
+    val rolesVersion: Int = 0,
 ) {
     val buddy: OwnedPokemon? get() = pokemon.firstOrNull { it.id == buddyId }
     val guardianPokemon: List<OwnedPokemon> get() = guardians.mapNotNull { id -> pokemon.firstOrNull { it.id == id } }
-    /** Plan's party, the one whose buddy and perks the reward engine uses. */
+    /** Plan's party, the one whose lead and perks the reward engine uses for Plan's rewards. */
     val party: List<OwnedPokemon> get() = partyOf(PartyIds.PLAN)
 
-    val careLead: OwnedPokemon? get() = pokemon.firstOrNull { it.id == careLeadId && it.inParty && it.partyId == PartyIds.CARE }
+    /** A module party's lead (its slot 1): the one chosen if it is still in the party, else the party's first member, else none. */
+    fun lead(partyId: String): OwnedPokemon? {
+        val members = partyOf(partyId)
+        val chosen = when (partyId) { PartyIds.PLAN -> planLeadId; PartyIds.CARE -> careLeadId; else -> null }
+        return members.firstOrNull { it.id == chosen } ?: members.firstOrNull()
+    }
+
+    /** Plan's lead: the Pokémon whose perks and friendship Plan's rewards use. Not the global buddy. */
+    val planLead: OwnedPokemon? get() = lead(PartyIds.PLAN)
+
+    val careLead: OwnedPokemon? get() = lead(PartyIds.CARE)
+
+    /** A party in slot order: the lead first, then the members in the order they joined. */
+    fun partySlots(partyId: String): List<OwnedPokemon> {
+        val lead = lead(partyId) ?: return emptyList()
+        return listOf(lead) + partyOf(partyId).filter { it.id != lead.id }
+    }
 
     fun partyOf(partyId: String): List<OwnedPokemon> = pokemon.filter { it.inParty && it.partyId == partyId }
 
@@ -125,7 +146,7 @@ data class AchievementEvent(
     val nowMillis: Long,
     /** The task was the one "Pick for me" chose. */
     val picked: Boolean = false,
-    /** Paid work that already warmed the buddy today; past [RewardEngine.TASK_FRIENDSHIP_DAILY_CAP] it adds no friendship. */
+    /** Paid work that already warmed Plan's lead today; past [RewardEngine.TASK_FRIENDSHIP_DAILY_CAP] it adds no friendship. */
     val friendshipTasksToday: Int = 0,
 )
 
@@ -221,7 +242,7 @@ object RewardEngine {
     /** Taking the task "Pick for me" chose: candies × this. *(tune)* */
     const val PICKED_BONUS = 1.10
 
-    /** Finished work raises the buddy's friendship this many times a day at most. *(tune)* */
+    /** Finished work raises Plan's lead's friendship this many times a day at most. *(tune)* */
     const val TASK_FRIENDSHIP_DAILY_CAP = 10
 
     /** Care pays bond, berries, Rare Candies, Care Eggs and a small share of trainer rank. *(tune)* */
@@ -270,7 +291,7 @@ object RewardEngine {
         if (rng.nextDouble() * 100 < eggLuckPercent) rarity.next() else rarity
 
     fun effort(state: PlayerState, e: EffortEvent, rng: Random): Outcome {
-        val buddy = state.buddy
+        val buddy = state.planLead
         val perks = Perks.total(buddy, state.party, PerkContext(sessionMinutes = e.minutes, megaActive = buddy != null && Perks.megaReady(buddy)), state.guardianPokemon)
         val rewards = mutableListOf<Reward>()
         var inventory = state.inventory
@@ -320,7 +341,7 @@ object RewardEngine {
 
     fun achievement(state: PlayerState, e: AchievementEvent, rng: Random): Outcome {
         val tier = e.tier
-        val buddy = state.buddy
+        val buddy = state.planLead
         val perks = Perks.total(buddy, state.party, PerkContext(taskRank = tier, hourOfDay = e.hourOfDay, firstTaskOfDay = e.firstOfDay), state.guardianPokemon)
         val rewards = mutableListOf<Reward>()
         var inventory = state.inventory
@@ -440,7 +461,7 @@ object RewardEngine {
     fun care(state: PlayerState, e: CareEvent, rng: Random): Outcome {
         val rewards = mutableListOf<Reward>()
         var pokemon = state.pokemon
-        val buddy = state.careLead ?: state.buddy
+        val buddy = state.careLead
         val perks = CarePerks.total(state.careLead, state.partyOf(PartyIds.CARE))
         val source = when (e.kind) {
             CareKind.ROUTINE -> FriendshipRules.Source.ROUTINE

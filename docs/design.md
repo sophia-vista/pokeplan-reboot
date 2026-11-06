@@ -236,7 +236,9 @@ Planned, with build order to be set later.
 
 The buddy can be **swapped freely at any time**. Perks apply when a reward is earned, so a player can pick an Egg luck buddy before a session. Friendship is per Pokémon, which gives a reason to stick with one.
 
-One party Pokémon is the **buddy**. It lives on the home screen and widget, reacts to real events only (sleeps during focus, one emote when a task pays or an egg hatches; it never droops, nags or shows a mood, as CLAUDE.md and `BuddyMood.kt` say), and gives perks that scale with its level and friendship.
+**Since 0.124.0 the buddy and the party leads are separate roles** (`docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md` section 2.2): the buddy is the global companion and is cosmetic; the perks described below come from **Plan's party lead** (slot 1) and its party, and are chosen separately ("Make Plan lead"). A save from before keeps its buddy as Plan's lead.
+
+The **buddy** lives on the home screen and widget, reacts to real events only (sleeps during focus, one emote when a task pays or an egg hatches; it never droops, nags or shows a mood, as CLAUDE.md and `BuddyMood.kt` say), and gives perks that scale with its level and friendship.
 
 - **Type perk** (one per type, from the buddy's primary type; second type gives half strength *(tune)*). Starting mapping:
 
@@ -275,7 +277,7 @@ state are marked *(proposed)*.
   between a party and the PC is free and instant; there is no copy.
 - **One party at a time** *(proposed)*. A Pokémon is in at most one party, so each party is a real choice and the best six
   cannot serve every module at once. Putting it in another party moves it.
-- **Lead per party** *(proposed)*. Each party has a **lead**, the module's buddy: it sits in that module's scenes, takes
+- **Lead per party** *(proposed; since 0.124.0 the lead is no longer the global buddy, which is cosmetic)*. Each party has a **lead**: it sits in that module's scenes, takes
   that module's friendship, and gives the **buddy perk**; the other five give **assists** (25% of type perk strength), as
   now. Since 0.49.0 the Home tab shows every region's lead; the widgets show the Plan lead. A party can be empty (module unused), except Plan's, which keeps
   at least one (the "last party member" rule moves to it). Transfer still refuses a lead.

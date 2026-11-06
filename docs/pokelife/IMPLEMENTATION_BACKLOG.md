@@ -28,7 +28,7 @@ Status uses the guide's vocabulary (Planned, Partial, Blocked, Done with evidenc
 
 | ID | Item | Depends on | Status |
 |---|---|---|---|
-| REP-009 | Pokémon roles: global buddy; module party of six (lead in slot 1); WORLD teams; GEAR helpers as visual only. Migrate PLAN's buddy and CARE's `careLeadId`; scope party perks to their own module | REP-008 | Planned |
+| REP-009 | Pokémon roles: global buddy; module party of six (lead in slot 1); WORLD teams; GEAR helpers as visual only. Migrate PLAN's buddy and CARE's `careLeadId`; scope party perks to their own module | REP-008 | Partial (0.124.0, `RewardRules.VERSION` 14): the buddy is cosmetic and separate from the party leads; `planLeadId` (migrated from the old buddy once, `rolesVersion`) and `careLeadId` are the leads of Plan's and Care's parties; Plan's perks, egg luck and friendship use Plan's lead and party, Care's use Care's lead and party only; the importer maps the same leads into the database's slot 1. Still open: one Pokémon in several modules' parties at once (the JSON model keeps one `partyId` per Pokémon; the database already allows it), parties for HEAL, MINT, HOME and LINK (the modules do not exist), the old server reward function does not know `planLeadId` |
 | REP-010 | One currency, Poké: merge PLAN coins and WORLD Poké 1:1 with audit metadata; bump `RewardRules.VERSION`; update `docs/economy.md`; re-run `:plan-core:simulateEconomy` and `:world-core:simulateWorldEconomy` | REP-008 | Planned |
 | REP-011 | Shared reminder scheduler and persistence (Integrations section 9) | REP-008 | Planned |
 

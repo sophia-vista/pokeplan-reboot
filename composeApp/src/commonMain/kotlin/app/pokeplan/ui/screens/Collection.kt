@@ -127,9 +127,9 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                 Section.PARTY -> {
                     // Every region's party on one page, each under its region with its lead first and its perks after
                     // (docs/design.md, "Parties per module"): one collection, a party per module.
-                    PartyGroup(model, Region.PLAN, player.party, player.buddyId, "Buddy", { PartyPerksCard(model) }) { selected = it }
+                    PartyGroup(model, Region.PLAN, player.party, player.planLead?.id, "Lead", { PartyPerksCard(model) }) { selected = it }
                     if (model.data.settings.careModule) {
-                        PartyGroup(model, Region.CARE, player.partyOf(PartyIds.CARE), player.careLeadId, "Lead", { CarePerksCard(model) }) { selected = it }
+                        PartyGroup(model, Region.CARE, player.partyOf(PartyIds.CARE), player.careLead?.id, "Lead", { CarePerksCard(model) }) { selected = it }
                     }
                 }
                 Section.PC -> {

@@ -969,6 +969,69 @@ class GameStoreTest {
         assertFalse(s.data.onboarded)
         assertTrue(s.data.tasks.isEmpty())
     }
+
+    // --- Pokémon roles (docs/pokelife POKEMON_ECOSYSTEM.md, section 2.2) ---------------------------------------------
+
+    @Test
+    fun aSaveFromBeforeTheRolesWereSplitMakesTheOldBuddyPlansLeadOnce() {
+        val (s, _) = started()
+        val old = s.data.copy(player = s.data.player.copy(planLeadId = null, rolesVersion = 0))
+        val storage = MemoryStorage(GameStore.json.encodeToString(AppData.serializer(), old))
+        val reopened = GameStore(storage, FakeClock(start), utc, Random(7))
+        val player = reopened.data.player
+        assertEquals(player.buddyId, player.planLeadId)
+        assertEquals(GameStore.ROLES_VERSION, player.rolesVersion)
+    }
+
+    @Test
+    fun theBuddyAndPlansLeadAreChosenSeparately() {
+        val (s, clock) = started()
+        hatchOne(s, clock)
+        val starter = s.data.player.buddyId!!
+        val hatched = s.data.player.pokemon.last().id
+        assertTrue(s.setPlanLead(hatched))
+        assertEquals(hatched, s.data.player.planLead?.id)
+        assertEquals(starter, s.data.player.buddyId, "choosing Plan's lead leaves the global buddy alone")
+        assertTrue(s.setBuddy(hatched))
+        assertTrue(s.setPlanLead(starter))
+        assertEquals(hatched, s.data.player.buddyId)
+        assertEquals(starter, s.data.player.planLead?.id)
+    }
+
+    @Test
+    fun theGlobalBuddyDoesNotChangeWhatPlanPays() {
+        val (a, clockA) = started()
+        val (b, clockB) = started()
+        hatchOne(a, clockA); hatchOne(b, clockB)
+        assertTrue(b.setBuddy(b.data.player.pokemon.last().id)) // only the buddy differs: Plan's lead is still the starter
+        assertEquals(a.data.player.planLead?.id, b.data.player.planLead?.id)
+        assertEquals(a.perks, b.perks)
+        assertEquals(a.perkSources, b.perkSources)
+    }
+
+    @Test
+    fun aLeadThatLeavesThePartyPassesTheLeadOn() {
+        val (s, clock) = started()
+        hatchOne(s, clock)
+        val starter = s.data.player.buddyId!!
+        val second = s.data.player.pokemon.last().id
+        assertTrue(s.data.player.party.any { it.id == second })
+        assertTrue(s.setInParty(starter, false), "the buddy is not tied to the party; its party seat can be left")
+        assertEquals(second, s.data.player.planLead?.id)
+        assertEquals(starter, s.data.player.buddyId)
+        assertFalse(s.setInParty(second, false), "Plan's party is never left empty")
+    }
+
+    @Test
+    fun aLeadIsNeverSetOutsideItsOwnParty() {
+        val (s, clock) = started()
+        hatchOne(s, clock)
+        val other = s.data.player.pokemon.last().id
+        assertTrue(s.setInParty(other, true, PartyIds.CARE))
+        assertFalse(s.setPlanLead(other), "a Pokémon in Care's party cannot lead Plan's")
+        assertFalse(s.setCareLead(s.data.player.buddyId!!), "a Pokémon in Plan's party cannot lead Care's")
+        assertTrue(s.setCareLead(other))
+    }
 }
 
 class QuickAddTimeTest {

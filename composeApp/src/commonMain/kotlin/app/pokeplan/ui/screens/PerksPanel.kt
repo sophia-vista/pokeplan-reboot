@@ -100,7 +100,7 @@ fun PartyPerksCard(model: AppModel) {
     val store = model.store
     val totals = store.perks
     val sources = store.perkSources
-    val buddy = model.data.player.buddy
+    val buddy = model.data.player.planLead
     var open by remember { mutableStateOf(false) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
