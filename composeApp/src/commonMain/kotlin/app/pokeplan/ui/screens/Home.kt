@@ -24,7 +24,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import app.pokeplan.ui.WhatsNew
 import app.pokeplan.ui.AppVersion
-import app.pokeplan.app.cloud.SyncStatus
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.Role
@@ -99,7 +98,6 @@ fun HomeScreen(model: AppModel, go: (Place) -> Unit) {
             footer = { RankProgress(points) },
             trailing = {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    SyncChip(model) { go(Place.ME) }
                     if (store.sees(Feature.COINS)) StatChip("${data.player.coins}", { ItemIcon("amulet-coin", size = 28.dp, description = "Poké") })
                     StatChip("${data.player.inventory[Items.RARE_CANDY]}", { ItemIcon("rare-candy", size = 28.dp, description = "Rare Candies") })
                 }
@@ -457,25 +455,3 @@ private fun WhatsNewCard(model: AppModel) {
     }
 }
 
-/** Where the cloud save stands, as a small dot and word. Only shown when signed in; tapping it opens Settings. */
-@Composable
-private fun SyncChip(model: AppModel, open: () -> Unit) {
-    val account = model.data.account ?: return
-    val (label, color) = when (val status = model.syncStatus) {
-        is SyncStatus.Syncing -> "Syncing" to Pixel.Blue
-        is SyncStatus.Offline -> "Offline" to Pixel.Warning
-        is SyncStatus.Conflict -> "Choose a save" to Pixel.Danger
-        is SyncStatus.Refused -> "Not saved" to Pixel.Danger
-        else -> if (account.unsynced) "Waiting" to Pixel.Warning else "Synced" to Pixel.Green
-    }
-    Row(
-        Modifier.clip(RoundedCornerShape(50)).background(Pixel.Panel)
-            .clickable(onClickLabel = "Open the account settings", role = Role.Button, onClick = open)
-            .padding(horizontal = Spacing.M, vertical = Spacing.S)
-            .semantics(mergeDescendants = true) { contentDescription = "Cloud save: $label" },
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
-    ) {
-        Box(Modifier.size(8.dp).background(color, CircleShape))
-        Text(label, style = MaterialTheme.typography.labelMedium, color = Pixel.Ink)
-    }
-}

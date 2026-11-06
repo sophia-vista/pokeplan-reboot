@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.130.0
+
+- **PokéLife is fully local.** The cloud is gone: no account, no sign-in, no sync, no friends board or gifts, and no server deciding rewards (they were always computed on the phone first). Settings loses its Account card, Care loses its Settings page (it held only the cloud copy), and Home loses the sync dot. Your save is unchanged; any sign-in tokens it held leave the save the next time it is written.
+- Under the hood (REP-012): `supabase/`, `app-core/cloud`, `tools/server`, the deploy workflow, the JavaScript build of the engine and its CI steps are deleted. CI no longer needs PostgreSQL or Node.
+
 ## 0.129.0
 
 - **Your save now lives in a database on the phone (Android).** On the first start, `save.json` and `care.json` are copied into the app's database in one step, checked, and from then on the database is the only place the app saves to. Your old files are left exactly as they were and never written again, so they are a copy to go back to. Nothing changes on screen.

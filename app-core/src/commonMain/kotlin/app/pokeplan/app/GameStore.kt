@@ -105,9 +105,9 @@ sealed interface FocusResult {
 
 /**
  * The app's rules engine for one device: holds the saved [data], applies every action to it with the real game rules
- * (the same ones the server runs), and saves after each change. No UI code in here, so it is tested on the JVM.
+ * and saves after each change. No UI code in here, so it is tested on the JVM.
  *
- * Rewards are granted locally; once the account is online the server becomes the authority and this store only previews.
+ * Rewards are granted locally; there is no server (retired in 0.130.0).
  */
 class GameStore(
     storage: Storage,
@@ -128,11 +128,6 @@ class GameStore(
     private fun update(change: (AppData) -> AppData) {
         val before = data
         var after = foldPoke(before, change(before))
-        // Anything but the account itself (and what stays on the device) changing means the cloud copy is out of date.
-        val account = after.account
-        if (account != null && account == before.account && after.cloudPart() != before.cloudPart()) {
-            after = after.copy(account = account.copy(unsynced = true))
-        }
         // A shiny stays in the Shiny Dex, and a form in the form dex, even if the Pokémon is transferred later.
         val shinyNow = after.player.pokemon.filter { it.isShiny }.map { it.speciesId }.toSet()
         if (!after.shinySpecies.containsAll(shinyNow)) after = after.copy(shinySpecies = after.shinySpecies + shinyNow)
@@ -162,42 +157,16 @@ class GameStore(
         )
     }
 
-    // --- cloud account ------------------------------------------------------------------------------------------------
-
-    /** Remembers a signed-in session. Progress made as a guest counts as not yet in the cloud. */
-    fun signedIn(email: String, userId: String, accessToken: String, refreshToken: String, expiresAtMillis: Long) = update { d ->
-        val same = d.account?.takeIf { it.userId == userId }
-        d.copy(account = Account(email, userId, accessToken, refreshToken, expiresAtMillis, same?.version ?: 0, same?.unsynced ?: true))
-    }
-
-    fun refreshedSession(accessToken: String, refreshToken: String, expiresAtMillis: Long) =
-        update { d -> d.copy(account = d.account?.copy(accessToken = accessToken, refreshToken = refreshToken, expiresAtMillis = expiresAtMillis)) }
-
-    /**
-     * Signs out. The progress on this device stays; it just stops syncing. The egg tickets were issued to the account, so
-     * they go (the device id stays).
-     */
-    fun signOut() = update { it.copy(account = null, eggTickets = EggTickets(device = it.eggTickets.device)) }
-
-    /** Everything PokéPlan keeps on this device, as readable JSON, without the sign-in tokens. */
+    /** Everything PokéPlan keeps on this device, as readable JSON,. */
     fun exportJson(): String {
         val pretty = Json(json) { prettyPrint = true }
-        // The player's own data, so the Picker's list is in it; the sign-in, the tickets, the calendars shown and the public rate cache are not.
-        val full = json.encodeToJsonElement(AppData.serializer(), data.copy(account = null, eggTickets = EggTickets(), shownCalendars = emptySet(), gearRates = null)) as JsonObject
+        // The player's own data, so the Picker's list is in it; the tickets, the calendars shown and the public rate cache are not.
+        val full = json.encodeToJsonElement(AppData.serializer(), data.copy(eggTickets = EggTickets(), shownCalendars = emptySet(), gearRates = null)) as JsonObject
         return pretty.encodeToString(JsonObject.serializer(), JsonObject(full.filterKeys { it !in EXPORT_LEFT_OUT }))
     }
 
-    /** Erases this device's save: back to the welcome screen. A signed-in account must be signed out or deleted first. */
-    fun eraseDevice() {
-        check(data.account == null) { "sign out first" }
-        update { AppData() }
-    }
-
-    /** This device's save as the document the cloud stores (everything but the account and what stays on the device). */
-    fun cloudDocument(): JsonObject {
-        val full = json.encodeToJsonElement(AppData.serializer(), data.cloudPart()) as JsonObject
-        return JsonObject(full.filterKeys { it !in DEVICE_ONLY })
-    }
+    /** Erases this device's save: back to the welcome screen. */
+    fun eraseDevice() = update { AppData() }
 
     /** What every save that comes in (from the device or the cloud) goes through: numbers back in their range. */
     // The Modules setting is gone from Settings: Care is always shown, so a save that switched it off is switched back on when loaded.
@@ -214,49 +183,11 @@ class GameStore(
         return p.copy(planLeadId = p.planLeadId ?: lead, rolesVersion = ROLES_VERSION)
     }
 
-    private fun AppData.cloudPart(): AppData = copy(account = null, eggTickets = EggTickets(), shownCalendars = emptySet(), pickerOptions = emptyList(), gearRates = null, gear = GearData())
-
     /** Shows or hides calendar events from this phone's calendars on the day timeline. */
     fun setShownCalendars(ids: Set<Long>) = update { it.copy(shownCalendars = ids) }
 
-    /** The cloud accepted the document at [version]. */
-    fun markSynced(version: Int) = update { d -> d.copy(account = d.account?.copy(version = version, unsynced = false, syncedAtMillis = nowMillis)) }
-
-    /** Replaces this device's progress with the cloud's. The account stays. Returns false, changing nothing, if the document cannot be read. */
-    fun adoptCloud(document: JsonObject, version: Int): Boolean {
-        val incoming = try {
-            tidy(json.decodeFromJsonElement(AppData.serializer(), document))
-        } catch (e: IllegalArgumentException) {
-            return false
-        }
-        update { d ->
-            incoming.copy(
-                account = d.account?.copy(version = version, unsynced = false, syncedAtMillis = nowMillis),
-                eggTickets = d.eggTickets, shownCalendars = d.shownCalendars, pickerOptions = d.pickerOptions, gearRates = d.gearRates, gear = d.gear,
-            )
-        }
-        return true
-    }
-
     // --- egg tickets --------------------------------------------------------------------------------------------------
 
-    /** This device's id and the spent tickets to report on the next sync. Makes the device id the first time. */
-    fun ticketReport(): Pair<String, List<SpentTicket>> {
-        if (data.eggTickets.device == null) update { d -> d.copy(eggTickets = d.eggTickets.copy(device = newId())) }
-        return data.eggTickets.device!! to data.eggTickets.spent
-    }
-
-    /**
-     * The server took the [reported] spends (accepted or refused, either way they are done) and sent the unspent [stock].
-     * A ticket spent while the call was out stays spent.
-     */
-    fun receivedTickets(stock: List<EggTicket>, reported: List<SpentTicket>) = update { d ->
-        val t = d.eggTickets
-        val reportedIds = reported.map { it.id }.toSet()
-        val spent = t.spent.filter { it.id !in reportedIds }
-        val used = spent.map { it.id }.toSet() + reportedIds + listOfNotNull(t.inSession?.id)
-        d.copy(eggTickets = t.copy(stock = stock.filter { it.id !in used }, spent = spent))
-    }
 
     // --- time and ids -------------------------------------------------------------------------------------------------
 
@@ -1706,7 +1637,7 @@ class GameStore(
         ).mapValues { CARE_LOG_PREFIX + it.value }
 
         /** Parts of the save that stay on this device: never uploaded, kept when the cloud save is adopted (see [cloudPart] and [adoptCloud]). */
-        internal val DEVICE_ONLY = setOf("account", "eggTickets", "shownCalendars", "pickerOptions", "gearRates", "gear")
+        internal val DEVICE_ONLY = setOf("eggTickets", "shownCalendars", "pickerOptions", "gearRates", "gear")
 
         /** What the "Export my data" file leaves out: the same as [DEVICE_ONLY] except the Picker's list and what the Pokégear tools remember, which are the player's own data. */
         private val EXPORT_LEFT_OUT = DEVICE_ONLY - setOf("pickerOptions", "gear")

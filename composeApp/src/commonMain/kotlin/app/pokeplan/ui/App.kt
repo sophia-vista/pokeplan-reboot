@@ -48,13 +48,6 @@ import app.pokeplan.app.MemoryStorage
 import app.pokeplan.care.CareData
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.Storage
-import app.pokeplan.app.cloud.CloudClient
-import app.pokeplan.app.cloud.CloudConfig
-import app.pokeplan.app.cloud.SocialClient
-import app.pokeplan.app.cloud.CareSync
-import app.pokeplan.app.cloud.SyncManager
-import app.pokeplan.app.cloud.SyncStatus
-import io.ktor.client.HttpClient
 import app.pokeplan.ui.screens.CareSection
 import app.pokeplan.ui.screens.CollectionScreen
 import app.pokeplan.ui.screens.Cutscene
@@ -79,8 +72,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlin.time.Clock as SystemClock
 
-private const val SYNC_DEBOUNCE_MILLIS = 3_000L
-private const val SYNC_EVERY_MILLIS = 120_000L
 
 /**
  * The bottom tabs, each with the real game item that stands for it. Home, Pokémon and Me are the shared world; each life
@@ -100,7 +91,7 @@ enum class Place(val tab: Tab) {
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
 class AppModel(
-    val store: GameStore, val motion: MotionSource? = null, val sync: SyncManager? = null, val social: SocialClient? = null,
+    val store: GameStore, val motion: MotionSource? = null,
     private val cries: CryPlayer? = null,
     private val haptics: HapticPlayer? = null,
     /** Where the data export goes; null where the platform has no way to hand over a file. */
@@ -111,8 +102,6 @@ class AppModel(
     val phone: PhoneState? = null,
     /** The Care module's own store, apart from Plan's save; it pays into [store] (the shared world). */
     val care: CareStore = CareStore(MemoryStorage(), Clock { store.nowMillis }, store),
-    /** Care's opt-in cloud copy, through the account [sync] signed in to; null without a cloud. */
-    val careSync: CareSync? = null,
     /** The phone's flashlight for the Pokégear; null where there is none (the tool then lights the screen). */
     val torch: Torch? = null,
     /** What this device can do for the Pokégear's hardware tools, found out at run time; [NoCapabilities] where there is no hardware tool (desktop, web). */
@@ -156,14 +145,6 @@ class AppModel(
         if (store.data.tasks.any { it.id == id && it.state == TaskState.OPEN }) effect(Sfx.SELECT)
         store.completeTask(id)
     }
-
-    /** Where the cloud sync stands, for Settings. */
-    var syncStatus: SyncStatus by mutableStateOf(sync?.status?.value ?: SyncStatus.SignedOut)
-        internal set
-
-    /** Where Care's cloud copy stands, for Settings → Modules. */
-    var careSyncStatus: SyncStatus by mutableStateOf(SyncStatus.Idle)
-        internal set
 
     var data: AppData by mutableStateOf(store.data)
         private set
@@ -265,7 +246,6 @@ fun App(
     startAddTask: Boolean = false,
     /** Where the app was asked to go while it was already open (a widget tap or a shortcut). */
     launches: Flow<AppLaunch>? = null,
-    cloud: CloudConfig = CloudSettings.config,
     /** Emits when something outside the app may have changed the save (the Android app coming back after a widget tap). */
     externalChanges: Flow<Unit>? = null,
     cries: CryPlayer? = null,
@@ -287,11 +267,8 @@ fun App(
     val model = remember {
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
-        val client = if (cloud.enabled) CloudClient(cloud, HttpClient()) { clock.nowMillis() } else null
         val care = CareStore(careStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
-        val sync = client?.let { SyncManager(store, it) }
-        val careSync = if (client != null && sync != null) CareSync(care, client) { sync.session() } else null
-        AppModel(store, motion, sync, client?.let { SocialClient(it) }, cries, haptics, files, calendars, phone, care, careSync, torch, capabilities, sensors, services).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
+        AppModel(store, motion, cries, haptics, files, calendars, phone, care, torch, capabilities, sensors, services).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
     }
     // The phone's power saver is read now and then; World's animations stand still while it is on.
     LaunchedEffect(model) { while (true) { model.powerSaving = phone?.powerSaving == true; kotlinx.coroutines.delay(30_000) } }
@@ -310,44 +287,6 @@ fun App(
         externalChanges.collect {
             store.reload()
             model.care.reload()
-        }
-    }
-
-    // Cloud sync: follow the status, sync when signed in, and again a moment after any change (and now and then, to hear
-    // about changes from other devices).
-    val sync = model.sync
-    if (sync != null) {
-        LaunchedEffect(sync) { sync.status.collect { model.syncStatus = it } }
-        val account = model.data.account
-        LaunchedEffect(account?.userId) {
-            if (account != null) {
-                sync.sync()
-                model.careSync?.sync()
-                while (true) {
-                    delay(SYNC_EVERY_MILLIS)
-                    sync.sync()
-                    model.careSync?.sync()
-                }
-            }
-        }
-        LaunchedEffect(account?.unsynced, account?.syncedAtMillis) {
-            if (account?.unsynced == true && model.syncStatus !is SyncStatus.Conflict && model.syncStatus !is SyncStatus.Refused) {
-                delay(SYNC_DEBOUNCE_MILLIS)
-                sync.sync()
-            }
-        }
-    }
-
-    // Care's opt-in copy: follow its status, and upload a moment after any change.
-    val careSync = model.careSync
-    if (careSync != null) {
-        LaunchedEffect(careSync) { careSync.status.collect { model.careSyncStatus = it } }
-        val careCloud = model.careData.cloud
-        LaunchedEffect(careCloud?.unsynced, careCloud?.syncedAtMillis, model.data.account?.userId) {
-            if (careCloud?.unsynced == true && model.data.account != null && model.careSyncStatus !is SyncStatus.Conflict && model.careSyncStatus !is SyncStatus.Refused) {
-                delay(SYNC_DEBOUNCE_MILLIS)
-                careSync.sync()
-            }
         }
     }
 

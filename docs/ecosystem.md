@@ -1,5 +1,7 @@
 # The PokéPlan ecosystem
 
+> **Retired (0.130.0, REP-012):** Supabase, accounts, cloud sync, the friends board and gifts, the server reward function and the JavaScript build were removed. Wherever this document describes them, read it as history; `docs/pokelife/` is the current plan.
+
 > **Superseded by `docs/pokelife/` (6 November 2026).** The module plans, regions, naming and the "lead per region, no global buddy" decisions below are replaced: modules are PLAN, CARE, HEAL, MINT, HOME, LINK, GEAR and WORLD; Grow is not a module; Explore is part of WORLD; there is one global buddy plus a six-slot party (lead and five) per module; the currency is Poké. See `docs/pokelife/README.md` for the name mapping. Kept as history and for the effort-event contract and the done-list in section 8**
 
 How PokéPlan grows from one productivity app into a small family of life tools that share one world, without the tools

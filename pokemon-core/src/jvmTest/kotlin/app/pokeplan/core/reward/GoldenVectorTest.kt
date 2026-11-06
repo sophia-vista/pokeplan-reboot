@@ -14,13 +14,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * One fixed input and the exact JSON the engine must give for it. The same file is checked on JavaScript by
- * `tools/server/smoke.mjs`, so the app (JVM / web) and the server (JS) can never drift apart.
+ * One fixed input and the exact JSON the engine must give for it, so a change to the reward rules is always deliberate
+ * (the server that once checked the same file on JavaScript is retired).
  * Regenerate after a deliberate rule change: `UPDATE_GOLDEN=1 ./gradlew :pokemon-core:jvmTest --tests "*GoldenVectorTest*"`.
  * New outcomes need a new [RewardRules.VERSION]: regenerating refuses to write them under the version already in the file.
  */
 class GoldenVectorTest {
-    private val file = File("../tools/server/golden.json")
+    private val file = File("src/jvmTest/resources/golden.json")
     private val json = RewardJson.json
 
     private fun build(): JsonObject {
@@ -52,14 +52,14 @@ class GoldenVectorTest {
             val old = if (file.exists()) json.parseToJsonElement(file.readText()) as JsonObject else null
             val outcomesChanged = old != null && listOf("effortOutcome", "achievementOutcome", "careOutcome").any { it in old && old[it] != actual[it] }
             check(!outcomesChanged || old!!["rulesVersion"] != actual["rulesVersion"]) {
-                "the outcomes changed: bump RewardRules.VERSION (now ${RewardRules.VERSION}) before regenerating tools/server/golden.json"
+                "the outcomes changed: bump RewardRules.VERSION (now ${RewardRules.VERSION}) before regenerating pokemon-core/src/jvmTest/resources/golden.json"
             }
             file.parentFile.mkdirs()
             file.writeText(Json { prettyPrint = true }.encodeToString(JsonObject.serializer(), actual) + "\n")
         }
         val expected = json.parseToJsonElement(file.readText()) as JsonObject
         for (key in actual.keys) {
-            assertEquals((expected.getValue(key) as JsonPrimitive).content, (actual.getValue(key) as JsonPrimitive).content, "$key differs from tools/server/golden.json")
+            assertEquals((expected.getValue(key) as JsonPrimitive).content, (actual.getValue(key) as JsonPrimitive).content, "$key differs from pokemon-core/src/jvmTest/resources/golden.json")
         }
     }
 }

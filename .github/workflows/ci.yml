@@ -44,15 +44,6 @@ jobs:
         run: |
           python3 -I tools/species/generate.py
           git diff --exit-code -- pokemon-core/src/commonMain/kotlin/app/pokeplan/core/dex/generated
-      # The runner image does not always ship PostgreSQL: install it when no server binaries are there.
-      - name: PostgreSQL, if the image has none
-        run: |
-          if ! ls /usr/lib/postgresql/*/bin/initdb >/dev/null 2>&1 && ! command -v initdb >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y postgresql postgresql-contrib
-          fi
-      - name: The Supabase migrations and SQL tests
-        run: supabase/tests/run.sh
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -63,11 +54,8 @@ jobs:
           # instead of from nothing (a PR can read main's caches but not write them).
           GRADLE_BUILD_ACTION_CACHE_KEY_PREFIX: pokeplan
           GRADLE_BUILD_ACTION_CACHE_KEY_JOB: gradle
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Unit tests (JVM) and the web and JavaScript builds
-        run: ./gradlew jvmTest compileKotlinWasmJs jsProductionLibraryCompileSync :composeApp:compileKotlinJvm --no-daemon
+      - name: Unit tests (JVM) and the web build
+        run: ./gradlew jvmTest compileKotlinWasmJs :composeApp:compileKotlinJvm --no-daemon
       # Compiling the Android app costs about as much as packaging it (most of it is compiling the shared modules a second time), so
       # it is done only when the PR can break it: it touches the Android app, an Android source set or the Gradle setup, or has the
       # "android" or "apk" label. Changes to shared code are already compiled for the JVM and the web above; every merge to main is
@@ -100,7 +88,3 @@ jobs:
           name: pokeplan-debug-apk
           path: androidApp/build/outputs/apk/debug/androidApp-debug.apk
           retention-days: 3
-      - name: The compiled engine matches the JVM (Node)
-        run: node tools/server/smoke.mjs pokemon-core/build/compileSync/js/main/productionLibrary/kotlin
-      - name: The reward function's logic (Node)
-        run: node --experimental-strip-types supabase/functions/reward/core.test.ts
