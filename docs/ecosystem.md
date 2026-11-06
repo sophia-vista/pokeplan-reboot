@@ -1,5 +1,7 @@
 # The PokéPlan ecosystem
 
+> **Superseded by `docs/pokelife/` (6 November 2026).** The module plans, regions, naming and the "lead per region, no global buddy" decisions below are replaced: modules are PLAN, CARE, HEAL, MINT, HOME, LINK, GEAR and WORLD; Grow is not a module; Explore is part of WORLD; there is one global buddy plus a six-slot party (lead and five) per module; the currency is Poké. See `docs/pokelife/README.md` for the name mapping. Kept as history and for the effort-event contract and the done-list in section 8**
+
 How PokéPlan grows from one productivity app into a small family of life tools that share one world, without the tools
 getting in each other's way. This refines the first draft (`pokelife_pokemon_progression_spec.md`, from ChatGPT) against
 what is already built. `docs/design.md` stays the source of truth for the game rules of what exists today; this

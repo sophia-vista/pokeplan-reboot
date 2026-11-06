@@ -1,5 +1,7 @@
 # The economy: sources, sinks and caps
 
+> **Describes what the code pays today (rules version 12).** The source of truth for the economy's shape is `docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md` (reward ledger, one Bag, one currency: Poké). Coins and World Poké merge 1:1 into Poké in a future rules version; until then this file stays accurate for the code**
+
 Every reward source, every use and every cap, as the code has them under **rules version 12** (`RewardRules.VERSION` in
 `pokemon-core`). This is principle 6 of `docs/ecosystem.md` ("every reward source, cap and use is written down"). The
 reasons and pacing targets are in `docs/design.md`; the simulated pacing is in `docs/economy-report.md`.
