@@ -12,8 +12,8 @@ Status uses the guide's vocabulary (Planned, Partial, Blocked, Done with evidenc
 |---|---|---|---|
 | REP-001 | Record the baseline build: commit, command (`./gradlew jvmTest compileKotlinWasmJs`), environment, result | none | See the guide, section 3.1 |
 | REP-002 | Map the existing test files to the module contracts they protect; find which screenshot tests compare images and which only assert drawing | REP-001 | Planned |
-| REP-003 | Inventory every persisted save shape (`AppData`, `CareStore`, widget access to `save.json`), cloud path and manifest permission; commit representative save fixtures | none | Planned |
-| REP-004 | Inspect live Actions storage (caches, artifacts, release assets) before any cleanup; the 3-day artifact retention in `ci.yml` is already short | none | Planned |
+| REP-003 | Inventory every persisted save shape (`AppData`, `CareStore`, widget access to `save.json`), cloud path and manifest permission; commit representative save fixtures | none | Partial: inventory done (`evidence/REP-003-baseline-inventory.md`); fixtures and device permission check still to do |
+| REP-004 | Inspect live Actions storage (caches, artifacts, release assets) before any cleanup; the 3-day artifact retention in `ci.yml` is already short | none | Partial: the latest `main` run (206) has no artifacts, and the repository has about 30 versioned releases plus the rolling `latest`, each with an APK (release assets do not count toward Actions storage). Cache sizes cannot be read with the available tools: check Settings > Actions > Caches on GitHub before deleting anything |
 | REP-005 | Signing: `androidApp/pokeplan-debug.keystore` is committed and shared by every build (documented in `CLAUDE.md`). Decide whether it is test-only; plan a protected release key and update continuity before any public release | none | Planned |
 
 ## Sequence 1 to 2: architecture and data
