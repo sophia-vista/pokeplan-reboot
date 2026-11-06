@@ -3,9 +3,18 @@ name: Latest APK
 # Every merge to main builds the Android app and replaces the "latest" release with it, so the newest version can be
 # downloaded on a phone from the repository's Releases page. The first merge with a new number in the VERSION file also
 # creates that version's own release ("PokéPlan v0.2.0"), which stays as it was built.
+# Owner's rule (6 November 2026): fewer Actions runs. A merge that changes only docs, notes or the old app publishes nothing
+# new, and a build can be started by hand (Actions → Latest APK → Run workflow) or by merging a code change.
 on:
+  workflow_dispatch:
   push:
     branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+      - ".claude/**"
+      - ".idea/**"
+      - "legacy-android/**"
 
 permissions:
   contents: write
