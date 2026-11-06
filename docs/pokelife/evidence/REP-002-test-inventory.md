@@ -13,7 +13,7 @@
 |---|---|---|
 | Shared Pokémon: owned instance, stats, nature, evolution, items, guardians, perks | `OwnedPokemonTest`, `NatureAndStatsTest`, `EvolutionRulesTest`, `EvolutionDataTest`, `ItemsTest`, `GuardiansTest`, `PerksTest`, `PerksStoreTest`, `FormDexTest`, `PcViewTest`, `DexDataTest`, `MoveDataTest` | Roles (`POKEMON_ECOSYSTEM.md` section 2.2): no test of a six-slot party with a lead, or of module-scoped bonuses (REP-009) |
 | Eggs and hatching | `EggTest`, `HatchRulesTest`, `HatchingTest` | None known |
-| Reward engine and economy | `RewardEngineTest`, `RewardJsonTest`, `GoldenVectorTest`, `CandyRewardsTest`, `CareRewardTest`, `TransferTest`, `TrainerRankTest`, `GenerousEconomyTest`, `CountersTest`, `QuestsTest` | The golden vector exists, but the idempotency contract in the spec (a ledger, not caller-side checks) has no test; a single Poké currency needs new vectors (REP-010) |
+| Reward engine and economy | `RewardEngineTest`, `RewardJsonTest`, `GoldenVectorTest`, `CandyRewardsTest`, `CareRewardTest`, `TransferTest`, `TrainerRankTest`, `GenerousEconomyTest`, `CountersTest`, `QuestsTest` | The golden vector exists. Several store tests mention double payment or duplicates (`GameStoreTest`, `CareStoreTest`, `WorldStoreTest`), but I did not check whether they cover the spec's ledger-level idempotency, which is not caller-side; a single Poké currency needs new vectors (REP-010) |
 | PLAN: tasks, recurrence, focus, goals, reminders | the 16 `plan-core` tests (`TaskRulesTest`, `RecurrenceTest`, `FocusSessionTest`, `GoalTest`, `RemindersTest`, …) | Habits are still a separate system; the spec merges them into recurring tasks |
 | CARE | `CareRulesTest` (care-core), `CareStoreTest`, `CareRemindersTest`, `CareSyncTest` (app-core) | CARE is thinly tested at the rules layer (one file) compared with its spec |
 | WORLD: progression, story, regions | the 13 `world-core` tests, `WorldStoreTest` | Deterministic expedition and reward vectors against the shared ledger are not separated yet |
@@ -24,7 +24,7 @@
 | UI rendering | `ScreenshotTest` | See section 3 |
 | Android platform (widgets, reminders, permissions, boot recovery) | none | `androidApp` has no test source set and there is no instrumented suite |
 
-Tests tied to the legacy architecture, to replace at the new ownership boundary: `SyncManagerTest`, `SocialClientTest`, `CareSyncTest`, and parts of `GameStoreTest` and `CareStoreTest` that assume whole-document JSON saves.
+Tests tied to the legacy architecture, to replace at the new ownership boundary: `SyncManagerTest`, `SocialClientTest` and `CareSyncTest` (cloud). `GameStoreTest`, `CareStoreTest` and `SaveCompatibilityTest` exercise the JSON save and will need review when the database lands (not read in detail here).
 
 ## 3. The screenshot test is not a golden test
 
