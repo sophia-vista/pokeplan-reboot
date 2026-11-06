@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.127.0
+
+- Under the hood (REP-011): reminder source adapters for Plan and Care and a router for notification actions. A stale or unknown reminder cannot change anything, snoozing keeps the same reminder, and dismissing or snoozing never finishes a task or routine or pays a reward. Nothing changes on screen yet.
+
 ## 0.126.0
 
 - **Care's routine reminders now respect quiet hours.** One global quiet-hours window (default 22:00 to 07:00) holds every module's reminders until it ends; a routine set for 23:00 now goes off the next morning at 07:00. Focus sessions still hold a reminder until they end, and a focus that ends in quiet hours waits for the quiet window's end.
