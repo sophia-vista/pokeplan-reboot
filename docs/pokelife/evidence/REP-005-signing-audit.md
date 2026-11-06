@@ -32,4 +32,4 @@
 
 ## 4. Not established
 
-Whether the repository or any fork was ever public; GitHub's secret-scanning alerts; whether the debug key's SHA-1 is registered with any external service (`CLAUDE.md` mentions Google sign-in in a code comment); a scan of the full history beyond the 50 newest commits for private-key headers.
+Whether the repository or any fork was ever public; GitHub's secret-scanning alerts; whether the debug key's SHA-1 is registered with any external service (the comment in `androidApp/build.gradle.kts` mentions Google sign-in); a scan of the full history beyond the 50 newest commits for private-key headers.
