@@ -43,6 +43,7 @@ android {
 
 dependencies {
     implementation(project(":composeApp"))
+    implementation(project(":data"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.glance.appwidget)
     // The QR scanner: Google's own scanning screen, which needs no camera permission from this app.

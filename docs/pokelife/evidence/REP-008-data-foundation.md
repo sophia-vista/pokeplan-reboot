@@ -41,3 +41,8 @@
 | Tables for PLAN, CARE, WORLD, GEAR | Each module's refactor (REP-014); until then its fields live in the sidecar |
 | `reminder_request`, `attachment`, `external_source` | REP-011 and the HEAL, MINT, HOME and LINK work |
 | A reward policy that uses the ledger for live events | REP-010 |
+
+
+## Device self-check (0.128.0)
+
+The owner chose not to schedule formal device checks ("no need to test, just go", 6 November 2026). So the checks can run themselves without any setup, debug builds carry a second launcher icon, **DB check** (`androidApp/src/debug`, `DeviceSelfCheck` in `:data` androidMain). It runs on a throwaway file, never `pokelife.db` or the save: SQLite version, foreign keys enforced, journal mode, transaction rollback, a refused orphan row, 5000 inserts timed, checkpoint then backup copy then reopen, and a reopen after close. **Nothing has been run on a device yet**: tapping the icon once on the phone is the evidence. Not covered: low storage, the widgets' access to the database, MINT encryption, a kill during a write. The database stays out of the live path until the owner has seen the report and says to cut over.

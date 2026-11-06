@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.128.0
+
+- **Debug builds get a second icon, "DB check"**, that runs the database checks on a throwaway file (SQLite version, foreign keys, WAL mode, rollback, speed, backup copy, reopen) and shows PASS or FAIL for each line. It never touches your save. Release builds do not have it.
+
 ## 0.127.0
 
 - Under the hood (REP-011): reminder source adapters for Plan and Care and a router for notification actions. A stale or unknown reminder cannot change anything, snoozing keeps the same reminder, and dismissing or snoozing never finishes a task or routine or pays a reward. Nothing changes on screen yet.
