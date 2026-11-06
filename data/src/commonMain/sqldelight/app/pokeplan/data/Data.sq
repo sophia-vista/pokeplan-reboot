@@ -1,4 +1,4 @@
--- Schema version 3 of the PokéLife database (docs/pokelife ARCHITECTURE/DATA_AND_MIGRATIONS.md sections 7 and 8).
+-- Schema version 4 of the PokéLife database (docs/pokelife ARCHITECTURE/DATA_AND_MIGRATIONS.md sections 7 and 8).
 -- It holds the shared Pokémon and economy side and a legacy sidecar for every module that has no tables yet.
 -- Every later change is a numbered migration (N.sqm) checked against the committed schema file (databases/N.db).
 
@@ -195,6 +195,75 @@ CREATE TABLE reminder_hold (
     created_at INTEGER NOT NULL
 );
 
+-- CARE's own records (version 4, REP-014): the Care save moved out of the live document into tables, one family per kind of
+-- record so a private kind (the journal, the diary) can be read, exported or erased on its own. A record table keeps the
+-- columns the app asks by (its key, its place in the list, its day) and the record itself as JSON in `json`, so the typed
+-- model stays the one definition of a record and a field it does not know yet is never dropped. `position` is the order of the
+-- list; a record without an id of its own is keyed by its position.
+CREATE TABLE care_routine (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+-- The days a routine was done, one row each (a routine's json holds everything but these).
+CREATE TABLE care_routine_completion (
+    routine_key TEXT NOT NULL REFERENCES care_routine(key) ON DELETE CASCADE,
+    day TEXT NOT NULL,
+    PRIMARY KEY (routine_key, day)
+);
+
+CREATE TABLE care_diary_card (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE care_journal_entry (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE care_calm_break (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE care_skill_practice (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+-- Visitors in the meadow and in the queue (in arrival order), and the ones the player sent away (kept, so a dismissal can be undone).
+CREATE TABLE care_visitor (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE care_dismissed_visitor (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+-- Everything else Care keeps that is one value rather than a list: its settings, the visit in progress, the journal draft, the
+-- skipped prompts, the rhythm weeks, the visitor seed, and any field a newer build adds. One row per top-level field.
+CREATE TABLE care_state (
+    key TEXT NOT NULL PRIMARY KEY,
+    json TEXT NOT NULL
+);
+
 -- Owned Pokémon.
 insertPokemon:
 INSERT INTO owned_pokemon(
@@ -369,6 +438,9 @@ INSERT OR REPLACE INTO live_document(name, json, updated_at) VALUES (?, ?, ?);
 
 liveNames:
 SELECT name FROM live_document ORDER BY name;
+
+liveDelete:
+DELETE FROM live_document WHERE name = ?;
 
 -- Held reminders.
 holdPut:

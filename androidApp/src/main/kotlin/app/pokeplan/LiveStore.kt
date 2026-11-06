@@ -22,7 +22,9 @@ class DatabaseStorage(private val live: LiveDocuments, private val name: String)
  * The cutover (DATA_AND_MIGRATIONS.md section 12.6). The app and the widgets in this process share one connection. On the
  * first start with this build, `save.json` and `care.json` are copied into the database in one transaction, read back and
  * the marker set; from then on the database is the only live store and the files are never written again (they stay as the
- * rollback copy). A backup of the live documents is written once a day (`backups/`).
+ * rollback copy). Care's records then move into Care's own tables (schema 4, `CareTables`); `live.read`, `write` and the backup
+ * snapshot put them back together as `care`, so the app and the backup see the same document. A backup of the live documents is
+ * written once a day (`backups/`).
  *
  * If the database cannot be used the app never loses data silently: a corrupt file is moved aside whole and the newest
  * backup is restored, else the untouched legacy files are used; a database written by a newer build is left alone. Only
@@ -44,6 +46,9 @@ object LiveStore {
             val s = openOrRecover(app, backups, now)
             s.live.activate(read(app, "save.json"), read(app, "care.json"), now)
             File(app.filesDir, ACTIVE_FLAG).writeText("database") // from now on the files are never the live store again
+            // Care's records move from their document row into Care's tables, once (REP-014). If it cannot (the read-back differed),
+            // nothing changed and the document row stays the live Care save; it is tried again at the next start.
+            runCatching { s.live.moveCareToTables(now) }.onFailure { Log.w(TAG, "Care tables not active this run: ${it.javaClass.simpleName}") }
             runCatching { backups.takeIfDue(s.live, now) }.onFailure { Log.w(TAG, "backup failed: ${it.javaClass.simpleName}") }
             store = s
             s

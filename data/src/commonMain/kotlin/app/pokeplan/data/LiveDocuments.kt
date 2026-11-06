@@ -20,11 +20,31 @@ class LiveDocuments(private val store: DataStore) {
 
     fun isActive(): Boolean = q.meta(META_LIVE).executeAsOneOrNull() == LIVE_DATABASE
 
-    fun read(name: String): String? = q.liveRead(name).executeAsOneOrNull()
+    /** Whether [name] is kept in tables rather than as a row (Care, once [moveCareToTables] has run). */
+    private fun inTables(name: String): Boolean = name == CARE && store.careTables.isActive()
 
-    /** One document, one transaction. */
+    fun read(name: String): String? = if (inTables(name)) store.careTables.read() else q.liveRead(name).executeAsOneOrNull()
+
+    /** One document, one transaction. A document kept in tables is split into its rows, and only the rows that changed are written. */
     fun write(name: String, json: String, nowMillis: Long) {
-        store.transaction { q.liveWrite(name, json, nowMillis) }
+        if (inTables(name)) store.careTables.write(json) else store.transaction { q.liveWrite(name, json, nowMillis) }
+    }
+
+    /**
+     * Moves the Care document from its row into Care's tables (REP-014), once: the rows are written and read back equal to the
+     * document, the marker is set, and the old row is kept under `aside:care:tables:<millis>` (never deleted), all in one
+     * transaction, so a failure leaves the document row as the live Care save. Does nothing once done, so it can run on every start.
+     */
+    fun moveCareToTables(nowMillis: Long) {
+        if (store.careTables.isActive()) return
+        store.transaction {
+            val doc = q.liveRead(CARE).executeAsOneOrNull()
+            store.careTables.activate(doc, nowMillis)
+            if (doc != null) {
+                q.liveWrite("${ASIDE}$CARE:tables:$nowMillis", doc, nowMillis)
+                q.liveDelete(CARE)
+            }
+        }
     }
 
     /** Keeps a document that could not be read where [write] will not replace it. */
@@ -32,11 +52,13 @@ class LiveDocuments(private val store: DataStore) {
         write("$ASIDE$name:$nowMillis", json, nowMillis)
     }
 
-    fun names(): List<String> = q.liveNames().executeAsList()
+    fun names(): List<String> = (q.liveNames().executeAsList() + listOfNotNull(CARE.takeIf { store.careTables.isActive() && store.careTables.read() != null })).sorted()
 
-    /** Every live document (not the kept-aside ones) as of one moment: a single read transaction. */
+    /** Every live document (not the kept-aside ones) as of one moment: a single read transaction. Care's tables are put back together as `care`. */
     fun snapshot(): Map<String, String> = store.transaction {
-        q.liveNames().executeAsList().filter { !it.startsWith(ASIDE) }.associateWith { q.liveRead(it).executeAsOne() }
+        val docs = q.liveNames().executeAsList().filter { !it.startsWith(ASIDE) }.associateWith { q.liveRead(it).executeAsOne() }.toMutableMap()
+        if (store.careTables.isActive()) store.careTables.read()?.let { docs[CARE] = it }
+        docs
     }
 
     /**
@@ -46,8 +68,8 @@ class LiveDocuments(private val store: DataStore) {
     fun replaceAll(docs: Map<String, String>, nowMillis: Long) {
         store.transaction {
             for ((name, json) in docs) {
-                q.liveRead(name).executeAsOneOrNull()?.let { q.liveWrite("$ASIDE$name:$nowMillis", it, nowMillis) }
-                q.liveWrite(name, json, nowMillis)
+                read(name)?.let { q.liveWrite("$ASIDE$name:$nowMillis", it, nowMillis) }
+                if (inTables(name)) store.careTables.write(json) else q.liveWrite(name, json, nowMillis)
             }
         }
     }

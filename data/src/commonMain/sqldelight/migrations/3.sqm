@@ -1,0 +1,64 @@
+-- Version 3 to 4: CARE's own record tables (see Data.sq). The Care document moves into them once, when the app starts.
+CREATE TABLE care_routine (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+-- The days a routine was done, one row each (a routine's json holds everything but these).
+CREATE TABLE care_routine_completion (
+    routine_key TEXT NOT NULL REFERENCES care_routine(key) ON DELETE CASCADE,
+    day TEXT NOT NULL,
+    PRIMARY KEY (routine_key, day)
+);
+
+CREATE TABLE care_diary_card (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE care_journal_entry (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE care_calm_break (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE care_skill_practice (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+-- Visitors in the meadow and in the queue (in arrival order), and the ones the player sent away (kept, so a dismissal can be undone).
+CREATE TABLE care_visitor (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE care_dismissed_visitor (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+-- Everything else Care keeps that is one value rather than a list: its settings, the visit in progress, the journal draft, the
+-- skipped prompts, the rhythm weeks, the visitor seed, and any field a newer build adds. One row per top-level field.
+CREATE TABLE care_state (
+    key TEXT NOT NULL PRIMARY KEY,
+    json TEXT NOT NULL
+);
