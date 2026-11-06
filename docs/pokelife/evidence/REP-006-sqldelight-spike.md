@@ -20,7 +20,7 @@ The spike's schema is a small slice of the target model (owned Pokémon, module 
 
 ## 2. Findings that matter for the design
 
-1. **Foreign keys are off by default in SQLite.** The tests only pass the party and release rules because the connection sets `foreign_keys=true`. The spec already requires verifying this on every connection (`DATA_AND_MIGRATIONS.md` section 4.2); the real driver setup must do it and a test must prove it.
+1. **Foreign keys are off by default in SQLite.** The tests only pass the party and release rules because the connection sets `foreign_keys=true` (checked: with it set to false, `constraintsHoldWhereTheCodeCouldForgetThem` fails because an unknown owned id is accepted). The spec already requires verifying this on every connection (`DATA_AND_MIGRATIONS.md` section 4.2); the real driver setup must do it and a test must prove it.
 2. **The migration verification task is not yet meaningful.** `verifyCommonMainSpikeDbMigration` exists and passes, but it checks nothing until `schemaOutputDirectory` is configured and the version `.db` files are committed. That has to be set up with the real schema so every future migration is checked against the previous version.
 3. **The party-size rule can live in the schema** (`CHECK (slot BETWEEN 1 AND 6)`), which matches the six-slot party (`POKEMON_ECOSYSTEM.md` section 2.2). Rules that depend on other rows (for example module-specific eligibility) still belong in the domain layer.
 4. **Room is not needed.** The spec asked to compare Room only if SQLDelight harmed maintainability or Android reliability. Nothing found does; the decision in `DATA_AND_MIGRATIONS.md` section 4.1 stands, subject to the unverified points below.
