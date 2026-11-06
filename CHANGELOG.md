@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.131.0
+
+- **One reminder system for Plan and Care.** Task and routine reminders now share one scheduler: the same quiet hours for both, a reminder that goes off during a focus session waits for its end, and a snooze now survives a restart of the phone. Plan keeps its Done / 10 min / 1 hour buttons and its three gentle repeats; Care keeps Done / In 30 min and never repeats. Old notifications still react to their buttons after the update.
+- Under the hood (REP-011): `reminder_hold` table (schema v3), `ReminderCoordinator`, `SharedReminders`; the old alarms are cancelled once, after the new ones are set. DB check also tests the new table.
+
 ## 0.130.0
 
 - **PokéLife is fully local.** The cloud is gone: no account, no sign-in, no sync, no friends board or gifts, and no server deciding rewards (they were always computed on the phone first). Settings loses its Account card, Care loses its Settings page (it held only the cloud copy), and Home loses the sync dot. Your save is unchanged; any sign-in tokens it held leave the save the next time it is written.

@@ -93,4 +93,7 @@ interface ReminderSourceAdapter {
 
     /** Runs a stable action key ("done", "snooze") in the owning module; false when it is stale or not allowed. */
     fun execute(request: ReminderRequest, action: String): Boolean
+
+    /** The reminder to hold after [request] was shown (an unanswered-reminder repeat), or null. The source's own policy, bounded. */
+    fun followUp(request: ReminderRequest, nowMillis: Long): ReminderRequest? = null
 }

@@ -22,9 +22,8 @@ import app.pokeplan.ui.App
 import app.pokeplan.ui.AppLaunch
 import app.pokeplan.ui.Place
 import app.pokeplan.reminders.AppAlerts
-import app.pokeplan.reminders.RoutineReminders
+import app.pokeplan.reminders.SharedReminders
 import app.pokeplan.reminders.TASK_REMINDERS_PREFS
-import app.pokeplan.reminders.TaskReminders
 import app.pokeplan.widgets.announceBuddyEvent
 import app.pokeplan.widgets.updateWidgets
 import kotlinx.coroutines.Job
@@ -128,7 +127,7 @@ class MainActivity : ComponentActivity() {
         reminderRefresh?.cancel()
         reminderRefresh = lifecycleScope.launch {
             delay(800)
-            TaskReminders.reschedule(applicationContext, upcoming)
+            SharedReminders.reschedule(applicationContext)
             AppAlerts.schedule(applicationContext, alerts)
         }
     }
@@ -163,7 +162,7 @@ class MainActivity : ComponentActivity() {
         routineRefresh?.cancel()
         routineRefresh = lifecycleScope.launch {
             delay(800)
-            RoutineReminders.reschedule(applicationContext, upcoming)
+            SharedReminders.reschedule(applicationContext)
         }
     }
 
