@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.132.0
+
+- **Visitors are calmer and kinder (Care).** Visitors now arrive on their own, one a day and sometimes two, whatever you did in Care. Four stand in the meadow and up to six wait in a quiet line that never runs out; nobody is pushed out. You can visit any of them at any time with nothing to do first. Every kind of care warms a visitor straight away and the warmth is never lost, however long you are away: no three-day goodbye and no one visit a day. A visit can be left whenever you like, and a visitor then rests a few hours. Sixteen warmth makes a friend, about two visits. You can send a visitor away on purpose, and ask it back later. Visitors from an older save keep what they had (each warm day counts for a quarter). What a friend pays has not changed.
+- **Care's data has its own tables.** Routines, diary, journal, calm breaks, skills and visitors now live in their own tables inside the app's database (schema 4) instead of one block of text, so a save writes only what changed. The daily backup still writes the same `care.json`.
+- Under the hood (REP-014): `CareTables`, `LiveDocuments.moveCareToTables` (read back and compared, the old row kept aside), `Visitors.arrivals`, `CareStore.leaveVisit/dismiss/restore`, `MODULES/CARE.md` section 6.8, `evidence/REP-014-care-tables.md`. DB check also tests the Care tables.
+
 ## 0.131.0
 
 - **One reminder system for Plan and Care.** Task and routine reminders now share one scheduler: the same quiet hours for both, a reminder that goes off during a focus session waits for its end, and a snooze now survives a restart of the phone. Plan keeps its Done / 10 min / 1 hour buttons and its three gentle repeats; Care keeps Done / In 30 min and never repeats. Old notifications still react to their buttons after the update.

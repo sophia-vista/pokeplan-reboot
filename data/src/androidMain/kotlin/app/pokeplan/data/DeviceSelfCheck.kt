@@ -76,6 +76,18 @@ object DeviceSelfCheck {
                 } finally { dir.deleteRecursively() }
                 "marker set, backup written and restored, replaced document kept aside"
             }
+            check("Care tables: move in, write a change, read back, backup sees it") {
+                val live = s.live
+                val doc = "{\"routines\":[{\"id\":\"r\",\"title\":\"T\",\"createdOn\":\"2026-11-01\",\"completions\":[\"2026-11-01\"]}],\"journal\":[{\"id\":\"j\",\"atMillis\":1,\"day\":\"2026-11-01\",\"text\":\"x\"}],\"journalDraft\":\"\"}"
+                live.write("care", doc, 6)
+                live.moveCareToTables(7)
+                check(s.careTables.isActive()) { "marker not set" }
+                live.write("care", doc.replace("\"journalDraft\":\"\"", "\"journalDraft\":\"d\""), 8)
+                val back = live.read("care") ?: error("Care did not read back")
+                check("\"journalDraft\":\"d\"" in back && "\"completions\":[\"2026-11-01\"]" in back && "\"text\":\"x\"" in back) { "the tables did not give the document back" }
+                check(live.snapshot()["care"] == back) { "a backup would not see Care" }
+                "moved into tables, a change written, read back equal, the snapshot has it"
+            }
             check("Reminder holds: put, replace, release") {
                 val r = s.reminders
                 r.hold(HeldReminder("PLAN|t|task|1", "PLAN", "t", "task", "1", 100, "snooze"), 1)

@@ -262,6 +262,18 @@ Rules:
 - Reunion interactions may include unique dialogue, reactions and references to the original visit and relationship history.
 - No separate keepsake collection, memento album or keepsake inventory.
 
+### 6.8 Adopted numbers and adaptations (built in 0.132.0) *(tune)*
+
+The sections above say what visitors are; these are the numbers the code uses and the places it had to decide.
+
+- **Arrivals:** one visitor a day, and a second one 35% of days (the same for a device and day), independent of anything done in CARE. A device's first arrivals are two. A few days away are caught up, at most three days' worth at a time. Arrivals pause while the meadow (4) and the queue (6) are full, which keeps "never expires" from meaning "grows forever"; nobody already here is dropped or replaced. A species is never here twice.
+- **Slots:** the first four visitors by arrival are in the meadow, the rest are the queue in order. When one leaves (befriended or sent away) the next takes the place.
+- **Progress:** *warmth*, added at once by every interaction: its favourite 2, any other kind 1, each kind once a visit, a pat on its liked spot 1, noticing a small moment 1, its liked berry 4 (once per visitor). Sixteen makes a friend, which takes about two visits (a full visit is 6 to 11). It is never reset and never counts days. An old save's warm days become 4 each, so no visitor loses what it had.
+- **A visit** has no fixed length: it ends when all five kinds are done, when the visitor is warm enough, or when the player leaves, and what it warmed is kept either way. After a visit the visitor rests three hours before another visit counts (playing with it is always possible). There is no daily limit on visits; the pace of friends is set by arrivals.
+- **Friends the world cannot pay today** (its daily limit of friends, `GameStore.BEFRIEND_DAILY_CAP`): the visit ends, the visitor stays, ready, and its next visit makes it a friend.
+- **Dismissal:** asked once, keeps what the visitor earned (nothing already given is taken back), and the visitor is kept (the last twenty) so it can be asked back, to the end of the queue with its warmth.
+- **Not built yet:** returning befriended visitors (reunions), Care Play for the buddy and owned Pokémon, the fixed Meadow scene, and light egg inheritance with an origin note. Rewards are unchanged (`RewardRules.VERSION` 15): only how often a friend can happen changed.
+
 ## 7. Asset and animation policy
 
 PMD asset coverage is uneven by species, form, action and expression. The implementation must inspect actual availability and must not assume universal animation support.

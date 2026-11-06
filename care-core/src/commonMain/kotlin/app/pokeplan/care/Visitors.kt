@@ -14,20 +14,26 @@ import kotlinx.serialization.Serializable
 import kotlin.random.Random
 
 /**
- * A Pokémon visiting Care's scene, one the player may befriend (docs/ecosystem.md, section 6, "Befriending"). [points] is how
- * warm it is: one for each day the player spent the day's befriend on it, [FRIEND_POINTS] make it a friend.
+ * A Pokémon visiting Care's meadow, one the player may befriend (docs/pokelife `MODULES/CARE.md`, section 6). [progress] is how
+ * warm it is: every kind of care it takes adds to it at once, and [Visitors.FRIEND_PROGRESS] makes it a friend. It is never reset
+ * and never counts days: absence, a closed app or a missed day change nothing. Visitors stay until they are befriended or sent away.
  */
 @Serializable
 data class Visitor(
+    /** Who it is, for as long as it stays: the device seed, the day it arrived and its place in that day's arrivals. Old saves are given one when loaded. */
+    val id: String = "",
     val speciesId: Int,
     val formIdentifier: String,
     val arrivedDay: LocalDate,
+    val progress: Int = 0,
+    /** The warm days the old system counted (four made a friend). Read from an old save and moved into [progress] once ([Visitors.migrated]); 0 after. */
     val points: Int = 0,
-    val lastVisitDay: LocalDate? = null,
     /** The way of caring it likes best; the player finds it out by trying (the five love languages as a vocabulary). */
     val favorite: CareAction = CareAction.TIME,
-    /** Whether its liked berry has given its one bonus day ([Visitors.likedBerry]). */
+    /** Whether its liked berry has given its one bonus ([Visitors.likedBerry]). */
     val berryBonus: Boolean = false,
+    /** After a visit it rests until this time (millis), so a visit is a calm moment and not something to repeat in a row; 0 when it is not resting. */
+    val restUntilMillis: Long = 0,
 )
 
 /**
@@ -48,7 +54,7 @@ enum class PetSpot { HEAD, BACK, CHIN }
 /** How a visitor took an action: its favourite, a kind of care it likes, or one it already had this visit. */
 enum class Reaction(val warmth: Int) { LOVED(2), LIKED(1), FLAT(0) }
 
-/** A visit in progress: the actions done so far, and the bid waiting to be noticed, if any. */
+/** A visit in progress: the kinds of care done so far, and the bid waiting to be noticed, if any. It stays until the player leaves it or it comes to its end. */
 @Serializable
 data class Visit(
     val speciesId: Int,
@@ -67,34 +73,43 @@ data class Visit(
 data class VisitStep(val reaction: Reaction, val visit: Visit, val result: BefriendResult? = null)
 
 /**
- * What a visit did: the visitor's days now (a visit that was not warm enough adds none), and whether it became a friend (then
- * [rewards] holds the Pokémon). [joined] is true when the visitor itself joined, rather than leaving an egg of its family.
+ * What a visit came to: the visitor as it is now, and whether it became a friend (then [rewards] holds the Pokémon). [joined] is true when the visitor itself joined, rather than leaving an egg of its family.
  */
-data class BefriendResult(val visitor: Visitor, val friend: Boolean, val rewards: List<app.pokeplan.core.reward.Reward>, val joined: Boolean = false)
+data class BefriendResult(
+    val visitor: Visitor, val friend: Boolean, val rewards: List<app.pokeplan.core.reward.Reward>, val joined: Boolean = false,
+    /** The visitor is warm enough to be a friend but the world paid nothing now (its daily limit of friends): it stays, ready, and the next visit makes it one. */
+    val waiting: Boolean = false,
+)
 
-/** Who visits, and how long they stay. *(tune)* */
+/** Who visits, how many fit and how a visitor warms. *(tune)* */
 object Visitors {
-    /** Visitors offered on an ordinary day; a fuller choice after a break. */
-    const val OFFERED = 2
-    const val OFFERED_AFTER_BREAK = 3
-
-    /**
-     * Visitors in the meadow at once: new ones come only while there is room, so visiting every one each day stays a few
-     * short visits, and friends come at most this many a day. *(tune)*
-     */
+    /** Visitors in the meadow at once; the buddy is not one of them. */
     const val MAX_VISITORS = 4
 
-    /** Days of befriending that make a visitor a friend. */
-    const val FRIEND_POINTS = 4
+    /** Visitors waiting for a place. They never expire; new arrivals pause while the queue is full. */
+    const val MAX_QUEUE = 6
 
-    /** A warming visitor not visited for this many days wanders off, with no penalty. */
-    const val WANDER_DAYS = 3
+    /** Visitors the player sent away, kept so they can be asked back. The oldest are forgotten past this. */
+    const val MAX_DISMISSED = 20
 
-    /** Actions in a visit; a bid is offered before the second and the third. */
-    const val ACTIONS_PER_VISIT = 3
+    /** The first arrivals on a new device, so the meadow is not empty. */
+    const val FIRST_ARRIVALS = 2
 
-    /** Warmth that makes a visit count as a day with the visitor: three different kinds of care alone (3) are not quite enough. *(tune)* */
-    const val WARM_VISIT = 4
+    /** A day brings one arrival, and sometimes a second; a few days away are caught up, at most this many. Care activity changes none of it. */
+    const val CATCH_UP_DAYS = 3
+    private const val SECOND_ARRIVAL_CHANCE = 0.35
+
+    /** Warmth that makes a visitor a friend. A visit of every kind of care and its small moments warms 6 to 11, so it takes about two visits. */
+    const val FRIEND_PROGRESS = 16
+
+    /** What one warm day of the old system is worth (four made a friend), so no visitor loses what it had. */
+    const val LEGACY_DAY_PROGRESS = FRIEND_PROGRESS / 4
+
+    /** A visitor rests this long after a visit before the next one counts. It does not stop playing with it. */
+    const val REST_MILLIS = 3 * 60 * 60 * 1_000L
+
+    /** A visit is every kind of care once; it ends when all are done, when the visitor is warm enough, or when the player leaves. */
+    val KINDS = CareAction.entries.size
 
     private const val UNCOMMON_SHARE = 0.30
     private const val RARE_SHARE = 0.10
@@ -102,17 +117,46 @@ object Visitors {
     /** Care actions done lately tilt the type pool a little: calm breaks lean Water and Fairy, routines Normal, skills Grass. */
     const val LEAN_WEIGHT = 1.5
 
-    /** How many new visitors to offer on [today] when the last offer was on [lastOffer] and [staying] are still warming up. */
-    fun count(lastOffer: LocalDate?, today: LocalDate, staying: Int = 0): Int =
-        minOf(if (lastOffer != null && lastOffer.daysUntil(today) >= WANDER_DAYS) OFFERED_AFTER_BREAK else OFFERED, MAX_VISITORS - staying).coerceAtLeast(0)
+    /** Visitors in the meadow (the first [MAX_VISITORS] by arrival) and in the queue (the rest). */
+    fun meadow(visitors: List<Visitor>): List<Visitor> = visitors.take(MAX_VISITORS)
+    fun queue(visitors: List<Visitor>): List<Visitor> = visitors.drop(MAX_VISITORS)
+
+    fun resting(visitor: Visitor, nowMillis: Long): Boolean = nowMillis < visitor.restUntilMillis
+
+    fun friend(visitor: Visitor): Boolean = visitor.progress >= FRIEND_PROGRESS
+
+    /** A visitor from an old save: it gets an id, and the warm days it had become progress. Already migrated: unchanged. */
+    fun migrated(visitor: Visitor): Visitor {
+        val id = visitor.id.ifEmpty { "old-${visitor.speciesId}-${visitor.arrivedDay.toEpochDays()}" }
+        return if (visitor.points == 0 && id == visitor.id) visitor else visitor.copy(id = id, progress = visitor.progress + visitor.points * LEGACY_DAY_PROGRESS, points = 0)
+    }
 
     /**
-     * Today's new visitors from the Care Region (Common to Rare; Super Rare and the patrons stay quest-only), the same for the
-     * same device [seed] and day. [exclude] are species already visiting. [luck] is Care's Visitor luck in percent: each
-     * visitor has that chance of coming one rarity higher. [lean] are the types to favour.
+     * The visitors that arrived since the last arrivals on [lastOffer] (null: this device's first): a day brings one, and
+     * sometimes two, from the Care Region (Common to Rare; Super Rare and the patrons stay quest-only), the same for the same
+     * device [seed] and day. Up to [CATCH_UP_DAYS] days are caught up, and no more than [room] come. [present] are the species
+     * already here or waiting. [luck] is Care's Visitor luck in percent: each visitor has that chance of coming one rarity
+     * higher. [lean] are the types to favour.
      */
-    fun offer(seed: Int, today: LocalDate, count: Int, exclude: Set<Int>, luck: Double, lean: Set<PokemonType>): List<Visitor> {
-        val rng = Random(seed.toLong() * 31 + today.toEpochDays())
+    fun arrivals(seed: Int, lastOffer: LocalDate?, today: LocalDate, room: Int, present: Set<Int>, luck: Double, lean: Set<PokemonType>): List<Visitor> {
+        val days = if (lastOffer == null) 1 else minOf(lastOffer.daysUntil(today), CATCH_UP_DAYS)
+        val taken = present.toMutableSet()
+        val out = mutableListOf<Visitor>()
+        for (back in days - 1 downTo 0) {
+            val day = today.minus(DatePeriod(days = back))
+            val count = if (lastOffer == null) FIRST_ARRIVALS else 1 + if (Random(seed.toLong() * 17 + day.toEpochDays()).nextDouble() < SECOND_ARRIVAL_CHANCE) 1 else 0
+            val left = room - out.size
+            if (left <= 0) break
+            val arrived = offer(seed, day, minOf(count, left), taken, luck, lean)
+            taken += arrived.map { it.speciesId }
+            out += arrived
+        }
+        return out
+    }
+
+    /** [count] new visitors for [day], the same for the same [seed] and day. [exclude] are species already here. */
+    fun offer(seed: Int, day: LocalDate, count: Int, exclude: Set<Int>, luck: Double, lean: Set<PokemonType>): List<Visitor> {
+        val rng = Random(seed.toLong() * 31 + day.toEpochDays())
         val taken = exclude.toMutableSet()
         return buildList {
             repeat(count) {
@@ -124,7 +168,7 @@ object Visitors {
                 if (rarity != Rarity.RARE && rng.nextDouble() * 100 < luck) rarity = rarity.next()
                 val option = pick(rarity, rng, taken, lean) ?: return@repeat
                 taken += option.speciesId
-                add(Visitor(option.speciesId, option.formIdentifier, today, favorite = CareAction.entries[rng.nextInt(CareAction.entries.size)]))
+                add(Visitor("v$seed-${day.toEpochDays()}-$size", option.speciesId, option.formIdentifier, day, favorite = CareAction.entries[rng.nextInt(CareAction.entries.size)]))
             }
         }
     }
@@ -157,21 +201,18 @@ object Visitors {
         else -> Reaction.LIKED
     }
 
-    /** Whether all of [ACTIONS_PER_VISIT] are done. */
-    fun finished(visit: Visit): Boolean = visit.actions.size >= ACTIONS_PER_VISIT
-
-    /** Whether the visit warmed the visitor enough to count as a day. */
-    fun warm(visit: Visit): Boolean = visit.warmth >= WARM_VISIT
+    /** Whether every kind of care has been done this visit. */
+    fun finished(visit: Visit): Boolean = visit.actions.size >= KINDS
 
     /**
-     * Does [action]. An unnoticed bid is let go without cost, and after the first and second action the visitor makes a new
-     * one (the same for the same visitor and day).
+     * Does [action]. An unnoticed bid is let go without cost, and after each action but the last the visitor makes a new one
+     * (the same for the same visitor and day).
      */
     fun act(visitor: Visitor, visit: Visit, action: CareAction, spot: PetSpot? = null): Pair<Visit, Reaction> {
         if (finished(visit)) return visit to Reaction.FLAT
         val reaction = reaction(visitor, visit, action)
         val actions = visit.actions + action
-        val bid = if (actions.size < ACTIONS_PER_VISIT) Bid.entries[((visit.speciesId + visit.day.toEpochDays() + actions.size) % Bid.entries.size).toInt()] else null
+        val bid = if (actions.size < KINDS) Bid.entries[((visit.speciesId + visit.day.toEpochDays() + actions.size) % Bid.entries.size).toInt()] else null
         // A pat on its liked spot warms one more, once a visit and only when the pat was new; a wrong spot costs nothing.
         val spotBonus = if (action == CareAction.TOUCH && reaction != Reaction.FLAT && spot == likedSpot(visitor.speciesId) && !visit.spotFound) 1 else 0
         return visit.copy(actions = actions, warmth = visit.warmth + reaction.warmth + spotBonus, spotFound = visit.spotFound || spotBonus > 0, pendingBid = bid) to reaction
@@ -185,17 +226,11 @@ object Visitors {
         return Items.berry(flavors[(speciesId / PetSpot.entries.size) % flavors.size])
     }
 
-    /**
-     * The days a finished [visit] adds to [visitor]: one for a warm visit, and one more the first time it is given the berry it
-     * likes as a treat (once per visitor, warm visit or not). *(tune)*
-     */
-    fun daysEarned(visitor: Visitor, visit: Visit): Int =
-        (if (warm(visit)) 1 else 0) + (if (berryBonusDue(visitor, visit)) BERRY_BONUS else 0)
+    /** Whether giving [visit]'s berry gives [visitor] its one bonus: it is the berry the species likes and it has not had it before. */
+    fun berryBonusDue(visitor: Visitor, berry: String?): Boolean = !visitor.berryBonus && berry != null && berry == likedBerry(visitor.speciesId)
 
-    fun berryBonusDue(visitor: Visitor, visit: Visit): Boolean = !visitor.berryBonus && visit.berry == likedBerry(visitor.speciesId)
-
-    /** Days the liked berry adds, once per visitor. *(tune)* */
-    const val BERRY_BONUS = 1
+    /** Warmth the liked berry adds, once per visitor. *(tune)* */
+    const val BERRY_BONUS = 4
 
     /** Turns toward the visitor's bid: one more warmth. Nothing when there is none. */
     fun notice(visit: Visit): Visit =

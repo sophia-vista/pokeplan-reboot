@@ -229,20 +229,24 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
             step.reaction == Reaction.LOVED -> move(SpriteAction.HOP)
             given == CareAction.GIFT && step.reaction != Reaction.FLAT -> move(SpriteAction.EAT)
         }
-        val hatched = result?.rewards?.filterIsInstance<Reward.Hatched>()?.firstOrNull()?.pokemon
         say(
             when {
-                result?.friend == true && result.joined -> "$name wants to stay with you! It joined you."
-                result?.friend == true -> "$name left you an Egg before heading home. It hatched: ${hatched?.nickname ?: "a new friend"}!"
-                result != null ->
-                    if (result.visitor.points == 0) "$name had a quiet visit. Try again tomorrow."
-                    else "$name liked the visit. ${Visitors.FRIEND_POINTS - result.visitor.points} more warm days."
+                result != null -> visitEndedLine(name, result)
                 step.visit.berry != null && step.visit.berry == Visitors.likedBerry(visitor.speciesId) -> "$name's favourite berry! It will remember that."
                 step.reaction == Reaction.LOVED -> "$name loved that."
                 step.reaction == Reaction.LIKED -> "$name liked that."
-                else -> "$name already had that today."
+                else -> "$name already had that this visit."
             },
         )
+    }
+
+    // Leaving whenever you like: what the visit warmed is already kept. A friend is paid now (and tried again if that did not go through).
+    fun leave() {
+        doing = null
+        val result = care.leaveVisit() ?: return say("Not now.")
+        model.haptic()
+        if (result.friend) { model.effect(Sfx.POKEMON_CENTER); model.cry(visitor.speciesId); pop("🎉") } else pop("😊")
+        say(visitEndedLine(name, result))
     }
     fun act(given: CareAction, spot: PetSpot? = null, berry: String? = null) = answer(care.visitAct(given, spot, berry), given)
 
@@ -256,8 +260,9 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         }
     }
     fun answerBid() {
-        if (care.visitNotice() == null) return
+        val step = care.visitNotice() ?: return
         model.haptic()
+        if (step.result != null) return answer(step, CareAction.TIME) // the moment that made it a friend
         model.effect(Sfx.JUMP)
         move(SpriteAction.HOP)
         pop("🎵")
@@ -356,12 +361,12 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
                 DraggableTreat("$n", berry, Items.name(berry), { p -> if (offered(p)) act(CareAction.GIFT, berry = berry) }) { act(CareAction.GIFT, berry = berry) }
             }
         }
-        // How far the visit is, small in the corner like the buddy's level.
+        // How warm the visitor is, small in the corner like the buddy's level.
         if (visit != null) Text(
-            "${visit.actions.size} of ${Visitors.ACTIONS_PER_VISIT}",
+            "${visitor.progress} of ${Visitors.FRIEND_PROGRESS}",
             Modifier.align(Alignment.TopEnd).padding(Spacing.S).background(Pixel.Scrim.copy(alpha = 0.33f), RoundedCornerShape(Spacing.CardRadius - Spacing.S))
                 .padding(horizontal = Spacing.M, vertical = Spacing.XS)
-                .semantics { contentDescription = "${visit.actions.size} of ${Visitors.ACTIONS_PER_VISIT} kinds of care this visit" },
+                .semantics { contentDescription = "$name is ${visitor.progress} of ${Visitors.FRIEND_PROGRESS} of the way to being a friend" },
             style = MaterialTheme.typography.labelMedium, color = Color.White,
         )
         val progress = if (doing == CareAction.TIME) hold.value else if (doing == CareAction.SERVICE) swept else 0f
@@ -378,7 +383,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
             doing == CareAction.GIFT -> "Drag a treat to $name, or tap one to offer it. Each kind of Pokémon likes one berry flavour."
             doing == CareAction.WORDS -> "What do you say to $name?"
             bid != null -> "${bid.text()} Tap $name to answer."
-            visiting -> "Care for $name any way you like, one of each kind a visit. It has a favourite, and little moments it may offer."
+            visiting -> "Care for $name any way you like, each kind once a visit. It has a favourite, and little moments it may offer. Leave whenever you like: what it warmed stays."
             play == Play.PAT -> "Tap $name to pat it."
             play == Play.TREAT -> "Drag the treat to $name, or tap it."
             play == Play.TAG -> "Tap anywhere in the meadow and $name bounds over."
@@ -391,18 +396,32 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         kindWords.forEach { words -> PixelButton(words, { act(CareAction.WORDS) }, color = Pixel.Green, compact = true) }
     }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        if (visit != null) CareAction.entries.forEach { given ->
-            val chosen = doing == given
-            PixelButton(
-                given.label(), { doing = if (chosen) null else given; swept = 0f },
-                color = if (chosen) Pixel.Blue else Pixel.Green, enabled = given !in visit.actions, compact = true,
-            )
+        if (visit != null) {
+            CareAction.entries.forEach { given ->
+                val chosen = doing == given
+                PixelButton(
+                    given.label(), { doing = if (chosen) null else given; swept = 0f },
+                    color = if (chosen) Pixel.Blue else Pixel.Green, enabled = given !in visit.actions, compact = true,
+                )
+            }
+            PixelIconButton("check", "Leave the visit", { leave() }, Pixel.InkSoft)
         } else {
             Play.entries.forEach { kind ->
                 PixelButton(kind.label, { play = if (play == kind) null else kind }, color = if (play == kind) Pixel.Blue else Pixel.Green, compact = true)
             }
             PixelIconButton("check", "Done", { say(null); onClose() }, Pixel.InkSoft)
         }
+    }
+}
+
+/** What a visit came to: a friend (an egg that hatched, or the visitor itself joining), or a pleasant visit after which it rests. */
+private fun visitEndedLine(name: String, result: app.pokeplan.care.BefriendResult): String {
+    val hatched = result.rewards.filterIsInstance<Reward.Hatched>().firstOrNull()?.pokemon
+    return when {
+        result.friend && result.joined -> "$name wants to stay with you! It joined you."
+        result.friend -> "$name left you an Egg before heading home. It hatched: ${hatched?.nickname ?: "a new friend"}!"
+        result.waiting -> "$name is ready to be your friend. It will wait for the next visit: a few friends a day is plenty."
+        else -> "$name enjoyed the visit. It will be ready for another in a few hours, and you can still play with it."
     }
 }
 

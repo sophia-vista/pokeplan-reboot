@@ -286,7 +286,7 @@ Item definitions must declare acquisition source families. Item grants, purchase
 Detailed fields remain in module specifications. The data layer should accommodate at least these families:
 
 - **PLAN:** `task`, `task_occurrence`, `task_series`/recurrence, `subtask`, `task_list`, `project`, `goal`, `milestone`, `focus_session`, `focus_history`, and any explicitly approved calendar cache.
-- **CARE:** `self_care_routine`, `routine_completion`, `diary_card_entry`, `journal_entry`, `note`, `mood_check_in`, `skill_practice`, `entry_tag`, and `entry_link`.
+- **CARE:** `self_care_routine`, `routine_completion`, `diary_card_entry`, `journal_entry`, `note`, `mood_check_in`, `skill_practice`, `entry_tag`, and `entry_link`. *Built first (0.132.0, schema 4):* `care_routine`, `care_routine_completion`, `care_diary_card`, `care_journal_entry`, `care_calm_break`, `care_skill_practice`, `care_visitor`, `care_dismissed_visitor` and `care_state`, each record table holding its key, position, day and the record as JSON (`evidence/REP-014-care-tables.md`).
 - **HEAL:** `health_metric_definition`, `health_observation`, `activity_session`, `workout`, `exercise_set`, `food_entry`, `nutrition_summary`, `sleep_session`, `body_measurement`, `health_source`, and `import_batch`.
 - **MINT:** `financial_account`, `account_snapshot`, `transaction`, `budget`, `budget_period`, `bill`, `bill_occurrence`, `payment_record`, `debt`, `savings_goal`, and provider import provenance.
 - **HOME:** `household_area`, `chore`, `chore_occurrence`, `inventory_item`, `inventory_adjustment`, `asset`, `maintenance_schedule`, `maintenance_record`, `warranty`, `reference_record`, and attachment references.

@@ -173,7 +173,7 @@ private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
         onEvent = { model.cry(buddy.speciesId) },
         celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
         // The warmest visitors wait in the meadow beside the buddy; a tap is a pat, just for fun.
-        guests = model.careData.visitors.sortedByDescending { it.points }.take(2).map { v ->
+        guests = Visitors.meadow(model.careData.visitors).sortedByDescending { it.progress }.take(2).map { v ->
             StageGuest(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, Dex.species(v.speciesId).name) { model.haptic(); model.cry(v.speciesId) }
         },
     )
@@ -182,38 +182,40 @@ private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
 // ----- Visitors -------------------------------------------------------------------------------------------------------
 
 /**
- * Who is visiting Care's meadow. Each visitor can have one visit a day once some care has paid; it warms up on days with a
- * warm visit, and at four becomes a friend: usually an egg of its family's first stage that hatches at once, rarely the
- * visitor itself. Any visitor can also be played with at any time, which counts for nothing and is just for fun.
+ * Who is in Care's meadow (docs/pokelife `MODULES/CARE.md`, section 6). Visitors arrive on their own, four are in the meadow and the
+ * rest wait in a quiet queue that never expires. Any of them can be visited at any time, with nothing done first: each kind of care
+ * warms it at once and the warmth is never lost, however long you are away. At sixteen it becomes a friend: usually an egg of its
+ * family's first stage that hatches at once, rarely the visitor itself. A visitor can also be played with, which counts for
+ * nothing, and sent away on purpose (it keeps what it earned and can be asked back).
  */
 @Composable
 private fun VisitorsCard(model: AppModel) {
     val care = model.care
-    // The day's visitors are made the first time they are asked for.
+    // The day's arrivals are made the first time they are asked for.
     LaunchedEffect(care.today) { care.visitors() }
-    val visitors = model.careData.visitors
+    val all = model.careData.visitors
+    val meadow = Visitors.meadow(all)
+    val waiting = Visitors.queue(all)
     var note by remember { mutableStateOf<String?>(null) }
     var playing by remember { mutableStateOf<Int?>(null) }
-    if (visitors.isEmpty()) return
-    val visit = model.careData.visit?.takeIf { it.day == care.today }
-    val open = visitors.firstOrNull { it.speciesId == (visit?.speciesId ?: playing) }
+    var sendAway by remember { mutableStateOf<Int?>(null) }
+    var showAway by remember { mutableStateOf(false) }
+    if (all.isEmpty() && model.careData.dismissed.isEmpty()) return
+    val visit = model.careData.visit
+    val open = meadow.firstOrNull { it.speciesId == (visit?.speciesId ?: playing) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Visitors")
             if (open == null) Text(
-                when {
-                    !care.canBefriend() -> "Do something in Care today, a routine, a calm break or a skill, and each visitor can have a visit. You can play with them any time."
-                    care.befriendSpent -> "Every visitor has had today's visit. You can still play with them."
-                    else -> "Visit each one once a day. Every kind of care warms it, and it likes one best. After four warm days most leave you an egg of their family; a few stay themselves."
-                },
+                "Visit any time. Every kind of care warms a visitor and it likes one best; its warmth is never lost. Most leave you an egg of their family when they become friends; a few stay themselves.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
                 modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
             )
             note?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
             if (open != null) VisitorScene(model, open, visit?.takeIf { it.speciesId == open.speciesId }, { note = it }) { playing = null }
-            visitors.forEach { v ->
+            meadow.forEach { v ->
                 val species = Dex.species(v.speciesId)
-                val visited = care.visitedToday(v)
+                val resting = care.resting(v)
                 ListRow(
                     lead = {
                         AnimatedSprite(
@@ -226,7 +228,7 @@ private fun VisitorsCard(model: AppModel) {
                         when {
                             visit?.speciesId == v.speciesId -> Text("Visiting", style = MaterialTheme.typography.labelMedium, color = Pixel.Green)
                             care.canVisit(v) -> PixelButton("Visit", {
-                                if (care.startVisit(v.speciesId) == null) note = "Not today." else { playing = null; note = null; model.haptic(); model.cry(v.speciesId) }
+                                if (care.startVisit(v.speciesId) == null) note = "Not now." else { playing = null; note = null; model.haptic(); model.cry(v.speciesId) }
                             }, color = Pixel.Green, compact = true)
                             else -> PixelButton(if (playing == v.speciesId) "Playing" else "Play", {
                                 playing = v.speciesId; note = null; model.haptic()
@@ -239,12 +241,40 @@ private fun VisitorsCard(model: AppModel) {
                         Text(species.name, style = MaterialTheme.typography.bodyLarge)
                         Text(
                             listOfNotNull(
-                                if (v.points == 0) "Just arrived" else "${v.points} of ${Visitors.FRIEND_POINTS} days",
-                                if (visited) "visited today" else null,
+                                if (Visitors.friend(v)) "ready to be a friend" else if (v.progress == 0) "Just arrived" else "${v.progress} of ${Visitors.FRIEND_PROGRESS} warm",
+                                if (resting) "resting, ready for a visit later" else null,
                             ).joinToString(", "),
                             style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
                         )
                     }
+                }
+            }
+            if (waiting.isNotEmpty()) {
+                SectionLabel("Waiting for a place (${waiting.size})")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    waiting.forEach { v -> Sprite(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, "${Dex.species(v.speciesId).name}, waiting for a place", size = 40.dp) }
+                }
+            }
+            // Sending a visitor away is a deliberate choice, not a chore: it asks once, keeps what the visitor earned and can be undone.
+            if (open != null && visit == null) {
+                if (sendAway == open.speciesId) {
+                    Text("Send ${Dex.species(open.speciesId).name} away? It keeps what it has earned, and you can ask it back.", style = MaterialTheme.typography.bodyMedium)
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        PixelButton("Send away", { care.dismiss(open.speciesId); sendAway = null; playing = null; note = null }, color = Pixel.InkSoft, compact = true)
+                        PixelButton("Keep", { sendAway = null }, color = Pixel.Green, compact = true)
+                    }
+                } else PixelButton("Send away", { sendAway = open.speciesId }, color = Pixel.InkSoft, compact = true)
+            }
+            val away = model.careData.dismissed
+            if (away.isNotEmpty()) {
+                PixelButton(if (showAway) "Hide sent away" else "Sent away (${away.size})", { showAway = !showAway }, color = Pixel.InkSoft, compact = true)
+                if (showAway) away.asReversed().forEach { v ->
+                    val species = Dex.species(v.speciesId)
+                    ListRow(
+                        lead = { Sprite(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, species.name, size = 40.dp) },
+                        trail = { PixelButton("Ask back", { note = if (care.restore(v.id)) "${species.name} is back, waiting for a place." else "No room just now." }, color = Pixel.Green, compact = true) },
+                        highlight = false,
+                    ) { Text(species.name, style = MaterialTheme.typography.bodyLarge) }
                 }
             }
             MetAlbum(model)

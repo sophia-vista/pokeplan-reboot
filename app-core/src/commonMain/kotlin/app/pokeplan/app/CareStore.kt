@@ -49,7 +49,7 @@ class CareStore(
     private val weekStart: () -> DayOfWeek = { DayOfWeek.MONDAY },
     private val rng: Random = Random,
 ) {
-    private val document = SavedDocument(storage, CareData.serializer(), json) { CareData() }
+    private val document = SavedDocument(storage, CareData.serializer(), json, tidy = { tidy(it) }) { CareData() }
 
     val data: CareData get() = document.value
 
@@ -147,48 +147,52 @@ class CareStore(
             (if (data.breaks.any { it.day == today }) Skills.all.filter { it.calmBreak }.map { it.id } else emptyList())
 
     // --- visitors (befriending) ---------------------------------------------------------------------------------------
-
-    /** Whether some care has paid today: each visitor can then be visited once (a visitor warms up on days with care). */
-    fun canBefriend(): Boolean = CareRules.paidOn(data, today)
-
-    /** Whether [visitor] had its visit today; each visitor has one a day. */
-    fun visitedToday(visitor: Visitor): Boolean = visitor.lastVisitDay == today
-
-    /** Whether [visitor] can be visited now: care has paid today, it has not had today's visit, and no other visit is on. */
-    fun canVisit(visitor: Visitor): Boolean =
-        canBefriend() && !visitedToday(visitor) && (visit == null || visit?.speciesId == visitor.speciesId)
+    // docs/pokelife MODULES/CARE.md, section 6: visitors arrive on their own (never because of what was done in Care), four are in the
+    // meadow and the rest wait in a queue that never expires, a visitor can be visited at any time, every kind of care warms it at once
+    // and nothing is lost by being away. Visitors stay until they are befriended or sent away.
 
     /** The berries Care can offer as a treat (from the shared bag). */
     fun berries(): Map<String, Int> = world.berries()
 
-    /** Whether every visitor here has had today's visit. */
-    val befriendSpent: Boolean get() = data.visitors.isNotEmpty() && data.visitors.all { visitedToday(it) }
+    /** Whether [visitor] is resting from a visit just over: it can still be played with, but another visit would not count yet. */
+    fun resting(visitor: Visitor): Boolean = Visitors.resting(visitor, nowMillis)
+
+    /** Whether [visitor] can be visited now: it is in the meadow, not resting, and no other visit is on. */
+    fun canVisit(visitor: Visitor): Boolean =
+        Visitors.meadow(data.visitors).any { it.id == visitor.id } && !resting(visitor) && (visit == null || visit?.speciesId == visitor.speciesId)
 
     /**
-     * The visitors now: the ones warming up that have not wandered off, and today's new ones (2, or 3 after a break, while
-     * there is room for [Visitors.MAX_VISITORS]), the same on this device all day. The day's offer is made the first time it
-     * is asked for.
+     * The visitors here (the first [Visitors.MAX_VISITORS] are in the meadow, the rest in the queue). The first time it is called
+     * on a new day the arrivals since the last are added, up to the room there is; the same on this device all day, so the day's
+     * arrivals are saved the first time they are seen.
      */
     fun visitors(): List<Visitor> {
-        if (data.visitorsDay != today) {
+        val last = data.visitorsDay
+        if (last == null || today > last) {
             val seed = data.visitorSeed.takeIf { it != 0 } ?: (1 + rng.nextInt(Int.MAX_VALUE - 1))
-            val earliest = today.toEpochDays() - Visitors.WANDER_DAYS
-            val staying = data.visitors.filter { it.points > 0 && (it.lastVisitDay?.toEpochDays() ?: 0L) >= earliest }
-            val arrivals = Visitors.offer(
-                seed, today, Visitors.count(data.visitorsDay, today, staying.size), staying.map { it.speciesId }.toSet(),
-                world.visitorLuck(), Visitors.lean(data, today),
+            val room = Visitors.MAX_VISITORS + Visitors.MAX_QUEUE - data.visitors.size
+            val arrivals = Visitors.arrivals(
+                seed, last, today, room, data.visitors.map { it.speciesId }.toSet(), world.visitorLuck(), Visitors.lean(data, today),
             )
-            update { it.copy(visitorSeed = seed, visitorsDay = today, visitors = staying + arrivals) }
+            update { it.copy(visitorSeed = seed, visitorsDay = today, visitors = it.visitors + arrivals) }
         }
         return data.visitors
     }
 
-    /** The visit in progress today, if there is one. */
-    val visit: Visit? get() = data.visit?.takeIf { it.day == today }
+    /** The visitors in the meadow, and the ones waiting for a place. */
+    fun meadow(): List<Visitor> = Visitors.meadow(visitors())
+    fun queued(): List<Visitor> = Visitors.queue(visitors())
+
+    /** Visitors sent away and not asked back, the newest first. */
+    fun dismissed(): List<Visitor> = data.dismissed.asReversed()
+
+    /** The visit in progress, if there is one. It stays until it is finished or left. */
+    val visit: Visit? get() = data.visit
 
     /**
-     * Starts a visit with a visitor, its one visit today. Null when it cannot be done now: the visitor is gone or already had
-     * today's visit, another visit is on, or no care has paid today. A visit already started with that visitor carries on.
+     * Starts a visit with a visitor. Null when it cannot be done now: the visitor is gone, in the queue, resting, or another visit
+     * is on. A visit already started with that visitor carries on. No other care has to have been done first, and there is no
+     * limit to the visits in a day.
      */
     fun startVisit(speciesId: Int): Visit? {
         visit?.takeIf { it.speciesId == speciesId }?.let { return it }
@@ -198,8 +202,10 @@ class CareStore(
     }
 
     /**
-     * Does [action] in the visit; the third ends it (see [finishVisit]). A treat ([CareAction.GIFT]) can be a [berry] from the
-     * shared bag, spent at once; the berry the visitor likes adds a bonus day once. Null when there is no visit to do it in.
+     * Does [action] in the visit. What it warms the visitor is added to its progress at once, so leaving never loses it. A treat
+     * ([CareAction.GIFT]) can be a [berry] from the shared bag, spent at once; the berry the visitor likes adds a bonus once. The
+     * visit ends (see [leaveVisit]) when every kind of care is done or the visitor is warm enough to be a friend. Null when there is
+     * no visit to do it in.
      */
     fun visitAct(action: CareAction, spot: PetSpot? = null, berry: String? = null): VisitStep? {
         val visit = visit ?: return null
@@ -208,37 +214,73 @@ class CareStore(
         // Only a treat the visitor takes (not a repeat) uses up the berry.
         val given = berry?.takeIf { action == CareAction.GIFT && reaction != Reaction.FLAT && visit.berry == null && world.spendBerry(it) }
         val next = if (given != null) acted.copy(berry = given) else acted
-        update { it.copy(visit = next) }
-        return VisitStep(reaction, next, if (Visitors.finished(next)) finishVisit() else null)
+        val bonus = given != null && Visitors.berryBonusDue(visitor, given)
+        val warmer = visitor.copy(
+            progress = visitor.progress + (next.warmth - visit.warmth) + if (bonus) Visitors.BERRY_BONUS else 0,
+            berryBonus = visitor.berryBonus || bonus,
+        )
+        update { d -> d.copy(visit = next, visitors = d.visitors.map { if (it.id == warmer.id) warmer else it }) }
+        return VisitStep(reaction, next, if (Visitors.finished(next) || Visitors.friend(warmer)) leaveVisit() else null)
     }
 
-    /** Turns toward the visitor's bid, if it made one. */
-    fun visitNotice(): Visit? {
+    /** Turns toward the visitor's bid, if it made one: one more warmth. The step has a result when that made it a friend. */
+    fun visitNotice(): VisitStep? {
         val visit = visit ?: return null
-        return Visitors.notice(visit).also { next -> update { it.copy(visit = next) } }
+        if (visit.pendingBid == null) return null
+        val visitor = visitors().firstOrNull { it.speciesId == visit.speciesId } ?: return null
+        val next = Visitors.notice(visit)
+        val warmer = visitor.copy(progress = visitor.progress + (next.warmth - visit.warmth))
+        update { d -> d.copy(visit = next, visitors = d.visitors.map { if (it.id == warmer.id) warmer else it }) }
+        return VisitStep(Reaction.LIKED, next, if (Visitors.friend(warmer)) leaveVisit() else null)
     }
 
     /**
-     * Ends a finished visit: the visitor warms by a day if the visit was warm enough, and at [Visitors.FRIEND_POINTS] it
-     * becomes a friend, paid through the world (usually an egg of its family's first stage that hatches at once, rarely the
-     * visitor itself). Null when the visit is not finished, or the world paid nothing (it can be tried again).
+     * Ends the visit now, whenever the player likes: a visitor that has become a friend is paid through the world (usually an
+     * egg of its family's first stage that hatches at once, rarely the visitor itself) and leaves; any other rests a while. What
+     * the visit warmed is already kept. A friend the world cannot pay today ([BefriendResult.waiting]) stays, ready. Null when there is no visit.
      */
-    fun finishVisit(): BefriendResult? {
-        val visit = visit?.takeIf { Visitors.finished(it) } ?: return null
-        val visitor = visitors().firstOrNull { it.speciesId == visit.speciesId } ?: return null
-        val warmer = visitor.copy(
-            points = visitor.points + Visitors.daysEarned(visitor, visit), lastVisitDay = today,
-            berryBonus = visitor.berryBonus || Visitors.berryBonusDue(visitor, visit),
-        )
-        if (warmer.points < Visitors.FRIEND_POINTS) {
-            update { d -> d.copy(befriendDay = today, visit = null, met = d.met + visit.speciesId, visitors = d.visitors.map { if (it.speciesId == visit.speciesId) warmer else it }) }
-            return BefriendResult(warmer, friend = false, rewards = emptyList())
+    fun leaveVisit(): BefriendResult? {
+        val visit = visit ?: return null
+        val visitor = data.visitors.firstOrNull { it.speciesId == visit.speciesId }
+        if (visitor == null) { update { it.copy(visit = null) }; return null }
+        if (!Visitors.friend(visitor)) {
+            val rested = visitor.copy(restUntilMillis = nowMillis + Visitors.REST_MILLIS)
+            update { d -> d.copy(visit = null, met = d.met + visit.speciesId, visitors = d.visitors.map { if (it.id == rested.id) rested else it }) }
+            return BefriendResult(rested, friend = false, rewards = emptyList())
         }
-        val rewards = world.befriend(BefriendEvent(visitor.speciesId, visitor.formIdentifier, newId(), nowMillis)) ?: return null
-        update { d -> d.copy(befriendDay = today, visit = null, met = d.met + visit.speciesId, visitors = d.visitors.filterNot { it.speciesId == visit.speciesId }) }
+        val rewards = world.befriend(BefriendEvent(visitor.speciesId, visitor.formIdentifier, newId(), nowMillis))
+        if (rewards == null) {
+            // The world paid nothing now (its daily limit of friends): the visit still ends, and the visitor stays, ready, for the next one.
+            update { d -> d.copy(visit = null, met = d.met + visit.speciesId) }
+            return BefriendResult(visitor, friend = false, rewards = emptyList(), waiting = true)
+        }
+        update { d -> d.copy(visit = null, met = d.met + visit.speciesId, visitors = d.visitors.filterNot { it.id == visitor.id }) }
         // The visitor itself joins with the high friendship only a direct join starts with; an egg starts low.
         val joined = rewards.filterIsInstance<Reward.Hatched>().any { it.pokemon.speciesId == visitor.speciesId && it.pokemon.friendship >= RewardEngine.BEFRIEND_JOIN_FRIENDSHIP }
-        return BefriendResult(warmer, friend = true, rewards = rewards, joined = joined)
+        return BefriendResult(visitor, friend = true, rewards = rewards, joined = joined)
+    }
+
+    /**
+     * Sends [speciesId]'s visitor away, on purpose. What it earned stays (a Pokémon or egg already given is never taken back), the
+     * place goes to the next in the queue, and it is kept so it can be asked back ([restore]). A visit with it ends.
+     */
+    fun dismiss(speciesId: Int): Boolean {
+        val visitor = data.visitors.firstOrNull { it.speciesId == speciesId } ?: return false
+        update { d ->
+            d.copy(
+                visitors = d.visitors.filterNot { it.id == visitor.id }, visit = d.visit?.takeIf { it.speciesId != speciesId },
+                dismissed = (d.dismissed + visitor).takeLast(Visitors.MAX_DISMISSED),
+            )
+        }
+        return true
+    }
+
+    /** Asks a dismissed visitor back: it joins the end of the queue with its warmth. False when there is no room or its species is here again. */
+    fun restore(id: String): Boolean {
+        val visitor = data.dismissed.firstOrNull { it.id == id } ?: return false
+        if (data.visitors.size >= Visitors.MAX_VISITORS + Visitors.MAX_QUEUE || data.visitors.any { it.speciesId == visitor.speciesId }) return false
+        update { d -> d.copy(dismissed = d.dismissed.filterNot { it.id == id }, visitors = d.visitors + visitor) }
+        return true
     }
 
     // --- diary card, journal (private, never paid) --------------------------------------------------------------------
@@ -320,9 +362,14 @@ class CareStore(
     /** Whether there is anything of the player's to lose: a device with only its settings has nothing yet. */
     val hasEntries: Boolean
         get() = data.routines.isNotEmpty() || data.diary.isNotEmpty() || data.breaks.isNotEmpty() || data.practices.isNotEmpty() ||
-            data.journal.isNotEmpty() || data.met.isNotEmpty() || data.befriendDay != null
+            data.journal.isNotEmpty() || data.met.isNotEmpty() || data.visitors.any { it.progress > 0 }
 
     companion object {
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
+
+        /** What every Care save that comes in goes through: visitors of an old save get an id and their warm days become progress (kept, never lost). */
+        internal fun tidy(d: CareData): CareData =
+            if (d.visitors.all { Visitors.migrated(it) == it } && d.dismissed.all { Visitors.migrated(it) == it }) d
+            else d.copy(visitors = d.visitors.map(Visitors::migrated), dismissed = d.dismissed.map(Visitors::migrated))
     }
 }
