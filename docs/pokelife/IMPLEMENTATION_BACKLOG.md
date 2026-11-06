@@ -20,7 +20,7 @@ Status uses the guide's vocabulary (Planned, Partial, Blocked, Done with evidenc
 
 | ID | Item | Depends on | Status |
 |---|---|---|---|
-| REP-006 | SQLDelight/SQLite feasibility spike, **Android driver only** (desktop and web may keep a development store); migration runner and backup snapshot included | REP-003 | Planned |
+| REP-006 | SQLDelight/SQLite feasibility spike, **Android driver only** (desktop and web may keep a development store); migration runner and backup snapshot included | REP-003 | Done on the JVM and a compile of the Android target (`evidence/REP-006-sqldelight-spike.md`): SQLDelight 2.4.1 works with Kotlin 2.4.21 and AGP 9.4.1. Still to do on a device: runtime, WAL, backup snapshot, widget access, encryption |
 | REP-007 | Gate A review: ownership contracts, transaction and idempotency model, rollback strategy | REP-006 | Planned |
 | REP-008 | Local data foundation: repositories, migrations, backup/restore, recovery; one authority, no dual writes | REP-007 | Planned |
 

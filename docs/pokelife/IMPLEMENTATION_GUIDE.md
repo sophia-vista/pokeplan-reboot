@@ -264,7 +264,7 @@ These are recorded in their authoritative documents; they are listed here only s
 ## 10. Current unresolved issues
 
 1. **Test execution evidence:** `ARCHITECTURE/TEST_STRATEGY.md` exists and is approved. Its stated baseline includes 89 Kotlin test source files, but this audit did not execute them or establish a passing test run. Refresh the baseline against the current branch.
-2. **Architecture decision maturity:** `DATA_AND_MIGRATIONS.md` is labelled a proposed target architecture and still calls for SQLDelight feasibility, source fixtures, and migration acceptance work. It is not evidence of an implemented database architecture.
+2. **Architecture decision maturity:** `DATA_AND_MIGRATIONS.md` is an approved target architecture. The SQLDelight feasibility spike (REP-006) passed on the JVM and compiles for Android, and five 0.123.0 save fixtures exist (REP-003); device checks and the importer are still to do. No database architecture is implemented in the app yet.
 3. **Integration feasibility:** Huawei Watch Fit 4 Pro/Health Connect and Philippine bank/e-wallet integrations remain provider/device-dependent. No live integration is verified by the baseline audit.
 4. **Asset distribution rights:** the baseline includes game-derived/private-use material. Public distribution requires an asset-by-asset rights review and replacement/permission where necessary.
 5. **Expanded Pokémon implementation evidence:** the integrated expansion catalogue is approved target scope, not evidence of implementation. Verify actual Kotlin source areas, schemas and tests before assigning implementation status or exact file paths.
