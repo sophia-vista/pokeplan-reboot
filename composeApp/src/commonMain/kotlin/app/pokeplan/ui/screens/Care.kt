@@ -241,7 +241,7 @@ private fun VisitorsCard(model: AppModel) {
                         Text(species.name, style = MaterialTheme.typography.bodyLarge)
                         Text(
                             listOfNotNull(
-                                if (v.progress == 0) "Just arrived" else "${v.progress} of ${Visitors.FRIEND_PROGRESS} warm",
+                                if (Visitors.friend(v)) "ready to be a friend" else if (v.progress == 0) "Just arrived" else "${v.progress} of ${Visitors.FRIEND_PROGRESS} warm",
                                 if (resting) "resting, ready for a visit later" else null,
                             ).joinToString(", "),
                             style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,

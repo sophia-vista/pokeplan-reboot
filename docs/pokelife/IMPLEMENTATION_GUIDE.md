@@ -50,7 +50,7 @@ A capability may be built but untested, or tested but not device-verified. Never
 | Area | Baseline evidence | Status against target | Not established |
 |---|---|---|---|
 | PLAN | Tasks/planner, focus, habits, goals/lists, calendar-related models and reminders | Partial; substantial foundation to reuse/refactor | Full target workflows, migration, device acceptance |
-| CARE | Routines, calm breaks, Diary Card, skills/DBT, journal/trends, reminders, visitors, Care Eggs/rewards | Partial; substantial foundation to refactor | Target persistence/lifecycle, all acceptance criteria, device acceptance |
+| CARE | Routines, calm breaks, Diary Card, skills/DBT, journal/trends, reminders, visitors, Care Eggs/rewards | Partial; since 0.132.0 on its own tables and the visitor rules of `MODULES/CARE.md` section 6 (JVM-tested, `evidence/REP-014-care-tables.md`) | Device acceptance; reunions, Care Play, Meadow and egg inheritance not built |
 | WORLD | Expeditions, teams, dungeons, missions, rank/skills, rewards, story scenes and settlement | Partial; functioning foundation with substantial content/model work remaining | Full regional coverage, final balance, end-to-end/device acceptance |
 | GEAR | Calculator, currency, units, date/time, sensors, QR, network, sound, randomizer, flashlight capabilities | Partial; existing tools need dedicated-app quality and lifecycle review | Every tool's full capability and device acceptance |
 | Android launcher | Optional launcher with town/scene rendering, pages, app list, widgets, folders, weather/settings | Partial; meaningful prototype | Full living-world behavior, robust lifecycle, actual Samsung device acceptance |

@@ -75,7 +75,11 @@ data class VisitStep(val reaction: Reaction, val visit: Visit, val result: Befri
 /**
  * What a visit came to: the visitor as it is now, and whether it became a friend (then [rewards] holds the Pokémon). [joined] is true when the visitor itself joined, rather than leaving an egg of its family.
  */
-data class BefriendResult(val visitor: Visitor, val friend: Boolean, val rewards: List<app.pokeplan.core.reward.Reward>, val joined: Boolean = false)
+data class BefriendResult(
+    val visitor: Visitor, val friend: Boolean, val rewards: List<app.pokeplan.core.reward.Reward>, val joined: Boolean = false,
+    /** The visitor is warm enough to be a friend but the world paid nothing now (its daily limit of friends): it stays, ready, and the next visit makes it one. */
+    val waiting: Boolean = false,
+)
 
 /** Who visits, how many fit and how a visitor warms. *(tune)* */
 object Visitors {

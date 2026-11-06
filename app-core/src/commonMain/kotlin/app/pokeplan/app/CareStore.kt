@@ -237,7 +237,7 @@ class CareStore(
     /**
      * Ends the visit now, whenever the player likes: a visitor that has become a friend is paid through the world (usually an
      * egg of its family's first stage that hatches at once, rarely the visitor itself) and leaves; any other rests a while. What
-     * the visit warmed is already kept. Null when there is no visit, or the world paid nothing (it can be tried again).
+     * the visit warmed is already kept. A friend the world cannot pay today ([BefriendResult.waiting]) stays, ready. Null when there is no visit.
      */
     fun leaveVisit(): BefriendResult? {
         val visit = visit ?: return null
@@ -248,7 +248,12 @@ class CareStore(
             update { d -> d.copy(visit = null, met = d.met + visit.speciesId, visitors = d.visitors.map { if (it.id == rested.id) rested else it }) }
             return BefriendResult(rested, friend = false, rewards = emptyList())
         }
-        val rewards = world.befriend(BefriendEvent(visitor.speciesId, visitor.formIdentifier, newId(), nowMillis)) ?: return null
+        val rewards = world.befriend(BefriendEvent(visitor.speciesId, visitor.formIdentifier, newId(), nowMillis))
+        if (rewards == null) {
+            // The world paid nothing now (its daily limit of friends): the visit still ends, and the visitor stays, ready, for the next one.
+            update { d -> d.copy(visit = null, met = d.met + visit.speciesId) }
+            return BefriendResult(visitor, friend = false, rewards = emptyList(), waiting = true)
+        }
         update { d -> d.copy(visit = null, met = d.met + visit.speciesId, visitors = d.visitors.filterNot { it.id == visitor.id }) }
         // The visitor itself joins with the high friendship only a direct join starts with; an egg starts low.
         val joined = rewards.filterIsInstance<Reward.Hatched>().any { it.pokemon.speciesId == visitor.speciesId && it.pokemon.friendship >= RewardEngine.BEFRIEND_JOIN_FRIENDSHIP }

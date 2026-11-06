@@ -218,6 +218,8 @@ which skill).
 
 ### Befriending (built in 0.35.0)
 
+> **Superseded in 0.132.0 by `docs/pokelife/MODULES/CARE.md` sections 6 and 6.8** (visitors arrive on their own, a queue, persistent warmth, no daily visit, no three-day departure). The text below is the history of the first design.
+
 *Owner's answers, October 2026.* Care gains a Pokémon source that is about bond, not volume. Entering sensitive information
 still earns nothing, and a visitor never reads a domain (only the *kind* of Care action).
 

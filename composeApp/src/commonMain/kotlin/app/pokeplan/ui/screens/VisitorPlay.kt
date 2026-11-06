@@ -420,6 +420,7 @@ private fun visitEndedLine(name: String, result: app.pokeplan.care.BefriendResul
     return when {
         result.friend && result.joined -> "$name wants to stay with you! It joined you."
         result.friend -> "$name left you an Egg before heading home. It hatched: ${hatched?.nickname ?: "a new friend"}!"
+        result.waiting -> "$name is ready to be your friend. It will wait for the next visit: a few friends a day is plenty."
         else -> "$name enjoyed the visit. It will be ready for another in a few hours, and you can still play with it."
     }
 }

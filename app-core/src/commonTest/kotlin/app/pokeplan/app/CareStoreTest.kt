@@ -374,6 +374,26 @@ class CareStoreTest {
     }
 
     @Test
+    fun aFriendTheWorldCannotPayTodayStaysReadyAndTheVisitIsNotStranded() {
+        val s = setup(started = false) // the world pays nothing before the game has started, the same refusal as its daily limit of friends
+        val species = s.care.visitors().first().speciesId
+        var step: app.pokeplan.care.VisitStep
+        do {
+            step = fullVisit(s, species)
+            if (step.result == null) error("a visit ends when it is done")
+            if (step.result?.waiting != true) s.clock.millis += rest
+        } while (step.result?.waiting != true)
+        assertEquals(null, s.care.visit, "the visit ended; it is not stuck")
+        val ready = s.care.visitors().first { it.speciesId == species }
+        assertTrue(ready.progress >= app.pokeplan.care.Visitors.FRIEND_PROGRESS, "the visitor stays, ready")
+        s.game.start("Sophia", 25)
+        s.care.startVisit(species)
+        val made = assertNotNull(s.care.visitAct(CareAction.entries.first())!!.result)
+        assertTrue(made.friend, "the next visit makes it a friend")
+        assertTrue(s.care.visitors().none { it.speciesId == species })
+    }
+
+    @Test
     fun theMeadowHoldsFourTheRestWaitInAQueueThatNeverExpiresAndNothingIsDisplaced() {
         val s = setup()
         val V = app.pokeplan.care.Visitors
