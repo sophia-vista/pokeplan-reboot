@@ -781,7 +781,7 @@ class ScreenshotTest {
         }
         for (v in 0..5) page("planner-$v") { app.pokeplan.ui.screens.PlannerScreen(it, startView = v) }
         page("care") { it.module = app.pokeplan.ui.screens.Module.CARE; app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
-        app.pokeplan.ui.screens.CareSection.entries.filter { it != app.pokeplan.ui.screens.CareSection.SETTINGS }.forEach { sec ->
+        app.pokeplan.ui.screens.CareSection.entries.forEach { sec ->
             page("care-${sec.name.lowercase()}") { it.module = app.pokeplan.ui.screens.Module.CARE; it.careSection = sec; app.pokeplan.ui.screens.ModulesScreen(it, focusTab = true) {} }
         }
         app.pokeplan.ui.screens.WorldSection.entries.filter { it != app.pokeplan.ui.screens.WorldSection.SETTINGS }.forEach { sec ->
@@ -822,10 +822,10 @@ class ScreenshotTest {
     fun careTrends() = care("care-trends", app.pokeplan.ui.screens.CareSection.TRENDS)
 
     @Test
-    fun meSettings() = me("me-settings", 1)
+    fun meSettings() = me("me-settings", 0)
 
     @Test
-    fun meHelp() = me("me-help", 2)
+    fun meHelp() = me("me-help", 1)
 
     @Test
     fun collectionGuardians() {
@@ -868,31 +868,6 @@ class ScreenshotTest {
 
     @Test
     fun meMenu() = me("me-menu", -1)
-
-    @Test
-    fun friends() {
-        val store = storeWithTeam()
-        store.signedIn("sophia@example.com", "me-1", "token", "refresh", Long.MAX_VALUE)
-        val engine = io.ktor.client.engine.mock.MockEngine { request ->
-            val path = request.url.encodedPath
-            val answer = when {
-                path.endsWith("/profiles") -> """[{"friend_code":"7F3A91C2"}]"""
-                path.endsWith("/friend_cards") ->
-                    """[{"user_id":"f1","trainer_name":"Bob","rank":3,"status":"accepted","incoming":false,"buddy_species":6,"buddy_form":"charizard","buddy_shiny":false,"buddy_level":32},
-                        {"user_id":"f2","trainer_name":"Carol","rank":1,"status":"pending","incoming":true}]"""
-                path.endsWith("/weekly_leaderboard") ->
-                    """[{"user_id":"f1","trainer_name":"Bob","rank":3,"points":140,"is_me":false},{"user_id":"me-1","trainer_name":"Sophia","rank":1,"points":96,"is_me":true}]"""
-                path.endsWith("/gifts") -> """[{"id":"g1","sender":"f1","item_id":"rare-candy","amount":3}]"""
-                else -> "{}"
-            }
-            respond(answer, io.ktor.http.HttpStatusCode.OK, io.ktor.http.headersOf(io.ktor.http.HttpHeaders.ContentType, "application/json"))
-        }
-        val client = app.pokeplan.app.cloud.CloudClient(app.pokeplan.app.cloud.CloudConfig("https://x.supabase.co", "anon"), io.ktor.client.HttpClient(engine)) { clock.millis }
-        val model = AppModel(store, null, app.pokeplan.app.cloud.SyncManager(store, client), app.pokeplan.app.cloud.SocialClient(client))
-        render("friends") {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.SectionScaffold("Friends", null, {}) { app.pokeplan.ui.screens.FriendsView(model) } } }
-        }
-    }
 
     private val fakeApps = listOf(
         "Calendar" to app.pokeplan.ui.launcher.AppCategory.PRODUCTIVITY, "Camera" to app.pokeplan.ui.launcher.AppCategory.OTHER, "Chess" to app.pokeplan.ui.launcher.AppCategory.GAMES,

@@ -1,5 +1,7 @@
 # PokéPlan design
 
+> **Retired (0.130.0, REP-012):** Supabase, accounts, cloud sync, the friends board and gifts, the server reward function and the JavaScript build were removed. Wherever this document describes them, read it as history; `docs/pokelife/` is the current plan.
+
 > **Superseded where it differs from `docs/pokelife/` (6 November 2026).** The source of truth is now `docs/pokelife/`; read `docs/pokelife/README.md` first. This file stays as the record of the rules the code implements today (Pokémon, rewards, perks) until each is migrated. Its account, cloud-sync, friends and one-account-family sections are legacy: PokéLife is local-only with Android priority. Its buddy and perks rules now follow the four Pokémon roles in `docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md` section 2.2 (global buddy; a party of one lead and five per module, with bonuses for that module only**
 
 A fun productivity, growth and self-improvement app for Pokémon lovers: your Pokémon grow as you do. This is the product and game design for the multiplatform rewrite. Numbers marked *(tune)* are starting values to be settled by simulation before release. Everything not marked is decided.

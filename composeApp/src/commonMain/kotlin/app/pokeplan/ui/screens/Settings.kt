@@ -33,7 +33,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import app.pokeplan.app.cloud.SyncStatus
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -125,7 +124,6 @@ internal fun SettingsView(model: AppModel) {
         }
         ToggleRow("Weekly recap", settings.weeklyRecap, detail = "Sunday evening: tasks finished, focus time and your top category. Skipped after an empty week.") { store.changeSettings { s -> s.copy(weeklyRecap = it) } }
     }
-    AccountCard(model)
     DataCard(model)
     AboutCard()
 }
@@ -160,17 +158,12 @@ private fun CalendarsCard(model: AppModel) {
     }
 }
 
-/** The player's data: a copy to keep, deleting the account, starting over on this device. Each destructive step asks twice. */
+/** The player's data: a copy to keep, starting over on this device. Each destructive step asks twice. */
 @Composable
 private fun DataCard(model: AppModel) {
     val store = model.store
-    val sync = model.sync
-    val signedIn = model.data.account != null
-    val scope = rememberCoroutineScope()
     var note by remember { mutableStateOf<String?>(null) }
     var asking by remember { mutableStateOf<String?>(null) }
-    var busy by remember { mutableStateOf(false) }
-
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             GlyphTitle("Your data", "download")
@@ -179,39 +172,13 @@ private fun DataCard(model: AppModel) {
                 PixelButton("Export Care data", { note = files.save("pokeplan-care-${store.today}.json", model.care.exportJson()) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
             when (asking) {
-                "account" -> {
-                    Text("Delete your account? Your cloud save, friends and gifts are removed for good. This device keeps its progress as a guest.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
-                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PixelButton("Delete for good", {
-                            busy = true
-                            scope.launch {
-                                note = sync?.deleteAccount() ?: "Your account was deleted."
-                                busy = false
-                                asking = null
-                            }
-                        }, Modifier.weight(1f), Pixel.Danger, enabled = !busy, compact = true)
-                        PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                    }
-                }
                 "care" -> {
-                    val inCloud = model.careData.settings.cloudSync && model.careSync != null
                     Text(
-                        "Erase Care's data on this device? Every routine, calm break, diary card, skill practised and journal entry is removed" +
-                            (if (inCloud) ", and its copy in the cloud too" else "") + ". What they earned stays. This cannot be undone.",
+                        "Erase Care's data on this device? Every routine, calm break, diary card, skill practised and journal entry is removed. What they earned stays. This cannot be undone.",
                         style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger,
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PixelIconButton("trash", "Erase", {
-                            busy = true
-                            scope.launch {
-                                // The cloud copy goes first, so a failure leaves everything as it was.
-                                val failed = if (inCloud) model.careSync?.turnOff() else null
-                                if (failed == null) model.care.erase()
-                                note = failed?.let { "Care's cloud copy could not be deleted: $it" } ?: "Care's data was erased."
-                                busy = false
-                                asking = null
-                            }
-                        }, Pixel.Danger, enabled = !busy)
+                        PixelIconButton("trash", "Erase", { model.care.erase(); note = "Care's data was erased."; asking = null }, Pixel.Danger)
                         PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }
@@ -223,8 +190,7 @@ private fun DataCard(model: AppModel) {
                     }
                 }
                 else -> Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    if (signedIn && sync != null) PixelButton("Delete account", { asking = "account"; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                    else PixelButton("Erase this device", { asking = "device"; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Erase this device", { asking = "device"; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     PixelButton("Erase Care data", { asking = "care"; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
@@ -266,130 +232,6 @@ private fun AboutCard() {
             )
         }
     }
-}
-
-/** Sign in, sign out and the state of the cloud save. Without a configured project it says online features are not set up. */
-@Composable
-private fun AccountCard(model: AppModel) {
-    val sync = model.sync
-    val account = model.data.account
-    val scope = rememberCoroutineScope()
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf<String?>(null) }
-    var busy by remember { mutableStateOf(false) }
-
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            GlyphTitle("Account", "lock")
-            when {
-                sync == null -> Text(
-                    "Online features are off in this build. Progress is saved on this device only.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                account == null -> {
-                    Text("Sign in to back up your progress and use it on your other devices.", style = MaterialTheme.typography.bodyMedium)
-                    PixelField(email, { email = it }, Modifier.fillMaxWidth(), singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next, autoCorrectEnabled = false),
-                        label = "Email", enabled = !busy)
-                    PixelField(password, { password = it }, Modifier.fillMaxWidth(), singleLine = true,
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done, autoCorrectEnabled = false),
-                        label = "Password",
-                        enabled = !busy,
-                        // Say the rule up front instead of leaving the buttons grey without a reason; once typing, say how far along it is.
-                        helper = if (password.isEmpty() || password.length >= 6) "At least 6 characters" else null,
-                        error = if (password.isNotEmpty() && password.length < 6) "A few more characters: at least 6" else null)
-                    message?.let { Notice(it, tone = NoticeTone.WARNING) }
-                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        PixelButton("Sign in", {
-                            busy = true; message = null
-                            scope.launch { message = sync.signIn(email.trim(), password); busy = false }
-                        }, Modifier.weight(1f), Pixel.Blue, enabled = !busy && email.isNotBlank() && password.length >= 6, compact = true)
-                        PixelButton("Create account", {
-                            busy = true; message = null
-                            scope.launch {
-                                val result = sync.signUp(email.trim(), password)
-                                message = if (result == "confirm") "Check your email to confirm your account, then sign in." else result
-                                busy = false
-                            }
-                        }, Modifier.weight(1f), Pixel.Green, enabled = !busy && email.isNotBlank() && password.length >= 6, compact = true)
-                    }
-                }
-                else -> {
-                    Text("Signed in as ${account.email}", style = MaterialTheme.typography.bodyLarge)
-                    val st = model.syncStatus
-                    Notice(
-                        when (st) {
-                            SyncStatus.Syncing -> "Syncing..."
-                            is SyncStatus.Offline -> "No connection. Your changes are kept and sent later."
-                            is SyncStatus.Refused -> st.message
-                            is SyncStatus.Conflict -> "This device and the cloud both have new progress."
-                            else -> if (account.unsynced) "Changes waiting to sync" else "Everything is saved to the cloud."
-                        },
-                        tone = when (st) { is SyncStatus.Refused -> NoticeTone.DANGER; is SyncStatus.Offline, is SyncStatus.Conflict -> NoticeTone.WARNING; else -> NoticeTone.INFO },
-                    )
-                    val status = model.syncStatus
-                    if (status is SyncStatus.Conflict) {
-                        Text("Which should win?", style = MaterialTheme.typography.bodyLarge)
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                            PixelButton("This device", { scope.launch { sync.resolve(keepThisDevice = true) } }, Modifier.weight(1f), Pixel.Blue, compact = true)
-                            PixelButton("The cloud", { scope.launch { sync.resolve(keepThisDevice = false) } }, Modifier.weight(1f), Pixel.Green, compact = true)
-                        }
-                    } else {
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                            PixelButton("Sync now", { scope.launch { sync.sync() } }, Modifier.weight(1f), Pixel.Blue, enabled = status != SyncStatus.Syncing, compact = true)
-                            PixelButton("Sign out", { sync.signOut() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * Care's opt-in cloud copy: off by default, so Care stays on this device. On, routines, diary cards and journal entries go to
- * the account's own Care copy (never to friends or leaderboards); off deletes that copy.
- */
-@Composable
-private fun CareCloudRow(model: AppModel) {
-    val careSync = model.careSync ?: return
-    val on = model.careData.settings.cloudSync
-    val signedIn = model.data.account != null
-    val scope = rememberCoroutineScope()
-    var busy by remember { mutableStateOf(false) }
-    var message by remember { mutableStateOf<String?>(null) }
-    ToggleRow(
-        "Care copy in the cloud", on,
-        detail = if (signedIn) "Off by default: Care stays on this device. On, it is kept with your account so another phone can have it, and never shown to friends. Off deletes the copy."
-        else "Sign in under Account to keep a copy of Care with your account. Until then Care stays on this device.",
-    ) { want ->
-        if (busy || !signedIn) return@ToggleRow
-        busy = true; message = null
-        scope.launch {
-            message = if (want) careSync.turnOn() else careSync.turnOff()
-            busy = false
-        }
-    }
-    if (on && signedIn) {
-        val status = model.careSyncStatus
-        Notice(
-            when (status) {
-                SyncStatus.Syncing -> "Syncing Care..."
-                is SyncStatus.Offline -> "No connection. Care's changes are kept and sent later."
-                is SyncStatus.Refused -> status.message
-                is SyncStatus.Conflict -> "This device and the cloud both have new Care entries."
-                else -> if (model.careData.cloud?.unsynced == true) "Care changes waiting to sync" else "Care is saved to the cloud."
-            },
-            tone = when (status) { is SyncStatus.Refused -> NoticeTone.DANGER; is SyncStatus.Offline, is SyncStatus.Conflict -> NoticeTone.WARNING; else -> NoticeTone.INFO },
-        )
-        if (status is SyncStatus.Conflict) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelButton("This device", { scope.launch { careSync.resolve(keepThisDevice = true) } }, Modifier.weight(1f), Pixel.Blue, compact = true)
-            PixelButton("The cloud", { scope.launch { careSync.resolve(keepThisDevice = false) } }, Modifier.weight(1f), Pixel.Green, compact = true)
-        }
-    }
-    message?.let { Notice(it, tone = NoticeTone.WARNING) }
 }
 
 /** One group of settings in its own card, under a small heading. */
@@ -437,12 +279,6 @@ internal fun PlanSettings(model: AppModel) {
         ToggleRow("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }
     }
     CalendarsCard(model)
-}
-
-/** Care's own settings (Modules, Care, Settings): its optional cloud copy. Care's reminders are in Me, Settings, Notifications. */
-@Composable
-internal fun CareSettings(model: AppModel) {
-    SettingsGroup("Cloud copy", "cloud") { CareCloudRow(model) }
 }
 
 /** World's own settings (Modules, World, Settings). */

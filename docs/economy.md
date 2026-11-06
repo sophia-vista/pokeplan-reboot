@@ -1,5 +1,7 @@
 # The economy: sources, sinks and caps
 
+> **Retired (0.130.0, REP-012):** Supabase, accounts, cloud sync, the friends board and gifts, the server reward function and the JavaScript build were removed. Wherever this document describes them, read it as history; `docs/pokelife/` is the current plan.
+
 > **Describes what the code pays today (rules version 15).** The source of truth for the economy's shape is `docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md` (reward ledger, one Bag, one currency: Poké). Coins and World Poké are one balance, Poké, since rules version 15 (the tables below still say "coins" for what Plan pays and "Poké" for what World pays; both are the same Poké); this file stays accurate for the code**
 
 Every reward source, every use and every cap, as the code has them under **rules version 15** (`RewardRules.VERSION` in

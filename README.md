@@ -21,16 +21,15 @@ Rules of the game are written down: [`docs/design.md`](docs/design.md) (what to 
 
 ## How it is built
 
-A Kotlin Multiplatform rewrite (Android, desktop and web) with a Supabase backend. Compose Multiplatform draws one UI for all targets in a Game Boy Advance and Mystery Dungeon style; the art is real game art only (nothing is hand-drawn or generated).
+A Kotlin Multiplatform rewrite (Android, desktop and web), local-only. Compose Multiplatform draws one UI for all targets in a Game Boy Advance and Mystery Dungeon style; the art is real game art only (nothing is hand-drawn or generated).
 
 | Folder | Role |
 |---|---|
 | `pokemon-core/` | The Pokémon side: the Dex, rewards, items, hatching, evolution. No UI. |
 | `plan-core/`, `care-core/`, `world-core/` | Each module's own rules, no UI. |
-| `app-core/` | The rules engine (`GameStore`), the saved shape (`AppData`) and cloud sync. |
+| `app-core/` | The rules engine (`GameStore`) and the saved shape (`AppData`). |
 | `composeApp/` | The shared Compose UI. |
 | `androidApp/` | The Android host: widgets, launcher, reminders, sensors, torch. |
-| `supabase/` | The backend: migrations, SQL tests, the reward Edge Function. |
 | `assets/`, `tools/` | The game art and the scripts that fetch it. |
 | `legacy-android/` | The original Java app, the reference for the old rules. No longer developed. |
 

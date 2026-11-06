@@ -93,15 +93,6 @@ class CareStoreTest {
         assertEquals("", s.care.write("Today I felt calm.")?.let { s.care.data.journalDraft }, "saving the entry clears the draft")
     }
 
-    @Test
-    fun aDraftChangingNeverMarksCareForTheCloud() {
-        val s = setup()
-        s.care.setCloudSync(true)
-        val before = s.care.data
-        s.care.setJournalDraft("typing...")
-        assertEquals(before.cloud, s.care.data.cloud, "no upload is queued by typing")
-        assertEquals(before.copy(journalDraft = "typing..."), s.care.data)
-    }
 
     @Test
     fun aRoutinePaysOnceADayAndUndoNeverPaysTwice() {

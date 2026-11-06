@@ -110,48 +110,8 @@ class GameStoreTest {
         assertTrue(s.data.onboarded, "a half-written save never replaces the progress in memory")
     }
 
-    @Test
-    fun theDeviceOnlyPartsAreRealFieldsAndNeverUploaded() {
-        val fields = (0 until AppData.serializer().descriptor.elementsCount).map { AppData.serializer().descriptor.getElementName(it) }
-        assertTrue(fields.containsAll(GameStore.DEVICE_ONLY), "a renamed field would be uploaded without anyone noticing")
-        val (s, _) = started()
-        s.setShownCalendars(setOf(4L))
-        assertTrue(s.cloudDocument().keys.none { it in GameStore.DEVICE_ONLY })
-    }
 
-    @Test
-    fun theCloudNeverSeesThePickersListNorTheRateCacheAndAdoptingKeepsThisDevicesCopy() {
-        val (s, _) = started()
-        s.setPickerOptions(listOf("Sushi", "Ramen"))
-        s.saveGearRates(app.pokeplan.app.GearRates("2026-11-01", mapOf("USD" to 1.0, "PHP" to 58.0)))
-        val doc = s.cloudDocument()
-        assertTrue("pickerOptions" !in doc && "gearRates" !in doc, "nothing private or cached is uploaded: ${doc.keys}")
-        assertTrue(!doc.toString().contains("Sushi"), "not even inside another field")
-        // Adopting a cloud save (which never has them) keeps this device's list and rates.
-        assertTrue(s.adoptCloud(doc, 5))
-        assertEquals(listOf("Sushi", "Ramen"), s.data.pickerOptions)
-        assertEquals(58.0, s.data.gearRates!!.perUsd["PHP"])
-        // A cloud document that did carry the keys (an older upload) does not overwrite them either.
-        val old = kotlinx.serialization.json.JsonObject(doc + mapOf("pickerOptions" to kotlinx.serialization.json.JsonArray(listOf(kotlinx.serialization.json.JsonPrimitive("Old")))))
-        assertTrue(s.adoptCloud(old, 6))
-        assertEquals(listOf("Sushi", "Ramen"), s.data.pickerOptions)
-        // The player's own export still has the list, and never the rate cache.
-        assertTrue(s.exportJson().contains("Sushi") && !s.exportJson().contains("gearRates"))
-        // What the Pokégear tools remember (favourites, timers, history) is device-only too, and in the player's own export.
-        s.changeGear { it.copy(favorites = listOf("TIMER"), calcHistory = listOf("2+2=4"), calcHistoryOn = true) }
-        assertTrue("gear" !in s.cloudDocument() && !s.cloudDocument().toString().contains("2+2=4"))
-        assertTrue(s.adoptCloud(s.cloudDocument(), 7))
-        assertEquals(listOf("2+2=4"), s.data.gear.calcHistory, "adopting the cloud save keeps this device's tool data")
-        assertTrue(s.exportJson().contains("2+2=4"))
-    }
 
-    @Test
-    fun anUnreadableCloudSaveChangesNothing() {
-        val (s, _) = started()
-        val before = s.data
-        assertFalse(s.adoptCloud(kotlinx.serialization.json.buildJsonObject { put("tasks", kotlinx.serialization.json.JsonPrimitive(3)) }, 7))
-        assertEquals(before, s.data)
-    }
 
     @Test
     fun theTutorialTaskPaysAfterTheUndoWindow() {
@@ -243,75 +203,9 @@ class GameStoreTest {
         assertTrue(s.data.focusHistory.single().completed)
     }
 
-    @Test
-    fun anEggTicketFixesTheEggWhicheverDeviceRollsIt() {
-        val tickets = listOf(EggTicket("t1", 4242, 0), EggTicket("t2", 99, 0))
-        fun hatchWithTicket(extraRolls: Boolean): app.pokeplan.core.pokemon.OwnedPokemon {
-            val (s, clock) = started()
-            s.receivedTickets(tickets, emptyList())
-            if (extraRolls) repeat(3) { s.addTask("Use up some of the device's dice") }
-            s.startFocus(25, deepFocus = false)
-            assertEquals("t1", s.data.eggTickets.inSession?.id, "the oldest ticket is spent when the session starts")
-            assertEquals(listOf("t2"), s.data.eggTickets.stock.map { it.id })
-            clock.advance(25 * 60_000L + 1)
-            val hatched = (s.tickFocus() as FocusResult.Hatched).rewards.filterIsInstance<Reward.Hatched>().single().pokemon
-            assertNull(s.data.eggTickets.inSession)
-            assertEquals(listOf(SpentTicket("t1", start, hatched.id)), s.data.eggTickets.spent)
-            return hatched
-        }
-        val a = hatchWithTicket(extraRolls = false)
-        val b = hatchWithTicket(extraRolls = true)
-        assertEquals(a.copy(id = ""), b.copy(id = ""), "the same ticket hatches the same egg")
-    }
 
-    @Test
-    fun aFailedSessionSpendsItsTicketAndNoTicketStillHatches() {
-        val (s, clock) = started()
-        s.receivedTickets(listOf(EggTicket("t1", 1, 0)), emptyList())
-        s.startFocus(25, deepFocus = false)
-        s.focusEvent(FocusEvent.Left)
-        clock.advance(11_000)
-        assertIs<FocusResult.Failed>(s.tickFocus())
-        assertEquals(listOf(SpentTicket("t1", start, null)), s.data.eggTickets.spent)
-        assertTrue(s.data.eggTickets.stock.isEmpty())
 
-        val before = s.data.player.pokemon.size
-        hatchOne(s, clock)
-        assertEquals(before + 1, s.data.player.pokemon.size, "out of tickets, the egg rolls on the device")
-        assertEquals(1, s.data.eggTickets.spent.size)
-    }
 
-    @Test
-    fun ticketsStayOnTheDevice() {
-        val (s, _) = started()
-        s.signedIn("a@b.c", "u1", "tok", "ref", Long.MAX_VALUE)
-        s.markSynced(1)
-        s.receivedTickets(listOf(EggTicket("t1", 1, 0)), emptyList())
-        assertFalse(s.data.account!!.unsynced, "new tickets are not a change to upload")
-        assertFalse("eggTickets" in s.cloudDocument())
-        s.adoptCloud(s.cloudDocument(), 2)
-        assertEquals(listOf("t1"), s.data.eggTickets.stock.map { it.id }, "adopting the cloud save keeps this device's tickets")
-
-        // A ticket spent while the call was out stays spent.
-        s.startFocus(25, deepFocus = false)
-        s.receivedTickets(listOf(EggTicket("t1", 1, 0), EggTicket("t3", 3, 0)), emptyList())
-        assertEquals(listOf("t3"), s.data.eggTickets.stock.map { it.id })
-
-        s.signOut()
-        assertTrue(s.data.eggTickets.stock.isEmpty() && s.data.eggTickets.inSession == null, "tickets belong to the account")
-    }
-
-    @Test
-    fun theChosenCalendarsStayOnThePhone() {
-        val (s, _) = started()
-        s.signedIn("a@b.c", "u1", "tok", "ref", Long.MAX_VALUE)
-        s.markSynced(1)
-        s.setShownCalendars(setOf(3L, 7L))
-        assertFalse(s.data.account!!.unsynced, "calendar ids differ per phone, so they are not a change to upload")
-        assertFalse("shownCalendars" in s.cloudDocument())
-        s.adoptCloud(s.cloudDocument(), 2)
-        assertEquals(setOf(3L, 7L), s.data.shownCalendars)
-    }
 
     @Test
     fun leavingTheAppForTooLongFailsTheSession() {
@@ -743,24 +637,6 @@ class GameStoreTest {
         assertTrue(s.transfer(extra.id))
     }
 
-    @Test
-    fun the_dex_tells_owned_caught_seen_and_unknown_apart() {
-        val (s, _) = started()
-        val extra = s.grantPokemon(16, "Test")
-        s.markSeen(listOf(150, 25))
-        assertEquals(DexState.OWNED, DexState.of(s.data, 25))
-        assertEquals(DexState.OWNED, DexState.of(s.data, 16))
-        assertEquals(DexState.SEEN, DexState.of(s.data, 150))
-        assertEquals(DexState.UNKNOWN, DexState.of(s.data, 151))
-        assertTrue(s.transfer(extra.id))
-        assertEquals(DexState.CAUGHT, DexState.of(s.data, 16))
-        assertTrue(DexState.CAUGHT.caught && !DexState.SEEN.caught)
-        // Seen once is seen for good, and marking it again saves nothing new.
-        val before = s.data
-        s.markSeen(listOf(150))
-        assertTrue(before === s.data)
-        assertTrue("seenSpecies" in s.cloudDocument())
-    }
 
     @Test
     fun lists_file_tasks_and_deleting_a_list_sends_its_tasks_to_the_inbox() {
@@ -954,20 +830,43 @@ class GameStoreTest {
         assertNull(s.data.tasks.first { it.id == task.id }.estimateMinutes, "a finished task keeps its estimate")
     }
 
+
     @Test
-    fun the_export_has_everything_but_the_sign_in_and_erasing_starts_over() {
+    fun the_dex_tells_owned_caught_seen_and_unknown_apart() {
+        val (s, _) = started()
+        val extra = s.grantPokemon(16, "Test")
+        s.markSeen(listOf(150, 25))
+        assertEquals(DexState.OWNED, DexState.of(s.data, 25))
+        assertEquals(DexState.OWNED, DexState.of(s.data, 16))
+        assertEquals(DexState.SEEN, DexState.of(s.data, 150))
+        assertEquals(DexState.UNKNOWN, DexState.of(s.data, 151))
+        assertTrue(s.transfer(extra.id))
+        assertEquals(DexState.CAUGHT, DexState.of(s.data, 16))
+        assertTrue(DexState.CAUGHT.caught && !DexState.SEEN.caught)
+        // Seen once is seen for good, and marking it again saves nothing new.
+        val before = s.data
+        s.markSeen(listOf(150))
+        assertTrue(before === s.data)
+    }
+
+    @Test
+    fun the_export_has_the_players_data_and_erasing_starts_over() {
         val (s, _) = started()
         s.addTask("Buy milk")
-        s.signedIn("a@b.c", "u1", "secret-token", "secret-refresh", 0L)
         val export = s.exportJson()
         assertTrue("Buy milk" in export && "Sophia" in export)
-        assertFalse("secret" in export, "no tokens in the export")
         assertFalse("\"account\"" in export)
-        kotlin.test.assertFailsWith<IllegalStateException> { s.eraseDevice() }
-        s.signOut()
         s.eraseDevice()
         assertFalse(s.data.onboarded)
         assertTrue(s.data.tasks.isEmpty())
+    }
+
+    @Test
+    fun theChosenCalendarsStayOnThePhone() {
+        val (s, _) = started()
+        s.setShownCalendars(setOf(3L, 7L))
+        assertEquals(setOf(3L, 7L), s.data.shownCalendars)
+        assertFalse("shownCalendars" in s.exportJson(), "calendar ids differ per phone, so the export leaves them out")
     }
 
     // --- Pokémon roles (docs/pokelife POKEMON_ECOSYSTEM.md, section 2.2) ---------------------------------------------

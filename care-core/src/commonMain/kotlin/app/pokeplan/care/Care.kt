@@ -123,25 +123,12 @@ data class CareData(
     val visit: Visit? = null,
     /** Species of visitors the player has cared for, whether or not they became friends (the "met" album). */
     val met: Set<Int> = emptySet(),
-    /** Where the opt-in cloud copy stands; kept on this device only, never uploaded. Null until the first sync. */
-    val cloud: CareCloud? = null,
-)
-
-/** The cloud copy as this device last saw it: whose it is, its version, and whether this device changed since. */
-@Serializable
-data class CareCloud(
-    val userId: String,
-    val version: Int,
-    val unsynced: Boolean = false,
-    val syncedAtMillis: Long = 0,
 )
 
 @Serializable
 data class CareSettings(
     /** Gentle routine reminders; each can still be dismissed. */
     val reminders: Boolean = true,
-    /** Cloud sync is opt-in: off, Care stays on this device. */
-    val cloudSync: Boolean = false,
     /** Urges the user chose to track on the diary card (none by default). */
     val urges: List<String> = emptyList(),
 )
