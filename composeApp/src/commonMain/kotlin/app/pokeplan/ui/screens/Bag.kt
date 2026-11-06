@@ -46,10 +46,10 @@ internal fun BagView(model: AppModel) {
         val each = Shop.COINS_PER_RARE_CANDY
         val afford = player.coins / each
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("${player.coins} coins", style = MaterialTheme.typography.titleMedium)
+            Text("${player.coins} Poké", style = MaterialTheme.typography.titleMedium)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 ItemIcon(Items.RARE_CANDY, size = 32.dp)
-                Text("Rare Candy: $each coins each", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                Text("Rare Candy: $each Poké each", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 listOf(1, 10).forEach { n ->

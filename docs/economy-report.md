@@ -12,7 +12,7 @@ Plays 180 days for 60 simulated players per profile through the real reward engi
 
 ## Targets
 
-- Basic Plan dex (57 hatchable species) in about 60 days for a typical player.
+- Basic Plan dex (57 hatchable species) in about 45 days for a typical player (rules version 12: easy to fill, hard to perfect).
 - Ranks quick at first, slower after: Apprentice within about 2 days and Ace within about 2 weeks for a typical player; each rank takes longer than the one before.
 - Evolving everything in the Plan Region once needs 83 evolutions: 70 Super Candies, 2562 to 4707 Rare Candies (with and without the catch-up discount), 12 stones, 1 Link Cords, 3 trials.
 
@@ -34,7 +34,7 @@ Plays 180 days for 60 simulated players per profile through the real reward engi
 | Coins after 60 days | 2044 (1733 to 2353) |
 | Item drops in 60 days | 33.0 (27.0 to 40.0) |
 | Buddy level after 60 days | 100 (100 to 100) |
-| Shinies in 180 days | 1.0 (0.0 to 2.0) |
+| Shinies in 180 days | 1.0 (0.0 to 3.0) |
 | Species owned after 90 days | 45.0 (40.0 to 48.0) |
 
 Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (100) that is about 42.0 days. Rare Candies: 2562 to 4707 needed, 2515 earned in 60 days (about 61.1 to 112 days).
@@ -57,7 +57,7 @@ Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (100) 
 | Coins after 60 days | 9306 (8629 to 10341) |
 | Item drops in 60 days | 142 (123 to 153) |
 | Buddy level after 60 days | 100 (100 to 100) |
-| Shinies in 180 days | 5.0 (2.0 to 7.0) |
+| Shinies in 180 days | 7.0 (4.0 to 9.0) |
 | Species owned after 90 days | 122 (119 to 122) |
 
 Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (321) that is about 13.1 days. Rare Candies: 2562 to 4707 needed, 10349 earned in 60 days (about 14.9 to 27.3 days).
@@ -80,7 +80,7 @@ Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (321) 
 | Coins after 60 days | 29769 (27277 to 32010) |
 | Item drops in 60 days | 273 (250 to 297) |
 | Buddy level after 60 days | 100 (100 to 100) |
-| Shinies in 180 days | 10.0 (7.0 to 13.0) |
+| Shinies in 180 days | 15.0 (11.0 to 19.0) |
 | Species owned after 90 days | 122 (122 to 122) |
 
 Evolving the whole Plan Region needs 70 Super Candies: at the 60-day rate (703) that is about 6.0 days. Rare Candies: 2562 to 4707 needed, 23631 earned in 60 days (about 6.5 to 12.0 days).

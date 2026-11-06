@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.125.0
+
+- **One currency: Poké.** Plan's coins and World's Poké are now a single balance, merged one to one on first open (a save with 120 coins and 35 World Poké opens with 155 Poké). What you earn anywhere is Poké, and the Bag's Rare Candy shop, World's facilities, shop and Dojo all spend the same Poké. Nothing was re-priced and no earnings changed. Both old values are kept in the save (`pokeMigration`) for checking. `RewardRules.VERSION` is 15. The economy simulations were re-run.
+- Under the hood: World's own `poke` field is only a working copy of the one balance until World moves onto the shared economy.
+
 ## 0.124.0
 
 - **The buddy and each party's lead are now separate.** Your **buddy** is your main companion (home, widgets, story) and only for show: it never changes a reward. **Plan's party has a lead** (the first slot, "Make Plan lead" on a Pokémon's page), and Plan's perks, egg luck and friendship come from that lead and Plan's party; **Care's lead** does the same for Care. A save from before keeps its buddy as Plan's lead, so nothing you earn changes. The buddy can now leave the party, and **Care no longer warms your Plan buddy** when Care's party is empty (put a Pokémon in Care's party to give it a lead). `RewardRules.VERSION` is 14, with no change to any amount.

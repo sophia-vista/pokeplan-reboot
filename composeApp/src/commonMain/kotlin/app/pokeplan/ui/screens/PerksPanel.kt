@@ -48,7 +48,7 @@ internal fun PerkBucket.label() = when (this) {
     PerkBucket.ITEM_FINDER -> "Item finder"
     PerkBucket.SHINY_HUNTER -> "Shiny hunter"
     PerkBucket.STREAK_KEEPER -> "Streak keeper"
-    PerkBucket.COINS -> "Coins"
+    PerkBucket.COINS -> "Poké"
 }
 
 /** What a bucket does, in one line, so a percentage means something. */
@@ -59,7 +59,7 @@ private fun PerkBucket.effect() = when (this) {
     PerkBucket.ITEM_FINDER -> "more item drops"
     PerkBucket.SHINY_HUNTER -> "better shiny odds"
     PerkBucket.STREAK_KEEPER -> "at ${Perks.STREAK_KEEPER_THRESHOLD.roundToInt()}%, a second missed day a week is forgiven"
-    PerkBucket.COINS -> "more coins"
+    PerkBucket.COINS -> "more Poké"
 }
 
 private fun PerkCondition.label(): String? = when (this) {

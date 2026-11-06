@@ -32,6 +32,7 @@ import app.pokeplan.core.pokemon.Perks
 import app.pokeplan.core.pokemon.Transfer
 import app.pokeplan.core.pokemon.TransferBlock
 import app.pokeplan.core.reward.CandyType
+import app.pokeplan.core.reward.RewardRules
 import app.pokeplan.core.pokemon.Inventory
 import app.pokeplan.core.pokemon.Shop
 import app.pokeplan.core.reward.AchievementEvent
@@ -126,7 +127,7 @@ class GameStore(
 
     private fun update(change: (AppData) -> AppData) {
         val before = data
-        var after = change(before)
+        var after = foldPoke(before, change(before))
         // Anything but the account itself (and what stays on the device) changing means the cloud copy is out of date.
         val account = after.account
         if (account != null && account == before.account && after.cloudPart() != before.cloudPart()) {
@@ -136,6 +137,29 @@ class GameStore(
         val shinyNow = after.player.pokemon.filter { it.isShiny }.map { it.speciesId }.toSet()
         if (!after.shinySpecies.containsAll(shinyNow)) after = after.copy(shinySpecies = after.shinySpecies + shinyNow)
         document.write(FormDex.record(after))
+    }
+
+    /**
+     * One Poké balance (`PlayerState.coins`). World's pure rules still read and write `WorldData.poke`, so that field is a
+     * working copy of the balance, never a second wallet: whatever changed it or the coins in one update is folded into
+     * both. Retired when World moves onto the shared economy (docs/pokelife IMPLEMENTATION_BACKLOG.md, REP-014).
+     */
+    private fun foldPoke(before: AppData, after: AppData): AppData {
+        if (before.pokeMigration == null || after.pokeMigration == null) return migratePoke(after)
+        val migrated = after
+        val balance = (before.player.coins + (migrated.player.coins - before.player.coins) + (migrated.world.poke - before.world.poke)).coerceAtLeast(0)
+        if (balance == migrated.player.coins && balance == migrated.world.poke) return migrated
+        return migrated.copy(player = migrated.player.copy(coins = balance), world = migrated.world.copy(poke = balance))
+    }
+
+    /** The one-time merge of Plan's coins and World's Poké, 1:1, recording both sources. Does nothing once it has run. */
+    private fun migratePoke(d: AppData): AppData {
+        if (d.pokeMigration != null) return d.copy(world = d.world.copy(poke = d.player.coins))
+        val total = d.player.coins + d.world.poke
+        return d.copy(
+            player = d.player.copy(coins = total), world = d.world.copy(poke = total),
+            pokeMigration = PokeMigration(d.player.coins, d.world.poke, nowMillis, RewardRules.VERSION),
+        )
     }
 
     // --- cloud account ------------------------------------------------------------------------------------------------
@@ -177,7 +201,7 @@ class GameStore(
 
     /** What every save that comes in (from the device or the cloud) goes through: numbers back in their range. */
     // The Modules setting is gone from Settings: Care is always shown, so a save that switched it off is switched back on when loaded.
-    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player))
+    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player)).let(::migratePoke)
 
     /**
      * Saves from before the Pokémon roles were split (docs/pokelife POKEMON_ECOSYSTEM.md, section 2.2) used the buddy as

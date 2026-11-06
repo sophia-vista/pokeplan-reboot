@@ -348,7 +348,7 @@ private fun TransferBox(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                 !confirm -> PixelButton("Transfer", { confirm = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 else -> {
                     val quote = Transfer.quote(p)
-                    Text("Send ${p.nickname} away for ${quote.rareCandies} Rare Candies and ${quote.coins} coins?", style = MaterialTheme.typography.bodyLarge)
+                    Text("Send ${p.nickname} away for ${quote.rareCandies} Rare Candies and ${quote.coins} Poké?", style = MaterialTheme.typography.bodyLarge)
                     quote.warnings.forEach { Text(it, style = soft, color = Pixel.Red) }
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         PixelButton("Transfer", { if (store.transfer(p.id)) { model.effect(Sfx.ESCAPE); back() } }, Modifier.weight(1f), Pixel.Danger, compact = true)
