@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.126.0
+
+- **Care's routine reminders now respect quiet hours.** One global quiet-hours window (default 22:00 to 07:00) holds every module's reminders until it ends; a routine set for 23:00 now goes off the next morning at 07:00. Focus sessions still hold a reminder until they end, and a focus that ends in quiet hours waits for the quiet window's end.
+- Under the hood (REP-011, first slice): the shared reminder policy `ReminderPolicy` with `ReminderRequest` (stable ids, opaque source references, no titles or notes stored), `FocusWindow` and the `ReminderSourceAdapter` contract. The Android scheduler, the reminder tables in the database and Plan's move onto it wait for device checks.
+
 ## 0.125.0
 
 - **One currency: Poké.** Plan's coins and World's Poké are now a single balance, merged one to one on first open (a save with 120 coins and 35 World Poké opens with 155 Poké). What you earn anywhere is Poké, and the Bag's Rare Candy shop, World's facilities, shop and Dojo all spend the same Poké. Nothing was re-priced and no earnings changed. Both old values are kept in the save (`pokeMigration`) for checking. `RewardRules.VERSION` is 15. The economy simulations were re-run.

@@ -179,7 +179,7 @@ devices both changed. The device's visitor seed and its sync state are never upl
 data, deletes the copy.
 **Routine reminders (0.39.0):** on Android, a routine with a time reminds once at that time on
 its days while it is not done (`CareReminders` in app-core, `RoutineReminders` in androidApp), with Done (ticked and paid
-as on the screen) and "In 30 min"; never repeated, not moved by Plan's quiet hours or rest days, held until the end of a
+as on the screen) and "In 30 min"; never repeated, not moved by Plan's rest days, but held out of the global quiet hours (0.126.0), held until the end of a
 focus session; Settings → Modules → "Routine reminders" (`CareSettings.reminders`). **Care widget (0.40.0):** today's
 routines with a tick (ticked and paid as on the screen), the done ones below, and whether today's diary card is saved, in
 the meadow scene; tapping opens Care. **Care v1 is complete** with the visitor's liked berry (0.41.0, under Befriending).
