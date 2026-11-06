@@ -21,6 +21,9 @@ kotlin {
             implementation(libs.sqldelight.runtime)
             implementation(libs.kotlinx.serialization.json)
         }
+        // Plain java.io code that both the Android and the JVM targets compile (backups of the live documents).
+        androidMain { kotlin.srcDir("src/javaMain/kotlin") }
+        jvmMain { kotlin.srcDir("src/javaMain/kotlin") }
         androidMain.dependencies {
             implementation(libs.sqldelight.android.driver)
         }

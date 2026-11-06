@@ -61,6 +61,21 @@ object DeviceSelfCheck {
                     check(n == 5000L && ok == "ok") { "rows $n, integrity $ok" }; "5000 rows, integrity ok, ${copy.length() / 1024} KB"
                 }
             }
+            check("Live documents: activate, write, backup, restore") {
+                val live = s.live
+                live.activate("{\"a\":1}", "{\"c\":1}", 1)
+                check(live.isActive()) { "marker not set" }
+                live.write("save", "{\"a\":2}", 2)
+                val dir = File(db.parentFile, "selfcheck-backups").also { it.deleteRecursively() }
+                try {
+                    val b = LiveBackup(dir)
+                    check(b.take(live, 3) != null) { "no backup written" }
+                    live.write("save", "{\"a\":3}", 4)
+                    check(b.restoreNewest(live, 5)) { "no backup to restore" }
+                    check(live.read("save") == "{\"a\":2}" && live.read("aside:save:5") == "{\"a\":3}") { "restore did not match" }
+                } finally { dir.deleteRecursively() }
+                "marker set, backup written and restored, replaced document kept aside"
+            }
             check("Reopen after close keeps committed rows") {
                 s.close(); store = null
                 val again = AndroidDatabase.open(context, NAME); store = again

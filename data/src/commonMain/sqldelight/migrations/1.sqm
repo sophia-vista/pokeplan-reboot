@@ -1,0 +1,6 @@
+-- Version 1 to 2: the live save documents (the cutover).
+CREATE TABLE live_document (
+    name TEXT NOT NULL PRIMARY KEY,
+    json TEXT NOT NULL,
+    updated_at INTEGER NOT NULL
+);
