@@ -22,12 +22,18 @@ class CareRewardTest {
         return PlayerState(pokemon = listOf(buddy), buddyId = buddy.id, trainerPoints = 10)
     }
 
+    /** A state whose Pikachu leads Care's party (Care warms only its own lead, never the global buddy or Plan's lead). */
+    private fun careState(nature: Nature = Nature.HARDY): PlayerState {
+        val lead = pokemon(Ids.PIKACHU, nature = nature).copy(inParty = true, partyId = PartyIds.CARE)
+        return PlayerState(pokemon = listOf(lead), careLeadId = lead.id, trainerPoints = 10)
+    }
+
     private fun care(kind: CareKind, s: PlayerState = state()) = RewardEngine.care(s, CareEvent(kind, 1_000L), Random(1))
 
     @Test
     fun aRoutineGrowsTheBondAndALittleRank() {
-        val out = care(CareKind.ROUTINE, state(Nature.BOLD))
-        assertEquals(FriendshipRules.START + 2, out.state.buddy!!.friendship, "a comfort-loving buddy doubles a routine's friendship")
+        val out = care(CareKind.ROUTINE, careState(Nature.BOLD))
+        assertEquals(FriendshipRules.START + 2, out.state.careLead!!.friendship, "a comfort-loving lead doubles a routine's friendship")
         assertEquals(listOf(Reward.Friendship(2), Reward.Candies(CandyType.RARE, RewardEngine.CARE_CANDIES.getValue(CareKind.ROUTINE))), out.rewards)
         assertEquals(10 + RewardEngine.CARE_POINTS, out.state.trainerPoints)
     }
@@ -39,12 +45,20 @@ class CareRewardTest {
     }
 
     @Test
-    fun theCareLeadTakesCaresFriendshipInsteadOfThePlanBuddy() {
+    fun theCareLeadTakesCaresFriendshipAndThePlanLeadAndBuddyDoNot() {
         val lead = pokemon(Ids.EEVEE, friendship = FriendshipRules.START)
         val s = withCareLead(lead)
         val out = care(CareKind.ROUTINE, s)
         assertTrue(out.state.pokemon.first { it.id == lead.id }.friendship > FriendshipRules.START)
         assertEquals(FriendshipRules.START, out.state.buddy!!.friendship)
+        assertEquals(FriendshipRules.START, out.state.planLead!!.friendship)
+    }
+
+    @Test
+    fun withNoCareLeadCareWarmsNobody() {
+        val out = care(CareKind.ROUTINE, state(Nature.BOLD))
+        assertEquals(FriendshipRules.START, out.state.buddy!!.friendship, "the global buddy is never warmed by a module")
+        assertEquals(listOf(Reward.Candies(CandyType.RARE, RewardEngine.CARE_CANDIES.getValue(CareKind.ROUTINE))), out.rewards)
     }
 
     @Test
@@ -59,8 +73,8 @@ class CareRewardTest {
 
     @Test
     fun aCalmBreakGivesFriendshipAndABerry() {
-        val out = care(CareKind.CALM_BREAK, state(Nature.HASTY))
-        assertEquals(FriendshipRules.START + 2, out.state.buddy!!.friendship, "a presence-loving buddy doubles a calm break")
+        val out = care(CareKind.CALM_BREAK, careState(Nature.HASTY))
+        assertEquals(FriendshipRules.START + 2, out.state.careLead!!.friendship, "a presence-loving lead doubles a calm break")
         val berry = out.rewards.filterIsInstance<Reward.ItemDrop>().single()
         assertTrue(berry.itemId.startsWith("berry-"))
         assertEquals(1, out.state.inventory[berry.itemId])
@@ -68,8 +82,8 @@ class CareRewardTest {
 
     @Test
     fun aPractisedSkillGivesFriendshipAndABerry() {
-        val out = care(CareKind.SKILL, state(Nature.HASTY))
-        assertEquals(FriendshipRules.START + 2, out.state.buddy!!.friendship, "a presence-loving buddy doubles a practised skill")
+        val out = care(CareKind.SKILL, careState(Nature.HASTY))
+        assertEquals(FriendshipRules.START + 2, out.state.careLead!!.friendship, "a presence-loving lead doubles a practised skill")
         assertEquals(1, out.rewards.filterIsInstance<Reward.ItemDrop>().size)
         assertEquals(10 + RewardEngine.CARE_POINTS, out.state.trainerPoints)
     }

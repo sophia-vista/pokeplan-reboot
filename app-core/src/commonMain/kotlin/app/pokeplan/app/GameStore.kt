@@ -177,7 +177,18 @@ class GameStore(
 
     /** What every save that comes in (from the device or the cloud) goes through: numbers back in their range. */
     // The Modules setting is gone from Settings: Care is always shown, so a save that switched it off is switched back on when loaded.
-    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true))
+    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player))
+
+    /**
+     * Saves from before the Pokémon roles were split (docs/pokelife POKEMON_ECOSYSTEM.md, section 2.2) used the buddy as
+     * Plan's lead. The buddy stays the global buddy and also becomes the lead of Plan's party if it is in it, so nothing
+     * changes for the player; from then on the two are chosen separately. Care's lead already was a party lead.
+     */
+    private fun migrateRoles(p: app.pokeplan.core.reward.PlayerState): app.pokeplan.core.reward.PlayerState {
+        if (p.rolesVersion >= ROLES_VERSION) return p
+        val lead = p.buddyId?.takeIf { id -> p.party.any { it.id == id } }
+        return p.copy(planLeadId = p.planLeadId ?: lead, rolesVersion = ROLES_VERSION)
+    }
 
     private fun AppData.cloudPart(): AppData = copy(account = null, eggTickets = EggTickets(), shownCalendars = emptySet(), pickerOptions = emptyList(), gearRates = null, gear = GearData())
 
@@ -254,7 +265,7 @@ class GameStore(
         update {
             it.copy(
                 trainerName = trainerName.trim().ifEmpty { "Trainer" }, onboarded = true,
-                player = it.player.copy(pokemon = listOf(starter), buddyId = starter.id, caught = setOf(starter.speciesId)),
+                player = it.player.copy(pokemon = listOf(starter), buddyId = starter.id, planLeadId = starter.id, rolesVersion = ROLES_VERSION, caught = setOf(starter.speciesId)),
                 tasks = listOf(first), origins = mapOf(starter.id to Origin(Origin.How.STARTER)),
             )
         }
@@ -288,7 +299,7 @@ class GameStore(
     }
 
     /** The Pokémon Care's screens show: Care's lead, or the Plan buddy until Care has one (it takes Care's friendship then). */
-    val careBuddy: OwnedPokemon? get() = data.player.careLead ?: data.player.buddy
+    val careBuddy: OwnedPokemon? get() = data.player.careLead
 
     /** The day work counts for in streaks: it rolls over at 4am, so a late night still counts for the day before. */
     val streakDay: LocalDate get() = Streaks.streakDay(now)
@@ -868,7 +879,7 @@ class GameStore(
     val perks: PerkBonuses get() = data.perks
 
     /** Where [perks] come from, part by part, for the perks panel. */
-    val perkSources: List<PerkSource> get() = data.player.let { Perks.sources(it.buddy, it.party, it.guardianPokemon) }
+    val perkSources: List<PerkSource> get() = data.player.let { Perks.sources(it.planLead, it.party, it.guardianPokemon) }
 
     // --- focus --------------------------------------------------------------------------------------------------------
 
@@ -877,7 +888,7 @@ class GameStore(
         check(data.focus == null) { "a session is already running" }
         val session = FocusRules.start(
             id = newId(), durationMinutes = minutes, nowMillis = nowMillis, deepFocus = deepFocus, region = data.settings.region.open,
-            buddyIdAtStart = data.player.buddyId, taskId = taskId, lure = lure, emergencyPausesUsedToday = emergencyPausesToday(),
+            leadIdAtStart = data.player.planLead?.id, taskId = taskId, lure = lure, emergencyPausesUsedToday = emergencyPausesToday(),
         )
         // The oldest egg ticket fixes the egg's dice now, like the perks; without one the egg rolls on the device.
         update { d ->
@@ -912,14 +923,14 @@ class GameStore(
             is Phase.Completed -> {
                 val minutes = (session.durationMillis / 60_000L).toInt()
                 val event: EffortEvent = session.toEffortEvent(newId(), nowMillis, epochDay).let { it.copy(region = it.region.open) }
-                // The perks that count are the ones of the buddy when the session started.
+                // The perks that count are the ones of Plan's lead when the session started.
                 val player = data.player
                 val ticket = data.eggTickets.inSession
                 val outcome = RewardEngine.effort(player.atStartOf(session), event, ticket?.let { Random(it.seed) } ?: rng)
                 update { d ->
                     log("Focus: $minutes min", outcome.rewards, d.copy(
                         eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
-                        player = outcome.state.copy(buddyId = d.player.buddyId), focus = null, activeDays = d.activeDays + streakDay, lastFocusEnd = FocusEnd(nowMillis, true),
+                        player = outcome.state.copy(planLeadId = d.player.planLeadId), focus = null, activeDays = d.activeDays + streakDay, lastFocusEnd = FocusEnd(nowMillis, true),
                         focusHistory = d.focusHistory + session.record(minutes, completed = true),
                         tasks = d.tasks.map { if (it.id == session.taskId) it.copy(focusedMinutes = it.focusedMinutes + minutes) else it },
                     ), origin = Origin(Origin.How.FOCUS_EGG, event.region))
@@ -950,14 +961,14 @@ class GameStore(
     private fun magicGuard(session: FocusSession, reason: FailReason, minutes: Int): FocusResult? {
         val player = data.player.atStartOf(session)
         if (minutes < Egg.MIN_MINUTES || Counters.MAGIC_GUARD.isSet(data.counters, weekStart)) return null
-        if (!Perks.total(player.buddy, player.party, guardians = player.guardianPokemon).keepsFailedEgg) return null
+        if (!Perks.total(player.planLead, player.party, guardians = player.guardianPokemon).keepsFailedEgg) return null
         val ticket = data.eggTickets.inSession
         val event = EffortEvent(minutes, false, session.region.open, session.lure, epochDay, newId(), nowMillis)
         val outcome = RewardEngine.effort(player, event, ticket?.let { Random(it.seed) } ?: rng)
         update { d ->
             log("Magic Guard: $minutes min", outcome.rewards, d.copy(
                 eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
-                player = outcome.state.copy(buddyId = d.player.buddyId), focus = null,
+                player = outcome.state.copy(planLeadId = d.player.planLeadId), focus = null,
                 lastFocusEnd = FocusEnd(nowMillis, true, reason, guarded = true),
                 focusHistory = d.focusHistory + session.record(minutes, completed = false),
                 counters = Counters.MAGIC_GUARD.set(d.counters, weekStart, 1),
@@ -966,9 +977,9 @@ class GameStore(
         return FocusResult.Hatched(outcome.rewards)
     }
 
-    /** The perks that count for a session are the ones of the buddy when it started, if that Pokémon is still here. */
+    /** The perks that count for a session are the ones of Plan's lead when it started, if that Pokémon is still in Plan's party. */
     private fun app.pokeplan.core.reward.PlayerState.atStartOf(session: FocusSession) =
-        if (session.buddyIdAtStart != null && pokemon.any { it.id == session.buddyIdAtStart }) copy(buddyId = session.buddyIdAtStart) else this
+        if (session.leadIdAtStart != null && party.any { it.id == session.leadIdAtStart }) copy(planLeadId = session.leadIdAtStart) else this
 
     private fun FocusSession.record(minutes: Int, completed: Boolean) = FocusRecord(startedAtMillis, minutes, completed, taskId, deepFocus)
 
@@ -996,7 +1007,8 @@ class GameStore(
 
     /**
      * Puts a Pokémon in or out of a module's party (up to six; one party at a time, so joining another moves it). Returns
-     * false if the party is full, or it would leave Plan's party empty or take the buddy out of it.
+     * false if the party is full or it would leave Plan's party empty. A lead that leaves passes the lead on to the
+     * party's first member; the global buddy is not tied to any party.
      */
     fun setInParty(id: String, inParty: Boolean, partyId: String = PartyIds.PLAN): Boolean {
         val p = pokemon(id)
@@ -1005,18 +1017,28 @@ class GameStore(
         val staying = inParty && p.inParty && p.partyId == partyId
         if (inParty && !staying && data.player.partyOf(partyId).size >= OwnedPokemon.PARTY_SIZE) return false
         val leavingPlan = p.inParty && p.partyId == PartyIds.PLAN && !(inParty && partyId == PartyIds.PLAN)
-        if (leavingPlan && (planSize <= 1 || id == data.player.buddyId)) return false
+        if (leavingPlan && planSize <= 1) return false
         update { d ->
             val pokemon = d.player.pokemon.map { if (it.id == id) p.copy(inParty = inParty, partyId = partyId) else it }
             // Care's lead is its first member until the player picks another, and passes on when it leaves.
             val care = pokemon.filter { it.inParty && it.partyId == PartyIds.CARE }
             val lead = d.player.careLeadId?.takeIf { l -> care.any { it.id == l } } ?: care.firstOrNull()?.id
-            d.copy(player = d.player.copy(pokemon = pokemon, careLeadId = lead))
+            val plan = pokemon.filter { it.inParty && it.partyId == PartyIds.PLAN }
+            val planLead = d.player.planLeadId?.takeIf { l -> plan.any { it.id == l } } ?: plan.firstOrNull()?.id
+            d.copy(player = d.player.copy(pokemon = pokemon, careLeadId = lead, planLeadId = planLead))
         }
         return true
     }
 
-    /** Makes [id], who must be in Care's party, its lead: the buddy that takes Care's friendship and gives its perks. */
+    /** Makes [id], who must be in Plan's party, its lead: the Pokémon that takes Plan's friendship and gives its perks. */
+    fun setPlanLead(id: String): Boolean {
+        val p = pokemon(id)
+        if (!p.inParty || p.partyId != PartyIds.PLAN) return false
+        update { d -> d.copy(player = d.player.copy(planLeadId = id)) }
+        return true
+    }
+
+    /** Makes [id], who must be in Care's party, its lead: the Pokémon that takes Care's friendship and gives its perks. */
     fun setCareLead(id: String): Boolean {
         val p = pokemon(id)
         if (!p.inParty || p.partyId != PartyIds.CARE) return false
@@ -1092,7 +1114,7 @@ class GameStore(
     fun transferBlock(id: String): TransferBlock? =
         pokemon(id).let { p ->
             // The "last party member" rule guards Plan's party only; other modules' parties may be emptied.
-            Transfer.block(p, id == data.player.buddyId || id == data.player.careLead?.id, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
+            Transfer.block(p, id == data.player.buddyId || id == data.player.planLead?.id || id == data.player.careLead?.id, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
         }
 
     /** Whether [feature] has appeared yet at the player's trainer rank (the gradual reveal). */
@@ -1621,6 +1643,9 @@ class GameStore(
     fun buddyBerry(): String? = berries().keys.minOrNull()
 
     companion object {
+        /** The version of the Pokémon-roles layout that [migrateRoles] brings a save to. */
+        const val ROLES_VERSION = 1
+
         /** The reward-log source of what World gives (a recruit, the Guardian): not an egg, so no hatch scene or hatch reaction. */
         const val WORLD_SOURCE = "World"
         const val MEW_GIFT = "gift-mew"

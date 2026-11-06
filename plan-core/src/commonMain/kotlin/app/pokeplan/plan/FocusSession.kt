@@ -61,7 +61,8 @@ sealed interface FocusEvent {
 /**
  * A focus session in strict mode. Pure: [apply] takes an event and the current time and returns the next session;
  * [tick] only moves the clock (grace expiring, a long emergency pause ending, the timer finishing).
- * `buddyIdAtStart` and `lure` are locked in when the session starts: perks use the buddy at that moment.
+ * `leadIdAtStart` (Plan's party lead; saved as `buddyIdAtStart` by older builds) and `lure` are locked in when the session starts:
+ * perks use that lead at that moment.
  */
 @Serializable
 data class FocusSession(
@@ -70,7 +71,7 @@ data class FocusSession(
     val durationMillis: Long,
     val deepFocus: Boolean,
     val region: Region,
-    val buddyIdAtStart: String?,
+    @kotlinx.serialization.SerialName("buddyIdAtStart") val leadIdAtStart: String?,
     val taskId: String? = null,
     val lure: PokemonType? = null,
     val phase: Phase = Phase.Running,
@@ -150,7 +151,7 @@ data class FocusSession(
     }
 
     /**
-     * The reward event for a completed session. Apply it to a player state whose buddy is [buddyIdAtStart], so the perks are
+     * The reward event for a completed session. Apply it to a player state whose Plan lead is [leadIdAtStart], so the perks are
      * the ones locked in at the start.
      */
     fun toEffortEvent(newPokemonId: String, nowMillis: Long, epochDay: Long): EffortEvent {
@@ -194,12 +195,12 @@ object FocusRules {
         nowMillis: Long,
         deepFocus: Boolean,
         region: Region,
-        buddyIdAtStart: String?,
+        leadIdAtStart: String?,
         taskId: String? = null,
         lure: PokemonType? = null,
         emergencyPausesUsedToday: Int = 0,
     ): FocusSession {
         require(durationMinutes >= FocusDuration.MIN_MINUTES) { "a session is at least ${FocusDuration.MIN_MINUTES} minutes" }
-        return FocusSession(id, nowMillis, durationMinutes * 60_000L, deepFocus, region, buddyIdAtStart, taskId, lure, emergencyPausesUsed = emergencyPausesUsedToday)
+        return FocusSession(id, nowMillis, durationMinutes * 60_000L, deepFocus, region, leadIdAtStart, taskId, lure, emergencyPausesUsed = emergencyPausesUsedToday)
     }
 }

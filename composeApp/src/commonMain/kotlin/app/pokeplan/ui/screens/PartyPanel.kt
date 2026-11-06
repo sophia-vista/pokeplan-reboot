@@ -65,7 +65,7 @@ private class PerkLine(val label: String, val percent: Double)
 /** What a party's perks say before the rank that shows them: every party's perks open together, and they already count. */
 internal val PERKS_LOCKED = "Open at rank ${TrainerRank.names[Feature.PERKS.step]}. Your party is already growing them."
 
-/** Plan's party in its module: the buddy leads, and its perks once the rank has opened them. */
+/** Plan's party in its module: its lead first, and its perks once the rank has opened them. */
 @Composable
 fun PlanPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val store = model.store
@@ -73,11 +73,11 @@ fun PlanPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val opened = store.sees(Feature.PERKS)
     val totals = store.perks
     PartyPanel(
-        model, player.party, player.buddyId, lead = "Buddy", perksTitle = "Party perks",
+        model, player.party, player.planLead?.id, lead = "Lead", perksTitle = "Party perks",
         perks = if (opened) PerkBucket.entries.filter { totals[it] > 0 }.map { PerkLine(it.label(), totals[it]) } else emptyList(),
         perksNote = when {
             !opened -> PERKS_LOCKED
-            player.buddy == null -> "Choose a buddy to get its perks."
+            player.planLead == null -> "Put a Pokémon in Plan's party to get its perks."
             else -> null
         },
         empty = "Hatch an egg with a focus session. It joins your party here.",
@@ -93,14 +93,14 @@ fun CarePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val opened = model.store.sees(Feature.PERKS)
     val totals = CarePerks.total(player.careLead, party)
     PartyPanel(
-        model, party, player.careLeadId, lead = "Lead", perksTitle = "Care perks",
+        model, party, player.careLead?.id, lead = "Lead", perksTitle = "Care perks",
         perks = if (opened) CareBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
         perksNote = when {
             !opened -> PERKS_LOCKED
             party.isEmpty() || totals.values.any { it > 0 } -> null
             else -> "None yet: Normal, Fairy, Water, Grass, Bug, Fighting, Flying, Psychic and Ghost types bring them."
         },
-        empty = "Open a Pokémon and choose \"To Care party\". Until then Care warms your Plan buddy.",
+        empty = "Open a Pokémon and choose \"To Care party\". Until then Care has no lead to warm.",
         onOpen = onOpen,
     )
 }

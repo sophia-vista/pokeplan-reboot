@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.124.0
+
+- **The buddy and each party's lead are now separate.** Your **buddy** is your main companion (home, widgets, story) and only for show: it never changes a reward. **Plan's party has a lead** (the first slot, "Make Plan lead" on a Pokémon's page), and Plan's perks, egg luck and friendship come from that lead and Plan's party; **Care's lead** does the same for Care. A save from before keeps its buddy as Plan's lead, so nothing you earn changes. The buddy can now leave the party, and **Care no longer warms your Plan buddy** when Care's party is empty (put a Pokémon in Care's party to give it a lead). `RewardRules.VERSION` is 14, with no change to any amount.
+- Under the hood: the new `:data` module (REP-008) is merged but not used by the app yet; the JSON save is still the only store.
+- Known limit: the old Supabase reward function does not know the Plan lead (cloud sign-in is being retired), so a signed-in account's server-checked rewards use Plan's first party member.
+
 ## 0.123.0
 
 - **The home layer is gone; World has two optional Mystery Dungeon arcs.** The Mystery Dungeon world is split into **Rescue Team** (Pokémon Square: Tiny Woods, Mt. Steel and the Sky Tower, six chapters, Sky Tower as its Guardian dungeon) and **Explorers** (Treasure Town: Thunderwave Cave, Waterfall Cave, Glacier Palace, Ancient Ruins and the Temporal Tower, eight chapters, Primal Dialga as its Guardian, the Distortion Rift after it). Each is a layer beside Kanto, Johto, Hoenn and Sinnoh. The old six-chapter home story (the temporal saga) is removed; the two arcs' chapters have titles and gates now and their scenes are the next step (`docs/world-story-rewrite.md`).

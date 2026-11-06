@@ -277,7 +277,8 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
     val inPlan = p.inParty && p.partyId == PartyIds.PLAN
     val inCare = p.inParty && p.partyId == PartyIds.CARE
     val isBuddy = p.id == player.buddyId
-    val isLead = p.id == player.careLeadId
+    val isLead = p.id == player.careLead?.id
+    val isPlanLead = p.id == player.planLead?.id
     if (isGuardian) {
         val slotted = p.id in player.guardians
         Text(perkText(p), style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
@@ -290,7 +291,8 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
         )
     } else {
         val place = when {
-            isBuddy -> "Plan's buddy, in Plan's party"
+            isPlanLead -> if (isBuddy) "Your buddy, and Plan's lead" else "Plan's lead, in Plan's party"
+            isBuddy -> if (inPlan) "Your buddy, in Plan's party" else "Your buddy"
             inPlan -> "In Plan's party"
             isLead -> "Care's lead, in Care's party"
             inCare -> "In Care's party"
@@ -308,6 +310,9 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
             PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p.speciesId) }, Modifier.weight(1f), Pixel.Red, enabled = !isBuddy, compact = true)
             PixelButton(if (inPlan) "To PC" else "To Plan party", { store.setInParty(p.id, !inPlan) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
+            PixelButton(if (isPlanLead) "Is Plan's lead" else "Make Plan lead", { store.setPlanLead(p.id) }, Modifier.fillMaxWidth(), Pixel.Red, enabled = inPlan && !isPlanLead, compact = true)
         }
         if (care) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
             PixelButton(if (isLead) "Is Care's lead" else "Make Care lead", { store.setCareLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inCare && !isLead, compact = true)

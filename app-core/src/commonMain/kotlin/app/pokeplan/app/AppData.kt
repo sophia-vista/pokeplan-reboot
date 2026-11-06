@@ -382,7 +382,7 @@ enum class DexState(val label: String) {
 }
 
 /** The perks of the buddy, its party and the slotted Guardians as they stand now (no task or session in view). */
-val AppData.perks: PerkBonuses get() = player.let { Perks.total(it.buddy, it.party, guardians = it.guardianPokemon) }
+val AppData.perks: PerkBonuses get() = player.let { Perks.total(it.planLead, it.party, guardians = it.guardianPokemon) }
 
 /**
  * The daily streak at [now], wherever it is shown (the app, the evening reminder): the day turns over at

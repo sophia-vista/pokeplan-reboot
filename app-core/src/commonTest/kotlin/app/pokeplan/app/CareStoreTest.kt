@@ -31,6 +31,15 @@ class CareStoreTest {
             gameStorage.save(GameStore.json.encodeToString(AppData.serializer(), game.data.let { d -> d.copy(player = d.player.copy(inventory = d.player.inventory.add(item, n))) }))
             game.reload()
         }
+
+        /** Puts a second Pokémon in Care's party as its lead: Care warms only its own lead, never the Plan buddy. */
+        fun giveCareLead() {
+            val d = game.data
+            val starter = d.player.pokemon.first()
+            val lead = starter.copy(id = "care-lead", inParty = true, partyId = app.pokeplan.core.pokemon.PartyIds.CARE)
+            gameStorage.save(GameStore.json.encodeToString(AppData.serializer(), d.copy(player = d.player.copy(pokemon = d.player.pokemon + lead, careLeadId = lead.id))))
+            game.reload()
+        }
     }
 
     private fun setup(started: Boolean = true): Setup {
@@ -97,6 +106,7 @@ class CareStoreTest {
     @Test
     fun aRoutinePaysOnceADayAndUndoNeverPaysTwice() {
         val s = setup()
+        s.giveCareLead()
         val water = s.care.addRoutine("Drink water")
         val before = s.points
         assertTrue(s.care.completeRoutine(water.id).any { it is Reward.Friendship })
@@ -411,7 +421,9 @@ class CareStoreTest {
     @Test
     fun careScreensCelebrateOnlyCareMomentsAndPetCaresBuddy() {
         val s = setup()
-        assertEquals(s.game.data.player.buddy?.id, s.game.careBuddy?.id, "without a Care lead, Care shows the Plan buddy")
+        assertEquals(null, s.game.careBuddy, "without a Care party, Care has no lead and does not borrow the Plan buddy")
+        s.giveCareLead()
+        assertEquals("care-lead", s.game.careBuddy?.id)
         assertEquals(null, s.game.buddyEvent(care = true))
         s.care.completeRoutine(s.care.addRoutine("Stretch").id)
         assertNotNull(s.game.buddyEvent(care = true))

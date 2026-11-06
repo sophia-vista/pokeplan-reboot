@@ -132,7 +132,7 @@ class FocusSessionTest {
         assertTrue(e.deepFocus)
         assertEquals(PokemonType.WATER, e.lure)
         assertEquals(Region.KANTO, e.region)
-        assertEquals("buddy", s.buddyIdAtStart)
+        assertEquals("buddy", s.leadIdAtStart)
         assertFailsWith<IllegalStateException> { start().toEffortEvent("x", 0, 0) }
     }
 
