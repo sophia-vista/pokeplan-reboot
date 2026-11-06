@@ -21,6 +21,7 @@ class DataStore private constructor(internal val driver: SqlDriver) {
     val pokemon = PokemonRepository(this)
     val economy = EconomyRepository(this)
     val live = LiveDocuments(this)
+    val reminders = ReminderRepository(this)
 
     /** Runs [body] in one transaction: it commits as a whole, or leaves nothing behind when it throws. */
     fun <T> transaction(body: () -> T): T = db.transactionWithResult { body() }

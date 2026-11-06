@@ -1,0 +1,11 @@
+-- Version 2 to 3: the shared reminder feature's held reminders (snoozes and repeats).
+CREATE TABLE reminder_hold (
+    id TEXT NOT NULL PRIMARY KEY,
+    module TEXT NOT NULL,
+    source_ref TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    occurrence TEXT NOT NULL,
+    at_millis INTEGER NOT NULL,
+    reason TEXT NOT NULL CHECK (reason IN ('snooze', 'repeat')),
+    created_at INTEGER NOT NULL
+);

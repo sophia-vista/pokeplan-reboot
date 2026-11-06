@@ -65,6 +65,7 @@
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
+        <receiver android:name=".reminders.SharedReminderReceiver" android:exported="false" />
         <receiver android:name=".reminders.ReminderReceiver" android:exported="false" />
         <receiver android:name=".reminders.NudgeReceiver" android:exported="false" />
         <receiver android:name=".reminders.TimerActionReceiver" android:exported="false" />

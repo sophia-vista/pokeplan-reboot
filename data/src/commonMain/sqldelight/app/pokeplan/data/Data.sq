@@ -1,4 +1,4 @@
--- Schema version 2 of the PokéLife database (docs/pokelife ARCHITECTURE/DATA_AND_MIGRATIONS.md sections 7 and 8).
+-- Schema version 3 of the PokéLife database (docs/pokelife ARCHITECTURE/DATA_AND_MIGRATIONS.md sections 7 and 8).
 -- It holds the shared Pokémon and economy side and a legacy sidecar for every module that has no tables yet.
 -- Every later change is a numbered migration (N.sqm) checked against the committed schema file (databases/N.db).
 
@@ -181,6 +181,20 @@ CREATE TABLE live_document (
     updated_at INTEGER NOT NULL
 );
 
+-- The shared reminder feature's own records (INTEGRATIONS_AND_PRIVACY.md section 9): only reminders held back from what the modules
+-- rebuild by themselves (a snooze, an unanswered-reminder repeat). Opaque references and times only, never a title or a note; the modules'
+-- own records stay canonical and every other reminder is rebuilt from them (section 9.8).
+CREATE TABLE reminder_hold (
+    id TEXT NOT NULL PRIMARY KEY,
+    module TEXT NOT NULL,
+    source_ref TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    occurrence TEXT NOT NULL,
+    at_millis INTEGER NOT NULL,
+    reason TEXT NOT NULL CHECK (reason IN ('snooze', 'repeat')),
+    created_at INTEGER NOT NULL
+);
+
 -- Owned Pokémon.
 insertPokemon:
 INSERT INTO owned_pokemon(
@@ -355,3 +369,16 @@ INSERT OR REPLACE INTO live_document(name, json, updated_at) VALUES (?, ?, ?);
 
 liveNames:
 SELECT name FROM live_document ORDER BY name;
+
+-- Held reminders.
+holdPut:
+INSERT OR REPLACE INTO reminder_hold(id, module, source_ref, kind, occurrence, at_millis, reason, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+holdAll:
+SELECT * FROM reminder_hold ORDER BY at_millis, id;
+
+holdDelete:
+DELETE FROM reminder_hold WHERE id = ?;
+
+holdDeleteBefore:
+DELETE FROM reminder_hold WHERE at_millis < ?;

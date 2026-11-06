@@ -76,6 +76,15 @@ object DeviceSelfCheck {
                 } finally { dir.deleteRecursively() }
                 "marker set, backup written and restored, replaced document kept aside"
             }
+            check("Reminder holds: put, replace, release") {
+                val r = s.reminders
+                r.hold(HeldReminder("PLAN|t|task|1", "PLAN", "t", "task", "1", 100, "snooze"), 1)
+                r.hold(HeldReminder("PLAN|t|task|1", "PLAN", "t", "task", "1", 200, "snooze"), 2)
+                check(r.all().map { it.atMillis } == listOf(200L)) { "snoozing twice did not replace" }
+                r.release("PLAN|t|task|1")
+                check(r.all().isEmpty()) { "release left a row" }
+                "one row per reminder, released cleanly"
+            }
             check("Reopen after close keeps committed rows") {
                 s.close(); store = null
                 val again = AndroidDatabase.open(context, NAME); store = again
