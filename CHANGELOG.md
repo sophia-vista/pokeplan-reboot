@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.129.0
+
+- **Your save now lives in a database on the phone (Android).** On the first start, `save.json` and `care.json` are copied into the app's database in one step, checked, and from then on the database is the only place the app saves to. Your old files are left exactly as they were and never written again, so they are a copy to go back to. Nothing changes on screen.
+- A backup of the save is written once a day (the newest three are kept). If the database file is ever damaged, the app moves it aside whole and restores the newest backup, or falls back to the untouched old files.
+- The widgets and reminders use the same database.
+- Debug builds: DB check also tests activation, backup and restore.
+
 ## 0.128.0
 
 - **Debug builds get a second icon, "DB check"**, that runs the database checks on a throwaway file (SQLite version, foreign keys, WAL mode, rollback, speed, backup copy, reopen) and shows PASS or FAIL for each line. It never touches your save. Release builds do not have it.
