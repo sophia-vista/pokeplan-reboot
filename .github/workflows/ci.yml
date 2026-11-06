@@ -3,8 +3,13 @@ name: CI
 # Pull requests only: a merge to main was already tested on its PR, and the Latest APK workflow still builds main. Actions
 # minutes are limited on this private repository, so main is not tested a second time, a PR that changes only text is not
 # tested at all, and every job below is one the PR needs (each job also costs at least a minute to start).
+# Owner's rule (6 November 2026): spend as few Actions minutes as possible. A PR runs these checks only when it carries the
+# `ci` label (or the `android` or `apk` label), or when someone starts the workflow by hand; `./gradlew jvmTest
+# compileKotlinWasmJs` run locally is the normal gate.
 on:
+  workflow_dispatch:
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
     # Docs, notes and the old app do not change what these checks look at. VERSION and CHANGELOG changes still run them when
     # they arrive with code; a PR that changes only .md files has nothing to test.
     paths-ignore:
@@ -22,6 +27,8 @@ concurrency:
 jobs:
   test:
     name: Tests and builds
+    # A skipped job costs no minutes.
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci') || contains(github.event.pull_request.labels.*.name, 'android') || contains(github.event.pull_request.labels.*.name, 'apk') }}
     runs-on: ubuntu-latest
     # A run that hangs must not eat the month's minutes: the whole job normally takes about ten.
     timeout-minutes: 30
