@@ -11,7 +11,7 @@ enum class Feature(val step: Int, val label: String) {
     POKEDEX(0, "Pokédex"), RARE_CANDY(0, "Rare Candy"), WEEKLY_REVIEW(0, "Weekly review"),
     EVOLUTION(1, "Evolution with Super Candy"), BAG(1, "The Bag"), GOALS(1, "Goals"), REGION_PICKER(1, "Choosing a hatching region"),
     MINI_QUESTS(1, "Daily mini-quests"),
-    HELD_ITEMS(2, "Held items"), PERKS(2, "Party perks"), GROWTH_SCREEN(2, "Growth trends"), COINS(2, "Coins"),
+    HELD_ITEMS(2, "Held items"), PERKS(2, "Party perks"), GROWTH_SCREEN(2, "Growth trends"), COINS(2, "Poké"),
     TRAINING_ITEMS(3, "Nature Mints, Bottle Caps, Ability Capsules and Tera Shards"), STATS_DETAIL(3, "Stats and the IV judge"),
     GUARDIANS(4, "Guardians"), LEGENDARY_QUESTS(4, "Legendary quests"),
     ;

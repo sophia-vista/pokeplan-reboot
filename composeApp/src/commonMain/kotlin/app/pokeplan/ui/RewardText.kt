@@ -20,7 +20,7 @@ fun Reward.describe(source: String = ""): String = when (this) {
         }
     }
     is Reward.Candies -> "$amount ${if (type == CandyType.SUPER) "Super" else "Rare"} ${if (amount == 1) "Candy" else "Candies"}"
-    is Reward.Coins -> "$amount coins"
+    is Reward.Coins -> "$amount Poké"
     is Reward.Poke -> "$amount Poké"
     is Reward.ItemDrop -> "${Items.name(itemId)}" + if (amount > 1) " x$amount" else ""
     is Reward.Evs -> "Training: +$points"

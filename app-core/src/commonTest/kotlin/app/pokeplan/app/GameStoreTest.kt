@@ -1032,6 +1032,52 @@ class GameStoreTest {
         assertFalse(s.setCareLead(s.data.player.buddyId!!), "a Pokémon in Plan's party cannot lead Care's")
         assertTrue(s.setCareLead(other))
     }
+
+    // --- One currency: Poké (docs/pokelife POKEMON_ECOSYSTEM.md, section 11.2) ------------------------------------------
+
+    @Test
+    fun anOldSaveMergesCoinsAndWorldPokeOneToOneOnceAndKeepsBothSources() {
+        val (s, _) = started()
+        val old = s.data.copy(
+            player = s.data.player.copy(coins = 120),
+            world = s.data.world.copy(poke = 35),
+            pokeMigration = null,
+        )
+        val storage = MemoryStorage(GameStore.json.encodeToString(AppData.serializer(), old))
+        val reopened = GameStore(storage, FakeClock(start), utc, Random(7))
+        assertEquals(155, reopened.data.player.coins)
+        assertEquals(155, reopened.data.world.poke, "World's field is only a working copy of the one balance")
+        val audit = assertNotNull(reopened.data.pokeMigration)
+        assertEquals(120, audit.legacyCoins)
+        assertEquals(35, audit.legacyWorldPoke)
+        assertEquals(app.pokeplan.core.reward.RewardRules.VERSION, audit.rulesVersion)
+        // Opening the merged save again adds nothing.
+        val again = GameStore(storage, FakeClock(start), utc, Random(7))
+        assertEquals(155, again.data.player.coins)
+        assertEquals(audit, again.data.pokeMigration)
+    }
+
+    @Test
+    fun worldSpendsAndEarnsFromTheSameBalanceAsPlan() {
+        val storage = MemoryStorage()
+        val (s, _) = store(storage)
+        s.start("Sophia", 25)
+        val base = s.data.player.coins
+        // Plan earned 5,000 (written as a widget would leave it, then picked up).
+        storage.save(GameStore.json.encodeToString(AppData.serializer(), s.data.copy(player = s.data.player.copy(coins = base + 5_000))))
+        s.reload()
+        assertEquals(base + 5_000, s.data.player.coins)
+        assertEquals(base + 5_000, s.data.world.poke, "World sees what Plan earned")
+        val candyBefore = s.data.player.inventory[app.pokeplan.core.pokemon.Items.RARE_CANDY]
+        assertTrue(s.worldBuyCandy(), "World's shop is paid from Plan's earnings")
+        assertTrue(s.data.player.coins < base + 5_000)
+        assertEquals(s.data.player.coins, s.data.world.poke)
+        assertTrue(s.data.player.inventory[app.pokeplan.core.pokemon.Items.RARE_CANDY] > candyBefore)
+        val afterShop = s.data.player.coins
+        assertEquals(1, s.buyRareCandies(1))
+        assertEquals(afterShop - app.pokeplan.core.pokemon.Shop.COINS_PER_RARE_CANDY, s.data.player.coins, "Plan's shop is paid from the same balance")
+        assertEquals(s.data.player.coins, s.data.world.poke)
+    }
 }
 
 class QuickAddTimeTest {

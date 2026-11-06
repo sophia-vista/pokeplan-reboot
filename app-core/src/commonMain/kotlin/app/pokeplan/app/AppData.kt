@@ -101,11 +101,20 @@ data class AppData(
     val eggTickets: EggTickets = EggTickets(),
     /** Which of this phone's calendars show on the day timeline (calendar ids differ per device, so this stays here). */
     val shownCalendars: Set<Long> = emptySet(),
+    /** Audit record of the one-time merge of Plan's coins and World's Poké into one Poké balance; null until it has run. */
+    val pokeMigration: PokeMigration? = null,
 ) {
     companion object {
         const val SCHEMA = 1
     }
 }
+
+/**
+ * How the two legacy balances became one (docs/pokelife POKEMON_ECOSYSTEM.md, section 11.2): `Poké = coins + World Poké`, 1:1.
+ * Both source values are kept so the conversion can be checked or undone by hand; it runs once and never adds a balance again.
+ */
+@Serializable
+data class PokeMigration(val legacyCoins: Int, val legacyWorldPoke: Int, val migratedAtMillis: Long, val rulesVersion: Int)
 
 /** Which colours the app uses: the phone's choice, or always light or dark. */
 @Serializable
