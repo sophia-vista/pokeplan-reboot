@@ -1,0 +1,337 @@
+-- Schema version 1 of the PokéLife database (docs/pokelife ARCHITECTURE/DATA_AND_MIGRATIONS.md sections 7 and 8).
+-- It holds the shared Pokémon and economy side and a legacy sidecar for every module that has no tables yet.
+-- Every later change is a numbered migration (N.sqm) checked against the committed schema file (databases/N.db).
+
+CREATE TABLE app_meta (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+-- One owned Pokémon (POKEMON_ECOSYSTEM.md section 4). The id is the legacy id, kept as it was.
+CREATE TABLE owned_pokemon (
+    id TEXT NOT NULL PRIMARY KEY,
+    species_id INTEGER NOT NULL CHECK (species_id > 0),
+    form_identifier TEXT NOT NULL,
+    nickname TEXT NOT NULL,
+    nature TEXT NOT NULL,
+    ability TEXT NOT NULL,
+    gender TEXT,
+    iv_hp INTEGER NOT NULL CHECK (iv_hp BETWEEN 0 AND 31),
+    iv_attack INTEGER NOT NULL CHECK (iv_attack BETWEEN 0 AND 31),
+    iv_defense INTEGER NOT NULL CHECK (iv_defense BETWEEN 0 AND 31),
+    iv_sp_attack INTEGER NOT NULL CHECK (iv_sp_attack BETWEEN 0 AND 31),
+    iv_sp_defense INTEGER NOT NULL CHECK (iv_sp_defense BETWEEN 0 AND 31),
+    iv_speed INTEGER NOT NULL CHECK (iv_speed BETWEEN 0 AND 31),
+    ev_hp INTEGER NOT NULL CHECK (ev_hp BETWEEN 0 AND 252),
+    ev_attack INTEGER NOT NULL CHECK (ev_attack BETWEEN 0 AND 252),
+    ev_defense INTEGER NOT NULL CHECK (ev_defense BETWEEN 0 AND 252),
+    ev_sp_attack INTEGER NOT NULL CHECK (ev_sp_attack BETWEEN 0 AND 252),
+    ev_sp_defense INTEGER NOT NULL CHECK (ev_sp_defense BETWEEN 0 AND 252),
+    ev_speed INTEGER NOT NULL CHECK (ev_speed BETWEEN 0 AND 252),
+    level INTEGER NOT NULL CHECK (level BETWEEN 1 AND 100),
+    candy_progress INTEGER NOT NULL CHECK (candy_progress >= 0),
+    total_candies INTEGER NOT NULL CHECK (total_candies >= 0),
+    friendship INTEGER NOT NULL CHECK (friendship BETWEEN 0 AND 255),
+    is_shiny INTEGER NOT NULL CHECK (is_shiny IN (0, 1)),
+    held_item TEXT,
+    tera_type TEXT,
+    cosmetic_form TEXT,
+    personality INTEGER NOT NULL,
+    caught_at_millis INTEGER NOT NULL,
+    -- Global favourite flag (POKEMON_ECOSYSTEM.md section 6.4).
+    is_favorite INTEGER NOT NULL DEFAULT 0 CHECK (is_favorite IN (0, 1)),
+    -- How it joined the collection (the legacy "origin"), null for Pokémon from before it was recorded.
+    origin_how TEXT,
+    origin_region TEXT,
+    -- Any field of the legacy record this version has no column for, kept as raw JSON, never dropped.
+    extra_json TEXT,
+    CHECK (ev_hp + ev_attack + ev_defense + ev_sp_attack + ev_sp_defense + ev_speed <= 510)
+);
+
+CREATE INDEX owned_pokemon_species ON owned_pokemon(species_id, form_identifier);
+
+-- A module's party: the lead is slot 1, then up to five members (POKEMON_ECOSYSTEM.md section 2.2.2).
+-- The same Pokémon may sit in several modules' parties, but only once in one party.
+CREATE TABLE module_party (
+    module_id TEXT NOT NULL,
+    slot INTEGER NOT NULL CHECK (slot BETWEEN 1 AND 6),
+    owned_id TEXT NOT NULL REFERENCES owned_pokemon(id) ON DELETE CASCADE,
+    PRIMARY KEY (module_id, slot),
+    UNIQUE (module_id, owned_id)
+);
+
+-- The one global buddy (a row only while one is chosen).
+CREATE TABLE buddy_selection (
+    id INTEGER NOT NULL PRIMARY KEY CHECK (id = 1),
+    owned_id TEXT NOT NULL REFERENCES owned_pokemon(id) ON DELETE CASCADE
+);
+
+-- Legendary and mythical Guardians, in slot order.
+CREATE TABLE guardian_slot (
+    slot INTEGER NOT NULL PRIMARY KEY CHECK (slot >= 1),
+    owned_id TEXT NOT NULL UNIQUE REFERENCES owned_pokemon(id) ON DELETE CASCADE
+);
+
+-- Species and forms ever seen, caught or owned as a shiny; they survive a transfer (POKEMON_ECOSYSTEM.md section 5).
+CREATE TABLE dex_history (
+    kind TEXT NOT NULL CHECK (kind IN ('caught_species', 'shiny_species', 'caught_form', 'shiny_form', 'seen_species')),
+    ref INTEGER NOT NULL,
+    PRIMARY KEY (kind, ref)
+);
+
+CREATE TABLE player_progress (
+    id INTEGER NOT NULL PRIMARY KEY CHECK (id = 1),
+    egg_meter INTEGER NOT NULL CHECK (egg_meter >= 0),
+    trainer_points INTEGER NOT NULL CHECK (trainer_points >= 0)
+);
+
+-- The one Bag: candies, berries, evolution items and every other stack.
+CREATE TABLE bag_stack (
+    item_id TEXT NOT NULL PRIMARY KEY,
+    quantity INTEGER NOT NULL CHECK (quantity >= 0)
+);
+
+-- The one currency, Poké.
+CREATE TABLE currency_balance (
+    currency TEXT NOT NULL PRIMARY KEY CHECK (currency = 'poke'),
+    amount INTEGER NOT NULL CHECK (amount >= 0)
+);
+
+-- A settled event. event_id is the idempotency key: <module>:<source record>:<kind>[:<occurrence>].
+CREATE TABLE reward_event (
+    event_id TEXT NOT NULL PRIMARY KEY,
+    source_module TEXT NOT NULL,
+    source_record_id TEXT NOT NULL,
+    event_kind TEXT NOT NULL,
+    policy_version TEXT NOT NULL,
+    settled_at INTEGER NOT NULL,
+    metadata_json TEXT
+);
+
+-- Append-only: an entry is never changed or removed; a reversal is a new entry that points at the original.
+CREATE TABLE reward_ledger_entry (
+    entry_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    event_id TEXT NOT NULL REFERENCES reward_event(event_id),
+    asset TEXT NOT NULL,
+    delta INTEGER NOT NULL CHECK (delta <> 0),
+    reverses_entry_id INTEGER REFERENCES reward_ledger_entry(entry_id),
+    UNIQUE (event_id, asset)
+);
+
+CREATE INDEX reward_ledger_asset ON reward_ledger_entry(asset);
+
+CREATE TRIGGER reward_ledger_no_update BEFORE UPDATE ON reward_ledger_entry
+BEGIN
+    SELECT RAISE(ABORT, 'the reward ledger is append-only');
+END;
+
+CREATE TRIGGER reward_ledger_no_delete BEFORE DELETE ON reward_ledger_entry
+BEGIN
+    SELECT RAISE(ABORT, 'the reward ledger is append-only');
+END;
+
+CREATE TABLE outbox_event (
+    outbox_id TEXT NOT NULL PRIMARY KEY,
+    event_kind TEXT NOT NULL,
+    contract_version INTEGER NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+);
+
+CREATE TABLE processed_event (
+    consumer TEXT NOT NULL,
+    outbox_id TEXT NOT NULL REFERENCES outbox_event(outbox_id),
+    processed_at INTEGER NOT NULL,
+    PRIMARY KEY (consumer, outbox_id)
+);
+
+-- One row per import or schema migration run.
+CREATE TABLE migration_history (
+    migration_id TEXT NOT NULL PRIMARY KEY,
+    kind TEXT NOT NULL CHECK (kind IN ('legacy_json_import')),
+    source_checksum TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('complete')),
+    completed_at INTEGER NOT NULL,
+    summary_json TEXT NOT NULL
+);
+
+CREATE TABLE import_warning (
+    warning_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    migration_id TEXT NOT NULL REFERENCES migration_history(migration_id),
+    code TEXT NOT NULL,
+    detail TEXT NOT NULL
+);
+
+-- Every legacy field that has no table yet (PLAN, CARE, WORLD, GEAR, settings), as raw JSON by its legacy path.
+-- Written only by the importer; a module moves its fields out when it gets its own tables.
+CREATE TABLE legacy_sidecar (
+    source TEXT NOT NULL CHECK (source IN ('save', 'care')),
+    path TEXT NOT NULL,
+    json TEXT NOT NULL,
+    PRIMARY KEY (source, path)
+);
+
+-- Owned Pokémon.
+insertPokemon:
+INSERT INTO owned_pokemon(
+    id, species_id, form_identifier, nickname, nature, ability, gender,
+    iv_hp, iv_attack, iv_defense, iv_sp_attack, iv_sp_defense, iv_speed,
+    ev_hp, ev_attack, ev_defense, ev_sp_attack, ev_sp_defense, ev_speed,
+    level, candy_progress, total_candies, friendship, is_shiny, held_item, tera_type, cosmetic_form,
+    personality, caught_at_millis, is_favorite, origin_how, origin_region, extra_json
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+pokemonById:
+SELECT * FROM owned_pokemon WHERE id = ?;
+
+allPokemon:
+SELECT * FROM owned_pokemon ORDER BY caught_at_millis, id;
+
+pokemonCount:
+SELECT count(*) FROM owned_pokemon;
+
+releasePokemon:
+DELETE FROM owned_pokemon WHERE id = ?;
+
+-- Parties, buddy and Guardians.
+insertPartySlot:
+INSERT INTO module_party(module_id, slot, owned_id) VALUES (?, ?, ?);
+
+clearParty:
+DELETE FROM module_party WHERE module_id = ?;
+
+partyOf:
+SELECT slot, owned_id FROM module_party WHERE module_id = ? ORDER BY slot;
+
+partySlotCount:
+SELECT count(*) FROM module_party;
+
+setBuddy:
+INSERT OR REPLACE INTO buddy_selection(id, owned_id) VALUES (1, ?);
+
+clearBuddy:
+DELETE FROM buddy_selection WHERE id = 1;
+
+buddy:
+SELECT owned_id FROM buddy_selection WHERE id = 1;
+
+insertGuardian:
+INSERT INTO guardian_slot(slot, owned_id) VALUES (?, ?);
+
+clearGuardians:
+DELETE FROM guardian_slot;
+
+guardians:
+SELECT slot, owned_id FROM guardian_slot ORDER BY slot;
+
+-- Dex history.
+addDex:
+INSERT OR IGNORE INTO dex_history(kind, ref) VALUES (?, ?);
+
+dexOf:
+SELECT ref FROM dex_history WHERE kind = ? ORDER BY ref;
+
+-- Progress.
+setProgress:
+INSERT OR REPLACE INTO player_progress(id, egg_meter, trainer_points) VALUES (1, ?, ?);
+
+progress:
+SELECT egg_meter, trainer_points FROM player_progress WHERE id = 1;
+
+-- Bag and Poké balances (changed only together with a ledger entry).
+ensureBalance:
+INSERT OR IGNORE INTO currency_balance(currency, amount) VALUES ('poke', 0);
+
+pokeBalance:
+SELECT amount FROM currency_balance WHERE currency = 'poke';
+
+addPoke:
+UPDATE currency_balance SET amount = amount + ? WHERE currency = 'poke';
+
+bagQuantity:
+SELECT quantity FROM bag_stack WHERE item_id = ?;
+
+-- No upsert: Android 8 (minSdk 26) ships SQLite 3.18.
+ensureStack:
+INSERT OR IGNORE INTO bag_stack(item_id, quantity) VALUES (?, 0);
+
+addToBag:
+UPDATE bag_stack SET quantity = quantity + ? WHERE item_id = ?;
+
+dropEmptyStacks:
+DELETE FROM bag_stack WHERE quantity = 0;
+
+bag:
+SELECT item_id, quantity FROM bag_stack ORDER BY item_id;
+
+-- Events and the ledger.
+eventById:
+SELECT * FROM reward_event WHERE event_id = ?;
+
+insertEvent:
+INSERT INTO reward_event(event_id, source_module, source_record_id, event_kind, policy_version, settled_at, metadata_json)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+insertLedgerEntry:
+INSERT INTO reward_ledger_entry(event_id, asset, delta, reverses_entry_id) VALUES (?, ?, ?, ?);
+
+lastInsertedRow:
+SELECT last_insert_rowid();
+
+ledgerOfEvent:
+SELECT * FROM reward_ledger_entry WHERE event_id = ? ORDER BY entry_id;
+
+ledgerReversalOf:
+SELECT entry_id FROM reward_ledger_entry WHERE reverses_entry_id = ?;
+
+ledgerTotals:
+SELECT asset, sum(delta) AS total FROM reward_ledger_entry GROUP BY asset ORDER BY asset;
+
+ledgerCount:
+SELECT count(*) FROM reward_ledger_entry;
+
+eventCount:
+SELECT count(*) FROM reward_event;
+
+-- Outbox.
+insertOutbox:
+INSERT INTO outbox_event(outbox_id, event_kind, contract_version, payload_json, created_at) VALUES (?, ?, ?, ?, ?);
+
+pendingOutbox:
+SELECT o.* FROM outbox_event o
+WHERE NOT EXISTS (SELECT 1 FROM processed_event p WHERE p.consumer = ? AND p.outbox_id = o.outbox_id)
+ORDER BY o.created_at, o.outbox_id;
+
+markProcessed:
+INSERT INTO processed_event(consumer, outbox_id, processed_at) VALUES (?, ?, ?);
+
+-- Meta, migrations, warnings and the sidecar.
+setMeta:
+INSERT OR REPLACE INTO app_meta(key, value) VALUES (?, ?);
+
+meta:
+SELECT value FROM app_meta WHERE key = ?;
+
+insertMigration:
+INSERT INTO migration_history(migration_id, kind, source_checksum, status, completed_at, summary_json) VALUES (?, ?, ?, 'complete', ?, ?);
+
+migrationById:
+SELECT * FROM migration_history WHERE migration_id = ?;
+
+migrations:
+SELECT * FROM migration_history ORDER BY completed_at, migration_id;
+
+insertWarning:
+INSERT INTO import_warning(migration_id, code, detail) VALUES (?, ?, ?);
+
+warningsOf:
+SELECT code, detail FROM import_warning WHERE migration_id = ? ORDER BY warning_id;
+
+insertSidecar:
+INSERT INTO legacy_sidecar(source, path, json) VALUES (?, ?, ?);
+
+sidecarOf:
+SELECT path, json FROM legacy_sidecar WHERE source = ? ORDER BY path;
+
+sidecarJson:
+SELECT json FROM legacy_sidecar WHERE source = ? AND path = ?;
