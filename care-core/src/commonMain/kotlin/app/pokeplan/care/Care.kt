@@ -114,12 +114,12 @@ data class CareData(
     val settings: CareSettings = CareSettings(),
     /** Seeds this device's visitors (with the day); made the first time they are offered. */
     val visitorSeed: Int = 0,
-    /** The day visitors were last offered, and who is visiting now (those being befriended stay, the rest are today's). */
+    /** The last day visitors arrived (the next arrivals count from it), and who is here: the first four by arrival are in the meadow, the rest wait in the queue. */
     val visitorsDay: LocalDate? = null,
     val visitors: List<Visitor> = emptyList(),
-    /** The last day a visit was finished. */
-    val befriendDay: LocalDate? = null,
-    /** The visit in progress, if one was started and not finished (it ends with the day). */
+    /** Visitors the player sent away, kept (with what they had warmed) so one can be asked back. */
+    val dismissed: List<Visitor> = emptyList(),
+    /** The visit in progress, if one was started and not finished; it stays until it is finished or left. */
     val visit: Visit? = null,
     /** Species of visitors the player has cared for, whether or not they became friends (the "met" album). */
     val met: Set<Int> = emptySet(),
