@@ -375,6 +375,71 @@ CREATE TABLE heal_state (
     json TEXT NOT NULL
 );
 
+-- MINT's own records (version 8, REP-014): the Mint save kept in tables from the start, one family per kind of private record (account, category,
+-- transaction, budget, bill, bill payment, reconciliation, review) so each can be read, exported or erased on its own. Same shape as HEAL's (key,
+-- position, day, and the record as JSON in `json`; every amount is an integer in minor units inside that JSON, never a floating-point number).
+-- `mint_state` holds the settings and any field a newer build adds. MINT never has a row in `live_document`: it is created in the tables.
+CREATE TABLE mint_account (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_category (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_transaction (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_budget (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_bill (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_bill_payment (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_reconciliation (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_review (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_state (
+    key TEXT NOT NULL PRIMARY KEY,
+    json TEXT NOT NULL
+);
+
 -- Owned Pokémon.
 insertPokemon:
 INSERT INTO owned_pokemon(

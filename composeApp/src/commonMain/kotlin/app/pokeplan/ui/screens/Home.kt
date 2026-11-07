@@ -61,6 +61,8 @@ import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.describe
 import app.pokeplan.ui.isWorldSource
+import app.pokeplan.ui.Acquisition
+import app.pokeplan.ui.acquisitionOfSource
 import app.pokeplan.ui.Place
 import app.pokeplan.ui.theme.ExpBar
 import app.pokeplan.ui.theme.ListRow
@@ -297,7 +299,7 @@ private fun RecentCard(model: AppModel, go: (Place) -> Unit) {
             onClick = owned?.let { p -> { model.openPokemonId = p.id; go(Place.COLLECTION) } },
             onClickLabel = owned?.let { "Open ${it.nickname}" },
         ) {
-            Text(if (hatched != null) "${hatched.nickname} ${if (isWorldSource(entry.source)) "joined you" else "hatched"}" else entry.source, style = MaterialTheme.typography.bodyLarge, maxLines = 2)
+            Text(if (hatched != null) "${hatched.nickname} ${if (isWorldSource(entry.source)) "joined you" else when (acquisitionOfSource(entry.source)) { Acquisition.ARRIVAL -> "arrived"; Acquisition.FIELD -> "was found"; Acquisition.LEDGER -> "was catalogued"; Acquisition.EGG -> "hatched" }}" else entry.source, style = MaterialTheme.typography.bodyLarge, maxLines = 2)
             val what = if (hatched != null) entry.source else entry.rewards.take(2).joinToString(", ") { it.describe() }
             Text(listOf(what, daysAgo(store.today, store.dayOf(entry.atMillis))).filter { it.isNotEmpty() }.joinToString(", "), style = MaterialTheme.typography.bodyMedium, maxLines = 2)
         }

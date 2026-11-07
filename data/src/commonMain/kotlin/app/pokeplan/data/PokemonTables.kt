@@ -71,7 +71,7 @@ class PokemonTables(private val store: DataStore) {
         for ((index, o) in owned.withIndex()) if (o.bool("inParty") == true) byParty.getOrPut(o.text("partyId") ?: "") { mutableListOf() } += ids[index]
         for ((party, members) in byParty) {
             if (party.isEmpty()) throw SaveNotRepresentableException("a Pokémon is in a party that has no id")
-            val chosen = when (party) { "plan" -> player.text("planLeadId"); "care" -> player.text("careLeadId"); "heal" -> player.text("healLeadId"); else -> null }
+            val chosen = when (party) { "plan" -> player.text("planLeadId"); "care" -> player.text("careLeadId"); "heal" -> player.text("healLeadId"); "mint" -> player.text("mintLeadId"); else -> null }
             val ordered = chosen?.takeIf { it in members }?.let { lead -> listOf(lead) + members.filter { it != lead } } ?: members
             ordered.forEachIndexed { i, id -> put(id, Place(KIND_PARTY, party, i + 1), "the $party party") }
         }

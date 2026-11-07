@@ -186,7 +186,7 @@ class HealTablesTest {
         val text = BackupBundle.encode(docs, DataStore.SCHEMA_VERSION, 7)
         val staged = BackupBundle.stage(text, DataStore.SCHEMA_VERSION)
         assertTrue(staged is BackupBundle.Staged.Ready && staged.documents.keys == setOf("save", "heal"))
-        assertEquals(7, DataStore.SCHEMA_VERSION) // Heal's tables made it 7 (0.136.0)
+        assertEquals(8, DataStore.SCHEMA_VERSION) // Heal made it 7 (0.136.0), Mint's tables 8 (0.140.0)
         val bad = BackupBundle.encode(mapOf("save" to "{}"), 7, 7).replace("\"save\"", "\"health\"")
         assertTrue(BackupBundle.stage(bad, 7) is BackupBundle.Staged.Refused)
     }

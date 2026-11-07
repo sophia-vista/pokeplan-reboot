@@ -116,6 +116,8 @@ data class AppData(
      * HEAL does with its records (edit, delete, restore). The newest [GameStore.HEAL_PAID_KEPT] are kept.
      */
     val healPaid: List<String> = emptyList(),
+    /** The ids of MINT events already paid (`MintEvent.id`, opaque, no figure in them), kept like [healPaid]. The newest [GameStore.MINT_PAID_KEPT] are kept. */
+    val mintPaid: List<String> = emptyList(),
 ) {
     companion object {
         const val SCHEMA = 1
@@ -139,6 +141,9 @@ object Tutorials {
 
     /** Heal: a 5-second walk that finds a Field Egg for Heal's party. */
     const val HEAL_WALK = "heal-walk"
+
+    /** Mint: a 5-second tally that finds a Ledger Egg for Mint's party. */
+    const val MINT_TALLY = "mint-tally"
 
     /** How long each demo runs, in seconds. */
     const val DEMO_SECONDS = 5
@@ -379,8 +384,9 @@ data class Origin(val how: How, val region: Region? = null, val visitor: Visitor
         STARTER("Your first partner"),
         FOCUS_EGG("Hatched from a Focus Egg"),
         TASK_EGG("Hatched from a Task Egg"),
-        CARE_EGG("Hatched from a Care Egg"),
+        CARE_EGG("Arrived through Care"),
         FIELD_EGG("Found by Field Research"),
+        LEDGER_EGG("Found by Ledger Research"),
         BEFRIENDED("Befriended on a Care visit"),
         QUEST("Earned on a quest"),
         WORLD("Found in the World"),

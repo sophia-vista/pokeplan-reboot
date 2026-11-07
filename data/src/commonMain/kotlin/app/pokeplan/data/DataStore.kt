@@ -23,6 +23,7 @@ class DataStore private constructor(internal val driver: SqlDriver) {
     val careTables = CareTables(this)
     val planTables = PlanTables(this)
     val healTables = HealTables(this)
+    val mintTables = MintTables(this)
     val pokemonTables = PokemonTables(this)
     val live = LiveDocuments(this)
     val reminders = ReminderRepository(this)

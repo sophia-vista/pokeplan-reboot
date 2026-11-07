@@ -47,6 +47,12 @@ import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.Stage
+import app.pokeplan.ui.SceneStage
+import app.pokeplan.ui.SpriteAction
+import app.pokeplan.ui.Acquisition
+import app.pokeplan.ui.acquisitionOf
+import app.pokeplan.app.BuddyScene
+import androidx.compose.foundation.layout.offset
 import app.pokeplan.ui.TypePlate
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
@@ -55,7 +61,8 @@ import kotlinx.coroutines.delay
 
 /** A moment that takes the whole screen for a few seconds, the way the games stop for it: an egg hatching, an evolution. */
 sealed interface Cutscene {
-    data class Hatch(val pokemon: OwnedPokemon, val fromTask: Boolean) : Cutscene
+    /** A new Pokémon arriving. [how] is where it came from, which picks the scene: Plan's egg hatches, Care's friend walks in, Heal's is found on a route, Mint's is catalogued. */
+    data class Hatch(val pokemon: OwnedPokemon, val fromTask: Boolean, val how: app.pokeplan.app.Origin.How? = null) : Cutscene
 
     data class Evolve(val before: OwnedPokemon, val after: OwnedPokemon) : Cutscene
 
@@ -68,8 +75,9 @@ private val FlashWhite = Color.White
 private val FlashGold = Color(0xFFFFE27A)
 
 /**
- * Plays [AppModel.cutscene] over the whole app, and starts the hatch of any egg nobody has seen hatch yet: a focus egg, a
- * Task Egg, or one paid for a task ticked on the widget. Each hatch plays once per run of the app.
+ * Plays [AppModel.cutscene] over the whole app, and starts the arrival of any new Pokémon nobody has seen arrive yet: a focus egg, a
+ * Task Egg, or one paid for a task ticked on the widget (an egg hatches), a Care friend, a Field Research find or a Ledger Research
+ * entry (each has a scene of its own). Each plays once per run of the app.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -82,7 +90,7 @@ fun CutsceneHost(model: AppModel) {
     LaunchedEffect(waiting?.pokemon?.id, idle) {
         if (idle && waiting != null) {
             model.playedHatches += waiting.pokemon.id
-            model.cutscene = Cutscene.Hatch(waiting.pokemon, waiting.fromTask)
+            model.cutscene = Cutscene.Hatch(waiting.pokemon, waiting.fromTask, model.data.origins[waiting.pokemon.id]?.how)
         }
     }
     // A new World rank or story chapter: one at a time, once, when nothing else is playing.
@@ -93,7 +101,7 @@ fun CutsceneHost(model: AppModel) {
     val close = { model.cutscene = null }
     BackHandler(enabled = true, onBack = close)
     when (scene) {
-        is Cutscene.Hatch -> HatchScene(model, scene, close)
+        is Cutscene.Hatch -> if (acquisitionOf(scene.how) == Acquisition.EGG) HatchScene(model, scene, close) else ArrivalScene(model, scene, acquisitionOf(scene.how), close)
         is Cutscene.Evolve -> EvolutionScene(model, scene, close)
         is Cutscene.World -> WorldMomentScene(model, scene.moment, close)
     }
@@ -133,7 +141,7 @@ private fun SceneText(text: String, detail: String?, done: Boolean, skip: () -> 
 }
 
 /**
- * An egg hatching, as in the games: "Oh?", the egg rocks three times, harder each time, a flash, and the Pokémon is there
+ * An egg hatching, as in the games (Plan's focus and task eggs and a visitor's gift): "Oh?", the egg rocks three times, harder each time, a flash, and the Pokémon is there
  * and calls out. A shiny flashes gold, twice. Reduce motion goes straight to the Pokémon; a tap skips ahead.
  */
 @Composable
@@ -180,7 +188,11 @@ private fun HatchScene(model: AppModel, scene: Cutscene.Hatch, close: () -> Unit
     }
 
     val name = p.nickname
-    val egg = if (scene.fromTask) "Task Egg" else "Egg"
+    val egg = when {
+        scene.fromTask -> "Task Egg"
+        scene.how == app.pokeplan.app.Origin.How.BEFRIENDED -> "Egg a visitor left"
+        else -> "Egg"
+    }
     SceneFrame({ hatched = true }, flash.value, if (p.isShiny) FlashGold else FlashWhite) {
         Stage("bw08", 260.dp) {
             if (!hatched) {
@@ -208,6 +220,96 @@ private fun HatchScene(model: AppModel, scene: Cutscene.Hatch, close: () -> Unit
             },
             detail = if (hatched) p.species.genus.takeIf { it.isNotEmpty() }?.let { "$name, the $it." } else null,
             done = hatched, skip = { hatched = true }, close = close,
+        )
+    }
+}
+
+/**
+ * A new Pokémon that did not come from an egg (owner, 8 November 2026), in its module's own scenery: **Care's** friend wanders in over the
+ * meadow and settles, **Heal's** is found running along the route, and **Mint's** is catalogued: a Star Piece glints in the cave, then the
+ * Pokémon rises from the floor. Reduce motion goes straight to the Pokémon; a tap skips ahead.
+ */
+@Composable
+private fun ArrivalScene(model: AppModel, scene: Cutscene.Hatch, kind: Acquisition, close: () -> Unit) {
+    val p = scene.pokemon
+    val still = model.data.settings.reduceMotion
+    var arrived by remember(p.id) { mutableStateOf(false) }
+    val travel = remember(p.id) { Animatable(0f) }
+    val flash = remember(p.id) { Animatable(0f) }
+    val glint = remember(p.id) { Animatable(0f) }
+    LaunchedEffect(p.id, arrived) {
+        if (arrived) return@LaunchedEffect
+        if (!still) {
+            when (kind) {
+                Acquisition.ARRIVAL -> { delay(500); travel.animateTo(1f, tween(1800)) }
+                Acquisition.FIELD -> { delay(400); travel.animateTo(1f, tween(900)) }
+                Acquisition.LEDGER -> {
+                    delay(300)
+                    repeat(3) { model.effect(Sfx.SELECT); glint.animateTo(1f, tween(260)); glint.animateTo(0.25f, tween(260)) }
+                    glint.animateTo(1f, tween(300))
+                    flash.animateTo(0.7f, tween(200))
+                    travel.snapTo(0f)
+                    flash.animateTo(0f, tween(250))
+                    travel.animateTo(1f, tween(900))
+                }
+                Acquisition.EGG -> {}
+            }
+        }
+        arrived = true
+    }
+    LaunchedEffect(p.id, arrived) {
+        if (!arrived) return@LaunchedEffect
+        travel.snapTo(1f)
+        glint.snapTo(0f)
+        model.cry(p.speciesId)
+        model.haptic()
+        if (still) return@LaunchedEffect
+        if (p.isShiny) {
+            flash.snapTo(0.6f)
+            flash.animateTo(0f, tween(700))
+        }
+    }
+
+    val name = p.nickname
+    val shiny = p.isShiny
+    val scenery = when (kind) { Acquisition.ARRIVAL -> BuddyScene.CARE; Acquisition.FIELD -> BuddyScene.HEAL; else -> BuddyScene.MINT }
+    SceneFrame({ arrived = true }, flash.value, if (shiny) FlashGold else FlashWhite) {
+        SceneStage(scenery, 260.dp) {
+            // The slot the Pokémon stands in; it enters from the left (Care), the right (Heal) or the floor (Mint).
+            val t = travel.value
+            val enter = when (kind) {
+                Acquisition.ARRIVAL -> Modifier.offset(x = (-(1f - t) * 260).dp)
+                Acquisition.FIELD -> Modifier.offset(x = ((1f - t) * 260).dp)
+                else -> Modifier.offset(y = ((1f - t) * 200).dp)
+            }
+            if (kind == Acquisition.LEDGER && !arrived) {
+                ItemIcon("star-piece", Modifier.align(Alignment.Center).graphicsLayer { alpha = 0.3f + 0.7f * glint.value; scaleX = 1f + 0.25f * glint.value; scaleY = 1f + 0.25f * glint.value }, size = 72.dp, description = null)
+            }
+            if (arrived || kind != Acquisition.LEDGER || t > 0f) {
+                val walking = !arrived && t < 1f && kind != Acquisition.LEDGER
+                AnimatedSprite(
+                    p.form.id, shiny, name, Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.XL).then(enter), size = 176.dp, animate = !still,
+                    action = if (walking) SpriteAction.WALK_SIDE else SpriteAction.IDLE, mirror = walking && kind == Acquisition.FIELD,
+                )
+            }
+            if (arrived) {
+                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.S), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    p.form.types.forEach { TypePlate(it, width = 84.dp) }
+                }
+            }
+        }
+        val prefix = if (shiny) "shiny " else ""
+        SceneText(
+            text = when {
+                !arrived -> when (kind) { Acquisition.ARRIVAL -> "Oh? Someone is coming over the meadow..."; Acquisition.FIELD -> "Oh? Something is running along the route..."; else -> "Oh? Ledger Research has turned something up..." }
+                else -> when (kind) {
+                    Acquisition.ARRIVAL -> "A ${prefix}new friend wandered over: $name!"
+                    Acquisition.FIELD -> "Field Research found a $prefix$name!"
+                    else -> "Ledger Research catalogued a $prefix$name!"
+                }
+            },
+            detail = if (arrived) p.species.genus.takeIf { it.isNotEmpty() }?.let { "$name, the $it." } else null,
+            done = arrived, skip = { arrived = true }, close = close,
         )
     }
 }

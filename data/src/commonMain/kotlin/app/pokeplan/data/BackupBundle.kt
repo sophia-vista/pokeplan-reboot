@@ -23,7 +23,7 @@ object BackupBundle {
     const val VERSION = 1
 
     /** The documents a bundle may carry; anything else is refused rather than written into the live store. */
-    val KNOWN = setOf(LiveDocuments.SAVE, LiveDocuments.CARE, LiveDocuments.HEAL)
+    val KNOWN = setOf(LiveDocuments.SAVE, LiveDocuments.CARE, LiveDocuments.HEAL, LiveDocuments.MINT)
 
     sealed interface Staged {
         /** A bundle that passed every check: [documents] are ready to swap in. */
