@@ -1,144 +1,145 @@
-tileset	palettes	chunks
-1	12	400
-2	12	400
-3	12	400
-4	12	400
-5	12	400
-6	12	400
-7	12	400
-8	12	400
-9	12	400
-10	12	400
-11	12	400
-12	12	400
-13	12	400
-14	12	400
-15	12	400
-16	12	400
-17	12	400
-18	12	400
-19	12	400
-20	12	400
-21	12	400
-22	12	400
-23	12	400
-24	12	400
-25	12	400
-26	12	400
-27	12	400
-28	12	400
-29	12	400
-30	12	400
-31	12	400
-32	12	400
-33	12	400
-34	12	400
-35	12	400
-36	12	400
-37	12	400
-38	12	400
-39	12	400
-40	12	400
-41	12	400
-42	12	400
-43	12	400
-44	12	400
-45	12	400
-46	12	400
-47	12	400
-48	12	400
-49	12	400
-50	12	400
-51	12	400
-52	12	400
-53	12	400
-54	12	400
-55	12	400
-56	12	400
-57	12	400
-58	12	400
-59	12	400
-60	12	400
-61	12	400
-62	12	400
-63	12	400
-64	12	400
-65	12	400
-66	12	400
-67	12	400
-68	12	400
-69	12	400
-70	12	400
-71	12	400
-72	12	400
-73	12	400
-74	12	400
-75	12	400
-76	12	400
-77	12	400
-78	12	400
-79	12	400
-80	12	400
-81	12	400
-82	12	400
-83	12	400
-84	12	400
-85	12	400
-86	12	400
-87	12	400
-88	12	400
-89	12	400
-90	12	400
-91	12	400
-92	12	400
-93	12	400
-94	12	400
-95	12	400
-96	12	400
-97	12	400
-98	12	400
-99	12	400
-100	12	400
-101	12	400
-102	12	400
-103	12	400
-104	12	400
-105	12	400
-106	12	400
-107	12	400
-108	12	400
-109	12	400
-110	12	400
-111	12	400
-112	12	400
-113	12	400
-114	12	400
-115	12	400
-116	12	400
-117	12	400
-118	12	400
-119	12	400
-120	12	400
-121	12	400
-122	12	400
-123	12	400
-124	12	400
-125	12	400
-126	12	400
-127	12	400
-128	12	400
-129	12	400
-130	12	400
-131	12	400
-132	12	400
-133	12	400
-134	12	400
-135	12	400
-136	12	400
-137	12	400
-138	12	400
-139	12	400
-140	12	400
-141	12	400
-142	12	400
-143	12	400
+tileset	palettes	chunks	dungeons
+1	12	400	Beach Cave; Destiny Tower; Zero Isle South
+2	12	400	Destiny Tower; Drenched Bluff; Zero Isle South
+3	12	400	Mt. Bristle; Zero Isle East
+4	12	400	Destiny Tower; Spring Cave; Waterfall Cave; Zero Isle South
+5	12	400	Apple Woods; Zero Isle West
+6	12	400	Craggy Coast; Destiny Tower; Zero Isle South
+7	12	400	Destiny Tower; Side Path; Upper Spring Cave; Zero Isle East; Zero Isle South
+8	12	400	Destiny Tower; Lower Spring Cave; Mt. Horn; Zero Isle South; Zero Isle West
+9	12	400	Rock Path
+10	12	400	Foggy Forest
+11	12	400	1st Station Pass; Forest Path; [M:D1]Dummy
+12	12	400	Spring Cave Depths; Steam Cave; Upper Steam Cave
+13	12	400	
+14	12	400	Amp Plains
+15	12	400	Far Amp Plains
+16	12	400	Destiny Tower; Zero Isle South
+17	12	400	Northern Desert; Rescue
+18	12	400	Northern Desert
+19	12	400	Quicksand Cave
+20	12	400	Quicksand Pit
+21	12	400	
+22	12	400	Crystal Cave
+23	12	400	Crystal Cave
+24	12	400	Crystal Crossing; Star Cave; Zero Isle West
+25	12	400	Destiny Tower; Zero Isle South
+26	12	400	Chasm Cave
+27	12	400	Chasm Cave
+28	12	400	Dark Hill
+29	12	400	Dark Hill
+30	12	400	Sealed Ruin
+31	12	400	Deep Sealed Ruin; Zero Isle West
+32	12	400	Deep Barren Valley; Sky Peak Summit Pass
+33	12	400	Dusk Forest
+34	12	400	Dusk Forest; Midnight Forest
+35	12	400	Deep Dusk Forest
+36	12	400	Deep Dusk Forest; Destiny Tower; Zero Isle South
+37	12	400	Treeshroud Forest
+38	12	400	Treeshroud Forest
+39	12	400	Brine Cave
+40	12	400	Lower Brine Cave
+41	12	400	
+42	12	400	Hidden Land
+43	12	400	Hidden Highland
+44	12	400	Southern Jungle
+45	12	400	Temporal Tower
+46	12	400	Temporal Spire
+47	12	400	
+48	12	400	Mystifying Forest
+49	12	400	Aegis Cave Pit; Regirock Chamber; Rock Aegis Cave
+50	12	400	Concealed Ruins
+51	12	400	Surrounded Sea; Treacherous Waters
+52	12	400	Deep Miracle Sea; Miracle Sea; Miracle Seabed
+53	12	400	Mt. Travail
+54	12	400	The Nightmare
+55	12	400	Spacial Rift
+56	12	400	Deep Spacial Rift; Spacial Rift; Spacial Rift Bottom
+57	12	400	Dark Crater
+58	12	400	Deep Dark Crater
+59	12	400	World Abyss; World Abyss Pit
+60	12	400	
+61	12	400	Deep Mystery Jungle; Mystery Jungle
+62	12	400	Mystery Jungle
+63	12	400	Zero Isle East
+64	12	400	Zero Isle East
+65	12	400	Tiny Meadow
+66	12	400	3rd Station Pass
+67	12	400	Destiny Tower
+68	12	400	
+69	12	400	
+70	12	400	
+71	12	400	
+72	12	400	
+73	12	400	
+74	12	400	
+75	12	400	Southeastern Islands
+76	12	400	Zero Isle Center
+77	12	400	
+78	12	400	[M:D1]Dummy
+79	12	400	
+80	12	400	Deep Star Cave; Star Cave; Star Cave Depths
+81	12	400	
+82	12	400	Crevice Cave; Crevice Cave Pit; Lower Crevice Cave
+83	12	400	Zero Isle Center
+84	12	400	Oblivion Forest
+85	12	400	Shimmer Desert; Shimmer Desert Pit
+86	12	400	
+87	12	400	
+88	12	400	Blizzard Island
+89	12	400	[M:D1]Dummy
+90	12	400	Lush Prairie
+91	12	400	Happy Outlook
+92	12	400	
+93	12	400	
+94	12	400	9th Station Pass
+95	12	400	
+96	12	400	Serenity River; [M:D1]Dummy
+97	12	400	Zero Isle Center
+98	12	400	
+99	12	400	Sky Stairway; Sky Stairway Apex
+100	12	400	
+101	12	400	
+102	12	400	Boulder Quarry; Labyrinth Cave
+103	12	400	Eastern Cave; Landslide Cave
+104	12	400	Fortune Ravine
+105	12	400	2nd Station Pass; Oran Forest
+106	12	400	6th Station Pass; Shimmer Hill
+107	12	400	
+108	12	400	Lost Wilderness
+109	12	400	Right Cave Path; Treacherous Waters; Zero Isle Center
+110	12	400	Inferno Cave
+111	12	400	Mt. Avalanche; Mt. Avalanche Peak
+112	12	400	Zero Isle Center
+113	12	400	Lake Afar; [M:D1]Dummy
+114	12	400	Zero Isle Center; [M:D1]Dummy
+115	12	400	Zero Isle Center
+116	12	400	Zero Isle Center
+117	12	400	Marine Resort; Zero Isle North
+118	12	400	Bottomless Sea; Bottomless Sea Depths
+119	12	400	Mt. Mistral
+120	12	400	
+121	12	400	
+122	12	400	Left Cave Path
+123	12	400	Giant Volcano; Giant Volcano Peak
+124	12	400	Zero Isle North
+125	12	400	World Abyss
+126	12	400	Fortune Ravine Depths; Ice Aegis Cave; Regice Chamber; Zero Isle North
+127	12	400	Registeel Chamber; Steel Aegis Cave; Zero Isle North
+128	12	400	Murky Forest
+129	12	400	Deep Boulder Quarry
+130	12	400	Limestone Cavern
+131	12	400	Deep Limestone Cavern
+132	12	400	Barren Valley
+133	12	400	Dark Wasteland
+134	12	400	Armaldo's Shelter; Hot Spring; Luminous Spring; Shaymin Village; Temporal Tower
+135	12	400	Hot Spring; Temporal Spire
+136	12	400	Spacial Cliffs
+137	12	400	Dark Ice Mountain
+138	12	400	Dark Ice Mountain; Dark Ice Mountain Peak
+139	12	400	Icicle Forest
+140	12	400	Vast Ice Mountain
+141	12	400	Vast Ice Mountain Peak
+142	12	400	4th Station Pass; 5th Station Clearing; 5th Station Pass
+143	12	400	7th Station Pass; 8th Station Pass
+144	12	400	

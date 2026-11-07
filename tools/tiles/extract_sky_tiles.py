@@ -23,7 +23,8 @@ from pathlib import Path
 import ndspy.rom
 from PIL import Image
 from skytemple_files.common.types.file_types import FileType
-from skytemple_files.common.util import get_ppmdu_config_for_rom
+from skytemple_files.common.util import get_binary_from_rom, get_ppmdu_config_for_rom
+from skytemple_files.hardcoded.dungeons import HardcodedDungeons
 from skytemple_files.graphics.dma.protocol import DmaType
 from skytemple_files.graphics.dma.util import get_tile_neighbors
 
@@ -41,10 +42,11 @@ def main():
     if hashlib.sha1(data).hexdigest() != ROM_SHA1:
         sys.exit("Not the Explorers of Sky (USA) ROM (SHA-1 mismatch).")
     rom = ndspy.rom.NintendoDSRom(data)
-    pack = FileType.DUNGEON_BIN.deserialize(rom.getFileByName("DUNGEON/dungeon.bin"), get_ppmdu_config_for_rom(rom))
+    cfg = get_ppmdu_config_for_rom(rom)
+    pack = FileType.DUNGEON_BIN.deserialize(rom.getFileByName("DUNGEON/dungeon.bin"), cfg)
     OUT.mkdir(parents=True, exist_ok=True)
-    rows, seen = [], {}
-    for n in range(199):
+    rows, seen, alias = [], {}, {}
+    for n in range(1, 199):
         try:
             dma = pack.get(f"dungeon{n}.dma")
             dpc, dpci, dpl = pack.get(f"dungeon{n}.dpc"), pack.get(f"dungeon{n}.dpci"), pack.get(f"dungeon{n}.dpl")
@@ -68,6 +70,7 @@ def main():
             atlas.paste(chunk(idx), (v * TILE, 3 * TILE))
         digest = hashlib.sha1(atlas.tobytes()).hexdigest()
         if digest in seen:  # the game ships many placeholder copies of one tileset; keep the first
+            alias[n] = seen[digest]
             print("tileset", n, "is the same as", seen[digest])
             (OUT / f"ex-{n:03d}.png").unlink(missing_ok=True)
             continue
@@ -82,10 +85,22 @@ def main():
                 sheet.paste(chunk(i), (i % cols * TILE, i // cols * TILE))
             sheet.save(Path(args.sheets) / f"ex-{n:03d}-chunks.png")
         print("tileset", n, flush=True)
+    # Which dungeons use each tileset: the game's dungeon list (arm9) gives each dungeon's floors in mappa_s.bin,
+    # and each floor layout names its tileset (ids of 170 and up are the pit and boss floors, which have none here).
+    uses = {}
+    mappa = FileType.MAPPA_BIN.deserialize(rom.getFileByName("BALANCE/mappa_s.bin"))
+    names = {d.id: d.name for d in cfg.dungeon_data.dungeons}
+    for did, d in enumerate(HardcodedDungeons.get_dungeon_list(get_binary_from_rom(rom, cfg.bin_sections.arm9), cfg)):
+        if d.mappa_index >= len(mappa.floor_lists) or did == 0:
+            continue
+        for floor in mappa.floor_lists[d.mappa_index][d.start_after:d.start_after + d.number_floors]:
+            ts = alias.get(floor.layout.tileset_id, floor.layout.tileset_id)
+            if ts < 170 and did in names:
+                uses.setdefault(ts, set()).add(names[did])
     with open(OUT / "ex-tilesets.tsv", "w", encoding="utf-8") as f:
-        f.write("tileset\tpalettes\tchunks\n")
+        f.write("tileset\tpalettes\tchunks\tdungeons\n")
         for r in rows:
-            f.write("\t".join(map(str, r)) + "\n")
+            f.write("\t".join(map(str, r)) + "\t" + "; ".join(sorted(uses.get(r[0], []))) + "\n")
     print(len(rows), "tilesets")
 
 

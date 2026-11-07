@@ -1,0 +1,53 @@
+file	kind	seconds	pmd_sky_music_id
+se_sys-00	se	0.02	
+se_sys-01	se	0.07	
+se_sys-02	se	0.35	
+se_sys-03	se	0.08	
+se_sys-04	se	0.04	
+se_sys-05	se	0.25	
+se_sys-06	se	0.21	
+se_sys-07	se	0.58	
+se_sys-08	se	1.06	
+se_sys-09	se	1.05	
+se_sys-10	se	0.09	
+me0000	me	1.86	
+me0001	me	2.92	
+me0002	me	2.25	
+me0003	me	2.33	
+me0004	me	1.45	
+me0005	me	2.30	
+me0006	me	1.86	
+me0007	me	1.07	
+me0008	me	2.70	
+me0009	me	1.63	
+me0010	me	4.60	
+me0011	me	7.71	
+me0012	me	2.72	
+me0013	me	4.92	
+jingle-mission-success	bgm-short	1.83	MUSIC_MISSION_SUCCESS (bgm0019)
+jingle-good-sentry-duty	bgm-short	5.83	MUSIC_GOOD_SENTRY_DUTY (bgm0065)
+jingle-decent-sentry-duty	bgm-short	4.08	MUSIC_DECENT_SENTRY_DUTY (bgm0066)
+jingle-failed-sentry-duty	bgm-short	1.75	MUSIC_FAILED_SENTRY_DUTY (bgm0067)
+jingle-on-the-beach-at-dusk	bgm-short	3.81	MUSIC_ON_THE_BEACH_AT_DUSK (bgm0068)
+jingle-rumbling-louder-sfx	bgm-short	3.68	MUSIC_RUMBLING_LOUDER_SFX (bgm0103)
+jingle-rumbling-loudest-sfx	bgm-short	2.07	MUSIC_RUMBLING_LOUDEST_SFX (bgm0104)
+jingle-running-hot-water-sfx	bgm-short	2.42	MUSIC_RUNNING_HOT_WATER_SFX (bgm0105)
+jingle-temporal-pinnacle-sfx	bgm-short	3.10	MUSIC_TEMPORAL_PINNACLE_SFX (bgm0106)
+jingle-single-tone-ringing-sfx	bgm-short	1.53	MUSIC_SINGLE_TONE_RINGING_SFX (bgm0110)
+jingle-electricity-sfx-1	bgm-short	3.03	MUSIC_ELECTRICITY_SFX_1 (bgm0111)
+jingle-electricity-sfx-2	bgm-short	5.28	MUSIC_ELECTRICITY_SFX_2 (bgm0112)
+jingle-electricity-sfx-3	bgm-short	2.42	MUSIC_ELECTRICITY_SFX_3 (bgm0113)
+jingle-fire-crackling-sfx-1	bgm-short	8.21	MUSIC_FIRE_CRACKLING_SFX_1 (bgm0114)
+jingle-rainbow-stoneship-sfx	bgm-short	3.41	MUSIC_RAINBOW_STONESHIP_SFX (bgm0117)
+jingle-rainbow-stoneship-preparing-sfx	bgm-short	2.40	MUSIC_RAINBOW_STONESHIP_PREPARING_SFX (bgm0118)
+jingle-humming-sfx	bgm-short	3.20	MUSIC_HUMMING_SFX (bgm0119)
+jingle-have-to-get-home	bgm-short	2.42	MUSIC_HAVE_TO_GET_HOME (bgm0120)
+jingle-eating-sfx	bgm-short	8.57	MUSIC_EATING_SFX (bgm0125)
+jingle-ominous-string-note-sfx	bgm-short	5.44	MUSIC_OMINOUS_STRING_NOTE_SFX (bgm0126)
+jingle-flood-sfx	bgm-short	1.12	MUSIC_FLOOD_SFX (bgm0127)
+jingle-pelipper-island	bgm-short	5.42	MUSIC_PELIPPER_ISLAND (bgm0128)
+jingle-here-comes-team-charm	bgm-short	7.78	MUSIC_HERE_COMES_TEAM_CHARM (bgm0166)
+jingle-wind-sfx-2	bgm-short	5.23	MUSIC_WIND_SFX_2 (bgm0189)
+jingle-waterfall-cave-vision-sfx	bgm-short	7.06	MUSIC_WATERFALL_CAVE_VISION_SFX (bgm0192)
+jingle-wind-sfx-3	bgm-short	6.15	MUSIC_WIND_SFX_3 (bgm0193)
+jingle-team-charm-jingle	bgm-short	1.30	MUSIC_TEAM_CHARM_JINGLE (bgm0200)

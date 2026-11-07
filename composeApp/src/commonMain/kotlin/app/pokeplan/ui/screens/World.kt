@@ -422,7 +422,7 @@ private fun WorldMissionsView(model: AppModel) {
                 val needed = m.give?.let { it to m.giveCount }
                 val haveIt = needed == null || model.data.player.inventory.has(needed.first, needed.second)
                 if (p.done && !haveIt) Text("Needs ${needed!!.second} x ${Items.name(needed.first)} in your Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
-                if (p.done) PixelButton("Claim", { store.worldClaimMission(p.id) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = haveIt, compact = true)
+                if (p.done) PixelButton("Claim", { if (store.worldClaimMission(p.id)) model.effect(Sfx.MISSION_SUCCESS) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = haveIt, compact = true)
                 else PixelButton("Give up", { store.worldAbandonMission(p.id) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
         }
@@ -543,7 +543,7 @@ private fun WorldBaseView(model: AppModel) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text("${f.label}, level $level of ${Facility.MAX_LEVEL}", style = MaterialTheme.typography.titleSmall)
                 Text("${f.blurb} ${f.bonus}.", style = MaterialTheme.typography.bodyMedium)
-                if (level < Facility.MAX_LEVEL) PixelButton("Build level ${level + 1}: ${f.cost(level)} Poké", { store.worldUpgrade(f) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = world.poke >= f.cost(level), compact = true)
+                if (level < Facility.MAX_LEVEL) PixelButton("Build level ${level + 1}: ${f.cost(level)} Poké", { if (store.worldUpgrade(f)) model.effect(Sfx.UNLOCK) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = world.poke >= f.cost(level), compact = true)
             }
         }
     }
@@ -560,7 +560,7 @@ private fun WorldBaseView(model: AppModel) {
                     Text(buildString { append("${step.poke} Poké"); step.itemId?.let { append(", ${Items.name(it)} x${step.count}") } }, style = MaterialTheme.typography.bodyMedium)
                 }
                 if (claimed) Text("Done", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
-                else PixelButton("Claim", { store.worldClaimResearch(step.species) }, color = Module.WORLD.look.accent, enabled = reached, compact = true)
+                else PixelButton("Claim", { if (store.worldClaimResearch(step.species)) model.effect(Sfx.ITEM_GET) }, color = Module.WORLD.look.accent, enabled = reached, compact = true)
             }
         }
     }
@@ -580,7 +580,7 @@ private fun WorldBaseView(model: AppModel) {
             Text("${app.pokeplan.world.Cafe.BERRIES} berries from your Bag make a brew for ${app.pokeplan.world.Cafe.HOURS} hours: 30% more Exploration XP, 5% more treasure chance and 1% more find chance on every floor.", style = MaterialTheme.typography.bodyMedium)
             if (brewing) Text("A brew is working for ${(world.brewUntil - clock) / 60_000} more minutes.", style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
             var cafeMessage by remember { mutableStateOf("") }
-            PixelButton("Brew", { cafeMessage = if (brewing) "A brew is still working." else if (store.worldBrew()) { steam++; "Brewed." } else "You need ${app.pokeplan.world.Cafe.BERRIES} berries in your Bag." }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+            PixelButton("Brew", { cafeMessage = if (brewing) "A brew is still working." else if (store.worldBrew()) { steam++; model.effect(Sfx.EATING); "Brewed." } else "You need ${app.pokeplan.world.Cafe.BERRIES} berries in your Bag." }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
             if (cafeMessage.isNotEmpty()) Text(cafeMessage, style = MaterialTheme.typography.bodyMedium)
         }
     }
@@ -592,7 +592,7 @@ private fun WorldBaseView(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Rare Candy", style = MaterialTheme.typography.titleSmall)
             Text("${world.shopCandies} bought so far. Each costs a little more.", style = MaterialTheme.typography.bodyMedium)
-            PixelButton("Buy one: ${world.candyPrice} Poké", { store.worldBuyCandy() }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = world.poke >= world.candyPrice, compact = true)
+            PixelButton("Buy one: ${world.candyPrice} Poké", { if (store.worldBuyCandy()) model.effect(Sfx.CANDY) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = world.poke >= world.candyPrice, compact = true)
         }
     }
         }
@@ -614,7 +614,7 @@ private fun WorldBaseView(model: AppModel) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 app.pokeplan.world.SwapShop.flavors.forEach { f -> PixelButton(f, { swapTo = f }, color = if (swapTo == f) Module.WORLD.look.accent else Pixel.InkSoft, compact = true) }
             }
-            PixelIconButton("repeat", "Swap", { swapMessage = if (store.worldSwap(swapFrom, swapTo)) "Swapped." else "Pick two flavours, and have ${app.pokeplan.world.SwapShop.GIVE} to give." }, Module.WORLD.look.accent)
+            PixelIconButton("repeat", "Swap", { swapMessage = if (store.worldSwap(swapFrom, swapTo)) { model.effect(Sfx.CONFIRM); "Swapped." } else "Pick two flavours, and have ${app.pokeplan.world.SwapShop.GIVE} to give." }, Module.WORLD.look.accent)
             if (swapMessage.isNotEmpty()) Text(swapMessage, style = MaterialTheme.typography.bodyMedium)
         }
     }
@@ -631,7 +631,7 @@ private fun WorldBaseView(model: AppModel) {
             }
             Text("${app.pokeplan.world.Dojo.COST} Poké buys ${app.pokeplan.world.Dojo.SKILL_XP} skill XP in a skill you choose.", style = MaterialTheme.typography.bodyMedium)
             WorldSkill.entries.forEach { skill ->
-                PixelButton("Train ${skill.label}", { if (store.worldTrain(skill)) hit++ }, Modifier.fillMaxWidth(), Pixel.InkSoft, enabled = world.poke >= app.pokeplan.world.Dojo.COST && world.skillLevel(skill) < WorldSkill.MAX_LEVEL, compact = true)
+                PixelButton("Train ${skill.label}", { if (store.worldTrain(skill)) { hit++; model.effect(Sfx.DAMAGE) } }, Modifier.fillMaxWidth(), Pixel.InkSoft, enabled = world.poke >= app.pokeplan.world.Dojo.COST && world.skillLevel(skill) < WorldSkill.MAX_LEVEL, compact = true)
             }
         }
     }
