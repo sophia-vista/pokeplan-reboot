@@ -917,11 +917,11 @@ class GameStoreTest {
         val storage = MemoryStorage(GameStore.json.encodeToString(AppData.serializer(), old))
         val reopened = GameStore(storage, FakeClock(start), utc, Random(7))
         val player = reopened.data.player
-        assertEquals(starter, player.planLeadId)
         assertEquals(GameStore.ROLES_VERSION, player.rolesVersion)
-        // ...and then the one-place rule: it stays where it works (Plan's party), and the buddy is empty with no one else to take it.
-        assertEquals(Place.Party(PartyIds.PLAN), reopened.placeOf(starter))
-        assertNull(player.buddyId)
+        // ...and then the one-place rule: the starter stays the buddy, and Plan's party, which it led, is empty.
+        assertEquals(Place.Buddy, reopened.placeOf(starter))
+        assertEquals(starter, player.buddyId)
+        assertTrue(player.party.isEmpty())
         assertEquals(Places.VERSION, reopened.data.placesVersion)
     }
 

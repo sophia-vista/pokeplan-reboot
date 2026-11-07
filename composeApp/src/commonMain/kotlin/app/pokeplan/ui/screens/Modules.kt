@@ -144,6 +144,7 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
         ) {
             PlanBuddyStage(model) { data.player.buddyId?.let(openPokemon) }
             RewardBox(model)
+            TutorialCard(model, app.pokeplan.app.Tutorials.PLAN_FOCUS)
             PlanPartyPanel(model, openPokemon)
             SectionLabel("Today", icon = PlanSection.PLANNER.icon)
             if (open.isEmpty()) {

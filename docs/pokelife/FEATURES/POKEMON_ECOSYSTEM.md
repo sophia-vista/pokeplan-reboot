@@ -60,7 +60,7 @@ Places reference canonical owned IDs and never copy a Pokémon. **One Pokémon, 
 
 #### 2.2.3 Resolving a save with a Pokémon in two places
 
-Done once, deterministically and without removing any Pokémon, by this priority (the function a place performs wins over decoration): Guardian slot, then WORLD team, then module party, then GEAR helper, then buddy. A Pokémon that holds several places keeps the highest and leaves the others. If the buddy is lost this way the buddy becomes the player's highest-level Pokémon that is in the PC (ties: friendliest, then id), so the app always has a face; with none in the PC the buddy stays empty until the player picks one. The resolution is recorded with the save (a version, so it runs once) and never pays or costs anything.
+Done once, deterministically and without removing any Pokémon, by this priority: Guardian slot, then WORLD team, then **buddy** (owner, 7 November 2026: the starter stays the buddy), then module party, then GEAR helper. A Pokémon that holds several places keeps the highest and leaves the others. So a save whose buddy was also Plan's lead keeps the buddy and Plan's party loses it (an empty party is allowed; Plan's perks then come from whoever joins). If the buddy is lost this way (to a Guardian slot or a team) the buddy becomes the player's highest-level Pokémon that is in the PC (ties: friendliest, then id), so the app always has a face; with none in the PC the buddy stays empty until the player picks one. The resolution is recorded with the save (a version, so it runs once) and never pays or costs anything.
 
 #### 2.2.1 Module party bonuses
 
@@ -382,6 +382,20 @@ Each module specification defines its own exact eligibility, pacing, caps and pr
 | WORLD | Exploration Finds, encounters, expeditions, story/Guardian recruitment | Find record and/or canonical owned instance | WORLD owns adventure progress and Exploration Rank |
 
 ### 10.2 Module-specific acquisition rules
+
+#### 10.2.1 First-run module tutorials *(owner, 7 November 2026)*
+
+The starter is the buddy and starts in no party, so each module that has a Pokémon acquisition method teaches that method once, in the module, with a short demo that **gives one Pokémon through that method** and puts it in the module's own party:
+
+| Module | Tutorial | What it gives |
+|---|---|---|
+| PLAN | A 5-second focus demo (Planner → Focus): the ring fills, then an egg hatches | A Common egg of the open region, into Plan's party, leading it |
+| CARE | A 5-second breath (Care): the breathing circle runs once, then a Care Egg hatches | A Common egg of the Care Region, into Care's party, leading it |
+| WORLD | Its authored opening (`MODULES/WORLD.md`) | Unchanged |
+| GEAR | None: GEAR has no acquisition (`MODULES/GEAR.md` section 6) | Nothing |
+| HEAL, MINT, HOME, LINK | Each module's own first-run demo when it is built | Through its acquisition method |
+
+Rules: it is offered on the module's first screen until done and is never required (every module works without it); it is done once per save (`AppData.tutorials`), so replaying or reloading cannot pay twice; it counts as no focus session, no calm break and no history (no streak, caps, meter, friendship or trainer points); the first of its species pays the usual new-species candies; a player who has already done the real thing (a finished focus session, a calm break) never sees it and is given nothing; and it needs no permission. A new module adds its own row here.
 
 The ecosystem must preserve the approved module mechanics; it does not redefine them:
 

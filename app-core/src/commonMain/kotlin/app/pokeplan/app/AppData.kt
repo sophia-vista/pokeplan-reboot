@@ -109,6 +109,8 @@ data class AppData(
     val pokeMigration: PokeMigration? = null,
     /** 1 once a Pokémon in two places has been resolved to one ([Places.resolve], owner decision 7 November 2026); 0 for an older save. */
     val placesVersion: Int = 0,
+    /** The module tutorials already done ([Tutorials]); each pays once per save. */
+    val tutorials: Set<String> = emptySet(),
 ) {
     companion object {
         const val SCHEMA = 1
@@ -121,6 +123,18 @@ data class AppData(
  */
 @Serializable
 data class PokeMigration(val legacyCoins: Int, val legacyWorldPoke: Int, val migratedAtMillis: Long, val rulesVersion: Int)
+
+/** The first-run module tutorials (docs/pokelife `FEATURES/POKEMON_ECOSYSTEM.md` section 10.2.1): each gives one Pokémon through its module's method, once. */
+object Tutorials {
+    /** Planner: a 5-second focus demo that hatches an egg into Plan's party. */
+    const val PLAN_FOCUS = "plan-focus"
+
+    /** Care: a 5-second breath that hatches a Care Egg into Care's party. */
+    const val CARE_BREATH = "care-breath"
+
+    /** How long each demo runs, in seconds. */
+    const val DEMO_SECONDS = 5
+}
 
 /** Which colours the app uses: the phone's choice, or always light or dark. */
 @Serializable
