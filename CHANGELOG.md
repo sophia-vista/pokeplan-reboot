@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.138.0
+
+From phone testing of 0.137.0.
+
+- **Plan's card on Home shows Plan's own lead** (the first of its party), not the buddy; with an empty party it says "No lead yet". The buddy stays on Home's stage.
+- **Back is a pixel chevron and the label in the dialogue font**, on one centre line; the old "‹ Back" text fell back to another font and sat high in its key. `TextCentreTest` checks it.
+- **Pokégear is called Gear** in the Modules menu, its header, the launcher and its messages.
+
 ## 0.137.0
 
 Design pass, from the owner's phone testing: consistency, pixel parts and fewer words.

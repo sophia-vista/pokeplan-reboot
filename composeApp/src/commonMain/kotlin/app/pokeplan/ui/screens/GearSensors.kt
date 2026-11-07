@@ -48,7 +48,7 @@ private fun needs(model: AppModel, vararg caps: Capability): Capability? = caps.
 internal fun CompassTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.sensors
     val lack = needs(model, Capability.ACCELEROMETER, Capability.MAGNETOMETER)
-    if (feed == null || lack != null) return Missing("The compass", if (feed == null) "This device has no motion sensors for Pokégear to read (the desktop and web apps have none)." else "This phone has no ${lack?.label?.lowercase()}.")
+    if (feed == null || lack != null) return Missing("The compass", if (feed == null) "This device has no motion sensors for Gear to read (the desktop and web apps have none)." else "This phone has no ${lack?.label?.lowercase()}.")
     var heading by remember { mutableStateOf<Float?>(null) }
     DisposableEffect(feed) {
         var smooth: Float? = null
@@ -84,7 +84,7 @@ internal fun CompassTool(model: AppModel, onUse: () -> Unit) {
 @Composable
 internal fun LevelTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.sensors
-    if (feed == null || !model.capabilities.status(Capability.ACCELEROMETER).available) return Missing("The level", "This device has no accelerometer for Pokégear to read.")
+    if (feed == null || !model.capabilities.status(Capability.ACCELEROMETER).available) return Missing("The level", "This device has no accelerometer for Gear to read.")
     var tilt by remember { mutableStateOf<SensorMath.Tilt?>(null) }
     var zero by remember { mutableStateOf(SensorMath.Tilt(0f, 0f)) }
     DisposableEffect(feed) {
@@ -147,7 +147,7 @@ internal fun BarometerTool(model: AppModel, onUse: () -> Unit) {
     }
 }
 
-/** Device check: what this phone can do for the Pokégear, from what it really reports, and what each needs. Nothing starts or is asked for here. */
+/** Device check: what this phone can do for Gear, from what it really reports, and what each needs. Nothing starts or is asked for here. */
 @Composable
 internal fun DeviceTool(model: AppModel) {
     TextBox {

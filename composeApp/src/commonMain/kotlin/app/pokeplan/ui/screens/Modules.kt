@@ -73,7 +73,7 @@ private fun ModulesMenu(model: AppModel) {
             // yet is a quiet placeholder in its own colour, so the list shows where it will sit.
             MenuGrid(
                 listOfNotNull(
-                    MenuEntry("GEAR", "explorer-kit", "Pokégear", tint = ModuleAccent.GEAR.accent, wide = true),
+                    MenuEntry("GEAR", "explorer-kit", "Gear", tint = ModuleAccent.GEAR.accent, wide = true),
                     MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = ModuleAccent.PLAN.accent),
                     MenuEntry("MINT", "amulet-coin", "Mint", tint = ModuleAccent.MINT.accent, pending = true),
                     MenuEntry("HOME", "chipped-pot", "Home", tint = ModuleAccent.HOME.accent, pending = true),

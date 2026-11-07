@@ -192,13 +192,14 @@ private fun leadLine(p: OwnedPokemon) = "Lead: ${p.nickname}, Lv. ${p.level}"
 private fun PlanRegionCard(model: AppModel, go: (Place) -> Unit) {
     val store = model.store
     val data = model.data
-    val buddy = data.player.buddy
+    // Plan's own lead (the first of its party), never the global buddy: the buddy lives on Home's stage above.
+    val lead = data.player.planLead
     val open = store.openTodayTasks()
     val next = open.firstOrNull { it.id == data.pickedTaskId } ?: open.firstOrNull()
     val doneToday = data.tasks.count { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
     val total = doneToday + open.size
     RegionCard(
-        Module.PLAN.label, Module.PLAN.icon, Module.PLAN.look, BuddyScene.darkness(store.now.hour, store.now.minute), buddy, buddy?.let(::leadLine) ?: "No buddy yet",
+        Module.PLAN.label, Module.PLAN.icon, Module.PLAN.look, BuddyScene.darkness(store.now.hour, store.now.minute), lead, lead?.let(::leadLine) ?: "No lead yet",
         if (total == 0) "Tasks and focus" else "$doneToday of $total tasks done today",
         still = data.settings.reduceMotion, onOpen = { go(Place.PLAN) },
     ) {

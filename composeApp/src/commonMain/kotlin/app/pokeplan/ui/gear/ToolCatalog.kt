@@ -27,7 +27,7 @@ object ToolCatalog {
         ToolInfo(GearTool.COMPASS, ToolCategory.MEASURE, "Which way you are facing, from the magnetic sensor", listOf("direction", "north", "heading", "bearing", "magnetic", "navigate", "sensor")),
         ToolInfo(GearTool.LEVEL, ToolCategory.MEASURE, "How far from flat the phone lies, in degrees", listOf("flat", "tilt", "spirit level", "bubble", "angle", "incline", "slope", "sensor", "shelf", "picture")),
         ToolInfo(GearTool.BAROMETER, ToolCategory.MEASURE, "Air pressure and a rough height", listOf("pressure", "weather", "altitude", "height", "hpa", "elevation", "sensor", "storm")),
-        ToolInfo(GearTool.DEVICE, ToolCategory.MEASURE, "What this phone can do for the Pokégear", listOf("sensors", "hardware", "capabilities", "permissions", "check", "support", "gps", "nfc", "camera", "battery")),
+        ToolInfo(GearTool.DEVICE, ToolCategory.MEASURE, "What this phone can do for Gear", listOf("sensors", "hardware", "capabilities", "permissions", "check", "support", "gps", "nfc", "camera", "battery")),
         ToolInfo(GearTool.WAYPOINTS, ToolCategory.MEASURE, "Save where you are and see how far and which way it is", listOf("gps", "location", "place", "park", "car", "parked", "find", "way back", "coordinates", "latitude", "map", "hike", "trail")),
         ToolInfo(GearTool.SOUND, ToolCategory.MEASURE, "How loud it is around you, and the pitch of a sound", listOf("noise", "decibel", "db", "loud", "microphone", "mic", "pitch", "tuner", "note", "frequency", "hearing")),
         ToolInfo(GearTool.QR, ToolCategory.MEASURE, "Make a QR code from text, or scan one with the camera", listOf("qr", "barcode", "scan", "scanner", "camera", "wifi", "link", "share", "code")),

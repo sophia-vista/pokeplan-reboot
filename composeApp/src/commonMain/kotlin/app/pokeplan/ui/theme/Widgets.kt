@@ -126,7 +126,7 @@ fun ScreenHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
-            if (onBack != null) PixelButton("‹ Back", onBack, color = Pixel.InkSoft, compact = true)
+            if (onBack != null) BackButton(onBack)
             else if (icon != null) ItemIcon(icon, size = 36.dp, description = null)
             Column(Modifier.weight(1f)) {
                 PixelTitle(title, Modifier.semantics { heading() }, large = true, onLight = false)
@@ -135,6 +135,20 @@ fun ScreenHeader(
             trailing()
         }
         if (footer != null) Box(Modifier.fillMaxWidth().padding(start = Spacing.Page, end = Spacing.Page, bottom = Spacing.M)) { footer() }
+    }
+}
+
+/**
+ * Back: a pixel chevron and the label in the dialogue font, on one centre line. (It used to be the text "‹ Back", whose arrow the
+ * dialogue font lacks, so the whole label fell back to another font and sat off the centre of its key.)
+ */
+@Composable
+fun BackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
+    PixelKey(onBack, modifier, key = Pixel.InkSoft, compact = true, horizontal = Spacing.S) { look ->
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            app.pokeplan.ui.Glyph("chevron-left", look.ink, size = 16.dp)
+            KeyLabel("Back", look)
+        }
     }
 }
 
