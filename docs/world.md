@@ -779,7 +779,7 @@ The brief makes a region a *journey across its real map*, not a list of dungeons
 
 ### Art
 - **Map picture (found):** the official FireRed and LeafGreen Kanto region map, `assets/world/map-kanto.png` (192 x 128), built from the game's own tiles by `tools/sprites/fetch_kanto_map.py`. It is small, so it is drawn at an integer scale with no smoothing; the fog of war and the node markers are laid over it in code. It shows the nine cities and the routes but not every place of the story, so the markers use positions read from it. Kanto's story art, rooms and tiles stay the Mystery Dungeon sheets.
-- **Tilesets:** the Explorers of Sky sheets already in `assets/tiles/` cover every kind needed (Apple Woods or Lush Prairie for the forest; Crystal Cave for Mt. Moon; Beach Cave for Seafoam; Deep Sealed Ruin for the tower). No new sheet is required for the first release.
+- **Tilesets:** the Explorers of Sky sheets already in `assets/tiles/` cover every kind needed (Apple Woods or Lush Prairie for the forest; Crystal Cave for Mt. Moon; Beach Cave for Seafoam; Deep Sealed Ruin for the tower). No new sheet is required for the first release. Since 0.135.0 the 64 Red Rescue Team tilesets (`assets/tiles/rr-NN`, `docs/assets.md`) also exist, and a dungeon without its own Explorers of Sky sheet (every Kanto, Johto, Hoenn and Sinnoh one) borrows the Rescue Team tileset closest to its look in `dungeonTiles` (`WorldArt.kt`) instead of the World Abyss; only the two rifts keep the Abyss.
 - **Sprites, cries and portraits:** SpriteCollab and the existing assets, as for every Pokémon.
 
 ### Status (0.99.0)

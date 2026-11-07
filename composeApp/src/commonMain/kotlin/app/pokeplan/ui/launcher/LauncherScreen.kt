@@ -742,6 +742,8 @@ internal fun TownPicker(current: String, onPick: (String) -> Unit, onClose: () -
                 TownChoices(TownScenes.scenes, current, onPick)
                 Text("Dungeons", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, modifier = Modifier.padding(top = Spacing.S))
                 TownChoices(TownScenes.dungeons, current, onPick)
+                Text("Rescue Team dungeons", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, modifier = Modifier.padding(top = Spacing.S))
+                TownChoices(TownScenes.rescueTeam, current, onPick)
             }
             Text("Press and hold the town any time to change it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }

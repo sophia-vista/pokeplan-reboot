@@ -36,7 +36,7 @@ SOUNDS = {
     'focus-start': 414,
     'focus-end': 200,  # default success
     'egg-get': 478,
-    'level-up': 216,
+    'level-up': 201,  # shares the rank-up clip; 216 was a guess and is the dungeon wind sound (assets/pmd-sfx/README.md)
     'rank-up': 201,  # super success
     'candy': 332,  # money
     'item-get': 203,  # got something good

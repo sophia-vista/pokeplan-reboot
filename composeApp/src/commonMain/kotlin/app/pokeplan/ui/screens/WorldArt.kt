@@ -24,6 +24,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.platform.LocalDensity
@@ -89,6 +90,43 @@ internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boo
     }
 }
 
+/**
+ * A whole map picture as big as the width allows, for a screen's headquarters: the picture is scaled by a whole number that covers the
+ * box (so its pixels stay square) and its edges, which are plain margins in these maps, are trimmed. The caption sits on a plate along the bottom.
+ */
+@Composable
+internal fun WorldMapHero(name: String, title: String, subtitle: String? = null, aspect: Float = 1f) {
+    Box(Modifier.fillMaxWidth().aspectRatio(aspect).border(2.dp, Pixel.Ink).background(Color(0xFF0B0B12)).clipToBounds()) {
+        WorldPicture(name, Modifier.fillMaxSize(), crop = true)
+        Box(Modifier.align(Alignment.BottomStart).fillMaxWidth().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xCC1B2230)))).padding(horizontal = Spacing.M, vertical = Spacing.S)) {
+            Column {
+                Text(title, style = MaterialTheme.typography.titleSmall, color = Color.White)
+                if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = Color(0xFFE3EEF5))
+            }
+        }
+    }
+}
+
+/** The team base of the first partner's line (assets/rescue-maps, bundled as `team-base-<partner>-<stage>`): the Rescue Team games' sixteen partners. */
+private val partnerLines: Map<String, List<Int>> = mapOf(
+    "bulbasaur" to listOf(1, 2, 3), "charmander" to listOf(4, 5, 6), "squirtle" to listOf(7, 8, 9), "pikachu" to listOf(172, 25, 26),
+    "meowth" to listOf(52, 53, 863), "psyduck" to listOf(54, 55), "machop" to listOf(66, 67, 68), "cubone" to listOf(104, 105, 105),
+    "eevee" to listOf(133, 134, 135, 136, 196, 197, 470, 471, 700), "chikorita" to listOf(152, 153, 154), "cyndaquil" to listOf(155, 156, 157),
+    "totodile" to listOf(158, 159, 160), "treecko" to listOf(252, 253, 254), "torchic" to listOf(255, 256, 257), "mudkip" to listOf(258, 259, 260),
+    "skitty" to listOf(300, 301),
+)
+
+/** The species of the player's first partner, if they still have it. */
+internal fun starterSpecies(data: app.pokeplan.app.AppData): Int? =
+    data.origins.entries.firstOrNull { it.value.how == app.pokeplan.app.Origin.How.STARTER }?.key?.let { id -> data.player.pokemon.firstOrNull { it.id == id }?.speciesId }
+
+/** The Base's picture: the first partner's team base (Eevee's when it is not one of the sixteen), plain, then under construction, then finished as the Camp grows. */
+internal fun baseMap(starter: Int?, campLevel: Int): String {
+    val partner = partnerLines.entries.firstOrNull { starter != null && starter in it.value }?.key ?: "eevee"
+    val stage = when { campLevel >= 4 -> "final"; campLevel >= 2 -> "construction"; else -> "basic" }
+    return "team-base-$partner-$stage"
+}
+
 /** A framed picture ([top] shows the top of it, where a scene's sky and buildings are) with a caption plate along its bottom, to open a World screen. */
 @Composable
 internal fun WorldBanner(name: String, title: String, subtitle: String? = null, sky: Color = Color(0xFFBFE3F2), height: Dp = 132.dp, top: Boolean = false) {
@@ -106,7 +144,7 @@ internal fun WorldBanner(name: String, title: String, subtitle: String? = null, 
 private val tileAtlases = mutableMapOf<String, ImageBitmap?>()
 private val layouts = mutableMapOf<Pair<Int, Int>, app.pokeplan.ui.launcher.TownMap>()
 
-/** The tileset atlas (assets/tiles) a dungeon is drawn with: its own where the game's sheet is here, the Distortion Rift borrows the World Abyss. */
+/** The tileset atlas (assets/tiles) a dungeon is drawn with: its own where the game's Explorers of Sky sheet is here, else a Red Rescue Team one by theme; the rifts use the World Abyss. */
 internal fun dungeonTiles(dungeonId: String): String = when (dungeonId) {
     "tiny-woods" -> "tiny-woods"
     "thunderwave-cave" -> "thunderwave-cave"
@@ -116,6 +154,15 @@ internal fun dungeonTiles(dungeonId: String): String = when (dungeonId) {
     "ancient-ruins" -> "wish-cave"
     "sky-tower" -> "sky-tower"
     "temporal-tower" -> "temporal-tower"
+    // The other dungeons borrow the Red Rescue Team tileset (assets/tiles/rr-NN) closest to their look; the rifts keep the World Abyss.
+    "viridian-forest" -> "rr-11"; "ilex-forest" -> "rr-20"; "petalburg-woods" -> "rr-26"; "eterna-forest" -> "rr-32"
+    "mt-moon" -> "rr-28"; "meteor-falls" -> "rr-10"; "rock-tunnel" -> "rr-05"; "mt-mortar" -> "rr-05"; "oreburgh-mine" -> "rr-05"
+    "pokemon-tower" -> "rr-57"; "power-plant" -> "rr-42"; "seafoam-islands" -> "rr-47"; "shoal-cave" -> "rr-15"
+    "mt-ember" -> "rr-46"; "mt-chimney" -> "rr-46"; "burned-tower" -> "rr-59"; "victory-road", "victory-road-hoenn", "victory-road-sinnoh", "iron-island" -> "rr-40"
+    "cerulean-cave" -> "rr-16"; "cave-of-origin" -> "rr-18"; "sprout-tower" -> "rr-08"; "tin-tower" -> "rr-13"
+    "union-cave" -> "rr-06"; "ruins-of-alph" -> "rr-07"; "slowpoke-well" -> "rr-30"; "whirl-islands", "seafloor-cavern" -> "rr-49"
+    "granite-cave" -> "rr-01"; "sky-pillar" -> "rr-35"; "wayward-cave" -> "rr-31"; "old-chateau" -> "rr-17"
+    "mt-coronet" -> "rr-24"; "spear-pillar" -> "rr-12"
     else -> "world-abyss"
 }
 

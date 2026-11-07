@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.135.0
+
+- **Real Rescue Team art from the game's own files.** 245 maps (the 57 Friend Areas, towns, team bases and more) and the 64 dungeon tilesets of Pokémon Mystery Dungeon: Red Rescue Team, decoded by `tools/sprites/fetch_rescue_maps.py` (from pret/pmd-red's committed map data) and `tools/tiles/extract_rescue_tiles.py` (from the owner's ROM, which is not in the repo). Sources and licences in `docs/assets.md`.
+- **Backgrounds and towns use them.** Settings → Look → Background now lists the Rescue Team dungeon towns and the 57 Friend Areas in groups; the launcher's town picker gains the Rescue Team dungeons.
+- **World's Base is no longer one long list.** It opens on the team base of your first partner, as big as the width allows, growing with the Camp, then your rank and a menu: Facilities, Research, Café, Kecleon Shop, Swap Shop, Dojo. Each opens its own page with a banner from the Square or the Dojo.
+- **World dungeons without a sheet of their own** (all of Kanto, Johto, Hoenn and Sinnoh) borrow the Rescue Team tileset closest to their look instead of the World Abyss.
+- **Sound effects, with their triggers.** 496 Red Rescue Team sounds rendered from the ROM's sound data (`assets/pmd-sfx`, approximate and not yet listened to, not used by the app) and `triggers.tsv`, which maps each id to the game events that play it from pret/pmd-red's source. The audit found `level-up` was mapped to the dungeon wind sound; it now shares the rank-up clip.
+
 ## 0.134.0
 
 - **Each module teaches how it gives Pokémon.** Your starter is your buddy and starts in no party, so Plan and Care each show a one-time tutorial until you have done the real thing: Plan a 5-second focus session, Care a 5-second breath. Each hatches one egg into that module's own party and leads it. They are not focus sessions or calm breaks and leave no history, streak or meter, they never pay twice, and nothing needs them.

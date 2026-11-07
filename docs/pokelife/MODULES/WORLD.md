@@ -78,6 +78,8 @@ Landing hierarchy:
 7. Current regional story progress.
 8. Facility shortcuts.
 
+**Implemented (0.135.0):** the Base page now opens on the headquarters picture, as big as the width allows (the team base of the first partner from the Rescue Team games, plain, under construction or finished as the Camp grows), then the rank strip and a menu of the places in it (Facilities, Research, Café, Kecleon Shop, Swap Shop, Dojo). Each opens its own page, with a banner from the Square, Pokémon Square or the Dojo; before, every facility, research step, the Café and every shop stood in one long list. The primary action and the story, Finds and Guild lines of the landing hierarchy live on the WORLD menu above it, not on this page.
+
 The primary action is state-dependent: begin the introductory adventure for a new save; prepare a team when none is active; review an expedition when teams are away; recruit a Pokémon when Finds are waiting; review a completed request when a claim is ready; or continue a chapter when a story scene is available. Do not show every available statistic and shortcut at once.
 
 ### 2.2 Atlas — regions, places and dungeons

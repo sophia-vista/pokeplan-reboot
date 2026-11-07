@@ -492,11 +492,44 @@ private fun WorldSkillsView(model: AppModel) {
     }
 }
 
+/** The pages of the Base: its landing is the headquarters map and a menu, so nothing but the one page you opened is on screen (docs/pokelife/MODULES/WORLD.md section 2.1). */
+private enum class BasePage(val label: String, val icon: String) {
+    FACILITIES("Facilities", "heart-scale"), RESEARCH("Research", "journal"), CAFE("Café", "soothe-bell"),
+    KECLEON("Kecleon Shop", "rare-candy"), SWAP("Swap Shop", "amulet-coin"), DOJO("Dojo", "scope-lens"),
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun WorldBaseView(model: AppModel) {
-    val store = model.store
+    var page by remember { mutableStateOf<BasePage?>(null) }
     val world = model.data.world
-    WorldBanner("summit", "Exploration base", "${world.poke} Poké to spend", top = true)
+    val open = page
+    if (open == null) {
+        // The headquarters: the team base of your first partner as big as the screen allows, growing with the Camp, then rank and the places in it.
+        WorldMapHero(baseMap(starterSpecies(model.data), world.facilityLevel(Facility.CAMP)), "Exploration base", "Camp level ${world.facilityLevel(Facility.CAMP)} of ${Facility.MAX_LEVEL}")
+        RankStrip(model)
+        MenuGrid(
+            BasePage.entries.map { p ->
+                val detail = when (p) {
+                    BasePage.FACILITIES -> "Camp level ${world.facilityLevel(Facility.CAMP)}"
+                    BasePage.RESEARCH -> "${world.discovered.size} species"
+                    BasePage.CAFE -> "a brew for the road"
+                    BasePage.KECLEON -> "${world.candyPrice} Poké a candy"
+                    BasePage.SWAP -> "berry for berry"
+                    BasePage.DOJO -> "${app.pokeplan.world.Dojo.COST} Poké a lesson"
+                }
+                MenuEntry(p.name, p.icon, p.label, detail, badge = if (p == BasePage.RESEARCH) world.researchReady().size else 0, tint = Module.WORLD.look.accent)
+            },
+        ) { key -> page = BasePage.valueOf(key) }
+        Text("Storage is the shared Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        return
+    }
+    BackHandler(enabled = true) { page = null }
+    val store = model.store
+    val play = !(model.data.settings.reduceMotion || model.powerSaving)
+    PixelButton("Back to the base", { page = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+    when (open) {
+        BasePage.FACILITIES -> {
     FieldLabel("Base")
     Facility.entries.forEach { f ->
         val level = world.facilityLevel(f)
@@ -514,6 +547,8 @@ private fun WorldBaseView(model: AppModel) {
             }
         }
     }
+        }
+        BasePage.RESEARCH -> {
     FieldLabel("Research: ${world.discovered.size} species discovered")
     Research.steps.forEach { step ->
         val reached = world.discovered.size >= step.species
@@ -530,9 +565,10 @@ private fun WorldBaseView(model: AppModel) {
         }
     }
     NotebookCard(model)
+        }
+        BasePage.CAFE -> {
     WorldBanner("cafe", "Spinda's Café", "A brew for the road", sky = Color(0xFF29180F), top = true, height = 150.dp)
     var steam by remember { mutableStateOf(0) }
-    val play = !(model.data.settings.reduceMotion || model.powerSaving)
     val clock = model.worldNow.takeIf { it > 0 } ?: model.store.nowMillis
     val brewing = world.brewUntil > clock
     TextBox {
@@ -548,6 +584,9 @@ private fun WorldBaseView(model: AppModel) {
             if (cafeMessage.isNotEmpty()) Text(cafeMessage, style = MaterialTheme.typography.bodyMedium)
         }
     }
+        }
+        BasePage.KECLEON -> {
+            WorldBanner("pokemon-square", "Kecleon Shop", "Rare Candy, for Poké", height = 150.dp)
     FieldLabel("Kecleon Shop")
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -556,6 +595,9 @@ private fun WorldBaseView(model: AppModel) {
             PixelButton("Buy one: ${world.candyPrice} Poké", { store.worldBuyCandy() }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = world.poke >= world.candyPrice, compact = true)
         }
     }
+        }
+        BasePage.SWAP -> {
+            WorldBanner("square", "Croagunk Swap Shop", "Berry for berry", height = 150.dp)
     FieldLabel("Croagunk Swap Shop")
     var swapFrom by remember { mutableStateOf(app.pokeplan.world.SwapShop.flavors[0]) }
     var swapTo by remember { mutableStateOf(app.pokeplan.world.SwapShop.flavors[1]) }
@@ -576,6 +618,9 @@ private fun WorldBaseView(model: AppModel) {
             if (swapMessage.isNotEmpty()) Text(swapMessage, style = MaterialTheme.typography.bodyMedium)
         }
     }
+        }
+        BasePage.DOJO -> {
+            WorldBanner("makuhita-dojo", "Makuhita's Dojo", "${'$'}{world.poke} Poké to spend", height = 150.dp)
     FieldLabel("Dojo")
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -590,7 +635,8 @@ private fun WorldBaseView(model: AppModel) {
             }
         }
     }
-    Text("Storage is the shared Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        }
+    }
 }
 
 // ----- Expeditions ------------------------------------------------------------------------------------------------------
