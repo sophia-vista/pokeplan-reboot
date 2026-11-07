@@ -37,8 +37,9 @@ class MintTablesTest {
         override fun keepAside(text: String) = live.keepAside("mint", text, 1)
     }
 
+    private fun cipher(seed: Int = 1) = AesGcmCipher(javax.crypto.spec.SecretKeySpec(ByteArray(32) { (it * 7 + seed).toByte() }, "AES"))
     private fun obj(text: String) = Json.parseToJsonElement(text) as JsonObject
-    private fun live(): DataStore = JvmDatabase.open().also { it.live.activate(null, null, 1); it.live.moveMintToTables(2) }
+    private fun live(): DataStore = JvmDatabase.open().also { it.mintCipher = cipher() }.also { it.live.activate(null, null, 1); it.live.moveMintToTables(2) }
 
     private fun count(s: DataStore, table: String): Long =
         s.driver.executeQuery(null, "SELECT count(*) FROM $table", { c -> QueryResult.Value(if (c.next().value) c.getLong(0) else null) }, 0).value ?: 0L
@@ -71,7 +72,7 @@ class MintTablesTest {
 
     @Test
     fun aFreshStartActivatesWithNothingToMoveAndSurvivesRestarts() {
-        val s = JvmDatabase.open().also { it.live.activate(null, null, 1) }
+        val s = JvmDatabase.open().also { it.mintCipher = cipher() }.also { it.live.activate(null, null, 1) }
         assertFalse(s.mintTables.isActive())
         s.live.moveMintToTables(5)
         assertTrue(s.mintTables.isActive())
@@ -83,18 +84,19 @@ class MintTablesTest {
 
     @Test
     fun aDocumentRestoredBeforeActivationIsImportedReadBackEqualAndKeptAside() {
-        val s = JvmDatabase.open().also { it.live.activate(null, null, 1) }
+        val s = JvmDatabase.open().also { it.mintCipher = cipher() }.also { it.live.activate(null, null, 1) }
         val doc = """{"accounts":[{"id":"a1","name":"Cash","type":"CASH","currency":"PHP","openingDay":"2026-11-07"}],"settings":{"hideValues":true},"future":{"x":1}}"""
         s.live.write("mint", doc, 2)
         s.live.moveMintToTables(3)
         assertEquals(obj(doc), obj(s.live.read("mint")!!))
-        assertEquals(doc, s.live.read("aside:mint:tables:3"))
+        assertTrue(RowCipher.isSealed(s.live.read("aside:mint:tables:3")!!), "the kept-aside copy is sealed")
+        assertEquals(doc, cipher().open(s.live.read("aside:mint:tables:3")!!))
         assertEquals(1, count(s, "mint_account"))
     }
 
     @Test
     fun anActivationThatCannotFinishLeavesTheDatabaseAsItWas() {
-        val s = JvmDatabase.open().also { it.live.activate(null, null, 1) }
+        val s = JvmDatabase.open().also { it.mintCipher = cipher() }.also { it.live.activate(null, null, 1) }
         s.live.write("mint", """{"accounts":[{"id":"a1","name":"Cash","type":"CASH","currency":"PHP","openingDay":"2026-11-07"}]}""", 2)
         s.driver.execute(null, "CREATE TRIGGER no_marker BEFORE INSERT ON app_meta WHEN NEW.key = 'mint_store' BEGIN SELECT RAISE(ABORT, 'no'); END", 0)
         assertFailsWith<Exception> { s.live.moveMintToTables(3) }
@@ -108,7 +110,7 @@ class MintTablesTest {
         val f = File.createTempFile("mint", ".db").also { it.delete(); it.deleteOnExit() }
         val g = game()
         val before: app.pokeplan.mint.MintData
-        JvmDatabase.open(f.path).let { s ->
+        JvmDatabase.open(f.path).also { it.mintCipher = cipher() }.let { s ->
             s.live.activate(null, null, 1); s.live.moveMintToTables(2)
             val mint = mintOn(s, g)
             val a = mint.fill()
@@ -119,7 +121,7 @@ class MintTablesTest {
             assertEquals(2L, count(s, "mint_account")); assertEquals(3L, count(s, "mint_transaction")); assertEquals(1L, count(s, "mint_reconciliation"))
             s.close()
         }
-        val again = JvmDatabase.open(f.path)
+        val again = JvmDatabase.open(f.path).also { it.mintCipher = cipher() }
         assertTrue(again.integrityIssues().isEmpty())
         assertTrue(again.mintTables.isActive())
         assertEquals(before, mintOn(again, g).data, "everything MINT kept is back, field for field, every amount an exact integer")
@@ -193,14 +195,15 @@ class MintTablesTest {
         s.live.write("save", GameStore.json.encodeToString(AppData.serializer(), g.data), 3)
         mint.addAccount("Kept", AccountType.CASH, "PHP", 5_000)
         val snap = s.live.snapshot()
-        assertTrue("mint" in snap && snap.getValue("mint").contains("Kept"))
+        assertTrue("mint" in snap && RowCipher.isSealed(snap.getValue("mint")) && "Kept" !in snap.getValue("mint"), "the snapshot holds Mint sealed")
         assertTrue("mint" in s.live.names())
         s.live.replaceAll(mapOf("save" to snap.getValue("save")), 9)
         assertEquals(1, mintOn(s, g).data.accounts.size, "a backup from before Mint existed must not wipe Mint")
         mint.addAccount("Later", AccountType.CASH, "PHP")
         s.live.replaceAll(snap, 11)
         assertEquals(1, mintOn(s, g).data.accounts.size)
-        assertTrue(s.live.read("aside:mint:11")!!.contains("Later"))
+        val aside = s.live.read("aside:mint:11")!!
+        assertTrue(RowCipher.isSealed(aside) && "Later" !in aside && cipher().open(aside)!!.contains("Later"), "what a restore replaced is kept aside sealed")
     }
 
     @Test
@@ -229,7 +232,7 @@ class MintTablesTest {
         assertTrue(g.setInParty(second, true, app.pokeplan.core.pokemon.PartyIds.MINT))
         assertTrue(g.setMintLead(second))
         val doc = GameStore.json.encodeToString(AppData.serializer(), g.data)
-        val s = JvmDatabase.open()
+        val s = JvmDatabase.open().also { it.mintCipher = cipher() }
         s.live.normalizer = GameStore::normalizeDocument
         s.live.activate(doc, null, 5)
         s.live.movePlanToTables(6)
@@ -238,5 +241,87 @@ class MintTablesTest {
         assertEquals(g.data.player.partyOf("mint").map { it.id }.toSet(), back.player.partyOf("mint").map { it.id }.toSet())
         assertEquals(second, back.player.mintLead?.id, "the chosen lead leads, whatever order the members joined in")
         assertEquals(2, back.player.partyOf("mint").size)
+    }
+
+    private fun rawText(s: DataStore): String = (tables + "mint_state").joinToString("\n") { t ->
+        val columns = if (t == "mint_state") listOf("key", "json") else listOf("key", "position", "day", "json")
+        s.driver.executeQuery(null, "SELECT ${columns.joinToString()} FROM $t", { c ->
+            val out = StringBuilder()
+            while (c.next().value) { for (i in columns.indices) out.append(runCatching { c.getString(i) }.getOrNull() ?: runCatching { c.getLong(i).toString() }.getOrNull()).append('|'); out.append('\n') }
+            QueryResult.Value(out.toString())
+        }, 0).value.orEmpty()
+    }
+
+    @Test
+    fun theStoredRowsHoldNoFigureNameOrDateInClear() {
+        val s = live()
+        val mint = mintOn(s, game())
+        mint.fill()
+        mint.setHideValues(true)
+        val raw = rawText(s)
+        assertTrue(raw.contains("m1."), "rows are sealed")
+        for (secret in listOf("Savings", "Wallet", "Market", "Internet", "100000", "2500", "PHP", "2026-", "hideValues", "Salary")) assertFalse(secret in raw, "a row holds $secret in clear")
+        assertEquals(0L, s.driver.executeQuery(null, "SELECT count(*) FROM mint_transaction WHERE day IS NOT NULL", { c -> QueryResult.Value(if (c.next().value) c.getLong(0) else 0L) }, 0).value)
+    }
+
+    @Test
+    fun aBackupSnapshotAndTheAsidesHoldMintOnlySealed() {
+        val s = live()
+        val g = game()
+        val mint = mintOn(s, g)
+        mint.fill()
+        s.live.write("save", GameStore.json.encodeToString(AppData.serializer(), g.data), 3)
+        val snap = s.live.snapshot()
+        assertTrue(RowCipher.isSealed(snap.getValue("mint")), "the snapshot's Mint is sealed")
+        for (secret in listOf("Savings", "Market", "100000")) assertFalse(secret in snap.getValue("mint"))
+        val staged = BackupBundle.stage(BackupBundle.encode(snap, DataStore.SCHEMA_VERSION, 7), DataStore.SCHEMA_VERSION)
+        assertTrue(staged is BackupBundle.Staged.Ready && "mint" in staged.documents.keys, "a bundle with sealed Mint passes its checks")
+        // Restoring it on the same phone brings Mint back, and what it replaced is kept aside sealed.
+        mint.addAccount("Later", AccountType.CASH, "PHP")
+        s.live.replaceAll(snap, 11)
+        assertEquals(2, mintOn(s, g).data.accounts.size)
+        val aside = s.live.read("aside:mint:11")!!
+        assertTrue(RowCipher.isSealed(aside) && "Later" !in aside)
+        s.live.keepAside("mint", """{"accounts":[]}""", 5)
+        assertTrue(RowCipher.isSealed(s.live.read("aside:mint:5")!!))
+    }
+
+    @Test
+    fun aDatabaseOpenedWithoutTheKeyIsLockedNotWipedAndRestoreOfAForeignBackupKeepsItSealed() {
+        val f = File.createTempFile("mint", ".db").also { it.delete(); it.deleteOnExit() }
+        val g = game()
+        val snap: Map<String, String>
+        JvmDatabase.open(f.path).also { it.mintCipher = cipher(1) }.let { s ->
+            s.live.activate(null, null, 1); s.live.moveMintToTables(2)
+            mintOn(s, g).fill()
+            snap = s.live.snapshot()
+            s.close()
+        }
+        // The same file on a phone with another key (a database restored from the cloud): Mint reads as empty, nothing is destroyed.
+        val other = JvmDatabase.open(f.path).also { it.mintCipher = cipher(2) }
+        assertTrue(other.mintTables.locked())
+        assertNull(other.live.read("mint"))
+        assertFalse("mint" in other.live.names())
+        val fresh = mintOn(other, g)
+        assertTrue(fresh.data.accounts.isEmpty())
+        fresh.addAccount("New", AccountType.CASH, "PHP", 100) // the first write sets the sealed rows aside first
+        assertEquals(1, other.live.names().count { it.startsWith("aside:mint:locked:") })
+        assertEquals(1, mintOn(other, g).data.accounts.size)
+        // A backup sealed with the first key does not open here either: it is kept aside and the new Mint is untouched.
+        other.live.replaceAll(snap, 21)
+        assertEquals(1, mintOn(other, g).data.accounts.size)
+        assertTrue(other.live.read("aside:mint:locked:21") != null)
+        // The right key opens everything again from that backup.
+        val home = JvmDatabase.open().also { it.mintCipher = cipher(1) }
+        home.live.activate(null, null, 1); home.live.moveMintToTables(2)
+        home.live.replaceAll(snap, 5)
+        assertEquals(2, mintOn(home, g).data.accounts.size)
+    }
+
+    @Test
+    fun mintsTablesRefuseToStartWithoutAKey() {
+        val s = JvmDatabase.open().also { it.live.activate(null, null, 1) }
+        assertFailsWith<IllegalStateException> { s.live.moveMintToTables(2) }
+        assertFalse(s.mintTables.isActive())
     }
 }

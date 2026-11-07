@@ -62,7 +62,7 @@ object BackupBundle {
         if (documents.keys.any { it !in KNOWN }) return Staged.Refused("That backup holds something this version does not know.")
         if (checksum(documents) != (root["sha256"] as? JsonPrimitive)?.contentOrNull) return Staged.Refused("That backup is damaged: its checksum does not match.")
         for ((name, doc) in documents) {
-            val ok = try { json.parseToJsonElement(doc) is JsonObject } catch (e: Exception) { false }
+            val ok = if (name == LiveDocuments.MINT && RowCipher.isSealed(doc)) true else try { json.parseToJsonElement(doc) is JsonObject } catch (e: Exception) { false }
             if (!ok) return Staged.Refused("The $name in that backup is damaged.")
         }
         return Staged.Ready(documents, schema, (root["createdAtMillis"] as? JsonPrimitive)?.longOrNull ?: 0L)

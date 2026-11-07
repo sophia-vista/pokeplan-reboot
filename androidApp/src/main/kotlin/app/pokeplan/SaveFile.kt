@@ -5,6 +5,7 @@ import app.pokeplan.app.CareStore
 import app.pokeplan.app.Clock
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.HealStore
+import app.pokeplan.app.MemoryStorage
 import app.pokeplan.app.Storage
 
 /**
@@ -31,9 +32,13 @@ fun healStorage(context: Context): Storage = LiveStore.storage(context, "heal", 
 
 /**
  * The Mint module's own save (private financial records), apart from every other module's: its own tables in the database, created there from the start
- * (`mint.json` exists only as a fallback while the database has never opened). No widget, notification or reminder reads it.
+ * with every row sealed by a Keystore key (`KeystoreMintKey`); there is no file fallback. No widget, notification or reminder reads it.
  */
-fun mintStorage(context: Context): Storage = LiveStore.storage(context, "mint", "mint.json")
+fun mintStorage(context: Context): Storage {
+    val s = LiveStore.get(context)
+    // Sealed rows in the database, or memory only: Mint is never written in clear, not even as a fallback file.
+    return if (s != null && s.mintCipher != null && s.mintTables.isActive()) DatabaseStorage(s.live, "mint") else MemoryStorage()
+}
 
 /** Heal's store outside the app (reminders): its own records, paying Field Research into [world] like the app does. */
 fun healStore(context: Context, world: GameStore = widgetStore(context)): HealStore =

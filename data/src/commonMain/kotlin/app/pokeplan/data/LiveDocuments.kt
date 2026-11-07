@@ -43,7 +43,7 @@ class LiveDocuments(private val store: DataStore) {
     fun read(name: String): String? = when {
         name == CARE && inTables(name) -> store.careTables.read()
         name == HEAL && inTables(name) -> store.healTables.read()
-        name == MINT && inTables(name) -> store.mintTables.read()
+        name == MINT && inTables(name) -> store.mintTables.readOrNull()
         planSplit(name) -> store.transaction { assembleSave() }
         else -> q.liveRead(name).executeAsOneOrNull()
     }
@@ -177,7 +177,7 @@ class LiveDocuments(private val store: DataStore) {
             val doc = q.liveRead(MINT).executeAsOneOrNull()
             store.mintTables.activate(doc, nowMillis)
             if (doc != null) {
-                q.liveWrite("${ASIDE}$MINT:tables:$nowMillis", doc, nowMillis)
+                q.liveWrite("${ASIDE}$MINT:tables:$nowMillis", store.mintCipher!!.seal(doc), nowMillis)
                 q.liveDelete(MINT)
             }
         }
@@ -185,17 +185,18 @@ class LiveDocuments(private val store: DataStore) {
 
     /** Keeps a document that could not be read where [write] will not replace it. */
     fun keepAside(name: String, json: String, nowMillis: Long) {
-        write("$ASIDE$name:$nowMillis", json, nowMillis)
+        write("$ASIDE$name:$nowMillis", if (name == MINT) store.mintCipher!!.seal(json) else json, nowMillis)
     }
 
-    fun names(): List<String> = (q.liveNames().executeAsList() + listOfNotNull(CARE.takeIf { store.careTables.isActive() && store.careTables.read() != null }, HEAL.takeIf { store.healTables.isActive() && store.healTables.read() != null }, MINT.takeIf { store.mintTables.isActive() && store.mintTables.read() != null })).distinct().sorted()
+    fun names(): List<String> = (q.liveNames().executeAsList() + listOfNotNull(CARE.takeIf { store.careTables.isActive() && store.careTables.read() != null }, HEAL.takeIf { store.healTables.isActive() && store.healTables.read() != null }, MINT.takeIf { store.mintTables.isActive() && store.mintTables.readOrNull() != null })).distinct().sorted()
 
     /** Every live document (not the kept-aside ones) as of one moment: a single read transaction. Care's tables are put back together as `care`. */
     fun snapshot(): Map<String, String> = store.transaction {
         val docs = q.liveNames().executeAsList().filter { !it.startsWith(ASIDE) }.associateWith { q.liveRead(it).executeAsOne() }.toMutableMap()
         if (store.careTables.isActive()) store.careTables.read()?.let { docs[CARE] = it }
         if (store.healTables.isActive()) store.healTables.read()?.let { docs[HEAL] = it }
-        if (store.mintTables.isActive()) store.mintTables.read()?.let { docs[MINT] = it }
+        // Mint leaves the tables only sealed: a backup (a daily copy or a file) never holds a figure, a name or a date in clear.
+        if (store.mintTables.isActive()) store.mintTables.sealedSnapshot()?.let { docs[MINT] = it }
         if (store.planTables.isActive()) assembleSave()?.let { docs[SAVE] = it }
         docs
     }
@@ -206,8 +207,12 @@ class LiveDocuments(private val store: DataStore) {
      */
     fun replaceAll(docs: Map<String, String>, nowMillis: Long) {
         store.transaction {
-            for ((name, json) in docs) {
-                read(name)?.let { q.liveWrite("$ASIDE$name:$nowMillis", it, nowMillis) }
+            for ((name, json0) in docs) {
+                read(name)?.let { q.liveWrite("$ASIDE$name:$nowMillis", if (name == MINT) store.mintCipher!!.seal(it) else it, nowMillis) }
+                // Mint arrives sealed (see snapshot). One sealed with another phone's key stays sealed in the aside and changes nothing; a plain one (an older build's) is written.
+                val json = if (name == MINT && RowCipher.isSealed(json0)) {
+                    store.mintCipher!!.open(json0) ?: run { q.liveWrite("$ASIDE$MINT:locked:$nowMillis", json0, nowMillis); continue }
+                } else json0
                 // A backup is not the app's own write: it may be from an older build, so the save goes through the app's check first.
                 write(name, if (pokemonSplit(name)) normalizer?.invoke(json, nowMillis) ?: json else json, nowMillis)
             }

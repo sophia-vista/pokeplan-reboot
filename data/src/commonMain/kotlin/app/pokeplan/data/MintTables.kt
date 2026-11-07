@@ -23,6 +23,13 @@ class MintTables(private val store: DataStore) {
     private val q get() = store.db.dataQueries
     private val rows = RecordRows(store)
 
+    private fun cipher(): RowCipher = store.mintCipher ?: error("Mint's tables need their key (DataStore.mintCipher) before they are used")
+
+    /** Every stored record and setting of Mint is sealed with the phone's key; a row this key cannot open raises [MintLockedException]. */
+    private fun codec() = RecordRows.Codec({ cipher().seal(it) }, { cipher().open(it) ?: throw MintLockedException() })
+
+    @Volatile private var openChecked = false
+
     /** Whether MINT lives here (set once by [activate]); before that a `mint` row of `live_document`, if any, is all there is. */
     fun isActive(): Boolean = q.meta(META_MINT_TABLES).executeAsOneOrNull() == ACTIVE
 
@@ -32,7 +39,40 @@ class MintTables(private val store: DataStore) {
     /** Saves [document] (the whole MINT document as JSON): the rows that differ are changed, the rest are left alone. */
     fun write(document: String) {
         val parsed = parse(document)
-        store.transaction { replaceRows(parsed) }
+        store.transaction {
+            if (!openChecked) { if (locked()) keepLockedAside(); openChecked = true }
+            replaceRows(parsed)
+        }
+    }
+
+    /**
+     * Whether any stored row of Mint cannot be opened with this phone's key (a database copied from another phone, or a lost key). It never throws, so it is safe
+     * inside a transaction (an exception inside a nested one would roll the outer one back).
+     */
+    fun locked(): Boolean {
+        val c = store.mintCipher ?: return true // no key: nothing can be opened, and nothing is written (fail closed)
+        return SLICES.any { slice -> rows.records(slice.table).any { c.open(it.json) == null } } || rows.state("mint_state").values.any { c.open(it) == null }
+    }
+
+    /** Mint's document, or null when it is empty or locked: the callers that must not fail inside a transaction use this. */
+    fun readOrNull(): String? = if (locked()) null else read()
+
+    /**
+     * Mint as one sealed text for a backup: the same records, sealed again as a whole, so a daily backup or a backup file holds no figure, name or date in
+     * clear and opens only on a phone that has the key. Null when Mint is empty; throws [MintLockedException] when it cannot be read.
+     */
+    fun sealedSnapshot(): String? = readOrNull()?.let { cipher().seal(it) }
+
+    /**
+     * Sets aside what cannot be opened, still sealed, before the tables are written again, so an empty Mint on a phone without the key never overwrites the only
+     * copy of the records: the rows go to the `aside:mint:locked:<hash>` live document and the tables start empty.
+     */
+    private fun keepLockedAside() {
+        val raw = JsonObject(SLICES.associate { it.table to JsonArray(rows.records(it.table).map { r -> JsonPrimitive(r.json) }) } + ("mint_state" to JsonArray(rows.state("mint_state").values.map { JsonPrimitive(it) })))
+        val text = JSON.encodeToString(JsonElement.serializer(), raw)
+        store.db.dataQueries.liveWrite("aside:mint:locked:" + Sha256.hex(text).take(16), text, 0L)
+        for (slice in SLICES) store.driver.execute(null, "DELETE FROM ${slice.table}", 0)
+        store.driver.execute(null, "DELETE FROM mint_state", 0)
     }
 
     /**
@@ -42,6 +82,7 @@ class MintTables(private val store: DataStore) {
      */
     fun activate(document: String?, nowMillis: Long): Boolean {
         if (isActive()) return false
+        cipher() // refuses to start without the key
         val parsed = document?.let(::parse)
         store.transaction {
             if (parsed != null) {
@@ -58,7 +99,7 @@ class MintTables(private val store: DataStore) {
     /** One kind of record ([MintTables.KINDS] names them) as a JSON array, for export; empty when there is none. */
     fun readKind(field: String): String {
         val slice = SLICES.firstOrNull { it.field == field } ?: error("unknown kind of MINT record: $field")
-        return store.transaction { JSON.encodeToString(JsonElement.serializer(), JsonArray(rows.records(slice.table).map { JSON.parseToJsonElement(it.json) })) }
+        return store.transaction { JSON.encodeToString(JsonElement.serializer(), JsonArray(rows.records(slice.table, codec()).map { JSON.parseToJsonElement(it.json) })) }
     }
 
     /** Erases one kind of record (every row of its table family) and nothing else, in one transaction. */
@@ -78,9 +119,9 @@ class MintTables(private val store: DataStore) {
     // --- taking a document apart and putting it back --------------------------------------------------------------------
 
     private fun replaceRows(document: JsonObject) {
-        for (slice in SLICES) rows.diffRecords(slice.table, rowsOf(slice, document[slice.field] as? JsonArray))
+        for (slice in SLICES) rows.diffRecords(slice.table, rowsOf(slice, document[slice.field] as? JsonArray), codec())
         val state = document.filterKeys { key -> SLICES.none { it.field == key && document[key] is JsonArray } }
-        rows.diffState("mint_state", state.mapValues { JSON.encodeToString(JsonElement.serializer(), it.value) })
+        rows.diffState("mint_state", state.mapValues { JSON.encodeToString(JsonElement.serializer(), it.value) }, codec())
     }
 
     private fun rowsOf(slice: Slice, array: JsonArray?): List<RecordRows.Row> {
@@ -95,10 +136,10 @@ class MintTables(private val store: DataStore) {
 
     private fun assemble(): JsonObject? {
         val fields = mutableMapOf<String, JsonElement>()
-        for ((key, json) in rows.state("mint_state")) fields[key] = JSON.parseToJsonElement(json)
+        for ((key, json) in rows.state("mint_state", codec())) fields[key] = JSON.parseToJsonElement(json)
         var any = fields.isNotEmpty()
         for (slice in SLICES) {
-            val records = rows.records(slice.table).map { JSON.parseToJsonElement(it.json) }
+            val records = rows.records(slice.table, codec()).map { JSON.parseToJsonElement(it.json) }
             if (records.isNotEmpty()) { fields[slice.field] = JsonArray(records); any = true }
         }
         return if (any) JsonObject(fields) else null

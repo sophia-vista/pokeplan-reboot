@@ -109,12 +109,12 @@ data class HealGoal(
 )
 
 /**
- * HEAL's preferences. Field Research (the reward) is **off** until the player turns it on (HEAL.md section 12.4) and can be turned off again without
+ * HEAL's preferences. Field Research (the reward) is **on** by default (owner, 8 November 2026: every acquisition method starts on; HEAL.md section 12.4 said opt-in) and can be turned off without
  * touching any record. Reminders are all off by default (section 13): hydration is the only source built, up to [MAX_REMINDERS] times a day.
  */
 @Serializable
 data class HealSettings(
-    val fieldResearch: Boolean = false,
+    val fieldResearch: Boolean = true,
     val hydrationTargetMl: Int? = null,
     val hydrationReminders: List<LocalTime> = emptyList(),
     val showMeasurementsOnToday: Boolean = false,

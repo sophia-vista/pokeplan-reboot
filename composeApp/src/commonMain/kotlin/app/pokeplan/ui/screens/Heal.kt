@@ -516,7 +516,7 @@ private fun HealSettingsView(model: AppModel) {
             PixelTitle("Field Research")
             ToggleRow(
                 "Find Pokémon from what I log", settings.fieldResearch,
-                detail = "Off by default. A session of ${HealRules.RESEARCH_MIN_MINUTES} minutes or more, just logged, and the day's first drink can find a Field Egg. Weight, sleep and every other number never earn anything.",
+                detail = "On by default. A session of ${HealRules.RESEARCH_MIN_MINUTES} minutes or more, just logged, and the day's first drink can find a Field Egg. Weight, sleep and every other number never earn anything.",
             ) { heal.setFieldResearch(it) }
         }
     }
