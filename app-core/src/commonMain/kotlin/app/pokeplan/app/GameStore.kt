@@ -45,7 +45,7 @@ import app.pokeplan.core.reward.HealKind
 import app.pokeplan.core.reward.HomeEvent
 import app.pokeplan.core.reward.HomeKind
 import app.pokeplan.core.reward.LinkEvent
-import app.pokeplan.core.reward.LinkKind
+import app.pokeplan.core.reward.LinkKind as PostcardKind
 import app.pokeplan.core.reward.MintEvent
 import app.pokeplan.core.reward.MintKind
 import app.pokeplan.heal.HealRules
@@ -439,7 +439,7 @@ class GameStore(
         val rewards = outcome.rewards + egg?.rewards.orEmpty()
         update { d ->
             val counters = tally.set(d.counters, today, paidToday + 1) + (Counters.LINK_EGG_METER to meter % RewardEngine.LINK_EGG_METER_SIZE)
-            log(LINK_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, linkPaid = (d.linkPaid + event.id).takeLast(LINK_PAID_KEPT)), origin = Origin(Origin.How.POSTCARD_EGG, Region.LINK))
+            noted(d, log(LINK_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, linkPaid = (d.linkPaid + event.id).takeLast(LINK_PAID_KEPT)), origin = Origin(Origin.How.POSTCARD_EGG, Region.LINK)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
         }
         return rewards
     }
@@ -614,6 +614,12 @@ class GameStore(
      * rules and paid once; the link only lets LINK show this task's status ([linkedTask]) and keeps LINK from paying for the same follow-up. Converting the same
      * follow-up again returns the same task, so it can never exist twice.
      */
+    override fun followUpTask(followUpId: String): FollowUpTask? =
+        linkedTask(LinkKind.LINK_FOLLOW_UP, followUpId)?.let { FollowUpTask(it.id, it.state == TaskState.DONE, it.completedAtMillis) }
+
+    override fun planFollowUp(followUpId: String, title: String, planned: LocalDate?): FollowUpTask? =
+        convertFollowUp(followUpId, title, planned)?.let { FollowUpTask(it.id, it.state == TaskState.DONE, it.completedAtMillis) }
+
     fun convertFollowUp(followUpId: String, title: String, planned: LocalDate? = null, due: LocalDateTime? = null): Task? {
         linkedTask(LinkKind.LINK_FOLLOW_UP, followUpId)?.let { return it }
         val clean = title.trim().ifEmpty { return null }
@@ -2014,11 +2020,11 @@ class GameStore(
         private val HOME_SOURCES = mapOf(HomeKind.CHORE to "Habitat Discovery", HomeKind.MAINTENANCE to "Habitat Discovery").mapValues { HOME_LOG_PREFIX + it.value }
 
         /** The most of each LINK kind the world pays in a day *(tune)*, a backstop to the same limit in `LinkRules`. */
-        val LINK_CAPS: Map<LinkKind, Int> = mapOf(LinkKind.FOLLOW_UP to app.pokeplan.link.LinkRules.FOLLOW_UPS_PAID_PER_DAY)
+        val LINK_CAPS: Map<PostcardKind, Int> = mapOf(PostcardKind.FOLLOW_UP to app.pokeplan.link.LinkRules.FOLLOW_UPS_PAID_PER_DAY)
 
         /** Every LINK entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val LINK_LOG_PREFIX = "Link: "
-        private val LINK_SOURCES = mapOf(LinkKind.FOLLOW_UP to "Postcard Trail").mapValues { LINK_LOG_PREFIX + it.value }
+        private val LINK_SOURCES = mapOf(PostcardKind.FOLLOW_UP to "Postcard Trail").mapValues { LINK_LOG_PREFIX + it.value }
 
         /** How many paid LINK event ids the save remembers. */
         const val LINK_PAID_KEPT = 1000

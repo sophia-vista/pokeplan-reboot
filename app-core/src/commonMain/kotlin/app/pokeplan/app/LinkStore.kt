@@ -185,6 +185,7 @@ class LinkStore(
     fun complete(id: String): Logged<FollowUp> {
         val f = data.followUps.firstOrNull { it.id == id } ?: return Logged(null, "That follow-up is gone.")
         if (f.status != FollowUpStatus.OPEN) return Logged(null, "That follow-up is not open.")
+        if (world.followUpTask(f.id) != null) return Logged(null, IN_PLAN)
         val before = data
         val pays = LinkRules.pays(before, f, today)
         change(id) { it.copy(status = FollowUpStatus.COMPLETED, completedMillis = nowMillis, completedDay = today, updatedMillis = nowMillis) }
@@ -193,11 +194,43 @@ class LinkStore(
         return Logged(data.followUps.first { it.id == id }, rewards = rewards.orEmpty())
     }
 
+    /**
+     * Hands an open follow-up to PLAN as a task, by the user's choice (LINK.md 2.4). From then on PLAN owns the task, its completion and its reward, once; LINK
+     * keeps the person and the words, shows the task's status ([planTask]) and never pays for this follow-up. The same follow-up gives the same task. Null
+     * when it is gone, not open, or there is no Plan to receive it.
+     */
+    fun convertToPlan(id: String): FollowUpTask? {
+        val f = data.followUps.firstOrNull { it.id == id }?.takeIf { it.status == FollowUpStatus.OPEN } ?: return null
+        val task = world.planFollowUp(f.id, f.title, f.due) ?: return null
+        if (!f.converted) change(id) { it.copy(converted = true, updatedMillis = nowMillis) }
+        return task
+    }
+
+    /** The PLAN task this follow-up became, with its state, or null when it has none (or it was deleted in PLAN: LINK's record is then untouched). */
+    fun planTask(id: String): FollowUpTask? = world.followUpTask(id)
+
+    /**
+     * Mirrors a converted follow-up whose PLAN task was finished as completed here too, without paying: PLAN already did, once. Call it when PLAN's data
+     * changes. A deleted or unlinked task leaves the follow-up open and owned by nobody but LINK, which still pays nothing for it.
+     */
+    fun syncFromPlan() {
+        val done = data.followUps.filter { it.converted && it.status == FollowUpStatus.OPEN }.mapNotNull { f -> world.followUpTask(f.id)?.takeIf { it.done }?.let { f.id to it } }
+        if (done.isEmpty()) return
+        val byId = done.toMap()
+        update { d ->
+            d.copy(followUps = d.followUps.map { f ->
+                val t = byId[f.id] ?: return@map f
+                val at = t.doneAtMillis ?: nowMillis
+                f.copy(status = FollowUpStatus.COMPLETED, completedMillis = at, completedDay = at.toLocalDateTime(zone).date, updatedMillis = nowMillis)
+            })
+        }
+    }
+
     /** Puts a done or cancelled follow-up back to open. What was paid stays paid and is never paid twice. */
     fun reopen(id: String) = change(id) { if (it.status == FollowUpStatus.OPEN) it else it.copy(status = FollowUpStatus.OPEN, updatedMillis = nowMillis) }
 
     /** Cancels an open follow-up. It earns nothing and leaves the open list. */
-    fun cancel(id: String) = change(id) { if (it.status == FollowUpStatus.OPEN) it.copy(status = FollowUpStatus.CANCELLED, completedMillis = nowMillis, updatedMillis = nowMillis) else it }
+    fun cancel(id: String) = if (world.followUpTask(id) != null) Unit else change(id) { if (it.status == FollowUpStatus.OPEN) it.copy(status = FollowUpStatus.CANCELLED, completedMillis = nowMillis, updatedMillis = nowMillis) else it }
 
     fun deleteFollowUp(id: String) = update { d -> d.copy(followUps = d.followUps.filterNot { it.id == id }) }
 
@@ -234,6 +267,9 @@ class LinkStore(
     fun eraseAll() = update { d -> LinkKinds.entries.fold(d) { acc, k -> LinkExport.without(acc, k) } }
 
     companion object {
+        /** Why a follow-up that PLAN owns cannot be finished or cancelled here: one real action, one completion. */
+        const val IN_PLAN = "This one is in Plan now. Finish it there."
+
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
     }
 }

@@ -147,7 +147,7 @@ object LinkRules {
      * Cancelling, reopening, editing and rescheduling never pay.
      */
     fun pays(data: LinkData, f: FollowUp, day: LocalDate): Boolean =
-        data.settings.postcardTrail && !f.paid && data.followUps.count { it.paid && it.completedDay == day } < FOLLOW_UPS_PAID_PER_DAY
+        data.settings.postcardTrail && !f.paid && !f.converted && data.followUps.count { it.paid && it.completedDay == day } < FOLLOW_UPS_PAID_PER_DAY
 
     // --- people ------------------------------------------------------------------------------------------------------------
 

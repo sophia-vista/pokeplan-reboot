@@ -29,6 +29,7 @@ class LinkStoreTest {
     private class FakeClock(var millis: Long) : Clock {
         override fun nowMillis() = millis
         fun advanceDays(n: Int) { millis += n * 86_400_000L }
+        fun advanceMinutes(n: Int) { millis += n * 60_000L }
     }
 
     private val utc = TimeZone.UTC
@@ -40,6 +41,8 @@ class LinkStoreTest {
         val events = mutableListOf<LinkEvent>()
         override fun care(event: app.pokeplan.core.reward.CareEvent) = inner.care(event)
         override fun link(event: LinkEvent): List<Reward>? { events += event; return inner.link(event) }
+        override fun followUpTask(followUpId: String) = inner.followUpTask(followUpId)
+        override fun planFollowUp(followUpId: String, title: String, planned: LocalDate?) = inner.planFollowUp(followUpId, title, planned)
     }
 
     private class Setup(val game: GameStore, val storage: MemoryStorage, var link: LinkStore, val spy: Spy, val clock: FakeClock)
@@ -279,5 +282,65 @@ class LinkStoreTest {
         s.link.addPerson("Ana Cruz", phone = "0917 123 4567")
         assertEquals(1, s.link.search("cruz").size)
         assertEquals(1, s.link.possibleDuplicates("Someone", phone = "0917 123 4567").size)
+    }
+
+    // --- the follow-up that became a PLAN task (LINK.md 2.4, 9.2) -------------------------------------------------------------
+
+    @Test
+    fun aConvertedFollowUpIsPlansToFinishAndLinkNeverPaysForIt() {
+        val s = setup()
+        val f = s.followUp("Send the photos")
+        val task = assertNotNull(s.link.convertToPlan(f.id))
+        assertFalse(task.done)
+        assertTrue(s.link.data.followUps.single().converted)
+        assertEquals(task.taskId, s.link.convertToPlan(f.id)?.taskId, "the same follow-up gives the same task")
+        assertEquals(1, s.game.data.tasks.count { !it.tutorial })
+        // One real action, one completion: LINK refuses to finish what PLAN owns.
+        assertEquals(LinkStore.IN_PLAN, s.link.complete(f.id).refused)
+        s.link.cancel(f.id)
+        assertEquals(FollowUpStatus.OPEN, s.link.data.followUps.single().status)
+        // Finishing it in PLAN is mirrored in LINK, with no Postcard Trail event.
+        s.clock.advanceMinutes(30)
+        s.game.completeTask(task.taskId)
+        s.clock.advanceMinutes(1); s.game.tick()
+        s.link.syncFromPlan()
+        val done = s.link.data.followUps.single()
+        assertEquals(FollowUpStatus.COMPLETED, done.status)
+        assertFalse(done.paid)
+        assertTrue(s.spy.events.isEmpty())
+        assertEquals(0, s.game.linkEggMeter())
+    }
+
+    @Test
+    fun aConvertedFollowUpStaysUnpaidEvenWhenItsTaskIsGone() {
+        val s = setup()
+        val f = s.followUp("Send the photos")
+        val task = assertNotNull(s.link.convertToPlan(f.id))
+        s.game.deleteTask(task.taskId)
+        assertNull(s.link.planTask(f.id))
+        val done = s.link.complete(f.id)
+        assertEquals(FollowUpStatus.COMPLETED, done.record?.status)
+        assertTrue(done.rewards.isEmpty())
+        assertTrue(s.spy.events.isEmpty(), "the converted flag is never cleared")
+    }
+
+    @Test
+    fun onlyAnOpenFollowUpCanBeHandedToPlan() {
+        val s = setup()
+        val f = s.followUp("Call about the trip")
+        s.link.complete(f.id)
+        assertNull(s.link.convertToPlan(f.id))
+        assertNull(s.link.convertToPlan("nope"))
+        assertTrue(s.game.data.tasks.none { it.link != null })
+    }
+
+    @Test
+    fun aLinkRewardLeavesItsOwnEventInTheLedger() {
+        val s = setup()
+        s.link.complete(s.followUp("Send the photos").id)
+        val note = s.game.data.ledgerNotes.single()
+        assertEquals("LINK", note.module)
+        assertTrue(note.eventId.startsWith("link:"))
+        assertTrue(secrets.none { it in note.toString() })
     }
 }

@@ -210,7 +210,7 @@ LINK owns the following canonical records:
 | Contact source mapping | Import provenance and reconciliation |
 | Postcard Trail state | LINK's optional acquisition progress and idempotency references |
 
-**As built (0.144.0, REP-014): Plan's half only.** LINK itself is not built. `GameStore.convertFollowUp(followUpId, title, planned, due)` makes the PLAN task for a converted follow-up (one task per follow-up id; `TaskLink(LINK_FOLLOW_UP, id)`), after which PLAN owns its completion and pays it once by Plan's rules (paid once, so a reopen never pays again); `GameStore.linkedTask(LINK_FOLLOW_UP, id)` gives LINK the task and its state to display; `unlinkTask` leaves a normal PLAN task. LINK must not pay for a follow-up that has a linked task. `TaskLinksTest` covers it.
+**As built (0.144.0 Plan's half, 0.145.0 LINK's half, REP-014).** `GameStore.convertFollowUp(followUpId, title, planned, due)` makes the PLAN task for a converted follow-up (one task per follow-up id; `TaskLink(LINK_FOLLOW_UP, id)`), after which PLAN owns its completion and pays it once by Plan's rules (paid once, so a reopen never pays again); `GameStore.linkedTask(LINK_FOLLOW_UP, id)` gives LINK the task and its state to display; `unlinkTask` leaves a normal PLAN task. LINK must not pay for a follow-up that has a linked task. LINK's half (0.145.0): "Do it in Plan" on a follow-up (`LinkStore.convertToPlan`, through `World.planFollowUp`) sets `FollowUp.converted`, which is never cleared, so LINK pays nothing for that follow-up even if its task is later deleted; while the task exists LINK refuses to finish or cancel the follow-up (`LinkStore.IN_PLAN`, one real action, one completion) and shows "In Plan"; a task finished in PLAN is mirrored as completed in LINK without a reward (`syncFromPlan`); a deleted task leaves the follow-up open for the player to finish or cancel here, unpaid. `TaskLinksTest` and `LinkStoreTest` cover it.
 
 ### 4.1 Cross-module boundaries
 
@@ -560,7 +560,7 @@ This document is the single detailed requirements source for LINK. Shared schedu
 
 **Data (section 4).** `link_*` tables from the start (schema 10): `link_person`, `link_note`, `link_date`, `link_followup` (each row `key, position, day, json`) and `link_state` (settings); `LinkTables` reads, exports or erases one family alone. Link is in the daily backup and the backup file; a backup made before Link leaves Link alone. Not sealed (no owner decision), like Home.
 
-**Not built, not offered:** reminders for dates and follow-ups (5; the shared scheduler has no LINK source), importing device contacts and the Contacts permission (6.1), converting a follow-up to a PLAN task (2.4), a link from HOME to a contact, contact source mapping and provenance, widgets, and a passphrase-sealed backup.
+**Not built, not offered:** reminders for dates and follow-ups (5; the shared scheduler has no LINK source), importing device contacts and the Contacts permission (6.1), a link from HOME to a contact, contact source mapping and provenance, widgets, and a passphrase-sealed backup.
 
 ## Shared Pokémon ecosystem contract
 
