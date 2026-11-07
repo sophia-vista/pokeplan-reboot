@@ -100,6 +100,29 @@ object DeviceSelfCheck {
                 check(live.snapshot()["save"] == back) { "a backup would not see the save" }
                 "moved into tables, a change written, read back equal, the snapshot has it"
             }
+            check("Pokémon tables: move in, one place each, ledger writes the balance, backup sees it") {
+                val live = s.live
+                fun mon(id: String, inParty: Boolean, level: Int) =
+                    "{\"id\":\"$id\",\"speciesId\":25,\"formIdentifier\":\"pikachu\",\"nickname\":\"\",\"nature\":\"HARDY\",\"ability\":\"static\",\"gender\":null," +
+                        "\"ivs\":{\"hp\":1,\"attack\":2,\"defense\":3,\"spAttack\":4,\"spDefense\":5,\"speed\":6},\"evs\":{\"hp\":0,\"attack\":0,\"defense\":0,\"spAttack\":0,\"spDefense\":0,\"speed\":0}," +
+                        "\"level\":$level,\"candyProgress\":0,\"totalCandies\":0,\"friendship\":70,\"isShiny\":false,\"heldItem\":null,\"teraType\":null,\"cosmeticForm\":null," +
+                        "\"personality\":7,\"inParty\":$inParty,\"caughtAtMillis\":1,\"partyId\":\"plan\"}"
+                fun save(coins: Int, level: Int) =
+                    "{\"player\":{\"pokemon\":[${mon("p1", false, level)},${mon("p2", true, 3)}],\"buddyId\":\"p1\",\"inventory\":{\"counts\":{\"rare-candy\":3}},\"coins\":$coins," +
+                        "\"eggMeter\":0,\"trainerPoints\":0,\"caught\":[25],\"guardians\":[],\"careLeadId\":null,\"planLeadId\":\"p2\",\"rolesVersion\":1}," +
+                        "\"favorites\":[\"p2\"],\"origins\":{},\"shinySpecies\":[],\"caughtForms\":[],\"shinyForms\":[],\"seenSpecies\":[25]}"
+                live.write("save", save(10, 5), 12)
+                live.movePokemonToTables(13)
+                check(s.pokemonTables.isActive()) { "marker not set" }
+                check(s.economy.poke() == 10L && s.economy.bag() == mapOf("rare-candy" to 3L)) { "the opening balance is not the save's" }
+                live.write("save", save(15, 6), 14)
+                check(s.economy.poke() == 15L && s.economy.reconcile().isEmpty()) { "the ledger does not give the balance" }
+                check(s.pokemon.placeOf("p1") == PokemonPlace.Buddy && s.pokemon.placeOf("p2") == PokemonPlace.Party("PLAN")) { "the places are wrong" }
+                val back = live.read("save") ?: error("the save did not read back")
+                check("\"level\":6" in back && "\"coins\":15" in back) { "the tables did not give the save back" }
+                check(live.snapshot()["save"] == back) { "a backup would not see the save" }
+                "moved into tables, ${s.pokemon.count()} Pokémon, a change written, the ledger reconciles, the snapshot has it"
+            }
             check("Reminder holds: put, replace, release") {
                 val r = s.reminders
                 r.hold(HeldReminder("PLAN|t|task|1", "PLAN", "t", "task", "1", 100, "snooze"), 1)

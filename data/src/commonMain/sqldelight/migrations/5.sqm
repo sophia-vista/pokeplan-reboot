@@ -1,0 +1,29 @@
+-- Version 5 to 6: the shared Pokémon, Bag and ledger tables become the live authority (REP-014).
+-- The collection keeps the order the Pokémon were owned and the origin exactly as the save has it.
+ALTER TABLE owned_pokemon ADD COLUMN position INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE owned_pokemon ADD COLUMN origin_json TEXT;
+UPDATE owned_pokemon SET position = rowid;
+
+-- One place per Pokémon replaces the party, buddy and Guardian tables. Rows an older build wrote are carried over by the same priority
+-- the app uses (Guardian, buddy, party), so a Pokémon the old tables had in two places keeps the first; the others are dropped from it.
+CREATE TABLE pokemon_place (
+    owned_id TEXT NOT NULL PRIMARY KEY REFERENCES owned_pokemon(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL CHECK (kind IN ('buddy', 'party', 'guardian')),
+    ref TEXT NOT NULL DEFAULT '',
+    slot INTEGER NOT NULL DEFAULT 0,
+    UNIQUE (kind, ref, slot),
+    CHECK ((kind = 'buddy' AND ref = '' AND slot = 0) OR (kind = 'guardian' AND ref = '' AND slot >= 1) OR (kind = 'party' AND ref <> '' AND slot >= 1))
+);
+
+INSERT OR IGNORE INTO pokemon_place(owned_id, kind, ref, slot) SELECT owned_id, 'guardian', '', slot FROM guardian_slot ORDER BY slot;
+INSERT OR IGNORE INTO pokemon_place(owned_id, kind, ref, slot) SELECT owned_id, 'buddy', '', 0 FROM buddy_selection;
+INSERT OR IGNORE INTO pokemon_place(owned_id, kind, ref, slot) SELECT owned_id, 'party', lower(module_id), slot FROM module_party ORDER BY module_id, slot;
+
+DROP TABLE guardian_slot;
+DROP TABLE buddy_selection;
+DROP TABLE module_party;
+
+CREATE TABLE pokemon_state (
+    key TEXT NOT NULL PRIMARY KEY,
+    json TEXT NOT NULL
+);

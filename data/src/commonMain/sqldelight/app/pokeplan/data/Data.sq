@@ -1,4 +1,4 @@
--- Schema version 5 of the PokéLife database (docs/pokelife ARCHITECTURE/DATA_AND_MIGRATIONS.md sections 7 and 8).
+-- Schema version 6 of the PokéLife database (docs/pokelife ARCHITECTURE/DATA_AND_MIGRATIONS.md sections 7 and 8).
 -- It holds the shared Pokémon and economy side and a legacy sidecar for every module that has no tables yet.
 -- Every later change is a numbered migration (N.sqm) checked against the committed schema file (databases/N.db).
 
@@ -45,31 +45,26 @@ CREATE TABLE owned_pokemon (
     origin_region TEXT,
     -- Any field of the legacy record this version has no column for, kept as raw JSON, never dropped.
     extra_json TEXT,
+    -- Version 6: the place in the collection's list (the order the Pokémon were owned, which a party's member order follows), and the
+    -- origin exactly as the save keeps it (origin_how and origin_region are its lookup columns).
+    position INTEGER NOT NULL DEFAULT 0,
+    origin_json TEXT,
     CHECK (ev_hp + ev_attack + ev_defense + ev_sp_attack + ev_sp_defense + ev_speed <= 510)
 );
 
 CREATE INDEX owned_pokemon_species ON owned_pokemon(species_id, form_identifier);
 
--- A module's party: the lead is slot 1, then up to five members (POKEMON_ECOSYSTEM.md section 2.2.2).
--- The same Pokémon may sit in several modules' parties, but only once in one party.
-CREATE TABLE module_party (
-    module_id TEXT NOT NULL,
-    slot INTEGER NOT NULL CHECK (slot BETWEEN 1 AND 6),
-    owned_id TEXT NOT NULL REFERENCES owned_pokemon(id) ON DELETE CASCADE,
-    PRIMARY KEY (module_id, slot),
-    UNIQUE (module_id, owned_id)
-);
-
--- The one global buddy (a row only while one is chosen).
-CREATE TABLE buddy_selection (
-    id INTEGER NOT NULL PRIMARY KEY CHECK (id = 1),
-    owned_id TEXT NOT NULL REFERENCES owned_pokemon(id) ON DELETE CASCADE
-);
-
--- Legendary and mythical Guardians, in slot order.
-CREATE TABLE guardian_slot (
-    slot INTEGER NOT NULL PRIMARY KEY CHECK (slot >= 1),
-    owned_id TEXT NOT NULL UNIQUE REFERENCES owned_pokemon(id) ON DELETE CASCADE
+-- Where a Pokémon is (POKEMON_ECOSYSTEM.md sections 2.2 and 6.2, owner decision 7 November 2026): **one place only**. The primary key is the
+-- Pokémon, so a second row for it cannot exist; no row means the PC. A party is its module's party id in `ref` (the lower-case module id the save uses, `plan`) and the lead is slot 1; the buddy
+-- is the one row of its kind (slot 0); a Guardian has its slot. A WORLD expedition team and a GEAR helper are the other two places: their
+-- records stay with their module (the 'save' row), and the live write refuses a save that puts one of those Pokémon here as well.
+CREATE TABLE pokemon_place (
+    owned_id TEXT NOT NULL PRIMARY KEY REFERENCES owned_pokemon(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL CHECK (kind IN ('buddy', 'party', 'guardian')),
+    ref TEXT NOT NULL DEFAULT '',
+    slot INTEGER NOT NULL DEFAULT 0,
+    UNIQUE (kind, ref, slot),
+    CHECK ((kind = 'buddy' AND ref = '' AND slot = 0) OR (kind = 'guardian' AND ref = '' AND slot >= 1) OR (kind = 'party' AND ref <> '' AND slot >= 1))
 );
 
 -- Species and forms ever seen, caught or owned as a shiny; they survive a transfer (POKEMON_ECOSYSTEM.md section 5).
@@ -83,6 +78,13 @@ CREATE TABLE player_progress (
     id INTEGER NOT NULL PRIMARY KEY CHECK (id = 1),
     egg_meter INTEGER NOT NULL CHECK (egg_meter >= 0),
     trainer_points INTEGER NOT NULL CHECK (trainer_points >= 0)
+);
+
+-- The player's single values that have no table of their own (version 6): the leads a party was given, the roles version and any field a
+-- newer build adds to the player, the favourites and origins of Pokémon that are no longer owned. One row per key, as JSON.
+CREATE TABLE pokemon_state (
+    key TEXT NOT NULL PRIMARY KEY,
+    json TEXT NOT NULL
 );
 
 -- The one Bag: candies, berries, evolution items and every other stack.
@@ -336,51 +338,66 @@ INSERT INTO owned_pokemon(
     iv_hp, iv_attack, iv_defense, iv_sp_attack, iv_sp_defense, iv_speed,
     ev_hp, ev_attack, ev_defense, ev_sp_attack, ev_sp_defense, ev_speed,
     level, candy_progress, total_candies, friendship, is_shiny, held_item, tera_type, cosmetic_form,
-    personality, caught_at_millis, is_favorite, origin_how, origin_region, extra_json
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    personality, caught_at_millis, is_favorite, origin_how, origin_region, extra_json, position, origin_json
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 pokemonById:
 SELECT * FROM owned_pokemon WHERE id = ?;
 
 allPokemon:
-SELECT * FROM owned_pokemon ORDER BY caught_at_millis, id;
+SELECT * FROM owned_pokemon ORDER BY position, caught_at_millis, id;
 
 pokemonCount:
 SELECT count(*) FROM owned_pokemon;
 
+nextPokemonPosition:
+SELECT coalesce(max(position), 0) + 1 FROM owned_pokemon;
+
+updatePokemon:
+UPDATE owned_pokemon SET
+    species_id = ?, form_identifier = ?, nickname = ?, nature = ?, ability = ?, gender = ?,
+    iv_hp = ?, iv_attack = ?, iv_defense = ?, iv_sp_attack = ?, iv_sp_defense = ?, iv_speed = ?,
+    ev_hp = ?, ev_attack = ?, ev_defense = ?, ev_sp_attack = ?, ev_sp_defense = ?, ev_speed = ?,
+    level = ?, candy_progress = ?, total_candies = ?, friendship = ?, is_shiny = ?, held_item = ?, tera_type = ?, cosmetic_form = ?,
+    personality = ?, caught_at_millis = ?, is_favorite = ?, origin_how = ?, origin_region = ?, extra_json = ?, position = ?, origin_json = ?
+WHERE id = ?;
+
 releasePokemon:
 DELETE FROM owned_pokemon WHERE id = ?;
 
--- Parties, buddy and Guardians.
-insertPartySlot:
-INSERT INTO module_party(module_id, slot, owned_id) VALUES (?, ?, ?);
+-- Places: a Pokémon has at most one row.
+placeOf:
+SELECT kind, ref, slot FROM pokemon_place WHERE owned_id = ?;
 
-clearParty:
-DELETE FROM module_party WHERE module_id = ?;
+allPlaces:
+SELECT owned_id, kind, ref, slot FROM pokemon_place ORDER BY kind, ref, slot;
+
+removePlace:
+DELETE FROM pokemon_place WHERE owned_id = ?;
+
+insertPlace:
+INSERT INTO pokemon_place(owned_id, kind, ref, slot) VALUES (?, ?, ?, ?);
+
+clearPlaces:
+DELETE FROM pokemon_place WHERE kind = ? AND ref = ?;
 
 partyOf:
-SELECT slot, owned_id FROM module_party WHERE module_id = ? ORDER BY slot;
+SELECT slot, owned_id FROM pokemon_place WHERE kind = 'party' AND ref = ? ORDER BY slot;
 
 partySlotCount:
-SELECT count(*) FROM module_party;
-
-setBuddy:
-INSERT OR REPLACE INTO buddy_selection(id, owned_id) VALUES (1, ?);
-
-clearBuddy:
-DELETE FROM buddy_selection WHERE id = 1;
+SELECT count(*) FROM pokemon_place WHERE kind = 'party';
 
 buddy:
-SELECT owned_id FROM buddy_selection WHERE id = 1;
-
-insertGuardian:
-INSERT INTO guardian_slot(slot, owned_id) VALUES (?, ?);
-
-clearGuardians:
-DELETE FROM guardian_slot;
+SELECT owned_id FROM pokemon_place WHERE kind = 'buddy';
 
 guardians:
-SELECT slot, owned_id FROM guardian_slot ORDER BY slot;
+SELECT slot, owned_id FROM pokemon_place WHERE kind = 'guardian' ORDER BY slot;
+
+placeCount:
+SELECT count(*) FROM pokemon_place;
+
+moveSlot:
+UPDATE pokemon_place SET slot = ? WHERE owned_id = ?;
 
 -- Dex history.
 addDex:
