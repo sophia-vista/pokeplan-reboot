@@ -167,11 +167,13 @@ enum class CareKind {
 }
 
 /** A Care moment, with no other field: no titles, no mood, no health values. Daily caps are the caller's job. */
+@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 @Serializable
 data class CareEvent(
     val kind: CareKind,
     val nowMillis: Long,
     /** For [CareKind.PLAY]: the Pokémon played with, who takes the friendship. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val pokemonId: String? = null,
 )
 

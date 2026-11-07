@@ -822,6 +822,12 @@ class ScreenshotTest {
     fun careTrends() = care("care-trends", app.pokeplan.ui.screens.CareSection.TRENDS)
 
     @Test
+    fun careMeadow() = care("care-meadow", app.pokeplan.ui.screens.CareSection.MEADOW, careParty = 2)
+
+    @Test
+    fun carePlay() = care("care-play", app.pokeplan.ui.screens.CareSection.PLAY, careParty = 2)
+
+    @Test
     fun meSettings() = me("me-settings", 0)
 
     @Test
