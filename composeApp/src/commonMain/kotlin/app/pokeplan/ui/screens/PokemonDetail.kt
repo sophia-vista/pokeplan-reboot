@@ -280,6 +280,8 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
     val isMintLead = p.id == player.mintLead?.id
     val inHome = p.inParty && p.partyId == PartyIds.HOME
     val isHomeLead = p.id == player.homeLead?.id
+    val inLink = p.inParty && p.partyId == PartyIds.LINK
+    val isLinkLead = p.id == player.linkLead?.id
     val isHealLead = p.id == player.healLead?.id
     val isBuddy = p.id == player.buddyId
     val isLead = p.id == player.careLead?.id
@@ -334,7 +336,11 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             PixelButton(if (isHomeLead) "Is Home's lead" else "Make Home lead", { store.setHomeLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inHome && !isHomeLead, compact = true)
-            PixelButton(if (inHome) "To PC" else "To Home party", { store.setInParty(p.id, !inHome, PartyIds.HOME) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            PixelButton(if (inHome) "To PC" else "To Home party", { store.setInParty(p.id, !inHome, PartyIds.HOME); model.effect(if (inHome) Sfx.MOVE_DROP else Sfx.RECRUIT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            PixelButton(if (isLinkLead) "Is Link's lead" else "Make Link lead", { store.setLinkLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inLink && !isLinkLead, compact = true)
+            PixelButton(if (inLink) "To PC" else "To Link party", { store.setInParty(p.id, !inLink, PartyIds.LINK); model.effect(if (inLink) Sfx.MOVE_DROP else Sfx.RECRUIT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
     }
     if (!p.species.isSpecial) {

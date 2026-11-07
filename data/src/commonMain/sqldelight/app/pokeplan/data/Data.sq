@@ -731,3 +731,40 @@ CREATE TABLE home_state (
     key TEXT NOT NULL PRIMARY KEY,
     json TEXT NOT NULL
 );
+
+-- LINK's own records (version 10, REP-014): the Link save kept in tables from the start, one family per kind of private record (person, note about a
+-- person, important date, follow-up) so each can be read, exported or erased on its own. Same shape as HOME's (key, position, day, and the record as JSON
+-- in `json`). `link_state` holds the settings and any field a newer build adds. LINK never has a row in `live_document`: it is created in the tables.
+-- Nothing is sealed (that is MINT's alone; no owner decision on encrypting LINK yet).
+CREATE TABLE link_person (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE link_note (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE link_date (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE link_followup (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE link_state (
+    key TEXT NOT NULL PRIMARY KEY,
+    json TEXT NOT NULL
+);

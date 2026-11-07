@@ -649,19 +649,19 @@ class ScreenshotTest {
     @Test
     fun darkPlan() = dark("dark-plan", Place.PLAN)
 
-    /** Every module's page opens on its lead in its own scene (Plan, Heal, Mint, Home and World), light and dark. */
+    /** Every module's page opens on its lead in its own scene , light and dark. */
     @Test
     fun moduleLeadStages() {
         val store = storeWithTeam(hatched = 7)
         store.markRewardsSeen(); store.markVersionSeen(AppVersion.NAME)
         val others = store.data.player.pokemon.filter { it.id != store.data.player.buddyId }
         val ids = app.pokeplan.core.pokemon.PartyIds
-        listOf(ids.PLAN, ids.HEAL, ids.MINT, ids.HOME).forEachIndexed { i, party -> others.getOrNull(i)?.let { store.setInParty(it.id, true, party) } }
-        others.getOrNull(4)?.let { p -> store.worldAssign(0, listOf(p.id)) }
+        listOf(ids.PLAN, ids.HEAL, ids.MINT, ids.HOME, ids.LINK).forEachIndexed { i, party -> others.getOrNull(i)?.let { store.setInParty(it.id, true, party) } }
+        others.getOrNull(5)?.let { p -> store.worldAssign(0, listOf(p.id)) }
         val model = AppModel(store)
         for (dark in listOf(false, true)) {
             val tag = if (dark) "dark" else "light"
-            for (module in listOf(app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.Module.HEAL, app.pokeplan.ui.screens.Module.MINT, app.pokeplan.ui.screens.Module.HOME, app.pokeplan.ui.screens.Module.WORLD)) {
+            for (module in listOf(app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.Module.HEAL, app.pokeplan.ui.screens.Module.MINT, app.pokeplan.ui.screens.Module.HOME, app.pokeplan.ui.screens.Module.LINK, app.pokeplan.ui.screens.Module.WORLD)) {
                 model.module = module
                 render("lead-$tag-${module.name.lowercase()}", height = 1500) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
             }
@@ -920,6 +920,50 @@ class ScreenshotTest {
     @Test
     fun largeTextHousehold() {
         app.pokeplan.ui.screens.HouseholdSection.entries.forEach { household("home-xl-${it.name.lowercase()}", it, height = 2800, fontScale = 1.3f) }
+    }
+
+    @Test
+    fun arrivalLink() = cutscene("arrival-link", frames = 60, still = true) {
+        app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last(), fromTask = false, how = app.pokeplan.app.Origin.How.POSTCARD_EGG)
+    }
+
+    /** The Link module with a little recorded (two people, a note, two dates, follow-ups), open on [section] (null for its menu). Synthetic text only. */
+    private fun link(name: String, section: app.pokeplan.ui.screens.LinkSection?, height: Int = 1500, linkParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false) {
+        val store = storeWithTeam()
+        store.markRewardsSeen()
+        store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(linkParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.LINK) }
+        val model = AppModel(store)
+        if (!empty) {
+            val link = model.link
+            val today = model.store.today
+            val ana = link.addPerson("Ana Reyes", organization = "Choir", category = "Friend", tags = listOf("choir"), favorite = true).record!!
+            val ben = link.addPerson("Ben Cruz", preferred = "Benny", category = "Family").record!!
+            link.addNote(ana.id, "Prefers texts in the evening.")
+            link.addDate(app.pokeplan.link.DateKind.BIRTHDAY, "Birthday", today.plus(6, DateTimeUnit.DAY).monthNumber, today.plus(6, DateTimeUnit.DAY).dayOfMonth, 1994, personId = ana.id)
+            link.addDate(app.pokeplan.link.DateKind.ANNIVERSARY, "Anniversary", 2, 29, personId = ben.id)
+            link.addFollowUp("Send the choir photos", ana.id, today.plus(-2, DateTimeUnit.DAY))
+            link.addFollowUp("Ask about the visit", ben.id)
+            link.complete(link.addFollowUp("Return the book").record!!.id)
+            store.markRewardsSeen()
+        }
+        model.module = app.pokeplan.ui.screens.Module.LINK
+        model.linkSection = section
+        render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+    }
+
+    @Test
+    fun linkMenu() = link("link-menu", null, height = 2600, linkParty = 3)
+
+    @Test
+    fun linkMenuEmptyShowsTheTutorial() = link("link-menu-empty", null, height = 2000, empty = true)
+
+    @Test
+    fun linkMenuDark() = link("link-menu-dark", null, height = 2600, linkParty = 3, dark = true)
+
+    /** Every Link section at the system's text at 130%: nothing clipped or pushed out of its box. */
+    @Test
+    fun largeTextLink() {
+        app.pokeplan.ui.screens.LinkSection.entries.forEach { link("link-xl-${it.name.lowercase()}", it, height = 2800, fontScale = 1.3f) }
     }
 
     @Test

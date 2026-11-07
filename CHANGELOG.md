@@ -5,12 +5,20 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.145.0
+## 0.146.0
 
 Every module opens on its lead, and the rounded parts that were left are pixel parts. No reward number changes.
 
-- **A lead scene on every module page** (`ModuleLeadStage`, the Care meadow's window): the module's lead idles in the module's own scene, a tap pets it, its level and progress sit small in the corner, and it celebrates what its module paid (`GameStore.moduleEvent`: a finished task or hatch for Plan, Field Research for Heal, Ledger Research for Mint, Habitat Discovery for Home). World shows the lead of the team out exploring. Nothing shows until the module has a lead; the global buddy stays on Home.
+- **A lead scene on every module page** (`ModuleLeadStage`, the Care meadow's window): the module's lead idles in the module's own scene, a tap pets it, its level and progress sit small in the corner, and it celebrates what its module paid (`GameStore.moduleEvent`: a finished task or hatch for Plan, Field Research for Heal, Ledger Research for Mint, Habitat Discovery for Home, Postcard Trail for Link). World shows the lead of the team out exploring. Nothing shows until the module has a lead; the global buddy stays on Home.
 - **Pixel audit.** Picture windows (`Stage`, `SceneStage`: Calm break, hatch and visitor scenes, Pokédex, Focus), the background picker, the whole launcher (search field, category chips, rows, sheets) and the Gear unit drop-down (now a pixel list in a dialogue frame, not Material's menu) use stair corners. Colour swatches, the Menu badge, calendar day markers and the dots on lists are pixel squares, and the breathing circle, the compass and level, the Ranger ring and the World map markers are drawn as pixel discs (`drawPixelDisc`, `drawPixelRing`). The buddy's progress bar and its berry button lost their round shapes. Unused Material imports are gone.
+
+## 0.145.0
+
+Link, the connection module, built manual first (REP-014). Stacked on the cross-module links of 0.144.0.
+
+- **Link is a module** (Modules → Link, blue; `link-core`, `LinkStore`, `screens/Link.kt`). **People** (a name is enough; phone, email, organization, role, address, a relationship word and tags are optional; a directory sorted by name or by what changed last, a Pinned filter that is only a shortcut; a profile with Overview, Notes and Follow-ups; possible duplicates are suggested by name, phone digits or email and never merged; deleting a person asks whether their dates and follow-ups stay), **dates** (birthday, anniversary, milestone or custom; month and day, a year only when known, every year or once; "turns N" when the year is known; **29 February is observed on 28 February in a year without one**), **follow-ups** (a title is enough; Open and History; done, cancelled, reopened; a late one is only "Due since", no warning), an **Overview** with only what is due or near, and one **search** over everything. No contact is ever contacted, and no screen shows a score, a streak, a frequency or a "last contacted".
+- **Postcard Trail** (rules version 20): a follow-up you finish pays 2 Rare Candies, friendship for Link's lead and a trainer point, and adds a point to the track; **three finished follow-ups find a Postcard Egg** from the Link Region into Link's party. At most 3 a day; one follow-up pays once however often it is reopened and finished again; adding people, notes, dates, tags, favourites, editing, rescheduling, cancelling and reopening never pay. On by default, off in Settings without losing anything. The event is `LinkEvent` (id, module, opaque reference, kind, time, policy): no name, number, category, tag, note, date or follow-up title; tests prove none of them reaches the shared save, the reward log, the event or the shared tables.
+- Link's party (lead, perks that change only Postcard Trail), a first-run postcard tutorial, and a scene of its own for the new Pokémon (delivered along the route). The Link Region is released (a Pokédex tab). `link_*` tables (schema 10), in the daily backup and the backup file; export and erase by kind. A follow-up can be made a Plan task (the conversion of 0.144.0): PLAN then owns it, Link shows "In Plan" with no tick and never pays for it. Not built: reminders, importing device contacts, widgets.
 
 ## 0.144.0
 
