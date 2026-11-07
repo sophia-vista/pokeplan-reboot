@@ -1,4 +1,4 @@
-# REP-014, fourth slice: MINT, manual first, and arrival scenes by module (0.140.0)
+# REP-014, fourth slice: MINT, manual first, and arrival scenes by module (0.141.0)
 
 **Status:** built and tested on the JVM, compiled for desktop, web and Android; **not run on a device**. No provider, statement import or bank connection was started.
 **Owner brief (8 November 2026):** the next REP-014 item (MINT, whose placeholder colour was reserved), and "improve Pokémon acquisition scenes: all are egg, that was created mainly for Plan focus eggs; can reuse but not too much, whatever makes sense for the module".

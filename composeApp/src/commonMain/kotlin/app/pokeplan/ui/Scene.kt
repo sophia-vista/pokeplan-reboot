@@ -45,7 +45,8 @@ internal fun rememberFadeIn(ready: Boolean): State<Float> {
 fun SceneImage(name: String, modifier: Modifier = Modifier, darkness: Float = 0f, crisp: Boolean = false) {
     val image by produceState(scenes[name], name) {
         if (value == null) {
-            value = orNull { Res.readBytes("files/scenes/$name.png").decodeToImageBitmap() }
+            val path = if (app.pokeplan.ui.launcher.FriendAreas.isArea(name)) app.pokeplan.ui.launcher.FriendAreas.file(name) else "files/scenes/$name.png"
+            value = orNull { Res.readBytes(path).decodeToImageBitmap() }
             scenes[name] = value
         }
     }

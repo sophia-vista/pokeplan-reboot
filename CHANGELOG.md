@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.140.0
+## 0.141.0
 
 Mint, the finance module, built manual first (REP-014), and a scene of its own for every way a new Pokémon arrives (owner: "all are egg, that was made for Plan's focus eggs: reuse it, but not too much, whatever makes sense for the module").
 
@@ -16,6 +16,16 @@ Mint, the finance module, built manual first (REP-014), and a scene of its own f
 - **Every acquisition method starts on:** Heal's Field Research is now on by default (it was off until turned on; a save that already stored the old default keeps it), like Ledger Research.
 - **Mint's own tables** (schema 8, `mint_*`, `MintTables`; in the daily backup and the backup file; a backup made before Mint leaves Mint alone), the Mint Region is released (about 65 to 75 hatchable lines, patrons Diancie and Melmetal), Mint's party of six with its own lead and perks (Candy finder: Steel, Rock, Ground, Normal, Electric, Psychic; Friendship gain: Ghost, Dark, Poison, Fire, Fairy, Dragon), and a 5-second tally tutorial that gives one Mint Pokémon into Mint's party.
 - **Arrival scenes by module.** Plan's focus and task eggs and a visitor's gift keep the egg. A **Care** friend now wanders in over the meadow and settles; a **Heal** find runs in along the route; a **Mint** entry is catalogued in the cave (a Star Piece glints, then the Pokémon rises from the floor). The words follow ("A new friend wandered over", "Field Research found", "Ledger Research catalogued"), on Home's Recently list, in the reward box and on the Pokémon's origin line ("Arrived through Care"). Reduce motion goes straight to the Pokémon.
+
+## 0.140.0
+
+- **Real Rescue Team art from the game's own files.** 245 maps (the 57 Friend Areas, towns, team bases and more) and the 64 dungeon tilesets of Pokémon Mystery Dungeon: Red Rescue Team, decoded by `tools/sprites/fetch_rescue_maps.py` (from pret/pmd-red's committed map data) and `tools/tiles/extract_rescue_tiles.py` (from the owner's ROM, which is not in the repo). Sources and licences in `docs/assets.md`.
+- **Explorers of Sky too.** 440 maps (`assets/sky-maps`, not used yet) and 143 dungeon tilesets (`assets/tiles/ex-NNN`) from the owner's Explorers of Sky ROM, by `tools/sprites/extract_sky_maps.py` and `tools/tiles/extract_sky_tiles.py`. Their sound (DSE, rendered by `tools/sprites/extract_sky_audio.py`, an approximation not yet listened to) is in `assets/sky-sfx`: 11 system effects, 14 jingles and 27 short music files named from pret/pmd-sky.
+- **World makes sounds.** A claimed job plays the Explorers of Sky mission-success jingle; building a facility, claiming research, buying a candy, brewing, swapping and training use existing game clips.
+- **Backgrounds and towns use them.** Settings → Look → Background now lists the Rescue Team dungeon towns and the 57 Friend Areas in groups; the launcher's town picker gains the Rescue Team dungeons.
+- **World's Base is no longer one long list.** It opens on the team base of your first partner, as big as the width allows, growing with the Camp, then your rank and a menu: Facilities, Research, Café, Kecleon Shop, Swap Shop, Dojo. Each opens its own page with a banner from the Square or the Dojo.
+- **World dungeons without a sheet of their own** (all of Kanto, Johto, Hoenn and Sinnoh) borrow the Rescue Team tileset closest to their look instead of the World Abyss.
+- **Sound effects, with their triggers.** 496 Red Rescue Team sounds rendered from the ROM's sound data (`assets/pmd-sfx`, approximate and not yet listened to, not used by the app) and `triggers.tsv`, which maps each id to the game events that play it from pret/pmd-red's source. The audit found `level-up` was mapped to the dungeon wind sound; it now shares the rank-up clip.
 
 ## 0.139.0
 
