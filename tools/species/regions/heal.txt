@@ -1,0 +1,74 @@
+# The Heal Region (Region.HEAL): sporty, outdoorsy and energetic Pokémon for the Heal module's Field Research (movement, training,
+# swimming, stamina), mostly Fighting, Fire, Water, Electric, Normal and Flying. In dex order (line 1 becomes Heal #1).
+# Super Rare lines: Jangmo-o and Frigibax (stamina from a long climb).
+#
+# One species per line, by English name or PokeAPI identifier; blank lines and # lines are ignored.
+# A species is in at most one module region (the other lists in this folder); the generator checks it.
+# Curation: docs/region-curation-prompt.md. After editing:
+#   python3 -I tools/species/generate.py
+#   ./gradlew :pokemon-core:jvmTest
+
+Mankey
+Machop
+Magikarp
+Doduo
+Tyrogue
+Cyndaquil
+Totodile
+Ponyta
+Tauros
+Miltank
+Phanpy
+Treecko
+Torchic
+Mudkip
+Poochyena
+Shroomish
+Makuhita
+Electrike
+Zangoose
+Barboach
+Chimchar
+Piplup
+Shinx
+Buizel
+Pidove
+Blitzle
+Darumaka
+Timburr
+Throh
+Sawk
+Scraggy
+Mienfoo
+Chespin
+Fennekin
+Froakie
+Bunnelby
+Pancham
+Hawlucha
+Litten
+Pikipek
+Crabrawler
+Yungoos
+Passimian
+Mudbray
+Rookidee
+Arrokuda
+Yamper
+Clobbopus
+Grookey
+Scorbunny
+Sobble
+Falinks
+Pawmi
+Quaxly
+Sprigatito
+Fuecoco
+Flamigo
+Wiglett
+Finizen
+Elekid
+Magby
+Rhyhorn
+Jangmo-o
+Frigibax
