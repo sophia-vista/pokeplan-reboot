@@ -189,6 +189,7 @@ private fun PartyGroup(
         else if (region == Region.HEAL) "Open a Pokémon and choose \"To Heal party\", or try Field Research in Heal. Its first member leads."
         else if (region == Region.MINT) "Open a Pokémon and choose \"To Mint party\", or try the tally in Mint. Its first member leads."
         else if (region == Region.HOUSEHOLD) "Open a Pokémon and choose \"To Home party\", or try the tidy in Home. Its first member leads."
+        else if (region == Region.HOUSEHOLD) "Open a Pokémon and choose \"To Home party\", or try the tidy in Home. Its first member leads."
         else if (region == Region.LINK) "Open a Pokémon and choose \"To Link party\", or try the postcard in Link. Its first member leads."
         else "Hatch an egg with a focus session, or move a Pokémon here from the PC."
         EmptyState("No one here yet", how, icon = "poke-ball", sleeper = true)
