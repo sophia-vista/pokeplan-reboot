@@ -218,6 +218,8 @@ Each applicable module persists an independent `ModuleParty` or equivalent:
 
 Capacity is six: slot 1 is the lead, slots 2 to 6 are members. Enforce unique IDs within one party and across all parties (one Pokémon, one place). A party can contain fewer than six. Do not auto-fill or auto-replace a party when a Pokémon evolves, changes buddy status, or is added to another module.
 
+**As built (0.135.0, REP-014):** the collection is `owned_pokemon` and a Pokémon's place is at most one row of `pokemon_place` (the Pokémon is its primary key, so two places cannot be stored; no row is the PC). A party's rows are its module's party id and slots 1 to n with the lead in slot 1; the buddy is the one row of its kind; a Guardian has its slot. WORLD teams and GEAR helpers remain in their modules' records, and the live write refuses a save that names a Pokémon there and in the table (`DATA_AND_MIGRATIONS.md` section 7.3). A Pokémon obtained from WORLD (a Guardian included) arrives with no place, that is in the PC, until the player assigns it.
+
 ### 6.3 WORLD teams
 
 WORLD owns named or contextual expedition teams, assignments, active expedition membership and team-size limits. They reference canonical owned IDs. An owned Pokémon on a WORLD team is in no module party and is not the buddy or a helper (section 2.2). A Pokémon on an expedition under way cannot be moved. WORLD's expedition concurrency/assignment policy remains authoritative for the team itself.
@@ -494,6 +496,8 @@ Poké is the sole universal game currency. There is no separate PLAN Coins balan
 Conversion is 1:1, summing both legacy balances into the new shared Poké balance. Migration must preserve the two original source values, source save/version, conversion timestamp, and migration ID in migration/audit metadata so the conversion can be verified or recovered. It must be applied once, be idempotent, and never re-add balances after restore/retry. If one legacy balance is absent, treat it as zero. Do not round or reinterpret integer units.
 
 `PlayerState.coins` and `WorldData.poke` are legacy sources only; after migration all reads/writes use the shared economy repository. UI labels use Poké consistently.
+
+**As built (0.135.0, REP-014):** the balance and the Bag are `currency_balance` and `bag_stack`, written only by `EconomyRepository.settle` together with their `reward_ledger_entry` rows in one transaction (the live save turns the change of one action into one event; the migration's opening balance carries the Poké merge's two source values in its metadata and pays nothing). `PlayerState.coins` is the balance as the app reads it; `WorldData.poke` is **no longer stored**: it is the in-memory input of World's pure rules, set from the balance on load and folded back after each action, and an old save's stored World balance is read once into `legacyPoke` for the merge and never written. Dropping the in-memory field needs World's rules to take the balance as an input (`DATA_AND_MIGRATIONS.md` section 7.3.0).
 
 ### 11.3 Economy operations
 

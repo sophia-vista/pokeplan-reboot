@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.135.0
+
+- **Your Pokémon, Bag and Poké now live in their own database tables** (schema 6), the way Plan's and Care's already do. The game works exactly as before: the app still reads and writes one save, and the database splits it into rows and puts it back together, so saving a level-up writes one Pokémon's row instead of the whole collection. The first start with this version moves everything over, checks it reads back equal, keeps the old save whole under an `aside:` copy, and pays nothing; if anything differs, the old save stays the live one and it tries again next start.
+- **A Pokémon is in one place, and the database enforces it.** The buddy, each module's party and the Guardian slots are now one table keyed by the Pokémon, so a second place for the same Pokémon cannot be stored; the save is refused if it would also put that Pokémon on a World team or as a Pokégear helper. A Pokémon from World, a Guardian included, arrives in the PC until you assign it.
+- **The ledger is the only writer of your Poké and Bag.** Both change only together with a ledger entry in the same transaction (one event per change, never edited or removed, and the balance can always be rebuilt from it). World's copy of the Poké balance is no longer saved at all: the World screen shows the one balance, and an old save's World Poké is read once for the merge.
+- Restoring a backup goes through the same checks and split, so an older backup restores correctly.
+- Under the hood: `5.sqm` and `databases/6.db`, `PokemonTables`, `LiveDocuments.movePokemonToTables`, the DB check screen has a line for it. No reward number changed (`RewardRules.VERSION` stays 16).
+
 ## 0.134.0
 
 - **Each module teaches how it gives Pokémon.** Your starter is your buddy and starts in no party, so Plan and Care each show a one-time tutorial until you have done the real thing: Plan a 5-second focus session, Care a 5-second breath. Each hatches one egg into that module's own party and leads it. They are not focus sessions or calm breaks and leave no history, streak or meter, they never pay twice, and nothing needs them.
