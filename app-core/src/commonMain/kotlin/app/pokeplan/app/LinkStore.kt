@@ -1,7 +1,7 @@
 package app.pokeplan.app
 
 import app.pokeplan.core.reward.LinkEvent
-import app.pokeplan.core.reward.LinkKind
+import app.pokeplan.core.reward.LinkMoment
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.link.Check
 import app.pokeplan.link.DateKind
@@ -56,7 +56,7 @@ class LinkStore(
     private fun newId(): String = newId(nowMillis, rng)
 
     private fun pay(id: String, ref: String): List<Reward>? =
-        if (!data.settings.postcardTrail) null else world.link(LinkEvent("link:followup:$id", LinkKind.FOLLOW_UP, nowMillis, ref))
+        if (!data.settings.postcardTrail) null else world.link(LinkEvent("link:followup:$id", LinkMoment.FOLLOW_UP, nowMillis, ref))
 
     // --- people ------------------------------------------------------------------------------------------------------------
 

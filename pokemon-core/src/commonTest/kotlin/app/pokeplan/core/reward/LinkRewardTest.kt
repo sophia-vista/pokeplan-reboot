@@ -23,14 +23,14 @@ class LinkRewardTest {
         return PlayerState(pokemon = listOf(lead, buddy), buddyId = buddy.id, linkLeadId = lead.id, trainerPoints = 10)
     }
 
-    private fun event() = LinkEvent("link:followup:k1", LinkKind.FOLLOW_UP, 1_000L, "k1")
+    private fun event() = LinkEvent("link:followup:k1", LinkMoment.FOLLOW_UP, 1_000L, "k1")
 
     @Test
     fun aFinishedFollowUpWarmsOnlyLinksLeadAndPaysCandiesAndALittleRank() {
         val out = RewardEngine.link(linkState(), event(), Random(1))
         assertTrue(out.state.linkLead!!.friendship > FriendshipRules.START)
         assertEquals(FriendshipRules.START, out.state.buddy!!.friendship, "the global buddy is never warmed by a module")
-        assertTrue(out.rewards.any { it is Reward.Candies && it.amount >= RewardEngine.LINK_CANDIES.getValue(LinkKind.FOLLOW_UP) })
+        assertTrue(out.rewards.any { it is Reward.Candies && it.amount >= RewardEngine.LINK_CANDIES.getValue(LinkMoment.FOLLOW_UP) })
         assertEquals(10 + RewardEngine.LINK_POINTS, out.state.trainerPoints)
     }
 
@@ -49,7 +49,7 @@ class LinkRewardTest {
 
     @Test
     fun threeFollowUpsFillTheTrack() {
-        assertEquals(3, RewardEngine.LINK_EGG_METER_SIZE / RewardEngine.LINK_EGG_POINTS.getValue(LinkKind.FOLLOW_UP))
+        assertEquals(3, RewardEngine.LINK_EGG_METER_SIZE / RewardEngine.LINK_EGG_POINTS.getValue(LinkMoment.FOLLOW_UP))
     }
 
     @Test

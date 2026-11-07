@@ -4,7 +4,7 @@ import app.pokeplan.core.dex.Region
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.reward.LinkEvent
-import app.pokeplan.core.reward.LinkKind
+import app.pokeplan.core.reward.LinkMoment
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.core.reward.RewardEngine
 import app.pokeplan.link.DateKind
@@ -120,7 +120,7 @@ class LinkStoreTest {
         val first = s.link.complete(f.id)
         assertTrue(assertNotNull(first.record).paid)
         val paid = s.candies
-        assertTrue(paid >= RewardEngine.LINK_CANDIES.getValue(LinkKind.FOLLOW_UP))
+        assertTrue(paid >= RewardEngine.LINK_CANDIES.getValue(LinkMoment.FOLLOW_UP))
         s.link.reopen(f.id)
         assertEquals(FollowUpStatus.OPEN, s.link.data.followUps.single().status)
         val again = s.link.complete(f.id)
@@ -200,7 +200,7 @@ class LinkStoreTest {
     @Test
     fun threeFinishedFollowUpsFindAPostcardEggIntoLinksPartyAndTheTrackWraps() {
         val s = setup()
-        val size = RewardEngine.LINK_EGG_METER_SIZE / RewardEngine.LINK_EGG_POINTS.getValue(LinkKind.FOLLOW_UP)
+        val size = RewardEngine.LINK_EGG_METER_SIZE / RewardEngine.LINK_EGG_POINTS.getValue(LinkMoment.FOLLOW_UP)
         assertEquals(3, size)
         for (i in 1..size) {
             assertTrue(assertNotNull(s.link.complete(s.followUp("F$i").id).record).paid)
@@ -279,5 +279,18 @@ class LinkStoreTest {
         s.link.addPerson("Ana Cruz", phone = "0917 123 4567")
         assertEquals(1, s.link.search("cruz").size)
         assertEquals(1, s.link.possibleDuplicates("Someone", phone = "0917 123 4567").size)
+    }
+
+    @Test
+    fun aFollowUpConvertedToAPlanTaskIsNeverPaidByLink() {
+        val s = setup()
+        val f = s.followUp("Ask about the visit")
+        val task = assertNotNull(s.game.convertFollowUp(f.id, f.title))
+        assertEquals(task.id, s.game.linkedTask(app.pokeplan.plan.LinkKind.LINK_FOLLOW_UP, f.id)?.id)
+        assertEquals(task.id, assertNotNull(s.game.convertFollowUp(f.id, f.title)).id, "converting again gives the same task")
+        val done = s.link.complete(f.id)
+        assertFalse(done.record!!.paid, "LINK pays nothing for a converted follow-up")
+        assertEquals(0, s.candies)
+        assertTrue(s.game.data.linkPaid.isEmpty())
     }
 }
