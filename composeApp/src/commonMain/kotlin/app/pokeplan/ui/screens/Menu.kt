@@ -64,6 +64,8 @@ import app.pokeplan.ui.theme.focusRing
 data class MenuEntry(val key: String, val icon: String, val title: String, val detail: String = "", val badge: Int = 0, val tint: Color = Pixel.Blue,
     /** A module not built yet: a quiet card in its own colour that opens nothing. */
     val pending: Boolean = false,
+    /** What a tap sounds like (a door for the module list); the menu cursor by default. */
+    val sound: app.pokeplan.ui.Sfx = app.pokeplan.ui.Sfx.CURSOR,
     /** Takes a whole row to itself, laid out sideways. */
     val wide: Boolean = false,
 )
@@ -100,7 +102,7 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
             .dialogueBox(tone = frameToneOf(entry.tint))
             .clip(menuShape)
             .focusRing(menuShape)
-            .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, enabled = !entry.pending) { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }
+            .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, enabled = !entry.pending) { ui(entry.sound); onClick() }
             .semantics { if (entry.pending) contentDescription = entry.title + ", coming later" else if (entry.detail.isNotEmpty()) contentDescription = entry.title + ", " + entry.detail }
             .padding(horizontal = Spacing.XL, vertical = Spacing.XL),
     ) {

@@ -45,6 +45,7 @@ import app.pokeplan.mint.TxStatus
 import app.pokeplan.mint.TxType
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.DeviceGate
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -660,7 +661,7 @@ private fun BillsView(model: AppModel) {
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                         PixelButton("Paid", {
                             val paid = if (full == null) Money.parse(partial, o.bill.currency) else o.bill.expectedMinor
-                            if (paid != null && mint.settle(o.bill.id, o.dueDay, SettleStatus.PAID, paid)) openKey = null
+                            if (paid != null && mint.settle(o.bill.id, o.dueDay, SettleStatus.PAID, paid)) { model.effect(Sfx.CANDY); openKey = null }
                         }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = full != null || Money.parse(partial, o.bill.currency) != null, compact = true)
                         if (full != null) PixelButton("Part", { Money.parse(partial, o.bill.currency)?.let { if (mint.settle(o.bill.id, o.dueDay, SettleStatus.PARTIAL, it)) openKey = null } }, Modifier.weight(1f), Pixel.InkSoft, enabled = Money.parse(partial, o.bill.currency) != null, compact = true)
                         PixelButton("Skip", { if (mint.settle(o.bill.id, o.dueDay, SettleStatus.SKIPPED)) openKey = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -767,7 +768,7 @@ private fun MintReviewView(model: AppModel) {
                 "${data.accounts.count { it.status == AccountStatus.ACTIVE }} open accounts · ${soon.size} bill${if (soon.size == 1) "" else "s"} to settle this week · ${data.budgets.count { it.status == PlanStatus.ACTIVE }} budgets",
                 style = MaterialTheme.typography.bodyLarge,
             )
-            PixelButton(if (weekDone) "Reviewed this week" else "Finish this week's review", { mint.finishReview(); message = "Saved." }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = !weekDone && data.accounts.isNotEmpty())
+            PixelButton(if (weekDone) "Reviewed this week" else "Finish this week's review", { mint.finishReview(); model.effect(Sfx.ITEM_GET); message = "Saved." }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = !weekDone && data.accounts.isNotEmpty())
             message?.let { Notice(it) }
         }
     }
@@ -801,14 +802,14 @@ private fun ReconcileCard(model: AppModel) {
             PixelButton("Compare", {
                 if (parsed == null) { message = "Check the amount." to NoticeTone.WARNING; return@PixelButton }
                 val diff = MintRules.reconcileDifference(parsed, book)
-                if (diff == 0L) { mint.reconcile(account.id, parsed); message = "They match. Saved." to NoticeTone.INFO; statement = ""; difference = null }
+                if (diff == 0L) { mint.reconcile(account.id, parsed); model.effect(Sfx.ITEM_GET); message = "They match. Saved." to NoticeTone.INFO; statement = ""; difference = null }
                 else { difference = diff; message = null }
             }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = parsed != null)
             difference?.let { diff ->
                 Text("The statement is ${mint.show(kotlin.math.abs(diff), account.currency)} ${if (diff > 0) "higher" else "lower"} than Mint. Accepting records the difference as a balance adjustment; nothing else changes.", style = MaterialTheme.typography.bodyLarge)
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     PixelButton("Accept the difference", {
-                        parsed?.let { mint.reconcile(account.id, it, acceptAdjustment = true) }
+                        parsed?.let { mint.reconcile(account.id, it, acceptAdjustment = true); model.effect(Sfx.ITEM_GET) }
                         message = "Adjustment recorded. Saved." to NoticeTone.INFO; statement = ""; difference = null
                     }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
                     PixelButton("Not now", { difference = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)

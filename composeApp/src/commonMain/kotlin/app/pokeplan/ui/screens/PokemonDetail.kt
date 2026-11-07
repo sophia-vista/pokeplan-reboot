@@ -314,22 +314,22 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
     if (!isGuardian) {
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p.speciesId) }, Modifier.weight(1f), Pixel.Red, enabled = !isBuddy, compact = true)
-            PixelButton(if (inPlan) "To PC" else "To Plan party", { store.setInParty(p.id, !inPlan) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            PixelButton(if (inPlan) "To PC" else "To Plan party", { store.setInParty(p.id, !inPlan); model.effect(if (inPlan) Sfx.MOVE_DROP else Sfx.RECRUIT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             PixelButton(if (isPlanLead) "Is Plan's lead" else "Make Plan lead", { store.setPlanLead(p.id) }, Modifier.fillMaxWidth(), Pixel.Red, enabled = inPlan && !isPlanLead, compact = true)
         }
         if (care) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             PixelButton(if (isLead) "Is Care's lead" else "Make Care lead", { store.setCareLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inCare && !isLead, compact = true)
-            PixelButton(if (inCare) "To PC" else "To Care party", { store.setInParty(p.id, !inCare, PartyIds.CARE) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            PixelButton(if (inCare) "To PC" else "To Care party", { store.setInParty(p.id, !inCare, PartyIds.CARE); model.effect(if (inCare) Sfx.MOVE_DROP else Sfx.RECRUIT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             PixelButton(if (isHealLead) "Is Heal's lead" else "Make Heal lead", { store.setHealLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inHeal && !isHealLead, compact = true)
-            PixelButton(if (inHeal) "To PC" else "To Heal party", { store.setInParty(p.id, !inHeal, PartyIds.HEAL) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            PixelButton(if (inHeal) "To PC" else "To Heal party", { store.setInParty(p.id, !inHeal, PartyIds.HEAL); model.effect(if (inHeal) Sfx.MOVE_DROP else Sfx.RECRUIT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             PixelButton(if (isMintLead) "Is Mint's lead" else "Make Mint lead", { store.setMintLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inMint && !isMintLead, compact = true)
-            PixelButton(if (inMint) "To PC" else "To Mint party", { store.setInParty(p.id, !inMint, PartyIds.MINT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            PixelButton(if (inMint) "To PC" else "To Mint party", { store.setInParty(p.id, !inMint, PartyIds.MINT); model.effect(if (inMint) Sfx.MOVE_DROP else Sfx.RECRUIT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
     }
     if (!p.species.isSpecial) {

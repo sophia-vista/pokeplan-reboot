@@ -38,6 +38,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.FilterQuality
+import app.pokeplan.ui.launcher.drawInnerCorners
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -214,8 +215,9 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
                         val scrolled = (((c + scrollTiles) % 40) + 40) % 40
                         val (ax, ay) = map.atlas(scrolled, r, seed).let { t -> if (t.second == 3 && !fit[t.first]) 0 to 3 else t }
                         put(ax, ay, x, r * tilePx)
+                        map.innerCorners(scrolled, r).let { corners -> if (corners != 0) drawInnerCorners(image, corners, x, r * tilePx, TILE_PX, pixel) }
                     }
-                    drawRect(Color(0xB3141C28), Offset(0f, (STRIP_ROWS + 2) * tilePx.toFloat()), Size(size.width, size.height))
+                    drawRect(Color(0xB3141C28), Offset(0f, (STRIP_ROWS + 3) * tilePx.toFloat()), Size(size.width, size.height))
                 }
                 // The team on the floor rows, leader on the right: feet on the floor, never on a wall.
                 val shown = walkers.take(4)
@@ -233,7 +235,7 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
                     }
                 }
             }
-            Column(Modifier.padding(start = Spacing.BoxX + 8.dp, end = Spacing.BoxX + 8.dp, top = FRAME - 2.dp + tile * (STRIP_ROWS + 2) + Spacing.L, bottom = Spacing.BoxY + 12.dp)) { onWall(content) }
+            Column(Modifier.padding(start = Spacing.BoxX + 8.dp, end = Spacing.BoxX + 8.dp, top = FRAME - 2.dp + tile * (STRIP_ROWS + 3) + Spacing.L, bottom = Spacing.BoxY + 12.dp)) { onWall(content) }
         }
     }
 }

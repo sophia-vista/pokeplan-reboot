@@ -528,6 +528,32 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.Cutscene.Evolve(before, before.evolvedInto(5, "charmeleon"))
     }
 
+    /** The reported bug: a sprite that stays on screen while its Pokémon evolves (the buddy on Home) went blank, because it kept the old form's sheet. */
+    @Test
+    fun aSpriteStaysAfterItsPokemonEvolvesInPlace() {
+        var form by androidx.compose.runtime.mutableIntStateOf(4)
+        val scene = ImageComposeScene(width = 300, height = 300, density = Density(1f, 1f)) { PixelTheme { app.pokeplan.ui.AnimatedSprite(form, false, "x", size = 200.dp, animate = false) } }
+        var nanos = 0L
+        fun draw(frames: Int, name: String): Int {
+            repeat(frames) { scene.render(nanos); nanos += 50_000_000; Thread.sleep(20) }
+            val bytes = scene.render(nanos).encodeToData(EncodedImageFormat.PNG)!!.bytes
+            File("build/screenshots/$name.png").apply { parentFile.mkdirs() }.writeBytes(bytes)
+            return bytes.size
+        }
+        val before = draw(60, "evolve-in-place-before")
+        form = 5
+        val after = draw(60, "evolve-in-place-after")
+        scene.close()
+        assertTrue(before > 800 && after > 800, "the sprite is drawn before ($before) and after ($after) the form changes")
+    }
+
+    /** The animated evolution, run to its end: the evolved Pokémon must be on the stage (owner: "after evolution, sprite disappears"). */
+    @Test
+    fun evolutionAnimatedEnds() = cutscene("evolution-end", frames = 360, still = false) {
+        val before = it.grantPokemon(4, "test")
+        app.pokeplan.ui.screens.Cutscene.Evolve(before, before.evolvedInto(5, "charmeleon"))
+    }
+
     /** Whole app places at the system's largest text (130%): looked at for clipped or overlapping text. */
     @Test
     fun largeTextPlaces() {
@@ -825,13 +851,15 @@ class ScreenshotTest {
         mint("mint-bills-reminders", app.pokeplan.ui.screens.MintSection.BILLS, height = 2600, settings = { it.mint.setBillReminders(true) })
     }
 
-    /** An expedition box: the frame's stair corners must stay visible over the dungeon's tiles (owner: "the corner seems clipped"). */
+    /** An expedition box at several points of its scroll: a bay's rim must close at the bottom and the frame corner stays whole (owner: "this L seems to be missing something"). */
     @Test
     fun tileBoxCorners() {
-        render("tilebox", height = 700) {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
-                app.pokeplan.ui.screens.TileBox("mt-ember", listOf(app.pokeplan.ui.screens.TileWalker(25, false, "Pikachu")), animate = false, scrolls = false) { Text("Team 2") }
-            } }
+        listOf(2, 120, 260, 420, 560, 700).forEach { frames ->
+            render("tilebox-$frames", frames = frames, height = 380) {
+                PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
+                    app.pokeplan.ui.screens.TileBox("mt-ember", listOf(app.pokeplan.ui.screens.TileWalker(25, false, "Pikachu")), animate = true, scrolls = true) { Text("Team 2") }
+                } }
+            }
         }
     }
 
