@@ -210,6 +210,8 @@ LINK owns the following canonical records:
 | Contact source mapping | Import provenance and reconciliation |
 | Postcard Trail state | LINK's optional acquisition progress and idempotency references |
 
+**As built (0.144.0, REP-014): Plan's half only.** LINK itself is not built. `GameStore.convertFollowUp(followUpId, title, planned, due)` makes the PLAN task for a converted follow-up (one task per follow-up id; `TaskLink(LINK_FOLLOW_UP, id)`), after which PLAN owns its completion and pays it once by Plan's rules (paid once, so a reopen never pays again); `GameStore.linkedTask(LINK_FOLLOW_UP, id)` gives LINK the task and its state to display; `unlinkTask` leaves a normal PLAN task. LINK must not pay for a follow-up that has a linked task. `TaskLinksTest` covers it.
+
 ### 4.1 Cross-module boundaries
 
 | Capability | Owner | LINK relationship |

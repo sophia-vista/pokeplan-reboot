@@ -98,6 +98,27 @@ class TaskLinksTest {
         assertEquals(1, s.spy.events.size)
     }
 
+    @Test fun `a module reward leaves a ledger note with the event's own id and the real change`() {
+        val s = setup()
+        val chore = s.weeklyChore()
+        val coins = s.game.data.player.coins
+        val candies = s.game.data.player.inventory.counts.values.sum()
+        val task = s.game.linkChore(chore.id)!!
+        s.game.completeTask(task.id)
+        val note = s.game.data.ledgerNotes.single()
+        assertEquals(s.spy.events.single().id, note.eventId)
+        assertEquals("HOME", note.module)
+        assertEquals("chore", note.kind)
+        assertEquals(s.game.data.player.coins - coins, note.poke.toInt())
+        assertEquals((s.game.data.player.inventory.counts.values.sum() - candies).toLong(), note.items.values.sum())
+        // Doing it again for the same occurrence pays nothing and leaves no second note.
+        s.game.undoCompletion(task.id)
+        s.game.completeTask(task.id)
+        assertEquals(1, s.game.data.ledgerNotes.size)
+        // Nothing the user typed is in the note.
+        assertTrue(!note.toString().contains("Vacuum"))
+    }
+
     @Test fun `undo and a second tick pay the occurrence once`() {
         val s = setup()
         val chore = s.weeklyChore()

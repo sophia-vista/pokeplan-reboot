@@ -301,6 +301,18 @@ class GameStore(
         return d.copy(rewardLog = (d.rewardLog + RewardEntry(nowMillis, source, rewards, seen)).takeLast(LOG_SIZE), origins = d.origins + joined)
     }
 
+    /**
+     * Notes what a module reward added to the Poké balance and the Bag, under the event's own id, so the database ledger can record the real event
+     * (DATA_AND_MIGRATIONS.md section 7.3.0). [before] and [after] are the player's state around the change; a reward that added nothing leaves no note.
+     */
+    private fun noted(before: AppData, after: AppData, id: String, module: String, ref: String, kind: String, at: Long): AppData {
+        val poke = (after.player.coins - before.player.coins).toLong()
+        val items = (before.player.inventory.counts.keys + after.player.inventory.counts.keys)
+            .associateWith { (after.player.inventory[it] - before.player.inventory[it]).toLong() }.filterValues { it != 0L }
+        if (poke == 0L && items.isEmpty()) return after
+        return after.copy(ledgerNotes = (after.ledgerNotes + LedgerNote(id, module.uppercase(), ref, kind, at, poke, items)).takeLast(LEDGER_NOTES_KEPT))
+    }
+
     fun markRewardsSeen() = update { d -> d.copy(rewardLog = d.rewardLog.map { it.copy(seen = true) }) }
 
     private fun achieve(d: AppData, tier: Int, source: String, onTime: Boolean = false, focusedOnIt: Boolean = false, picked: Boolean = false): AppData {
@@ -359,7 +371,7 @@ class GameStore(
         val rewards = outcome.rewards + egg?.rewards.orEmpty()
         update { d ->
             val counters = tally.set(d.counters, today, paidToday + 1) + (Counters.HEAL_EGG_METER to meter % RewardEngine.HEAL_EGG_METER_SIZE)
-            log(HEAL_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, healPaid = (d.healPaid + event.id).takeLast(HEAL_PAID_KEPT)), origin = Origin(Origin.How.FIELD_EGG, Region.HEAL))
+            noted(d, log(HEAL_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, healPaid = (d.healPaid + event.id).takeLast(HEAL_PAID_KEPT)), origin = Origin(Origin.How.FIELD_EGG, Region.HEAL)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
         }
         return rewards
     }
@@ -381,7 +393,7 @@ class GameStore(
         val rewards = outcome.rewards + egg?.rewards.orEmpty()
         update { d ->
             val counters = tally.set(d.counters, period, paidInPeriod + 1) + (Counters.MINT_EGG_METER to meter % RewardEngine.MINT_EGG_METER_SIZE)
-            log(MINT_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, mintPaid = (d.mintPaid + event.id).takeLast(MINT_PAID_KEPT)), origin = Origin(Origin.How.LEDGER_EGG, Region.MINT))
+            noted(d, log(MINT_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, mintPaid = (d.mintPaid + event.id).takeLast(MINT_PAID_KEPT)), origin = Origin(Origin.How.LEDGER_EGG, Region.MINT)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
         }
         return rewards
     }
@@ -402,7 +414,7 @@ class GameStore(
         val rewards = outcome.rewards + egg?.rewards.orEmpty()
         update { d ->
             val counters = tally.set(d.counters, today, paidToday + 1) + (Counters.HOME_EGG_METER to meter % RewardEngine.HOME_EGG_METER_SIZE)
-            log(HOME_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, homePaid = (d.homePaid + event.id).takeLast(HOME_PAID_KEPT)), origin = Origin(Origin.How.HABITAT_EGG, Region.HOUSEHOLD))
+            noted(d, log(HOME_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, homePaid = (d.homePaid + event.id).takeLast(HOME_PAID_KEPT)), origin = Origin(Origin.How.HABITAT_EGG, Region.HOUSEHOLD)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
         }
         return rewards
     }
@@ -1967,6 +1979,9 @@ class GameStore(
 
         /** How many paid HOME event ids the save remembers. */
         const val HOME_PAID_KEPT = 1000
+
+        /** How many [LedgerNote]s the save keeps; the database settles each as it is written, so only the newest few are ever still waiting. */
+        const val LEDGER_NOTES_KEPT = 50
 
         /** How many paid MINT event ids the save remembers. */
         const val MINT_PAID_KEPT = 1000
