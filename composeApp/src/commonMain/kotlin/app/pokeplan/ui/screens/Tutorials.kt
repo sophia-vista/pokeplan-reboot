@@ -51,12 +51,11 @@ internal fun TutorialCard(model: AppModel, id: String, careBreaks: Int = 0, heal
             PixelTitle(if (plan) "Try a focus session" else if (heal) "Go on a short walk" else "Take a breath")
             if (!running) {
                 Text(
-                    if (plan) "Finishing a focus session hatches an Egg. Try one that lasts ${Tutorials.DEMO_SECONDS} seconds, just to see: it gives you a Pokémon for Plan's party."
-                    else if (heal) "Field Research is one way Heal gives you Pokémon. Walk on the spot for ${Tutorials.DEMO_SECONDS} seconds, just to see: it gives you a Pokémon for Heal's party. It is not logged anywhere, and Heal works the same without it."
-                    else "A calm break is one way Care gives you Pokémon. Take one breath for ${Tutorials.DEMO_SECONDS} seconds, just to see: it gives you a Pokémon for Care's party.",
-                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+                    if (plan) "A ${Tutorials.DEMO_SECONDS} second focus gives you a first Pokémon for Plan's party."
+                    else if (heal) "A ${Tutorials.DEMO_SECONDS} second walk gives you a first Pokémon for Heal's party."
+                    else "One breath gives you a first Pokémon for Care's party.",
+                    style = MaterialTheme.typography.bodyLarge,
                 )
-                if (cancelled) Text("No hurry. It is here whenever you like.", style = MaterialTheme.typography.bodyMedium)
                 PixelButton(if (plan) "Start the ${Tutorials.DEMO_SECONDS} second focus" else if (heal) "Walk for ${Tutorials.DEMO_SECONDS} seconds" else "Breathe for ${Tutorials.DEMO_SECONDS} seconds", { seconds = 0f; cancelled = false; running = true }, color = Pixel.Green, compact = true)
             } else {
                 val left = (Tutorials.DEMO_SECONDS - seconds).coerceAtLeast(0f)

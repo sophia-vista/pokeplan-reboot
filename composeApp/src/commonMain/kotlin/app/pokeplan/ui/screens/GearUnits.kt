@@ -83,7 +83,7 @@ internal fun UnitsTool(model: AppModel, onUse: () -> Unit) {
                 OptionPicker("From", category.units.map { "${it.symbol} (${it.name})" }, fromIndex, Modifier.weight(1f), short = category.units.map { it.symbol }) { fromIndex = it }
                 OptionPicker("To", category.units.map { "${it.symbol} (${it.name})" }, toIndex, Modifier.weight(1f), short = category.units.map { it.symbol }) { toIndex = it }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelIconButton("repeat", "Swap", { val f = fromIndex; fromIndex = toIndex; toIndex = f; onUse() }, Pixel.InkSoft)
                 val starred = pairId in gear.unitFavorites
                 PixelButton(if (starred) "Starred" else "Star this pair", { store.changeGear { g -> g.copy(unitFavorites = if (starred) g.unitFavorites - pairId else (g.unitFavorites + pairId).takeLast(20)) } }, Modifier.weight(1f), if (starred) Pixel.Green else Pixel.InkSoft, compact = true)
@@ -95,7 +95,7 @@ internal fun UnitsTool(model: AppModel, onUse: () -> Unit) {
                 style = MaterialTheme.typography.titleMedium,
             )
             listOf(from, to).distinct().filter { it.note.isNotEmpty() }.forEach { Text("${it.symbol}: ${it.note}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelIconButton("copy", "Copy", { shown?.let { clipboard.setText(AnnotatedString("$it ${to.symbol}")) } }, Pixel.InkSoft, enabled = shown != null)
                 PixelButton(if (all) "Hide the rest" else "Every unit", { all = !all }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
@@ -103,7 +103,7 @@ internal fun UnitsTool(model: AppModel, onUse: () -> Unit) {
                 Text("${UnitCatalog.show(UnitCatalog.convert(parsed, from, u), gear.unitDecimals)} ${u.symbol}  (${u.name})", style = MaterialTheme.typography.bodyMedium)
             }
             FieldLabel("Decimals")
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 listOf(0, 2, 4, 6, 8).forEach { d -> PixelButton(d.toString(), { store.changeGear { it.copy(unitDecimals = d) } }, Modifier.weight(1f), if (gear.unitDecimals == d) Pixel.Blue else Pixel.InkSoft, compact = true) }
             }
             if (gear.unitFavorites.isNotEmpty()) {

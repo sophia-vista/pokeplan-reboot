@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import androidx.compose.foundation.layout.Spacer
 import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,7 +66,6 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
             fun entry(t: ToolInfo) = MenuEntry(t.tool.name, t.tool.icon, t.tool.label)
             if (query.isNotBlank()) {
                 val found = ToolCatalog.search(query, gear.favorites, gear.recents)
-                if (found.isEmpty()) Text("No tool by that name. Units and Currency have their own search for the thing you want to convert.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 found.forEach { t -> PixelButton("${t.tool.label}: ${t.description}", { query = ""; open = t.tool }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true) }
             } else {
                 val starred = gear.favorites.mapNotNull { n -> GearTool.entries.firstOrNull { it.name == n } }
@@ -89,10 +89,10 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
     } else {
         // Opening a tool puts it first among the ones used lately (a short list kept on this phone).
         LaunchedEffect(tool) { store.gearUsed(tool) }
-        SectionScaffold(tool.label, "Pokégear", { open = null }, icon = tool.icon, color = ModuleAccent.GEAR.header) {
+        SectionScaffold(tool.label, null, { open = null }, icon = tool.icon, color = ModuleAccent.GEAR.header) {
             val starred = tool.name in gear.favorites
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                Text(ToolCatalog.info(tool).description, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                Spacer(Modifier.weight(1f))
                 PixelButton(if (starred) "Starred" else "Star", { store.gearFavorite(tool, !starred) }, color = if (starred) Pixel.Green else Pixel.InkSoft, compact = true)
             }
             HelperBar(model, tool, used)
@@ -143,7 +143,7 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
                     GearHelper.None -> ItemIcon(tool.icon, Modifier.align(Alignment.Center), size = 32.dp, description = null)
                 }
             }
-            Text(when (helper) { is GearHelper.Owned -> "${helper.pokemon.nickname} helps"; is GearHelper.Loaner -> "${Dex.species(helper.speciesId).name} is lending a hand"; GearHelper.None -> "No helper" }, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Text(when (helper) { is GearHelper.Owned -> "${helper.pokemon.nickname} helps"; is GearHelper.Loaner -> "${Dex.species(helper.speciesId).name} is lending a hand"; GearHelper.None -> "Helper" }, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             PixelButton("Show", { store.changeGear { it.copy(helperCompact = false) } }, color = Pixel.InkSoft, compact = true)
         }
         return
@@ -163,11 +163,9 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
                     when (helper) {
                         is GearHelper.Owned -> {
                             Text("${helper.pokemon.nickname} helps", style = MaterialTheme.typography.titleSmall)
-                            Text("${Dex.species(helper.pokemon.speciesId).name} can help ${tool.label}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                         }
                         is GearHelper.Loaner -> {
                             Text("${Dex.species(helper.speciesId).name} is lending a hand", style = MaterialTheme.typography.titleSmall)
-                            Text("On loan from a Ranger until you have one of your own.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                         }
                         GearHelper.None -> {
                             Text("No helper yet", style = MaterialTheme.typography.titleSmall)
@@ -176,7 +174,7 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
                     }
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Make it small", { store.changeGear { it.copy(helperCompact = true) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 if (store.gearCandidates(tool).isNotEmpty()) PixelButton(if (choosing) "Done" else "Change helper", { choosing = !choosing }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 if (helper is GearHelper.None) PixelButton("Ask a Ranger", { ranger = !ranger }, Modifier.weight(1f), Pixel.Blue, compact = true)

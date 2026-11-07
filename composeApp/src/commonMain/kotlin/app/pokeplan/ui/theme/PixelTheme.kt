@@ -158,8 +158,10 @@ fun PixelTheme(dark: Boolean = false, content: @Composable () -> Unit) {
     remember(dark) { Pixel.dark = dark }
     val display = pixelFont()
     val body = bodyFont()
+    // The Pokémon DP font sits low in its line box (measured on a screenshot by TextCentreTest: a label in a 48 dp box was 2 to 4 dp under the
+    // centre), so every style lifts it until its letters, not its line, are centred; the shift per size was found by measuring.
     fun style(font: FontFamily, size: Int, line: Int, weight: FontWeight = FontWeight.Normal, color: Color = Pixel.Ink) = TextStyle(
-        fontFamily = font, fontSize = size.sp, lineHeight = line.sp, fontWeight = weight, color = color,
+        fontFamily = font, fontSize = size.sp, lineHeight = line.sp, fontWeight = weight, color = color, baselineShift = androidx.compose.ui.text.style.BaselineShift(when (size) { 14 -> 0.5f; 16 -> 0.45f; 18 -> 0.37f; else -> 0.42f }),
         lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
     )
     MaterialTheme(
@@ -177,7 +179,7 @@ fun PixelTheme(dark: Boolean = false, content: @Composable () -> Unit) {
             )
         },
         // Text fields and anything else Material draws take the dialogue box corner, like the keys.
-        shapes = androidx.compose.material3.Shapes(extraSmall = DialogueShape, small = DialogueShape, medium = DialogueShape),
+        shapes = androidx.compose.material3.Shapes(extraSmall = RoundedCornerShape(2.dp), small = RoundedCornerShape(2.dp), medium = RoundedCornerShape(2.dp)),
         typography = Typography(
             // Four sizes only: 24 (screen titles, big numbers), 18 (section titles, buttons), 16 (body), 14 (secondary and
             // labels). Hierarchy inside a size comes from the font, weight and colour. Pixel font for game headings, rank,
@@ -198,7 +200,7 @@ fun PixelTheme(dark: Boolean = false, content: @Composable () -> Unit) {
     ) { content() }
 }
 
-private val cardShape = RoundedCornerShape(Spacing.CardRadius)
+private val cardShape = PixelShape
 
 /** The basic card of the app: a dialogue box (the game's blue frame around [Pixel.Panel]), with 16 dp of room inside. */
 @Composable
@@ -272,31 +274,32 @@ private fun LoadingPixels(color: Color) {
 fun darker(c: Color): Color = Color(c.red * 0.72f, c.green * 0.72f, c.blue * 0.72f, c.alpha)
 
 /**
- * A progress bar: a neutral track with a semantic fill. [label] is read out by screen readers ("3 of 5 tasks done"); put the
- * same words next to the bar so the meaning does not rest on colour.
+ * A progress bar: a flat track with stair corners and a solid fill, no rounding. [label] is read out by screen readers ("3 of 5 tasks
+ * done"); put the same words next to the bar so the meaning does not rest on colour.
  */
 @Composable
 fun PixelBar(fraction: Float, modifier: Modifier = Modifier, color: Color = Pixel.Green, label: String? = null) {
-    val shape = RoundedCornerShape(8.dp)
     val f = fraction.coerceIn(0f, 1f)
     Box(
         modifier
             .fillMaxWidth()
-            .height(10.dp)
-            .clip(shape)
-            .background(Pixel.Border, shape)
+            .height(12.dp)
+            .drawBehind {
+                val p = 2.dp.toPx()
+                drawPath(stairRect(p, 0f, 0f, size.width, size.height, intArrayOf(1, 0)), Pixel.Border)
+                // A filled bar is never thinner than the two pixels of its own end.
+                if (f > 0f) drawPath(stairRect(p, 0f, 0f, maxOf(size.width * f, 2 * p), size.height, intArrayOf(1, 0)), color)
+            }
             .semantics {
                 progressBarRangeInfo = ProgressBarRangeInfo(f, 0f..1f)
                 if (label != null) contentDescription = label
             },
-    ) {
-        if (f > 0f) Box(Modifier.fillMaxWidth(f).height(10.dp).background(color, shape))
-    }
+    )
 }
 
 /**
- * A bar in the style of the games' EXP and HP bars: a dark outline, a short label, a bright fill. Used for the trainer rank,
- * where it adds the game feel; [label] is also read out by screen readers.
+ * A bar in the style of the games' EXP and HP bars: a dark outline, a short label, a bright fill, all in stair corners. Used for the
+ * trainer rank, where it adds the game feel; [label] is also read out by screen readers.
  */
 @Composable
 fun ExpBar(fraction: Float, label: String, modifier: Modifier = Modifier, tag: String = "EXP", color: Color = Pixel.Blue, tagColor: Color = Color.White) {
@@ -307,10 +310,14 @@ fun ExpBar(fraction: Float, label: String, modifier: Modifier = Modifier, tag: S
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
     ) {
         Text(tag, style = MaterialTheme.typography.bodyLarge.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold), color = tagColor)
-        Box(Modifier.weight(1f).height(14.dp).clip(RoundedCornerShape(7.dp)).background(Pixel.Outline).padding(2.dp)) {
-            Box(Modifier.fillMaxWidth().height(10.dp).clip(RoundedCornerShape(5.dp)).background(Pixel.Shade))
-            if (f > 0f) Box(Modifier.fillMaxWidth(f).height(10.dp).clip(RoundedCornerShape(5.dp)).background(color))
-        }
+        Box(
+            Modifier.weight(1f).height(14.dp).drawBehind {
+                val p = 2.dp.toPx()
+                drawPath(stairRect(p, 0f, 0f, size.width, size.height, intArrayOf(1, 0)), Pixel.Outline)
+                drawPath(stairRect(p, p, p, size.width - p, size.height - p, intArrayOf(0)), Pixel.Shade)
+                if (f > 0f) drawPath(stairRect(p, p, p, p + maxOf((size.width - 2 * p) * f, p), size.height - p, intArrayOf(0)), color)
+            },
+        )
     }
 }
 
@@ -322,7 +329,7 @@ fun ExpBar(fraction: Float, label: String, modifier: Modifier = Modifier, tag: S
 fun GameBox(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     // The inner frame sits 3 dp in, so its corners are 3 dp smaller: the two outlines stay concentric.
     val outer = cardShape
-    val inner = RoundedCornerShape(Spacing.CardRadius - 3.dp)
+    val inner = PixelShape
     Box(
         modifier
             .fillMaxWidth()

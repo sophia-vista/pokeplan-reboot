@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.Emote
 import app.pokeplan.ui.EmoteIcon
 import androidx.compose.animation.AnimatedVisibility
@@ -355,7 +356,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
             enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut(),
         ) { emote?.let { EmoteIcon(it, size = 32.dp) } }
         // Treats wait in a row along the top: drag one to the visitor, or tap it.
-        if (treats) Row(Modifier.align(Alignment.TopStart).padding(Spacing.S).zIndex(1f), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        if (treats) Row(Modifier.align(Alignment.TopStart).padding(Spacing.S).zIndex(1f), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             DraggableTreat("Treat", null, "a little treat", { p -> if (offered(p)) { if (visiting) act(CareAction.GIFT) else played(Play.TREAT) } }) {
                 if (visiting) act(CareAction.GIFT) else played(Play.TREAT)
             }
@@ -366,7 +367,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         // How warm the visitor is, small in the corner like the buddy's level.
         if (visit != null) Text(
             "${visitor.progress} of ${Visitors.FRIEND_PROGRESS}",
-            Modifier.align(Alignment.TopEnd).padding(Spacing.S).background(Pixel.Scrim.copy(alpha = 0.33f), RoundedCornerShape(Spacing.CardRadius - Spacing.S))
+            Modifier.align(Alignment.TopEnd).padding(Spacing.S).background(Pixel.Scrim.copy(alpha = 0.33f), PixelShape)
                 .padding(horizontal = Spacing.M, vertical = Spacing.XS)
                 .semantics { contentDescription = "$name is ${visitor.progress} of ${Visitors.FRIEND_PROGRESS} of the way to being a friend" },
             style = MaterialTheme.typography.labelMedium, color = Color.White,
@@ -432,7 +433,7 @@ private fun visitEndedLine(name: String, result: app.pokeplan.care.BefriendResul
 private fun DraggableTreat(label: String, berry: String?, description: String, onDrop: (Offset) -> Unit, onTap: () -> Unit) {
     var drag by remember { mutableStateOf(Offset.Zero) }
     var origin by remember { mutableStateOf(Offset.Zero) }
-    val shape = RoundedCornerShape(50)
+    val shape = PixelShape
     Row(
         Modifier.onGloballyPositioned { origin = it.boundsInRoot().center }
             .offset { IntOffset(drag.x.roundToInt(), drag.y.roundToInt()) }

@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.Arrangement
@@ -130,7 +131,7 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
         view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
         placeholder = "Search by name or number",
     )
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
         DexFilter.entries.forEach { f -> TabButton(f.label, f == view.filter, { change(view.copy(filter = f)) }, Modifier.padding(0.dp)) }
     }
     val text = view.search.trim().lowercase().removePrefix("#")
@@ -152,7 +153,7 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
         }
     } else {
         // An index, not a wall of cards: number, sprite, name and one quiet line per row, with a hairline between rows.
-        val shape = RoundedCornerShape(Spacing.CardRadius)
+        val shape = PixelShape
         Column(Modifier.fillMaxWidth().clip(shape).background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape)) {
             shown.forEachIndexed { i, (number, s) ->
                 val state = states.getValue(s.id)
@@ -183,11 +184,6 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
             }
         }
     }
-    Text(
-        "A Poké Ball marks the Pokémon in your party or PC now. Seen ones are named; tap one to see where it stands. " +
-            "About 1 in 128 eggs is shiny; longer sessions and a Shiny hunter buddy raise the odds.",
-        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-    )
 }
 
 /** "0.7 m" from decimetres, "6.9 kg" from hectograms: the games keep both in tenths. */
@@ -230,13 +226,13 @@ internal fun DexEntryScreen(model: AppModel, rows: List<Pair<Int, SpeciesInfo>>,
                     Modifier.align(Alignment.TopCenter).padding(top = Spacing.M).quietClickable(onClickLabel = "Hear its cry") { model.cry(id) },
                     size = 160.dp, animate = !model.data.settings.reduceMotion,
                 )
-                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.M), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.M), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     form.types.forEach { TypePlate(it, width = 84.dp) }
                 }
             } else Stage("bw08", 232.dp) {
                 Sprite(form.id, false, s.name, Modifier.align(Alignment.Center), size = 160.dp, silhouette = Pixel.Shade)
             }
-            if (at >= 0 && found.size > 1) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
+            if (at >= 0 && found.size > 1) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelIconButton("arrow-left", "Previous", { open(found[at - 1]) }, Pixel.InkSoft, enabled = at > 0)
                 PixelIconButton("arrow-right", "Next", { open(found[at + 1]) }, Pixel.InkSoft, enabled = at < found.size - 1)
             }
@@ -267,7 +263,7 @@ private fun FormsBox(model: AppModel, speciesId: Int, shownId: Int, shiny: Boole
                     "${counted.count { FormDex.shiny(model.data, it) }} of ${counted.size} shiny",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 TabButton("Regular", !shiny, { setShiny(false) }, Modifier.padding(0.dp))
                 TabButton("Shiny", shiny, { setShiny(true) }, Modifier.padding(0.dp))
             }
@@ -277,7 +273,7 @@ private fun FormsBox(model: AppModel, speciesId: Int, shownId: Int, shiny: Boole
                     val found = if (shiny) FormDex.shiny(model.data, f) else caught
                     val canHave = FormDex.counts(f)
                     val name = if (caught) f.name else "???"
-                    val shape = RoundedCornerShape(12.dp)
+                    val shape = PixelShape
                     Column(
                         Modifier.size(width = 92.dp, height = 104.dp).clip(shape).background(Pixel.Panel)
                             .border(2.dp, if (f.id == shownId && caught) Pixel.Red else Pixel.Border, shape)
@@ -378,7 +374,7 @@ private fun LineMember(model: AppModel, speciesId: Int, current: Boolean, open: 
     val state = DexState.of(model.data, speciesId)
     val name = if (state == DexState.UNKNOWN) "???" else Dex.species(speciesId).name
     Column(
-        Modifier.size(width = 92.dp, height = 76.dp).clip(RoundedCornerShape(12.dp))
+        Modifier.size(width = 92.dp, height = 76.dp).clip(PixelShape)
             .background(if (current) Pixel.Shade else Pixel.Panel)
             .quietClickable(enabled = !current && state != DexState.UNKNOWN, onClickLabel = "Open entry") { open(speciesId) }
             .semantics(mergeDescendants = true) { contentDescription = name },

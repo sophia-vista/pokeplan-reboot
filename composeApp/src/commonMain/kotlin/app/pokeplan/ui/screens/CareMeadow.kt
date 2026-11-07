@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -81,7 +82,7 @@ internal fun MeadowView(model: AppModel, goPlay: (String) -> Unit) {
     // The four fixed spots for visitors, as shares of the scene (x, y of the sprite's bottom centre); the buddy has the centre.
     val spots = listOf(0.17f to 0.70f, 0.83f to 0.70f, 0.30f to 0.97f, 0.70f to 0.97f)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth().height(300.dp).clip(RoundedCornerShape(Spacing.CardRadius)).border(1.dp, Pixel.Border, RoundedCornerShape(Spacing.CardRadius))) {
+        androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth().height(300.dp).clip(PixelShape).border(1.dp, Pixel.Border, PixelShape)) {
             SceneImage(Module.CARE.look.scene, Modifier.matchParentSize(), 0f)
             @Composable
             fun Resident(id: Int, shiny: Boolean, name: String, key: String, speciesId: Int, x: Float, y: Float, size: Int) {
@@ -107,14 +108,14 @@ internal fun MeadowView(model: AppModel, goPlay: (String) -> Unit) {
             Text(
                 if (waiting == 0) "No one waiting" else "$waiting waiting",
                 style = MaterialTheme.typography.labelMedium, color = Pixel.Ink,
-                modifier = Modifier.align(Alignment.TopStart).padding(Spacing.S).clip(RoundedCornerShape(8.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.75f)).padding(horizontal = Spacing.S, vertical = 2.dp)
+                modifier = Modifier.align(Alignment.TopStart).padding(Spacing.S).clip(PixelShape).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.75f)).padding(horizontal = Spacing.S, vertical = 2.dp)
                     .semantics { contentDescription = if (waiting == 0) "No visitors waiting" else "$waiting visitors waiting for a place" },
             )
             val points = model.store.careEggMeter()
             Text(
                 "Care Egg $points/${app.pokeplan.core.reward.RewardEngine.CARE_EGG_METER_SIZE}",
                 style = MaterialTheme.typography.labelMedium, color = Pixel.Ink,
-                modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.S).clip(RoundedCornerShape(8.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.75f)).padding(horizontal = Spacing.S, vertical = 2.dp),
+                modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.S).clip(PixelShape).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.75f)).padding(horizontal = Spacing.S, vertical = 2.dp),
             )
         }
         reunion?.let { r ->
@@ -124,7 +125,6 @@ internal fun MeadowView(model: AppModel, goPlay: (String) -> Unit) {
                     AnimatedSprite(Dex.form(r.friend.formIdentifier)?.id ?: Dex.defaultForm(r.friend.speciesId).id, false, name, Modifier.size(56.dp), size = 56.dp, animate = !calm)
                     Column(Modifier.weight(1f)) {
                         Text("$name came back to say hello.", style = MaterialTheme.typography.bodyLarge)
-                        Text("It is not a new visitor and takes no place in the meadow.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     }
                     PixelButton("Say hello", { line = model.care.greetReunion(); model.cry(r.friend.speciesId) }, color = Pixel.Green, compact = true)
                 }
@@ -157,7 +157,7 @@ private fun PokemonPlayPanel(model: AppModel, key: String, species: String, nick
                 else "Likes: " + known.joinToString(", ") { it.playName() },
                 style = MaterialTheme.typography.bodyMedium,
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Spend time", onPlay, color = Pixel.Green, compact = true)
                 PixelButton("Close", onClose, color = Pixel.InkSoft, compact = true)
             }
@@ -232,7 +232,7 @@ internal fun PlayView(model: AppModel, initial: String?) {
             } else {
                 Text("${running.label}: ${running.verb}", style = MaterialTheme.typography.bodyLarge)
                 PixelBar(taps.toFloat() / running.taps, color = Pixel.Green, label = "${running.label}: $taps of ${running.taps}")
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton(running.verb, { model.haptic(); taps++; if (taps >= running.taps) finish(running) }, color = Pixel.Green)
                     PixelButton("Stop for now", { activity = null; taps = 0 }, color = Pixel.InkSoft, compact = true)
                 }

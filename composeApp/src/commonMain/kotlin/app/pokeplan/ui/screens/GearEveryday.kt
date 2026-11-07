@@ -81,7 +81,6 @@ internal fun EverydayTool(model: AppModel, onUse: () -> Unit) {
             FieldLabel("Answer")
             if (answer.isNullOrEmpty()) Text("Fill in the numbers above.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             else answer.forEach { Text(it, style = MaterialTheme.typography.titleSmall) }
-            Text("Sums only: nothing is kept, and rounding is to the cent.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }

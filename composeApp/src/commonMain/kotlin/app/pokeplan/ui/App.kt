@@ -384,7 +384,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                         // The tabs crossfade; each keeps its scroll position while another is open.
                         ScreenSwitch(tab) { page ->
                             when (page) {
-                                Tab.HOME -> HomeScreen(model, go)
+                                Tab.HOME -> HomeScreen(model, { id -> model.openPokemonId = id; go(Place.COLLECTION) }, go)
                                 Tab.MODULES -> ModulesScreen(model, focusTab) { id -> model.openPokemonId = id; go(Place.COLLECTION) }
                                 Tab.COLLECTION -> {
                                     val open = remember { model.openPokemonId }

@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -146,7 +147,7 @@ private fun PartyPanel(
             }
             (0 until PARTY_SIZE).chunked(3).forEach { row ->
                 // Every slot in a row is as tall as the tallest, so a long name never puts the row out of line.
-                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     row.forEach { i ->
                         val p = ordered.getOrNull(i)
                         val slot = Modifier.weight(1f).fillMaxHeight()
@@ -164,14 +165,13 @@ private fun PartyPanel(
                         Text(pct(line.percent), style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = Pixel.Green)
                     }
                 }
-                if (perks.isEmpty() && perksNote == null) Text("None yet. They grow with level and friendship.", style = MaterialTheme.typography.bodyMedium)
                 if (perksNote != null) Text(perksNote, style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
 }
 
-private val slotShape = RoundedCornerShape(12.dp)
+private val slotShape = PixelShape
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

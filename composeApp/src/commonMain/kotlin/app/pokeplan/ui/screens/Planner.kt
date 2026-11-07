@@ -1,5 +1,9 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.frameToneOf
+import app.pokeplan.ui.theme.dialogueBox
+import androidx.compose.ui.semantics.contentDescription
+import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.SpriteAction
 import app.pokeplan.ui.theme.ModuleAccent
@@ -123,7 +127,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
             val overdue = TaskViews.overdue(today, store.now).size
             val doneToday = store.doneToday()
             Column(Modifier.fillMaxSize()) {
-                ScreenHeader("Planner", subtitle = if (today.isEmpty()) "Nothing left for today" else "${today.size} to do today", icon = "journal", onBack = onBack, color = ModuleAccent.PLAN.header)
+                ScreenHeader("Planner", icon = "journal", onBack = onBack, color = ModuleAccent.PLAN.header)
                 Column(
                     Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
                     verticalArrangement = Arrangement.spacedBy(Spacing.L),
@@ -151,7 +155,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
             return@ScreenSwitch
         }
 
-        SectionScaffold(current.label, "Planner", onBack = { view = null }, icon = current.icon, color = ModuleAccent.PLAN.header) {
+        SectionScaffold(current.label, null, onBack = { view = null }, icon = current.icon, color = ModuleAccent.PLAN.header) {
             RewardBox(model)
             when (current) {
                 View.TARGETS -> FrequencyView(model)
@@ -180,34 +184,33 @@ private class ListTile(val view: View, val count: String?, val detail: String)
 
 /** The list tint, the same on the menu tile and nowhere else (the lists themselves stay calm). */
 private fun View.tint(): Color = when (this) {
-    View.TODAY -> ModuleAccent.PLAN.accent; View.DAY -> Pixel.Teal; View.INBOX -> Pixel.Blue; View.UPCOMING -> Pixel.Warning
-    View.TARGETS -> Pixel.Green; View.DONE -> Pixel.Violet; View.ALL -> Pixel.Gray
+    View.TODAY, View.DAY, View.INBOX, View.UPCOMING, View.TARGETS, View.DONE -> ModuleAccent.PLAN.accent
+    View.ALL -> Pixel.InkSoft
 }
 
 /** Two tiles to a row: the item icon and the count on top, the name and one quiet line below. */
 @Composable
 private fun ListTiles(tiles: List<ListTile>, onOpen: (View) -> Unit) {
-    val shape = RoundedCornerShape(Spacing.CardRadius)
+    val shape = app.pokeplan.ui.theme.DialogueShape
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         tiles.chunked(2).forEach { row ->
-            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 row.forEach { tile ->
                     Column(
                         Modifier.weight(1f).fillMaxHeight()
-                            .background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)
+                            .dialogueBox(tone = frameToneOf(tile.view.tint())).clip(shape)
                             .clickable(role = Role.Button, onClickLabel = "Open ${tile.view.label}") { onOpen(tile.view) }
-                            .padding(Spacing.M),
+                            .padding(horizontal = Spacing.L, vertical = Spacing.M),
                         verticalArrangement = Arrangement.spacedBy(Spacing.XS),
                     ) {
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Box(Modifier.size(48.dp).background(tile.view.tint().copy(alpha = 0.14f), CircleShape), contentAlignment = Alignment.Center) {
+                            Box(Modifier.size(48.dp).background(tile.view.tint().copy(alpha = 0.14f), app.pokeplan.ui.theme.PixelDisc), contentAlignment = Alignment.Center) {
                                 ItemIcon(tile.view.icon, size = 40.dp, description = null)
                             }
                             Spacer(Modifier.weight(1f))
                             if (tile.count != null) Text(tile.count, style = MaterialTheme.typography.headlineMedium)
                         }
                         Text(tile.view.label, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(tile.detail, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 2)
                     }
                 }
                 if (row.size == 1) Spacer(Modifier.weight(1f))
@@ -239,9 +242,7 @@ private fun TodayList(model: AppModel, tasks: List<Task>, card: @Composable (Tas
         val total = tasks.size + done
         Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Text("$done of $total done", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            Box(Modifier.weight(1f).height(8.dp).clip(CircleShape).background(Pixel.Shade)) {
-                if (done > 0) Box(Modifier.fillMaxWidth(done.toFloat() / total).fillMaxHeight().clip(CircleShape).background(Pixel.Green))
-            }
+            app.pokeplan.ui.theme.PixelBar(done.toFloat() / total, Modifier.weight(1f), label = "$done of $total done")
         }
     }
     if (tasks.isEmpty()) {
@@ -280,7 +281,7 @@ internal fun TaskGroup(
                 if (action != null) PixelButton(action.first, action.second, color = Pixel.InkSoft, compact = true)
             }
         }
-        val shape = RoundedCornerShape(Spacing.CardRadius)
+        val shape = PixelShape
         Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)) {
             tasks.forEachIndexed { i, t ->
                 if (i > 0) HorizontalDivider(Modifier.padding(start = Spacing.M), color = Pixel.Border)
@@ -291,8 +292,8 @@ internal fun TaskGroup(
 }
 
 /**
- * What an empty list says, and what to do about it: a small real item icon, a short title, one line, and at most one
- * action, in the game's own words.
+ * What an empty list says, and what to do about it: a small real item icon (or the sleeping buddy), a short title, and at most one
+ * action. [line] is not drawn (an empty screen needs no explanation; the Help screen has the rules); a screen reader reads it after the title.
  */
 @Composable
 fun EmptyState(title: String, line: String? = null, icon: String? = null, action: Pair<String, () -> Unit>? = null, sleeper: Boolean = false) {
@@ -302,9 +303,8 @@ fun EmptyState(title: String, line: String? = null, icon: String? = null, action
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
             if (buddy != null) AnimatedSprite(buddy.form.id, buddy.isShiny, "", size = 56.dp, animate = !LocalReduceMotion.current, ground = 4.dp, action = SpriteAction.SLEEP, actionKey = 1)
             else if (icon != null) ItemIcon(icon, size = 40.dp, description = null)
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            Column(Modifier.weight(1f).semantics(mergeDescendants = true) { if (line != null) contentDescription = "$title. $line" }, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 Text(title, style = MaterialTheme.typography.titleSmall)
-                if (line != null) Text(line, style = MaterialTheme.typography.bodyLarge)
                 if (action != null) PixelButton(action.first, action.second, Modifier.padding(top = Spacing.XS), Pixel.InkSoft, compact = true)
             }
         }
@@ -334,7 +334,7 @@ internal fun emptyLine(view: View) = when (view) {
 fun DifficultyPicker(selected: Rank, onSelect: (Rank) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         Text("How hard does it feel?", style = MaterialTheme.typography.bodyLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             Rank.entries.forEach { r -> RankBadge(r, selected = r == selected, onClick = { onSelect(r) }) }
         }
         Text("${selected.letter}: ${selected.title}. Harder tasks earn more.", style = MaterialTheme.typography.bodyMedium)
@@ -522,7 +522,7 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                             Text(if (minutes == 0) "No estimate" else "$minutes min", style = MaterialTheme.typography.bodyLarge)
                             PixelButton("+5", { minutes += 5 }, color = Pixel.InkSoft, compact = true)
                         }
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                             PixelIconButton("check", "Save", {
                                 store.updateTask(
                                     task.copy(
@@ -575,7 +575,7 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                             RemindMe(model, task)
                             RepeatRow(model, task)
                             HorizontalDivider(color = Pixel.Border)
-                            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                                 PixelIconButton("pencil", "Edit", { editing = true }, Pixel.InkSoft)
                                 PixelButton("Won't do", { store.wontDo(task.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                                 PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.Danger)

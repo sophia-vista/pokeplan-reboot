@@ -77,22 +77,24 @@ Colors are semantic, not decorative. Module/region accents may tint selected ele
 #### Chrome and module accents (8 November 2026)
 
 - **App chrome is neutral.** The header bar of every page that belongs to no module (Home, Modules, Pokémon, Me) and the bottom tab bar use `Pixel.Chrome`, a deep slate. The brand red is not chrome: it is the Poké Ball accent for a few primary game actions (start a focus, choose a starter) and never identifies a module.
-- **One accent per module**, in `ModuleAccent` (app UI `RegionLook.kt`). A module's header bar is its `header` colour (the same in both palettes, white text on it, at least 4.5:1); its dialogue-frame tint, menu-card tint and its primary action are its `accent` (a brighter shade in the dark palette so the frame stays visible on a dark panel). Starting values *(tune)*:
+- **One accent per module**, in `ModuleAccent` (`RegionLook.kt`), ordered as the Modules menu is: **Pokégear first, World last, and the six between running down a quiet rainbow** (owner, 8 November 2026; the order may be rearranged to fit the colours, but Pokégear stays on top and World at the bottom). A module's header bar is its `header` colour (the same in both palettes, white text on it, at least 4.5:1); its dialogue-frame tint, menu-card tint and primary action are its `accent` (a brighter shade in the dark palette so the frame stays visible on a dark panel). A module that is not built yet is a placeholder card in its own colour, dimmed, that opens nothing. Starting values *(tune)*:
 
-| Module | Hue | Header (both palettes) | Dark-palette accent |
-|---|---|---|---|
-| PLAN | violet | `#6D3FD6` | `#9B7BF0` |
-| CARE | meadow green | `#1E7F52` | `#34B07A` |
-| WORLD | teal | `#0F766E` | `#2DB5A8` |
-| GEAR (Pokégear) | blue | `#2C6CCC` | `#5B96EE` |
-| HEAL | rose | `#BE185D` | `#EC5C9B` |
-| MINT | amber | `#B45309` | `#E08A2E` |
-| HOME | olive | `#4D7C0F` | `#8DB83A` |
-| LINK | cyan | `#0E7490` | `#38B2D0` |
+| Order | Module | Hue | Header (both palettes) | Dark-palette accent |
+|---|---|---|---|---|
+| 1 | GEAR (Pokégear) | rose | `#B83A4B` | `#F0707F` |
+| 2 | PLAN | orange | `#B35309` | `#EE9040` |
+| 3 | MINT | ochre | `#8A6700` | `#D4A82A` |
+| 4 | HOME | olive | `#4D7C0F` | `#8DB83A` |
+| 5 | CARE | green | `#1E7F52` | `#34B07A` |
+| 6 | HEAL | teal | `#0F766E` | `#2DB5A8` |
+| 7 | LINK | blue | `#2C6CCC` | `#5B96EE` |
+| 8 | WORLD | violet | `#6D3FD6` | `#9B7BF0` |
 
-- HEAL, MINT, HOME and LINK are reserved now so the modules built later do not invent their own. An accent never stands for success, warning, error or money status; those keep the semantic tokens. HEAL's rose is never used as a judgement of a measurement.
+- MINT, HOME and LINK are reserved so the modules built later do not invent their own. An accent never stands for success, warning, error or money status; those keep the semantic tokens. Inside a module every menu card, frame and primary action uses that one accent (no rainbow of tiles inside a module); only quiet items such as Settings use the neutral ink.
 - **Letters on a filled key** (pressed, selected) are white or the dark ink, whichever has the higher contrast with the fill (`keyLook`), so a mid-tone fill in the dark palette still reads at AA.
-- **Frames.** One frame per group: a dialogue box holds its rows without a box round each row, and a box is not put inside a box. An empty state is a short line of dialogue with a real sprite or item icon, not a grey placeholder.
+- **Frames.** One frame per group: a dialogue box holds its rows without a box round each row, and a box is not put inside a box. **Every big section sits in a dialogue box** (a rank and XP strip, a list of teams, a settings group), never loose on the page background; only the header, a menu grid and a picture window stand outside one.
+- **Pixel parts, no rounding (8 November 2026).** Text fields, bars, toggles, sliders, cards, picture windows and the header bar use stair corners of whole 2 dp art pixels (`StairShape`: `DialogueShape`, `PixelShape`, `PixelDisc`), drawn in code. Material's rounded `OutlinedTextField`, `Switch` and `Slider` are not used: `PixelField` (outline like a key, a label above it or a placeholder inside, text centred in 48 dp), `PixelToggle`, `PixelSlider`, `PixelBar` and `ExpBar` replace them. A row that puts a field and keys side by side centres them on one line (`verticalAlignment = CenterVertically`); a label for such a field goes above the row, never inside the field.
+- **The buddy lives on Home only** (`HomeBuddyStage`, in a scene of its own type). Module pages show their own party and lead, never the buddy, and the PC list shows only Pokémon that are in no other place (`Places.of == Pc`), so the buddy is never in the PC.
 
 ### 5.2 Spacing and sizing
 
@@ -272,6 +274,20 @@ All module UI reviews must check:
 - [ ] Progressive disclosure for advanced controls.
 - [ ] Light/dark, enlarged text, TalkBack, touch targets and responsive widths verified.
 - [ ] Pixel art remains crisp and does not obstruct the task.
+
+## 12A. Copy and anti-slop rules
+
+Condensed from the owner's `unslop-ui` reference (8 November 2026), for a native app. Slop is an unspecified default: the first thing that comes to mind, which every generated screen shares. A screen should read as if someone decided each thing on it.
+
+1. **A caption must say something the screen does not already show.** No sentence that restates the title, the visible state or the button's label; no reassurance ("Only you see this", "Nothing here earns anything", "No hurry"), no tutorial paragraph under a menu, no "Each module is one part of your day". If a rule matters it belongs in Help, once. An empty state is a short title and at most one action, not an explanation. A menu card is an icon and a title.
+2. **No breadcrumb under a header** that repeats where the Back button goes; a header's second line is a fact (rank, a count that changes), not a label.
+3. **Specific copy, no clichés.** "Send a team into a dungeon", not "Unleash your team's potential". Say what the thing does in the words of the game.
+4. **No emoji as icons or bullets**; item icons and Pixelarticons glyphs only (a buddy's tap emote is the one game-style exception).
+5. **No gradient text, no glow, no animation on every element.** Motion tells state or a real event and respects Reduce motion; the dither background is the only texture.
+6. **No uniform treatment.** Rounded corners everywhere, the same shadow on everything and a box round every row all read as generated. Use the stair corner, one frame per group, and hierarchy (size, weight, spacing) before another border.
+7. **Colours come from the tokens.** A new colour is a decision recorded in section 5.1 with its reason, not the next-most-likely hex; module accents follow the rainbow table, red is not chrome.
+8. **Text is centred by its letters, and that is measured, not eyeballed.** The Pokémon DP font sits low in its line box, so `PixelTheme` lifts every text style (`baselineShift`) and the dialogue bitmap font draws one art pixel lower (`PmdFont.BASELINE`); `TextCentreTest` renders keys, fields, badges and each text style and fails if the gap above the letters and below them differ by more than 1 dp. A new font, size or control gets a line in that test. Rank badges are rounded pixel squares (`DialogueShape`), never circles.
+9. **Layout quality is checked by eye on a real screenshot, in both palettes, on every change**: nothing clipped or overflowing, one spacing scale (`Spacing`), every row's contents on one centre line, edges aligned to the page gutter, one thing leading the eye per screen.
 
 ## 13. Change control
 

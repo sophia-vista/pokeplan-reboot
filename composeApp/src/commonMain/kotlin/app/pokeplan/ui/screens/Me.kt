@@ -57,7 +57,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
             }
             return@ScreenSwitch
         }
-        SectionScaffold(current.label, "Me", onBack = { section = null }, icon = current.icon) {
+        SectionScaffold(current.label, null, onBack = { section = null }, icon = current.icon) {
             when (current) {
                 MeSection.SETTINGS -> SettingsView(model)
                 MeSection.HELP -> HelpView()
@@ -85,10 +85,6 @@ private fun TrainerCard(model: AppModel) {
             // Each number says what it counts and over what time, so none is mistaken for another.
             Text("All time: ${plural(data.tasks.count { it.state == TaskState.DONE }, "task")} finished, ${data.focusHistory.filter { it.completed }.sumOf { it.minutes }} min focused", style = MaterialTheme.typography.bodyMedium)
             Text("Streak: ${plural(streak.current, "day")} in a row (best ${streak.longest})", style = MaterialTheme.typography.bodyMedium)
-            Text(
-                "A day counts with a paid task or a finished focus session. One missed day a week is free, and rest days don't count against you.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
         }
     }
 }

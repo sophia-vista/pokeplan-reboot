@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -131,7 +132,7 @@ internal fun MonthView(
         draft?.let { d -> NewEventPanel(d, week = false, { draft = it }, { d.addTo(store); draft = null; chosen = d.day }, hours = false) { draft = null } }
         if (pickedEvent != null) EventPanel(model, pickedEvent, week = true, { picked = it }) { picked = null }
 
-        val shape = RoundedCornerShape(Spacing.CardRadius)
+        val shape = PixelShape
         Column(
             Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).padding(Spacing.XS),
             verticalArrangement = Arrangement.spacedBy(Spacing.XS),
@@ -210,7 +211,7 @@ private fun MonthWeek(
 /** A timed event or a task in a month cell: its title on a soft tint of its colour. */
 @Composable
 private fun MonthLabel(item: MonthItem, modifier: Modifier, pick: (String) -> Unit) {
-    val shape = RoundedCornerShape(4.dp)
+    val shape = PixelShape
     val own = item.event?.isOwn == true
     Text(
         item.title,

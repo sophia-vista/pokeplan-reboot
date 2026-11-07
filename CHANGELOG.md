@@ -7,16 +7,17 @@ release always has the newest merge).
 
 ## 0.137.0
 
-Design polish pass (the owner's request after a design review): consistency, dark mode and a livelier world.
+Design pass, from the owner's phone testing: consistency, pixel parts and fewer words.
 
-- **One colour per module, and a neutral app.** The header bar on Home, Modules, Pokémon and Me is now a deep slate (`Pixel.Chrome`) instead of red, so a module's colour tells you where you are: Plan is violet, Care green, World teal, Pokégear blue. HEAL (rose), MINT (amber), HOME (olive) and LINK (cyan) are reserved in `ModuleAccent` before they are built. Inside a module the menu cards, frames, lead marker and main button all wear its colour (no more warning-yellow or red tiles in Plan's menu). The table is in `DESIGN_SYSTEM.md` 5.1, written first.
-- **Pokégear has its own look**: blue header and frames, instead of Plan's red.
-- **Readable in both palettes.** Letters on a pressed or selected key are white or the dark ink, whichever reads better, so the dark-mode blue, green and red keys, and Teal and Violet, pass 4.5:1. Dark-mode Blue, Green and Red are a shade lighter, Teal and Violet follow the palette, and the sprite credit line is no longer pale grey on white. `TokenContrastTest` checks it.
-- **Real art instead of emoji** in the Pokégear helper's reaction, the Care visit reactions (`Emote`: item icons and Pixelarticons glyphs) and the shiny and starred marks, which are words or a star glyph. The buddy's own tap emotes stay as the game-style emotes they are meant to be.
-- **Livelier empty states**: when there is nothing to show (no one in a party, an empty PC, nothing planned, no routines, an empty Bag) your buddy dozes beside the words with its own Sleep animation (still with Reduce motion).
-- **World is on Home** with a card like Plan's and Care's: the team out exploring, how many are out, and one next step. World's "Since you last looked" shows the haul as icons (floors, coin, berries, boxes) with the detail underneath.
-- **Fewer frames**: party slots are no longer boxed inside the boxed Party card; only the lead is outlined, in the module's colour.
-- **Screenshot tests show real screens.** The opening story covered every `App()` screenshot (all the dark ones were the intro); the tests now finish it first, and dark Care, World, Pokégear and Plan, and Home, Modules, Plan, Care, World and Pokégear in both palettes (`accent-light-*`, `accent-dark-*`) are rendered.
+- **Module colours run down a quiet rainbow.** The Modules menu is Pokégear (rose) first and World (violet) last, with Plan (orange), Mint (ochre), Home (olive), Care (green), Heal (teal) and Link (blue) between; Mint, Home and Link are dimmed placeholder cards until they are built. The header bar of Home, Modules, Pokémon and Me is a neutral slate instead of red. Inside a module every card, frame, lead marker and main button wears its one colour (no yellow, red or blue tiles in Plan's menu or the Planner). The table is in `DESIGN_SYSTEM.md` 5.1.
+- **The buddy lives on Home** (in a scene of its own type) and no longer on Plan's page; the PC list shows only Pokémon that are in no other place, so the buddy is not in the PC.
+- **Pixel parts, no rounding.** Text fields (`PixelField`), progress and EXP bars, the on/off toggle, the volume sliders, cards, picture windows, menu discs and the header bar have stair corners of whole art pixels; Material's rounded field, switch and slider are gone. The text in a field is centred in its 48 dp, and a field beside keys shares a centre line (Pokégear's currency rows, Planner's add row, timers, dice).
+- **Pokégear and World take a whole row each** in the Modules menu; the Planner's tiles are framed cards like the menus' and have no caption line.
+- **Rank badges are rounded pixel squares**, not circles.
+- **Text is centred by its letters, and it is measured.** The Pokémon DP font sat 2 to 4 dp low in its line box and the dialogue font a pixel high, so labels in keys, fields and badges were off the centre line. Every text style is lifted to its centre, the dialogue font moved down a pixel, and `TextCentreTest` renders them and fails if the gap above the letters and below differ by more than 1 dp.
+- **Big sections sit in dialogue boxes**: World's rank and XP strip is a box now.
+- **Fewer words.** Removed the captions that said what the screen already shows: the Modules intro and subtitle, "Modules" breadcrumbs under headers, the Pokémon intro, every empty state's explanation (a title and one action remain), reassurance lines in Care, Heal, Lists and Pokégear tools, the long tutorial blurbs, settings details, World's start and map blurbs. `DESIGN_SYSTEM.md` 12A records the rules so they hold next time.
+- Carried from the first pass (the same version): one accent per module and neutral chrome, AA contrast on filled keys (`TokenContrastTest`), real art instead of emoji, the buddy asleep in empty states, World on Home, the haul as icons in World's report, unboxed party slots, and screenshot tests that show real screens in both palettes.
 
 ## 0.136.0
 

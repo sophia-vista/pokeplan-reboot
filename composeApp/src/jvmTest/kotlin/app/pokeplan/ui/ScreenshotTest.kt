@@ -225,7 +225,7 @@ class ScreenshotTest {
         val store = started()
         val data = store.data.copy(player = store.data.player.copy(pokemon = store.data.player.pokemon.map { it.copy(isShiny = true) }))
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), data.copy(lastSeenVersion = app.pokeplan.ui.AppVersion.NAME)))
-        render("plan-buddy-shiny", frames = 47) { App(storage, focusTab = true, start = Place.PLAN) }
+        render("home-buddy-shiny", frames = 47) { App(storage, focusTab = true, start = Place.HOME) }
     }
 
     @Test
@@ -236,7 +236,7 @@ class ScreenshotTest {
         store.tick()
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
         // Stop early: a reaction lasts about two seconds of animation time, so it is on screen at frame 30.
-        render("plan-buddy-event", frames = 30) { App(storage, focusTab = true, start = Place.PLAN) }
+        render("home-buddy-event", frames = 30) { App(storage, focusTab = true, start = Place.HOME) }
     }
 
     @Test
@@ -244,7 +244,7 @@ class ScreenshotTest {
         val store = started()
         store.startFocus(25, deepFocus = false)
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
-        render("plan-buddy-asleep") { App(storage, focusTab = true, start = Place.PLAN) }
+        render("home-buddy-asleep") { App(storage, focusTab = true, start = Place.HOME) }
     }
 
     @Test
@@ -592,9 +592,11 @@ class ScreenshotTest {
             shot("plan") { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
             shot("care") { model.module = app.pokeplan.ui.screens.Module.CARE; model.careSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
             shot("world") { app.pokeplan.ui.screens.WorldScreen(model) }
+            shot("planner") { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = app.pokeplan.ui.screens.PlanSection.PLANNER; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
+            shot("heal") { model.module = app.pokeplan.ui.screens.Module.HEAL; model.healSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
             shot("gear") { app.pokeplan.ui.screens.GearScreen(model) {} }
         }
-        model.module = null
+        model.module = null; model.planSection = null
     }
 
     @Test
