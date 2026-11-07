@@ -34,6 +34,8 @@ object TaskRules {
      */
     fun paysOnCompletion(task: Task, nowMillis: Long, zone: TimeZone = TimeZone.UTC): Boolean {
         if (task.paid) return false
+        // One completion, one reward owner: a task whose completion another module owns never pays from PLAN (PRODUCT_BIBLE.md section 4).
+        if (task.ownedElsewhere) return false
         if (task.tutorial) return true
         if (task.seriesId != null) return task.planned == null || task.planned <= nowMillis.toLocalDateTime(zone).date
         return nowMillis - task.createdAtMillis >= minAgeMillis(task.rank)
@@ -85,7 +87,7 @@ object TaskRules {
         val sub = task.subtasks.first { it.id == subtaskId }
         check(!sub.done) { "already done" }
         val paidSoFar = task.subtasks.count { it.paid }
-        val pays = !sub.paid && paidSoFar < MAX_PAID_SUBTASKS && nowMillis - sub.createdAtMillis >= minAgeMillis(task.rank)
+        val pays = !task.ownedElsewhere && !sub.paid && paidSoFar < MAX_PAID_SUBTASKS && nowMillis - sub.createdAtMillis >= minAgeMillis(task.rank)
         val updated = task.subtasks.map { if (it.id == subtaskId) it.copy(done = true, paid = it.paid || pays) else it }
         return task.copy(subtasks = updated) to pays
     }

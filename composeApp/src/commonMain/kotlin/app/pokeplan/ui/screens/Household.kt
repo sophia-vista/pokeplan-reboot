@@ -34,6 +34,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.Tutorials
+import app.pokeplan.plan.LinkKind
+import app.pokeplan.plan.TaskState
 import app.pokeplan.core.reward.RewardEngine
 import app.pokeplan.home.Asset
 import app.pokeplan.home.Chore
@@ -543,6 +545,15 @@ private fun ChoreOptions(model: AppModel, v: ChoreView, today: LocalDate, onDone
             if (v.state == ChoreState.PAUSED) PixelButton("Resume", { home.setChoreStatus(id, RecordStatus.ACTIVE); onDone() }, Modifier.weight(1f), accent, compact = true)
             else PixelButton("Pause", { home.setChoreStatus(id, RecordStatus.PAUSED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
+        // Making the responsibility visible in Plan is the user's choice and never moves the chore: Home still completes and pays it (HOME.md 2.1).
+        val linked = model.data.tasks.any { it.link?.kind == LinkKind.HOME_CHORE && it.link?.ref == id && it.state != TaskState.DELETED }
+        if (linked || (waiting && v.chore.status == RecordStatus.ACTIVE)) Actions {
+            if (linked) PixelButton("Remove from Plan", { model.store.data.tasks.firstOrNull { it.link?.ref == id && it.state != TaskState.DELETED }?.let { t -> model.store.unlinkTask(t.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            else PixelButton("Show in Plan", { model.store.linkChore(id) }, Modifier.weight(1f), accent, compact = true)
+        }
+        if (model.homeData.settings.reminders && v.chore.status == RecordStatus.ACTIVE) Actions {
+            PixelButton(if (v.chore.remind) "Reminder on" else "Remind me", { home.setChoreRemind(id, !v.chore.remind) }, Modifier.weight(1f), if (v.chore.remind) accent else Pixel.InkSoft, compact = true)
+        }
         Actions {
             PixelButton("Archive", { home.setChoreStatus(id, RecordStatus.ARCHIVED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -670,6 +681,9 @@ private fun SupplyOptions(model: AppModel, s: Supply, onDone: () -> Unit) {
                 if (setText.isNotBlank() && milli == null) refused = "Check the quantity."
                 else { refused = home.setQuantity(s.id, milli, "Set by hand"); if (refused == null) setText = "" }
             }, color = Pixel.InkSoft, compact = true)
+        }
+        if (model.homeData.settings.reminders && s.lowMilli != null) Actions {
+            PixelButton(if (s.remind) "Low-stock reminder on" else "Tell me when low", { home.setSupplyRemind(s.id, !s.remind) }, Modifier.weight(1f), if (s.remind) accent else Pixel.InkSoft, compact = true)
         }
         Actions {
             PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -892,6 +906,9 @@ private fun ScheduleOptions(model: AppModel, s: MaintenanceSchedule, onDone: () 
             if (s.status != RecordStatus.PAUSED) PixelButton("Done", { home.completeMaintenance(s.id, notes, cost); model.haptic(); onDone() }, Modifier.weight(1f), accent, compact = true)
             PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
+        if (model.homeData.settings.reminders && s.status == RecordStatus.ACTIVE) Actions {
+            PixelButton(if (s.remind) "Reminder on" else "Remind me", { home.setScheduleRemind(s.id, !s.remind) }, Modifier.weight(1f), if (s.remind) accent else Pixel.InkSoft, compact = true)
+        }
         Actions {
             if (s.status == RecordStatus.PAUSED) PixelButton("Resume", { home.setScheduleStatus(s.id, RecordStatus.ACTIVE); onDone() }, Modifier.weight(1f), accent, compact = true)
             else PixelButton("Pause", { home.setScheduleStatus(s.id, RecordStatus.PAUSED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -1009,6 +1026,7 @@ private fun AssetDetail(model: AppModel, a: Asset, onDone: () -> Unit) {
                 listOfNotNull(state.label, w.expiryDay?.let { "until ${it.short()}" }, w.reference.takeIf { it.isNotBlank() }).joinToString(" · "), warn = state == WarrantyState.ENDING,
                 trail = { PixelIconButton("trash", "Delete this warranty", { home.deleteWarranty(w.id) }, Pixel.InkSoft) },
             )
+            if (model.homeData.settings.reminders && w.expiryDay != null) PixelButton(if (w.remind) "Reminder on" else "Remind me before it ends", { home.setWarrantyRemind(w.id, !w.remind) }, Modifier.fillMaxWidth(), if (w.remind) accent else Pixel.InkSoft, compact = true)
         }
         if (warranty) WarrantyForm(model, a.id) { warranty = false }
         else PixelButton("Add warranty", { warranty = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
@@ -1190,6 +1208,31 @@ private fun HouseholdSettingsView(model: AppModel) {
                 "Find Pokémon from finished work", settings.progression,
                 detail = "A chore or a piece of maintenance you finish can find a Habitat Egg; adding, editing, quantities and notes never do.",
             ) { home.setProgression(it) }
+        }
+    }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelTitle("Reminders")
+            ToggleRow(
+                "Remind me about the home", settings.reminders,
+                detail = "Off by default, and each chore, job, supply and warranty is switched on by itself. One reminder each, never a daily nag for something late. It never shows a quantity or a serial number, and it never records anything for you.",
+            ) { home.setReminders(it) }
+            if (settings.reminders) {
+                SectionLabel("At")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    listOf(8, 9, 12, 18, 20).forEach { h -> Chip("${h.toString().padStart(2, '0')}:00", h == settings.reminderHour, { home.setReminderHour(h) }) }
+                }
+                SectionLabel("Maintenance")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    listOf(0 to "On the day", 1 to "1 day before", 3 to "3 days before", 7 to "A week before").forEach { (d, l) -> Chip(l, d == settings.maintenanceLeadDays, { home.setMaintenanceLeadDays(d) }) }
+                }
+                SectionLabel("Warranties")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    listOf(7 to "A week before", 14 to "2 weeks", 30 to "A month", 60 to "2 months").forEach { (d, l) -> Chip(l, d == settings.warrantyLeadDays, { home.setWarrantyLeadDays(d) }) }
+                }
+                Text("Your quiet hours and focus sessions still hold a reminder back.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                ToggleRow("Name it", settings.reminderNames, detail = "After you unlock your phone it says which chore, job or supply. The lock screen only says what kind.") { home.setReminderNames(it) }
+            }
         }
     }
     TextBox {

@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.144.0
+
+Cross-module links, Home reminders, and real reward events in the ledger (REP-014). No reward number changes (`RewardRules.VERSION` stays 19).
+
+- **A PLAN task can be linked to a HOME chore** (Home → a chore → "Show in Plan"; PRODUCT_BIBLE.md section 4, HOME.md 2.1). The task is a projection of the chore's current occurrence: its words and day follow Home, a repeating chore's task moves on to the next occurrence, and a task marked "from Home" is completed *by Home*: ticking it in Plan runs Home's own completion, Home pays Habitat Discovery once, and Plan pays nothing (no task reward, no steps reward, no activity day). Reopen and "won't do" in Plan are Home's undo and skip. "Remove from Plan" removes only the projection; deleting or pausing the chore takes it along (restorable), and a task cannot be made to repeat on its own. Without Home's store (a widget before Home is known) a linked task is left exactly as it is.
+- **A LINK follow-up can be converted into a PLAN task** (`GameStore.convertFollowUp`): from then on PLAN owns the task, its completion and its reward, once, by Plan's rules; the same follow-up converts to the same task; LINK reads its status with `linkedTask`. This is Plan's half of LINK.md 2.4; the LINK module itself is not built.
+- **Home reminders** through the shared scheduler (`HomeReminders`, `HomeReminderAdapter`, `UpkeepReminders`; HOME.md section 6). **Off until turned on** in Home → Settings, and then each chore, maintenance schedule, supply (with a threshold) and warranty (with an end date) is switched on by itself, so there is never a default reminder. One reminder each at a chosen hour (a chore on its day; maintenance 0, 1, 3 or 7 days before; a warranty a week to two months before; a low supply once), never repeated, nothing for what is overdue, and a done, skipped, paused, archived, edited-away or deleted source stops asking when the alarm goes off. The lock screen says only the kind ("A chore is due"); the name shows after unlocking and only if the player allowed it; never a quantity, serial or note. A chore's notification has "Done" (Home's own completion) and every kind has "Tomorrow"; delivery, snooze and dismiss pay nothing.
+- **Real events in the ledger** (the first typed-repository step of DATA_AND_MIGRATIONS.md 7.3.0): a HEAL, MINT or HOME reward now leaves a `LedgerNote` with the event's own id (`home:chore:<id>:<day>`), module, opaque reference and kind, and the database settles it as that event (once; the id is the idempotency key) instead of folding it into "net change of one save". Whatever else differs between the save and the tables is still the net change, so the balance and the Bag always equal the save. Holds no household, health or money word.
+- Tests: `TaskLinksTest` (13), `HomeRemindersTest` (7), two ledger tests in `PokemonTablesTest`.
+
 ## 0.143.0
 
 Home, the household module, built manual first (REP-014).

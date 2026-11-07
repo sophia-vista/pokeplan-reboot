@@ -108,7 +108,37 @@ class PokemonTables(private val store: DataStore) {
         // The balance and the Bag: one ledger event for what changed.
         val coins = player.long("coins") ?: 0
         val counts = ((player["inventory"] as? JsonObject)?.get("counts") as? JsonObject).orEmpty().mapValues { (_, v) -> (v as? JsonPrimitive)?.longOrNull ?: throw SaveNotRepresentableException("a Bag count is not a number") }
+        // What a module reward really was is settled under its own event id first; whatever is still different after that is the net change below.
+        if (!opening) settleNotes(rest["ledgerNotes"], nowMillis)
         settleChange(coins, counts, nowMillis, opening, rest["pokeMigration"])
+    }
+
+    /**
+     * Settles the save's ledger notes (`AppData.ledgerNotes`): each is a module reward with its own event id (`home:chore:<id>:<day>`, source module and opaque
+     * reference), so the ledger says what really happened instead of only "net change of one save" (DATA_AND_MIGRATIONS.md section 7.3.0). The event id is the
+     * idempotency key: a note already settled is skipped, so a replay, a restore or a second write pays nothing twice. A note that cannot be applied (it would take
+     * a balance below zero, or is not a number) is left to the net change that follows, which always brings the tables to the document.
+     */
+    private fun settleNotes(notes: JsonElement?, nowMillis: Long) {
+        for (element in (notes as? JsonArray).orEmpty()) {
+            val note = element as? JsonObject ?: continue
+            val id = note.text("eventId") ?: continue
+            if (store.economy.hasEvent(id)) continue
+            val poke = note.long("poke") ?: 0L
+            val items = (note["items"] as? JsonObject).orEmpty().mapNotNull { (item, n) -> (n as? JsonPrimitive)?.longOrNull?.let { item to it } }.toMap()
+            if (poke == 0L && items.isEmpty()) continue
+            try {
+                store.economy.settle(
+                    RewardEventInput(
+                        eventId = id, sourceModule = note.text("module") ?: "APP", sourceRecordId = note.text("ref") ?: id,
+                        eventKind = note.text("kind") ?: "reward", policyVersion = LIVE_POLICY, occurredAt = note.long("atMillis") ?: nowMillis,
+                        poke = poke, items = items,
+                    ),
+                )
+            } catch (e: InsufficientFundsException) {
+                // Left to the net change; nothing was applied (the repository checks before it writes).
+            }
+        }
     }
 
     /** The player's fields as stored, to be put back into the save with the rest. Empty until the first save has been written. */

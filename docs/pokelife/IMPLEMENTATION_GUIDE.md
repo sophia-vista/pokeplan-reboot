@@ -150,7 +150,7 @@ This section supersedes the status column of section 3, which stays as the 0.123
 | Forgiving, no punishment (principles 4 and 9) | Holds by design in Home (no backlog, no streak, no shaming words); not re-audited for the older Plan and Care streak features |
 | Local-first, no account, no cloud, no telemetry (principle 6, section 3) | Holds since 0.130.0 |
 | Android only (section 3) | Holds; desktop and web stay compile-only |
-| Cross-module links (section 4): HOME owns a chore a PLAN task is linked to; LINK owns a follow-up until converted; MINT owns bill state | **Not built.** There are no cross-module links yet: `HOME.md` 2.1 and `LINK.md` 4.1 describe them; no module creates a PLAN task |
+| Cross-module links (section 4): HOME owns a chore a PLAN task is linked to; LINK owns a follow-up until converted; MINT owns bill state | **Partly built (0.144.0).** HOME chore to PLAN task is built (`TaskLink`, `HomeLinkOwner`: HOME completes and pays once, PLAN pays nothing, tested) and PLAN's half of a LINK follow-up conversion (`convertFollowUp`, one task per follow-up, PLAN pays once); LINK itself and MINT bill links are not built |
 | Roles (section 5): global buddy, module party of six, WORLD teams, GEAR helpers; one Pokémon in one place | Holds (0.124.0, 0.133.0); LINK's party does not exist yet |
 | One Bag and one currency Poké | Holds (0.125.0, 0.135.0); World's working copy remains |
 | Held items persistent and non-consumable | Implemented for the existing held items; not re-verified against the full invariant |
@@ -162,9 +162,9 @@ This section supersedes the status column of section 3, which stays as the 0.123
 
 1. **Device acceptance for everything since 0.129.0**: the database cutover recovery cases, Mint's Keystore key, access gate, bill reminders and portable backup, the module tables on a device, the new arrival scenes, reminders, and a visual review of every new screen in both palettes and at 130% text.
 2. **LINK** (sequence 8): all eight phases of `MODULES/LINK.md`, its party, and its Postcard Trail event.
-3. **Cross-module links**: HOME chore to PLAN task, LINK follow-up to PLAN task, and MINT bill state; each must keep one completion and one reward owner.
-4. **Reminders through the shared scheduler** for Home (chores, maintenance, low stock, warranty) and Link (dates and follow-ups), plus the Plan streak reminder and weekly recap.
-5. **Typed repositories per module** and the removal of the single-`AppData` view; REP-010's World rules taking the balance as an input.
+3. **Cross-module links**: HOME chore to PLAN task and PLAN's half of the LINK follow-up conversion are built (0.144.0); still open: the LINK module itself, MINT bill state, a PLAN shopping task for a supply.
+4. **Reminders through the shared scheduler**: Home's (chores, maintenance, low stock, warranty) are built (0.144.0, not run on a device); still open: Link (dates and follow-ups), the Plan streak reminder and weekly recap.
+5. **Typed repositories per module** and the removal of the single-`AppData` view; REP-010's World rules taking the balance as an input. Started (0.144.0): HEAL, MINT and HOME rewards settle their real event ids in the ledger (`DATA_AND_MIGRATIONS.md` 7.3.0 step 1); the rest is open.
 6. **Open module scope**: HEAL (workouts, nutrition, imports, history), MINT (import, providers, splits, rollover, savings targets), HOME (attachments, widgets, imports).
 7. **GEAR completion, WORLD completion and the launcher** (sequences 9 to 11), not re-audited since 0.123.0.
 8. **Release hardening** (sequence 12): the asset registry and rights audit (REP-015), the sound clean-ups (REP-016, REP-017), the protected release key (REP-005), and a refreshed test baseline that includes an Android build and a device suite.

@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.app.AppData
 import app.pokeplan.app.CareStore
 import app.pokeplan.app.HealStore
+import app.pokeplan.app.HomeLinkOwner
 import app.pokeplan.app.HomeStore
 import app.pokeplan.app.MintStore
 import app.pokeplan.home.HomeData
@@ -273,7 +274,9 @@ class AppModel(
         care.observe { careData = it }
         heal.observe { healData = it }
         mint.observe { mintData = it }
-        home.observe { homeData = it }
+        // A PLAN task linked to a HOME chore is a projection: HOME completes and pays it, and the task follows (PRODUCT_BIBLE.md section 4).
+        store.registerLinkOwner(HomeLinkOwner(home))
+        home.observe { homeData = it; store.syncLinks() }
     }
 }
 
@@ -323,6 +326,8 @@ fun App(
     onHealChanged: ((HealData) -> Unit)? = null,
     /** Called after every change to Mint's records (the Android app keeps bill reminders up to date). Only the host's own reminder code looks inside; nothing is sent anywhere. */
     onMintChanged: ((MintData) -> Unit)? = null,
+    /** Called after every change to Home's records (the Android app keeps Home's reminders up to date). Only the host's own reminder code looks inside; nothing is sent anywhere. */
+    onHomeChanged: ((HomeData) -> Unit)? = null,
     /** Called when the app switches between the light and dark colours, so the host can match the system bar icons. */
     onDark: ((Boolean) -> Unit)? = null,
 ) {
@@ -356,6 +361,11 @@ fun App(
     if (onMintChanged != null) DisposableEffect(model.mint) {
         val stop = model.mint.observe(onMintChanged)
         onMintChanged(model.mint.data)
+        onDispose(stop)
+    }
+    if (onHomeChanged != null) DisposableEffect(model.home) {
+        val stop = model.home.observe(onHomeChanged)
+        onHomeChanged(model.home.data)
         onDispose(stop)
     }
     if (externalChanges != null) LaunchedEffect(externalChanges) {
