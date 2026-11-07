@@ -110,6 +110,8 @@ class AppModel(
     val sensors: app.pokeplan.ui.gear.SensorFeed? = null,
     /** The phone's location, microphone, network and code scanner for the Pokégear's field tools; each is null where there is none. */
     val services: app.pokeplan.ui.gear.GearServices = app.pokeplan.ui.gear.GearServices(),
+    /** The platform's backups (Android); null where there are none. */
+    val backups: BackupAccess? = null,
 ) {
     /** Whether the Pokégear is open: a screen over whichever tab is showing, reached from the button at the top of every tab. */
     var gearOpen: Boolean by mutableStateOf(false)
@@ -175,6 +177,8 @@ class AppModel(
 
     /** The screen open inside Care (null shows Care's menu). */
     var careSection: CareSection? by mutableStateOf(null)
+    /** The Pokémon the Meadow's panel sent to Care Play (opens it on them). */
+    var playTarget: String? by mutableStateOf(null)
     var worldSection: WorldSection? by mutableStateOf(null)
 
     /** The layer of the World map on show (the home map or Kanto). */
@@ -257,6 +261,7 @@ fun App(
     capabilities: app.pokeplan.ui.gear.DeviceCapabilities = app.pokeplan.ui.gear.NoCapabilities,
     sensors: app.pokeplan.ui.gear.SensorFeed? = null,
     services: app.pokeplan.ui.gear.GearServices = app.pokeplan.ui.gear.GearServices(),
+    backups: BackupAccess? = null,
     /** Called after every change to the saved data (the Android app uses it to keep its widgets up to date). */
     onDataChanged: ((AppData) -> Unit)? = null,
     /** Called after every change to Care's save (the Android app keeps routine reminders and the Care widget up to date). */
@@ -268,7 +273,7 @@ fun App(
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
         val care = CareStore(careStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
-        AppModel(store, motion, cries, haptics, files, calendars, phone, care, torch, capabilities, sensors, services).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
+        AppModel(store, motion, cries, haptics, files, calendars, phone, care, torch, capabilities, sensors, services, backups).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
     }
     // The phone's power saver is read now and then; World's animations stand still while it is on.
     LaunchedEffect(model) { while (true) { model.powerSaving = phone?.powerSaving == true; kotlinx.coroutines.delay(30_000) } }

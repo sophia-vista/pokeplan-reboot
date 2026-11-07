@@ -88,6 +88,18 @@ object DeviceSelfCheck {
                 check(live.snapshot()["care"] == back) { "a backup would not see Care" }
                 "moved into tables, a change written, read back equal, the snapshot has it"
             }
+            check("Plan tables: move in, write a change, read back, backup sees it") {
+                val live = s.live
+                val doc = "{\"player\":{\"coins\":1},\"tasks\":[{\"id\":\"t\",\"title\":\"T\"}],\"activeDays\":[\"2026-11-01\"],\"focus\":null}"
+                live.write("save", doc, 9)
+                live.movePlanToTables(10)
+                check(s.planTables.isActive()) { "marker not set" }
+                live.write("save", doc.replace("\"coins\":1", "\"coins\":2").replace("\"title\":\"T\"", "\"title\":\"U\""), 11)
+                val back = live.read("save") ?: error("the save did not read back")
+                check("\"coins\":2" in back && "\"title\":\"U\"" in back && "\"activeDays\":[\"2026-11-01\"]" in back) { "the tables did not give the save back" }
+                check(live.snapshot()["save"] == back) { "a backup would not see the save" }
+                "moved into tables, a change written, read back equal, the snapshot has it"
+            }
             check("Reminder holds: put, replace, release") {
                 val r = s.reminders
                 r.hold(HeldReminder("PLAN|t|task|1", "PLAN", "t", "task", "1", 100, "snooze"), 1)

@@ -49,7 +49,7 @@ class SaveFixtureTest {
         // 2. A week of ordinary use, with a habit, a goal, an open task and a finished focus session.
         val clock = Clock(start)
         val store = newStore(clock)
-        store.addHabit("Stretch")
+        store.addFrequencyTask("Stretch")
         store.addGoal("Read a book")
         repeat(7) { useADay(store, clock, it) }
         store.addTask("Still to do", Rank.B)

@@ -16,9 +16,33 @@ class LiveBackup(private val dir: File, private val keep: Int = 3, private val e
         return take(live, nowMillis)
     }
 
+    /** One finished automatic backup: when it was taken and which documents it holds. */
+    data class Info(val millis: Long, val documents: List<String>, val bytes: Long)
+
+    /** The finished backups, newest first. */
+    fun list(): List<Info> = complete().sortedByDescending { it.name.toLong() }.map { f ->
+        Info(f.name.toLong(), File(f, DONE).readText().split(",").filter { it.isNotEmpty() }, f.listFiles()?.filter { it.name.endsWith(".json") }?.sumOf { it.length() } ?: 0L)
+    }
+
+    /**
+     * Whether there is room to write a backup of [bytes] (and a margin): twice the size, because a file is written beside the copy it
+     * replaces, plus [MARGIN]. A backup is skipped, never half written, when there is not.
+     */
+    fun hasRoomFor(bytes: Long): Boolean {
+        dir.mkdirs()
+        return dir.usableSpace >= bytes * 2 + MARGIN
+    }
+
+    /** True when the last backup was skipped for lack of room; the app tells the player calmly and tries again later. */
+    @Volatile var lowStorage: Boolean = false
+        private set
+
+    /** Takes a backup of the live documents, or returns null when there is nothing to back up or no room ([lowStorage] says which). */
     fun take(live: LiveDocuments, nowMillis: Long): File? {
         val docs = live.snapshot()
         if (docs.isEmpty()) return null
+        lowStorage = !hasRoomFor(docs.values.sumOf { it.length.toLong() })
+        if (lowStorage) return null
         val folder = File(dir, nowMillis.toString())
         folder.mkdirs()
         for ((name, json) in docs) {
@@ -29,6 +53,21 @@ class LiveBackup(private val dir: File, private val keep: Int = 3, private val e
         File(folder, DONE).writeText(docs.keys.sorted().joinToString(","))
         complete().sortedBy { it.name.toLong() }.dropLast(keep).forEach { it.deleteRecursively() }
         return folder
+    }
+
+    /** The backup taken at [millis] as one bundle file's text ([BackupBundle]), for the player to save anywhere; null when it is not there. */
+    fun bundleOf(millis: Long, schema: Int): String? {
+        val folder = complete().firstOrNull { it.name.toLong() == millis } ?: return null
+        val names = File(folder, DONE).readText().split(",").filter { it.isNotEmpty() }
+        return BackupBundle.encode(names.associateWith { File(folder, "$it.json").readText() }, schema, millis)
+    }
+
+    /** Puts the backup taken at [millis] back (the documents it replaces are kept aside first). False when there is no such backup. */
+    fun restore(live: LiveDocuments, millis: Long, nowMillis: Long): Boolean {
+        val folder = complete().firstOrNull { it.name.toLong() == millis } ?: return false
+        val names = File(folder, DONE).readText().split(",").filter { it.isNotEmpty() }
+        live.replaceAll(names.associateWith { File(folder, "$it.json").readText() }, nowMillis)
+        return true
     }
 
     /** The newest finished backup folder, or null. */
@@ -48,5 +87,8 @@ class LiveBackup(private val dir: File, private val keep: Int = 3, private val e
     companion object {
         const val DAY = 24 * 60 * 60 * 1000L
         private const val DONE = "DONE"
+
+        /** Free space kept beyond a backup itself. */
+        const val MARGIN = 5L * 1024 * 1024
     }
 }

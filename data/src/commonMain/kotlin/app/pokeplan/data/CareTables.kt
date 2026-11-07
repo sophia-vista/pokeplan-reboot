@@ -22,6 +22,7 @@ import kotlinx.serialization.json.contentOrNull
  */
 class CareTables(private val store: DataStore) {
     private val q get() = store.db.dataQueries
+    private val rows = RecordRows(store)
 
     /** Whether Care's records live here (set once by [activate]); before that the Care document is a row of `live_document`. */
     fun isActive(): Boolean = q.meta(META_CARE_TABLES).executeAsOneOrNull() == ACTIVE
@@ -67,16 +68,15 @@ class CareTables(private val store: DataStore) {
 
     private fun replaceRows(document: JsonObject) {
         for (slice in SLICES) {
-            val rows = rowsOf(slice, document[slice.field] as? JsonArray)
-            diffRecords(slice.table, rows.map { it.row })
-            if (slice == ROUTINES) diffCompletions(rows)
+            val built = rowsOf(slice, document[slice.field] as? JsonArray)
+            rows.diffRecords(slice.table, built.map { it.row })
+            if (slice == ROUTINES) diffCompletions(built)
         }
         val state = document.filterKeys { key -> SLICES.none { it.field == key && document[key] is JsonArray } }
         diffState(state.mapValues { JSON.encodeToString(JsonElement.serializer(), it.value) })
     }
 
-    private class Row(val key: String, val position: Int, val day: String?, val json: String)
-    private class Built(val row: Row, val completions: List<String>)
+    private class Built(val row: RecordRows.Row, val completions: List<String>)
 
     private fun rowsOf(slice: Slice, array: JsonArray?): List<Built> {
         val seen = mutableSetOf<String>()
@@ -87,24 +87,7 @@ class CareTables(private val store: DataStore) {
             val day = (obj[slice.dayField] as? JsonPrimitive)?.contentOrNull
             val completions = if (slice == ROUTINES) (obj["completions"] as? JsonArray).orEmpty().mapNotNull { (it as? JsonPrimitive)?.contentOrNull } else emptyList()
             val body = if (slice == ROUTINES) JsonObject(obj.filterKeys { it != "completions" }) else obj
-            Built(Row(key, index, day, JSON.encodeToString(JsonElement.serializer(), body)), completions)
-        }
-    }
-
-    private fun diffRecords(table: String, wanted: List<Row>) {
-        val have = mutableMapOf<String, Row>()
-        store.driver.executeQuery(null, "SELECT key, position, day, json FROM $table", { c ->
-            while (c.next().value) have[c.getString(0)!!] = Row(c.getString(0)!!, c.getLong(1)!!.toInt(), c.getString(2), c.getString(3)!!)
-            QueryResult.Unit
-        }, 0)
-        val keys = wanted.map { it.key }.toSet()
-        for (gone in have.keys - keys) store.driver.execute(null, "DELETE FROM $table WHERE key = ?", 1) { bindString(0, gone) }
-        for (row in wanted) {
-            val old = have[row.key]
-            if (old != null && old.position == row.position && old.day == row.day && old.json == row.json) continue
-            store.driver.execute(null, "INSERT OR REPLACE INTO $table(key, position, day, json) VALUES (?, ?, ?, ?)", 4) {
-                bindString(0, row.key); bindLong(1, row.position.toLong()); bindString(2, row.day); bindString(3, row.json)
-            }
+            Built(RecordRows.Row(key, index, day, JSON.encodeToString(JsonElement.serializer(), body)), completions)
         }
     }
 
@@ -119,15 +102,7 @@ class CareTables(private val store: DataStore) {
         for ((key, day) in wanted - have) store.driver.execute(null, "INSERT INTO care_routine_completion(routine_key, day) VALUES (?, ?)", 2) { bindString(0, key); bindString(1, day) }
     }
 
-    private fun diffState(wanted: Map<String, String>) {
-        val have = mutableMapOf<String, String>()
-        store.driver.executeQuery(null, "SELECT key, json FROM care_state", { c ->
-            while (c.next().value) have[c.getString(0)!!] = c.getString(1)!!
-            QueryResult.Unit
-        }, 0)
-        for (gone in have.keys - wanted.keys) store.driver.execute(null, "DELETE FROM care_state WHERE key = ?", 1) { bindString(0, gone) }
-        for ((key, json) in wanted) if (have[key] != json) store.driver.execute(null, "INSERT OR REPLACE INTO care_state(key, json) VALUES (?, ?)", 2) { bindString(0, key); bindString(1, json) }
-    }
+    private fun diffState(wanted: Map<String, String>) = rows.diffState("care_state", wanted)
 
     private fun assemble(): JsonObject? {
         val fields = mutableMapOf<String, JsonElement>()

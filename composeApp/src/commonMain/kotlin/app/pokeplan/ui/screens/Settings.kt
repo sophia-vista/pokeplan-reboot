@@ -3,6 +3,9 @@ package app.pokeplan.ui.screens
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalTime
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import kotlinx.datetime.toLocalDateTime
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -125,6 +128,7 @@ internal fun SettingsView(model: AppModel) {
         ToggleRow("Weekly recap", settings.weeklyRecap, detail = "Sunday evening: tasks finished, focus time and your top category. Skipped after an empty week.") { store.changeSettings { s -> s.copy(weeklyRecap = it) } }
     }
     DataCard(model)
+    BackupsCard(model)
     AboutCard()
 }
 
@@ -156,6 +160,59 @@ private fun CalendarsCard(model: AppModel) {
             }
         }
     }
+}
+
+/**
+ * Backups (Android): the app's own daily ones, a copy saved anywhere as one file, and restoring either. A chosen file is read and checked whole
+ * before anything is asked; restoring replaces what is on the phone but keeps it aside, and asks first.
+ */
+@Composable
+private fun BackupsCard(model: AppModel) {
+    val backups = model.backups ?: return
+    var note by remember { mutableStateOf<String?>(null) }
+    var entries by remember { mutableStateOf(backups.automatic()) }
+    var asking by remember { mutableStateOf<Long?>(null) }
+    var chosen by remember { mutableStateOf<app.pokeplan.ui.StagedBackup?>(null) }
+    fun restored(text: String) { model.store.reload(); model.care.reload(); entries = backups.automatic(); note = text }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            GlyphTitle("Backups", "download")
+            if (backups.lowStorage()) Text("This phone is almost out of storage, so a backup was skipped and some changes may not be saved. Free some space and it carries on by itself.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
+            Text("The app keeps a copy of your data every day (the newest three). You can also save a copy anywhere, and put one back.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelButton("Back up now", { note = backups.backupNow(); entries = backups.automatic() }, Modifier.weight(1f), Pixel.Blue, compact = true)
+                PixelButton("Save a copy", { backups.saveCopy(null) { note = it } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            }
+            entries.forEach { e ->
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Text(backupLabel(e.millis), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                    PixelButton("Save", { backups.saveCopy(e.millis) { note = it } }, color = Pixel.InkSoft, compact = true)
+                    PixelButton("Restore", { asking = e.millis; chosen = null }, color = Pixel.Warning, compact = true)
+                }
+            }
+            asking?.let { millis ->
+                Text("Put the backup from ${backupLabel(millis)} back? What is on this phone now is kept aside, so this can be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelButton("Restore", { restored(backups.restoreAutomatic(millis)); asking = null }, Modifier.weight(1f), Pixel.Warning, compact = true)
+                    PixelButton("Keep what I have", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                }
+            }
+            PixelButton("Restore from a file", { asking = null; chosen = null; backups.chooseFile { staged, why -> chosen = staged; note = why } }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            chosen?.let { c ->
+                Text("This file is a backup from ${backupLabel(c.createdAtMillis)} (${c.documents.joinToString(", ")}). Replace what is on this phone with it? What is here now is kept aside.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelButton("Restore", { restored(backups.applyChosen()); chosen = null }, Modifier.weight(1f), Pixel.Warning, compact = true)
+                    PixelButton("Cancel", { chosen = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                }
+            }
+            note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
+        }
+    }
+}
+
+private fun backupLabel(millis: Long): String {
+    val t = kotlinx.datetime.Instant.fromEpochMilliseconds(millis).toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+    return "${t.date} ${t.hour.toString().padStart(2, '0')}:${t.minute.toString().padStart(2, '0')}"
 }
 
 /** The player's data: a copy to keep, starting over on this device. Each destructive step asks twice. */
@@ -285,12 +342,6 @@ internal fun PlanSettings(model: AppModel) {
 @Composable
 internal fun WorldSettings(model: AppModel) {
     val settings = model.data.settings
-    SettingsGroup("Teams", "users") {
-        ToggleRow(
-            "Keep party Pokémon out of World", settings.worldKeepPartyOut,
-            detail = "Pokémon in a module's party (Plan, Care...) are not offered for World teams, and Send my strongest passes them by. One already on a team stays until you change the team.",
-        ) { model.store.changeSettings { s -> s.copy(worldKeepPartyOut = it) } }
-    }
     SettingsGroup("Animation", "zap") {
         ToggleRow(
             "Scrolling floors", settings.worldScroll,

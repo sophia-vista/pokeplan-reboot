@@ -79,7 +79,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.datetime.minus
 
 internal enum class View(val label: String, val icon: String) {
-    TODAY("Today", "oaks-parcel"), DAY("Calendar", "town-map"), INBOX("Inbox", "seal-bag"), UPCOMING("Next 7 days", "timer-ball"), HABITS("Habits", "heart-scale"), DONE("Done", "premier-ball"),
+    TODAY("Today", "oaks-parcel"), DAY("Calendar", "town-map"), INBOX("Inbox", "seal-bag"), UPCOMING("Next 7 days", "timer-ball"), TARGETS("Targets", "heart-scale"), DONE("Done", "premier-ball"),
     // Last, because widgets and shortcuts open a view by its index.
     ALL("All tasks", "scope-lens"),
 }
@@ -99,7 +99,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
         View.INBOX -> TaskViews.inbox(live)
         View.UPCOMING -> TaskViews.upcoming(live, store.now)
         View.DONE -> live.filter { it.state == TaskState.DONE }.sortedByDescending { it.completedAtMillis }.take(30)
-        View.HABITS, View.DAY, View.ALL -> emptyList()
+        View.TARGETS, View.DAY, View.ALL -> emptyList()
     }.filter { it.id !in pendingIds }
 
     fun card(showList: Boolean): @Composable (Task, LocalDate?) -> Unit = { t, day ->
@@ -135,7 +135,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
                                 View.DAY -> null to "plan the hours"
                                 View.INBOX -> "${tasksFor(v).size}" to "in no list"
                                 View.UPCOMING -> "${tasksFor(v).size}" to "after today"
-                                View.HABITS -> model.data.habits.let { hs -> if (hs.isEmpty()) null to "small things, often" else "${hs.count { store.today in it.completions }}/${hs.size}" to "done today" }
+                                View.TARGETS -> store.frequencyTasks().let { hs -> if (hs.isEmpty()) null to "small things, often" else "${hs.count { store.today in it.completions }}/${hs.size}" to "done today" }
                                 View.DONE -> "$doneToday" to "finished today"
                                 View.ALL -> "${live.count { it.isOpen }}" to "search and filter"
                             }
@@ -151,7 +151,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
         SectionScaffold(current.label, "Planner", onBack = { view = null }, icon = current.icon) {
             RewardBox(model)
             when (current) {
-                View.HABITS -> HabitsView(model)
+                View.TARGETS -> FrequencyView(model)
                 View.DAY -> DayView(model, pendingIds, startWeek)
                 View.ALL -> AllTasksView(model, live.filter { it.id !in pendingIds }, card(showList = true))
                 else -> {
@@ -178,7 +178,7 @@ private class ListTile(val view: View, val count: String?, val detail: String)
 /** The list tint, the same on the menu tile and nowhere else (the lists themselves stay calm). */
 private fun View.tint(): Color = when (this) {
     View.TODAY -> Pixel.Red; View.DAY -> Pixel.Teal; View.INBOX -> Pixel.Blue; View.UPCOMING -> Pixel.Warning
-    View.HABITS -> Pixel.Green; View.DONE -> Pixel.Violet; View.ALL -> Pixel.Gray
+    View.TARGETS -> Pixel.Green; View.DONE -> Pixel.Violet; View.ALL -> Pixel.Gray
 }
 
 /** Two tiles to a row: the item icon and the count on top, the name and one quiet line below. */
@@ -310,7 +310,7 @@ internal fun emptyTitle(view: View) = when (view) {
     View.INBOX -> "The inbox is empty"
     View.UPCOMING -> "Nothing coming up"
     View.DONE -> "Nothing finished yet"
-    View.HABITS -> "No habits yet"
+    View.TARGETS -> "No targets yet"
     View.DAY, View.ALL -> ""
 }
 
@@ -319,7 +319,7 @@ internal fun emptyLine(view: View) = when (view) {
     View.INBOX -> "Tasks you add outside a list land here. File them in a list from a task's options."
     View.UPCOMING -> "Tasks planned for the next 7 days show up here."
     View.DONE -> "Tasks you finish show up here, newest first."
-    View.HABITS -> "Habits are small things you want to do often."
+    View.TARGETS -> "Targets are small things you want to do often, like three times a week."
     View.DAY, View.ALL -> null
 }
 
@@ -475,7 +475,7 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                 Text(task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 4, overflow = TextOverflow.Ellipsis, color = if (task.isOpen) Pixel.Ink else Pixel.InkSoft)
                 // Overdue tasks sit under Today's calm "From before" heading, so the row needs no alarm of its own (docs/design.md, No shame).
                 // A finished task's plan no longer matters: the Done list is grouped by the day it was finished.
-                val kind = store.seriesOf(task)?.let { RepeatKind.of(it.recurrence.repeat) }
+                val kind = store.seriesOf(task)?.let { RepeatKind.of(it.recurrence?.repeat) }
                 val line = if (task.isOpen) taskMeta(task, day, kind?.let { if (it == RepeatKind.CUSTOM) "repeats" else "repeats ${it.label.lowercase()}" }) else ""
                 // Its list, by name and colour, as TickTick shows it in the smart lists (not inside the list itself).
                 val shownList = list?.takeIf { showList }

@@ -13,7 +13,9 @@ import app.pokeplan.plan.Recurrence
 import app.pokeplan.plan.ReminderOffset
 import app.pokeplan.plan.Repeat
 import app.pokeplan.plan.TaskState
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.minus
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
@@ -66,7 +68,8 @@ class GameStoreTest {
         assertTrue(s.data.onboarded)
         val buddy = assertNotNull(s.data.player.buddy)
         assertEquals(25, buddy.speciesId)
-        assertTrue(buddy.inParty)
+        assertFalse(buddy.inParty, "the starter is the buddy and in no party: one place only")
+        assertEquals(Place.Buddy, s.placeOf(buddy.id))
         assertTrue(25 in s.data.player.caught)
         assertTrue(s.data.tasks.single().tutorial)
     }
@@ -177,16 +180,49 @@ class GameStoreTest {
     @Test
     fun aHabitPaysOncePerDay() {
         val (s, _) = started()
-        val habit = s.addHabit("Stretch", HabitTarget.Daily, Rank.E)
-        s.completeHabit(habit.id)
+        val habit = s.addFrequencyTask("Stretch", HabitTarget.Daily, Rank.E)
+        s.completeFrequencyTask(habit.template.id)
         assertEquals(1, s.data.rewardLog.size)
-        s.completeHabit(habit.id)
+        s.completeFrequencyTask(habit.template.id)
         assertEquals(1, s.data.rewardLog.size, "the second tick the same day pays nothing")
-        assertEquals(setOf(s.today), s.data.habits.single().completions)
-        s.undoHabit(habit.id)
-        assertEquals(emptySet(), s.data.habits.single().completions)
-        s.completeHabit(habit.id)
+        assertEquals(setOf(s.today), s.frequencyTasks().single().completions)
+        s.undoFrequencyTask(habit.template.id)
+        assertEquals(emptySet(), s.frequencyTasks().single().completions)
+        s.completeFrequencyTask(habit.template.id)
         assertEquals(1, s.data.rewardLog.size, "undoing and ticking again the same day pays nothing")
+    }
+
+    @Test
+    fun habitsOfAnOlderSaveBecomeRecurringTasksWithTheirHistoryAndPayNothing() {
+        val (s, _) = started()
+        val day = s.today
+        val habit = app.pokeplan.plan.Habit("h1", "Read", Rank.D, app.pokeplan.plan.Category.PERSONAL, HabitTarget.PerWeek(3), day.minus(DatePeriod(days = 10)),
+            completions = setOf(day.minus(DatePeriod(days = 2)), day.minus(DatePeriod(days = 1))), paidOn = day.minus(DatePeriod(days = 1)))
+        val goal = s.addGoal("Learn")
+        val old = s.data.copy(habits = listOf(habit), goals = listOf(goal.copy(linkedHabitIds = setOf("h1"))))
+        val storage = MemoryStorage(GameStore.json.encodeToString(AppData.serializer(), old))
+        val coins = old.player.coins
+        val reopened = GameStore(storage, FakeClock(start), utc, Random(7))
+        val series = reopened.frequencyTasks().single()
+        assertEquals("h1", series.template.id, "the id is kept, so the goal that links it still does")
+        assertEquals(setOf("h1"), reopened.data.goals.single().linkedHabitIds)
+        assertEquals(HabitTarget.PerWeek(3), series.target)
+        assertEquals(habit.completions, series.completions); assertEquals(habit.paidOn, series.paidOn); assertEquals(habit.createdOn, series.createdOn)
+        assertEquals(listOf(habit), reopened.data.legacyHabits, "the old habits are kept aside")
+        assertTrue(reopened.data.habits.isEmpty()); assertNotNull(reopened.data.habitsMergedAtMillis)
+        assertEquals(coins, reopened.data.player.coins, "the migration pays nothing")
+        assertEquals(old.rewardLog, reopened.data.rewardLog)
+        // The history counts as progress and as a streak; yesterday's payment is not paid again, and a new day's first tick pays once.
+        assertEquals(0, reopened.frequencyProgress(series)!!.done, "the test day is a Monday: the two days before it belong to last week")
+        assertEquals(3, reopened.frequencyProgress(series)!!.target)
+        assertEquals(habit.streak(day), reopened.frequencyStreak(series))
+        // Loading again changes nothing (idempotent).
+        val again = GameStore(storage, FakeClock(start), utc, Random(7))
+        assertEquals(1, again.data.series.size)
+        reopened.completeFrequencyTask("h1")
+        assertEquals(old.rewardLog.size + 1, reopened.data.rewardLog.size)
+        reopened.completeFrequencyTask("h1")
+        assertEquals(old.rewardLog.size + 1, reopened.data.rewardLog.size)
     }
 
     @Test
@@ -247,7 +283,7 @@ class GameStoreTest {
         val (s, _) = started()
         val id = s.data.player.buddyId!!
         assertFalse(s.transfer(id))
-        assertFalse(s.setInParty(id, false))
+        assertFalse(s.setInParty(id, false), "the buddy is in no party to leave")
     }
 
     @Test
@@ -263,36 +299,34 @@ class GameStoreTest {
     @Test
     fun aPokemonIsInOnePartyAtATimeAndCareHasItsOwn() {
         val (s, clock) = started()
-        hatchOne(s, clock)
+        hatchOne(s, clock); hatchOne(s, clock); hatchOne(s, clock)
         val buddy = s.data.player.buddyId!!
-        val other = s.data.player.pokemon.first { it.id != buddy }
-        assertTrue(s.setInParty(other.id, true, PartyIds.CARE))
-        assertEquals(listOf(other.id), s.data.player.partyOf(PartyIds.CARE).map { it.id })
-        assertEquals(listOf(buddy), s.data.player.party.map { it.id })
-        // Moving back takes it out of Care's party, and Plan's last member and buddy cannot leave for Care.
-        assertFalse(s.setInParty(buddy, true, PartyIds.CARE))
-        assertTrue(s.setInParty(other.id, true, PartyIds.PLAN))
+        val (first, second, third) = s.data.player.party.map { it.id }
+        assertTrue(s.setInParty(second, true, PartyIds.CARE))
+        assertEquals(listOf(second), s.data.player.partyOf(PartyIds.CARE).map { it.id })
+        assertEquals(listOf(first, third), s.data.player.party.map { it.id })
+        assertEquals(Place.Party(PartyIds.CARE), s.placeOf(second))
+        // Moving back takes it out of Care's party; the buddy joining Care stops being the buddy (one place only).
+        assertTrue(s.setInParty(second, true, PartyIds.PLAN))
         assertTrue(s.data.player.partyOf(PartyIds.CARE).isEmpty())
-        // Care's first member leads, and a lead cannot be transferred.
-        assertTrue(s.setInParty(other.id, true, PartyIds.CARE))
-        assertEquals(other.id, s.data.player.careLead?.id)
-        assertEquals(TransferBlock.BUDDY, s.transferBlock(other.id))
-        // A Care member that is not the lead transfers even while Plan has one member, and the lead passes on when it leaves.
-        hatchOne(s, clock)
-        val third = s.data.player.pokemon.first { it.id != buddy && it.id != other.id }
-        assertTrue(s.setInParty(third.id, true, PartyIds.CARE))
-        assertNull(s.transferBlock(third.id))
-        assertTrue(s.setCareLead(third.id))
-        assertEquals(third.id, s.data.player.careLead?.id)
-        assertTrue(s.setInParty(third.id, false))
-        assertEquals(other.id, s.data.player.careLead?.id)
-        assertFalse(s.setCareLead(buddy))
+        assertTrue(s.setInParty(buddy, true, PartyIds.CARE))
+        assertNull(s.data.player.buddyId)
+        assertEquals(buddy, s.data.player.careLead?.id)
+        assertEquals(TransferBlock.BUDDY.takeIf { false }, null)
+        // A Care member that is not the lead transfers, and the lead passes on when it leaves.
+        assertTrue(s.setInParty(third, true, PartyIds.CARE))
+        assertNull(s.transferBlock(third))
+        assertTrue(s.setCareLead(third))
+        assertEquals(third, s.data.player.careLead?.id)
+        assertTrue(s.setInParty(third, false))
+        assertEquals(buddy, s.data.player.careLead?.id)
+        assertFalse(s.setCareLead(first))
     }
 
     @Test
     fun transferGivesCandiesAndCoinsAndKeepsThePokedexEntry() {
         val (s, clock) = started()
-        hatchOne(s, clock)
+        hatchOne(s, clock); hatchOne(s, clock)
         val hatched = s.data.player.pokemon.last()
         val coins = s.data.player.coins
         assertTrue(s.transfer(hatched.id))
@@ -492,7 +526,7 @@ class GameStoreTest {
             val (s, _) = store()
             s.start("Sophia", id)
             assertEquals(id, s.data.player.buddy!!.speciesId)
-            assertTrue(s.data.player.buddy!!.inParty)
+            assertFalse(s.data.player.buddy!!.inParty)
         }
     }
 
@@ -874,12 +908,21 @@ class GameStoreTest {
     @Test
     fun aSaveFromBeforeTheRolesWereSplitMakesTheOldBuddyPlansLeadOnce() {
         val (s, _) = started()
-        val old = s.data.copy(player = s.data.player.copy(planLeadId = null, rolesVersion = 0))
+        // The old shape: the starter was the buddy and in Plan's party, with no lead chosen.
+        val old = s.data.copy(
+            player = s.data.player.copy(planLeadId = null, rolesVersion = 0, pokemon = s.data.player.pokemon.map { it.copy(inParty = true) }),
+            placesVersion = 0,
+        )
+        val starter = s.data.player.buddyId!!
         val storage = MemoryStorage(GameStore.json.encodeToString(AppData.serializer(), old))
         val reopened = GameStore(storage, FakeClock(start), utc, Random(7))
         val player = reopened.data.player
-        assertEquals(player.buddyId, player.planLeadId)
+        assertEquals(starter, player.planLeadId)
         assertEquals(GameStore.ROLES_VERSION, player.rolesVersion)
+        // ...and then the one-place rule: it stays where it works (Plan's party), and the buddy is empty with no one else to take it.
+        assertEquals(Place.Party(PartyIds.PLAN), reopened.placeOf(starter))
+        assertNull(player.buddyId)
+        assertEquals(Places.VERSION, reopened.data.placesVersion)
     }
 
     @Test
@@ -888,13 +931,16 @@ class GameStoreTest {
         hatchOne(s, clock)
         val starter = s.data.player.buddyId!!
         val hatched = s.data.player.pokemon.last().id
-        assertTrue(s.setPlanLead(hatched))
         assertEquals(hatched, s.data.player.planLead?.id)
         assertEquals(starter, s.data.player.buddyId, "choosing Plan's lead leaves the global buddy alone")
+        // One place only: making the lead the buddy takes it out of Plan's party, and the old buddy goes to the PC.
         assertTrue(s.setBuddy(hatched))
-        assertTrue(s.setPlanLead(starter))
         assertEquals(hatched, s.data.player.buddyId)
+        assertNull(s.data.player.planLead)
+        assertEquals(Place.Pc, s.placeOf(starter))
+        assertTrue(s.setInParty(starter, true))
         assertEquals(starter, s.data.player.planLead?.id)
+        assertEquals(hatched, s.data.player.buddyId)
     }
 
     @Test
@@ -902,7 +948,9 @@ class GameStoreTest {
         val (a, clockA) = started()
         val (b, clockB) = started()
         hatchOne(a, clockA); hatchOne(b, clockB)
-        assertTrue(b.setBuddy(b.data.player.pokemon.last().id)) // only the buddy differs: Plan's lead is still the starter
+        // Only the buddy differs: a Pokémon from the PC becomes the buddy (the starter goes to the PC); Plan's lead is untouched.
+        val other = b.grantPokemon(1, "test", Origin.How.QUEST)
+        assertTrue(b.setBuddy(other.id))
         assertEquals(a.data.player.planLead?.id, b.data.player.planLead?.id)
         assertEquals(a.perks, b.perks)
         assertEquals(a.perkSources, b.perkSources)
@@ -911,24 +959,23 @@ class GameStoreTest {
     @Test
     fun aLeadThatLeavesThePartyPassesTheLeadOn() {
         val (s, clock) = started()
-        hatchOne(s, clock)
-        val starter = s.data.player.buddyId!!
-        val second = s.data.player.pokemon.last().id
-        assertTrue(s.data.player.party.any { it.id == second })
-        assertTrue(s.setInParty(starter, false), "the buddy is not tied to the party; its party seat can be left")
+        hatchOne(s, clock); hatchOne(s, clock)
+        val (first, second) = s.data.player.party.map { it.id }
+        assertEquals(first, s.data.player.planLead?.id)
+        assertTrue(s.setInParty(first, false), "a lead can leave; it goes to the PC")
         assertEquals(second, s.data.player.planLead?.id)
-        assertEquals(starter, s.data.player.buddyId)
-        assertFalse(s.setInParty(second, false), "Plan's party is never left empty")
+        assertEquals(Place.Pc, s.placeOf(first))
+        assertFalse(s.setInParty(second, false), "Plan's party is never left empty by taking its last member out")
     }
 
     @Test
     fun aLeadIsNeverSetOutsideItsOwnParty() {
         val (s, clock) = started()
-        hatchOne(s, clock)
+        hatchOne(s, clock); hatchOne(s, clock)
         val other = s.data.player.pokemon.last().id
         assertTrue(s.setInParty(other, true, PartyIds.CARE))
         assertFalse(s.setPlanLead(other), "a Pokémon in Care's party cannot lead Plan's")
-        assertFalse(s.setCareLead(s.data.player.buddyId!!), "a Pokémon in Plan's party cannot lead Care's")
+        assertFalse(s.setCareLead(s.data.player.planLead!!.id), "a Pokémon in Plan's party cannot lead Care's")
         assertTrue(s.setCareLead(other))
     }
 

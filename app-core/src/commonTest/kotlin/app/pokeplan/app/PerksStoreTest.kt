@@ -33,7 +33,11 @@ class PerksStoreTest {
     private val start = LocalDateTime(2026, 10, 19, 9, 0).toInstant(utc).toEpochMilliseconds()
     private val storage = MemoryStorage()
     private val clock = FakeClock(start)
-    private val s = GameStore(storage, clock, utc, Random(7)).also { it.start("Sophia", 25) }
+    private val s = GameStore(storage, clock, utc, Random(7)).also {
+        it.start("Sophia", 25)
+        // The perks come from Plan's party, so the starter works there (and is no longer the buddy: one place only).
+        it.setInParty(it.data.player.buddyId!!, true)
+    }
 
     /** Changes the save behind the store's back, the way a widget would, and picks it up. */
     private fun edit(change: (AppData) -> AppData) {
@@ -42,12 +46,12 @@ class PerksStoreTest {
     }
 
     private fun editBuddy(change: (OwnedPokemon) -> OwnedPokemon) = edit { d ->
-        d.copy(player = d.player.copy(pokemon = d.player.pokemon.map { if (it.id == d.player.buddyId) change(it) else it }))
+        d.copy(player = d.player.copy(pokemon = d.player.pokemon.map { if (it.id == d.player.planLeadId) change(it) else it }))
     }
 
     private fun give(item: String, n: Int = 1) = edit { d -> d.copy(player = d.player.copy(inventory = d.player.inventory.add(item, n))) }
 
-    private val buddy get() = s.data.player.buddy!!
+    private val buddy get() = s.data.player.planLead!!
 
     @Test
     fun aHeldItemLeavesTheBagAndComesBack() {

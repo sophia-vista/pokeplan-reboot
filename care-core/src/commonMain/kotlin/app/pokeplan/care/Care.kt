@@ -123,6 +123,15 @@ data class CareData(
     val visit: Visit? = null,
     /** Species of visitors the player has cared for, whether or not they became friends (the "met" album). */
     val met: Set<Int> = emptySet(),
+    /** Visitors the player made friends with (one record each), who may come back to say hello ([Reunions]). */
+    val friends: List<Friend> = emptyList(),
+    /** A friend that came back and has not been greeted; it holds no meadow place. */
+    val reunion: Reunion? = null,
+    /** The last day a reunion was rolled, and the last day each friend (by visitor id) came back. */
+    val reunionDay: LocalDate? = null,
+    val reunionSeen: Map<String, LocalDate> = emptyMap(),
+    /** What Care Play found out about each Pokémon, by owned Pokémon id (or visitor id). */
+    val play: Map<String, PlayRecord> = emptyMap(),
 )
 
 @Serializable

@@ -283,6 +283,8 @@ Item definitions must declare acquisition source families. Item grants, purchase
 
 ### 7.4 Module-owned entity families
 
+**As built:** CARE's records are in `care_*` (schema 4, 0.132.0) and PLAN's in `plan_*` (schema 5, 0.133.0), each as `key, position, day, json` tables plus a `*_state` table for single values (and `plan_day` for the rest and active days). PLAN shares the `AppData` document with the player, so `LiveDocuments` splits every save into PLAN's part (tables) and the rest (the `save` row) and puts them together on a read; a Habit record no longer exists (merged into recurring tasks, `MODULES/PLAN.md` section 11.2).
+
 Detailed fields remain in module specifications. The data layer should accommodate at least these families:
 
 - **PLAN:** `task`, `task_occurrence`, `task_series`/recurrence, `subtask`, `task_list`, `project`, `goal`, `milestone`, `focus_session`, `focus_history`, and any explicitly approved calendar cache.
@@ -413,6 +415,14 @@ Use app-private storage for working data. Support a user-selected document desti
 ### 10.5 Export formats
 
 Provide a complete restorable backup separately from readable exports. Human-readable JSON/CSV exports may be offered per module or for selected records, with stable IDs, schema/format version, timestamps, provenance, and relationship references. A partial CSV export is not a full backup. JSON export must have an explicit schema and must not silently omit data necessary for restoration.
+
+### 10.5.1 As built (0.133.0, REP-008)
+
+What exists is the live-documents half of the archive above, as **one JSON file** (`BackupBundle`, `pokelife-backup` format version 1): the documents `save` and `care` exactly as the app serialises them, the database schema they were taken at, the time and a SHA-256 of the documents. The app keeps its daily backups as folders (`LiveBackup`, newest three, a `DONE` marker last) and can write any of them, or a fresh one, as a bundle through Android's document picker (`CreateDocument`); a bundle is chosen with `OpenDocument`. There is no `database.sqlite` payload, attachments or encryption yet (no module has attachments; MINT's encryption below is still Planned).
+
+**Restore, as built:** the chosen file is read whole and **staged**: `BackupBundle.stage` refuses a file that is not a backup, is cut short or damaged, fails its checksum, holds a document this build does not know, or comes from a newer format or schema, and changes nothing. A bundle that passes is shown to the player (its date and contents) and only on confirmation is swapped in by `LiveDocuments.replaceAll`: one transaction, in which each replaced document is first kept as `aside:<name>:<millis>`, so a restore can be undone and a failure part way (the write of the second document, say) rolls the first back too. PLAN's and CARE's tables follow the documents, because the swap goes through the same write path as every save. The app reloads both stores after a restore. A backup is skipped, never half written, when the phone lacks room for twice its size plus 5 MB (`LiveBackup.lowStorage`), and a save that fails for lack of storage rolls back whole (SQLite's transaction), is reported in Settings → Backups, and the next save that fits writes everything again.
+
+**Cut short:** a write that is interrupted before its commit (the process killed) leaves every table at the last committed state, across the save row, PLAN's tables and CARE's tables (`BackupRestoreTest`, simulated by dropping the connection inside the transaction; a real kill on a device is still unproven).
 
 ### 10.6 Restore workflow
 

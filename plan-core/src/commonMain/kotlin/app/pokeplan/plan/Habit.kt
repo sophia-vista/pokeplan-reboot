@@ -18,8 +18,10 @@ sealed interface HabitTarget {
 }
 
 /**
- * A habit is a recurring-task type with a flexible target and its own forgiving streak. Completions pay like recurring
- * tasks, once per day per habit.
+ * **Legacy shape.** A habit of a save from before 0.133.0. PLAN has no separate Habits record any more (PLAN.md section 5): when such a
+ * save loads, each habit becomes a recurring task with a frequency target ([FrequencyTarget]) in the same id, creation day, completion days and
+ * payment day, and the habit list is kept aside (`AppData.legacyHabits`). This class stays to read those saves and, as the one tested
+ * implementation of the forgiving streak and of paying once a day, to compute them for the recurring task that replaced it.
  */
 @Serializable
 data class Habit(

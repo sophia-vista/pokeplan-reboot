@@ -4,6 +4,12 @@ import app.pokeplan.care.BefriendResult
 import app.pokeplan.care.CalmBreak
 import app.pokeplan.care.CareAction
 import app.pokeplan.care.CareData
+import app.pokeplan.care.CarePlay
+import app.pokeplan.care.Friend
+import app.pokeplan.care.PlayActivity
+import app.pokeplan.care.PlayReaction
+import app.pokeplan.care.Reunion
+import app.pokeplan.care.Reunions
 import app.pokeplan.care.CareRules
 import app.pokeplan.care.CareSettings
 import app.pokeplan.care.CareTrends
@@ -248,16 +254,17 @@ class CareStore(
             update { d -> d.copy(visit = null, met = d.met + visit.speciesId, visitors = d.visitors.map { if (it.id == rested.id) rested else it }) }
             return BefriendResult(rested, friend = false, rewards = emptyList())
         }
-        val rewards = world.befriend(BefriendEvent(visitor.speciesId, visitor.formIdentifier, newId(), nowMillis))
+        val rewards = world.befriend(BefriendEvent(visitor.speciesId, visitor.formIdentifier, newId(), nowMillis, visitor.id))
         if (rewards == null) {
             // The world paid nothing now (its daily limit of friends): the visit still ends, and the visitor stays, ready, for the next one.
             update { d -> d.copy(visit = null, met = d.met + visit.speciesId) }
             return BefriendResult(visitor, friend = false, rewards = emptyList(), waiting = true)
         }
-        update { d -> d.copy(visit = null, met = d.met + visit.speciesId, visitors = d.visitors.filterNot { it.id == visitor.id }) }
         // The visitor itself joins with the high friendship only a direct join starts with; an egg starts low.
-        val joined = rewards.filterIsInstance<Reward.Hatched>().any { it.pokemon.speciesId == visitor.speciesId && it.pokemon.friendship >= RewardEngine.BEFRIEND_JOIN_FRIENDSHIP }
-        return BefriendResult(visitor, friend = true, rewards = rewards, joined = joined)
+        val joinedNow = rewards.filterIsInstance<Reward.Hatched>().any { it.pokemon.speciesId == visitor.speciesId && it.pokemon.friendship >= RewardEngine.BEFRIEND_JOIN_FRIENDSHIP }
+        val friend = Friend(visitor.speciesId, visitor.formIdentifier, visitor.id, today, joinedNow)
+        update { d -> d.copy(visit = null, met = d.met + visit.speciesId, visitors = d.visitors.filterNot { it.id == visitor.id }, friends = d.friends + friend) }
+        return BefriendResult(visitor, friend = true, rewards = rewards, joined = joinedNow)
     }
 
     /**
@@ -281,6 +288,53 @@ class CareStore(
         if (data.visitors.size >= Visitors.MAX_VISITORS + Visitors.MAX_QUEUE || data.visitors.any { it.speciesId == visitor.speciesId }) return false
         update { d -> d.copy(dismissed = d.dismissed.filterNot { it.id == id }, visitors = d.visitors + visitor) }
         return true
+    }
+
+    // --- reunions (CARE.md section 6.7) -------------------------------------------------------------------------------
+
+    /**
+     * The befriended visitor that has come back to say hello, if one has. The first call on a new day may bring one (a chance, never because
+     * of what was done in Care); it holds no meadow place and waits, unexpired, until it is greeted.
+     */
+    fun reunion(): Reunion? {
+        val last = data.reunionDay
+        if (last == null || today > last) {
+            val seed = data.visitorSeed.takeIf { it != 0 } ?: (1 + rng.nextInt(Int.MAX_VALUE - 1))
+            val found = Reunions.roll(seed, today, data.friends, data.reunion, data.reunionSeen)
+            update { it.copy(visitorSeed = seed, reunionDay = today, reunion = found ?: it.reunion, reunionSeen = if (found == null) it.reunionSeen else it.reunionSeen + (found.friend.visitorId to today)) }
+        }
+        return data.reunion
+    }
+
+    /** Greets the friend who came back: its words, which remember the first visit. Pays nothing and awards no egg or Pokémon (it already gave them). Null when no one is waiting. */
+    fun greetReunion(): String? {
+        val r = reunion() ?: return null
+        update { it.copy(reunion = null) }
+        return Reunions.greeting(r, app.pokeplan.core.dex.Dex.species(r.friend.speciesId).name)
+    }
+
+    // --- Care Play (CARE.md section 4) --------------------------------------------------------------------------------
+
+    /** What Care Play has found out about the Pokémon [key] (an owned Pokémon's id): only the ways of care it has shown it likes. */
+    fun discoveredLikes(key: String): Set<CareAction> = CarePlay.discovered(data.play[key])
+
+    /** An activity to suggest for [key] today. It never expires and ignoring it costs nothing. */
+    fun suggestion(key: String): PlayActivity = CarePlay.suggestion(key, data.play[key], today)
+
+    /** "Surprise me": an activity for [key]. */
+    fun surprise(key: String): PlayActivity = CarePlay.surprise(key, nowMillis / 60_000L)
+
+    /**
+     * Spends time with the owned Pokémon [pokemonId] doing [activity]. It always happens and can be repeated freely; the first time with each
+     * Pokémon on a day pays through the shared world (friendship to that Pokémon and a point towards Care's Egg), the rest pay nothing. The
+     * way of care it showed it likes becomes known. Returns how it took it, and what the first time paid (null when it paid nothing).
+     */
+    fun playWith(pokemonId: String, activity: PlayActivity): Pair<PlayReaction, List<Reward>?> {
+        val reaction = CarePlay.reaction(pokemonId, activity)
+        val paying = CarePlay.pays(data.play[pokemonId], today)
+        val rewards = if (paying) world.care(CareEvent(CareKind.PLAY, nowMillis, pokemonId)) else null
+        update { d -> d.copy(play = d.play + (pokemonId to CarePlay.played(d.play[pokemonId], pokemonId, activity, today, paid = rewards != null))) }
+        return reaction to rewards
     }
 
     // --- diary card, journal (private, never paid) --------------------------------------------------------------------
@@ -362,7 +416,7 @@ class CareStore(
     /** Whether there is anything of the player's to lose: a device with only its settings has nothing yet. */
     val hasEntries: Boolean
         get() = data.routines.isNotEmpty() || data.diary.isNotEmpty() || data.breaks.isNotEmpty() || data.practices.isNotEmpty() ||
-            data.journal.isNotEmpty() || data.met.isNotEmpty() || data.visitors.any { it.progress > 0 }
+            data.journal.isNotEmpty() || data.met.isNotEmpty() || data.friends.isNotEmpty() || data.play.isNotEmpty() || data.visitors.any { it.progress > 0 }
 
     companion object {
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }

@@ -83,6 +83,7 @@ import kotlin.math.roundToInt
 enum class CareSection(val label: String, val icon: String) {
     ROUTINES("Routines", "oaks-parcel"), CALM("Calm break", "lunar-wing"), DIARY("Diary card", "heart-scale"),
     SKILLS("Skills", "mental-herb"), JOURNAL("Journal", "journal"), TRENDS("Trends", "exp-share"),
+    MEADOW("Meadow", "town-map"), PLAY("Play", "poke-ball"),
 }
 
 @Composable
@@ -107,6 +108,8 @@ private fun CarePage(model: AppModel, section: CareSection?, openPokemon: (Strin
             CareSection.SKILLS -> SkillsView(model)
             CareSection.JOURNAL -> JournalView(model)
             CareSection.TRENDS -> TrendsView(model)
+            CareSection.MEADOW -> MeadowView(model) { key -> model.playTarget = key; model.careSection = CareSection.PLAY }
+            CareSection.PLAY -> PlayView(model, model.playTarget.also { model.playTarget = null })
         }
     }
 }
@@ -144,6 +147,8 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                     MenuEntry(CareSection.SKILLS.name, CareSection.SKILLS.icon, "Skills", if (practised == 0) "DBT skills to try" else "$practised practised today", tint = Pixel.Green),
                     MenuEntry(CareSection.JOURNAL.name, CareSection.JOURNAL.icon, "Journal", if (care.journal.isEmpty()) "write anything" else if (care.journal.size == 1) "1 entry" else "${care.journal.size} entries", tint = Pixel.Warning),
                     MenuEntry(CareSection.TRENDS.name, CareSection.TRENDS.icon, "Trends", "the last few weeks", tint = Pixel.InkSoft),
+                    MenuEntry(CareSection.MEADOW.name, CareSection.MEADOW.icon, "Meadow", if (care.visitors.isEmpty()) "your buddy's garden" else "${care.visitors.size.coerceAtMost(4)} here", tint = Pixel.Green),
+                    MenuEntry(CareSection.PLAY.name, CareSection.PLAY.icon, "Play", "time with a Pokémon", tint = Pixel.Red),
                 ),
             ) { key -> model.careSection = CareSection.valueOf(key) }
             VisitorsCard(model)

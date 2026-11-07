@@ -1,5 +1,8 @@
 package app.pokeplan.data
 
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+
 /** What activation did, for the caller to log or show. */
 sealed interface Activation {
     /** The database was already the live store; nothing was imported. */
@@ -23,11 +26,52 @@ class LiveDocuments(private val store: DataStore) {
     /** Whether [name] is kept in tables rather than as a row (Care, once [moveCareToTables] has run). */
     private fun inTables(name: String): Boolean = name == CARE && store.careTables.isActive()
 
-    fun read(name: String): String? = if (inTables(name)) store.careTables.read() else q.liveRead(name).executeAsOneOrNull()
+    /** Whether the PLAN part of [name] is kept in tables (the save, once [movePlanToTables] has run); the rest of it stays a row. */
+    private fun planSplit(name: String): Boolean = name == SAVE && store.planTables.isActive()
+
+    fun read(name: String): String? = when {
+        inTables(name) -> store.careTables.read()
+        planSplit(name) -> store.transaction { assembleSave() }
+        else -> q.liveRead(name).executeAsOneOrNull()
+    }
+
+    /** The save put back together: its row (everything that is not PLAN's) with PLAN's fields from the tables. */
+    private fun assembleSave(): String? {
+        val rest = q.liveRead(SAVE).executeAsOneOrNull()?.let { JSON.parseToJsonElement(it) as? JsonObject }
+        val plan = store.planTables.read()
+        if (rest == null && plan.isEmpty()) return null
+        return JSON.encodeToString(JsonObject.serializer(), JsonObject((rest ?: JsonObject(emptyMap())) + plan))
+    }
 
     /** One document, one transaction. A document kept in tables is split into its rows, and only the rows that changed are written. */
     fun write(name: String, json: String, nowMillis: Long) {
-        if (inTables(name)) store.careTables.write(json) else store.transaction { q.liveWrite(name, json, nowMillis) }
+        when {
+            inTables(name) -> store.careTables.write(json)
+            planSplit(name) -> store.transaction {
+                val (plan, rest) = store.planTables.split(json)
+                store.planTables.write(plan)
+                q.liveWrite(name, JSON.encodeToString(JsonObject.serializer(), rest), nowMillis)
+            }
+            else -> store.transaction { q.liveWrite(name, json, nowMillis) }
+        }
+    }
+
+    /**
+     * Moves PLAN's part of the save from its row into PLAN's tables (REP-014), once: the rows are written and read back equal to the
+     * document, the marker is set, the whole old row is kept under `aside:save:plan:<millis>` (never deleted) and the `save` row keeps
+     * only what is not PLAN's, all in one transaction, so a failure leaves the save row as the live save. Does nothing once done, so it
+     * can run on every start.
+     */
+    fun movePlanToTables(nowMillis: Long) {
+        if (store.planTables.isActive()) return
+        store.transaction {
+            val doc = q.liveRead(SAVE).executeAsOneOrNull()
+            val rest = store.planTables.activate(doc, nowMillis)
+            if (doc != null && rest != null) {
+                q.liveWrite("${ASIDE}$SAVE:plan:$nowMillis", doc, nowMillis)
+                q.liveWrite(SAVE, JSON.encodeToString(JsonObject.serializer(), rest), nowMillis)
+            }
+        }
     }
 
     /**
@@ -52,12 +96,13 @@ class LiveDocuments(private val store: DataStore) {
         write("$ASIDE$name:$nowMillis", json, nowMillis)
     }
 
-    fun names(): List<String> = (q.liveNames().executeAsList() + listOfNotNull(CARE.takeIf { store.careTables.isActive() && store.careTables.read() != null })).sorted()
+    fun names(): List<String> = (q.liveNames().executeAsList() + listOfNotNull(CARE.takeIf { store.careTables.isActive() && store.careTables.read() != null })).distinct().sorted()
 
     /** Every live document (not the kept-aside ones) as of one moment: a single read transaction. Care's tables are put back together as `care`. */
     fun snapshot(): Map<String, String> = store.transaction {
         val docs = q.liveNames().executeAsList().filter { !it.startsWith(ASIDE) }.associateWith { q.liveRead(it).executeAsOne() }.toMutableMap()
         if (store.careTables.isActive()) store.careTables.read()?.let { docs[CARE] = it }
+        if (store.planTables.isActive()) assembleSave()?.let { docs[SAVE] = it }
         docs
     }
 
@@ -69,7 +114,7 @@ class LiveDocuments(private val store: DataStore) {
         store.transaction {
             for ((name, json) in docs) {
                 read(name)?.let { q.liveWrite("$ASIDE$name:$nowMillis", it, nowMillis) }
-                if (inTables(name)) store.careTables.write(json) else q.liveWrite(name, json, nowMillis)
+                write(name, json, nowMillis)
             }
         }
     }
@@ -94,6 +139,7 @@ class LiveDocuments(private val store: DataStore) {
     }
 
     companion object {
+        private val JSON = Json { encodeDefaults = true }
         const val ASIDE = "aside:"
         const val SAVE = "save"
         const val CARE = "care"

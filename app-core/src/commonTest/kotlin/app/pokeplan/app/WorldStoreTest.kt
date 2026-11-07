@@ -99,21 +99,21 @@ class WorldStoreTest {
     }
 
     @Test
-    fun partyPokemonCanBeKeptOutOfWorld() {
+    fun aPokemonOnATeamIsInNoOtherPlace() {
         val store = store(Clock())
-        val starter = store.data.player.pokemon.first()
-        assertTrue(starter.inParty, "the first Pokémon starts in a party")
-        assertTrue(store.worldIdle().any { it.id == starter.id }, "off by default: a party member is free")
-        store.changeSettings { it.copy(worldKeepPartyOut = true) }
-        assertTrue(store.worldIdle().none { it.inParty }, "on: nobody in a party is offered")
-        assertFalse(store.worldAssign(1, listOf(starter.id)), "and a party member cannot be put on a team")
-        assertFalse(store.worldQuickSend("tiny-woods"), "Send my strongest passes them by (here there is no one else)")
-        // Off again: the same team goes through, and turning it on later does not pull a member off a team.
-        store.changeSettings { it.copy(worldKeepPartyOut = false) }
-        assertTrue(store.worldAssign(1, listOf(starter.id)))
-        store.changeSettings { it.copy(worldKeepPartyOut = true) }
-        assertEquals(listOf(starter.id), store.data.world.team(1)!!.members)
-        assertTrue(store.worldAssign(1, listOf(starter.id)), "one already on the team may stay")
+        val buddy = store.data.player.buddyId!!
+        val grant = store.grantPokemon(25, "test")
+        assertTrue(store.setInParty(grant.id, true))
+        assertTrue(store.worldIdle().none { it.id == grant.id || it.id == buddy }, "the PC only: the buddy and a party member are not offered")
+        // Putting the party member on a team takes it out of the party; the buddy on a team stops being the buddy.
+        assertTrue(store.worldAssign(1, listOf(grant.id, buddy)))
+        assertEquals(Place.WorldTeam(1), store.placeOf(grant.id))
+        assertTrue(store.data.player.party.isEmpty())
+        assertNull(store.data.player.buddyId)
+        // Coming home to the party takes it off the team.
+        assertTrue(store.setInParty(grant.id, true))
+        assertEquals(listOf(buddy), store.data.world.team(1)!!.members)
+        assertEquals(Place.Party(app.pokeplan.core.pokemon.PartyIds.PLAN), store.placeOf(grant.id))
     }
 
     @Test
@@ -123,8 +123,7 @@ class WorldStoreTest {
         assertTrue(store.worldIdle().any { it.id == mewtwo.id }, "an idle Guardian is free to explore")
         assertTrue(store.worldAssign(1, listOf(mewtwo.id)), "a Guardian can be put on a team")
         assertTrue(store.worldIdle().none { it.id == mewtwo.id }, "and is busy there")
-        assertFalse(store.slotGuardian(mewtwo.id), "a Guardian on a team is not slotted behind the player's back")
-        assertEquals(setOf(mewtwo.id), store.data.world.assigned)
+        assertEquals(Place.WorldTeam(1), store.placeOf(mewtwo.id), "on a team it is in no other place")
     }
 
     @Test
@@ -224,9 +223,12 @@ class WorldStoreTest {
         assertFalse(store.worldStart(1, "tiny-woods"), "an empty team cannot go")
         val id = store.data.player.pokemon.first().id
         assertTrue(store.worldAssign(1, listOf(id)))
-        assertFalse(store.worldAssign(2, listOf(id)), "one team at a time")
+        assertTrue(store.worldAssign(2, listOf(id)), "one team at a time: it moves from the first")
+        assertTrue(store.data.world.team(1)!!.members.isEmpty())
+        assertTrue(store.worldAssign(1, listOf(id)))
         assertFalse(store.worldStart(1, "mt-steel"), "Mt. Steel needs a higher rank")
         assertTrue(store.worldStart(1, "tiny-woods"))
+        assertFalse(store.worldAssign(2, listOf(id)), "on an expedition under way it cannot be moved")
         store.worldRecall(1)
         assertNull(store.data.world.team(1)?.expedition)
     }
