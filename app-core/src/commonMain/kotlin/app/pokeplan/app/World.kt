@@ -4,6 +4,7 @@ import app.pokeplan.core.reward.BefriendEvent
 import app.pokeplan.core.reward.CareEvent
 import app.pokeplan.core.reward.HealEvent
 import app.pokeplan.core.reward.HomeEvent
+import app.pokeplan.core.reward.LinkEvent
 import app.pokeplan.core.reward.MintEvent
 import app.pokeplan.core.reward.Reward
 
@@ -32,6 +33,12 @@ interface World {
      * The world learns nothing but the event's id, module, opaque reference, kind and time: no chore, area, supply, asset or note.
      */
     fun home(event: HomeEvent): List<Reward>? = null
+
+    /**
+     * Pays a LINK moment (Postcard Trail) from the minimal event; null when nothing was paid (not started, already paid, or today's share is used).
+     * The world learns nothing but the event's id, module, opaque reference, kind, time and policy: no person, number, note, date or follow-up words.
+     */
+    fun link(event: LinkEvent): List<Reward>? = null
 
     /** Makes a friend of a Care visitor (one a day); null when nothing was paid (not started, or today's is used). */
     fun befriend(event: BefriendEvent): List<Reward>? = null

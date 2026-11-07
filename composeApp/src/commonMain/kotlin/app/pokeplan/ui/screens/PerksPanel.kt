@@ -28,6 +28,8 @@ import app.pokeplan.core.pokemon.HealBucket
 import app.pokeplan.core.pokemon.HealPerks
 import app.pokeplan.core.pokemon.HomeBucket
 import app.pokeplan.core.pokemon.HomePerks
+import app.pokeplan.core.pokemon.LinkBucket
+import app.pokeplan.core.pokemon.LinkPerks
 import app.pokeplan.core.pokemon.MintBucket
 import app.pokeplan.core.pokemon.MintPerks
 import app.pokeplan.core.pokemon.CarePerks
@@ -262,6 +264,33 @@ fun HomePerksCard(model: AppModel) {
             shown.forEach { b -> PerkRow(b.label, totals[b] ?: 0.0, Perks.BUCKET_CAP) }
             Text(
                 "Up to +${Perks.BUCKET_CAP.roundToInt()}% a bucket, only on what Habitat Discovery pays. They never change a record or a schedule.",
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            )
+        }
+    }
+}
+
+/** Link's party perks, laid out like [LinkPerksCard]. They only change what Postcard Trail pays; nothing in LINK's records depends on them. */
+@Composable
+fun LinkPerksCard(model: AppModel) {
+    val player = model.data.player
+    val lead = player.linkLead
+    val party = player.partyOf(PartyIds.LINK)
+    val totals = LinkPerks.total(lead, party)
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Link perks")
+            if (!model.store.sees(Feature.PERKS)) {
+                Text(PERKS_LOCKED, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                return@Column
+            }
+            if (lead == null) {
+                return@Column
+            }
+            val shown = LinkBucket.entries.filter { (totals[it] ?: 0.0) > 0 }
+            shown.forEach { b -> PerkRow(b.label, totals[b] ?: 0.0, Perks.BUCKET_CAP) }
+            Text(
+                "Up to +${Perks.BUCKET_CAP.roundToInt()}% a bucket, only on what Postcard Trail pays. They never change a record or a schedule.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
         }

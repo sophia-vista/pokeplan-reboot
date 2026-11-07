@@ -30,7 +30,7 @@ import app.pokeplan.ui.theme.Spacing
  * life; everything done in any of them looks after the same Pokémon, which live in the shared tabs (Home, Pokémon, Me).
  */
 enum class Module(val label: String, val icon: String, val look: RegionLook) {
-    PLAN("Plan", "journal", RegionLook.PLAN), CARE("Care", "soothe-bell", RegionLook.CARE), HEAL("Heal", "potion", RegionLook.HEAL), MINT("Mint", "amulet-coin", RegionLook.MINT), HOME("Home", "chipped-pot", RegionLook.HOME), WORLD("World", "town-map", RegionLook.WORLD),
+    PLAN("Plan", "journal", RegionLook.PLAN), CARE("Care", "soothe-bell", RegionLook.CARE), HEAL("Heal", "potion", RegionLook.HEAL), MINT("Mint", "amulet-coin", RegionLook.MINT), HOME("Home", "chipped-pot", RegionLook.HOME), LINK("Link", "link-cord", RegionLook.LINK), WORLD("World", "town-map", RegionLook.WORLD),
 }
 
 /** Plan's screens: tasks and focus, and the trends, goals and weekly review that read them. */
@@ -53,6 +53,7 @@ fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> U
             Module.HEAL -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.HEAL.look.accent)) { HealScreen(model, openPokemon) }
             Module.MINT -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.MINT.look.accent)) { MintScreen(model, openPokemon) }
             Module.HOME -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.HOME.look.accent)) { HouseholdScreen(model, openPokemon) }
+            Module.LINK -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.LINK.look.accent)) { LinkScreen(model, openPokemon) }
             Module.WORLD -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.WORLD.look.accent)) { WorldScreen(model, openPokemon) }
             null -> ModulesMenu(model)
         }
@@ -65,6 +66,7 @@ private fun ModulesMenu(model: AppModel) {
     model.healData // and when Heal does
     model.mintData // and Mint
     model.homeData // and Home
+    model.linkData // and Link
     val today = model.store.todayTasks().size
     Column(Modifier.fillMaxSize()) {
         ScreenHeader("Modules", icon = "explorer-kit")
@@ -86,7 +88,7 @@ private fun ModulesMenu(model: AppModel) {
                         Module.CARE.name, Module.CARE.icon, Module.CARE.label, if (routinesLeft == 0) "routines and calm" else if (routinesLeft == 1) "1 routine today" else "$routinesLeft routines today", tint = ModuleAccent.CARE.accent,
                     ),
                     MenuEntry(Module.HEAL.name, Module.HEAL.icon, Module.HEAL.label, healSubtitle(model), tint = ModuleAccent.HEAL.accent, sound = Sfx.DOOR_ENTER),
-                    MenuEntry("LINK", "link-cord", "Link", tint = ModuleAccent.LINK.accent, pending = true),
+                    MenuEntry(Module.LINK.name, Module.LINK.icon, Module.LINK.label, linkSubtitle(model), tint = ModuleAccent.LINK.accent, sound = Sfx.DOOR_ENTER),
                     MenuEntry(Module.WORLD.name, Module.WORLD.icon, Module.WORLD.label, "dungeons and expeditions", badge = model.data.world.finds.size, tint = ModuleAccent.WORLD.accent, wide = true, sound = Sfx.DOOR_ENTER),
                 ),
             ) { key -> if (key == "GEAR") model.gearOpen = true else model.module = Module.valueOf(key) }
