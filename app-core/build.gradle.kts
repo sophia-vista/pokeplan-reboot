@@ -20,6 +20,7 @@ kotlin {
             api(project(":care-core"))
             api(project(":heal-core"))
             api(project(":mint-core"))
+            api(project(":home-core"))
             api(project(":world-core"))
             api(libs.ktor.client.core)
             api(libs.kotlinx.coroutines.core)

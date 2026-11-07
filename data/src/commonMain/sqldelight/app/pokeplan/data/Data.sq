@@ -645,3 +645,89 @@ DELETE FROM reminder_hold WHERE id = ?;
 
 holdDeleteBefore:
 DELETE FROM reminder_hold WHERE at_millis < ?;
+
+-- HOME's own records (version 9, REP-014): the Home save kept in tables from the start, one family per kind of private record (area, chore, chore entry,
+-- supply, stock adjustment, restocking entry, asset, maintenance schedule, maintenance record, warranty, reference note) so each can be read, exported or erased
+-- on its own. Same shape as HEAL's (key, position, day, and the record as JSON in `json`). `home_state` holds the settings and any field a newer build adds.
+-- HOME never has a row in `live_document`: it is created in the tables. Nothing is sealed (that is MINT's alone).
+CREATE TABLE home_area (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_chore (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_entry (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_supply (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_adjustment (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_restock (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_asset (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_schedule (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_maintenance (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_warranty (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_reference (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_state (
+    key TEXT NOT NULL PRIMARY KEY,
+    json TEXT NOT NULL
+);

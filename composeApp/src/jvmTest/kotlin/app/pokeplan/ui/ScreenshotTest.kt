@@ -28,6 +28,7 @@ import io.ktor.client.engine.mock.respond
 import org.jetbrains.skia.EncodedImageFormat
 import java.io.File
 import kotlin.test.Test
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.plus
 import kotlinx.datetime.minus
 import kotlin.test.assertTrue
@@ -796,6 +797,52 @@ class ScreenshotTest {
         model.module = app.pokeplan.ui.screens.Module.MINT
         model.mintSection = section
         render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+    }
+
+    @Test
+    fun arrivalHome() = cutscene("arrival-home", frames = 60, still = true) {
+        app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last(), fromTask = false, how = app.pokeplan.app.Origin.How.HABITAT_EGG)
+    }
+
+    /** The Home module with a little recorded (chores, supplies, an appliance with a warranty and a service, a note), open on [section] (null for its menu). Synthetic text only. */
+    private fun household(name: String, section: app.pokeplan.ui.screens.HouseholdSection?, height: Int = 1500, homeParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false) {
+        val store = storeWithTeam()
+        store.markRewardsSeen()
+        store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(homeParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.HOME) }
+        val model = AppModel(store)
+        if (!empty) {
+            val home = model.home
+            val today = model.store.today
+            val kitchen = home.data.areas.first { it.name == "Kitchen" }.id
+            home.addChore("Wash the dishes", app.pokeplan.home.Recurrence(app.pokeplan.home.RepeatKind.DAILY), today, areaId = kitchen)
+            home.addChore("Take out the bins", app.pokeplan.home.Recurrence(app.pokeplan.home.RepeatKind.WEEKLY), today.plus(-3, DateTimeUnit.DAY))
+            home.addChore("Descale the kettle")
+            home.addSupply("Dish soap", "bottles", 1000, 1000, areaId = kitchen)
+            home.addSupply("Rice", "kg", 4500, 2000)
+            val fridge = home.addAsset("Fridge", brand = "Coolco", model = "C-200", areaId = kitchen).record!!
+            home.addWarranty(fridge.id, provider = "Coolco", expiryDay = today.plus(20, DateTimeUnit.DAY))
+            home.addSchedule("Clean the filter", today.plus(-2, DateTimeUnit.DAY), app.pokeplan.home.Recurrence(app.pokeplan.home.RepeatKind.MONTHLY), assetId = fridge.id)
+            home.addReference("Router settings", "Reset button is behind the shelf.")
+            store.markRewardsSeen()
+        }
+        model.module = app.pokeplan.ui.screens.Module.HOME
+        model.homeSection = section
+        render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+    }
+
+    @Test
+    fun householdMenu() = household("home-menu", null, height = 2600, homeParty = 3)
+
+    @Test
+    fun householdMenuEmptyShowsTheTutorial() = household("home-menu-empty", null, height = 2000, empty = true)
+
+    @Test
+    fun householdMenuDark() = household("home-menu-dark", null, height = 2600, homeParty = 3, dark = true)
+
+    /** Every Home section at the system's text at 130%: nothing clipped or pushed out of its box. */
+    @Test
+    fun largeTextHousehold() {
+        app.pokeplan.ui.screens.HouseholdSection.entries.forEach { household("home-xl-${it.name.lowercase()}", it, height = 2800, fontScale = 1.3f) }
     }
 
     @Test

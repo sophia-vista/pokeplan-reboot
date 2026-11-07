@@ -81,6 +81,11 @@ object LiveStore {
                 read(app, "heal.json")?.let { legacy -> if (!s.healTables.isActive() && s.live.read("heal") == null) s.live.write("heal", legacy, now) }
                 s.live.moveHealToTables(now)
             }.onFailure { Log.w(TAG, "Heal tables not active this run: ${it.javaClass.simpleName}") }
+            // HOME lives in its own tables from the start (schema 9), like HEAL and unsealed. A home.json written while the database could not be opened is taken in once.
+            runCatching {
+                read(app, "home.json")?.let { legacy -> if (!s.homeTables.isActive() && s.live.read("home") == null) s.live.write("home", legacy, now) }
+                s.live.moveHomeToTables(now)
+            }.onFailure { Log.w(TAG, "Home tables not active this run: ${it.javaClass.simpleName}") }
             // MINT lives in its own tables from the start (schema 8), every row sealed with a key that lives in the Android Keystore. If the Keystore cannot give
             // the key, Mint does not start this run (nothing of it is ever written in clear: `mintStorage` then keeps it in memory only), and it is tried again at the next start.
             runCatching {

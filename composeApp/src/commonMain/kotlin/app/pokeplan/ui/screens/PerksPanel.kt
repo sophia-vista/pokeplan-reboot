@@ -26,6 +26,8 @@ import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.CareBucket
 import app.pokeplan.core.pokemon.HealBucket
 import app.pokeplan.core.pokemon.HealPerks
+import app.pokeplan.core.pokemon.HomeBucket
+import app.pokeplan.core.pokemon.HomePerks
 import app.pokeplan.core.pokemon.MintBucket
 import app.pokeplan.core.pokemon.MintPerks
 import app.pokeplan.core.pokemon.CarePerks
@@ -233,6 +235,33 @@ fun MintPerksCard(model: AppModel) {
             shown.forEach { b -> PerkRow(b.label, totals[b] ?: 0.0, Perks.BUCKET_CAP) }
             Text(
                 "Up to +${Perks.BUCKET_CAP.roundToInt()}% a bucket, only on what Ledger Research pays. They never change a record, a total or a goal.",
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            )
+        }
+    }
+}
+
+/** Home's party perks, laid out like [MintPerksCard]. They only change what Habitat Discovery pays; nothing in HOME's records depends on them. */
+@Composable
+fun HomePerksCard(model: AppModel) {
+    val player = model.data.player
+    val lead = player.homeLead
+    val party = player.partyOf(PartyIds.HOME)
+    val totals = HomePerks.total(lead, party)
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Home perks")
+            if (!model.store.sees(Feature.PERKS)) {
+                Text(PERKS_LOCKED, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                return@Column
+            }
+            if (lead == null) {
+                return@Column
+            }
+            val shown = HomeBucket.entries.filter { (totals[it] ?: 0.0) > 0 }
+            shown.forEach { b -> PerkRow(b.label, totals[b] ?: 0.0, Perks.BUCKET_CAP) }
+            Text(
+                "Up to +${Perks.BUCKET_CAP.roundToInt()}% a bucket, only on what Habitat Discovery pays. They never change a record or a schedule.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
         }

@@ -31,6 +31,12 @@ fun careStore(context: Context, world: GameStore = widgetStore(context)): CareSt
 fun healStorage(context: Context): Storage = LiveStore.storage(context, "heal", "heal.json")
 
 /**
+ * The Home module's own save (private household records, serial numbers among them), apart from every other module's: its own tables in the database,
+ * created there from the start (`home.json` exists only as a fallback while the database has never opened). No widget reads it.
+ */
+fun homeStorage(context: Context): Storage = LiveStore.storage(context, "home", "home.json")
+
+/**
  * The Mint module's own save (private financial records), apart from every other module's: its own tables in the database, created there from the start
  * with every row sealed by a Keystore key (`KeystoreMintKey`); there is no file fallback. No widget, notification or reminder reads it.
  */

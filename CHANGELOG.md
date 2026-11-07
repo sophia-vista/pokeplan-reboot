@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.142.0
+
+Home, the household module, built manual first (REP-014).
+
+- **Home is a module** (Modules → Home, green; `home-core`, `HomeStore`, `screens/Household.kt`). **Chores** (one time, daily, weekly on chosen weekdays, monthly, yearly; done, skipped, put off, undone; pause and archive; history; a repeating chore shows only its latest occurrence, so being away never builds a backlog), **supplies** (exact quantities, unknown is not zero, optional low-stock threshold, restocking list), **belongings, maintenance and warranties** (schedules, done records, cost as plain text), **reference notes**, a search across all of them, and an Overview that shows only what needs attention.
+- **Habitat Discovery** (rules version 19): a chore done and a piece of maintenance done pay Rare Candies, friendship for Home's lead and a trainer point, and fill a Habitat Egg meter (5 points); a full meter finds a Habitat Egg from the Home Region into Home's party. One occurrence pays once however often it is undone; at most 5 chores and 2 pieces of maintenance a day. Creating or editing anything never pays. Off in Settings without losing anything. The event holds no household word.
+- Home's party (lead, perks that change only Habitat Discovery), a first-run tidy tutorial, and a scene of its own for the new Pokémon (it settles into the habitat). `home_*` tables (schema 9), in the daily backup and bundle; export and erase by kind.
+
 ## 0.141.0
 
 Mint, the finance module, built manual first (REP-014), and a scene of its own for every way a new Pokémon arrives (owner: "all are egg, that was made for Plan's focus eggs: reuse it, but not too much, whatever makes sense for the module").
