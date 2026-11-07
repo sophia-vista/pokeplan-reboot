@@ -1,0 +1,187 @@
+# The Home Region (Region.HOUSEHOLD, the household module's Habitat Discovery): Pokémon of the kitchen, pantry, closet,
+# garden and hearth: Fire (the stove), Grass (the garden), Ice (the fridge), Fairy (sweets), Ghost (appliances and the old
+# house), Poison (the bin) and pets. Starts with the Johto starters. Patron: Ogerpon (the masks, the hearth), last in the list,
+# after Tapu Bulu. Super Rare lines: Gible and Larvitar (they dig out a home).
+# Not released until the module ships.
+#
+# In the order of a mainline regional dex: the starters first, then the lines by rarity (Common, Uncommon, Rare, Super Rare) in
+# National Dex order with every stage next to its pre-evolution, then the quest and milestone species (ultra beasts, paradox,
+# legendary, mythical) and the patrons last. A line is never split: a species is in at most one module region (the other lists
+# in this folder; the generator checks it), and every evolution is in the same list as the Pokémon it evolves from.
+# One species per line, by English name or PokeAPI identifier; blank lines and # lines are ignored.
+# Legendary, mythical, Ultra Beast and Paradox species stay in the dex but are quest and milestone rewards, never egg drops.
+# Curation: docs/region-curation-prompt.md. After editing:
+#   python3 -I tools/species/generate.py
+#   ./gradlew :pokemon-core:jvmTest
+
+Chikorita
+Bayleef
+Meganium
+Cyndaquil
+Quilava
+Typhlosion
+Totodile
+Croconaw
+Feraligatr
+Slugma
+Magcargo
+Numel
+Camerupt
+Torkoal
+Corphish
+Crawdaunt
+Shuppet
+Banette
+Tropius
+Glameow
+Purugly
+Bonsly
+Sudowoodo
+Carnivine
+Rotom
+Purrloin
+Liepard
+Maractus
+Minccino
+Cinccino
+Foongus
+Amoonguss
+Stunfisk
+Nickit
+Thievul
+Eiscue
+Grimer
+Muk
+Gastly
+Haunter
+Gengar
+Krabby
+Kingler
+Koffing
+Weezing
+Misdreavus
+Mismagius
+Miltank
+Cacnea
+Cacturne
+Snorunt
+Glalie
+Froslass
+Stunky
+Skuntank
+Skorupi
+Drapion
+Snover
+Abomasnow
+Pansage
+Simisage
+Pansear
+Simisear
+Panpour
+Simipour
+Sewaddle
+Swadloon
+Leavanny
+Dwebble
+Crustle
+Trubbish
+Garbodor
+Heatmor
+Furfrou
+Swirlix
+Slurpuff
+Binacle
+Barbaracle
+Clauncher
+Clawitzer
+Helioptile
+Heliolisk
+Phantump
+Trevenant
+Pumpkaboo
+Gourgeist
+Salandit
+Salazzle
+Sandygast
+Palossand
+Milcery
+Alcremie
+Indeedee
+Lechonk
+Oinkologne
+Nacli
+Naclstack
+Garganacl
+Shroodle
+Grafaiai
+Bramblin
+Brambleghast
+Capsakid
+Scovillain
+Tatsugiri
+Exeggcute
+Exeggutor
+Lickitung
+Lickilicky
+Tangela
+Tangrowth
+Dunsparce
+Dudunsparce
+Shuckle
+Swinub
+Piloswine
+Mamoswine
+Vanillite
+Vanillish
+Vanilluxe
+Litwick
+Lampent
+Chandelure
+Cryogonal
+Bergmite
+Avalugg
+Rolycoly
+Carkol
+Coalossal
+Applin
+Flapple
+Appletun
+Dipplin
+Hydrapple
+Sizzlipede
+Centiskorch
+Sinistea
+Polteageist
+Smoliv
+Dolliv
+Arboliva
+Charcadet
+Armarouge
+Ceruledge
+Toedscool
+Toedscruel
+Dondozo
+Poltchageist
+Sinistcha
+Larvitar
+Pupitar
+Tyranitar
+Gible
+Gabite
+Garchomp
+Xurkitree
+Kartana
+Guzzlord
+Stakataka
+Brute Bonnet
+Flutter Mane
+Iron Moth
+Iron Leaves
+Groudon
+Heatran
+Landorus
+Terapagos
+Volcanion
+Zarude
+Tapu Bulu
+Ogerpon

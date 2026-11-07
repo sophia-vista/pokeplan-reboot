@@ -1,184 +1,194 @@
-# The Plan Region (Region.PLAN, stored as HOME; it was the Home Region): everyday route Pokémon, in dex order
-# (line 1 becomes Plan #1). Patrons: Uxie, Mesprit and Azelf.
+# The Plan Region (Region.PLAN, stored as HOME; it was the Home Region): everyday route Pokémon for the Plan module (tasks, focus,
+# habits, goals): commuters and route birds, busy bug workers, steady Normal critters, clever Psychic thinkers, Electric energy,
+# and a Unova and Paldea "fresh start" starter set. Patrons: Uxie, Mesprit and Azelf (last in the list).
+# Super Rare lines: Bagon (a dream of flying: a goal) and Deino (three heads: many tasks at once).
 #
-# One species per line, by English name (Farfetch'd, Mr. Mime, ...) or by PokeAPI identifier (mr-mime).
-# Blank lines and lines starting with # are ignored. Any number of species from about 30 up works, but
-# a module region is meant to be completed in about 2 months, so around 150 is the target size.
-# A species is in at most one module region (the other lists in this folder); the generator checks it.
-# Curation: docs/region-curation-prompt.md.
-#
-# After editing, regenerate the data and run the tests:
+# In the order of a mainline regional dex: the starters first, then the lines by rarity (Common, Uncommon, Rare, Super Rare) in
+# National Dex order with every stage next to its pre-evolution, then the quest and milestone species (ultra beasts, paradox,
+# legendary, mythical) and the patrons last. A line is never split: a species is in at most one module region (the other lists
+# in this folder; the generator checks it), and every evolution is in the same list as the Pokémon it evolves from.
+# One species per line, by English name or PokeAPI identifier; blank lines and # lines are ignored.
+# Legendary, mythical, Ultra Beast and Paradox species stay in the dex but are quest and milestone rewards, never egg drops.
+# Curation: docs/region-curation-prompt.md. After editing:
 #   python3 -I tools/species/generate.py
 #   ./gradlew :pokemon-core:jvmTest
-#
-# Legendary, mythical, Ultra Beast and Paradox species can be listed; they stay in the dex but are
-# quest and milestone rewards, never egg drops. Every rarity tier needs at least one hatchable species,
-# so keep a few pseudo-legendary lines (Dratini, Larvitar, Bagon, Gible, Deino...) for Super Rare.
 
-Pidgey
-Pidgeotto
-Pidgeot
-Rattata
-Raticate
-Sentret
-Furret
-Hoothoot
-Noctowl
-Starly
-Staravia
-Staraptor
-Bidoof
-Bibarel
-Patrat
-Watchog
-Lillipup
-Herdier
-Stoutland
-Zigzagoon
-Linoone
-Obstagoon
-Taillow
-Swellow
-Wingull
-Pelipper
-Spearow
-Fearow
-Fletchling
-Fletchinder
-Talonflame
+Snivy
+Servine
+Serperior
+Tepig
+Pignite
+Emboar
+Oshawott
+Dewott
+Samurott
+Sprigatito
+Floragato
+Meowscarada
+Fuecoco
+Crocalor
+Skeledirge
+Quaxly
+Quaxwell
+Quaquaval
 Caterpie
 Metapod
 Butterfree
 Weedle
 Kakuna
 Beedrill
+Rattata
+Raticate
+Ekans
+Arbok
+Paras
+Parasect
+Venonat
+Venomoth
+Sentret
+Furret
+Hoothoot
+Noctowl
 Ledyba
 Ledian
 Spinarak
 Ariados
+Natu
+Xatu
+Wurmple
+Silcoon
+Beautifly
+Cascoon
+Dustox
+Surskit
+Masquerain
+Nincada
+Ninjask
+Shedinja
+Gulpin
+Swalot
+Castform
+Absol
+Wynaut
+Wobbuffet
+Bidoof
+Bibarel
+Burmy
+Wormadam
+Mothim
+Pachirisu
+Patrat
+Watchog
+Woobat
+Swoobat
+Emolga
+Espurr
+Meowstic
+Yungoos
+Gumshoos
 Cutiefly
 Ribombee
-Pichu
-Pikachu
-Raichu
-Pachirisu
-Emolga
-Mareep
-Flaaffy
-Ampharos
-Joltik
-Galvantula
+Tarountula
+Spidops
+Rellor
+Rabsca
+Pidgey
+Pidgeotto
+Pidgeot
+Abra
+Kadabra
+Alakazam
+Bellsprout
+Weepinbell
+Victreebel
+Aipom
+Ambipom
+Seedot
+Nuzleaf
+Shiftry
+Combee
+Vespiquen
 Buneary
 Lopunny
-Deerling
-Sawsbuck
-Skiddo
-Gogoat
 Venipede
 Whirlipede
 Scolipede
-Larvesta
-Volcarona
+Gothita
+Gothorita
+Gothitelle
+Solosis
+Duosion
+Reuniclus
+Deerling
+Sawsbuck
+Joltik
+Galvantula
+Elgyem
+Beheeyem
+Durant
+Fletchling
+Fletchinder
+Talonflame
+Grubbin
+Charjabug
+Vikavolt
+Mudbray
+Mudsdale
+Oranguru
+Tadbulb
+Bellibolt
+Cyclizar
+Vulpix
+Ninetales
 Zubat
 Golbat
 Crobat
-Woobat
-Swoobat
-Noibat
-Noivern
-Togepi
-Togetic
-Togekiss
-Murkrow
-Honchkrow
+Yanma
+Yanmega
 Girafarig
 Farigiraf
-Vulpix
-Ninetales
-Growlithe
-Arcanine
-Rockruff
-Lycanroc
-Mawile
-Absol
-Riolu
-Lucario
+Stantler
+Wyrdeer
+Zigzagoon
+Linoone
+Obstagoon
 Trapinch
 Vibrava
 Flygon
-Swinub
-Piloswine
-Mamoswine
-Spheal
-Sealeo
-Walrein
-Archen
-Archeops
-Zorua
-Zoroark
-Gastly
-Haunter
-Gengar
-Misdreavus
-Mismagius
-Litwick
-Lampent
-Chandelure
-Golett
-Golurk
-Impidimp
-Morgrem
-Grimmsnarl
-Eevee
-Vaporeon
-Jolteon
-Flareon
-Espeon
-Umbreon
-Leafeon
-Glaceon
-Sylveon
-Dratini
-Dragonair
-Dragonite
-Larvitar
-Pupitar
-Tyranitar
+Larvesta
+Volcarona
+Noibat
+Noivern
+Wimpod
+Golisopod
+Blipbug
+Dottler
+Orbeetle
 Bagon
 Shelgon
 Salamence
-Gible
-Gabite
-Garchomp
 Deino
 Zweilous
 Hydreigon
-Dreepy
-Drakloak
-Dragapult
+Nihilego
+Poipole
+Naganadel
+Slither Wing
+Iron Jugulis
+Roaring Moon
+Mewtwo
+Dialga
+Palkia
+Giratina
+Reshiram
+Zekrom
+Kyurem
+Zygarde
+Celebi
+Jirachi
+Deoxys
+Arceus
+Victini
 Uxie
 Mesprit
 Azelf
-Cobalion
-Terrakion
-Virizion
-Keldeo
-Flutter Mane
-Slither Wing
-Roaring Moon
-Iron Jugulis
-Iron Moth
-Iron Thorns
-Mew
-Jirachi
-Phione
-Manaphy
-Meloetta
-Genesect
-Diancie
-Hoopa
-Volcanion
-Magearna
-Marshadow
-Zeraora
-Zarude

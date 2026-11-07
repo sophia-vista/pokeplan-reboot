@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.139.0
+
+Species lists of every module region, curated together (owner: "curate all modules species list, as much as possible, no dupes, keep it relevant to the theme, follow mainline regional dex patterns, module guardians last"; Plan and Care may be reworked).
+
+- **Every species is in exactly one module region.** All 1025 species are split over six lists in `tools/species/regions/`: Plan (179), Care (179), Heal (179), Mint (159), Home (171) and Link (158), each about 65 to 75 hatchable lines with the 12 Super Rare lines two per region. The generator and `HatchRulesTest` refuse a species in two lists, a region without a hatchable line of every rarity, and a list that does not end with its patrons.
+- **Themes.** Plan: everyday route Pokémon, busy bug workers, clever Psychic thinkers, the Unova and Paldea starters. Care: soft Fairy, Grass, Water and Normal, with the Kanto starters. Heal: Fighting, Fire, Water swimmers and fast runners, with the Hoenn and Galar starters. Mint: Steel, Rock, Ground, fossils, gems and hoarders, with the Sinnoh starters. Home: the kitchen, garden, hearth, fridge, closet and pets, with the Johto starters. Link: postal birds, loyal dogs, pairs, singers, gift-givers and Eevee, with the Kalos starters.
+- **Mainline dex order.** Each list starts with its starters, then the lines by rarity (Common, Uncommon, Rare, Super Rare) in National Dex order with every stage next to its pre-evolution, then the ultra beasts, paradox, legendary and mythical species, and the **patrons last**: Uxie, Mesprit and Azelf (Plan), Cresselia and Shaymin (Care), Raikou, Entei and Suicune (Heal), Diancie and Melmetal (Mint), Tapu Bulu and Ogerpon (Home), Latias and Latios (Link).
+- **Mint and Link are regions now** (`Region.MINT`, `Region.LINK`, unreleased like Home until their modules ship, so their eggs still come from the Plan Region).
+- **Moved out of Plan, Care and Heal:** Plan keeps no starter from Kanto to Sinnoh (its birds Taillow, Wingull, Starly and the Pichu line went to Link, the Swords of Justice and Keldeo to Heal, Hoopa, Mew, Phione and Manaphy to Link), Care lost Lotad, Lapras and Kangaskhan to Link and took Cubone's, Duskull's and Cetoddle's comfort lines, and Heal's other starters went to Mint, Home and Link. A Pokémon you already own stays yours; only where new eggs of a line hatch changes.
+
 ## 0.138.0
 
 From phone testing of 0.137.0.
