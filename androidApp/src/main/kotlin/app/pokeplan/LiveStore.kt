@@ -14,7 +14,21 @@ import java.io.File
 /** A document of the live save, kept in the database one transaction at a time. */
 class DatabaseStorage(private val live: LiveDocuments, private val name: String) : Storage {
     override fun load(): String? = live.read(name)
-    override fun save(text: String) = live.write(name, text, System.currentTimeMillis())
+
+    /**
+     * One transaction. If the phone is out of storage the write is rolled back whole (nothing half saved), the app keeps working from memory
+     * and says so ([LiveStore.writeFailed]); the next write that fits saves everything, since each save is the whole document.
+     */
+    override fun save(text: String) {
+        try {
+            live.write(name, text, System.currentTimeMillis())
+            LiveStore.writeFailed = false
+        } catch (e: android.database.sqlite.SQLiteFullException) {
+            LiveStore.writeFailed = true
+        } catch (e: android.database.sqlite.SQLiteDiskIOException) {
+            LiveStore.writeFailed = true
+        }
+    }
     override fun keepAside(text: String) = live.keepAside(name, text, System.currentTimeMillis())
 }
 
@@ -35,6 +49,13 @@ object LiveStore {
     private const val TAG = "LiveStore"
     private var store: DataStore? = null
     private var gaveUp = false
+    private var backupStore: LiveBackup? = null
+
+    /** The last save could not be written because the phone is out of storage; cleared by the next one that is. */
+    @Volatile var writeFailed: Boolean = false
+
+    /** The daily backups (the same folder the app writes), once the database is open. */
+    fun backups(context: Context): LiveBackup? = backupStore ?: get(context)?.let { backupStore }
 
     @Synchronized
     fun get(context: Context): DataStore? {
@@ -53,6 +74,7 @@ object LiveStore {
             // The same for PLAN's part of the save (schema 5): its records move into PLAN's tables, the rest of the save stays a row.
             runCatching { s.live.movePlanToTables(now) }.onFailure { Log.w(TAG, "Plan tables not active this run: ${it.javaClass.simpleName}") }
             runCatching { backups.takeIfDue(s.live, now) }.onFailure { Log.w(TAG, "backup failed: ${it.javaClass.simpleName}") }
+            backupStore = backups
             store = s
             s
         } catch (t: Throwable) {

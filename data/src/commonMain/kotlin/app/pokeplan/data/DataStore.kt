@@ -45,6 +45,9 @@ class DataStore private constructor(internal val driver: SqlDriver) {
     fun close() = driver.close()
 
     companion object {
+        /** The schema version this build understands (what a backup file may be at most). */
+        val SCHEMA_VERSION: Int get() = DataDb.Schema.version.toInt()
+
         fun open(driver: SqlDriver): DataStore {
             requireForeignKeys(driver)
             prepareSchema(driver)
