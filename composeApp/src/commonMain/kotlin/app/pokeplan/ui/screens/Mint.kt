@@ -434,7 +434,7 @@ private fun TransactionRow(model: AppModel, t: Transaction, open: Boolean, onCli
     ) {
         Column {
             Text(title, style = MaterialTheme.typography.bodyLarge, maxLines = 1)
-            Text(line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 2)
+            Text(line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 3)
         }
     }
 }
