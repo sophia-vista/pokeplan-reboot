@@ -14,6 +14,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
 import app.pokeplan.app.AppData
 import app.pokeplan.app.CareReminders
+import app.pokeplan.app.HealReminders
+import app.pokeplan.heal.HealData
 import app.pokeplan.app.upcomingReminders
 import app.pokeplan.care.CareData
 import app.pokeplan.core.pokemon.ItemCategory
@@ -73,8 +75,8 @@ class MainActivity : ComponentActivity() {
         val place = first.place ?: Place.HOME
         setContent {
             App(
-                storage, careStorage = careStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = AndroidSensorFeed(this), services = gearServices, backups = backups, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onDark = ::matchSystemBars,
+                storage, careStorage = careStorage(this), healStorage = healStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
+                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = AndroidSensorFeed(this), services = gearServices, backups = backups, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onDark = ::matchSystemBars,
             )
         }
     }
@@ -149,6 +151,25 @@ class MainActivity : ComponentActivity() {
         widgetRefresh = lifecycleScope.launch {
             delay(800)
             updateWidgets(applicationContext)
+        }
+    }
+
+    private var healSignature: Int? = null
+    private var healRefresh: Job? = null
+
+    /** Sets Heal's hydration reminders again when the times, the target or the day's total change, a moment after the last change. Nothing else of Heal leaves the module. */
+    private fun healChanged(data: HealData) {
+        val app = appData ?: return
+        val upcoming = HealReminders.upcoming(data, app, System.currentTimeMillis(), TimeZone.currentSystemDefault())
+        if (upcoming.isNotEmpty()) askForNotifications()
+        val signature = upcoming.map { it.ref to it.atMillis }.hashCode()
+        if (healSignature == null) { healSignature = signature; if (upcoming.isEmpty()) return }
+        else if (signature == healSignature) return
+        healSignature = signature
+        healRefresh?.cancel()
+        healRefresh = lifecycleScope.launch {
+            delay(800)
+            SharedReminders.reschedule(applicationContext)
         }
     }
 

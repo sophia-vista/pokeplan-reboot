@@ -43,6 +43,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.AppData
 import app.pokeplan.app.CareStore
+import app.pokeplan.app.HealStore
+import app.pokeplan.heal.HealData
+import app.pokeplan.ui.screens.HealSection
 import app.pokeplan.app.Clock
 import app.pokeplan.app.MemoryStorage
 import app.pokeplan.care.CareData
@@ -86,7 +89,7 @@ enum class Tab(val label: String, val icon: String) {
  * it ("PLANNER", "FOCUS", "CARE"), so the names stay as they are.
  */
 enum class Place(val tab: Tab) {
-    HOME(Tab.HOME), PLAN(Tab.MODULES), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), PARTY(Tab.COLLECTION), ME(Tab.ME), CARE(Tab.MODULES), GEAR(Tab.HOME), WORLD(Tab.MODULES),
+    HOME(Tab.HOME), PLAN(Tab.MODULES), PLANNER(Tab.MODULES), FOCUS(Tab.MODULES), COLLECTION(Tab.COLLECTION), PARTY(Tab.COLLECTION), ME(Tab.ME), CARE(Tab.MODULES), HEAL(Tab.MODULES), GEAR(Tab.HOME), WORLD(Tab.MODULES),
 }
 
 /** The store plus its current data as Compose state, so screens redraw when anything changes. */
@@ -102,6 +105,8 @@ class AppModel(
     val phone: PhoneState? = null,
     /** The Care module's own store, apart from Plan's save; it pays into [store] (the shared world). */
     val care: CareStore = CareStore(MemoryStorage(), Clock { store.nowMillis }, store),
+    /** The Heal module's own store, apart from Plan's and Care's saves (private health records); it pays Field Research into [store] with a minimal event. */
+    val heal: HealStore = HealStore(MemoryStorage(), Clock { store.nowMillis }, store),
     /** The phone's flashlight for the Pokégear; null where there is none (the tool then lights the screen). */
     val torch: Torch? = null,
     /** What this device can do for the Pokégear's hardware tools, found out at run time; [NoCapabilities] where there is no hardware tool (desktop, web). */
@@ -153,6 +158,12 @@ class AppModel(
 
     var careData: CareData by mutableStateOf(care.data)
         private set
+
+    var healData: HealData by mutableStateOf(heal.data)
+        private set
+
+    /** The screen open inside Heal (null shows Heal's menu). */
+    var healSection: HealSection? by mutableStateOf(null)
 
     /** A task just deleted, which the undo bar can bring back for a few seconds. */
     var deletedTask: Task? by mutableStateOf(null)
@@ -218,6 +229,7 @@ class AppModel(
             Place.PLANNER -> { module = Module.PLAN; planSection = PlanSection.PLANNER }
             Place.FOCUS -> { module = Module.PLAN; planSection = if (focusTab) PlanSection.FOCUS else null }
             Place.CARE -> { module = Module.CARE; careSection = null }
+            Place.HEAL -> { module = Module.HEAL; healSection = null }
             Place.PARTY -> openParty = true
             Place.GEAR -> gearOpen = true
             Place.WORLD -> { module = Module.WORLD; worldSection = null }
@@ -228,6 +240,7 @@ class AppModel(
     init {
         store.observe { data = it }
         care.observe { careData = it }
+        heal.observe { healData = it }
     }
 }
 
@@ -243,6 +256,8 @@ fun App(
     storage: Storage,
     /** Where the Care module keeps its own save (`care.json`); in memory only when the platform gives none. */
     careStorage: Storage? = null,
+    /** Where the Heal module keeps its records (its own tables on Android); in memory only when the platform gives none. */
+    healStorage: Storage? = null,
     focusTab: Boolean = true,
     motion: MotionSource? = null,
     start: Place = Place.HOME,
@@ -266,6 +281,8 @@ fun App(
     onDataChanged: ((AppData) -> Unit)? = null,
     /** Called after every change to Care's save (the Android app keeps routine reminders and the Care widget up to date). */
     onCareChanged: ((CareData) -> Unit)? = null,
+    /** Called after every change to Heal's records (the Android app keeps hydration reminders up to date). It receives the settings' reminder times only through the data; nothing else leaves Heal. */
+    onHealChanged: ((HealData) -> Unit)? = null,
     /** Called when the app switches between the light and dark colours, so the host can match the system bar icons. */
     onDark: ((Boolean) -> Unit)? = null,
 ) {
@@ -273,7 +290,8 @@ fun App(
         val clock = Clock { SystemClock.System.now().toEpochMilliseconds() }
         val store = GameStore(storage, clock)
         val care = CareStore(careStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
-        AppModel(store, motion, cries, haptics, files, calendars, phone, care, torch, capabilities, sensors, services, backups).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
+        val heal = HealStore(healStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
+        AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, torch, capabilities, sensors, services, backups).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
     }
     // The phone's power saver is read now and then; World's animations stand still while it is on.
     LaunchedEffect(model) { while (true) { model.powerSaving = phone?.powerSaving == true; kotlinx.coroutines.delay(30_000) } }
@@ -288,10 +306,16 @@ fun App(
         onCareChanged(model.care.data)
         onDispose(stop)
     }
+    if (onHealChanged != null) DisposableEffect(model.heal) {
+        val stop = model.heal.observe(onHealChanged)
+        onHealChanged(model.heal.data)
+        onDispose(stop)
+    }
     if (externalChanges != null) LaunchedEffect(externalChanges) {
         externalChanges.collect {
             store.reload()
             model.care.reload()
+            model.heal.reload()
         }
     }
 

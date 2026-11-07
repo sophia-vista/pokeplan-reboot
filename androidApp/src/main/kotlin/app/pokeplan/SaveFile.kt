@@ -4,6 +4,7 @@ import android.content.Context
 import app.pokeplan.app.CareStore
 import app.pokeplan.app.Clock
 import app.pokeplan.app.GameStore
+import app.pokeplan.app.HealStore
 import app.pokeplan.app.Storage
 
 /**
@@ -19,6 +20,19 @@ fun careStorage(context: Context): Storage = LiveStore.storage(context, "care", 
 fun careStore(context: Context, world: GameStore = widgetStore(context)): CareStore =
     CareStore(
         careStorage(context), Clock { System.currentTimeMillis() }, world,
+        weekStart = { world.data.settings.weekStart },
+    )
+
+/**
+ * The Heal module's own save (private health records), apart from Plan's and Care's: its own tables in the database, created there from the start
+ * (`heal.json` exists only as a fallback while the database has never opened). It is never read by a widget.
+ */
+fun healStorage(context: Context): Storage = LiveStore.storage(context, "heal", "heal.json")
+
+/** Heal's store outside the app (reminders): its own records, paying Field Research into [world] like the app does. */
+fun healStore(context: Context, world: GameStore = widgetStore(context)): HealStore =
+    HealStore(
+        healStorage(context), Clock { System.currentTimeMillis() }, world,
         weekStart = { world.data.settings.weekStart },
     )
 

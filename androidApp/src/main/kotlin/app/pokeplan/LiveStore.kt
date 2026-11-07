@@ -73,6 +73,11 @@ object LiveStore {
             runCatching { s.live.moveCareToTables(now) }.onFailure { Log.w(TAG, "Care tables not active this run: ${it.javaClass.simpleName}") }
             // The same for PLAN's part of the save (schema 5): its records move into PLAN's tables, the rest of the save stays a row.
             runCatching { s.live.movePlanToTables(now) }.onFailure { Log.w(TAG, "Plan tables not active this run: ${it.javaClass.simpleName}") }
+            // HEAL lives in its own tables from the start (schema 6). A heal.json written while the database could not be opened is taken in once, so nothing logged then is lost.
+            runCatching {
+                read(app, "heal.json")?.let { legacy -> if (!s.healTables.isActive() && s.live.read("heal") == null) s.live.write("heal", legacy, now) }
+                s.live.moveHealToTables(now)
+            }.onFailure { Log.w(TAG, "Heal tables not active this run: ${it.javaClass.simpleName}") }
             runCatching { backups.takeIfDue(s.live, now) }.onFailure { Log.w(TAG, "backup failed: ${it.javaClass.simpleName}") }
             backupStore = backups
             store = s

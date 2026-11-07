@@ -40,6 +40,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import app.pokeplan.core.pokemon.CareBucket
+import app.pokeplan.core.pokemon.HealBucket
+import app.pokeplan.core.pokemon.HealPerks
 import app.pokeplan.core.pokemon.CarePerks
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.PartyIds
@@ -101,6 +103,26 @@ fun CarePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
             else -> "None yet: Normal, Fairy, Water, Grass, Bug, Fighting, Flying, Psychic and Ghost types bring them."
         },
         empty = "Open a Pokémon and choose \"To Care party\". Until then Care has no lead to warm.",
+        onOpen = onOpen,
+    )
+}
+
+/** Heal's party in its module: its lead first, and its two perks (which only change what Field Research pays) once the rank opens them, as Care's. */
+@Composable
+fun HealPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
+    val player = model.data.player
+    val party = player.partyOf(PartyIds.HEAL)
+    val opened = model.store.sees(Feature.PERKS)
+    val totals = HealPerks.total(player.healLead, party)
+    PartyPanel(
+        model, party, player.healLead?.id, lead = "Lead", perksTitle = "Heal perks",
+        perks = if (opened) HealBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
+        perksNote = when {
+            !opened -> PERKS_LOCKED
+            party.isEmpty() || totals.values.any { it > 0 } -> null
+            else -> "None yet: Fighting, Normal, Fire, Electric, Flying, Dragon, Water, Grass, Ground, Ice, Bug and Fairy types bring them."
+        },
+        empty = "Open a Pokémon and choose \"To Heal party\", or try Field Research above. Heal works fully with an empty party.",
         onOpen = onOpen,
     )
 }
