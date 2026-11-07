@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.144.0
+
+Link, the connection module, built manual first (REP-014). Stacked on the Home branch (0.143.0).
+
+- **Link is a module** (Modules → Link, blue; `link-core`, `LinkStore`, `screens/Link.kt`). **People** (a name is enough; phone, email, organization, role, address, a relationship word and tags are optional; a directory sorted by name or by what changed last, a Pinned filter that is only a shortcut; a profile with Overview, Notes and Follow-ups; possible duplicates are suggested by name, phone digits or email and never merged; deleting a person asks whether their dates and follow-ups stay), **dates** (birthday, anniversary, milestone or custom; month and day, a year only when known, every year or once; "turns N" when the year is known; **29 February is observed on 28 February in a year without one**), **follow-ups** (a title is enough; Open and History; done, cancelled, reopened; a late one is only "Due since", no warning), an **Overview** with only what is due or near, and one **search** over everything. No contact is ever contacted, and no screen shows a score, a streak, a frequency or a "last contacted".
+- **Postcard Trail** (rules version 20): a follow-up you finish pays 2 Rare Candies, friendship for Link's lead and a trainer point, and adds a point to the track; **three finished follow-ups find a Postcard Egg** from the Link Region into Link's party. At most 3 a day; one follow-up pays once however often it is reopened and finished again; adding people, notes, dates, tags, favourites, editing, rescheduling, cancelling and reopening never pay. On by default, off in Settings without losing anything. The event is `LinkEvent` (id, module, opaque reference, kind, time, policy): no name, number, category, tag, note, date or follow-up title; tests prove none of them reaches the shared save, the reward log, the event or the shared tables.
+- Link's party (lead, perks that change only Postcard Trail), a first-run postcard tutorial, and a scene of its own for the new Pokémon (delivered along the route). The Link Region is released (a Pokédex tab). `link_*` tables (schema 10), in the daily backup and the backup file; export and erase by kind. Not built: reminders, importing device contacts, PLAN conversion, widgets.
+- **Home branch merged with `main`.** The Home branch was cut before the Mint follow-ups: it now includes them (Home is 0.143.0), a new Pokémon's party lead rule applies to Home too (`homeEgg`), and the Pokémon page shows Home's party tab and Link's with short tab names ("Plan 6", not "Plan Region 6").
+
 ## 0.143.0
 
 Home, the household module, built manual first (REP-014).
