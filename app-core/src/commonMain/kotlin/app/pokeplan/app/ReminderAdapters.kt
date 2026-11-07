@@ -31,7 +31,7 @@ object ReminderSnooze {
             ReminderActions.TOMORROW -> app.pokeplan.plan.Reminders.snoozedTo(nowMillis.toLocalDateTime(zone), app.pokeplan.plan.Snooze.TOMORROW, zone).toEpochMillis(zone)
             else -> null
         }
-        ReminderModule.CARE -> if (action == ReminderActions.SNOOZE_30 || action == ReminderActions.SNOOZE) nowMillis + 30 * MINUTE else null
+        ReminderModule.CARE, ReminderModule.HEAL -> if (action == ReminderActions.SNOOZE_30 || action == ReminderActions.SNOOZE) nowMillis + 30 * MINUTE else null
         else -> null
     }
 }

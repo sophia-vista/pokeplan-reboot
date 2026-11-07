@@ -44,7 +44,9 @@ SAME = ['rare-candy', 'ability-capsule', 'ability-patch', 'bottle-cap', 'dynamax
         'soothe-bell', 'lunar-wing', 'mental-herb',
         # Menu entries inside the tabs.
         'great-ball', 'storage-key', 'seal-bag', 'master-ball', 'oaks-letter', 'exp-share', 'heart-scale', 'gb-sounds',
-        'oaks-parcel', 'timer-ball', 'premier-ball', 'friend-ball']
+        'oaks-parcel', 'timer-ball', 'premier-ball', 'friend-ball',
+        # Module cards: Heal's Today, Activity and Hydration.
+        'potion', 'x-speed', 'fresh-water']
 
 
 def read_csv(name):

@@ -131,6 +131,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                     if (model.data.settings.careModule) {
                         PartyGroup(model, Region.CARE, player.partyOf(PartyIds.CARE), player.careLead?.id, "Lead", { CarePerksCard(model) }) { selected = it }
                     }
+                    PartyGroup(model, Region.HEAL, player.partyOf(PartyIds.HEAL), player.healLead?.id, "Lead", { HealPerksCard(model) }) { selected = it }
                 }
                 Section.PC -> {
                     // One PC for every region's party (docs/design.md, "Parties per module"), in boxes of 30 like the games.
@@ -168,13 +169,14 @@ private fun PartyGroup(
 ) {
     val store = model.store
     // The region's colour beside its name, as down the edge of its card on Home; the name says which region it is.
-    val accent = (if (region == Region.CARE) RegionLook.CARE else RegionLook.PLAN).accent
+    val accent = when (region) { Region.CARE -> RegionLook.CARE; Region.HEAL -> RegionLook.HEAL; else -> RegionLook.PLAN }.accent
     Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         Box(Modifier.padding(bottom = 2.dp).size(width = 4.dp, height = 20.dp).clip(RoundedCornerShape(2.dp)).background(accent))
         SectionLabel("${region.label} · ${party.size} of ${OwnedPokemon.PARTY_SIZE}")
     }
     if (party.isEmpty()) {
         val how = if (region == Region.CARE) "Open a Pokémon and choose \"To Care party\", or befriend a visitor. Until then Care warms your Plan buddy. Its first member leads."
+        else if (region == Region.HEAL) "Open a Pokémon and choose \"To Heal party\", or try Field Research in Heal. Its first member leads."
         else "Hatch an egg with a focus session, or move a Pokémon here from the PC."
         EmptyState("No one here yet", how, icon = "poke-ball", sleeper = true)
         return

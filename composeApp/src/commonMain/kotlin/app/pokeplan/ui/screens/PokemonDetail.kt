@@ -276,6 +276,8 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
     val soft = MaterialTheme.typography.bodyMedium
     val inPlan = p.inParty && p.partyId == PartyIds.PLAN
     val inCare = p.inParty && p.partyId == PartyIds.CARE
+    val inHeal = p.inParty && p.partyId == PartyIds.HEAL
+    val isHealLead = p.id == player.healLead?.id
     val isBuddy = p.id == player.buddyId
     val isLead = p.id == player.careLead?.id
     val isPlanLead = p.id == player.planLead?.id
@@ -296,6 +298,8 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
             inPlan -> "In Plan's party"
             isLead -> "Care's lead, in Care's party"
             inCare -> "In Care's party"
+            isHealLead -> "Heal's lead, in Heal's party"
+            inHeal -> "In Heal's party"
             else -> "Resting in the PC"
         }
         Text(place, style = MaterialTheme.typography.bodyLarge)
@@ -317,6 +321,10 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
         if (care) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
             PixelButton(if (isLead) "Is Care's lead" else "Make Care lead", { store.setCareLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inCare && !isLead, compact = true)
             PixelButton(if (inCare) "To PC" else "To Care party", { store.setInParty(p.id, !inCare, PartyIds.CARE) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
+            PixelButton(if (isHealLead) "Is Heal's lead" else "Make Heal lead", { store.setHealLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inHeal && !isHealLead, compact = true)
+            PixelButton(if (inHeal) "To PC" else "To Heal party", { store.setInParty(p.id, !inHeal, PartyIds.HEAL) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
     }
     if (!p.species.isSpecial) {

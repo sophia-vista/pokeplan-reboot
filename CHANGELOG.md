@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.136.0
+## 0.137.0
 
 Design polish pass (the owner's request after a design review): consistency, dark mode and a livelier world.
 
@@ -17,6 +17,15 @@ Design polish pass (the owner's request after a design review): consistency, dar
 - **World is on Home** with a card like Plan's and Care's: the team out exploring, how many are out, and one next step. World's "Since you last looked" shows the haul as icons (floors, coin, berries, boxes) with the detail underneath.
 - **Fewer frames**: party slots are no longer boxed inside the boxed Party card; only the lead is outlined, in the module's colour.
 - **Screenshot tests show real screens.** The opening story covered every `App()` screenshot (all the dark ones were the intro); the tests now finish it first, and dark Care, World, Pokégear and Plan, and Home, Modules, Plan, Care, World and Pokégear in both palettes (`accent-light-*`, `accent-dark-*`) are rendered.
+
+## 0.136.0
+
+- **Heal (Modules → Heal), the manual slice.** Log an activity (a type, how long, when it ended; distance and a note if you like), the drinks you have, a night's sleep and an optional body measurement, and set goals of your own that you can pause or put away. Today shows what you logged, and "not logged" where you did not (never a zero, never a score). Nothing is advice, nothing is judged, and a missed day costs nothing. There is no watch, Health Connect or import yet, and Settings says so.
+- **Field Research (off until you turn it on).** A session of 10 minutes or more that you log just after doing it, and the day's first drink, can find Pokémon: Rare Candies, a berry, friendship for Heal's lead and a Field Egg from the new Heal Region (64 sporty, outdoor Pokémon) that hatches into Heal's party. Sleep, measurements, goals and every other number never earn anything, older entries never pay, and editing or deleting never pays again. Heal has its own party of six whose perks change only what Field Research pays.
+- **First-run walk.** Heal shows a one-time 5-second walk that gives you one Pokémon for Heal's party (no record, no streak, nothing counted); a player who has already logged an activity does not see it.
+- **Private by design.** Your records live in their own tables (schema 7): activity, hydration, sleep, measurements and goals each in a family of their own, so one kind can be exported or erased alone (Heal → Settings); erasing never touches your Pokémon, Poké, Bag, Plan or Care. They are in the daily backup and the backup file, and a backup from before Heal leaves them alone. The only thing the rest of the app learns is a stable id, an opaque reference, "activity" or "participation" and the time.
+- **Hydration reminders (off).** Up to three times a day if you add them, through the shared reminders: quiet hours and focus sessions apply, the words are always "A moment for a drink?", the lock screen shows nothing more, and there is no "done" button.
+- Under the hood (REP-014): `heal-core`, `HealStore`, `HealTables`, `LiveDocuments.moveHealToTables`, `HealEvent`/`RewardEngine.heal`/`healEgg`, `Region.HEAL`, `HealPerks`, `HealReminderAdapter`, `Tutorials.HEAL_WALK`; `RewardRules.VERSION` 17 (`docs/economy.md`); `MODULES/HEAL.md` section 22, `evidence/REP-014-heal.md`. Not run on a device; tables and backups are not encrypted yet.
 
 ## 0.135.0
 

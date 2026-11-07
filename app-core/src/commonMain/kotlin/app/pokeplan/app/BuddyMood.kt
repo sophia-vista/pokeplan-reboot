@@ -16,6 +16,9 @@ object BuddyScene {
     /** Care's region scene: the meadow, where Care's lead and its visitors stand. */
     const val CARE = "meadow"
 
+    /** Heal's region scene: an open route, for movement. */
+    const val HEAL = "route"
+
     /** The scene file name (without .png) for a Pokémon whose types are [types]. */
     fun of(types: List<PokemonType>): String = when (types.firstOrNull()) {
         PokemonType.FIRE -> "mountain"

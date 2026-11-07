@@ -711,6 +711,47 @@ class ScreenshotTest {
         render(name, fontScale = fontScale, height = height) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
+    /** The Heal module with a little logged (an activity, drinks, a night, a weight and a goal), Field Research on, open on [section] (null for its menu). */
+    private fun heal(name: String, section: app.pokeplan.ui.screens.HealSection?, height: Int = 1500, healParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false) {
+        val store = storeWithTeam()
+        store.markRewardsSeen()
+        store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(healParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.HEAL) }
+        val model = AppModel(store)
+        if (!empty) {
+            val heal = model.heal
+            heal.setFieldResearch(true)
+            heal.logActivity(app.pokeplan.heal.ActivityType.WALK, 35, note = "Along the river")
+            heal.logDrink(250); heal.logDrink(330)
+            heal.logSleep(clock.millis - 9 * 3_600_000L, clock.millis - 2 * 3_600_000L)
+            heal.logMeasurement(app.pokeplan.heal.MeasureType.WEIGHT, 68.4, "kg")
+            heal.addGoal(app.pokeplan.heal.GoalKind.WEEKLY_ACTIVE_MINUTES, 150)
+            heal.setHydrationTarget(2000)
+            store.markRewardsSeen()
+        }
+        model.module = app.pokeplan.ui.screens.Module.HEAL
+        model.healSection = section
+        render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+    }
+
+    @Test
+    fun healMenu() = heal("heal-menu", null, height = 2400, healParty = 3)
+
+    @Test
+    fun healMenuEmptyShowsTheTutorialAndNoScore() = heal("heal-menu-empty", null, height = 2000, empty = true)
+
+    @Test
+    fun healMenuDark() = heal("heal-menu-dark", null, height = 2400, healParty = 3, dark = true)
+
+    @Test
+    fun healActivity() = heal("heal-activity", app.pokeplan.ui.screens.HealSection.ACTIVITY, height = 2000)
+
+    /** Every Heal section at the system's text at 130%: nothing clipped or pushed out of its box. */
+    @Test
+    fun largeTextHeal() {
+        heal("heal-xl-menu", null, height = 4200, healParty = 3, fontScale = 1.3f)
+        app.pokeplan.ui.screens.HealSection.entries.forEach { heal("heal-xl-${it.name.lowercase()}", it, height = 2400, fontScale = 1.3f) }
+    }
+
     /** Home as the world overview: each region with its lead and next step, the streak, and what happened recently. */
     @Test
     fun homeRegions() {
