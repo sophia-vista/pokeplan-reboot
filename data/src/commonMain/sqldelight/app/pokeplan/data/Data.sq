@@ -1,4 +1,4 @@
--- Schema version 4 of the PokéLife database (docs/pokelife ARCHITECTURE/DATA_AND_MIGRATIONS.md sections 7 and 8).
+-- Schema version 5 of the PokéLife database (docs/pokelife ARCHITECTURE/DATA_AND_MIGRATIONS.md sections 7 and 8).
 -- It holds the shared Pokémon and economy side and a legacy sidecar for every module that has no tables yet.
 -- Every later change is a numbered migration (N.sqm) checked against the committed schema file (databases/N.db).
 
@@ -260,6 +260,71 @@ CREATE TABLE care_dismissed_visitor (
 -- Everything else Care keeps that is one value rather than a list: its settings, the visit in progress, the journal draft, the
 -- skipped prompts, the rhythm weeks, the visitor seed, and any field a newer build adds. One row per top-level field.
 CREATE TABLE care_state (
+    key TEXT NOT NULL PRIMARY KEY,
+    json TEXT NOT NULL
+);
+
+-- PLAN's own records (version 5, REP-014): PLAN's part of the save document ('save' = AppData, which PLAN shares with the player) moved
+-- into tables. Same shape as CARE's (key, position, day, and the record as JSON in `json`). What is not PLAN's stays in the 'save'
+-- row of live_document. `plan_day` holds the rest days and the active days; `plan_state` the single values (the running focus
+-- session, the completions waiting out their undo, the pick, the emergency pauses, the legacy habits kept after their merge into
+-- recurring tasks, and any field a newer build adds).
+CREATE TABLE plan_task (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE plan_list (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE plan_event (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE plan_series (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE plan_goal (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE plan_review (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE plan_focus_record (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE plan_day (
+    kind TEXT NOT NULL,
+    day TEXT NOT NULL,
+    PRIMARY KEY (kind, day)
+);
+
+CREATE TABLE plan_state (
     key TEXT NOT NULL PRIMARY KEY,
     json TEXT NOT NULL
 );

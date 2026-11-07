@@ -22,8 +22,9 @@ class DatabaseStorage(private val live: LiveDocuments, private val name: String)
  * The cutover (DATA_AND_MIGRATIONS.md section 12.6). The app and the widgets in this process share one connection. On the
  * first start with this build, `save.json` and `care.json` are copied into the database in one transaction, read back and
  * the marker set; from then on the database is the only live store and the files are never written again (they stay as the
- * rollback copy). Care's records then move into Care's own tables (schema 4, `CareTables`); `live.read`, `write` and the backup
- * snapshot put them back together as `care`, so the app and the backup see the same document. A backup of the live documents is
+ * rollback copy). Care's records then move into Care's own tables (schema 4, `CareTables`) and PLAN's part of the save into PLAN's (schema 5,
+ * `PlanTables`); `live.read`, `write` and the backup snapshot put them back together as `care` and `save`, so the app and the backup
+ * see the same documents. A backup of the live documents is
  * written once a day (`backups/`).
  *
  * If the database cannot be used the app never loses data silently: a corrupt file is moved aside whole and the newest
@@ -49,6 +50,8 @@ object LiveStore {
             // Care's records move from their document row into Care's tables, once (REP-014). If it cannot (the read-back differed),
             // nothing changed and the document row stays the live Care save; it is tried again at the next start.
             runCatching { s.live.moveCareToTables(now) }.onFailure { Log.w(TAG, "Care tables not active this run: ${it.javaClass.simpleName}") }
+            // The same for PLAN's part of the save (schema 5): its records move into PLAN's tables, the rest of the save stays a row.
+            runCatching { s.live.movePlanToTables(now) }.onFailure { Log.w(TAG, "Plan tables not active this run: ${it.javaClass.simpleName}") }
             runCatching { backups.takeIfDue(s.live, now) }.onFailure { Log.w(TAG, "backup failed: ${it.javaClass.simpleName}") }
             store = s
             s
