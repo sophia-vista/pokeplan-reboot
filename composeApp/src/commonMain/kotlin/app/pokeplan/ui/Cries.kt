@@ -66,6 +66,9 @@ enum class Sfx(val file: String) {
     CALM_BREAK_START("calm-start"),
     CALM_BREAK_END("calm-end"),
 
+    /** A World job claimed: the Explorers of Sky "mission success" jingle (assets/sky-sfx, rendered from the game's sound data). */
+    MISSION_SUCCESS("jingle-mission-success"),
+
     // Emotes, for the buddy's reactions.
     DAMAGE("damage"),
     SURPRISE("surprise"),

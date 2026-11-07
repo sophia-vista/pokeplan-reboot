@@ -539,9 +539,118 @@ object TownScenes {
         "dark-hill" to "Dark Hill", "dark-hill-deep" to "Dark Hill (deep)", "deep-sealed-ruin" to "Deep Sealed Ruin", "concealed-ruins" to "Concealed Ruins", "amp-plains" to "Amp Plains",
     )
 
-    val all = scenes + dungeons
+    /** Towns built from the dungeon tilesets of Pokémon Mystery Dungeon: Red Rescue Team (assets/tiles/rr-NN, cut by tools/tiles/extract_rescue_tiles.py). */
+    val rescueTeam = listOf(
+        "rr-00" to "Silver Trench / Stormy Sea (Rescue Team)", "rr-01" to "Rescue Team 1", "rr-02" to "Silent Chasm (Rescue Team)", "rr-03" to "Rescue Team 3",
+        "rr-04" to "Rescue Team 4", "rr-05" to "Rescue Team 5", "rr-06" to "Rescue Team 6", "rr-07" to "Rescue Team 7", "rr-08" to "Rescue Team 8",
+        "rr-09" to "Rescue Team 9", "rr-10" to "Rescue Team 10", "rr-11" to "Rescue Team 11", "rr-12" to "Rescue Team 12", "rr-13" to "Rescue Team 13",
+        "rr-14" to "Tiny Woods (Rescue Team)", "rr-15" to "Rescue Team 15", "rr-16" to "Rescue Team 16", "rr-17" to "Rescue Team 17",
+        "rr-18" to "Rescue Team 18", "rr-19" to "Rescue Team 19", "rr-20" to "Rescue Team 20", "rr-21" to "Rescue Team 21", "rr-22" to "Rescue Team 22",
+        "rr-23" to "Rescue Team 23", "rr-24" to "Rescue Team 24", "rr-25" to "Rescue Team 25", "rr-26" to "Rescue Team 26", "rr-27" to "Rescue Team 27",
+        "rr-28" to "Meteor Cave (Rescue Team)", "rr-29" to "Rescue Team 29", "rr-30" to "Rescue Team 30", "rr-31" to "Rescue Team 31",
+        "rr-32" to "Rescue Team 32", "rr-33" to "Rescue Team 33", "rr-34" to "Rescue Team 34", "rr-35" to "Sky Tower / Sky Tower Summit (Rescue Team)",
+        "rr-36" to "Frosty Forest / Frosty Grotto (Rescue Team)", "rr-37" to "Rescue Team 37", "rr-38" to "Rescue Team 38",
+        "rr-39" to "Mt Steel (Rescue Team)", "rr-40" to "Mt Steel (Rescue Team)", "rr-41" to "Sinister Woods (Rescue Team)",
+        "rr-42" to "Mt Thunder (Rescue Team)", "rr-43" to "Mt Thunder Peak (Rescue Team)", "rr-44" to "Great Canyon (Rescue Team)",
+        "rr-45" to "Lapis Cave (Rescue Team)", "rr-46" to "Magma Cavern / Mt Blaze (Rescue Team)", "rr-47" to "Mt Freeze / Mt Freeze Peak (Rescue Team)",
+        "rr-48" to "Magma Cavern / Magma Cavern Pit (Rescue Team)", "rr-49" to "Silver Trench / Stormy Sea (Rescue Team)",
+        "rr-50" to "Thunderwave Cave (Rescue Team)", "rr-51" to "Rescue Team 51", "rr-52" to "Rescue Team 52", "rr-53" to "Rescue Team 53",
+        "rr-54" to "Silver Trench (Rescue Team)", "rr-55" to "Rescue Team 55", "rr-56" to "Rescue Team 56", "rr-57" to "Rescue Team 57",
+        "rr-58" to "Rescue Team 58", "rr-59" to "Magma Cavern (Rescue Team)", "rr-60" to "Rescue Team 60", "rr-61" to "Rescue Team 61",
+        "rr-62" to "Rescue Team 62", "rr-63" to "Rescue Team 63",
+    )
 
-    fun isDungeon(name: String) = dungeons.any { it.first == name }
+    /** Towns built from the dungeon tilesets of Pokémon Mystery Dungeon: Explorers of Sky (assets/tiles/ex-NNN, cut by tools/tiles/extract_sky_tiles.py; named by the dungeons that use them, from the game's own floor data). */
+    val explorers = listOf(
+        "ex-001" to "Beach Cave / Destiny Tower (Explorers)", "ex-002" to "Destiny Tower / Drenched Bluff (Explorers)",
+        "ex-003" to "Mt. Bristle / Zero Isle East (Explorers)", "ex-004" to "Destiny Tower / Spring Cave (Explorers)",
+        "ex-005" to "Apple Woods / Zero Isle West (Explorers)", "ex-006" to "Craggy Coast / Destiny Tower (Explorers)",
+        "ex-007" to "Destiny Tower / Side Path (Explorers)", "ex-008" to "Destiny Tower / Lower Spring Cave (Explorers)", "ex-009" to "Rock Path (Explorers)",
+        "ex-010" to "Foggy Forest (Explorers)", "ex-011" to "1st Station Pass / Forest Path (Explorers)",
+        "ex-012" to "Spring Cave Depths / Steam Cave (Explorers)", "ex-013" to "Explorers 13", "ex-014" to "Amp Plains (Explorers)",
+        "ex-015" to "Far Amp Plains (Explorers)", "ex-016" to "Destiny Tower / Zero Isle South (Explorers)",
+        "ex-017" to "Northern Desert / Rescue (Explorers)", "ex-018" to "Northern Desert (Explorers)", "ex-019" to "Quicksand Cave (Explorers)",
+        "ex-020" to "Quicksand Pit (Explorers)", "ex-021" to "Explorers 21", "ex-022" to "Crystal Cave (Explorers)", "ex-023" to "Crystal Cave (Explorers)",
+        "ex-024" to "Crystal Crossing / Star Cave (Explorers)", "ex-025" to "Destiny Tower / Zero Isle South (Explorers)",
+        "ex-026" to "Chasm Cave (Explorers)", "ex-027" to "Chasm Cave (Explorers)", "ex-028" to "Dark Hill (Explorers)", "ex-029" to "Dark Hill (Explorers)",
+        "ex-030" to "Sealed Ruin (Explorers)", "ex-031" to "Deep Sealed Ruin / Zero Isle West (Explorers)",
+        "ex-032" to "Deep Barren Valley / Sky Peak Summit Pass (Explorers)", "ex-033" to "Dusk Forest (Explorers)",
+        "ex-034" to "Dusk Forest / Midnight Forest (Explorers)", "ex-035" to "Deep Dusk Forest (Explorers)",
+        "ex-036" to "Deep Dusk Forest / Destiny Tower (Explorers)", "ex-037" to "Treeshroud Forest (Explorers)", "ex-038" to "Treeshroud Forest (Explorers)",
+        "ex-039" to "Brine Cave (Explorers)", "ex-040" to "Lower Brine Cave (Explorers)", "ex-041" to "Explorers 41", "ex-042" to "Hidden Land (Explorers)",
+        "ex-043" to "Hidden Highland (Explorers)", "ex-044" to "Southern Jungle (Explorers)", "ex-045" to "Temporal Tower (Explorers)",
+        "ex-046" to "Temporal Spire (Explorers)", "ex-047" to "Explorers 47", "ex-048" to "Mystifying Forest (Explorers)",
+        "ex-049" to "Aegis Cave Pit / Regirock Chamber (Explorers)", "ex-050" to "Concealed Ruins (Explorers)",
+        "ex-051" to "Surrounded Sea / Treacherous Waters (Explorers)", "ex-052" to "Deep Miracle Sea / Miracle Sea (Explorers)",
+        "ex-053" to "Mt. Travail (Explorers)", "ex-054" to "The Nightmare (Explorers)", "ex-055" to "Spacial Rift (Explorers)",
+        "ex-056" to "Deep Spacial Rift / Spacial Rift (Explorers)", "ex-057" to "Dark Crater (Explorers)", "ex-058" to "Deep Dark Crater (Explorers)",
+        "ex-059" to "World Abyss / World Abyss Pit (Explorers)", "ex-060" to "Explorers 60", "ex-061" to "Deep Mystery Jungle / Mystery Jungle (Explorers)",
+        "ex-062" to "Mystery Jungle (Explorers)", "ex-063" to "Zero Isle East (Explorers)", "ex-064" to "Zero Isle East (Explorers)",
+        "ex-065" to "Tiny Meadow (Explorers)", "ex-066" to "3rd Station Pass (Explorers)", "ex-067" to "Destiny Tower (Explorers)", "ex-068" to "Explorers 68",
+        "ex-069" to "Explorers 69", "ex-070" to "Explorers 70", "ex-071" to "Explorers 71", "ex-072" to "Explorers 72", "ex-073" to "Explorers 73",
+        "ex-074" to "Explorers 74", "ex-075" to "Southeastern Islands (Explorers)", "ex-076" to "Zero Isle Center (Explorers)", "ex-077" to "Explorers 77",
+        "ex-078" to "[M:D1]Dummy (Explorers)", "ex-079" to "Explorers 79", "ex-080" to "Deep Star Cave / Star Cave (Explorers)", "ex-081" to "Explorers 81",
+        "ex-082" to "Crevice Cave / Crevice Cave Pit (Explorers)", "ex-083" to "Zero Isle Center (Explorers)", "ex-084" to "Oblivion Forest (Explorers)",
+        "ex-085" to "Shimmer Desert / Shimmer Desert Pit (Explorers)", "ex-086" to "Explorers 86", "ex-087" to "Explorers 87",
+        "ex-088" to "Blizzard Island (Explorers)", "ex-089" to "[M:D1]Dummy (Explorers)", "ex-090" to "Lush Prairie (Explorers)",
+        "ex-091" to "Happy Outlook (Explorers)", "ex-092" to "Explorers 92", "ex-093" to "Explorers 93", "ex-094" to "9th Station Pass (Explorers)",
+        "ex-095" to "Explorers 95", "ex-096" to "Serenity River / [M:D1]Dummy (Explorers)", "ex-097" to "Zero Isle Center (Explorers)",
+        "ex-098" to "Explorers 98", "ex-099" to "Sky Stairway / Sky Stairway Apex (Explorers)", "ex-100" to "Explorers 100", "ex-101" to "Explorers 101",
+        "ex-102" to "Boulder Quarry / Labyrinth Cave (Explorers)", "ex-103" to "Eastern Cave / Landslide Cave (Explorers)",
+        "ex-104" to "Fortune Ravine (Explorers)", "ex-105" to "2nd Station Pass / Oran Forest (Explorers)",
+        "ex-106" to "6th Station Pass / Shimmer Hill (Explorers)", "ex-107" to "Explorers 107", "ex-108" to "Lost Wilderness (Explorers)",
+        "ex-109" to "Right Cave Path / Treacherous Waters (Explorers)", "ex-110" to "Inferno Cave (Explorers)",
+        "ex-111" to "Mt. Avalanche / Mt. Avalanche Peak (Explorers)", "ex-112" to "Zero Isle Center (Explorers)",
+        "ex-113" to "Lake Afar / [M:D1]Dummy (Explorers)", "ex-114" to "Zero Isle Center / [M:D1]Dummy (Explorers)",
+        "ex-115" to "Zero Isle Center (Explorers)", "ex-116" to "Zero Isle Center (Explorers)", "ex-117" to "Marine Resort / Zero Isle North (Explorers)",
+        "ex-118" to "Bottomless Sea / Bottomless Sea Depths (Explorers)", "ex-119" to "Mt. Mistral (Explorers)", "ex-120" to "Explorers 120",
+        "ex-121" to "Explorers 121", "ex-122" to "Left Cave Path (Explorers)", "ex-123" to "Giant Volcano / Giant Volcano Peak (Explorers)",
+        "ex-124" to "Zero Isle North (Explorers)", "ex-125" to "World Abyss (Explorers)", "ex-126" to "Fortune Ravine Depths / Ice Aegis Cave (Explorers)",
+        "ex-127" to "Registeel Chamber / Steel Aegis Cave (Explorers)", "ex-128" to "Murky Forest (Explorers)", "ex-129" to "Deep Boulder Quarry (Explorers)",
+        "ex-130" to "Limestone Cavern (Explorers)", "ex-131" to "Deep Limestone Cavern (Explorers)", "ex-132" to "Barren Valley (Explorers)",
+        "ex-133" to "Dark Wasteland (Explorers)", "ex-134" to "Armaldo's Shelter / Hot Spring (Explorers)",
+        "ex-135" to "Hot Spring / Temporal Spire (Explorers)", "ex-136" to "Spacial Cliffs (Explorers)", "ex-137" to "Dark Ice Mountain (Explorers)",
+        "ex-138" to "Dark Ice Mountain / Dark Ice Mountain Peak (Explorers)", "ex-139" to "Icicle Forest (Explorers)",
+        "ex-140" to "Vast Ice Mountain (Explorers)", "ex-141" to "Vast Ice Mountain Peak (Explorers)",
+        "ex-142" to "4th Station Pass / 5th Station Clearing (Explorers)", "ex-143" to "7th Station Pass / 8th Station Pass (Explorers)",
+        "ex-144" to "Explorers 144",
+    )
+
+    val all = scenes + dungeons + rescueTeam + explorers
+
+    fun isDungeon(name: String) = dungeons.any { it.first == name } || rescueTeam.any { it.first == name } || explorers.any { it.first == name }
+}
+
+/**
+ * The 57 Friend Areas of Pokémon Mystery Dungeon: Red Rescue Team (assets/rescue-maps, decoded by tools/sprites/fetch_rescue_maps.py): whole
+ * pictures, used as page backgrounds. A key is `fa-` and the area's name in lower case with hyphens; [file] is its picture.
+ */
+object FriendAreas {
+    val all = listOf(
+        "fa-aged-chamber-an" to "Aged Chamber (A to N)", "fa-aged-chamber-o-exclaim" to "Aged Chamber (O to !)", "fa-ancient-relic" to "Ancient Relic",
+        "fa-beau-plains" to "Beau Plains", "fa-boulder-cave" to "Boulder Cave", "fa-bountiful-sea" to "Bountiful Sea", "fa-crater" to "Crater",
+        "fa-cryptic-cave" to "Cryptic Cave", "fa-darkness-ridge" to "Darkness Ridge", "fa-decrepit-lab" to "Decrepit Lab",
+        "fa-deep-sea-current" to "Deep Sea Current", "fa-deep-sea-floor" to "Deep Sea Floor", "fa-dragon-cave" to "Dragon Cave", "fa-echo-cave" to "Echo Cave",
+        "fa-enclosed-island" to "Enclosed Island", "fa-energetic-forest" to "Energetic Forest", "fa-final-island" to "Final Island",
+        "fa-flyaway-forest" to "Flyaway Forest", "fa-frigid-cavern" to "Frigid Cavern", "fa-furnace-desert" to "Furnace Desert",
+        "fa-healing-forest" to "Healing Forest", "fa-ice-floe-beach" to "Ice Floe Beach", "fa-jungle" to "Jungle", "fa-legendary-island" to "Legendary Island",
+        "fa-magnetic-quarry" to "Magnetic Quarry", "fa-mist-rise-forest" to "Mist Rise Forest", "fa-mt-cleft" to "Mt. Cleft",
+        "fa-mt-deepgreen" to "Mt. Deepgreen", "fa-mt-discipline" to "Mt. Discipline", "fa-mt-moonview" to "Mt. Moonview",
+        "fa-mushroom-forest" to "Mushroom Forest", "fa-mystic-lake" to "Mystic Lake", "fa-overgrown-forest" to "Overgrown Forest",
+        "fa-peanut-swamp" to "Peanut Swamp", "fa-poison-swamp" to "Poison Swamp", "fa-power-plant" to "Power Plant", "fa-rainbow-peak" to "Rainbow Peak",
+        "fa-ravaged-field" to "Ravaged Field", "fa-rub-a-dub-river" to "Rub A Dub River", "fa-sacred-field" to "Sacred Field", "fa-safari" to "Safari",
+        "fa-scorched-plains" to "Scorched Plains", "fa-seafloor-cave" to "Seafloor Cave", "fa-secretive-forest" to "Secretive Forest",
+        "fa-serene-sea" to "Serene Sea", "fa-shallow-beach" to "Shallow Beach", "fa-sky-blue-plains" to "Sky Blue Plains",
+        "fa-southern-island" to "Southern Island", "fa-stratos-lookout" to "Stratos Lookout", "fa-tadpole-pond" to "Tadpole Pond",
+        "fa-thunder-meadow" to "Thunder Meadow", "fa-transform-forest" to "Transform Forest", "fa-treasure-sea" to "Treasure Sea",
+        "fa-turtleshell-pond" to "Turtleshell Pond", "fa-volcanic-pit" to "Volcanic Pit", "fa-waterfall-lake" to "Waterfall Lake",
+        "fa-wild-plains" to "Wild Plains",
+    )
+
+    fun isArea(name: String) = all.any { it.first == name }
+
+    /** The resource path of a Friend Area's picture. */
+    fun file(name: String) = "files/rescue-maps/FRIEND_AREA_" + name.removePrefix("fa-").uppercase().replace('-', '_') + ".png"
 }
 
 /** The game items an app's icon can be set to on the home page (real item sprites from assets/items). */

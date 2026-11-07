@@ -740,8 +740,9 @@ internal fun TownPicker(current: String, onPick: (String) -> Unit, onClose: () -
             Column(Modifier.height(420.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text("Scenes", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
                 TownChoices(TownScenes.scenes, current, onPick)
-                Text("Dungeons", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, modifier = Modifier.padding(top = Spacing.S))
-                TownChoices(TownScenes.dungeons, current, onPick)
+                listOf("Dungeons" to TownScenes.dungeons, "Rescue Team dungeons" to TownScenes.rescueTeam, "Explorers of Sky dungeons" to TownScenes.explorers).forEach { (heading, list) ->
+                    app.pokeplan.ui.ChoiceGroup(heading, list.size, initiallyOpen = heading == "Dungeons" || list.any { it.first == current }) { TownChoices(list, current, onPick) }
+                }
             }
             Text("Press and hold the town any time to change it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }

@@ -1,0 +1,1491 @@
+id	kind	event	sites	first_source	confidence
+0	call	dungeon_cutscene_articuno.c: ArticunoPreFightDialogue	1	src/dungeon_cutscene_articuno.c:152	call-site
+0	script	story script d10p01: ?	1	src/data/ground/ground_data_d10p01_station.h:159	call-site
+0	script	story script t01p01: ?	1	src/data/ground/ground_data_t01p01_station.h:3256	call-site
+200	call	dungeon_music.c: sub_8083D58	1	src/dungeon_music.c:44	call-site
+201	call	mission_reward.c: MR_InitStateDialogue	1	src/mission_reward.c:342	call-site
+201	script	story script b01p01a: ?	1	src/data/ground/ground_data_b01p01a_station.h:11906	call-site
+201	script	story script b01p02a: ?	1	src/data/ground/ground_data_b01p02a_station.h:1184	call-site
+202	call	party_list_menu.c: HandlePartyListMenuCallback	1	src/party_list_menu.c:341	call-site
+203	call	code_801B60C.c: sub_801B874	2	src/code_801B60C.c:188	call-site
+203	call	code_801B60C.c: sub_801BD80	1	src/code_801B60C.c:423	call-site
+203	call	code_801B60C.c: sub_801BE30	1	src/code_801B60C.c:461	call-site
+203	call	code_80227B8.c: sub_8022A10	1	src/code_80227B8.c:201	call-site
+203	call	makuhita_dojo1.c: MakuhitaDojo_UpdateDialogue	1	src/makuhita_dojo1.c:216	call-site
+203	call	mission_reward.c: MR_InitStateDialogue	2	src/mission_reward.c:211	call-site
+203	script	story script b01p01a: ?	1	src/data/ground/ground_data_b01p01a_station.h:10079	call-site
+203	script	story script ground_event_data: ?	4	src/data/ground/ground_event_data.h:893	call-site
+204	call	dungeon_cutscene_celebi.c: CelebiJoinDialogue	1	src/dungeon_cutscene_celebi.c:123	call-site
+204	call	dungeon_music.c: sub_8083D88	1	src/dungeon_music.c:59	call-site
+204	call	party_list_menu.c: HandlePartyListMenuCallback	1	src/party_list_menu.c:336	call-site
+204	script	story script b01p01a: ?	4	src/data/ground/ground_data_b01p01a_station.h:12624	call-site
+204	script	story script d10p03: ?	1	src/data/ground/ground_data_d10p03_station.h:285	call-site
+204	script	story script ground_event_data: ?	1	src/data/ground/ground_event_data.h:925	call-site
+204	script	story script t01p01: ?	4	src/data/ground/ground_data_t01p01_station.h:2230	call-site
+205	script	story script b01p01a: ?	1	src/data/ground/ground_data_b01p01a_station.h:13137	call-site
+205	script	story script d07p02: ?	1	src/data/ground/ground_data_d07p02_station.h:120	call-site
+205	script	story script d15p01: ?	1	src/data/ground/ground_data_d15p01_station.h:59	call-site
+205	script	story script d16p01: ?	1	src/data/ground/ground_data_d16p01_station.h:129	call-site
+205	script	story script d17p01: ?	1	src/data/ground/ground_data_d17p01_station.h:131	call-site
+205	script	story script d18p01: ?	1	src/data/ground/ground_data_d18p01_station.h:134	call-site
+205	script	story script h29p01: ?	1	src/data/ground/ground_data_h29p01_station.h:319	call-site
+205	script	story script t01p01: ?	4	src/data/ground/ground_data_t01p01_station.h:13667	call-site
+205	script	story script t01p02a: ?	1	src/data/ground/ground_data_t01p02a_station.h:393	call-site
+205	script	story script t01p03: ?	3	src/data/ground/ground_data_t01p03_station.h:860	call-site
+206	call	dungeon_mon_recruit.c: HandleSpecialEntityJoinSequence	1	src/dungeon_mon_recruit.c:433	call-site
+206	call	dungeon_mon_recruit.c: MonsterJoinSequence_Async	1	src/dungeon_mon_recruit.c:311	call-site
+206	call	mission_reward.c: MR_InitStateDialogue	2	src/mission_reward.c:249	call-site
+206	call	wigglytuff_shop3.c: UpdateWigglytuffDialogue	1	src/wigglytuff_shop3.c:258	call-site
+206	script	story script t01p01: ?	2	src/data/ground/ground_data_t01p01_station.h:2140	call-site
+207	call	dungeon_music.c: sub_8083D68	1	src/dungeon_music.c:49	call-site
+207	call	dungeon_music.c: sub_8083E28	1	src/dungeon_music.c:82	call-site
+207	call	friend_list_menu.c: sub_8025518	1	src/friend_list_menu.c:295	call-site
+207	call	party_list_menu.c: HandlePartyListMenuCallback	2	src/party_list_menu.c:326	call-site
+210	call	luminous_cave.c: UpdateLuminousCaveDialogue	1	src/luminous_cave.c:327	call-site
+211	call	dungeon_music.c: sub_8083D78	1	src/dungeon_music.c:54	call-site
+212	call	code_801B60C.c: sub_801B874	1	src/code_801B60C.c:218	call-site
+212	call	dungeon_8041AD0.c: sub_80429FC	1	src/dungeon_8041AD0.c:1461	call-site
+212	call	dungeon_cutscene_jirachi.c: JirachiWish_Async	1	src/dungeon_cutscene_jirachi.c:283	call-site
+212	call	dungeon_cutscene_regis.c: sub_808AFB0_Async	1	src/dungeon_cutscene_regis.c:198	call-site
+212	call	dungeon_cutscene_regis.c: sub_808B030_Async	1	src/dungeon_cutscene_regis.c:217	call-site
+212	call	dungeon_cutscene_regis.c: sub_808B0B0_Async	1	src/dungeon_cutscene_regis.c:236	call-site
+212	call	dungeon_items.c: MusicBoxCreation_Async	1	src/dungeon_items.c:806	call-site
+212	script	story script a04p01: ?	1	src/data/ground/ground_data_a04p01_station.h:206	call-site
+212	script	story script b01p01a: ?	1	src/data/ground/ground_data_b01p01a_station.h:13595	call-site
+212	script	story script b01p02a: ?	1	src/data/ground/ground_data_b01p02a_station.h:559	call-site
+212	script	story script d11p03: ?	1	src/data/ground/ground_data_d11p03_station.h:176	call-site
+212	script	story script d15p01: ?	1	src/data/ground/ground_data_d15p01_station.h:55	call-site
+212	script	story script d16p01: ?	1	src/data/ground/ground_data_d16p01_station.h:123	call-site
+212	script	story script d17p01: ?	1	src/data/ground/ground_data_d17p01_station.h:125	call-site
+212	script	story script d18p01: ?	1	src/data/ground/ground_data_d18p01_station.h:128	call-site
+212	script	story script h29p01: ?	1	src/data/ground/ground_data_h29p01_station.h:315	call-site
+213	script	story script b01p01a: ?	4	src/data/ground/ground_data_b01p01a_station.h:1777	call-site
+214	call	dungeon_item_action.c: MusicBoxItemAction	1	src/dungeon_item_action.c:965	call-site
+215	call	dungeon_items.c: MusicBoxCreation_Async	1	src/dungeon_items.c:801	call-site
+216	dungeon	Dungeon wind (other weather/tileset wind), stage 0	1	dungeon_8041AD0.c sub_80426C8, called from dungeon_wind.c	call-site
+217	dungeon	Dungeon wind (other weather/tileset wind), stage 1	1	dungeon_8041AD0.c sub_80426C8, called from dungeon_wind.c	call-site
+217	dungeon	Dungeon wind (other weather/tileset wind), stage 2	1	dungeon_8041AD0.c sub_80426C8, called from dungeon_wind.c	call-site
+218	dungeon	Dungeon wind (wind type 4), stage 0	1	dungeon_8041AD0.c sub_80426C8, called from dungeon_wind.c	call-site
+219	dungeon	Dungeon wind (wind type 4), stage 1	1	dungeon_8041AD0.c sub_80426C8, called from dungeon_wind.c	call-site
+219	dungeon	Dungeon wind (wind type 4), stage 2	1	dungeon_8041AD0.c sub_80426C8, called from dungeon_wind.c	call-site
+256	call	dungeon_main.c: ShowMainMenu	1	src/dungeon_main.c:1128	call-site
+256	call	script_item.c: TryAddItemWithText	1	src/script_item.c:117	call-site
+301	call	dungeon_music.c: PlayDungeonCursorSE	1	src/dungeon_music.c:19	call-site
+301	call	world_map_sound.c: PlayCursorUpDownSoundEffect	1	src/world_map_sound.c:52	call-site
+301	menu	Menu sound: navigate	1	music_util.c sMenuSoundEffects	table
+302	call	dungeon_music.c: PlayDungeonConfirmationSE	1	src/dungeon_music.c:24	call-site
+302	call	world_map_sound.c: PlayAcceptSoundEffect	1	src/world_map_sound.c:40	call-site
+302	menu	Menu sound: accept	1	music_util.c sMenuSoundEffects	table
+303	call	dungeon_music.c: PlayDungeonCancelSE	1	src/dungeon_music.c:34	call-site
+303	call	world_map_sound.c: PlayCancelSoundEffect	1	src/world_map_sound.c:46	call-site
+303	menu	Menu sound: back	1	music_util.c sMenuSoundEffects	table
+303	menu	Menu sound: fail	1	music_util.c sMenuSoundEffects	table
+304	call	dungeon_music.c: PlayDungeonStartButtonSE	1	src/dungeon_music.c:39	call-site
+304	menu	Menu sound: info	1	music_util.c sMenuSoundEffects	table
+305	call	music_util.c: PlayDialogueTextSound	1	src/music_util.c:145	call-site
+306	call	dungeon_menu_items.c: ShowDungeonItemsMenu	1	src/dungeon_menu_items.c:195	call-site
+306	menu	Menu sound: sort	1	music_util.c sMenuSoundEffects	table
+307	call	dungeon_action_handler.c: HandleSetItemAction_Async	1	src/dungeon_action_handler.c:79	call-site
+307	call	dungeon_action_handler.c: HandleUnsetItemAction_Async	1	src/dungeon_action_handler.c:117	call-site
+307	call	dungeon_menu_moves.c: ActionDelinkMoves	1	src/dungeon_menu_moves.c:844	call-site
+307	call	dungeon_menu_moves.c: ActionLinkMoves	1	src/dungeon_menu_moves.c:788	call-site
+307	call	dungeon_menu_moves.c: ActionSetOrUnsetMove	1	src/dungeon_menu_moves.c:735	call-site
+307	call	dungeon_menu_moves.c: ActionToggleMoveUsableForAi	1	src/dungeon_menu_moves.c:757	call-site
+307	call	dungeon_menu_team.c: ShowDungeonSummaryOrIQMenu	1	src/dungeon_menu_team.c:1046	call-site
+307	call	dungeon_menu_team.c: ShowDungeonTacticsMenu	1	src/dungeon_menu_team.c:559	call-site
+307	call	dungeon_music.c: sub_8083D1C	1	src/dungeon_music.c:29	call-site
+307	call	gulpin_shop.c: sub_801ED28	1	src/gulpin_shop.c:272	call-site
+307	call	gulpin_shop_801FB50.c: sub_8020EB4	6	src/gulpin_shop_801FB50.c:944	call-site
+307	call	iq_skill_menu.c: HandleIQSkillMenuAction	1	src/iq_skill_menu.c:184	call-site
+307	call	mailbox.c: HandleMailActionMenu	2	src/mailbox.c:415	call-site
+307	call	pelipper_board.c: sub_802EDBC	1	src/pelipper_board.c:353	call-site
+307	call	wonder_mail_802C860.c: sub_802CC70	2	src/wonder_mail_802C860.c:243	call-site
+307	menu	Menu sound: toggle	1	music_util.c sMenuSoundEffects	table
+312	call	code_801AFA4.c: sub_801B080	1	src/code_801AFA4.c:97	call-site
+312	call	dungeon_leveling.c: sub_8072778	1	src/dungeon_leveling.c:612	call-site
+312	call	dungeon_leveling.c: sub_8072938	1	src/dungeon_leveling.c:679	call-site
+312	dungeon	A monster learns a new move (both call sites in dungeon_leveling.c read: the sound plays just before the 'learned' message, not on level-up)	1	dungeon_leveling.c:612,679	read
+330	call	dungeon_ai_items.c: MonTryPickUpItem	2	src/dungeon_ai_items.c:532	call-site
+330	call	dungeon_items.c: TryLeaderItemPickUp_Async	2	src/dungeon_items.c:249	call-site
+330	script	story script t01p01: ?	3	src/data/ground/ground_data_t01p01_station.h:1230	call-site
+331	call	dungeon_ai_items.c: MonTryPickUpItem	2	src/dungeon_ai_items.c:462	call-site
+332	call	code_801EE10.c: sub_801EF38	1	src/code_801EE10.c:172	call-site
+332	call	dungeon_ai_items.c: MonTryPickUpItem	1	src/dungeon_ai_items.c:465	call-site
+332	call	dungeon_cutscene_jirachi.c: JirachiWish_Async	1	src/dungeon_cutscene_jirachi.c:229	call-site
+332	call	dungeon_items.c: TryLeaderItemPickUp_Async	1	src/dungeon_items.c:178	call-site
+332	call	dungeon_kecleon_shop.c: sub_807EFFC	1	src/dungeon_kecleon_shop.c:221	call-site
+332	call	dungeon_kecleon_shop.c: sub_807F19C	1	src/dungeon_kecleon_shop.c:272	call-site
+332	call	felicity_bank.c: Felicity_DepositMoney	1	src/felicity_bank.c:349	call-site
+332	call	felicity_bank.c: Felicity_WithdrawMoney	1	src/felicity_bank.c:370	call-site
+332	call	gulpin_shop_801FB50.c: sub_8020EB4	1	src/gulpin_shop_801FB50.c:986	call-site
+332	call	kecleon_bros1.c: HandleKecleonBrosBuyItemYesNoMenu	1	src/kecleon_bros1.c:698	call-site
+332	call	kecleon_bros1.c: HandleKecleonBrosSellAllItemsMenu	1	src/kecleon_bros1.c:749	call-site
+332	call	kecleon_bros1.c: HandleKecleonBrosSellItemYesNoMenu	1	src/kecleon_bros1.c:719	call-site
+332	call	wigglytuff_shop3.c: HandleWigglytuffConfirmFriendAreaMenu	1	src/wigglytuff_shop3.c:452	call-site
+333	call	dungeon_action_handler.c: HandleGiveItemAction_Async	2	src/dungeon_action_handler.c:173	call-site
+333	call	dungeon_action_handler.c: HandlePlaceItemAction_Async	1	src/dungeon_action_handler.c:329	call-site
+333	call	dungeon_action_handler.c: HandleTakeItemAction_Async	1	src/dungeon_action_handler.c:229	call-site
+333	call	dungeon_action_handler.c: sub_8066BD4_Async	1	src/dungeon_action_handler.c:274	call-site
+333	call	dungeon_action_handler.c: sub_8066E14	1	src/dungeon_action_handler.c:385	call-site
+333	call	dungeon_action_handler.c: sub_8066FA4	1	src/dungeon_action_handler.c:434	call-site
+333	call	dungeon_item_action.c: sub_80479B8	1	src/dungeon_item_action.c:110	call-site
+333	call	friend_area_action_menu.c: sub_80278B4	1	src/friend_area_action_menu.c:456	call-site
+333	call	friend_area_action_menu.c: sub_8027BD8	1	src/friend_area_action_menu.c:599	call-site
+333	call	friend_area_action_menu.c: sub_8027EB8	2	src/friend_area_action_menu.c:776	call-site
+333	call	friend_list_menu.c: sub_8025A84	1	src/friend_list_menu.c:472	call-site
+333	call	friend_list_menu.c: sub_8025CB4	1	src/friend_list_menu.c:587	call-site
+333	call	party_list_menu.c: PartyListMenu_HandleMenu1	1	src/party_list_menu.c:578	call-site
+333	call	party_list_menu.c: PartyListMenu_HandleMenu2	1	src/party_list_menu.c:737	call-site
+333	call	party_list_menu.c: sub_8026FA4	2	src/party_list_menu.c:930	call-site
+333	script	story script t01p01: ?	1	src/data/ground/ground_data_t01p01_station.h:1420	call-site
+336	call	dungeon_8041AD0.c: sub_8042208	1	src/dungeon_8041AD0.c:1072	call-site
+336	move	Move Barrage: animation (effect animation #189)	1	effect_data.c gUnknown_80BDBC4	table
+336	move	Move Eruption: animation (effect animation #136)	1	effect_data.c gUnknown_80BDBC4	table
+337	call	dungeon_8041AD0.c: sub_8042208	1	src/dungeon_8041AD0.c:1070	call-site
+337	move	Move Bone Rush: animation (effect animation #133)	1	effect_data.c gUnknown_80BDBC4	table
+337	move	Move Bonemerang: animation (effect animation #133)	1	effect_data.c gUnknown_80BDBC4	table
+337	move	Move Egg Bomb: animation (effect animation #294)	1	effect_data.c gUnknown_80BDBC4	table
+337	move	Move Present: animation (effect animation #142)	1	effect_data.c gUnknown_80BDBC4	table
+337	move	Move Rock Blast: animation (effect animation #353)	1	effect_data.c gUnknown_80BDBC4	table
+338	call	dungeon_8041AD0.c: sub_8042208	1	src/dungeon_8041AD0.c:1068	call-site
+338	move	Move Pin Missile: animation (effect animation #283)	1	effect_data.c gUnknown_80BDBC4	table
+338	move	Move Poison Sting: animation (effect animation #217)	1	effect_data.c gUnknown_80BDBC4	table
+338	move	Move Spike Cannon: animation (effect animation #218)	1	effect_data.c gUnknown_80BDBC4	table
+338	move	Move Twineedle: animation (effect animation #216)	1	effect_data.c gUnknown_80BDBC4	table
+339	call	dungeon_turn_effects.c: DoEndOfTurnEffects_Async	1	src/dungeon_turn_effects.c:158	call-site
+340	dungeon	Stairs: the ascending sound	1	dungeon_8041AD0.c PlayStairsSound (IsStairDirectionUp)	call-site
+341	dungeon	Stairs: the descending sound	1	dungeon_8041AD0.c PlayStairsSound	call-site
+342	call	dungeon_8041AD0.c: sub_8042238	1	src/dungeon_8041AD0.c:1080	call-site
+342	call	dungeon_move.c: UseMoveAgainstTargets	1	src/dungeon_move.c:266	call-site
+343	call	dungeon_8041AD0.c: sub_8042238	1	src/dungeon_8041AD0.c:1078	call-site
+343	call	dungeon_move.c: UseMoveAgainstTargets	1	src/dungeon_move.c:269	call-site
+344	move	Arm Thrust: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+344	move	Bide 2: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+344	move	Headbutt: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+344	move	Low Kick: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+344	move	Tackle: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+344	move	Take Down: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+348	call	trap.c: TryTriggerTrap	1	src/trap.c:309	call-site
+348	script	story script d24p01: ?	1	src/data/ground/ground_data_d24p01_station.h:79	call-site
+351	move	Attract: used by Volbeat	1	effect_data.c gUnknown_80C183C	table
+351	move	Bide 2: used by Abra, Machop, Machoke, Machamp and 24 more	1	effect_data.c gUnknown_80C183C	table
+351	move	Brick Break: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Clamp: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Comet Punch: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Cross Chop: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Double Kick: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Double Kick: used by Hitmonlee	1	effect_data.c gUnknown_80C183C	table
+351	move	Fake Out: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	False Swipe: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	False Swipe: used by Nincada, Ninjask	1	effect_data.c gUnknown_80C183C	table
+351	move	Headbutt: used by Doduo	1	effect_data.c gUnknown_80C183C	table
+351	move	Hi Jump Kick: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Hi Jump Kick: used by Hitmonlee	1	effect_data.c gUnknown_80C183C	table
+351	move	Hyper Fang: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Jump Kick: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Jump Kick: used by Tauros, Girafarig, Hitmonlee	1	effect_data.c gUnknown_80C183C	table
+351	move	Karate Chop: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Knock Off: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Mud Shot: used by Kakuna, Abra	1	effect_data.c gUnknown_80C183C	table
+351	move	Pay Day: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Peck: used by Natu	1	effect_data.c gUnknown_80C183C	table
+351	move	Pound: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Regular Attack: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Revenge: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Scratch: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Scratch: used by Shedinja	1	effect_data.c gUnknown_80C183C	table
+351	move	Slam: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Slash: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Struggle: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Take Down: used by Tauros, Girafarig	1	effect_data.c gUnknown_80C183C	table
+351	move	Triple Kick: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Triple Kick: used by Hitmonlee, Tauros, Girafarig	1	effect_data.c gUnknown_80C183C	table
+351	move	Vicegrip: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+351	move	Vine Whip: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+352	move	Rolling Kick: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+352	move	Thief: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+353	move	Agility: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+353	move	Move Double Team: animation (effect animation #232)	1	effect_data.c gUnknown_80BDBC4	table
+354	move	Attract: used by Marowak, Latios, Latias	1	effect_data.c gUnknown_80C183C	table
+354	move	Bide: used by Seedot	1	effect_data.c gUnknown_80C183C	table
+354	move	Bubblebeam: used by Marowak, Pichu, Miltank	1	effect_data.c gUnknown_80C183C	table
+354	move	Dig: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+354	move	Move Bounce: animation (effect animation #233)	1	effect_data.c gUnknown_80BDBC4	table
+354	move	Move Splash: animation (effect animation #233)	1	effect_data.c gUnknown_80BDBC4	table
+354	move	Mud Shot: used by Marowak, Miltank	1	effect_data.c gUnknown_80C183C	table
+354	move	Pound: used by Swalot, Gulpin, Whismur, Loudred and 7 more	1	effect_data.c gUnknown_80C183C	table
+354	move	Splash: used by Milotic	1	effect_data.c gUnknown_80C183C	table
+354	move	Spore: used by Marowak, Pichu, Shroomish, Breloom	1	effect_data.c gUnknown_80C183C	table
+354	move	Steel Wing: used by Latios, Latias	1	effect_data.c gUnknown_80C183C	table
+355	move	Attract: used by Meganium, Gardevoir	1	effect_data.c gUnknown_80C183C	table
+355	move	Belly Drum: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Bide 2: used by Hitmonchan	1	effect_data.c gUnknown_80C183C	table
+355	move	Bide: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Bide: used by Sandshrew, Sandslash, Shellder, Cloyster and 2 more	1	effect_data.c gUnknown_80C183C	table
+355	move	Bulk Up: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Charge: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Curse Ghost: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Destiny Bond: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Detect: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Endure: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Explosion: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Flame Wheel: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Focus Energy: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Focus Punch: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Glare: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Growth: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Harden: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Ingrain: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Leer: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Minimize: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Mist: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Night Shade: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Razor Leaf: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Rebound: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Recycle: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Reversal: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Sacred Fire: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Shock Wave: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Sky Attack 2Nd Turn: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Sky Attack: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Steel Wing: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Steel Wing: used by Beedrill	1	effect_data.c gUnknown_80C183C	table
+355	move	Sweet Kiss: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Tri Attack: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Water Spout: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Wing Attack: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+355	move	Wing Attack: used by Beedrill	1	effect_data.c gUnknown_80C183C	table
+356	call	dungeon_action_handler.c: sub_80671A0	1	src/dungeon_action_handler.c:521	call-site
+356	move	Barrage: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Baton Pass: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Beat Up: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Calm Mind: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Camouflage: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Conversion 2: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Conversion: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Famish: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Flash: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Hp Gauge: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Mimic: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Mind Reader: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Moonlight: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Mud Sport: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Odor Sleuth: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Pain Split: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Petal Dance: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Power Ears: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Refresh: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Role Play: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Safeguard: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Sand Attack: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Scan: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	See Trap: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Shocker: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Sketch: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Snatch: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Sonicboom: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Steel Wing: used by Butterfree, Yanma	1	effect_data.c gUnknown_80C183C	table
+356	move	Substitute: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Tail Glow: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Tail Whip: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Takeaway: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Taunt: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Transform: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Trick: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Twister: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Two Edge: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Wild Call: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+356	move	Wing Attack: used by Butterfree, Yanma	1	effect_data.c gUnknown_80C183C	table
+357	move	Bide 2: used by Charmander, Gligar	1	effect_data.c gUnknown_80C183C	table
+357	move	Comet Punch: used by Charmander	1	effect_data.c gUnknown_80C183C	table
+357	move	Double Kick: used by Machop, Machoke, Machamp	1	effect_data.c gUnknown_80C183C	table
+357	move	Hi Jump Kick: used by Machop, Machoke, Machamp	1	effect_data.c gUnknown_80C183C	table
+357	move	Jump Kick: used by Machop, Machoke, Machamp	1	effect_data.c gUnknown_80C183C	table
+357	move	Karate Chop: used by Charmander	1	effect_data.c gUnknown_80C183C	table
+357	move	Knock Off: used by Charmander	1	effect_data.c gUnknown_80C183C	table
+357	move	Low Kick: used by Machop, Machoke, Machamp	1	effect_data.c gUnknown_80C183C	table
+357	move	Pound: used by Charmander	1	effect_data.c gUnknown_80C183C	table
+357	move	Rolling Kick: used by Machop, Machoke, Machamp	1	effect_data.c gUnknown_80C183C	table
+357	move	Scratch: used by Charmander	1	effect_data.c gUnknown_80C183C	table
+357	move	Slam: used by Charmander	1	effect_data.c gUnknown_80C183C	table
+357	move	Slash: used by Charmander	1	effect_data.c gUnknown_80C183C	table
+357	move	Triple Kick: used by Machop, Machoke, Machamp	1	effect_data.c gUnknown_80C183C	table
+357	move	Vicegrip: used by Charmander	1	effect_data.c gUnknown_80C183C	table
+357	move	Vine Whip: used by Charmander	1	effect_data.c gUnknown_80C183C	table
+358	move	Comet Punch: used by Lickitung	1	effect_data.c gUnknown_80C183C	table
+358	move	Scratch: used by Lickitung	1	effect_data.c gUnknown_80C183C	table
+359	move	Headbutt: used by Heracross	1	effect_data.c gUnknown_80C183C	table
+360	move	Bide: used by Golem	1	effect_data.c gUnknown_80C183C	table
+361	move	Double Kick: used by Blaziken	1	effect_data.c gUnknown_80C183C	table
+362	call	dungeon_cutscene_jirachi.c: JirachiWish_Async	1	src/dungeon_cutscene_jirachi.c:199	call-site
+362	move	Tail Whip: used by Rattata, Raticate, Eevee, Flareon and 4 more	1	effect_data.c gUnknown_80C183C	table
+363	move	Sand Attack: used by Stantler	1	effect_data.c gUnknown_80C183C	table
+365	move	Comet Punch: used by Meowth	1	effect_data.c gUnknown_80C183C	table
+365	move	Steel Wing: used by Tropius, Altaria, Swablu, Natu	1	effect_data.c gUnknown_80C183C	table
+365	move	Wing Attack: used by Natu	1	effect_data.c gUnknown_80C183C	table
+366	move	Steel Wing: used by Murkrow	1	effect_data.c gUnknown_80C183C	table
+366	move	Wing Attack: used by Murkrow	1	effect_data.c gUnknown_80C183C	table
+367	move	Steel Wing: used by Aerodactyl, Articuno, Moltres, Ho_Oh and 1 more	1	effect_data.c gUnknown_80C183C	table
+367	move	Tail Whip: used by Taillow, Swellow	1	effect_data.c gUnknown_80C183C	table
+367	move	Wing Attack: used by Aerodactyl, Articuno, Moltres	1	effect_data.c gUnknown_80C183C	table
+368	move	Attract: used by Pichu, Ralts, Corsola	1	effect_data.c gUnknown_80C183C	table
+368	move	Bide: used by Jigglypuff, Wigglytuff	1	effect_data.c gUnknown_80C183C	table
+368	move	Peck: the move's sound	1	effect_data.c gUnknown_80BDBC4	table
+368	move	Peck: used by Doduo, Dodrio	1	effect_data.c gUnknown_80C183C	table
+368	move	Tail Whip: used by Vulpix, Ninetales, Dunsparce	1	effect_data.c gUnknown_80C183C	table
+369	move	Bide: used by Omanyte, Omastar	1	effect_data.c gUnknown_80C183C	table
+369	move	Facade: used by Absol	1	effect_data.c gUnknown_80C183C	table
+369	move	Steel Wing: used by Spearow	1	effect_data.c gUnknown_80C183C	table
+369	move	Wing Attack: used by Spearow	1	effect_data.c gUnknown_80C183C	table
+370	move	Destiny Bond: used by Cacturne, Cacnea	1	effect_data.c gUnknown_80C183C	table
+371	dungeon	Dungeon wind (other weather/tileset wind), stage 3	1	dungeon_8041AD0.c sub_80426C8, called from dungeon_wind.c	call-site
+372	dungeon	Dungeon wind (wind type 4), stage 3	1	dungeon_8041AD0.c sub_80426C8, called from dungeon_wind.c	call-site
+400	call	dungeon_cutscene_jirachi.c: JirachiWish_Async	2	src/dungeon_cutscene_jirachi.c:255	call-site
+400	call	trap.c: HandleTripTrap	1	src/trap.c:845	call-site
+400	script	story script t01p01: ?	3	src/data/ground/ground_data_t01p01_station.h:1149	call-site
+401	call	dungeon_8041AD0.c: sub_8041D48	1	src/dungeon_8041AD0.c:681	call-site
+402	call	trap.c: HandleStickyTrap	1	src/trap.c:464	call-site
+403	call	dungeon_8041AD0.c: sub_804225C	1	src/dungeon_8041AD0.c:1106	call-site
+403	call	trap.c: HandlePitfallTrap	1	src/trap.c:580	call-site
+404	call	trap.c: HandleSummonTrap	1	src/trap.c:650	call-site
+406	call	dungeon_8041AD0.c: sub_8041BE8	1	src/dungeon_8041AD0.c:547	call-site
+407	call	dungeon_8041AD0.c: sub_8041AF4	1	src/dungeon_8041AD0.c:445	call-site
+407	call	dungeon_8041AD0.c: sub_8041EC8	1	src/dungeon_8041AD0.c:810	call-site
+407	call	dungeon_8041AD0.c: sub_8041ED8	1	src/dungeon_8041AD0.c:815	call-site
+413	call	dungeon_8041AD0.c: sub_8041CEC	1	src/dungeon_8041AD0.c:637	call-site
+415	call	dungeon_8041AD0.c: sub_8041D84	1	src/dungeon_8041AD0.c:698	call-site
+417	call	drought_orb.c: HandleDroughtOrb	1	src/drought_orb.c:65	call-site
+418	call	trawl_orb.c: HandleTrawlOrb	1	src/trawl_orb.c:126	call-site
+419	call	blow_away.c: BlowAwayTarget	1	src/blow_away.c:62	call-site
+419	call	hurl_orb.c: HandleHurlOrb	1	src/hurl_orb.c:146	call-site
+420	call	code_8040094_1.c: sub_8040DA0	2	src/code_8040094_1.c:152	call-site
+420	move	Move Magnitude: animation (effect animation #230)	1	effect_data.c gUnknown_80BDBC4	table
+420	move	Move One Room: animation (effect animation #230)	1	effect_data.c gUnknown_80BDBC4	table
+421	call	dungeon_8041AD0.c: sub_8041BD0	1	src/dungeon_8041AD0.c:542	call-site
+421	call	dungeon_cutscene_celebi.c: sub_808C8E0	1	src/dungeon_cutscene_celebi.c:194	call-site
+423	call	dungeon_8041AD0.c: sub_8042148	1	src/dungeon_8041AD0.c:1020	call-site
+423	call	dungeon_cutscene_jirachi.c: JirachiWish_Async	1	src/dungeon_cutscene_jirachi.c:192	call-site
+450	script	story script d01p01: ?	2	src/data/ground/ground_data_d01p01_station.h:332	call-site
+451	script	story script b01p01a: ?	12	src/data/ground/ground_data_b01p01a_station.h:925	call-site
+451	script	story script t01p01: ?	1	src/data/ground/ground_data_t01p01_station.h:6696	call-site
+451	script	story script t01p03: ?	1	src/data/ground/ground_data_t01p03_station.h:1521	call-site
+453	call	dungeon_cutscene_hooh.c: HoOhPreFightDialogue	1	src/dungeon_cutscene_hooh.c:111	call-site
+453	call	dungeon_cutscene_magma_cavern.c: MagmaCavernMidDialogue	1	src/dungeon_cutscene_magma_cavern.c:120	call-site
+453	script	story script a01p01: ?	2	src/data/ground/ground_data_a01p01_station.h:102	call-site
+453	script	story script b01p02a: ?	2	src/data/ground/ground_data_b01p02a_station.h:2284	call-site
+453	script	story script d11p03: ?	1	src/data/ground/ground_data_d11p03_station.h:908	call-site
+453	script	story script d12p04: ?	1	src/data/ground/ground_data_d12p04_station.h:131	call-site
+453	script	story script d20p01: ?	1	src/data/ground/ground_data_d20p01_station.h:162	call-site
+453	script	story script t01p03: ?	1	src/data/ground/ground_data_t01p03_station.h:492	call-site
+454	script	story script b01p01a: ?	3	src/data/ground/ground_data_b01p01a_station.h:2778	call-site
+454	script	story script b01p02a: ?	1	src/data/ground/ground_data_b01p02a_station.h:1631	call-site
+454	script	story script d03p01: ?	2	src/data/ground/ground_data_d03p01_station.h:124	call-site
+454	script	story script t01p03: ?	13	src/data/ground/ground_data_t01p03_station.h:607	call-site
+455	call	dungeon_cutscene_celebi.c: CelebiJoinDialogue	4	src/dungeon_cutscene_celebi.c:97	call-site
+455	call	dungeon_cutscene_magma_cavern.c: MagmaCavernMidDialogue	1	src/dungeon_cutscene_magma_cavern.c:141	call-site
+455	call	dungeon_cutscene_medicham.c: MedichamRescueDialogue	2	src/dungeon_cutscene_medicham.c:74	call-site
+455	call	dungeon_cutscene_smeargle.c: SmeargleRescueDialogue	2	src/dungeon_cutscene_smeargle.c:82	call-site
+455	script	story script a02p03: ?	1	src/data/ground/ground_data_a02p03_station.h:68	call-site
+455	script	story script a02p04: ?	1	src/data/ground/ground_data_a02p04_station.h:161	call-site
+455	script	story script b01p01a: ?	10	src/data/ground/ground_data_b01p01a_station.h:1457	call-site
+455	script	story script b01p02a: ?	1	src/data/ground/ground_data_b01p02a_station.h:1032	call-site
+455	script	story script d04p02: ?	1	src/data/ground/ground_data_d04p02_station.h:134	call-site
+455	script	story script d08p01: ?	1	src/data/ground/ground_data_d08p01_station.h:177	call-site
+455	script	story script d09p03: ?	1	src/data/ground/ground_data_d09p03_station.h:59	call-site
+455	script	story script d11p03: ?	2	src/data/ground/ground_data_d11p03_station.h:100	call-site
+455	script	story script t01p01: ?	8	src/data/ground/ground_data_t01p01_station.h:2790	call-site
+457	script	story script b01p01a: ?	9	src/data/ground/ground_data_b01p01a_station.h:3988	call-site
+457	script	story script d01p01: ?	1	src/data/ground/ground_data_d01p01_station.h:717	call-site
+457	script	story script d01p02: ?	1	src/data/ground/ground_data_d01p02_station.h:94	call-site
+457	script	story script d04p02: ?	1	src/data/ground/ground_data_d04p02_station.h:150	call-site
+457	script	story script d05p01: ?	2	src/data/ground/ground_data_d05p01_station.h:156	call-site
+457	script	story script d07p02: ?	3	src/data/ground/ground_data_d07p02_station.h:640	call-site
+457	script	story script d13p01: ?	2	src/data/ground/ground_data_d13p01_station.h:118	call-site
+457	script	story script t01p01: ?	5	src/data/ground/ground_data_t01p01_station.h:14266	call-site
+458	script	story script b01p01a: ?	4	src/data/ground/ground_data_b01p01a_station.h:3993	call-site
+458	script	story script d10p03: ?	1	src/data/ground/ground_data_d10p03_station.h:356	call-site
+458	script	story script d13p01: ?	1	src/data/ground/ground_data_d13p01_station.h:129	call-site
+459	script	story script d03p02: ?	1	src/data/ground/ground_data_d03p02_station.h:184	call-site
+459	script	story script d05p02: ?	1	src/data/ground/ground_data_d05p02_station.h:317	call-site
+459	script	story script d06p03: ?	1	src/data/ground/ground_data_d06p03_station.h:479	call-site
+459	script	story script d09p03: ?	2	src/data/ground/ground_data_d09p03_station.h:245	call-site
+459	script	story script d10p03: ?	1	src/data/ground/ground_data_d10p03_station.h:418	call-site
+460	script	story script d09p03: ?	1	src/data/ground/ground_data_d09p03_station.h:56	call-site
+463	call	dungeon_cutscene_moltres.c: MoltresPreFightDialogue	1	src/dungeon_cutscene_moltres.c:139	call-site
+463	script	story script b01p01a: ?	8	src/data/ground/ground_data_b01p01a_station.h:4010	call-site
+463	script	story script d01p01: ?	1	src/data/ground/ground_data_d01p01_station.h:313	call-site
+463	script	story script d03p02: ?	1	src/data/ground/ground_data_d03p02_station.h:151	call-site
+463	script	story script d05p01: ?	1	src/data/ground/ground_data_d05p01_station.h:93	call-site
+463	script	story script d06p03: ?	1	src/data/ground/ground_data_d06p03_station.h:213	call-site
+463	script	story script d07p02: ?	1	src/data/ground/ground_data_d07p02_station.h:614	call-site
+463	script	story script d09p01: ?	1	src/data/ground/ground_data_d09p01_station.h:414	call-site
+463	script	story script d10p03: ?	1	src/data/ground/ground_data_d10p03_station.h:265	call-site
+463	script	story script d24p01: ?	1	src/data/ground/ground_data_d24p01_station.h:107	call-site
+463	script	story script t01p01: ?	4	src/data/ground/ground_data_t01p01_station.h:4336	call-site
+464	call	dungeon_cutscene.c: SpriteShockEffect	1	src/dungeon_cutscene.c:1497	call-site
+464	script	story script b01p01a: ?	1	src/data/ground/ground_data_b01p01a_station.h:7019	call-site
+464	script	story script b01p02a: ?	3	src/data/ground/ground_data_b01p02a_station.h:2085	call-site
+464	script	story script d05p01: ?	1	src/data/ground/ground_data_d05p01_station.h:87	call-site
+464	script	story script d06p03: ?	1	src/data/ground/ground_data_d06p03_station.h:286	call-site
+464	script	story script d11p03: ?	1	src/data/ground/ground_data_d11p03_station.h:125	call-site
+464	script	story script t01p01: ?	4	src/data/ground/ground_data_t01p01_station.h:3935	call-site
+465	script	story script a01p02: ?	1	src/data/ground/ground_data_a01p02_station.h:116	call-site
+465	script	story script a02p03: ?	1	src/data/ground/ground_data_a02p03_station.h:128	call-site
+465	script	story script a02p04: ?	1	src/data/ground/ground_data_a02p04_station.h:113	call-site
+465	script	story script a03p01: ?	1	src/data/ground/ground_data_a03p01_station.h:97	call-site
+465	script	story script a03p03: ?	1	src/data/ground/ground_data_a03p03_station.h:309	call-site
+465	script	story script a04p01: ?	4	src/data/ground/ground_data_a04p01_station.h:157	call-site
+465	script	story script a04p04: ?	1	src/data/ground/ground_data_a04p04_station.h:70	call-site
+465	script	story script b01p01a: ?	34	src/data/ground/ground_data_b01p01a_station.h:1451	call-site
+465	script	story script b01p02a: ?	3	src/data/ground/ground_data_b01p02a_station.h:531	call-site
+465	script	story script d01p01: ?	1	src/data/ground/ground_data_d01p01_station.h:277	call-site
+465	script	story script d03p02: ?	1	src/data/ground/ground_data_d03p02_station.h:144	call-site
+465	script	story script d04p02: ?	1	src/data/ground/ground_data_d04p02_station.h:73	call-site
+465	script	story script d06p03: ?	2	src/data/ground/ground_data_d06p03_station.h:127	call-site
+465	script	story script d07p02: ?	2	src/data/ground/ground_data_d07p02_station.h:93	call-site
+465	script	story script d08p01: ?	2	src/data/ground/ground_data_d08p01_station.h:164	call-site
+465	script	story script d08p02: ?	1	src/data/ground/ground_data_d08p02_station.h:68	call-site
+465	script	story script d09p01: ?	1	src/data/ground/ground_data_d09p01_station.h:521	call-site
+465	script	story script d10p01: ?	1	src/data/ground/ground_data_d10p01_station.h:474	call-site
+465	script	story script d10p03: ?	3	src/data/ground/ground_data_d10p03_station.h:98	call-site
+465	script	story script d11p01: ?	1	src/data/ground/ground_data_d11p01_station.h:515	call-site
+465	script	story script d11p03: ?	5	src/data/ground/ground_data_d11p03_station.h:144	call-site
+465	script	story script d12p04: ?	1	src/data/ground/ground_data_d12p04_station.h:83	call-site
+465	script	story script d13p01: ?	1	src/data/ground/ground_data_d13p01_station.h:110	call-site
+465	script	story script d13p03: ?	3	src/data/ground/ground_data_d13p03_station.h:95	call-site
+465	script	story script d16p01: ?	1	src/data/ground/ground_data_d16p01_station.h:161	call-site
+465	script	story script d17p01: ?	1	src/data/ground/ground_data_d17p01_station.h:163	call-site
+465	script	story script d18p01: ?	1	src/data/ground/ground_data_d18p01_station.h:166	call-site
+465	script	story script d20p01: ?	1	src/data/ground/ground_data_d20p01_station.h:118	call-site
+465	script	story script d24p01: ?	5	src/data/ground/ground_data_d24p01_station.h:62	call-site
+465	script	story script t01p01: ?	30	src/data/ground/ground_data_t01p01_station.h:841	call-site
+465	script	story script t01p02a: ?	8	src/data/ground/ground_data_t01p02a_station.h:357	call-site
+465	script	story script t01p03: ?	8	src/data/ground/ground_data_t01p03_station.h:444	call-site
+466	script	story script b01p01a: ?	1	src/data/ground/ground_data_b01p01a_station.h:5313	call-site
+466	script	story script b01p02a: ?	1	src/data/ground/ground_data_b01p02a_station.h:2241	call-site
+466	script	story script d01p01: ?	2	src/data/ground/ground_data_d01p01_station.h:198	call-site
+466	script	story script d05p02: ?	1	src/data/ground/ground_data_d05p02_station.h:228	call-site
+466	script	story script d06p03: ?	1	src/data/ground/ground_data_d06p03_station.h:492	call-site
+466	script	story script d07p02: ?	1	src/data/ground/ground_data_d07p02_station.h:474	call-site
+466	script	story script d11p03: ?	1	src/data/ground/ground_data_d11p03_station.h:677	call-site
+466	script	story script t01p01: ?	1	src/data/ground/ground_data_t01p01_station.h:3027	call-site
+466	script	story script t01p02a: ?	2	src/data/ground/ground_data_t01p02a_station.h:1439	call-site
+468	script	story script b01p01a: ?	4	src/data/ground/ground_data_b01p01a_station.h:1724	call-site
+468	script	story script b01p02a: ?	17	src/data/ground/ground_data_b01p02a_station.h:783	call-site
+468	script	story script d01p01: ?	9	src/data/ground/ground_data_d01p01_station.h:92	call-site
+468	script	story script d07p02: ?	2	src/data/ground/ground_data_d07p02_station.h:633	call-site
+468	script	story script d08p01: ?	1	src/data/ground/ground_data_d08p01_station.h:454	call-site
+468	script	story script d09p01: ?	1	src/data/ground/ground_data_d09p01_station.h:528	call-site
+468	script	story script d10p01: ?	1	src/data/ground/ground_data_d10p01_station.h:481	call-site
+468	script	story script d11p01: ?	1	src/data/ground/ground_data_d11p01_station.h:522	call-site
+468	script	story script d24p01: ?	2	src/data/ground/ground_data_d24p01_station.h:119	call-site
+468	script	story script t01p01: ?	15	src/data/ground/ground_data_t01p01_station.h:2922	call-site
+468	script	story script t01p02a: ?	2	src/data/ground/ground_data_t01p02a_station.h:2199	call-site
+469	call	dungeon_cutscene_articuno.c: ArticunoPreFightDialogue	2	src/dungeon_cutscene_articuno.c:144	call-site
+469	call	dungeon_cutscene_celebi.c: CelebiJoinDialogue	4	src/dungeon_cutscene_celebi.c:131	call-site
+469	call	dungeon_cutscene_groudon.c: GroudonPreFightDialogue	2	src/dungeon_cutscene_groudon.c:166	call-site
+469	call	dungeon_cutscene_magma_cavern.c: MagmaCavernMidDialogue	2	src/dungeon_cutscene_magma_cavern.c:139	call-site
+469	script	story script a03p03: ?	1	src/data/ground/ground_data_a03p03_station.h:185	call-site
+469	script	story script b01p01a: ?	7	src/data/ground/ground_data_b01p01a_station.h:3278	call-site
+469	script	story script b01p02a: ?	4	src/data/ground/ground_data_b01p02a_station.h:681	call-site
+469	script	story script d01p01: ?	3	src/data/ground/ground_data_d01p01_station.h:137	call-site
+469	script	story script d07p02: ?	8	src/data/ground/ground_data_d07p02_station.h:627	call-site
+469	script	story script d11p01: ?	1	src/data/ground/ground_data_d11p01_station.h:271	call-site
+469	script	story script d11p03: ?	4	src/data/ground/ground_data_d11p03_station.h:1077	call-site
+469	script	story script d24p01: ?	2	src/data/ground/ground_data_d24p01_station.h:143	call-site
+469	script	story script t01p01: ?	7	src/data/ground/ground_data_t01p01_station.h:3059	call-site
+469	script	story script t01p03: ?	1	src/data/ground/ground_data_t01p03_station.h:2784	call-site
+470	script	story script b01p01a: ?	13	src/data/ground/ground_data_b01p01a_station.h:1758	call-site
+470	script	story script b01p02a: ?	2	src/data/ground/ground_data_b01p02a_station.h:748	call-site
+470	script	story script d01p01: ?	3	src/data/ground/ground_data_d01p01_station.h:189	call-site
+470	script	story script d03p01: ?	2	src/data/ground/ground_data_d03p01_station.h:68	call-site
+470	script	story script d05p01: ?	4	src/data/ground/ground_data_d05p01_station.h:180	call-site
+470	script	story script d07p02: ?	3	src/data/ground/ground_data_d07p02_station.h:88	call-site
+470	script	story script d09p03: ?	3	src/data/ground/ground_data_d09p03_station.h:145	call-site
+470	script	story script t01p01: ?	5	src/data/ground/ground_data_t01p01_station.h:2935	call-site
+470	script	story script t01p02a: ?	2	src/data/ground/ground_data_t01p02a_station.h:1447	call-site
+471	script	story script b01p01a: ?	3	src/data/ground/ground_data_b01p01a_station.h:6370	call-site
+471	script	story script t01p01: ?	2	src/data/ground/ground_data_t01p01_station.h:6069	call-site
+472	script	story script b01p01a: ?	3	src/data/ground/ground_data_b01p01a_station.h:3315	call-site
+472	script	story script d20p01: ?	1	src/data/ground/ground_data_d20p01_station.h:86	call-site
+472	script	story script t01p01: ?	2	src/data/ground/ground_data_t01p01_station.h:5644	call-site
+473	script	story script b01p01a: ?	8	src/data/ground/ground_data_b01p01a_station.h:1655	call-site
+473	script	story script b01p02a: ?	1	src/data/ground/ground_data_b01p02a_station.h:1045	call-site
+473	script	story script d05p01: ?	1	src/data/ground/ground_data_d05p01_station.h:106	call-site
+473	script	story script d06p03: ?	1	src/data/ground/ground_data_d06p03_station.h:190	call-site
+473	script	story script d07p02: ?	2	src/data/ground/ground_data_d07p02_station.h:713	call-site
+473	script	story script d24p01: ?	1	src/data/ground/ground_data_d24p01_station.h:213	call-site
+473	script	story script t01p01: ?	8	src/data/ground/ground_data_t01p01_station.h:4389	call-site
+473	script	story script t01p02a: ?	3	src/data/ground/ground_data_t01p02a_station.h:606	call-site
+474	call	dungeon_cutscene_articuno.c: ArticunoPostStoryPreFightDialogue	1	src/dungeon_cutscene_articuno.c:219	call-site
+474	call	dungeon_cutscene_articuno.c: ArticunoPreFightDialogue	1	src/dungeon_cutscene_articuno.c:161	call-site
+474	call	dungeon_cutscene_moltres.c: MoltresPreFightDialogue	1	src/dungeon_cutscene_moltres.c:145	call-site
+474	call	dungeon_cutscene_rayquaza.c: RayquazaPostStoryPreFightDialogue	1	src/dungeon_cutscene_rayquaza.c:163	call-site
+474	call	dungeon_cutscene_rayquaza.c: RayquazaPreFightDialogue	1	src/dungeon_cutscene_rayquaza.c:113	call-site
+474	call	dungeon_cutscene_rayquaza.c: RayquazaReFightDialogue	1	src/dungeon_cutscene_rayquaza.c:136	call-site
+474	call	dungeon_cutscene_zapdos.c: ZapdosPostStoryPreFightDialogue	1	src/dungeon_cutscene_zapdos.c:219	call-site
+474	call	dungeon_cutscene_zapdos.c: ZapdosPreFightDialogue	1	src/dungeon_cutscene_zapdos.c:129	call-site
+474	call	dungeon_cutscene_zapdos.c: ZapdosReFightDialogue	1	src/dungeon_cutscene_zapdos.c:192	call-site
+474	script	story script a04p01: ?	1	src/data/ground/ground_data_a04p01_station.h:671	call-site
+474	script	story script b01p01a: ?	2	src/data/ground/ground_data_b01p01a_station.h:13210	call-site
+474	script	story script d05p02: ?	1	src/data/ground/ground_data_d05p02_station.h:130	call-site
+474	script	story script d07p02: ?	2	src/data/ground/ground_data_d07p02_station.h:142	call-site
+474	script	story script d09p03: ?	1	src/data/ground/ground_data_d09p03_station.h:215	call-site
+475	script	story script d09p03: ?	2	src/data/ground/ground_data_d09p03_station.h:374	call-site
+475	script	story script d10p03: ?	4	src/data/ground/ground_data_d10p03_station.h:373	call-site
+475	script	story script d21p01: ?	2	src/data/ground/ground_data_d21p01_station.h:39	call-site
+475	script	story script t01p01: ?	1	src/data/ground/ground_data_t01p01_station.h:14744	call-site
+476	script	story script a03p03: ?	3	src/data/ground/ground_data_a03p03_station.h:161	call-site
+477	script	story script a01p01: ?	3	src/data/ground/ground_data_a01p01_station.h:445	call-site
+477	script	story script a03p03: ?	1	src/data/ground/ground_data_a03p03_station.h:213	call-site
+477	script	story script a04p01: ?	1	src/data/ground/ground_data_a04p01_station.h:1181	call-site
+478	script	story script a03p01: ?	1	src/data/ground/ground_data_a03p01_station.h:209	call-site
+479	script	story script d06p03: ?	2	src/data/ground/ground_data_d06p03_station.h:86	call-site
+479	script	story script d17p01: ?	1	src/data/ground/ground_data_d17p01_station.h:175	call-site
+480	script	story script a03p01: ?	1	src/data/ground/ground_data_a03p01_station.h:63	call-site
+481	script	story script d06p03: ?	1	src/data/ground/ground_data_d06p03_station.h:122	call-site
+482	script	story script b01p01a: ?	2	src/data/ground/ground_data_b01p01a_station.h:1908	call-site
+482	script	story script d01p01: ?	1	src/data/ground/ground_data_d01p01_station.h:142	call-site
+483	script	story script d03p02: ?	1	src/data/ground/ground_data_d03p02_station.h:201	call-site
+484	script	story script b01p02a: ?	1	src/data/ground/ground_data_b01p02a_station.h:2492	call-site
+485	script	story script a01p01: ?	1	src/data/ground/ground_data_a01p01_station.h:1105	call-site
+485	script	story script a04p04: ?	1	src/data/ground/ground_data_a04p04_station.h:54	call-site
+485	script	story script h29p01: ?	1	src/data/ground/ground_data_h29p01_station.h:438	call-site
+486	script	story script b01p01a: ?	3	src/data/ground/ground_data_b01p01a_station.h:2784	call-site
+486	script	story script b01p02a: ?	1	src/data/ground/ground_data_b01p02a_station.h:1645	call-site
+486	script	story script d03p01: ?	2	src/data/ground/ground_data_d03p01_station.h:129	call-site
+486	script	story script t01p03: ?	13	src/data/ground/ground_data_t01p03_station.h:613	call-site
+487	script	story script t01p01: ?	8	src/data/ground/ground_data_t01p01_station.h:10978	call-site
+489	script	story script a04p01: ?	1	src/data/ground/ground_data_a04p01_station.h:182	call-site
+490	call	dungeon_cutscene_articuno.c: ArticunoPreFightDialogue	1	src/dungeon_cutscene_articuno.c:164	call-site
+490	call	dungeon_cutscene_articuno.c: sub_8088484	1	src/dungeon_cutscene_articuno.c:246	call-site
+490	call	dungeon_cutscene_zapdos.c: ZapdosDropInEffect	1	src/dungeon_cutscene_zapdos.c:242	call-site
+491	script	story script d06p03: ?	1	src/data/ground/ground_data_d06p03_station.h:457	call-site
+492	call	dungeon_cutscene_moltres.c: MoltresScreenFlash2	1	src/dungeon_cutscene_moltres.c:289	call-site
+492	script	story script d09p03: ?	2	src/data/ground/ground_data_d09p03_station.h:122	call-site
+493	call	dungeon_cutscene_entei.c: EnteiScreenFlash	1	src/dungeon_cutscene_entei.c:142	call-site
+493	call	dungeon_cutscene_hooh.c: HoOhScreenFlash	1	src/dungeon_cutscene_hooh.c:194	call-site
+493	call	dungeon_cutscene_moltres.c: MoltresScreenFlash3	2	src/dungeon_cutscene_moltres.c:311	call-site
+493	script	story script d12p04: ?	2	src/data/ground/ground_data_d12p04_station.h:60	call-site
+493	script	story script d13p03: ?	2	src/data/ground/ground_data_d13p03_station.h:50	call-site
+494	call	dungeon_cutscene_articuno.c: ArticunoPreFightDialogue	1	src/dungeon_cutscene_articuno.c:155	call-site
+494	call	dungeon_cutscene_latios.c: LatiosScreenFlash	1	src/dungeon_cutscene_latios.c:156	call-site
+494	call	dungeon_cutscene_suicune.c: SuicuneScreenFlash	1	src/dungeon_cutscene_suicune.c:190	call-site
+497	script	story script b01p01a: ?	3	src/data/ground/ground_data_b01p01a_station.h:7088	call-site
+497	script	story script d11p03: ?	2	src/data/ground/ground_data_d11p03_station.h:408	call-site
+497	script	story script d16p01: ?	2	src/data/ground/ground_data_d16p01_station.h:52	call-site
+497	script	story script d17p01: ?	2	src/data/ground/ground_data_d17p01_station.h:52	call-site
+497	script	story script d18p01: ?	2	src/data/ground/ground_data_d18p01_station.h:52	call-site
+497	script	story script h29p01: ?	3	src/data/ground/ground_data_h29p01_station.h:339	call-site
+497	script	story script t01p01: ?	1	src/data/ground/ground_data_t01p01_station.h:4638	call-site
+499	script	story script d12p04: ?	1	src/data/ground/ground_data_d12p04_station.h:76	call-site
+500	script	story script a04p01: ?	1	src/data/ground/ground_data_a04p01_station.h:425	call-site
+500	script	story script d22p01: ?	1	src/data/ground/ground_data_d22p01_station.h:111	call-site
+501	script	story script b01p01a: ?	5	src/data/ground/ground_data_b01p01a_station.h:935	call-site
+502	call	dungeon_cutscene_groudon.c: GroudonPostStoryPreFightDialogue	2	src/dungeon_cutscene_groudon.c:263	call-site
+502	call	dungeon_cutscene_lugia.c: LugiaScreenFlash	1	src/dungeon_cutscene_lugia.c:114	call-site
+502	call	dungeon_cutscene_lugia.c: LugiaScreenFlash2	1	src/dungeon_cutscene_lugia.c:137	call-site
+502	call	dungeon_cutscene_mewtwo.c: MewtwoScreenFlash	1	src/dungeon_cutscene_mewtwo.c:167	call-site
+502	call	dungeon_cutscene_raikou.c: RaikouScreenFlash	1	src/dungeon_cutscene_raikou.c:168	call-site
+502	call	dungeon_cutscene_rayquaza.c: RayquazaScreenFlash	1	src/dungeon_cutscene_rayquaza.c:204	call-site
+502	call	dungeon_cutscene_zapdos.c: ZapdosScreenFlash	1	src/dungeon_cutscene_zapdos.c:255	call-site
+502	script	story script d05p02: ?	3	src/data/ground/ground_data_d05p02_station.h:119	call-site
+502	script	story script d24p01: ?	4	src/data/ground/ground_data_d24p01_station.h:84	call-site
+502	script	story script h29p01: ?	2	src/data/ground/ground_data_h29p01_station.h:256	call-site
+503	script	story script d09p01: ?	2	src/data/ground/ground_data_d09p01_station.h:135	call-site
+504	call	dungeon_cutscene_hooh.c: HoOhDropInEffect	1	src/dungeon_cutscene_hooh.c:176	call-site
+504	call	dungeon_cutscene_jirachi.c: JirachiDropInEffect	1	src/dungeon_cutscene_jirachi.c:421	call-site
+504	call	dungeon_cutscene_kyogre.c: KyogreScreenFlash	1	src/dungeon_cutscene_kyogre.c:132	call-site
+504	call	dungeon_cutscene_lugia.c: LugiaPreFightDialogue	1	src/dungeon_cutscene_lugia.c:91	call-site
+504	call	dungeon_cutscene_mewtwo.c: MewtwoDropInEffect	1	src/dungeon_cutscene_mewtwo.c:149	call-site
+504	call	dungeon_cutscene_moltres.c: MoltresDropInEffect	1	src/dungeon_cutscene_moltres.c:254	call-site
+504	call	dungeon_cutscene_rayquaza.c: RayquazaDropInEffect	1	src/dungeon_cutscene_rayquaza.c:186	call-site
+504	call	dungeon_cutscene_skarmory.c: SkarmoryEntry	1	src/dungeon_cutscene_skarmory.c:180	call-site
+504	call	dungeon_cutscene_suicune.c: sub_808A528	1	src/dungeon_cutscene_suicune.c:172	call-site
+504	script	story script d11p03: ?	1	src/data/ground/ground_data_d11p03_station.h:1250	call-site
+504	script	story script h29p01: ?	2	src/data/ground/ground_data_h29p01_station.h:366	call-site
+505	call	dungeon_cutscene.c: sub_808680C	1	src/dungeon_cutscene.c:1833	call-site
+505	call	dungeon_cutscene.c: sub_8086854	1	src/dungeon_cutscene.c:1868	call-site
+505	call	dungeon_cutscene_groudon.c: SceneGroudonMovement	1	src/dungeon_cutscene_groudon.c:285	call-site
+505	script	story script d10p03: ?	1	src/data/ground/ground_data_d10p03_station.h:430	call-site
+506	call	dungeon_cutscene_groudon.c: GroudonPreFightDialogue	1	src/dungeon_cutscene_groudon.c:202	call-site
+506	call	dungeon_cutscene_groudon.c: GroudonReFightDialogue	1	src/dungeon_cutscene_groudon.c:235	call-site
+506	script	story script a01p01: ?	1	src/data/ground/ground_data_a01p01_station.h:384	call-site
+506	script	story script a01p02: ?	1	src/data/ground/ground_data_a01p02_station.h:95	call-site
+506	script	story script a03p03: ?	1	src/data/ground/ground_data_a03p03_station.h:25	call-site
+506	script	story script d11p03: ?	2	src/data/ground/ground_data_d11p03_station.h:80	call-site
+506	script	story script d24p01: ?	2	src/data/ground/ground_data_d24p01_station.h:95	call-site
+506	script	story script h29p01: ?	1	src/data/ground/ground_data_h29p01_station.h:265	call-site
+507	script	story script d16p01: ?	1	src/data/ground/ground_data_d16p01_station.h:103	call-site
+507	script	story script d17p01: ?	1	src/data/ground/ground_data_d17p01_station.h:102	call-site
+507	script	story script d18p01: ?	1	src/data/ground/ground_data_d18p01_station.h:104	call-site
+508	script	story script a04p03: ?	2	src/data/ground/ground_data_a04p03_station.h:26	call-site
+508	script	story script b01p02a: ?	1	src/data/ground/ground_data_b01p02a_station.h:887	call-site
+509	script	story script d13p01: ?	2	src/data/ground/ground_data_d13p01_station.h:42	call-site
+510	script	story script b01p02a: ?	1	src/data/ground/ground_data_b01p02a_station.h:751	call-site
+510	script	story script d13p01: ?	1	src/data/ground/ground_data_d13p01_station.h:48	call-site
+510	script	story script t01p01: ?	3	src/data/ground/ground_data_t01p01_station.h:13106	call-site
+511	call	luminous_cave.c: UpdateLuminousCaveDialogue	1	src/luminous_cave.c:305	call-site
+511	script	story script a04p01: ?	1	src/data/ground/ground_data_a04p01_station.h:2017	call-site
+512	script	story script d13p03: ?	1	src/data/ground/ground_data_d13p03_station.h:76	call-site
+513	script	story script d13p03: ?	1	src/data/ground/ground_data_d13p03_station.h:315	call-site
+514	script	story script a04p01: ?	1	src/data/ground/ground_data_a04p01_station.h:2055	call-site
+515	script	story script t01p01: ?	1	src/data/ground/ground_data_t01p01_station.h:836	call-site
+516	script	story script t01p01: ?	1	src/data/ground/ground_data_t01p01_station.h:1026	call-site
+517	call	dungeon_cutscene_groudon.c: GroudonPreFightDialogue	1	src/dungeon_cutscene_groudon.c:173	call-site
+517	script	story script d05p02: ?	1	src/data/ground/ground_data_d05p02_station.h:156	call-site
+517	script	story script d13p03: ?	1	src/data/ground/ground_data_d13p03_station.h:211	call-site
+600	move	Move Nightmare: animation (effect animation #1)	1	effect_data.c gUnknown_80BDBC4	table
+601	move	Move Dive: animation (effect animation #2)	1	effect_data.c gUnknown_80BDBC4	table
+602	move	Move Dig: animation (effect animation #3)	1	effect_data.c gUnknown_80BDBC4	table
+603	call	wigglytuff_shop3.c: UpdateWigglytuffDialogue	1	src/wigglytuff_shop3.c:243	call-site
+603	move	Move Blowback: animation (effect animation #4)	1	effect_data.c gUnknown_80BDBC4	table
+603	move	Move Decoy Maker: animation (effect animation #4)	1	effect_data.c gUnknown_80BDBC4	table
+603	move	Move Itemize: animation (effect animation #4)	1	effect_data.c gUnknown_80BDBC4	table
+603	move	Move Observer: animation (effect animation #4)	1	effect_data.c gUnknown_80BDBC4	table
+603	move	Move Refresh: animation (effect animation #4)	1	effect_data.c gUnknown_80BDBC4	table
+603	move	Move Sketch: animation (effect animation #4)	1	effect_data.c gUnknown_80BDBC4	table
+603	move	Move Stay Away: animation (effect animation #4)	1	effect_data.c gUnknown_80BDBC4	table
+603	move	Move Switcher: animation (effect animation #4)	1	effect_data.c gUnknown_80BDBC4	table
+603	move	Move Transfer: animation (effect animation #4)	1	effect_data.c gUnknown_80BDBC4	table
+603	script	story script t01p01: ?	2	src/data/ground/ground_data_t01p01_station.h:2134	call-site
+604	move	Move Mind Reader: animation (effect animation #5)	1	effect_data.c gUnknown_80BDBC4	table
+605	move	Move Bulk Up: animation (effect animation #6)	1	effect_data.c gUnknown_80BDBC4	table
+605	move	Move Rage: animation (effect animation #6)	1	effect_data.c gUnknown_80BDBC4	table
+605	move	Move Swagger: animation (effect animation #6)	1	effect_data.c gUnknown_80BDBC4	table
+607	item	Item Alert Specs: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Beatup Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Beauty Scarf: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Blowback Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Bounce Band: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Cleanse Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Curve Band: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Decoy Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Deepseascale: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Deepseatooth: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Def Scarf: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Detect Band: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Diet Ribbon: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Dodge Scarf: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Dragon Scale: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Drought Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Escape Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Evasion Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Fill In Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Fire Stone: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Friend Bow: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item G Machine 6: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item G Machine 7: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item G Machine 8: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Goggle Specs: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Gold Ribbon: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Hail Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Heal Ribbon: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Hm Cut: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Hm Dive: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Hm Flash: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Hm Fly: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Hm Rock Smash: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Hm Strength: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Hm Surf: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Hm Waterfall: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Hurl Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Ice Part: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Identify Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Insomniscope: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Invisify Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Itemizer Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Joy Ribbon: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Key: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Kings Rock: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Leaf Stone: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Link Box: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Link Cable: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Lob Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Lockon Specs: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Longtoss Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Luminous Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Lunar Ribbon: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Metal Coat: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Mime Jr Fig: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Mobile Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Mobile Scarf: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Moon Stone: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Mug Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Munch Belt: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Music Box: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item No Aim Scope: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Nostick Cap: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Nothing: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Observer Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item One Room Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item One Shot Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Pass Scarf: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Patsy Band: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Pecha Scarf: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Persim Band: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Petrify Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Pierce Band: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Pierce Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Plain Ribbon: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Poke: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Possess Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Pounce Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Power Band: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Quick Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Racket Band: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Radar Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Rainy Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Rebound Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Reviver Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Ring D: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Ring E: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Ring F: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Rock Part: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Rocky Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Rollcall Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Sandy Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Scanner Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Scope Lens: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item See Trap Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Shocker Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Silence Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Sizebust Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Slow Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Slumber Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Snatch Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Sneak Scarf: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Special Band: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Stairs Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Stamina Band: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Stayaway Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Steel Part: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Stick: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Sun Ribbon: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Sun Stone: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Sunny Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Switch Box: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Switcher Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Thunderstone: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tight Belt: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Aerial Ace: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Attract: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Blizzard: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Brick Break: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Bulk Up: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Bullet Seed: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Calm Mind: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Dig: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Dragon Claw: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Earthquake: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Excavate: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Facade: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Fire Blast: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Flamethrower: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Focus Punch: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Frustration: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Giga Drain: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Hidden Power: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Hyper Beam: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Ice Beam: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Iron Tail: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Light Screen: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Overheat: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Protect: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Psychic: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Reflect: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Rest: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Return: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Roar: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Safeguard: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Secret Power: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Shadow Ball: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Shock Wave: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Skill Swap: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Sludge Bomb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Solarbeam: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Spin Slash: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Steel Wing: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Taunt: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Thief: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Thunder: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Thunderbolt: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Torment: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Toxic: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Used Tm: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Vacuum Cut: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Water Pulse: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Tm Wide Slash: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Toss Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Totter Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Transfer Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Trap Scarf: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Trapbust Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Trapper Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Trawl Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Twist Band: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Two Edge Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Upgrade: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Warp Orb: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Warp Scarf: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Water Stone: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Weather Band: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Weavile Fig: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Whiff Specs: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Wish Stone: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item X Ray Specs: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+607	item	Item Zinc Band: use animation (effect animation #8)	1	effect_data.c gUnknown_80CE37C	table
+608	item	Item Cacnea Spike: use animation (effect animation #9)	1	effect_data.c gUnknown_80CE37C	table
+608	item	Item Corsola Twig: use animation (effect animation #9)	1	effect_data.c gUnknown_80CE37C	table
+608	item	Item Gold Fang: use animation (effect animation #9)	1	effect_data.c gUnknown_80CE37C	table
+608	item	Item Gravelerock: use animation (effect animation #9)	1	effect_data.c gUnknown_80CE37C	table
+608	item	Item Silver Spike: use animation (effect animation #9)	1	effect_data.c gUnknown_80CE37C	table
+609	item	Item Geo Pebble: use animation (effect animation #10)	1	effect_data.c gUnknown_80CE37C	table
+609	item	Item Iron Thorn: use animation (effect animation #10)	1	effect_data.c gUnknown_80CE37C	table
+610	script	story script b01p01a: ?	2	src/data/ground/ground_data_b01p01a_station.h:12246	call-site
+610	script	story script d20p01: ?	3	src/data/ground/ground_data_d20p01_station.h:264	call-site
+611	move	Move Siesta: animation (effect animation #12)	1	effect_data.c gUnknown_80BDBC4	table
+611	move	Move Sweet Scent: animation (effect animation #12)	1	effect_data.c gUnknown_80BDBC4	table
+614	move	Move Attract: animation (effect animation #15)	1	effect_data.c gUnknown_80BDBC4	table
+616	move	Move Confuse Ray: animation (effect animation #17)	1	effect_data.c gUnknown_80BDBC4	table
+618	move	Move Aromatherapy: animation (effect animation #19)	1	effect_data.c gUnknown_80BDBC4	table
+620	item	Item Beatup Orb: use animation (effect animation #21)	1	effect_data.c gUnknown_80CE37C	table
+620	item	Item G Machine 6: use animation (effect animation #21)	1	effect_data.c gUnknown_80CE37C	table
+620	item	Item G Machine 7: use animation (effect animation #21)	1	effect_data.c gUnknown_80CE37C	table
+620	item	Item G Machine 8: use animation (effect animation #21)	1	effect_data.c gUnknown_80CE37C	table
+620	item	Item Link Box: use animation (effect animation #21)	1	effect_data.c gUnknown_80CE37C	table
+620	item	Item Mime Jr Fig: use animation (effect animation #21)	1	effect_data.c gUnknown_80CE37C	table
+620	item	Item Switch Box: use animation (effect animation #21)	1	effect_data.c gUnknown_80CE37C	table
+620	item	Item Weavile Fig: use animation (effect animation #21)	1	effect_data.c gUnknown_80CE37C	table
+620	move	Move Acid: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Aeroblast: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Aurora Beam: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Blizzard: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Bubble: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Bullet Seed: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Dragon Rage: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Dragonbreath: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Flamethrower: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Hp Gauge: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Hydro Cannon: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Hydro Pump: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Hyper Beam: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Hypnosis: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Ice Beam: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Icicle Spear: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Icy Wind: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Megahorn: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Metal Sound: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Minimize: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Mud Slap: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Octazooka: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Poison Gas: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Poison Sting: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Psybeam: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Psywave: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Recycle: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Rock Blast: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Shadow Ball: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Shock Wave: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Signal Beam: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Sludge Bomb: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Smog: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Sonicboom: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Spike Cannon: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Supersonic: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Tri Attack: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Twineedle: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Volt Tackle: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Water Gun: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Water Pulse: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Will O Wisp: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+620	move	Move Zap Cannon: animation (effect animation #21)	1	effect_data.c gUnknown_80BDBC4	table
+621	move	Move Confusion: animation (effect animation #22)	1	effect_data.c gUnknown_80BDBC4	table
+621	move	Move Future Sight: animation (effect animation #22)	1	effect_data.c gUnknown_80BDBC4	table
+621	move	Move Meditate: animation (effect animation #22)	1	effect_data.c gUnknown_80BDBC4	table
+621	move	Move Twister: animation (effect animation #22)	1	effect_data.c gUnknown_80BDBC4	table
+622	move	Move Ice Ball: animation (effect animation #23)	1	effect_data.c gUnknown_80BDBC4	table
+623	move	Move Ice Ball: animation (effect animation #24)	1	effect_data.c gUnknown_80BDBC4	table
+623	move	Move Ice Punch: animation (effect animation #24)	1	effect_data.c gUnknown_80BDBC4	table
+623	move	Move Weather Ball Hail: animation (effect animation #24)	1	effect_data.c gUnknown_80BDBC4	table
+623	script	story script d24p01: ?	1	src/data/ground/ground_data_d24p01_station.h:286	call-site
+624	move	Move Yawn: animation (effect animation #25)	1	effect_data.c gUnknown_80BDBC4	table
+625	move	Move Lovely Kiss: animation (effect animation #26)	1	effect_data.c gUnknown_80BDBC4	table
+626	move	Move Morning Sun: animation (effect animation #27)	1	effect_data.c gUnknown_80BDBC4	table
+627	move	Move Bubble: animation (effect animation #28)	1	effect_data.c gUnknown_80BDBC4	table
+628	move	Move Bubble: animation (effect animation #29)	1	effect_data.c gUnknown_80BDBC4	table
+630	move	Move Encore: animation (effect animation #31)	1	effect_data.c gUnknown_80BDBC4	table
+631	move	Move Aerial Ace: animation (effect animation #32)	1	effect_data.c gUnknown_80BDBC4	table
+631	move	Move Fury Cutter: animation (effect animation #32)	1	effect_data.c gUnknown_80BDBC4	table
+631	script	story script d18p01: ?	1	src/data/ground/ground_data_d18p01_station.h:187	call-site
+631	script	story script d24p01: ?	1	src/data/ground/ground_data_d24p01_station.h:413	call-site
+632	move	Move Substitute: animation (effect animation #33)	1	effect_data.c gUnknown_80BDBC4	table
+636	move	Move Rest: animation (effect animation #37)	1	effect_data.c gUnknown_80BDBC4	table
+638	move	Move Poison Tail: animation (effect animation #39)	1	effect_data.c gUnknown_80BDBC4	table
+638	move	Move Torment: animation (effect animation #39)	1	effect_data.c gUnknown_80BDBC4	table
+639	call	dungeon_cutscene_jirachi.c: JirachiSpinEffect	1	src/dungeon_cutscene_jirachi.c:444	call-site
+639	move	Move Transform: animation (effect animation #41)	1	effect_data.c gUnknown_80BDBC4	table
+640	move	Move Baton Pass: animation (effect animation #42)	2	effect_data.c gUnknown_80BDBC4	table
+641	move	Move Octazooka: animation (effect animation #65)	1	effect_data.c gUnknown_80BDBC4	table
+641	move	Move Smokescreen: animation (effect animation #65)	1	effect_data.c gUnknown_80BDBC4	table
+642	move	Move Torment: animation (effect animation #43)	1	effect_data.c gUnknown_80BDBC4	table
+643	move	Move Spider Web: animation (effect animation #44)	1	effect_data.c gUnknown_80BDBC4	table
+643	move	Move String Shot: animation (effect animation #44)	1	effect_data.c gUnknown_80BDBC4	table
+644	move	Move Spider Web: animation (effect animation #46)	1	effect_data.c gUnknown_80BDBC4	table
+644	move	Move String Shot: animation (effect animation #46)	1	effect_data.c gUnknown_80BDBC4	table
+645	move	Move Growth: animation (effect animation #47)	1	effect_data.c gUnknown_80BDBC4	table
+645	move	Move Mimic: animation (effect animation #47)	1	effect_data.c gUnknown_80BDBC4	table
+645	move	Move Pain Split: animation (effect animation #47)	1	effect_data.c gUnknown_80BDBC4	table
+645	move	Move Role Play: animation (effect animation #47)	1	effect_data.c gUnknown_80BDBC4	table
+645	move	Move Skill Swap: animation (effect animation #47)	1	effect_data.c gUnknown_80BDBC4	table
+645	move	Move Snatch: animation (effect animation #47)	1	effect_data.c gUnknown_80BDBC4	table
+645	move	Move Takeaway: animation (effect animation #47)	1	effect_data.c gUnknown_80BDBC4	table
+645	move	Move Trick: animation (effect animation #47)	1	effect_data.c gUnknown_80BDBC4	table
+645	move	Move Two Edge: animation (effect animation #47)	1	effect_data.c gUnknown_80BDBC4	table
+646	move	Move Mimic: animation (effect animation #48)	1	effect_data.c gUnknown_80BDBC4	table
+646	move	Move Pain Split: animation (effect animation #48)	1	effect_data.c gUnknown_80BDBC4	table
+646	move	Move Refresh: animation (effect animation #48)	1	effect_data.c gUnknown_80BDBC4	table
+646	move	Move Role Play: animation (effect animation #48)	1	effect_data.c gUnknown_80BDBC4	table
+646	move	Move Skill Swap: animation (effect animation #48)	1	effect_data.c gUnknown_80BDBC4	table
+646	move	Move Snatch: animation (effect animation #48)	1	effect_data.c gUnknown_80BDBC4	table
+646	move	Move Takeaway: animation (effect animation #48)	1	effect_data.c gUnknown_80BDBC4	table
+646	move	Move Trick: animation (effect animation #48)	1	effect_data.c gUnknown_80BDBC4	table
+646	move	Move Two Edge: animation (effect animation #48)	1	effect_data.c gUnknown_80BDBC4	table
+647	move	Move Poison Fang: animation (effect animation #49)	1	effect_data.c gUnknown_80BDBC4	table
+647	move	Move Super Fang: animation (effect animation #49)	1	effect_data.c gUnknown_80BDBC4	table
+648	move	Move Beat Up: animation (effect animation #50)	1	effect_data.c gUnknown_80BDBC4	table
+648	move	Move Heal Bell: animation (effect animation #50)	1	effect_data.c gUnknown_80BDBC4	table
+649	move	Move Snore: animation (effect animation #51)	1	effect_data.c gUnknown_80BDBC4	table
+650	move	Move Screech: animation (effect animation #52)	1	effect_data.c gUnknown_80BDBC4	table
+651	move	Move Rock Throw: animation (effect animation #53)	1	effect_data.c gUnknown_80BDBC4	table
+652	script	story script d13p03: ?	1	src/data/ground/ground_data_d13p03_station.h:174	call-site
+653	move	Move Rock Slide: animation (effect animation #55)	1	effect_data.c gUnknown_80BDBC4	table
+653	script	story script d16p01: ?	1	src/data/ground/ground_data_d16p01_station.h:173	call-site
+654	move	Move Weather Ball Hail: animation (effect animation #56)	1	effect_data.c gUnknown_80BDBC4	table
+654	move	Move Weather Ball Rain: animation (effect animation #56)	1	effect_data.c gUnknown_80BDBC4	table
+654	move	Move Weather Ball Sandstorm: animation (effect animation #56)	1	effect_data.c gUnknown_80BDBC4	table
+654	move	Move Weather Ball Sunny: animation (effect animation #56)	1	effect_data.c gUnknown_80BDBC4	table
+654	move	Move Weather Ball: animation (effect animation #56)	1	effect_data.c gUnknown_80BDBC4	table
+655	move	Move Weather Ball Sunny: animation (effect animation #57)	1	effect_data.c gUnknown_80BDBC4	table
+656	move	Move Weather Ball Rain: animation (effect animation #58)	1	effect_data.c gUnknown_80BDBC4	table
+657	move	Move Whirlpool: animation (effect animation #59)	1	effect_data.c gUnknown_80BDBC4	table
+658	move	Move Sing: animation (effect animation #60)	1	effect_data.c gUnknown_80BDBC4	table
+659	move	Move Facade: animation (effect animation #62)	1	effect_data.c gUnknown_80BDBC4	table
+659	move	Move Fake Tears: animation (effect animation #62)	1	effect_data.c gUnknown_80BDBC4	table
+660	move	Move Spite: animation (effect animation #63)	1	effect_data.c gUnknown_80BDBC4	table
+661	move	Move Air Cutter: animation (effect animation #64)	1	effect_data.c gUnknown_80BDBC4	table
+661	script	story script d18p01: ?	2	src/data/ground/ground_data_d18p01_station.h:196	call-site
+662	move	Move Overheat: animation (effect animation #66)	1	effect_data.c gUnknown_80BDBC4	table
+662	script	story script d12p04: ?	1	src/data/ground/ground_data_d12p04_station.h:209	call-site
+662	script	story script d17p01: ?	1	src/data/ground/ground_data_d17p01_station.h:190	call-site
+663	script	story script d16p01: ?	1	src/data/ground/ground_data_d16p01_station.h:167	call-site
+664	call	dungeon_cutscene_jirachi.c: JirachiSpinEffect	1	src/dungeon_cutscene_jirachi.c:438	call-site
+664	move	Move Aurora Beam: animation (effect animation #68)	1	effect_data.c gUnknown_80BDBC4	table
+664	script	story script d13p03: ?	1	src/data/ground/ground_data_d13p03_station.h:308	call-site
+664	script	story script d18p01: ?	1	src/data/ground/ground_data_d18p01_station.h:173	call-site
+665	move	Move Octazooka: animation (effect animation #69)	1	effect_data.c gUnknown_80BDBC4	table
+665	script	story script d12p04: ?	1	src/data/ground/ground_data_d12p04_station.h:207	call-site
+666	move	Move Flatter: animation (effect animation #70)	1	effect_data.c gUnknown_80BDBC4	table
+666	script	story script d24p01: ?	1	src/data/ground/ground_data_d24p01_station.h:360	call-site
+667	move	Move Astonish: animation (effect animation #71)	1	effect_data.c gUnknown_80BDBC4	table
+668	move	Move Astonish: animation (effect animation #72)	1	effect_data.c gUnknown_80BDBC4	table
+669	move	Move Dragon Rage: animation (effect animation #74)	1	effect_data.c gUnknown_80BDBC4	table
+669	move	Move Dragonbreath: animation (effect animation #74)	1	effect_data.c gUnknown_80BDBC4	table
+669	move	Move Fire Punch: animation (effect animation #74)	1	effect_data.c gUnknown_80BDBC4	table
+669	move	Move Flame Wheel: animation (effect animation #74)	1	effect_data.c gUnknown_80BDBC4	table
+669	move	Move Flamethrower: animation (effect animation #74)	1	effect_data.c gUnknown_80BDBC4	table
+670	move	Move Grudge: animation (effect animation #75)	1	effect_data.c gUnknown_80BDBC4	table
+671	move	Move Will O Wisp: animation (effect animation #76)	1	effect_data.c gUnknown_80BDBC4	table
+672	move	Move Flame Wheel: animation (effect animation #77)	1	effect_data.c gUnknown_80BDBC4	table
+672	script	story script d13p03: ?	2	src/data/ground/ground_data_d13p03_station.h:180	call-site
+673	move	Move Flame Wheel: animation (effect animation #78)	1	effect_data.c gUnknown_80BDBC4	table
+674	move	Move Dragon Rage: animation (effect animation #79)	1	effect_data.c gUnknown_80BDBC4	table
+674	move	Move Dragonbreath: animation (effect animation #79)	1	effect_data.c gUnknown_80BDBC4	table
+674	move	Move Flamethrower: animation (effect animation #79)	1	effect_data.c gUnknown_80BDBC4	table
+675	move	Move Agility: animation (effect animation #80)	1	effect_data.c gUnknown_80BDBC4	table
+675	move	Move Odor Sleuth: animation (effect animation #80)	1	effect_data.c gUnknown_80BDBC4	table
+675	move	Move Scan: animation (effect animation #80)	1	effect_data.c gUnknown_80BDBC4	table
+675	move	Move See Stairs: animation (effect animation #80)	1	effect_data.c gUnknown_80BDBC4	table
+675	move	Move Slow Down: animation (effect animation #80)	1	effect_data.c gUnknown_80BDBC4	table
+676	move	Move Lock On: animation (effect animation #81)	1	effect_data.c gUnknown_80BDBC4	table
+677	move	Move Sharpen: animation (effect animation #82)	1	effect_data.c gUnknown_80BDBC4	table
+678	move	Move Gust: animation (effect animation #83)	1	effect_data.c gUnknown_80BDBC4	table
+678	move	Move Rapid Spin: animation (effect animation #83)	1	effect_data.c gUnknown_80BDBC4	table
+678	move	Move Razor Wind: animation (effect animation #83)	1	effect_data.c gUnknown_80BDBC4	table
+678	move	Move Steel Wing: animation (effect animation #83)	1	effect_data.c gUnknown_80BDBC4	table
+678	move	Move Whirlwind: animation (effect animation #83)	1	effect_data.c gUnknown_80BDBC4	table
+678	move	Move Wing Attack: animation (effect animation #83)	1	effect_data.c gUnknown_80BDBC4	table
+679	move	Move Harden: animation (effect animation #84)	1	effect_data.c gUnknown_80BDBC4	table
+680	call	dungeon_cutscene_jirachi.c: JirachiWishGrantDialogue	1	src/dungeon_cutscene_jirachi.c:457	call-site
+680	move	Move Detect: animation (effect animation #85)	1	effect_data.c gUnknown_80BDBC4	table
+680	move	Move Disable: animation (effect animation #85)	1	effect_data.c gUnknown_80BDBC4	table
+681	move	Move Razor Wind 2Nd Turn: animation (effect animation #86)	1	effect_data.c gUnknown_80BDBC4	table
+682	move	Move Bide: animation (effect animation #87)	1	effect_data.c gUnknown_80BDBC4	table
+682	script	story script d21p01: ?	1	src/data/ground/ground_data_d21p01_station.h:91	call-site
+682	script	story script t01p01: ?	1	src/data/ground/ground_data_t01p01_station.h:14749	call-site
+683	move	Move Crunch: animation (effect animation #95)	1	effect_data.c gUnknown_80BDBC4	table
+684	move	Move Bite: animation (effect animation #96)	1	effect_data.c gUnknown_80BDBC4	table
+685	call	dungeon_cutscene_articuno.c: ArticunoScreenFlash	1	src/dungeon_cutscene_articuno.c:259	call-site
+685	move	Move Thunder: animation (effect animation #113)	1	effect_data.c gUnknown_80BDBC4	table
+685	script	story script d10p03: ?	3	src/data/ground/ground_data_d10p03_station.h:125	call-site
+685	script	story script d17p01: ?	1	src/data/ground/ground_data_d17p01_station.h:67	call-site
+686	move	Move Spark: animation (effect animation #114)	1	effect_data.c gUnknown_80BDBC4	table
+686	move	Move Thunderpunch: animation (effect animation #114)	1	effect_data.c gUnknown_80BDBC4	table
+686	script	story script d24p01: ?	8	src/data/ground/ground_data_d24p01_station.h:397	call-site
+687	move	Move Rock Tomb: animation (effect animation #115)	1	effect_data.c gUnknown_80BDBC4	table
+688	move	Move Karate Chop: animation (effect animation #116)	1	effect_data.c gUnknown_80BDBC4	table
+689	move	Move Clamp: animation (effect animation #117)	1	effect_data.c gUnknown_80BDBC4	table
+690	move	Move Smellingsalt: animation (effect animation #118)	1	effect_data.c gUnknown_80BDBC4	table
+691	move	Move Fury Swipes: animation (effect animation #120)	1	effect_data.c gUnknown_80BDBC4	table
+692	move	Move Destiny Bond: animation (effect animation #121)	1	effect_data.c gUnknown_80BDBC4	table
+694	move	Move Revenge: animation (effect animation #123)	1	effect_data.c gUnknown_80BDBC4	table
+695	move	Move Dragon Dance: animation (effect animation #124)	1	effect_data.c gUnknown_80BDBC4	table
+696	move	Move Cotton Spore: animation (effect animation #125)	1	effect_data.c gUnknown_80BDBC4	table
+697	move	Move Bind: animation (effect animation #126)	1	effect_data.c gUnknown_80BDBC4	table
+697	move	Move Constrict: animation (effect animation #126)	1	effect_data.c gUnknown_80BDBC4	table
+697	move	Move Wrap: animation (effect animation #126)	1	effect_data.c gUnknown_80BDBC4	table
+698	move	Move Brick Break: animation (effect animation #127)	1	effect_data.c gUnknown_80BDBC4	table
+698	move	Move Comet Punch: animation (effect animation #127)	1	effect_data.c gUnknown_80BDBC4	table
+698	move	Move Mach Punch: animation (effect animation #127)	1	effect_data.c gUnknown_80BDBC4	table
+699	move	Move Absorb: animation (effect animation #128)	1	effect_data.c gUnknown_80BDBC4	table
+699	move	Move Dream Eater: animation (effect animation #128)	1	effect_data.c gUnknown_80BDBC4	table
+699	move	Move Giga Drain: animation (effect animation #128)	1	effect_data.c gUnknown_80BDBC4	table
+699	move	Move Mega Drain: animation (effect animation #128)	1	effect_data.c gUnknown_80BDBC4	table
+700	move	Move Reversal: animation (effect animation #129)	1	effect_data.c gUnknown_80BDBC4	table
+701	move	Move Endure: animation (effect animation #130)	1	effect_data.c gUnknown_80BDBC4	table
+701	move	Move Focus Energy: animation (effect animation #130)	1	effect_data.c gUnknown_80BDBC4	table
+701	move	Move Focus Punch: animation (effect animation #130)	1	effect_data.c gUnknown_80BDBC4	table
+702	move	Move Focus Punch 2Nd Turn: animation (effect animation #131)	1	effect_data.c gUnknown_80BDBC4	table
+702	move	Move Mega Punch: animation (effect animation #131)	1	effect_data.c gUnknown_80BDBC4	table
+702	script	story script b01p01a: ?	2	src/data/ground/ground_data_b01p01a_station.h:12242	call-site
+703	move	Move Blast Burn: animation (effect animation #132)	1	effect_data.c gUnknown_80BDBC4	table
+704	move	Move Featherdance: animation (effect animation #134)	1	effect_data.c gUnknown_80BDBC4	table
+705	call	dungeon_cutscene_deoxys.c: DeoxysScreenFlash	1	src/dungeon_cutscene_deoxys.c:99	call-site
+705	call	dungeon_cutscene_jirachi.c: JirachiWishGrantFlash	1	src/dungeon_cutscene_jirachi.c:366	call-site
+705	move	Move Flash: animation (effect animation #135)	1	effect_data.c gUnknown_80BDBC4	table
+705	script	story script d20p01: ?	2	src/data/ground/ground_data_d20p01_station.h:171	call-site
+706	move	Move Scratch: animation (effect animation #138)	1	effect_data.c gUnknown_80BDBC4	table
+707	move	Move Leaf Blade: animation (effect animation #139)	1	effect_data.c gUnknown_80BDBC4	table
+708	move	Move Protect: animation (effect animation #140)	1	effect_data.c gUnknown_80BDBC4	table
+708	script	story script d17p01: ?	1	src/data/ground/ground_data_d17p01_station.h:169	call-site
+709	move	Move Defense Curl: animation (effect animation #141)	1	effect_data.c gUnknown_80BDBC4	table
+710	move	Move Bone Rush: animation (effect animation #143)	1	effect_data.c gUnknown_80BDBC4	table
+710	move	Move Bonemerang: animation (effect animation #143)	1	effect_data.c gUnknown_80BDBC4	table
+711	move	Move Ember: animation (effect animation #144)	1	effect_data.c gUnknown_80BDBC4	table
+713	move	Move Spit Up: animation (effect animation #146)	1	effect_data.c gUnknown_80BDBC4	table
+714	move	Move Doom Desire: animation (effect animation #147)	1	effect_data.c gUnknown_80BDBC4	table
+715	move	Move Guillotine: animation (effect animation #148)	1	effect_data.c gUnknown_80BDBC4	table
+716	move	Move Knock Off: animation (effect animation #149)	1	effect_data.c gUnknown_80BDBC4	table
+717	move	Move Water Sport: animation (effect animation #150)	1	effect_data.c gUnknown_80BDBC4	table
+718	move	Move Wish: animation (effect animation #151)	1	effect_data.c gUnknown_80BDBC4	table
+719	move	Move Swallow: animation (effect animation #152)	1	effect_data.c gUnknown_80BDBC4	table
+720	move	Move Double Kick: animation (effect animation #153)	1	effect_data.c gUnknown_80BDBC4	table
+720	move	Move Hi Jump Kick: animation (effect animation #153)	1	effect_data.c gUnknown_80BDBC4	table
+720	move	Move Jump Kick: animation (effect animation #153)	1	effect_data.c gUnknown_80BDBC4	table
+720	move	Move Rolling Kick: animation (effect animation #153)	1	effect_data.c gUnknown_80BDBC4	table
+720	move	Move Triple Kick: animation (effect animation #153)	1	effect_data.c gUnknown_80BDBC4	table
+721	move	Move Block: animation (effect animation #154)	1	effect_data.c gUnknown_80BDBC4	table
+721	move	Move Imprison: animation (effect animation #154)	1	effect_data.c gUnknown_80BDBC4	table
+721	move	Move No Move: animation (effect animation #154)	1	effect_data.c gUnknown_80BDBC4	table
+721	trap	Trap Seal Trap: triggered (effect animation #154)	1	effect_data.c sTrapEffectTable	table
+722	move	Move Tri Attack: animation (effect animation #155)	1	effect_data.c gUnknown_80BDBC4	table
+723	move	Move Vicegrip: animation (effect animation #156)	1	effect_data.c gUnknown_80BDBC4	table
+724	move	Move Spore: animation (effect animation #157)	1	effect_data.c gUnknown_80BDBC4	table
+725	move	Move Leech Life: animation (effect animation #158)	1	effect_data.c gUnknown_80BDBC4	table
+726	move	Move Slash: animation (effect animation #159)	1	effect_data.c gUnknown_80BDBC4	table
+726	script	story script d17p01: ?	2	src/data/ground/ground_data_d17p01_station.h:198	call-site
+727	move	Move Taunt: animation (effect animation #175)	1	effect_data.c gUnknown_80BDBC4	table
+728	move	Move Frustration: animation (effect animation #176)	1	effect_data.c gUnknown_80BDBC4	table
+728	move	Move Taunt: animation (effect animation #176)	1	effect_data.c gUnknown_80BDBC4	table
+729	move	Move Shock Wave: animation (effect animation #177)	1	effect_data.c gUnknown_80BDBC4	table
+729	move	Move Volt Tackle: animation (effect animation #177)	1	effect_data.c gUnknown_80BDBC4	table
+730	move	Move Shock Wave: animation (effect animation #178)	1	effect_data.c gUnknown_80BDBC4	table
+731	move	Move Zap Cannon: animation (effect animation #179)	1	effect_data.c gUnknown_80BDBC4	table
+732	move	Move Mud Sport: animation (effect animation #180)	1	effect_data.c gUnknown_80BDBC4	table
+733	move	Move Mud Sport: animation (effect animation #181)	1	effect_data.c gUnknown_80BDBC4	table
+734	move	Move Mud Slap: animation (effect animation #182)	1	effect_data.c gUnknown_80BDBC4	table
+735	move	Move Needle Arm: animation (effect animation #183)	1	effect_data.c gUnknown_80BDBC4	table
+736	call	dungeon_action_execution.c: HandleSleepTalk	1	src/dungeon_action_execution.c:394	call-site
+737	move	Move Assist: animation (effect animation #185)	1	effect_data.c gUnknown_80BDBC4	table
+738	move	Move Ingrain: animation (effect animation #186)	1	effect_data.c gUnknown_80BDBC4	table
+739	move	Move Frenzy Plant: animation (effect animation #187)	1	effect_data.c gUnknown_80BDBC4	table
+739	script	story script d16p01: ?	1	src/data/ground/ground_data_d16p01_station.h:194	call-site
+740	move	Move Sonicboom: animation (effect animation #188)	1	effect_data.c gUnknown_80BDBC4	table
+740	move	Move Swift: animation (effect animation #212)	1	effect_data.c gUnknown_80BDBC4	table
+741	move	Move Bullet Seed: animation (effect animation #190)	1	effect_data.c gUnknown_80BDBC4	table
+742	move	Move Fury Attack: animation (effect animation #191)	1	effect_data.c gUnknown_80BDBC4	table
+742	move	Move Horn Attack: animation (effect animation #191)	1	effect_data.c gUnknown_80BDBC4	table
+742	move	Move Horn Drill: animation (effect animation #191)	1	effect_data.c gUnknown_80BDBC4	table
+743	move	Move Icicle Spear: animation (effect animation #192)	1	effect_data.c gUnknown_80BDBC4	table
+744	move	Move Swords Dance: animation (effect animation #193)	1	effect_data.c gUnknown_80BDBC4	table
+745	move	Move Vine Whip: animation (effect animation #194)	1	effect_data.c gUnknown_80BDBC4	table
+746	move	Move Grasswhistle: animation (effect animation #195)	1	effect_data.c gUnknown_80BDBC4	table
+748	move	Move Crabhammer: animation (effect animation #197)	1	effect_data.c gUnknown_80BDBC4	table
+750	move	Move Earthquake: animation (effect animation #199)	1	effect_data.c gUnknown_80BDBC4	table
+750	move	Move Magnitude: animation (effect animation #199)	1	effect_data.c gUnknown_80BDBC4	table
+750	move	Move Trap Buster: animation (effect animation #199)	1	effect_data.c gUnknown_80BDBC4	table
+751	move	Move Haze: animation (effect animation #200)	1	effect_data.c gUnknown_80BDBC4	table
+753	move	Move Volt Tackle: animation (effect animation #202)	1	effect_data.c gUnknown_80BDBC4	table
+754	call	dungeon_cutscene_moltres.c: MoltresPreFightDialogue	1	src/dungeon_cutscene_moltres.c:132	call-site
+754	move	Move Muddy Water: animation (effect animation #203)	1	effect_data.c gUnknown_80BDBC4	table
+755	move	Move Cleanse: animation (effect animation #204)	1	effect_data.c gUnknown_80BDBC4	table
+755	move	Move Surf: animation (effect animation #204)	1	effect_data.c gUnknown_80BDBC4	table
+756	move	Move Psych Up: animation (effect animation #205)	1	effect_data.c gUnknown_80BDBC4	table
+757	move	Move Follow Me: animation (effect animation #206)	1	effect_data.c gUnknown_80BDBC4	table
+758	move	Move Metronome: animation (effect animation #207)	1	effect_data.c gUnknown_80BDBC4	table
+759	move	Move Glare: animation (effect animation #208)	1	effect_data.c gUnknown_80BDBC4	table
+759	move	Move Scary Face: animation (effect animation #208)	1	effect_data.c gUnknown_80BDBC4	table
+759	move	Move Shocker: animation (effect animation #208)	1	effect_data.c gUnknown_80BDBC4	table
+760	move	Move Signal Beam: animation (effect animation #209)	1	effect_data.c gUnknown_80BDBC4	table
+761	move	Move Mist Ball: animation (effect animation #210)	1	effect_data.c gUnknown_80BDBC4	table
+761	move	Move Mist: animation (effect animation #210)	1	effect_data.c gUnknown_80BDBC4	table
+761	trap	Trap Pokemon Trap: triggered (effect animation #210)	1	effect_data.c sTrapEffectTable	table
+762	move	Move Lick: animation (effect animation #211)	1	effect_data.c gUnknown_80BDBC4	table
+762	script	story script t01p01: ?	1	src/data/ground/ground_data_t01p01_station.h:13258	call-site
+763	move	Move Sky Uppercut: animation (effect animation #213)	1	effect_data.c gUnknown_80BDBC4	table
+764	move	Move Sketch: animation (effect animation #214)	1	effect_data.c gUnknown_80BDBC4	table
+765	move	Move Sand Attack: animation (effect animation #215)	1	effect_data.c gUnknown_80BDBC4	table
+766	move	Move Cosmic Power: animation (effect animation #219)	1	effect_data.c gUnknown_80BDBC4	table
+767	move	Move Psybeam: animation (effect animation #220)	1	effect_data.c gUnknown_80BDBC4	table
+768	move	Move Cosmic Power: animation (effect animation #221)	1	effect_data.c gUnknown_80BDBC4	table
+768	move	Move Recover: animation (effect animation #221)	1	effect_data.c gUnknown_80BDBC4	table
+768	move	Move Solarbeam: animation (effect animation #221)	1	effect_data.c gUnknown_80BDBC4	table
+770	move	Move Powder Snow: animation (effect animation #223)	1	effect_data.c gUnknown_80BDBC4	table
+771	move	Move Psywave: animation (effect animation #224)	1	effect_data.c gUnknown_80BDBC4	table
+772	move	Move Hypnosis: animation (effect animation #225)	1	effect_data.c gUnknown_80BDBC4	table
+772	move	Move Supersonic: animation (effect animation #225)	1	effect_data.c gUnknown_80BDBC4	table
+773	move	Move Psycho Boost: animation (effect animation #226)	1	effect_data.c gUnknown_80BDBC4	table
+774	move	Move Thunder Wave: animation (effect animation #236)	1	effect_data.c gUnknown_80BDBC4	table
+774	move	Move Thunderbolt: animation (effect animation #236)	1	effect_data.c gUnknown_80BDBC4	table
+774	move	Move Thundershock: animation (effect animation #236)	1	effect_data.c gUnknown_80BDBC4	table
+774	script	story script d13p03: ?	1	src/data/ground/ground_data_d13p03_station.h:201	call-site
+775	move	Move Fissure: animation (effect animation #237)	1	effect_data.c gUnknown_80BDBC4	table
+775	move	Move Seismic Toss: animation (effect animation #237)	1	effect_data.c gUnknown_80BDBC4	table
+776	move	Move Safeguard: animation (effect animation #238)	1	effect_data.c gUnknown_80BDBC4	table
+778	move	Move Cross Chop: animation (effect animation #240)	1	effect_data.c gUnknown_80BDBC4	table
+779	move	Move Sand Tomb: animation (effect animation #241)	1	effect_data.c gUnknown_80BDBC4	table
+779	script	story script b01p01a: ?	1	src/data/ground/ground_data_b01p01a_station.h:13332	call-site
+779	script	story script d21p01: ?	1	src/data/ground/ground_data_d21p01_station.h:86	call-site
+780	move	Move Poison Gas: animation (effect animation #242)	1	effect_data.c gUnknown_80BDBC4	table
+780	move	Move Smog: animation (effect animation #242)	1	effect_data.c gUnknown_80BDBC4	table
+781	move	Move Sacred Fire: animation (effect animation #243)	1	effect_data.c gUnknown_80BDBC4	table
+782	move	Move Sacred Fire: animation (effect animation #244)	1	effect_data.c gUnknown_80BDBC4	table
+783	move	Move Sheer Cold: animation (effect animation #245)	1	effect_data.c gUnknown_80BDBC4	table
+784	move	Move Solarbeam 2Nd Turn: animation (effect animation #246)	1	effect_data.c gUnknown_80BDBC4	table
+786	script	story script d20p01: ?	3	src/data/ground/ground_data_d20p01_station.h:304	call-site
+787	call	textbox.c: sub_809C478	1	src/textbox.c:1934	call-site
+787	script	story script d20p01: ?	1	src/data/ground/ground_data_d20p01_station.h:308	call-site
+788	move	Move Sky Attack 2Nd Turn: animation (effect animation #250)	1	effect_data.c gUnknown_80BDBC4	table
+789	move	Move Metal Sound: animation (effect animation #251)	1	effect_data.c gUnknown_80BDBC4	table
+790	move	Move Icy Wind: animation (effect animation #252)	1	effect_data.c gUnknown_80BDBC4	table
+791	move	Move Meteor Mash: animation (effect animation #253)	1	effect_data.c gUnknown_80BDBC4	table
+792	move	Move Mean Look: animation (effect animation #254)	1	effect_data.c gUnknown_80BDBC4	table
+793	move	Move Uproar: animation (effect animation #255)	1	effect_data.c gUnknown_80BDBC4	table
+794	move	Move Shadow Ball: animation (effect animation #256)	1	effect_data.c gUnknown_80BDBC4	table
+795	move	Move Stun Spore: animation (effect animation #257)	1	effect_data.c gUnknown_80BDBC4	table
+796	move	Move Poisonpowder: animation (effect animation #258)	1	effect_data.c gUnknown_80BDBC4	table
+797	move	Move Sleep Powder: animation (effect animation #259)	1	effect_data.c gUnknown_80BDBC4	table
+799	move	Move Water Spout: animation (effect animation #261)	1	effect_data.c gUnknown_80BDBC4	table
+800	move	Move Kinesis: animation (effect animation #262)	1	effect_data.c gUnknown_80BDBC4	table
+801	move	Move Fire Blast: animation (effect animation #263)	1	effect_data.c gUnknown_80BDBC4	table
+802	move	Move Fire Blast: animation (effect animation #264)	1	effect_data.c gUnknown_80BDBC4	table
+803	move	Move Waterfall: animation (effect animation #265)	1	effect_data.c gUnknown_80BDBC4	table
+805	move	Move Stockpile: animation (effect animation #267)	1	effect_data.c gUnknown_80BDBC4	table
+807	move	Move Leech Seed: animation (effect animation #269)	1	effect_data.c gUnknown_80BDBC4	table
+808	move	Move Leech Seed: animation (effect animation #270)	1	effect_data.c gUnknown_80BDBC4	table
+809	move	Move Synthesis: animation (effect animation #271)	1	effect_data.c gUnknown_80BDBC4	table
+809	script	story script t01p01: ?	1	src/data/ground/ground_data_t01p01_station.h:13098	call-site
+810	move	Move Moonlight: animation (effect animation #272)	1	effect_data.c gUnknown_80BDBC4	table
+811	move	Move Moonlight: animation (effect animation #273)	1	effect_data.c gUnknown_80BDBC4	table
+812	move	Move Growl: animation (effect animation #274)	1	effect_data.c gUnknown_80BDBC4	table
+812	move	Move Howl: animation (effect animation #274)	1	effect_data.c gUnknown_80BDBC4	table
+812	move	Move Roar: animation (effect animation #274)	1	effect_data.c gUnknown_80BDBC4	table
+812	script	story script b01p02a: ?	1	src/data/ground/ground_data_b01p02a_station.h:736	call-site
+813	move	Move Stomp: animation (effect animation #275)	1	effect_data.c gUnknown_80BDBC4	table
+814	move	Move Mist Ball: animation (effect animation #276)	1	effect_data.c gUnknown_80BDBC4	table
+815	move	Move Secret Power: animation (effect animation #277)	1	effect_data.c gUnknown_80BDBC4	table
+816	move	Move Sludge Bomb: animation (effect animation #278)	1	effect_data.c gUnknown_80BDBC4	table
+817	move	Move Sludge: animation (effect animation #279)	1	effect_data.c gUnknown_80BDBC4	table
+818	move	Move Dynamicpunch: animation (effect animation #280)	1	effect_data.c gUnknown_80BDBC4	table
+819	move	Move Crush Claw: animation (effect animation #281)	1	effect_data.c gUnknown_80BDBC4	table
+819	move	Move Dragon Claw: animation (effect animation #281)	1	effect_data.c gUnknown_80BDBC4	table
+819	move	Move Metal Claw: animation (effect animation #281)	1	effect_data.c gUnknown_80BDBC4	table
+820	move	Move Silver Wind: animation (effect animation #282)	1	effect_data.c gUnknown_80BDBC4	table
+821	move	Move Thief: animation (effect animation #284)	1	effect_data.c gUnknown_80BDBC4	table
+822	move	Move Conversion 2: animation (effect animation #285)	1	effect_data.c gUnknown_80BDBC4	table
+823	move	Move Camouflage: animation (effect animation #286)	1	effect_data.c gUnknown_80BDBC4	table
+823	move	Move Conversion: animation (effect animation #286)	1	effect_data.c gUnknown_80BDBC4	table
+824	move	Move Leer: animation (effect animation #287)	1	effect_data.c gUnknown_80BDBC4	table
+825	move	Move Razor Leaf: animation (effect animation #288)	1	effect_data.c gUnknown_80BDBC4	table
+826	move	Move Tail Glow: animation (effect animation #289)	1	effect_data.c gUnknown_80BDBC4	table
+827	move	Move Spikes: animation (effect animation #290)	1	effect_data.c gUnknown_80BDBC4	table
+827	move	Move Trapper: animation (effect animation #290)	1	effect_data.c gUnknown_80BDBC4	table
+828	move	Move Blizzard: animation (effect animation #291)	1	effect_data.c gUnknown_80BDBC4	table
+828	move	Move Ice Beam: animation (effect animation #291)	1	effect_data.c gUnknown_80BDBC4	table
+829	move	Move Blizzard: animation (effect animation #292)	1	effect_data.c gUnknown_80BDBC4	table
+829	move	Move Ice Beam: animation (effect animation #292)	1	effect_data.c gUnknown_80BDBC4	table
+831	item	Item Blast Seed: use animation (effect animation #416)	1	effect_data.c gUnknown_80CE37C	table
+831	move	Move Egg Bomb: animation (effect animation #295)	1	effect_data.c gUnknown_80BDBC4	table
+831	script	story script d20p01: ?	4	src/data/ground/ground_data_d20p01_station.h:306	call-site
+833	move	Move Softboiled: animation (effect animation #297)	1	effect_data.c gUnknown_80BDBC4	table
+834	move	Move Sweet Kiss: animation (effect animation #298)	1	effect_data.c gUnknown_80BDBC4	table
+835	move	Move Bulk Up: animation (effect animation #300)	1	effect_data.c gUnknown_80BDBC4	table
+837	move	Move Magical Leaf: animation (effect animation #302)	1	effect_data.c gUnknown_80BDBC4	table
+838	move	Move Water Pulse: animation (effect animation #303)	1	effect_data.c gUnknown_80BDBC4	table
+839	move	Move False Swipe: animation (effect animation #304)	1	effect_data.c gUnknown_80BDBC4	table
+840	move	Move Calm Mind: animation (effect animation #305)	1	effect_data.c gUnknown_80BDBC4	table
+840	move	Move Famish: animation (effect animation #305)	1	effect_data.c gUnknown_80BDBC4	table
+840	move	Move Power Ears: animation (effect animation #305)	1	effect_data.c gUnknown_80BDBC4	table
+841	move	Move Mega Kick: animation (effect animation #306)	1	effect_data.c gUnknown_80BDBC4	table
+842	move	Move Twister: animation (effect animation #310)	1	effect_data.c gUnknown_80BDBC4	table
+843	move	Move Arm Thrust: animation (effect animation #311)	1	effect_data.c gUnknown_80BDBC4	table
+844	move	Move Helping Hand: animation (effect animation #312)	1	effect_data.c gUnknown_80BDBC4	table
+845	move	Move Barrier: animation (effect animation #313)	1	effect_data.c gUnknown_80BDBC4	table
+845	move	Move Iron Defense: animation (effect animation #313)	1	effect_data.c gUnknown_80BDBC4	table
+847	move	Move Tri Attack: animation (effect animation #315)	1	effect_data.c gUnknown_80BDBC4	table
+848	move	Move Fire Spin: animation (effect animation #316)	1	effect_data.c gUnknown_80BDBC4	table
+848	script	story script d13p03: ?	1	src/data/ground/ground_data_d13p03_station.h:61	call-site
+849	move	Move Ember: animation (effect animation #317)	1	effect_data.c gUnknown_80BDBC4	table
+850	move	Move Aurora Beam: animation (effect animation #318)	1	effect_data.c gUnknown_80BDBC4	table
+850	move	Move Magic Coat: animation (effect animation #318)	1	effect_data.c gUnknown_80BDBC4	table
+850	move	Move Rebound: animation (effect animation #318)	1	effect_data.c gUnknown_80BDBC4	table
+851	move	Move Light Screen: animation (effect animation #319)	1	effect_data.c gUnknown_80BDBC4	table
+851	move	Move Mirror Move: animation (effect animation #319)	1	effect_data.c gUnknown_80BDBC4	table
+852	move	Move Mirror Coat: animation (effect animation #320)	1	effect_data.c gUnknown_80BDBC4	table
+852	trap	Trap Slow Trap: triggered (effect animation #320)	1	effect_data.c sTrapEffectTable	table
+853	move	Move Counter: animation (effect animation #321)	1	effect_data.c gUnknown_80BDBC4	table
+853	move	Move Pursuit: animation (effect animation #321)	1	effect_data.c gUnknown_80BDBC4	table
+853	move	Move Reflect: animation (effect animation #321)	1	effect_data.c gUnknown_80BDBC4	table
+854	move	Move Drill Peck: animation (effect animation #322)	1	effect_data.c gUnknown_80BDBC4	table
+855	move	Move Amnesia: animation (effect animation #324)	1	effect_data.c gUnknown_80BDBC4	table
+856	move	Move Night Shade: animation (effect animation #330)	1	effect_data.c gUnknown_80BDBC4	table
+858	move	Move Heat Wave: animation (effect animation #332)	1	effect_data.c gUnknown_80BDBC4	table
+859	move	Move Water Gun: animation (effect animation #333)	1	effect_data.c gUnknown_80BDBC4	table
+860	move	Move Hydro Cannon: animation (effect animation #334)	1	effect_data.c gUnknown_80BDBC4	table
+860	move	Move Hydro Pump: animation (effect animation #334)	1	effect_data.c gUnknown_80BDBC4	table
+860	move	Move Mud Shot: animation (effect animation #437)	1	effect_data.c gUnknown_80BDBC4	table
+860	move	Move Water Gun: animation (effect animation #334)	1	effect_data.c gUnknown_80BDBC4	table
+861	move	Move Hydro Cannon: animation (effect animation #335)	1	effect_data.c gUnknown_80BDBC4	table
+862	move	Move Hydro Pump: animation (effect animation #336)	1	effect_data.c gUnknown_80BDBC4	table
+862	script	story script d20p01: ?	3	src/data/ground/ground_data_d20p01_station.h:265	call-site
+863	move	Move Mud Shot: animation (effect animation #337)	1	effect_data.c gUnknown_80BDBC4	table
+864	move	Move Hyper Beam: animation (effect animation #338)	1	effect_data.c gUnknown_80BDBC4	table
+865	move	Move Bubblebeam: animation (effect animation #339)	1	effect_data.c gUnknown_80BDBC4	table
+866	move	Move Aeroblast: animation (effect animation #340)	1	effect_data.c gUnknown_80BDBC4	table
+867	move	Move Hyper Voice: animation (effect animation #341)	1	effect_data.c gUnknown_80BDBC4	table
+868	move	Move Petal Dance: animation (effect animation #342)	1	effect_data.c gUnknown_80BDBC4	table
+869	move	Move Belly Drum: animation (effect animation #343)	1	effect_data.c gUnknown_80BDBC4	table
+870	move	Move Hyper Fang: animation (effect animation #344)	1	effect_data.c gUnknown_80BDBC4	table
+871	move	Move Dizzy Punch: animation (effect animation #345)	1	effect_data.c gUnknown_80BDBC4	table
+872	move	Move Teeter Dance: animation (effect animation #346)	1	effect_data.c gUnknown_80BDBC4	table
+872	move	Move Totter: animation (effect animation #346)	1	effect_data.c gUnknown_80BDBC4	table
+873	move	Move Blaze Kick: animation (effect animation #347)	1	effect_data.c gUnknown_80BDBC4	table
+874	move	Move Perish Song: animation (effect animation #348)	1	effect_data.c gUnknown_80BDBC4	table
+875	move	Move Milk Drink: animation (effect animation #349)	1	effect_data.c gUnknown_80BDBC4	table
+876	move	Move Acid: animation (effect animation #350)	1	effect_data.c gUnknown_80BDBC4	table
+877	move	Move Luster Purge: animation (effect animation #351)	1	effect_data.c gUnknown_80BDBC4	table
+877	move	Move One Room: animation (effect animation #351)	1	effect_data.c gUnknown_80BDBC4	table
+877	move	Move Searchlight: animation (effect animation #351)	1	effect_data.c gUnknown_80BDBC4	table
+877	move	Move Sky Attack: animation (effect animation #351)	1	effect_data.c gUnknown_80BDBC4	table
+877	script	story script d20p01: ?	3	src/data/ground/ground_data_d20p01_station.h:185	call-site
+878	move	Move Rock Blast: animation (effect animation #352)	1	effect_data.c gUnknown_80BDBC4	table
+879	move	Move Wide Slash: animation (effect animation #354)	1	effect_data.c gUnknown_80BDBC4	table
+880	move	Move Cut: animation (effect animation #355)	1	effect_data.c gUnknown_80BDBC4	table
+880	move	Move Spin Slash: animation (effect animation #355)	1	effect_data.c gUnknown_80BDBC4	table
+881	move	Move See Trap: animation (effect animation #356)	1	effect_data.c gUnknown_80BDBC4	table
+882	move	Move Blowback: animation (effect animation #357)	1	effect_data.c gUnknown_80BDBC4	table
+882	move	Move Itemize: animation (effect animation #357)	1	effect_data.c gUnknown_80BDBC4	table
+882	move	Move Observer: animation (effect animation #357)	1	effect_data.c gUnknown_80BDBC4	table
+882	move	Move Switcher: animation (effect animation #357)	1	effect_data.c gUnknown_80BDBC4	table
+883	move	Move Decoy Maker: animation (effect animation #358)	1	effect_data.c gUnknown_80BDBC4	table
+883	move	Move Stay Away: animation (effect animation #358)	1	effect_data.c gUnknown_80BDBC4	table
+883	move	Move Transfer: animation (effect animation #358)	1	effect_data.c gUnknown_80BDBC4	table
+884	move	Move Speed Boost: animation (effect animation #359)	1	effect_data.c gUnknown_80BDBC4	table
+884	move	Move Trapper: animation (effect animation #359)	1	effect_data.c gUnknown_80BDBC4	table
+885	call	dungeon_cutscene_jirachi.c: JirachiWishGrantDialogue	1	src/dungeon_cutscene_jirachi.c:455	call-site
+885	move	Move Petrify: animation (effect animation #360)	1	effect_data.c gUnknown_80BDBC4	table
+885	move	Move Trawl: animation (effect animation #360)	1	effect_data.c gUnknown_80BDBC4	table
+886	move	Move Drought: animation (effect animation #361)	1	effect_data.c gUnknown_80BDBC4	table
+887	move	Move Wild Call: animation (effect animation #362)	1	effect_data.c gUnknown_80BDBC4	table
+888	move	Move Invisify: animation (effect animation #363)	1	effect_data.c gUnknown_80BDBC4	table
+888	move	Move Mobile: animation (effect animation #363)	1	effect_data.c gUnknown_80BDBC4	table
+889	move	Move Vacuum Cut: animation (effect animation #368)	1	effect_data.c gUnknown_80BDBC4	table
+891	move	Move Curse Ghost: animation (effect animation #374)	1	effect_data.c gUnknown_80BDBC4	table
+892	move	Move Curse Ghost: animation (effect animation #375)	1	effect_data.c gUnknown_80BDBC4	table
+893	trap	Trap Mud Trap: triggered (effect animation #386)	1	effect_data.c sTrapEffectTable	table
+895	trap	Trap Grimy Trap: triggered (effect animation #388)	1	effect_data.c sTrapEffectTable	table
+896	trap	Trap Whirlwind Trap: triggered (effect animation #389)	1	effect_data.c sTrapEffectTable	table
+897	trap	Trap Spin Trap: triggered (effect animation #390)	1	effect_data.c sTrapEffectTable	table
+898	trap	Trap Slumber Trap: triggered (effect animation #391)	1	effect_data.c sTrapEffectTable	table
+899	trap	Trap Poison Trap: triggered (effect animation #392)	1	effect_data.c sTrapEffectTable	table
+900	script	story script t01p01: ?	1	src/data/ground/ground_data_t01p01_station.h:1152	call-site
+900	trap	Trap Chestnut Trap: triggered (effect animation #393)	1	effect_data.c sTrapEffectTable	table
+912	item	Item Apple: use animation (effect animation #405)	2	effect_data.c gUnknown_80CE37C	table
+912	item	Item Banana: use animation (effect animation #405)	1	effect_data.c gUnknown_80CE37C	table
+912	item	Item Big Apple: use animation (effect animation #405)	2	effect_data.c gUnknown_80CE37C	table
+912	item	Item Chestnut: use animation (effect animation #405)	1	effect_data.c gUnknown_80CE37C	table
+912	item	Item Grimy Food: use animation (effect animation #405)	2	effect_data.c gUnknown_80CE37C	table
+912	item	Item Huge Apple: use animation (effect animation #405)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Banana: use animation (effect animation #406)	1	effect_data.c gUnknown_80CE37C	table
+913	item	Item Black Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Blue Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Brown Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Chestnut: use animation (effect animation #406)	1	effect_data.c gUnknown_80CE37C	table
+913	item	Item Clear Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Gold Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Grass Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Gray Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Green Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Orange Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Pink Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Purple Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Red Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Royal Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Silver Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Sky Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item White Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+913	item	Item Yellow Gummi: use animation (effect animation #406)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Allure Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Blast Seed: use animation (effect animation #407)	1	effect_data.c gUnknown_80CE37C	table
+914	item	Item Blinker Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Cheri Berry: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Chesto Berry: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Doom Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Eyedrop Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Ginseng: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Heal Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Hunger Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Joy Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Life Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Oran Berry: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Pecha Berry: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Plain Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Quick Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Rawst Berry: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Reviver Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Sitrus Berry: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Sleep Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Stun Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Totter Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+914	item	Item Warp Seed: use animation (effect animation #407)	2	effect_data.c gUnknown_80CE37C	table
+915	item	Item Calcium: use animation (effect animation #408)	2	effect_data.c gUnknown_80CE37C	table
+915	item	Item Iron: use animation (effect animation #408)	2	effect_data.c gUnknown_80CE37C	table
+915	item	Item Max Elixir: use animation (effect animation #408)	2	effect_data.c gUnknown_80CE37C	table
+915	item	Item Protein: use animation (effect animation #408)	2	effect_data.c gUnknown_80CE37C	table
+915	item	Item Zinc: use animation (effect animation #408)	2	effect_data.c gUnknown_80CE37C	table
+918	item	Item Hm Cut: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Hm Dive: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Hm Flash: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Hm Fly: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Hm Rock Smash: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Hm Strength: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Hm Surf: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Hm Waterfall: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Aerial Ace: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Attract: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Blizzard: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Brick Break: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Bulk Up: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Bullet Seed: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Calm Mind: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Dig: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Dragon Claw: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Earthquake: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Excavate: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Facade: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Fire Blast: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Flamethrower: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Focus Punch: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Frustration: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Giga Drain: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Hidden Power: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Hyper Beam: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Ice Beam: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Iron Tail: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Light Screen: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Overheat: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Protect: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Psychic: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Reflect: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Rest: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Return: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Roar: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Safeguard: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Secret Power: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Shadow Ball: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Shock Wave: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Skill Swap: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Sludge Bomb: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Solarbeam: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Spin Slash: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Steel Wing: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Taunt: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Thief: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Thunder: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Thunderbolt: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Torment: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Toxic: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Vacuum Cut: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Water Pulse: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+918	item	Item Tm Wide Slash: use animation (effect animation #411)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Blowback Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Cleanse Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Decoy Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Drought Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Escape Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Evasion Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Fill In Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Hail Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Hurl Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Identify Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Invisify Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Itemizer Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Lob Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Longtoss Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Luminous Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Mobile Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Mug Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Observer Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item One Room Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item One Shot Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Petrify Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Pierce Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Possess Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Pounce Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Quick Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Radar Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Rainy Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Rebound Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Reviver Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Rocky Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Rollcall Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Sandy Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Scanner Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item See Trap Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Shocker Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Silence Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Sizebust Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Slow Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Slumber Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Snatch Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Stairs Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Stayaway Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Sunny Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Switcher Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Toss Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Totter Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Transfer Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Trapbust Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Trapper Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Trawl Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Two Edge Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+919	item	Item Warp Orb: use animation (effect animation #412)	1	effect_data.c gUnknown_80CE37C	table
+920	item	Item Key: use animation (effect animation #413)	1	effect_data.c gUnknown_80CE37C	table
+922	move	Move Excavate: animation (effect animation #415)	1	effect_data.c gUnknown_80BDBC4	table
+922	move	Move Rollout: animation (effect animation #415)	1	effect_data.c gUnknown_80BDBC4	table
+922	move	Move Weather Ball Sandstorm: animation (effect animation #415)	1	effect_data.c gUnknown_80BDBC4	table
+925	move	Move Charge: animation (effect animation #421)	1	effect_data.c gUnknown_80BDBC4	table
+933	move	Move Shocker: animation (effect animation #429)	1	effect_data.c gUnknown_80BDBC4	table
+936	trap	Trap Pp Zero Trap: triggered (effect animation #432)	1	effect_data.c sTrapEffectTable	table
+938	move	Move Disable: animation (effect animation #434)	1	effect_data.c gUnknown_80BDBC4	table
+939	trap	Trap Sticky Trap: triggered (effect animation #435)	1	effect_data.c sTrapEffectTable	table

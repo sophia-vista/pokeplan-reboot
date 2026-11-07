@@ -23,8 +23,17 @@ val composeAssets = tasks.register<Sync>("prepareComposeAssets") {
     from(rootProject.file("assets/world")) { include("*.png", "fx/*.png", "fx/*.tsv"); into("files/world") }
     from(rootProject.file("assets/pmd-items")) { include("*.png"); into("files/pmditems") }
     from(rootProject.file("assets/tiles")) { include("*.png"); into("files/tiles") }
+    from(rootProject.file("assets/rescue-maps")) { include("FRIEND_AREA_*.png"); into("files/rescue-maps") }
+    // The Rescue Team pictures World uses (the team bases outside, in three stages for each of the sixteen partners, and the places in the Square), lower-cased with hyphens.
+    from(rootProject.file("assets/rescue-maps")) {
+        include("TEAM_BASE_*_BASIC.png", "TEAM_BASE_*_CONSTRUCTION.png", "TEAM_BASE_*_FINAL.png", "POKEMON_SQUARE.png", "SQUARE.png", "MAKUHITA_DOJO.png", "PELIPPER_POST_OFFICE.png")
+        exclude("TEAM_BASE_INSIDE_*")
+        rename { it.lowercase().replace('_', '-') }
+        into("files/world")
+    }
     from(rootProject.file("assets/cries")) { include("*.ogg"); into("files/cries") }
     from(rootProject.file("assets/sfx")) { include("*.ogg"); into("files/sfx") }
+    from(rootProject.file("assets/sky-sfx")) { include("jingle-mission-success.ogg"); into("files/sfx") }
     from(rootProject.file("assets/status")) { include("*.png"); exclude("sheet.png", "sheet2.png"); into("files/status") }
     from(rootProject.file("assets/weather")) { include("*.png"); into("files/weather") }
     from(rootProject.file("assets/fonts")) { include("*.ttf"); into("font") }

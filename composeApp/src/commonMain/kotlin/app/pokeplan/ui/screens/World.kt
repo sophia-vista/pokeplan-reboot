@@ -421,7 +421,7 @@ private fun WorldMissionsView(model: AppModel) {
                 val needed = m.give?.let { it to m.giveCount }
                 val haveIt = needed == null || model.data.player.inventory.has(needed.first, needed.second)
                 if (p.done && !haveIt) Text("Needs ${needed!!.second} x ${Items.name(needed.first)} in your Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
-                if (p.done) PixelButton("Claim", { store.worldClaimMission(p.id) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = haveIt, compact = true)
+                if (p.done) PixelButton("Claim", { if (store.worldClaimMission(p.id)) model.effect(Sfx.MISSION_SUCCESS) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = haveIt, compact = true)
                 else PixelButton("Give up", { store.worldAbandonMission(p.id) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
         }
@@ -490,11 +490,44 @@ private fun WorldSkillsView(model: AppModel) {
     }
 }
 
+/** The pages of the Base: its landing is the headquarters map and a menu, so nothing but the one page you opened is on screen (docs/pokelife/MODULES/WORLD.md section 2.1). */
+private enum class BasePage(val label: String, val icon: String) {
+    FACILITIES("Facilities", "heart-scale"), RESEARCH("Research", "journal"), CAFE("Café", "soothe-bell"),
+    KECLEON("Kecleon Shop", "rare-candy"), SWAP("Swap Shop", "amulet-coin"), DOJO("Dojo", "scope-lens"),
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun WorldBaseView(model: AppModel) {
-    val store = model.store
+    var page by remember { mutableStateOf<BasePage?>(null) }
     val world = model.data.world
-    WorldBanner("summit", "Exploration base", "${model.data.player.coins} Poké to spend", top = true)
+    val open = page
+    if (open == null) {
+        // The headquarters: the team base of your first partner as big as the screen allows, growing with the Camp, then rank and the places in it.
+        WorldMapHero(baseMap(starterSpecies(model.data), world.facilityLevel(Facility.CAMP)), "Exploration base", "Camp level ${world.facilityLevel(Facility.CAMP)} of ${Facility.MAX_LEVEL}")
+        RankStrip(model)
+        MenuGrid(
+            BasePage.entries.map { p ->
+                val detail = when (p) {
+                    BasePage.FACILITIES -> "Camp level ${world.facilityLevel(Facility.CAMP)}"
+                    BasePage.RESEARCH -> "${world.discovered.size} species"
+                    BasePage.CAFE -> "a brew for the road"
+                    BasePage.KECLEON -> "${world.candyPrice} Poké a candy"
+                    BasePage.SWAP -> "berry for berry"
+                    BasePage.DOJO -> "${app.pokeplan.world.Dojo.COST} Poké a lesson"
+                }
+                MenuEntry(p.name, p.icon, p.label, detail, badge = if (p == BasePage.RESEARCH) world.researchReady().size else 0, tint = Module.WORLD.look.accent)
+            },
+        ) { key -> page = BasePage.valueOf(key) }
+        Text("Storage is the shared Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        return
+    }
+    BackHandler(enabled = true) { page = null }
+    val store = model.store
+    val play = !(model.data.settings.reduceMotion || model.powerSaving)
+    PixelButton("Back to the base", { page = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+    when (open) {
+        BasePage.FACILITIES -> {
     FieldLabel("Base")
     Facility.entries.forEach { f ->
         val level = world.facilityLevel(f)
@@ -508,10 +541,12 @@ private fun WorldBaseView(model: AppModel) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text("${f.label}, level $level of ${Facility.MAX_LEVEL}", style = MaterialTheme.typography.titleSmall)
                 Text("${f.blurb} ${f.bonus}.", style = MaterialTheme.typography.bodyMedium)
-                if (level < Facility.MAX_LEVEL) PixelButton("Build level ${level + 1}: ${f.cost(level)} Poké", { store.worldUpgrade(f) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = world.poke >= f.cost(level), compact = true)
+                if (level < Facility.MAX_LEVEL) PixelButton("Build level ${level + 1}: ${f.cost(level)} Poké", { if (store.worldUpgrade(f)) model.effect(Sfx.UNLOCK) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = world.poke >= f.cost(level), compact = true)
             }
         }
     }
+        }
+        BasePage.RESEARCH -> {
     FieldLabel("Research: ${world.discovered.size} species discovered")
     Research.steps.forEach { step ->
         val reached = world.discovered.size >= step.species
@@ -523,14 +558,15 @@ private fun WorldBaseView(model: AppModel) {
                     Text(buildString { append("${step.poke} Poké"); step.itemId?.let { append(", ${Items.name(it)} x${step.count}") } }, style = MaterialTheme.typography.bodyMedium)
                 }
                 if (claimed) Text("Done", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
-                else PixelButton("Claim", { store.worldClaimResearch(step.species) }, color = Module.WORLD.look.accent, enabled = reached, compact = true)
+                else PixelButton("Claim", { if (store.worldClaimResearch(step.species)) model.effect(Sfx.ITEM_GET) }, color = Module.WORLD.look.accent, enabled = reached, compact = true)
             }
         }
     }
     NotebookCard(model)
+        }
+        BasePage.CAFE -> {
     WorldBanner("cafe", "Spinda's Café", "A brew for the road", sky = Color(0xFF29180F), top = true, height = 150.dp)
     var steam by remember { mutableStateOf(0) }
-    val play = !(model.data.settings.reduceMotion || model.powerSaving)
     val clock = model.worldNow.takeIf { it > 0 } ?: model.store.nowMillis
     val brewing = world.brewUntil > clock
     TextBox {
@@ -542,18 +578,24 @@ private fun WorldBaseView(model: AppModel) {
             Text("${app.pokeplan.world.Cafe.BERRIES} berries from your Bag make a brew for ${app.pokeplan.world.Cafe.HOURS} hours: 30% more Exploration XP, 5% more treasure chance and 1% more find chance on every floor.", style = MaterialTheme.typography.bodyMedium)
             if (brewing) Text("A brew is working for ${(world.brewUntil - clock) / 60_000} more minutes.", style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
             var cafeMessage by remember { mutableStateOf("") }
-            PixelButton("Brew", { cafeMessage = if (brewing) "A brew is still working." else if (store.worldBrew()) { steam++; "Brewed." } else "You need ${app.pokeplan.world.Cafe.BERRIES} berries in your Bag." }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
+            PixelButton("Brew", { cafeMessage = if (brewing) "A brew is still working." else if (store.worldBrew()) { steam++; model.effect(Sfx.EATING); "Brewed." } else "You need ${app.pokeplan.world.Cafe.BERRIES} berries in your Bag." }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, compact = true)
             if (cafeMessage.isNotEmpty()) Text(cafeMessage, style = MaterialTheme.typography.bodyMedium)
         }
     }
+        }
+        BasePage.KECLEON -> {
+            WorldBanner("pokemon-square", "Kecleon Shop", "Rare Candy, for Poké", height = 150.dp)
     FieldLabel("Kecleon Shop")
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Rare Candy", style = MaterialTheme.typography.titleSmall)
             Text("${world.shopCandies} bought so far. Each costs a little more.", style = MaterialTheme.typography.bodyMedium)
-            PixelButton("Buy one: ${world.candyPrice} Poké", { store.worldBuyCandy() }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = world.poke >= world.candyPrice, compact = true)
+            PixelButton("Buy one: ${world.candyPrice} Poké", { if (store.worldBuyCandy()) model.effect(Sfx.CANDY) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = world.poke >= world.candyPrice, compact = true)
         }
     }
+        }
+        BasePage.SWAP -> {
+            WorldBanner("square", "Croagunk Swap Shop", "Berry for berry", height = 150.dp)
     FieldLabel("Croagunk Swap Shop")
     var swapFrom by remember { mutableStateOf(app.pokeplan.world.SwapShop.flavors[0]) }
     var swapTo by remember { mutableStateOf(app.pokeplan.world.SwapShop.flavors[1]) }
@@ -570,10 +612,13 @@ private fun WorldBaseView(model: AppModel) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 app.pokeplan.world.SwapShop.flavors.forEach { f -> PixelButton(f, { swapTo = f }, color = if (swapTo == f) Module.WORLD.look.accent else Pixel.InkSoft, compact = true) }
             }
-            PixelIconButton("repeat", "Swap", { swapMessage = if (store.worldSwap(swapFrom, swapTo)) "Swapped." else "Pick two flavours, and have ${app.pokeplan.world.SwapShop.GIVE} to give." }, Module.WORLD.look.accent)
+            PixelIconButton("repeat", "Swap", { swapMessage = if (store.worldSwap(swapFrom, swapTo)) { model.effect(Sfx.CONFIRM); "Swapped." } else "Pick two flavours, and have ${app.pokeplan.world.SwapShop.GIVE} to give." }, Module.WORLD.look.accent)
             if (swapMessage.isNotEmpty()) Text(swapMessage, style = MaterialTheme.typography.bodyMedium)
         }
     }
+        }
+        BasePage.DOJO -> {
+            WorldBanner("makuhita-dojo", "Makuhita's Dojo", "${model.data.player.coins} Poké to spend", height = 150.dp)
     FieldLabel("Dojo")
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -584,11 +629,12 @@ private fun WorldBaseView(model: AppModel) {
             }
             Text("${app.pokeplan.world.Dojo.COST} Poké buys ${app.pokeplan.world.Dojo.SKILL_XP} skill XP in a skill you choose.", style = MaterialTheme.typography.bodyMedium)
             WorldSkill.entries.forEach { skill ->
-                PixelButton("Train ${skill.label}", { if (store.worldTrain(skill)) hit++ }, Modifier.fillMaxWidth(), Pixel.InkSoft, enabled = world.poke >= app.pokeplan.world.Dojo.COST && world.skillLevel(skill) < WorldSkill.MAX_LEVEL, compact = true)
+                PixelButton("Train ${skill.label}", { if (store.worldTrain(skill)) { hit++; model.effect(Sfx.DAMAGE) } }, Modifier.fillMaxWidth(), Pixel.InkSoft, enabled = world.poke >= app.pokeplan.world.Dojo.COST && world.skillLevel(skill) < WorldSkill.MAX_LEVEL, compact = true)
             }
         }
     }
-    Text("Storage is the shared Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        }
+    }
 }
 
 // ----- Expeditions ------------------------------------------------------------------------------------------------------

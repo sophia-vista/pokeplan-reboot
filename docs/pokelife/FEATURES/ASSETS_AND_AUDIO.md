@@ -37,7 +37,11 @@ The inspected source is `pokeplan-reboot-main (5).zip`, version `0.123.0`, inclu
 | `assets/animated/` | Black/White animated sprite sheets, Gen 1–5 | Optional animated Pokédex/collection presentation; not a replacement for PMD movement sets |
 | `assets/scenes/` | 11 PNG backgrounds | Battle/scene backdrops |
 | `assets/world/` | 22 PNGs plus effect metadata | Town, guild, summit, cave, regional maps, café and effects |
-| `assets/tiles/` | 52 PNG tileset atlases | PMD dungeon and launcher terrain |
+| `assets/tiles/` | 52 PNG tileset atlases (26 Explorers of Sky) plus `rr-00` to `rr-63` (64 Red Rescue Team) and `ex-NNN` (143 Explorers of Sky), extracted from the owner's ROMs | PMD dungeon and launcher terrain |
+| `assets/rescue-maps/` | 245 PNG maps of Red Rescue Team (57 Friend Areas, towns, team bases, dungeon pictures), `maps.tsv`, `sources.tsv` receipts | Page backgrounds; World's Base, shops and dojo pictures |
+| `assets/sky-maps/` | 440 PNG maps of Explorers of Sky from the owner's ROM (`maps.tsv`) | Not used yet; candidates for the Explorers campaign and Atlas |
+| `assets/sky-sfx/` | 52 Ogg clips of Explorers of Sky sounds (system effects, jingles, short music files) rendered from the owner's ROM (`sounds.tsv`) | World: `jingle-mission-success` on a claimed job; the rest is a source library, not audited by ear |
+| `assets/pmd-sfx/` | 496 mono Ogg sound effects rendered from the Red Rescue Team ROM's sound engine data, `sfx.tsv`, `triggers.tsv`, README | Source library for sound effects; approximated, not yet audited by ear |
 | `assets/pmd-items/` | 214 PNG item icons plus manifest | PMD items, ranks and World reward art |
 | `assets/pixelarticons/` | 63 PNG glyphs plus source/license files | UI controls only |
 | `assets/status/`, `assets/weather/` | Status and weather strips/sheets | PMD status and environmental overlays |
@@ -53,7 +57,7 @@ The repository's `docs/assets.md` is the current source inventory note. It docum
 - Cry files are currently species-keyed in `CryPlayer`; do not imply form-specific cries where none are indexed.
 - Mainline animated sprite sheets cover only generations 1–5.
 - No dedicated Pokémon Ranger asset pack is present in the inspected repository. Ranger media may be considered as a PMD-style fallback only when an exact source, creator credit and rights grant for the intended use are recorded; it is not an assumed available source.
-- The current SFX set includes PMD-derived clips whose enum labels were partly assigned by listening/owner identification and partly inferred from duration/pitch. Those uncertain mappings require an audio audit.
+- The current SFX set includes PMD-derived clips whose enum labels were partly assigned by listening/owner identification and partly inferred from duration/pitch. Those uncertain mappings require an audio audit. `assets/pmd-sfx/triggers.tsv` now maps each sound id to the game events that play it (from pret/pmd-red's source), and its README audits the existing guesses: `level-up` was mapped to the dungeon wind sound (216) and now shares the rank-up clip. The rendered `assets/pmd-sfx` clips are a software approximation of the GBA sound engine (no vibrato, reverb or pan; synthesised square, wave and noise channels) and have not been listened to; do not replace a clip ripped from the game with a rendered one without an A/B listen.
 - `assets/npc/` contains no production NPC portrait set in the inspected repository. This is not a blocker for the Pokémon-only world premise.
 
 Do not fill these gaps by claiming universal coverage, silently stretching a different form, or fabricating new Pokémon art.
