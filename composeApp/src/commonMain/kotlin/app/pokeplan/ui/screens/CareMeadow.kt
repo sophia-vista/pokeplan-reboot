@@ -1,6 +1,7 @@
 package app.pokeplan.ui.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -106,14 +107,14 @@ internal fun MeadowView(model: AppModel, goPlay: (String) -> Unit) {
             Text(
                 if (waiting == 0) "No one waiting" else "$waiting waiting",
                 style = MaterialTheme.typography.labelMedium, color = Pixel.Ink,
-                modifier = Modifier.align(Alignment.TopStart).padding(Spacing.S).clip(RoundedCornerShape(8.dp)).padding(horizontal = Spacing.S, vertical = 2.dp)
+                modifier = Modifier.align(Alignment.TopStart).padding(Spacing.S).clip(RoundedCornerShape(8.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.75f)).padding(horizontal = Spacing.S, vertical = 2.dp)
                     .semantics { contentDescription = if (waiting == 0) "No visitors waiting" else "$waiting visitors waiting for a place" },
             )
             val points = model.store.careEggMeter()
             Text(
                 "Care Egg $points/${app.pokeplan.core.reward.RewardEngine.CARE_EGG_METER_SIZE}",
                 style = MaterialTheme.typography.labelMedium, color = Pixel.Ink,
-                modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.S).clip(RoundedCornerShape(8.dp)).padding(horizontal = Spacing.S, vertical = 2.dp),
+                modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.S).clip(RoundedCornerShape(8.dp)).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.75f)).padding(horizontal = Spacing.S, vertical = 2.dp),
             )
         }
         reunion?.let { r ->
