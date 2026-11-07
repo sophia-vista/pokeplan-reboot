@@ -47,7 +47,7 @@ class HealStoreTest {
         val spy = Spy(game)
         val storage = MemoryStorage()
         val heal = HealStore(storage, clock, spy, utc, rng = Random(3))
-        if (research) heal.setFieldResearch(true)
+        if (!research) heal.setFieldResearch(false)
         return Setup(game, heal, spy, clock, storage)
     }
 
@@ -85,7 +85,8 @@ class HealStoreTest {
     }
 
     @Test
-    fun fieldResearchIsOffByDefaultAndTrackingWorksWithoutIt() {
+    fun fieldResearchIsOnByDefaultAndCanBeTurnedOffWithoutLosingTracking() {
+        assertTrue(setup().heal.data.settings.fieldResearch)
         val s = setup(research = false)
         val before = s.candies
         val a = assertNotNull(s.heal.logActivity(ActivityType.WALK, 30).record)

@@ -26,6 +26,8 @@ import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.CareBucket
 import app.pokeplan.core.pokemon.HealBucket
 import app.pokeplan.core.pokemon.HealPerks
+import app.pokeplan.core.pokemon.MintBucket
+import app.pokeplan.core.pokemon.MintPerks
 import app.pokeplan.core.pokemon.CarePerks
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.PerkBucket
@@ -204,6 +206,33 @@ fun HealPerksCard(model: AppModel) {
             shown.forEach { b -> PerkRow(b.label, totals[b] ?: 0.0, Perks.BUCKET_CAP) }
             Text(
                 "Up to +${Perks.BUCKET_CAP.roundToInt()}% a bucket, only on what Field Research pays. They never change a record, a total or a goal.",
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            )
+        }
+    }
+}
+
+/** Mint's party perks, laid out like [CarePerksCard]. They only change what Ledger Research pays; nothing in MINT's records depends on them. */
+@Composable
+fun MintPerksCard(model: AppModel) {
+    val player = model.data.player
+    val lead = player.mintLead
+    val party = player.partyOf(PartyIds.MINT)
+    val totals = MintPerks.total(lead, party)
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Mint perks")
+            if (!model.store.sees(Feature.PERKS)) {
+                Text(PERKS_LOCKED, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                return@Column
+            }
+            if (lead == null) {
+                return@Column
+            }
+            val shown = MintBucket.entries.filter { (totals[it] ?: 0.0) > 0 }
+            shown.forEach { b -> PerkRow(b.label, totals[b] ?: 0.0, Perks.BUCKET_CAP) }
+            Text(
+                "Up to +${Perks.BUCKET_CAP.roundToInt()}% a bucket, only on what Ledger Research pays. They never change a record, a total or a goal.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
         }

@@ -2,6 +2,7 @@ package app.pokeplan.app
 
 import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.HealKind
+import app.pokeplan.core.reward.MintKind
 import kotlinx.datetime.LocalDate
 
 /**
@@ -63,6 +64,14 @@ internal object Counters {
 
     /** HEAL moments of [kind] paid today. */
     fun heal(kind: HealKind): PeriodCounter = heal.getValue(kind)
+
+    private val mint = MintKind.entries.associateWith { PeriodCounter("mint-${it.name}-") }
+
+    /** MINT moments of [kind] paid in the period: the day for a reconciled account, the week's first day for a review. */
+    fun mint(kind: MintKind): PeriodCounter = mint.getValue(kind)
+
+    /** Points towards the next Ledger Egg. It carries over from day to day. */
+    const val MINT_EGG_METER = "mint-egg-meter"
 
     /** Points towards the next Field Egg. It carries over from day to day. */
     const val HEAL_EGG_METER = "heal-egg-meter"

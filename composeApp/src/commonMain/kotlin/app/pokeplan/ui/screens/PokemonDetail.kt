@@ -277,6 +277,8 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
     val inPlan = p.inParty && p.partyId == PartyIds.PLAN
     val inCare = p.inParty && p.partyId == PartyIds.CARE
     val inHeal = p.inParty && p.partyId == PartyIds.HEAL
+    val inMint = p.inParty && p.partyId == PartyIds.MINT
+    val isMintLead = p.id == player.mintLead?.id
     val isHealLead = p.id == player.healLead?.id
     val isBuddy = p.id == player.buddyId
     val isLead = p.id == player.careLead?.id
@@ -324,6 +326,10 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             PixelButton(if (isHealLead) "Is Heal's lead" else "Make Heal lead", { store.setHealLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inHeal && !isHealLead, compact = true)
             PixelButton(if (inHeal) "To PC" else "To Heal party", { store.setInParty(p.id, !inHeal, PartyIds.HEAL) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            PixelButton(if (isMintLead) "Is Mint's lead" else "Make Mint lead", { store.setMintLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inMint && !isMintLead, compact = true)
+            PixelButton(if (inMint) "To PC" else "To Mint party", { store.setInParty(p.id, !inMint, PartyIds.MINT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
     }
     if (!p.species.isSpecial) {

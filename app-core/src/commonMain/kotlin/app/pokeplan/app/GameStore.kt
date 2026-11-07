@@ -42,6 +42,8 @@ import app.pokeplan.core.reward.CareEvent
 import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.HealEvent
 import app.pokeplan.core.reward.HealKind
+import app.pokeplan.core.reward.MintEvent
+import app.pokeplan.core.reward.MintKind
 import app.pokeplan.heal.HealRules
 import app.pokeplan.core.reward.EffortEvent
 import app.pokeplan.core.reward.Feature
@@ -234,10 +236,11 @@ class GameStore(
      * Whether the tutorial [id] is still on offer: not done, and the player has not done the real thing (a finished focus session for
      * Plan's). Care's tutorial also stays off for a player with calm breaks; [careBreaks] is how many Care has recorded (Care keeps its own save).
      */
-    fun tutorialOffered(id: String, careBreaks: Int = 0, healActivities: Int = 0): Boolean = data.onboarded && id !in data.tutorials && when (id) {
+    fun tutorialOffered(id: String, careBreaks: Int = 0, healActivities: Int = 0, mintRecords: Int = 0): Boolean = data.onboarded && id !in data.tutorials && when (id) {
         Tutorials.PLAN_FOCUS -> data.focusHistory.none { it.completed }
         Tutorials.CARE_BREATH -> careBreaks == 0
         Tutorials.HEAL_WALK -> healActivities == 0
+        Tutorials.MINT_TALLY -> mintRecords == 0
         else -> false
     }
 
@@ -252,10 +255,11 @@ class GameStore(
             Tutorials.PLAN_FOCUS -> Triple(data.settings.region.open, PartyIds.PLAN, Origin.How.FOCUS_EGG)
             Tutorials.CARE_BREATH -> Triple(Region.CARE, PartyIds.CARE, Origin.How.CARE_EGG)
             Tutorials.HEAL_WALK -> Triple(Region.HEAL, PartyIds.HEAL, Origin.How.FIELD_EGG)
+            Tutorials.MINT_TALLY -> Triple(Region.MINT, PartyIds.MINT, Origin.How.LEDGER_EGG)
             else -> return null
         }
         val outcome = RewardEngine.tutorialEgg(data.player, region, party, newId(), nowMillis, rng)
-        update { d -> log((if (id == Tutorials.CARE_BREATH) CARE_LOG_PREFIX else if (id == Tutorials.HEAL_WALK) HEAL_LOG_PREFIX else "") + "first egg", outcome.rewards, d.copy(player = outcome.state, tutorials = d.tutorials + id), origin = Origin(how, region)) }
+        update { d -> log((if (id == Tutorials.CARE_BREATH) CARE_LOG_PREFIX else if (id == Tutorials.HEAL_WALK) HEAL_LOG_PREFIX else if (id == Tutorials.MINT_TALLY) MINT_LOG_PREFIX else "") + "first egg", outcome.rewards, d.copy(player = outcome.state, tutorials = d.tutorials + id), origin = Origin(how, region)) }
         return outcome.rewards
     }
 
@@ -354,6 +358,39 @@ class GameStore(
         return rewards
     }
 
+    /**
+     * Pays a MINT moment into the shared world (Ledger Research, MINT.md section 16): once per event id whatever MINT does with its records, at most
+     * [MINT_CAPS] of each kind in its period (a day for a reconciled account, a week for a review), and a full Ledger Research meter finds a Ledger Egg
+     * on top. The log says only "Mint" and the kind of moment. Nothing about money, an account or a provider exists in the event to be read here.
+     */
+    override fun mint(event: MintEvent): List<Reward>? {
+        if (!data.onboarded || event.id in data.mintPaid) return null
+        val tally = Counters.mint(event.kind)
+        val period = if (event.kind == MintKind.REVIEW) app.pokeplan.mint.MintRules.weekStartOf(today) else today
+        val paidInPeriod = tally.get(data.counters, period)
+        if (paidInPeriod >= MINT_CAPS.getValue(event.kind)) return null
+        val outcome = RewardEngine.mint(data.player, event, rng)
+        val meter = mintEggMeter() + RewardEngine.MINT_EGG_POINTS.getValue(event.kind)
+        val egg = if (meter >= RewardEngine.MINT_EGG_METER_SIZE) RewardEngine.mintEgg(outcome.state, newId(), nowMillis, rng) else null
+        val rewards = outcome.rewards + egg?.rewards.orEmpty()
+        update { d ->
+            val counters = tally.set(d.counters, period, paidInPeriod + 1) + (Counters.MINT_EGG_METER to meter % RewardEngine.MINT_EGG_METER_SIZE)
+            log(MINT_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, mintPaid = (d.mintPaid + event.id).takeLast(MINT_PAID_KEPT)), origin = Origin(Origin.How.LEDGER_EGG, Region.MINT))
+        }
+        return rewards
+    }
+
+    /** Points towards the next Ledger Egg, out of [RewardEngine.MINT_EGG_METER_SIZE]. */
+    fun mintEggMeter(): Int = data.counters[Counters.MINT_EGG_METER] ?: 0
+
+    /** Makes [id], who must be in Mint's party, its lead: the Pokémon that takes Ledger Research's friendship and gives its perks. */
+    fun setMintLead(id: String): Boolean {
+        val p = pokemon(id)
+        if (!p.inParty || p.partyId != PartyIds.MINT) return false
+        update { d -> d.copy(player = d.player.copy(mintLeadId = id)) }
+        return true
+    }
+
     /** Points towards the next Field Egg, out of [RewardEngine.HEAL_EGG_METER_SIZE]. */
     fun healEggMeter(): Int = data.counters[Counters.HEAL_EGG_METER] ?: 0
 
@@ -409,7 +446,7 @@ class GameStore(
             val counters = Counters.BEFRIEND.set(d.counters, today, made + 1)
             val tickets = if (ticket == null) d.eggTickets
             else d.eggTickets.copy(stock = d.eggTickets.stock.drop(1), spent = d.eggTickets.spent + SpentTicket(ticket.id, nowMillis, event.newPokemonId))
-            log(CARE_LOG_PREFIX + "made a friend", outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets),
+            log(CARE_FRIEND_SOURCE, outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets),
                 origin = Origin(Origin.How.BEFRIENDED, Region.CARE, visitor = visitorOrigin(event, outcome.rewards)))
         }
         return outcome.rewards
@@ -1183,7 +1220,7 @@ class GameStore(
     fun transferBlock(id: String): TransferBlock? =
         pokemon(id).let { p ->
             // The "last party member" rule guards Plan's party only; other modules' parties may be emptied.
-            Transfer.block(p, id == data.player.buddyId || id == data.player.planLead?.id || id == data.player.careLead?.id || id == data.player.healLead?.id, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
+            Transfer.block(p, id == data.player.buddyId || id == data.player.planLead?.id || id == data.player.careLead?.id || id == data.player.healLead?.id || id == data.player.mintLead?.id, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
         }
 
     /** Whether [feature] has appeared yet at the player's trainer rank (the gradual reveal). */
@@ -1750,12 +1787,25 @@ class GameStore(
         /** Every Care entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val CARE_LOG_PREFIX = "Care: "
 
+        /** The reward-log source of a befriended Care visitor, whose gift really is an egg (MODULES/CARE.md section 6). */
+        const val CARE_FRIEND_SOURCE = CARE_LOG_PREFIX + "made a friend"
+
         /** The most of each HEAL kind the world pays a day *(tune)*, a backstop to the same limits in `HealRules`. */
         val HEAL_DAILY_CAP: Map<HealKind, Int> = mapOf(HealKind.ACTIVITY to HealRules.ACTIVITIES_PAID_PER_DAY, HealKind.PARTICIPATION to HealRules.PARTICIPATION_PAID_PER_DAY)
 
         /** Every HEAL entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val HEAL_LOG_PREFIX = "Heal: "
         private val HEAL_SOURCES = mapOf(HealKind.ACTIVITY to "Field Research", HealKind.PARTICIPATION to "Field Research").mapValues { HEAL_LOG_PREFIX + it.value }
+
+        /** The most of each MINT kind the world pays in its period *(tune)*, a backstop to the same limits in `MintRules`: reconciled accounts a day, reviews a week. */
+        val MINT_CAPS: Map<MintKind, Int> = mapOf(MintKind.RECONCILED to app.pokeplan.mint.MintRules.RECONCILES_PAID_PER_DAY, MintKind.REVIEW to app.pokeplan.mint.MintRules.REVIEWS_PAID_PER_WEEK)
+
+        /** Every MINT entry in the reward log starts with this (the kind of moment only, never what it was). */
+        const val MINT_LOG_PREFIX = "Mint: "
+        private val MINT_SOURCES = mapOf(MintKind.RECONCILED to "Ledger Research", MintKind.REVIEW to "Ledger Research").mapValues { MINT_LOG_PREFIX + it.value }
+
+        /** How many paid MINT event ids the save remembers. */
+        const val MINT_PAID_KEPT = 1000
 
         /** How many paid HEAL event ids the save remembers. */
         const val HEAL_PAID_KEPT = 1000

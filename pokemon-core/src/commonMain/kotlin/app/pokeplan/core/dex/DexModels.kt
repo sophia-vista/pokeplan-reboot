@@ -28,8 +28,8 @@ enum class Region(val label: String, val isModule: Boolean = false, val released
     CARE("Care Region", isModule = true),
     /** The Heal module's region (Field Research): sporty, outdoorsy and energetic Pokémon. Released with the Heal screens. */
     HEAL("Heal Region", isModule = true),
-    /** The finance module's region (Ledger Research): steady Steel, Rock and Ground keepers, fossils and gems. Not released until the module ships. */
-    MINT("Mint Region", isModule = true, released = false),
+    /** The finance module's region (Ledger Research): steady Steel, Rock and Ground keepers, fossils and gems. Released with the Mint screens. */
+    MINT("Mint Region", isModule = true),
     /** The household module's region (kitchen, pantry, closet, garden): hearth, garden and pet Pokémon. Not released until the module ships. */
     HOUSEHOLD("Home Region", isModule = true, released = false),
     /** The connection module's region (Postcard Trail): postal birds, loyal dogs, pairs and signallers. Not released until the module ships. */

@@ -1,0 +1,61 @@
+-- Version 7 to 8: MINT's own record tables (see Data.sq). New in this version: nothing is moved, the tables start empty.
+CREATE TABLE mint_account (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_category (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_transaction (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_budget (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_bill (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_bill_payment (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_reconciliation (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_review (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE mint_state (
+    key TEXT NOT NULL PRIMARY KEY,
+    json TEXT NOT NULL
+);

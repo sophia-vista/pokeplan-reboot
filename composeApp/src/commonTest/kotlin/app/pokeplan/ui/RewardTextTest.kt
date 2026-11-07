@@ -25,4 +25,17 @@ class RewardTextTest {
         assertTrue(isWorldSource("World: exploring") && !isWorldSource("Care"))
         assertFalse(hatched.describe("World").contains("egg", ignoreCase = true))
     }
+
+    @Test
+    fun onlyPlansEggsAndAVisitorsGiftHatchEveryOtherModuleHasItsOwnWords() {
+        assertEquals("A new friend wandered over: Pikachu!", hatched.describe("Care: a routine"))
+        assertEquals("Field Research found Pikachu!", hatched.describe("Heal: Field Research"))
+        assertEquals("Ledger Research catalogued Pikachu!", hatched.describe("Mint: Ledger Research"))
+        assertEquals("Your egg hatched: Pikachu!", hatched.describe(app.pokeplan.app.GameStore.CARE_FRIEND_SOURCE), "a visitor's gift really is an egg")
+        for (source in listOf("Care: a routine", "Heal: Field Research", "Mint: Ledger Research")) assertFalse(hatched.describe(source).contains("egg", ignoreCase = true), source)
+        assertEquals(Acquisition.ARRIVAL, acquisitionOf(app.pokeplan.app.Origin.How.CARE_EGG))
+        assertEquals(Acquisition.FIELD, acquisitionOf(app.pokeplan.app.Origin.How.FIELD_EGG))
+        assertEquals(Acquisition.LEDGER, acquisitionOf(app.pokeplan.app.Origin.How.LEDGER_EGG))
+        for (how in listOf(app.pokeplan.app.Origin.How.FOCUS_EGG, app.pokeplan.app.Origin.How.TASK_EGG, app.pokeplan.app.Origin.How.BEFRIENDED, null)) assertEquals(Acquisition.EGG, acquisitionOf(how))
+    }
 }

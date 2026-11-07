@@ -506,6 +506,22 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last().copy(isShiny = true), fromTask = true)
     }
 
+    /** Each module's own way of a new Pokémon arriving (owner, 8 November 2026): a friend walks over Care's meadow, one is found on Heal's route, one is catalogued in Mint's cave. */
+    @Test
+    fun arrivalCare() = cutscene("arrival-care", frames = 60, still = true) {
+        app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last(), fromTask = false, how = app.pokeplan.app.Origin.How.CARE_EGG)
+    }
+
+    @Test
+    fun arrivalHeal() = cutscene("arrival-heal", frames = 60, still = true) {
+        app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last(), fromTask = false, how = app.pokeplan.app.Origin.How.FIELD_EGG)
+    }
+
+    @Test
+    fun arrivalMint() = cutscene("arrival-mint", frames = 60, still = true) {
+        app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last().copy(isShiny = true), fromTask = false, how = app.pokeplan.app.Origin.How.LEDGER_EGG)
+    }
+
     @Test
     fun evolution() = cutscene("evolution", frames = 30, still = true) {
         val before = it.grantPokemon(4, "test")
@@ -752,6 +768,59 @@ class ScreenshotTest {
     fun largeTextHeal() {
         heal("heal-xl-menu", null, height = 4200, healParty = 3, fontScale = 1.3f)
         app.pokeplan.ui.screens.HealSection.entries.forEach { heal("heal-xl-${it.name.lowercase()}", it, height = 2400, fontScale = 1.3f) }
+    }
+
+    /** The Mint module with a little recorded (two accounts, a card, spending, a budget, a bill and a reconciliation), open on [section] (null for its menu). Synthetic amounts only. */
+    private fun mint(name: String, section: app.pokeplan.ui.screens.MintSection?, height: Int = 1500, mintParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, hide: Boolean = false) {
+        val store = storeWithTeam()
+        store.markRewardsSeen()
+        store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(mintParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.MINT) }
+        val model = AppModel(store)
+        if (!empty) {
+            val mint = model.mint
+            val bank = mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000, suffix = "4821", group = "Daily spending").record!!
+            val wallet = mint.addAccount("E-wallet", app.pokeplan.mint.AccountType.EWALLET, "PHP", 350_000).record!!
+            val card = mint.addAccount("Credit card", app.pokeplan.mint.AccountType.CREDIT_CARD, "PHP", 0).record!!
+            mint.record(app.pokeplan.mint.TxType.INCOME, 3_500_000, bank.id, categoryId = "cat-salary", payee = "Salary")
+            mint.record(app.pokeplan.mint.TxType.EXPENSE, 184_550, bank.id, categoryId = "cat-food", payee = "Wet market")
+            mint.record(app.pokeplan.mint.TxType.EXPENSE, 62_000, wallet.id, categoryId = "cat-transport", payee = "Commute")
+            mint.record(app.pokeplan.mint.TxType.EXPENSE, 320_000, card.id, categoryId = "cat-shopping", payee = "Shoes")
+            mint.record(app.pokeplan.mint.TxType.TRANSFER, 500_000, bank.id, toAccountId = wallet.id)
+            mint.addBudget(800_000, "PHP", app.pokeplan.mint.BudgetPeriod.MONTHLY, "cat-food")
+            mint.addBudget(2_000_000, "PHP", app.pokeplan.mint.BudgetPeriod.MONTHLY, null)
+            mint.addBill("Internet", "PHP", app.pokeplan.mint.Frequency.MONTHLY, model.store.today, 149_900)
+            mint.addBill("Electricity", "PHP", app.pokeplan.mint.Frequency.MONTHLY, model.store.today, null)
+            if (hide) mint.setHideValues(true)
+            store.markRewardsSeen()
+        }
+        model.module = app.pokeplan.ui.screens.Module.MINT
+        model.mintSection = section
+        render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+    }
+
+    @Test
+    fun mintMenu() = mint("mint-menu", null, height = 2400, mintParty = 3)
+
+    @Test
+    fun mintMenuEmptyShowsTheTutorial() = mint("mint-menu-empty", null, height = 2000, empty = true)
+
+    @Test
+    fun mintMenuDark() = mint("mint-menu-dark", null, height = 2400, mintParty = 3, dark = true)
+
+    @Test
+    fun mintMenuWithAmountsHidden() = mint("mint-menu-hidden", null, height = 2400, mintParty = 1, hide = true)
+
+    @Test
+    fun mintActivityAndAccounts() {
+        mint("mint-activity", app.pokeplan.ui.screens.MintSection.ACTIVITY, height = 2800)
+        mint("mint-accounts", app.pokeplan.ui.screens.MintSection.ACCOUNTS, height = 2200)
+    }
+
+    /** Every Mint section at the system's text at 130%: nothing clipped or pushed out of its box. */
+    @Test
+    fun largeTextMint() {
+        mint("mint-xl-menu", null, height = 4200, mintParty = 3, fontScale = 1.3f)
+        app.pokeplan.ui.screens.MintSection.entries.forEach { mint("mint-xl-${it.name.lowercase()}", it, height = 2800, fontScale = 1.3f) }
     }
 
     /** Home as the world overview: each region with its lead and next step, the streak, and what happened recently. */

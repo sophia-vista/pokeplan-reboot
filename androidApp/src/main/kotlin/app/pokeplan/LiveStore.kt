@@ -7,6 +7,7 @@ import app.pokeplan.app.GameStore
 import app.pokeplan.app.Storage
 import app.pokeplan.data.AndroidDatabase
 import app.pokeplan.data.DataStore
+import app.pokeplan.data.KeystoreMintKey
 import app.pokeplan.data.LiveBackup
 import app.pokeplan.data.LiveDocuments
 import app.pokeplan.data.NewerSchemaException
@@ -80,6 +81,12 @@ object LiveStore {
                 read(app, "heal.json")?.let { legacy -> if (!s.healTables.isActive() && s.live.read("heal") == null) s.live.write("heal", legacy, now) }
                 s.live.moveHealToTables(now)
             }.onFailure { Log.w(TAG, "Heal tables not active this run: ${it.javaClass.simpleName}") }
+            // MINT lives in its own tables from the start (schema 8), every row sealed with a key that lives in the Android Keystore. If the Keystore cannot give
+            // the key, Mint does not start this run (nothing of it is ever written in clear: `mintStorage` then keeps it in memory only), and it is tried again at the next start.
+            runCatching {
+                s.mintCipher = KeystoreMintKey.cipher()
+                s.live.moveMintToTables(now)
+            }.onFailure { s.mintCipher = null; Log.w(TAG, "Mint tables not active this run: ${it.javaClass.simpleName}") }
             // And the player's side (schema 6): the Pokémon, their places, the Bag, the Poké balance and its ledger, once PLAN's move has run.
             // The save is checked the way the app checks every save it loads, written as rows, read back and compared; any difference or a
             // save the tables cannot represent changes nothing, the rows stay the live save, and it is tried again at the next start.

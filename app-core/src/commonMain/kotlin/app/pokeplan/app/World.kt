@@ -3,6 +3,7 @@ package app.pokeplan.app
 import app.pokeplan.core.reward.BefriendEvent
 import app.pokeplan.core.reward.CareEvent
 import app.pokeplan.core.reward.HealEvent
+import app.pokeplan.core.reward.MintEvent
 import app.pokeplan.core.reward.Reward
 
 /**
@@ -18,6 +19,12 @@ interface World {
      * The world learns nothing but the event's id, module, opaque reference, kind and time.
      */
     fun heal(event: HealEvent): List<Reward>? = null
+
+    /**
+     * Pays a MINT moment (Ledger Research) from the minimal event; null when nothing was paid (not started, already paid, or today's share is used).
+     * The world learns nothing but the event's id, module, opaque reference, kind and time: no amount, account, merchant or note.
+     */
+    fun mint(event: MintEvent): List<Reward>? = null
 
     /** Makes a friend of a Care visitor (one a day); null when nothing was paid (not started, or today's is used). */
     fun befriend(event: BefriendEvent): List<Reward>? = null

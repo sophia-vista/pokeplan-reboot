@@ -23,6 +23,13 @@ class DataStore private constructor(internal val driver: SqlDriver) {
     val careTables = CareTables(this)
     val planTables = PlanTables(this)
     val healTables = HealTables(this)
+    val mintTables = MintTables(this)
+
+    /**
+     * The key that seals Mint's rows and every copy of Mint that leaves its tables (a snapshot for a backup, a kept-aside document). Set before Mint is used; with
+     * none, Mint's tables refuse to start, so a build that forgets it can never store a financial record in clear.
+     */
+    @Volatile var mintCipher: RowCipher? = null
     val pokemonTables = PokemonTables(this)
     val live = LiveDocuments(this)
     val reminders = ReminderRepository(this)
