@@ -329,6 +329,50 @@ CREATE TABLE plan_state (
     json TEXT NOT NULL
 );
 
+-- HEAL's own records (version 6, REP-014): the Heal save kept in tables from the start, one family per kind of private record (activity,
+-- hydration, sleep, body measurements, goals) so each can be read, exported or erased on its own. Same shape as CARE's and PLAN's (key,
+-- position, day, and the record as JSON in `json`). `heal_state` holds the settings and any field a newer build adds. HEAL never has a
+-- row in `live_document`: it is created in the tables.
+CREATE TABLE heal_activity (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE heal_hydration (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE heal_sleep (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE heal_measurement (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE heal_goal (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE heal_state (
+    key TEXT NOT NULL PRIMARY KEY,
+    json TEXT NOT NULL
+);
+
 -- Owned Pokémon.
 insertPokemon:
 INSERT INTO owned_pokemon(
