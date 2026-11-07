@@ -101,6 +101,8 @@ data class AppData(
     val shownCalendars: Set<Long> = emptySet(),
     /** Audit record of the one-time merge of Plan's coins and World's Poké into one Poké balance; null until it has run. */
     val pokeMigration: PokeMigration? = null,
+    /** 1 once a Pokémon in two places has been resolved to one ([Places.resolve], owner decision 7 November 2026); 0 for an older save. */
+    val placesVersion: Int = 0,
 ) {
     companion object {
         const val SCHEMA = 1
@@ -263,7 +265,7 @@ data class Settings(
     val careModule: Boolean = true,
     /** World's expedition boxes scroll their floor while the team walks. */
     val worldScroll: Boolean = true,
-    /** Pokémon in a module's party (Plan's, Care's...) stay out of World teams, so a module's party is never taken away for exploring. */
+    /** No longer used: a Pokémon on a World team is never in a party (one place only). Kept so older saves load. */
     val worldKeepPartyOut: Boolean = false,
 ) {
     /** How loud sound effects play, 0 to 1 (0 when Sound was switched off). */
@@ -305,9 +307,16 @@ data class PendingCompletion(
     val finalAtMillis: Long,
 )
 
+/**
+ * The small record an egg or Pokémon from a befriended visitor keeps (CARE.md section 6.6): which visitor, the day, the traits it took
+ * from it (empty when it took none, or when the visitor itself joined) and a short note. The link stays after hatching.
+ */
+@Serializable
+data class VisitorOrigin(val speciesId: Int, val visitorId: String, val epochDay: Long, val inherited: List<String> = emptyList(), val note: String = "")
+
 /** How a Pokémon joined the collection, and in which region when it hatched or was befriended there. */
 @Serializable
-data class Origin(val how: How, val region: Region? = null) {
+data class Origin(val how: How, val region: Region? = null, val visitor: VisitorOrigin? = null) {
     enum class How(val label: String) {
         STARTER("Your first partner"),
         FOCUS_EGG("Hatched from a Focus Egg"),

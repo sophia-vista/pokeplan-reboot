@@ -175,6 +175,8 @@ class AppModel(
 
     /** The screen open inside Care (null shows Care's menu). */
     var careSection: CareSection? by mutableStateOf(null)
+    /** The Pokémon the Meadow's panel sent to Care Play (opens it on them). */
+    var playTarget: String? by mutableStateOf(null)
     var worldSection: WorldSection? by mutableStateOf(null)
 
     /** The layer of the World map on show (the home map or Kanto). */

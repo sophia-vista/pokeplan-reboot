@@ -130,6 +130,8 @@ data class BefriendEvent(
     val formIdentifier: String,
     val newPokemonId: String,
     val nowMillis: Long,
+    /** The visitor's own id: an egg it leaves may take light traits from it ([VisitorInheritance]); empty for a friend of an old save. */
+    val visitorId: String = "",
 )
 
 /** A finished piece of work of some [tier] (1 to 5): a task, a habit, a milestone... */
@@ -160,6 +162,8 @@ enum class CareKind {
     @SerialName("calm_break_completed") CALM_BREAK,
     @SerialName("weekly_rhythm") WEEKLY_RHYTHM,
     @SerialName("skill_practised") SKILL,
+    /** Care Play: time spent with a Pokémon ([CareEvent.pokemonId]), at most once per Pokémon per day (CARE.md section 4). */
+    @SerialName("care_play") PLAY,
 }
 
 /** A Care moment, with no other field: no titles, no mood, no health values. Daily caps are the caller's job. */
@@ -167,6 +171,8 @@ enum class CareKind {
 data class CareEvent(
     val kind: CareKind,
     val nowMillis: Long,
+    /** For [CareKind.PLAY]: the Pokémon played with, who takes the friendship. */
+    val pokemonId: String? = null,
 )
 
 /** Which type is in the spotlight on a given day: all 18 take turns. */
@@ -249,13 +255,13 @@ object RewardEngine {
     const val CARE_POINTS = 1
 
     /** Rare Candies for each Care moment. *(tune)* */
-    val CARE_CANDIES: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 3, CareKind.CALM_BREAK to 4, CareKind.SKILL to 4, CareKind.WEEKLY_RHYTHM to 15)
+    val CARE_CANDIES: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 3, CareKind.CALM_BREAK to 4, CareKind.SKILL to 4, CareKind.WEEKLY_RHYTHM to 15, CareKind.PLAY to 1)
 
     /**
      * Care's Egg meter, kept by the app (it never reaches the server): each Care moment adds its points, and a full meter
      * gives a Care Egg ([careEgg]). With every routine, calm break and skill done that is 5 eggs a day; a few moments, 1 or 2.
      */
-    val CARE_EGG_POINTS: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 1, CareKind.CALM_BREAK to 2, CareKind.SKILL to 2, CareKind.WEEKLY_RHYTHM to 0)
+    val CARE_EGG_POINTS: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 1, CareKind.CALM_BREAK to 2, CareKind.SKILL to 2, CareKind.WEEKLY_RHYTHM to 0, CareKind.PLAY to 1)
     const val CARE_EGG_METER_SIZE = 3
 
     /**
@@ -425,7 +431,7 @@ object RewardEngine {
         var p = Hatching.create(e.newPokemonId, hatch, careParty, e.nowMillis, TASK_EGG_MINUTES, rng)
         val floor = BEFRIEND_IV_FLOOR + (luck / Perks.BUCKET_CAP * BEFRIEND_LUCK_IV_BONUS).toInt()
         p = p.copy(partyId = PartyIds.CARE, ivs = Stat.entries.fold(p.ivs) { ivs, stat -> ivs.with(stat, maxOf(ivs[stat], floor)) })
-        if (joins) p = p.copy(friendship = BEFRIEND_JOIN_FRIENDSHIP)
+        if (joins) p = p.copy(friendship = BEFRIEND_JOIN_FRIENDSHIP) else p = VisitorInheritance.apply(p, VisitorInheritance.plan(e.visitorId, e.newPokemonId))
         val lead = state.careLeadId?.takeIf { state.careLead != null } ?: p.id.takeIf { p.inParty }
         val (bag, overflow, newRewards) = newSpecies(state.caught + state.pokemon.map { it.speciesId }, p.speciesId, state.inventory)
         return Outcome(
@@ -461,12 +467,13 @@ object RewardEngine {
     fun care(state: PlayerState, e: CareEvent, rng: Random): Outcome {
         val rewards = mutableListOf<Reward>()
         var pokemon = state.pokemon
-        val buddy = state.careLead
+        val buddy = if (e.kind == CareKind.PLAY) state.pokemon.firstOrNull { it.id == e.pokemonId } ?: state.careLead else state.careLead
         val perks = CarePerks.total(state.careLead, state.partyOf(PartyIds.CARE))
         val source = when (e.kind) {
             CareKind.ROUTINE -> FriendshipRules.Source.ROUTINE
             CareKind.CALM_BREAK -> FriendshipRules.Source.CALM_BREAK
             CareKind.SKILL -> FriendshipRules.Source.SKILL
+            CareKind.PLAY -> FriendshipRules.Source.PET
             CareKind.WEEKLY_RHYTHM -> null
         }
         if (buddy != null && source != null) {
@@ -477,7 +484,7 @@ object RewardEngine {
             if (grown.friendship > buddy.friendship) rewards += Reward.Friendship(grown.friendship - buddy.friendship)
         }
         val berries = when (e.kind) {
-            CareKind.ROUTINE -> 0
+            CareKind.ROUTINE, CareKind.PLAY -> 0
             CareKind.CALM_BREAK, CareKind.SKILL -> 1
             CareKind.WEEKLY_RHYTHM -> RHYTHM_BERRIES
         }

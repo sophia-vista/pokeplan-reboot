@@ -329,7 +329,11 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
 @Composable
 private fun OriginBox(model: AppModel, p: OwnedPokemon) = DetailBox("Origin") {
     val day = model.store.dayOf(p.caughtAtMillis)
-    model.data.origins[p.id]?.let { Text(originText(it), style = MaterialTheme.typography.bodyLarge) }
+    model.data.origins[p.id]?.let {
+        Text(originText(it), style = MaterialTheme.typography.bodyLarge)
+        // A friend's egg or a visitor that stayed keeps a small note of who it came from and what it took.
+        it.visitor?.takeIf { v -> v.note.isNotBlank() }?.let { v -> Text(v.note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
+    }
     Text("Met on ${day.dayMonth()} ${day.year}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 

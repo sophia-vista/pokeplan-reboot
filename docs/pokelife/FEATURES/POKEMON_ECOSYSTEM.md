@@ -47,7 +47,7 @@ No module may create a local shadow collection, local copy of a Pokémon's progr
 
 ### 2.2 Pokémon roles *(owner decision, 6 November 2026)*
 
-A Pokémon has four possible roles. They are independent: one owned Pokémon can hold several at once, and changing one never changes another.
+An owned Pokémon is in **exactly one place** at any time (owner decision, 7 November 2026, replacing the earlier "independent roles"): the global buddy, one module's party, a Guardian slot, a WORLD expedition team, a GEAR tool as its helper, or the PC. Putting a Pokémon in a place takes it out of the place it was in (the PC is the place of every Pokémon that holds no other); nothing is ever copied, and taking a Pokémon from a place never releases or deletes it. A Pokémon on an expedition under way cannot be moved until the expedition ends. The roles themselves stay independent of each other (changing one place never changes another place's other members).
 
 | Role | Scope | What it does | What it never does |
 |---|---|---|---|
@@ -56,7 +56,11 @@ A Pokémon has four possible roles. They are independent: one owned Pokémon can
 | **WORLD expedition team** | WORLD only | Goes on expeditions and dungeons under WORLD's own team-size and assignment rules | Count as a module party or share its bonuses |
 | **GEAR helper** | GEAR tools and the Pokégear menu | A visual helper: its sprite is the tool icon and menu decoration | Have any effect: aesthetics only (`MODULES/GEAR.md` section 6) |
 
-Roles reference canonical owned IDs and never copy a Pokémon. A Pokémon in several roles at once is allowed unless a module rule explicitly says otherwise.
+Places reference canonical owned IDs and never copy a Pokémon. **One Pokémon, one place:** no Pokémon is the buddy and in a party, in two parties, on a WORLD team and in a party, a Guardian and a helper, and so on. A GEAR helper helps one tool. The place is derived from the references (the buddy id, the party each Pokémon is in, the Guardian slots, the WORLD teams and the GEAR helpers) and every operation that assigns a place first vacates the old one in the same save, so no state with two places can be written; a save from before this rule is resolved once on load (section 2.2.3).
+
+#### 2.2.3 Resolving a save with a Pokémon in two places
+
+Done once, deterministically and without removing any Pokémon, by this priority (the function a place performs wins over decoration): Guardian slot, then WORLD team, then module party, then GEAR helper, then buddy. A Pokémon that holds several places keeps the highest and leaves the others. If the buddy is lost this way the buddy becomes the player's highest-level Pokémon that is in the PC (ties: friendliest, then id), so the app always has a face; with none in the PC the buddy stays empty until the player picks one. The resolution is recorded with the save (a version, so it runs once) and never pays or costs anything.
 
 #### 2.2.1 Module party bonuses
 
@@ -77,16 +81,16 @@ Each applicable module owns an independent party. This is not a single global ac
 - The launcher may prioritize the selected global buddy and display other collection members according to its presentation settings; it does not own a party.
 - The shared collection and PC/storage remain global.
 
-A party stores an ordered list of canonical `ownedPokemonId` references. It never stores a copied Pokémon object. A given owned Pokémon may appear in multiple module parties at the same time, subject to each module's own slot and eligibility rules. A change to one party must not mutate another party or WORLD team assignment.
+A party stores an ordered list of canonical `ownedPokemonId` references. It never stores a copied Pokémon object. **A given owned Pokémon is in at most one party, and then in no other place** (section 2.2); adding it to a party moves it out of its previous place. A change to one party must not mutate another party or WORLD team assignment, except that the Pokémon being moved leaves its old place.
 
 Party capacity is **six for every applicable module: one lead and five members**. The lead is slot 1; a party can hold fewer than six and never auto-fills. Slot validation must reject unknown, released, or otherwise ineligible IDs, but party removal never releases or deletes the Pokémon.
 
 ### 2.3 Global buddy
 
-There is one global buddy selection independent of all parties and WORLD expedition teams.
+There is one global buddy. It is a place of its own, not a membership of any party or WORLD expedition team.
 
 - Any currently owned Pokémon may be selected, including a Legendary or Mythical Pokémon if the collection rules permit it.
-- Switching is immediate and does not reset campaign progress, alter party membership, or rewrite authored dialogue.
+- Switching is immediate and does not reset campaign progress or rewrite authored dialogue. The buddy is one of the Pokémon places (section 2.2): choosing a Pokémon that is in a party, a team or a helper role takes it from there, and the previous buddy goes to the PC.
 - Story continuity is maintained by using the selected Pokémon as the visual buddy while keeping dialogue semantically coherent.
 - The buddy is the main companion. Buddy selection is cosmetic/narrative; it is not a reward multiplier, combat stat bonus, or required participant in a module action. Bonuses come from module parties (section 2.2.1), not from the buddy.
 - No separate affection meter, daily maintenance, decay, or needy pet loop.
@@ -95,9 +99,9 @@ There is one global buddy selection independent of all parties and WORLD expedit
 
 ### 2.4 Pokémon availability and references
 
-A module can use an owned Pokémon in its party even if that Pokémon was acquired elsewhere. A party is a presentation/selection roster, not ownership. A Pokémon can be in PC/storage and still remain in another module's party unless a specific module's rule requires active eligibility; do not introduce global exclusivity by default.
+A module can use an owned Pokémon in its party even if that Pokémon was acquired elsewhere. A party is a presentation/selection roster, not ownership. Exclusivity is the rule (section 2.2): a Pokémon in the PC is in no party, and one in a party is not in the PC.
 
-WORLD expedition assignment is validated against WORLD rules and expedition capacity, not against module-party membership. Removing a Pokémon from a module party does not remove it from WORLD teams, the buddy selection, or any other party.
+WORLD expedition assignment is validated against WORLD rules and expedition capacity. A Pokémon on a team is in no party and is not the buddy; putting it on a team takes it out of its party (and the reverse). Removing a Pokémon from a place sends it to the PC; it does not release it.
 
 ## 3. Canonical species and form catalog
 
@@ -212,11 +216,11 @@ Each applicable module persists an independent `ModuleParty` or equivalent:
 - module-specific capacity/configuration if applicable
 - update/version metadata
 
-Capacity is six: slot 1 is the lead, slots 2 to 6 are members. Enforce unique IDs within one party; allow the same ID across different parties. A party can contain fewer than six. Do not auto-fill or auto-replace a party when a Pokémon evolves, changes buddy status, or is added to another module.
+Capacity is six: slot 1 is the lead, slots 2 to 6 are members. Enforce unique IDs within one party and across all parties (one Pokémon, one place). A party can contain fewer than six. Do not auto-fill or auto-replace a party when a Pokémon evolves, changes buddy status, or is added to another module.
 
 ### 6.3 WORLD teams
 
-WORLD owns named or contextual expedition teams, assignments, active expedition membership and team-size limits. They reference canonical owned IDs. An owned Pokémon may be present in a module party and a WORLD team simultaneously unless WORLD explicitly prevents concurrent expedition assignments for the same time window. WORLD's existing expedition concurrency/assignment policy remains authoritative.
+WORLD owns named or contextual expedition teams, assignments, active expedition membership and team-size limits. They reference canonical owned IDs. An owned Pokémon on a WORLD team is in no module party and is not the buddy or a helper (section 2.2). A Pokémon on an expedition under way cannot be moved. WORLD's expedition concurrency/assignment policy remains authoritative for the team itself.
 
 ### 6.4 Favorites and protection
 

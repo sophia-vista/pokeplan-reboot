@@ -35,18 +35,24 @@ class GearTest {
     }
 
     @Test
-    fun anOwnedPokemonTakesOverFromTheLoanerAndTheChoiceSticksUntilTheyLeave() {
+    fun aChosenPokemonTakesOverFromTheLoanerAndHelpsOneToolInNoOtherPlace() {
         val store = store()
         store.lendGearHelper(GearTool.FLASHLIGHT)
         val mareep = store.grantPokemon(179, "test")
-        assertEquals(mareep.id, assertIs<GearHelper.Owned>(store.gearHelper(GearTool.FLASHLIGHT)).pokemon.id)
+        // Nothing picks a helper from the collection by itself (it would take the Pokémon out of the PC): the loaner stays until a choice.
+        assertIs<GearHelper.Loaner>(store.gearHelper(GearTool.FLASHLIGHT))
+        assertTrue(store.assignGearHelper(GearTool.FLASHLIGHT, mareep.id))
+        assertEquals(Place.GearHelper(GearTool.FLASHLIGHT.name), store.placeOf(mareep.id))
         val ampharos = store.grantPokemon(181, "test")
         assertTrue(store.assignGearHelper(GearTool.FLASHLIGHT, ampharos.id))
         assertEquals(ampharos.id, assertIs<GearHelper.Owned>(store.gearHelper(GearTool.FLASHLIGHT)).pokemon.id)
-        // One Pokémon may help several tools, but only the ones its line fits.
+        assertEquals(Place.Pc, store.placeOf(mareep.id), "the one it replaced goes back to the PC")
+        // Only the tools its line fits.
         assertFalse(store.assignGearHelper(GearTool.COIN, ampharos.id))
         assertFalse(store.assignGearHelper(GearTool.FLASHLIGHT, "nobody"))
         store.clearGearHelper(GearTool.FLASHLIGHT)
+        assertEquals(Place.Pc, store.placeOf(ampharos.id))
+        assertIs<GearHelper.Loaner>(store.gearHelper(GearTool.FLASHLIGHT))
         assertTrue(store.gearCandidates(GearTool.FLASHLIGHT).size == 2)
     }
 
@@ -58,8 +64,8 @@ class GearTest {
         store.assignGearHelper(GearTool.FLASHLIGHT, first.id)
         val inventory = store.data.player.inventory
         assertTrue(store.transfer(first.id), "a duplicate Mareep can be transferred")
-        // The other Mareep takes over, and with none left the tool has no helper.
-        assertEquals(second.id, assertIs<GearHelper.Owned>(store.gearHelper(GearTool.FLASHLIGHT)).pokemon.id)
+        // The other Mareep does not take over by itself, and the tool has no helper.
+        assertIs<GearHelper.None>(store.gearHelper(GearTool.FLASHLIGHT))
         assertTrue(store.data.player.inventory != inventory, "the transfer itself pays (it is not a tool)")
         assertEquals(setOf(second.id), store.gearCandidates(GearTool.FLASHLIGHT).map { it.id }.toSet())
     }

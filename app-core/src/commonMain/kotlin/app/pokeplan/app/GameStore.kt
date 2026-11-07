@@ -37,6 +37,7 @@ import app.pokeplan.core.pokemon.Inventory
 import app.pokeplan.core.pokemon.Shop
 import app.pokeplan.core.reward.AchievementEvent
 import app.pokeplan.core.reward.BefriendEvent
+import app.pokeplan.core.reward.VisitorInheritance
 import app.pokeplan.core.reward.CareEvent
 import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.EffortEvent
@@ -170,7 +171,7 @@ class GameStore(
 
     /** What every save that comes in (from the device or the cloud) goes through: numbers back in their range. */
     // The Modules setting is gone from Settings: Care is always shown, so a save that switched it off is switched back on when loaded.
-    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player)).let(::migratePoke)
+    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player)).let(::migratePoke).let(Places::resolve)
 
     /**
      * Saves from before the Pokémon roles were split (docs/pokelife POKEMON_ECOSYSTEM.md, section 2.2) used the buddy as
@@ -209,19 +210,19 @@ class GameStore(
 
     // --- onboarding ---------------------------------------------------------------------------------------------------
 
-    /** Starts as a guest: creates the trainer, the starter (which becomes the buddy) and a first task that pays at once. */
+    /** Starts as a guest: creates the trainer, the starter (which becomes the buddy, and is in no party: one place only) and a first task that pays at once. */
     fun start(trainerName: String, starterSpeciesId: Int) {
         check(!data.onboarded) { "already started" }
         val option = HatchOption(starterSpeciesId, Dex.defaultForm(starterSpeciesId).identifier)
-        val starter = Hatching.create(newId(), option, 0, nowMillis, 25, rng).copy(isShiny = false, inParty = true)
+        val starter = Hatching.create(newId(), option, 0, nowMillis, 25, rng).copy(isShiny = false, inParty = false)
         val first = Task(
             id = newId(), title = "Finish your first task", rank = Rank.E, planned = today, tutorial = true, createdAtMillis = nowMillis,
         )
         update {
             it.copy(
                 trainerName = trainerName.trim().ifEmpty { "Trainer" }, onboarded = true,
-                player = it.player.copy(pokemon = listOf(starter), buddyId = starter.id, planLeadId = starter.id, rolesVersion = ROLES_VERSION, caught = setOf(starter.speciesId)),
-                tasks = listOf(first), origins = mapOf(starter.id to Origin(Origin.How.STARTER)),
+                player = it.player.copy(pokemon = listOf(starter), buddyId = starter.id, rolesVersion = ROLES_VERSION, caught = setOf(starter.speciesId)),
+                placesVersion = Places.VERSION, tasks = listOf(first), origins = mapOf(starter.id to Origin(Origin.How.STARTER)),
             )
         }
     }
@@ -326,9 +327,24 @@ class GameStore(
             val tickets = if (ticket == null) d.eggTickets
             else d.eggTickets.copy(stock = d.eggTickets.stock.drop(1), spent = d.eggTickets.spent + SpentTicket(ticket.id, nowMillis, event.newPokemonId))
             log(CARE_LOG_PREFIX + "made a friend", outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets),
-                origin = Origin(Origin.How.BEFRIENDED, Region.CARE))
+                origin = Origin(Origin.How.BEFRIENDED, Region.CARE, visitor = visitorOrigin(event, outcome.rewards)))
         }
         return outcome.rewards
+    }
+
+    /** The origin note of what a visitor left: the visitor, the day and the traits an egg took from it (none when the visitor itself joined). */
+    private fun visitorOrigin(event: BefriendEvent, rewards: List<Reward>): VisitorOrigin? {
+        if (event.visitorId.isEmpty()) return null
+        val hatched = rewards.filterIsInstance<Reward.Hatched>().firstOrNull()?.pokemon
+        val joined = hatched != null && hatched.speciesId == event.speciesId && hatched.friendship >= RewardEngine.BEFRIEND_JOIN_FRIENDSHIP
+        val traits = if (joined) emptyList() else VisitorInheritance.plan(event.visitorId, event.newPokemonId).labels()
+        val name = Dex.species(event.speciesId).name
+        val note = when {
+            joined -> "$name came to stay after a visit to Care."
+            traits.isEmpty() -> "Left by a $name you befriended."
+            else -> "Left by a $name you befriended; it took ${traits.joinToString(", ")}."
+        }
+        return VisitorOrigin(event.speciesId, event.visitorId, today.toEpochDays(), traits, note)
     }
 
     // --- tasks --------------------------------------------------------------------------------------------------------
@@ -951,38 +967,41 @@ class GameStore(
     private fun replace(p: OwnedPokemon) =
         update { d -> d.copy(player = d.player.copy(pokemon = d.player.pokemon.map { if (it.id == p.id) p else it })) }
 
-    /** Makes a Pokémon the buddy. Guardians (legendaries and mythicals) cannot be buddies. Returns false if refused. */
+    /** Where [id] is now: the buddy, a party, a Guardian slot, a World team, a Pokégear helper or the PC (one place only, [Places]). */
+    fun placeOf(id: String): Place = Places.of(data, id)
+
+    /** Takes [id] out of the place it is in and runs [then] on the result, in one save; false when it is on an expedition under way. */
+    private fun moveTo(id: String, then: (AppData) -> AppData): Boolean {
+        if (!Places.movable(data, id)) return false
+        update { d -> then(Places.vacate(d, id)).let { r -> r.copy(player = Places.leads(r.player)) } }
+        return true
+    }
+
+    /**
+     * Makes a Pokémon the buddy. Guardians (legendaries and mythicals) cannot be buddies. A Pokémon in a party, on a team or helping a tool
+     * is taken from there (one place only) and the previous buddy goes to the PC. Returns false if refused.
+     */
     fun setBuddy(id: String): Boolean {
         if (Guardians.canBe(pokemon(id))) return false
-        update { d -> d.copy(player = d.player.copy(buddyId = id)) }
-        return true
+        return moveTo(id) { d -> d.copy(player = d.player.copy(buddyId = id)) }
     }
 
     fun rename(id: String, nickname: String) = replace(pokemon(id).withNickname(nickname))
 
     /**
-     * Puts a Pokémon in or out of a module's party (up to six; one party at a time, so joining another moves it). Returns
-     * false if the party is full or it would leave Plan's party empty. A lead that leaves passes the lead on to the
-     * party's first member; the global buddy is not tied to any party.
+     * Puts a Pokémon in or out of a module's party (up to six, in one party only: joining takes it from the buddy, a team, a helper job or
+     * another party). Returns false if the party is full, it is a Guardian species, or it is on an expedition under way, or if it would leave
+     * Plan's party empty by going out (use a place to move it instead). A lead that leaves passes the lead on to the party's first member.
      */
     fun setInParty(id: String, inParty: Boolean, partyId: String = PartyIds.PLAN): Boolean {
         val p = pokemon(id)
         if (inParty && Guardians.canBe(p)) return false
-        val planSize = data.player.party.size
         val staying = inParty && p.inParty && p.partyId == partyId
         if (inParty && !staying && data.player.partyOf(partyId).size >= OwnedPokemon.PARTY_SIZE) return false
         val leavingPlan = p.inParty && p.partyId == PartyIds.PLAN && !(inParty && partyId == PartyIds.PLAN)
-        if (leavingPlan && planSize <= 1) return false
-        update { d ->
-            val pokemon = d.player.pokemon.map { if (it.id == id) p.copy(inParty = inParty, partyId = partyId) else it }
-            // Care's lead is its first member until the player picks another, and passes on when it leaves.
-            val care = pokemon.filter { it.inParty && it.partyId == PartyIds.CARE }
-            val lead = d.player.careLeadId?.takeIf { l -> care.any { it.id == l } } ?: care.firstOrNull()?.id
-            val plan = pokemon.filter { it.inParty && it.partyId == PartyIds.PLAN }
-            val planLead = d.player.planLeadId?.takeIf { l -> plan.any { it.id == l } } ?: plan.firstOrNull()?.id
-            d.copy(player = d.player.copy(pokemon = pokemon, careLeadId = lead, planLeadId = planLead))
-        }
-        return true
+        if (leavingPlan && data.player.party.size <= 1) return false
+        if (!inParty) return p.inParty && moveTo(id) { it }
+        return moveTo(id) { d -> d.copy(player = d.player.copy(pokemon = d.player.pokemon.map { if (it.id == id) it.copy(inParty = true, partyId = partyId) else it })) }
     }
 
     /** Makes [id], who must be in Plan's party, its lead: the Pokémon that takes Plan's friendship and gives its perks. */
@@ -1009,14 +1028,12 @@ class GameStore(
     /** Owned legendaries and mythicals, slotted or not. */
     val guardianCandidates: List<OwnedPokemon> get() = data.player.pokemon.filter(Guardians::canBe)
 
-    /** Puts a Guardian in a free slot. Returns false if it is not a Guardian, is already slotted, is on a World team, or every slot is taken. */
+    /** Puts a Guardian in a free slot. Returns false if it is not a Guardian, is already slotted, is on an expedition, or every slot is taken. Slotting takes it off its World team or helper job. */
     fun slotGuardian(id: String): Boolean {
         val p = pokemon(id)
         if (!Guardians.canBe(p) || id in data.player.guardians || data.player.guardians.size >= guardianSlots) return false
-        // A Guardian on a World team is busy: it is slotted only when it is idle (it is not moved off the team behind the player's back).
-        if (id in data.world.assigned) return false
-        update { d -> d.copy(player = d.player.copy(guardians = d.player.guardians + id)) }
-        return true
+        // A Guardian on a World team is taken off it (one place only) unless its team is out on an expedition.
+        return moveTo(id) { d -> d.copy(player = d.player.copy(guardians = d.player.guardians + id)) }
     }
 
     fun unslotGuardian(id: String) = update { d -> d.copy(player = d.player.copy(guardians = d.player.guardians - id)) }
@@ -1164,18 +1181,19 @@ class GameStore(
         worldClaimItems()
     }
 
-    /** Sets who is on World team [team]; false when the rank, the team or the Pokémon do not allow it. */
+    /**
+     * Sets who is on World team [team]; false when the rank, the team or the Pokémon do not allow it. A Pokémon newly put on a team is taken
+     * from its party, the buddy, a Guardian slot, another team or a helper job (one place only), unless that team is out on an expedition.
+     */
     fun worldAssign(team: Int, members: List<String>): Boolean {
         if (members.any { id -> data.player.pokemon.none { it.id == id } }) return false
-        // A Guardian can explore while it is idle; one slotted as a Guardian is busy there.
-        if (members.any { it in data.player.guardians }) return false
-        // With "keep party Pokémon out" on, a party member cannot be newly put on a team (one already on it may stay until it is changed).
-        if (data.settings.worldKeepPartyOut) {
-            val already = data.world.team(team)?.members.orEmpty().toSet()
-            if (members.any { id -> id !in already && data.player.pokemon.firstOrNull { it.id == id }?.inParty == true }) return false
-        }
-        val next = data.world.assign(team, members) ?: return false
-        update { it.copy(world = next) }
+        val already = data.world.team(team)?.members.orEmpty().toSet()
+        val incoming = members.filter { it !in already }
+        if (incoming.any { !Places.movable(data, it) }) return false
+        var moved = data
+        for (id in incoming) moved = Places.vacate(moved, id)
+        val next = moved.world.assign(team, members) ?: return false
+        update { _ -> moved.copy(player = Places.leads(moved.player), world = next) }
         return true
     }
 
@@ -1203,9 +1221,10 @@ class GameStore(
 
     fun worldDeletePreset(name: String) = update { it.copy(world = it.world.deletePreset(name)) }
 
-    /** Puts the preset [name] on World team [team]: whoever of it is still owned, idle and not slotted as a Guardian. */
+    /** Puts the preset [name] on World team [team]: whoever of it is still owned and in the PC (or already on this team): a Pokémon in a party, slotted or helping is not taken. */
     fun worldApplyPreset(team: Int, name: String): Boolean {
-        val owned = data.player.pokemon.filter { !(data.settings.worldKeepPartyOut && it.inParty) }.map { it.id }.toSet() - data.player.guardians.toSet()
+        val onTeam = data.world.team(team)?.members.orEmpty().toSet()
+        val owned = data.player.pokemon.map { it.id }.filter { it in onTeam || Places.of(data, it) == Place.Pc }.toSet()
         val next = data.world.applyPreset(team, name, owned) ?: return false
         update { it.copy(world = next) }
         return true
@@ -1227,18 +1246,18 @@ class GameStore(
         worldSettle()
         val slot = data.world.slots().firstOrNull { it.expedition == null } ?: return false
         if (slot.members.isEmpty()) {
-            val free = worldIdle().take(app.pokeplan.world.WorldTeam.MAX_MEMBERS)
+            val free = worldIdle().filter { !Guardians.canBe(it) }.take(app.pokeplan.world.WorldTeam.MAX_MEMBERS)
             if (free.isEmpty() || !worldAssign(slot.id, free.map { it.id })) return false
         }
         return worldStart(slot.id, dungeonId)
     }
 
     /**
-     * The Pokémon free to join a World team, strongest first: not on any team and not slotted as a Guardian. A Guardian (a legendary or
-     * mythical) is included while it is idle.
+     * The Pokémon free to join a World team, strongest first: in the PC: not the buddy, not in a party, not slotted as a Guardian, not helping a tool and not on a team
+     * (one place only; choosing one for a team moves it, so the others are offered by moving them first).
      */
     fun worldIdle(): List<OwnedPokemon> = data.player.pokemon
-        .filter { it.id !in data.world.assigned && it.id !in data.player.guardians && !(data.settings.worldKeepPartyOut && it.inParty) }
+        .filter { Places.of(data, it.id) == Place.Pc }
         .sortedWith(compareByDescending<OwnedPokemon> { it.level }.thenBy { it.id })
 
     /** Answers the World choice [id] with [option] (0 or 1), after settling what is due; false when there is no such choice. */
@@ -1404,10 +1423,10 @@ class GameStore(
     fun gearCandidates(tool: GearTool): List<OwnedPokemon> =
         data.player.pokemon.filter { tool.helps(it.speciesId) }.sortedWith(compareByDescending<OwnedPokemon> { it.friendship }.thenByDescending { it.level }.thenBy { it.id })
 
-    /** Who helps [tool] now: the one the player chose (while they still own them), else the best owned who can help, else a Ranger loaner, else no one. */
+    /** Who helps [tool] now: the one the player chose (while they still own them), else a Ranger loaner, else no one. */
     fun gearHelper(tool: GearTool): GearHelper {
-        val chosen = data.gearHelpers[tool.name]?.let { id -> data.player.pokemon.firstOrNull { it.id == id && tool.helps(it.speciesId) } }
-        val owned = chosen ?: gearCandidates(tool).firstOrNull()
+        // Only a helper the player chose counts: picking one from the collection by itself would take it out of the PC (one place only).
+        val owned = data.gearHelpers[tool.name]?.let { id -> data.player.pokemon.firstOrNull { it.id == id && tool.helps(it.speciesId) } }
         return when {
             owned != null -> GearHelper.Owned(owned)
             tool.name in data.gearLoans -> GearHelper.Loaner(tool.loaner)
@@ -1415,15 +1434,17 @@ class GameStore(
         }
     }
 
-    /** Makes [pokemonId] the helper of [tool]; false if they are not owned or cannot help it. One Pokémon may help several tools. */
+    /**
+     * Makes [pokemonId] the helper of [tool]; false if they are not owned, cannot help it or are on an expedition. A Pokémon helps one tool
+     * and is in no other place, so it is taken from its party, the buddy, a team or another tool.
+     */
     fun assignGearHelper(tool: GearTool, pokemonId: String): Boolean {
         val mon = data.player.pokemon.firstOrNull { it.id == pokemonId } ?: return false
         if (!tool.helps(mon.speciesId)) return false
-        update { it.copy(gearHelpers = it.gearHelpers + (tool.name to pokemonId)) }
-        return true
+        return moveTo(pokemonId) { d -> d.copy(gearHelpers = d.gearHelpers - tool.name + (tool.name to pokemonId)) }
     }
 
-    /** Forgets the chosen helper, so the best owned one (or the loaner) helps again. */
+    /** Forgets the chosen helper: it goes back to the PC, and the tool shows its loaner or its own icon. */
     fun clearGearHelper(tool: GearTool) = update { it.copy(gearHelpers = it.gearHelpers - tool.name) }
 
     /** A Ranger request succeeded: the tool gets its loaner. It stays a loan (never owned, never in the Dex) until an owned Pokémon can help. */
@@ -1628,12 +1649,12 @@ class GameStore(
         const val BEFRIEND_DAILY_CAP = 4
 
         /** The most of each Care kind the world pays a day *(tune)*, a backstop to the same limits in CareRules. */
-        val CARE_DAILY_CAP: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 5, CareKind.CALM_BREAK to 3, CareKind.SKILL to 3, CareKind.WEEKLY_RHYTHM to 1)
+        val CARE_DAILY_CAP: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 5, CareKind.CALM_BREAK to 3, CareKind.SKILL to 3, CareKind.WEEKLY_RHYTHM to 1, CareKind.PLAY to 6)
         /** Every Care entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val CARE_LOG_PREFIX = "Care: "
 
         private val CARE_SOURCES = mapOf(
-            CareKind.ROUTINE to "a routine", CareKind.CALM_BREAK to "a calm break", CareKind.WEEKLY_RHYTHM to "kept a rhythm", CareKind.SKILL to "a skill practised",
+            CareKind.ROUTINE to "a routine", CareKind.CALM_BREAK to "a calm break", CareKind.WEEKLY_RHYTHM to "kept a rhythm", CareKind.SKILL to "a skill practised", CareKind.PLAY to "time together",
         ).mapValues { CARE_LOG_PREFIX + it.value }
 
         /** Parts of the save that stay on this device: never uploaded, kept when the cloud save is adopted (see [cloudPart] and [adoptCloud]). */
