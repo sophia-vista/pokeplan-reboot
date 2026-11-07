@@ -8,10 +8,11 @@ import kotlin.test.assertTrue
 class SfxAssetsTest {
     @Test
     fun everySfxHasItsFile() {
-        val dir = listOf("../assets/sfx", "assets/sfx").map(::File).first { it.isDirectory }
+        // The build bundles assets/sfx and the Explorers of Sky jingles (assets/sky-sfx) together, so a sound may be in either.
+        val roots = listOf("../assets", "assets").map(::File).first { it.isDirectory }
+        val dirs = listOf(File(roots, "sfx"), File(roots, "sky-sfx"))
         for (s in Sfx.entries) {
-            val f = File(dir, "${s.file}.ogg")
-            assertTrue(f.isFile && f.length() > 500, "${s.name} needs assets/sfx/${s.file}.ogg")
+            assertTrue(dirs.any { File(it, "${s.file}.ogg").let { f -> f.isFile && f.length() > 500 } }, "${s.name} needs ${s.file}.ogg in assets/sfx or assets/sky-sfx")
         }
     }
 }
