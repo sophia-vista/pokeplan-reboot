@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.platform.LocalDensity
 import app.pokeplan.ui.StatusKind
@@ -100,7 +101,7 @@ private fun CarePage(model: AppModel, section: CareSection?, openPokemon: (Strin
         CareMenu(model, toModules, openPokemon)
         return
     }
-    SectionScaffold(section.label, Module.CARE.label, onBack = { model.careSection = null }, icon = section.icon, color = Module.CARE.look.header) {
+    SectionScaffold(section.label, null, onBack = { model.careSection = null }, icon = section.icon, color = Module.CARE.look.header) {
         when (section) {
             CareSection.ROUTINES -> RoutinesView(model)
             CareSection.CALM -> CalmBreakView(model)
@@ -122,7 +123,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
     val diarySaved = model.care.diaryToday() != null
     val practised = model.care.practisedToday().size
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.CARE.label, subtitle = "Modules", onBack = onBack, color = Module.CARE.look.header)
+        ScreenHeader(Module.CARE.label, onBack = onBack, color = Module.CARE.look.header)
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -136,20 +137,20 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                 EmptyState(
                     if (care.routines.none { !it.archived }) "No routines yet" else "Nothing planned for today",
                     "Small things you do for yourself, like a glass of water or a stretch.",
-                    action = "Add a routine" to { model.careSection = CareSection.ROUTINES },
+                    action = "Add a routine" to { model.careSection = CareSection.ROUTINES }, sleeper = true,
                 )
             } else today.forEach { RoutineRow(model, it) }
             CareEggMeter(model)
             MenuGrid(
                 listOf(
-                    MenuEntry(CareSection.ROUTINES.name, CareSection.ROUTINES.icon, "Routines", if (today.isEmpty()) "none today" else "$done of ${today.size} today", tint = Pixel.Green),
-                    MenuEntry(CareSection.CALM.name, CareSection.CALM.icon, "Calm break", "a minute to breathe", tint = Pixel.Blue),
-                    MenuEntry(CareSection.DIARY.name, CareSection.DIARY.icon, "Diary card", if (diarySaved) "saved today" else "how today felt", tint = Pixel.Red),
-                    MenuEntry(CareSection.SKILLS.name, CareSection.SKILLS.icon, "Skills", if (practised == 0) "DBT skills to try" else "$practised practised today", tint = Pixel.Green),
-                    MenuEntry(CareSection.JOURNAL.name, CareSection.JOURNAL.icon, "Journal", if (care.journal.isEmpty()) "write anything" else if (care.journal.size == 1) "1 entry" else "${care.journal.size} entries", tint = Pixel.Warning),
+                    MenuEntry(CareSection.ROUTINES.name, CareSection.ROUTINES.icon, "Routines", if (today.isEmpty()) "none today" else "$done of ${today.size} today", tint = ModuleAccent.CARE.accent),
+                    MenuEntry(CareSection.CALM.name, CareSection.CALM.icon, "Calm break", "a minute to breathe", tint = ModuleAccent.CARE.accent),
+                    MenuEntry(CareSection.DIARY.name, CareSection.DIARY.icon, "Diary card", if (diarySaved) "saved today" else "how today felt", tint = ModuleAccent.CARE.accent),
+                    MenuEntry(CareSection.SKILLS.name, CareSection.SKILLS.icon, "Skills", if (practised == 0) "DBT skills to try" else "$practised practised today", tint = ModuleAccent.CARE.accent),
+                    MenuEntry(CareSection.JOURNAL.name, CareSection.JOURNAL.icon, "Journal", if (care.journal.isEmpty()) "write anything" else if (care.journal.size == 1) "1 entry" else "${care.journal.size} entries", tint = ModuleAccent.CARE.accent),
                     MenuEntry(CareSection.TRENDS.name, CareSection.TRENDS.icon, "Trends", "the last few weeks", tint = Pixel.InkSoft),
-                    MenuEntry(CareSection.MEADOW.name, CareSection.MEADOW.icon, "Meadow", if (care.visitors.isEmpty()) "your buddy's garden" else "${care.visitors.size.coerceAtMost(4)} here", tint = Pixel.Green),
-                    MenuEntry(CareSection.PLAY.name, CareSection.PLAY.icon, "Play", "time with a Pokémon", tint = Pixel.Red),
+                    MenuEntry(CareSection.MEADOW.name, CareSection.MEADOW.icon, "Meadow", if (care.visitors.isEmpty()) "your buddy's garden" else "${care.visitors.size.coerceAtMost(4)} here", tint = ModuleAccent.CARE.accent),
+                    MenuEntry(CareSection.PLAY.name, CareSection.PLAY.icon, "Play", "time with a Pokémon", tint = ModuleAccent.CARE.accent),
                 ),
             ) { key -> model.careSection = CareSection.valueOf(key) }
             VisitorsCard(model)
@@ -212,11 +213,6 @@ private fun VisitorsCard(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Visitors")
-            if (open == null) Text(
-                "Visit any time. Every kind of care warms a visitor and it likes one best; its warmth is never lost. Most leave you an egg of their family when they become friends; a few stay themselves.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-            )
             note?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
             if (open != null) VisitorScene(model, open, visit?.takeIf { it.speciesId == open.speciesId }, { note = it }) { playing = null }
             meadow.forEach { v ->
@@ -265,7 +261,7 @@ private fun VisitorsCard(model: AppModel) {
             if (open != null && visit == null) {
                 if (sendAway == open.speciesId) {
                     Text("Send ${Dex.species(open.speciesId).name} away? It keeps what it has earned, and you can ask it back.", style = MaterialTheme.typography.bodyMedium)
-                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         PixelButton("Send away", { care.dismiss(open.speciesId); sendAway = null; playing = null; note = null }, color = Pixel.InkSoft, compact = true)
                         PixelButton("Keep", { sendAway = null }, color = Pixel.Green, compact = true)
                     }
@@ -424,7 +420,7 @@ internal fun RoutineOptions(model: AppModel, routine: Routine, startEditing: Boo
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                 )
                 RoutineFields(time, { time = it }, days, { days = it })
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelIconButton("check", "Save", { model.care.updateRoutine(routine.copy(title = title.trim(), time = time, days = days)); editing = false; onDone() }, Pixel.Green, enabled = title.isNotBlank())
                     PixelIconButton("close", "Cancel", { editing = false; title = routine.title; time = routine.time; days = routine.days }, Pixel.InkSoft)
                 }
@@ -504,8 +500,8 @@ private fun CalmBreakView(model: AppModel) {
         result?.let { line -> TextBox { Text(line, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) } }
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                Text("A minute or two to breathe, with your buddy resting beside you. Breathe in as the circle grows and out as it shrinks.", style = MaterialTheme.typography.bodyLarge)
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Text("Breathe in as the circle grows, out as it shrinks.", style = MaterialTheme.typography.bodyLarge)
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     listOf(60, 120).forEach { s -> TabButton(if (s == 60) "1 minute" else "2 minutes", seconds == s, { seconds = s }, Modifier.weight(1f)) }
                 }
                 PixelButton("Start", { result = null; waking = false; model.haptic(); model.effect(Sfx.CALM_BREAK_START); startedAt = model.now }, Modifier.fillMaxWidth(), Pixel.Blue)
@@ -551,7 +547,7 @@ private fun BreathCircle(inhale: Boolean, still: Boolean) {
 private fun Rating(label: String, value: Int?, onChange: (Int?) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         Text(label, style = MaterialTheme.typography.bodyLarge)
-        Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+        Row(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             (0..5).forEach { n -> TabButton("$n", value == n, { onChange(if (value == n) null else n) }, Modifier.weight(1f)) }
         }
     }
@@ -585,7 +581,6 @@ private fun DiaryView(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Urges")
             val tracked = data.settings.urges
-            if (tracked.isEmpty()) Text("If there's an urge you want to keep an eye on, add it here. Only you see it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             tracked.forEach { u ->
                 Rating(u, urges[u]) { v -> urges = if (v == null) urges - u else urges + (u to v); done = false }
                 PixelButton("Stop tracking", { care.changeSettings { s -> s.copy(urges = s.urges - u) }; urges = urges - u }, color = Pixel.InkSoft, compact = true)
@@ -624,11 +619,8 @@ private fun DiaryView(model: AppModel) {
                 care.saveDiary(feelings, urges, skills, note)
                 model.effect(Sfx.SELECT)
                 done = true
-            }, Modifier.fillMaxWidth(), Pixel.Red, enabled = feelings.isNotEmpty() || urges.isNotEmpty() || skills.isNotEmpty() || note.isNotBlank())
-            Text(
-                if (done) "Saved on this device." else "Your diary card stays on this device and never earns anything, so there is nothing to get right.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-            )
+            }, Modifier.fillMaxWidth(), ModuleAccent.CARE.accent, enabled = feelings.isNotEmpty() || urges.isNotEmpty() || skills.isNotEmpty() || note.isNotBlank())
+            if (done) Text("Saved", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         }
     }
     val past = data.diary.filter { it.day != care.today }.sortedByDescending { it.day }.take(14)
@@ -719,7 +711,7 @@ private fun JournalView(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Today's question", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Text(prompt.text, style = MaterialTheme.typography.titleMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Write about this", { answering = prompt.id }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 PixelButton("Another question", { care.skipPrompt() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
@@ -741,7 +733,6 @@ private fun JournalView(model: AppModel) {
                 JOURNAL_TAGS.forEach { t -> TabButton(t, t in tags, { tags = if (t in tags) tags - t else tags + t }) }
             }
             PixelButton("Save entry", ::save, Modifier.fillMaxWidth(), Pixel.Warning, enabled = text.isNotBlank())
-            Text("Only for you: the journal stays on this device and never earns anything.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
     if (data.journal.size > 3) PixelField(
@@ -774,7 +765,6 @@ private fun TrendsView(model: AppModel) {
             Text("Skills used: ${care.skillsLast7Days()}", style = MaterialTheme.typography.bodyLarge)
             Text("Calm breaks: ${care.calmMinutesLast7Days()} min", style = MaterialTheme.typography.bodyLarge)
             Text("Your best week: ${care.bestWeek()} routines", style = MaterialTheme.typography.bodyLarge)
-            Text("No streaks here: a quiet week costs nothing and says nothing.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
     TextBox {
@@ -797,7 +787,6 @@ private fun TrendsView(model: AppModel) {
                     if (avg != null) PixelBar((avg / 5).toFloat(), Modifier.fillMaxWidth(), Pixel.Blue, label = label)
                 }
             }
-            Text("Only you see this. It never earns and your buddy never mentions it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }

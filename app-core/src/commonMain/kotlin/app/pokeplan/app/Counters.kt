@@ -1,6 +1,7 @@
 package app.pokeplan.app
 
 import app.pokeplan.core.reward.CareKind
+import app.pokeplan.core.reward.HealKind
 import kotlinx.datetime.LocalDate
 
 /**
@@ -57,6 +58,14 @@ internal object Counters {
 
     /** Care moments of [kind] paid today. */
     fun care(kind: CareKind): PeriodCounter = care.getValue(kind)
+
+    private val heal = HealKind.entries.associateWith { PeriodCounter("heal-${it.name}-") }
+
+    /** HEAL moments of [kind] paid today. */
+    fun heal(kind: HealKind): PeriodCounter = heal.getValue(kind)
+
+    /** Points towards the next Field Egg. It carries over from day to day. */
+    const val HEAL_EGG_METER = "heal-egg-meter"
 
     /** Points towards the next Care Egg. It carries over from day to day. */
     const val CARE_EGG_METER = "care-egg-meter"

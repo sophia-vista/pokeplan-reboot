@@ -54,7 +54,7 @@ internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
     if (ringing.isNotEmpty()) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Time is up: ${ringing.joinToString(", ") { it.label }}", style = MaterialTheme.typography.titleSmall, color = Pixel.Red)
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelIconButton("stop", "Stop", { store.timersDismissFinished(); onUse() }, Pixel.Red)
                 PixelButton("+1 min", { ringing.forEach { store.timerAddTime(it.id, 60_000) }; onUse() }, Modifier.weight(1f), Pixel.Blue, compact = true)
             }
@@ -66,12 +66,12 @@ internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
                 Text(t.label, style = MaterialTheme.typography.titleSmall)
                 Text(formatTimer(t.leftAt(now)), style = MaterialTheme.typography.headlineMedium, color = if (t.running) Pixel.Ink else Pixel.InkSoft)
                 Text(if (t.running) "Running" else if (t.paused) "Paused" else "Ready: ${formatTimer(t.durationMs)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     if (t.running) PixelIconButton("pause", "Pause", { store.timerPause(t.id); onUse() }, Pixel.InkSoft)
                     else PixelButton(if (t.paused) "Resume" else "Start", { store.timerStart(t.id); onUse() }, Modifier.weight(1f), Pixel.Blue, compact = true)
                     PixelButton("+1 min", { store.timerAddTime(t.id, 60_000); onUse() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelIconButton("reload", "Reset", { store.timerReset(t.id) }, Pixel.InkSoft)
                     PixelIconButton("trash", "Delete", { store.timerRemove(t.id) }, Pixel.InkSoft)
                 }
@@ -87,12 +87,11 @@ internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
                     PixelButton("$m min", { store.timerAdd(label, m * 60_000L)?.let { store.timerStart(it.id); label = "" }; onUse() }, color = Pixel.Blue, compact = true, enabled = timers.size < GearTimers.MAX_TIMERS)
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelField(minutesText, { minutesText = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(6) }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Minutes")
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                PixelField(minutesText, { minutesText = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(6) }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), placeholder = "Minutes")
                 val minutes = minutesText.replace(',', '.').toDoubleOrNull()
                 PixelButton("Start", { minutes?.let { m -> store.timerAdd(label, (m * 60_000).toLong())?.let { t -> store.timerStart(t.id); label = ""; minutesText = "" } }; onUse() }, Modifier.weight(0.6f), Pixel.Blue, compact = true, enabled = minutes != null && minutes > 0 && timers.size < GearTimers.MAX_TIMERS)
             }
-            Text("Timers keep going when the app is closed and ring with a notification (allow notifications to hear them). A direct timer pays nothing; a Focus session is Plan's own.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }
@@ -110,7 +109,7 @@ internal fun StopwatchTool(model: AppModel, onUse: () -> Unit) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(formatStopwatch(elapsed), Modifier.fillMaxWidth(), style = MaterialTheme.typography.headlineLarge, maxLines = 1)
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 if (watch.running) PixelIconButton("pause", "Pause", { store.stopwatchPause(); onUse() }, Pixel.InkSoft)
                 else PixelButton(if (watch.accumulatedMs > 0) "Resume" else "Start", { store.stopwatchStart(); onUse() }, Modifier.weight(1f), Pixel.Blue, compact = true)
                 PixelButton("Lap", { store.stopwatchLap(); onUse() }, Modifier.weight(1f), Pixel.Blue, compact = true, enabled = watch.running)
@@ -124,10 +123,8 @@ internal fun StopwatchTool(model: AppModel, onUse: () -> Unit) {
                     val mark = if (splits.size > 1 && splits[i] == fastest) "  fastest" else if (splits.size > 1 && splits[i] == slowest) "  slowest" else ""
                     Text("${i + 1}.  ${formatStopwatch(splits[i])}   total ${formatStopwatch(watch.laps[i])}$mark", style = MaterialTheme.typography.bodyMedium)
                 }
-                Text("Average lap ${formatStopwatch(splits.sum() / splits.size)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 PixelButton("Copy the laps", { clipboard.setText(AnnotatedString(splits.indices.joinToString("\n") { i -> "${i + 1}\t${formatStopwatch(splits[i])}\t${formatStopwatch(watch.laps[i])}" })) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
-            Text("It keeps counting when the app is closed. A phone clock set back never takes time away.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }

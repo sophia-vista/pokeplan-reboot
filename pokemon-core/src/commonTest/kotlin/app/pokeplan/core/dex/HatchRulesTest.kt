@@ -106,11 +106,26 @@ class HatchRulesTest {
     }
 
     @Test
-    fun careRegionHasItsPatronsAndEveryTier() {
-        val care = Dex.regionDex(Region.CARE).map { it.name }
-        assertTrue(care.size in 130..170, "Care has ${care.size}")
-        assertTrue(listOf("Cresselia", "Shaymin", "Goomy", "Swablu", "Altaria", "Cottonee", "Whimsicott").all { it in care })
-        for (r in Rarity.entries) assertTrue(HatchRules.pool(Region.CARE, r).isNotEmpty(), "Care has nothing at $r")
+    fun moduleRegionsCoverTheWholeDexAndEndWithTheirPatrons() {
+        val modules = Region.entries.filter { it.isModule }
+        assertEquals(6, modules.size, "Plan, Care, Heal, Mint, Home and Link")
+        // Every species is in exactly one module region (the "no duplicates" half is moduleRegionsNeverShareASpecies).
+        assertEquals(Dex.species.size, modules.sumOf { Dex.regionDex(it).size }, "every species belongs to a module region")
+        val patrons = mapOf(
+            Region.PLAN to listOf("Uxie", "Mesprit", "Azelf"), Region.CARE to listOf("Cresselia", "Shaymin"),
+            Region.HEAL to listOf("Raikou", "Entei", "Suicune"), Region.MINT to listOf("Diancie", "Melmetal"),
+            Region.HOUSEHOLD to listOf("Tapu Bulu", "Ogerpon"), Region.LINK to listOf("Latias", "Latios"),
+        )
+        for (region in modules) {
+            val dex = Dex.regionDex(region)
+            assertTrue(dex.size in 150..200, "${region.label} has ${dex.size}")
+            assertEquals(patrons.getValue(region), dex.takeLast(patrons.getValue(region).size).map { it.name }, "${region.label} ends with its patrons")
+            // The quest and milestone species (legendary, mythical, ultra beast, paradox) come after every species that hatches.
+            val firstSpecial = dex.indexOfFirst { it.isSpecial }
+            assertTrue(dex.drop(firstSpecial).all { it.isSpecial }, "${region.label} puts its quest species last")
+            for (r in Rarity.entries) assertTrue(HatchRules.pool(region, r).isNotEmpty(), "${region.label} has nothing at $r")
+            assertEquals(2, Dex.regionDex(region).count { s -> HatchRules.rarity(s.id) == Rarity.SUPER_RARE && s.evolvesFrom == null }, "${region.label} has two Super Rare lines")
+        }
     }
 
     @Test

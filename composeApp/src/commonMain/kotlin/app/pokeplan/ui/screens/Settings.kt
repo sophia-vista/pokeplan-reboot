@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelSlider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalTime
@@ -97,12 +98,11 @@ internal fun SettingsView(model: AppModel) {
             TabButton(if (choosing) "Done" else "Change", choosing, { choosing = !choosing })
         }
         if (choosing) app.pokeplan.ui.BackgroundChoices(settings.appBackground, store.now.hour, store.now.minute, Pixel.dark) { name -> store.changeSettings { s -> s.copy(appBackground = name) } }
-        ToggleRow("Reduce motion", settings.reduceMotion, detail = "Sprites stand still, nothing wobbles and screens switch without sliding.") { store.changeSettings { s -> s.copy(reduceMotion = it) } }
+        ToggleRow("Reduce motion", settings.reduceMotion) { store.changeSettings { s -> s.copy(reduceMotion = it) } }
     }
     SettingsGroup("Notifications", "bell") {
         ToggleRow(
             "Routine reminders", model.careData.settings.reminders,
-            detail = "Care: a gentle note at a routine's own time, once, with Done. Routines with no time never remind.",
         ) { on -> model.care.changeSettings { it.copy(reminders = on) } }
         ToggleRow("Task reminders", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }
         if (settings.reminders) {
@@ -113,19 +113,18 @@ internal fun SettingsView(model: AppModel) {
             Stepper("Quiet until", hourText(settings.quietHours.end.hour), 1) { by ->
                 store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = shift(s.quietHours.end, by))) }
             }
-            ToggleRow("Repeat until answered", settings.repeatReminders, detail = "An unanswered reminder comes back up to 3 times, 10 minutes apart.") { store.changeSettings { s -> s.copy(repeatReminders = it) } }
-            Text("Reminders wait during quiet hours, a focus session and rest days.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            ToggleRow("Repeat until answered", settings.repeatReminders) { store.changeSettings { s -> s.copy(repeatReminders = it) } }
         }
-        ToggleRow("Focus halfway alert", settings.focusHalfway, detail = "A quiet note halfway through sessions of 15 minutes or more.") { store.changeSettings { s -> s.copy(focusHalfway = it) } }
-        ToggleRow("Focus end alert", settings.focusEnd, detail = "When a session's time is up. These two are the only notifications during focus.") { store.changeSettings { s -> s.copy(focusEnd = it) } }
-        ToggleRow("World job alert", settings.worldJobAlerts, detail = "When an exploring team finishes a job on the mission board, so it is ready to claim.") { store.changeSettings { s -> s.copy(worldJobAlerts = it) } }
-        ToggleRow("Streak reminder", settings.streakReminder, detail = "In the evening, if nothing has counted yet today and you have a streak going.") { store.changeSettings { s -> s.copy(streakReminder = it) } }
+        ToggleRow("Focus halfway alert", settings.focusHalfway) { store.changeSettings { s -> s.copy(focusHalfway = it) } }
+        ToggleRow("Focus end alert", settings.focusEnd) { store.changeSettings { s -> s.copy(focusEnd = it) } }
+        ToggleRow("World job alert", settings.worldJobAlerts) { store.changeSettings { s -> s.copy(worldJobAlerts = it) } }
+        ToggleRow("Streak reminder", settings.streakReminder) { store.changeSettings { s -> s.copy(streakReminder = it) } }
         if (settings.streakReminder) {
             Stepper("Streak reminder at", hourText(settings.streakReminderHour), 1) { by ->
                 store.changeSettings { s -> s.copy(streakReminderHour = (s.streakReminderHour + by + 24) % 24) }
             }
         }
-        ToggleRow("Weekly recap", settings.weeklyRecap, detail = "Sunday evening: tasks finished, focus time and your top category. Skipped after an empty week.") { store.changeSettings { s -> s.copy(weeklyRecap = it) } }
+        ToggleRow("Weekly recap", settings.weeklyRecap) { store.changeSettings { s -> s.copy(weeklyRecap = it) } }
     }
     DataCard(model)
     BackupsCard(model)
@@ -179,7 +178,7 @@ private fun BackupsCard(model: AppModel) {
             GlyphTitle("Backups", "download")
             if (backups.lowStorage()) Text("This phone is almost out of storage, so a backup was skipped and some changes may not be saved. Free some space and it carries on by itself.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
             Text("The app keeps a copy of your data every day (the newest three). You can also save a copy anywhere, and put one back.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Back up now", { note = backups.backupNow(); entries = backups.automatic() }, Modifier.weight(1f), Pixel.Blue, compact = true)
                 PixelButton("Save a copy", { backups.saveCopy(null) { note = it } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
@@ -192,7 +191,7 @@ private fun BackupsCard(model: AppModel) {
             }
             asking?.let { millis ->
                 Text("Put the backup from ${backupLabel(millis)} back? What is on this phone now is kept aside, so this can be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton("Restore", { restored(backups.restoreAutomatic(millis)); asking = null }, Modifier.weight(1f), Pixel.Warning, compact = true)
                     PixelButton("Keep what I have", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
@@ -200,7 +199,7 @@ private fun BackupsCard(model: AppModel) {
             PixelButton("Restore from a file", { asking = null; chosen = null; backups.chooseFile { staged, why -> chosen = staged; note = why } }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             chosen?.let { c ->
                 Text("This file is a backup from ${backupLabel(c.createdAtMillis)} (${c.documents.joinToString(", ")}). Replace what is on this phone with it? What is here now is kept aside.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton("Restore", { restored(backups.applyChosen()); chosen = null }, Modifier.weight(1f), Pixel.Warning, compact = true)
                     PixelButton("Cancel", { chosen = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
@@ -234,19 +233,19 @@ private fun DataCard(model: AppModel) {
                         "Erase Care's data on this device? Every routine, calm break, diary card, skill practised and journal entry is removed. What they earned stays. This cannot be undone.",
                         style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger,
                     )
-                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         PixelIconButton("trash", "Erase", { model.care.erase(); note = "Care's data was erased."; asking = null }, Pixel.Danger)
                         PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }
                 "device" -> {
                     Text("Erase this device? Every task, Pokémon, setting and Care entry here is removed and the app starts over. This cannot be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
-                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         PixelIconButton("trash", "Erase", { store.eraseDevice(); model.care.erase(); asking = null }, Pixel.Danger)
                         PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }
-                else -> Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                else -> Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton("Erase this device", { asking = "device"; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     PixelButton("Erase Care data", { asking = "care"; note = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
@@ -265,12 +264,8 @@ private fun VolumeRow(label: String, value: Int, onChange: (Int) -> Unit) {
             Text(label, style = MaterialTheme.typography.bodyLarge)
             Text("$value%", style = MaterialTheme.typography.bodyMedium)
         }
-        val colors = SliderDefaults.colors(thumbColor = Pixel.Red, activeTrackColor = Pixel.Red, inactiveTrackColor = Pixel.Shade, activeTickColor = Color.Transparent, inactiveTickColor = Color.Transparent)
-        val interaction = remember { MutableInteractionSource() }
-        Slider(
-            value = value / 100f, onValueChange = { onChange((it * 10).roundToInt() * 10) }, valueRange = 0f..1f, steps = 9,
-            colors = colors, interactionSource = interaction,
-            thumb = { SliderDefaults.Thumb(interaction, colors = colors, thumbSize = DpSize(24.dp, 24.dp)) },
+        PixelSlider(
+            value = value / 100f, onChange = { onChange((it * 10).roundToInt() * 10) }, steps = 9,
             modifier = Modifier.semantics { contentDescription = "$label volume $value percent" },
         )
     }
@@ -345,7 +340,6 @@ internal fun WorldSettings(model: AppModel) {
     SettingsGroup("Animation", "zap") {
         ToggleRow(
             "Scrolling floors", settings.worldScroll,
-            detail = "The floor of an expedition box slides past while the team walks. Off, the Pokémon still walk but the floor stands still (saves battery). Reduce motion, in Me, Settings, stops both.",
         ) { model.store.changeSettings { s -> s.copy(worldScroll = it) } }
     }
 }

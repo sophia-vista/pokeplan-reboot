@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -60,7 +61,7 @@ internal fun GrowthView(model: AppModel) {
     val trend = model.store.trend(6)
     val weekStart = if (model.data.settings.weekStartsOnMonday) "Monday" else "Sunday"
 
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
         growthRanges.forEach { d -> TabButton("$d days", d == days, { days = d }, Modifier.weight(1f)) }
     }
     Insights.estimateAccuracy(model.data.tasks)?.let { acc ->
@@ -141,7 +142,7 @@ private fun WeekBars(
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(label(v), style = MaterialTheme.typography.labelMedium, maxLines = 1)
-                        Box(Modifier.fillMaxWidth().height((80 * v / max + 4).dp).background(color, RoundedCornerShape(6.dp)))
+                        Box(Modifier.fillMaxWidth().height((80 * v / max + 4).dp).background(color, PixelShape))
                         Text(if (i == weeks.lastIndex) "now" else w.weekStart.dayMonth(), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, maxLines = 1)
                     }
                 }

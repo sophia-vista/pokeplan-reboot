@@ -35,7 +35,7 @@ import app.pokeplan.ui.pressScale
  *   state      face                       outline    letters            notes
  *   rest       panel                      key        key (ink if grey)
  *   hovered    key at 10% over the panel  key        key                pointer only (desktop, web)
- *   pressed    key                        key        white              also shrinks to 98% unless Reduce motion
+ *   pressed    key                        key        white or ink (the better contrast)             also shrinks to 98% unless Reduce motion
  *   selected   key                        key        white              tabs, chips, segments; pressed goes darker
  *   focused    as above + a 2 dp blue ring round the touch target          keyboard and D-pad only
  *   disabled   panel                      border     ink-soft at 55%    not tappable, not announced as enabled
@@ -57,6 +57,14 @@ internal fun isNeutralKey(key: Color) = key == Pixel.InkSoft || key == Pixel.Ink
 /** A light key colour (yellow) is too pale to read as letters on the panel, so its letters are a darker shade of it. */
 private fun legible(key: Color) = if (key.luminance() > 0.45f && !Pixel.dark) darker(key) else key
 
+private fun contrast(a: Color, b: Color): Float {
+    val la = a.luminance(); val lb = b.luminance()
+    return (maxOf(la, lb) + 0.05f) / (minOf(la, lb) + 0.05f)
+}
+
+/** Letters on a filled key: white, or the dark ink when that reads better on [face] (a mid-tone fill in the dark palette, or yellow). */
+internal fun onFill(face: Color): Color = if (contrast(Color.White, face) >= contrast(Pixel.Outline, face)) Color.White else Pixel.Outline
+
 /** The look of a key of colour [key] in [state], [selected] or not. The one place where the table above is written in code. */
 fun keyLook(key: Color, state: KeyState, selected: Boolean = false): KeyLook {
     val neutral = isNeutralKey(key)
@@ -65,12 +73,12 @@ fun keyLook(key: Color, state: KeyState, selected: Boolean = false): KeyLook {
     return when (state) {
         KeyState.Disabled, KeyState.Loading ->
             KeyLook(face = if (selected) Pixel.Shade else Pixel.Panel, edge = Pixel.Border, ink = Pixel.InkSoft.copy(alpha = 0.55f), tinted = true)
-        KeyState.Pressed -> KeyLook(face = if (selected) darker(edgeKey) else edgeKey, edge = if (selected) darker(edgeKey) else edgeKey, ink = Color.White, tinted = false)
+        KeyState.Pressed -> run { val fill = if (selected) darker(edgeKey) else edgeKey; KeyLook(face = fill, edge = fill, ink = onFill(fill), tinted = false) }
         KeyState.Hovered ->
-            if (selected) KeyLook(face = edgeKey.copy(alpha = 0.88f).compositeOver(Pixel.Panel), edge = edgeKey, ink = Color.White, tinted = false)
+            if (selected) edgeKey.copy(alpha = 0.88f).compositeOver(Pixel.Panel).let { fill -> KeyLook(face = fill, edge = edgeKey, ink = onFill(fill), tinted = false) }
             else KeyLook(face = edgeKey.copy(alpha = 0.10f).compositeOver(Pixel.Panel), edge = edgeKey, ink = letters, tinted = true)
         KeyState.Rest ->
-            if (selected) KeyLook(face = edgeKey, edge = edgeKey, ink = Color.White, tinted = false)
+            if (selected) KeyLook(face = edgeKey, edge = edgeKey, ink = onFill(edgeKey), tinted = false)
             else KeyLook(face = Pixel.Panel, edge = edgeKey, ink = letters, tinted = true)
     }
 }

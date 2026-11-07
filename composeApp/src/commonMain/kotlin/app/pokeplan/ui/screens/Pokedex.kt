@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
+import app.pokeplan.ui.Glyph
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.app.DexState
 import app.pokeplan.app.FormDex
@@ -120,7 +122,7 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
             PixelBar(caught.toFloat() / rows.size.coerceAtLeast(1), color = if (caught == rows.size) Pixel.Warning else Pixel.Red)
             // One quiet line for the rest, so the card stays a number and a bar.
             val more = listOfNotNull(
-                "✨ $shiny shiny".takeIf { shiny > 0 }, "Forms $formsHad of $formsAll", "$seen more seen".takeIf { seen > 0 },
+                "$shiny shiny".takeIf { shiny > 0 }, "Forms $formsHad of $formsAll", "$seen more seen".takeIf { seen > 0 },
             )
             Text(more.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
@@ -129,7 +131,7 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
         view.search, { change(view.copy(search = it.take(20))) }, Modifier.fillMaxWidth(), singleLine = true,
         placeholder = "Search by name or number",
     )
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
         DexFilter.entries.forEach { f -> TabButton(f.label, f == view.filter, { change(view.copy(filter = f)) }, Modifier.padding(0.dp)) }
     }
     val text = view.search.trim().lowercase().removePrefix("#")
@@ -151,7 +153,7 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
         }
     } else {
         // An index, not a wall of cards: number, sprite, name and one quiet line per row, with a hairline between rows.
-        val shape = RoundedCornerShape(Spacing.CardRadius)
+        val shape = PixelShape
         Column(Modifier.fillMaxWidth().clip(shape).background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape)) {
             shown.forEachIndexed { i, (number, s) ->
                 val state = states.getValue(s.id)
@@ -176,17 +178,12 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
                         // Words, not just the sprite's colour, tell the states apart.
                         Text(if (state == DexState.UNKNOWN) "Not found yet" else state.label, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1)
                     }
-                    if (isShiny) Text("✨", style = MaterialTheme.typography.bodyMedium)
+                    if (isShiny) Glyph("star", Pixel.Warning, size = 18.dp, description = "Shiny")
                     if (state == DexState.OWNED) ItemIcon("poke-ball", size = 20.dp, description = null)
                 }
             }
         }
     }
-    Text(
-        "A Poké Ball marks the Pokémon in your party or PC now. Seen ones are named; tap one to see where it stands. " +
-            "About 1 in 128 eggs is shiny; longer sessions and a Shiny hunter buddy raise the odds.",
-        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-    )
 }
 
 /** "0.7 m" from decimetres, "6.9 kg" from hectograms: the games keep both in tenths. */
@@ -229,13 +226,13 @@ internal fun DexEntryScreen(model: AppModel, rows: List<Pair<Int, SpeciesInfo>>,
                     Modifier.align(Alignment.TopCenter).padding(top = Spacing.M).quietClickable(onClickLabel = "Hear its cry") { model.cry(id) },
                     size = 160.dp, animate = !model.data.settings.reduceMotion,
                 )
-                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.M), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.M), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     form.types.forEach { TypePlate(it, width = 84.dp) }
                 }
             } else Stage("bw08", 232.dp) {
                 Sprite(form.id, false, s.name, Modifier.align(Alignment.Center), size = 160.dp, silhouette = Pixel.Shade)
             }
-            if (at >= 0 && found.size > 1) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
+            if (at >= 0 && found.size > 1) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelIconButton("arrow-left", "Previous", { open(found[at - 1]) }, Pixel.InkSoft, enabled = at > 0)
                 PixelIconButton("arrow-right", "Next", { open(found[at + 1]) }, Pixel.InkSoft, enabled = at < found.size - 1)
             }
@@ -263,12 +260,12 @@ private fun FormsBox(model: AppModel, speciesId: Int, shownId: Int, shiny: Boole
             Text(if (forms.size == 1) "Form" else "Forms", style = MaterialTheme.typography.titleMedium)
             Text(
                 "${counted.count { FormDex.caught(model.data, it) }} of ${counted.size} caught, " +
-                    "✨ ${counted.count { FormDex.shiny(model.data, it) }} of ${counted.size} shiny",
+                    "${counted.count { FormDex.shiny(model.data, it) }} of ${counted.size} shiny",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 TabButton("Regular", !shiny, { setShiny(false) }, Modifier.padding(0.dp))
-                TabButton("✨ Shiny", shiny, { setShiny(true) }, Modifier.padding(0.dp))
+                TabButton("Shiny", shiny, { setShiny(true) }, Modifier.padding(0.dp))
             }
             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 forms.forEach { f ->
@@ -276,7 +273,7 @@ private fun FormsBox(model: AppModel, speciesId: Int, shownId: Int, shiny: Boole
                     val found = if (shiny) FormDex.shiny(model.data, f) else caught
                     val canHave = FormDex.counts(f)
                     val name = if (caught) f.name else "???"
-                    val shape = RoundedCornerShape(12.dp)
+                    val shape = PixelShape
                     Column(
                         Modifier.size(width = 92.dp, height = 104.dp).clip(shape).background(Pixel.Panel)
                             .border(2.dp, if (f.id == shownId && caught) Pixel.Red else Pixel.Border, shape)
@@ -320,7 +317,7 @@ private fun CaughtEntry(model: AppModel, s: SpeciesInfo, form: FormInfo, open: (
                 if (owned > 0) "You have $owned in your party and PC." else "Caught before; none in your party or PC now.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
-            if (id in model.data.shinySpecies) Text("✨ You have found a shiny one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning)
+            if (id in model.data.shinySpecies) Text("You have found a shiny one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning)
         }
     }
     TextBox {
@@ -377,7 +374,7 @@ private fun LineMember(model: AppModel, speciesId: Int, current: Boolean, open: 
     val state = DexState.of(model.data, speciesId)
     val name = if (state == DexState.UNKNOWN) "???" else Dex.species(speciesId).name
     Column(
-        Modifier.size(width = 92.dp, height = 76.dp).clip(RoundedCornerShape(12.dp))
+        Modifier.size(width = 92.dp, height = 76.dp).clip(PixelShape)
             .background(if (current) Pixel.Shade else Pixel.Panel)
             .quietClickable(enabled = !current && state != DexState.UNKNOWN, onClickLabel = "Open entry") { open(speciesId) }
             .semantics(mergeDescendants = true) { contentDescription = name },
@@ -393,8 +390,8 @@ private fun LineMember(model: AppModel, speciesId: Int, current: Boolean, open: 
 private fun CreditLine(credit: String) {
     Text(
         "$credit, PMD SpriteCollab (CC\u00A0BY\u2060-\u2060NC\u00A04.0)", Modifier.fillMaxWidth(),
-        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 10.sp, lineHeight = 13.sp),
-        color = Pixel.Gray.copy(alpha = 0.7f), textAlign = TextAlign.Center,
+        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp, lineHeight = 15.sp),
+        color = Pixel.InkSoft, textAlign = TextAlign.Center,
     )
 }
 

@@ -160,8 +160,11 @@ class LegacyJsonImporterTest {
         val edited = text.replace("\"buddyId\":null", "\"buddyId\":\"$chosen\"").replace("\"buddyId\": null", "\"buddyId\": \"$chosen\"")
         val store = JvmDatabase.open()
         LegacyJsonImporter(store).import(edited, null, now)
-        assertEquals(chosen, store.pokemon.lead(ModuleIds.PLAN))
+        // One place only (7 November 2026): the old buddy is the buddy and no longer in Plan's party, which the import reports.
         assertEquals(chosen, store.pokemon.buddy())
-        assertEquals(ids.size, store.pokemon.party(ModuleIds.PLAN).size)
+        assertEquals(PokemonPlace.Buddy, store.pokemon.placeOf(chosen))
+        assertEquals(ids.size - 1, store.pokemon.party(ModuleIds.PLAN).size)
+        assertTrue(chosen !in store.pokemon.party(ModuleIds.PLAN))
+        assertTrue(store.db.dataQueries.warningsOf(LegacyJsonImporter(store).import(edited, null, now).migrationId).executeAsList().any { it.code == "place_conflict" })
     }
 }

@@ -73,13 +73,11 @@ internal fun FlashlightTool(model: AppModel, onUse: () -> Unit) {
             if (torch != null) {
                 Text(if (on) "The flashlight is on." else "The phone's flashlight is off.", style = MaterialTheme.typography.bodyLarge)
                 PixelButton(if (on) "Turn off" else "Turn on", { sos = false; on = torch.set(!on); onUse() }, Modifier.fillMaxWidth(), if (on) Pixel.InkSoft else Pixel.Blue)
-                Text("A light left on warms the phone and drains the battery; it turns off when you leave this tool.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             } else Text("This device has no flashlight, so the screen is the light.", style = MaterialTheme.typography.bodyLarge)
             PixelButton("Screen light", { screen = true; onUse() }, Modifier.fillMaxWidth(), Pixel.InkSoft)
             if (torch != null) {
                 if (!sos) {
                     PixelButton("SOS signal", { warned = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true, enabled = !reduce)
-                    if (reduce) Text("The SOS flashing is off while Reduce motion is on.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     if (warned) {
                         Text("This flashes the light on and off. Do not use it if flashing lights bother you. It stops when you tap Stop, leave the tool, or after five minutes.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
                         PixelButton("Start the SOS", { warned = false; sos = true; onUse() }, Modifier.fillMaxWidth(), Pixel.Red, compact = true)

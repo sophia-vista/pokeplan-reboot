@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.border
@@ -73,7 +74,7 @@ internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit,
             RepeatPicker(draft.repeat) { change(draft.copy(repeat = it)) }
             if (draft.allDay) {
                 DaySpanPicker(draft.day, draft.lastDay, { change(draft.movedTo(it)) }) { change(draft.copy(lastDay = it)) }
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelIconButton("plus", "Add", add, Pixel.Green, enabled = draft.title.isNotBlank())
                     PixelIconButton("close", "Cancel", cancel, Pixel.InkSoft)
                 }
@@ -156,7 +157,7 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, follow
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RepeatPicker(selected: EventRepeat?, pick: (EventRepeat?) -> Unit) {
-    val shape = RoundedCornerShape(12.dp)
+    val shape = PixelShape
     Column {
         FieldLabel("Repeats")
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {

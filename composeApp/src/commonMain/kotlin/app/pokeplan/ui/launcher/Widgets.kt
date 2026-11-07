@@ -273,7 +273,7 @@ private fun ActionsWidget(env: WidgetEnv) {
                 PmdMenuLine(folders, env.pixel, Modifier.fillMaxWidth(), center = true, onClick = env.onFolders)
                 PmdMenuLine("All apps", env.pixel, Modifier.fillMaxWidth(), center = true, onClick = env.onAllApps)
                 PmdMenuLine("Widgets", env.pixel, Modifier.fillMaxWidth(), center = true, onClick = env.onWidgets)
-                PmdMenuLine("Pokégear", env.pixel, Modifier.fillMaxWidth(), center = true, onClick = env.onGear)
+                PmdMenuLine("Gear", env.pixel, Modifier.fillMaxWidth(), center = true, onClick = env.onGear)
             } else {
                 Row(Modifier.fillMaxWidth()) {
                     PmdMenuLine(folders, env.pixel, Modifier.weight(1f), center = true, onClick = env.onFolders)
@@ -281,7 +281,7 @@ private fun ActionsWidget(env: WidgetEnv) {
                 }
                 Row(Modifier.fillMaxWidth()) {
                     PmdMenuLine("Widgets", env.pixel, Modifier.weight(1f), center = true, onClick = env.onWidgets)
-                    PmdMenuLine("Pokégear", env.pixel, Modifier.weight(1f), center = true, onClick = env.onGear)
+                    PmdMenuLine("Gear", env.pixel, Modifier.weight(1f), center = true, onClick = env.onGear)
                 }
             }
         }

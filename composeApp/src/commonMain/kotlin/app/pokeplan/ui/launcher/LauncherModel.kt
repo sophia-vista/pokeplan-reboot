@@ -675,7 +675,7 @@ object LauncherIcons {
 
 /** What a launcher gesture can be set to do. */
 enum class GestureAction(val label: String) {
-    NONE("Nothing"), APPS("Open the app list"), GATHER("Gather the Pokémon"), POKELIFE("Open PokéLife"), GEAR("Open the Pokégear"), SETTINGS("Launcher settings"),
+    NONE("Nothing"), APPS("Open the app list"), GATHER("Gather the Pokémon"), POKELIFE("Open PokéLife"), GEAR("Open Gear"), SETTINGS("Launcher settings"),
 }
 
 /** The gestures that can be given a job, each with the jobs it offers. */

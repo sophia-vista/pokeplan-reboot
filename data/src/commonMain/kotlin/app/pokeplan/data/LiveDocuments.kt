@@ -21,32 +21,53 @@ sealed interface Activation {
 class LiveDocuments(private val store: DataStore) {
     private val q get() = store.db.dataQueries
 
+    /**
+     * The app's own check of a save (what `GameStore` does to every save it loads: numbers back in range, the Poké merge, one place per
+     * Pokémon, habits merged), `(document, nowMillis) -> document`, set by the app so `:data` does not depend on its model. It runs on a save
+     * that did not come from the app's own writes: the one being moved into the Pokémon tables and a restored backup. Without it those
+     * documents are taken as they are, and a save the tables cannot represent is refused.
+     */
+    @Volatile var normalizer: ((String, Long) -> String)? = null
+
     fun isActive(): Boolean = q.meta(META_LIVE).executeAsOneOrNull() == LIVE_DATABASE
 
     /** Whether [name] is kept in tables rather than as a row (Care, once [moveCareToTables] has run). */
-    private fun inTables(name: String): Boolean = name == CARE && store.careTables.isActive()
+    private fun inTables(name: String): Boolean = (name == CARE && store.careTables.isActive()) || (name == HEAL && store.healTables.isActive())
 
     /** Whether the PLAN part of [name] is kept in tables (the save, once [movePlanToTables] has run); the rest of it stays a row. */
     private fun planSplit(name: String): Boolean = name == SAVE && store.planTables.isActive()
 
+    /** Whether the player's part of [name] is kept in the shared Pokémon, Bag and ledger tables too (once [movePokemonToTables] has run). */
+    private fun pokemonSplit(name: String): Boolean = planSplit(name) && store.pokemonTables.isActive()
+
     fun read(name: String): String? = when {
-        inTables(name) -> store.careTables.read()
+        name == CARE && inTables(name) -> store.careTables.read()
+        name == HEAL && inTables(name) -> store.healTables.read()
         planSplit(name) -> store.transaction { assembleSave() }
         else -> q.liveRead(name).executeAsOneOrNull()
     }
 
-    /** The save put back together: its row (everything that is not PLAN's) with PLAN's fields from the tables. */
+    /** The save put back together: its row (what is neither PLAN's nor the player's) with PLAN's fields and the player's from the tables. */
     private fun assembleSave(): String? {
         val rest = q.liveRead(SAVE).executeAsOneOrNull()?.let { JSON.parseToJsonElement(it) as? JsonObject }
         val plan = store.planTables.read()
-        if (rest == null && plan.isEmpty()) return null
-        return JSON.encodeToString(JsonObject.serializer(), JsonObject((rest ?: JsonObject(emptyMap())) + plan))
+        val player = if (store.pokemonTables.isActive()) store.pokemonTables.read() else JsonObject(emptyMap())
+        if (rest == null && plan.isEmpty() && player.isEmpty()) return null
+        return JSON.encodeToString(JsonObject.serializer(), JsonObject((rest ?: JsonObject(emptyMap())) + plan + player))
     }
 
     /** One document, one transaction. A document kept in tables is split into its rows, and only the rows that changed are written. */
     fun write(name: String, json: String, nowMillis: Long) {
         when {
-            inTables(name) -> store.careTables.write(json)
+            name == CARE && inTables(name) -> store.careTables.write(json)
+            name == HEAL && inTables(name) -> store.healTables.write(json)
+            pokemonSplit(name) -> store.transaction {
+                val (plan, rest0) = store.planTables.split(json)
+                val (part, rest) = store.pokemonTables.split(rest0)
+                store.planTables.write(plan)
+                store.pokemonTables.write(part, rest, nowMillis)
+                writeRest(rest, nowMillis)
+            }
             planSplit(name) -> store.transaction {
                 val (plan, rest) = store.planTables.split(json)
                 store.planTables.write(plan)
@@ -74,6 +95,42 @@ class LiveDocuments(private val store: DataStore) {
         }
     }
 
+    /** The save row, only when it changed (a write that touched one task need not rewrite World's data). */
+    private fun writeRest(rest: JsonObject, nowMillis: Long) {
+        val text = JSON.encodeToString(JsonObject.serializer(), rest)
+        if (q.liveRead(SAVE).executeAsOneOrNull() != text) q.liveWrite(SAVE, text, nowMillis)
+    }
+
+    /**
+     * Moves the player's side of the save into the shared Pokémon, Bag and ledger tables (REP-014, schema 6), once, after PLAN's move. The save is
+     * first passed through [normalizer] (the same check the app gives every save it loads), then written as rows; the balances become one
+     * opening-balance event and nothing is paid. The whole save is read back and compared with the normalized one, the marker is set, the old
+     * save is kept under `aside:save:pokemon:<millis>` (never deleted), and the `save` row keeps only what is neither PLAN's nor the player's,
+     * all in one transaction: any difference (or a save the tables cannot represent) rolls everything back and the rows stay the live save.
+     * Does nothing once done, so it can run on every start.
+     */
+    fun movePokemonToTables(nowMillis: Long) {
+        if (store.pokemonTables.isActive() || !store.planTables.isActive()) return
+        store.transaction {
+            val doc = assembleSave()
+            if (doc == null) {
+                store.pokemonTables.beginEmpty(nowMillis)
+                return@transaction
+            }
+            val normalized = normalizer?.invoke(doc, nowMillis) ?: doc
+            q.liveWrite("${ASIDE}$SAVE:pokemon:$nowMillis", doc, nowMillis)
+            val (plan, rest0) = store.planTables.split(normalized)
+            val (part, rest) = store.pokemonTables.split(rest0)
+            store.planTables.write(plan)
+            store.pokemonTables.begin(part, rest, nowMillis)
+            writeRest(rest, nowMillis)
+            val back = JSON.parseToJsonElement(assembleSave()!!) as JsonObject
+            check(canonical(back) == canonical(JSON.parseToJsonElement(normalized) as JsonObject)) { "the Pokémon, Bag and Poké tables did not read back equal" }
+            val problems = store.economy.reconcile()
+            check(problems.isEmpty()) { problems.joinToString("; ") }
+        }
+    }
+
     /**
      * Moves the Care document from its row into Care's tables (REP-014), once: the rows are written and read back equal to the
      * document, the marker is set, and the old row is kept under `aside:care:tables:<millis>` (never deleted), all in one
@@ -91,17 +148,35 @@ class LiveDocuments(private val store: DataStore) {
         }
     }
 
+    /**
+     * Starts HEAL in its tables (REP-014), once. HEAL has no earlier home, so on a normal start there is nothing to move: the marker is set and every later
+     * `write("heal")` goes to the `heal_*` rows. A `heal` document row that already exists (a backup restored before this ran) is imported, read back equal, and kept
+     * aside under `aside:heal:tables:<millis>`. A failure leaves the database as it was and is tried again at the next start. Does nothing once done.
+     */
+    fun moveHealToTables(nowMillis: Long) {
+        if (store.healTables.isActive()) return
+        store.transaction {
+            val doc = q.liveRead(HEAL).executeAsOneOrNull()
+            store.healTables.activate(doc, nowMillis)
+            if (doc != null) {
+                q.liveWrite("${ASIDE}$HEAL:tables:$nowMillis", doc, nowMillis)
+                q.liveDelete(HEAL)
+            }
+        }
+    }
+
     /** Keeps a document that could not be read where [write] will not replace it. */
     fun keepAside(name: String, json: String, nowMillis: Long) {
         write("$ASIDE$name:$nowMillis", json, nowMillis)
     }
 
-    fun names(): List<String> = (q.liveNames().executeAsList() + listOfNotNull(CARE.takeIf { store.careTables.isActive() && store.careTables.read() != null })).distinct().sorted()
+    fun names(): List<String> = (q.liveNames().executeAsList() + listOfNotNull(CARE.takeIf { store.careTables.isActive() && store.careTables.read() != null }, HEAL.takeIf { store.healTables.isActive() && store.healTables.read() != null })).distinct().sorted()
 
     /** Every live document (not the kept-aside ones) as of one moment: a single read transaction. Care's tables are put back together as `care`. */
     fun snapshot(): Map<String, String> = store.transaction {
         val docs = q.liveNames().executeAsList().filter { !it.startsWith(ASIDE) }.associateWith { q.liveRead(it).executeAsOne() }.toMutableMap()
         if (store.careTables.isActive()) store.careTables.read()?.let { docs[CARE] = it }
+        if (store.healTables.isActive()) store.healTables.read()?.let { docs[HEAL] = it }
         if (store.planTables.isActive()) assembleSave()?.let { docs[SAVE] = it }
         docs
     }
@@ -114,7 +189,8 @@ class LiveDocuments(private val store: DataStore) {
         store.transaction {
             for ((name, json) in docs) {
                 read(name)?.let { q.liveWrite("$ASIDE$name:$nowMillis", it, nowMillis) }
-                write(name, json, nowMillis)
+                // A backup is not the app's own write: it may be from an older build, so the save goes through the app's check first.
+                write(name, if (pokemonSplit(name)) normalizer?.invoke(json, nowMillis) ?: json else json, nowMillis)
             }
         }
     }
@@ -140,9 +216,13 @@ class LiveDocuments(private val store: DataStore) {
 
     companion object {
         private val JSON = Json { encodeDefaults = true }
+        /** What a read back cannot tell apart is left out of both sides of a comparison (see PlanTables and PokemonTables). */
+        internal fun canonical(save: JsonObject): JsonObject = PokemonTables.canonical(PlanTables.canonical(save))
+
         const val ASIDE = "aside:"
         const val SAVE = "save"
         const val CARE = "care"
+        const val HEAL = "heal"
         const val META_LIVE = "live_store"
         const val META_LIVE_AT = "live_store_since"
         const val LIVE_DATABASE = "database"

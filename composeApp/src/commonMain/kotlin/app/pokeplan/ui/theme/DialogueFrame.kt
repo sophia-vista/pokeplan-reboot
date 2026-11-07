@@ -1,6 +1,10 @@
 package app.pokeplan.ui.theme
 
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -36,17 +40,41 @@ val LocalFrameTone = androidx.compose.runtime.compositionLocalOf<FrameTone?> { n
 /** How solid the app's cards are: mostly, so the page (the day gradient, or the scene chosen as the background) shows faintly through. */
 const val CARD_OPACITY = 0.8f
 
-/** The corner of a dialogue box, for clipping what is drawn inside it (a ripple, a picture). */
-val DialogueShape = RoundedCornerShape(6.dp)
+/**
+ * A rectangle whose corners are stairs of whole art pixels ([px] each), the shape of everything that is drawn pixel by pixel: a card, a
+ * picture window, a header bar. [insets] is how far in each row from the corner starts, ending in 0; [roundTop] and [roundBottom]
+ * square off a side (a header is round only at the bottom). Used for clipping, backgrounds and borders alike.
+ */
+class StairShape(
+    private val insets: IntArray, private val px: Dp = 2.dp, private val roundTop: Boolean = true, private val roundBottom: Boolean = true,
+) : Shape {
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
+        val p = with(density) { px.toPx() }
+        val none = IntArray(insets.size)
+        return Outline.Generic(stairPath(p, 0f, 0f, size.width, size.height, if (roundTop) insets else none, if (roundBottom) insets else none))
+    }
+}
+
+/** The corner of a dialogue box, for clipping what is drawn inside it (a ripple, a picture): the same stairs as its frame. */
+val DialogueShape: Shape = StairShape(intArrayOf(2, 1, 0))
+
+/** The corner of keys, fields, bars and small cards: one stair. */
+val PixelShape: Shape = StairShape(intArrayOf(1, 0))
+
+/** A round picture drawn in pixels (the disc behind a menu icon): the corners cut in steps. */
+val PixelDisc: Shape = StairShape(intArrayOf(5, 3, 2, 1, 1, 0), px = 3.dp)
 
 /** A rectangle with stair-stepped (rounded) corners: [insets] is how far in each row from the corner starts, ending in 0. */
-internal fun stairRect(p: Float, l: Float, t: Float, r: Float, b: Float, insets: IntArray): Path = Path().apply {
-    val n = insets.size
-    moveTo(l + insets[0] * p, t)
-    for (k in 0 until n) { lineTo(r - insets[k] * p, t + k * p); lineTo(r - insets[k] * p, t + (k + 1) * p) }
-    for (k in n - 1 downTo 0) { lineTo(r - insets[k] * p, b - (k + 1) * p); lineTo(r - insets[k] * p, b - k * p) }
-    for (k in 0 until n) { lineTo(l + insets[k] * p, b - k * p); lineTo(l + insets[k] * p, b - (k + 1) * p) }
-    for (k in n - 1 downTo 0) { lineTo(l + insets[k] * p, t + (k + 1) * p); lineTo(l + insets[k] * p, t + k * p) }
+internal fun stairRect(p: Float, l: Float, t: Float, r: Float, b: Float, insets: IntArray): Path = stairPath(p, l, t, r, b, insets, insets)
+
+/** [stairRect] with its own steps at the top and at the bottom (a side with all zeros is square). */
+internal fun stairPath(p: Float, l: Float, t: Float, r: Float, b: Float, top: IntArray, bottom: IntArray): Path = Path().apply {
+    val n = top.size
+    moveTo(l + top[0] * p, t)
+    for (k in 0 until n) { lineTo(r - top[k] * p, t + k * p); lineTo(r - top[k] * p, t + (k + 1) * p) }
+    for (k in n - 1 downTo 0) { lineTo(r - bottom[k] * p, b - (k + 1) * p); lineTo(r - bottom[k] * p, b - k * p) }
+    for (k in 0 until n) { lineTo(l + bottom[k] * p, b - k * p); lineTo(l + bottom[k] * p, b - (k + 1) * p) }
+    for (k in n - 1 downTo 0) { lineTo(l + top[k] * p, t + (k + 1) * p); lineTo(l + top[k] * p, t + k * p) }
     close()
 }
 

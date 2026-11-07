@@ -90,6 +90,7 @@ Party capacity is **six for every applicable module: one lead and five members**
 There is one global buddy. It is a place of its own, not a membership of any party or WORLD expedition team.
 
 - Any currently owned Pokémon may be selected, including a Legendary or Mythical Pokémon if the collection rules permit it.
+- **Where it shows (owner, 8 November 2026):** on Home, in a scene of its own type, and in an empty state asleep. Module pages show their own party and lead, not the buddy, and the PC lists only Pokémon in no other place, so the buddy is never in the PC.
 - Switching is immediate and does not reset campaign progress or rewrite authored dialogue. The buddy is one of the Pokémon places (section 2.2): choosing a Pokémon that is in a party, a team or a helper role takes it from there, and the previous buddy goes to the PC.
 - Story continuity is maintained by using the selected Pokémon as the visual buddy while keeping dialogue semantically coherent.
 - The buddy is the main companion. Buddy selection is cosmetic/narrative; it is not a reward multiplier, combat stat bonus, or required participant in a module action. Bonuses come from module parties (section 2.2.1), not from the buddy.
@@ -193,6 +194,8 @@ Each life module has a distinct regional identity and regional dex view. WORLD h
 - `gear` (catalog/presentation only; no acquisition)
 - `world:<region-id>` for WORLD campaign regions
 
+**Species lists (owner, 7 November 2026; built in 0.139.0).** The six module regions (`plan`, `care`, `heal`, `mint`, `home`, `link`; in code `PLAN`, `CARE`, `HEAL`, `MINT`, `HOUSEHOLD`, `LINK`) divide the whole National Dex: every species is in exactly one module region and no evolution line is split. Each has about 65 to 75 hatchable lines, at least one of every rarity (two of the 12 Super Rare lines each), its starters first, its lines in regional-dex order, and its patrons (legendary-class and mythical Guardians) as the last entries. The lists are content in `tools/species/regions/`, summarised in `docs/design.md`; GEAR and WORLD have no module region. `mint`, `home` and `link` stay unreleased until their modules ship.
+
 All regions are accessible from day one. Progression can unlock deeper chapters, dungeons, bosses, and special encounters, but not basic access to an entire life module/region.
 
 A Pokémon can count toward multiple regional dexes only when the acquisition/encounter rules explicitly record it. Do not infer regional dex completion merely because a species exists in the global collection. Regional dexes are views over shared discovery/ownership events, not separate collections.
@@ -217,6 +220,8 @@ Each applicable module persists an independent `ModuleParty` or equivalent:
 - update/version metadata
 
 Capacity is six: slot 1 is the lead, slots 2 to 6 are members. Enforce unique IDs within one party and across all parties (one Pokémon, one place). A party can contain fewer than six. Do not auto-fill or auto-replace a party when a Pokémon evolves, changes buddy status, or is added to another module.
+
+**As built (0.135.0, REP-014):** the collection is `owned_pokemon` and a Pokémon's place is at most one row of `pokemon_place` (the Pokémon is its primary key, so two places cannot be stored; no row is the PC). A party's rows are its module's party id and slots 1 to n with the lead in slot 1; the buddy is the one row of its kind; a Guardian has its slot. WORLD teams and GEAR helpers remain in their modules' records, and the live write refuses a save that names a Pokémon there and in the table (`DATA_AND_MIGRATIONS.md` section 7.3). A Pokémon obtained from WORLD (a Guardian included) arrives with no place, that is in the PC, until the player assigns it.
 
 ### 6.3 WORLD teams
 
@@ -393,9 +398,10 @@ The starter is the buddy and starts in no party, so each module that has a Poké
 | CARE | A 5-second breath (Care): the breathing circle runs once, then a Care Egg hatches | A Common egg of the Care Region, into Care's party, leading it |
 | WORLD | Its authored opening (`MODULES/WORLD.md`) | Unchanged |
 | GEAR | None: GEAR has no acquisition (`MODULES/GEAR.md` section 6) | Nothing |
-| HEAL, MINT, HOME, LINK | Each module's own first-run demo when it is built | Through its acquisition method |
+| HEAL | A 5-second walk (Heal): "Walking…" counts down, then Field Research finds an egg | A Common egg of the Heal Region, into Heal's party, leading it |
+| MINT, HOME, LINK | Each module's own first-run demo when it is built | Through its acquisition method |
 
-Rules: it is offered on the module's first screen until done and is never required (every module works without it); it is done once per save (`AppData.tutorials`), so replaying or reloading cannot pay twice; it counts as no focus session, no calm break and no history (no streak, caps, meter, friendship or trainer points); the first of its species pays the usual new-species candies; a player who has already done the real thing (a finished focus session, a calm break) never sees it and is given nothing; and it needs no permission. A new module adds its own row here.
+Rules: it is offered on the module's first screen until done and is never required (every module works without it); it is done once per save (`AppData.tutorials`), so replaying or reloading cannot pay twice; it counts as no focus session, no calm break, no logged activity or drink (HEAL) and no history (no streak, caps, meter, friendship or trainer points); the first of its species pays the usual new-species candies; a player who has already done the real thing (a finished focus session, a calm break, a logged activity) never sees it and is given nothing; and it needs no permission. A new module adds its own row here.
 
 The ecosystem must preserve the approved module mechanics; it does not redefine them:
 
@@ -494,6 +500,8 @@ Poké is the sole universal game currency. There is no separate PLAN Coins balan
 Conversion is 1:1, summing both legacy balances into the new shared Poké balance. Migration must preserve the two original source values, source save/version, conversion timestamp, and migration ID in migration/audit metadata so the conversion can be verified or recovered. It must be applied once, be idempotent, and never re-add balances after restore/retry. If one legacy balance is absent, treat it as zero. Do not round or reinterpret integer units.
 
 `PlayerState.coins` and `WorldData.poke` are legacy sources only; after migration all reads/writes use the shared economy repository. UI labels use Poké consistently.
+
+**As built (0.135.0, REP-014):** the balance and the Bag are `currency_balance` and `bag_stack`, written only by `EconomyRepository.settle` together with their `reward_ledger_entry` rows in one transaction (the live save turns the change of one action into one event; the migration's opening balance carries the Poké merge's two source values in its metadata and pays nothing). `PlayerState.coins` is the balance as the app reads it; `WorldData.poke` is **no longer stored**: it is the in-memory input of World's pure rules, set from the balance on load and folded back after each action, and an old save's stored World balance is read once into `legacyPoke` for the merge and never written. Dropping the in-memory field needs World's rules to take the balance as an input (`DATA_AND_MIGRATIONS.md` section 7.3.0).
 
 ### 11.3 Economy operations
 

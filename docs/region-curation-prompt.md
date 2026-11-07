@@ -1,9 +1,9 @@
 # Curating a module region
 
-Every life module (Plan, Care, Grow, Home) has its own region: a hand-curated dex of about 150 species, open to every
+Every life module with a region (Plan, Care, Heal, Mint, Home, Link) has its own: a hand-curated dex of about 150 to 180 species (every species is in exactly one), open to every
 player once the module ships ("Module regions" in [ecosystem.md](ecosystem.md), section 4). This kit is how a region's
 list is chosen, in a separate chat or with Claude Code, and brought back. The lists live in `tools/species/regions/`
-(`plan.txt`, `care.txt`, `household.txt`, one per `Region` entry).
+(`plan.txt`, `care.txt`, `heal.txt`, `mint.txt`, `household.txt`, `link.txt`, one per `Region` entry). All six were curated together in 0.139.0 (docs/design.md, "Species lists"); this kit is for changing one.
 
 ## How to use it
 
@@ -20,16 +20,14 @@ To refresh the candidates table after any rule change or curation: `./gradlew :p
 
 ## Region briefs
 
-- **Plan Region** (`plan.txt`, curated; it was the Home Region): everyday route Pokémon. Patrons Uxie, Mesprit and Azelf.
-- **Care Region** (`care.txt`): Fairy, Grass, Water and Normal; gentle, soothing and caring Pokémon (sleep, comfort,
-  healing, gratitude). Patrons Cresselia and Shaymin. Super Rare line: Goomy. Takes Swablu, Altaria, Cottonee and
-  Whimsicott from Plan.
-- **Grow Region**: Psychic, Fighting and Bug; learning, practice and trials. Patrons Kubfu and Urshifu. Super Rare line:
-  Beldum. Takes Caterpie's line, Larvesta, Volcarona, Riolu and Lucario from Plan.
-- **Home Region** (`household.txt`, the household module): Normal, Fire, Grass and Fairy; kitchen, home and closet.
-  Patron Ogerpon. Super Rare line: Frigibax.
+- **Plan Region** (`plan.txt`): everyday route Pokémon, busy workers and clever thinkers. Patrons Uxie, Mesprit and Azelf. Super Rare lines: Bagon and Deino.
+- **Care Region** (`care.txt`): Fairy, Grass, Water and Normal; gentle, soothing and caring Pokémon (sleep, comfort, healing, gratitude). Patrons Cresselia and Shaymin. Super Rare lines: Goomy and Slakoth.
+- **Heal Region** (`heal.txt`): Fighting, Fire, Water and Electric; sporty, outdoorsy and energetic Pokémon. Patrons Raikou, Entei and Suicune. Super Rare lines: Jangmo-o and Frigibax.
+- **Mint Region** (`mint.txt`): Steel, Rock and Ground; steady keepers, fossils, gems and hoarders. Patrons Diancie and Melmetal. Super Rare lines: Beldum and Duraludon.
+- **Home Region** (`household.txt`): kitchen, garden, hearth, fridge, closet and pets. Patrons Tapu Bulu and Ogerpon. Super Rare lines: Gible and Larvitar.
+- **Link Region** (`link.txt`): postal birds, loyal dogs, pairs, singers and gift-givers. Patrons Latias and Latios. Super Rare lines: Dratini and Dreepy.
 
-The draft signature species for each are in the table in ecosystem.md.
+(There is no Grow region any more.) The order of a list follows a mainline regional dex: starters, lines by rarity, quest species, patrons last.
 
 ## The prompt
 

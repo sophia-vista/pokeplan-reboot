@@ -3,6 +3,7 @@ package app.pokeplan
 import android.content.Context
 import android.util.Log
 import app.pokeplan.app.FileStorage
+import app.pokeplan.app.GameStore
 import app.pokeplan.app.Storage
 import app.pokeplan.data.AndroidDatabase
 import app.pokeplan.data.DataStore
@@ -36,8 +37,8 @@ class DatabaseStorage(private val live: LiveDocuments, private val name: String)
  * The cutover (DATA_AND_MIGRATIONS.md section 12.6). The app and the widgets in this process share one connection. On the
  * first start with this build, `save.json` and `care.json` are copied into the database in one transaction, read back and
  * the marker set; from then on the database is the only live store and the files are never written again (they stay as the
- * rollback copy). Care's records then move into Care's own tables (schema 4, `CareTables`) and PLAN's part of the save into PLAN's (schema 5,
- * `PlanTables`); `live.read`, `write` and the backup snapshot put them back together as `care` and `save`, so the app and the backup
+ * rollback copy). Care's records then move into Care's own tables (schema 4, `CareTables`), PLAN's part of the save into PLAN's (schema 5,
+ * `PlanTables`) and the player's side (Pokémon, places, Bag, Poké and its ledger) into the shared tables (schema 6, `PokemonTables`); `live.read`, `write` and the backup snapshot put them back together as `care` and `save`, so the app and the backup
  * see the same documents. A backup of the live documents is
  * written once a day (`backups/`).
  *
@@ -66,6 +67,7 @@ object LiveStore {
         val backups = LiveBackup(File(app.filesDir, "backups"))
         return try {
             val s = openOrRecover(app, backups, now)
+            s.live.normalizer = GameStore::normalizeDocument
             s.live.activate(read(app, "save.json"), read(app, "care.json"), now)
             File(app.filesDir, ACTIVE_FLAG).writeText("database") // from now on the files are never the live store again
             // Care's records move from their document row into Care's tables, once (REP-014). If it cannot (the read-back differed),
@@ -73,6 +75,15 @@ object LiveStore {
             runCatching { s.live.moveCareToTables(now) }.onFailure { Log.w(TAG, "Care tables not active this run: ${it.javaClass.simpleName}") }
             // The same for PLAN's part of the save (schema 5): its records move into PLAN's tables, the rest of the save stays a row.
             runCatching { s.live.movePlanToTables(now) }.onFailure { Log.w(TAG, "Plan tables not active this run: ${it.javaClass.simpleName}") }
+            // HEAL lives in its own tables from the start (schema 7). A heal.json written while the database could not be opened is taken in once, so nothing logged then is lost.
+            runCatching {
+                read(app, "heal.json")?.let { legacy -> if (!s.healTables.isActive() && s.live.read("heal") == null) s.live.write("heal", legacy, now) }
+                s.live.moveHealToTables(now)
+            }.onFailure { Log.w(TAG, "Heal tables not active this run: ${it.javaClass.simpleName}") }
+            // And the player's side (schema 6): the Pokémon, their places, the Bag, the Poké balance and its ledger, once PLAN's move has run.
+            // The save is checked the way the app checks every save it loads, written as rows, read back and compared; any difference or a
+            // save the tables cannot represent changes nothing, the rows stay the live save, and it is tried again at the next start.
+            runCatching { s.live.movePokemonToTables(now) }.onFailure { Log.w(TAG, "Pokémon tables not active this run: ${it.javaClass.simpleName}") }
             runCatching { backups.takeIfDue(s.live, now) }.onFailure { Log.w(TAG, "backup failed: ${it.javaClass.simpleName}") }
             backupStore = backups
             store = s
@@ -119,6 +130,7 @@ object LiveStore {
             File(db.path + suffix).takeIf { it.exists() }?.renameTo(File(db.path + suffix + ".corrupt-$now"))
         }
         val fresh = AndroidDatabase.open(context)
+        fresh.live.normalizer = GameStore::normalizeDocument
         if (backups.restoreNewest(fresh.live, now)) {
             fresh.live.activate(null, null, now) // the restore is the live data; set the marker without reading the stale files
             Log.w(TAG, "the database was damaged; the newest backup was restored")

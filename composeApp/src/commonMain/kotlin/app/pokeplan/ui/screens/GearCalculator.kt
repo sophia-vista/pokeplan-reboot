@@ -79,7 +79,7 @@ internal fun CalculatorTool(model: AppModel, onUse: () -> Unit) {
                 },
                 style = MaterialTheme.typography.titleMedium, color = if (live is CalcResult.Error && showError) Pixel.Red else Pixel.Ink,
             )
-            @Composable fun keys(vararg labels: Pair<String, () -> Unit>, accent: Set<String> = emptySet()) = Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            @Composable fun keys(vararg labels: Pair<String, () -> Unit>, accent: Set<String> = emptySet()) = Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 labels.forEach { (label, action) -> PixelButton(label, action, Modifier.weight(1f), if (label in accent) Pixel.Blue else Pixel.InkSoft, compact = true) }
             }
             val ops = setOf("÷", "×", "−", "+", "=")
@@ -96,7 +96,7 @@ internal fun CalculatorTool(model: AppModel, onUse: () -> Unit) {
                 keys("M+" to { liveValue?.let { v -> store.changeGear { it.copy(calcMemory = it.calcMemory + v.value) } } }, "M−" to { liveValue?.let { v -> store.changeGear { it.copy(calcMemory = it.calcMemory - v.value) } } }, "MR" to { key(CalcEngine.format(gear.calcMemory), true) }, "MC" to { store.changeGear { it.copy(calcMemory = 0.0) } })
                 Text("Angles in ${if (gear.calcDegrees) "degrees" else "radians"}. Memory: ${CalcEngine.format(gear.calcMemory)}.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelIconButton("copy", "Copy", { clipboard.setText(AnnotatedString(liveValue?.text ?: expr)) }, Pixel.InkSoft, enabled = expr.isNotBlank())
                 PixelButton(if (gear.calcHistoryOn) "History on" else "History off", { store.changeGear { it.copy(calcHistoryOn = !it.calcHistoryOn) } }, Modifier.weight(1f), if (gear.calcHistoryOn) Pixel.Green else Pixel.InkSoft, compact = true)
             }

@@ -26,8 +26,14 @@ enum class Region(val label: String, val isModule: Boolean = false, val released
     PALDEA("Paldea", released = false),
     /** The Care module's region: gentle, soothing Pokémon. Released with the Care screens (0.34.0). */
     CARE("Care Region", isModule = true),
-    /** The household module's region (recipes, closet). Not curated yet. */
+    /** The Heal module's region (Field Research): sporty, outdoorsy and energetic Pokémon. Released with the Heal screens. */
+    HEAL("Heal Region", isModule = true),
+    /** The finance module's region (Ledger Research): steady Steel, Rock and Ground keepers, fossils and gems. Not released until the module ships. */
+    MINT("Mint Region", isModule = true, released = false),
+    /** The household module's region (kitchen, pantry, closet, garden): hearth, garden and pet Pokémon. Not released until the module ships. */
     HOUSEHOLD("Home Region", isModule = true, released = false),
+    /** The connection module's region (Postcard Trail): postal birds, loyal dogs, pairs and signallers. Not released until the module ships. */
+    LINK("Link Region", isModule = true, released = false),
     ;
 
     /** Where an egg from this region really comes from: itself while released, else the Plan Region. */

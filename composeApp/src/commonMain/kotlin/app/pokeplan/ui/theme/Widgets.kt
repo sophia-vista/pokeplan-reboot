@@ -75,14 +75,14 @@ fun rankColor(rank: Rank): Color = when (rank) {
 }
 
 /**
- * A round badge with the rank letter. The meaning is in the accessible description and, in pickers, in the label under it;
+ * A rounded pixel square with the rank letter. The meaning is in the accessible description and, in pickers, in the label under it;
  * colour is never the only signal. A clickable badge has a 48 dp touch target.
  */
 @Composable
 fun RankBadge(rank: Rank, modifier: Modifier = Modifier, selected: Boolean = true, onClick: (() -> Unit)? = null) {
     val badge = Modifier
         .size(36.dp)
-        .clip(CircleShape)
+        .clip(DialogueShape)
         .background(if (selected) rankColor(rank) else Pixel.Shade)
     Box(
         modifier
@@ -91,7 +91,7 @@ fun RankBadge(rank: Rank, modifier: Modifier = Modifier, selected: Boolean = tru
         contentAlignment = Alignment.Center,
     ) {
         Box(badge, contentAlignment = Alignment.Center) {
-            // The letter sits in a fixed-size circle, so it keeps its size when the system text size grows.
+            // The letter sits in a fixed-size square, so it keeps its size when the system text size grows.
             val density = LocalDensity.current
             CompositionLocalProvider(LocalDensity provides Density(density.density, 1f)) {
                 Text(rank.letter.toString(), style = MaterialTheme.typography.labelLarge, color = if (selected) Color.White else Pixel.InkSoft)
@@ -113,11 +113,11 @@ fun ScreenHeader(
     footer: (@Composable () -> Unit)? = null,
     /** Shows Back at the start of the bar, where every phone app puts it; it takes the icon's place. */
     onBack: (() -> Unit)? = null,
-    /** The bar's colour: the brand red, or a region's own ([RegionLook.header]) on that region's pages. */
-    color: Color = Pixel.Red,
+    /** The bar's colour: the app's neutral [Pixel.Chrome], or a module's own ([ModuleAccent.header]) on that module's pages. */
+    color: Color = Pixel.Chrome,
     trailing: @Composable () -> Unit = {},
 ) {
-    val shape = RoundedCornerShape(bottomStart = Spacing.CardRadius, bottomEnd = Spacing.CardRadius)
+    val shape = StairShape(intArrayOf(4, 2, 1, 0), roundTop = false)
     val chrome = LocalChromeColor.current
     androidx.compose.runtime.SideEffect { chrome?.value = color }
     Column(modifier.fillMaxWidth().clip(shape).background(color, shape)) {
@@ -126,7 +126,7 @@ fun ScreenHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
-            if (onBack != null) PixelButton("‹ Back", onBack, color = Pixel.InkSoft, compact = true)
+            if (onBack != null) BackButton(onBack)
             else if (icon != null) ItemIcon(icon, size = 36.dp, description = null)
             Column(Modifier.weight(1f)) {
                 PixelTitle(title, Modifier.semantics { heading() }, large = true, onLight = false)
@@ -135,6 +135,20 @@ fun ScreenHeader(
             trailing()
         }
         if (footer != null) Box(Modifier.fillMaxWidth().padding(start = Spacing.Page, end = Spacing.Page, bottom = Spacing.M)) { footer() }
+    }
+}
+
+/**
+ * Back: a pixel chevron and the label in the dialogue font, on one centre line. (It used to be the text "‹ Back", whose arrow the
+ * dialogue font lacks, so the whole label fell back to another font and sat off the centre of its key.)
+ */
+@Composable
+fun BackButton(onBack: () -> Unit, modifier: Modifier = Modifier) {
+    PixelKey(onBack, modifier, key = Pixel.InkSoft, compact = true, horizontal = Spacing.S) { look ->
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            app.pokeplan.ui.Glyph("chevron-left", look.ink, size = 16.dp)
+            KeyLabel("Back", look)
+        }
     }
 }
 
@@ -249,8 +263,8 @@ fun ToggleRow(label: String, on: Boolean, modifier: Modifier = Modifier, detail:
         modifier
             .fillMaxWidth()
             .defaultMinSize(minHeight = Spacing.Target)
-            .clip(RoundedCornerShape(Spacing.S))
-            .focusRing(RoundedCornerShape(Spacing.S))
+            .clip(PixelShape)
+            .focusRing(PixelShape)
             .toggleable(value = on, role = Role.Switch, onValueChange = onChange),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -260,13 +274,7 @@ fun ToggleRow(label: String, on: Boolean, modifier: Modifier = Modifier, detail:
             if (detail != null) Text(detail, style = MaterialTheme.typography.bodyMedium)
         }
         // The row handles the tap and speaks the state, so the switch itself is only a picture of it.
-        Switch(
-            checked = on, onCheckedChange = null,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White, checkedTrackColor = Pixel.Green, checkedBorderColor = Pixel.Green,
-                uncheckedThumbColor = Pixel.InkSoft, uncheckedTrackColor = Pixel.Shade, uncheckedBorderColor = Pixel.Border,
-            ),
-        )
+        PixelToggle(on)
     }
 }
 
@@ -289,8 +297,8 @@ fun ChoiceRow(selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modif
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.M),
     ) {
-        Box(Modifier.size(20.dp).border(BorderStroke(2.dp, if (selected) Pixel.Blue else Pixel.InkSoft), CircleShape), contentAlignment = Alignment.Center) {
-            if (selected) Box(Modifier.size(10.dp).background(Pixel.Blue, CircleShape))
+        Box(Modifier.size(20.dp).pixelFrame(Pixel.Panel, if (selected) Pixel.Blue else Pixel.InkSoft), contentAlignment = Alignment.Center) {
+            if (selected) Box(Modifier.size(8.dp).background(Pixel.Blue))
         }
         lead()
         Box(Modifier.weight(1f)) { content() }

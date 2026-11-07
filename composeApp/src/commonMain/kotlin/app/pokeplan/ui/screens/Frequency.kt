@@ -113,7 +113,6 @@ internal fun FrequencyView(model: AppModel) {
                         Text(habitTargetLabel(target()), style = MaterialTheme.typography.bodyLarge)
                         PixelButton("+", { times = (times + 1).coerceAtMost(max) }, color = Pixel.InkSoft, compact = true)
                     }
-                    Text("Miss one now and then and the streak carries on.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
                 FieldLabel("Category")
                 CategoryChips(category) { category = it ?: category }

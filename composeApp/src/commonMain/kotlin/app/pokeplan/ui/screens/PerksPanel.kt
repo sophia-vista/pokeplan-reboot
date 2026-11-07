@@ -24,6 +24,8 @@ import app.pokeplan.core.pokemon.HeldItems
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.CareBucket
+import app.pokeplan.core.pokemon.HealBucket
+import app.pokeplan.core.pokemon.HealPerks
 import app.pokeplan.core.pokemon.CarePerks
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.PerkBucket
@@ -155,12 +157,10 @@ fun CarePerksCard(model: AppModel) {
                 return@Column
             }
             if (lead == null) {
-                Text("Care's first member leads and gives its perks.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 return@Column
             }
             val shown = CareBucket.entries.filter { (totals[it] ?: 0.0) > 0 }
             shown.forEach { b -> PerkRow(b.label, totals[b] ?: 0.0, Perks.BUCKET_CAP) }
-            if (shown.isEmpty()) Text("None yet: no one in Care's party has a Care type.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             PixelButton(if (open) "Hide where they come from" else "Where they come from", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             if (open) {
                 val assists = party.filter { it.id != lead.id }.take(5)
@@ -179,6 +179,33 @@ fun CarePerksCard(model: AppModel) {
                     style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
                 )
             }
+        }
+    }
+}
+
+/** Heal's party perks, laid out like [CarePerksCard]. They only change what Field Research pays; nothing in HEAL's records depends on them. */
+@Composable
+fun HealPerksCard(model: AppModel) {
+    val player = model.data.player
+    val lead = player.healLead
+    val party = player.partyOf(PartyIds.HEAL)
+    val totals = HealPerks.total(lead, party)
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("Heal perks")
+            if (!model.store.sees(Feature.PERKS)) {
+                Text(PERKS_LOCKED, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                return@Column
+            }
+            if (lead == null) {
+                return@Column
+            }
+            val shown = HealBucket.entries.filter { (totals[it] ?: 0.0) > 0 }
+            shown.forEach { b -> PerkRow(b.label, totals[b] ?: 0.0, Perks.BUCKET_CAP) }
+            Text(
+                "Up to +${Perks.BUCKET_CAP.roundToInt()}% a bucket, only on what Field Research pays. They never change a record, a total or a goal.",
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            )
         }
     }
 }
@@ -213,7 +240,6 @@ fun PokemonPerksBox(model: AppModel, p: OwnedPokemon) {
             if (held != null) PixelButton(if (choosing) "Close" else "Swap", { choosing = !choosing }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             if (choosing) {
                 val holdable = bag.counts.filter { it.value > 0 && Items.holdable(it.key) }.keys.sorted()
-                if (holdable.isEmpty()) Text("No items to hold yet. Held items drop from finished tasks.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 holdable.forEach { id ->
                     val perk = HeldItems.perks[id]?.let { " (${pct(it.percent)} ${it.bucket.label()})" } ?: ""
                     ListRow(lead = { ItemIcon(id, size = 32.dp) }, onClick = { if (store.holdItem(p.id, id)) choosing = false }, onClickLabel = "Give ${Items.name(id)}") {

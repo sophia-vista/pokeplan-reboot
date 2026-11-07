@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.135.0
+## 0.140.0
 
 - **Real Rescue Team art from the game's own files.** 245 maps (the 57 Friend Areas, towns, team bases and more) and the 64 dungeon tilesets of Pokémon Mystery Dungeon: Red Rescue Team, decoded by `tools/sprites/fetch_rescue_maps.py` (from pret/pmd-red's committed map data) and `tools/tiles/extract_rescue_tiles.py` (from the owner's ROM, which is not in the repo). Sources and licences in `docs/assets.md`.
 - **Explorers of Sky too.** 440 maps (`assets/sky-maps`, not used yet) and 143 dungeon tilesets (`assets/tiles/ex-NNN`) from the owner's Explorers of Sky ROM, by `tools/sprites/extract_sky_maps.py` and `tools/tiles/extract_sky_tiles.py`. Their sound (DSE, rendered by `tools/sprites/extract_sky_audio.py`, an approximation not yet listened to) is in `assets/sky-sfx`: 11 system effects, 14 jingles and 27 short music files named from pret/pmd-sky.
@@ -14,6 +14,55 @@ release always has the newest merge).
 - **World's Base is no longer one long list.** It opens on the team base of your first partner, as big as the width allows, growing with the Camp, then your rank and a menu: Facilities, Research, Café, Kecleon Shop, Swap Shop, Dojo. Each opens its own page with a banner from the Square or the Dojo.
 - **World dungeons without a sheet of their own** (all of Kanto, Johto, Hoenn and Sinnoh) borrow the Rescue Team tileset closest to their look instead of the World Abyss.
 - **Sound effects, with their triggers.** 496 Red Rescue Team sounds rendered from the ROM's sound data (`assets/pmd-sfx`, approximate and not yet listened to, not used by the app) and `triggers.tsv`, which maps each id to the game events that play it from pret/pmd-red's source. The audit found `level-up` was mapped to the dungeon wind sound; it now shares the rank-up clip.
+
+## 0.139.0
+
+Species lists of every module region, curated together (owner: "curate all modules species list, as much as possible, no dupes, keep it relevant to the theme, follow mainline regional dex patterns, module guardians last"; Plan and Care may be reworked).
+
+- **Every species is in exactly one module region.** All 1025 species are split over six lists in `tools/species/regions/`: Plan (179), Care (179), Heal (179), Mint (159), Home (171) and Link (158), each about 65 to 75 hatchable lines with the 12 Super Rare lines two per region. The generator and `HatchRulesTest` refuse a species in two lists, a region without a hatchable line of every rarity, and a list that does not end with its patrons.
+- **Themes.** Plan: everyday route Pokémon, busy bug workers, clever Psychic thinkers, the Unova and Paldea starters. Care: soft Fairy, Grass, Water and Normal, with the Kanto starters. Heal: Fighting, Fire, Water swimmers and fast runners, with the Hoenn and Galar starters. Mint: Steel, Rock, Ground, fossils, gems and hoarders, with the Sinnoh starters. Home: the kitchen, garden, hearth, fridge, closet and pets, with the Johto starters. Link: postal birds, loyal dogs, pairs, singers, gift-givers and Eevee, with the Kalos starters.
+- **Mainline dex order.** Each list starts with its starters, then the lines by rarity (Common, Uncommon, Rare, Super Rare) in National Dex order with every stage next to its pre-evolution, then the ultra beasts, paradox, legendary and mythical species, and the **patrons last**: Uxie, Mesprit and Azelf (Plan), Cresselia and Shaymin (Care), Raikou, Entei and Suicune (Heal), Diancie and Melmetal (Mint), Tapu Bulu and Ogerpon (Home), Latias and Latios (Link).
+- **Mint and Link are regions now** (`Region.MINT`, `Region.LINK`, unreleased like Home until their modules ship, so their eggs still come from the Plan Region).
+- **Moved out of Plan, Care and Heal:** Plan keeps no starter from Kanto to Sinnoh (its birds Taillow, Wingull, Starly and the Pichu line went to Link, the Swords of Justice and Keldeo to Heal, Hoopa, Mew, Phione and Manaphy to Link), Care lost Lotad, Lapras and Kangaskhan to Link and took Cubone's, Duskull's and Cetoddle's comfort lines, and Heal's other starters went to Mint, Home and Link. A Pokémon you already own stays yours; only where new eggs of a line hatch changes.
+
+## 0.138.0
+
+From phone testing of 0.137.0.
+
+- **Plan's card on Home shows Plan's own lead** (the first of its party), not the buddy; with an empty party it says "No lead yet". The buddy stays on Home's stage.
+- **Back is a pixel chevron and the label in the dialogue font**, on one centre line; the old "‹ Back" text fell back to another font and sat high in its key. `TextCentreTest` checks it.
+- **Pokégear is called Gear** in the Modules menu, its header, the launcher and its messages.
+
+## 0.137.0
+
+Design pass, from the owner's phone testing: consistency, pixel parts and fewer words.
+
+- **Module colours run down a quiet rainbow.** The Modules menu is Pokégear (rose) first and World (violet) last, with Plan (orange), Mint (ochre), Home (olive), Care (green), Heal (teal) and Link (blue) between; Mint, Home and Link are dimmed placeholder cards until they are built. The header bar of Home, Modules, Pokémon and Me is a neutral slate instead of red. Inside a module every card, frame, lead marker and main button wears its one colour (no yellow, red or blue tiles in Plan's menu or the Planner). The table is in `DESIGN_SYSTEM.md` 5.1.
+- **The buddy lives on Home** (in a scene of its own type) and no longer on Plan's page; the PC list shows only Pokémon that are in no other place, so the buddy is not in the PC.
+- **Pixel parts, no rounding.** Text fields (`PixelField`), progress and EXP bars, the on/off toggle, the volume sliders, cards, picture windows, menu discs and the header bar have stair corners of whole art pixels; Material's rounded field, switch and slider are gone. The text in a field is centred in its 48 dp, and a field beside keys shares a centre line (Pokégear's currency rows, Planner's add row, timers, dice).
+- **Pokégear and World take a whole row each** in the Modules menu; the Planner's tiles are framed cards like the menus' and have no caption line.
+- **Rank badges are rounded pixel squares**, not circles.
+- **Text is centred by its letters, and it is measured.** The Pokémon DP font sat 2 to 4 dp low in its line box and the dialogue font a pixel high, so labels in keys, fields and badges were off the centre line. Every text style is lifted to its centre, the dialogue font moved down a pixel, and `TextCentreTest` renders them and fails if the gap above the letters and below differ by more than 1 dp.
+- **Big sections sit in dialogue boxes**: World's rank and XP strip is a box now.
+- **Fewer words.** Removed the captions that said what the screen already shows: the Modules intro and subtitle, "Modules" breadcrumbs under headers, the Pokémon intro, every empty state's explanation (a title and one action remain), reassurance lines in Care, Heal, Lists and Pokégear tools, the long tutorial blurbs, settings details, World's start and map blurbs. `DESIGN_SYSTEM.md` 12A records the rules so they hold next time.
+- Carried from the first pass (the same version): one accent per module and neutral chrome, AA contrast on filled keys (`TokenContrastTest`), real art instead of emoji, the buddy asleep in empty states, World on Home, the haul as icons in World's report, unboxed party slots, and screenshot tests that show real screens in both palettes.
+
+## 0.136.0
+
+- **Heal (Modules → Heal), the manual slice.** Log an activity (a type, how long, when it ended; distance and a note if you like), the drinks you have, a night's sleep and an optional body measurement, and set goals of your own that you can pause or put away. Today shows what you logged, and "not logged" where you did not (never a zero, never a score). Nothing is advice, nothing is judged, and a missed day costs nothing. There is no watch, Health Connect or import yet, and Settings says so.
+- **Field Research (off until you turn it on).** A session of 10 minutes or more that you log just after doing it, and the day's first drink, can find Pokémon: Rare Candies, a berry, friendship for Heal's lead and a Field Egg from the new Heal Region (64 sporty, outdoor Pokémon) that hatches into Heal's party. Sleep, measurements, goals and every other number never earn anything, older entries never pay, and editing or deleting never pays again. Heal has its own party of six whose perks change only what Field Research pays.
+- **First-run walk.** Heal shows a one-time 5-second walk that gives you one Pokémon for Heal's party (no record, no streak, nothing counted); a player who has already logged an activity does not see it.
+- **Private by design.** Your records live in their own tables (schema 7): activity, hydration, sleep, measurements and goals each in a family of their own, so one kind can be exported or erased alone (Heal → Settings); erasing never touches your Pokémon, Poké, Bag, Plan or Care. They are in the daily backup and the backup file, and a backup from before Heal leaves them alone. The only thing the rest of the app learns is a stable id, an opaque reference, "activity" or "participation" and the time.
+- **Hydration reminders (off).** Up to three times a day if you add them, through the shared reminders: quiet hours and focus sessions apply, the words are always "A moment for a drink?", the lock screen shows nothing more, and there is no "done" button.
+- Under the hood (REP-014): `heal-core`, `HealStore`, `HealTables`, `LiveDocuments.moveHealToTables`, `HealEvent`/`RewardEngine.heal`/`healEgg`, `Region.HEAL`, `HealPerks`, `HealReminderAdapter`, `Tutorials.HEAL_WALK`; `RewardRules.VERSION` 17 (`docs/economy.md`); `MODULES/HEAL.md` section 22, `evidence/REP-014-heal.md`. Not run on a device; tables and backups are not encrypted yet.
+
+## 0.135.0
+
+- **Your Pokémon, Bag and Poké now live in their own database tables** (schema 6), the way Plan's and Care's already do. The game works exactly as before: the app still reads and writes one save, and the database splits it into rows and puts it back together, so saving a level-up writes one Pokémon's row instead of the whole collection. The first start with this version moves everything over, checks it reads back equal, keeps the old save whole under an `aside:` copy, and pays nothing; if anything differs, the old save stays the live one and it tries again next start.
+- **A Pokémon is in one place, and the database enforces it.** The buddy, each module's party and the Guardian slots are now one table keyed by the Pokémon, so a second place for the same Pokémon cannot be stored; the save is refused if it would also put that Pokémon on a World team or as a Pokégear helper. A Pokémon from World, a Guardian included, arrives in the PC until you assign it.
+- **The ledger is the only writer of your Poké and Bag.** Both change only together with a ledger entry in the same transaction (one event per change, never edited or removed, and the balance can always be rebuilt from it). World's copy of the Poké balance is no longer saved at all: the World screen shows the one balance, and an old save's World Poké is read once for the merge.
+- Restoring a backup goes through the same checks and split, so an older backup restores correctly.
+- Under the hood: `5.sqm` and `databases/6.db`, `PokemonTables`, `LiveDocuments.movePokemonToTables`, the DB check screen has a line for it. No reward number changed (`RewardRules.VERSION` stays 16).
 
 ## 0.134.0
 

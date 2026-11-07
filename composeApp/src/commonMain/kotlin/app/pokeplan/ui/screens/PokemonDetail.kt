@@ -131,7 +131,7 @@ internal fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                     Modifier.align(Alignment.TopCenter).padding(top = Spacing.L).quietClickable(onClickLabel = "Hear ${p.nickname}") { model.cry(p.speciesId) },
                     size = 176.dp, animate = !model.data.settings.reduceMotion,
                 )
-                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.M), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.M), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     p.form.types.forEach { TypePlate(it, width = 84.dp) }
                 }
             }
@@ -184,7 +184,7 @@ private fun TraitsBox(p: OwnedPokemon, stats: Boolean) = DetailBox("Traits") {
     Text("Nature: ${natureText(p)}", style = body)
     Text("Ability: ${p.ability}", style = body)
     p.gender?.let { Text("Gender: ${it.name.titleCase()}", style = body) }
-    if (p.isShiny) Text("✨ Shiny", style = body, color = Pixel.Warning)
+    if (p.isShiny) Text("Shiny", style = body, color = Pixel.Warning)
     if (stats) {
         Text("Judge: ${judge(p.ivs.values.sum())}", style = body)
         Text("Its best: ${bestStats(p)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -209,7 +209,7 @@ private fun GrowthBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean, sta
                 ItemIcon("rare-candy", size = 32.dp, description = null)
                 Text("$have Rare Candies", style = MaterialTheme.typography.bodyLarge)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Feed 1", { store.feedRareCandy(p.id, 1) }, Modifier.weight(1f), enabled = have >= 1, compact = true)
                 PixelButton("Feed 10", { store.feedRareCandy(p.id, 10) }, Modifier.weight(1f), enabled = have >= 10, compact = true)
             }
@@ -276,13 +276,14 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
     val soft = MaterialTheme.typography.bodyMedium
     val inPlan = p.inParty && p.partyId == PartyIds.PLAN
     val inCare = p.inParty && p.partyId == PartyIds.CARE
+    val inHeal = p.inParty && p.partyId == PartyIds.HEAL
+    val isHealLead = p.id == player.healLead?.id
     val isBuddy = p.id == player.buddyId
     val isLead = p.id == player.careLead?.id
     val isPlanLead = p.id == player.planLead?.id
     if (isGuardian) {
         val slotted = p.id in player.guardians
         Text(perkText(p), style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
-        Text("Guardians are at full power and stay out of the party. Slot it for its boost.", style = soft, color = Pixel.InkSoft)
         PixelButton(
             if (slotted) "Remove from slot" else "Slot as Guardian",
             { if (slotted) store.unslotGuardian(p.id) else store.slotGuardian(p.id) },
@@ -296,6 +297,8 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
             inPlan -> "In Plan's party"
             isLead -> "Care's lead, in Care's party"
             inCare -> "In Care's party"
+            isHealLead -> "Heal's lead, in Heal's party"
+            inHeal -> "In Heal's party"
             else -> "Resting in the PC"
         }
         Text(place, style = MaterialTheme.typography.bodyLarge)
@@ -307,21 +310,25 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
         style = soft, color = Pixel.InkSoft,
     )
     if (!isGuardian) {
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p.speciesId) }, Modifier.weight(1f), Pixel.Red, enabled = !isBuddy, compact = true)
             PixelButton(if (inPlan) "To PC" else "To Plan party", { store.setInParty(p.id, !inPlan) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             PixelButton(if (isPlanLead) "Is Plan's lead" else "Make Plan lead", { store.setPlanLead(p.id) }, Modifier.fillMaxWidth(), Pixel.Red, enabled = inPlan && !isPlanLead, compact = true)
         }
-        if (care) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
+        if (care) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             PixelButton(if (isLead) "Is Care's lead" else "Make Care lead", { store.setCareLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inCare && !isLead, compact = true)
             PixelButton(if (inCare) "To PC" else "To Care party", { store.setInParty(p.id, !inCare, PartyIds.CARE) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            PixelButton(if (isHealLead) "Is Heal's lead" else "Make Heal lead", { store.setHealLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inHeal && !isHealLead, compact = true)
+            PixelButton(if (inHeal) "To PC" else "To Heal party", { store.setInParty(p.id, !inHeal, PartyIds.HEAL) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
     }
     if (!p.species.isSpecial) {
         val starred = store.isFavorite(p.id)
-        PixelButton(if (starred) "★ Starred" else "☆ Star", { store.toggleFavorite(p.id) }, Modifier.fillMaxWidth(), if (starred) Pixel.Warning else Pixel.InkSoft, compact = true)
+        PixelButton(if (starred) "Starred" else "Star", { store.toggleFavorite(p.id) }, Modifier.fillMaxWidth(), if (starred) Pixel.Warning else Pixel.InkSoft, compact = true)
     }
 }
 
@@ -354,7 +361,7 @@ private fun TransferBox(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
                     val quote = Transfer.quote(p)
                     Text("Send ${p.nickname} away for ${quote.rareCandies} Rare Candies and ${quote.coins} Poké?", style = MaterialTheme.typography.bodyLarge)
                     quote.warnings.forEach { Text(it, style = soft, color = Pixel.Red) }
-                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         PixelButton("Transfer", { if (store.transfer(p.id)) { model.effect(Sfx.ESCAPE); back() } }, Modifier.weight(1f), Pixel.Danger, compact = true)
                         PixelButton("Keep ${p.nickname}", { confirm = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }

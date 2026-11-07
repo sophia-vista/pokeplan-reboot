@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +29,7 @@ import app.pokeplan.ui.theme.Spacing
  * life; everything done in any of them looks after the same Pokémon, which live in the shared tabs (Home, Pokémon, Me).
  */
 enum class Module(val label: String, val icon: String, val look: RegionLook) {
-    PLAN("Plan", "journal", RegionLook.PLAN), CARE("Care", "soothe-bell", RegionLook.CARE), WORLD("World", "town-map", RegionLook.WORLD),
+    PLAN("Plan", "journal", RegionLook.PLAN), CARE("Care", "soothe-bell", RegionLook.CARE), HEAL("Heal", "potion", RegionLook.HEAL), WORLD("World", "town-map", RegionLook.WORLD),
 }
 
 /** Plan's screens: tasks and focus, and the trends, goals and weekly review that read them. */
@@ -48,6 +49,7 @@ fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> U
         when (page) {
             Module.PLAN -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.PLAN.look.accent)) { PlanScreen(model, focusTab, openPokemon) }
             Module.CARE -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.CARE.look.accent)) { CareScreen(model, openPokemon) }
+            Module.HEAL -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.HEAL.look.accent)) { HealScreen(model, openPokemon) }
             Module.WORLD -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.WORLD.look.accent)) { WorldScreen(model, openPokemon) }
             null -> ModulesMenu(model)
         }
@@ -57,32 +59,32 @@ fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> U
 @Composable
 private fun ModulesMenu(model: AppModel) {
     model.careData // redraw when Care changes
+    model.healData // and when Heal does
     val today = model.store.todayTasks().size
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader("Modules", subtitle = "Each looks after the same Pokémon", icon = "explorer-kit")
+        ScreenHeader("Modules", icon = "explorer-kit")
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             val routines = model.care.todayRoutines()
             val routinesLeft = routines.count { !it.doneOn(model.care.today) }
+            // Pokégear first and World last, the six between in the order of the accent rainbow (ModuleAccent). A module that is not built
+            // yet is a quiet placeholder in its own colour, so the list shows where it will sit.
             MenuGrid(
                 listOfNotNull(
-                    MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = Module.PLAN.look.accent),
+                    MenuEntry("GEAR", "explorer-kit", "Gear", tint = ModuleAccent.GEAR.accent, wide = true),
+                    MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = ModuleAccent.PLAN.accent),
+                    MenuEntry("MINT", "amulet-coin", "Mint", tint = ModuleAccent.MINT.accent, pending = true),
+                    MenuEntry("HOME", "chipped-pot", "Home", tint = ModuleAccent.HOME.accent, pending = true),
                     if (!model.data.settings.careModule) null else MenuEntry(
-                        Module.CARE.name, Module.CARE.icon, Module.CARE.label, if (routinesLeft == 0) "routines and calm" else if (routinesLeft == 1) "1 routine today" else "$routinesLeft routines today", tint = Module.CARE.look.accent,
+                        Module.CARE.name, Module.CARE.icon, Module.CARE.label, if (routinesLeft == 0) "routines and calm" else if (routinesLeft == 1) "1 routine today" else "$routinesLeft routines today", tint = ModuleAccent.CARE.accent,
                     ),
-                    // Not a region: a hub of handy tools (docs/ecosystem.md, Pokégear) that pays nothing and is always available.
-                    // The dungeon game (docs/world.md): send teams exploring and recruit what they find.
-                    MenuEntry(Module.WORLD.name, Module.WORLD.icon, Module.WORLD.label, "dungeons and expeditions", badge = model.data.world.finds.size, tint = Module.WORLD.look.accent),
-                    MenuEntry("GEAR", "explorer-kit", "Pokégear", tint = Pixel.Blue),
+                    MenuEntry(Module.HEAL.name, Module.HEAL.icon, Module.HEAL.label, healSubtitle(model), tint = ModuleAccent.HEAL.accent),
+                    MenuEntry("LINK", "link-cord", "Link", tint = ModuleAccent.LINK.accent, pending = true),
+                    MenuEntry(Module.WORLD.name, Module.WORLD.icon, Module.WORLD.label, "dungeons and expeditions", badge = model.data.world.finds.size, tint = ModuleAccent.WORLD.accent, wide = true),
                 ),
             ) { key -> if (key == "GEAR") model.gearOpen = true else model.module = Module.valueOf(key) }
-            Text(
-                "Each module is one part of your day. Your party, Pokédex and Bag are shared by all of them, under Pokémon." +
-                    if (model.data.settings.careModule) "" else " Care is switched off in Me, Settings.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
         }
     }
 }
@@ -111,7 +113,7 @@ private fun PlanPage(model: AppModel, section: PlanSection?, focusTab: Boolean, 
             BackHandler(enabled = true, onBack = toMenu)
             FocusScreen(model, openPokemon, onBack = toMenu)
         }
-        else -> SectionScaffold(section.label, Module.PLAN.label, onBack = toMenu, icon = section.icon, color = Module.PLAN.look.header) {
+        else -> SectionScaffold(section.label, null, onBack = toMenu, icon = section.icon, color = Module.PLAN.look.header) {
             when (section) {
                 PlanSection.GROWTH -> GrowthView(model)
                 PlanSection.GOALS -> GoalsView(model)
@@ -137,12 +139,11 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
     val session = data.focus
     val open = store.openTodayTasks()
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.PLAN.label, subtitle = "Modules", onBack = onBack, color = Module.PLAN.look.header)
+        ScreenHeader(Module.PLAN.label, onBack = onBack, color = Module.PLAN.look.header)
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
-            PlanBuddyStage(model) { data.player.buddyId?.let(openPokemon) }
             RewardBox(model)
             TutorialCard(model, app.pokeplan.app.Tutorials.PLAN_FOCUS)
             PlanPartyPanel(model, openPokemon)
@@ -169,14 +170,14 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
             }
             MenuGrid(
                 listOfNotNull(
-                    MenuEntry(PlanSection.PLANNER.name, PlanSection.PLANNER.icon, "Planner", if (today == 0) "nothing left today" else "$today to do today", tint = Pixel.Red),
+                    MenuEntry(PlanSection.PLANNER.name, PlanSection.PLANNER.icon, "Planner", if (today == 0) "nothing left today" else "$today to do today", tint = ModuleAccent.PLAN.accent),
                     if (!focusTab) null else MenuEntry(
                         PlanSection.FOCUS.name, PlanSection.FOCUS.icon, "Focus",
-                        if (session == null) "hatch an egg" else "egg incubating", badge = if (session != null) 1 else 0, tint = Pixel.Warning,
+                        if (session == null) "hatch an egg" else "egg incubating", badge = if (session != null) 1 else 0, tint = ModuleAccent.PLAN.accent,
                     ),
-                    if (store.sees(Feature.GROWTH_SCREEN)) MenuEntry(PlanSection.GROWTH.name, PlanSection.GROWTH.icon, "Progress", "effort and trends", tint = Pixel.Green) else null,
-                    if (!store.sees(Feature.GOALS)) null else MenuEntry(PlanSection.GOALS.name, PlanSection.GOALS.icon, "Goals", if (data.goals.size == 1) "1 goal" else "${data.goals.size} goals", tint = Pixel.Warning),
-                    MenuEntry(PlanSection.REVIEW.name, PlanSection.REVIEW.icon, "Review", if (store.canReview()) "ready this week" else "done this week", badge = if (store.canReview()) 1 else 0, tint = Pixel.Blue),
+                    if (store.sees(Feature.GROWTH_SCREEN)) MenuEntry(PlanSection.GROWTH.name, PlanSection.GROWTH.icon, "Progress", "effort and trends", tint = ModuleAccent.PLAN.accent) else null,
+                    if (!store.sees(Feature.GOALS)) null else MenuEntry(PlanSection.GOALS.name, PlanSection.GOALS.icon, "Goals", if (data.goals.size == 1) "1 goal" else "${data.goals.size} goals", tint = ModuleAccent.PLAN.accent),
+                    MenuEntry(PlanSection.REVIEW.name, PlanSection.REVIEW.icon, "Review", if (store.canReview()) "ready this week" else "done this week", badge = if (store.canReview()) 1 else 0, tint = ModuleAccent.PLAN.accent),
                     MenuEntry(PlanSection.SETTINGS.name, PlanSection.SETTINGS.icon, "Settings", "focus, week, calendars", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.planSection = PlanSection.valueOf(key) }

@@ -33,7 +33,18 @@ data class OwnedPokemonRecord(
     val originRegion: String? = null,
     /** Raw JSON of any legacy field this version has no column for. */
     val extraJson: String? = null,
+    /** Its place in the collection's list (the order the Pokémon were owned); 0 asks [PokemonRepository.add] to put it last. */
+    val position: Int = 0,
+    /** The origin exactly as the save keeps it; [originHow] and [originRegion] are its lookup columns. */
+    val originJson: String? = null,
 )
+
+/** Where a Pokémon is, besides the PC (a Pokémon with none is in the PC). WORLD teams and GEAR helpers are kept by their modules. */
+sealed interface PokemonPlace {
+    data object Buddy : PokemonPlace
+    data class Party(val moduleId: String) : PokemonPlace
+    data object Guardian : PokemonPlace
+}
 
 /** The modules that keep a party (POKEMON_ECOSYSTEM.md section 2.2). */
 object ModuleIds {

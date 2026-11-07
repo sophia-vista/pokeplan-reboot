@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
 import kotlin.math.roundToInt
 import androidx.compose.ui.platform.LocalDensity
 import app.pokeplan.ui.StatusKind
@@ -130,7 +131,7 @@ fun BuddyStage(
     val drift by rememberInfiniteTransition().animateFloat(0f, 1f, infiniteRepeatable(tween(2_600, easing = app.pokeplan.ui.Ease.InOut), RepeatMode.Reverse))
     val bob = if (calm || resting) 0f else -3f * drift
 
-    val shape = RoundedCornerShape(Spacing.CardRadius)
+    val shape = PixelShape
     // Tall enough for a whole hop: its frames hold the jump and draw at the idle scale, about 200 dp high at the peak.
     Box(modifier.fillMaxWidth().height(248.dp).clip(shape).border(1.dp, Pixel.Border, shape)) {
         SceneImage(scene, Modifier.matchParentSize(), darkness)
@@ -165,7 +166,7 @@ fun BuddyStage(
         // Level and progress: small, in the corner, readable on any scene. Its corners are the stage's minus the inset, so
         // the two curves stay concentric.
         Column(
-            Modifier.align(Alignment.BottomStart).padding(Spacing.S).clip(RoundedCornerShape(Spacing.CardRadius - Spacing.S)).background(Pixel.Scrim.copy(alpha = 0.33f))
+            Modifier.align(Alignment.BottomStart).padding(Spacing.S).clip(PixelShape).background(Pixel.Scrim.copy(alpha = 0.33f))
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Open ${buddy.nickname}", role = Role.Button, onClick = onOpen)
                 // Small to look at, but a full touch target to hit.
                 .defaultMinSize(minHeight = 40.dp)
