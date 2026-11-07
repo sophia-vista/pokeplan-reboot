@@ -1,5 +1,7 @@
 package app.pokeplan.ui
 
+import app.pokeplan.ui.theme.PixelShape
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,7 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -63,7 +64,7 @@ fun AppBackdrop(name: String, hour: Int, minute: Int, dark: Boolean) {
 /** Small pictures of the page backgrounds, two to a row, with the chosen one outlined (Settings → Look). */
 @Composable
 fun BackgroundChoices(current: String, hour: Int, minute: Int, dark: Boolean, onPick: (String) -> Unit) {
-    val shape = RoundedCornerShape(14.dp)
+    val shape = PixelShape
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         BackgroundGroups.forEach { (heading, choices) ->
             // The long groups start closed (unless the chosen one is in them): only an open group draws its pictures.
@@ -75,7 +76,7 @@ fun BackgroundChoices(current: String, hour: Int, minute: Int, dark: Boolean, on
 }
 
 @Composable
-private fun BackgroundRow(row: List<Pair<String, String>>, current: String, hour: Int, minute: Int, dark: Boolean, shape: RoundedCornerShape, onPick: (String) -> Unit) {
+private fun BackgroundRow(row: List<Pair<String, String>>, current: String, hour: Int, minute: Int, dark: Boolean, shape: androidx.compose.ui.graphics.Shape, onPick: (String) -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         row.forEach { (name, label) ->
             Box(

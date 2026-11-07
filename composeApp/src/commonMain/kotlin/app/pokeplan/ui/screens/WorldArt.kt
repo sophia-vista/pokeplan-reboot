@@ -1,5 +1,8 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.drawPixelDisc
+import app.pokeplan.ui.theme.drawPixelRing
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -385,8 +388,8 @@ internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: Str
             for (m in markers) {
                 val c = Offset(left + m.x * scale, m.y * scale)
                 val fill = when (m.state) { MarkerState.OPEN -> Color(0xFFFFD33D); MarkerState.CLEARED -> Color(0xFF4CAF50); MarkerState.LOCKED -> Color(0xFF8E8E93); MarkerState.EXPLORING -> Color(0xFF4A90E2) }
-                if (m.id == selected) drawCircle(Color.White, r + 6.dp.toPx(), c)
-                if (m.guardian) drawCircle(Color(0xFFE53935), r + 4.dp.toPx(), c, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx()))
+                if (m.id == selected) drawPixelDisc(Color.White, c, r + 6.dp.toPx())
+                if (m.guardian) drawPixelRing(Color(0xFFE53935), c, r + 4.dp.toPx(), 2.dp.toPx())
                 when (m.state) {
                     // A diamond: open.
                     MarkerState.OPEN -> {
@@ -397,7 +400,7 @@ internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: Str
                     }
                     // A circle with a tick: cleared.
                     MarkerState.CLEARED -> {
-                        drawCircle(ink, r + 2.dp.toPx(), c); drawCircle(fill, r, c)
+                        drawPixelDisc(ink, c, r + 2.dp.toPx()); drawPixelDisc(fill, c, r)
                         val tick = Path().apply { moveTo(c.x - r * 0.5f, c.y); lineTo(c.x - r * 0.1f, c.y + r * 0.45f); lineTo(c.x + r * 0.55f, c.y - r * 0.4f) }
                         drawPath(tick, Color.White, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.dp.toPx()))
                     }
@@ -408,7 +411,7 @@ internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: Str
                     }
                     // A circle with an arrow: a team is there.
                     MarkerState.EXPLORING -> {
-                        drawCircle(ink, r + 2.dp.toPx(), c); drawCircle(fill, r, c)
+                        drawPixelDisc(ink, c, r + 2.dp.toPx()); drawPixelDisc(fill, c, r)
                         val arrow = Path().apply { moveTo(c.x - r * 0.3f, c.y - r * 0.5f); lineTo(c.x + r * 0.55f, c.y); lineTo(c.x - r * 0.3f, c.y + r * 0.5f); close() }
                         drawPath(arrow, Color.White)
                     }

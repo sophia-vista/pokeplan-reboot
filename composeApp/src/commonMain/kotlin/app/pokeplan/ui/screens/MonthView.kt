@@ -1,5 +1,7 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.DialogueShape
+
 import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,8 +21,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -173,9 +173,9 @@ private fun MonthWeek(
                     contentAlignment = Alignment.Center,
                 ) {
                     Box(
-                        Modifier.size(26.dp).clip(CircleShape)
+                        Modifier.size(26.dp).clip(DialogueShape)
                             .background(if (isToday) Pixel.Red else if (on) Pixel.Shade else Color.Transparent)
-                            .border(if (on && !isToday) 1.dp else 0.dp, if (on && !isToday) Pixel.Ink else Color.Transparent, CircleShape),
+                            .border(if (on && !isToday) 1.dp else 0.dp, if (on && !isToday) Pixel.Ink else Color.Transparent, DialogueShape),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
@@ -249,14 +249,14 @@ private fun DayAgenda(
                     Modifier.fillMaxWidth().then(if (e.isOwn) Modifier.clickable(role = Role.Button, onClickLabel = "Edit ${e.title}") { pick(e.id) } else Modifier),
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
                 ) {
-                    Box(Modifier.size(10.dp).background(eventColor(e), CircleShape))
+                    Box(Modifier.size(10.dp).background(eventColor(e), PixelShape))
                     Text(if (e.start.date == day) clock(e.start.time) else "…", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     Text(e.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
             tasks.forEach { t ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Box(Modifier.size(10.dp).border(2.dp, categoryColor(t.category), CircleShape))
+                    Box(Modifier.size(10.dp).border(2.dp, categoryColor(t.category), PixelShape))
                     (t.plannedTime ?: t.due?.time)?.let { Text(clock(it), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
                     Text(t.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }

@@ -1,5 +1,7 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.DialogueShape
+
 import app.pokeplan.ui.theme.PixelShape
 import kotlin.math.roundToInt
 import androidx.compose.ui.platform.LocalDensity
@@ -30,8 +32,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -174,8 +174,8 @@ fun BuddyStage(
                 .semantics(mergeDescendants = true) { contentDescription = "${buddy.nickname}, level ${buddy.level}, ${(progress * 100).toInt()} percent to the next level" },
         ) {
             Text("${buddy.nickname}  Lv. ${buddy.level}", style = MaterialTheme.typography.labelMedium, color = Color.White)
-            Box(Modifier.padding(top = 3.dp).width(84.dp).height(3.dp).background(Color.White.copy(alpha = 0.33f), CircleShape)) {
-                Box(Modifier.width((84 * progress).dp).height(3.dp).background(Pixel.Yellow, CircleShape))
+            Box(Modifier.padding(top = 3.dp).width(84.dp).height(4.dp).background(Color.White.copy(alpha = 0.33f))) {
+                Box(Modifier.width((84 * progress).dp).height(4.dp).background(Pixel.Yellow))
             }
         }
 
@@ -191,7 +191,7 @@ fun BuddyStage(
         }
 
         if (berry != null) Box(
-            Modifier.align(Alignment.BottomEnd).padding(Spacing.S).size(Spacing.Target).background(Color.White.copy(alpha = 0.8f), CircleShape)
+            Modifier.align(Alignment.BottomEnd).padding(Spacing.S).size(Spacing.Target).clip(DialogueShape).background(Color.White.copy(alpha = 0.8f))
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClickLabel = "Give ${buddy.nickname} a ${Items.get(berry)?.name ?: berry}", role = Role.Button) {
                     onHaptic()
                     react(onFeed(lastReaction), SpriteAction.EAT)
