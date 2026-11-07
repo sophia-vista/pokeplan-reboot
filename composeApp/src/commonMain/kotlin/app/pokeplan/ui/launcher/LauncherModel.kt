@@ -560,9 +560,42 @@ object TownScenes {
         "rr-62" to "Rescue Team 62", "rr-63" to "Rescue Team 63",
     )
 
-    val all = scenes + dungeons + rescueTeam
+    /** Towns built from the dungeon tilesets of Pokémon Mystery Dungeon: Explorers of Sky (assets/tiles/ex-NNN, cut by tools/tiles/extract_sky_tiles.py; the dungeons they belong to are not named). */
+    val explorers = listOf(
+        "ex-001" to "Explorers 1", "ex-002" to "Explorers 2", "ex-003" to "Explorers 3", "ex-004" to "Explorers 4", "ex-005" to "Explorers 5",
+        "ex-006" to "Explorers 6", "ex-007" to "Explorers 7", "ex-008" to "Explorers 8", "ex-009" to "Explorers 9", "ex-010" to "Explorers 10",
+        "ex-011" to "Explorers 11", "ex-012" to "Explorers 12", "ex-013" to "Explorers 13", "ex-014" to "Explorers 14", "ex-015" to "Explorers 15",
+        "ex-016" to "Explorers 16", "ex-017" to "Explorers 17", "ex-018" to "Explorers 18", "ex-019" to "Explorers 19", "ex-020" to "Explorers 20",
+        "ex-021" to "Explorers 21", "ex-022" to "Explorers 22", "ex-023" to "Explorers 23", "ex-024" to "Explorers 24", "ex-025" to "Explorers 25",
+        "ex-026" to "Explorers 26", "ex-027" to "Explorers 27", "ex-028" to "Explorers 28", "ex-029" to "Explorers 29", "ex-030" to "Explorers 30",
+        "ex-031" to "Explorers 31", "ex-032" to "Explorers 32", "ex-033" to "Explorers 33", "ex-034" to "Explorers 34", "ex-035" to "Explorers 35",
+        "ex-036" to "Explorers 36", "ex-037" to "Explorers 37", "ex-038" to "Explorers 38", "ex-039" to "Explorers 39", "ex-040" to "Explorers 40",
+        "ex-041" to "Explorers 41", "ex-042" to "Explorers 42", "ex-043" to "Explorers 43", "ex-044" to "Explorers 44", "ex-045" to "Explorers 45",
+        "ex-046" to "Explorers 46", "ex-047" to "Explorers 47", "ex-048" to "Explorers 48", "ex-049" to "Explorers 49", "ex-050" to "Explorers 50",
+        "ex-051" to "Explorers 51", "ex-052" to "Explorers 52", "ex-053" to "Explorers 53", "ex-054" to "Explorers 54", "ex-055" to "Explorers 55",
+        "ex-056" to "Explorers 56", "ex-057" to "Explorers 57", "ex-058" to "Explorers 58", "ex-059" to "Explorers 59", "ex-060" to "Explorers 60",
+        "ex-061" to "Explorers 61", "ex-062" to "Explorers 62", "ex-063" to "Explorers 63", "ex-064" to "Explorers 64", "ex-065" to "Explorers 65",
+        "ex-066" to "Explorers 66", "ex-067" to "Explorers 67", "ex-068" to "Explorers 68", "ex-069" to "Explorers 69", "ex-070" to "Explorers 70",
+        "ex-071" to "Explorers 71", "ex-072" to "Explorers 72", "ex-073" to "Explorers 73", "ex-074" to "Explorers 74", "ex-075" to "Explorers 75",
+        "ex-076" to "Explorers 76", "ex-077" to "Explorers 77", "ex-078" to "Explorers 78", "ex-079" to "Explorers 79", "ex-080" to "Explorers 80",
+        "ex-081" to "Explorers 81", "ex-082" to "Explorers 82", "ex-083" to "Explorers 83", "ex-084" to "Explorers 84", "ex-085" to "Explorers 85",
+        "ex-086" to "Explorers 86", "ex-087" to "Explorers 87", "ex-088" to "Explorers 88", "ex-089" to "Explorers 89", "ex-090" to "Explorers 90",
+        "ex-091" to "Explorers 91", "ex-092" to "Explorers 92", "ex-093" to "Explorers 93", "ex-094" to "Explorers 94", "ex-095" to "Explorers 95",
+        "ex-096" to "Explorers 96", "ex-097" to "Explorers 97", "ex-098" to "Explorers 98", "ex-099" to "Explorers 99", "ex-100" to "Explorers 100",
+        "ex-101" to "Explorers 101", "ex-102" to "Explorers 102", "ex-103" to "Explorers 103", "ex-104" to "Explorers 104", "ex-105" to "Explorers 105",
+        "ex-106" to "Explorers 106", "ex-107" to "Explorers 107", "ex-108" to "Explorers 108", "ex-109" to "Explorers 109", "ex-110" to "Explorers 110",
+        "ex-111" to "Explorers 111", "ex-112" to "Explorers 112", "ex-113" to "Explorers 113", "ex-114" to "Explorers 114", "ex-115" to "Explorers 115",
+        "ex-116" to "Explorers 116", "ex-117" to "Explorers 117", "ex-118" to "Explorers 118", "ex-119" to "Explorers 119", "ex-120" to "Explorers 120",
+        "ex-121" to "Explorers 121", "ex-122" to "Explorers 122", "ex-123" to "Explorers 123", "ex-124" to "Explorers 124", "ex-125" to "Explorers 125",
+        "ex-126" to "Explorers 126", "ex-127" to "Explorers 127", "ex-128" to "Explorers 128", "ex-129" to "Explorers 129", "ex-130" to "Explorers 130",
+        "ex-131" to "Explorers 131", "ex-132" to "Explorers 132", "ex-133" to "Explorers 133", "ex-134" to "Explorers 134", "ex-135" to "Explorers 135",
+        "ex-136" to "Explorers 136", "ex-137" to "Explorers 137", "ex-138" to "Explorers 138", "ex-139" to "Explorers 139", "ex-140" to "Explorers 140",
+        "ex-141" to "Explorers 141", "ex-142" to "Explorers 142", "ex-143" to "Explorers 143",
+    )
 
-    fun isDungeon(name: String) = dungeons.any { it.first == name } || rescueTeam.any { it.first == name }
+    val all = scenes + dungeons + rescueTeam + explorers
+
+    fun isDungeon(name: String) = dungeons.any { it.first == name } || rescueTeam.any { it.first == name } || explorers.any { it.first == name }
 }
 
 /**

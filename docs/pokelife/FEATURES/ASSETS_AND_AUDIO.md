@@ -37,8 +37,9 @@ The inspected source is `pokeplan-reboot-main (5).zip`, version `0.123.0`, inclu
 | `assets/animated/` | Black/White animated sprite sheets, Gen 1–5 | Optional animated Pokédex/collection presentation; not a replacement for PMD movement sets |
 | `assets/scenes/` | 11 PNG backgrounds | Battle/scene backdrops |
 | `assets/world/` | 22 PNGs plus effect metadata | Town, guild, summit, cave, regional maps, café and effects |
-| `assets/tiles/` | 52 PNG tileset atlases (26 Explorers of Sky) plus `rr-00` to `rr-63` and `rr-tilesets.tsv` (64 Red Rescue Team, extracted from the owner's ROM) | PMD dungeon and launcher terrain |
+| `assets/tiles/` | 52 PNG tileset atlases (26 Explorers of Sky) plus `rr-00` to `rr-63` (64 Red Rescue Team) and `ex-NNN` (143 Explorers of Sky), extracted from the owner's ROMs | PMD dungeon and launcher terrain |
 | `assets/rescue-maps/` | 245 PNG maps of Red Rescue Team (57 Friend Areas, towns, team bases, dungeon pictures), `maps.tsv`, `sources.tsv` receipts | Page backgrounds; World's Base, shops and dojo pictures |
+| `assets/sky-maps/` | 440 PNG maps of Explorers of Sky from the owner's ROM (`maps.tsv`) | Not used yet; candidates for the Explorers campaign and Atlas |
 | `assets/pmd-sfx/` | 496 mono Ogg sound effects rendered from the Red Rescue Team ROM's sound engine data, `sfx.tsv`, `triggers.tsv`, README | Source library for sound effects; approximated, not yet audited by ear |
 | `assets/pmd-items/` | 214 PNG item icons plus manifest | PMD items, ranks and World reward art |
 | `assets/pixelarticons/` | 63 PNG glyphs plus source/license files | UI controls only |

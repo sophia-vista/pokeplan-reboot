@@ -14,6 +14,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +41,7 @@ private val BackgroundGroups: List<Pair<String?, List<Pair<String, String>>>> = 
     "Dungeons" to TownScenes.dungeons,
     "Rescue Team dungeons" to TownScenes.rescueTeam,
     "Rescue Team Friend Areas" to FriendAreas.all,
+    "Explorers of Sky dungeons" to TownScenes.explorers,
 )
 
 /**
@@ -61,8 +66,10 @@ fun BackgroundChoices(current: String, hour: Int, minute: Int, dark: Boolean, on
     val shape = RoundedCornerShape(14.dp)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         BackgroundGroups.forEach { (heading, choices) ->
-            if (heading != null) Text(heading, style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, modifier = Modifier.padding(top = Spacing.S))
-            choices.chunked(2).forEach { row -> BackgroundRow(row, current, hour, minute, dark, shape, onPick) }
+            // The long groups start closed (unless the chosen one is in them): only an open group draws its pictures.
+            ChoiceGroup(heading, choices.size, initiallyOpen = heading == null || choices.any { it.first == current }) {
+                choices.chunked(2).forEach { row -> BackgroundRow(row, current, hour, minute, dark, shape, onPick) }
+            }
         }
     }
 }
@@ -81,4 +88,17 @@ private fun BackgroundRow(row: List<Pair<String, String>>, current: String, hour
         }
         if (row.size == 1) Box(Modifier.weight(1f))
     }
+}
+
+/** A heading that opens and closes the choices under it; a group without a heading is always open. */
+@Composable
+internal fun ChoiceGroup(heading: String?, count: Int, initiallyOpen: Boolean, content: @Composable () -> Unit) {
+    var open by remember { mutableStateOf(initiallyOpen) }
+    if (heading != null) {
+        Text(
+            (if (open) "▾ " else "▸ ") + "$heading ($count)", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft,
+            modifier = Modifier.padding(top = Spacing.S).clickable(role = Role.Button, onClickLabel = if (open) "Close $heading" else "Open $heading") { open = !open },
+        )
+    }
+    if (open || heading == null) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) { content() }
 }
