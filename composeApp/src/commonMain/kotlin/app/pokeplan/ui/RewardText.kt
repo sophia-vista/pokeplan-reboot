@@ -13,8 +13,8 @@ fun Reward.describe(source: String = ""): String = when (this) {
     is Reward.Hatched -> {
         val name = Dex.species(pokemon.speciesId).name
         when {
-            isWorldSource(source) -> if (pokemon.isShiny) "✨ A shiny $name joined you! ✨" else "$name joined you!"
-            pokemon.isShiny -> "✨ A shiny $name hatched! ✨"
+            isWorldSource(source) -> if (pokemon.isShiny) "A shiny $name joined you!" else "$name joined you!"
+            pokemon.isShiny -> "A shiny $name hatched!"
             fromTask -> "A Task Egg hatched: $name!"
             else -> "Your egg hatched: $name!"
         }

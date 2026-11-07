@@ -120,7 +120,7 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SectionScaffold(
-    title: String, subtitle: String?, onBack: () -> Unit, icon: String? = null, color: Color = Pixel.Red, content: @Composable () -> Unit,
+    title: String, subtitle: String?, onBack: () -> Unit, icon: String? = null, color: Color = Pixel.Chrome, content: @Composable () -> Unit,
 ) {
     BackHandler(enabled = true, onBack = onBack)
     Column(Modifier.fillMaxSize()) {
@@ -134,6 +134,9 @@ fun SectionScaffold(
 
 /** The Reduce motion setting, for screens that move without being handed the model; `App` provides it. */
 val LocalReduceMotion = staticCompositionLocalOf { false }
+
+/** The global buddy, for screens that show it without being handed the model (an empty state's sleeping buddy); `App` provides it. */
+val LocalBuddy = staticCompositionLocalOf<app.pokeplan.core.pokemon.OwnedPokemon?> { null }
 
 /** Ordinary navigation, inside the 160 to 240 ms of docs/ecosystem.md, section 11; game moments take longer on their own. */
 private const val FADE_MS = 180

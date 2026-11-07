@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.pokemon.GearTool
 import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Glyph
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.theme.ChoiceRow
 import app.pokeplan.ui.theme.FieldLabel
@@ -57,7 +59,7 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
     if (tool == null) {
         var query by remember { mutableStateOf("") }
         var category by remember { mutableStateOf<ToolCategory?>(null) }
-        SectionScaffold("Pokégear", null, onClose, icon = "explorer-kit") {
+        SectionScaffold("Pokégear", null, onClose, icon = "explorer-kit", color = ModuleAccent.GEAR.header) {
             // The home: search first, then what you starred and used lately, then every tool by group. Search works offline.
             PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search the tools (lbs, yen, torch, laps)")
             fun entry(t: ToolInfo) = MenuEntry(t.tool.name, t.tool.icon, t.tool.label)
@@ -87,7 +89,7 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
     } else {
         // Opening a tool puts it first among the ones used lately (a short list kept on this phone).
         LaunchedEffect(tool) { store.gearUsed(tool) }
-        SectionScaffold(tool.label, "Pokégear", { open = null }, icon = tool.icon) {
+        SectionScaffold(tool.label, "Pokégear", { open = null }, icon = tool.icon, color = ModuleAccent.GEAR.header) {
             val starred = tool.name in gear.favorites
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 Text(ToolCatalog.info(tool).description, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -155,7 +157,7 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
                         is GearHelper.Loaner -> AnimatedSprite(Dex.defaultForm(helper.speciesId).id, false, Dex.species(helper.speciesId).name, size = 72.dp, animate = !reduce)
                         GearHelper.None -> ItemIcon(tool.icon, Modifier.align(Alignment.Center), size = 48.dp, description = null)
                     }
-                    if (reaction && helper !is GearHelper.None) Text(reactionFor(tool), Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), style = MaterialTheme.typography.titleLarge)
+                    if (reaction && helper !is GearHelper.None) reactionFor(tool).let { (art, name) -> if (art) ItemIcon(name, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = 28.dp, description = null) else Glyph(name, Pixel.Blue, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = 28.dp) }
                 }
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                     when (helper) {
@@ -193,23 +195,24 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
     }
 }
 
-private fun reactionFor(tool: GearTool): String = when (tool) {
-    GearTool.FLASHLIGHT -> "💡"
-    GearTool.CALCULATOR -> "👍"
-    GearTool.CURRENCY -> "💰"
-    GearTool.PICKER -> "✨"
-    GearTool.COIN -> "🎉"
-    GearTool.UNITS -> "📏"
-    GearTool.TIMER -> "⏰"
-    GearTool.STOPWATCH -> "⏱"
-    GearTool.EVERYDAY -> "🧾"
-    GearTool.WORLD_CLOCK -> "🌍"
-    GearTool.COMPASS -> "🧭"
-    GearTool.LEVEL -> "📐"
-    GearTool.BAROMETER -> "🌤"
-    GearTool.DEVICE -> "📱"
-    GearTool.WAYPOINTS -> "📍"
-    GearTool.SOUND -> "🔊"
-    GearTool.QR -> "🔳"
-    GearTool.NETWORK -> "📶"
+/** The picture over the helper after a use: (true, item id) or (false, Pixelarticons glyph). */
+private fun reactionFor(tool: GearTool): Pair<Boolean, String> = when (tool) {
+    GearTool.FLASHLIGHT -> false to "zap"
+    GearTool.CALCULATOR -> false to "check"
+    GearTool.CURRENCY -> true to "amulet-coin"
+    GearTool.PICKER -> true to "star-piece"
+    GearTool.COIN -> true to "heart-scale"
+    GearTool.UNITS -> false to "sliders"
+    GearTool.TIMER -> false to "clock"
+    GearTool.STOPWATCH -> false to "clock"
+    GearTool.EVERYDAY -> false to "clipboard"
+    GearTool.WORLD_CLOCK -> false to "globe"
+    GearTool.COMPASS -> true to "town-map"
+    GearTool.LEVEL -> false to "sliders"
+    GearTool.BAROMETER -> false to "cloud"
+    GearTool.DEVICE -> false to "battery"
+    GearTool.WAYPOINTS -> false to "map-pin"
+    GearTool.SOUND -> false to "volume-2"
+    GearTool.QR -> false to "grid-2x2-2"
+    GearTool.NETWORK -> false to "info-box"
 }

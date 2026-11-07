@@ -105,12 +105,17 @@ internal fun WorldReportCard(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("Since you last looked", style = MaterialTheme.typography.titleSmall)
             val where = report.byDungeon.entries.joinToString(", ") { (id, n) -> "${Dungeons.byId(id)?.name ?: id} $n" }
-            Text("${report.floors} ${if (report.floors == 1) "floor" else "floors"} climbed ($where), ${report.xp} Exploration XP.", style = MaterialTheme.typography.bodyMedium)
-            // The haul at a glance, with the games' own art: the coin for Poké and a box for each treasure tier.
-            if (report.poke > 0 || report.treasure.isNotEmpty()) Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("${report.floors} ${if (report.floors == 1) "floor" else "floors"} climbed", style = MaterialTheme.typography.bodyLarge)
+            Text("$where. ${report.xp} Exploration XP.", style = MaterialTheme.typography.bodyMedium)
+            // The haul at a glance, with the games' own art: the coin for Poké, a berry, and a box for each treasure tier.
+            if (report.poke > 0 || report.berries > 0 || report.treasure.isNotEmpty()) Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 if (report.poke > 0) {
                     app.pokeplan.ui.ItemIcon(app.pokeplan.world.PmdArt.POKE_COIN, size = 28.dp, description = null)
                     Text("${report.poke}", style = MaterialTheme.typography.bodyLarge)
+                }
+                if (report.berries > 0) {
+                    app.pokeplan.ui.ItemIcon("berry-sweet", size = 28.dp, description = "Berries")
+                    Text("x${report.berries}", style = MaterialTheme.typography.bodyLarge)
                 }
                 report.treasure.entries.sortedBy { it.key }.forEach { (tier, n) ->
                     app.pokeplan.ui.ItemIcon(app.pokeplan.world.PmdArt.treasureBox(tier.coerceIn(1, 3)), size = 28.dp, description = null)
@@ -123,12 +128,7 @@ internal fun WorldReportCard(model: AppModel) {
                 },
                 style = MaterialTheme.typography.bodyMedium,
             )
-            val chance = buildList {
-                if (report.berries > 0) add("${report.berries} ${if (report.berries == 1) "berry" else "berries"}")
-                val boxes = report.treasure.values.sum()
-                if (boxes > 0) add("$boxes treasure ${if (boxes == 1) "box" else "boxes"} (to open in Finds and Bag)")
-            }
-            if (chance.isNotEmpty()) Text("Also found: ${chance.joinToString(", ")}.", style = MaterialTheme.typography.bodyMedium)
+            if (report.treasure.isNotEmpty()) Text("Open treasure boxes in Finds and Bag.", style = MaterialTheme.typography.bodyMedium)
             if (report.cleared.isNotEmpty()) Text("Cleared: ${report.cleared.distinct().joinToString(", ") { Dungeons.byId(it)?.name ?: it }}.", style = MaterialTheme.typography.bodyMedium)
             if (report.jobsDone.isNotEmpty()) Text("Jobs done: ${report.jobsDone.joinToString(", ") { app.pokeplan.world.Missions.byId(it)?.title ?: it }}. Claim them on the board.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             if (report.eventsOpened > 0 || report.eventsPassed > 0) Text(

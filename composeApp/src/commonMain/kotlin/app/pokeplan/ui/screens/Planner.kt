@@ -1,5 +1,8 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.AnimatedSprite
+import app.pokeplan.ui.SpriteAction
+import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -120,7 +123,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
             val overdue = TaskViews.overdue(today, store.now).size
             val doneToday = store.doneToday()
             Column(Modifier.fillMaxSize()) {
-                ScreenHeader("Planner", subtitle = if (today.isEmpty()) "Nothing left for today" else "${today.size} to do today", icon = "journal", onBack = onBack)
+                ScreenHeader("Planner", subtitle = if (today.isEmpty()) "Nothing left for today" else "${today.size} to do today", icon = "journal", onBack = onBack, color = ModuleAccent.PLAN.header)
                 Column(
                     Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
                     verticalArrangement = Arrangement.spacedBy(Spacing.L),
@@ -148,7 +151,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
             return@ScreenSwitch
         }
 
-        SectionScaffold(current.label, "Planner", onBack = { view = null }, icon = current.icon) {
+        SectionScaffold(current.label, "Planner", onBack = { view = null }, icon = current.icon, color = ModuleAccent.PLAN.header) {
             RewardBox(model)
             when (current) {
                 View.TARGETS -> FrequencyView(model)
@@ -177,7 +180,7 @@ private class ListTile(val view: View, val count: String?, val detail: String)
 
 /** The list tint, the same on the menu tile and nowhere else (the lists themselves stay calm). */
 private fun View.tint(): Color = when (this) {
-    View.TODAY -> Pixel.Red; View.DAY -> Pixel.Teal; View.INBOX -> Pixel.Blue; View.UPCOMING -> Pixel.Warning
+    View.TODAY -> ModuleAccent.PLAN.accent; View.DAY -> Pixel.Teal; View.INBOX -> Pixel.Blue; View.UPCOMING -> Pixel.Warning
     View.TARGETS -> Pixel.Green; View.DONE -> Pixel.Violet; View.ALL -> Pixel.Gray
 }
 
@@ -242,8 +245,8 @@ private fun TodayList(model: AppModel, tasks: List<Task>, card: @Composable (Tas
         }
     }
     if (tasks.isEmpty()) {
-        if (done > 0) EmptyState("All clear for today", "$done finished. The rest can wait for tomorrow.", icon = View.TODAY.icon)
-        else EmptyState(emptyTitle(View.TODAY), emptyLine(View.TODAY), icon = View.TODAY.icon)
+        if (done > 0) EmptyState("All clear for today", "$done finished. The rest can wait for tomorrow.", icon = View.TODAY.icon, sleeper = true)
+        else EmptyState(emptyTitle(View.TODAY), emptyLine(View.TODAY), icon = View.TODAY.icon, sleeper = true)
         return
     }
     val before = TaskViews.overdue(tasks, store.now).toSet()
@@ -292,10 +295,13 @@ internal fun TaskGroup(
  * action, in the game's own words.
  */
 @Composable
-fun EmptyState(title: String, line: String? = null, icon: String? = null, action: Pair<String, () -> Unit>? = null) {
+fun EmptyState(title: String, line: String? = null, icon: String? = null, action: Pair<String, () -> Unit>? = null, sleeper: Boolean = false) {
+    // With [sleeper] the global buddy dozes beside the words (its own SpriteCollab Sleep animation, still with Reduce motion).
+    val buddy = if (sleeper) LocalBuddy.current else null
     TextBox {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            if (icon != null) ItemIcon(icon, size = 40.dp, description = null)
+            if (buddy != null) AnimatedSprite(buddy.form.id, buddy.isShiny, "", size = 56.dp, animate = !LocalReduceMotion.current, ground = 4.dp, action = SpriteAction.SLEEP, actionKey = 1)
+            else if (icon != null) ItemIcon(icon, size = 40.dp, description = null)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 Text(title, style = MaterialTheme.typography.titleSmall)
                 if (line != null) Text(line, style = MaterialTheme.typography.bodyLarge)
@@ -429,7 +435,7 @@ internal fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
-                PixelIconButton("plus", "Add", ::add, Pixel.Red, enabled = text.isNotBlank())
+                PixelIconButton("plus", "Add", ::add, ModuleAccent.PLAN.accent, enabled = text.isNotBlank())
             }
             // What the line was understood as, so a typed "tomorrow 5pm #Social !B" is never a guess (Tesler: the app does the parsing, and shows it).
             val parsed = QuickAdd.parse(text, model.store.today)

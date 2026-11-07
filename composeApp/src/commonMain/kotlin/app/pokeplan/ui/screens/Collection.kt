@@ -176,7 +176,7 @@ private fun PartyGroup(
     if (party.isEmpty()) {
         val how = if (region == Region.CARE) "Open a Pokémon and choose \"To Care party\", or befriend a visitor. Until then Care warms your Plan buddy. Its first member leads."
         else "Hatch an egg with a focus session, or move a Pokémon here from the PC."
-        EmptyState("No one here yet", how, icon = "poke-ball")
+        EmptyState("No one here yet", how, icon = "poke-ball", sleeper = true)
         return
     }
     party.sortedByDescending { it.id == leadId }.forEach { p ->
@@ -196,8 +196,8 @@ private fun PokemonRow(p: OwnedPokemon, role: String?, favorite: Boolean, onClic
         trail = {
             Column(horizontalAlignment = Alignment.End) {
                 if (role != null) Text(role, style = MaterialTheme.typography.labelMedium, color = Pixel.Red)
-                if (favorite) Text("★ Starred", style = MaterialTheme.typography.labelMedium, color = Pixel.Warning)
-                if (p.isShiny) Text("✨ Shiny", style = MaterialTheme.typography.labelMedium, color = Pixel.Warning)
+                if (favorite) Text("Starred", style = MaterialTheme.typography.labelMedium, color = Pixel.Warning)
+                if (p.isShiny) Text("Shiny", style = MaterialTheme.typography.labelMedium, color = Pixel.Warning)
             }
         },
     ) {
@@ -227,8 +227,8 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
             }
             SectionLabel("Show")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                TabButton("✨ Shiny", view.shinyOnly, { change(view.copy(shinyOnly = !view.shinyOnly)) })
-                TabButton("★ Starred", view.starredOnly, { change(view.copy(starredOnly = !view.starredOnly)) })
+                TabButton("Shiny", view.shinyOnly, { change(view.copy(shinyOnly = !view.shinyOnly)) })
+                TabButton("Starred", view.starredOnly, { change(view.copy(starredOnly = !view.starredOnly)) })
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 PokemonType.entries.forEach { t ->
@@ -276,7 +276,7 @@ private fun PcTile(p: OwnedPokemon, favorite: Boolean, onClick: () -> Unit) {
         Sprite(p.form.id, p.isShiny, "", size = 64.dp)
         Text(p.nickname, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Text(
-            "Lv. ${p.level}" + (if (p.isShiny) " ✨" else "") + (if (favorite) " ★" else ""),
+            "Lv. ${p.level}" + (if (p.isShiny) " · Shiny" else "") + (if (favorite) " · Starred" else ""),
             style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, maxLines = 1,
         )
     }

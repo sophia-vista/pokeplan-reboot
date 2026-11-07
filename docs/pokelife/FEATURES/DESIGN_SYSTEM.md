@@ -74,6 +74,26 @@ Define paired light and dark values for:
 
 Colors are semantic, not decorative. Module/region accents may tint selected elements, but must not impersonate success, warning, error or financial status. Do not rely on color alone to communicate meaning. Verify text contrast to WCAG AA where measurable.
 
+#### Chrome and module accents (8 November 2026)
+
+- **App chrome is neutral.** The header bar of every page that belongs to no module (Home, Modules, Pokémon, Me) and the bottom tab bar use `Pixel.Chrome`, a deep slate. The brand red is not chrome: it is the Poké Ball accent for a few primary game actions (start a focus, choose a starter) and never identifies a module.
+- **One accent per module**, in `ModuleAccent` (app UI `RegionLook.kt`). A module's header bar is its `header` colour (the same in both palettes, white text on it, at least 4.5:1); its dialogue-frame tint, menu-card tint and its primary action are its `accent` (a brighter shade in the dark palette so the frame stays visible on a dark panel). Starting values *(tune)*:
+
+| Module | Hue | Header (both palettes) | Dark-palette accent |
+|---|---|---|---|
+| PLAN | violet | `#6D3FD6` | `#9B7BF0` |
+| CARE | meadow green | `#1E7F52` | `#34B07A` |
+| WORLD | teal | `#0F766E` | `#2DB5A8` |
+| GEAR (Pokégear) | blue | `#2C6CCC` | `#5B96EE` |
+| HEAL | rose | `#BE185D` | `#EC5C9B` |
+| MINT | amber | `#B45309` | `#E08A2E` |
+| HOME | olive | `#4D7C0F` | `#8DB83A` |
+| LINK | cyan | `#0E7490` | `#38B2D0` |
+
+- HEAL, MINT, HOME and LINK are reserved now so the modules built later do not invent their own. An accent never stands for success, warning, error or money status; those keep the semantic tokens. HEAL's rose is never used as a judgement of a measurement.
+- **Letters on a filled key** (pressed, selected) are white or the dark ink, whichever has the higher contrast with the fill (`keyLook`), so a mid-tone fill in the dark palette still reads at AA.
+- **Frames.** One frame per group: a dialogue box holds its rows without a box round each row, and a box is not put inside a box. An empty state is a short line of dialogue with a real sprite or item icon, not a grey placeholder.
+
 ### 5.2 Spacing and sizing
 
 Use a 4 dp-based spacing scale and named semantic tokens. Initial scale: `space0=0`, `space1=4`, `space2=8`, `space3=12`, `space4=16`, `space5=20`, `space6=24`, `space8=32`, `space10=40`, `space12=48` dp. Prefer semantic aliases such as `contentInset`, `panelPadding`, `rowGap`, `sectionGap`, `pageGutter` and `compactControlGap` in component APIs.

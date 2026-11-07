@@ -62,7 +62,8 @@ class ScreenshotTest {
         override fun nowMillis() = millis
     }
 
-    private fun started(): GameStore = GameStore(MemoryStorage(), clock).also { it.start("Sophia", 25) }
+    // The opening story ("A New Explorer") covers Home until it is done, so a screenshot of a real screen marks it done first.
+    private fun started(): GameStore = GameStore(MemoryStorage(), clock).also { it.start("Sophia", 25); it.worldEpisodeDone(app.pokeplan.world.WorldMoments.INTRO_KEY) }
 
     @Test
     fun story() {
@@ -562,6 +563,39 @@ class ScreenshotTest {
 
     @Test
     fun darkMe() = dark("dark-me", Place.ME)
+
+    @Test
+    fun darkCare() = dark("dark-care", Place.CARE)
+
+    @Test
+    fun darkWorld() = dark("dark-world", Place.WORLD)
+
+    @Test
+    fun darkGear() = dark("dark-gear", Place.GEAR)
+
+    @Test
+    fun darkPlan() = dark("dark-plan", Place.PLAN)
+
+    /** The module pages in both palettes side by side by name, so each accent can be checked on the light and the dark panel. */
+    @Test
+    fun moduleAccentsBothPalettes() {
+        val store = storeWithTeam()
+        store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 45)
+        store.markRewardsSeen(); store.markVersionSeen(AppVersion.NAME)
+        val model = AppModel(store)
+        model.care.addRoutine("Drink a glass of water", kotlinx.datetime.LocalTime(9, 0))
+        for (dark in listOf(false, true)) {
+            val tag = if (dark) "dark" else "light"
+            fun shot(name: String, content: @Composable () -> Unit) = render("accent-$tag-$name") { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { content() } } }
+            shot("home") { app.pokeplan.ui.screens.HomeScreen(model) {} }
+            shot("modules") { model.module = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
+            shot("plan") { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
+            shot("care") { model.module = app.pokeplan.ui.screens.Module.CARE; model.careSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
+            shot("world") { app.pokeplan.ui.screens.WorldScreen(model) }
+            shot("gear") { app.pokeplan.ui.screens.GearScreen(model) {} }
+        }
+        model.module = null
+    }
 
     @Test
     fun collectionPc() = collection("collection-pc", 1, hatched = 14)

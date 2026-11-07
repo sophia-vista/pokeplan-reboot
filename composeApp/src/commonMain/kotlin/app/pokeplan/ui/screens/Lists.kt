@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -106,7 +107,7 @@ private fun ListRows(lists: List<TaskList>, tasks: List<Task>, open: (String) ->
 @Composable
 internal fun ListScreen(model: AppModel, list: TaskList, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit, back: () -> Unit) {
     var editing by remember(list.id) { mutableStateOf(false) }
-    SectionScaffold(list.name, if (list.archived) "Archived list" else "Planner", onBack = back, icon = list.icon) {
+    SectionScaffold(list.name, if (list.archived) "Archived list" else "Planner", onBack = back, icon = list.icon, color = ModuleAccent.PLAN.header) {
         RewardBox(model)
         if (editing) ListEditor(model, list) { kept -> editing = false; if (kept == null) back() }
         else PixelButton("Edit list", { editing = true }, color = Pixel.InkSoft, compact = true)

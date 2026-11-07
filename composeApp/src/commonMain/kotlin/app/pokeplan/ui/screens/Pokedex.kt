@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
+import app.pokeplan.ui.Glyph
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.app.DexState
 import app.pokeplan.app.FormDex
@@ -120,7 +121,7 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
             PixelBar(caught.toFloat() / rows.size.coerceAtLeast(1), color = if (caught == rows.size) Pixel.Warning else Pixel.Red)
             // One quiet line for the rest, so the card stays a number and a bar.
             val more = listOfNotNull(
-                "✨ $shiny shiny".takeIf { shiny > 0 }, "Forms $formsHad of $formsAll", "$seen more seen".takeIf { seen > 0 },
+                "$shiny shiny".takeIf { shiny > 0 }, "Forms $formsHad of $formsAll", "$seen more seen".takeIf { seen > 0 },
             )
             Text(more.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
@@ -176,7 +177,7 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
                         // Words, not just the sprite's colour, tell the states apart.
                         Text(if (state == DexState.UNKNOWN) "Not found yet" else state.label, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1)
                     }
-                    if (isShiny) Text("✨", style = MaterialTheme.typography.bodyMedium)
+                    if (isShiny) Glyph("star", Pixel.Warning, size = 18.dp, description = "Shiny")
                     if (state == DexState.OWNED) ItemIcon("poke-ball", size = 20.dp, description = null)
                 }
             }
@@ -263,12 +264,12 @@ private fun FormsBox(model: AppModel, speciesId: Int, shownId: Int, shiny: Boole
             Text(if (forms.size == 1) "Form" else "Forms", style = MaterialTheme.typography.titleMedium)
             Text(
                 "${counted.count { FormDex.caught(model.data, it) }} of ${counted.size} caught, " +
-                    "✨ ${counted.count { FormDex.shiny(model.data, it) }} of ${counted.size} shiny",
+                    "${counted.count { FormDex.shiny(model.data, it) }} of ${counted.size} shiny",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 TabButton("Regular", !shiny, { setShiny(false) }, Modifier.padding(0.dp))
-                TabButton("✨ Shiny", shiny, { setShiny(true) }, Modifier.padding(0.dp))
+                TabButton("Shiny", shiny, { setShiny(true) }, Modifier.padding(0.dp))
             }
             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 forms.forEach { f ->
@@ -320,7 +321,7 @@ private fun CaughtEntry(model: AppModel, s: SpeciesInfo, form: FormInfo, open: (
                 if (owned > 0) "You have $owned in your party and PC." else "Caught before; none in your party or PC now.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
             )
-            if (id in model.data.shinySpecies) Text("✨ You have found a shiny one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning)
+            if (id in model.data.shinySpecies) Text("You have found a shiny one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Warning)
         }
     }
     TextBox {
@@ -393,8 +394,8 @@ private fun LineMember(model: AppModel, speciesId: Int, current: Boolean, open: 
 private fun CreditLine(credit: String) {
     Text(
         "$credit, PMD SpriteCollab (CC\u00A0BY\u2060-\u2060NC\u00A04.0)", Modifier.fillMaxWidth(),
-        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 10.sp, lineHeight = 13.sp),
-        color = Pixel.Gray.copy(alpha = 0.7f), textAlign = TextAlign.Center,
+        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp, lineHeight = 15.sp),
+        color = Pixel.InkSoft, textAlign = TextAlign.Center,
     )
 }
 

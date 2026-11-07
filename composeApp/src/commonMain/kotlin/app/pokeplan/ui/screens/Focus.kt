@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -63,7 +64,7 @@ import app.pokeplan.ui.theme.TextBox
 fun FocusScreen(model: AppModel, openPokemon: ((String) -> Unit)? = null, onBack: (() -> Unit)? = null) {
     val session = model.data.focus
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader("Focus", subtitle = if (session == null) "Hatch an egg" else if (session.deepFocus) "Deep Focus" else "Egg incubating", icon = "mystery-egg", onBack = onBack)
+        ScreenHeader("Focus", subtitle = if (session == null) "Hatch an egg" else if (session.deepFocus) "Deep Focus" else "Egg incubating", icon = "mystery-egg", onBack = onBack, color = ModuleAccent.PLAN.header)
         if (session == null) SetupView(model) { Ends(model, openPokemon) }
         else Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M),
@@ -203,7 +204,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
         }
     }
     Column(Modifier.fillMaxWidth().padding(horizontal = Spacing.M, vertical = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelButton("Start $minutes min", { model.effect(Sfx.FOCUS_START); store.startFocus(minutes, deep, taskId); store.dismissFocusEnd() }, Modifier.fillMaxWidth(), Pixel.Red)
+        PixelButton("Start $minutes min", { model.effect(Sfx.FOCUS_START); store.startFocus(minutes, deep, taskId); store.dismissFocusEnd() }, Modifier.fillMaxWidth(), ModuleAccent.PLAN.accent)
         // For when starting is the hard part: the shortest session there is, with no choices to make.
         val five = FocusRules.justFiveMinutes().minutesRoundedUp
         if (minutes != five) PixelButton("Just $five minutes", { model.effect(Sfx.FOCUS_START); store.startFocus(five, deepFocus = false, taskId = taskId); store.dismissFocusEnd() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)

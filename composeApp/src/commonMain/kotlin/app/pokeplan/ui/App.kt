@@ -317,7 +317,7 @@ fun App(
                 // The intro's picture runs under the system bars; only its content keeps clear of them.
                 PixelBackground("bw12", Modifier.fillMaxSize()) { Box(Modifier.fillMaxSize().safeDrawingPadding()) { OnboardingScreen(store) } }
             } else {
-                CompositionLocalProvider(LocalReduceMotion provides model.data.settings.reduceMotion, LocalUiSound provides model::tap) { MainShell(model, focusTab, start, launches) }
+                CompositionLocalProvider(LocalReduceMotion provides model.data.settings.reduceMotion, app.pokeplan.ui.screens.LocalBuddy provides model.data.player.buddy, LocalUiSound provides model::tap) { MainShell(model, focusTab, start, launches) }
             }
         }
     }
@@ -351,7 +351,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
     BoxWithConstraints(Modifier.fillMaxSize().imePadding()) {
         val rail = maxWidth >= EXPANDED_WIDTH
         // The status bar and the tab bar wear the colour of the header on the page shown.
-        val chrome = remember { androidx.compose.runtime.mutableStateOf(Pixel.Red) }
+        val chrome = remember { androidx.compose.runtime.mutableStateOf(Pixel.Chrome) }
         val page: @Composable (Modifier) -> Unit = { modifier ->
             Column(modifier) {
                 Spacer(Modifier.fillMaxWidth().windowInsetsTopHeight(WindowInsets.statusBars).background(chrome.value))
@@ -373,7 +373,11 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                         }
                         UndoBar(model, Modifier.align(Alignment.BottomCenter))
                         // The Pokégear covers whichever tab is open until it is closed.
-                        if (model.gearOpen) Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.GearScreen(model) { model.gearOpen = false } }
+                        if (model.gearOpen) Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                            androidx.compose.runtime.CompositionLocalProvider(app.pokeplan.ui.theme.LocalFrameTone provides app.pokeplan.ui.theme.frameToneOf(app.pokeplan.ui.theme.ModuleAccent.GEAR.accent)) {
+                                app.pokeplan.ui.screens.GearScreen(model) { model.gearOpen = false }
+                            }
+                        }
                     }
                 }
             }

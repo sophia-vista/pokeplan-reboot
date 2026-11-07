@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.platform.LocalDensity
 import app.pokeplan.ui.StatusKind
@@ -136,20 +137,20 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                 EmptyState(
                     if (care.routines.none { !it.archived }) "No routines yet" else "Nothing planned for today",
                     "Small things you do for yourself, like a glass of water or a stretch.",
-                    action = "Add a routine" to { model.careSection = CareSection.ROUTINES },
+                    action = "Add a routine" to { model.careSection = CareSection.ROUTINES }, sleeper = true,
                 )
             } else today.forEach { RoutineRow(model, it) }
             CareEggMeter(model)
             MenuGrid(
                 listOf(
-                    MenuEntry(CareSection.ROUTINES.name, CareSection.ROUTINES.icon, "Routines", if (today.isEmpty()) "none today" else "$done of ${today.size} today", tint = Pixel.Green),
-                    MenuEntry(CareSection.CALM.name, CareSection.CALM.icon, "Calm break", "a minute to breathe", tint = Pixel.Blue),
-                    MenuEntry(CareSection.DIARY.name, CareSection.DIARY.icon, "Diary card", if (diarySaved) "saved today" else "how today felt", tint = Pixel.Red),
-                    MenuEntry(CareSection.SKILLS.name, CareSection.SKILLS.icon, "Skills", if (practised == 0) "DBT skills to try" else "$practised practised today", tint = Pixel.Green),
-                    MenuEntry(CareSection.JOURNAL.name, CareSection.JOURNAL.icon, "Journal", if (care.journal.isEmpty()) "write anything" else if (care.journal.size == 1) "1 entry" else "${care.journal.size} entries", tint = Pixel.Warning),
+                    MenuEntry(CareSection.ROUTINES.name, CareSection.ROUTINES.icon, "Routines", if (today.isEmpty()) "none today" else "$done of ${today.size} today", tint = ModuleAccent.CARE.accent),
+                    MenuEntry(CareSection.CALM.name, CareSection.CALM.icon, "Calm break", "a minute to breathe", tint = ModuleAccent.CARE.accent),
+                    MenuEntry(CareSection.DIARY.name, CareSection.DIARY.icon, "Diary card", if (diarySaved) "saved today" else "how today felt", tint = ModuleAccent.CARE.accent),
+                    MenuEntry(CareSection.SKILLS.name, CareSection.SKILLS.icon, "Skills", if (practised == 0) "DBT skills to try" else "$practised practised today", tint = ModuleAccent.CARE.accent),
+                    MenuEntry(CareSection.JOURNAL.name, CareSection.JOURNAL.icon, "Journal", if (care.journal.isEmpty()) "write anything" else if (care.journal.size == 1) "1 entry" else "${care.journal.size} entries", tint = ModuleAccent.CARE.accent),
                     MenuEntry(CareSection.TRENDS.name, CareSection.TRENDS.icon, "Trends", "the last few weeks", tint = Pixel.InkSoft),
-                    MenuEntry(CareSection.MEADOW.name, CareSection.MEADOW.icon, "Meadow", if (care.visitors.isEmpty()) "your buddy's garden" else "${care.visitors.size.coerceAtMost(4)} here", tint = Pixel.Green),
-                    MenuEntry(CareSection.PLAY.name, CareSection.PLAY.icon, "Play", "time with a Pokémon", tint = Pixel.Red),
+                    MenuEntry(CareSection.MEADOW.name, CareSection.MEADOW.icon, "Meadow", if (care.visitors.isEmpty()) "your buddy's garden" else "${care.visitors.size.coerceAtMost(4)} here", tint = ModuleAccent.CARE.accent),
+                    MenuEntry(CareSection.PLAY.name, CareSection.PLAY.icon, "Play", "time with a Pokémon", tint = ModuleAccent.CARE.accent),
                 ),
             ) { key -> model.careSection = CareSection.valueOf(key) }
             VisitorsCard(model)
@@ -624,7 +625,7 @@ private fun DiaryView(model: AppModel) {
                 care.saveDiary(feelings, urges, skills, note)
                 model.effect(Sfx.SELECT)
                 done = true
-            }, Modifier.fillMaxWidth(), Pixel.Red, enabled = feelings.isNotEmpty() || urges.isNotEmpty() || skills.isNotEmpty() || note.isNotBlank())
+            }, Modifier.fillMaxWidth(), ModuleAccent.CARE.accent, enabled = feelings.isNotEmpty() || urges.isNotEmpty() || skills.isNotEmpty() || note.isNotBlank())
             Text(
                 if (done) "Saved on this device." else "Your diary card stays on this device and never earns anything, so there is nothing to get right.",
                 style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },

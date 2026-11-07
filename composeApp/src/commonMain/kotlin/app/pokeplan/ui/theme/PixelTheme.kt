@@ -82,25 +82,27 @@ object Pixel {
     /** `textSecondary` */
     val InkSoft: Color get() = if (dark) Color(0xFFA9AEC4) else Color(0xFF666B7E)
     /** `brandPrimary` */
-    val Red: Color get() = if (dark) Color(0xFFEC4C3E) else Color(0xFFD23B2E)
+    val Red: Color get() = if (dark) Color(0xFFF2665A) else Color(0xFFD23B2E)
     val RedDark = Color(0xFFB62A1C)
     /** `info` */
-    val Blue: Color get() = if (dark) Color(0xFF4A89E8) else Color(0xFF2C6CCC)
+    val Blue: Color get() = if (dark) Color(0xFF5B96EE) else Color(0xFF2C6CCC)
     /** `success` */
-    val Green: Color get() = if (dark) Color(0xFF2E9E6A) else Color(0xFF1E7F52)
+    val Green: Color get() = if (dark) Color(0xFF34B07A) else Color(0xFF1E7F52)
     /** `warning` */
     val Warning: Color get() = if (dark) Color(0xFFD99A1E) else Color(0xFF946000)
     /** `danger` */
     val Danger: Color get() = if (dark) Color(0xFFEC6A75) else Color(0xFFB42332)
+    /** The app's own header bar and tab bar (Home, Modules, Pokémon, Me): a neutral deep slate, the same in both palettes, white text on it. */
+    val Chrome = Color(0xFF2B3050)
     /** Care's header: a deep meadow green, the same in both palettes so white text stays readable on it. */
     val Meadow = Color(0xFF1E7F52)
     /** A highlight for selected items and rewards. */
     val Yellow = Color(0xFFFFCB05)
     val Gray = Color(0xFF9AA1B5)
-    /** Identity colours for categories and regions (the same in both themes), so no screen needs its own literal. */
-    val Violet = Color(0xFF8B5CF6)
+    /** Identity colours for categories and regions, so no screen needs its own literal; Violet and Teal shift with the palette so letters on them read at 4.5:1. */
+    val Violet: Color get() = if (dark) Color(0xFFA78BFA) else Color(0xFF7C3AED)
     val Pink = Color(0xFFEC4899)
-    val Teal = Color(0xFF0D9488)
+    val Teal: Color get() = if (dark) Color(0xFF2DB5A8) else Color(0xFF0F766E)
     val Amber = Color(0xFFF59E0B)
     /** The cool tint laid over a scene at night (how dark is [app.pokeplan.app.BuddyScene.darkness]). */
     val Night = Color(0xFF101C3C)

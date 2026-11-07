@@ -165,10 +165,12 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
         lift.animateTo(0f, tween(150))
     }
     val leads = role != null
+    // The lead wears the module's own colour inside a module page (its frame tone), the brand red elsewhere.
+    val leadColor = app.pokeplan.ui.theme.LocalFrameTone.current?.band ?: Pixel.Red
     Box(
         modifier
-            .background(if (leads) Pixel.Red.copy(alpha = 0.08f) else Pixel.Shade.copy(alpha = 0.6f), slotShape)
-            .border(if (leads) 2.dp else 1.dp, if (leads) Pixel.Red else Pixel.Border, slotShape)
+            .background(if (leads) leadColor.copy(alpha = 0.10f) else Pixel.Shade.copy(alpha = 0.6f), slotShape)
+            .let { if (leads) it.border(2.dp, leadColor, slotShape) else it }
             .combinedClickable(
                 role = Role.Button, onClickLabel = "Hear ${p.nickname}", onLongClickLabel = "Open ${p.nickname}",
                 onLongClick = { model.haptic(); onOpen(p.id) },
@@ -193,9 +195,9 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
                 maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
             )
             // The lead's level is on the stage just above, so its slot names its role there instead.
-            if (role != null) Text(role, style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = Pixel.Red)
+            if (role != null) Text(role, style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold), color = leadColor)
             else Text(
-                "Lv. ${p.level}" + if (p.isShiny) " ✨" else "", style = MaterialTheme.typography.labelMedium,
+                "Lv. ${p.level}" + if (p.isShiny) " · Shiny" else "", style = MaterialTheme.typography.labelMedium,
                 color = if (p.isShiny) Pixel.Warning else Pixel.InkSoft,
             )
         }
@@ -209,7 +211,7 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
 @Composable
 private fun EmptySlot(modifier: Modifier) {
     Box(
-        modifier.border(1.dp, Pixel.Border, slotShape).semantics(mergeDescendants = true) { contentDescription = "Free place" },
+        modifier.background(Pixel.Shade.copy(alpha = 0.3f), slotShape).semantics(mergeDescendants = true) { contentDescription = "Free place" },
         contentAlignment = Alignment.Center,
     ) {
         Column(Modifier.padding(vertical = Spacing.S).alpha(0f)) {

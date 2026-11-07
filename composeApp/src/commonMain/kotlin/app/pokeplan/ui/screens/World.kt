@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -83,7 +84,7 @@ import kotlinx.coroutines.delay
  * its sections. Its progression (rank, Poké, dungeon depth) is its own; the Pokémon it recruits are the shared collection's.
  */
 enum class WorldSection(val label: String, val icon: String) {
-    MAP("Map", "town-map"), MISSIONS("Missions", "journal"), SKILLS("Skills", "ability-capsule"), BASE("Base", "scope-lens"), ARCHIVE("Story archive", "oaks-letter"), TEAMS("Expeditions", "exp-share"), BAG("Finds and Bag", "seal-bag"), SETTINGS("Settings", "storage-key"),
+    MAP("Map", "town-map"), MISSIONS("Missions", "oaks-parcel"), SKILLS("Skills", "ability-capsule"), BASE("Base", "scope-lens"), ARCHIVE("Story archive", "oaks-letter"), TEAMS("Expeditions", "exp-share"), BAG("Finds and Bag", "seal-bag"), SETTINGS("Settings", "storage-key"),
 }
 
 @Composable
@@ -144,16 +145,16 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
             // The four places that matter most, big; the rest as small buttons below.
             MenuGrid(
                 listOf(
-                    MenuEntry(WorldSection.MAP.name, WorldSection.MAP.icon, WorldSection.MAP.label, "${Dungeons.all.size} dungeons", tint = Module.WORLD.look.accent),
-                    MenuEntry(WorldSection.TEAMS.name, WorldSection.TEAMS.icon, WorldSection.TEAMS.label, if (out == 0) "no team out" else "$out out", tint = Module.WORLD.look.accent),
-                    MenuEntry(WorldSection.MISSIONS.name, WorldSection.MISSIONS.icon, WorldSection.MISSIONS.label, if (!Missions.boardOpen(world)) "opens in the story" else "${world.missions.size} taken", badge = world.missions.count { it.done }, tint = Module.WORLD.look.accent),
-                    MenuEntry(WorldSection.BASE.name, WorldSection.BASE.icon, WorldSection.BASE.label, badge = world.researchReady().size, tint = Module.WORLD.look.accent),
+                    MenuEntry(WorldSection.MAP.name, WorldSection.MAP.icon, WorldSection.MAP.label, "${Dungeons.all.size} dungeons", tint = ModuleAccent.WORLD.accent),
+                    MenuEntry(WorldSection.TEAMS.name, WorldSection.TEAMS.icon, WorldSection.TEAMS.label, if (out == 0) "no team out" else "$out out", tint = ModuleAccent.WORLD.accent),
+                    MenuEntry(WorldSection.MISSIONS.name, WorldSection.MISSIONS.icon, WorldSection.MISSIONS.label, if (!Missions.boardOpen(world)) "opens in the story" else "${world.missions.size} taken", badge = world.missions.count { it.done }, tint = ModuleAccent.WORLD.accent),
+                    MenuEntry(WorldSection.BASE.name, WorldSection.BASE.icon, WorldSection.BASE.label, badge = world.researchReady().size, tint = ModuleAccent.WORLD.accent),
                 ),
             ) { key -> model.worldSection = WorldSection.valueOf(key) }
             FieldLabel("More")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 listOf(WorldSection.BAG to if (world.finds.isEmpty()) "Finds and Bag" else "Finds and Bag (${world.finds.size})", WorldSection.SKILLS to "Skills", WorldSection.ARCHIVE to "Story archive", WorldSection.SETTINGS to "Settings").forEach { (section, label) ->
-                    PixelButton(label, { model.worldSection = section }, color = Module.WORLD.look.accent, compact = true)
+                    PixelButton(label, { model.worldSection = section }, color = ModuleAccent.WORLD.accent, compact = true)
                 }
             }
         }

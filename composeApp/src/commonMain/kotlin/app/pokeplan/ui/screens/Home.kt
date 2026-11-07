@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -115,6 +116,7 @@ fun HomeScreen(model: AppModel, go: (Place) -> Unit) {
 
             PlanRegionCard(model, go)
             if (data.settings.careModule) CareRegionCard(model, go)
+            WorldRegionCard(model, go)
 
             StreakCard(model)
             if (store.sees(Feature.MINI_QUESTS)) MiniQuestsCard(model, go)
@@ -201,7 +203,7 @@ private fun PlanRegionCard(model: AppModel, go: (Place) -> Unit) {
             data.focus != null -> StepRow("An egg is incubating", "Open", Pixel.Blue) { go(Place.FOCUS) }
             next != null -> StepRow(next.title, "Done", lead = { RankBadge(next.rank) }) { model.completeTask(next.id) }
             doneToday > 0 -> StepRow("All done for today. Rest, or add one more if you feel like it.", null)
-            else -> StepRow("Nothing planned for today", "Add a task", Pixel.Red) { model.addTaskRequested = true; go(Place.PLANNER) }
+            else -> StepRow("Nothing planned for today", "Add a task", ModuleAccent.PLAN.accent) { model.addTaskRequested = true; go(Place.PLANNER) }
         }
     }
 }
@@ -230,6 +232,26 @@ private fun CareRegionCard(model: AppModel, go: (Place) -> Unit) {
             model.careData.routines.none { !it.archived } -> StepRow("Small things you do for yourself, like a glass of water.", "Add a routine", Pixel.Green) { open(CareSection.ROUTINES) }
             else -> StepRow("No routines today. A calm break is always there.", "Calm break", Pixel.Blue) { open(CareSection.CALM) }
         }
+    }
+}
+
+/** World: the team out exploring (or the first one picked), how many are out, and the one next step. */
+@Composable
+private fun WorldRegionCard(model: AppModel, go: (Place) -> Unit) {
+    val data = model.data
+    val world = data.world
+    val team = world.teams.firstOrNull { it.expedition != null } ?: world.teams.firstOrNull { it.members.isNotEmpty() }
+    val lead = team?.members?.firstNotNullOfOrNull { id -> data.player.pokemon.firstOrNull { it.id == id } }
+    val out = world.teams.count { it.expedition != null }
+    RegionCard(
+        Module.WORLD.label, Module.WORLD.icon, Module.WORLD.look, BuddyScene.darkness(model.store.now.hour, model.store.now.minute), lead,
+        team?.let { "${it.title}: ${lead?.nickname ?: "no members yet"}" } ?: "No team yet",
+        if (out == 0) "Dungeons and expeditions" else if (out == 1) "1 team out exploring" else "$out teams out exploring",
+        still = data.settings.reduceMotion, onOpen = { go(Place.WORLD) },
+    ) {
+        val where = team?.expedition?.let { app.pokeplan.world.Dungeons.byId(it.dungeonId)?.name }
+        if (where != null) StepRow("Exploring $where", "Open") { go(Place.WORLD) }
+        else StepRow("Send a team into a dungeon. They climb on their own while you are away.", "Open", ModuleAccent.WORLD.accent) { go(Place.WORLD) }
     }
 }
 

@@ -203,7 +203,7 @@ private fun HatchScene(model: AppModel, scene: Cutscene.Hatch, close: () -> Unit
         SceneText(
             text = when {
                 !hatched -> "Oh?"
-                p.isShiny -> "✨ A shiny $name hatched from the $egg! ✨"
+                p.isShiny -> "A shiny $name hatched from the $egg!"
                 else -> "$name hatched from the $egg!"
             },
             detail = if (hatched) p.species.genus.takeIf { it.isNotEmpty() }?.let { "$name, the $it." } else null,

@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -75,7 +76,7 @@ private fun ModulesMenu(model: AppModel) {
                     // Not a region: a hub of handy tools (docs/ecosystem.md, Pokégear) that pays nothing and is always available.
                     // The dungeon game (docs/world.md): send teams exploring and recruit what they find.
                     MenuEntry(Module.WORLD.name, Module.WORLD.icon, Module.WORLD.label, "dungeons and expeditions", badge = model.data.world.finds.size, tint = Module.WORLD.look.accent),
-                    MenuEntry("GEAR", "explorer-kit", "Pokégear", tint = Pixel.Blue),
+                    MenuEntry("GEAR", "explorer-kit", "Pokégear", tint = ModuleAccent.GEAR.accent),
                 ),
             ) { key -> if (key == "GEAR") model.gearOpen = true else model.module = Module.valueOf(key) }
             Text(
@@ -169,14 +170,14 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
             }
             MenuGrid(
                 listOfNotNull(
-                    MenuEntry(PlanSection.PLANNER.name, PlanSection.PLANNER.icon, "Planner", if (today == 0) "nothing left today" else "$today to do today", tint = Pixel.Red),
+                    MenuEntry(PlanSection.PLANNER.name, PlanSection.PLANNER.icon, "Planner", if (today == 0) "nothing left today" else "$today to do today", tint = ModuleAccent.PLAN.accent),
                     if (!focusTab) null else MenuEntry(
                         PlanSection.FOCUS.name, PlanSection.FOCUS.icon, "Focus",
-                        if (session == null) "hatch an egg" else "egg incubating", badge = if (session != null) 1 else 0, tint = Pixel.Warning,
+                        if (session == null) "hatch an egg" else "egg incubating", badge = if (session != null) 1 else 0, tint = ModuleAccent.PLAN.accent,
                     ),
-                    if (store.sees(Feature.GROWTH_SCREEN)) MenuEntry(PlanSection.GROWTH.name, PlanSection.GROWTH.icon, "Progress", "effort and trends", tint = Pixel.Green) else null,
-                    if (!store.sees(Feature.GOALS)) null else MenuEntry(PlanSection.GOALS.name, PlanSection.GOALS.icon, "Goals", if (data.goals.size == 1) "1 goal" else "${data.goals.size} goals", tint = Pixel.Warning),
-                    MenuEntry(PlanSection.REVIEW.name, PlanSection.REVIEW.icon, "Review", if (store.canReview()) "ready this week" else "done this week", badge = if (store.canReview()) 1 else 0, tint = Pixel.Blue),
+                    if (store.sees(Feature.GROWTH_SCREEN)) MenuEntry(PlanSection.GROWTH.name, PlanSection.GROWTH.icon, "Progress", "effort and trends", tint = ModuleAccent.PLAN.accent) else null,
+                    if (!store.sees(Feature.GOALS)) null else MenuEntry(PlanSection.GOALS.name, PlanSection.GOALS.icon, "Goals", if (data.goals.size == 1) "1 goal" else "${data.goals.size} goals", tint = ModuleAccent.PLAN.accent),
+                    MenuEntry(PlanSection.REVIEW.name, PlanSection.REVIEW.icon, "Review", if (store.canReview()) "ready this week" else "done this week", badge = if (store.canReview()) 1 else 0, tint = ModuleAccent.PLAN.accent),
                     MenuEntry(PlanSection.SETTINGS.name, PlanSection.SETTINGS.icon, "Settings", "focus, week, calendars", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.planSection = PlanSection.valueOf(key) }

@@ -113,8 +113,8 @@ fun ScreenHeader(
     footer: (@Composable () -> Unit)? = null,
     /** Shows Back at the start of the bar, where every phone app puts it; it takes the icon's place. */
     onBack: (() -> Unit)? = null,
-    /** The bar's colour: the brand red, or a region's own ([RegionLook.header]) on that region's pages. */
-    color: Color = Pixel.Red,
+    /** The bar's colour: the app's neutral [Pixel.Chrome], or a module's own ([ModuleAccent.header]) on that module's pages. */
+    color: Color = Pixel.Chrome,
     trailing: @Composable () -> Unit = {},
 ) {
     val shape = RoundedCornerShape(bottomStart = Spacing.CardRadius, bottomEnd = Spacing.CardRadius)

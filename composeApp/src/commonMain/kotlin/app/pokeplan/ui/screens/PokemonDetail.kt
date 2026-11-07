@@ -184,7 +184,7 @@ private fun TraitsBox(p: OwnedPokemon, stats: Boolean) = DetailBox("Traits") {
     Text("Nature: ${natureText(p)}", style = body)
     Text("Ability: ${p.ability}", style = body)
     p.gender?.let { Text("Gender: ${it.name.titleCase()}", style = body) }
-    if (p.isShiny) Text("✨ Shiny", style = body, color = Pixel.Warning)
+    if (p.isShiny) Text("Shiny", style = body, color = Pixel.Warning)
     if (stats) {
         Text("Judge: ${judge(p.ivs.values.sum())}", style = body)
         Text("Its best: ${bestStats(p)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -321,7 +321,7 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
     }
     if (!p.species.isSpecial) {
         val starred = store.isFavorite(p.id)
-        PixelButton(if (starred) "★ Starred" else "☆ Star", { store.toggleFavorite(p.id) }, Modifier.fillMaxWidth(), if (starred) Pixel.Warning else Pixel.InkSoft, compact = true)
+        PixelButton(if (starred) "Starred" else "Star", { store.toggleFavorite(p.id) }, Modifier.fillMaxWidth(), if (starred) Pixel.Warning else Pixel.InkSoft, compact = true)
     }
 }
 

@@ -5,6 +5,19 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.136.0
+
+Design polish pass (the owner's request after a design review): consistency, dark mode and a livelier world.
+
+- **One colour per module, and a neutral app.** The header bar on Home, Modules, Pokémon and Me is now a deep slate (`Pixel.Chrome`) instead of red, so a module's colour tells you where you are: Plan is violet, Care green, World teal, Pokégear blue. HEAL (rose), MINT (amber), HOME (olive) and LINK (cyan) are reserved in `ModuleAccent` before they are built. Inside a module the menu cards, frames, lead marker and main button all wear its colour (no more warning-yellow or red tiles in Plan's menu). The table is in `DESIGN_SYSTEM.md` 5.1, written first.
+- **Pokégear has its own look**: blue header and frames, instead of Plan's red.
+- **Readable in both palettes.** Letters on a pressed or selected key are white or the dark ink, whichever reads better, so the dark-mode blue, green and red keys, and Teal and Violet, pass 4.5:1. Dark-mode Blue, Green and Red are a shade lighter, Teal and Violet follow the palette, and the sprite credit line is no longer pale grey on white. `TokenContrastTest` checks it.
+- **Real art instead of emoji** in the Pokégear helper's reaction, the Care visit reactions (`Emote`: item icons and Pixelarticons glyphs) and the shiny and starred marks, which are words or a star glyph. The buddy's own tap emotes stay as the game-style emotes they are meant to be.
+- **Livelier empty states**: when there is nothing to show (no one in a party, an empty PC, nothing planned, no routines, an empty Bag) your buddy dozes beside the words with its own Sleep animation (still with Reduce motion).
+- **World is on Home** with a card like Plan's and Care's: the team out exploring, how many are out, and one next step. World's "Since you last looked" shows the haul as icons (floors, coin, berries, boxes) with the detail underneath.
+- **Fewer frames**: party slots are no longer boxed inside the boxed Party card; only the lead is outlined, in the module's colour.
+- **Screenshot tests show real screens.** The opening story covered every `App()` screenshot (all the dark ones were the intro); the tests now finish it first, and dark Care, World, Pokégear and Plan, and Home, Modules, Plan, Care, World and Pokégear in both palettes (`accent-light-*`, `accent-dark-*`) are rendered.
+
 ## 0.135.0
 
 - **Your Pokémon, Bag and Poké now live in their own database tables** (schema 6), the way Plan's and Care's already do. The game works exactly as before: the app still reads and writes one save, and the database splits it into rows and puts it back together, so saving a level-up writes one Pokémon's row instead of the whole collection. The first start with this version moves everything over, checks it reads back equal, keeps the old save whole under an `aside:` copy, and pays nothing; if anything differs, the old save stays the live one and it tries again next start.
