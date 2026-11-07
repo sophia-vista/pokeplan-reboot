@@ -128,6 +128,8 @@ data class Bill(
     val accountId: String? = null,
     val status: PlanStatus = PlanStatus.ACTIVE,
     val createdMillis: Long = 0,
+    /** Whether this bill may ask for a reminder at all (it still needs [MintSettings.billReminders]); the user can switch one bill off. */
+    val remind: Boolean = true,
 )
 
 /** What the user settled for one occurrence. Marking an occurrence paid never creates a transaction; [txId] only links one the user chose. */
@@ -184,6 +186,16 @@ data class MintSettings(
     val hideValues: Boolean = false,
     val currency: String = "PHP",
     val tutorialSeen: Boolean = false,
+    /** Bill reminders (MINT.md section 12): **off until the user turns them on**, one per bill occurrence, never a daily repeat for an overdue one. */
+    val billReminders: Boolean = false,
+    /** How many days before the due day the reminder is for: 0 is the day itself. */
+    val billReminderDays: Int = 1,
+    /** The hour of the day it goes off (the shared quiet hours and a focus session can still hold it). */
+    val billReminderHour: Int = 9,
+    /** Whether the notification names the bill. Off by default: it says only that a bill is coming up. Never an amount, either way. */
+    val billReminderNames: Boolean = false,
+    /** The optional gate (MINT.md 13.2): Mint asks the phone's own screen lock before it shows anything. Only a preference; no key depends on it. */
+    val gate: Boolean = false,
 )
 
 /**

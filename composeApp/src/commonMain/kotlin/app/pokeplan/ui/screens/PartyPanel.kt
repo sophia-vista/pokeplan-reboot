@@ -169,16 +169,7 @@ private fun PartyPanel(
                 Text("Party", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                 Text("${ordered.size} of $PARTY_SIZE", style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
             }
-            (0 until PARTY_SIZE).chunked(3).forEach { row ->
-                // Every slot in a row is as tall as the tallest, so a long name never puts the row out of line.
-                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    row.forEach { i ->
-                        val p = ordered.getOrNull(i)
-                        val slot = Modifier.weight(1f).fillMaxHeight()
-                        if (p == null) EmptySlot(slot) else PartySlot(model, p, if (p.id == leadId) lead else null, slot, onOpen)
-                    }
-                }
-            }
+            PartyGrid(model, ordered, leadId, lead, onOpen)
             if (ordered.isEmpty()) Text(empty, style = MaterialTheme.typography.bodyMedium)
             else {
                 HorizontalDivider(color = Pixel.Border)
@@ -195,11 +186,32 @@ private fun PartyPanel(
     }
 }
 
+/**
+ * The party's six places, two rows of three equal slots, the lead first and named by its role, free ones a faint Poké Ball. With [tapOpens] a tap opens the
+ * Pokémon (and a long press plays its cry), as on the Pokémon tab; otherwise a tap plays the cry and a long press opens it, as inside a module.
+ */
+@Composable
+internal fun PartyGrid(model: AppModel, members: List<OwnedPokemon>, leadId: String?, lead: String, onOpen: (String) -> Unit, tapOpens: Boolean = false) {
+    val ordered = members.sortedByDescending { it.id == leadId }.take(PARTY_SIZE)
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        (0 until PARTY_SIZE).chunked(3).forEach { row ->
+            // Every slot in a row is as tall as the tallest, so a long name never puts the row out of line.
+            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                row.forEach { i ->
+                    val p = ordered.getOrNull(i)
+                    val slot = Modifier.weight(1f).fillMaxHeight()
+                    if (p == null) EmptySlot(slot) else PartySlot(model, p, if (p.id == leadId) lead else null, slot, onOpen, tapOpens)
+                }
+            }
+        }
+    }
+}
+
 private val slotShape = PixelShape
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier: Modifier, onOpen: (String) -> Unit) {
+private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier: Modifier, onOpen: (String) -> Unit, tapOpens: Boolean = false) {
     val calm = model.data.settings.reduceMotion
     var hops by remember(p.id) { mutableIntStateOf(0) }
     var action by remember(p.id) { mutableStateOf(SpriteAction.IDLE) }
@@ -218,12 +230,11 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
             .background(if (leads) leadColor.copy(alpha = 0.10f) else Pixel.Shade.copy(alpha = 0.6f), slotShape)
             .let { if (leads) it.border(2.dp, leadColor, slotShape) else it }
             .combinedClickable(
-                role = Role.Button, onClickLabel = "Hear ${p.nickname}", onLongClickLabel = "Open ${p.nickname}",
-                onLongClick = { model.haptic(); onOpen(p.id) },
+                role = Role.Button, onClickLabel = if (tapOpens) "Open ${p.nickname}" else "Hear ${p.nickname}", onLongClickLabel = if (tapOpens) "Hear ${p.nickname}" else "Open ${p.nickname}",
+                onLongClick = { model.haptic(); if (tapOpens) hear(model, p, calm) { action = SpriteAction.HOP; hops++ } else onOpen(p.id) },
             ) {
                 model.haptic()
-                model.cry(p.speciesId)
-                if (!calm) { action = SpriteAction.HOP; hops++ }
+                if (tapOpens) onOpen(p.id) else hear(model, p, calm) { action = SpriteAction.HOP; hops++ }
             }
             .padding(vertical = Spacing.S, horizontal = Spacing.XS)
             .semantics(mergeDescendants = true) {
@@ -248,6 +259,12 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
             )
         }
     }
+}
+
+/** A Pokémon's cry and, unless motion is reduced, its hop. */
+private inline fun hear(model: AppModel, p: OwnedPokemon, calm: Boolean, hop: () -> Unit) {
+    model.cry(p.speciesId)
+    if (!calm) hop()
 }
 
 /**

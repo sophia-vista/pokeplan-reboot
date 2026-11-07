@@ -37,6 +37,7 @@ import app.pokeplan.heal.HealUnits
 import app.pokeplan.heal.MeasureType
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
 import app.pokeplan.ui.theme.ListRow
@@ -197,7 +198,7 @@ private fun ActivityView(model: AppModel) {
         val km = distance.replace(',', '.').toDoubleOrNull()
         val out = heal.logActivity(type, minutes.toIntOrNull() ?: 0, endedAtMillis = model.store.nowMillis - ago * 60_000L, distanceMeters = km?.let { (it * 1000).roundToInt() }, note = note)
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-        else { message = "Saved." to NoticeTone.INFO; note = ""; distance = ""; more = false; model.haptic() }
+        else { message = "Saved." to NoticeTone.INFO; note = ""; distance = ""; more = false; model.haptic(); model.effect(Sfx.HEAL) }
     }
     RewardBox(model)
     TextBox {
@@ -306,7 +307,7 @@ private fun HydrationView(model: AppModel) {
     fun add(v: Int) {
         val out = heal.logDrink(v)
         message = if (out.record == null) out.refused else null
-        if (out.record != null) { model.haptic(); custom = "" }
+        if (out.record != null) { model.haptic(); model.effect(Sfx.HEAL); custom = "" }
     }
     RewardBox(model)
     val total = HealRules.hydrationOn(data, today)
@@ -363,7 +364,7 @@ private fun SleepView(model: AppModel) {
         val day = LocalDate.fromEpochDays(model.store.today.toEpochDays() - if (yesterday) 1 else 0)
         val end = LocalDateTime(day, wake).toInstant(zone).toEpochMilliseconds()
         val out = heal.logSleep(end - length * 60_000L, end)
-        message = if (out.record == null) (out.refused ?: "That could not be saved.") to NoticeTone.WARNING else "Saved." to NoticeTone.INFO
+        message = if (out.record == null) (out.refused ?: "That could not be saved.") to NoticeTone.WARNING else { model.effect(Sfx.HEAL); "Saved." to NoticeTone.INFO }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {

@@ -173,6 +173,7 @@ private fun HatchScene(model: AppModel, scene: Cutscene.Hatch, close: () -> Unit
     LaunchedEffect(p.id, hatched) {
         if (!hatched) return@LaunchedEffect
         tilt.snapTo(0f)
+        model.effect(Sfx.RECRUIT)
         model.cry(p.speciesId)
         model.haptic()
         if (still) {
@@ -262,6 +263,7 @@ private fun ArrivalScene(model: AppModel, scene: Cutscene.Hatch, kind: Acquisiti
         if (!arrived) return@LaunchedEffect
         travel.snapTo(1f)
         glint.snapTo(0f)
+        model.effect(Sfx.RECRUIT)
         model.cry(p.speciesId)
         model.haptic()
         if (still) return@LaunchedEffect
@@ -333,6 +335,8 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
     LaunchedEffect(after, done) {
         if (done) return@LaunchedEffect
         if (!still) {
+            // The games' evolution music for the glow and the flicker (not the healing jingle).
+            model.effect(Sfx.EVOLUTION)
             delay(1_000)
             white.animateTo(1f, tween(600))
             var gap = 450L
@@ -358,9 +362,9 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
             flash.snapTo(1f)
             flash.animateTo(0f, tween(700))
         }
-        // "Congratulations!": the Pokémon Center jingle, once the cry has had its moment.
+        // "Congratulations!": the unlock chime (an evolution opens a new Dex entry), once the cry has had its moment.
         delay(1_200)
-        model.effect(Sfx.POKEMON_CENTER)
+        model.effect(Sfx.UNLOCK)
     }
 
     SceneFrame({ done = true }, flash.value, FlashWhite) {

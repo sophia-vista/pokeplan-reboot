@@ -44,6 +44,8 @@ internal inline fun <T> orNull(block: () -> T): T? = try {
 fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp, description: String? = itemId) {
     val path = if (itemId.startsWith("pmd2-")) "files/pmditems/$itemId.png" else "files/items/$itemId.png"
     val bitmap by produceState(cache[path], path) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = cache[path]
         if (value == null) {
             value = orNull { Res.readBytes(path).decodeToImageBitmap() }
             cache[path] = value
@@ -62,6 +64,8 @@ fun ItemIcon(itemId: String, modifier: Modifier = Modifier, size: Dp = 32.dp, de
 fun Glyph(name: String, tint: Color, modifier: Modifier = Modifier, size: Dp = 24.dp, description: String? = null) {
     val path = "files/pixelarticons/$name.png"
     val bitmap by produceState(cache[path], path) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = cache[path]
         if (value == null) {
             value = orNull { Res.readBytes(path).decodeToImageBitmap() }
             cache[path] = value
@@ -101,6 +105,8 @@ fun Sprite(formId: Int, shiny: Boolean, description: String, modifier: Modifier 
     }
     val name = if (shiny) "$formId-shiny" else "$formId"
     val bitmap by produceState(cache[name], name) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = cache[name]
         if (value == null) {
             value = orNull { Res.readBytes("files/sprites/$name.png").decodeToImageBitmap() }
             cache[name] = value
@@ -121,6 +127,8 @@ fun Sprite(formId: Int, shiny: Boolean, description: String, modifier: Modifier 
 fun NpcPortrait(name: String, modifier: Modifier = Modifier, size: Dp = 200.dp) {
     val path = "files/npc/$name.png"
     val bitmap by produceState(cache[path], path) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = cache[path]
         if (value == null) {
             value = orNull { Res.readBytes(path).decodeToImageBitmap() }
             cache[path] = value
@@ -136,6 +144,8 @@ fun NpcPortrait(name: String, modifier: Modifier = Modifier, size: Dp = 200.dp) 
 fun TypePlate(type: app.pokeplan.core.dex.PokemonType, modifier: Modifier = Modifier, width: Dp = 72.dp) {
     val path = "files/types/${type.name.lowercase()}.png"
     val bitmap by produceState(cache[path], path) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = cache[path]
         if (value == null) {
             value = orNull { Res.readBytes(path).decodeToImageBitmap() }
             cache[path] = value

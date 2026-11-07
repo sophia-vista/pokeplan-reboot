@@ -14,7 +14,7 @@ fun interface CryPlayer {
 }
 
 /** The real game sound effects in assets/sfx (fetched by tools/sprites/fetch_sfx.py), each kept for one kind of moment. */
-enum class Sfx(val file: String) {
+enum class Sfx(val file: String, val streams: Boolean = false) {
     /** The menu "select" blip: a task ticked off. */
     SELECT("select"),
 
@@ -28,7 +28,25 @@ enum class Sfx(val file: String) {
     ESCAPE("escape"),
 
     /** The Pokémon Center jingle: an evolution's "Congratulations!". */
-    POKEMON_CENTER("pokemon-center"),
+    POKEMON_CENTER("pokemon-center", streams = true),
+
+    /** The opening of the games' evolution music, 6.5 seconds, faded out: "What? it is evolving". Not the healing jingle. */
+    EVOLUTION("evolution", streams = true),
+
+    /** A monster joins the team (Red Rescue Team's own sound for it): a Pokémon hatches, arrives, is befriended or joins a party. */
+    RECRUIT("recruit"),
+
+    /** Going down the stairs: a team sets out on an expedition. */
+    STAIRS_DOWN("stairs-down"),
+
+    /** Going up the stairs: a team is recalled. */
+    STAIRS_UP("stairs-up"),
+
+    /** A monster learns a new move: a skill is trained or practised. */
+    LEARN("learn"),
+
+    /** A door opened: a module is entered from the Modules list. */
+    DOOR_ENTER("door-enter"),
 
     // The Mystery Dungeon UI sounds, cut by tools/sprites/convert_pmd_sfx.py. The first four were named by the owner.
     /** Moving or tapping a card, tab or row; also the switches and the letter scroller's tick. */

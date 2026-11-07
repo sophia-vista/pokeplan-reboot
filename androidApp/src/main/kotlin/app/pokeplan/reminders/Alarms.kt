@@ -25,6 +25,7 @@ internal object Channels {
     const val TASK_REMINDERS = "task-reminders-2"
     const val CARE_ROUTINES = "care-routines-2"
     const val HEAL_HYDRATION = "heal-hydration"
+    const val MINT_BILLS = "mint-bills"
 }
 
 /** Gives a channel the game's notification sound (res/raw/pokelife_notify, the Mystery Dungeon "notice" blip). */

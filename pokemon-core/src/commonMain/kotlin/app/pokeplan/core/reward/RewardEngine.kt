@@ -561,7 +561,7 @@ object RewardEngine {
         val floor = BEFRIEND_IV_FLOOR + (luck / Perks.BUCKET_CAP * BEFRIEND_LUCK_IV_BONUS).toInt()
         p = p.copy(partyId = PartyIds.CARE, ivs = Stat.entries.fold(p.ivs) { ivs, stat -> ivs.with(stat, maxOf(ivs[stat], floor)) })
         if (joins) p = p.copy(friendship = BEFRIEND_JOIN_FRIENDSHIP) else p = VisitorInheritance.apply(p, VisitorInheritance.plan(e.visitorId, e.newPokemonId))
-        val lead = state.careLeadId?.takeIf { state.careLead != null } ?: p.id.takeIf { p.inParty }
+        val lead = state.careLead?.id ?: p.id.takeIf { p.inParty } // the lead the party already has (chosen or implicit: its first member) keeps leading; a newcomer only leads an empty party
         val (bag, overflow, newRewards) = newSpecies(state.caught + state.pokemon.map { it.speciesId }, p.speciesId, state.inventory)
         return Outcome(
             state.copy(
@@ -589,11 +589,11 @@ object RewardEngine {
         var next = state.copy(pokemon = state.pokemon + p, inventory = bag, coins = state.coins + overflow, caught = known + p.speciesId)
         if (p.inParty) {
             next = when (partyId) {
-                PartyIds.CARE -> if (next.careLead == null) next.copy(careLeadId = p.id) else next
-                PartyIds.PLAN -> if (next.planLead == null) next.copy(planLeadId = p.id) else next
-                PartyIds.HEAL -> if (next.healLead == null) next.copy(healLeadId = p.id) else next
-                PartyIds.MINT -> if (next.mintLead == null) next.copy(mintLeadId = p.id) else next
-                PartyIds.HOME -> if (next.homeLead == null) next.copy(homeLeadId = p.id) else next
+                PartyIds.CARE -> if (state.careLead == null) next.copy(careLeadId = p.id) else next
+                PartyIds.PLAN -> if (state.planLead == null) next.copy(planLeadId = p.id) else next
+                PartyIds.HEAL -> if (state.healLead == null) next.copy(healLeadId = p.id) else next
+                PartyIds.MINT -> if (state.mintLead == null) next.copy(mintLeadId = p.id) else next
+                PartyIds.HOME -> if (state.homeLead == null) next.copy(homeLeadId = p.id) else next
                 else -> next
             }
         }
@@ -613,7 +613,7 @@ object RewardEngine {
         val option = HatchRules.rollWeighted(Region.CARE, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
         val careParty = state.partyOf(PartyIds.CARE).size
         val p = Hatching.create(newPokemonId, option, careParty, nowMillis, TASK_EGG_MINUTES, rng).copy(partyId = PartyIds.CARE)
-        val lead = state.careLeadId?.takeIf { state.careLead != null } ?: p.id.takeIf { p.inParty }
+        val lead = state.careLead?.id ?: p.id.takeIf { p.inParty } // the lead the party already has (chosen or implicit: its first member) keeps leading; a newcomer only leads an empty party
         val (bag, overflow, newRewards) = newSpecies(known, p.speciesId, state.inventory)
         return Outcome(
             state.copy(pokemon = state.pokemon + p, careLeadId = lead, inventory = bag, coins = state.coins + overflow, caught = known + p.speciesId),
@@ -675,7 +675,7 @@ object RewardEngine {
         val option = HatchRules.rollWeighted(Region.HEAL, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
         val size = state.partyOf(PartyIds.HEAL).size
         val p = Hatching.create(newPokemonId, option, size, nowMillis, TASK_EGG_MINUTES, rng).copy(partyId = PartyIds.HEAL)
-        val lead = state.healLeadId?.takeIf { state.healLead != null } ?: p.id.takeIf { p.inParty }
+        val lead = state.healLead?.id ?: p.id.takeIf { p.inParty } // the lead the party already has (chosen or implicit: its first member) keeps leading; a newcomer only leads an empty party
         val (bag, overflow, newRewards) = newSpecies(known, p.speciesId, state.inventory)
         return Outcome(
             state.copy(pokemon = state.pokemon + p, healLeadId = lead, inventory = bag, coins = state.coins + overflow, caught = known + p.speciesId),
@@ -730,7 +730,7 @@ object RewardEngine {
         val option = HatchRules.rollWeighted(Region.MINT, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
         val size = state.partyOf(PartyIds.MINT).size
         val p = Hatching.create(newPokemonId, option, size, nowMillis, TASK_EGG_MINUTES, rng).copy(partyId = PartyIds.MINT)
-        val lead = state.mintLeadId?.takeIf { state.mintLead != null } ?: p.id.takeIf { p.inParty }
+        val lead = state.mintLead?.id ?: p.id.takeIf { p.inParty } // the lead the party already has (chosen or implicit: its first member) keeps leading; a newcomer only leads an empty party
         val (bag, overflow, newRewards) = newSpecies(known, p.speciesId, state.inventory)
         return Outcome(
             state.copy(pokemon = state.pokemon + p, mintLeadId = lead, inventory = bag, coins = state.coins + overflow, caught = known + p.speciesId),

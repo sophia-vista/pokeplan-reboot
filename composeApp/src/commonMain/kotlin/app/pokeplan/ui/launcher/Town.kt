@@ -359,6 +359,8 @@ internal fun TownBackdrop(scene: String, modifier: Modifier = Modifier, darkness
 @Composable
 private fun TileTown(name: String, modifier: Modifier, darkness: Float) {
     val atlas by produceState(atlases[name], name) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = atlases[name]
         if (value == null) {
             value = orNull { Res.readBytes("files/tiles/$name.png").decodeToImageBitmap() }
             atlases[name] = value

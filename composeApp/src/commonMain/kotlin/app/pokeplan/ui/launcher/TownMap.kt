@@ -4,6 +4,33 @@ import androidx.compose.ui.graphics.toPixelMap
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
+const val CORNER_TL = 1
+const val CORNER_TR = 2
+const val CORNER_BL = 4
+const val CORNER_BR = 8
+
+/**
+ * Draws the inner corners [corners] of one wall square at ([x], [y]) so the rim turns the corner instead of stopping short. Each is a rim-thick block (three eighths of the 24 pixel tile) cut from the
+ * end of the block's left or right edge tile, leaving out that tile's outermost column (it is ground colour: the edge tile expects ground beside it), and that column is taken from the top or bottom
+ * edge tile instead, where the rim of the bay's other side begins. [scale] is the screen pixels per atlas pixel.
+ */
+internal fun androidx.compose.ui.graphics.drawscope.DrawScope.drawInnerCorners(image: androidx.compose.ui.graphics.ImageBitmap, corners: Int, x: Int, y: Int, tile: Int, scale: Int) {
+    if (corners == 0 || tile != 24) return
+    val t = tile
+    val rim = 9
+    fun block(sx: Int, sy: Int, w: Int, h: Int, dx: Int, dy: Int) = drawImage(
+        image, androidx.compose.ui.unit.IntOffset(sx, sy), androidx.compose.ui.unit.IntSize(w, h),
+        androidx.compose.ui.unit.IntOffset(x + dx * scale, y + dy * scale), androidx.compose.ui.unit.IntSize(w * scale, h * scale),
+        filterQuality = androidx.compose.ui.graphics.FilterQuality.None,
+    )
+    // Edge tiles: left (column 0, row 1), right (2, 1), top (1, 0), bottom (1, 2). The right edge's rim is x 13 to 22, the left edge's x 1 to 10.
+    // The three pixels of that column nearest the ground are the rim's own outline carried on, so no ground-coloured pixel is left at the turn.
+    if (corners and CORNER_TL != 0) { block(1, t, 10, rim, 1, 0); block(1, t, 1, 3, 0, 0); block(t + 23, 3, 1, 6, 0, 3) }
+    if (corners and CORNER_TR != 0) { block(2 * t + 13, t, 10, rim, 13, 0); block(2 * t + 22, t, 1, 3, 23, 0); block(t, 3, 1, 6, 23, 3) }
+    if (corners and CORNER_BL != 0) { block(1, t + 15, 10, rim, 1, 15); block(1, t + 21, 1, 3, 0, 21); block(t + 23, 2 * t + 15, 1, 6, 0, 15) }
+    if (corners and CORNER_BR != 0) { block(2 * t + 13, t + 15, 10, rim, 13, 15); block(2 * t + 22, t + 21, 1, 3, 23, 21); block(t, 2 * t + 15, 1, 6, 23, 15) }
+}
+
 /** What a square of a dungeon town is: open ground, wall (trees, rocks) or water. */
 enum class TownCell { GROUND, WALL, WATER }
 
@@ -21,6 +48,17 @@ class TownMap(val cols: Int, val rows: Int, private val cells: Array<TownCell>) 
      * water block at 3 to 5 (rows 0 to 2), and on row 3 the ground tile and its two alternates, which a few ground
      * squares use (chosen from [seed], so a town always looks the same).
      */
+    /**
+     * The inner corners of a wall square: a bit for each diagonal ([CORNER_TL], [CORNER_TR], [CORNER_BL], [CORNER_BR]) that is open while both squares beside it are wall. The 3 x 3 block has only
+     * outer corners, so where a bay is cut into a wall its rim has a notch there, which [drawInnerCorners] fills from the block's own edge tiles.
+     */
+    fun innerCorners(x: Int, y: Int): Int {
+        val me = at(x, y)
+        if (me != TownCell.WALL) return 0
+        fun open(dx: Int, dy: Int) = at(x + dx, y) == me && at(x, y + dy) == me && at(x + dx, y + dy) != me
+        return (if (open(-1, -1)) CORNER_TL else 0) or (if (open(1, -1)) CORNER_TR else 0) or (if (open(-1, 1)) CORNER_BL else 0) or (if (open(1, 1)) CORNER_BR else 0)
+    }
+
     fun atlas(x: Int, y: Int, seed: Int): Pair<Int, Int> {
         val me = at(x, y)
         if (me == TownCell.GROUND) {

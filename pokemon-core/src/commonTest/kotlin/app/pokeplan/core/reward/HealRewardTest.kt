@@ -75,6 +75,21 @@ class HealRewardTest {
         assertTrue(out.rewards.first() is Reward.Hatched)
     }
 
+    /** The reported bug: with no lead ever chosen, the first member is the lead, and a new Pokémon used to take over. A newcomer leads only an empty party. */
+    @Test
+    fun aNewPokemonNeverTakesTheLeadOfAPartyThatHasOne() {
+        val first = pokemon(Ids.PIKACHU).copy(inParty = true, partyId = PartyIds.HEAL)
+        val implicit = PlayerState(pokemon = listOf(first)) // healLeadId was never set: the first member leads implicitly
+        assertEquals(first.id, implicit.healLead?.id)
+        val egg = RewardEngine.healEgg(implicit, "egg1", 1_000L, Random(2)).state
+        assertEquals(2, egg.partyOf(PartyIds.HEAL).size)
+        assertEquals(first.id, egg.healLead?.id, "the lead did not change when a new Pokémon arrived")
+        assertEquals(first.id, egg.healLeadId, "and it is now the stored lead")
+        val chosen = pokemon(Ids.EEVEE).copy(inParty = true, partyId = PartyIds.HEAL)
+        val withChoice = PlayerState(pokemon = listOf(first, chosen), healLeadId = chosen.id)
+        assertEquals(chosen.id, RewardEngine.healEgg(withChoice, "egg2", 1_000L, Random(3)).state.healLead?.id, "a chosen lead stays too")
+    }
+
     @Test
     fun theHealRegionHasEveryRarityToHatch() {
         for (r in Rarity.entries) assertTrue(HatchRules.pool(Region.HEAL, r).isNotEmpty(), "no $r in the Heal Region")

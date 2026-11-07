@@ -86,11 +86,24 @@ class MintStore(
         return Logged(account)
     }
 
-    /** Renames or regroups an account. Its currency and opening balance stay: changing them would rewrite history (use an adjustment instead). */
+    /** Whether [id] has records that depend on its currency: a transaction, a reconciliation or a bill paid from it. */
+    fun hasHistory(id: String): Boolean =
+        data.transactions.any { it.accountId == id || it.toAccountId == id } || data.reconciliations.any { it.accountId == id } || data.bills.any { it.accountId == id }
+
+    /**
+     * Edits an account: its name, type (only to another type on the same side, an asset stays an asset and a liability a liability), institution, group, last
+     * digits and **opening balance** (a mistake made when the account was added; the balance is derived, so the shown balance moves by the difference and no
+     * record is rewritten). The **currency** can change only while the account has no history ([hasHistory]); with history it stays, because every record and
+     * bill linked to it is in that currency (MINT.md section 5.2). Nothing is paid, and nothing about the edit leaves Mint.
+     */
     fun updateAccount(a: FinancialAccount): Logged<FinancialAccount> {
         val old = data.accounts.firstOrNull { it.id == a.id } ?: return Logged(null, "That account is gone.")
-        (MintRules.checkAccount(a.name, old.currency, old.openingMinor, a.suffix.trim()) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val next = old.copy(name = a.name.trim(), institution = a.institution.trim().take(MintRules.NAME_MAX), suffix = a.suffix.trim(), group = a.group.trim().take(MintRules.NAME_MAX), type = if (a.type.liability == old.type.liability) a.type else old.type)
+        val currency = if (a.currency == old.currency || hasHistory(old.id)) old.currency else a.currency.trim().uppercase()
+        (MintRules.checkAccount(a.name, currency, a.openingMinor, a.suffix.trim()) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val next = old.copy(
+            name = a.name.trim(), institution = a.institution.trim().take(MintRules.NAME_MAX), suffix = a.suffix.trim(), group = a.group.trim().take(MintRules.NAME_MAX),
+            type = if (a.type.liability == old.type.liability) a.type else old.type, openingMinor = a.openingMinor, currency = currency,
+        )
         update { d -> d.copy(accounts = d.accounts.map { if (it.id == a.id) next else it }) }
         return Logged(next)
     }
@@ -287,6 +300,24 @@ class MintStore(
     /** Hides every amount across Mint (MINT.md section 3.3). */
     fun setHideValues(on: Boolean) = settings { it.copy(hideValues = on) }
 
+    /** Turns bill reminders on or off (MINT.md section 12). Off by default; turning them off never touches a bill. */
+    fun setBillReminders(on: Boolean) = settings { it.copy(billReminders = on) }
+
+    /** How many days before the due day a reminder is for, 0 to [MAX_REMIND_DAYS]. */
+    fun setBillReminderDays(days: Int) = settings { it.copy(billReminderDays = days.coerceIn(0, MAX_REMIND_DAYS)) }
+
+    /** The hour a reminder goes off, 0 to 23. */
+    fun setBillReminderHour(hour: Int) = settings { it.copy(billReminderHour = hour.coerceIn(0, 23)) }
+
+    /** Whether a reminder names its bill (never an amount). */
+    fun setBillReminderNames(on: Boolean) = settings { it.copy(billReminderNames = on) }
+
+    /** Lets one bill ask for a reminder, or not. */
+    fun setBillRemind(billId: String, on: Boolean) = update { d -> d.copy(bills = d.bills.map { if (it.id == billId) it.copy(remind = on) else it }) }
+
+    /** Turns the optional access gate on or off. The caller has already proved the phone can ask for its screen lock; the gate holds no key and no password. */
+    fun setGate(on: Boolean) = settings { it.copy(gate = on) }
+
     fun setCurrency(code: String) = settings { if (MintRules.checkCurrency(code.trim().uppercase()) is Check.Ok) it.copy(currency = code.trim().uppercase()) else it }
 
     fun markTutorialSeen() = settings { it.copy(tutorialSeen = true) }
@@ -307,6 +338,9 @@ class MintStore(
 
     companion object {
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
+
+        /** The furthest ahead of its due day a bill reminder may be set (a week). */
+        const val MAX_REMIND_DAYS = 7
 
         /** A document with no categories gets the starting set, with stable ids, so a fresh install can record an expense at once. */
         internal fun tidy(d: MintData): MintData = if (d.categories.isEmpty()) d.copy(categories = MintRules.seedCategories()) else d

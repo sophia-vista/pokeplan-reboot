@@ -1,4 +1,4 @@
-# REP-014, fifth slice: HOME, manual first (0.142.0)
+# REP-014, fifth slice: HOME, manual first (0.143.0)
 
 **Status:** built and tested on the JVM, compiled for desktop, web and Android; **not run on a device**. No reminder, attachment, import or PLAN link was started.
 **Owner brief (8 November 2026):** "work on next pending item" (the backlog's next item after MINT: HOME, then LINK).

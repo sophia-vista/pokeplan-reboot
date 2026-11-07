@@ -25,7 +25,12 @@ SOUNDS = {
     'heal': 'sfx/heal.wav',
     'escape': 'sfx/escape.wav',
     'pokemon-center': 'music/pc-healing.ogg',
+    # The opening of the games' evolution music (the track is three minutes; the first 6.5 seconds, faded out, carry the "What? it is evolving" glow).
+    'evolution': 'music/evolution.ogg',
+    'door-enter': 'sfx/door_enter.wav',
 }
+# Only these are cut short, as (start, length) in seconds.
+TRIM = {'evolution': (0.0, 6.5)}
 
 
 def main():
@@ -38,7 +43,9 @@ def main():
             raw = os.path.join(tmp, os.path.basename(source))
             with urllib.request.urlopen(BASE + source, timeout=30) as r, open(raw, 'wb') as fh:
                 fh.write(r.read())
-            subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', raw, '-ac', '1', '-c:a', 'libvorbis', '-q:a', '4', path], check=True)
+            trim = TRIM.get(name)
+            filters = ['-ss', str(trim[0]), '-t', str(trim[1]), '-af', f'afade=t=out:st={trim[1] - 1.0}:d=1.0'] if trim else []
+            subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', raw, *filters, '-ac', '1', '-c:a', 'libvorbis', '-q:a', '4', path], check=True)
     size = sum(os.path.getsize(os.path.join(OUT, f)) for f in os.listdir(OUT))
     print(f'{len(SOUNDS)} sounds, {size / 1e3:.0f} KB')
 
