@@ -1428,11 +1428,28 @@ class GameStore(
         val report = WorldSim.settle(before, data.player.pokemon, nowMillis)
         if (report.isEmpty) { worldLegends(); return null }
         update { it.copy(world = report.data) }
+        worldMemberXp(report)
         worldSummary = (worldSummary ?: ReportSummary()) + ReportSummary.of(report, report.data.xp - before.xp)
         worldPaid("World: exploring", before)
         worldGuardian()
         worldLegends()
         return report
+    }
+
+    /**
+     * Every Pokémon that climbed floors in [report] gets the full experience for each (WORLD.md 5.2): [CandyRules.XP_PER_FLOOR] a floor,
+     * not divided among the team. It goes through the Pokémon's own progression (candy progress and level), and the floors were counted
+     * by the same settle that moved the team's cursor, so a floor is paid once however often the app settles.
+     */
+    private fun worldMemberXp(report: WorldReport) {
+        if (report.memberFloors.isEmpty()) return
+        update { d ->
+            val partner = d.player.pokemon.filter { it.inParty }.maxOfOrNull { it.level }
+            d.copy(player = d.player.copy(pokemon = d.player.pokemon.map { p ->
+                val floors = report.memberFloors[p.id] ?: return@map p
+                p.gainXp(floors * CandyRules.XP_PER_FLOOR, partner ?: p.level)
+            }))
+        }
     }
 
     /** The story's end: the Guardian, Primal Dialga, joins the Guardian collection once (docs/world.md, section 15). The mastery bonus is [app.pokeplan.world.Story.GUARDIAN_BONUS]. */
@@ -1833,7 +1850,7 @@ class GameStore(
     fun levelProgress(p: OwnedPokemon): Float {
         if (!p.canFeed) return 1f
         val partner = data.player.pokemon.filter { it.inParty }.maxOfOrNull { it.level } ?: p.level
-        return (p.candyProgress.toFloat() / CandyRules.candiesNeeded(p.level, partner)).coerceIn(0f, 1f)
+        return ((p.candyProgress + p.xp.toFloat() / CandyRules.XP_PER_CANDY) / CandyRules.candiesNeeded(p.level, partner)).coerceIn(0f, 1f)
     }
 
     /**

@@ -5,6 +5,8 @@ import app.pokeplan.core.dex.FormInfo
 import app.pokeplan.core.dex.Gender
 import app.pokeplan.core.dex.SpeciesInfo
 import app.pokeplan.core.dex.PokemonType
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
 /**
@@ -12,6 +14,8 @@ import kotlinx.serialization.Serializable
  *
  * [personality] is a number rolled at hatch that fixes random choices such as Wurmple's evolution.
  * [candyProgress] counts Rare Candies fed towards the next level.
+ * [xp] is experience from a World expedition, in points: [CandyRules.XP_PER_CANDY] of them move [candyProgress] on by one (a candy of
+ * progress, without a candy spent), so there is one level curve however a Pokémon is trained. It is always below that and is never lost.
  */
 @Serializable
 data class OwnedPokemon(
@@ -27,6 +31,7 @@ data class OwnedPokemon(
     val level: Int = 1,
     val candyProgress: Int = 0,
     val totalCandies: Int = 0,
+    @OptIn(ExperimentalSerializationApi::class) @EncodeDefault(EncodeDefault.Mode.NEVER) val xp: Int = 0,
     val friendship: Int = FriendshipRules.START,
     val isShiny: Boolean = false,
     val heldItem: String? = null,
@@ -73,6 +78,24 @@ data class OwnedPokemon(
         } else {
             fed.copy(candyProgress = progress)
         }
+    }
+
+    /**
+     * Gains [points] of expedition experience, once per floor and member (WORLD.md 5.2): every [CandyRules.XP_PER_CANDY] points are a
+     * step of candy progress, so a level comes at the same cost as with Rare Candies (with the same catch-up discount). A Guardian and a
+     * Pokémon at the top level gain nothing, as they take no candies. [partnerLevel] is the level of the player's strongest partner.
+     */
+    fun gainXp(points: Int, partnerLevel: Int = level): OwnedPokemon {
+        if (points <= 0 || !canFeed) return this
+        var p = this
+        var pending = xp + points
+        while (pending >= CandyRules.XP_PER_CANDY && p.canFeed) {
+            pending -= CandyRules.XP_PER_CANDY
+            val progress = p.candyProgress + 1
+            p = if (progress >= CandyRules.candiesNeeded(p.level, partnerLevel)) p.copy(level = p.level + 1, candyProgress = 0).gainFriendship(FriendshipRules.Source.LEVEL_UP)
+            else p.copy(candyProgress = progress)
+        }
+        return p.copy(xp = if (p.canFeed) pending else 0)
     }
 
     fun gainFriendship(source: FriendshipRules.Source): OwnedPokemon =

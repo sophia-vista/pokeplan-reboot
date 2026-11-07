@@ -103,7 +103,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                     MenuGrid(
                         listOfNotNull(
                             MenuEntry("PARTY", "premier-ball", "Party", "${player.party.size} of 6", tint = Pixel.Red),
-                            MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { inPc(store.data, it) }} stored", tint = Pixel.Warning),
+                            MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { inPc(store, it) }} stored", tint = Pixel.Warning),
                             MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught", tint = Pixel.Blue),
                             if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.Green) else null,
                             if (!store.sees(Feature.GUARDIANS)) null else MenuEntry("GUARDIANS", "master-ball", "Guardians", if (store.guardianSlots == 0) "opens at rank ${TrainerRank.names[4]}" else "${player.guardians.size} of ${store.guardianSlots} slotted", tint = Pixel.Violet),
@@ -128,7 +128,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                 }
                 Section.PC -> {
                     // One PC for every region's party (docs/design.md, "Parties per module"), in boxes of 30 like the games.
-                    val box = player.pokemon.filter { inPc(store.data, it) }
+                    val box = player.pokemon.filter { inPc(store, it) }
                     if (box.isEmpty()) EmptyState("The PC is empty", "New eggs go to their region's party first, then here once it is full. One PC serves every region.", icon = "storage-key")
                     else {
                         val shown = pcView.apply(box) { store.isFavorite(it) }
@@ -282,5 +282,10 @@ internal fun perkText(p: OwnedPokemon): String =
 
 internal val statNames = listOf("HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed")
 
-/** In the PC: in no other place (not the buddy, a party, a World team or a Pokégear helper) and not a Guardian candidate. */
-private fun inPc(data: app.pokeplan.app.AppData, p: OwnedPokemon) = app.pokeplan.app.Places.of(data, p.id) == app.pokeplan.app.Place.Pc && !Guardians.canBe(p)
+/**
+ * In the PC: in no other place (not the buddy, a party, a World team or a Pokégear helper) and, once the Guardians screen is open, not a
+ * Guardian candidate (it is shown there). Until then a legendary or mythical Pokémon (Mew from the World opening, say) stays in the PC,
+ * so no Pokémon is in a place the player cannot see.
+ */
+private fun inPc(store: app.pokeplan.app.GameStore, p: OwnedPokemon) =
+    app.pokeplan.app.Places.of(store.data, p.id) == app.pokeplan.app.Place.Pc && (!Guardians.canBe(p) || !store.sees(Feature.GUARDIANS))

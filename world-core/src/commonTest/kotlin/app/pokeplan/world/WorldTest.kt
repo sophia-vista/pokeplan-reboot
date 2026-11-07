@@ -126,6 +126,25 @@ class WorldTest {
     }
 
     @Test
+    fun everyMemberIsCountedForEveryFloorTheTeamClimbsAndAnEmptyStretchCountsNone() {
+        val start = out(members = listOf("a", "b", "c"))
+        val per = WorldSim.floorMillis(Dungeons.byId("tiny-woods")!!, WorldSim.power(listOf(roster[0], roster[1], roster[2]), Dungeons.byId("tiny-woods")!!))
+        val first = WorldSim.settle(start, roster, 7 * per + per / 2)
+        val floors = first.events.count { it is WorldEvent.FloorCleared }
+        assertEquals(7, floors)
+        // The full count for each member, not a share of it; a Pokémon outside the team gets none.
+        assertEquals(mapOf("a" to 7, "b" to 7, "c" to 7), first.memberFloors)
+        // Settling again at once finds no new floor, so nothing is counted twice.
+        assertEquals(emptyMap(), WorldSim.settle(first.data, roster, 7 * per + per / 2).memberFloors)
+        // However often it is settled, the floors add up to the same: one settle at 20 floors equals settles in between.
+        val once = WorldSim.settle(start, roster, 20 * per).memberFloors.getValue("a")
+        var d = start
+        var sum = 0
+        for (step in 1..20) { val r = WorldSim.settle(d, roster, step * per); d = r.data; sum += r.memberFloors["a"] ?: 0 }
+        assertEquals(once, sum)
+    }
+
+    @Test
     fun theStoryOpensWithRankAndClears() {
         assertEquals(1, Story.opened(WorldData()))
         assertEquals(2, Story.opened(WorldData(xp = 300, clears = mapOf("tiny-woods" to 1))))

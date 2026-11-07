@@ -52,7 +52,16 @@ data class SpeedExplanation(
 )
 
 /** What settling did: the new data and, per team, the floors climbed and what happened. */
-data class WorldReport(val data: WorldData, val perTeam: Map<Int, List<WorldEvent>>) {
+data class WorldReport(
+    val data: WorldData,
+    val perTeam: Map<Int, List<WorldEvent>>,
+    /**
+     * The floors each member climbed in this settle, by Pokémon id: the members of the team at settlement, one count per completed floor
+     * (WORLD.md 5.2). The app gives every one of them the full per-floor experience for each. A floor is counted once: the same step that
+     * counts it moves the team's cursor (`floorsClimbed` and `settledTo`), so the floor's id (team, expedition start, floor index) is never settled twice.
+     */
+    val memberFloors: Map<String, Int> = emptyMap(),
+) {
     val events: List<WorldEvent> get() = perTeam.values.flatten()
     val isEmpty: Boolean get() = events.isEmpty()
 }
@@ -103,6 +112,7 @@ object WorldSim {
     fun settle(data: WorldData, roster: List<OwnedPokemon>, now: Long): WorldReport {
         var out = data
         val perTeam = mutableMapOf<Int, List<WorldEvent>>()
+        val memberFloors = mutableMapOf<String, Int>()
         for (team in data.teams) {
             val trip = team.expedition ?: continue
             val dungeon = Dungeons.byId(trip.dungeonId) ?: continue
@@ -124,6 +134,7 @@ object WorldSim {
             val current = out.team(team.id) ?: team
             out = out.withTeam(current.copy(expedition = trip.copy(settledTo = settled, floorsClimbed = trip.floorsClimbed + floors)))
             perTeam[team.id] = events
+            members.forEach { memberFloors[it.id] = (memberFloors[it.id] ?: 0) + floors }
         }
         // A dungeon cleared again and again in one stretch is one line ("... (3 times)"), not three.
         val lines = perTeam.flatMap { (teamId, events) -> events.mapNotNull { journalLine(out.team(teamId)?.title ?: "Team $teamId", it, now) } }
@@ -132,7 +143,7 @@ object WorldSim {
                 acc
             }.map { (l, n) -> if (n > 1) l.copy(text = l.text.removeSuffix(".") + " ($n times).") else l }
         out = Choices.expire(out, now)
-        return WorldReport(out.copy(lastSeenAt = now, journal = (out.journal + lines).takeLast(WorldData.JOURNAL_SIZE)), perTeam)
+        return WorldReport(out.copy(lastSeenAt = now, journal = (out.journal + lines).takeLast(WorldData.JOURNAL_SIZE)), perTeam, memberFloors)
     }
 
     /**

@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.145.0
+
+World: expedition Pokémon experience (WORLD.md 5.2), and a fix for Guardians that could not be seen. `RewardRules.VERSION` stays 19 (World pays outside the reward engine).
+
+- **Every member of a World team gets the full experience for each floor the team climbs** (owner-approved rule, not divided among the team). A member earns `CandyRules.XP_PER_FLOOR` (1) point a floor, and `CandyRules.XP_PER_CANDY` (20) points make one step of candy progress on the same level curve and catch-up discount as Rare Candies, without spending a candy (`OwnedPokemon.xp`, `gainXp`). A Pokémon outside the team, a Guardian and a Pokémon at level 100 get none. The floors are counted by the same settle step that moves the team's cursor (`WorldReport.memberFloors`), so a floor pays once however often the app settles, and a team's members are those on it at settlement. `xp` has no column: it travels in the Pokémon's `extra_json`, so there is no schema change. Level progress bars include it. *(tune: 1 and 20; `docs/world-economy-report.md` does not model Pokémon levels and was not re-run.)*
+- **Fix: a legendary or mythical Pokémon was in no visible place** until trainer rank 5 (Veteran): the PC left out every Guardian candidate, and the Guardians card opens only at that rank (owner: "where is guardian"). The PC now shows them until Guardians opens (`Collection.kt`, `inPc`).
+- Tests: `OwnedPokemonTest` (2), `WorldTest` (1), `WorldStoreTest` (1).
+
 ## 0.144.0
 
 Cross-module links, Home reminders, and real reward events in the ledger (REP-014). No reward number changes (`RewardRules.VERSION` stays 19).
