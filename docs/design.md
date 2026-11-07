@@ -236,6 +236,8 @@ Planned, with build order to be set later.
 
 ## Buddy and perks
 
+**One Pokémon, one place (owner, 7 November 2026; `docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md` section 2.2).** A Pokémon is the buddy, or in one module's party, or a slotted Guardian, or on a World team, or a Pokégear helper, or in the PC: never two. Putting it somewhere takes it from where it was (the previous buddy goes to the PC), except that a team out on an expedition cannot be moved. The starter is the buddy and starts in no party (the first Pokémon to hatch joins Plan's party). `Places` derives the place and `GameStore` vacates before every assignment; a save with a Pokémon in two places is resolved once on load, keeping the highest of Guardian, World team, party, helper, buddy and giving the buddy to the best Pokémon in the PC if it was lost. The "Keep party Pokémon out of World" setting is gone (it is always so). A Pokégear tool shows a helper only if the player chose one (or a Ranger loaner).
+
 The buddy can be **swapped freely at any time**. Perks apply when a reward is earned, so a player can pick an Egg luck buddy before a session. Friendship is per Pokémon, which gives a reason to stick with one.
 
 **Since 0.124.0 the buddy and the party leads are separate roles** (`docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md` section 2.2): the buddy is the global companion and is cosmetic; the perks described below come from **Plan's party lead** (slot 1) and its party, and are chosen separately ("Make Plan lead"). A save from before keeps its buddy as Plan's lead.

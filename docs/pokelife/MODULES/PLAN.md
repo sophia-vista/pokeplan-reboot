@@ -308,6 +308,18 @@ Do not simply delete `Habit` and rename `Recurrence`. The unified model must pre
 
 Do not lose historical completion or reward data.
 
+**As built (0.133.0):** a Habit is gone as a record. A save from before loads with each habit merged, once and without paying anything, into a **recurring task with a frequency target** (`TaskSeries.target`; the target shapes are the habit's, so stored targets keep reading): same id (so a goal that links it still does), creation day, completion days (its recurring-task completion history) and the day it last paid (its idempotency record, `paidOn`), and the original habits are kept in `legacyHabits` with the merge time (`habitsMergedAtMillis`), so nothing is discarded and the merge can be checked by hand. Mapping used:
+
+| Habit | Recurring task |
+|---|---|
+| Daily | Daily frequency target |
+| Per week / per month | Weekly / monthly frequency target (`completed / target` this week or month, `Frequency.progress`) |
+| Chosen weekdays | **Kept as a frequency target ("chosen days")**, not turned into a calendar recurrence: a weekday recurrence would create a task for each day (a different reward and overdue behaviour) and the habit's history has no such tasks. This differs from the table above and is the one documented exception |
+| Forgiving streak | Derived from the target's completions (`TaskSeries.asHabit().streak`), shown secondary: only from a streak of 2, after the period progress |
+| One payment a day | `paidOn` plus the completion set: undoing and ticking again the same day pays nothing |
+
+The Planner's Habits view is now **Targets** (progress first, e.g. `2 / 3 this week`). Limits, per section 5.6's rule to ship the subset that is safe: one completion per day per target (the completion set is days), and the scope of an edit is the whole definition.
+
 ### 11.3 CARE remains separate
 
 Do not move CARE routines into PLAN storage. Preserve CARE routine IDs, schedule fields, completion dates, payment history, archive state, save format/migration compatibility, and optional cloud-sync behavior. Shared reminder metadata does not replace CARE's canonical records.
