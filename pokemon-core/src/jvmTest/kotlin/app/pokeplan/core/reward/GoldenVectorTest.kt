@@ -32,6 +32,7 @@ class GoldenVectorTest {
         val care = json.encodeToString(CareEvent.serializer(), CareEvent(CareKind.CALM_BREAK, nowMillis = 1_700_000_000_000))
         val heal = json.encodeToString(HealEvent.serializer(), HealEvent("heal:activity:k1", HealKind.ACTIVITY, nowMillis = 1_700_000_000_000, ref = "k1"))
         val mint = json.encodeToString(MintEvent.serializer(), MintEvent("mint:reconciled:k1", MintKind.RECONCILED, nowMillis = 1_700_000_000_000, ref = "k1"))
+        val home = json.encodeToString(HomeEvent.serializer(), HomeEvent("home:chore:k1", HomeKind.CHORE, nowMillis = 1_700_000_000_000, ref = "k1"))
         return buildJsonObject {
             put("rulesVersion", RewardRules.VERSION)
             put("state", stateJson)
@@ -50,6 +51,9 @@ class GoldenVectorTest {
             put("mintEvent", mint)
             put("mintSeed", 5)
             put("mintOutcome", RewardJson.mint(stateJson, mint, 5))
+            put("homeEvent", home)
+            put("homeSeed", 5)
+            put("homeOutcome", RewardJson.home(stateJson, home, 5))
         }
     }
 
@@ -58,7 +62,7 @@ class GoldenVectorTest {
         val actual = build()
         if (System.getenv("UPDATE_GOLDEN") != null) {
             val old = if (file.exists()) json.parseToJsonElement(file.readText()) as JsonObject else null
-            val outcomesChanged = old != null && listOf("effortOutcome", "achievementOutcome", "careOutcome", "healOutcome", "mintOutcome").any { it in old && old[it] != actual[it] }
+            val outcomesChanged = old != null && listOf("effortOutcome", "achievementOutcome", "careOutcome", "healOutcome", "mintOutcome", "homeOutcome").any { it in old && old[it] != actual[it] }
             check(!outcomesChanged || old!!["rulesVersion"] != actual["rulesVersion"]) {
                 "the outcomes changed: bump RewardRules.VERSION (now ${RewardRules.VERSION}) before regenerating pokemon-core/src/jvmTest/resources/golden.json"
             }

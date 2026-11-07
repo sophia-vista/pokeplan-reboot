@@ -43,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.core.pokemon.CareBucket
 import app.pokeplan.core.pokemon.HealBucket
 import app.pokeplan.core.pokemon.HealPerks
+import app.pokeplan.core.pokemon.HomeBucket
+import app.pokeplan.core.pokemon.HomePerks
 import app.pokeplan.core.pokemon.MintBucket
 import app.pokeplan.core.pokemon.MintPerks
 import app.pokeplan.core.pokemon.CarePerks
@@ -282,4 +284,24 @@ private fun EmptySlot(modifier: Modifier) {
         }
         ItemIcon("poke-ball", Modifier.alpha(0.22f), size = 32.dp, description = null)
     }
+}
+
+/** Home's party in its module: its lead first, and its two perks (which only change what Habitat Discovery pays) once the rank opens them, as Mint's. */
+@Composable
+fun HomePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
+    val player = model.data.player
+    val party = player.partyOf(PartyIds.HOME)
+    val opened = model.store.sees(Feature.PERKS)
+    val totals = HomePerks.total(player.homeLead, party)
+    PartyPanel(
+        model, party, player.homeLead?.id, lead = "Lead", perksTitle = "Home perks",
+        perks = if (opened) HomeBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
+        perksNote = when {
+            !opened -> PERKS_LOCKED
+            party.isEmpty() || totals.values.any { it > 0 } -> null
+            else -> "None yet: Grass, Normal, Bug, Ground, Fire, Water, Fairy, Flying, Ice, Electric, Psychic and Ghost types bring them."
+        },
+        empty = "Open a Pokémon and choose \"To Home party\", or try the tidy above. Home works fully with an empty party.",
+        onOpen = onOpen,
+    )
 }

@@ -257,7 +257,7 @@ class PokemonTablesTest {
                 st.execute("INSERT INTO guardian_slot(slot, owned_id) VALUES (1, 'b')")
             }
             val s = JvmDatabase.open(file.path)
-            assertEquals(8, DataStore.SCHEMA_VERSION) // Heal made it 7 (0.136.0), Mint's tables 8 (0.141.0)
+            assertEquals(9, DataStore.SCHEMA_VERSION) // Heal made it 7 (0.136.0), Mint's tables 8 (0.141.0), Home's tables 9
             assertEquals(4L, s.pokemon.count())
             assertEquals(listOf("a", "b", "c", "d"), s.pokemon.all().map { it.id }, "the order they were owned")
             // The first place by the app's priority wins (Guardian, buddy, party); the others are closed up behind it.
@@ -462,7 +462,7 @@ class PokemonTablesTest {
     @Test
     fun theTablesAreAtSchemaSixWithOnePlaceTable() {
         val s = JvmDatabase.open()
-        assertEquals(8, DataStore.SCHEMA_VERSION) // Heal made it 7 (0.136.0), Mint's tables 8 (0.141.0)
+        assertEquals(9, DataStore.SCHEMA_VERSION) // Heal made it 7 (0.136.0), Mint's tables 8 (0.141.0), Home's tables 9
         val tables = mutableSetOf<String>()
         s.driver.executeQuery(null, "SELECT name FROM sqlite_master WHERE type = 'table'", { c ->
             while (c.next().value) tables += c.getString(0)!!

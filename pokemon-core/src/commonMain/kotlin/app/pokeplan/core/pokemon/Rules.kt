@@ -46,13 +46,15 @@ object FriendshipRules {
         ACTIVITY(1),
         /** A financial review or a reconciled account in Mint (Ledger Research). */
         LEDGER(1),
+        /** A chore or a piece of maintenance done in Home (Habitat Discovery). */
+        HABITAT(1),
     }
 
     /** Friendship gained from [source]: doubled when it matches the bond style, +50% (rounded up) for balanced natures. */
     fun amount(source: Source, style: BondStyle): Int {
         val matches = when (style) {
             BondStyle.COMFORT -> source == Source.PET || source == Source.ROUTINE
-            BondStyle.PRESENCE -> source == Source.FOCUS_SESSION || source == Source.CALM_BREAK || source == Source.SKILL || source == Source.ACTIVITY || source == Source.LEDGER
+            BondStyle.PRESENCE -> source == Source.FOCUS_SESSION || source == Source.CALM_BREAK || source == Source.SKILL || source == Source.ACTIVITY || source == Source.LEDGER || source == Source.HABITAT
             BondStyle.GIFTS -> source == Source.BERRY
             BondStyle.BALANCED -> false
         }

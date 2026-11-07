@@ -1,0 +1,82 @@
+-- Version 8 to 9: HOME's own record tables (see Data.sq). New in this version: nothing is moved, the tables start empty.
+CREATE TABLE home_area (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_chore (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_entry (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_supply (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_adjustment (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_restock (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_asset (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_schedule (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_maintenance (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_warranty (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_reference (
+    key TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL,
+    day TEXT,
+    json TEXT NOT NULL
+);
+
+CREATE TABLE home_state (
+    key TEXT NOT NULL PRIMARY KEY,
+    json TEXT NOT NULL
+);

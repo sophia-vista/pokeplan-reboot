@@ -31,11 +31,13 @@ class RewardTextTest {
         assertEquals("A new friend wandered over: Pikachu!", hatched.describe("Care: a routine"))
         assertEquals("Field Research found Pikachu!", hatched.describe("Heal: Field Research"))
         assertEquals("Ledger Research catalogued Pikachu!", hatched.describe("Mint: Ledger Research"))
+        assertEquals("Habitat Discovery found Pikachu!", hatched.describe("Home: Habitat Discovery"))
         assertEquals("Your egg hatched: Pikachu!", hatched.describe(app.pokeplan.app.GameStore.CARE_FRIEND_SOURCE), "a visitor's gift really is an egg")
-        for (source in listOf("Care: a routine", "Heal: Field Research", "Mint: Ledger Research")) assertFalse(hatched.describe(source).contains("egg", ignoreCase = true), source)
+        for (source in listOf("Care: a routine", "Heal: Field Research", "Mint: Ledger Research", "Home: Habitat Discovery")) assertFalse(hatched.describe(source).contains("egg", ignoreCase = true), source)
         assertEquals(Acquisition.ARRIVAL, acquisitionOf(app.pokeplan.app.Origin.How.CARE_EGG))
         assertEquals(Acquisition.FIELD, acquisitionOf(app.pokeplan.app.Origin.How.FIELD_EGG))
         assertEquals(Acquisition.LEDGER, acquisitionOf(app.pokeplan.app.Origin.How.LEDGER_EGG))
+        assertEquals(Acquisition.HABITAT, acquisitionOf(app.pokeplan.app.Origin.How.HABITAT_EGG))
         for (how in listOf(app.pokeplan.app.Origin.How.FOCUS_EGG, app.pokeplan.app.Origin.How.TASK_EGG, app.pokeplan.app.Origin.How.BEFRIENDED, null)) assertEquals(Acquisition.EGG, acquisitionOf(how))
     }
 }

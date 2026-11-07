@@ -131,4 +131,5 @@ object PartyIds {
     const val CARE = "care"
     const val HEAL = "heal"
     const val MINT = "mint"
+    const val HOME = "home"
 }

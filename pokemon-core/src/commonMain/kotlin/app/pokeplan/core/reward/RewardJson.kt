@@ -40,6 +40,12 @@ object RewardJson {
         return json.encodeToString(Outcome.serializer(), RewardEngine.mint(state, event, Random(seed)))
     }
 
+    fun home(stateJson: String, eventJson: String, seed: Int): String {
+        val state = json.decodeFromString(PlayerState.serializer(), stateJson)
+        val event = json.decodeFromString(HomeEvent.serializer(), eventJson)
+        return json.encodeToString(Outcome.serializer(), RewardEngine.home(state, event, Random(seed)))
+    }
+
     fun heal(stateJson: String, eventJson: String, seed: Int): String {
         val state = json.decodeFromString(PlayerState.serializer(), stateJson)
         val event = json.decodeFromString(HealEvent.serializer(), eventJson)

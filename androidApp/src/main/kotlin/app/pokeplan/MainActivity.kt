@@ -80,7 +80,7 @@ class MainActivity : ComponentActivity() {
         val place = first.place ?: Place.HOME
         setContent {
             App(
-                storage, careStorage = careStorage(this), healStorage = healStorage(this), mintStorage = mintStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
+                storage, careStorage = careStorage(this), healStorage = healStorage(this), mintStorage = mintStorage(this), homeStorage = homeStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
                 cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = AndroidSensorFeed(this), services = gearServices, backups = backups, deviceGate = gate, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onDark = ::matchSystemBars,
             )
         }

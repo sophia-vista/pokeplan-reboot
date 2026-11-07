@@ -1,19 +1,19 @@
 # PokéLife Implementation Guide
 
-**Version:** 1.9  
+**Version:** 2.0  
 **Status:** Baseline evidence, implementation status, dependency plan  
 **Baseline audited:** `pokeplan-reboot-main (5).zip`, version `0.123.0`; re-checked against the repository (`main`, commit `2b22975d`) on 6 November 2026  
-**Documentation reconciliation:** 6 November 2026
+**Documentation reconciliation:** 6 November 2026; status re-aligned with the code and the Product Bible at version `0.143.0` on 8 November 2026 (section 3.2)
 
 > This guide distinguishes approved specifications from implementation evidence. The inspected baseline is a source archive, not a verified current working checkout. No successful full build/test run or target-device acceptance run was established by the baseline audit. Re-audit the actual implementation branch before treating any status as current.
 
 ## 1. Executive summary
 
-PokéLife has an established Kotlin Multiplatform/Compose foundation and substantial existing PLAN, CARE, WORLD, GEAR, Pokémon, asset, and launcher implementation. The 0.123.0 baseline is not the complete product defined by the Product Bible.
+PokéLife has an established Kotlin Multiplatform/Compose foundation and substantial existing PLAN, CARE, WORLD, GEAR, Pokémon, asset, and launcher implementation. The 0.123.0 baseline is not the complete product defined by the Product Bible. **Since then (0.124.0 to 0.143.0) the data foundation, the shared Pokémon and economy contracts, and the HEAL, MINT and HOME modules have been built on the JVM and compiled for Android; LINK is the only life module not started, and nothing has been verified on a device by this guide.** Section 3.2 is the current status; section 3's table is kept as the 0.123.0 baseline.
 
 The primary engineering risk is not a lack of feature specifications. It is the gap between approved modular ownership and the older JSON/store/cloud pathways. The implementation sequence must establish the local data architecture, migration safety, and shared services before broad module expansion.
 
-No feature is marked device-verified by this guide. No full build or test execution is claimed.
+No feature is marked device-verified by this guide. The one device observation recorded is the owner's confirmation on the phone that the database cutover kept all data (REP-012). Build and test evidence is in section 3.2.
 
 ## 2. Evidence and status vocabulary
 
@@ -97,6 +97,78 @@ The docs were imported into the repository at `docs/pokelife/`, and the real che
 ### Build/test execution limitation (archive audit)
 
 The archive audit could not resolve `services.gradle.org` to download Gradle 9.8.1. That was an environment failure, not a source failure, and it is superseded by the repository run above.
+
+## 3.2 Current status at 0.143.0 (8 November 2026)
+
+This section supersedes the status column of section 3, which stays as the 0.123.0 baseline. Status words follow section 2.2. Evidence is the backlog row (`IMPLEMENTATION_BACKLOG.md`), the evidence file, the module's "As built" section and the tests named there; nothing below is device-verified.
+
+### Modules
+
+| Area | Status at 0.143.0 | Evidence | Not established |
+|---|---|---|---|
+| PLAN | Partial. Own `plan_*` tables since 0.133.0; Habit merged into recurring tasks; one reminder scheduler | REP-014, `evidence/REP-014-plan-tables.md`, REP-011 | Streak reminder and weekly recap adapters; device acceptance; target workflows against `PLAN.md` not re-audited |
+| CARE | Partial. Own `care_*` tables since 0.132.0; visitor rules of `CARE.md` section 6; reunions, Care Play, Meadow and egg inheritance built (0.133.0) | `evidence/REP-014-care-tables.md`, `REP-014-plan-tables.md` | Device acceptance; the rest of `CARE.md` not re-audited |
+| HEAL | **Built, manual first** (0.136.0): activity, hydration, sleep, measurements, goals, Field Research (rules version 17) | `MODULES/HEAL.md` section 22, `evidence/REP-014-heal.md`, `HealStoreTest`, `HealTablesTest` | Exercise library and workouts, nutrition, health records, imports (Health Connect, Huawei), history and charts, medication reminders, encryption; **device acceptance; wearable claims withheld** |
+| MINT | **Built, manual first** (0.141.0): accounts, activity, budgets, bills, review and reconciliation, exact integer money, Ledger Research (version 18); rows and backups sealed with an Android Keystore key; follow-ups (0.142.0): a passphrase-sealed backup that opens on any phone, bill reminders through the shared scheduler (off until turned on), the optional screen-lock access gate, full account edit | `MODULES/MINT.md` section 22, `evidence/REP-014-mint.md`, `MintStoreTest`, `MintTablesTest`, `PortableBackupTest`, `MintRemindersTest` | Providers, statement import, splits, rollover, savings targets, foreign currency; **device acceptance, including the Keystore path, the access gate and the reminders**
+| HOME | **Built, manual first** (0.143.0): chores with deterministic schedules and no backlog, supplies with exact quantities, belongings, maintenance, warranties, reference notes, search, Overview, Habitat Discovery (version 19) | `MODULES/HOME.md` section 16, `evidence/REP-014-home.md`, `HomeRulesTest`, `HomeStoreTest`, `HomeTablesTest` | Reminders, attachments, PLAN links, widgets, imports, encryption (no owner decision); device acceptance |
+| LINK | Planned / specified; placeholder card, colour and region reserved. Not started | `MODULES/LINK.md` | Everything |
+| WORLD | Partial. Foundation as in section 3; Rescue Team maps and tilesets added (0.140.0); Poké is the shared balance but World still keeps a working copy | CHANGELOG, REP-010 | Full regional coverage, balance, shared-ownership completion, device acceptance; not re-audited since 0.123.0 beyond those |
+| GEAR | Partial. Not re-audited since 0.123.0 | Section 3 | Every tool's capability and device acceptance |
+| Launcher | Partial. Not re-audited since 0.123.0 | Section 3 | Lifecycle, Samsung hardware acceptance |
+| Shared Pokémon and economy | Partial, advanced: four roles with one place per Pokémon (0.124.0, 0.133.0), one currency Poké (0.125.0, version 15), shared Pokémon, Bag and ledger tables as the live authority (0.135.0), per-module parties and leads (Plan, Care, Heal, Mint, Home), module regions curated (0.139.0), an arrival scene per acquisition (0.141.0, 0.143.0). Held items, natures and Mints, abilities and capsules, evolution and trade items, Bottle Caps and Tera Shards exist | REP-009, REP-010, `evidence/REP-014-shared-tables.md`, `docs/economy.md` (rules version 19) | Moves and mastery, Ribbons and Marks, Poké Ball identity, Mega/Z/Dynamax/Tera systems as gameplay, Jobs, contests, Pokéathlon, berries and camps, raids: **not found in the source by a name search; unverified, treat as not built**. A party for LINK; the place label on the party and PC screens |
+| Data architecture | **Live on Android since 0.129.0**: SQLDelight/SQLite (`:data`), schema 9, every released schema committed with verified migrations, idempotent append-only ledger, daily file backup of the documents with move-aside restore, one authority (no dual writes). Plan, Care, Heal, Mint and Home and the player's Pokémon, Bag and Poké are in their own tables; legacy JSON kept as the rollback copy | REP-006, REP-007, REP-008, REP-012, `evidence/REP-014-*`; the owner confirmed on the phone that the cutover kept all data | A real kill and a real low-storage run on a device, the snapshot archive with attachments, archive encryption, the typed repositories per module (`DATA_AND_MIGRATIONS.md` section 7.3.0; the app still reads one `AppData` through the split) |
+| Integrations and privacy | Cloud, accounts, sync, friends board and the server reward function **retired** (0.130.0). Reminders: Plan and Care on one scheduler with global quiet hours and focus deferral (0.131.0), Heal's hydration reminders, Mint's bill reminders (0.142.0). Private module content never reaches the shared save, ledger or reward log (tested for Care, Heal, Mint, Home) | REP-011, REP-012, module tests | Reminders for Home and Link; the streak reminder and weekly recap; the permission manifest audit on a device; provider approvals |
+| Tests | `./gradlew jvmTest compileKotlinWasmJs` at the commit that built HOME: `BUILD SUCCESSFUL`, 1,151 JVM tests, 0 failures (pokemon-core 192, plan-core 134, care-core 8, heal-core 8, mint-core 23, home-core 58, world-core 90, app-core 285, data 105, composeApp 248). The wasm target is compile-only; there are no Android unit or instrumented tests (`:androidApp:compileDebugKotlin` compiles) | `evidence/REP-002-test-inventory.md`; the screenshot tests only check that something was drawn | A device suite; an integration suite; screenshots are looked at by hand, not compared |
+| Design system and assets | Design rules of 8 November 2026 applied (dialogue boxes, pixel-drawn controls, module accents, fewer words; 0.137.0, 0.138.0); real game assets only | `FEATURES/DESIGN_SYSTEM.md`, CHANGELOG | Rendering on target Android versions, TalkBack and dark mode on device; REP-015 asset registry and rights audit (planned); asset distribution rights |
+
+### Sequence and gates
+
+| Sequence | Status |
+|---|---|
+| 0 Baseline | Done (REP-001 to REP-005). Signing remains test-grade and must move to a secret before any public release |
+| 1 Architecture and test strategy | Done (REP-007, Gate A passed; `TEST_STRATEGY.md` approved) |
+| 2 Local data foundation | Built and live on Android (REP-008, schema 9); **Gate B is partial**: fixtures migrate and the owner confirmed the cutover on the phone, but kill, low-storage and corruption recovery on a device are not run |
+| 3 Shared Pokémon, economy and reminders | Built for the contracts above; reminders are shared for Plan, Care, Heal's hydration and Mint's bills only. **Gate C is partial**: ownership, one Bag and one Poké balance and privacy-safe events hold in tests; shared reminders are not yet used by every module |
+| 3B Expanded Pokémon foundations | Partial (see the shared row above) |
+| 4 Design system and app shell | Partial; tokens and components applied, device rendering not reviewed |
+| 5 PLAN and CARE refactor | Largely done on the data side (own tables, one owner per record); the reminder adapters for the streak reminder and weekly recap remain |
+| 6 HEAL | Manual slice built; imports, nutrition and exercise library not built |
+| 7 MINT | Manual slice built; import and providers not built |
+| 8 HOME and LINK | **HOME manual slice built (0.143.0); LINK not started** |
+| 9 GEAR, 10 WORLD, 11 Launcher | Not advanced by this series beyond the shared items above |
+| 12 Release hardening | Not started |
+| Gate D (module acceptance) | No module passes in full: each lacks device, accessibility and process-death evidence |
+| Gate E (device and release acceptance) | Not started |
+
+### Alignment with the Product Bible
+
+| Bible rule | Status in the code |
+|---|---|
+| Module map (section 4): eight modules, no Grow, no Explore | Holds. PLAN, CARE, HEAL, MINT, HOME and WORLD have screens; GEAR is a Pokégear entry; LINK is a placeholder card |
+| One owner, one source of truth (principle 2) | Holds for the built modules: each has its own tables and store and pays only through a minimal event. Open: World's working copy of Poké (REP-010) and the app's single `AppData` view over the split tables |
+| Utility first; every module works without rewards (principle 1) | Holds: Field Research, Ledger Research and Habitat Discovery can be turned off in Settings without losing a record (tested) |
+| Forgiving, no punishment (principles 4 and 9) | Holds by design in Home (no backlog, no streak, no shaming words); not re-audited for the older Plan and Care streak features |
+| Local-first, no account, no cloud, no telemetry (principle 6, section 3) | Holds since 0.130.0 |
+| Android only (section 3) | Holds; desktop and web stay compile-only |
+| Cross-module links (section 4): HOME owns a chore a PLAN task is linked to; LINK owns a follow-up until converted; MINT owns bill state | **Not built.** There are no cross-module links yet: `HOME.md` 2.1 and `LINK.md` 4.1 describe them; no module creates a PLAN task |
+| Roles (section 5): global buddy, module party of six, WORLD teams, GEAR helpers; one Pokémon in one place | Holds (0.124.0, 0.133.0); LINK's party does not exist yet |
+| One Bag and one currency Poké | Holds (0.125.0, 0.135.0); World's working copy remains |
+| Held items persistent and non-consumable | Implemented for the existing held items; not re-verified against the full invariant |
+| Private content never enters WORLD or reward presentation (sections 3 and 8) | Holds and is tested for Care, Heal, Mint and Home (the event JSON, the shared save, the reward log and the shared tables are searched for private words) |
+| Permissions just in time; honest integrations (section 8) | Holds for what is built; no provider integration exists and Settings says so |
+| Definition of done (section 9) | **Not met by any new module**: each is built, tested on the JVM and compiled for Android, but has no device verification, accessibility review or process-death evidence |
+
+### Pending items carried over from earlier sessions
+
+1. **Device acceptance for everything since 0.129.0**: the database cutover recovery cases, Mint's Keystore key, access gate, bill reminders and portable backup, the module tables on a device, the new arrival scenes, reminders, and a visual review of every new screen in both palettes and at 130% text.
+2. **LINK** (sequence 8): all eight phases of `MODULES/LINK.md`, its party, and its Postcard Trail event.
+3. **Cross-module links**: HOME chore to PLAN task, LINK follow-up to PLAN task, and MINT bill state; each must keep one completion and one reward owner.
+4. **Reminders through the shared scheduler** for Home (chores, maintenance, low stock, warranty) and Link (dates and follow-ups), plus the Plan streak reminder and weekly recap.
+5. **Typed repositories per module** and the removal of the single-`AppData` view; REP-010's World rules taking the balance as an input.
+6. **Open module scope**: HEAL (workouts, nutrition, imports, history), MINT (import, providers, splits, rollover, savings targets), HOME (attachments, widgets, imports).
+7. **GEAR completion, WORLD completion and the launcher** (sequences 9 to 11), not re-audited since 0.123.0.
+8. **Release hardening** (sequence 12): the asset registry and rights audit (REP-015), the sound clean-ups (REP-016, REP-017), the protected release key (REP-005), and a refreshed test baseline that includes an Android build and a device suite.
+9. **Shared Pokémon expansion** (P2): the items marked unverified above.
 
 ## 4. Architecture dependencies and blocking work
 
@@ -264,11 +336,11 @@ These are recorded in their authoritative documents; they are listed here only s
 ## 10. Current unresolved issues
 
 1. **Test execution evidence:** `ARCHITECTURE/TEST_STRATEGY.md` exists and is approved. Its stated baseline includes 89 Kotlin test source files, but this audit did not execute them or establish a passing test run. Refresh the baseline against the current branch.
-2. **Architecture decision maturity:** `DATA_AND_MIGRATIONS.md` is an approved target architecture. The SQLDelight feasibility spike (REP-006) passed on the JVM and compiles for Android, and five 0.123.0 save fixtures exist (REP-003); the `:data` module and the JSON importer now exist and are tested on the JVM (REP-008, `evidence/REP-008-data-foundation.md`); device checks, activation and cutover are still to do. No database architecture is used by the app yet. Gate A (ownership, transactions and idempotency, rollback) was reviewed in `evidence/REP-007-gate-a-review.md`; the device checks are deferred to a release by the owner, so the database stays off the app's live path until they run.
+2. **Architecture decision maturity (updated at 0.143.0: the database is live on Android, see section 3.2):** `DATA_AND_MIGRATIONS.md` is an approved target architecture. The SQLDelight feasibility spike (REP-006) passed on the JVM and compiles for Android, and five 0.123.0 save fixtures exist (REP-003); the `:data` module and the JSON importer now exist and are tested on the JVM (REP-008, `evidence/REP-008-data-foundation.md`); device checks, activation and cutover are still to do. No database architecture is used by the app yet. Gate A (ownership, transactions and idempotency, rollback) was reviewed in `evidence/REP-007-gate-a-review.md`; the device checks are deferred to a release by the owner, so the database stays off the app's live path until they run.
 3. **Integration feasibility:** Huawei Watch Fit 4 Pro/Health Connect and Philippine bank/e-wallet integrations remain provider/device-dependent. No live integration is verified by the baseline audit.
 4. **Asset distribution rights:** the baseline includes game-derived/private-use material. Public distribution requires an asset-by-asset rights review and replacement/permission where necessary.
 5. **Expanded Pokémon implementation evidence:** the integrated expansion catalogue is approved target scope, not evidence of implementation. Verify actual Kotlin source areas, schemas and tests before assigning implementation status or exact file paths.
-6. **Current branch status:** refresh the status table against a named commit whenever work lands; the 6 November 2026 re-check above covers `2b22975d` only.
+6. **Current branch status:** section 3.2 is current for version `0.143.0` on the branch that builds HOME (8 November 2026); refresh it against a named commit whenever work lands. The 6 November 2026 re-check above covers `2b22975d` only.
 7. **Legacy duplicates:** root-level refresh and historical files remain outside the canonical project folder. They should be clearly archived or labelled historical after dependency/reference review.
 
 ## 11. Documentation change control

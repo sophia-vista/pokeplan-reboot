@@ -32,7 +32,7 @@ class LiveDocuments(private val store: DataStore) {
     fun isActive(): Boolean = q.meta(META_LIVE).executeAsOneOrNull() == LIVE_DATABASE
 
     /** Whether [name] is kept in tables rather than as a row (Care, once [moveCareToTables] has run). */
-    private fun inTables(name: String): Boolean = (name == CARE && store.careTables.isActive()) || (name == HEAL && store.healTables.isActive()) || (name == MINT && store.mintTables.isActive())
+    private fun inTables(name: String): Boolean = (name == CARE && store.careTables.isActive()) || (name == HEAL && store.healTables.isActive()) || (name == MINT && store.mintTables.isActive()) || (name == HOME && store.homeTables.isActive())
 
     /** Whether the PLAN part of [name] is kept in tables (the save, once [movePlanToTables] has run); the rest of it stays a row. */
     private fun planSplit(name: String): Boolean = name == SAVE && store.planTables.isActive()
@@ -44,6 +44,7 @@ class LiveDocuments(private val store: DataStore) {
         name == CARE && inTables(name) -> store.careTables.read()
         name == HEAL && inTables(name) -> store.healTables.read()
         name == MINT && inTables(name) -> store.mintTables.readOrNull()
+        name == HOME && inTables(name) -> store.homeTables.read()
         planSplit(name) -> store.transaction { assembleSave() }
         else -> q.liveRead(name).executeAsOneOrNull()
     }
@@ -63,6 +64,7 @@ class LiveDocuments(private val store: DataStore) {
             name == CARE && inTables(name) -> store.careTables.write(json)
             name == HEAL && inTables(name) -> store.healTables.write(json)
             name == MINT && inTables(name) -> store.mintTables.write(json)
+            name == HOME && inTables(name) -> store.homeTables.write(json)
             pokemonSplit(name) -> store.transaction {
                 val (plan, rest0) = store.planTables.split(json)
                 val (part, rest) = store.pokemonTables.split(rest0)
@@ -183,18 +185,35 @@ class LiveDocuments(private val store: DataStore) {
         }
     }
 
+    /**
+     * Starts HOME in its tables (REP-014), once, exactly as [moveHealToTables] does for HEAL: nothing to move on a normal start, a `home` document row left by a
+     * restore is imported, read back equal and kept aside under `aside:home:tables:<millis>`. A failure leaves the database as it was. Does nothing once done.
+     */
+    fun moveHomeToTables(nowMillis: Long) {
+        if (store.homeTables.isActive()) return
+        store.transaction {
+            val doc = q.liveRead(HOME).executeAsOneOrNull()
+            store.homeTables.activate(doc, nowMillis)
+            if (doc != null) {
+                q.liveWrite("${ASIDE}$HOME:tables:$nowMillis", doc, nowMillis)
+                q.liveDelete(HOME)
+            }
+        }
+    }
+
     /** Keeps a document that could not be read where [write] will not replace it. */
     fun keepAside(name: String, json: String, nowMillis: Long) {
         write("$ASIDE$name:$nowMillis", if (name == MINT) store.mintCipher!!.seal(json) else json, nowMillis)
     }
 
-    fun names(): List<String> = (q.liveNames().executeAsList() + listOfNotNull(CARE.takeIf { store.careTables.isActive() && store.careTables.read() != null }, HEAL.takeIf { store.healTables.isActive() && store.healTables.read() != null }, MINT.takeIf { store.mintTables.isActive() && store.mintTables.readOrNull() != null })).distinct().sorted()
+    fun names(): List<String> = (q.liveNames().executeAsList() + listOfNotNull(CARE.takeIf { store.careTables.isActive() && store.careTables.read() != null }, HEAL.takeIf { store.healTables.isActive() && store.healTables.read() != null }, MINT.takeIf { store.mintTables.isActive() && store.mintTables.readOrNull() != null }, HOME.takeIf { store.homeTables.isActive() && store.homeTables.read() != null })).distinct().sorted()
 
     /** Every live document (not the kept-aside ones) as of one moment: a single read transaction. Care's tables are put back together as `care`. */
     fun snapshot(): Map<String, String> = store.transaction {
         val docs = q.liveNames().executeAsList().filter { !it.startsWith(ASIDE) }.associateWith { q.liveRead(it).executeAsOne() }.toMutableMap()
         if (store.careTables.isActive()) store.careTables.read()?.let { docs[CARE] = it }
         if (store.healTables.isActive()) store.healTables.read()?.let { docs[HEAL] = it }
+        if (store.homeTables.isActive()) store.homeTables.read()?.let { docs[HOME] = it }
         // Mint leaves the tables only sealed: a backup (a daily copy or a file) never holds a figure, a name or a date in clear.
         if (store.mintTables.isActive()) store.mintTables.sealedSnapshot()?.let { docs[MINT] = it }
         if (store.planTables.isActive()) assembleSave()?.let { docs[SAVE] = it }
@@ -248,6 +267,7 @@ class LiveDocuments(private val store: DataStore) {
         const val CARE = "care"
         const val HEAL = "heal"
         const val MINT = "mint"
+        const val HOME = "home"
         const val META_LIVE = "live_store"
         const val META_LIVE_AT = "live_store_since"
         const val LIVE_DATABASE = "database"

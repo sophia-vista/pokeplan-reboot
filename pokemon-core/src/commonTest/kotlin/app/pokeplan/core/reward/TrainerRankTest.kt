@@ -34,14 +34,14 @@ class TrainerRankTest {
     fun onlyTheModuleRegionsOpen() {
         // The games' regions are retired: they never open, at any rank, and send their eggs to the Plan Region.
         for (points in listOf(0, TrainerRank.thresholds[1], TrainerRank.thresholds.last())) {
-            assertEquals(listOf(Region.PLAN, Region.CARE, Region.HEAL, Region.MINT), TrainerRank.unlockedRegions(points))
+            assertEquals(listOf(Region.PLAN, Region.CARE, Region.HEAL, Region.MINT, Region.HOUSEHOLD), TrainerRank.unlockedRegions(points))
         }
         assertTrue(Region.games.isNotEmpty() && Region.games.none { it.released })
         assertTrue(Region.games.all { it.open == Region.PLAN })
         assertEquals(Region.CARE, Region.CARE.open)
         assertFalse(TrainerRank.isUnlocked(Region.JOHTO, TrainerRank.thresholds.last()))
-        assertEquals(0, TrainerRank.rankToUnlock(Region.HOUSEHOLD))
-        assertFalse(TrainerRank.isUnlocked(Region.HOUSEHOLD, TrainerRank.thresholds.last()), "a module region opens when its module ships")
+        assertEquals(0, TrainerRank.rankToUnlock(Region.LINK))
+        assertFalse(TrainerRank.isUnlocked(Region.LINK, TrainerRank.thresholds.last()), "a module region opens when its module ships")
     }
 
     @Test

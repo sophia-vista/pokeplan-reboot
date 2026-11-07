@@ -22,6 +22,9 @@ object BuddyScene {
     /** Mint's region scene: a quiet cave of rock and ore, for the steady keepers. */
     const val MINT = "dampcave"
 
+    /** Home's region scene: the town, for the household's upkeep. */
+    const val HOME = "city"
+
     /** The scene file name (without .png) for a Pokémon whose types are [types]. */
     fun of(types: List<PokemonType>): String = when (types.firstOrNull()) {
         PokemonType.FIRE -> "mountain"

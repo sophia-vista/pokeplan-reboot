@@ -118,6 +118,8 @@ data class AppData(
     val healPaid: List<String> = emptyList(),
     /** The ids of MINT events already paid (`MintEvent.id`, opaque, no figure in them), kept like [healPaid]. The newest [GameStore.MINT_PAID_KEPT] are kept. */
     val mintPaid: List<String> = emptyList(),
+    /** The ids of HOME events already paid (`HomeEvent.id`, opaque, no household word in them), kept like [mintPaid]. The newest [GameStore.HOME_PAID_KEPT] are kept. */
+    val homePaid: List<String> = emptyList(),
 ) {
     companion object {
         const val SCHEMA = 1
@@ -144,6 +146,9 @@ object Tutorials {
 
     /** Mint: a 5-second tally that finds a Ledger Egg for Mint's party. */
     const val MINT_TALLY = "mint-tally"
+
+    /** Home: a 5-second tidy that finds a Habitat Egg for Home's party. */
+    const val HOME_TIDY = "home-tidy"
 
     /** How long each demo runs, in seconds. */
     const val DEMO_SECONDS = 5
@@ -387,6 +392,7 @@ data class Origin(val how: How, val region: Region? = null, val visitor: Visitor
         CARE_EGG("Arrived through Care"),
         FIELD_EGG("Found by Field Research"),
         LEDGER_EGG("Found by Ledger Research"),
+        HABITAT_EGG("Found by Habitat Discovery"),
         BEFRIENDED("Befriended on a Care visit"),
         QUEST("Earned on a quest"),
         WORLD("Found in the World"),
