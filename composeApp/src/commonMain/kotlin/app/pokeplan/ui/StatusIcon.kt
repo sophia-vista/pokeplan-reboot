@@ -40,6 +40,8 @@ private val strips = mutableMapOf<StatusKind, ImageBitmap?>()
 @Composable
 fun StatusIcon(kind: StatusKind, pixel: Int, modifier: Modifier = Modifier, loop: Boolean = false, animate: Boolean = true) {
     val strip by produceState(strips[kind], kind) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = strips[kind]
         if (value == null) {
             value = orNull { Res.readBytes("files/status/${kind.file}.png").decodeToImageBitmap() }
             strips[kind] = value

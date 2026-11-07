@@ -128,6 +128,16 @@ class ScreenshotTest {
         }
     }
 
+    /** The Kanto layer's whole dungeon list, tall: each card's title, types and tiles must belong to the same dungeon. */
+    @Test
+    fun worldMapKantoList() {
+        val store = started()
+        val model = AppModel(store)
+        model.worldSection = app.pokeplan.ui.screens.WorldSection.MAP
+        model.worldLayer = app.pokeplan.world.WorldLayer.KANTO
+        render("world-map-kanto-list", height = 9000, frames = 40) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
+    }
+
     @Test
     fun world() {
         val store = started()
@@ -545,6 +555,26 @@ class ScreenshotTest {
         val after = draw(60, "evolve-in-place-after")
         scene.close()
         assertTrue(before > 800 && after > 800, "the sprite is drawn before ($before) and after ($after) the form changes")
+    }
+
+    /** The wrong-picture bug (a map card with another dungeon's tiles): an image composable whose key changes in place must draw what a fresh one draws. */
+    @Test
+    fun aTileBoxChangedInPlaceDrawsWhatAFreshOneDraws() {
+        fun frames(content: @Composable () -> Unit, change: (() -> Unit)?): ByteArray {
+            val scene = ImageComposeScene(width = 300, height = 300, density = Density(1f, 1f)) { PixelTheme { content() } }
+            var nanos = 0L
+            fun draw(n: Int): ByteArray { repeat(n) { scene.render(nanos); nanos += 50_000_000; Thread.sleep(20) }; return scene.render(nanos).encodeToData(EncodedImageFormat.PNG)!!.bytes }
+            draw(60)
+            change?.invoke()
+            val out = draw(60)
+            scene.close()
+            return out
+        }
+        fun box(id: String) = @Composable { app.pokeplan.ui.screens.TileBox(id, emptyList(), animate = false, scrolls = false) { Text("x") } }
+        var dungeon by androidx.compose.runtime.mutableStateOf("mt-ember")
+        val changed = frames({ box(dungeon)() }, { dungeon = "sky-pillar" })
+        val fresh = frames(box("sky-pillar"), null)
+        assertTrue(changed.contentEquals(fresh), "a card whose dungeon changed is drawn in the new dungeon's tiles, not the old one's")
     }
 
     /** The animated evolution, run to its end: the evolved Pokémon must be on the stage (owner: "after evolution, sprite disappears"). */

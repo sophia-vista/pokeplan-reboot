@@ -66,6 +66,8 @@ private val worldArt = mutableMapOf<String, ImageBitmap?>()
 @Composable
 internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boolean = false, top: Boolean = false) {
     val image by produceState(worldArt[name], name) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = worldArt[name]
         if (value == null) {
             value = orNull { Res.readBytes("files/world/$name.png").decodeToImageBitmap() }
             worldArt[name] = value
@@ -177,6 +179,8 @@ internal fun dungeonTiles(dungeonId: String): String = when (dungeonId) {
 internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Boolean, modifier: Modifier = Modifier, scrolls: Boolean = true, content: @Composable () -> Unit) {
     val tiles = dungeonTiles(dungeonId)
     val atlas by produceState(tileAtlases[tiles], tiles) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = tileAtlases[tiles]
         if (value == null) {
             value = orNull { Res.readBytes("files/tiles/$tiles.png").decodeToImageBitmap() }
             tileAtlases[tiles] = value
@@ -278,6 +282,8 @@ internal fun campTiles(level: Int): String = when {
 internal fun CampYard(level: Int, residents: List<TileWalker>, animate: Boolean) {
     val tiles = campTiles(level)
     val atlas by produceState(tileAtlases[tiles], tiles) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = tileAtlases[tiles]
         if (value == null) {
             value = orNull { Res.readBytes("files/tiles/$tiles.png").decodeToImageBitmap() }
             tileAtlases[tiles] = value
@@ -344,6 +350,8 @@ internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: Str
     // [mapName] names another map (the Kanto layer's own, assets/world/map-kanto.png); the home map is map-1 to map-8, uncovered by [stage].
     val name = mapName ?: "map-${stage.coerceIn(1, 8)}"
     val image by produceState(worldArt[name], name) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = worldArt[name]
         if (value == null) {
             value = orNull { Res.readBytes("files/world/$name.png").decodeToImageBitmap() }
             worldArt[name] = value
@@ -428,6 +436,8 @@ private val fxFrames = mapOf("hit" to Triple(72, 72, 24), "welcome" to Triple(64
 internal fun FxBurst(name: String, key: Int, size: Dp, modifier: Modifier = Modifier, play: Boolean = true) {
     val (fw, fh, count) = fxFrames[name] ?: return
     val sheet by produceState(fxSheets[name], name) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = fxSheets[name]
         if (value == null) {
             value = orNull { Res.readBytes("files/world/fx/$name.png").decodeToImageBitmap() }
             fxSheets[name] = value
