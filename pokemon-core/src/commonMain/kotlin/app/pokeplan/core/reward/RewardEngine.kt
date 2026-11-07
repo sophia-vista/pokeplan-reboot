@@ -14,6 +14,8 @@ import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.CareBucket
 import app.pokeplan.core.pokemon.CarePerks
+import app.pokeplan.core.pokemon.HealBucket
+import app.pokeplan.core.pokemon.HealPerks
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.PerkBucket
 import app.pokeplan.core.pokemon.PerkContext
@@ -42,6 +44,8 @@ data class PlayerState(
     val guardians: List<String> = emptyList(),
     /** The lead of Care's party (slot 1); null means its first member. */
     val careLeadId: String? = null,
+    /** The lead of Heal's party (slot 1); null means its first member. */
+    val healLeadId: String? = null,
     /** The lead of Plan's party (slot 1); null means its first member. Before roles were split (0) this was the buddy; see [rolesVersion]. */
     val planLeadId: String? = null,
     /** 0 for a save from before the buddy and the party leads were separate roles; 1 once [planLeadId] has been set from the old buddy. */
@@ -55,7 +59,7 @@ data class PlayerState(
     /** A module party's lead (its slot 1): the one chosen if it is still in the party, else the party's first member, else none. */
     fun lead(partyId: String): OwnedPokemon? {
         val members = partyOf(partyId)
-        val chosen = when (partyId) { PartyIds.PLAN -> planLeadId; PartyIds.CARE -> careLeadId; else -> null }
+        val chosen = when (partyId) { PartyIds.PLAN -> planLeadId; PartyIds.CARE -> careLeadId; PartyIds.HEAL -> healLeadId; else -> null }
         return members.firstOrNull { it.id == chosen } ?: members.firstOrNull()
     }
 
@@ -63,6 +67,8 @@ data class PlayerState(
     val planLead: OwnedPokemon? get() = lead(PartyIds.PLAN)
 
     val careLead: OwnedPokemon? get() = lead(PartyIds.CARE)
+
+    val healLead: OwnedPokemon? get() = lead(PartyIds.HEAL)
 
     /** A party in slot order: the lead first, then the members in the order they joined. */
     fun partySlots(partyId: String): List<OwnedPokemon> {
@@ -177,6 +183,35 @@ data class CareEvent(
     val pokemonId: String? = null,
 )
 
+/**
+ * What a HEAL moment was (docs/pokelife `MODULES/HEAL.md` section 12). Only participation counts: a logged activity session, or one
+ * hydration entry a day for a player who has opted in. Weight, sleep, calories, heart rate, symptoms, medication, notes and
+ * every other health value are never events (section 12.3).
+ */
+@Serializable
+enum class HealKind {
+    @SerialName("activity_logged") ACTIVITY,
+    @SerialName("participation") PARTICIPATION,
+}
+
+/**
+ * The whole of what HEAL tells the shared world (HEAL.md section 12.4, INTEGRATIONS_AND_PRIVACY.md section 13): a stable event [id] (so a
+ * replay is recognised and never pays twice), the source [module], an opaque record reference [ref] (a random key that means nothing outside HEAL), the
+ * broad [kind] and the [nowMillis] it happened. No duration, distance, volume, type of activity or any measurement.
+ */
+@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+@Serializable
+data class HealEvent(
+    val id: String,
+    val kind: HealKind,
+    val nowMillis: Long,
+    val ref: String,
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.ALWAYS)
+    val module: String = MODULE,
+) {
+    companion object { const val MODULE = "heal" }
+}
+
 /** Which type is in the spotlight on a given day: all 18 take turns. */
 object Spotlight {
     fun typeFor(epochDay: Long): PokemonType = PokemonType.entries[(((epochDay % PokemonType.entries.size) + PokemonType.entries.size) % PokemonType.entries.size).toInt()]
@@ -279,6 +314,14 @@ object RewardEngine {
     const val BEFRIEND_JOIN_FRIENDSHIP = 150
     const val RHYTHM_POINTS = 5
     const val RHYTHM_BERRIES = 3
+
+    /** Rare Candies for each HEAL moment (Field Research). *(tune)* */
+    val HEAL_CANDIES: Map<HealKind, Int> = mapOf(HealKind.ACTIVITY to 4, HealKind.PARTICIPATION to 1)
+
+    /** Field Research's meter, kept by the app: each moment adds its points and a full meter discovers a Field Egg ([healEgg]). *(tune)* */
+    val HEAL_EGG_POINTS: Map<HealKind, Int> = mapOf(HealKind.ACTIVITY to 2, HealKind.PARTICIPATION to 1)
+    const val HEAL_EGG_METER_SIZE = 4
+    const val HEAL_POINTS = 1
 
     private fun scaled(base: Int, multiplier: Double): Int = maxOf(base, (base * multiplier).roundToInt())
 
@@ -464,6 +507,7 @@ object RewardEngine {
             next = when (partyId) {
                 PartyIds.CARE -> if (next.careLead == null) next.copy(careLeadId = p.id) else next
                 PartyIds.PLAN -> if (next.planLead == null) next.copy(planLeadId = p.id) else next
+                PartyIds.HEAL -> if (next.healLead == null) next.copy(healLeadId = p.id) else next
                 else -> next
             }
         }
@@ -532,5 +576,60 @@ object RewardEngine {
         rewards += Reward.Candies(CandyType.RARE, candies)
         val points = if (e.kind == CareKind.WEEKLY_RHYTHM) RHYTHM_POINTS else CARE_POINTS
         return Outcome(state.copy(pokemon = pokemon, inventory = inventory, coins = coins, trainerPoints = state.trainerPoints + points), rewards)
+    }
+    /**
+     * A Field Egg from a full Field Research meter ([HEAL_EGG_POINTS]): rolled like a Task Egg from the Heal Region (species not caught yet
+     * more likely), it hatches at once into Heal's party if there is room (else the PC), and leads it if Heal has no lead yet. Shiny odds and
+     * IVs are the ordinary ones.
+     */
+    fun healEgg(state: PlayerState, newPokemonId: String, nowMillis: Long, rng: Random): Outcome {
+        val known = state.caught + state.pokemon.map { it.speciesId }
+        var rarity = Egg.rates(TASK_EGG_MINUTES, false).roll(rng)
+        while (rarity.ordinal > 0 && HatchRules.pool(Region.HEAL, rarity).isEmpty()) rarity = Rarity.entries[rarity.ordinal - 1]
+        val option = HatchRules.rollWeighted(Region.HEAL, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
+        val size = state.partyOf(PartyIds.HEAL).size
+        val p = Hatching.create(newPokemonId, option, size, nowMillis, TASK_EGG_MINUTES, rng).copy(partyId = PartyIds.HEAL)
+        val lead = state.healLeadId?.takeIf { state.healLead != null } ?: p.id.takeIf { p.inParty }
+        val (bag, overflow, newRewards) = newSpecies(known, p.speciesId, state.inventory)
+        return Outcome(
+            state.copy(pokemon = state.pokemon + p, healLeadId = lead, inventory = bag, coins = state.coins + overflow, caught = known + p.speciesId),
+            listOf(Reward.Hatched(p, fromTask = true)) + newRewards,
+        )
+    }
+
+    /**
+     * A HEAL moment (Field Research): a logged activity gives Heal's lead friendship and a berry, each pays [HEAL_CANDIES] Rare Candies and a
+     * little trainer rank. Only Heal's own perks apply. Nothing about the activity is read: the event has no such field.
+     */
+    fun heal(state: PlayerState, e: HealEvent, rng: Random): Outcome {
+        val rewards = mutableListOf<Reward>()
+        var pokemon = state.pokemon
+        val lead = state.healLead
+        val perks = HealPerks.total(lead, state.partyOf(PartyIds.HEAL))
+        if (lead != null && e.kind == HealKind.ACTIVITY) {
+            var grown = lead.gainFriendship(FriendshipRules.Source.ACTIVITY)
+            val extra = perks[HealBucket.FRIENDSHIP_GAIN] ?: 0.0
+            if (extra > 0 && rng.nextDouble() * 100 < extra) grown = grown.gainFriendship(FriendshipRules.Source.ACTIVITY)
+            pokemon = pokemon.map { if (it.id == lead.id) grown else it }
+            if (grown.friendship > lead.friendship) rewards += Reward.Friendship(grown.friendship - lead.friendship)
+        }
+        var inventory = state.inventory
+        var coins = state.coins
+        if (e.kind == HealKind.ACTIVITY) {
+            val second = perks[HealBucket.BERRY_FINDER] ?: 0.0
+            repeat(1 + if (second > 0 && rng.nextDouble() * 100 < second) 1 else 0) {
+                val berry = Items.randomBerry(rng)
+                val (bag, extra) = inventory.addCapped(berry, 1)
+                inventory = bag
+                coins += extra
+                rewards += Reward.ItemDrop(berry, 1)
+            }
+        }
+        val candies = HEAL_CANDIES.getValue(e.kind)
+        val (bag, overflow) = inventory.addCapped(Items.RARE_CANDY, candies)
+        inventory = bag
+        coins += overflow
+        rewards += Reward.Candies(CandyType.RARE, candies)
+        return Outcome(state.copy(pokemon = pokemon, inventory = inventory, coins = coins, trainerPoints = state.trainerPoints + HEAL_POINTS), rewards)
     }
 }

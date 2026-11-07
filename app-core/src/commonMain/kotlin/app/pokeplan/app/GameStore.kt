@@ -40,6 +40,9 @@ import app.pokeplan.core.reward.BefriendEvent
 import app.pokeplan.core.reward.VisitorInheritance
 import app.pokeplan.core.reward.CareEvent
 import app.pokeplan.core.reward.CareKind
+import app.pokeplan.core.reward.HealEvent
+import app.pokeplan.core.reward.HealKind
+import app.pokeplan.heal.HealRules
 import app.pokeplan.core.reward.EffortEvent
 import app.pokeplan.core.reward.Feature
 import app.pokeplan.core.reward.TrainerRank
@@ -231,9 +234,10 @@ class GameStore(
      * Whether the tutorial [id] is still on offer: not done, and the player has not done the real thing (a finished focus session for
      * Plan's). Care's tutorial also stays off for a player with calm breaks; [careBreaks] is how many Care has recorded (Care keeps its own save).
      */
-    fun tutorialOffered(id: String, careBreaks: Int = 0): Boolean = data.onboarded && id !in data.tutorials && when (id) {
+    fun tutorialOffered(id: String, careBreaks: Int = 0, healActivities: Int = 0): Boolean = data.onboarded && id !in data.tutorials && when (id) {
         Tutorials.PLAN_FOCUS -> data.focusHistory.none { it.completed }
         Tutorials.CARE_BREATH -> careBreaks == 0
+        Tutorials.HEAL_WALK -> healActivities == 0
         else -> false
     }
 
@@ -247,10 +251,11 @@ class GameStore(
         val (region, party, how) = when (id) {
             Tutorials.PLAN_FOCUS -> Triple(data.settings.region.open, PartyIds.PLAN, Origin.How.FOCUS_EGG)
             Tutorials.CARE_BREATH -> Triple(Region.CARE, PartyIds.CARE, Origin.How.CARE_EGG)
+            Tutorials.HEAL_WALK -> Triple(Region.HEAL, PartyIds.HEAL, Origin.How.FIELD_EGG)
             else -> return null
         }
         val outcome = RewardEngine.tutorialEgg(data.player, region, party, newId(), nowMillis, rng)
-        update { d -> log(CARE_LOG_PREFIX.takeIf { id == Tutorials.CARE_BREATH }.orEmpty() + "first egg", outcome.rewards, d.copy(player = outcome.state, tutorials = d.tutorials + id), origin = Origin(how, region)) }
+        update { d -> log((if (id == Tutorials.CARE_BREATH) CARE_LOG_PREFIX else if (id == Tutorials.HEAL_WALK) HEAL_LOG_PREFIX else "") + "first egg", outcome.rewards, d.copy(player = outcome.state, tutorials = d.tutorials + id), origin = Origin(how, region)) }
         return outcome.rewards
     }
 
@@ -326,6 +331,38 @@ class GameStore(
             log(CARE_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters), origin = Origin(Origin.How.CARE_EGG, Region.CARE))
         }
         return rewards
+    }
+
+    /**
+     * Pays a HEAL moment into the shared world (Field Research, HEAL.md section 12): once per event id whatever HEAL does with its records, at
+     * most [HEAL_DAILY_CAP] of each kind a day, and a full Field Research meter finds a Field Egg on top. The log says only "Heal" and the kind
+     * of moment. Nothing the event could tell about the person's body or health exists to be read here.
+     */
+    override fun heal(event: HealEvent): List<Reward>? {
+        if (!data.onboarded || event.id in data.healPaid) return null
+        val tally = Counters.heal(event.kind)
+        val paidToday = tally.get(data.counters, today)
+        if (paidToday >= HEAL_DAILY_CAP.getValue(event.kind)) return null
+        val outcome = RewardEngine.heal(data.player, event, rng)
+        val meter = healEggMeter() + RewardEngine.HEAL_EGG_POINTS.getValue(event.kind)
+        val egg = if (meter >= RewardEngine.HEAL_EGG_METER_SIZE) RewardEngine.healEgg(outcome.state, newId(), nowMillis, rng) else null
+        val rewards = outcome.rewards + egg?.rewards.orEmpty()
+        update { d ->
+            val counters = tally.set(d.counters, today, paidToday + 1) + (Counters.HEAL_EGG_METER to meter % RewardEngine.HEAL_EGG_METER_SIZE)
+            log(HEAL_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, healPaid = (d.healPaid + event.id).takeLast(HEAL_PAID_KEPT)), origin = Origin(Origin.How.FIELD_EGG, Region.HEAL))
+        }
+        return rewards
+    }
+
+    /** Points towards the next Field Egg, out of [RewardEngine.HEAL_EGG_METER_SIZE]. */
+    fun healEggMeter(): Int = data.counters[Counters.HEAL_EGG_METER] ?: 0
+
+    /** Makes [id], who must be in Heal's party, its lead: the Pokémon that takes Field Research's friendship and gives its perks. */
+    fun setHealLead(id: String): Boolean {
+        val p = pokemon(id)
+        if (!p.inParty || p.partyId != PartyIds.HEAL) return false
+        update { d -> d.copy(player = d.player.copy(healLeadId = id)) }
+        return true
     }
 
     /** Points towards the next Care Egg, out of [RewardEngine.CARE_EGG_METER_SIZE]. */
@@ -1146,7 +1183,7 @@ class GameStore(
     fun transferBlock(id: String): TransferBlock? =
         pokemon(id).let { p ->
             // The "last party member" rule guards Plan's party only; other modules' parties may be emptied.
-            Transfer.block(p, id == data.player.buddyId || id == data.player.planLead?.id || id == data.player.careLead?.id, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
+            Transfer.block(p, id == data.player.buddyId || id == data.player.planLead?.id || id == data.player.careLead?.id || id == data.player.healLead?.id, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
         }
 
     /** Whether [feature] has appeared yet at the player's trainer rank (the gradual reveal). */
@@ -1712,6 +1749,16 @@ class GameStore(
         val CARE_DAILY_CAP: Map<CareKind, Int> = mapOf(CareKind.ROUTINE to 5, CareKind.CALM_BREAK to 3, CareKind.SKILL to 3, CareKind.WEEKLY_RHYTHM to 1, CareKind.PLAY to 6)
         /** Every Care entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val CARE_LOG_PREFIX = "Care: "
+
+        /** The most of each HEAL kind the world pays a day *(tune)*, a backstop to the same limits in `HealRules`. */
+        val HEAL_DAILY_CAP: Map<HealKind, Int> = mapOf(HealKind.ACTIVITY to HealRules.ACTIVITIES_PAID_PER_DAY, HealKind.PARTICIPATION to HealRules.PARTICIPATION_PAID_PER_DAY)
+
+        /** Every HEAL entry in the reward log starts with this (the kind of moment only, never what it was). */
+        const val HEAL_LOG_PREFIX = "Heal: "
+        private val HEAL_SOURCES = mapOf(HealKind.ACTIVITY to "Field Research", HealKind.PARTICIPATION to "Field Research").mapValues { HEAL_LOG_PREFIX + it.value }
+
+        /** How many paid HEAL event ids the save remembers. */
+        const val HEAL_PAID_KEPT = 1000
 
         private val CARE_SOURCES = mapOf(
             CareKind.ROUTINE to "a routine", CareKind.CALM_BREAK to "a calm break", CareKind.WEEKLY_RHYTHM to "kept a rhythm", CareKind.SKILL to "a skill practised", CareKind.PLAY to "time together",

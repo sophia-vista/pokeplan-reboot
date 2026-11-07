@@ -17,6 +17,9 @@ enum class RegionLook(val scene: String) {
 
     /** The World game (docs/world.md): a forest to begin in, and a deep teal. */
     WORLD("forest"),
+
+    /** The Heal module (docs/pokelife MODULES/HEAL.md): an open route, and a clear blue. A utility surface: the scene is only a quiet backdrop. */
+    HEAL(BuddyScene.HEAL),
     ;
 
     /** The header bar on the region's pages, under white text. */
@@ -24,6 +27,7 @@ enum class RegionLook(val scene: String) {
         PLAN -> Pixel.Red
         CARE -> Pixel.Meadow
         WORLD -> Pixel.Teal
+        HEAL -> Pixel.Blue
     }
 
     /** The region's accent: its menu card tint and the edge of its card on Home. */
@@ -31,5 +35,6 @@ enum class RegionLook(val scene: String) {
         PLAN -> Pixel.Red
         CARE -> Pixel.Green
         WORLD -> Pixel.Teal
+        HEAL -> Pixel.Blue
     }
 }

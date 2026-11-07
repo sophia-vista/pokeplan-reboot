@@ -111,6 +111,11 @@ data class AppData(
     val placesVersion: Int = 0,
     /** The module tutorials already done ([Tutorials]); each pays once per save. */
     val tutorials: Set<String> = emptySet(),
+    /**
+     * The ids of HEAL events already paid (`HealEvent.id`, opaque, no health value in them), so a replayed event never pays twice whatever
+     * HEAL does with its records (edit, delete, restore). The newest [GameStore.HEAL_PAID_KEPT] are kept.
+     */
+    val healPaid: List<String> = emptyList(),
 ) {
     companion object {
         const val SCHEMA = 1
@@ -131,6 +136,9 @@ object Tutorials {
 
     /** Care: a 5-second breath that hatches a Care Egg into Care's party. */
     const val CARE_BREATH = "care-breath"
+
+    /** Heal: a 5-second walk that finds a Field Egg for Heal's party. */
+    const val HEAL_WALK = "heal-walk"
 
     /** How long each demo runs, in seconds. */
     const val DEMO_SECONDS = 5
@@ -372,6 +380,7 @@ data class Origin(val how: How, val region: Region? = null, val visitor: Visitor
         FOCUS_EGG("Hatched from a Focus Egg"),
         TASK_EGG("Hatched from a Task Egg"),
         CARE_EGG("Hatched from a Care Egg"),
+        FIELD_EGG("Found by Field Research"),
         BEFRIENDED("Befriended on a Care visit"),
         QUEST("Earned on a quest"),
         WORLD("Found in the World"),

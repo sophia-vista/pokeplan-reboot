@@ -52,7 +52,9 @@ class ReminderCoordinatorTest {
         assertNull(ReminderSnooze.untilMillis(ReminderModule.CARE, ReminderActions.SNOOZE_10, at(10), utc), "Care offers only its 30 minutes")
         assertEquals(at(10, 10), ReminderSnooze.untilMillis(ReminderModule.PLAN, ReminderActions.SNOOZE_10, at(10), utc))
         assertEquals(at(11), ReminderSnooze.untilMillis(ReminderModule.PLAN, ReminderActions.SNOOZE_60, at(10), utc))
-        assertNull(ReminderSnooze.untilMillis(ReminderModule.HEAL, ReminderActions.SNOOZE, at(10), utc))
+        assertEquals(at(10, 30), ReminderSnooze.untilMillis(ReminderModule.HEAL, ReminderActions.SNOOZE_30, at(10), utc), "Heal offers the same 30 minutes")
+        assertNull(ReminderSnooze.untilMillis(ReminderModule.HEAL, ReminderActions.SNOOZE_10, at(10), utc))
+        assertNull(ReminderSnooze.untilMillis(ReminderModule.MINT, ReminderActions.SNOOZE, at(10), utc), "a module with no reminders yet offers none")
     }
 
     private fun LocalDate.plusDays1() = LocalDate.fromEpochDays(toEpochDays() + 1)
