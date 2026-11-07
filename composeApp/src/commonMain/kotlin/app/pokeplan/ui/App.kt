@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.app.AppData
 import app.pokeplan.app.CareStore
 import app.pokeplan.app.HealStore
+import app.pokeplan.app.HomeLinkOwner
 import app.pokeplan.app.HomeStore
 import app.pokeplan.app.MintStore
 import app.pokeplan.home.HomeData
@@ -273,7 +274,9 @@ class AppModel(
         care.observe { careData = it }
         heal.observe { healData = it }
         mint.observe { mintData = it }
-        home.observe { homeData = it }
+        // A PLAN task linked to a HOME chore is a projection: HOME completes and pays it, and the task follows (PRODUCT_BIBLE.md section 4).
+        store.registerLinkOwner(HomeLinkOwner(home))
+        home.observe { homeData = it; store.syncLinks() }
     }
 }
 

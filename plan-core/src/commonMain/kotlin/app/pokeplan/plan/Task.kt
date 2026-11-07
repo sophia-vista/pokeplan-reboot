@@ -32,6 +32,24 @@ enum class Category(val label: String) {
 
 enum class TaskState { OPEN, DONE, WONT_DO, DELETED }
 
+/**
+ * What a task is linked to in another module (docs/pokelife `PRODUCT_BIBLE.md` section 4, cross-module ownership). A link is a reference by a stable opaque id,
+ * never a second copy of the other module's record, and it decides **who owns the one completion and the one reward**:
+ *  - [HOME_CHORE]: HOME owns the chore. The task is a projection of the chore's current occurrence: completing it from PLAN asks HOME to complete the chore,
+ *    HOME pays Habitat Discovery once, and PLAN pays nothing ([ownsCompletion]).
+ *  - [LINK_FOLLOW_UP]: the user converted a LINK follow-up. From then on PLAN owns the task, its completion and its reward (PLAN's rules, paid once);
+ *    LINK keeps the person and shows this task's status, and cannot pay for the same follow-up.
+ */
+@Serializable
+enum class LinkKind(val ownsCompletion: Boolean) {
+    HOME_CHORE(ownsCompletion = true),
+    LINK_FOLLOW_UP(ownsCompletion = false),
+}
+
+/** The reference a linked task keeps: the kind, the other module's record id, and (for a repeating chore) the occurrence the task stands for now. */
+@Serializable
+data class TaskLink(val kind: LinkKind, val ref: String, val occurrence: String = "")
+
 @Serializable
 data class Subtask(
     val id: String,
@@ -75,6 +93,8 @@ data class Task(
     val paid: Boolean = false,
     /** When to be reminded, relative to the planned time or the deadline ([Reminders.baseTime]). */
     val reminders: List<ReminderOffset> = emptyList(),
+    /** The other module's record this task refers to, if any (see [TaskLink]). A task linked to a record its module owns never pays from PLAN. */
+    val link: TaskLink? = null,
 ) {
     init {
         require(title.isNotBlank()) { "a task needs a title" }
@@ -83,4 +103,7 @@ data class Task(
     }
 
     val isOpen: Boolean get() = state == TaskState.OPEN
+
+    /** True when another module owns this task's completion and reward (a HOME chore link): PLAN only shows it and asks the owner. */
+    val ownedElsewhere: Boolean get() = link?.kind?.ownsCompletion == true
 }

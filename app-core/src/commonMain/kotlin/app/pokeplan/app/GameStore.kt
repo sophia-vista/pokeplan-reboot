@@ -53,6 +53,8 @@ import app.pokeplan.core.reward.TrainerRank
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.core.reward.RewardEngine
 import app.pokeplan.plan.Category
+import app.pokeplan.plan.LinkKind
+import app.pokeplan.plan.TaskLink
 import app.pokeplan.plan.FailReason
 import app.pokeplan.plan.FocusEvent
 import app.pokeplan.plan.FocusRecord
@@ -531,6 +533,84 @@ class GameStore(
 
     fun updateTask(task: Task) = update { d -> d.copy(tasks = d.tasks.map { if (it.id == task.id) task else it }) }
 
+    // --- links to other modules (PRODUCT_BIBLE.md section 4) -------------------------------------------------------------------
+
+    private val linkOwners = mutableMapOf<LinkKind, LinkOwner>()
+
+    /** Registers the module that owns the completion of the tasks linked to its records (the app does this once for Home). */
+    fun registerLinkOwner(owner: LinkOwner) { linkOwners[owner.kind] = owner; syncLinks() }
+
+    /** The live task linked to [kind]'s record [ref] (never a deleted one), if any: a record has at most one. */
+    fun linkedTask(kind: LinkKind, ref: String): Task? = data.tasks.firstOrNull { it.link?.kind == kind && it.link?.ref == ref && it.state != TaskState.DELETED }
+
+    /**
+     * Makes the responsibility of a HOME chore visible in PLAN, by the user's choice (HOME.md 2.1). The task is a projection: its words and day come from the
+     * chore, completing it completes the chore in HOME (which pays once) and PLAN pays nothing. One task per chore: asking again gives the same task. Null when
+     * the chore is gone or has nothing waiting.
+     */
+    fun linkChore(choreId: String): Task? {
+        linkedTask(LinkKind.HOME_CHORE, choreId)?.let { return it }
+        val owner = linkOwners[LinkKind.HOME_CHORE] ?: return null
+        val link = TaskLink(LinkKind.HOME_CHORE, choreId)
+        val open = owner.project(link) as? LinkState.Open ?: return null
+        val task = Task(
+            id = newId(), title = open.title, category = Category.HOME, planned = open.planned, createdAtMillis = nowMillis,
+            link = link.copy(occurrence = open.occurrence),
+        )
+        update { it.copy(tasks = it.tasks + task) }
+        return task
+    }
+
+    /**
+     * The user converts a LINK follow-up into a PLAN task (LINK.md 2.4). From now on PLAN owns the task, its schedule, its completion and its reward, by PLAN's own
+     * rules and paid once; the link only lets LINK show this task's status ([linkedTask]) and keeps LINK from paying for the same follow-up. Converting the same
+     * follow-up again returns the same task, so it can never exist twice.
+     */
+    fun convertFollowUp(followUpId: String, title: String, planned: LocalDate? = null, due: LocalDateTime? = null): Task? {
+        linkedTask(LinkKind.LINK_FOLLOW_UP, followUpId)?.let { return it }
+        val clean = title.trim().ifEmpty { return null }
+        val task = Task(
+            id = newId(), title = clean, category = Category.SOCIAL, planned = planned, due = due, createdAtMillis = nowMillis,
+            link = TaskLink(LinkKind.LINK_FOLLOW_UP, followUpId),
+        )
+        update { it.copy(tasks = it.tasks + task) }
+        return task
+    }
+
+    /**
+     * Ends a link by the user's choice. A HOME projection is removed (it can be restored like any deleted task; the chore is untouched, HOME.md 2.1). A converted
+     * follow-up stays a normal PLAN task, now without the reference (what it paid stays paid, so it never pays twice).
+     */
+    fun unlinkTask(taskId: String) {
+        val task = data.tasks.firstOrNull { it.id == taskId && it.link != null } ?: return
+        if (task.ownedElsewhere) deleteTask(taskId)
+        else update { d -> d.copy(tasks = d.tasks.map { if (it.id == taskId) it.copy(link = null) else it }) }
+    }
+
+    /**
+     * Brings every task linked to a record another module owns in line with that record: words, day and state follow the owner, and nothing is paid or
+     * recorded here. A repeating chore's task moves on to the next occurrence; a chore that is gone takes its projection with it (restorable, never the chore's data).
+     * Call it when the owner's data changes and when the app opens; it writes nothing when nothing differs.
+     */
+    fun syncLinks() {
+        val now = nowMillis
+        val changed = data.tasks.map { t ->
+            val link = t.link?.takeIf { t.ownedElsewhere && t.state != TaskState.DELETED } ?: return@map t
+            val owner = linkOwners[link.kind] ?: return@map t
+            when (val s = owner.project(link)) {
+                LinkState.Gone -> TaskRules.delete(t, now)
+                LinkState.Inactive -> if (t.state == TaskState.WONT_DO) t else t.copy(state = TaskState.WONT_DO, completedAtMillis = t.completedAtMillis ?: now)
+                is LinkState.Open -> t.copy(
+                    title = s.title, planned = s.planned, state = TaskState.OPEN, completedAtMillis = null,
+                    link = link.copy(occurrence = s.occurrence),
+                )
+                is LinkState.Done -> if (t.state == TaskState.DONE && link.occurrence == s.occurrence) t
+                    else t.copy(state = TaskState.DONE, completedAtMillis = t.completedAtMillis ?: s.atMillis.takeIf { it > 0 } ?: now, link = link.copy(occurrence = s.occurrence))
+            }
+        }
+        if (changed != data.tasks) update { d -> d.copy(tasks = changed) }
+    }
+
     // --- lists --------------------------------------------------------------------------------------------------------
 
     /** The lists shown in the menu: not archived, in the order they were made. */
@@ -631,16 +711,50 @@ class GameStore(
 
     fun restoreTask(id: String) = update { d -> d.copy(tasks = d.tasks.map { if (it.id == id) TaskRules.restore(it, nowMillis) else it }) }
 
-    fun wontDo(id: String) = update { d -> d.copy(tasks = d.tasks.map { if (it.id == id) TaskRules.wontDo(it, nowMillis) else it }) }
+    fun wontDo(id: String) {
+        val task = data.tasks.firstOrNull { it.id == id } ?: return
+        val link = task.link?.takeIf { task.ownedElsewhere }
+        // For a linked chore, "won't do" is the owner's skip; syncLinks then shows it.
+        if (link != null) { if (task.isOpen) linkOwners[link.kind]?.skip(link); return }
+        update { d -> d.copy(tasks = d.tasks.map { if (it.id == id) TaskRules.wontDo(it, nowMillis) else it }) }
+    }
 
-    fun reopen(id: String) = update { d -> d.copy(tasks = d.tasks.map { if (it.id == id) TaskRules.reopen(it) else it }) }
+    fun reopen(id: String) {
+        val task = data.tasks.firstOrNull { it.id == id } ?: return
+        // A task whose record another module owns is reopened by taking back the owner's completion; syncLinks then shows it open again.
+        val link = task.link?.takeIf { task.ownedElsewhere }
+        if (link != null) {
+            if (task.state == TaskState.DONE || task.state == TaskState.WONT_DO) linkOwners[link.kind]?.undo(link)
+            return
+        }
+        update { d -> d.copy(tasks = d.tasks.map { if (it.id == id) TaskRules.reopen(it) else it }) }
+    }
 
-    /** Ticks a task off. The reward is held for the undo window; call [tick] (the UI does, every second) to settle it. */
+    /**
+     * Ticks a task off. The reward is held for the undo window; call [tick] (the UI does, every second) to settle it.
+     *
+     * A task linked to a record another module owns (a HOME chore) is not completed by PLAN: the owner does its own completion, once, and pays its own
+     * reward; this task then only shows it done and pays nothing (`PRODUCT_BIBLE.md` section 4). If the owner is not available or refuses, nothing is recorded.
+     */
     fun completeTask(id: String): PendingCompletion {
         val task = data.tasks.first { it.id == id }
+        val link = task.link?.takeIf { task.ownedElsewhere }
+        if (link != null) return completeLinked(task, link)
         val c = TaskRules.complete(task, nowMillis, zone)
         val pending = PendingCompletion(task, c.task, c.pays, c.tier, c.onTime, c.focusedOnIt, c.finalAtMillis)
         update { d -> d.copy(tasks = d.tasks.map { if (it.id == id) c.task else it }, pending = d.pending + pending) }
+        return pending
+    }
+
+    private fun completeLinked(task: Task, link: TaskLink): PendingCompletion {
+        val nothing = PendingCompletion(task, task, false, task.rank.tier, false, false, nowMillis)
+        if (!task.isOpen) return nothing
+        val owner = linkOwners[link.kind] ?: return nothing
+        if (!owner.complete(link)) return nothing
+        // The owner's own save may already have shown the task done through [syncLinks]; the task is read again either way.
+        val done = (data.tasks.firstOrNull { it.id == task.id } ?: task).copy(state = TaskState.DONE, completedAtMillis = nowMillis)
+        val pending = PendingCompletion(task, done, false, task.rank.tier, false, false, nowMillis + TaskRules.UNDO_WINDOW_MILLIS)
+        update { d -> d.copy(tasks = d.tasks.map { if (it.id == task.id) done else it }, pending = d.pending + pending) }
         return pending
     }
 
@@ -648,6 +762,7 @@ class GameStore(
     fun undoCompletion(taskId: String): Boolean {
         val p = data.pending.firstOrNull { it.original.id == taskId } ?: return false
         if (nowMillis >= p.finalAtMillis) return false
+        p.original.link?.takeIf { p.original.ownedElsewhere }?.let { link -> linkOwners[link.kind]?.undo(link) }
         update { d -> d.copy(tasks = d.tasks.map { if (it.id == taskId) p.original else it }, pending = d.pending - p) }
         return true
     }
@@ -697,6 +812,8 @@ class GameStore(
      */
     fun makeRepeating(taskId: String, repeat: Repeat): Boolean {
         val task = data.tasks.firstOrNull { it.id == taskId && it.isOpen } ?: return false
+        // A linked task is one record's projection, not a task of its own to repeat (the chore's own schedule repeats it).
+        if (task.link != null) return false
         val existing = seriesOf(task)
         if (existing != null) {
             val id = existing.template.seriesId!!
@@ -749,6 +866,7 @@ class GameStore(
     fun refresh() {
         val created = data.series.flatMap { s -> s.recurrence?.let { RecurringTasks.instancesToCreate(s.template, it, data.tasks, today, nowMillis) }.orEmpty() }
         if (created.isNotEmpty()) update { it.copy(tasks = it.tasks + created) }
+        syncLinks()
     }
 
     private fun settlePending() {
