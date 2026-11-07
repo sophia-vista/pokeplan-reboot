@@ -393,9 +393,10 @@ The starter is the buddy and starts in no party, so each module that has a Poké
 | CARE | A 5-second breath (Care): the breathing circle runs once, then a Care Egg hatches | A Common egg of the Care Region, into Care's party, leading it |
 | WORLD | Its authored opening (`MODULES/WORLD.md`) | Unchanged |
 | GEAR | None: GEAR has no acquisition (`MODULES/GEAR.md` section 6) | Nothing |
-| HEAL, MINT, HOME, LINK | Each module's own first-run demo when it is built | Through its acquisition method |
+| HEAL | A 5-second walk (Heal): "Walking…" counts down, then Field Research finds an egg | A Common egg of the Heal Region, into Heal's party, leading it |
+| MINT, HOME, LINK | Each module's own first-run demo when it is built | Through its acquisition method |
 
-Rules: it is offered on the module's first screen until done and is never required (every module works without it); it is done once per save (`AppData.tutorials`), so replaying or reloading cannot pay twice; it counts as no focus session, no calm break and no history (no streak, caps, meter, friendship or trainer points); the first of its species pays the usual new-species candies; a player who has already done the real thing (a finished focus session, a calm break) never sees it and is given nothing; and it needs no permission. A new module adds its own row here.
+Rules: it is offered on the module's first screen until done and is never required (every module works without it); it is done once per save (`AppData.tutorials`), so replaying or reloading cannot pay twice; it counts as no focus session, no calm break, no logged activity or drink (HEAL) and no history (no streak, caps, meter, friendship or trainer points); the first of its species pays the usual new-species candies; a player who has already done the real thing (a finished focus session, a calm break, a logged activity) never sees it and is given nothing; and it needs no permission. A new module adds its own row here.
 
 The ecosystem must preserve the approved module mechanics; it does not redefine them:
 

@@ -713,7 +713,7 @@ The module ownership rules in `PRODUCT_BIBLE.md` and `DATA_AND_MIGRATIONS.md` re
 | Owner | Data that stays private to owner | Permitted cross-boundary output |
 |---|---|---|
 | CARE | Journal, diary cards, mood, urges, skills responses, private notes | Only explicitly approved non-sensitive activity metadata; never content-derived events |
-| HEAL | Measurements, body composition, calories, heart rate, sleep, nutrition, symptoms, diagnoses, medication, appointments, health notes | Minimal opaque eligible participation event evaluated within HEAL/reward boundary; WORLD receives generic reward result only |
+| HEAL | Measurements, body composition, calories, heart rate, sleep, nutrition, symptoms, diagnoses, medication, appointments, health notes | Minimal opaque eligible participation event evaluated within HEAL/reward boundary; WORLD receives generic reward result only. *As built (0.135.0): `HealEvent` = stable id, module, opaque record reference, `activity_logged` or `participation`, time; nothing else (`MODULES/HEAL.md` section 22).* |
 | MINT | Account names, balances, transactions, merchants, budgets, savings, debts, bills, payment state | Approved abstract administrative Ledger Research event only; no values/circumstances |
 | LINK | Contact names, IDs, phone/email/address, relationship categories, notes, associated-person identity | Opaque eligible follow-up ID, module, policy version, completion time inside local reward contract; no identity/context |
 | HOME | Household contents, inventory, maintenance details, saved locations, private notes | Approved minimal Habitat Discovery event; no inventory or location payload |
