@@ -618,7 +618,7 @@ private fun WorldBaseView(model: AppModel) {
     }
         }
         BasePage.DOJO -> {
-            WorldBanner("makuhita-dojo", "Makuhita's Dojo", "${'$'}{model.data.player.coins} Poké to spend", height = 150.dp)
+            WorldBanner("makuhita-dojo", "Makuhita's Dojo", "${model.data.player.coins} Poké to spend", height = 150.dp)
     FieldLabel("Dojo")
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
