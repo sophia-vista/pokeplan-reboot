@@ -61,6 +61,7 @@ class TextCentreTest {
             "titleSmall18" to { androidx.compose.material3.MaterialTheme.typography.titleSmall }, "titleLarge24" to { androidx.compose.material3.MaterialTheme.typography.titleLarge },
             "labelMedium14" to { androidx.compose.material3.MaterialTheme.typography.labelMedium },
         )) measure("T-$n", Pixel.Panel) { Box(Modifier.size(120.dp, 48.dp).background(Pixel.Panel), contentAlignment = Alignment.Center) { androidx.compose.material3.Text("Value Hod", style = pick(), color = Pixel.Ink) } }
+        measure("back", Pixel.Panel) { BackButton({}) }
         measure("button", Pixel.Panel) { PixelButton("Done", {}, color = Pixel.Blue) }
         measure("button-compact", Pixel.Panel) { PixelButton("Done", {}, color = Pixel.Blue, compact = true) }
         measure("tab", Pixel.Panel) { TabButton("Week", false, {}) }

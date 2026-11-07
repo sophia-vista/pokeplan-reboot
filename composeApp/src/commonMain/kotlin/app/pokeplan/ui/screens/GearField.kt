@@ -127,7 +127,7 @@ internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
 @Composable
 internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.services.sound
-    if (feed == null) return NotHere("The sound meter", "This device has no microphone for the Pokégear to read.")
+    if (feed == null) return NotHere("The sound meter", "This device has no microphone for Gear to read.")
     val store = model.store
     val offset = model.data.gear.soundOffsetDb
     var dbFs by remember { mutableStateOf<Float?>(null) }

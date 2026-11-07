@@ -60,7 +60,7 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
     if (tool == null) {
         var query by remember { mutableStateOf("") }
         var category by remember { mutableStateOf<ToolCategory?>(null) }
-        SectionScaffold("Pokégear", null, onClose, icon = "explorer-kit", color = ModuleAccent.GEAR.header) {
+        SectionScaffold("Gear", null, onClose, icon = "explorer-kit", color = ModuleAccent.GEAR.header) {
             // The home: search first, then what you starred and used lately, then every tool by group. Search works offline.
             PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), singleLine = true, label = "Search the tools (lbs, yen, torch, laps)")
             fun entry(t: ToolInfo) = MenuEntry(t.tool.name, t.tool.icon, t.tool.label)
