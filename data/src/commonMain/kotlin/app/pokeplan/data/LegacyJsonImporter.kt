@@ -97,7 +97,8 @@ class LegacyJsonImporter(private val store: DataStore) {
         favorites.filter { it !in owned }.forEach { warnings += ImportWarning("favorite_unknown_pokemon", it) }
         origins.keys.filter { it !in owned }.forEach { warnings += ImportWarning("origin_unknown_pokemon", it) }
 
-        // 2. Parties: one per module, in the order the Pokémon were listed; the buddy / Care lead goes first (REP-009).
+        // 2. Parties: one per module, in the order the Pokémon were listed; the buddy / Care lead goes first (REP-009). A Pokémon is in one place
+        // only (owner decision, 7 November 2026), so the buddy, then a Guardian, take it from a party they were also in, as the app's Places.resolve does.
         val buddyId = player.string("buddyId")?.also { if (it !in owned) warnings += ImportWarning("buddy_unknown_pokemon", it) }?.takeIf { it in owned }
         val careLead = player.string("careLeadId")
         val byModule = linkedMapOf<String, MutableList<String>>()
@@ -109,7 +110,6 @@ class LegacyJsonImporter(private val store: DataStore) {
             if (module !in ModuleIds.WITH_PARTY) warnings += ImportWarning("unknown_party_id", "$legacyId on ${raw.string("id")}")
             byModule.getOrPut(module) { mutableListOf() } += raw.string("id")!!
         }
-        var partySlots = 0L
         for ((module, members) in byModule) {
             val lead = when (module) {
                 ModuleIds.PLAN -> buddyId
@@ -122,7 +122,6 @@ class LegacyJsonImporter(private val store: DataStore) {
             ordered.drop(ModuleIds.PARTY_CAPACITY).forEach { warnings += ImportWarning("party_over_capacity", "$module: $it stays owned but left the party") }
             if (module in ModuleIds.WITH_PARTY) {
                 store.pokemon.setParty(module, kept)
-                partySlots += kept.size
             } else warnings += ImportWarning("party_dropped", "$module: ${kept.size} members have no module to belong to")
         }
 
@@ -130,6 +129,12 @@ class LegacyJsonImporter(private val store: DataStore) {
         buddyId?.let { store.pokemon.setBuddy(it) }
         val guardians = player.stringList("guardians").filter { g -> (g in owned).also { if (!it) warnings += ImportWarning("guardian_unknown_pokemon", g) } }
         store.pokemon.setGuardians(guardians)
+        val placed = store.pokemon.places()
+        for ((module, members) in byModule) for (id in members) {
+            val now = placed[id]
+            if (module in ModuleIds.WITH_PARTY && now != PokemonPlace.Party(module) && id in owned) warnings += ImportWarning("place_conflict", "$id left the ${module.lowercase()} party for ${now?.let { it::class.simpleName } ?: "the PC"} (one place only)")
+        }
+        val partySlots = q.partySlotCount().executeAsOne()
 
         // 4. Dex history.
         val dexSources = mapOf(
@@ -202,6 +207,7 @@ class LegacyJsonImporter(private val store: DataStore) {
         check(store.economy.bag() == bag.filterValues { it > 0 }) { "the Bag differs from the source" }
         for ((kind, refs) in dex) check(store.pokemon.dex(kind).toSet() == refs) { "Dex ${kind.key} differs from the source" }
         check(store.db.dataQueries.partySlotCount().executeAsOne() == counts["partySlots"]) { "party slots differ" }
+        check(store.pokemon.places().size.toLong() == store.db.dataQueries.placeCount().executeAsOne()) { "a Pokémon is in two places" }
         val problems = store.economy.reconcile() + store.integrityIssues()
         check(problems.isEmpty()) { problems.joinToString("; ") }
     }
@@ -238,6 +244,7 @@ class LegacyJsonImporter(private val store: DataStore) {
             isFavorite = id in favorites,
             originHow = origin?.string("how"),
             originRegion = origin?.string("region"),
+            originJson = origin?.toString(),
             extraJson = extra.takeIf { it.isNotEmpty() }?.let { JsonObject(it).toString() },
         )
     }

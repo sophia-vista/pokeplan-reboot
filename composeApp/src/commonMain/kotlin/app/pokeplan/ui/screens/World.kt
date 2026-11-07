@@ -206,7 +206,7 @@ private fun RankStrip(model: AppModel) {
             if (next != null) PixelBar(((world.xp - rank.points).toFloat() / (next.points - rank.points)).coerceIn(0f, 1f), Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "${world.xp} of ${next.points} to ${next.label}")
         }
         ItemIcon(app.pokeplan.world.PmdArt.POKE_COIN, size = 24.dp, description = null)
-        Text("${world.poke}", style = MaterialTheme.typography.bodyMedium)
+        Text("${model.data.player.coins}", style = MaterialTheme.typography.bodyMedium)
     }
 }
 
@@ -496,7 +496,7 @@ private fun WorldSkillsView(model: AppModel) {
 private fun WorldBaseView(model: AppModel) {
     val store = model.store
     val world = model.data.world
-    WorldBanner("summit", "Exploration base", "${world.poke} Poké to spend", top = true)
+    WorldBanner("summit", "Exploration base", "${model.data.player.coins} Poké to spend", top = true)
     FieldLabel("Base")
     Facility.entries.forEach { f ->
         val level = world.facilityLevel(f)

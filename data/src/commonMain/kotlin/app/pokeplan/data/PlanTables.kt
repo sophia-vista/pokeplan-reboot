@@ -158,7 +158,7 @@ class PlanTables(private val store: DataStore) {
          * The save with what a read back cannot tell apart left out: an empty list of records or days is not stored, and comes back as
          * the model's own empty default; a day set is a set, so its order does not matter.
          */
-        private fun canonical(document: JsonObject): JsonObject = JsonObject(
+        internal fun canonical(document: JsonObject): JsonObject = JsonObject(
             document.filterNot { (key, value) -> (key in SLICES.map { it.field } || key in DAY_SETS) && (value as? JsonArray)?.isEmpty() == true }
                 .mapValues { (key, value) ->
                     if (key in DAY_SETS && value is JsonArray) JsonArray(value.sortedBy { (it as? JsonPrimitive)?.contentOrNull.orEmpty() }.distinct()) else value

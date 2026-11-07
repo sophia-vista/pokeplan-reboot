@@ -139,9 +139,10 @@ class GameStore(
     }
 
     /**
-     * One Poké balance (`PlayerState.coins`). World's pure rules still read and write `WorldData.poke`, so that field is a
-     * working copy of the balance, never a second wallet: whatever changed it or the coins in one update is folded into
-     * both. Retired when World moves onto the shared economy (docs/pokelife IMPLEMENTATION_BACKLOG.md, REP-014).
+     * One Poké balance (`PlayerState.coins`), written by the ledger (the live save turns a change of it into a ledger event, REP-014).
+     * World's pure rules still read and write `WorldData.poke`, so that field is the rules' working copy of the balance in memory, never
+     * a second wallet and never saved: whatever changed it or the coins in one update is folded into both. Retired when World's rules
+     * take the balance as an input (docs/pokelife IMPLEMENTATION_BACKLOG.md, REP-014).
      */
     private fun foldPoke(before: AppData, after: AppData): AppData {
         if (before.pokeMigration == null || after.pokeMigration == null) return migratePoke(after)
@@ -165,11 +166,12 @@ class GameStore(
 
     /** The one-time merge of Plan's coins and World's Poké, 1:1, recording both sources. Does nothing once it has run. */
     private fun migratePoke(d: AppData): AppData {
-        if (d.pokeMigration != null) return d.copy(world = d.world.copy(poke = d.player.coins))
-        val total = d.player.coins + d.world.poke
+        // The World balance of a save is read once (`legacyPoke`), then it is 0 and not written; `poke` is only the rules' working copy of the balance.
+        if (d.pokeMigration != null) return d.copy(world = d.world.copy(poke = d.player.coins, legacyPoke = 0))
+        val total = d.player.coins + d.world.legacyPoke
         return d.copy(
-            player = d.player.copy(coins = total), world = d.world.copy(poke = total),
-            pokeMigration = PokeMigration(d.player.coins, d.world.poke, nowMillis, RewardRules.VERSION),
+            player = d.player.copy(coins = total), world = d.world.copy(poke = total, legacyPoke = 0),
+            pokeMigration = PokeMigration(d.player.coins, d.world.legacyPoke, nowMillis, RewardRules.VERSION),
         )
     }
 
@@ -1720,6 +1722,18 @@ class GameStore(
 
         /** What the "Export my data" file leaves out: the same as [DEVICE_ONLY] except the Picker's list and what the Pokégear tools remember, which are the player's own data. */
         private val EXPORT_LEFT_OUT = DEVICE_ONLY - setOf("pickerOptions", "gear")
+
+        /**
+         * [text], a save, as the app would hold it after loading it (every rule that tidies a save applied) and serialised again, or an
+         * exception when it cannot be read. The live database uses it on a save it did not get from the app's own writes: the one it moves
+         * into the shared tables and a restored backup.
+         */
+        fun normalizeDocument(text: String, nowMillis: Long): String {
+            val storage = MemoryStorage(text)
+            val store = GameStore(storage, { nowMillis })
+            check(storage.keptAside == null) { "the save cannot be read" }
+            return json.encodeToString(AppData.serializer(), store.data)
+        }
 
         // "kind" because the rewards have a field called "type" (the same setting the reward engine uses over JSON).
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true; classDiscriminator = "kind" }

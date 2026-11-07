@@ -1,60 +1,115 @@
 package app.pokeplan.data
 
 
-/** Owned Pokémon, parties, the global buddy, Guardians, Dex history and progress: the shared Pokémon side. */
+/**
+ * Owned Pokémon, where each one is, Dex history and progress: the shared Pokémon side.
+ *
+ * A Pokémon is in **one place only** (POKEMON_ECOSYSTEM.md section 2.2): the global buddy, one module's party, a Guardian slot, or none (the
+ * PC). The table's primary key is the Pokémon, so every assignment here first takes it from its old place, and the places left behind are
+ * closed up so their slots stay 1, 2, 3... A WORLD expedition team and a GEAR helper are places too but belong to those modules' records.
+ */
 class PokemonRepository internal constructor(private val store: DataStore) {
     private val q get() = store.db.dataQueries
 
     fun add(p: OwnedPokemonRecord) = store.transaction {
+        val position = if (p.position > 0) p.position else q.nextPokemonPosition().executeAsOne().toInt()
         q.insertPokemon(
             p.id, p.speciesId.toLong(), p.formIdentifier, p.nickname, p.nature, p.ability, p.gender,
             p.ivs.hp.toLong(), p.ivs.attack.toLong(), p.ivs.defense.toLong(), p.ivs.spAttack.toLong(), p.ivs.spDefense.toLong(), p.ivs.speed.toLong(),
             p.evs.hp.toLong(), p.evs.attack.toLong(), p.evs.defense.toLong(), p.evs.spAttack.toLong(), p.evs.spDefense.toLong(), p.evs.speed.toLong(),
             p.level.toLong(), p.candyProgress.toLong(), p.totalCandies.toLong(), p.friendship.toLong(), if (p.isShiny) 1 else 0,
             p.heldItem, p.teraType, p.cosmeticForm, p.personality.toLong(), p.caughtAtMillis,
-            if (p.isFavorite) 1 else 0, p.originHow, p.originRegion, p.extraJson,
+            if (p.isFavorite) 1 else 0, p.originHow, p.originRegion, p.extraJson, position.toLong(), p.originJson,
         )
     }
 
     fun get(id: String): OwnedPokemonRecord? = q.pokemonById(id).executeAsOneOrNull()?.toRecord()
 
+    /** Every Pokémon in the order they were owned. */
     fun all(): List<OwnedPokemonRecord> = q.allPokemon().executeAsList().map { it.toRecord() }
 
     fun count(): Long = q.pokemonCount().executeAsOne()
 
-    /** Releases a Pokémon. Its party slots, buddy and Guardian entries go with it; its Dex history stays. */
-    fun release(id: String) = store.transaction { q.releasePokemon(id) }
+    /** Releases a Pokémon. Its place goes with it (the others in that party move up); its Dex history stays. */
+    fun release(id: String) = store.transaction {
+        q.releasePokemon(id)
+        compact()
+    }
 
-    // Parties.
+    // Places.
 
-    /** Replaces [moduleId]'s party with [ownedIds] (the lead first). A party never fills itself and never holds one Pokémon twice. */
+    /** Where [id] is; null means the PC (or that it is on a WORLD team or helps a GEAR tool, which those modules keep). */
+    fun placeOf(id: String): PokemonPlace? = q.placeOf(id).executeAsOneOrNull()?.let { place(it.kind, it.ref) }
+
+    /**
+     * Makes [ownedIds] (the lead first) [moduleId]'s party. A Pokémon that was somewhere else is taken from there; one that was in this
+     * party and is not listed goes to the PC. A party never fills itself, holds at most six and never one Pokémon twice.
+     */
     fun setParty(moduleId: String, ownedIds: List<String>) {
         require(moduleId in ModuleIds.WITH_PARTY) { "$moduleId has no party" }
         require(ownedIds.size <= ModuleIds.PARTY_CAPACITY) { "a party holds at most ${ModuleIds.PARTY_CAPACITY} (the lead and five members)" }
         require(ownedIds.toSet().size == ownedIds.size) { "a Pokémon can be in a party only once" }
         store.transaction {
-            q.clearParty(moduleId)
-            ownedIds.forEachIndexed { i, id -> q.insertPartySlot(moduleId, (i + 1).toLong(), id) }
+            q.clearPlaces(KIND_PARTY, moduleId.lowercase())
+            ownedIds.forEachIndexed { i, id ->
+                q.removePlace(id)
+                q.insertPlace(id, KIND_PARTY, moduleId.lowercase(), (i + 1).toLong())
+            }
+            compact()
         }
     }
 
     /** The party's Pokémon ids in slot order; the first is the lead. */
-    fun party(moduleId: String): List<String> = q.partyOf(moduleId).executeAsList().map { it.owned_id }
+    fun party(moduleId: String): List<String> = q.partyOf(moduleId.lowercase()).executeAsList().map { it.owned_id }
 
     fun lead(moduleId: String): String? = party(moduleId).firstOrNull()
 
-    // Buddy and Guardians.
-
-    fun setBuddy(id: String?) = store.transaction { if (id == null) q.clearBuddy() else q.setBuddy(id) }
+    /** [id] becomes the global buddy (taken from its old place); null leaves no buddy. The old buddy goes to the PC. */
+    fun setBuddy(id: String?) = store.transaction {
+        q.clearPlaces(KIND_BUDDY, "")
+        if (id != null) {
+            q.removePlace(id)
+            q.insertPlace(id, KIND_BUDDY, "", 0)
+        }
+        compact()
+    }
 
     fun buddy(): String? = q.buddy().executeAsOneOrNull()
 
+    /** [ids] become the Guardians in slot order, each taken from its old place; a Guardian not listed goes to the PC. */
     fun setGuardians(ids: List<String>) = store.transaction {
-        q.clearGuardians()
-        ids.forEachIndexed { i, id -> q.insertGuardian((i + 1).toLong(), id) }
+        require(ids.toSet().size == ids.size) { "a Pokémon can be a Guardian only once" }
+        q.clearPlaces(KIND_GUARDIAN, "")
+        ids.forEachIndexed { i, id ->
+            q.removePlace(id)
+            q.insertPlace(id, KIND_GUARDIAN, "", (i + 1).toLong())
+        }
+        compact()
     }
 
     fun guardians(): List<String> = q.guardians().executeAsList().map { it.owned_id }
+
+    /** Every place now (a Pokémon with none is not listed): for checks that the one-place rule holds. */
+    fun places(): Map<String, PokemonPlace> = q.allPlaces().executeAsList().associate { it.owned_id to place(it.kind, it.ref) }
+
+    /** Closes up the gaps a Pokémon leaves in a party or the Guardian slots, so the slots stay 1, 2, 3 in the same order. */
+    private fun compact() {
+        var last: Pair<String, String>? = null
+        var next = 0L
+        for (row in q.allPlaces().executeAsList()) {
+            if (row.kind == KIND_BUDDY) continue
+            val group = row.kind to row.ref
+            if (group != last) { last = group; next = 0 }
+            next++
+            if (row.slot != next) q.moveSlot(next, row.owned_id)
+        }
+    }
+
+    private fun place(kind: String, ref: String): PokemonPlace = when (kind) {
+        KIND_BUDDY -> PokemonPlace.Buddy
+        KIND_GUARDIAN -> PokemonPlace.Guardian
+        else -> PokemonPlace.Party(ref.uppercase())
+    }
 
     // Dex history and progress.
 
@@ -66,7 +121,7 @@ class PokemonRepository internal constructor(private val store: DataStore) {
 
     fun progress(): PlayerProgress? = q.progress().executeAsOneOrNull()?.let { PlayerProgress(it.egg_meter, it.trainer_points) }
 
-    private fun Owned_pokemon.toRecord() = OwnedPokemonRecord(
+    internal fun Owned_pokemon.toRecord() = OwnedPokemonRecord(
         id = id, speciesId = species_id.toInt(), formIdentifier = form_identifier, nickname = nickname, nature = nature,
         ability = ability, gender = gender,
         ivs = Spread(iv_hp.toInt(), iv_attack.toInt(), iv_defense.toInt(), iv_sp_attack.toInt(), iv_sp_defense.toInt(), iv_speed.toInt()),
@@ -75,5 +130,12 @@ class PokemonRepository internal constructor(private val store: DataStore) {
         isShiny = is_shiny == 1L, heldItem = held_item, teraType = tera_type, cosmeticForm = cosmetic_form,
         personality = personality.toInt(), caughtAtMillis = caught_at_millis, isFavorite = is_favorite == 1L,
         originHow = origin_how, originRegion = origin_region, extraJson = extra_json,
+        position = position.toInt(), originJson = origin_json,
     )
+
+    companion object {
+        internal const val KIND_BUDDY = "buddy"
+        internal const val KIND_PARTY = "party"
+        internal const val KIND_GUARDIAN = "guardian"
+    }
 }

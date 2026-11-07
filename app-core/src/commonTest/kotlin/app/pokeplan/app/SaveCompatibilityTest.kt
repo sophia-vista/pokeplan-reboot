@@ -7,6 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
@@ -71,7 +72,9 @@ class SaveCompatibilityTest {
         val exported = Json.parseToJsonElement(store.exportJson()) as JsonObject
         assertNotNull(exported["world"], "the export has World's save")
         assertNotNull(exported["rewardLog"], "and the reward history")
-        assertTrue((exported["world"] as JsonObject)["poke"].toString() != "0")
+        // One balance, and it is the player's: World's working copy of it is not part of a save.
+        assertNull((exported["world"] as JsonObject)["poke"], "World's Poké is not stored")
+        assertTrue(((exported["player"] as JsonObject)["coins"].toString().toInt()) > 0)
         store.eraseDevice()
         assertEquals(app.pokeplan.world.WorldData(), store.data.world)
         assertTrue(store.data.rewardLog.isEmpty())

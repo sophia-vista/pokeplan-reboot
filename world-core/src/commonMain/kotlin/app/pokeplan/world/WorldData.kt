@@ -1,6 +1,10 @@
 package app.pokeplan.world
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 /** One line of the expedition log: what happened and when (milliseconds). */
 @Serializable
@@ -55,6 +59,7 @@ data class Find(val speciesId: Int, val dungeonId: String, val floor: Int, val a
  * Everything the World game keeps: its teams, how deep each dungeon has been explored, its own XP and Poké, finds waiting
  * to be recruited, the items collected waiting for the Bag, and how far the story has got. It is client-side data of the save.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class WorldData(
     val teams: List<WorldTeam> = emptyList(),
@@ -63,7 +68,14 @@ data class WorldData(
     /** How many times each dungeon has been cleared, by id. */
     val clears: Map<String, Int> = emptyMap(),
     val xp: Int = 0,
-    val poke: Int = 0,
+    /**
+     * The Poké the World rules read and spend while one runs. **Never saved**: the one Poké balance is `PlayerState.coins`, which the ledger
+     * writes (docs/pokelife POKEMON_ECOSYSTEM.md section 11.2). The app sets this from the balance when a save loads and folds what a rule
+     * changed back into it after every action; it is a working input of these pure rules, not a wallet.
+     */
+    @Transient val poke: Int = 0,
+    /** Legacy: the World balance of a save from before the Poké merge, read once by the app's merge into the balance and then 0 (and so not written). */
+    @SerialName("poke") @EncodeDefault(EncodeDefault.Mode.NEVER) val legacyPoke: Int = 0,
     val finds: List<Find> = emptyList(),
     /** Items found and not yet in the shared Bag, by item id. */
     val items: Map<String, Int> = emptyMap(),
