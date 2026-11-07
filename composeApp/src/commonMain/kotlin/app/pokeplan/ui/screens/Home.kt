@@ -299,7 +299,7 @@ private fun RecentCard(model: AppModel, go: (Place) -> Unit) {
             onClick = owned?.let { p -> { model.openPokemonId = p.id; go(Place.COLLECTION) } },
             onClickLabel = owned?.let { "Open ${it.nickname}" },
         ) {
-            Text(if (hatched != null) "${hatched.nickname} ${if (isWorldSource(entry.source)) "joined you" else when (acquisitionOfSource(entry.source)) { Acquisition.ARRIVAL -> "arrived"; Acquisition.FIELD -> "was found"; Acquisition.LEDGER -> "was catalogued"; Acquisition.HABITAT -> "settled in"; Acquisition.EGG -> "hatched" }}" else entry.source, style = MaterialTheme.typography.bodyLarge, maxLines = 2)
+            Text(if (hatched != null) "${hatched.nickname} ${if (isWorldSource(entry.source)) "joined you" else when (acquisitionOfSource(entry.source)) { Acquisition.ARRIVAL -> "arrived"; Acquisition.FIELD -> "was found"; Acquisition.LEDGER -> "was catalogued"; Acquisition.HABITAT -> "settled in"; Acquisition.POSTCARD -> "was delivered"; Acquisition.EGG -> "hatched" }}" else entry.source, style = MaterialTheme.typography.bodyLarge, maxLines = 2)
             val what = if (hatched != null) entry.source else entry.rewards.take(2).joinToString(", ") { it.describe() }
             Text(listOf(what, daysAgo(store.today, store.dayOf(entry.atMillis))).filter { it.isNotEmpty() }.joinToString(", "), style = MaterialTheme.typography.bodyMedium, maxLines = 2)
         }

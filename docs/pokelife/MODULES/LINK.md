@@ -210,7 +210,7 @@ LINK owns the following canonical records:
 | Contact source mapping | Import provenance and reconciliation |
 | Postcard Trail state | LINK's optional acquisition progress and idempotency references |
 
-**As built (0.144.0, REP-014): Plan's half only.** LINK itself is not built. `GameStore.convertFollowUp(followUpId, title, planned, due)` makes the PLAN task for a converted follow-up (one task per follow-up id; `TaskLink(LINK_FOLLOW_UP, id)`), after which PLAN owns its completion and pays it once by Plan's rules (paid once, so a reopen never pays again); `GameStore.linkedTask(LINK_FOLLOW_UP, id)` gives LINK the task and its state to display; `unlinkTask` leaves a normal PLAN task. LINK must not pay for a follow-up that has a linked task. `TaskLinksTest` covers it.
+**As built (0.145.0, REP-014): Plan's half only.** LINK itself is not built. `GameStore.convertFollowUp(followUpId, title, planned, due)` makes the PLAN task for a converted follow-up (one task per follow-up id; `TaskLink(LINK_FOLLOW_UP, id)`), after which PLAN owns its completion and pays it once by Plan's rules (paid once, so a reopen never pays again); `GameStore.linkedTask(LINK_FOLLOW_UP, id)` gives LINK the task and its state to display; `unlinkTask` leaves a normal PLAN task. LINK must not pay for a follow-up that has a linked task. `TaskLinksTest` covers it.
 
 ### 4.1 Cross-module boundaries
 
@@ -544,6 +544,23 @@ LINK follows Phase 8 in the dependency-first Implementation Guide. HOME and LINK
 | `../ARCHITECTURE/DATA_AND_MIGRATIONS.md` | Shared persistence, transaction, encryption boundary, export, backup, restore and migration contracts |
 
 This document is the single detailed requirements source for LINK. Shared scheduling, visual rules, Pokémon ownership and technical foundations remain in their respective canonical documents; do not duplicate their implementation rules here.
+
+## 15. As built (0.145.0, REP-014): the manual slice
+
+*Built and tested on the JVM, compiled for Android; **not run on a device**. No reminder, device-contact import or widget was started.*
+
+**What exists.** A menu with an overview on top and four destinations. **Overview**: only what needs attention (follow-ups that are due, with a tick; dates in the next 14 days), quick-add, and one search over people, notes, dates and follow-ups. **People** (2.1, 2.2): a directory sorted by name or by what changed last (never ranked), filters for Pinned and relationship words, a person needs only a name, a profile with Overview, Notes (dated lines, newest first) and Follow-ups, an edit form, duplicate suggestions by name, phone digits or email (suggested, never merged), and a delete that asks what to do with their dates and follow-ups. **Dates** (2.3): birthday, anniversary, milestone or custom, day and month with an optional year, every year or once, an optional person; the next time it comes with "turns N" when the year is known. **29 February is observed on 28 February in a year without one** (`LinkRules.observed`). **Follow-ups** (2.4): title only, optional person, day and note; Open and History; done, cancelled, reopened. A late one is just "Due since…", no escalation. **Make it a Plan task** (2.4, on the follow-up's options, through `GameStore.convertFollowUp`): from then on PLAN owns the task and its reward, Link shows "In Plan" with no tick, Link never pays for that follow-up (`GameStore.link` refuses it), and "Stop linking to Plan" lets it go. **Settings**: Postcard Trail on or off, categories, export and erase by kind.
+
+**Postcard Trail (section 9), as built** *(numbers are *(tune)* starting values; `RewardRules.VERSION` 20, `docs/economy.md`)*:
+- **On by default** (every acquisition method is), off in Settings without touching a record. Only one thing pays: a **follow-up finished** (2 Rare Candies; at most 3 paid a day). Adding or importing people, notes, dates, tags and favourites, editing, rescheduling, cancelling and reopening never pay.
+- **Idempotent by follow-up.** The event id is `link:followup:<follow-up id>`, the game remembers it (`AppData.linkPaid`, newest 1000) and the follow-up keeps `paid`, so reopening and finishing again, a restore or a replay pays once. Nothing is clawed back by a reopen.
+- **What leaves LINK** is exactly `LinkEvent`: id, module ("link"), an opaque `ref`, the broad kind (`followup_completed`), the time and the policy version. `LinkStoreTest` and `LinkTablesTest` check that no name, number, email, organization, tag, note, date or follow-up title reaches the event, the shared save, the reward log or the shared tables.
+- A payment is candies, a little friendship for Link's lead, a trainer point and a point on the track; **3 points (three finished follow-ups) find a Postcard Egg** from the **Link Region** (`tools/species/regions/link.txt`) into Link's party. Link's party perks (Candy finder: Normal, Flying, Water, Grass, Bug, Ground; Friendship gain: Fairy, Fighting, Electric, Psychic, Fire, Dragon; capped at +25%) only change what Postcard Trail pays.
+- **First-run tutorial** (POKEMON_ECOSYSTEM.md 10.2.1): a 5-second postcard gives one Link Region Pokémon into Link's party, leading it, once per save. A new Pokémon arrives as "Postcard Trail delivered…" in a scene of its own (the route).
+
+**Data (section 4).** `link_*` tables from the start (schema 10): `link_person`, `link_note`, `link_date`, `link_followup` (each row `key, position, day, json`) and `link_state` (settings); `LinkTables` reads, exports or erases one family alone. Link is in the daily backup and the backup file; a backup made before Link leaves Link alone. Not sealed (no owner decision), like Home.
+
+**Not built, not offered:** reminders for dates and follow-ups (5; the shared scheduler has no LINK source), importing device contacts and the Contacts permission (6.1), a link from HOME to a contact, contact source mapping and provenance, widgets, and a passphrase-sealed backup.
 
 ## Shared Pokémon ecosystem contract
 

@@ -18,6 +18,8 @@ import app.pokeplan.core.pokemon.HealBucket
 import app.pokeplan.core.pokemon.HealPerks
 import app.pokeplan.core.pokemon.HomeBucket
 import app.pokeplan.core.pokemon.HomePerks
+import app.pokeplan.core.pokemon.LinkBucket
+import app.pokeplan.core.pokemon.LinkPerks
 import app.pokeplan.core.pokemon.MintBucket
 import app.pokeplan.core.pokemon.MintPerks
 import app.pokeplan.core.pokemon.PartyIds
@@ -54,6 +56,8 @@ data class PlayerState(
     val mintLeadId: String? = null,
     /** The lead of Home's party (slot 1); null means its first member. */
     val homeLeadId: String? = null,
+    /** The lead of Link's party (slot 1); null means its first member. */
+    val linkLeadId: String? = null,
     /** The lead of Plan's party (slot 1); null means its first member. Before roles were split (0) this was the buddy; see [rolesVersion]. */
     val planLeadId: String? = null,
     /** 0 for a save from before the buddy and the party leads were separate roles; 1 once [planLeadId] has been set from the old buddy. */
@@ -67,7 +71,7 @@ data class PlayerState(
     /** A module party's lead (its slot 1): the one chosen if it is still in the party, else the party's first member, else none. */
     fun lead(partyId: String): OwnedPokemon? {
         val members = partyOf(partyId)
-        val chosen = when (partyId) { PartyIds.PLAN -> planLeadId; PartyIds.CARE -> careLeadId; PartyIds.HEAL -> healLeadId; PartyIds.MINT -> mintLeadId; PartyIds.HOME -> homeLeadId; else -> null }
+        val chosen = when (partyId) { PartyIds.PLAN -> planLeadId; PartyIds.CARE -> careLeadId; PartyIds.HEAL -> healLeadId; PartyIds.MINT -> mintLeadId; PartyIds.HOME -> homeLeadId; PartyIds.LINK -> linkLeadId; else -> null }
         return members.firstOrNull { it.id == chosen } ?: members.firstOrNull()
     }
 
@@ -81,6 +85,8 @@ data class PlayerState(
     val mintLead: OwnedPokemon? get() = lead(PartyIds.MINT)
 
     val homeLead: OwnedPokemon? get() = lead(PartyIds.HOME)
+
+    val linkLead: OwnedPokemon? get() = lead(PartyIds.LINK)
 
     /** A party in slot order: the lead first, then the members in the order they joined. */
     fun partySlots(partyId: String): List<OwnedPokemon> {
@@ -280,6 +286,35 @@ data class HomeEvent(
     companion object { const val MODULE = "home" }
 }
 
+/**
+ * What a LINK moment was (docs/pokelife `MODULES/LINK.md` section 9.2). Only a follow-up the user finished counts. Adding or importing people, notes,
+ * dates, tags, favourites, and cancelling, reopening, editing or rescheduling a follow-up are never events.
+ */
+@Serializable
+enum class LinkMoment {
+    @SerialName("followup_completed") FOLLOW_UP,
+}
+
+/**
+ * The whole of what LINK tells the shared world (LINK.md section 4.2): a stable event [id] (so a replay is recognised and never pays twice), the
+ * source [module], an opaque record reference [ref] (a random key that means nothing outside LINK), the broad [kind], the [nowMillis] it happened and the
+ * eligibility policy [policy] version. No name, number, category, tag, note, date, follow-up title or context, and not who it was about.
+ */
+@OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+@Serializable
+data class LinkEvent(
+    val id: String,
+    val kind: LinkMoment,
+    val nowMillis: Long,
+    val ref: String,
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.ALWAYS)
+    val policy: Int = POLICY,
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.ALWAYS)
+    val module: String = MODULE,
+) {
+    companion object { const val MODULE = "link"; const val POLICY = 1 }
+}
+
 /** Which type is in the spotlight on a given day: all 18 take turns. */
 object Spotlight {
     fun typeFor(epochDay: Long): PokemonType = PokemonType.entries[(((epochDay % PokemonType.entries.size) + PokemonType.entries.size) % PokemonType.entries.size).toInt()]
@@ -406,6 +441,14 @@ object RewardEngine {
     val HOME_EGG_POINTS: Map<HomeKind, Int> = mapOf(HomeKind.CHORE to 1, HomeKind.MAINTENANCE to 2)
     const val HOME_EGG_METER_SIZE = 5
     const val HOME_POINTS = 1
+
+    /** Rare Candies for each LINK moment (Postcard Trail). *(tune)* */
+    val LINK_CANDIES: Map<LinkMoment, Int> = mapOf(LinkMoment.FOLLOW_UP to 2)
+
+    /** Postcard Trail's track, kept by the app: each finished follow-up adds its points and a full track discovers a Postcard Egg ([linkEgg]); three follow-ups, as LINK.md 9.3 asks. *(tune)* */
+    val LINK_EGG_POINTS: Map<LinkMoment, Int> = mapOf(LinkMoment.FOLLOW_UP to 1)
+    const val LINK_EGG_METER_SIZE = 3
+    const val LINK_POINTS = 1
 
     private fun scaled(base: Int, multiplier: Double): Int = maxOf(base, (base * multiplier).roundToInt())
 
@@ -594,6 +637,7 @@ object RewardEngine {
                 PartyIds.HEAL -> if (state.healLead == null) next.copy(healLeadId = p.id) else next
                 PartyIds.MINT -> if (state.mintLead == null) next.copy(mintLeadId = p.id) else next
                 PartyIds.HOME -> if (state.homeLead == null) next.copy(homeLeadId = p.id) else next
+                PartyIds.LINK -> if (state.linkLead == null) next.copy(linkLeadId = p.id) else next
                 else -> next
             }
         }
@@ -772,7 +816,7 @@ object RewardEngine {
         val option = HatchRules.rollWeighted(Region.HOUSEHOLD, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
         val size = state.partyOf(PartyIds.HOME).size
         val p = Hatching.create(newPokemonId, option, size, nowMillis, TASK_EGG_MINUTES, rng).copy(partyId = PartyIds.HOME)
-        val lead = state.homeLeadId?.takeIf { state.homeLead != null } ?: p.id.takeIf { p.inParty }
+        val lead = state.homeLead?.id ?: p.id.takeIf { p.inParty } // the lead the party already has (chosen or implicit: its first member) keeps leading; a newcomer only leads an empty party
         val (bag, overflow, newRewards) = newSpecies(known, p.speciesId, state.inventory)
         return Outcome(
             state.copy(pokemon = state.pokemon + p, homeLeadId = lead, inventory = bag, coins = state.coins + overflow, caught = known + p.speciesId),
@@ -801,5 +845,47 @@ object RewardEngine {
         val (bag, overflow) = state.inventory.addCapped(Items.RARE_CANDY, candies)
         rewards += Reward.Candies(CandyType.RARE, candies)
         return Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow, trainerPoints = state.trainerPoints + HOME_POINTS), rewards)
+    }
+
+    /**
+     * A Postcard Egg from a full Postcard Trail track ([LINK_EGG_POINTS]): rolled like a Task Egg from the Link Region (species not caught yet more
+     * likely), it hatches at once into Link's party if there is room (else the PC), and leads it if Link has no lead yet.
+     */
+    fun linkEgg(state: PlayerState, newPokemonId: String, nowMillis: Long, rng: Random): Outcome {
+        val known = state.caught + state.pokemon.map { it.speciesId }
+        var rarity = Egg.rates(TASK_EGG_MINUTES, false).roll(rng)
+        while (rarity.ordinal > 0 && HatchRules.pool(Region.LINK, rarity).isEmpty()) rarity = Rarity.entries[rarity.ordinal - 1]
+        val option = HatchRules.rollWeighted(Region.LINK, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
+        val size = state.partyOf(PartyIds.LINK).size
+        val p = Hatching.create(newPokemonId, option, size, nowMillis, TASK_EGG_MINUTES, rng).copy(partyId = PartyIds.LINK)
+        val lead = state.linkLead?.id ?: p.id.takeIf { p.inParty } // the lead the party already has keeps leading; a newcomer only leads an empty party
+        val (bag, overflow, newRewards) = newSpecies(known, p.speciesId, state.inventory)
+        return Outcome(
+            state.copy(pokemon = state.pokemon + p, linkLeadId = lead, inventory = bag, coins = state.coins + overflow, caught = known + p.speciesId),
+            listOf(Reward.Hatched(p, fromTask = true)) + newRewards,
+        )
+    }
+
+    /**
+     * A LINK moment (Postcard Trail): Link's lead gets a little friendship and the player [LINK_CANDIES] Rare Candies and a trainer point; Link's own
+     * perks may add a second candy or more friendship. Nothing about a person or a follow-up is read: the event has no such field.
+     */
+    fun link(state: PlayerState, e: LinkEvent, rng: Random): Outcome {
+        val rewards = mutableListOf<Reward>()
+        var pokemon = state.pokemon
+        val lead = state.linkLead
+        val perks = LinkPerks.total(lead, state.partyOf(PartyIds.LINK))
+        if (lead != null) {
+            var grown = lead.gainFriendship(FriendshipRules.Source.FOLLOW_UP)
+            val extra = perks[LinkBucket.FRIENDSHIP_GAIN] ?: 0.0
+            if (extra > 0 && rng.nextDouble() * 100 < extra) grown = grown.gainFriendship(FriendshipRules.Source.FOLLOW_UP)
+            pokemon = pokemon.map { if (it.id == lead.id) grown else it }
+            if (grown.friendship > lead.friendship) rewards += Reward.Friendship(grown.friendship - lead.friendship)
+        }
+        val second = perks[LinkBucket.CANDY_FINDER] ?: 0.0
+        val candies = LINK_CANDIES.getValue(e.kind) + if (second > 0 && rng.nextDouble() * 100 < second) 1 else 0
+        val (bag, overflow) = state.inventory.addCapped(Items.RARE_CANDY, candies)
+        rewards += Reward.Candies(CandyType.RARE, candies)
+        return Outcome(state.copy(pokemon = pokemon, inventory = bag, coins = state.coins + overflow, trainerPoints = state.trainerPoints + LINK_POINTS), rewards)
     }
 }

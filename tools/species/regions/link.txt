@@ -2,7 +2,7 @@
 # in touch: postal birds, loyal dogs, pairs and teams, singers and signallers, gift-givers, and Eevee for every bond. Starts
 # with the Kalos starters. Patrons: Latias and Latios (they talk through shared images), last in the list.
 # Super Rare lines: Dratini (the Dragonite express) and Dreepy (a bond that rides along).
-# Not released until the module ships.
+# Released with the Link screens.
 #
 # In the order of a mainline regional dex: the starters first, then the lines by rarity (Common, Uncommon, Rare, Super Rare) in
 # National Dex order with every stage next to its pre-evolution, then the quest and milestone species (ultra beasts, paradox,

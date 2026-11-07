@@ -56,7 +56,7 @@ object Places {
             val members = p.pokemon.filter { it.inParty && it.partyId == party }
             return chosen?.takeIf { c -> members.any { it.id == c } } ?: members.firstOrNull()?.id
         }
-        return p.copy(planLeadId = lead(PartyIds.PLAN, p.planLeadId), careLeadId = lead(PartyIds.CARE, p.careLeadId), healLeadId = lead(PartyIds.HEAL, p.healLeadId), mintLeadId = lead(PartyIds.MINT, p.mintLeadId), homeLeadId = lead(PartyIds.HOME, p.homeLeadId))
+        return p.copy(planLeadId = lead(PartyIds.PLAN, p.planLeadId), careLeadId = lead(PartyIds.CARE, p.careLeadId), healLeadId = lead(PartyIds.HEAL, p.healLeadId), mintLeadId = lead(PartyIds.MINT, p.mintLeadId), homeLeadId = lead(PartyIds.HOME, p.homeLeadId), linkLeadId = lead(PartyIds.LINK, p.linkLeadId))
     }
 
     /** The version a save carries once [resolve] has run. */

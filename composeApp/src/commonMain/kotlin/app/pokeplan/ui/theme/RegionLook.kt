@@ -48,6 +48,9 @@ enum class RegionLook(val scene: String, private val module: ModuleAccent) {
 
     /** The Home module (docs/pokelife MODULES/HOME.md): the town, and green. A utility surface: the scene is only a quiet backdrop. */
     HOME(BuddyScene.HOME, ModuleAccent.HOME),
+
+    /** The Link module (docs/pokelife MODULES/LINK.md): a route for the postcard trail, and blue. A utility surface: the scene is only a quiet backdrop. */
+    LINK(BuddyScene.LINK, ModuleAccent.LINK),
     ;
 
     /** The header bar on the region's pages, under white text. */
