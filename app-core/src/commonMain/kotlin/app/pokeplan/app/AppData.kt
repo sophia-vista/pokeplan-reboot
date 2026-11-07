@@ -8,6 +8,7 @@ import app.pokeplan.plan.FailReason
 import app.pokeplan.plan.FocusRecord
 import app.pokeplan.plan.FocusSession
 import app.pokeplan.plan.Goal
+import app.pokeplan.plan.FrequencyTarget
 import app.pokeplan.plan.Habit
 import app.pokeplan.plan.QuietHours
 import app.pokeplan.plan.DueReminder
@@ -42,7 +43,12 @@ data class AppData(
     /** Events on PokéPlan's own calendar: never paid, synced with the rest of the save. */
     val events: List<PlanEvent> = emptyList(),
     val series: List<TaskSeries> = emptyList(),
+    /** Legacy: habits of an older save, merged into [series] when it loads (then empty). */
     val habits: List<Habit> = emptyList(),
+    /** The habits as they were before their merge into recurring tasks (PLAN.md section 11.2), kept so nothing is lost and the merge can be checked or undone by hand. */
+    val legacyHabits: List<Habit> = emptyList(),
+    /** When [legacyHabits] were merged into [series]; null until that has run. */
+    val habitsMergedAtMillis: Long? = null,
     val goals: List<Goal> = emptyList(),
     val reviews: List<WeeklyReview> = emptyList(),
     val restDays: Set<LocalDate> = emptySet(),
@@ -293,7 +299,37 @@ data class Settings(
  * minimum-age rule, but it still shows that it repeats.
  */
 @Serializable
-data class TaskSeries(val template: Task, val recurrence: Recurrence, val firstTaskId: String? = null)
+data class TaskSeries(
+    val template: Task,
+    /** The calendar rule (daily, weekly, monthly, yearly). Null for a series with a [target]; exactly one of the two is set. */
+    val recurrence: Recurrence? = null,
+    val firstTaskId: String? = null,
+    /** A frequency target instead of a calendar rule (PLAN.md section 5.1). Such a series makes no task instances; it counts [completions]. */
+    val target: FrequencyTarget? = null,
+    /** The day a frequency series began, for its streak. */
+    val createdOn: LocalDate? = null,
+    /** The days a frequency series was done. Kept when its definition is edited (history is never rewritten). */
+    val completions: Set<LocalDate> = emptySet(),
+    /** The last day a completion paid, apart from [completions] so undoing and ticking again never pays twice. */
+    val paidOn: LocalDate? = null,
+) {
+    init {
+        require((recurrence != null) != (target != null)) { "a recurring task has a calendar rule or a frequency target, not both" }
+    }
+
+    val isFrequency: Boolean get() = target != null
+
+    /** The computing shape of a frequency series (its streak, and paying once a day): null for a calendar series. */
+    fun asHabit(): Habit? = target?.let { Habit(template.id, template.title, template.rank, template.category, it, createdOn ?: LocalDate(1970, 1, 1), completions, paidOn) }
+
+    companion object {
+        /** A legacy habit as a frequency series: same id (so goals that link it still do), creation day, completions and payment day. Pays nothing. */
+        fun of(h: Habit, createdAtMillis: Long): TaskSeries = TaskSeries(
+            template = Task(id = h.id, seriesId = h.id, title = h.title, rank = h.rank, category = h.category, createdAtMillis = createdAtMillis),
+            target = h.target, createdOn = h.createdOn, completions = h.completions, paidOn = h.paidOn,
+        )
+    }
+}
 
 /** A finished task that may still be undone. [original] is what to restore. */
 @Serializable

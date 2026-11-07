@@ -139,7 +139,7 @@ object Quests {
             RequirementKind.TASKS_DONE_HARD -> data.tasks.count {
                 it.state == TaskState.DONE && it.paid && (it.completedAtMillis ?: 0) >= since && (it.rank == Rank.B || it.rank == Rank.A)
             }
-            RequirementKind.HABIT_DAYS -> data.habits.flatMap { it.completions }.toSet().count { it >= sinceDay }
+            RequirementKind.HABIT_DAYS -> data.series.flatMap { it.completions }.toSet().count { it >= sinceDay }
             RequirementKind.WEEKLY_REVIEWS -> data.reviews.count { it.completedAtMillis >= since }
             RequirementKind.MILESTONES_DONE -> data.goals.flatMap { it.milestones }.count { it.rewarded && (it.doneAtMillis ?: 0) >= since }
             RequirementKind.ACTIVE_DAYS -> data.activeDays.count { it >= sinceDay }

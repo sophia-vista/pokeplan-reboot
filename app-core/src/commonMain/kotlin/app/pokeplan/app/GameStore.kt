@@ -64,6 +64,9 @@ import app.pokeplan.plan.MiniQuests
 import app.pokeplan.plan.PickForMe
 import app.pokeplan.plan.MilestoneResult
 import app.pokeplan.plan.Reviews
+import app.pokeplan.plan.FrequencyProgress
+import app.pokeplan.plan.FrequencyTarget
+import app.pokeplan.plan.Frequency
 import app.pokeplan.plan.HabitTarget
 import app.pokeplan.plan.Phase
 import app.pokeplan.plan.Rank
@@ -148,6 +151,18 @@ class GameStore(
         return migrated.copy(player = migrated.player.copy(coins = balance), world = migrated.world.copy(poke = balance))
     }
 
+    /**
+     * Habits of an older save become recurring tasks with a frequency target (PLAN.md sections 5 and 11.2): same id, creation day,
+     * completion days and payment day, so nothing paid is paid again and a goal that links one still does. The habit list is kept aside in
+     * `legacyHabits`, and the merge pays nothing. Idempotent: once the list is empty it does nothing.
+     */
+    private fun mergeHabits(d: AppData): AppData {
+        if (d.habits.isEmpty()) return d
+        val known = d.series.map { it.template.id }.toSet()
+        val merged = d.habits.filter { it.id !in known }.map { TaskSeries.of(it, nowMillis) }
+        return d.copy(series = d.series + merged, habits = emptyList(), legacyHabits = d.legacyHabits + d.habits, habitsMergedAtMillis = d.habitsMergedAtMillis ?: nowMillis)
+    }
+
     /** The one-time merge of Plan's coins and World's Poké, 1:1, recording both sources. Does nothing once it has run. */
     private fun migratePoke(d: AppData): AppData {
         if (d.pokeMigration != null) return d.copy(world = d.world.copy(poke = d.player.coins))
@@ -171,7 +186,7 @@ class GameStore(
 
     /** What every save that comes in (from the device or the cloud) goes through: numbers back in their range. */
     // The Modules setting is gone from Settings: Care is always shown, so a save that switched it off is switched back on when loaded.
-    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player)).let(::migratePoke).let(Places::resolve)
+    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player)).let(::migratePoke).let(Places::resolve).let(::mergeHabits)
 
     /**
      * Saves from before the Pokémon roles were split (docs/pokelife POKEMON_ECOSYSTEM.md, section 2.2) used the buddy as
@@ -546,7 +561,7 @@ class GameStore(
             val id = existing.template.seriesId!!
             update { d ->
                 d.copy(
-                    series = d.series.map { if (it.template.seriesId == id) it.copy(recurrence = it.recurrence.copy(repeat = repeat)) else it },
+                    series = d.series.map { if (it.template.seriesId == id) it.copy(recurrence = it.recurrence?.copy(repeat = repeat)) else it },
                     tasks = d.tasks.filterNot { untouchedLaterInstance(it, id) },
                 )
             }
@@ -591,7 +606,7 @@ class GameStore(
 
     /** Creates recurring instances for the next days. Call when the app opens and when the date changes. */
     fun refresh() {
-        val created = data.series.flatMap { RecurringTasks.instancesToCreate(it.template, it.recurrence, data.tasks, today, nowMillis) }
+        val created = data.series.flatMap { s -> s.recurrence?.let { RecurringTasks.instancesToCreate(s.template, it, data.tasks, today, nowMillis) }.orEmpty() }
         if (created.isNotEmpty()) update { it.copy(tasks = it.tasks + created) }
     }
 
@@ -609,26 +624,40 @@ class GameStore(
         }
     }
 
-    // --- habits -------------------------------------------------------------------------------------------------------
+    // --- frequency targets (recurring tasks that repeat N times in a period; there is no Habit record any more) ------------
 
-    fun addHabit(title: String, target: HabitTarget = HabitTarget.Daily, rank: Rank = Rank.C, category: Category = Category.HEALTH): Habit {
-        val habit = Habit(newId(), title.trim(), rank, category, target, today)
-        update { it.copy(habits = it.habits + habit) }
-        return habit
+    /** The recurring tasks with a frequency target. */
+    fun frequencyTasks(): List<TaskSeries> = data.series.filter { it.isFrequency }
+
+    fun addFrequencyTask(title: String, target: FrequencyTarget = HabitTarget.Daily, rank: Rank = Rank.C, category: Category = Category.HEALTH): TaskSeries {
+        val id = newId()
+        val series = TaskSeries(
+            Task(id = id, seriesId = id, title = title.trim(), rank = rank, category = category, createdAtMillis = nowMillis),
+            target = target, createdOn = today,
+        )
+        update { it.copy(series = it.series + series) }
+        return series
     }
 
-    /** Marks a habit done for [date]; the first completion of the day pays like a task. */
-    fun completeHabit(id: String, date: LocalDate = today) {
-        val habit = data.habits.first { it.id == id }
+    /** Marks a frequency task done for [date]; the first completion of the day pays like a task, and never twice for the same day. */
+    fun completeFrequencyTask(id: String, date: LocalDate = today) {
+        val series = data.series.first { it.template.id == id && it.isFrequency }
+        val habit = checkNotNull(series.asHabit())
         val pays = habit.paysOn(date) && date == today
         update { d ->
-            val next = d.copy(habits = d.habits.map { if (it.id == id) it.complete(date).let { h -> if (pays) h.paid(date) else h } else it })
-            if (pays) achieve(next, habit.rank.tier, "Habit: ${habit.title}") else next
+            val next = d.copy(series = d.series.map { if (it.template.id == id) it.copy(completions = it.completions + date, paidOn = if (pays) date else it.paidOn) else it })
+            if (pays) achieve(next, series.template.rank.tier, "Recurring: ${series.template.title}") else next
         }
     }
 
-    fun undoHabit(id: String, date: LocalDate = today) =
-        update { d -> d.copy(habits = d.habits.map { if (it.id == id) it.undo(date) else it }) }
+    fun undoFrequencyTask(id: String, date: LocalDate = today) =
+        update { d -> d.copy(series = d.series.map { if (it.template.id == id && it.isFrequency) it.copy(completions = it.completions - date) else it }) }
+
+    /** How far [series] is in its current period: "2 / 3 this week". */
+    fun frequencyProgress(series: TaskSeries): FrequencyProgress? = series.target?.let { Frequency.progress(it, series.completions, today, firstDayOfWeek) }
+
+    /** The streak of a frequency task, forgiving and secondary (PLAN.md section 5.4). */
+    fun frequencyStreak(series: TaskSeries): Int = series.asHabit()?.streak(today, data.restDays, perks.extraForgivenDays, firstDayOfWeek) ?: 0
 
     // --- goals --------------------------------------------------------------------------------------------------------
 
@@ -675,7 +704,7 @@ class GameStore(
     val weekStart: LocalDate
         get() = Streaks.weekStartOf(today, firstDayOfWeek)
 
-    fun reviewSummary(): Reviews.Summary = Reviews.summary(weekStart, data.tasks, data.focusHistory, data.habits, zone)
+    fun reviewSummary(): Reviews.Summary = Reviews.summary(weekStart, data.tasks, data.focusHistory, data.series.mapNotNull { it.asHabit() }, zone)
 
     fun canReview(): Boolean = Reviews.canComplete(weekStart, today, data.reviews)
 

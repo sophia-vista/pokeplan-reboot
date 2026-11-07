@@ -147,7 +147,7 @@ class PlanTables(private val store: DataStore) {
         private val DAY_SETS = listOf("restDays", "activeDays")
 
         /** Single values that belong to PLAN: the running session and how it ended, completions waiting to be undone, the pick, the emergency pauses, and the habits kept aside after their merge. */
-        private val STATE_FIELDS = setOf("focus", "lastFocusEnd", "pending", "pickedTaskId", "emergencyPausesDay", "emergencyPausesUsed", "legacyHabits", "habitsMergedAtMillis")
+        private val STATE_FIELDS = setOf("focus", "lastFocusEnd", "pending", "pickedTaskId", "emergencyPausesDay", "emergencyPausesUsed", "habits", "legacyHabits", "habitsMergedAtMillis")
 
         /** Every top-level field of the save that PLAN owns; the rest of the save is not PLAN's. */
         val PLAN_FIELDS: Set<String> = SLICES.map { it.field }.toSet() + DAY_SETS + STATE_FIELDS

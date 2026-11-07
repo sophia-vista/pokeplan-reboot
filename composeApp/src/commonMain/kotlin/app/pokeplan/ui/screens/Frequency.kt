@@ -56,7 +56,7 @@ internal fun habitTargetLabel(target: HabitTarget): String = when (target) {
 }
 
 @Composable
-internal fun HabitsView(model: AppModel) {
+internal fun FrequencyView(model: AppModel) {
     val store = model.store
     var title by remember { mutableStateOf("") }
     var more by remember { mutableStateOf(false) }
@@ -73,7 +73,7 @@ internal fun HabitsView(model: AppModel) {
     val ready = title.isNotBlank() && (kind != HabitKind.WEEKDAYS || days.isNotEmpty())
     fun add() {
         if (!ready) return
-        store.addHabit(title, target(), category = category)
+        store.addFrequencyTask(title, target(), category = category)
         title = ""; more = false; kind = HabitKind.DAILY; category = Category.HEALTH
     }
     TextBox {
@@ -81,7 +81,7 @@ internal fun HabitsView(model: AppModel) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelField(
                     title, { title = it }, Modifier.weight(1f), singleLine = true,
-                    placeholder = "New habit",
+                    placeholder = "New target, like read every day",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
@@ -120,21 +120,26 @@ internal fun HabitsView(model: AppModel) {
             }
         }
     }
-    if (model.data.habits.isEmpty()) EmptyState(emptyTitle(View.HABITS), emptyLine(View.HABITS), icon = View.HABITS.icon)
-    model.data.habits.forEach { h ->
+    val targets = model.data.series.filter { it.isFrequency }
+    if (targets.isEmpty()) EmptyState(emptyTitle(View.TARGETS), emptyLine(View.TARGETS), icon = View.TARGETS.icon)
+    targets.forEach { h ->
+        val target = h.target ?: return@forEach
         val doneToday = store.today in h.completions
+        val progress = store.frequencyProgress(h)
         ListRow(
-            lead = { RankBadge(h.rank) },
+            lead = { RankBadge(h.template.rank) },
             trail = {
-                if (doneToday) PixelIconButton("undo", "Undo", { store.undoHabit(h.id) }, Pixel.InkSoft)
-                else PixelIconButton("check", "Done", { model.effect(Sfx.HABIT_TICK); store.completeHabit(h.id) }, Pixel.Green)
+                if (doneToday) PixelIconButton("undo", "Undo", { store.undoFrequencyTask(h.template.id) }, Pixel.InkSoft)
+                else PixelIconButton("check", "Done", { model.effect(Sfx.HABIT_TICK); store.completeFrequencyTask(h.template.id) }, Pixel.Green)
             },
         ) {
-            Text(h.title, style = MaterialTheme.typography.bodyLarge)
+            Text(h.template.title, style = MaterialTheme.typography.bodyLarge)
+            // Progress in the period comes first; the streak is secondary and only shown once there is one (PLAN.md section 5.4).
+            val streak = store.frequencyStreak(h)
             Text(
-                listOf(
-                    if (doneToday) "Done today" else "Streak ${h.streak(store.today, model.data.restDays, store.perks.extraForgivenDays, store.firstDayOfWeek)}${streakUnit(h.target)}",
-                    habitTargetLabel(h.target), h.category.label,
+                listOfNotNull(
+                    progress?.label(), habitTargetLabel(target), h.template.category.label,
+                    if (streak >= 2) "streak $streak${streakUnit(target)}" else null,
                 ).joinToString(", "),
                 style = MaterialTheme.typography.bodyMedium,
             )
