@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import app.pokeplan.data.BackupBundle
 import app.pokeplan.data.DataStore
+import app.pokeplan.data.Pbkdf2Sealer
 import app.pokeplan.ui.BackupAccess
 import app.pokeplan.ui.BackupEntry
 import app.pokeplan.ui.StagedBackup
@@ -41,7 +42,7 @@ class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
         }.getOrNull()
         if (text == null) { done(null, "That file is too big to be a backup, or could not be read."); return@registerForActivityResult }
         when (val result = BackupBundle.stage(text, DataStore.SCHEMA_VERSION)) {
-            is BackupBundle.Staged.Ready -> { staged = result; done(StagedBackup(result.createdAtMillis, result.documents.keys.sorted()), null) }
+            is BackupBundle.Staged.Ready -> { staged = result; done(StagedBackup(result.createdAtMillis, result.documents.keys.sorted(), result.needsPassphrase), null) }
             is BackupBundle.Staged.Refused -> done(null, result.reason)
         }
     }
@@ -67,14 +68,27 @@ class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
             .getOrElse { Log.w(tag, "restore failed: ${it.javaClass.simpleName}"); "Could not restore it; nothing was changed." }
     }
 
-    override fun saveCopy(millis: Long?, onDone: (String) -> Unit) {
+    override fun saveCopy(millis: Long?, passphrase: String?, onDone: (String) -> Unit) {
         val s = store ?: return onDone("The data could not be opened.")
-        val text = runCatching {
-            if (millis != null) backups?.bundleOf(millis, DataStore.SCHEMA_VERSION)
-            else BackupBundle.encode(s.live.snapshot(), DataStore.SCHEMA_VERSION, System.currentTimeMillis())
-        }.getOrNull() ?: return onDone("That backup is gone.")
-        pendingText = text; onSaved = onDone
-        create.launch("pokelife-backup-${java.time.LocalDate.now()}.json")
+        val key = s.mintCipher
+        val sealer = Pbkdf2Sealer()
+        // Stretching a passphrase takes a moment on a phone, so it is done off the main thread; the picker opens when it is ready.
+        Thread {
+            val note = runCatching {
+                val docs = (if (millis != null) backups?.documentsOf(millis) else s.live.snapshot()) ?: return@runCatching "That backup is gone." to null
+                val made = if (passphrase == null) docs else {
+                    app.pokeplan.data.PassphraseSealer.refusal(passphrase)?.let { return@runCatching it to null }
+                    if (key == null) return@runCatching "Mint is not open on this run, so it cannot be sealed. Close the app and open it again." to null
+                    BackupBundle.portable(docs, key, passphrase, sealer) ?: return@runCatching "Mint in that backup was sealed on another phone, so this phone cannot open it to re-seal it." to null
+                }
+                null to BackupBundle.encode(made, DataStore.SCHEMA_VERSION, millis ?: System.currentTimeMillis())
+            }.getOrElse { Log.w(tag, "copy failed: ${it.javaClass.simpleName}"); "The copy could not be made." to null }
+            activity.runOnUiThread {
+                val text = note.second
+                if (text == null) onDone(note.first ?: "The copy could not be made.")
+                else { pendingText = text; onSaved = onDone; create.launch("pokelife-backup-${java.time.LocalDate.now()}.json") }
+            }
+        }.start()
     }
 
     override fun chooseFile(onChosen: (StagedBackup?, String?) -> Unit) {
@@ -82,11 +96,17 @@ class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
         open.launch(arrayOf("application/json", "application/octet-stream", "text/plain", "*/*"))
     }
 
-    override fun applyChosen(): String {
-        val ready = staged ?: return "Choose a file first."
-        val s = store ?: return "The data could not be opened, so nothing was restored."
-        return runCatching { s.live.replaceAll(ready.documents, System.currentTimeMillis()); staged = null; "Restored. What was here is kept aside." }
-            .getOrElse { Log.w(tag, "restore failed: ${it.javaClass.simpleName}"); "Could not restore it; nothing was changed." }
+    override fun applyChosen(passphrase: String?, onDone: (String) -> Unit) {
+        val ready = staged ?: return onDone("Choose a file first.")
+        val s = store ?: return onDone("The data could not be opened, so nothing was restored.")
+        Thread {
+            val note = runCatching {
+                val docs = BackupBundle.unlock(ready, passphrase, Pbkdf2Sealer())
+                if (docs == null) "That passphrase does not open this backup. Nothing was changed."
+                else { s.live.replaceAll(docs, System.currentTimeMillis()); "Restored. What was here is kept aside." }
+            }.getOrElse { Log.w(tag, "restore failed: ${it.javaClass.simpleName}"); "Could not restore it; nothing was changed." }
+            activity.runOnUiThread { if (note.startsWith("Restored")) staged = null; onDone(note) }
+        }.start()
     }
 
     private companion object { const val MAX_BYTES = 64 * 1024 * 1024 }

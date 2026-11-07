@@ -63,6 +63,28 @@ class MintStoreTest {
     }
 
     @Test
+    fun editingAnAccountChangesItsDetailsAndOpeningBalanceButNotItsCurrencyOnceItHasHistory() {
+        val s = setup()
+        val fresh = assertNotNull(s.mint.addAccount("Wallet", AccountType.CASH, "PHP", 1_000).record)
+        // No history yet: everything can be corrected, the currency included, and the shown balance is derived from the new opening.
+        val edited = assertNotNull(s.mint.updateAccount(fresh.copy(name = " Pocket ", institution = "Me", group = "Daily", suffix = "42", openingMinor = 5_000, currency = "usd", type = AccountType.BANK)).record)
+        assertEquals(listOf("Pocket", "Me", "Daily", "42", "USD", AccountType.BANK, 5_000L), listOf(edited.name, edited.institution, edited.group, edited.suffix, edited.currency, edited.type, edited.openingMinor))
+        assertEquals(5_000, MintRules.balance(s.mint.data, s.mint.data.accounts.single()).postedMinor)
+        // With history the currency is fixed, an asset cannot become a liability, and a bad figure is refused without changing anything.
+        val id = s.withHistory()
+        val a = s.mint.data.accounts.first { it.id == id }
+        assertTrue(s.mint.hasHistory(id))
+        val again = assertNotNull(s.mint.updateAccount(a.copy(currency = "JPY", type = AccountType.CREDIT_CARD, openingMinor = 90_000)).record)
+        assertEquals(listOf("PHP", AccountType.BANK, 90_000L), listOf(again.currency, again.type, again.openingMinor))
+        assertEquals(90_000 - 2_500, MintRules.balance(s.mint.data, again).postedMinor, "the balance follows the corrected opening; no record was rewritten")
+        assertNotNull(s.mint.updateAccount(a.copy(openingMinor = -1)).refused)
+        assertNotNull(s.mint.updateAccount(a.copy(name = "  ")).refused)
+        assertEquals(90_000L, s.mint.data.accounts.first { it.id == id }.openingMinor)
+        assertNotNull(s.mint.updateAccount(a.copy(id = "nope")).refused)
+        assertTrue(s.spy.events.isEmpty(), "editing an account earns and sends nothing")
+    }
+
+    @Test
     fun aFreshMintHasTheStartingCategoriesAndNothingElse() {
         val s = setup()
         assertTrue(s.mint.data.categories.size >= 10 && s.mint.data.accounts.isEmpty() && s.mint.data.transactions.isEmpty())

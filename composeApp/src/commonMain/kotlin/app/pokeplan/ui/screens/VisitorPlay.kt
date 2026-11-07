@@ -222,7 +222,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         model.haptic()
         val result = step.result
         when {
-            result?.friend == true -> { model.effect(Sfx.POKEMON_CENTER); model.cry(visitor.speciesId); pop(Emote.PARTY) }
+            result?.friend == true -> { model.effect(Sfx.RECRUIT); model.cry(visitor.speciesId); pop(Emote.PARTY) }
             step.reaction == Reaction.LOVED -> { model.cry(visitor.speciesId); pop(Emote.LOVE) }
             given == CareAction.GIFT && step.reaction != Reaction.FLAT -> { model.effect(Sfx.HEAL); pop(Emote.YUM) }
             step.reaction == Reaction.LIKED -> { model.effect(Sfx.SELECT); pop(Emote.HAPPY) }
@@ -248,7 +248,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         doing = null
         val result = care.leaveVisit() ?: return say("Not now.")
         model.haptic()
-        if (result.friend) { model.effect(Sfx.POKEMON_CENTER); model.cry(visitor.speciesId); pop(Emote.PARTY) } else pop(Emote.HAPPY)
+        if (result.friend) { model.effect(Sfx.RECRUIT); model.cry(visitor.speciesId); pop(Emote.PARTY) } else pop(Emote.HAPPY)
         say(visitEndedLine(name, result))
     }
     fun act(given: CareAction, spot: PetSpot? = null, berry: String? = null) = answer(care.visitAct(given, spot, berry), given)

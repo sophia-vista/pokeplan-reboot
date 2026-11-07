@@ -38,6 +38,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.FilterQuality
+import app.pokeplan.ui.launcher.drawInnerCorners
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -65,6 +66,8 @@ private val worldArt = mutableMapOf<String, ImageBitmap?>()
 @Composable
 internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boolean = false, top: Boolean = false) {
     val image by produceState(worldArt[name], name) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = worldArt[name]
         if (value == null) {
             value = orNull { Res.readBytes("files/world/$name.png").decodeToImageBitmap() }
             worldArt[name] = value
@@ -176,6 +179,8 @@ internal fun dungeonTiles(dungeonId: String): String = when (dungeonId) {
 internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Boolean, modifier: Modifier = Modifier, scrolls: Boolean = true, content: @Composable () -> Unit) {
     val tiles = dungeonTiles(dungeonId)
     val atlas by produceState(tileAtlases[tiles], tiles) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = tileAtlases[tiles]
         if (value == null) {
             value = orNull { Res.readBytes("files/tiles/$tiles.png").decodeToImageBitmap() }
             tileAtlases[tiles] = value
@@ -195,7 +200,7 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
         val tile = with(density) { tilePx.toDp() }
         // Dark fill, so a pixel the tiles do not reach shows dark and never the white of a plain box.
         Box(Modifier.fillMaxWidth().dialogueBox(fill = Color(0xFF141C28)).clip(DialogueShape)) {
-            Box(Modifier.matchParentSize().padding(start = FRAME, end = FRAME, top = FRAME, bottom = FRAME - 2.dp).clipToBounds()) {
+            Box(Modifier.matchParentSize().padding(start = FRAME, end = FRAME, top = FRAME - 2.dp, bottom = FRAME - 2.dp).clipToBounds()) {
                 Canvas(Modifier.fillMaxSize()) {
                     val image = atlas ?: return@Canvas drawRect(Color(0xFF2A2A2A))
                     val cols = (size.width / tilePx).toInt() + 2
@@ -214,8 +219,9 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
                         val scrolled = (((c + scrollTiles) % 40) + 40) % 40
                         val (ax, ay) = map.atlas(scrolled, r, seed).let { t -> if (t.second == 3 && !fit[t.first]) 0 to 3 else t }
                         put(ax, ay, x, r * tilePx)
+                        map.innerCorners(scrolled, r).let { corners -> if (corners != 0) drawInnerCorners(image, corners, x, r * tilePx, TILE_PX, pixel) }
                     }
-                    drawRect(Color(0xB3141C28), Offset(0f, (STRIP_ROWS + 2) * tilePx.toFloat()), Size(size.width, size.height))
+                    drawRect(Color(0xB3141C28), Offset(0f, (STRIP_ROWS + 3) * tilePx.toFloat()), Size(size.width, size.height))
                 }
                 // The team on the floor rows, leader on the right: feet on the floor, never on a wall.
                 val shown = walkers.take(4)
@@ -233,7 +239,7 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
                     }
                 }
             }
-            Column(Modifier.padding(start = Spacing.BoxX + 8.dp, end = Spacing.BoxX + 8.dp, top = FRAME + tile * (STRIP_ROWS + 2) + Spacing.L, bottom = Spacing.BoxY + 12.dp)) { onWall(content) }
+            Column(Modifier.padding(start = Spacing.BoxX + 8.dp, end = Spacing.BoxX + 8.dp, top = FRAME - 2.dp + tile * (STRIP_ROWS + 3) + Spacing.L, bottom = Spacing.BoxY + 12.dp)) { onWall(content) }
         }
     }
 }
@@ -276,6 +282,8 @@ internal fun campTiles(level: Int): String = when {
 internal fun CampYard(level: Int, residents: List<TileWalker>, animate: Boolean) {
     val tiles = campTiles(level)
     val atlas by produceState(tileAtlases[tiles], tiles) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = tileAtlases[tiles]
         if (value == null) {
             value = orNull { Res.readBytes("files/tiles/$tiles.png").decodeToImageBitmap() }
             tileAtlases[tiles] = value
@@ -291,8 +299,8 @@ internal fun CampYard(level: Int, residents: List<TileWalker>, animate: Boolean)
         val pixel = (with(density) { inner.toPx() } / (TILE_PX * 8)).toInt().coerceAtLeast(1)
         val tilePx = TILE_PX * pixel
         val tile = with(density) { tilePx.toDp() }
-        Box(Modifier.fillMaxWidth().height(tile * (YARD_ROWS) + FRAME * 2 - 2.dp).dialogueBox(fill = Color(0xFF141C28)).clip(DialogueShape)) {
-            Box(Modifier.matchParentSize().padding(start = FRAME, end = FRAME, top = FRAME, bottom = FRAME - 2.dp).clipToBounds()) {
+        Box(Modifier.fillMaxWidth().height(tile * (YARD_ROWS) + FRAME * 2 - 4.dp).dialogueBox(fill = Color(0xFF141C28)).clip(DialogueShape)) {
+            Box(Modifier.matchParentSize().padding(start = FRAME, end = FRAME, top = FRAME - 2.dp, bottom = FRAME - 2.dp).clipToBounds()) {
                 Canvas(Modifier.fillMaxSize()) {
                     val image = atlas ?: return@Canvas drawRect(Color(0xFF2A2A2A))
                     fun put(ax: Int, ay: Int, x: Int, y: Int) =
@@ -342,6 +350,8 @@ internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: Str
     // [mapName] names another map (the Kanto layer's own, assets/world/map-kanto.png); the home map is map-1 to map-8, uncovered by [stage].
     val name = mapName ?: "map-${stage.coerceIn(1, 8)}"
     val image by produceState(worldArt[name], name) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = worldArt[name]
         if (value == null) {
             value = orNull { Res.readBytes("files/world/$name.png").decodeToImageBitmap() }
             worldArt[name] = value
@@ -426,6 +436,8 @@ private val fxFrames = mapOf("hit" to Triple(72, 72, 24), "welcome" to Triple(64
 internal fun FxBurst(name: String, key: Int, size: Dp, modifier: Modifier = Modifier, play: Boolean = true) {
     val (fw, fh, count) = fxFrames[name] ?: return
     val sheet by produceState(fxSheets[name], name) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = fxSheets[name]
         if (value == null) {
             value = orNull { Res.readBytes("files/world/fx/$name.png").decodeToImageBitmap() }
             fxSheets[name] = value

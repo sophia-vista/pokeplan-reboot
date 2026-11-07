@@ -122,7 +122,13 @@ class AppModel(
     val services: app.pokeplan.ui.gear.GearServices = app.pokeplan.ui.gear.GearServices(),
     /** The platform's backups (Android); null where there are none. */
     val backups: BackupAccess? = null,
+    /** The phone's screen lock for Mint's optional gate; null where there is none (desktop, web), and then the gate is not offered. */
+    val gate: DeviceGate? = null,
 ) {
+    /** When Mint was last opened with the gate (millis), and when the Mint screens were last left; see `MintGate` in screens/Mint.kt. */
+    var mintUnlockedAt: Long = 0L
+    var mintLeftAt: Long = 0L
+
     /** Whether the Pokégear is open: a screen over whichever tab is showing, reached from the button at the top of every tab. */
     var gearOpen: Boolean by mutableStateOf(false)
 
@@ -293,12 +299,15 @@ fun App(
     sensors: app.pokeplan.ui.gear.SensorFeed? = null,
     services: app.pokeplan.ui.gear.GearServices = app.pokeplan.ui.gear.GearServices(),
     backups: BackupAccess? = null,
+    deviceGate: DeviceGate? = null,
     /** Called after every change to the saved data (the Android app uses it to keep its widgets up to date). */
     onDataChanged: ((AppData) -> Unit)? = null,
     /** Called after every change to Care's save (the Android app keeps routine reminders and the Care widget up to date). */
     onCareChanged: ((CareData) -> Unit)? = null,
     /** Called after every change to Heal's records (the Android app keeps hydration reminders up to date). It receives the settings' reminder times only through the data; nothing else leaves Heal. */
     onHealChanged: ((HealData) -> Unit)? = null,
+    /** Called after every change to Mint's records (the Android app keeps bill reminders up to date). Only the host's own reminder code looks inside; nothing is sent anywhere. */
+    onMintChanged: ((MintData) -> Unit)? = null,
     /** Called when the app switches between the light and dark colours, so the host can match the system bar icons. */
     onDark: ((Boolean) -> Unit)? = null,
 ) {
@@ -308,7 +317,7 @@ fun App(
         val care = CareStore(careStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val heal = HealStore(healStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val mint = MintStore(mintStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
-        AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, torch, capabilities, sensors, services, backups).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
+        AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, torch, capabilities, sensors, services, backups, deviceGate).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
     }
     // The phone's power saver is read now and then; World's animations stand still while it is on.
     LaunchedEffect(model) { while (true) { model.powerSaving = phone?.powerSaving == true; kotlinx.coroutines.delay(30_000) } }
@@ -326,6 +335,11 @@ fun App(
     if (onHealChanged != null) DisposableEffect(model.heal) {
         val stop = model.heal.observe(onHealChanged)
         onHealChanged(model.heal.data)
+        onDispose(stop)
+    }
+    if (onMintChanged != null) DisposableEffect(model.mint) {
+        val stop = model.mint.observe(onMintChanged)
+        onMintChanged(model.mint.data)
         onDispose(stop)
     }
     if (externalChanges != null) LaunchedEffect(externalChanges) {

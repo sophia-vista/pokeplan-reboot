@@ -35,6 +35,8 @@ private val cache = mutableMapOf<String, ImageBitmap?>()
 @Composable
 fun PixelBackground(name: String, modifier: Modifier = Modifier, scale: Int = 3, content: @Composable BoxScope.() -> Unit) {
     val bitmap by produceState(cache[name], name) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = cache[name]
         if (value == null) {
             value = orNull { Res.readBytes("files/backgrounds/$name.png").decodeToImageBitmap() }
             cache[name] = value

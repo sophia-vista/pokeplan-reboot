@@ -9,6 +9,8 @@ import app.pokeplan.LiveStore
 import app.pokeplan.app.ActionResult
 import app.pokeplan.app.CareReminderAdapter
 import app.pokeplan.app.HealReminderAdapter
+import app.pokeplan.app.MintReminderAdapter
+import app.pokeplan.mintStore
 import app.pokeplan.healStore
 import app.pokeplan.app.FireDecision
 import app.pokeplan.app.FocusWindow
@@ -27,7 +29,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 
 /**
- * The one reminder scheduler for PLAN, CARE and HEAL (INTEGRATIONS_AND_PRIVACY.md section 9). The policy and the decisions are in
+ * The one reminder scheduler for PLAN, CARE, HEAL and MINT (INTEGRATIONS_AND_PRIVACY.md section 9). The policy and the decisions are in
  * [ReminderCoordinator] (JVM-tested); this object only sets alarms at the times it plans, posts what it says to show, and routes
  * a tapped action to the module that owns the source. Alarms carry only the opaque request (module, reference, kind,
  * occurrence), never a title or a note. Snoozes and repeats are the one thing it stores (`reminder_hold`); everything else is
@@ -52,10 +54,12 @@ object SharedReminders {
         val game = widgetStore(context)
         val care = careStore(context, game)
         val heal = healStore(context, game)
+        val mint = mintStore(context, game)
         val coordinator = ReminderCoordinator(
             listOf(
                 PlanReminderAdapter({ game.data }) { id -> if (game.data.tasks.any { it.id == id && it.isOpen }) { game.completeTask(id); true } else false },
                 HealReminderAdapter({ heal.data }, { game.data }, { heal.today }),
+                MintReminderAdapter({ mint.data }, { game.data }, { mint.today }),
                 CareReminderAdapter({ care.data }, { game.data }) { id, day ->
                     // Ticked like on the Care screen, and paid the same way, only for today's routine.
                     if (day == care.today && care.data.routines.any { it.id == id && !it.doneOn(day) }) { care.completeRoutine(id); true } else false
@@ -152,6 +156,7 @@ object SharedReminders {
             ReminderModule.PLAN -> widgetStore(context).data.tasks.firstOrNull { it.id == request.sourceRef }?.let { TaskReminders.show(context, it, now, request) }
             ReminderModule.CARE -> RoutineReminders.show(context, request.sourceRef, title, LocalDate.parse(request.occurrence), request)
             ReminderModule.HEAL -> HydrationReminders.show(context, request.sourceRef, title, request)
+            ReminderModule.MINT -> BillReminders.show(context, request.sourceRef, title, request)
             else -> Unit
         }
     }
@@ -188,6 +193,7 @@ object SharedReminders {
             ReminderModule.PLAN -> TaskReminders.notificationId(request.sourceRef)
             ReminderModule.CARE -> RoutineReminders.notificationId(request.sourceRef)
             ReminderModule.HEAL -> HydrationReminders.notificationId(request.sourceRef)
+            ReminderModule.MINT -> BillReminders.notificationId(request.sourceRef)
             else -> return
         }
         context.getSystemService(NotificationManager::class.java)?.cancel(id)

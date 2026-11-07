@@ -260,7 +260,7 @@ private fun WorldMapView(model: AppModel) {
                 when {
                     reasons.isNotEmpty() -> reasons.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = warn) }
                     ready.isEmpty() && world.slots().any { it.expedition == null } ->
-                        PixelButton("Send my strongest", { model.store.worldQuickSend(d.id) }, color = Module.WORLD.look.accent, compact = true)
+                        PixelButton("Send my strongest", { model.store.worldQuickSend(d.id); model.effect(Sfx.STAIRS_DOWN) }, color = Module.WORLD.look.accent, compact = true)
                     ready.isEmpty() -> Text("Every team is out. Recall one in Expeditions.", style = MaterialTheme.typography.bodyMedium)
                     else -> {
                         // Why a team suits the place: how long a floor takes it, and how many of its members are of a favoured type.
@@ -270,7 +270,7 @@ private fun WorldMapView(model: AppModel) {
                             Text("Team ${team.id}: a floor takes about ${fit.floorMillis / 60_000} min; ${fit.favored} of ${fit.size} like this place.", style = MaterialTheme.typography.bodyMedium)
                         }
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                            ready.forEach { team -> PixelButton("Send team ${team.id}", { model.store.worldStart(team.id, d.id) }, color = Module.WORLD.look.accent, compact = true) }
+                            ready.forEach { team -> PixelButton("Send team ${team.id}", { if (model.store.worldStart(team.id, d.id)) model.effect(Sfx.STAIRS_DOWN) }, color = Module.WORLD.look.accent, compact = true) }
                         }
                     }
                 }
@@ -629,7 +629,7 @@ private fun WorldBaseView(model: AppModel) {
             }
             Text("${app.pokeplan.world.Dojo.COST} Poké buys ${app.pokeplan.world.Dojo.SKILL_XP} skill XP in a skill you choose.", style = MaterialTheme.typography.bodyMedium)
             WorldSkill.entries.forEach { skill ->
-                PixelButton("Train ${skill.label}", { if (store.worldTrain(skill)) { hit++; model.effect(Sfx.DAMAGE) } }, Modifier.fillMaxWidth(), Pixel.InkSoft, enabled = world.poke >= app.pokeplan.world.Dojo.COST && world.skillLevel(skill) < WorldSkill.MAX_LEVEL, compact = true)
+                PixelButton("Train ${skill.label}", { if (store.worldTrain(skill)) { hit++; model.effect(Sfx.LEARN) } }, Modifier.fillMaxWidth(), Pixel.InkSoft, enabled = world.poke >= app.pokeplan.world.Dojo.COST && world.skillLevel(skill) < WorldSkill.MAX_LEVEL, compact = true)
             }
         }
     }
@@ -678,7 +678,7 @@ private fun WorldTeamsView(model: AppModel) {
                         Text("A floor takes about ${per / 1000 / 60} min ${per / 1000 % 60} s. It keeps going while you are away, up to 12 hours.", style = MaterialTheme.typography.bodyMedium)
                     }
                     if (outAt != null) SpeedExplainer(members, outAt, world)
-                    PixelButton("Recall", { store.worldRecall(team.id) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                    PixelButton("Recall", { store.worldRecall(team.id); model.effect(Sfx.STAIRS_UP) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 } else {
                     PixelButton(if (editing) "Close" else "Choose the team", { editing = !editing }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                     if (editing) {
@@ -801,7 +801,7 @@ private fun WorldBagView(model: AppModel) {
             meetFind, joined,
             onRecruit = {
                 val index = meeting ?: return@RecruitCard
-                store.worldRecruit(index)?.let { p -> joined = p; model.cry(p.speciesId); model.effect(Sfx.CONFIRM) }
+                store.worldRecruit(index)?.let { p -> joined = p; model.cry(p.speciesId); model.effect(Sfx.RECRUIT) }
                 meeting = null
             },
             onLater = { meeting = null }, onOk = { joined = null },

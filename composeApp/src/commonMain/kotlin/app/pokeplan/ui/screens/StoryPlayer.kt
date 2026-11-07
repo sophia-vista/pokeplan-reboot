@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.launcher.drawInnerCorners
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.VectorConverter
@@ -318,6 +319,7 @@ private fun DungeonFloor(dungeonId: String) {
         for (r in 0 until rows) for (c in 0 until cols) {
             val (ax, ay) = map.atlas(c, r, seed).let { t -> if (t.second == 3 && !fit[t.first]) 0 to 3 else t }
             put(ax, ay, c * tilePx - shift, r * tilePx)
+            map.innerCorners(c, r).let { corners -> if (corners != 0) drawInnerCorners(image, corners, c * tilePx - shift, r * tilePx, tileSize, pixel) }
         }
     }
 }
