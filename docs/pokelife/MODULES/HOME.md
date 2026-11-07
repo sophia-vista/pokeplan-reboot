@@ -662,7 +662,7 @@ HOME follows the dependency-first roadmap in `IMPLEMENTATION_GUIDE.md`. Do not s
 
 This module document owns HOME-specific rules only. Shared feature documents remain authoritative for shared behavior.
 
-## 16. As built (0.142.0, REP-014): the manual slice
+## 16. As built (0.143.0, REP-014): the manual slice
 
 *Built and tested on the JVM, compiled for Android; **not run on a device**. No reminder, attachment, camera, PLAN link or import was started.*
 

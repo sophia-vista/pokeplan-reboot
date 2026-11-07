@@ -129,6 +129,16 @@ class ScreenshotTest {
         }
     }
 
+    /** The Kanto layer's whole dungeon list, tall: each card's title, types and tiles must belong to the same dungeon. */
+    @Test
+    fun worldMapKantoList() {
+        val store = started()
+        val model = AppModel(store)
+        model.worldSection = app.pokeplan.ui.screens.WorldSection.MAP
+        model.worldLayer = app.pokeplan.world.WorldLayer.KANTO
+        render("world-map-kanto-list", height = 9000, frames = 40) { PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.WorldScreen(model) } } }
+    }
+
     @Test
     fun world() {
         val store = started()
@@ -529,6 +539,52 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.Cutscene.Evolve(before, before.evolvedInto(5, "charmeleon"))
     }
 
+    /** The reported bug: a sprite that stays on screen while its Pokémon evolves (the buddy on Home) went blank, because it kept the old form's sheet. */
+    @Test
+    fun aSpriteStaysAfterItsPokemonEvolvesInPlace() {
+        var form by androidx.compose.runtime.mutableIntStateOf(4)
+        val scene = ImageComposeScene(width = 300, height = 300, density = Density(1f, 1f)) { PixelTheme { app.pokeplan.ui.AnimatedSprite(form, false, "x", size = 200.dp, animate = false) } }
+        var nanos = 0L
+        fun draw(frames: Int, name: String): Int {
+            repeat(frames) { scene.render(nanos); nanos += 50_000_000; Thread.sleep(20) }
+            val bytes = scene.render(nanos).encodeToData(EncodedImageFormat.PNG)!!.bytes
+            File("build/screenshots/$name.png").apply { parentFile.mkdirs() }.writeBytes(bytes)
+            return bytes.size
+        }
+        val before = draw(60, "evolve-in-place-before")
+        form = 5
+        val after = draw(60, "evolve-in-place-after")
+        scene.close()
+        assertTrue(before > 800 && after > 800, "the sprite is drawn before ($before) and after ($after) the form changes")
+    }
+
+    /** The wrong-picture bug (a map card with another dungeon's tiles): an image composable whose key changes in place must draw what a fresh one draws. */
+    @Test
+    fun aTileBoxChangedInPlaceDrawsWhatAFreshOneDraws() {
+        fun frames(content: @Composable () -> Unit, change: (() -> Unit)?): ByteArray {
+            val scene = ImageComposeScene(width = 300, height = 300, density = Density(1f, 1f)) { PixelTheme { content() } }
+            var nanos = 0L
+            fun draw(n: Int): ByteArray { repeat(n) { scene.render(nanos); nanos += 50_000_000; Thread.sleep(20) }; return scene.render(nanos).encodeToData(EncodedImageFormat.PNG)!!.bytes }
+            draw(60)
+            change?.invoke()
+            val out = draw(60)
+            scene.close()
+            return out
+        }
+        fun box(id: String) = @Composable { app.pokeplan.ui.screens.TileBox(id, emptyList(), animate = false, scrolls = false) { Text("x") } }
+        var dungeon by androidx.compose.runtime.mutableStateOf("mt-ember")
+        val changed = frames({ box(dungeon)() }, { dungeon = "sky-pillar" })
+        val fresh = frames(box("sky-pillar"), null)
+        assertTrue(changed.contentEquals(fresh), "a card whose dungeon changed is drawn in the new dungeon's tiles, not the old one's")
+    }
+
+    /** The animated evolution, run to its end: the evolved Pokémon must be on the stage (owner: "after evolution, sprite disappears"). */
+    @Test
+    fun evolutionAnimatedEnds() = cutscene("evolution-end", frames = 360, still = false) {
+        val before = it.grantPokemon(4, "test")
+        app.pokeplan.ui.screens.Cutscene.Evolve(before, before.evolvedInto(5, "charmeleon"))
+    }
+
     /** Whole app places at the system's largest text (130%): looked at for clipped or overlapping text. */
     @Test
     fun largeTextPlaces() {
@@ -772,11 +828,11 @@ class ScreenshotTest {
     }
 
     /** The Mint module with a little recorded (two accounts, a card, spending, a budget, a bill and a reconciliation), open on [section] (null for its menu). Synthetic amounts only. */
-    private fun mint(name: String, section: app.pokeplan.ui.screens.MintSection?, height: Int = 1500, mintParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, hide: Boolean = false) {
+    private fun mint(name: String, section: app.pokeplan.ui.screens.MintSection?, height: Int = 1500, mintParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, hide: Boolean = false, settings: ((AppModel) -> Unit)? = null, gate: Boolean = false) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(mintParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.MINT) }
-        val model = AppModel(store)
+        val model = AppModel(store, gate = if (gate) object : app.pokeplan.ui.DeviceGate { override fun available() = true; override fun authenticate(onResult: (Boolean) -> Unit) {}; override fun leftAt() = 0L } else null)
         if (!empty) {
             val mint = model.mint
             val bank = mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000, suffix = "4821", group = "Daily spending").record!!
@@ -794,6 +850,7 @@ class ScreenshotTest {
             if (hide) mint.setHideValues(true)
             store.markRewardsSeen()
         }
+        settings?.invoke(model)
         model.module = app.pokeplan.ui.screens.Module.MINT
         model.mintSection = section
         render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
@@ -861,6 +918,39 @@ class ScreenshotTest {
     fun mintActivityAndAccounts() {
         mint("mint-activity", app.pokeplan.ui.screens.MintSection.ACTIVITY, height = 2800)
         mint("mint-accounts", app.pokeplan.ui.screens.MintSection.ACCOUNTS, height = 2200)
+    }
+
+    /** The optional access gate (locked card) and Mint's settings with bill reminders on and the gate offered. */
+    @Test
+    fun mintLockedAndSettings() {
+        mint("mint-locked", null, height = 900, gate = true, settings = { it.mint.setGate(true) })
+        mint("mint-settings", app.pokeplan.ui.screens.MintSection.SETTINGS, height = 3200, gate = true, settings = { it.mint.setBillReminders(true) })
+        mint("mint-bills-reminders", app.pokeplan.ui.screens.MintSection.BILLS, height = 2600, settings = { it.mint.setBillReminders(true) })
+    }
+
+    /** An expedition box at several points of its scroll: a bay's rim must close at the bottom and the frame corner stays whole (owner: "this L seems to be missing something"). */
+    @Test
+    fun tileBoxCorners() {
+        listOf(2, 120, 260, 420, 560, 700).forEach { frames ->
+            render("tilebox-$frames", frames = frames, height = 380) {
+                PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
+                    app.pokeplan.ui.screens.TileBox("mt-ember", listOf(app.pokeplan.ui.screens.TileWalker(25, false, "Pikachu")), animate = true, scrolls = true) { Text("Team 2") }
+                } }
+            }
+        }
+    }
+
+    /** An account being edited: every detail, the currency fixed once it has records. */
+    @Test
+    fun mintAccountEdit() {
+        val store = storeWithTeam()
+        val model = AppModel(store)
+        val account = model.mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000, suffix = "4821", group = "Daily spending").record!!
+        val fresh = model.mint.addAccount("Spare wallet", app.pokeplan.mint.AccountType.CASH, "PHP", 10_000).record!!
+        model.mint.record(app.pokeplan.mint.TxType.EXPENSE, 184_550, account.id, categoryId = "cat-food", payee = "Wet market")
+        render("mint-account-edit", height = 1900) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { androidx.compose.foundation.layout.Column { app.pokeplan.ui.screens.AccountOptions(model, account, startEditing = true) {}; app.pokeplan.ui.screens.AccountOptions(model, fresh, startEditing = true) {} } } }
+        }
     }
 
     /** Every Mint section at the system's text at 130%: nothing clipped or pushed out of its box. */

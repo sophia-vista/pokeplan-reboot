@@ -98,19 +98,19 @@ The docs were imported into the repository at `docs/pokelife/`, and the real che
 
 The archive audit could not resolve `services.gradle.org` to download Gradle 9.8.1. That was an environment failure, not a source failure, and it is superseded by the repository run above.
 
-## 3.2 Current status at 0.142.0 (8 November 2026)
+## 3.2 Current status at 0.143.0 (8 November 2026)
 
 This section supersedes the status column of section 3, which stays as the 0.123.0 baseline. Status words follow section 2.2. Evidence is the backlog row (`IMPLEMENTATION_BACKLOG.md`), the evidence file, the module's "As built" section and the tests named there; nothing below is device-verified.
 
 ### Modules
 
-| Area | Status at 0.142.0 | Evidence | Not established |
+| Area | Status at 0.143.0 | Evidence | Not established |
 |---|---|---|---|
 | PLAN | Partial. Own `plan_*` tables since 0.133.0; Habit merged into recurring tasks; one reminder scheduler | REP-014, `evidence/REP-014-plan-tables.md`, REP-011 | Streak reminder and weekly recap adapters; device acceptance; target workflows against `PLAN.md` not re-audited |
 | CARE | Partial. Own `care_*` tables since 0.132.0; visitor rules of `CARE.md` section 6; reunions, Care Play, Meadow and egg inheritance built (0.133.0) | `evidence/REP-014-care-tables.md`, `REP-014-plan-tables.md` | Device acceptance; the rest of `CARE.md` not re-audited |
 | HEAL | **Built, manual first** (0.136.0): activity, hydration, sleep, measurements, goals, Field Research (rules version 17) | `MODULES/HEAL.md` section 22, `evidence/REP-014-heal.md`, `HealStoreTest`, `HealTablesTest` | Exercise library and workouts, nutrition, health records, imports (Health Connect, Huawei), history and charts, medication reminders, encryption; **device acceptance; wearable claims withheld** |
 | MINT | **Built, manual first** (0.141.0): accounts, activity, budgets, bills, review and reconciliation, exact integer money, Ledger Research (version 18); rows and backups sealed with an Android Keystore key | `MODULES/MINT.md` section 22, `evidence/REP-014-mint.md`, `MintStoreTest`, `MintTablesTest` | Providers, statement import, bill reminders, splits, rollover, savings targets, foreign currency, access gate, passphrase-sealed portable backup; **device acceptance, including the Keystore path** |
-| HOME | **Built, manual first** (0.142.0): chores with deterministic schedules and no backlog, supplies with exact quantities, belongings, maintenance, warranties, reference notes, search, Overview, Habitat Discovery (version 19) | `MODULES/HOME.md` section 16, `evidence/REP-014-home.md`, `HomeRulesTest`, `HomeStoreTest`, `HomeTablesTest` | Reminders, attachments, PLAN links, widgets, imports, encryption (no owner decision); device acceptance |
+| HOME | **Built, manual first** (0.143.0): chores with deterministic schedules and no backlog, supplies with exact quantities, belongings, maintenance, warranties, reference notes, search, Overview, Habitat Discovery (version 19) | `MODULES/HOME.md` section 16, `evidence/REP-014-home.md`, `HomeRulesTest`, `HomeStoreTest`, `HomeTablesTest` | Reminders, attachments, PLAN links, widgets, imports, encryption (no owner decision); device acceptance |
 | LINK | Planned / specified; placeholder card, colour and region reserved. Not started | `MODULES/LINK.md` | Everything |
 | WORLD | Partial. Foundation as in section 3; Rescue Team maps and tilesets added (0.140.0); Poké is the shared balance but World still keeps a working copy | CHANGELOG, REP-010 | Full regional coverage, balance, shared-ownership completion, device acceptance; not re-audited since 0.123.0 beyond those |
 | GEAR | Partial. Not re-audited since 0.123.0 | Section 3 | Every tool's capability and device acceptance |
@@ -134,7 +134,7 @@ This section supersedes the status column of section 3, which stays as the 0.123
 | 5 PLAN and CARE refactor | Largely done on the data side (own tables, one owner per record); the reminder adapters for the streak reminder and weekly recap remain |
 | 6 HEAL | Manual slice built; imports, nutrition and exercise library not built |
 | 7 MINT | Manual slice built; import and providers not built |
-| 8 HOME and LINK | **HOME manual slice built (0.142.0); LINK not started** |
+| 8 HOME and LINK | **HOME manual slice built (0.143.0); LINK not started** |
 | 9 GEAR, 10 WORLD, 11 Launcher | Not advanced by this series beyond the shared items above |
 | 12 Release hardening | Not started |
 | Gate D (module acceptance) | No module passes in full: each lacks device, accessibility and process-death evidence |
@@ -340,7 +340,7 @@ These are recorded in their authoritative documents; they are listed here only s
 3. **Integration feasibility:** Huawei Watch Fit 4 Pro/Health Connect and Philippine bank/e-wallet integrations remain provider/device-dependent. No live integration is verified by the baseline audit.
 4. **Asset distribution rights:** the baseline includes game-derived/private-use material. Public distribution requires an asset-by-asset rights review and replacement/permission where necessary.
 5. **Expanded Pokémon implementation evidence:** the integrated expansion catalogue is approved target scope, not evidence of implementation. Verify actual Kotlin source areas, schemas and tests before assigning implementation status or exact file paths.
-6. **Current branch status:** section 3.2 is current for version `0.142.0` on the branch that builds HOME (8 November 2026); refresh it against a named commit whenever work lands. The 6 November 2026 re-check above covers `2b22975d` only.
+6. **Current branch status:** section 3.2 is current for version `0.143.0` on the branch that builds HOME (8 November 2026); refresh it against a named commit whenever work lands. The 6 November 2026 re-check above covers `2b22975d` only.
 7. **Legacy duplicates:** root-level refresh and historical files remain outside the canonical project folder. They should be clearly archived or labelled historical after dependency/reference review.
 
 ## 11. Documentation change control

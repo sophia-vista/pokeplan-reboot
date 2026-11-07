@@ -44,6 +44,8 @@ internal fun rememberFadeIn(ready: Boolean): State<Float> {
 @Composable
 fun SceneImage(name: String, modifier: Modifier = Modifier, darkness: Float = 0f, crisp: Boolean = false) {
     val image by produceState(scenes[name], name) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = scenes[name]
         if (value == null) {
             val path = if (app.pokeplan.ui.launcher.FriendAreas.isArea(name)) app.pokeplan.ui.launcher.FriendAreas.file(name) else "files/scenes/$name.png"
             value = orNull { Res.readBytes(path).decodeToImageBitmap() }

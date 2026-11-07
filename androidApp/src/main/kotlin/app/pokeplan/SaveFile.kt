@@ -5,6 +5,7 @@ import app.pokeplan.app.CareStore
 import app.pokeplan.app.Clock
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.HealStore
+import app.pokeplan.app.MintStore
 import app.pokeplan.app.MemoryStorage
 import app.pokeplan.app.Storage
 
@@ -52,6 +53,10 @@ fun healStore(context: Context, world: GameStore = widgetStore(context)): HealSt
         healStorage(context), Clock { System.currentTimeMillis() }, world,
         weekStart = { world.data.settings.weekStart },
     )
+
+/** Mint's store outside the app (bill reminders): its own sealed records, read only; the reminder never pays or changes a record. */
+fun mintStore(context: Context, world: GameStore = widgetStore(context)): MintStore =
+    MintStore(mintStorage(context), Clock { System.currentTimeMillis() }, world, weekStart = { world.data.settings.weekStart })
 
 /** A store for the widgets: reads the same save as the app and writes back what a tap changes. */
 fun widgetStore(context: Context): GameStore =

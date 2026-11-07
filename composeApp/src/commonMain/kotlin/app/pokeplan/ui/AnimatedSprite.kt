@@ -150,7 +150,8 @@ fun AnimatedSprite(
     val name = idle?.sheetName(formId, shiny)
     // Paired with its name, so a sheet still being read can be told from one that is missing.
     val sheet by produceState<Pair<String, ImageBitmap?>?>(name?.let { n -> sheets[n]?.let { n to it } }, name) {
-        if (value == null && name != null) value = name to sheet(name)
+        // Not only when nothing is held: after an evolution the same sprite shows another form, and the sheet held is the old one's.
+        if (name != null && value?.first != name) value = name to sheet(name)
     }
     val loaded = sheet?.takeIf { it.first == name }
     val idleImage = loaded?.second

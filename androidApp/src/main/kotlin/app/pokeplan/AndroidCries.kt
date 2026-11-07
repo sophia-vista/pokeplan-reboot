@@ -40,7 +40,7 @@ class AndroidCryPlayer(private val context: Context) : CryPlayer {
 
     @Synchronized
     override fun effect(sound: Sfx, volume: Float) {
-        if (sound == Sfx.POKEMON_CENTER) {
+        if (sound.streams) {
             effectPlayer?.release()
             effectPlayer = start("sfx/${sound.file}.ogg", "sfx-${sound.file}.ogg", volume)
             return

@@ -16,6 +16,8 @@ import app.pokeplan.app.AppData
 import app.pokeplan.app.CareReminders
 import app.pokeplan.app.HealReminders
 import app.pokeplan.heal.HealData
+import app.pokeplan.mint.MintData
+import app.pokeplan.app.MintReminders
 import app.pokeplan.app.upcomingReminders
 import app.pokeplan.care.CareData
 import app.pokeplan.core.pokemon.ItemCategory
@@ -47,6 +49,7 @@ class MainActivity : ComponentActivity() {
     private var reminderSignature: Int? = null
     private var reminderRefresh: Job? = null
     private var appData: AppData? = null
+    private var deviceGate: AndroidDeviceGate? = null
     private var careData: CareData? = null
     private var routineSignature: Int? = null
     private var careWidgetSignature: Int? = null
@@ -70,13 +73,15 @@ class MainActivity : ComponentActivity() {
         val gearServices = androidGearServices(this)
         // The backup file pickers are registered here too, before the activity starts.
         val backups = AndroidBackups(this)
+        // Mint's optional gate asks the phone's own screen lock; its launcher is registered here too.
+        val gate = AndroidDeviceGate(this).also { deviceGate = it }
         // A widget can open the app on a place ("FOCUS" for the Start focus widget).
         val first = launchFrom(intent)
         val place = first.place ?: Place.HOME
         setContent {
             App(
                 storage, careStorage = careStorage(this), healStorage = healStorage(this), mintStorage = mintStorage(this), homeStorage = homeStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = AndroidSensorFeed(this), services = gearServices, backups = backups, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onDark = ::matchSystemBars,
+                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = AndroidSensorFeed(this), services = gearServices, backups = backups, deviceGate = gate, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onDark = ::matchSystemBars,
             )
         }
     }
@@ -173,6 +178,25 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private var mintSignature: Int? = null
+    private var mintRefresh: Job? = null
+
+    /** Sets Mint's bill reminders again when a bill, a payment or a reminder setting changes, a moment after the last change. Nothing of Mint leaves the module but the reminder's own id and day. */
+    private fun mintChanged(data: MintData) {
+        val app = appData ?: return
+        val upcoming = MintReminders.upcoming(data, app, System.currentTimeMillis(), TimeZone.currentSystemDefault())
+        if (upcoming.isNotEmpty()) askForNotifications()
+        val signature = upcoming.map { it.billId to it.atMillis }.hashCode()
+        if (mintSignature == null) { mintSignature = signature; if (upcoming.isEmpty()) return }
+        else if (signature == mintSignature) return
+        mintSignature = signature
+        mintRefresh?.cancel()
+        mintRefresh = lifecycleScope.launch {
+            delay(800)
+            SharedReminders.reschedule(applicationContext)
+        }
+    }
+
     /** Sets Care's routine reminders again when they change (a routine, a tick, a focus session), a moment after the last change. */
     private fun keepRoutineRemindersCurrent() {
         val app = appData ?: return
@@ -227,6 +251,7 @@ class MainActivity : ComponentActivity() {
     /** Leaving the app: bring the widgets up to date with what just happened. */
     override fun onStop() {
         torch.release()
+        deviceGate?.left()
         super.onStop()
         lifecycleScope.launch { announceBuddyEvent(applicationContext) }
     }

@@ -118,15 +118,13 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
         SectionScaffold(current.title, null, onBack = { section = null }, icon = current.icon) {
             when (current) {
                 Section.PARTY -> {
-                    // Every region's party on one page, each under its region with its lead first and its perks after
-                    // (docs/design.md, "Parties per module"): one collection, a party per module.
-                    PartyGroup(model, Region.PLAN, player.party, player.planLead?.id, "Lead", { PartyPerksCard(model) }) { selected = it }
-                    if (model.data.settings.careModule) {
-                        PartyGroup(model, Region.CARE, player.partyOf(PartyIds.CARE), player.careLead?.id, "Lead", { CarePerksCard(model) }) { selected = it }
-                    }
-                    PartyGroup(model, Region.HEAL, player.partyOf(PartyIds.HEAL), player.healLead?.id, "Lead", { HealPerksCard(model) }) { selected = it }
-                    PartyGroup(model, Region.MINT, player.partyOf(PartyIds.MINT), player.mintLead?.id, "Lead", { MintPerksCard(model) }) { selected = it }
-                    PartyGroup(model, Region.HOUSEHOLD, player.partyOf(PartyIds.HOME), player.homeLead?.id, "Lead", { HomePerksCard(model) }) { selected = it }
+                    // One region's party at a time behind tabs (a page of every module's party was a very long scroll), as the games' party screen:
+                    // its six places in two rows, a tap opens the Pokémon, and the perks fold away until asked for.
+                    val regions = listOfNotNull(Region.PLAN, Region.CARE.takeIf { model.data.settings.careModule }, Region.HEAL, Region.MINT, Region.HOUSEHOLD)
+                    var shown by remember { mutableStateOf(Region.PLAN) }
+                    val current = shown.takeIf { it in regions } ?: Region.PLAN
+                    PartyTabs(regions, current, { r -> partyOf(player, r).size }, { shown = it })
+                    PartyGroup(model, current, partyOf(player, current), leadOf(player, current)?.id, "Lead", { PerksOf(model, current) }) { selected = it }
                 }
                 Section.PC -> {
                     // One PC for every region's party (docs/design.md, "Parties per module"), in boxes of 30 like the games.
@@ -156,19 +154,36 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
     }
 }
 
-/** One region's party: its name and "x of 6", the lead first, then the rest, then the party's perks. */
+private fun partyOf(player: app.pokeplan.core.reward.PlayerState, region: Region): List<OwnedPokemon> = when (region) {
+    Region.CARE -> player.partyOf(PartyIds.CARE); Region.HEAL -> player.partyOf(PartyIds.HEAL); Region.MINT -> player.partyOf(PartyIds.MINT); Region.HOUSEHOLD -> player.partyOf(PartyIds.HOME); else -> player.party
+}
+
+private fun leadOf(player: app.pokeplan.core.reward.PlayerState, region: Region): OwnedPokemon? = when (region) {
+    Region.CARE -> player.careLead; Region.HEAL -> player.healLead; Region.MINT -> player.mintLead; Region.HOUSEHOLD -> player.homeLead; else -> player.planLead
+}
+
+private fun accentOf(region: Region) = when (region) { Region.CARE -> RegionLook.CARE; Region.HEAL -> RegionLook.HEAL; Region.MINT -> RegionLook.MINT; Region.HOUSEHOLD -> RegionLook.HOME; else -> RegionLook.PLAN }.accent
+
+@Composable
+private fun PerksOf(model: AppModel, region: Region) = when (region) {
+    Region.CARE -> CarePerksCard(model); Region.HEAL -> HealPerksCard(model); Region.MINT -> MintPerksCard(model); Region.HOUSEHOLD -> HomePerksCard(model); else -> PartyPerksCard(model)
+}
+
+/** The regions that have a party, each with how many it holds, in its own colour; the open one is filled. */
+@Composable
+private fun PartyTabs(regions: List<Region>, selected: Region, count: (Region) -> Int, onSelect: (Region) -> Unit) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        regions.forEach { r -> app.pokeplan.ui.screens.TabButton("${r.label.removeSuffix(" Region")} ${count(r)}", r == selected, { onSelect(r) }, Modifier.weight(1f), key = accentOf(r)) }
+    }
+}
+
+/** One region's party: its six places (a tap opens one), and its perks behind one button. */
 @Composable
 private fun PartyGroup(
     model: AppModel, region: Region, party: List<OwnedPokemon>, leadId: String?, leadLabel: String,
     perks: @Composable () -> Unit, open: (String) -> Unit,
 ) {
-    val store = model.store
-    // The region's colour beside its name, as down the edge of its card on Home; the name says which region it is.
-    val accent = when (region) { Region.CARE -> RegionLook.CARE; Region.HEAL -> RegionLook.HEAL; Region.MINT -> RegionLook.MINT; Region.HOUSEHOLD -> RegionLook.HOME; else -> RegionLook.PLAN }.accent
-    Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        Box(Modifier.padding(bottom = 2.dp).size(width = 4.dp, height = 20.dp).clip(androidx.compose.ui.graphics.RectangleShape).background(accent))
-        SectionLabel("${region.label} · ${party.size} of ${OwnedPokemon.PARTY_SIZE}")
-    }
+    var showPerks by remember(region) { mutableStateOf(false) }
     if (party.isEmpty()) {
         val how = if (region == Region.CARE) "Open a Pokémon and choose \"To Care party\", or befriend a visitor. Until then Care warms your Plan buddy. Its first member leads."
         else if (region == Region.HEAL) "Open a Pokémon and choose \"To Heal party\", or try Field Research in Heal. Its first member leads."
@@ -178,32 +193,9 @@ private fun PartyGroup(
         EmptyState("No one here yet", how, icon = "poke-ball", sleeper = true)
         return
     }
-    party.sortedByDescending { it.id == leadId }.forEach { p ->
-        PokemonRow(p, if (p.id == leadId) leadLabel else null, store.isFavorite(p.id)) { open(p.id) }
-    }
-    perks()
-}
-
-/** A Pokémon in a list: its sprite, its name, and one quiet line (level and types), with its role and marks at the end. */
-@Composable
-private fun PokemonRow(p: OwnedPokemon, role: String?, favorite: Boolean, onClick: () -> Unit) {
-    ListRow(
-        lead = { Sprite(p.form.id, p.isShiny, p.nickname, size = 64.dp) },
-        onClick = onClick,
-        onClickLabel = "Open ${p.nickname}",
-        highlight = false,
-        trail = {
-            Column(horizontalAlignment = Alignment.End) {
-                if (role != null) Text(role, style = MaterialTheme.typography.labelMedium, color = Pixel.Red)
-                if (favorite) Text("Starred", style = MaterialTheme.typography.labelMedium, color = Pixel.Warning)
-                if (p.isShiny) Text("Shiny", style = MaterialTheme.typography.labelMedium, color = Pixel.Warning)
-            }
-        },
-    ) {
-        Text(p.nickname, style = MaterialTheme.typography.titleMedium)
-        val types = p.form.types.joinToString(" / ") { it.label }
-        Text("Lv. ${p.level} · $types", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-    }
+    PartyGrid(model, party, leadId, leadLabel, open, tapOpens = true)
+    PixelButton(if (showPerks) "Hide perks" else "Perks", { showPerks = !showPerks }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+    if (showPerks) perks()
 }
 
 /** Search, sort and filters for the PC boxes. A type plate is dimmed until chosen; choosing it again clears it. */

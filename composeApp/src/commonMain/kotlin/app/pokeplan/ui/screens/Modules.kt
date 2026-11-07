@@ -16,6 +16,7 @@ import androidx.compose.ui.backhandler.BackHandler
 import app.pokeplan.core.reward.Feature
 import app.pokeplan.plan.TaskState
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.theme.LocalFrameTone
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.frameToneOf
@@ -77,16 +78,16 @@ private fun ModulesMenu(model: AppModel) {
             // yet is a quiet placeholder in its own colour, so the list shows where it will sit.
             MenuGrid(
                 listOfNotNull(
-                    MenuEntry("GEAR", "explorer-kit", "Gear", tint = ModuleAccent.GEAR.accent, wide = true),
-                    MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = ModuleAccent.PLAN.accent),
-                    MenuEntry(Module.MINT.name, Module.MINT.icon, Module.MINT.label, mintSubtitle(model), tint = ModuleAccent.MINT.accent),
-                    MenuEntry(Module.HOME.name, Module.HOME.icon, Module.HOME.label, householdSubtitle(model), tint = ModuleAccent.HOME.accent),
+                    MenuEntry("GEAR", "explorer-kit", "Gear", tint = ModuleAccent.GEAR.accent, wide = true, sound = Sfx.DOOR_ENTER),
+                    MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = ModuleAccent.PLAN.accent, sound = Sfx.DOOR_ENTER),
+                    MenuEntry(Module.MINT.name, Module.MINT.icon, Module.MINT.label, mintSubtitle(model), tint = ModuleAccent.MINT.accent, sound = Sfx.DOOR_ENTER),
+                    MenuEntry(Module.HOME.name, Module.HOME.icon, Module.HOME.label, householdSubtitle(model), tint = ModuleAccent.HOME.accent, sound = Sfx.DOOR_ENTER),
                     if (!model.data.settings.careModule) null else MenuEntry(
                         Module.CARE.name, Module.CARE.icon, Module.CARE.label, if (routinesLeft == 0) "routines and calm" else if (routinesLeft == 1) "1 routine today" else "$routinesLeft routines today", tint = ModuleAccent.CARE.accent,
                     ),
-                    MenuEntry(Module.HEAL.name, Module.HEAL.icon, Module.HEAL.label, healSubtitle(model), tint = ModuleAccent.HEAL.accent),
+                    MenuEntry(Module.HEAL.name, Module.HEAL.icon, Module.HEAL.label, healSubtitle(model), tint = ModuleAccent.HEAL.accent, sound = Sfx.DOOR_ENTER),
                     MenuEntry("LINK", "link-cord", "Link", tint = ModuleAccent.LINK.accent, pending = true),
-                    MenuEntry(Module.WORLD.name, Module.WORLD.icon, Module.WORLD.label, "dungeons and expeditions", badge = model.data.world.finds.size, tint = ModuleAccent.WORLD.accent, wide = true),
+                    MenuEntry(Module.WORLD.name, Module.WORLD.icon, Module.WORLD.label, "dungeons and expeditions", badge = model.data.world.finds.size, tint = ModuleAccent.WORLD.accent, wide = true, sound = Sfx.DOOR_ENTER),
                 ),
             ) { key -> if (key == "GEAR") model.gearOpen = true else model.module = Module.valueOf(key) }
         }
@@ -174,7 +175,7 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
             }
             MenuGrid(
                 listOfNotNull(
-                    MenuEntry(PlanSection.PLANNER.name, PlanSection.PLANNER.icon, "Planner", if (today == 0) "nothing left today" else "$today to do today", tint = ModuleAccent.PLAN.accent),
+                    MenuEntry(PlanSection.PLANNER.name, PlanSection.PLANNER.icon, "Planner", if (today == 0) "nothing left today" else "$today to do today", tint = ModuleAccent.PLAN.accent, sound = Sfx.DOOR_ENTER),
                     if (!focusTab) null else MenuEntry(
                         PlanSection.FOCUS.name, PlanSection.FOCUS.icon, "Focus",
                         if (session == null) "hatch an egg" else "egg incubating", badge = if (session != null) 1 else 0, tint = ModuleAccent.PLAN.accent,

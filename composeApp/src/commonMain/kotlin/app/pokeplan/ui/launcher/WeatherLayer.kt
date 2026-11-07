@@ -28,6 +28,8 @@ private val sheets = mutableMapOf<String, ImageBitmap?>()
 @Composable
 private fun weatherSheet(name: String): ImageBitmap? {
     val sheet by produceState(sheets[name], name) {
+        // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
+        value = sheets[name]
         if (value == null) {
             value = orNull { Res.readBytes("files/weather/$name.png").decodeToImageBitmap() }
             sheets[name] = value
