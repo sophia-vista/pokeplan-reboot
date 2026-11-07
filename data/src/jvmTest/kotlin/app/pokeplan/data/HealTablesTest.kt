@@ -186,9 +186,9 @@ class HealTablesTest {
         val text = BackupBundle.encode(docs, DataStore.SCHEMA_VERSION, 7)
         val staged = BackupBundle.stage(text, DataStore.SCHEMA_VERSION)
         assertTrue(staged is BackupBundle.Staged.Ready && staged.documents.keys == setOf("save", "heal"))
-        assertEquals(6, DataStore.SCHEMA_VERSION)
-        val bad = BackupBundle.encode(mapOf("save" to "{}"), 6, 7).replace("\"save\"", "\"health\"")
-        assertTrue(BackupBundle.stage(bad, 6) is BackupBundle.Staged.Refused)
+        assertEquals(7, DataStore.SCHEMA_VERSION) // Heal's tables made it 7 (0.136.0)
+        val bad = BackupBundle.encode(mapOf("save" to "{}"), 7, 7).replace("\"save\"", "\"health\"")
+        assertTrue(BackupBundle.stage(bad, 7) is BackupBundle.Staged.Refused)
     }
 
     @Test
@@ -201,5 +201,29 @@ class HealTablesTest {
         assertEquals(setOf("format", "activities"), exported.keys)
         assertEquals(1, (exported["activities"] as JsonArray).size)
         assertEquals(obj(s.healTables.readKind("activities").let { """{"a":$it}""" })["a"], exported["activities"] , "the table family and the export agree")
+    }
+
+    @Test
+    fun healsPartyAndLeadSurviveTheSharedPokemonTablesAndStayOnePlaceEach() {
+        val g = game()
+        g.completeTutorial(app.pokeplan.app.Tutorials.HEAL_WALK)
+        val second = g.data.player.buddyId!!
+        assertTrue(g.setInParty(second, true, app.pokeplan.core.pokemon.PartyIds.HEAL))
+        assertTrue(g.setHealLead(second))
+        val doc = GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), g.data)
+        val s = JvmDatabase.open()
+        s.live.normalizer = GameStore::normalizeDocument
+        s.live.activate(doc, null, 5)
+        s.live.movePlanToTables(6)
+        s.live.movePokemonToTables(7)
+        val back = GameStore.json.decodeFromString(app.pokeplan.app.AppData.serializer(), s.live.read("save")!!)
+        assertEquals(g.data.player.partyOf("heal").map { it.id }.toSet(), back.player.partyOf("heal").map { it.id }.toSet())
+        assertEquals(second, back.player.healLead?.id, "the chosen lead leads, whatever order the members joined in")
+        assertEquals(2, back.player.partyOf("heal").size)
+        // The Heal tables and the shared tables are separate: the player's side can be erased without touching a Heal record.
+        val heal = healOn(s, g)
+        heal.logActivity(ActivityType.WALK, 30)
+        s.live.movePokemonToTables(8)
+        assertEquals(1, healOn(s, g).data.activities.size)
     }
 }

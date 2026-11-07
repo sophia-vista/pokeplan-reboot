@@ -5,14 +5,22 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.135.0
+## 0.136.0
 
 - **Heal (Modules → Heal), the manual slice.** Log an activity (a type, how long, when it ended; distance and a note if you like), the drinks you have, a night's sleep and an optional body measurement, and set goals of your own that you can pause or put away. Today shows what you logged, and "not logged" where you did not (never a zero, never a score). Nothing is advice, nothing is judged, and a missed day costs nothing. There is no watch, Health Connect or import yet, and Settings says so.
 - **Field Research (off until you turn it on).** A session of 10 minutes or more that you log just after doing it, and the day's first drink, can find Pokémon: Rare Candies, a berry, friendship for Heal's lead and a Field Egg from the new Heal Region (64 sporty, outdoor Pokémon) that hatches into Heal's party. Sleep, measurements, goals and every other number never earn anything, older entries never pay, and editing or deleting never pays again. Heal has its own party of six whose perks change only what Field Research pays.
 - **First-run walk.** Heal shows a one-time 5-second walk that gives you one Pokémon for Heal's party (no record, no streak, nothing counted); a player who has already logged an activity does not see it.
-- **Private by design.** Your records live in their own tables (schema 6): activity, hydration, sleep, measurements and goals each in a family of their own, so one kind can be exported or erased alone (Heal → Settings); erasing never touches your Pokémon, Poké, Bag, Plan or Care. They are in the daily backup and the backup file, and a backup from before Heal leaves them alone. The only thing the rest of the app learns is a stable id, an opaque reference, "activity" or "participation" and the time.
+- **Private by design.** Your records live in their own tables (schema 7): activity, hydration, sleep, measurements and goals each in a family of their own, so one kind can be exported or erased alone (Heal → Settings); erasing never touches your Pokémon, Poké, Bag, Plan or Care. They are in the daily backup and the backup file, and a backup from before Heal leaves them alone. The only thing the rest of the app learns is a stable id, an opaque reference, "activity" or "participation" and the time.
 - **Hydration reminders (off).** Up to three times a day if you add them, through the shared reminders: quiet hours and focus sessions apply, the words are always "A moment for a drink?", the lock screen shows nothing more, and there is no "done" button.
 - Under the hood (REP-014): `heal-core`, `HealStore`, `HealTables`, `LiveDocuments.moveHealToTables`, `HealEvent`/`RewardEngine.heal`/`healEgg`, `Region.HEAL`, `HealPerks`, `HealReminderAdapter`, `Tutorials.HEAL_WALK`; `RewardRules.VERSION` 17 (`docs/economy.md`); `MODULES/HEAL.md` section 22, `evidence/REP-014-heal.md`. Not run on a device; tables and backups are not encrypted yet.
+
+## 0.135.0
+
+- **Your Pokémon, Bag and Poké now live in their own database tables** (schema 6), the way Plan's and Care's already do. The game works exactly as before: the app still reads and writes one save, and the database splits it into rows and puts it back together, so saving a level-up writes one Pokémon's row instead of the whole collection. The first start with this version moves everything over, checks it reads back equal, keeps the old save whole under an `aside:` copy, and pays nothing; if anything differs, the old save stays the live one and it tries again next start.
+- **A Pokémon is in one place, and the database enforces it.** The buddy, each module's party and the Guardian slots are now one table keyed by the Pokémon, so a second place for the same Pokémon cannot be stored; the save is refused if it would also put that Pokémon on a World team or as a Pokégear helper. A Pokémon from World, a Guardian included, arrives in the PC until you assign it.
+- **The ledger is the only writer of your Poké and Bag.** Both change only together with a ledger entry in the same transaction (one event per change, never edited or removed, and the balance can always be rebuilt from it). World's copy of the Poké balance is no longer saved at all: the World screen shows the one balance, and an old save's World Poké is read once for the merge.
+- Restoring a backup goes through the same checks and split, so an older backup restores correctly.
+- Under the hood: `5.sqm` and `databases/6.db`, `PokemonTables`, `LiveDocuments.movePokemonToTables`, the DB check screen has a line for it. No reward number changed (`RewardRules.VERSION` stays 16).
 
 ## 0.134.0
 

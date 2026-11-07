@@ -986,13 +986,15 @@ class GameStoreTest {
         val (s, _) = started()
         val old = s.data.copy(
             player = s.data.player.copy(coins = 120),
-            world = s.data.world.copy(poke = 35),
+            world = s.data.world.copy(legacyPoke = 35), // an old save stored World's balance as "poke"
             pokeMigration = null,
         )
         val storage = MemoryStorage(GameStore.json.encodeToString(AppData.serializer(), old))
         val reopened = GameStore(storage, FakeClock(start), utc, Random(7))
         assertEquals(155, reopened.data.player.coins)
         assertEquals(155, reopened.data.world.poke, "World's field is only a working copy of the one balance")
+        assertEquals(0, reopened.data.world.legacyPoke, "the old stored balance is read once and gone")
+        assertFalse("\"poke\"" in GameStore.json.encodeToString(app.pokeplan.world.WorldData.serializer(), reopened.data.world), "and never written again")
         val audit = assertNotNull(reopened.data.pokeMigration)
         assertEquals(120, audit.legacyCoins)
         assertEquals(35, audit.legacyWorldPoke)
