@@ -194,6 +194,8 @@ Each life module has a distinct regional identity and regional dex view. WORLD h
 - `gear` (catalog/presentation only; no acquisition)
 - `world:<region-id>` for WORLD campaign regions
 
+**Species lists (owner, 7 November 2026; built in 0.139.0).** The six module regions (`plan`, `care`, `heal`, `mint`, `home`, `link`; in code `PLAN`, `CARE`, `HEAL`, `MINT`, `HOUSEHOLD`, `LINK`) divide the whole National Dex: every species is in exactly one module region and no evolution line is split. Each has about 65 to 75 hatchable lines, at least one of every rarity (two of the 12 Super Rare lines each), its starters first, its lines in regional-dex order, and its patrons (legendary-class and mythical Guardians) as the last entries. The lists are content in `tools/species/regions/`, summarised in `docs/design.md`; GEAR and WORLD have no module region. `mint`, `home` and `link` stay unreleased until their modules ship.
+
 All regions are accessible from day one. Progression can unlock deeper chapters, dungeons, bosses, and special encounters, but not basic access to an entire life module/region.
 
 A Pokémon can count toward multiple regional dexes only when the acquisition/encounter rules explicitly record it. Do not infer regional dex completion merely because a species exists in the global collection. Regional dexes are views over shared discovery/ownership events, not separate collections.

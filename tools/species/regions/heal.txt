@@ -1,74 +1,194 @@
-# The Heal Region (Region.HEAL): sporty, outdoorsy and energetic Pokémon for the Heal module's Field Research (movement, training,
-# swimming, stamina), mostly Fighting, Fire, Water, Electric, Normal and Flying. In dex order (line 1 becomes Heal #1).
+# The Heal Region (Region.HEAL): sporty, outdoorsy and energetic Pokémon for the Heal module's Field Research (movement,
+# training, swimming, stamina), mostly Fighting, Fire, Water, Electric and fast Flying or Ground types. Starts with the Hoenn
+# and Galar starters and Litten. Patrons: the legendary beasts Raikou, Entei and Suicune, last in the list.
 # Super Rare lines: Jangmo-o and Frigibax (stamina from a long climb).
 #
+# In the order of a mainline regional dex: the starters first, then the lines by rarity (Common, Uncommon, Rare, Super Rare) in
+# National Dex order with every stage next to its pre-evolution, then the quest and milestone species (ultra beasts, paradox,
+# legendary, mythical) and the patrons last. A line is never split: a species is in at most one module region (the other lists
+# in this folder; the generator checks it), and every evolution is in the same list as the Pokémon it evolves from.
 # One species per line, by English name or PokeAPI identifier; blank lines and # lines are ignored.
-# A species is in at most one module region (the other lists in this folder); the generator checks it.
+# Legendary, mythical, Ultra Beast and Paradox species stay in the dex but are quest and milestone rewards, never egg drops.
 # Curation: docs/region-curation-prompt.md. After editing:
 #   python3 -I tools/species/generate.py
 #   ./gradlew :pokemon-core:jvmTest
 
-Mankey
-Machop
-Magikarp
-Doduo
-Tyrogue
-Cyndaquil
-Totodile
-Ponyta
-Tauros
-Miltank
-Phanpy
 Treecko
+Grovyle
+Sceptile
 Torchic
+Combusken
+Blaziken
 Mudkip
-Poochyena
+Marshtomp
+Swampert
+Litten
+Torracat
+Incineroar
+Grookey
+Thwackey
+Rillaboom
+Scorbunny
+Raboot
+Cinderace
+Sobble
+Drizzile
+Inteleon
+Doduo
+Dodrio
+Goldeen
+Seaking
+Tyrogue
+Hitmonlee
+Hitmonchan
+Hitmontop
 Shroomish
-Makuhita
-Electrike
+Breloom
+Carvanha
+Sharpedo
+Spoink
+Grumpig
 Zangoose
+Seviper
+Solrock
 Barboach
-Chimchar
-Piplup
-Shinx
-Buizel
-Pidove
-Blitzle
-Darumaka
-Timburr
+Whiscash
 Throh
 Sawk
-Scraggy
-Mienfoo
-Chespin
-Fennekin
-Froakie
 Bunnelby
-Pancham
-Hawlucha
-Litten
-Pikipek
-Crabrawler
-Yungoos
-Passimian
-Mudbray
-Rookidee
-Arrokuda
-Yamper
-Clobbopus
-Grookey
-Scorbunny
-Sobble
-Falinks
-Pawmi
-Quaxly
-Sprigatito
-Fuecoco
-Flamigo
+Diggersby
+Pincurchin
+Morpeko
+Nymble
+Lokix
 Wiglett
+Wugtrio
 Finizen
-Elekid
-Magby
+Palafin
+Ponyta
+Rapidash
+Scyther
+Scizor
+Kleavor
+Pinsir
+Tauros
+Heracross
+Houndour
+Houndoom
+Phanpy
+Donphan
+Makuhita
+Hariyama
+Electrike
+Manectric
+Buizel
+Floatzel
+Croagunk
+Toxicroak
+Blitzle
+Zebstrika
+Darumaka
+Darmanitan
+Scraggy
+Scrafty
+Bouffalant
+Pancham
+Pangoro
+Skrelp
+Dragalge
+Hawlucha
+Crabrawler
+Crabominable
+Mareanie
+Toxapex
+Turtonator
+Chewtle
+Drednaw
+Cramorant
+Arrokuda
+Barraskewda
+Clobbopus
+Grapploct
+Pawmi
+Pawmo
+Pawmot
+Flittle
+Espathra
+Veluza
+Mankey
+Primeape
+Annihilape
+Machop
+Machoke
+Machamp
 Rhyhorn
+Rhydon
+Rhyperior
+Magikarp
+Gyarados
+Gligar
+Gliscor
+Qwilfish
+Overqwil
+Sneasel
+Weavile
+Sneasler
+Elekid
+Electabuzz
+Electivire
+Magby
+Magmar
+Magmortar
+Shinx
+Luxio
+Luxray
+Riolu
+Lucario
+Timburr
+Gurdurr
+Conkeldurr
+Basculin
+Basculegion
+Tynamo
+Eelektrik
+Eelektross
+Axew
+Fraxure
+Haxorus
+Mienfoo
+Mienshao
+Rufflet
+Braviary
+Litleo
+Pyroar
 Jangmo-o
+Hakamo-o
+Kommo-o
 Frigibax
+Arctibax
+Baxcalibur
+Buzzwole
+Pheromosa
+Great Tusk
+Iron Hands
+Walking Wake
+Gouging Fire
+Raging Bolt
+Terrakion
+Virizion
+Tapu Koko
+Zacian
+Zamazenta
+Kubfu
+Urshifu
+Glastrier
+Spectrier
+Calyrex
+Koraidon
+Miraidon
+Keldeo
+Marshadow
+Zeraora
+Raikou
+Entei
+Suicune

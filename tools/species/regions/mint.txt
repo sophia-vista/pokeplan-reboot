@@ -1,0 +1,175 @@
+# The Mint Region (Region.MINT, the finance module's Ledger Research): steady, careful Pokémon for saving, counting and keeping
+# things safe: Steel, Rock and Ground (mines, vaults, coins and gems), fossils and relics (old records), hoarders and keepers.
+# Starts with the Sinnoh starters (Piplup is too proud to take a handout). Patrons: Diancie (the jewel) and Melmetal, last in
+# the list. Super Rare lines: Beldum (a computer of four brains) and Duraludon (a steel bridge that holds).
+# Not released until the module ships.
+#
+# In the order of a mainline regional dex: the starters first, then the lines by rarity (Common, Uncommon, Rare, Super Rare) in
+# National Dex order with every stage next to its pre-evolution, then the quest and milestone species (ultra beasts, paradox,
+# legendary, mythical) and the patrons last. A line is never split: a species is in at most one module region (the other lists
+# in this folder; the generator checks it), and every evolution is in the same list as the Pokémon it evolves from.
+# One species per line, by English name or PokeAPI identifier; blank lines and # lines are ignored.
+# Legendary, mythical, Ultra Beast and Paradox species stay in the dex but are quest and milestone rewards, never egg drops.
+# Curation: docs/region-curation-prompt.md. After editing:
+#   python3 -I tools/species/generate.py
+#   ./gradlew :pokemon-core:jvmTest
+
+Turtwig
+Grotle
+Torterra
+Chimchar
+Monferno
+Infernape
+Piplup
+Prinplup
+Empoleon
+Sandshrew
+Sandslash
+Diglett
+Dugtrio
+Meowth
+Persian
+Perrserker
+Pineco
+Forretress
+Skarmory
+Sableye
+Mawile
+Kecleon
+Klefki
+Minior
+Skwovet
+Greedent
+Stonjourner
+Klawf
+Geodude
+Graveler
+Golem
+Voltorb
+Electrode
+Omanyte
+Omastar
+Kabuto
+Kabutops
+Baltoy
+Claydol
+Lileep
+Cradily
+Anorith
+Armaldo
+Clamperl
+Huntail
+Gorebyss
+Relicanth
+Cranidos
+Rampardos
+Shieldon
+Bastiodon
+Bronzor
+Bronzong
+Sigilyph
+Yamask
+Cofagrigus
+Runerigus
+Tirtouga
+Carracosta
+Ferroseed
+Ferrothorn
+Druddigon
+Golett
+Golurk
+Honedge
+Doublade
+Aegislash
+Carbink
+Cufant
+Copperajah
+Varoom
+Revavroom
+Orthworm
+Magnemite
+Magneton
+Magnezone
+Shellder
+Cloyster
+Onix
+Steelix
+Porygon
+Porygon2
+Porygon-Z
+Aerodactyl
+Murkrow
+Honchkrow
+Nosepass
+Probopass
+Aron
+Lairon
+Aggron
+Hippopotas
+Hippowdon
+Roggenrola
+Boldore
+Gigalith
+Drilbur
+Excadrill
+Sandile
+Krokorok
+Krookodile
+Archen
+Archeops
+Klink
+Klang
+Klinklang
+Pawniard
+Bisharp
+Kingambit
+Vullaby
+Mandibuzz
+Tyrunt
+Tyrantrum
+Amaura
+Aurorus
+Dhelmise
+Silicobra
+Sandaconda
+Dracozolt
+Arctozolt
+Dracovish
+Arctovish
+Tinkatink
+Tinkatuff
+Tinkaton
+Glimmet
+Glimmora
+Gimmighoul
+Gholdengo
+Beldum
+Metang
+Metagross
+Duraludon
+Archaludon
+Celesteela
+Sandy Shocks
+Iron Treads
+Iron Thorns
+Iron Boulder
+Iron Crown
+Regirock
+Regice
+Registeel
+Regigigas
+Cobalion
+Type: Null
+Silvally
+Eternatus
+Regieleki
+Regidrago
+Wo-Chien
+Chien-Pao
+Ting-Lu
+Chi-Yu
+Genesect
+Magearna
+Meltan
+Diancie
+Melmetal

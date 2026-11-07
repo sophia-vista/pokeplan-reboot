@@ -1,10 +1,13 @@
-# The Care Region (Region.CARE): gentle, soothing and caring Pokémon for the Care module (sleep, comfort, healing,
-# mood, gratitude), mostly Fairy, Grass, Water and Normal. In dex order (line 1 becomes Care #1).
-# Patrons: Cresselia (good dreams) and Shaymin (gratitude). Super Rare lines: Goomy and Slakoth (rest).
-# Swablu, Altaria, Cottonee and Whimsicott came from the Plan Region.
+# The Care Region (Region.CARE): gentle, soothing and caring Pokémon for the Care module (sleep, comfort, healing, mood,
+# gratitude), mostly Fairy, Grass, Water and soft Normal or Psychic. Starts with the Kanto starters. Patrons: Cresselia (good
+# dreams) and Shaymin (gratitude), last in the list. Super Rare lines: Goomy and Slakoth (rest).
 #
+# In the order of a mainline regional dex: the starters first, then the lines by rarity (Common, Uncommon, Rare, Super Rare) in
+# National Dex order with every stage next to its pre-evolution, then the quest and milestone species (ultra beasts, paradox,
+# legendary, mythical) and the patrons last. A line is never split: a species is in at most one module region (the other lists
+# in this folder; the generator checks it), and every evolution is in the same list as the Pokémon it evolves from.
 # One species per line, by English name or PokeAPI identifier; blank lines and # lines are ignored.
-# A species is in at most one module region (the other lists in this folder); the generator checks it.
+# Legendary, mythical, Ultra Beast and Paradox species stay in the dex but are quest and milestone rewards, never egg drops.
 # Curation: docs/region-curation-prompt.md. After editing:
 #   python3 -I tools/species/generate.py
 #   ./gradlew :pokemon-core:jvmTest
@@ -12,47 +15,25 @@
 Bulbasaur
 Ivysaur
 Venusaur
+Charmander
+Charmeleon
+Charizard
 Squirtle
 Wartortle
 Blastoise
-Cleffa
-Clefairy
-Clefable
+Rowlet
+Dartrix
+Decidueye
+Popplio
+Brionne
+Primarina
+Cubone
+Marowak
+Chinchou
+Lanturn
 Igglybuff
 Jigglypuff
 Wigglytuff
-Oddish
-Gloom
-Vileplume
-Bellossom
-Psyduck
-Golduck
-Poliwag
-Poliwhirl
-Poliwrath
-Politoed
-Seel
-Dewgong
-Drowzee
-Hypno
-Happiny
-Chansey
-Blissey
-Kangaskhan
-Mime Jr.
-Mr. Mime
-Mr. Rime
-Lapras
-Munchlax
-Snorlax
-Chikorita
-Bayleef
-Meganium
-Chinchou
-Lanturn
-Azurill
-Marill
-Azumarill
 Hoppip
 Skiploom
 Jumpluff
@@ -60,95 +41,153 @@ Sunkern
 Sunflora
 Wooper
 Quagsire
+Clodsire
 Snubbull
 Granbull
-Teddiursa
-Ursaring
-Ursaluna
-Corsola
-Mantyke
-Mantine
-Lotad
-Lombre
-Ludicolo
-Ralts
-Kirlia
-Gardevoir
-Gallade
-Slakoth
-Vigoroth
-Slaking
+Azurill
+Marill
+Azumarill
 Skitty
 Delcatty
 Meditite
 Medicham
-Volbeat
-Illumise
-Budew
-Roselia
-Roserade
+Lunatone
+Cherubi
+Cherrim
+Chingling
+Chimecho
+Audino
+Alomomola
+Spritzee
+Aromatisse
+Dewpider
+Araquanid
+Morelull
+Shiinotic
+Pyukumuku
+Gossifleur
+Eldegoss
+Oddish
+Gloom
+Vileplume
+Bellossom
+Psyduck
+Golduck
+Slowpoke
+Slowbro
+Slowking
+Seel
+Dewgong
+Drowzee
+Hypno
+Cleffa
+Clefairy
+Clefable
 Wailmer
 Wailord
 Swablu
 Altaria
-Feebas
-Milotic
-Chingling
-Chimecho
-Luvdisc
-Turtwig
-Grotle
-Torterra
-Cherubi
-Cherrim
 Shellos
 Gastrodon
-Cresselia
-Shaymin
+Mantyke
+Mantine
 Munna
 Musharna
-Audino
 Cottonee
 Whimsicott
 Petilil
 Lilligant
 Ducklett
 Swanna
-Alomomola
-Flabébé
-Floette
-Florges
-Spritzee
-Aromatisse
-Dedenne
-Goomy
-Sliggoo
-Goodra
-Rowlet
-Dartrix
-Decidueye
-Popplio
-Brionne
-Primarina
+Frillish
+Jellicent
 Fomantis
 Lurantis
-Morelull
-Shiinotic
 Stufful
 Bewear
-Bounsweet
-Steenee
-Tsareena
 Comfey
 Komala
 Mimikyu
-Gossifleur
-Eldegoss
+Bruxish
+Drampa
 Wooloo
 Dubwool
+Snom
+Frosmoth
+Greavard
+Houndstone
+Poliwag
+Poliwhirl
+Poliwrath
+Politoed
+Tentacool
+Tentacruel
+Horsea
+Seadra
+Kingdra
+Staryu
+Starmie
+Teddiursa
+Ursaring
+Ursaluna
+Corsola
+Cursola
+Ralts
+Kirlia
+Gardevoir
+Gallade
+Feebas
+Milotic
+Duskull
+Dusclops
+Dusknoir
+Spheal
+Sealeo
+Walrein
+Budew
+Roselia
+Roserade
+Mime Jr.
+Mr. Mime
+Mr. Rime
+Happiny
+Chansey
+Blissey
+Munchlax
+Snorlax
+Cubchoo
+Beartic
+Flabébé
+Floette
+Florges
+Bounsweet
+Steenee
+Tsareena
 Hatenna
 Hattrem
 Hatterene
-Snom
-Frosmoth
-Indeedee
+Cetoddle
+Cetitan
+Slakoth
+Vigoroth
+Slaking
+Goomy
+Sliggoo
+Goodra
+Scream Tail
+Iron Valiant
+Articuno
+Lugia
+Kyogre
+Xerneas
+Yveltal
+Tapu Lele
+Tapu Fini
+Cosmog
+Cosmoem
+Solgaleo
+Lunala
+Necrozma
+Darkrai
+Cresselia
+Shaymin
