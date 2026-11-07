@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -49,9 +50,9 @@ fun NavButton(label: String, iconItem: String, selected: Boolean, onClick: () ->
         modifier
             .pressScale(source)
             .defaultMinSize(minHeight = 56.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(PixelShape)
             .background(if (selected) Color.White.copy(alpha = if (hovering) 0.32f else 0.24f) else if (hovering) Color.White.copy(alpha = 0.12f) else Color.Transparent)
-            .focusRing(RoundedCornerShape(16.dp))
+            .focusRing(PixelShape)
             .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Tab) { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }
             .semantics { this.selected = selected }
             .padding(vertical = Spacing.S),

@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -89,7 +90,7 @@ private fun HealPage(model: AppModel, section: HealSection?, openPokemon: (Strin
         HealMenu(model, toModules, openPokemon)
         return
     }
-    SectionScaffold(section.label, Module.HEAL.label, onBack = { model.healSection = null }, icon = section.icon, color = Module.HEAL.look.header) {
+    SectionScaffold(section.label, null, onBack = { model.healSection = null }, icon = section.icon, color = Module.HEAL.look.header) {
         when (section) {
             HealSection.ACTIVITY -> ActivityView(model)
             HealSection.HYDRATION -> HydrationView(model)
@@ -105,7 +106,7 @@ private fun HealPage(model: AppModel, section: HealSection?, openPokemon: (Strin
 private fun HealMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) -> Unit) {
     val data = model.healData
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.HEAL.label, subtitle = "Modules", onBack = onBack, color = Module.HEAL.look.header)
+        ScreenHeader(Module.HEAL.label, onBack = onBack, color = Module.HEAL.look.header)
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
@@ -115,20 +116,16 @@ private fun HealMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             TodayCard(model)
             MenuGrid(
                 listOf(
-                    MenuEntry(HealSection.ACTIVITY.name, HealSection.ACTIVITY.icon, "Activity", activityDetail(model), tint = Pixel.Red),
-                    MenuEntry(HealSection.HYDRATION.name, HealSection.HYDRATION.icon, "Hydration", hydrationDetail(model), tint = Pixel.Blue),
-                    MenuEntry(HealSection.SLEEP.name, HealSection.SLEEP.icon, "Sleep", if (data.sleep.isEmpty()) "log a night" else "${data.sleep.size} nights", tint = Pixel.Violet),
-                    MenuEntry(HealSection.BODY.name, HealSection.BODY.icon, "Body", if (data.measurements.isEmpty()) "optional" else "${data.measurements.size} entries", tint = Pixel.Green),
+                    MenuEntry(HealSection.ACTIVITY.name, HealSection.ACTIVITY.icon, "Activity", activityDetail(model), tint = ModuleAccent.HEAL.accent),
+                    MenuEntry(HealSection.HYDRATION.name, HealSection.HYDRATION.icon, "Hydration", hydrationDetail(model), tint = ModuleAccent.HEAL.accent),
+                    MenuEntry(HealSection.SLEEP.name, HealSection.SLEEP.icon, "Sleep", if (data.sleep.isEmpty()) "log a night" else "${data.sleep.size} nights", tint = ModuleAccent.HEAL.accent),
+                    MenuEntry(HealSection.BODY.name, HealSection.BODY.icon, "Body", if (data.measurements.isEmpty()) "optional" else "${data.measurements.size} entries", tint = ModuleAccent.HEAL.accent),
                     MenuEntry(HealSection.GOALS.name, HealSection.GOALS.icon, "Goals", if (data.goals.none { it.status == GoalStatus.ACTIVE }) "optional" else "${data.goals.count { it.status == GoalStatus.ACTIVE }} active", tint = Pixel.Warning),
                     MenuEntry(HealSection.SETTINGS.name, HealSection.SETTINGS.icon, "Settings", "Field Research, reminders, your data", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.healSection = HealSection.valueOf(key) }
             FieldResearchLine(model)
             HealPartyPanel(model, openPokemon)
-            Text(
-                "Everything you log here stays on this phone, in Heal. It is never shown in the World, on Home or in a notification, and nothing here is advice.",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
         }
     }
 }
@@ -163,7 +160,7 @@ private fun TodayCard(model: AppModel) {
                 val w = HealRules.latestMeasurement(data, MeasureType.WEIGHT)
                 if (w != null) Text("Weight: ${HealUnits.show(w, data.settings.weightUnit)} (${w.day.short()})", style = MaterialTheme.typography.bodyLarge)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Log activity", { model.healSection = HealSection.ACTIVITY }, Modifier.weight(1f), Pixel.Red, compact = true)
                 PixelButton("Add a drink", { model.healSection = HealSection.HYDRATION }, Modifier.weight(1f), Pixel.Blue, compact = true)
             }
@@ -177,7 +174,7 @@ private fun FieldResearchLine(model: AppModel) {
     val points = model.store.healEggMeter()
     Text(
         if (on) "Field Research is on · Field Egg $points of ${app.pokeplan.core.reward.RewardEngine.HEAL_EGG_METER_SIZE}"
-        else "Field Research is off. Logging works the same; turn it on in Settings to find Pokémon from what you do.",
+        else "Field Research is off",
         style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
     )
 }
@@ -274,8 +271,7 @@ private fun ActivityOptions(model: AppModel, a: ActivityRecord, onDone: () -> Un
                 }
                 PixelField(minutes, { minutes = it.filter(Char::isDigit).take(4) }, Modifier.fillMaxWidth(), label = "Minutes", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), error = error)
                 PixelField(note, { note = it.take(HealRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note")
-                Text("Changing a record never earns or takes back anything.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton("Save", {
                         val out = model.heal.updateActivity(a.copy(type = type, minutes = minutes.toIntOrNull() ?: 0, note = note))
                         if (out.record == null) error = out.refused else onDone()
@@ -284,11 +280,11 @@ private fun ActivityOptions(model: AppModel, a: ActivityRecord, onDone: () -> Un
                 }
             } else if (asking) {
                 Text("Delete this activity? What it earned stays earned.", style = MaterialTheme.typography.bodyLarge)
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton("Delete", { model.heal.deleteActivity(a.id); onDone() }, Modifier.weight(1f), Pixel.Danger, compact = true)
                     PixelButton("Keep it", { asking = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
-            } else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            } else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.Blue, compact = true)
                 PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 PixelButton("Close", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -372,7 +368,7 @@ private fun SleepView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("A night")
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 TabButton("Woke today", !yesterday, { yesterday = false }, Modifier.weight(1f))
                 TabButton("Woke yesterday", yesterday, { yesterday = true }, Modifier.weight(1f))
             }
@@ -431,13 +427,12 @@ private fun BodyView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("A measurement")
-            Text("Optional, and private. Nothing here earns anything or is compared with anyone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 MeasureType.entries.forEach { t -> TabButton(t.label, t == type, { pick(t) }) }
             }
             if (type == MeasureType.OTHER) PixelField(label, { label = it.take(40) }, Modifier.fillMaxWidth(), label = "What is it?", singleLine = true)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelField(value, { value = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(8) }, Modifier.weight(1f), label = "Value", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                PixelField(value, { value = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(8) }, Modifier.weight(1f), placeholder = "Value", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
                 if (type.units.size > 1) type.units.forEach { u -> TabButton(u, u == unit, { unit = u }) }
                 else if (type.units.first().isNotEmpty()) Text(type.units.first(), style = MaterialTheme.typography.bodyLarge)
             }
@@ -477,7 +472,6 @@ private fun GoalsHealView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("A goal of your own")
-            Text("Optional. A goal you miss costs nothing, and pausing it keeps everything you logged.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 GoalKind.entries.forEach { k -> TabButton(k.label, k == kind, { kind = k }) }
             }
@@ -496,7 +490,7 @@ private fun GoalsHealView(model: AppModel) {
                     PixelBar(p.fraction, color = if (p.met) Pixel.Green else Pixel.Blue, label = if (p.done == null) "Nothing logged yet" else "${p.done} of ${g.target} ${g.kind.unit} so far")
                     Text(if (p.done == null) "Nothing logged yet" else if (p.met) "Reached" else "${p.done} of ${g.target} ${g.kind.unit} so far", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton(if (g.status == GoalStatus.PAUSED) "Resume" else "Pause", { heal.setGoalStatus(g.id, if (g.status == GoalStatus.PAUSED) GoalStatus.ACTIVE else GoalStatus.PAUSED) }, Modifier.weight(1f), Pixel.Blue, compact = true)
                     PixelButton("Put away", { heal.setGoalStatus(g.id, GoalStatus.ARCHIVED) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     PixelButton("Delete", { heal.deleteGoal(g.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -524,7 +518,6 @@ private fun HealSettingsView(model: AppModel) {
                 "Find Pokémon from what I log", settings.fieldResearch,
                 detail = "Off by default. A session of ${HealRules.RESEARCH_MIN_MINUTES} minutes or more, just logged, and the day's first drink can find a Field Egg. Weight, sleep and every other number never earn anything.",
             ) { heal.setFieldResearch(it) }
-            Text("Turning it off keeps every record. Nothing is lost for a quiet day.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
     TextBox {
@@ -535,7 +528,7 @@ private fun HealSettingsView(model: AppModel) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 helper = "Heal never sets one for you.",
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Save target", { heal.setHydrationTarget(target.toIntOrNull()) }, Modifier.weight(1f), Pixel.Blue, compact = true)
                 PixelButton("No target", { target = ""; heal.setHydrationTarget(null) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
@@ -558,11 +551,10 @@ private fun HealSettingsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Units")
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 TabButton("kg", settings.weightUnit == "kg", { heal.setWeightUnit("kg") }, Modifier.weight(1f))
                 TabButton("lb", settings.weightUnit == "lb", { heal.setWeightUnit("lb") }, Modifier.weight(1f))
             }
-            Text("Changes how weight is shown. Each entry keeps the unit you entered it in.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
     TextBox {
@@ -583,7 +575,7 @@ private fun HealSettingsView(model: AppModel) {
             HealKinds.entries.forEach { k ->
                 if (asking == k) {
                     Text("Erase all ${k.label.lowercase()} records? This cannot be undone.", style = MaterialTheme.typography.bodyLarge)
-                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         PixelButton("Erase", { heal.erase(k); asking = null }, Modifier.weight(1f), Pixel.Danger, compact = true)
                         PixelButton("Keep them", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
@@ -591,7 +583,7 @@ private fun HealSettingsView(model: AppModel) {
             }
             if (askingAll) {
                 Text("Erase every Heal record? This cannot be undone.", style = MaterialTheme.typography.bodyLarge)
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton("Erase all", { heal.eraseAll(); askingAll = false }, Modifier.weight(1f), Pixel.Danger, compact = true)
                     PixelButton("Keep them", { askingAll = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }

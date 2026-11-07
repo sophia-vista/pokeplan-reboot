@@ -92,20 +92,23 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
             rows.forEachIndexed { i, code ->
                 val r = Currencies.rate(active, code, rates, home, gear.manualRates)
                 val shown = if (code == active) text else if (amount == null || r == null) "" else Currencies.plain(amount * r, code)
-                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    PixelField(
-                        shown, { active = code; text = it.take(20); onUse() }, Modifier.weight(1f), singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
-                        label = Currencies.label(code) + if (code == home) " (home)" else "",
-                    )
-                    if (i > 0 && code != home) PixelIconButton("arrow-up", "Move $code up", { saveBoard(rows.filter { it != home }.toMutableList().also { l -> val at = l.indexOf(code); if (at > 0) { l.removeAt(at); l.add(at - 1, code) } }) }, Pixel.InkSoft)
-                    if (code != home) PixelIconButton("trash", "Remove $code", { saveBoard(rows.filter { it != home && it != code }) }, Pixel.InkSoft)
+                // The currency's name sits over its row; the amount and its buttons share one centre line.
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    Text(Currencies.label(code) + if (code == home) " (home)" else "", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        PixelField(
+                            shown, { active = code; text = it.take(20); onUse() }, Modifier.weight(1f), singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
+                        )
+                        if (i > 0 && code != home) PixelIconButton("arrow-up", "Move $code up", { saveBoard(rows.filter { it != home }.toMutableList().also { l -> val at = l.indexOf(code); if (at > 0) { l.removeAt(at); l.add(at - 1, code) } }) }, Pixel.InkSoft)
+                        if (code != home) PixelIconButton("trash", "Remove $code", { saveBoard(rows.filter { it != home && it != code }) }, Pixel.InkSoft)
+                    }
                 }
             }
             if (foreign != home) Currencies.rate(home, foreign, rates, home, gear.manualRates)?.let { r ->
                 Text("1 $home = ${CalcEngine.formatSignificant(r, 6)} $foreign${if (gear.manualRates[foreign] != null) " (your rate)" else " (reference rate)"}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton(if (adding) "Cancel" else "Add a currency", { adding = !adding; query = "" }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 PixelButton(if (active == home) "$active is home" else "Make $active home", { store.changeGear { it.copy(homeCurrency = active) } }, Modifier.weight(1f), if (active == home) Pixel.Green else Pixel.InkSoft, compact = true, enabled = active != home)
             }
@@ -119,8 +122,8 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
             // Your own rate for the home pair: what the changer offered, in units of the other currency per one of the home currency.
             if (foreign != home) {
                 FieldLabel("A rate you were offered ($foreign per 1 $home)")
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    PixelField(manualText, { manualText = it.take(14) }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Your rate")
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                    PixelField(manualText, { manualText = it.take(14) }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), placeholder = "Your rate")
                     PixelButton("Use", { manualText.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 && it.isFinite() }?.let { v -> store.changeGear { g -> g.copy(manualRates = g.manualRates + (foreign to v)) } } }, Modifier.weight(0.5f), Pixel.Blue, compact = true)
                     PixelIconButton("close", "Clear", { manualText = ""; store.changeGear { g -> g.copy(manualRates = g.manualRates - foreign) } }, Pixel.InkSoft)
                 }
@@ -131,9 +134,8 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
                 var priceText by remember { mutableStateOf("") }
                 var percentText by remember { mutableStateOf(if (gear.feePercent > 0) CalcEngine.format(gear.feePercent) else "") }
                 var fixedText by remember { mutableStateOf(if (gear.feeFixed > 0) CalcEngine.format(gear.feeFixed) else "") }
-                Text("A price in $foreign, paid with $home: the reference estimate against the rate you were offered and the fees.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 PixelField(priceText, { priceText = it.take(14) }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Price in $foreign")
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelField(percentText, { percentText = it.take(8); store.changeGear { g -> g.copy(feePercent = it.replace(',', '.').toDoubleOrNull()?.takeIf { v -> v >= 0 } ?: 0.0) } }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Fee %")
                     PixelField(fixedText, { fixedText = it.take(10); store.changeGear { g -> g.copy(feeFixed = it.replace(',', '.').toDoubleOrNull()?.takeIf { v -> v >= 0 } ?: 0.0) } }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Fixed fee ($home)")
                 }
@@ -147,7 +149,6 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
                     Text("At ${if (gear.manualRates[foreign] != null) "your rate" else "the reference rate"}: ${Currencies.format(cost.atQuotedRate, home)}", style = MaterialTheme.typography.bodyMedium)
                     Text("Fees: ${Currencies.format(cost.fees, home)}", style = MaterialTheme.typography.bodyMedium)
                     Text("You pay about ${Currencies.format(cost.total, home)}, ${Currencies.format(cost.extra, home)} (${CalcEngine.format(kotlin.math.round(cost.extraPercent * 100) / 100)}%) more than the reference.", style = MaterialTheme.typography.titleSmall)
-                    Text("An estimate: your bank, card or changer has the final rate and fees.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
             }
             PixelButton("Refresh rates", { refresh() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)

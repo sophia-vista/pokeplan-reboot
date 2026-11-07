@@ -62,7 +62,6 @@ internal fun WorldClockTool(model: AppModel, onUse: () -> Unit) {
             if (adding) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 WorldClock.places.filter { it.id !in ids }.forEach { p -> PixelButton(p.name, { save(ids + p.id) }, color = Pixel.InkSoft, compact = true) }
             }
-            Text("The first place is home: tap the arrow to make the next one home. Daylight saving is included.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
     ConvertCard(ids, onUse)

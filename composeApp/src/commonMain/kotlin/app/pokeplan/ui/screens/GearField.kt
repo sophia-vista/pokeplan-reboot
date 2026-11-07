@@ -89,8 +89,7 @@ internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("The phone reads its location once when you press a button, and only then (it asks for permission the first time). Nothing is tracked, and your places stay on this phone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton(if (busy) "Looking..." else "Mark this place", { if (!busy) locate(true) }, Modifier.weight(1f), Pixel.Blue, compact = true, enabled = !busy)
                 PixelButton("Where am I", { if (!busy) locate(false) }, Modifier.weight(1f), Pixel.InkSoft, compact = true, enabled = !busy)
             }
@@ -104,18 +103,17 @@ internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 if (editing == w.id) {
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                        PixelField(editText, { editText = it.take(24) }, Modifier.weight(1f), singleLine = true, label = "Name")
+                        PixelField(editText, { editText = it.take(24) }, Modifier.weight(1f), singleLine = true, placeholder = "Name")
                         PixelIconButton("check", "Save the name", { store.changeGear { g -> g.copy(waypoints = g.waypoints.map { if (it.id == w.id) it.copy(name = editText.trim().ifEmpty { it.name }) else it }) }; editing = null })
                     }
                 } else Text(w.name, style = MaterialTheme.typography.titleSmall)
                 Text(Geo.coordinates(w.latitude, w.longitude), style = MaterialTheme.typography.bodyMedium)
-                Text("Accurate to about ${w.accuracyMeters.toInt()} m", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 here?.let { h ->
                     val d = Geo.distanceMeters(h.latitude, h.longitude, w.latitude, w.longitude)
                     val b = Geo.bearingDegrees(h.latitude, h.longitude, w.latitude, w.longitude).toFloat()
                     Text("From you: ${Geo.distanceText(d)}, ${SensorMath.cardinal(b)} (${b.toInt()}°). Use the Compass to face it.", style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
                 } ?: Text("Press Where am I to see how far it is.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelIconButton("pencil", "Rename ${w.name}", { editing = w.id; editText = w.name })
                     PixelIconButton("copy", "Copy the map link for ${w.name}", { clipboard.setText(AnnotatedString(Geo.mapLink(w.latitude, w.longitude))) })
                     PixelIconButton("trash", "Delete ${w.name}", { store.changeGear { g -> g.copy(waypoints = g.waypoints.filterNot { it.id == w.id }) } })
@@ -185,7 +183,6 @@ internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
                 PixelIconButton("plus", "One decibel higher", { store.changeGear { it.copy(soundOffsetDb = (it.soundOffsetDb + 1f).coerceAtMost(120f)) } })
                 PixelIconButton("reload", "Start the quietest and loudest again", { low = null; high = null; sum = 0.0; count = 0 })
             }
-            Text("A phone microphone is not a calibrated meter: use this to compare sounds, not to measure them. To tune it, hold a real meter or app next to the phone and move the offset until they agree. It listens only while this tool is open and records nothing.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }
@@ -213,23 +210,20 @@ internal fun QrTool(model: AppModel, onUse: () -> Unit) {
                     val quiet = 4; val cells = c.size + quiet * 2; val cell = size.minDimension / cells
                     for (y in 0 until c.size) for (x in 0 until c.size) if (c.dark(x, y)) drawRect(Color.Black, Offset((x + quiet) * cell, (y + quiet) * cell), Size(cell + 0.5f, cell + 0.5f))
                 }
-                Text("Version ${c.version}, ${c.size} by ${c.size} squares. Hold another phone's camera to it to test.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
         }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             FieldLabel("Scan a code")
-            if (scanner == null) Text("This device has no camera scanner for the Pokégear to open.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            else PixelButton("Open the scanner", { scanNote = ""; scanner.scan { r -> scanned = r; scanNote = if (r == null) "Nothing was scanned." else ""; onUse() } }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+            if (scanner != null) PixelButton("Open the scanner", { scanNote = ""; scanner.scan { r -> scanned = r; scanNote = if (r == null) "Nothing was scanned." else ""; onUse() } }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
             if (scanNote.isNotEmpty()) Text(scanNote, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             scanned?.let { r ->
                 Text(r, style = MaterialTheme.typography.bodyLarge)
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelIconButton("copy", "Copy what was scanned", { clipboard.setText(AnnotatedString(r)) })
                     PixelIconButton("arrow-up", "Make a code from it", { text = r.take(400) })
                 }
-                Text("Only the text is shown: the scanner never opens a link by itself.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
         }
     }
@@ -247,8 +241,7 @@ internal fun NetworkTool(model: AppModel, onUse: () -> Unit) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             val i = info
-            if (i == null) Text("This device cannot say how it is connected; the speed test still works.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            else {
+            if (i != null) {
                 Text("Connection: ${i.kind}", style = MaterialTheme.typography.titleSmall)
                 if (i.online) Text((if (i.metered) "Metered (data may cost money). " else "Not metered. ") + if (i.validated) "The phone has reached the internet." else "The phone could not confirm the internet.", style = MaterialTheme.typography.bodyMedium)
                 PixelIconButton("reload", "Look again", { info = feed?.info() })
@@ -270,7 +263,6 @@ internal fun NetworkTool(model: AppModel, onUse: () -> Unit) {
                 Text(NetworkCheck.verdict(r), style = MaterialTheme.typography.bodyLarge)
                 r.median?.let { Text("Answers in about $it ms" + (r.jitter?.let { j -> ", varying by up to $j ms" } ?: "") + ".", style = MaterialTheme.typography.bodyMedium) }
             }
-            Text("The test asks one small page from Cloudflare three times and times it. It sends nothing of yours and measures the time to answer, not the download speed.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }

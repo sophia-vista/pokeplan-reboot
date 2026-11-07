@@ -62,7 +62,8 @@ class ScreenshotTest {
         override fun nowMillis() = millis
     }
 
-    private fun started(): GameStore = GameStore(MemoryStorage(), clock).also { it.start("Sophia", 25) }
+    // The opening story ("A New Explorer") covers Home until it is done, so a screenshot of a real screen marks it done first.
+    private fun started(): GameStore = GameStore(MemoryStorage(), clock).also { it.start("Sophia", 25); it.worldEpisodeDone(app.pokeplan.world.WorldMoments.INTRO_KEY) }
 
     @Test
     fun story() {
@@ -224,7 +225,7 @@ class ScreenshotTest {
         val store = started()
         val data = store.data.copy(player = store.data.player.copy(pokemon = store.data.player.pokemon.map { it.copy(isShiny = true) }))
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), data.copy(lastSeenVersion = app.pokeplan.ui.AppVersion.NAME)))
-        render("plan-buddy-shiny", frames = 47) { App(storage, focusTab = true, start = Place.PLAN) }
+        render("home-buddy-shiny", frames = 47) { App(storage, focusTab = true, start = Place.HOME) }
     }
 
     @Test
@@ -235,7 +236,7 @@ class ScreenshotTest {
         store.tick()
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
         // Stop early: a reaction lasts about two seconds of animation time, so it is on screen at frame 30.
-        render("plan-buddy-event", frames = 30) { App(storage, focusTab = true, start = Place.PLAN) }
+        render("home-buddy-event", frames = 30) { App(storage, focusTab = true, start = Place.HOME) }
     }
 
     @Test
@@ -243,7 +244,7 @@ class ScreenshotTest {
         val store = started()
         store.startFocus(25, deepFocus = false)
         val storage = MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), store.data))
-        render("plan-buddy-asleep") { App(storage, focusTab = true, start = Place.PLAN) }
+        render("home-buddy-asleep") { App(storage, focusTab = true, start = Place.HOME) }
     }
 
     @Test
@@ -562,6 +563,41 @@ class ScreenshotTest {
 
     @Test
     fun darkMe() = dark("dark-me", Place.ME)
+
+    @Test
+    fun darkCare() = dark("dark-care", Place.CARE)
+
+    @Test
+    fun darkWorld() = dark("dark-world", Place.WORLD)
+
+    @Test
+    fun darkGear() = dark("dark-gear", Place.GEAR)
+
+    @Test
+    fun darkPlan() = dark("dark-plan", Place.PLAN)
+
+    /** The module pages in both palettes side by side by name, so each accent can be checked on the light and the dark panel. */
+    @Test
+    fun moduleAccentsBothPalettes() {
+        val store = storeWithTeam()
+        store.addTask("Write the report", Rank.B, planned = store.today, estimateMinutes = 45)
+        store.markRewardsSeen(); store.markVersionSeen(AppVersion.NAME)
+        val model = AppModel(store)
+        model.care.addRoutine("Drink a glass of water", kotlinx.datetime.LocalTime(9, 0))
+        for (dark in listOf(false, true)) {
+            val tag = if (dark) "dark" else "light"
+            fun shot(name: String, content: @Composable () -> Unit) = render("accent-$tag-$name") { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { content() } } }
+            shot("home") { app.pokeplan.ui.screens.HomeScreen(model) {} }
+            shot("modules") { model.module = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
+            shot("plan") { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
+            shot("care") { model.module = app.pokeplan.ui.screens.Module.CARE; model.careSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
+            shot("world") { app.pokeplan.ui.screens.WorldScreen(model) }
+            shot("planner") { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = app.pokeplan.ui.screens.PlanSection.PLANNER; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
+            shot("heal") { model.module = app.pokeplan.ui.screens.Module.HEAL; model.healSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} }
+            shot("gear") { app.pokeplan.ui.screens.GearScreen(model) {} }
+        }
+        model.module = null; model.planSection = null
+    }
 
     @Test
     fun collectionPc() = collection("collection-pc", 1, hatched = 14)

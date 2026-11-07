@@ -1,5 +1,7 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
+import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -66,10 +68,6 @@ internal fun ListsSection(model: AppModel, tasks: List<Task>, open: (String) -> 
         }
         if (creating) ListEditor(model, null) { made -> creating = false; made?.let(open) }
         val lists = store.activeLists
-        if (lists.isEmpty() && !creating) Text(
-            "Make a list for each part of your life (Groceries, Thesis, Home). Tasks in no list stay in the Inbox.",
-            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-        )
         ListRows(lists, tasks, open)
         val archived = model.data.lists.filter { it.archived }
         if (archived.isNotEmpty()) {
@@ -82,7 +80,7 @@ internal fun ListsSection(model: AppModel, tasks: List<Task>, open: (String) -> 
 @Composable
 private fun ListRows(lists: List<TaskList>, tasks: List<Task>, open: (String) -> Unit) {
     if (lists.isEmpty()) return
-    val shape = RoundedCornerShape(Spacing.CardRadius)
+    val shape = PixelShape
     Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)) {
         lists.forEachIndexed { i, l ->
             if (i > 0) HorizontalDivider(Modifier.padding(start = Spacing.M), color = Pixel.Border)
@@ -92,7 +90,7 @@ private fun ListRows(lists: List<TaskList>, tasks: List<Task>, open: (String) ->
                     .defaultMinSize(minHeight = 56.dp).padding(horizontal = Spacing.M, vertical = Spacing.S),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
             ) {
-                Box(Modifier.size(40.dp).background(Color(l.color).copy(alpha = 0.16f), CircleShape), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(40.dp).background(Color(l.color).copy(alpha = 0.16f), app.pokeplan.ui.theme.PixelDisc), contentAlignment = Alignment.Center) {
                     ItemIcon(l.icon, size = 32.dp, description = null)
                 }
                 Text(l.name, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -106,7 +104,7 @@ private fun ListRows(lists: List<TaskList>, tasks: List<Task>, open: (String) ->
 @Composable
 internal fun ListScreen(model: AppModel, list: TaskList, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit, back: () -> Unit) {
     var editing by remember(list.id) { mutableStateOf(false) }
-    SectionScaffold(list.name, if (list.archived) "Archived list" else "Planner", onBack = back, icon = list.icon) {
+    SectionScaffold(list.name, if (list.archived) "Archived list" else null, onBack = back, icon = list.icon, color = ModuleAccent.PLAN.header) {
         RewardBox(model)
         if (editing) ListEditor(model, list) { kept -> editing = false; if (kept == null) back() }
         else PixelButton("Edit list", { editing = true }, color = Pixel.InkSoft, compact = true)
@@ -153,27 +151,26 @@ private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit
                 TaskList.ICONS.forEach { id ->
                     val on = id == icon
                     Box(
-                        Modifier.size(Spacing.Target).clip(RoundedCornerShape(12.dp))
+                        Modifier.size(Spacing.Target).clip(PixelShape)
                             .background(if (on) Color(color).copy(alpha = 0.2f) else Color.Transparent)
-                            .border(if (on) 2.dp else 0.dp, if (on) Color(color) else Color.Transparent, RoundedCornerShape(12.dp))
+                            .border(if (on) 2.dp else 0.dp, if (on) Color(color) else Color.Transparent, PixelShape)
                             .selectable(on, role = Role.RadioButton) { icon = id }
                             .semantics { contentDescription = id.replace('-', ' ') },
                         contentAlignment = Alignment.Center,
                     ) { ItemIcon(id, size = 36.dp, description = null) }
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton(if (list == null) "Make list" else "Save", {
                     if (list == null) done(store.addList(name, color, icon)?.id)
                     else { store.updateList(list.copy(name = name, color = color, icon = icon)); done(list.id) }
                 }, Modifier.weight(1f), Pixel.Green, enabled = name.isNotBlank(), compact = true)
                 PixelIconButton("close", "Cancel", { done(list?.id) }, Pixel.InkSoft)
             }
-            if (list != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            if (list != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton(if (list.archived) "Unarchive" else "Archive", { store.updateList(list.copy(archived = !list.archived)); done(list.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 PixelIconButton("trash", "Delete", { store.deleteList(list.id); done(null) }, Pixel.Danger)
             }
-            if (list != null) Text("Deleting a list moves its tasks to the Inbox.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }

@@ -1,5 +1,7 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
+import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -85,7 +87,7 @@ import app.pokeplan.ui.theme.title
  * focus and each lead's scene stay inside their region. Nothing here punishes a quiet day.
  */
 @Composable
-fun HomeScreen(model: AppModel, go: (Place) -> Unit) {
+fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) -> Unit) {
     val store = model.store
     val data = model.data
     val points = data.player.trainerPoints
@@ -111,10 +113,13 @@ fun HomeScreen(model: AppModel, go: (Place) -> Unit) {
             WhatsNewCard(model)
             RankUpCard(model)
             WelcomeBackCard(model)
+            // The global buddy lives here: Home is the one place that shows it (Plan and the other modules show their own party).
+            HomeBuddyStage(model) { data.player.buddyId?.let(openPokemon) }
             RewardBox(model)
 
             PlanRegionCard(model, go)
             if (data.settings.careModule) CareRegionCard(model, go)
+            WorldRegionCard(model, go)
 
             StreakCard(model)
             if (store.sees(Feature.MINI_QUESTS)) MiniQuestsCard(model, go)
@@ -141,7 +146,7 @@ private fun RegionCard(
             Modifier.fillMaxWidth().clickable(onClickLabel = "Open $name", role = Role.Button, onClick = onOpen).padding(horizontal = Spacing.BoxX, vertical = Spacing.L),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
-            val window = RoundedCornerShape(Spacing.M)
+            val window = PixelShape
             Box(Modifier.size(80.dp).clip(window).border(1.dp, Pixel.Border, window), contentAlignment = Alignment.BottomCenter) {
                 SceneImage(look.scene, Modifier.matchParentSize(), darkness)
                 if (lead != null) AnimatedSprite(lead.form.id, lead.isShiny, lead.nickname, size = 72.dp, animate = !still, ground = 4.dp)
@@ -200,8 +205,8 @@ private fun PlanRegionCard(model: AppModel, go: (Place) -> Unit) {
         when {
             data.focus != null -> StepRow("An egg is incubating", "Open", Pixel.Blue) { go(Place.FOCUS) }
             next != null -> StepRow(next.title, "Done", lead = { RankBadge(next.rank) }) { model.completeTask(next.id) }
-            doneToday > 0 -> StepRow("All done for today. Rest, or add one more if you feel like it.", null)
-            else -> StepRow("Nothing planned for today", "Add a task", Pixel.Red) { model.addTaskRequested = true; go(Place.PLANNER) }
+            doneToday > 0 -> StepRow("All done for today", null)
+            else -> StepRow("Nothing planned for today", "Add a task", ModuleAccent.PLAN.accent) { model.addTaskRequested = true; go(Place.PLANNER) }
         }
     }
 }
@@ -230,6 +235,26 @@ private fun CareRegionCard(model: AppModel, go: (Place) -> Unit) {
             model.careData.routines.none { !it.archived } -> StepRow("Small things you do for yourself, like a glass of water.", "Add a routine", Pixel.Green) { open(CareSection.ROUTINES) }
             else -> StepRow("No routines today. A calm break is always there.", "Calm break", Pixel.Blue) { open(CareSection.CALM) }
         }
+    }
+}
+
+/** World: the team out exploring (or the first one picked), how many are out, and the one next step. */
+@Composable
+private fun WorldRegionCard(model: AppModel, go: (Place) -> Unit) {
+    val data = model.data
+    val world = data.world
+    val team = world.teams.firstOrNull { it.expedition != null } ?: world.teams.firstOrNull { it.members.isNotEmpty() }
+    val lead = team?.members?.firstNotNullOfOrNull { id -> data.player.pokemon.firstOrNull { it.id == id } }
+    val out = world.teams.count { it.expedition != null }
+    RegionCard(
+        Module.WORLD.label, Module.WORLD.icon, Module.WORLD.look, BuddyScene.darkness(model.store.now.hour, model.store.now.minute), lead,
+        team?.let { "${it.title}: ${lead?.nickname ?: "no members yet"}" } ?: "No team yet",
+        if (out == 0) "Dungeons and expeditions" else if (out == 1) "1 team out exploring" else "$out teams out exploring",
+        still = data.settings.reduceMotion, onOpen = { go(Place.WORLD) },
+    ) {
+        val where = team?.expedition?.let { app.pokeplan.world.Dungeons.byId(it.dungeonId)?.name }
+        if (where != null) StepRow("Exploring $where", "Open") { go(Place.WORLD) }
+        else StepRow("Send a team into a dungeon", "Open", ModuleAccent.WORLD.accent) { go(Place.WORLD) }
     }
 }
 
@@ -285,17 +310,17 @@ private fun daysAgo(today: LocalDate, day: LocalDate): String = when (val n = da
 }
 
 /**
- * The Plan buddy in Plan's town, on Plan's page: pet it, give it a berry, and it celebrates a finished task or a
+ * The global buddy in a scene of its own type, on Home: pet it, give it a berry, and it celebrates a finished task or a
  * hatch with its cry, its portrait and a hop. Nothing before the first buddy.
  */
 @Composable
-fun PlanBuddyStage(model: AppModel, onOpen: () -> Unit) {
+fun HomeBuddyStage(model: AppModel, onOpen: () -> Unit) {
     val store = model.store
     val data = model.data
     val buddy = data.player.buddy ?: return
     val berry = store.buddyBerry()
     BuddyStage(
-        buddy = buddy, scene = Module.PLAN.look.scene, darkness = BuddyScene.darkness(store.now.hour, store.now.minute),
+        buddy = buddy, scene = BuddyScene.of(buddy.form.types), darkness = BuddyScene.darkness(store.now.hour, store.now.minute),
         progress = store.levelProgress(buddy), event = store.buddyEvent(),
         calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
         onPet = { avoid -> store.pet(); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
@@ -317,7 +342,7 @@ internal fun NextUp(task: Task, onDone: () -> Unit, onFocus: (() -> Unit)?, onCh
                 Text(listOf(task.rank.title, taskMeta(task)).filter { it.isNotEmpty() }.joinToString(", "), style = MaterialTheme.typography.bodyMedium)
             }
             PixelIconButton("check", "Done", onDone, Pixel.Green)
-            if (onFocus != null || onChoose != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth()) {
+            if (onFocus != null || onChoose != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 if (onFocus != null) PixelButton("Focus on this", onFocus, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 if (onChoose != null) PixelButton(if (picked) "Pick another" else "Pick for me", onChoose, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
@@ -398,8 +423,7 @@ private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
                 }
             }
             val got = store.miniQuestRewards()
-            if (got.isEmpty()) Text("A berry and 2 Rare Candies each, more for all three.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            else got.forEach { r ->
+            got.forEach { r ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     r.iconItem()?.let { ItemIcon(it, size = 24.dp) }
                     Text("You got ${r.describe()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)

@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -96,7 +97,7 @@ fun UndoBar(model: AppModel, modifier: Modifier = Modifier) {
     if (rows.isEmpty()) return
     Column(
         modifier.fillMaxWidth().padding(horizontal = Spacing.M, vertical = Spacing.S)
-            .background(Pixel.Ink, RoundedCornerShape(Spacing.CardRadius))
+            .background(Pixel.Ink, PixelShape)
             .padding(horizontal = Spacing.L, vertical = Spacing.XS)
             .semantics { liveRegion = LiveRegionMode.Polite },
     ) {

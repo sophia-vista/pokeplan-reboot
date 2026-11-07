@@ -88,7 +88,7 @@ internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
             options.forEachIndexed { i, option ->
                 if (editing == i) {
                     PixelField(editText, { editText = it.take(40) }, Modifier.fillMaxWidth(), singleLine = true, label = "Change it")
-                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         PixelIconButton("check", "Save", {
                             val new = editText.trim()
                             if (new.isNotEmpty() && (new == option || new !in options)) { store.setPickerOptions(options.toMutableList().also { it[i] = new }); if (new != option) moveWeights(option, new) }
@@ -100,12 +100,12 @@ internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
                     val weight = Randomizer.weightOf(option, gear.pickerWeights)
                     Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                         Text(option + if (weight > 1) "  (x$weight)" else "", Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodyLarge)
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                             PixelIconButton("pencil", "Edit", { editing = i; editText = option }, Pixel.InkSoft)
                             PixelIconButton("arrow-up", "Up", { if (i > 0) store.setPickerOptions(options.toMutableList().also { it.add(i - 1, it.removeAt(i)) }) }, Pixel.InkSoft, enabled = i > 0)
                             PixelIconButton("arrow-down", "Down", { if (i < options.lastIndex) store.setPickerOptions(options.toMutableList().also { it.add(i + 1, it.removeAt(i)) }) }, Pixel.InkSoft, enabled = i < options.lastIndex)
                         }
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                             PixelIconButton("minus", "Less likely", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights + (option to (weight - 1).coerceAtLeast(1))) } }, Pixel.InkSoft, enabled = weight > 1)
                             PixelIconButton("plus", "More", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights + (option to (weight + 1).coerceAtMost(Randomizer.MAX_WEIGHT))) } }, Pixel.InkSoft, enabled = weight < Randomizer.MAX_WEIGHT)
                             PixelIconButton("trash", "Remove", { store.setPickerOptions(options - option); store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights - option) } }, Pixel.InkSoft)
@@ -113,14 +113,12 @@ internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
                     }
                 }
             }
-            if (options.isEmpty()) Text("Add two or more things, then pick. The list stays on this phone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            else Text("A weight (x2, x3 and up) makes an option more likely.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             FieldLabel("How many to pick")
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 (1..3).forEach { n -> PixelButton(n.toString(), { count = n }, Modifier.weight(1f), if (count == n) Pixel.Blue else Pixel.InkSoft, compact = true, enabled = n <= options.size.coerceAtLeast(1)) }
                 PixelButton(if (skipLast) "Skip last: on" else "Skip last: off", { skipLast = !skipLast }, Modifier.weight(2f), if (skipLast) Pixel.Green else Pixel.InkSoft, compact = true, enabled = count == 1)
             }
@@ -184,11 +182,11 @@ internal fun CoinTool(model: AppModel, onUse: () -> Unit) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 listOf(4, 6, 8, 10, 12, 20, 100).forEach { sides -> PixelButton("d$sides", { roll("${if (count == 1) "" else count}d$sides") }, color = Pixel.Blue, compact = true) }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 listOf(1, 2, 3, 4).forEach { n -> PixelButton("x$n", { count = n }, Modifier.weight(1f), if (count == n) Pixel.Blue else Pixel.InkSoft, compact = true) }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelField(dice, { dice = it.take(14) }, Modifier.weight(1f), singleLine = true, label = "Your own (2d6+3)")
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                PixelField(dice, { dice = it.take(14) }, Modifier.weight(1f), singleLine = true, placeholder = "Your own (2d6+3)")
                 PixelButton("Roll", { roll(dice) }, Modifier.weight(0.5f), Pixel.Blue, compact = true)
             }
             rolled?.let { Text(it, Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.titleMedium) }

@@ -1,5 +1,8 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
+import app.pokeplan.ui.Emote
+import app.pokeplan.ui.EmoteIcon
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -120,7 +123,7 @@ internal fun StageGuestSprite(guest: StageGuest, calm: Boolean, modifier: Modifi
             action = action, actionKey = taps, onActionDone = { action = SpriteAction.IDLE },
         )
         AnimatedVisibility(heart, Modifier.align(Alignment.TopCenter).offset(y = (-14).dp), enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut()) {
-            Text("💕", fontSize = 20.sp)
+            EmoteIcon(Emote.HEART, size = 24.dp)
         }
     }
 }
@@ -181,7 +184,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
     var play by remember(visitor.speciesId, visiting) { mutableStateOf<Play?>(null) }
     var action by remember { mutableStateOf(SpriteAction.IDLE) }
     var moves by remember { mutableIntStateOf(0) }
-    var emoji by remember { mutableStateOf<String?>(null) }
+    var emote by remember { mutableStateOf<Emote?>(null) }
     var pops by remember { mutableIntStateOf(0) }
     val lift = remember { Animatable(0f) }
     val roam = remember(visitor.speciesId) { Animatable(0f) }
@@ -202,14 +205,14 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         lift.animateTo(-14f, tween(110))
         lift.animateTo(0f, tween(150))
     }
-    fun pop(face: String) {
-        emoji = face
+    fun pop(face: Emote) {
+        emote = face
         pops++
     }
     LaunchedEffect(pops) {
         if (pops == 0) return@LaunchedEffect
         delay(1_600)
-        emoji = null
+        emote = null
     }
 
     // One kind of care done: the visitor's answer in sound, movement, a face and a line, and the visit's end when it ends.
@@ -219,11 +222,11 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         model.haptic()
         val result = step.result
         when {
-            result?.friend == true -> { model.effect(Sfx.POKEMON_CENTER); model.cry(visitor.speciesId); pop("🎉") }
-            step.reaction == Reaction.LOVED -> { model.cry(visitor.speciesId); pop("💖") }
-            given == CareAction.GIFT && step.reaction != Reaction.FLAT -> { model.effect(Sfx.HEAL); pop("😋") }
-            step.reaction == Reaction.LIKED -> { model.effect(Sfx.SELECT); pop("😊") }
-            else -> pop("😌")
+            result?.friend == true -> { model.effect(Sfx.POKEMON_CENTER); model.cry(visitor.speciesId); pop(Emote.PARTY) }
+            step.reaction == Reaction.LOVED -> { model.cry(visitor.speciesId); pop(Emote.LOVE) }
+            given == CareAction.GIFT && step.reaction != Reaction.FLAT -> { model.effect(Sfx.HEAL); pop(Emote.YUM) }
+            step.reaction == Reaction.LIKED -> { model.effect(Sfx.SELECT); pop(Emote.HAPPY) }
+            else -> pop(Emote.CALM)
         }
         when {
             step.reaction == Reaction.LOVED -> move(SpriteAction.HOP)
@@ -245,7 +248,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         doing = null
         val result = care.leaveVisit() ?: return say("Not now.")
         model.haptic()
-        if (result.friend) { model.effect(Sfx.POKEMON_CENTER); model.cry(visitor.speciesId); pop("🎉") } else pop("😊")
+        if (result.friend) { model.effect(Sfx.POKEMON_CENTER); model.cry(visitor.speciesId); pop(Emote.PARTY) } else pop(Emote.HAPPY)
         say(visitEndedLine(name, result))
     }
     fun act(given: CareAction, spot: PetSpot? = null, berry: String? = null) = answer(care.visitAct(given, spot, berry), given)
@@ -254,9 +257,9 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
     fun played(kind: Play) {
         model.haptic()
         when (kind) {
-            Play.PAT -> { model.cry(visitor.speciesId); move(SpriteAction.HOP); pop("💕"); say("$name leans into your hand.") }
-            Play.TREAT -> { model.effect(Sfx.HEAL); move(SpriteAction.EAT); pop("😋"); say("$name munches it happily.") }
-            Play.TAG -> { move(SpriteAction.HOP); pop("✨"); say("$name bounds over.") }
+            Play.PAT -> { model.cry(visitor.speciesId); move(SpriteAction.HOP); pop(Emote.HEART); say("$name leans into your hand.") }
+            Play.TREAT -> { model.effect(Sfx.HEAL); move(SpriteAction.EAT); pop(Emote.YUM); say("$name munches it happily.") }
+            Play.TAG -> { move(SpriteAction.HOP); pop(Emote.SPARK); say("$name bounds over.") }
         }
     }
     fun answerBid() {
@@ -265,7 +268,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         if (step.result != null) return answer(step, CareAction.TIME) // the moment that made it a friend
         model.effect(Sfx.JUMP)
         move(SpriteAction.HOP)
-        pop("🎵")
+        pop(Emote.MUSIC)
         say("You noticed. $name looks pleased.")
     }
     fun spotAt(y: Float, height: Int): PetSpot = when {
@@ -349,11 +352,11 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
             )
         }
         AnimatedVisibility(
-            emoji != null, Modifier.align(Alignment.TopCenter).padding(top = Spacing.L).offset { IntOffset(roam.value.dp.roundToPx(), 0) },
+            emote != null, Modifier.align(Alignment.TopCenter).padding(top = Spacing.L).offset { IntOffset(roam.value.dp.roundToPx(), 0) },
             enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut(),
-        ) { Text(emoji ?: "", fontSize = 28.sp) }
+        ) { emote?.let { EmoteIcon(it, size = 32.dp) } }
         // Treats wait in a row along the top: drag one to the visitor, or tap it.
-        if (treats) Row(Modifier.align(Alignment.TopStart).padding(Spacing.S).zIndex(1f), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        if (treats) Row(Modifier.align(Alignment.TopStart).padding(Spacing.S).zIndex(1f), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             DraggableTreat("Treat", null, "a little treat", { p -> if (offered(p)) { if (visiting) act(CareAction.GIFT) else played(Play.TREAT) } }) {
                 if (visiting) act(CareAction.GIFT) else played(Play.TREAT)
             }
@@ -364,7 +367,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         // How warm the visitor is, small in the corner like the buddy's level.
         if (visit != null) Text(
             "${visitor.progress} of ${Visitors.FRIEND_PROGRESS}",
-            Modifier.align(Alignment.TopEnd).padding(Spacing.S).background(Pixel.Scrim.copy(alpha = 0.33f), RoundedCornerShape(Spacing.CardRadius - Spacing.S))
+            Modifier.align(Alignment.TopEnd).padding(Spacing.S).background(Pixel.Scrim.copy(alpha = 0.33f), PixelShape)
                 .padding(horizontal = Spacing.M, vertical = Spacing.XS)
                 .semantics { contentDescription = "$name is ${visitor.progress} of ${Visitors.FRIEND_PROGRESS} of the way to being a friend" },
             style = MaterialTheme.typography.labelMedium, color = Color.White,
@@ -430,7 +433,7 @@ private fun visitEndedLine(name: String, result: app.pokeplan.care.BefriendResul
 private fun DraggableTreat(label: String, berry: String?, description: String, onDrop: (Offset) -> Unit, onTap: () -> Unit) {
     var drag by remember { mutableStateOf(Offset.Zero) }
     var origin by remember { mutableStateOf(Offset.Zero) }
-    val shape = RoundedCornerShape(50)
+    val shape = PixelShape
     Row(
         Modifier.onGloballyPositioned { origin = it.boundsInRoot().center }
             .offset { IntOffset(drag.x.roundToInt(), drag.y.roundToInt()) }

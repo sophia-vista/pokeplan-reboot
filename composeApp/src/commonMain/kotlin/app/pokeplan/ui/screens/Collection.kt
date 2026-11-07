@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import androidx.compose.foundation.clickable
@@ -95,22 +96,14 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
         val current = page.section
         if (current == null) {
             Column(Modifier.fillMaxSize()) {
-                ScreenHeader("Pokémon", subtitle = "${player.pokemon.size} owned, ${player.caught.size} seen", icon = "poke-ball")
+                ScreenHeader("Pokémon", icon = "poke-ball")
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M)) {
                     val ready = store.activeQuests.count { store.questReady(it) }
                     // A new player has one Pokémon: say where the next ones come from.
-                    if (player.pokemon.size <= 1) {
-                        TextBox(Modifier.padding(bottom = Spacing.M)) {
-                            Text(
-                                "Your collection grows as you go: finish a focus session or your tasks and eggs hatch into new Pokémon, and Care and World bring their own.",
-                                style = MaterialTheme.typography.bodyLarge,
-                            )
-                        }
-                    }
                     MenuGrid(
                         listOfNotNull(
                             MenuEntry("PARTY", "premier-ball", "Party", "${player.party.size} of 6", tint = Pixel.Red),
-                            MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { !it.inParty && !Guardians.canBe(it) }} stored", tint = Pixel.Warning),
+                            MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { inPc(store.data, it) }} stored", tint = Pixel.Warning),
                             MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught", tint = Pixel.Blue),
                             if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.Green) else null,
                             if (!store.sees(Feature.GUARDIANS)) null else MenuEntry("GUARDIANS", "master-ball", "Guardians", if (store.guardianSlots == 0) "opens at rank ${TrainerRank.names[4]}" else "${player.guardians.size} of ${store.guardianSlots} slotted", tint = Pixel.Violet),
@@ -122,7 +115,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
             return@ScreenSwitch
         }
 
-        SectionScaffold(current.title, "Pokémon", onBack = { section = null }, icon = current.icon) {
+        SectionScaffold(current.title, null, onBack = { section = null }, icon = current.icon) {
             when (current) {
                 Section.PARTY -> {
                     // Every region's party on one page, each under its region with its lead first and its perks after
@@ -135,7 +128,7 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                 }
                 Section.PC -> {
                     // One PC for every region's party (docs/design.md, "Parties per module"), in boxes of 30 like the games.
-                    val box = player.pokemon.filter { !it.inParty && !Guardians.canBe(it) }
+                    val box = player.pokemon.filter { inPc(store.data, it) }
                     if (box.isEmpty()) EmptyState("The PC is empty", "New eggs go to their region's party first, then here once it is full. One PC serves every region.", icon = "storage-key")
                     else {
                         val shown = pcView.apply(box) { store.isFavorite(it) }
@@ -171,14 +164,14 @@ private fun PartyGroup(
     // The region's colour beside its name, as down the edge of its card on Home; the name says which region it is.
     val accent = when (region) { Region.CARE -> RegionLook.CARE; Region.HEAL -> RegionLook.HEAL; else -> RegionLook.PLAN }.accent
     Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        Box(Modifier.padding(bottom = 2.dp).size(width = 4.dp, height = 20.dp).clip(RoundedCornerShape(2.dp)).background(accent))
+        Box(Modifier.padding(bottom = 2.dp).size(width = 4.dp, height = 20.dp).clip(androidx.compose.ui.graphics.RectangleShape).background(accent))
         SectionLabel("${region.label} · ${party.size} of ${OwnedPokemon.PARTY_SIZE}")
     }
     if (party.isEmpty()) {
         val how = if (region == Region.CARE) "Open a Pokémon and choose \"To Care party\", or befriend a visitor. Until then Care warms your Plan buddy. Its first member leads."
         else if (region == Region.HEAL) "Open a Pokémon and choose \"To Heal party\", or try Field Research in Heal. Its first member leads."
         else "Hatch an egg with a focus session, or move a Pokémon here from the PC."
-        EmptyState("No one here yet", how, icon = "poke-ball")
+        EmptyState("No one here yet", how, icon = "poke-ball", sleeper = true)
         return
     }
     party.sortedByDescending { it.id == leadId }.forEach { p ->
@@ -198,8 +191,8 @@ private fun PokemonRow(p: OwnedPokemon, role: String?, favorite: Boolean, onClic
         trail = {
             Column(horizontalAlignment = Alignment.End) {
                 if (role != null) Text(role, style = MaterialTheme.typography.labelMedium, color = Pixel.Red)
-                if (favorite) Text("★ Starred", style = MaterialTheme.typography.labelMedium, color = Pixel.Warning)
-                if (p.isShiny) Text("✨ Shiny", style = MaterialTheme.typography.labelMedium, color = Pixel.Warning)
+                if (favorite) Text("Starred", style = MaterialTheme.typography.labelMedium, color = Pixel.Warning)
+                if (p.isShiny) Text("Shiny", style = MaterialTheme.typography.labelMedium, color = Pixel.Warning)
             }
         },
     ) {
@@ -229,14 +222,14 @@ private fun PcControls(view: PcView, onChange: (PcView) -> Unit, shown: Int, tot
             }
             SectionLabel("Show")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                TabButton("✨ Shiny", view.shinyOnly, { change(view.copy(shinyOnly = !view.shinyOnly)) })
-                TabButton("★ Starred", view.starredOnly, { change(view.copy(starredOnly = !view.starredOnly)) })
+                TabButton("Shiny", view.shinyOnly, { change(view.copy(shinyOnly = !view.shinyOnly)) })
+                TabButton("Starred", view.starredOnly, { change(view.copy(starredOnly = !view.starredOnly)) })
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 PokemonType.entries.forEach { t ->
                     val on = view.type == t
                     Box(
-                        Modifier.clip(RoundedCornerShape(6.dp)).alpha(if (on || view.type == null) 1f else 0.35f)
+                        Modifier.clip(PixelShape).alpha(if (on || view.type == null) 1f else 0.35f)
                             .clickable(role = Role.Button, onClickLabel = "Show only ${t.label}") { change(view.copy(type = if (on) null else t)) }
                             .padding(2.dp),
                     ) { TypePlate(t, width = 56.dp) }
@@ -267,7 +260,7 @@ private fun PcBoxBar(at: Int, boxes: Int, go: (Int) -> Unit) {
 @Composable
 private fun PcTile(p: OwnedPokemon, favorite: Boolean, onClick: () -> Unit) {
     Column(
-        Modifier.size(width = 92.dp, height = 112.dp).clip(RoundedCornerShape(12.dp)).background(Pixel.Panel)
+        Modifier.size(width = 92.dp, height = 112.dp).clip(PixelShape).background(Pixel.Panel)
             .quietClickable(onClickLabel = "Open ${p.nickname}", onClick = onClick)
             .semantics(mergeDescendants = true) {
                 contentDescription = "${p.nickname}, level ${p.level}" + (if (p.isShiny) ", shiny" else "") + (if (favorite) ", starred" else "")
@@ -278,7 +271,7 @@ private fun PcTile(p: OwnedPokemon, favorite: Boolean, onClick: () -> Unit) {
         Sprite(p.form.id, p.isShiny, "", size = 64.dp)
         Text(p.nickname, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Text(
-            "Lv. ${p.level}" + (if (p.isShiny) " ✨" else "") + (if (favorite) " ★" else ""),
+            "Lv. ${p.level}" + (if (p.isShiny) " · Shiny" else "") + (if (favorite) " · Starred" else ""),
             style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft, maxLines = 1,
         )
     }
@@ -291,3 +284,6 @@ internal fun perkText(p: OwnedPokemon): String =
     Guardians.signature(p).entries.joinToString(", ") { (b, v) -> "+${v.toInt()}% ${b.label()}" }
 
 internal val statNames = listOf("HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed")
+
+/** In the PC: in no other place (not the buddy, a party, a World team or a Pokégear helper) and not a Guardian candidate. */
+private fun inPc(data: app.pokeplan.app.AppData, p: OwnedPokemon) = app.pokeplan.app.Places.of(data, p.id) == app.pokeplan.app.Place.Pc && !Guardians.canBe(p)

@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -103,7 +104,7 @@ private val HourHeight = 64.dp
 
 private val LabelWidth = 48.dp
 
-private val blockShape = RoundedCornerShape(8.dp)
+private val blockShape = PixelShape
 
 /** How far ahead the day view goes (recurring tasks are generated 14 days ahead). */
 private const val DAYS_AHEAD = 13
@@ -449,7 +450,7 @@ private fun DayCell(day: LocalDate, today: LocalDate, chosen: Boolean, busy: Boo
     Column(
         modifier
             .alpha(if (enabled) 1f else 0.35f)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(PixelShape)
             .clickable(enabled = enabled, role = Role.Button, onClickLabel = label, onClick = onClick)
             .semantics(mergeDescendants = true) {
                 contentDescription = (if (isToday) "Today, " else "") + day.short() + if (busy) ", has plans" else ""
@@ -548,7 +549,7 @@ internal val BarGap = 2.dp
  */
 @Composable
 internal fun AllDayBar(e: CalendarEvent, selected: Boolean, pick: (String) -> Unit, modifier: Modifier = Modifier, small: Boolean = false) {
-    val shape = RoundedCornerShape(6.dp)
+    val shape = PixelShape
     Text(
         e.title,
         modifier
@@ -648,7 +649,7 @@ private fun TrayGroup(label: String?, tasks: List<Task>, picked: String?, pick: 
 /** A task waiting for an hour: its real item icon and title on a soft chip, filled dark while picked. */
 @Composable
 private fun TrayChip(t: Task, selected: Boolean, onClick: () -> Unit, modifier: Modifier) {
-    val shape = RoundedCornerShape(12.dp)
+    val shape = PixelShape
     val color = categoryColor(t.category)
     Row(
         modifier
@@ -873,7 +874,7 @@ private fun TimelineBlock(
             }
         }
         if (selected && t.isOpen) {
-            Box(Modifier.align(Alignment.BottomCenter).width(16.dp).height(3.dp).background(Pixel.Ink, RoundedCornerShape(2.dp)))
+            Box(Modifier.align(Alignment.BottomCenter).width(16.dp).height(3.dp).background(Pixel.Ink, androidx.compose.ui.graphics.RectangleShape))
         }
     }
 }
@@ -936,7 +937,7 @@ private fun EventBlock(
             }
         }
         if (selected) {
-            Box(Modifier.align(Alignment.BottomCenter).width(16.dp).height(3.dp).background(Pixel.Ink, RoundedCornerShape(2.dp)))
+            Box(Modifier.align(Alignment.BottomCenter).width(16.dp).height(3.dp).background(Pixel.Ink, androidx.compose.ui.graphics.RectangleShape))
         }
     }
 }
@@ -947,7 +948,7 @@ private val AccentWidth = 4.dp
 /** How far an hour label reaches above its line (half its height), so it sits centred on the line. */
 private val LabelLift = 9.dp
 
-private val panelShape = RoundedCornerShape(Spacing.CardRadius)
+private val panelShape = PixelShape
 
 /** A block's look: a soft tint of [color] with a solid accent strip on the left; a dark outline while [selected]. */
 private fun Modifier.blockLook(color: Color, fill: Float, accent: Float, selected: Boolean): Modifier = this

@@ -37,13 +37,6 @@ internal fun QuestsView(model: AppModel) {
     val questSpecies = (active + available.take(12)).map { it.speciesId }
     LaunchedEffect(questSpecies) { store.markSeen(questSpecies) }
 
-    TextBox {
-        Text(
-            "Each legendary and mythical Pokémon listed here has a quest that fills in as you keep doing what you already do. " +
-                "No deadlines, up to ${Quests.MAX_ACTIVE} at a time. The ones that belong to a region of the World game (Kanto, Johto and Hoenn so far) come from that region's quests there.",
-            style = MaterialTheme.typography.bodyLarge,
-        )
-    }
     // World's jobs are World's own (a module owns its quests and its story); the shared list only says where they stand.
     val world = data.world
     if (app.pokeplan.world.Missions.boardOpen(world)) TextBox {

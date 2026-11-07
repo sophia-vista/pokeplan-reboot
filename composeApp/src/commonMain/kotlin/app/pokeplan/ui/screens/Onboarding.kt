@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -121,7 +122,7 @@ fun OnboardingScreen(store: GameStore, startStep: Int = 0) {
 
 @Composable
 private fun YesNo(onYes: () -> Unit, onNo: () -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth()) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
         PixelButton("Yes", onYes, Modifier.weight(1f), Pixel.Green)
         PixelButton("No", onNo, Modifier.weight(1f), Pixel.InkSoft)
     }
@@ -137,11 +138,11 @@ private fun StarterPicker(selected: Int, onSelect: (Int) -> Unit) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         GameStore.starterGroups.forEach { (game, ids) ->
             Text(game, style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 ids.forEach { id ->
                     val chosen = id == selected
                     Box(
-                        Modifier.background(if (chosen) Pixel.Yellow else Pixel.Panel, RoundedCornerShape(12.dp))
+                        Modifier.background(if (chosen) Pixel.Yellow else Pixel.Panel, PixelShape)
                             .selectable(selected = chosen, role = Role.RadioButton) { onSelect(id) }
                             .padding(Spacing.XS),
                     ) { Sprite(Dex.defaultForm(id).id, false, Dex.species(id).name, size = 56.dp) }

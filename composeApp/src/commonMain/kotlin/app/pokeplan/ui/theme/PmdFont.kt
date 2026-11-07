@@ -110,8 +110,8 @@ class PmdFont(val sheet: ImageBitmap, val glyphs: Map<Char, PmdGlyph>) {
         const val SPACE = 4
         /** The height of a line in pixels of the art: the capitals and their shadow, so a line of text is centred by its letters; descenders hang below it. */
         const val LINE = 10
-        /** The baseline's distance from the top of a line. */
-        const val BASELINE = 9
+        /** The baseline's distance from the top of a line: one more than the capitals are tall, so the letters (measured on a screenshot) sit on the centre line of their key rather than a pixel above it. */
+        const val BASELINE = 10
         private const val ACCENTED = "àáâãäåçèéêëìíîïñòóôõöøùúûüýÿ"
         private const val PLAIN = "aaaaaaceeeeiiiinoooooouuuuyy"
         private var cached: PmdFont? = null

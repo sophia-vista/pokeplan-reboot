@@ -76,7 +76,6 @@ internal fun CompassTool(model: AppModel, onUse: () -> Unit) {
                 drawCircle(Pixel.Ink, 8f, c)
             }
             Text(if (h == null) "Reading the sensors" else "${h.toInt()}° ${SensorMath.cardinal(h)}", style = MaterialTheme.typography.headlineMedium)
-            Text("Hold the phone flat and away from metal, magnets and speakers. Wave it in a figure of eight if it seems off. The red needle points to magnetic north, which is a little different from true north.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }
@@ -111,11 +110,10 @@ internal fun LevelTool(model: AppModel, onUse: () -> Unit) {
             }
             Text(if (t == null) "Reading the sensor" else if (level) "Level" else SensorMath.degreesText(t.fromFlat) + " off", style = MaterialTheme.typography.headlineMedium)
             if (t != null) Text("Forward and back ${SensorMath.degreesText(t.pitch)}, left and right ${SensorMath.degreesText(t.roll)}", style = MaterialTheme.typography.bodyLarge)
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelIconButton("check", "Call this flat", { tilt?.let { zero = it } })
                 PixelIconButton("reload", "Back to true flat", { zero = SensorMath.Tilt(0f, 0f) })
             }
-            Text("Lay the phone on the surface. The check mark takes the surface as flat (to level against a slope); the arrow goes back to true flat. A phone's sensor is within a degree or so, not a builder's tool.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }
@@ -145,7 +143,6 @@ internal fun BarometerTool(model: AppModel, onUse: () -> Unit) {
                 PixelIconButton("plus", "One hPa higher", { store.changeGear { it.copy(seaLevelHpa = (it.seaLevelHpa + 1f).coerceAtMost(1050f)) } })
                 PixelIconButton("reload", "Standard pressure", { store.changeGear { it.copy(seaLevelHpa = 1013.25f) } })
             }
-            Text("A weather report gives today's sea-level pressure; enter it for a better height. The weather moves the reading as much as climbing does, so treat the height as a guide, not a survey.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }
@@ -158,7 +155,6 @@ internal fun DeviceTool(model: AppModel) {
             val all = model.capabilities.all()
             if (all.none { it.available }) Text("This device reports no hardware tools (the desktop and web apps have none). The calculators, converters, clock and timers all work.", style = MaterialTheme.typography.bodyMedium)
             all.forEach { s -> Text(s.describe(), style = MaterialTheme.typography.bodyMedium, color = if (s.available) Pixel.Ink else Pixel.InkSoft) }
-            Text("Found out from the phone when this opens. Nothing is switched on, and no permission is asked for here.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }

@@ -41,6 +41,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.backhandler.BackHandler
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.semantics.Role
@@ -60,7 +61,12 @@ import app.pokeplan.ui.theme.focusRing
 
 /** One entry of a tab's menu: a real item icon, a title, a line of detail, and an optional count badge. */
 /** One card of a menu. [detail] is no longer drawn (the owner wants every card the same: icon and title only); it is kept as what a screen reader says after the title. */
-data class MenuEntry(val key: String, val icon: String, val title: String, val detail: String = "", val badge: Int = 0, val tint: Color = Pixel.Blue)
+data class MenuEntry(val key: String, val icon: String, val title: String, val detail: String = "", val badge: Int = 0, val tint: Color = Pixel.Blue,
+    /** A module not built yet: a quiet card in its own colour that opens nothing. */
+    val pending: Boolean = false,
+    /** Takes a whole row to itself, laid out sideways. */
+    val wide: Boolean = false,
+)
 
 private val menuShape = DialogueShape
 
@@ -68,9 +74,16 @@ private val menuShape = DialogueShape
 @Composable
 fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        entries.chunked(2).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth()) {
-                // A lone last card takes the whole row, laid out sideways, instead of leaving a gap beside it.
+        // A wide entry stands alone on its row; the others go two to a row, and a lone last card takes the whole row too.
+        val rows = mutableListOf<List<MenuEntry>>()
+        var pair = mutableListOf<MenuEntry>()
+        entries.forEach { e ->
+            if (e.wide) { if (pair.isNotEmpty()) rows += pair.also { pair = mutableListOf() }; rows += listOf(e) }
+            else { pair += e; if (pair.size == 2) rows += pair.also { pair = mutableListOf() } }
+        }
+        if (pair.isNotEmpty()) rows += pair
+        rows.forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 row.forEach { e -> if (row.size == 1) MenuCard(e, Modifier.fillMaxWidth(), wide = true) { onOpen(e.key) } else MenuCard(e, Modifier.weight(1f)) { onOpen(e.key) } }
             }
         }
@@ -83,16 +96,16 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
     val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Box(
         modifier
-            .pressScale(source)
+            .let { if (entry.pending) it.alpha(0.5f) else it.pressScale(source) }
             .dialogueBox(tone = frameToneOf(entry.tint))
             .clip(menuShape)
             .focusRing(menuShape)
-            .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button) { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }
-            .semantics { if (entry.detail.isNotEmpty()) contentDescription = entry.title + ", " + entry.detail }
+            .clickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, enabled = !entry.pending) { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }
+            .semantics { if (entry.pending) contentDescription = entry.title + ", coming later" else if (entry.detail.isNotEmpty()) contentDescription = entry.title + ", " + entry.detail }
             .padding(horizontal = Spacing.XL, vertical = Spacing.XL),
     ) {
         val picture = @Composable {
-            Box(Modifier.size(72.dp).background(entry.tint.copy(alpha = 0.12f), CircleShape), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(72.dp).background(entry.tint.copy(alpha = 0.12f), app.pokeplan.ui.theme.PixelDisc), contentAlignment = Alignment.Center) {
                 ItemIcon(entry.icon, size = 56.dp, description = null)
             }
         }
@@ -120,7 +133,7 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SectionScaffold(
-    title: String, subtitle: String?, onBack: () -> Unit, icon: String? = null, color: Color = Pixel.Red, content: @Composable () -> Unit,
+    title: String, subtitle: String?, onBack: () -> Unit, icon: String? = null, color: Color = Pixel.Chrome, content: @Composable () -> Unit,
 ) {
     BackHandler(enabled = true, onBack = onBack)
     Column(Modifier.fillMaxSize()) {
@@ -134,6 +147,9 @@ fun SectionScaffold(
 
 /** The Reduce motion setting, for screens that move without being handed the model; `App` provides it. */
 val LocalReduceMotion = staticCompositionLocalOf { false }
+
+/** The global buddy, for screens that show it without being handed the model (an empty state's sleeping buddy); `App` provides it. */
+val LocalBuddy = staticCompositionLocalOf<app.pokeplan.core.pokemon.OwnedPokemon?> { null }
 
 /** Ordinary navigation, inside the 160 to 240 ms of docs/ecosystem.md, section 11; game moments take longer on their own. */
 private const val FADE_MS = 180

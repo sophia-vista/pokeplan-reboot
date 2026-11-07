@@ -51,7 +51,7 @@ internal fun BagView(model: AppModel) {
                 ItemIcon(Items.RARE_CANDY, size = 32.dp)
                 Text("Rare Candy: $each Poké each", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 listOf(1, 10).forEach { n ->
                     PixelButton("Buy $n", { if (store.buyRareCandies(n) > 0) model.effect(Sfx.HEAL) }, Modifier.weight(1f), Pixel.Green, compact = true, enabled = afford >= n)
                 }
@@ -59,7 +59,7 @@ internal fun BagView(model: AppModel) {
             }
         }
     }
-    if (items.isEmpty()) EmptyState("The bag is empty", "Finish tasks and focus sessions to find candies, berries and more.", icon = "seal-bag")
+    if (items.isEmpty()) EmptyState("The bag is empty", "Finish tasks and focus sessions to find candies, berries and more.", icon = "seal-bag", sleeper = true)
     items.groupBy { Items.category(it.key) }.forEach { (category, group) ->
         SectionLabel(category.bagLabel())
         group.forEach { (id, n) ->
