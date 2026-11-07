@@ -825,6 +825,16 @@ class ScreenshotTest {
         mint("mint-bills-reminders", app.pokeplan.ui.screens.MintSection.BILLS, height = 2600, settings = { it.mint.setBillReminders(true) })
     }
 
+    /** An expedition box: the frame's stair corners must stay visible over the dungeon's tiles (owner: "the corner seems clipped"). */
+    @Test
+    fun tileBoxCorners() {
+        render("tilebox", height = 700) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp)) {
+                app.pokeplan.ui.screens.TileBox("mt-ember", listOf(app.pokeplan.ui.screens.TileWalker(25, false, "Pikachu")), animate = false, scrolls = false) { Text("Team 2") }
+            } }
+        }
+    }
+
     /** An account being edited: every detail, the currency fixed once it has records. */
     @Test
     fun mintAccountEdit() {

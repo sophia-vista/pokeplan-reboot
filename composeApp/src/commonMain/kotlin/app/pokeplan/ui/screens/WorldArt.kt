@@ -195,7 +195,7 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
         val tile = with(density) { tilePx.toDp() }
         // Dark fill, so a pixel the tiles do not reach shows dark and never the white of a plain box.
         Box(Modifier.fillMaxWidth().dialogueBox(fill = Color(0xFF141C28)).clip(DialogueShape)) {
-            Box(Modifier.matchParentSize().padding(start = FRAME, end = FRAME, top = FRAME, bottom = FRAME - 2.dp).clipToBounds()) {
+            Box(Modifier.matchParentSize().padding(start = FRAME, end = FRAME, top = FRAME - 2.dp, bottom = FRAME - 2.dp).clipToBounds()) {
                 Canvas(Modifier.fillMaxSize()) {
                     val image = atlas ?: return@Canvas drawRect(Color(0xFF2A2A2A))
                     val cols = (size.width / tilePx).toInt() + 2
@@ -233,7 +233,7 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
                     }
                 }
             }
-            Column(Modifier.padding(start = Spacing.BoxX + 8.dp, end = Spacing.BoxX + 8.dp, top = FRAME + tile * (STRIP_ROWS + 2) + Spacing.L, bottom = Spacing.BoxY + 12.dp)) { onWall(content) }
+            Column(Modifier.padding(start = Spacing.BoxX + 8.dp, end = Spacing.BoxX + 8.dp, top = FRAME - 2.dp + tile * (STRIP_ROWS + 2) + Spacing.L, bottom = Spacing.BoxY + 12.dp)) { onWall(content) }
         }
     }
 }
@@ -291,8 +291,8 @@ internal fun CampYard(level: Int, residents: List<TileWalker>, animate: Boolean)
         val pixel = (with(density) { inner.toPx() } / (TILE_PX * 8)).toInt().coerceAtLeast(1)
         val tilePx = TILE_PX * pixel
         val tile = with(density) { tilePx.toDp() }
-        Box(Modifier.fillMaxWidth().height(tile * (YARD_ROWS) + FRAME * 2 - 2.dp).dialogueBox(fill = Color(0xFF141C28)).clip(DialogueShape)) {
-            Box(Modifier.matchParentSize().padding(start = FRAME, end = FRAME, top = FRAME, bottom = FRAME - 2.dp).clipToBounds()) {
+        Box(Modifier.fillMaxWidth().height(tile * (YARD_ROWS) + FRAME * 2 - 4.dp).dialogueBox(fill = Color(0xFF141C28)).clip(DialogueShape)) {
+            Box(Modifier.matchParentSize().padding(start = FRAME, end = FRAME, top = FRAME - 2.dp, bottom = FRAME - 2.dp).clipToBounds()) {
                 Canvas(Modifier.fillMaxSize()) {
                     val image = atlas ?: return@Canvas drawRect(Color(0xFF2A2A2A))
                     fun put(ax: Int, ay: Int, x: Int, y: Int) =
