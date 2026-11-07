@@ -326,6 +326,8 @@ fun App(
     onHealChanged: ((HealData) -> Unit)? = null,
     /** Called after every change to Mint's records (the Android app keeps bill reminders up to date). Only the host's own reminder code looks inside; nothing is sent anywhere. */
     onMintChanged: ((MintData) -> Unit)? = null,
+    /** Called after every change to Home's records (the Android app keeps Home's reminders up to date). Only the host's own reminder code looks inside; nothing is sent anywhere. */
+    onHomeChanged: ((HomeData) -> Unit)? = null,
     /** Called when the app switches between the light and dark colours, so the host can match the system bar icons. */
     onDark: ((Boolean) -> Unit)? = null,
 ) {
@@ -359,6 +361,11 @@ fun App(
     if (onMintChanged != null) DisposableEffect(model.mint) {
         val stop = model.mint.observe(onMintChanged)
         onMintChanged(model.mint.data)
+        onDispose(stop)
+    }
+    if (onHomeChanged != null) DisposableEffect(model.home) {
+        val stop = model.home.observe(onHomeChanged)
+        onHomeChanged(model.home.data)
         onDispose(stop)
     }
     if (externalChanges != null) LaunchedEffect(externalChanges) {
