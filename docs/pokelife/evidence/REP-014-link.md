@@ -1,7 +1,7 @@
-# REP-014, sixth slice: LINK, manual first (0.144.0)
+# REP-014, sixth slice: LINK, manual first (0.145.0)
 
 **Status:** built and tested on the JVM, compiled for desktop and web (the Android app is compiled by the gate); **not run on a device**. No reminder, contact import or PLAN link was started.
-**Owner brief (8 November 2026):** "continue with next chunk of items" (the backlog's next item after HOME: LINK). Built on the HOME branch, which was not yet merged, so this slice stacks on it (schema 10, rules version 20, version 0.144.0); the HOME branch first took in `main` (the Mint follow-ups, version 0.142.0), which made HOME 0.143.0.
+**Owner brief (8 November 2026):** "continue with next chunk of items" (the backlog's next item after HOME: LINK). Built on the HOME branch, which was not yet merged, so this slice stacks on it (schema 10, rules version 20, version 0.145.0); the HOME branch first took in `main` (the Mint follow-ups, version 0.142.0), which made HOME 0.143.0.
 
 ## 1. What was chosen from the spec, and why
 `MODULES/LINK.md` section 12 puts the domain and persistence first, then manual contacts, notes and search, important dates, follow-ups and reminders, optional device-contact import and Postcard Trail. Built: the domain and persistence, people and profiles, notes, search, important dates, follow-ups and Postcard Trail. Not built: reminders (they need a source adapter in the shared scheduler, a separate piece), device-contact import (needs the Contacts permission and a preview flow, section 6.1) and the PLAN conversion (2.4).

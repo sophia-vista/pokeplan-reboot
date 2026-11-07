@@ -416,6 +416,28 @@ class HomeStore(
     /** Folds an Overview section away or brings it back ("chores", "maintenance", "supplies"). */
     fun setSectionHidden(section: String, hidden: Boolean) = settings { s -> s.copy(hidden = if (hidden) (s.hidden + section).distinct() else s.hidden - section) }
 
+    // --- reminders (HOME.md 6): all off until the user turns them on, per record --------------------------------------------------
+
+    /** The master switch. On, a record still asks only when its own reminder is on. Neither pays nor changes a record. */
+    fun setReminders(on: Boolean) = settings { it.copy(reminders = on) }
+
+    fun setReminderHour(hour: Int) = settings { it.copy(reminderHour = hour.coerceIn(0, 23)) }
+
+    fun setMaintenanceLeadDays(days: Int) = settings { it.copy(maintenanceLeadDays = days.coerceIn(0, MAX_LEAD_DAYS)) }
+
+    fun setWarrantyLeadDays(days: Int) = settings { it.copy(warrantyLeadDays = days.coerceIn(0, MAX_WARRANTY_LEAD_DAYS)) }
+
+    /** Lets a notification name the chore, supply or work once the phone is unlocked; the lock screen never does. */
+    fun setReminderNames(on: Boolean) = settings { it.copy(reminderNames = on) }
+
+    fun setChoreRemind(id: String, on: Boolean) = update { d -> d.copy(chores = d.chores.map { if (it.id == id) it.copy(remind = on) else it }) }
+
+    fun setScheduleRemind(id: String, on: Boolean) = update { d -> d.copy(schedules = d.schedules.map { if (it.id == id) it.copy(remind = on) else it }) }
+
+    fun setSupplyRemind(id: String, on: Boolean) = update { d -> d.copy(supplies = d.supplies.map { if (it.id == id) it.copy(remind = on) else it }) }
+
+    fun setWarrantyRemind(id: String, on: Boolean) = update { d -> d.copy(warranties = d.warranties.map { if (it.id == id) it.copy(remind = on) else it }) }
+
     // --- export and erase (one kind at a time, or all) ----------------------------------------------------------------------
 
     /** The chosen kinds of record (all by default) as readable JSON, exactly as saved. Nothing of the game is in it. */
@@ -431,6 +453,8 @@ class HomeStore(
     fun eraseAll() = update { d -> HomeKinds.entries.fold(d) { acc, k -> HomeExport.without(acc, k) } }
 
     companion object {
+        const val MAX_LEAD_DAYS = 14
+        const val MAX_WARRANTY_LEAD_DAYS = 90
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 
         /** A document that was never offered the starting areas gets them once, with stable ids, so a fresh install can file a chore at once. */

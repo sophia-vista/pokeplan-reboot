@@ -45,6 +45,8 @@ data class Chore(
     val status: RecordStatus = RecordStatus.ACTIVE,
     val createdMillis: Long = 0,
     val updatedMillis: Long = 0,
+    /** Asks the shared reminders for a nudge on the day each occurrence is due. Off until the user turns it on for this chore (HOME.md 6). */
+    val remind: Boolean = false,
 )
 
 @Serializable
@@ -95,6 +97,8 @@ data class Supply(
     val archived: Boolean = false,
     val createdMillis: Long = 0,
     val updatedMillis: Long = 0,
+    /** Asks for one notice when the supply runs low. Off until the user turns it on for this supply. */
+    val remind: Boolean = false,
 )
 
 /** A light record of one change of quantity (HOME.md 4.3), bounded by [HomeRules.ADJUSTMENTS_KEPT]. Not a consumption ledger. */
@@ -145,6 +149,8 @@ data class MaintenanceSchedule(
     val nextDue: LocalDate,
     val status: RecordStatus = RecordStatus.ACTIVE,
     val createdMillis: Long = 0,
+    /** Asks for a reminder before [nextDue]. Off until the user turns it on for this schedule. */
+    val remind: Boolean = false,
 )
 
 /** One piece of maintenance that was done. [cost] is informational text and never an accounting record or a transaction (HOME.md 4.5). */
@@ -173,6 +179,8 @@ data class Warranty(
     val reference: String = "",
     val notes: String = "",
     val createdMillis: Long = 0,
+    /** Asks for a reminder before [expiryDay] (a date the user typed). Off until the user turns it on for this warranty. */
+    val remind: Boolean = false,
 )
 
 /** A household note (HOME.md 4.7): a title, some text, and optionally an area or an asset. Not a wiki. */
@@ -201,6 +209,16 @@ data class HomeSettings(
     val hidden: List<String> = emptyList(),
     /** Whether the starting areas were offered once (so deleting them all does not bring them back). */
     val areasSeeded: Boolean = false,
+    /** The master switch for Home's reminders (HOME.md 6): **off**, and even on a record still asks only when the user turned that record's own reminder on. */
+    val reminders: Boolean = false,
+    /** The hour (0 to 23) a reminder goes off on its day. */
+    val reminderHour: Int = 9,
+    /** How many days before the next maintenance a reminder goes off (0 is the day itself). */
+    val maintenanceLeadDays: Int = 1,
+    /** How many days before a warranty ends the reminder goes off. */
+    val warrantyLeadDays: Int = 30,
+    /** Whether a notification may name the chore, supply or work after the phone is unlocked. The lock screen never does. */
+    val reminderNames: Boolean = false,
 )
 
 /** Everything HOME keeps on this device, as one document that `HomeTables` takes apart into one table family per kind of record. It holds nothing about Pokémon or rewards. */

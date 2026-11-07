@@ -17,7 +17,9 @@ import app.pokeplan.app.CareReminders
 import app.pokeplan.app.HealReminders
 import app.pokeplan.heal.HealData
 import app.pokeplan.mint.MintData
+import app.pokeplan.app.HomeReminders
 import app.pokeplan.app.MintReminders
+import app.pokeplan.home.HomeData
 import app.pokeplan.app.upcomingReminders
 import app.pokeplan.care.CareData
 import app.pokeplan.core.pokemon.ItemCategory
@@ -81,7 +83,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             App(
                 storage, careStorage = careStorage(this), healStorage = healStorage(this), mintStorage = mintStorage(this), homeStorage = homeStorage(this), linkStorage = linkStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = AndroidSensorFeed(this), services = gearServices, backups = backups, deviceGate = gate, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onDark = ::matchSystemBars,
+                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = AndroidSensorFeed(this), services = gearServices, backups = backups, deviceGate = gate, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onHomeChanged = ::homeChanged, onDark = ::matchSystemBars,
             )
         }
     }
@@ -192,6 +194,25 @@ class MainActivity : ComponentActivity() {
         mintSignature = signature
         mintRefresh?.cancel()
         mintRefresh = lifecycleScope.launch {
+            delay(800)
+            SharedReminders.reschedule(applicationContext)
+        }
+    }
+
+    private var homeSignature: Int? = null
+    private var homeRefresh: Job? = null
+
+    /** Sets Home's reminders again when a chore, a schedule, a supply, a warranty or a reminder setting changes, a moment after the last change. Nothing of Home leaves the module but a reminder's own id, kind and day. */
+    private fun homeChanged(data: HomeData) {
+        val app = appData ?: return
+        val upcoming = HomeReminders.upcoming(data, app, System.currentTimeMillis(), TimeZone.currentSystemDefault())
+        if (upcoming.isNotEmpty()) askForNotifications()
+        val signature = upcoming.map { Triple(it.recordId, it.kind, it.atMillis) }.hashCode()
+        if (homeSignature == null) { homeSignature = signature; if (upcoming.isEmpty()) return }
+        else if (signature == homeSignature) return
+        homeSignature = signature
+        homeRefresh?.cancel()
+        homeRefresh = lifecycleScope.launch {
             delay(800)
             SharedReminders.reschedule(applicationContext)
         }

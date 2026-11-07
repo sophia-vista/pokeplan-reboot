@@ -5,6 +5,8 @@ import app.pokeplan.app.CareStore
 import app.pokeplan.app.Clock
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.HealStore
+import app.pokeplan.app.HomeLinkOwner
+import app.pokeplan.app.HomeStore
 import app.pokeplan.app.MintStore
 import app.pokeplan.app.MemoryStorage
 import app.pokeplan.app.Storage
@@ -60,10 +62,20 @@ fun healStore(context: Context, world: GameStore = widgetStore(context)): HealSt
         weekStart = { world.data.settings.weekStart },
     )
 
+/** Home's store outside the app (reminders): its own records; a chore reminder's "Done" completes the chore like the app does and pays Habitat Discovery into [world]. */
+fun homeStore(context: Context, world: GameStore = widgetStore(context)): HomeStore =
+    HomeStore(homeStorage(context), Clock { System.currentTimeMillis() }, world)
+
 /** Mint's store outside the app (bill reminders): its own sealed records, read only; the reminder never pays or changes a record. */
 fun mintStore(context: Context, world: GameStore = widgetStore(context)): MintStore =
     MintStore(mintStorage(context), Clock { System.currentTimeMillis() }, world, weekStart = { world.data.settings.weekStart })
 
 /** A store for the widgets: reads the same save as the app and writes back what a tap changes. */
-fun widgetStore(context: Context): GameStore =
-    GameStore(saveStorage(context), Clock { System.currentTimeMillis() })
+fun widgetStore(context: Context): GameStore {
+    val clock = Clock { System.currentTimeMillis() }
+    val game = GameStore(saveStorage(context), clock)
+    // A task linked to a Home chore is completed by Home (PRODUCT_BIBLE.md section 4), so a widget or a notification that ticks one needs Home's store.
+    // It is opened only when such a task exists; without an owner a linked task is left exactly as it is.
+    if (game.data.tasks.any { it.ownedElsewhere }) game.registerLinkOwner(HomeLinkOwner(HomeStore(homeStorage(context), clock, game)))
+    return game
+}

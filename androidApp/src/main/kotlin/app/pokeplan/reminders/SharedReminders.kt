@@ -9,7 +9,9 @@ import app.pokeplan.LiveStore
 import app.pokeplan.app.ActionResult
 import app.pokeplan.app.CareReminderAdapter
 import app.pokeplan.app.HealReminderAdapter
+import app.pokeplan.app.HomeReminderAdapter
 import app.pokeplan.app.MintReminderAdapter
+import app.pokeplan.homeStore
 import app.pokeplan.mintStore
 import app.pokeplan.healStore
 import app.pokeplan.app.FireDecision
@@ -29,7 +31,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 
 /**
- * The one reminder scheduler for PLAN, CARE, HEAL and MINT (INTEGRATIONS_AND_PRIVACY.md section 9). The policy and the decisions are in
+ * The one reminder scheduler for PLAN, CARE, HEAL, MINT and HOME (INTEGRATIONS_AND_PRIVACY.md section 9). The policy and the decisions are in
  * [ReminderCoordinator] (JVM-tested); this object only sets alarms at the times it plans, posts what it says to show, and routes
  * a tapped action to the module that owns the source. Alarms carry only the opaque request (module, reference, kind,
  * occurrence), never a title or a note. Snoozes and repeats are the one thing it stores (`reminder_hold`); everything else is
@@ -55,11 +57,14 @@ object SharedReminders {
         val care = careStore(context, game)
         val heal = healStore(context, game)
         val mint = mintStore(context, game)
+        val home = homeStore(context, game)
         val coordinator = ReminderCoordinator(
             listOf(
-                PlanReminderAdapter({ game.data }) { id -> if (game.data.tasks.any { it.id == id && it.isOpen }) { game.completeTask(id); true } else false },
+                PlanReminderAdapter({ game.data }) { id -> if (game.data.tasks.any { it.id == id && it.isOpen }) { game.completeTask(id); game.data.tasks.any { it.id == id && !it.isOpen } } else false },
                 HealReminderAdapter({ heal.data }, { game.data }, { heal.today }),
                 MintReminderAdapter({ mint.data }, { game.data }, { mint.today }),
+                // A chore's "Done" is Home's own completion, the one that pays Habitat Discovery once; nothing else of Home is ever done from a notification.
+                HomeReminderAdapter({ home.data }, { game.data }, { home.today }) { id -> home.complete(id).record != null },
                 CareReminderAdapter({ care.data }, { game.data }) { id, day ->
                     // Ticked like on the Care screen, and paid the same way, only for today's routine.
                     if (day == care.today && care.data.routines.any { it.id == id && !it.doneOn(day) }) { care.completeRoutine(id); true } else false
@@ -157,6 +162,7 @@ object SharedReminders {
             ReminderModule.CARE -> RoutineReminders.show(context, request.sourceRef, title, LocalDate.parse(request.occurrence), request)
             ReminderModule.HEAL -> HydrationReminders.show(context, request.sourceRef, title, request)
             ReminderModule.MINT -> BillReminders.show(context, request.sourceRef, title, request)
+            ReminderModule.HOME -> UpkeepReminders.show(context, request, title)
             else -> Unit
         }
     }
@@ -194,6 +200,7 @@ object SharedReminders {
             ReminderModule.CARE -> RoutineReminders.notificationId(request.sourceRef)
             ReminderModule.HEAL -> HydrationReminders.notificationId(request.sourceRef)
             ReminderModule.MINT -> BillReminders.notificationId(request.sourceRef)
+            ReminderModule.HOME -> UpkeepReminders.notificationId(request.sourceRef, request.kind)
             else -> return
         }
         context.getSystemService(NotificationManager::class.java)?.cancel(id)

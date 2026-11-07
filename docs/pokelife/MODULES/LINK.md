@@ -210,6 +210,8 @@ LINK owns the following canonical records:
 | Contact source mapping | Import provenance and reconciliation |
 | Postcard Trail state | LINK's optional acquisition progress and idempotency references |
 
+**As built (0.145.0, REP-014): Plan's half only.** LINK itself is not built. `GameStore.convertFollowUp(followUpId, title, planned, due)` makes the PLAN task for a converted follow-up (one task per follow-up id; `TaskLink(LINK_FOLLOW_UP, id)`), after which PLAN owns its completion and pays it once by Plan's rules (paid once, so a reopen never pays again); `GameStore.linkedTask(LINK_FOLLOW_UP, id)` gives LINK the task and its state to display; `unlinkTask` leaves a normal PLAN task. LINK must not pay for a follow-up that has a linked task. `TaskLinksTest` covers it.
+
 ### 4.1 Cross-module boundaries
 
 | Capability | Owner | LINK relationship |
@@ -543,7 +545,7 @@ LINK follows Phase 8 in the dependency-first Implementation Guide. HOME and LINK
 
 This document is the single detailed requirements source for LINK. Shared scheduling, visual rules, Pokémon ownership and technical foundations remain in their respective canonical documents; do not duplicate their implementation rules here.
 
-## 15. As built (0.144.0, REP-014): the manual slice
+## 15. As built (0.145.0, REP-014): the manual slice
 
 *Built and tested on the JVM, compiled for Android; **not run on a device**. No reminder, device-contact import, PLAN link or widget was started.*
 

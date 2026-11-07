@@ -122,11 +122,30 @@ data class AppData(
     val homePaid: List<String> = emptyList(),
     /** The ids of LINK events already paid (`LinkEvent.id`, opaque, no word of a person or a follow-up in them), kept like [homePaid]. The newest [GameStore.LINK_PAID_KEPT] are kept. */
     val linkPaid: List<String> = emptyList(),
+    /**
+     * What each module reward really was, for the ledger (DATA_AND_MIGRATIONS.md section 7.3.0): one [LedgerNote] per paid HEAL, MINT or HOME event, with the event's own id,
+     * so the live database settles `home:chore:<id>:<day>` instead of one coarse "net change of one save". The database turns a note into a ledger event once (the id is the
+     * idempotency key) and gives the balance and the Bag the rest of the change; the newest [GameStore.LEDGER_NOTES_KEPT] are kept. Holds no household, health or money word:
+     * only the event's opaque id and reference, the broad kind and the amounts.
+     */
+    val ledgerNotes: List<LedgerNote> = emptyList(),
 ) {
     companion object {
         const val SCHEMA = 1
     }
 }
+
+/** What one reward event added to the Poké balance and the Bag (see [AppData.ledgerNotes]): [poke] and [items] (item id to count) are the change it made. */
+@Serializable
+data class LedgerNote(
+    val eventId: String,
+    val module: String,
+    val ref: String,
+    val kind: String,
+    val atMillis: Long,
+    val poke: Long = 0,
+    val items: Map<String, Long> = emptyMap(),
+)
 
 /**
  * How the two legacy balances became one (docs/pokelife POKEMON_ECOSYSTEM.md, section 11.2): `Poké = coins + World Poké`, 1:1.

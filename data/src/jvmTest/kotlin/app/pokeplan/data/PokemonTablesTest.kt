@@ -115,6 +115,61 @@ class PokemonTablesTest {
         assertNull(s.live.read("aside:save:pokemon:99"))
     }
 
+    private fun note(id: String, module: String, ref: String, kind: String, poke: Long, items: Map<String, Long> = emptyMap()) = JsonObject(
+        mapOf(
+            "eventId" to JsonPrimitive(id), "module" to JsonPrimitive(module), "ref" to JsonPrimitive(ref), "kind" to JsonPrimitive(kind), "atMillis" to JsonPrimitive(50),
+            "poke" to JsonPrimitive(poke), "items" to JsonObject(items.mapValues { JsonPrimitive(it.value) }),
+        ),
+    )
+
+    @Test
+    fun aModuleRewardIsSettledUnderItsOwnEventIdAndOnlyOnce() {
+        val s = moved("main-heavy-70-days.json")
+        val doc = save(s)
+        val coins = (player(doc)["coins"] as JsonPrimitive).content.toLong()
+        val counts = (player(doc)["inventory"] as JsonObject)["counts"] as JsonObject
+        val candy = (counts["rare-candy"] as? JsonPrimitive)?.content?.toLong() ?: 0L
+        val events = scalar(s, "SELECT count(*) FROM reward_event")
+        val paid = withPlayer(doc) { p ->
+            p.with("coins" to JsonPrimitive(coins + 5), "inventory" to JsonObject(mapOf("counts" to JsonObject(counts + ("rare-candy" to JsonPrimitive(candy + 2))))))
+        }
+        val noted = JsonObject(paid + ("ledgerNotes" to JsonArray(listOf(note("home:chore:c1:2026-11-07", "HOME", "e1", "chore", 5, mapOf("rare-candy" to 2))))))
+        write(s, noted)
+        // One event, with the module's own id, source and kind: not a "net change of one save".
+        assertEquals(events + 1, scalar(s, "SELECT count(*) FROM reward_event"))
+        val event = s.db.dataQueries.eventById("home:chore:c1:2026-11-07").executeAsOne()
+        assertEquals("HOME", event.source_module)
+        assertEquals("e1", event.source_record_id)
+        assertEquals("chore", event.event_kind)
+        assertEquals(0L, scalar(s, "SELECT count(*) FROM reward_event WHERE event_kind = 'net-change'"))
+        assertEquals(coins + 5, s.economy.poke())
+        assertEquals(candy + 2, s.economy.quantity("rare-candy"))
+        assertEquals(emptyList(), s.economy.reconcile())
+        // The same save again, and the note still in it on a later write, settle nothing twice.
+        write(s, noted)
+        write(s, JsonObject(noted + ("coins" to JsonPrimitive(1))))
+        assertEquals(events + 1, scalar(s, "SELECT count(*) FROM reward_event"))
+        assertEquals(emptyList(), s.economy.reconcile())
+        // An unrelated gain written while the old note is still there is the net change of that save, and the balance stays right.
+        write(s, JsonObject(withPlayer(noted) { it.with("coins" to JsonPrimitive(coins + 8), "inventory" to paid["player"]!!.let { pl -> (pl as JsonObject)["inventory"]!! }) }))
+        assertEquals(coins + 8, s.economy.poke())
+        assertEquals(1L, scalar(s, "SELECT count(*) FROM reward_event WHERE event_kind = 'net-change'"))
+        assertEquals(emptyList(), s.economy.reconcile())
+    }
+
+    @Test
+    fun aNoteThatDoesNotMatchTheSaveIsCorrectedByTheNetChange() {
+        val s = moved("main-heavy-70-days.json")
+        val doc = save(s)
+        val coins = (player(doc)["coins"] as JsonPrimitive).content.toLong()
+        // The note says 10 but the save only gained 4: the ledger keeps the note's event and the net change takes the 6 back, so the balance equals the save.
+        val bad = JsonObject(withPlayer(doc) { it.with("coins" to JsonPrimitive(coins + 4)) } + ("ledgerNotes" to JsonArray(listOf(note("heal:x:y", "HEAL", "r", "walk", 10)))))
+        write(s, bad)
+        assertEquals(coins + 4, s.economy.poke())
+        assertEquals(emptyList(), s.economy.reconcile())
+        assertTrue(s.economy.hasEvent("heal:x:y"))
+    }
+
     @Test
     fun aFreshInstallStartsOnTheTables() {
         val s = JvmDatabase.open()
