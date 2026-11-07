@@ -3,6 +3,7 @@ package app.pokeplan.app
 import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.HealKind
 import app.pokeplan.core.reward.HomeKind
+import app.pokeplan.core.reward.LinkKind
 import app.pokeplan.core.reward.MintKind
 import kotlinx.datetime.LocalDate
 
@@ -78,6 +79,14 @@ internal object Counters {
 
     /** Points towards the next Habitat Egg. It carries over from day to day. */
     const val HOME_EGG_METER = "home-egg-meter"
+
+    private val link = LinkKind.entries.associateWith { PeriodCounter("link-${it.name}-") }
+
+    /** LINK moments of [kind] paid today. */
+    fun link(kind: LinkKind): PeriodCounter = link.getValue(kind)
+
+    /** Points towards the next Postcard Egg. It carries over from day to day. */
+    const val LINK_EGG_METER = "link-egg-meter"
 
     /** Points towards the next Ledger Egg. It carries over from day to day. */
     const val MINT_EGG_METER = "mint-egg-meter"

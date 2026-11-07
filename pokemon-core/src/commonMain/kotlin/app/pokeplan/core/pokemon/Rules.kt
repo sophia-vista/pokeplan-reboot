@@ -48,13 +48,15 @@ object FriendshipRules {
         LEDGER(1),
         /** A chore or a piece of maintenance done in Home (Habitat Discovery). */
         HABITAT(1),
+        /** A follow-up finished in Link (Postcard Trail). */
+        FOLLOW_UP(1),
     }
 
     /** Friendship gained from [source]: doubled when it matches the bond style, +50% (rounded up) for balanced natures. */
     fun amount(source: Source, style: BondStyle): Int {
         val matches = when (style) {
             BondStyle.COMFORT -> source == Source.PET || source == Source.ROUTINE
-            BondStyle.PRESENCE -> source == Source.FOCUS_SESSION || source == Source.CALM_BREAK || source == Source.SKILL || source == Source.ACTIVITY || source == Source.LEDGER || source == Source.HABITAT
+            BondStyle.PRESENCE -> source == Source.FOCUS_SESSION || source == Source.CALM_BREAK || source == Source.SKILL || source == Source.ACTIVITY || source == Source.LEDGER || source == Source.HABITAT || source == Source.FOLLOW_UP
             BondStyle.GIFTS -> source == Source.BERRY
             BondStyle.BALANCED -> false
         }

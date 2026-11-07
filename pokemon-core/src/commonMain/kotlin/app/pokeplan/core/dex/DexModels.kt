@@ -33,7 +33,7 @@ enum class Region(val label: String, val isModule: Boolean = false, val released
     /** The household module's region (kitchen, pantry, closet, garden): hearth, garden and pet Pokémon. Released with the Home screens. */
     HOUSEHOLD("Home Region", isModule = true),
     /** The connection module's region (Postcard Trail): postal birds, loyal dogs, pairs and signallers. Not released until the module ships. */
-    LINK("Link Region", isModule = true, released = false),
+    LINK("Link Region", isModule = true),
     ;
 
     /** Where an egg from this region really comes from: itself while released, else the Plan Region. */
