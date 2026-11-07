@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.142.0
+
+Mint follow-ups (REP-014): a backup of Mint that opens on any phone, bill reminders, the optional access gate, and a full edit for accounts (owner: "mint edit accounts"). No reward rule changes (`RewardRules.VERSION` stays 18).
+
+- **Passphrase-sealed backup** (Settings → Backups → "Save a copy that opens on any phone"). Mint in that file is sealed under a passphrase the player types twice (at least 10 characters), through PBKDF2-HMAC-SHA256 (600,000 rounds, a random salt, the count stored in the file) into AES-256-GCM (`PassphraseSealer`, `Pbkdf2Sealer`, `BackupBundle.portable`). Restoring such a file asks for the passphrase; a wrong one changes nothing, and Mint is sealed again with the new phone's own key as it is written. The passphrase is stored nowhere and cannot be recovered; the screen says so. An ordinary copy still opens only on this phone. A backup whose Mint was sealed by another phone's key cannot be made portable here and says why. The stretch runs off the main thread.
+- **Bill reminders** through the shared scheduler (`MintReminders`, `MintReminderAdapter`; MINT.md section 12). **Off until turned on** in Mint → Settings; then one reminder for each bill occurrence, some days before (the day, 1, 2, 3 or 7) at a chosen hour, held by the quiet hours and focus sessions like every other module's. A late bill is never nagged daily, a paid, skipped, paused or deleted one stops asking, and a bill can switch itself off. The notification says only "A bill is coming up" (the bill's name only if the player allows it, after unlocking; never an amount, balance, account or merchant), opens Mint, and offers "Tomorrow", never "Paid". The shared tables hold only the bill's own opaque id and its due day.
+- **Access gate** (Mint → Settings → Privacy → "Ask for my screen lock"): the phone's own confirm-credential screen (PIN, pattern, password or biometrics, `KeyguardManager`, no new library) in front of the Mint screens, asked again after the app or Mint has been left for 30 seconds. A door only: no key or password is made, nothing is encrypted with it, so it cannot lock anyone out of their records. Not offered where the phone has no screen lock, and not on desktop or web.
+- **Edit an account**: Edit now changes the name, type (within asset or liability), bank or provider, group, last digits and the opening balance, and the currency while the account has no records. The balance is derived, so correcting the opening balance moves it by the difference and rewrites no record.
+- Tests: `PortableBackupTest` (6), `MintRemindersTest` (7), an account-edit test, and screenshots of the lock card, the settings, the bills with reminders and the account edit form.
+
 ## 0.141.0
 
 Mint, the finance module, built manual first (REP-014), and a scene of its own for every way a new Pokémon arrives (owner: "all are egg, that was made for Plan's focus eggs: reuse it, but not too much, whatever makes sense for the module").

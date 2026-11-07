@@ -45,6 +45,9 @@ import app.pokeplan.mint.TxStatus
 import app.pokeplan.mint.TxType
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.DeviceGate
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.Notice
@@ -97,7 +100,49 @@ internal fun mintSubtitle(model: AppModel): String {
 
 @Composable
 internal fun MintScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
-    ScreenSwitch(model.mintSection, depth = { if (it == null) 0 else 1 }) { section -> MintPage(model, section, openPokemon) }
+    MintGate(model) { ScreenSwitch(model.mintSection, depth = { if (it == null) 0 else 1 }) { section -> MintPage(model, section, openPokemon) } }
+}
+
+/** Whether Mint must ask for the phone's screen lock now: it was never opened with it, or the app or the Mint screens were left for longer than the grace. */
+private fun mintLocked(model: AppModel, gate: DeviceGate, now: Long): Boolean {
+    val away = maxOf(gate.leftAt(), model.mintLeftAt)
+    return model.mintUnlockedAt == 0L || (away > model.mintUnlockedAt && now - away > DeviceGate.GRACE_MILLIS)
+}
+
+/**
+ * The optional access gate (MINT.md section 13.2): with the setting on and a screen lock on the phone, the Mint screens show a locked card until the person proves
+ * themselves with that lock, and lock again after the app or the module has been left for a while. A door only: nothing is encrypted with it and no password is
+ * made, so it can never make a record unreadable. Without a gate or a lock on the phone it shows the screens at once.
+ */
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun MintGate(model: AppModel, content: @Composable () -> Unit) {
+    val gate = model.gate
+    if (gate == null || !model.mintData.settings.gate || !gate.available()) { content(); return }
+    var locked by remember { mutableStateOf(mintLocked(model, gate, model.store.nowMillis)) }
+    var failed by remember { mutableStateOf(false) }
+    DisposableEffect(Unit) { onDispose { model.mintLeftAt = model.store.nowMillis } }
+    LaunchedEffect(locked) {
+        while (!locked) {
+            val now = model.store.nowMillis
+            if (mintLocked(model, gate, now)) locked = true else model.mintUnlockedAt = now // coming back inside the grace keeps it open
+            kotlinx.coroutines.delay(1_000)
+        }
+    }
+    if (!locked) { content(); return }
+    fun ask() { gate.authenticate { ok -> if (ok) { model.mintUnlockedAt = model.store.nowMillis; failed = false; locked = false } else failed = true } }
+    LaunchedEffect(Unit) { ask() }
+    val toModules = { model.module = null }
+    BackHandler(enabled = true, onBack = toModules)
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelTitle("Mint is locked")
+            Text("Use your phone's screen lock to open it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            if (failed) Notice("That did not open it.", tone = NoticeTone.WARNING)
+            PixelButton("Unlock", ::ask, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent)
+            PixelButton("Back", toModules, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+        }
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -280,24 +325,52 @@ private fun AccountsView(model: AppModel) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun AccountOptions(model: AppModel, a: FinancialAccount, onDone: () -> Unit) {
+internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: Boolean = false, onDone: () -> Unit) {
     val mint = model.mint
     var asking by remember(a.id) { mutableStateOf(false) }
-    var renaming by remember(a.id) { mutableStateOf(false) }
+    var editing by remember(a.id) { mutableStateOf(startEditing) }
     var name by remember(a.id) { mutableStateOf(a.name) }
+    var type by remember(a.id) { mutableStateOf(a.type) }
+    var currency by remember(a.id) { mutableStateOf(a.currency) }
+    var opening by remember(a.id) { mutableStateOf(Money.plain(a.openingMinor, a.currency)) }
+    var institution by remember(a.id) { mutableStateOf(a.institution) }
+    var group by remember(a.id) { mutableStateOf(a.group) }
+    var suffix by remember(a.id) { mutableStateOf(a.suffix) }
     var refused by remember(a.id) { mutableStateOf<String?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
-        if (renaming) {
-            PixelField(name, { name = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true)
+        if (editing) {
+            val locked = mint.hasHistory(a.id)
+            val minor = Money.parse(opening.ifBlank { "0" }, currency)
+            PixelField(name, { name = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                AccountType.entries.filter { it.liability == a.type.liability }.forEach { t -> Chip(t.label, t == type, { type = t }) }
+            }
+            if (locked) Text("${a.currency} stays, because this account has records. Everything else can change.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            else FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Money.common.take(6).forEach { c -> Chip(c, c == currency, { if (c != currency) { opening = Money.parse(opening.ifBlank { "0" }, currency)?.let { m -> Money.plain(m, c) } ?: opening; currency = c } }) }
+            }
+            PixelField(
+                opening, { opening = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(),
+                label = if (type.liability) "Amount owed when you started tracking" else "Balance when you started tracking", singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), helper = "Records stay as they are; the balance is worked out from this and them.",
+            )
+            PixelField(institution, { institution = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Bank or provider, optional", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
+            PixelField(group, { group = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Group, optional", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
+            PixelField(suffix, { suffix = it.filter(Char::isLetterOrDigit).take(MintRules.SUFFIX_MAX) }, Modifier.fillMaxWidth(), label = "Last ${MintRules.SUFFIX_MAX} digits, optional", singleLine = true, helper = "Never a full number, a PIN or a code.")
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelButton("Save", { mint.updateAccount(a.copy(name = name)).let { if (it.record != null) { renaming = false; onDone() } else refused = it.refused } }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = name.isNotBlank(), compact = true)
-                PixelButton("Cancel", { renaming = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                PixelButton("Save", {
+                    if (minor == null) refused = "Check the balance."
+                    else mint.updateAccount(a.copy(name = name, type = type, currency = currency, openingMinor = minor, institution = institution, group = group, suffix = suffix))
+                        .let { if (it.record != null) { editing = false; refused = null; onDone() } else refused = it.refused }
+                }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = name.isNotBlank(), compact = true)
+                PixelButton("Cancel", { editing = false; refused = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
         } else if (asking) {
             Confirm("Delete this account? Only an account with no records can be deleted.", "Delete", onConfirm = { refused = mint.deleteAccount(a.id); asking = false; if (refused == null) onDone() }, onKeep = { asking = false })
         } else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelButton("Rename", { renaming = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             when (a.status) {
                 AccountStatus.ACTIVE -> {
                     PixelButton("Archive", { mint.setAccountStatus(a.id, AccountStatus.ARCHIVED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -633,6 +706,7 @@ private fun BillsView(model: AppModel) {
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     PixelButton(if (b.status == PlanStatus.PAUSED) "Resume" else "Pause", { mint.setBillStatus(b.id, if (b.status == PlanStatus.PAUSED) PlanStatus.ACTIVE else PlanStatus.PAUSED) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    if (data.settings.billReminders) PixelButton(if (b.remind) "Reminders on" else "Reminders off", { mint.setBillRemind(b.id, !b.remind) }, Modifier.weight(1f), if (b.remind) ModuleAccent.MINT.accent else Pixel.InkSoft, compact = true)
                     PixelButton("Delete", { mint.deleteBill(b.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
@@ -766,8 +840,38 @@ private fun MintSettingsView(model: AppModel) {
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelTitle("Bill reminders")
+            ToggleRow(
+                "Remind me about bills", settings.billReminders,
+                detail = "Off by default. One reminder for each bill that is due, never a daily nag for one that is late. It never shows an amount, and it never marks a bill paid; you do that in Mint.",
+            ) { mint.setBillReminders(it) }
+            if (settings.billReminders) {
+                SectionLabel("How early")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    listOf(0 to "On the day", 1 to "1 day before", 2 to "2 days before", 3 to "3 days before", 7 to "A week before").forEach { (d, label) -> Chip(label, d == settings.billReminderDays, { mint.setBillReminderDays(d) }) }
+                }
+                SectionLabel("At")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    listOf(8, 9, 12, 18, 20).forEach { h -> Chip("${h.toString().padStart(2, '0')}:00", h == settings.billReminderHour, { mint.setBillReminderHour(h) }) }
+                }
+                Text("Your quiet hours and focus sessions still hold a reminder back.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                ToggleRow("Name the bill", settings.billReminderNames, detail = "After you unlock your phone it says which bill. The lock screen always says only that a bill is coming up.") { mint.setBillReminderNames(it) }
+            }
+        }
+    }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Privacy")
             ToggleRow("Hide amounts", settings.hideValues, detail = "Every amount in Mint shows as dots.") { mint.setHideValues(it) }
+            model.gate?.let { gate ->
+                if (gate.available() || settings.gate) ToggleRow(
+                    "Ask for my screen lock", settings.gate,
+                    detail = "Mint stays closed until your phone's own lock (PIN, pattern, password or fingerprint) opens it, and closes again after you leave. It does not change how your records are kept, and it cannot lock you out of them.",
+                ) { on ->
+                    if (!on) mint.setGate(false)
+                    else gate.authenticate { ok -> if (ok) { mint.setGate(true); model.mintUnlockedAt = model.store.nowMillis } }
+                } else Text("Set a screen lock on this phone first, and Mint can ask for it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
             PixelTitle("Currency")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Money.common.forEach { c -> Chip(c, c == settings.currency, { mint.setCurrency(c) }) }
@@ -799,5 +903,5 @@ private fun MintSettingsView(model: AppModel) {
             else PixelButton("Erase all Mint records", { askingAll = true; asking = null }, Modifier.fillMaxWidth(), Pixel.Danger, compact = true)
         }
     }
-    Text("Connecting a bank or e-wallet, importing statements and bill reminders are not available yet. Mint is complete without them.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    Text("Connecting a bank or e-wallet and importing statements are not available yet. Mint is complete without them.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }

@@ -55,12 +55,15 @@ class LiveBackup(private val dir: File, private val keep: Int = 3, private val e
         return folder
     }
 
-    /** The backup taken at [millis] as one bundle file's text ([BackupBundle]), for the player to save anywhere; null when it is not there. */
-    fun bundleOf(millis: Long, schema: Int): String? {
+    /** The documents of the backup taken at [millis], exactly as stored (Mint sealed with this phone's key); null when it is not there. */
+    fun documentsOf(millis: Long): Map<String, String>? {
         val folder = complete().firstOrNull { it.name.toLong() == millis } ?: return null
         val names = File(folder, DONE).readText().split(",").filter { it.isNotEmpty() }
-        return BackupBundle.encode(names.associateWith { File(folder, "$it.json").readText() }, schema, millis)
+        return names.associateWith { File(folder, "$it.json").readText() }
     }
+
+    /** The backup taken at [millis] as one bundle file's text ([BackupBundle]), for the player to save anywhere; null when it is not there. */
+    fun bundleOf(millis: Long, schema: Int): String? = documentsOf(millis)?.let { BackupBundle.encode(it, schema, millis) }
 
     /** Puts the backup taken at [millis] back (the documents it replaces are kept aside first). False when there is no such backup. */
     fun restore(live: LiveDocuments, millis: Long, nowMillis: Long): Boolean {

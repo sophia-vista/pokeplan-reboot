@@ -771,11 +771,11 @@ class ScreenshotTest {
     }
 
     /** The Mint module with a little recorded (two accounts, a card, spending, a budget, a bill and a reconciliation), open on [section] (null for its menu). Synthetic amounts only. */
-    private fun mint(name: String, section: app.pokeplan.ui.screens.MintSection?, height: Int = 1500, mintParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, hide: Boolean = false) {
+    private fun mint(name: String, section: app.pokeplan.ui.screens.MintSection?, height: Int = 1500, mintParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, hide: Boolean = false, settings: ((AppModel) -> Unit)? = null, gate: Boolean = false) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(mintParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.MINT) }
-        val model = AppModel(store)
+        val model = AppModel(store, gate = if (gate) object : app.pokeplan.ui.DeviceGate { override fun available() = true; override fun authenticate(onResult: (Boolean) -> Unit) {}; override fun leftAt() = 0L } else null)
         if (!empty) {
             val mint = model.mint
             val bank = mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000, suffix = "4821", group = "Daily spending").record!!
@@ -793,6 +793,7 @@ class ScreenshotTest {
             if (hide) mint.setHideValues(true)
             store.markRewardsSeen()
         }
+        settings?.invoke(model)
         model.module = app.pokeplan.ui.screens.Module.MINT
         model.mintSection = section
         render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
@@ -814,6 +815,27 @@ class ScreenshotTest {
     fun mintActivityAndAccounts() {
         mint("mint-activity", app.pokeplan.ui.screens.MintSection.ACTIVITY, height = 2800)
         mint("mint-accounts", app.pokeplan.ui.screens.MintSection.ACCOUNTS, height = 2200)
+    }
+
+    /** The optional access gate (locked card) and Mint's settings with bill reminders on and the gate offered. */
+    @Test
+    fun mintLockedAndSettings() {
+        mint("mint-locked", null, height = 900, gate = true, settings = { it.mint.setGate(true) })
+        mint("mint-settings", app.pokeplan.ui.screens.MintSection.SETTINGS, height = 3200, gate = true, settings = { it.mint.setBillReminders(true) })
+        mint("mint-bills-reminders", app.pokeplan.ui.screens.MintSection.BILLS, height = 2600, settings = { it.mint.setBillReminders(true) })
+    }
+
+    /** An account being edited: every detail, the currency fixed once it has records. */
+    @Test
+    fun mintAccountEdit() {
+        val store = storeWithTeam()
+        val model = AppModel(store)
+        val account = model.mint.addAccount("Daily account", app.pokeplan.mint.AccountType.BANK, "PHP", 4_250_000, suffix = "4821", group = "Daily spending").record!!
+        val fresh = model.mint.addAccount("Spare wallet", app.pokeplan.mint.AccountType.CASH, "PHP", 10_000).record!!
+        model.mint.record(app.pokeplan.mint.TxType.EXPENSE, 184_550, account.id, categoryId = "cat-food", payee = "Wet market")
+        render("mint-account-edit", height = 1900) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { androidx.compose.foundation.layout.Column { app.pokeplan.ui.screens.AccountOptions(model, account, startEditing = true) {}; app.pokeplan.ui.screens.AccountOptions(model, fresh, startEditing = true) {} } } }
+        }
     }
 
     /** Every Mint section at the system's text at 130%: nothing clipped or pushed out of its box. */

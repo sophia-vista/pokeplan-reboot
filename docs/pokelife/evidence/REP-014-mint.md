@@ -50,8 +50,15 @@ Built: `RowCipher` (seal and open; sealed text starts `m1.`), `AesGcmCipher` (AE
 
 **Limits, said plainly.** A backup of Mint opens only on a phone with the key: a new phone restored from the player's own backup file or from Android's cloud backup has Mint sealed and empty (the sealed rows are kept aside, not lost, but cannot be opened there). The way to move Mint between phones today is Mint's own Export, a readable file. The next step is a passphrase-sealed backup (PBKDF2 into the same AES-GCM) that opens anywhere. Sealing hides records from a copy of the files; it does not hide them from the running app, from a rooted phone while Mint is open, or from a screenshot. Not exercised on a device: Keystore key creation, a phone with no hardware-backed keystore, and the cloud-restore path.
 
+## 6A. Follow-ups, 0.142.0
+
+- **Portable backup.** Decision: a *separate, opt-in* file format for Mint rather than changing the device seal, so the daily backups and the tables keep needing no passphrase. `p1.` texts carry their own salt and iteration count (so the count can be raised later without breaking old files) and are accepted by `BackupBundle.stage` as a Mint document. Restore converts a portable Mint to plain JSON in memory only and lets `LiveDocuments.replaceAll` seal it with the phone's key as it writes (the path an older build's plain Mint already took). Decisions the owner may reverse: the 10-character minimum, 600,000 rounds (OWASP 2023; a few hundred milliseconds on a phone, so it runs on a worker thread, but **not timed on a device**), no recovery of a lost passphrase, and that only a fresh copy or an automatic backup can be made portable, not a file already saved.
+- **Bill reminders.** Off by default (spec: conservative), lead 0 to 7 days, hour from five chips, name in the notification only by choice and only after unlocking. `reminder_hold` (unsealed) holds a snoozed reminder's bill id and due day; that is the one place a Mint fact (an opaque id and a date) is stored outside Mint's sealed rows, and is the same shape as Heal's. Alarm receivers read Mint through the app's shared connection and the Keystore key, so a reminder cannot fire on a run where Mint did not start. Not device-tested: the alarm, the notification's lock-screen version, the Android 13 permission prompt.
+- **Access gate.** Chose `KeyguardManager` over `androidx.biometric`: no new dependency, and `BiometricPrompt` in the library needs a `FragmentActivity`, which `MainActivity` is not. The cost is that the system decides whether biometrics are offered. The gate is stored in Mint's own (sealed) settings, so a restored backup on a phone with no screen lock simply asks nothing.
+- **Account edit.** `MintStore.updateAccount` now takes the opening balance and, only while `hasHistory` is false, the currency.
+
 ## 7. Not done / next
 
-- A passphrase-sealed portable backup of Mint; the access gate; bill reminders through the shared scheduler; import; providers; splits, rollover, savings targets.
+- Import; providers; splits, rollover, savings targets; attachments; custom and per-bill reminder timing.
 - Device checks for everything above, including the Keystore key and the new scenes' timing on a phone.
 - HOME and LINK, then the typed repositories per module.
