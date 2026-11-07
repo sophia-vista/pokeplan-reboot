@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.134.0
+
+- **Each module teaches how it gives Pokémon.** Your starter is your buddy and starts in no party, so Plan and Care each show a one-time tutorial until you have done the real thing: Plan a 5-second focus session, Care a 5-second breath. Each hatches one egg into that module's own party and leads it. They are not focus sessions or calm breaks and leave no history, streak or meter, they never pay twice, and nothing needs them.
+- **The starter stays the buddy** when an older save had it as both buddy and Plan's lead: the buddy now beats a party and a Pokégear helper when sorting out a Pokémon in two places (Plan's party loses it).
+- Cosmetic variation is dropped from egg inheritance (spec and notes).
+- Under the hood: `Tutorials`, `GameStore.completeTutorial`, `RewardEngine.tutorialEgg`, `TutorialCard`; `POKEMON_ECOSYSTEM.md` section 10.2.1. No reward rules changed beyond the one-time egg (`RewardRules.VERSION` stays 16).
+
 ## 0.133.0
 
 - **One Pokémon, one place.** A Pokémon is now the buddy, or in one module's party, or a slotted Guardian, or on a World team, or a Pokégear helper, or in the PC, and never two. Choosing it for a place takes it from where it was. Your starter is the buddy and starts in no party (the first Pokémon to hatch joins Plan's). A save that had a Pokémon in two places is sorted out once on load: a Guardian slot beats a World team, which beats a party, a Pokégear helper, then the buddy; if your buddy was taken, your best Pokémon in the PC becomes the buddy. Nobody leaves your collection. Settings → "Keep party Pokémon out of World" is gone (it is always so now), and a Pokégear tool shows a helper only when you chose one.

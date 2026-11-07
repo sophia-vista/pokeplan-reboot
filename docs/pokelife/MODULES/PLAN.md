@@ -209,6 +209,8 @@ Where safely supported, offer: this occurrence only; this and future occurrences
 
 ## 6. Focus
 
+> **First-run tutorial** (`FEATURES/POKEMON_ECOSYSTEM.md` section 10.2.1): until the player has done a focus session, the Planner offers a one-time 5-second demo that hatches one egg into Plan's party. It is not a focus session and leaves no record.
+
 Focus is a core PLAN capability. Audit and reuse reliable existing timer and lifecycle behavior.
 
 ### 6.1 Session model

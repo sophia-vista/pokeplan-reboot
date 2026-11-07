@@ -20,7 +20,7 @@ class PlacesTest {
         val s = store()
         val a = s.grantPokemon(25, "t"); val b = s.grantPokemon(74, "t"); val c = s.grantPokemon(10, "t"); val d = s.grantPokemon(16, "t")
         val d0 = s.data
-        // a: buddy + party + team + helper; b: party + helper; c: buddy + helper; d: buddy only.
+        // a: buddy + party + team + helper; b: party + helper; c: helper only (the buddy is a).
         val old = d0.copy(
             player = d0.player.copy(
                 buddyId = a.id,
@@ -33,7 +33,7 @@ class PlacesTest {
         val resolved = Places.resolve(old)
         assertEquals(Place.WorldTeam(1), Places.of(resolved, a.id), "a team beats a party, a helper and the buddy")
         assertEquals(Place.Party(PartyIds.PLAN), Places.of(resolved, b.id), "a party beats a helper")
-        assertEquals(Place.GearHelper("COIN"), Places.of(resolved, c.id), "a helper beats the buddy")
+        assertEquals(Place.GearHelper("COIN"), Places.of(resolved, c.id))
         assertEquals(old.player.pokemon.size, resolved.player.pokemon.size, "nobody leaves the collection")
         assertEquals(Places.VERSION, resolved.placesVersion)
         // Every Pokémon is in exactly one place: the references never overlap.
@@ -46,6 +46,21 @@ class PlacesTest {
         // The buddy was lost, so the best Pokémon in the PC takes it; it runs once.
         assertTrue(resolved.player.buddyId != null && Places.of(resolved, resolved.player.buddyId!!) == Place.Buddy)
         assertEquals(resolved, Places.resolve(resolved))
+    }
+
+    @Test
+    fun theBuddyBeatsAPartyAndAHelperSoTheStarterStaysTheBuddy() {
+        val s = store()
+        val starter = s.data.player.buddyId!!
+        val old = s.data.copy(
+            player = s.data.player.copy(pokemon = s.data.player.pokemon.map { it.copy(inParty = true) }, planLeadId = starter),
+            gearHelpers = mapOf("FLASHLIGHT" to starter), placesVersion = 0,
+        )
+        val resolved = Places.resolve(old)
+        assertEquals(Place.Buddy, Places.of(resolved, starter))
+        assertEquals(starter, resolved.player.buddyId)
+        assertTrue(resolved.player.party.isEmpty() && resolved.player.planLeadId == null)
+        assertTrue(resolved.gearHelpers.isEmpty())
     }
 
     @Test

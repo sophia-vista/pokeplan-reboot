@@ -26,7 +26,7 @@ See PLAN.md 11.2 "As built". `GameStore.mergeHabits` runs in `tidy` on every loa
 Spec first (POKEMON_ECOSYSTEM.md 2.2, 2.2.2, 2.2.3, 2.3, 2.4, 6.2, 6.3; GEAR.md 6), then `Places` (derived place, `vacate`, `resolve`) and `GameStore.moveTo`: `setBuddy`, `setInParty`, `slotGuardian`, `worldAssign`, `assignGearHelper` each take the Pokémon from its old place in the same save; a team out on an expedition cannot be moved. `PlacesTest` and the reworked `GameStoreTest`, `WorldStoreTest`, `GearTest`, `PerksStoreTest` cover it.
 
 **Decisions I made that the owner may reverse:**
-1. *Priority when a save has a Pokémon in two places:* Guardian, World team, party, helper, buddy (function beats decoration, so rewards do not drop). The usual case is the starter, who was both buddy and Plan's lead: it stays in Plan's party and the buddy becomes the best Pokémon in the PC, or is empty if there is none.
+1. *Priority when a save has a Pokémon in two places:* first built as Guardian, World team, party, helper, buddy. **Changed by the owner (7 November 2026, "make starter buddy") to Guardian, World team, buddy, party, helper**, so the starter stays the buddy and Plan's party loses it.
 2. *New games:* the starter is the buddy only; Plan's party starts empty and the first hatched Pokémon joins it (so the starter no longer earns Plan friendship).
 3. *Assigning moves, it does not refuse* (the lists of free Pokémon for a World team show the PC only). The Plan-party-never-empty rule stays for taking a member out directly.
 4. *Pokégear:* no automatic helper from the collection; a tool without a chosen helper shows its icon or its Ranger loaner. A Pokémon helps one tool.
@@ -36,7 +36,7 @@ Not done: a place label on the party/PC screens (the store has `placeOf`; the sc
 
 ## 4. CARE (CARE.md 6.8 "Built in 0.133.0")
 
-Reunions, egg inheritance with the origin note, Care Play and the Meadow; tests in `CareExtrasTest` (inheritance is stable, light and repeatable; a friend returns, takes no place and pays nothing; preferences are individual, stable and discovered only by showing; time pays once a day per Pokémon and repeats pay nothing). `RewardRules.VERSION` 16 (Care Play only). `simulateEconomy` was **not** re-run: it plays only Plan, and the new source is capped at 6 Rare Candies a day. Not built: the cosmetic-variation trait of inheritance (needs art), a Care Play activity per species, TalkBack and reduced-motion review on a device, and the visual check of the Meadow and Care Play screens (no screenshot test was added).
+Reunions, egg inheritance with the origin note, Care Play and the Meadow; tests in `CareExtrasTest` (inheritance is stable, light and repeatable; a friend returns, takes no place and pays nothing; preferences are individual, stable and discovered only by showing; time pays once a day per Pokémon and repeats pay nothing). `RewardRules.VERSION` 16 (Care Play only). `simulateEconomy` was **not** re-run: it plays only Plan, and the new source is capped at 6 Rare Candies a day. Not built: a Care Play activity per species, TalkBack and reduced-motion review on a device, and the visual check of the Meadow and Care Play screens (no screenshot test was added).
 
 ## 5. REP-008 remainder
 

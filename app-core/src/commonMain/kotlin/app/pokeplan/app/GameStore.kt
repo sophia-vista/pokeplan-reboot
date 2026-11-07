@@ -223,6 +223,35 @@ class GameStore(
 
     private fun newId(): String = newId(nowMillis, rng)
 
+    // --- module tutorials ---------------------------------------------------------------------------------------------
+
+    /**
+     * Whether the tutorial [id] is still on offer: not done, and the player has not done the real thing (a finished focus session for
+     * Plan's). Care's tutorial also stays off for a player with calm breaks; [careBreaks] is how many Care has recorded (Care keeps its own save).
+     */
+    fun tutorialOffered(id: String, careBreaks: Int = 0): Boolean = data.onboarded && id !in data.tutorials && when (id) {
+        Tutorials.PLAN_FOCUS -> data.focusHistory.none { it.completed }
+        Tutorials.CARE_BREATH -> careBreaks == 0
+        else -> false
+    }
+
+    /**
+     * Finishes the tutorial [id]: one egg of its module's method hatches into that module's party (Plan: a focus egg from the open region;
+     * Care: a Care Egg), once per save. It is no focus session or calm break, so it leaves no history, streak, cap, meter or friendship. Returns
+     * the rewards, or null when it is unknown, already done or not started yet.
+     */
+    fun completeTutorial(id: String): List<Reward>? {
+        if (!data.onboarded || id in data.tutorials) return null
+        val (region, party, how) = when (id) {
+            Tutorials.PLAN_FOCUS -> Triple(data.settings.region.open, PartyIds.PLAN, Origin.How.FOCUS_EGG)
+            Tutorials.CARE_BREATH -> Triple(Region.CARE, PartyIds.CARE, Origin.How.CARE_EGG)
+            else -> return null
+        }
+        val outcome = RewardEngine.tutorialEgg(data.player, region, party, newId(), nowMillis, rng)
+        update { d -> log(CARE_LOG_PREFIX.takeIf { id == Tutorials.CARE_BREATH }.orEmpty() + "first egg", outcome.rewards, d.copy(player = outcome.state, tutorials = d.tutorials + id), origin = Origin(how, region)) }
+        return outcome.rewards
+    }
+
     // --- onboarding ---------------------------------------------------------------------------------------------------
 
     /** Starts as a guest: creates the trainer, the starter (which becomes the buddy, and is in no party: one place only) and a first task that pays at once. */

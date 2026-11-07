@@ -21,14 +21,14 @@ sealed interface Place {
 }
 
 object Places {
-    /** Where [id] is, by the priority that resolves a save with two ([resolve]): Guardian, World team, party, Pokégear helper, buddy, else the PC. */
+    /** Where [id] is, by the priority that resolves a save with two ([resolve]): Guardian, World team, buddy, party, Pokégear helper, else the PC. */
     fun of(d: AppData, id: String): Place {
         val p = d.player.pokemon.firstOrNull { it.id == id } ?: return Place.Pc
         if (id in d.player.guardians) return Place.Guardian
         d.world.teams.firstOrNull { id in it.members }?.let { return Place.WorldTeam(it.id) }
+        if (d.player.buddyId == id) return Place.Buddy
         if (p.inParty) return Place.Party(p.partyId)
         d.gearHelpers.entries.firstOrNull { it.value == id }?.let { return Place.GearHelper(it.key) }
-        if (d.player.buddyId == id) return Place.Buddy
         return Place.Pc
     }
 
@@ -63,8 +63,8 @@ object Places {
     const val VERSION = 1
 
     /**
-     * A save from before the rule (docs section 2.2.3): a Pokémon in two places keeps the highest by Guardian, World team, party, helper,
-     * buddy, and the others are taken from it. If the buddy is lost the best Pokémon in the PC (highest level, friendliest, then id) becomes
+     * A save from before the rule (docs section 2.2.3): a Pokémon in two places keeps the highest by Guardian, World team, buddy, party,
+     * helper, and the others are taken from it. If the buddy is lost the best Pokémon in the PC (highest level, friendliest, then id) becomes
      * the buddy; with none, the buddy stays empty. Nothing is removed from the collection, nothing is paid, and it runs once.
      */
     fun resolve(d: AppData): AppData {

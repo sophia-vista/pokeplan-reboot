@@ -94,6 +94,8 @@ Diary entries, journal text, mood data, urges, therapy-related content, skills r
 
 ## 4. Care Play
 
+> **First-run tutorial** (`FEATURES/POKEMON_ECOSYSTEM.md` section 10.2.1): until the player has taken a calm break, Care offers a one-time 5-second breath that hatches one Care Egg into Care's party. It is not a calm break and leaves no record.
+
 Care Play is the Pokémon relationship interaction system. It should feel like spending time with Pokémon, not maintaining virtual pets or completing chores.
 
 ### 4.1 Pokémon participation
@@ -247,7 +249,7 @@ Rules:
 - Visitor eggs enter the shared Pokémon Egg collection and use the shared hatching/progression system.
 - No real-time countdown, expiry or forced hatching schedule.
 - Egg species is the visitor's first evolutionary stage.
-- Visitor eggs may lightly inherit selected characteristics from the visitor: personality/nature influence, potential stat strengths, and a rare special trait or cosmetic variation.
+- Visitor eggs may lightly inherit selected characteristics from the visitor: personality/nature influence, potential stat strengths, and a rare special trait. There is no cosmetic variation (owner, 7 November 2026: scrapped).
 - Inheritance is probabilistic and light; it does not determine the hatchling's whole build. The hatchling receives its own individual traits.
 - No breeding interface, pair selection, breeding optimization or repeatable breeding loop is introduced. This is a special visitor gift/recruitment outcome, not a general breeding system.
 - Eggs and hatchlings retain a small origin record: visitor species and individual identity, befriending date, inherited traits where applicable, and a short origin note. Preserve the link after hatching.
@@ -274,7 +276,7 @@ The sections above say what visitors are; these are the numbers the code uses an
 - **Dismissal:** asked once, keeps what the visitor earned (nothing already given is taken back), and the visitor is kept (the last twenty) so it can be asked back, to the end of the queue with its warmth.
 - **Built in 0.133.0** (the four items 0.132.0 left out):
   - **Reunions (6.7):** a befriended visitor is remembered (`CareData.friends`: species, form, visitor id, the day, whether it stayed). Once a day, with a 20% chance (the same for the same device and day), one friend may come back to say hello if none is waiting and it has not been back for 3 days. It holds no meadow place and does not count towards the 4 and 6, never expires, pays nothing and gives no egg or recruitment; greeting it says a line that remembers the day you became friends.
-  - **Egg inheritance (6.6):** an egg a friend leaves (not a visitor that stays) may take a temperament from it: the visitor's nature (40%), its strong stat raised to an IV of at least 24 (40%), and, rarely (5%), a second strong stat to at least 28 along with the other two. A visitor's nature and strong stat come from its id, so they are stable; what an egg takes comes from the visitor and the egg together, so it is the same on a retry. Shininess, ability, species and level are never touched. The hatchling's origin record (`Origin.visitor`: visitor, day, traits, a note such as "Left by a Pikachu you befriended; it took Jolly nature") is shown on its page. **Not built:** the "cosmetic variation" trait, which needs art that does not exist.
+  - **Egg inheritance (6.6):** an egg a friend leaves (not a visitor that stays) may take a temperament from it: the visitor's nature (40%), its strong stat raised to an IV of at least 24 (40%), and, rarely (5%), a second strong stat to at least 28 along with the other two. A visitor's nature and strong stat come from its id, so they are stable; what an egg takes comes from the visitor and the egg together, so it is the same on a retry. Shininess, ability, species and level are never touched. The hatchling's origin record (`Origin.visitor`: visitor, day, traits, a note such as "Left by a Pikachu you befriended; it took Jolly nature") is shown on its page.
   - **Care Play (4):** time with the buddy, a visitor or any owned Pokémon (invited without touching a party). Six activities map to the five kinds of care (grooming, toy play, a treat, cheering on, gentle touch, quiet time), each a short run of taps that can be stopped any time; suggested (never expires), browsed or "Surprise me". Every Pokémon has a primary and a secondary liked kind from its id, undiscovered until it shows them (a delighted or happy reaction records the kind; any other reaction is pleasant and records nothing). The first time with each Pokémon on a day pays `CareKind.PLAY` (1 friendship step to that Pokémon, 1 Rare Candy, 1 point on Care's Egg meter, at most 6 a day); repeats pay nothing and are unlimited.
   - **Meadow (5):** one fixed scene (Care → Meadow): the buddy in the middle and four visitor spots, no scrolling or roaming; tap is a reaction with a 0.9 s cooldown (a tap during it changes nothing and plays no cry), long press (or the "Details" accessibility action) opens a compact panel with identity, discovered likes and the way into Care Play; the queue and Care Egg progress sit small in the corners; a returning friend appears below with "Say hello". Reduced motion stops the animations.
   - Rewards: `RewardRules.VERSION` 16 (only Care Play is new; nothing else changed).

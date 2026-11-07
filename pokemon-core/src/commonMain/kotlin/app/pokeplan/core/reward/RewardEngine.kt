@@ -446,6 +446,31 @@ object RewardEngine {
     }
 
     /**
+     * The one Pokémon a module's first-run tutorial gives (docs/pokelife `FEATURES/POKEMON_ECOSYSTEM.md` section 10.2.1): an egg of
+     * [region]'s Common pool, hatched at once into [partyId]'s party if there is room (else the PC), leading it if it has no lead yet. Species
+     * not caught yet are more likely, as for any egg. It is paid once per module by the caller; it adds no trainer points, friendship or
+     * meter, and the first of its species pays the usual new-species candies.
+     */
+    fun tutorialEgg(state: PlayerState, region: Region, partyId: String, newPokemonId: String, nowMillis: Long, rng: Random): Outcome {
+        val known = state.caught + state.pokemon.map { it.speciesId }
+        var rarity = app.pokeplan.core.dex.Rarity.COMMON
+        while (rarity.ordinal > 0 && HatchRules.pool(region, rarity).isEmpty()) rarity = app.pokeplan.core.dex.Rarity.entries[rarity.ordinal - 1]
+        val option = HatchRules.rollWeighted(region, rarity, rng) { o -> if (o.speciesId !in known) UNCAUGHT_WEIGHT else 1.0 }
+        val size = state.partyOf(partyId).size
+        val p = Hatching.create(newPokemonId, option, size, nowMillis, TASK_EGG_MINUTES, rng).copy(partyId = partyId)
+        val (bag, overflow, newRewards) = newSpecies(known, p.speciesId, state.inventory)
+        var next = state.copy(pokemon = state.pokemon + p, inventory = bag, coins = state.coins + overflow, caught = known + p.speciesId)
+        if (p.inParty) {
+            next = when (partyId) {
+                PartyIds.CARE -> if (next.careLead == null) next.copy(careLeadId = p.id) else next
+                PartyIds.PLAN -> if (next.planLead == null) next.copy(planLeadId = p.id) else next
+                else -> next
+            }
+        }
+        return Outcome(next, listOf(Reward.Hatched(p, fromTask = true)) + newRewards)
+    }
+
+    /**
      * A Care Egg from a full Care Egg meter ([CARE_EGG_POINTS]): rolled like a Task Egg from the Care Region (species not
      * caught yet more likely), it hatches at once into Care's party if there is room (else the PC), and leads it if Care
      * has no lead yet. Shiny odds and IVs are the ordinary ones: a Care Egg fills the Pokédex, it does not make a better
