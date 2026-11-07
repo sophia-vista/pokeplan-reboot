@@ -3,6 +3,7 @@ package app.pokeplan
 import android.content.Context
 import android.util.Log
 import app.pokeplan.app.FileStorage
+import app.pokeplan.app.GameStore
 import app.pokeplan.app.Storage
 import app.pokeplan.data.AndroidDatabase
 import app.pokeplan.data.DataStore
@@ -66,7 +67,7 @@ object LiveStore {
         val backups = LiveBackup(File(app.filesDir, "backups"))
         return try {
             val s = openOrRecover(app, backups, now)
-            s.live.normalizer = app.pokeplan.app.GameStore::normalizeDocument
+            s.live.normalizer = GameStore::normalizeDocument
             s.live.activate(read(app, "save.json"), read(app, "care.json"), now)
             File(app.filesDir, ACTIVE_FLAG).writeText("database") // from now on the files are never the live store again
             // Care's records move from their document row into Care's tables, once (REP-014). If it cannot (the read-back differed),
@@ -124,7 +125,7 @@ object LiveStore {
             File(db.path + suffix).takeIf { it.exists() }?.renameTo(File(db.path + suffix + ".corrupt-$now"))
         }
         val fresh = AndroidDatabase.open(context)
-        fresh.live.normalizer = app.pokeplan.app.GameStore::normalizeDocument
+        fresh.live.normalizer = GameStore::normalizeDocument
         if (backups.restoreNewest(fresh.live, now)) {
             fresh.live.activate(null, null, now) // the restore is the live data; set the marker without reading the stale files
             Log.w(TAG, "the database was damaged; the newest backup was restored")

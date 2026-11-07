@@ -428,6 +428,35 @@ class PokemonTablesTest {
         assertEquals(before, t.live.read("save"))
     }
 
+    @Test
+    fun theDocumentTheDeviceCheckUsesMovesInWithoutTheAppsCheck() {
+        // The same save the Android DB check builds (DeviceSelfCheck): PLAN's tables already active, no normalizer.
+        fun mon(id: String, inParty: Boolean, level: Int) =
+            "{\"id\":\"$id\",\"speciesId\":25,\"formIdentifier\":\"pikachu\",\"nickname\":\"\",\"nature\":\"HARDY\",\"ability\":\"static\",\"gender\":null," +
+                "\"ivs\":{\"hp\":1,\"attack\":2,\"defense\":3,\"spAttack\":4,\"spDefense\":5,\"speed\":6},\"evs\":{\"hp\":0,\"attack\":0,\"defense\":0,\"spAttack\":0,\"spDefense\":0,\"speed\":0}," +
+                "\"level\":$level,\"candyProgress\":0,\"totalCandies\":0,\"friendship\":70,\"isShiny\":false,\"heldItem\":null,\"teraType\":null,\"cosmeticForm\":null," +
+                "\"personality\":7,\"inParty\":$inParty,\"caughtAtMillis\":1,\"partyId\":\"plan\"}"
+        fun save(coins: Int, level: Int) =
+            "{\"player\":{\"pokemon\":[${mon("p1", false, level)},${mon("p2", true, 3)}],\"buddyId\":\"p1\",\"inventory\":{\"counts\":{\"rare-candy\":3}},\"coins\":$coins," +
+                "\"eggMeter\":0,\"trainerPoints\":0,\"caught\":[25],\"guardians\":[],\"careLeadId\":null,\"planLeadId\":\"p2\",\"rolesVersion\":1}," +
+                "\"favorites\":[\"p2\"],\"origins\":{},\"shinySpecies\":[],\"caughtForms\":[],\"shinyForms\":[],\"seenSpecies\":[25]}"
+        val doc = "{\"player\":{\"coins\":1},\"tasks\":[{\"id\":\"t\",\"title\":\"T\"}],\"activeDays\":[\"2026-11-01\"],\"focus\":null}"
+        val s = withSave(doc, normalizer = null)
+        s.live.write("save", save(10, 5), 12)
+        s.live.movePokemonToTables(13)
+        assertTrue(s.pokemonTables.isActive())
+        assertEquals(10L, s.economy.poke())
+        assertEquals(mapOf("rare-candy" to 3L), s.economy.bag())
+        s.live.write("save", save(15, 6), 14)
+        assertEquals(15L, s.economy.poke())
+        assertEquals(emptyList(), s.economy.reconcile())
+        assertEquals(PokemonPlace.Buddy, s.pokemon.placeOf("p1"))
+        assertEquals(PokemonPlace.Party("PLAN"), s.pokemon.placeOf("p2"))
+        val back = s.live.read("save")!!
+        assertTrue("\"level\":6" in back && "\"coins\":15" in back)
+        assertEquals(back, s.live.snapshot()["save"])
+    }
+
     // --- the schema --------------------------------------------------------------------------------------------------------
 
     @Test
