@@ -43,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.core.pokemon.CareBucket
 import app.pokeplan.core.pokemon.HealBucket
 import app.pokeplan.core.pokemon.HealPerks
+import app.pokeplan.core.pokemon.MintBucket
+import app.pokeplan.core.pokemon.MintPerks
 import app.pokeplan.core.pokemon.CarePerks
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.PartyIds
@@ -124,6 +126,26 @@ fun HealPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
             else -> "None yet: Fighting, Normal, Fire, Electric, Flying, Dragon, Water, Grass, Ground, Ice, Bug and Fairy types bring them."
         },
         empty = "Open a Pokémon and choose \"To Heal party\", or try Field Research above. Heal works fully with an empty party.",
+        onOpen = onOpen,
+    )
+}
+
+/** Mint's party in its module: its lead first, and its two perks (which only change what Ledger Research pays) once the rank opens them, as Care's. */
+@Composable
+fun MintPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
+    val player = model.data.player
+    val party = player.partyOf(PartyIds.MINT)
+    val opened = model.store.sees(Feature.PERKS)
+    val totals = MintPerks.total(player.mintLead, party)
+    PartyPanel(
+        model, party, player.mintLead?.id, lead = "Lead", perksTitle = "Mint perks",
+        perks = if (opened) MintBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
+        perksNote = when {
+            !opened -> PERKS_LOCKED
+            party.isEmpty() || totals.values.any { it > 0 } -> null
+            else -> "None yet: Steel, Rock, Ground, Normal, Electric, Psychic, Ghost, Dark, Poison, Fire, Fairy and Dragon types bring them."
+        },
+        empty = "Open a Pokémon and choose \"To Mint party\", or try the tally above. Mint works fully with an empty party.",
         onOpen = onOpen,
     )
 }

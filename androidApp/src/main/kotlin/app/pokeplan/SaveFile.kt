@@ -29,6 +29,12 @@ fun careStore(context: Context, world: GameStore = widgetStore(context)): CareSt
  */
 fun healStorage(context: Context): Storage = LiveStore.storage(context, "heal", "heal.json")
 
+/**
+ * The Mint module's own save (private financial records), apart from every other module's: its own tables in the database, created there from the start
+ * (`mint.json` exists only as a fallback while the database has never opened). No widget, notification or reminder reads it.
+ */
+fun mintStorage(context: Context): Storage = LiveStore.storage(context, "mint", "mint.json")
+
 /** Heal's store outside the app (reminders): its own records, paying Field Research into [world] like the app does. */
 fun healStore(context: Context, world: GameStore = widgetStore(context)): HealStore =
     HealStore(

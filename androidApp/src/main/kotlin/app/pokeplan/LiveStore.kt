@@ -80,6 +80,11 @@ object LiveStore {
                 read(app, "heal.json")?.let { legacy -> if (!s.healTables.isActive() && s.live.read("heal") == null) s.live.write("heal", legacy, now) }
                 s.live.moveHealToTables(now)
             }.onFailure { Log.w(TAG, "Heal tables not active this run: ${it.javaClass.simpleName}") }
+            // MINT lives in its own tables from the start (schema 8), the same way: a mint.json written while the database could not be opened is taken in once.
+            runCatching {
+                read(app, "mint.json")?.let { legacy -> if (!s.mintTables.isActive() && s.live.read("mint") == null) s.live.write("mint", legacy, now) }
+                s.live.moveMintToTables(now)
+            }.onFailure { Log.w(TAG, "Mint tables not active this run: ${it.javaClass.simpleName}") }
             // And the player's side (schema 6): the Pokémon, their places, the Bag, the Poké balance and its ledger, once PLAN's move has run.
             // The save is checked the way the app checks every save it loads, written as rows, read back and compared; any difference or a
             // save the tables cannot represent changes nothing, the rows stay the live save, and it is tried again at the next start.

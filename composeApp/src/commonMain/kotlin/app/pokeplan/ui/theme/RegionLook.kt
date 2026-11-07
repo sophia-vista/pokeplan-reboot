@@ -42,6 +42,9 @@ enum class RegionLook(val scene: String, private val module: ModuleAccent) {
 
     /** The Heal module (docs/pokelife MODULES/HEAL.md): an open route, and teal. A utility surface: the scene is only a quiet backdrop. */
     HEAL(BuddyScene.HEAL, ModuleAccent.HEAL),
+
+    /** The Mint module (docs/pokelife MODULES/MINT.md): a quiet cave of ore, and ochre. A utility surface: the scene is only a backdrop and never sits behind a figure. */
+    MINT(BuddyScene.MINT, ModuleAccent.MINT),
     ;
 
     /** The header bar on the region's pages, under white text. */

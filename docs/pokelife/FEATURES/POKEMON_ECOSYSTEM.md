@@ -399,9 +399,12 @@ The starter is the buddy and starts in no party, so each module that has a Poké
 | WORLD | Its authored opening (`MODULES/WORLD.md`) | Unchanged |
 | GEAR | None: GEAR has no acquisition (`MODULES/GEAR.md` section 6) | Nothing |
 | HEAL | A 5-second walk (Heal): "Walking…" counts down, then Field Research finds an egg | A Common egg of the Heal Region, into Heal's party, leading it |
-| MINT, HOME, LINK | Each module's own first-run demo when it is built | Through its acquisition method |
+| MINT | A 5-second tally (Mint): "Counting…" counts down, then Ledger Research catalogues a find | A Common egg of the Mint Region, into Mint's party, leading it |
+| HOME, LINK | Each module's own first-run demo when it is built | Through its acquisition method |
 
 Rules: it is offered on the module's first screen until done and is never required (every module works without it); it is done once per save (`AppData.tutorials`), so replaying or reloading cannot pay twice; it counts as no focus session, no calm break, no logged activity or drink (HEAL) and no history (no streak, caps, meter, friendship or trainer points); the first of its species pays the usual new-species candies; a player who has already done the real thing (a finished focus session, a calm break, a logged activity) never sees it and is given nothing; and it needs no permission. A new module adds its own row here.
+
+**How a new Pokémon arrives (owner, 8 November 2026: "all are egg, that was created mainly for Plan focus eggs; reuse it, but not too much").** The egg-hatching scene belongs to Plan's focus and task eggs and to the egg a Care visitor leaves (CARE.md section 6 says an egg). Every other acquisition has a scene in its own module's scenery, and its words, in `Acquisition` (`RewardText.kt`) and `Cutscenes.kt`: **Care** (a routine or break, the tutorial): a new friend wanders in over the meadow and settles ("A new friend wandered over"); **Heal** (Field Research): the Pokémon runs in along the route ("Field Research found"); **Mint** (Ledger Research): a Star Piece glints in the cave and the Pokémon rises from the floor ("Ledger Research catalogued"). **HOME** and **LINK** choose theirs when they are built (suggested: a habitat found and a postcard delivered); World keeps no scene. The origin line, the reward box and Home's Recently list use the same words, and Reduce motion goes straight to the Pokémon. The mechanics underneath are unchanged: it is still a shared record in one place, and the Origin keeps the egg kind (`Origin.How`) so history is not rewritten.
 
 The ecosystem must preserve the approved module mechanics; it does not redefine them:
 
