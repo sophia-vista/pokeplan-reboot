@@ -280,7 +280,7 @@ private fun HouseholdOverview(model: AppModel) {
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Chore", { go(model, HouseholdSection.CHORES) }, Modifier.weight(1f), accent, compact = true)
-                PixelButton("Supply", { go(model, HouseholdSection.SUPPLIES) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                PixelButton("Stock", { go(model, HouseholdSection.SUPPLIES) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 PixelButton("Item", { go(model, HouseholdSection.MAINTENANCE, tab = 1) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 PixelButton("Note", { go(model, HouseholdSection.NOTES) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
@@ -329,7 +329,11 @@ private fun repeatText(r: Recurrence): String {
 
 private fun areaName(data: app.pokeplan.home.HomeData, id: String?): String? = id?.let { a -> data.areas.firstOrNull { it.id == a }?.name }
 
-private fun quantityText(s: Supply): String = Quantity.format(s.quantityMilli) + if (s.quantityMilli != null && s.unit.isNotEmpty()) " ${s.unit}" else ""
+private fun quantityText(s: Supply): String {
+    // "1 bottles" reads wrong: one of a plural unit drops its s (a unit like "kg" or "L" has none to drop).
+    val unit = if (s.quantityMilli == 1000L && s.unit.length > 3 && s.unit.endsWith("s")) s.unit.dropLast(1) else s.unit
+    return Quantity.format(s.quantityMilli) + if (s.quantityMilli != null && unit.isNotEmpty()) " $unit" else ""
+}
 
 private fun choreLine(data: app.pokeplan.home.HomeData, v: ChoreView, today: LocalDate): String {
     val first = when (v.state) {
