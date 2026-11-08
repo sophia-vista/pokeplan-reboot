@@ -65,9 +65,9 @@ object Integrations {
         ),
         IntegrationInfo(
             "huawei", "Huawei Watch Fit 4 Pro", IntegrationClass.UNSUPPORTED, IntegrationStatus.UNSUPPORTED,
-            "Not verified. There is no direct link to the watch and none is promised.",
-            "Whatever Huawei Health writes into Health Connect on your phone, if it writes anything, is read like any other app's; each record shows the app it came from.",
-            "Whether Huawei Health in your region writes steps, workouts, sleep or weight to Health Connect has to be tested on the real watch, phone and account. Until then HEAL claims no Huawei metric.",
+            "Not verified, and there is no direct link to the watch. Huawei Health is reported not to write into Health Connect itself, so nothing may arrive from it.",
+            "Whatever Huawei Health or another app writes into Health Connect is read like any other app's, and each record shows the app it came from.",
+            "Huawei's own Health Kit needs a developer registration and Huawei's approval before any app can use it, and the watch's steps, workouts, sleep and weight have not been tested here. A separate app you install yourself may copy Huawei data into Health Connect; Heal does not depend on one and has not checked any.",
         ),
     )
 
@@ -89,7 +89,7 @@ object Integrations {
         ),
         IntegrationInfo(
             "providers", "GCash, Maya, MariBank, GoTyme, UnionBank", IntegrationClass.UNSUPPORTED, IntegrationStatus.UNSUPPORTED, NO_ACCESS, "None.",
-            "Not verified: a developer portal or payment API is not access to your own account. Nothing here logs in, scrapes or asks for a password, PIN or code.",
+            "Not verified: UnionBank has a developer portal for businesses, and the BSP has an Open Finance framework, but neither is confirmed to give your own transactions to an app like this. Nothing here logs in, scrapes or asks for a password, PIN or code.",
         ),
     )
 }
