@@ -295,16 +295,7 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
             enabled = slotted || player.guardians.size < store.guardianSlots, compact = true,
         )
     } else {
-        val place = when {
-            isPlanLead -> if (isBuddy) "Your buddy, and Plan's lead" else "Plan's lead, in Plan's party"
-            isBuddy -> if (inPlan) "Your buddy, in Plan's party" else "Your buddy"
-            inPlan -> "In Plan's party"
-            isLead -> "Care's lead, in Care's party"
-            inCare -> "In Care's party"
-            isHealLead -> "Heal's lead, in Heal's party"
-            inHeal -> "In Heal's party"
-            else -> "Resting in the PC"
-        }
+        val place = app.pokeplan.app.Places.label(model.data, p.id)
         Text(place, style = MaterialTheme.typography.bodyLarge)
     }
     val regions = Region.entries.filter { it.isModule && it.released && (care || it != Region.CARE) }

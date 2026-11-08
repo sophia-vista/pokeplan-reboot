@@ -79,10 +79,8 @@ data class AppData(
     val favorites: Set<String> = emptySet(),
     /** The World game's save: teams, expeditions, finds, items and rank (docs/world.md). Client-side; stays on this device's save. */
     val world: WorldData = WorldData(),
-    /** The Pokémon the player chose to help each Pokégear tool, by tool name to Pokémon id. A tool with none uses the best Pokémon owned who can help, else its loan. Cosmetic; stays on this device's save. */
+    /** The Pokémon the player chose to help each Pokégear tool, by tool name to Pokémon id. A tool with none shows its own icon (nothing is picked or lent by itself). Cosmetic; stays on this device's save. */
     val gearHelpers: Map<String, String> = emptyMap(),
-    /** The Pokégear tools that have a loaner from a Ranger request (it helps until an owned Pokémon can). Cosmetic; stays on this device's save. */
-    val gearLoans: Set<String> = emptySet(),
     /** The list the Picker chooses from; never synced or sent anywhere (it is in [app.pokeplan.app.GameStore.DEVICE_ONLY], so the cloud document leaves it out and an adopted cloud save keeps this device's list). */
     val pickerOptions: List<String> = emptyList(),
     /** What the Pokégear tools remember: favourites, recents, currency choices, timers, the stopwatch, picker weights. Never synced (see [app.pokeplan.app.GameStore.DEVICE_ONLY]). */

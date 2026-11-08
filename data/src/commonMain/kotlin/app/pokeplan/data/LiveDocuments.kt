@@ -206,6 +206,16 @@ class LiveDocuments(private val store: DataStore) {
         write("$ASIDE$name:$nowMillis", if (name == MINT) store.mintCipher!!.seal(json) else json, nowMillis)
     }
 
+    /**
+     * What a full-device erase leaves behind once the stores have written their blank state: every copy kept aside by a migration or a
+     * restore (they hold the old documents whole) and every held reminder. Not the live documents (the stores own those) and not the files
+     * of the daily backups (the platform deletes those). One transaction.
+     */
+    fun eraseKeptCopiesAndHolds() = store.transaction {
+        q.liveDeleteAside()
+        q.holdDeleteAll()
+    }
+
     fun names(): List<String> = (q.liveNames().executeAsList() + listOfNotNull(CARE.takeIf { store.careTables.isActive() && store.careTables.read() != null }, HEAL.takeIf { store.healTables.isActive() && store.healTables.read() != null }, MINT.takeIf { store.mintTables.isActive() && store.mintTables.readOrNull() != null }, HOME.takeIf { store.homeTables.isActive() && store.homeTables.read() != null })).distinct().sorted()
 
     /** Every live document (not the kept-aside ones) as of one moment: a single read transaction. Care's tables are put back together as `care`. */

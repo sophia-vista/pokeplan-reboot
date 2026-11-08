@@ -32,6 +32,31 @@ object Places {
         return Place.Pc
     }
 
+    /** The name a player reads for a module's party: "Plan", "Care", "Heal", "Mint" or "Home". */
+    private fun partyName(partyId: String): String = when (partyId) {
+        PartyIds.PLAN -> "Plan"; PartyIds.CARE -> "Care"; PartyIds.HEAL -> "Heal"; PartyIds.MINT -> "Mint"; PartyIds.HOME -> "Home"
+        else -> partyId.replaceFirstChar { it.uppercase() }
+    }
+
+    /**
+     * Where [id] is, in words, for every place there is (the party and PC screens and the detail page read this one function, so no
+     * place is ever shown as "the PC" by mistake): the buddy, a party (and its lead), a Guardian slot, a World team, a tool it helps, the PC.
+     */
+    fun label(d: AppData, id: String): String = when (val place = of(d, id)) {
+        Place.Buddy -> "Your buddy"
+        is Place.Party -> {
+            val lead = when (place.partyId) {
+                PartyIds.PLAN -> d.player.planLeadId; PartyIds.CARE -> d.player.careLeadId; PartyIds.HEAL -> d.player.healLeadId
+                PartyIds.MINT -> d.player.mintLeadId; PartyIds.HOME -> d.player.homeLeadId; else -> null
+            }
+            if (lead == id) "${partyName(place.partyId)}'s lead, in ${partyName(place.partyId)}'s party" else "In ${partyName(place.partyId)}'s party"
+        }
+        Place.Guardian -> "In a Guardian slot"
+        is Place.WorldTeam -> "On ${d.world.team(place.team)?.title ?: "a World team"}"
+        is Place.GearHelper -> "Helping a Gear tool"
+        Place.Pc -> "Resting in the PC"
+    }
+
     /** Whether [id] can be taken from its place now: not while its World team is out on an expedition. */
     fun movable(d: AppData, id: String): Boolean = d.world.teams.none { id in it.members && it.expedition != null }
 

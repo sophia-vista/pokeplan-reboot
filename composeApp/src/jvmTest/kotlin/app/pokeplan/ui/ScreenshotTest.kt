@@ -84,8 +84,8 @@ class ScreenshotTest {
     @Test
     fun pokegear() {
         val store = started()
-        store.grantPokemon(181, "test")
-        store.lendGearHelper(app.pokeplan.core.pokemon.GearTool.CALCULATOR)
+        val helper = store.grantPokemon(137, "test")
+        store.assignGearHelper(app.pokeplan.core.pokemon.GearTool.CALCULATOR, helper.id)
         store.setPickerOptions(listOf("Pizza", "Sushi", "Tacos"))
         store.saveGearRates(app.pokeplan.app.GearRates("2026-10-30", mapOf("USD" to 1.0, "EUR" to 0.86, "JPY" to 152.3, "PHP" to 58.1, "GBP" to 0.75)))
         // Something kept in each tool so its screen shows more than the empty state.

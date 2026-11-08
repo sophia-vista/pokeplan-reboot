@@ -219,7 +219,11 @@ internal fun QrTool(model: AppModel, onUse: () -> Unit) {
             if (scanner != null) PixelButton("Open the scanner", { scanNote = ""; scanner.scan { r -> scanned = r; scanNote = if (r == null) "Nothing was scanned." else ""; onUse() } }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
             if (scanNote.isNotEmpty()) Text(scanNote, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             scanned?.let { r ->
+                val reading = app.pokeplan.ui.gear.QrPayload.read(r)
+                Text(reading.kind.label, style = MaterialTheme.typography.titleSmall)
                 Text(r, style = MaterialTheme.typography.bodyLarge)
+                reading.warnings.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) }
+                Text("Nothing was opened. Check it before you use it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelIconButton("copy", "Copy what was scanned", { clipboard.setText(AnnotatedString(r)) })
                     PixelIconButton("arrow-up", "Make a code from it", { text = r.take(400) })
@@ -246,7 +250,7 @@ internal fun NetworkTool(model: AppModel, onUse: () -> Unit) {
                 if (i.online) Text((if (i.metered) "Metered (data may cost money). " else "Not metered. ") + if (i.validated) "The phone has reached the internet." else "The phone could not confirm the internet.", style = MaterialTheme.typography.bodyMedium)
                 PixelIconButton("reload", "Look again", { info = feed?.info() })
             }
-            PixelButton(if (busy) "Testing..." else "Test the speed", {
+            PixelButton(if (busy) "Checking..." else "Check the connection", {
                 if (!busy) scope.launch {
                     busy = true; onUse()
                     val http = RatesClient.newHttpClient()
@@ -262,6 +266,7 @@ internal fun NetworkTool(model: AppModel, onUse: () -> Unit) {
             result?.let { r ->
                 Text(NetworkCheck.verdict(r), style = MaterialTheme.typography.bodyLarge)
                 r.median?.let { Text("Answers in about $it ms" + (r.jitter?.let { j -> ", varying by up to $j ms" } ?: "") + ".", style = MaterialTheme.typography.bodyMedium) }
+                Text("Three small requests to cloudflare.com, timed. This shows whether the internet answers and how quickly, not how fast it downloads.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
         }
     }

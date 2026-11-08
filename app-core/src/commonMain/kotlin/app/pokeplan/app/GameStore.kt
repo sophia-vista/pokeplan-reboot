@@ -1749,13 +1749,12 @@ class GameStore(
     fun gearCandidates(tool: GearTool): List<OwnedPokemon> =
         data.player.pokemon.filter { tool.helps(it.speciesId) }.sortedWith(compareByDescending<OwnedPokemon> { it.friendship }.thenByDescending { it.level }.thenBy { it.id })
 
-    /** Who helps [tool] now: the one the player chose (while they still own them), else a Ranger loaner, else no one. */
+    /** Who helps [tool] now: the one the player chose (while they still own them), else no one. */
     fun gearHelper(tool: GearTool): GearHelper {
         // Only a helper the player chose counts: picking one from the collection by itself would take it out of the PC (one place only).
         val owned = data.gearHelpers[tool.name]?.let { id -> data.player.pokemon.firstOrNull { it.id == id && tool.helps(it.speciesId) } }
         return when {
             owned != null -> GearHelper.Owned(owned)
-            tool.name in data.gearLoans -> GearHelper.Loaner(tool.loaner)
             else -> GearHelper.None
         }
     }
@@ -1770,11 +1769,8 @@ class GameStore(
         return moveTo(pokemonId) { d -> d.copy(gearHelpers = d.gearHelpers - tool.name + (tool.name to pokemonId)) }
     }
 
-    /** Forgets the chosen helper: it goes back to the PC, and the tool shows its loaner or its own icon. */
+    /** Forgets the chosen helper: it goes back to the PC, and the tool shows its own icon. */
     fun clearGearHelper(tool: GearTool) = update { it.copy(gearHelpers = it.gearHelpers - tool.name) }
-
-    /** A Ranger request succeeded: the tool gets its loaner. It stays a loan (never owned, never in the Dex) until an owned Pokémon can help. */
-    fun lendGearHelper(tool: GearTool) = update { it.copy(gearLoans = it.gearLoans + tool.name) }
 
     fun setPickerOptions(options: List<String>) = update { it.copy(pickerOptions = options.map { o -> o.trim() }.filter { o -> o.isNotEmpty() }.distinct().take(MAX_PICKER_OPTIONS)) }
 
@@ -2052,9 +2048,8 @@ class GameStore(
     }
 }
 
-/** Who helps a Pokégear tool: an owned Pokémon, a loaner from a Ranger request (only its species, it is never owned), or no one. */
+/** Who helps a Pokégear tool: an owned Pokémon the player chose, or no one. */
 sealed interface GearHelper {
     data class Owned(val pokemon: OwnedPokemon) : GearHelper
-    data class Loaner(val speciesId: Int) : GearHelper
     data object None : GearHelper
 }
