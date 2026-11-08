@@ -71,6 +71,13 @@ Project skills in `.claude/skills/` hold the detail for one area each, so this f
 - Send broad searches (where is X used, which screens show Y) to an Explore or Haiku agent. Leave `legacy-android/` alone unless the task is about it.
 - Keep replies short and skip restating the diff.
 
+## Parallel sessions (the owner runs several at once)
+Sessions start from "continue with the next chunk", so two can pick the same one (LINK was built twice, 7 to 8 November 2026). The session-start hook prints what other sessions have pushed and not merged (`.claude/hooks/in-flight.sh`, last 3 days, with each branch's first commit, the folders it touches and its `VERSION`). Run it again by hand any time; `in-flight.sh <word>` filters.
+- **Pick** the first backlog item (`docs/pokelife/IMPLEMENTATION_BACKLOG.md`, then the guide's order) that no in-flight branch or recent merge on `main` already covers. When in doubt, read that branch's commits (`git log origin/<branch> --not origin/main`) before starting.
+- **Claim it as your first action**, before reading code: `.claude/hooks/claim.sh "<backlog id> <topic>"` checks the other branches for the same words (exit 2: pick another), then pushes an empty `claim: ...` commit on your session branch so every other session sees it. `FORCE=1` only for a chunk that is really different. If you drop the chunk or find it done elsewhere: `claim.sh --release "why"`.
+- **Re-check before the PR:** `git fetch origin main`, run `in-flight.sh` again, and merge `main` in. If `main` or another branch now has the same work, stop and say so instead of merging a duplicate; port only what is missing. Two branches with the same `VERSION` collide: take the next free number after fetching, just before the PR.
+- Touching a file many sessions edit (`CHANGELOG.md`, `IMPLEMENTATION_*`, `GameStore.kt`, `App.kt`)? Merge `main` in early and often; add your lines at the end of a section so conflicts stay trivial.
+
 ## Sessions and handoff
 - One session per topic (a roadmap item, or a batch of fixes from phone testing). Start a new session rather than continuing a long one: every turn resends the whole conversation, so a long session costs more for each step.
 - When the topic is done (its PRs merged, or open and green), Claude ends with a **handoff prompt** the owner pastes into the next session: what shipped (PR numbers), what is still open and its state, decisions waiting on the owner (deploys, merges), and the next item with where its spec lives. It does not repeat what this file, the skills or the docs already say.
