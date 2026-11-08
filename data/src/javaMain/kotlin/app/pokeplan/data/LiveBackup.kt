@@ -74,7 +74,7 @@ class LiveBackup(private val dir: File, private val keep: Int = 3, private val e
     }
 
     /**
-     * After Heal's rows were sealed (0.152.0): takes a fresh backup now (Heal sealed in it) and deletes the older ones that still hold Heal in clear, so no daily copy
+     * After Heal's rows were sealed (0.154.0): takes a fresh backup now (Heal sealed in it) and deletes the older ones that still hold Heal in clear, so no daily copy
      * outlives the sealing with a plaintext measurement in it. Older copies stay when the new one could not be written (no room): they rotate out as usual.
      */
     fun refreshAfterSealing(live: LiveDocuments, nowMillis: Long): Boolean {

@@ -78,7 +78,7 @@ object LiveStore {
             // The same for PLAN's part of the save (schema 5): its records move into PLAN's tables, the rest of the save stays a row.
             runCatching { s.live.movePlanToTables(now) }.onFailure { Log.w(TAG, "Plan tables not active this run: ${it.javaClass.simpleName}") }
             // HEAL lives in its own tables from the start (schema 7). A heal.json written while the database could not be opened is taken in once, so nothing logged then is lost.
-            // Since 0.152.0 its rows are sealed with a Keystore key too: the first start with the key rewrites every row as sealed text (read back, one transaction) and
+            // Since 0.154.0 its rows are sealed with a Keystore key too: the first start with the key rewrites every row as sealed text (read back, one transaction) and
             // forgets what the clear rows left in the file. With no key the rows are used in clear for that run and sealed at the next start that has it; once sealed, no key means no access.
             useKeys(s)
             runCatching {

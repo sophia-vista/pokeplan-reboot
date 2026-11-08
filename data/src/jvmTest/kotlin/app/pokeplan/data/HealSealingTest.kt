@@ -23,7 +23,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * Heal's rows and backups sealed with a key of the phone (owner decision 6, 8 November 2026; 0.152.0): the one-time move of an install that has its records in
+ * Heal's rows and backups sealed with a key of the phone (owner decision 6, 8 November 2026; 0.154.0): the one-time move of an install that has its records in
  * clear, the same sealing from the start, a key that is missing or another phone's, and the daily and portable backups. Synthetic data only.
  */
 class HealSealingTest {
@@ -42,7 +42,7 @@ class HealSealingTest {
     private fun game() = GameStore(MemoryStorage(), clock, TimeZone.UTC, Random(7)).also { it.start("Sophia", 25) }
     private fun healOn(s: DataStore, g: GameStore) = HealStore(Tables(s.live), clock, g, TimeZone.UTC, rng = Random(3))
 
-    /** A phone whose Heal has been in clear (an install older than 0.152.0) with some records. */
+    /** A phone whose Heal has been in clear (an install older than 0.154.0) with some records. */
     private fun clearPhone(file: String? = null): Pair<DataStore, GameStore> {
         val s = if (file == null) JvmDatabase.open() else JvmDatabase.open(file)
         s.live.activate(null, null, 1); s.live.moveHealToTables(2)

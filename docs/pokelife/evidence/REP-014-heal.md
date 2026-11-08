@@ -37,7 +37,7 @@ Spec first: HEAL.md sections 12 and 22, `POKEMON_ECOSYSTEM.md` section 10.2.1 (t
 
 Tests (`HealTablesTest`, 9): fresh start; import of a restored row; an activation that cannot finish leaves the database as it was (trigger on the marker); a reopened file returns the whole `HealData` field for field; a save writes only the rows that changed (trigger-counted: one drink is one row, a setting is one row, an edit is one row); erasing one kind leaves the others and the game's `save` row byte-for-byte equal; backup snapshot carries `heal`, an older backup leaves it, a backup that has it brings it back and keeps the replaced one aside; the bundle knows `heal` and refuses unknown names; export of one kind equals that table family. `HealStoreTest` (17) and `HealRulesTest` (8) cover rules, caps, privacy, erase and export; `HealRemindersTest` (6) the reminders; `HealRewardTest` (8) the engine in `pokemon-core`.
 
-**Sealed later (0.152.0, `REP-014-heal-sealing.md`):** the rows, the backups and the kept-aside copies are now sealed with a Keystore key; the clear-text paragraph that followed here described 0.136.0 to 0.150.0. Per-kind export of a *backup* is still not done. The Android `heal.json` fallback is only for a database that never opens.
+**Sealed later (0.154.0, `REP-014-heal-sealing.md`):** the rows, the backups and the kept-aside copies are now sealed with a Keystore key; the clear-text paragraph that followed here described 0.136.0 to 0.150.0. Per-kind export of a *backup* is still not done. The Android `heal.json` fallback is only for a database that never opens.
 
 ## 4. Reminders
 

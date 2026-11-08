@@ -17,7 +17,7 @@ object KeystoreMintKey {
 }
 
 /**
- * Heal's key (0.152.0, owner decision 6): its own AES-256-GCM key in the Android Keystore, apart from Mint's, so one module's key can be lost or reset without the
+ * Heal's key (0.154.0, owner decision 6): its own AES-256-GCM key in the Android Keystore, apart from Mint's, so one module's key can be lost or reset without the
  * other, and a text sealed for one never opens as the other (the associated data differs too). Made the first time Heal is sealed; non-exportable; no screen-lock
  * prompt. Not yet exercised on a device.
  */

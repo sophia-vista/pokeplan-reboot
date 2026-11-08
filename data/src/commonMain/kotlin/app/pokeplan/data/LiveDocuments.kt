@@ -257,7 +257,7 @@ class LiveDocuments(private val store: DataStore) {
     fun snapshot(): Map<String, String> = store.transaction {
         val docs = q.liveNames().executeAsList().filter { !it.startsWith(ASIDE) }.associateWith { q.liveRead(it).executeAsOne() }.toMutableMap()
         if (store.careTables.isActive()) store.careTables.read()?.let { docs[CARE] = it }
-        // Heal leaves the tables sealed once its rows are (0.152.0), like Mint, so a backup holds no measurement, time or date in clear.
+        // Heal leaves the tables sealed once its rows are (0.154.0), like Mint, so a backup holds no measurement, time or date in clear.
         if (store.healTables.isActive()) store.healTables.snapshot()?.let { docs[HEAL] = it }
         if (store.homeTables.isActive()) store.homeTables.read()?.let { docs[HOME] = it }
         if (store.linkTables.isActive()) store.linkTables.read()?.let { docs[LINK] = it }
@@ -275,7 +275,7 @@ class LiveDocuments(private val store: DataStore) {
         store.transaction {
             for ((name, json0) in docs) {
                 read(name)?.let { q.liveWrite("$ASIDE$name:$nowMillis", asideText(name, it), nowMillis) }
-                // Mint arrives sealed (see snapshot), and so does Heal since 0.152.0. One sealed with another phone's key (or with no key on this run) stays sealed in the
+                // Mint arrives sealed (see snapshot), and so does Heal since 0.154.0. One sealed with another phone's key (or with no key on this run) stays sealed in the
                 // aside and changes nothing; a plain one (an older build's) is written.
                 val json = if ((name == MINT || name == HEAL) && RowCipher.isSealed(json0)) {
                     cipherFor(name)?.open(json0) ?: run { q.liveWrite("$ASIDE$name:locked:$nowMillis", json0, nowMillis); continue }

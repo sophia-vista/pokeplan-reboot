@@ -20,5 +20,5 @@ interface RowCipher {
 /** Raised when Mint's stored rows cannot be opened with this phone's key (a database restored from another phone, or a key that was lost). Nothing is deleted. */
 class MintLockedException : IllegalStateException("Mint's records are sealed with a key this phone does not have")
 
-/** Raised when Heal's stored rows are sealed (since 0.152.0) and this phone cannot open them (a database restored from another phone, or no key on this run). Nothing is deleted. */
+/** Raised when Heal's stored rows are sealed (since 0.154.0) and this phone cannot open them (a database restored from another phone, or no key on this run). Nothing is deleted. */
 class HealLockedException : IllegalStateException("Heal's records are sealed with a key this phone does not have")

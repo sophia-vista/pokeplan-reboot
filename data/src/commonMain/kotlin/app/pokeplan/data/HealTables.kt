@@ -17,10 +17,10 @@ import kotlinx.serialization.json.contentOrNull
  * `heal_state` for the settings), so a kind can be read ([readKind]), exported or erased ([erase]) on its own; erasing HEAL ([clear]) touches
  * nothing outside the `heal_*` tables: not the Pokémon, the Bag, the ledger, Plan or Care.
  *
- * **Sealed since 0.152.0** (owner decision, 8 November 2026; `evidence/REP-014-heal-sealing.md`): Heal's records are the most personal data after Mint's, so
+ * **Sealed since 0.154.0** (owner decision, 8 November 2026; `evidence/REP-014-heal-sealing.md`): Heal's records are the most personal data after Mint's, so
  * [seal] rewrites every row as AES-GCM text under the phone's Keystore key (`DataStore.healCipher`), once, with a read-back, and from then on a row holds neither a
  * measurement, a sleep time nor a date in clear, and every copy of Heal that leaves the tables (a backup, a kept-aside document) is sealed too. Before [seal] has
- * run (an install older than 0.152.0, or a phone whose Keystore gave no key) the rows are read and written in clear exactly as before.
+ * run (an install older than 0.154.0, or a phone whose Keystore gave no key) the rows are read and written in clear exactly as before.
  *
  * It works on the JSON, not on `HealData`, so `:data` stays independent of the module and a field it has never heard of (a newer build's) lands in
  * `heal_state`, or stays inside its record's `json`, instead of being dropped. A write only touches the rows that changed, in one transaction.
@@ -91,7 +91,7 @@ class HealTables(private val store: DataStore) {
     }
 
     /**
-     * Seals Heal, once (0.152.0): every row of every `heal_*` table is rewritten as sealed text (its date column emptied, the date lives inside the sealed record),
+     * Seals Heal, once (0.154.0): every row of every `heal_*` table is rewritten as sealed text (its date column emptied, the date lives inside the sealed record),
      * every plaintext copy of Heal kept aside by a migration or a restore (`aside:heal:*`) is sealed, and the marker is set, all in one transaction that reads the
      * whole document back with the key and compares it with what was there; any difference rolls everything back and Heal stays as it was. Returns whether it
      * sealed; already sealed, not yet active or no key does nothing (a start without the key tries again at the next one).

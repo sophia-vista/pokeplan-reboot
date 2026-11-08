@@ -30,7 +30,7 @@ fun careStore(context: Context, world: GameStore = widgetStore(context)): CareSt
 
 /**
  * The Heal module's own save (private health records), apart from Plan's and Care's: its own tables in the database, created there from the start
- * (`heal.json` exists only as a fallback while the database has never opened). Its rows are sealed with a Keystore key (`KeystoreHealKey`) since 0.152.0. It is never read by a widget.
+ * (`heal.json` exists only as a fallback while the database has never opened). Its rows are sealed with a Keystore key (`KeystoreHealKey`) since 0.154.0. It is never read by a widget.
  */
 fun healStorage(context: Context): Storage {
     val s = LiveStore.get(context)

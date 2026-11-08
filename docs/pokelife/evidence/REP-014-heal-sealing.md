@@ -1,4 +1,4 @@
-# REP-014, Heal sealed with a Keystore key (0.152.0)
+# REP-014, Heal sealed with a Keystore key (0.154.0)
 
 **Status:** built and tested on the JVM, compiled for Android; **not run on a device** (the Keystore path, the one-time move of a real install and the passphrase backup are the phone checks in section 6).
 **Owner decision 6 (8 November 2026), roadmap item 8 of `IMPLEMENTATION_GUIDE.md` section 3.2:** "HEAL encryption: put in the roadmap", i.e. seal `heal_*` rows and Heal's backup copy with the existing cipher. `HEAL.md` section 14 asks for "the shared encryption and backup architecture for sensitive local data and exports".
