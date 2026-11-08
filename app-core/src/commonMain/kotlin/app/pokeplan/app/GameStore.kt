@@ -1433,8 +1433,13 @@ class GameStore(
             Transfer.block(p, id == data.player.buddyId || id == data.player.planLead?.id || id == data.player.careLead?.id || id == data.player.healLead?.id || id == data.player.mintLead?.id || id == data.player.homeLead?.id || id == data.player.linkLead?.id, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
         }
 
-    /** Whether [feature] has appeared yet at the player's trainer rank (the gradual reveal). */
-    fun sees(feature: Feature): Boolean = TrainerRank.isVisible(feature, data.player.trainerPoints)
+    /**
+     * Whether [feature] has appeared yet at the player's trainer rank (the gradual reveal). The Guardians screen also opens as soon as the player owns one
+     * Guardian (a legendary or mythical, from the World opening or a quest) whatever the rank, so it is never in a place the player cannot see: the Pokémon
+     * lists it there (its slot still waits for the rank) and the PC does not hide it somewhere unreachable.
+     */
+    fun sees(feature: Feature): Boolean =
+        TrainerRank.isVisible(feature, data.player.trainerPoints) || (feature == Feature.GUARDIANS && guardianCandidates.isNotEmpty())
 
     /** Features opened by ranks the player reached but has not seen the "Rank up" card for, oldest first. */
     fun newlyOpened(): List<Feature> = ((data.seenRank + 1)..data.player.rank).flatMap { Feature.at(it) }

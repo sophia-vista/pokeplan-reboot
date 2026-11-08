@@ -51,6 +51,7 @@ import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.CryVoice
 import app.pokeplan.ui.Emotion
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Portrait
@@ -157,6 +158,8 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<Stri
 
     LaunchedEffect(scene.id, skipped) {
         if (skipped) { val end = SceneState.finalOf(scene, startFlags); state = end; positions.clear(); walking.clear(); blackout = 0f; onEnd(end.flags); return@LaunchedEffect }
+        // What the scene opens with: the stairs of a dungeon, the place's ambience (StoryCues).
+        if (!still) StoryCues.opening(scene).forEach { model.effect(it) }
         suspend fun runEvent(e: SceneEvent) {
             when (e) {
                 is SceneEvent.Show -> { state = state.apply(e); positions[e.who] = Offset(e.x, e.y) }
@@ -174,20 +177,29 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<Stri
                     state = state.apply(e)
                 }
                 is SceneEvent.Say -> {
+                    // A speaker whose face changes gets the sound of that feeling (StoryCues).
+                    val said = e.expression
+                    if (e.who != null && said != null) StoryCues.expression(state.actors[e.who]?.expression, said)?.let { model.effect(it) }
                     state = state.apply(e)
                     val full = fill(model, e.text)
                     typing = true; fast = false; shown = ""
                     for (i in 1..full.length) { if (fast || still) break; shown = full.take(i); delay(24) }
                     shown = full; typing = false
                     taps.receive()
+                    model.tap(app.pokeplan.ui.Sfx.CURSOR)
                 }
                 is SceneEvent.Wait -> if (!still) delay(e.millis.toLong())
                 is SceneEvent.Fade -> { val target = if (e.toBlack) 1f else 0f; if (still) blackout = target else Animatable(blackout).animateTo(target, tween(e.millis)) { blackout = value }; state = state.apply(e) }
-                is SceneEvent.Emote -> { state = state.apply(e); if (!still) delay(700); state = state.apply(SceneEvent.Emote(e.who, "")) }
+                is SceneEvent.Emote -> { state = state.apply(e); StoryCues.emote(e.mark)?.let { model.effect(it) }; if (!still) delay(700); state = state.apply(SceneEvent.Emote(e.who, "")) }
                 SceneEvent.End -> { state = state.apply(e) }
-                is SceneEvent.Shake -> if (!still) { for (k in 0 until e.millis / 50) { shake = if (k % 2 == 0) 6f else -6f; delay(50) }; shake = 0f }
-                is SceneEvent.Flash -> if (!still) { flash = 1f; Animatable(1f).animateTo(0f, tween(450)) { flash = value } }
-                is SceneEvent.Cry -> (faceSpecies(scene, e.who) ?: (model.data.player.buddy ?: model.data.player.pokemon.firstOrNull())?.speciesId)?.let { model.cry(it) }
+                is SceneEvent.Shake -> if (!still) { model.effect(StoryCues.shake(e.millis)); for (k in 0 until e.millis / 50) { shake = if (k % 2 == 0) 6f else -6f; delay(50) }; shake = 0f }
+                is SceneEvent.Flash -> if (!still) { model.effect(StoryCues.flash()); flash = 1f; Animatable(1f).animateTo(0f, tween(450)) { flash = value } }
+                is SceneEvent.Cry -> {
+                    // The cry of whoever it is, with their own small detune and the feeling they last showed (CryVoice).
+                    val buddy = model.data.player.buddy ?: model.data.player.pokemon.firstOrNull()
+                    val voice = CryVoice.of(buddy?.id.takeIf { e.who == app.pokeplan.world.story.BUDDY } ?: e.who, state.actors[e.who]?.expression)
+                    (faceSpecies(scene, e.who) ?: buddy?.speciesId)?.let { model.cry(it, voice) }
+                }
                 is SceneEvent.Sound -> runCatching { app.pokeplan.ui.Sfx.valueOf(e.name) }.getOrNull()?.let { model.effect(it) }
                 is SceneEvent.Choice -> {
                     e.prompt?.let { state = state.apply(SceneEvent.Say(null, it)); shown = fill(model, it) }

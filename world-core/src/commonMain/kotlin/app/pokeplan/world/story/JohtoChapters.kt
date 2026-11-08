@@ -83,7 +83,7 @@ internal object JohtoChapters {
         cinematic("johto-4-lugia", "The guardian of the sea", "beach", listOf(buddy, lugia), dungeonId = "whirl-islands") {
             show(BUDDY, 2.0f, 4.6f)
             narr("In the deepest cave of the Whirl Islands, the water parts.")
-            show("big_lugia", 7.0f, 5.2f, Facing.LEFT); flash(); shake(600); cry("big_lugia")
+            show("big_lugia", 7.0f, 5.2f, Facing.LEFT); flash(); shake(600); cry("big_lugia"); sound("STORY_WIND_HIGH")
             say("big_lugia", "You have walked through fire and ash. The sea knows your name.", NORMAL)
             say(BUDDY, "We came to restore the balance.", DETERMINED)
             say("big_lugia", "Then go to the Tin Tower. My sister of the sky waits there.", NORMAL)
@@ -102,7 +102,7 @@ internal object JohtoChapters {
         cinematic("johto-5-hooh", "Rainbow Wings", "mountain", listOf(buddy, hooh), dungeonId = "tin-tower") {
             show(BUDDY, 2.0f, 4.6f)
             narr("At the top of the tower, the clouds part.")
-            show("big_hooh", 7.0f, 4.0f, Facing.LEFT); flash(); shake(600); cry("big_hooh")
+            show("big_hooh", 7.0f, 4.0f, Facing.LEFT); flash(); shake(600); cry("big_hooh"); sound("STORY_HUMMING")
             say("big_hooh", "Sea and sky, fire and ash, they have been apart too long.", NORMAL)
             say(BUDDY, "Lugia sent us. We bring what was lost.", DETERMINED)
             say("big_hooh", "Then I will fly with you. The balance is whole once more.", HAPPY)

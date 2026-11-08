@@ -148,10 +148,11 @@ class AppModel(
         if (data.settings.haptics) haptics?.tick()
     }
 
-    /** Plays [speciesId]'s cry if the platform can and Sound is on. */
-    fun cry(speciesId: Int) {
+    /** Plays [speciesId]'s cry if the platform can and Sound is on, with the [voice] (the cry as recorded unless given; see [CryVoice]). */
+    fun cry(speciesId: Int, voice: CryVoice.Voice = CryVoice.NEUTRAL) {
         val volume = data.settings.criesLevel
-        if (volume > 0f) cries?.play(speciesId, volume)
+        if (volume <= 0f) return
+        if (voice == CryVoice.NEUTRAL) cries?.play(speciesId, volume) else cries?.playVoiced(speciesId, volume, voice.pitch, voice.speed)
     }
 
     /** Plays one of the real game sound effects if the platform can and Sound is on. */

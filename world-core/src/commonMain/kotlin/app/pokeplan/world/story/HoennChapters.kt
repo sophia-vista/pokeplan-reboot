@@ -81,8 +81,8 @@ internal object HoennChapters {
         cinematic("hoenn-4-clash", "Land and sea", "volcanocave", listOf(buddy, groudon, kyogre), dungeonId = "seafloor-cavern") {
             show(BUDDY, 5.0f, 5.2f)
             narr("Beneath the Seafloor Cavern, the two great beasts stir.")
-            show("big_groudon", 2.2f, 5.0f, Facing.RIGHT); shake(700); cry("big_groudon")
-            show("big_kyogre", 7.8f, 5.0f, Facing.LEFT); flash(); cry("big_kyogre")
+            show("big_groudon", 2.2f, 5.0f, Facing.RIGHT); shake(700); cry("big_groudon"); sound("STORY_RUMBLE")
+            show("big_kyogre", 7.8f, 5.0f, Facing.LEFT); flash(); cry("big_kyogre"); sound("STORY_FLOOD")
             narr("Above, the sky roars. The sun burns and the sea rises at once.")
             say(BUDDY, "They are fighting! Everything is being torn apart!", SURPRISED)
             narr("Only the sky itself can end this.")
@@ -107,7 +107,7 @@ internal object HoennChapters {
         cinematic("hoenn-5-rayquaza", "Delta Stream", "mountain", listOf(buddy, rayquaza), dungeonId = "sky-pillar") {
             show(BUDDY, 2.0f, 4.8f)
             narr("At the very top, a green coil rises from the clouds.")
-            show("big_rayquaza", 6.8f, 4.4f, Facing.LEFT); flash(); shake(800); cry("big_rayquaza")
+            show("big_rayquaza", 6.8f, 4.4f, Facing.LEFT); flash(); shake(800); cry("big_rayquaza"); sound("STORY_WIND_HIGH")
             say("big_rayquaza", "Two quarrelling beasts and two foolish teams. I have watched them long enough.", NORMAL)
             say(BUDDY, "Will you stop them?", DETERMINED)
             say("big_rayquaza", "With you beside me. Hold fast!", HAPPY)

@@ -5,6 +5,12 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.157.0
+
+- **The story has sound** (WORLD.md 4.4, REP-017). The scenes were nearly silent: the engine now adds sounds of its own (`StoryCues`): the Mystery Dungeon games' emote clips when a speaker's face turns surprised, worried, angry or sad (and for the `!` and `?` emotes), the stairs on entering a dungeon scene, a rumble under a long shake and a hit under a short one, a ringing for a flash, wind, fire or electricity for an icy, volcanic or stormy place, and a soft tick as a line is advanced. Seventeen Explorers of Sky cutscene clips (`assets/sfx/story-*.ogg`, `Sfx.STORY_*`) were levelled to sit with the cries (they were 6 to 20 dB quieter; `tools/sprites/convert_story_sfx.py`) and the legendaries' arrivals use them (`sound("STORY_TEMPORAL")` for Dialga and so on). Not listened to yet.
+- **Cries with a voice** (`CryVoice`): a cry in a scene (and the buddy's) takes a small stable detune of its own, so two of a species differ, and a pitch and speed for how the speaker feels (higher and quicker pleased or startled, lower and slower worried or sad), never more than 15% from the recording. Android shifts pitch and speed apart (`PlaybackParams`); the web shifts them together; a player that cannot plays the recording.
+- **The Guardians screen opens as soon as you own a Guardian** (a legendary or mythical such as Mew or Articuno), whatever the trainer rank, so they are never in a place you cannot see; the slot still opens at rank Veteran.
+
 ## 0.156.0
 
 - **The Rescue Team and Explorers of Sky arcs have their scenes** (`RescueChapters` 6 episodes and 20 scenes, `ExplorersChaptersA` and `B` 8 episodes and 19 scenes), ported from the owner's brief (`docs/world-story-rewrite.md`): each chapter now plays its episode instead of a title card, and replays from the Story archive. Where the engine or the assets lack something the script asks for (a beach, hidden-land or sky background, a dungeon of that name, three speakers in a dialogue scene) the scene uses the nearest existing one; `docs/world-story-script.md` was regenerated. The `StoryEngineTest` now requires an episode for every chapter of every region.

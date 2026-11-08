@@ -39,6 +39,12 @@ class AndroidCryPlayer(private val context: Context) : CryPlayer {
     }
 
     @Synchronized
+    override fun playVoiced(speciesId: Int, volume: Float, pitch: Float, speed: Float) {
+        player?.release()
+        player = start("cries/$speciesId.ogg", "cry-$speciesId.ogg", volume, pitch, speed)
+    }
+
+    @Synchronized
     override fun effect(sound: Sfx, volume: Float) {
         if (sound.streams) {
             effectPlayer?.release()
@@ -65,7 +71,7 @@ class AndroidCryPlayer(private val context: Context) : CryPlayer {
         0
     }
 
-    private fun start(file: String, cacheName: String, volume: Float): MediaPlayer? {
+    private fun start(file: String, cacheName: String, volume: Float, pitch: Float = 1f, speed: Float = 1f): MediaPlayer? {
         return try {
             val path = "composeResources/pokeplan.composeapp.generated.resources/files/$file"
             MediaPlayer().apply {
@@ -79,7 +85,11 @@ class AndroidCryPlayer(private val context: Context) : CryPlayer {
                     setDataSource(copy.absolutePath)
                 }
                 setVolume(volume, volume)
-                setOnPreparedListener { it.start() }
+                // A voiced cry (CryVoice): pitch and speed apart. Setting them on a prepared player may start it, which start() then repeats harmlessly.
+                setOnPreparedListener { p ->
+                    if (pitch != 1f || speed != 1f) runCatching { p.playbackParams = android.media.PlaybackParams().setPitch(pitch).setSpeed(speed) }
+                    p.start()
+                }
                 setOnCompletionListener { it.release() }
                 setOnErrorListener { mp, _, _ -> mp.release(); true }
                 prepareAsync()

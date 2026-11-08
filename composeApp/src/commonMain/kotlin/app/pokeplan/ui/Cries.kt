@@ -9,6 +9,12 @@ fun interface CryPlayer {
     /** Plays the cry of species [speciesId] (its National Dex number) at [volume] (0 to 1). Never throws; a missing file is silent. */
     fun play(speciesId: Int, volume: Float)
 
+    /**
+     * Plays the cry with a voice: [pitch] and [speed] are 1 for the cry as recorded (see [CryVoice]). A player that cannot shift a sound plays it
+     * as recorded, which is why this has a default and [play] stays the one method every player must have. Never throws.
+     */
+    fun playVoiced(speciesId: Int, volume: Float, pitch: Float, speed: Float) = play(speciesId, volume)
+
     /** Plays [sound] at [volume] (0 to 1), alongside a cry rather than cutting it off. Never throws. */
     fun effect(sound: Sfx, volume: Float) {}
 }
@@ -86,6 +92,26 @@ enum class Sfx(val file: String, val streams: Boolean = false) {
 
     /** A World job claimed: the Explorers of Sky "mission success" jingle (assets/sky-sfx, rendered from the game's sound data). */
     MISSION_SUCCESS("jingle-mission-success"),
+
+    // The story's sounds: Explorers of Sky's own cutscene effects, levelled to sit with the cries by tools/sprites/convert_story_sfx.py.
+    // None of them has been listened to yet; the table in [StoryCues] is the one place to change which plays when.
+    STORY_RUMBLE("story-rumble"),
+    STORY_RUMBLE_LOUD("story-rumble-loud"),
+    STORY_WIND("story-wind"),
+    STORY_WIND_HIGH("story-wind-high"),
+    STORY_FLOOD("story-flood"),
+    STORY_ELECTRICITY("story-electricity"),
+    STORY_ELECTRICITY_LONG("story-electricity-long"),
+    STORY_FIRE("story-fire"),
+    STORY_HOT_WATER("story-hot-water"),
+    STORY_OMINOUS("story-ominous"),
+    STORY_RINGING("story-ringing"),
+    STORY_VISION("story-vision"),
+    STORY_TEMPORAL("story-temporal"),
+    STORY_HUMMING("story-humming"),
+    STORY_STONESHIP("story-stoneship"),
+    STORY_TEAM_CHARM("story-team-charm"),
+    STORY_BEACH_DUSK("story-beach-dusk"),
 
     // Emotes, for the buddy's reactions.
     DAMAGE("damage"),

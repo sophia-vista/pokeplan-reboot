@@ -25,6 +25,15 @@ class RankRevealTest {
     }
 
     @Test
+    fun ownedGuardianOpensTheGuardiansScreenAtAnyRank() {
+        assertFalse(s.sees(Feature.GUARDIANS), "locked at rank 0 with no Guardian")
+        s.grantPokemon(151, "test")   // Mew
+        assertTrue(s.sees(Feature.GUARDIANS), "one legendary or mythical is enough")
+        assertTrue(s.guardianCandidates.any { it.speciesId == 151 }, "and the screen lists it")
+        assertFalse(s.sees(Feature.LEGENDARY_QUESTS), "nothing else opens early")
+    }
+
+    @Test
     fun aRankUpListsWhatOpenedOnce() {
         setPoints(TrainerRank.thresholds[2])
         assertTrue(s.sees(Feature.HELD_ITEMS))
