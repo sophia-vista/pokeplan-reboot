@@ -101,7 +101,12 @@ fun CutsceneHost(model: AppModel) {
     val close = { model.cutscene = null }
     BackHandler(enabled = true, onBack = close)
     when (scene) {
-        is Cutscene.Hatch -> if (acquisitionOf(scene.how) == Acquisition.EGG) HatchScene(model, scene, close) else ArrivalScene(model, scene, acquisitionOf(scene.how), close)
+        is Cutscene.Hatch -> if (acquisitionOf(scene.how) == Acquisition.EGG) {
+            // A visitor's gift: first the visitor leaves the egg on the meadow, then the egg hatches at once (owner, 8 November 2026).
+            val visitor = model.data.origins[scene.pokemon.id]?.visitor?.takeIf { scene.how == app.pokeplan.app.Origin.How.BEFRIENDED }
+            var left by remember(scene.pokemon.id) { mutableStateOf(visitor == null) }
+            if (left) HatchScene(model, scene, close) else VisitorLeavesEggScene(model, visitor!!) { left = true }
+        } else ArrivalScene(model, scene, acquisitionOf(scene.how), close)
         is Cutscene.Evolve -> EvolutionScene(model, scene, close)
         is Cutscene.World -> WorldMomentScene(model, scene.moment, close)
     }
@@ -221,6 +226,50 @@ private fun HatchScene(model: AppModel, scene: Cutscene.Hatch, close: () -> Unit
             },
             detail = if (hatched) p.species.genus.takeIf { it.isNotEmpty() }?.let { "$name, the $it." } else null,
             done = hatched, skip = { hatched = true }, close = close,
+        )
+    }
+}
+
+/**
+ * The moment before a visitor's egg hatches (owner, 8 November 2026): on Care's meadow the visitor, now a friend, says goodbye, walks off
+ * and leaves an egg in the grass; then the hatching scene takes over. Reduce motion shows the egg in the grass at once; a tap skips ahead.
+ */
+@Composable
+private fun VisitorLeavesEggScene(model: AppModel, visitor: app.pokeplan.app.VisitorOrigin, next: () -> Unit) {
+    val still = model.data.settings.reduceMotion
+    val key = visitor.visitorId
+    var gone by remember(key) { mutableStateOf(false) }
+    val walk = remember(key) { Animatable(0f) }
+    val eggIn = remember(key) { Animatable(0f) }
+    val name = app.pokeplan.core.dex.Dex.species(visitor.speciesId).name
+    LaunchedEffect(key, gone) {
+        if (gone) { walk.snapTo(1f); eggIn.snapTo(1f); return@LaunchedEffect }
+        if (still) { gone = true; return@LaunchedEffect }
+        model.cry(visitor.speciesId)
+        delay(1400)
+        eggIn.animateTo(1f, tween(500))
+        model.effect(Sfx.SELECT)
+        walk.animateTo(1f, tween(1700))
+        gone = true
+    }
+    SceneFrame({ gone = true }, 0f, FlashWhite) {
+        SceneStage(BuddyScene.CARE, 260.dp) {
+            Box(Modifier.align(Alignment.Center).graphicsLayer { alpha = eggIn.value }) {
+                ItemIcon("mystery-egg", size = 96.dp, description = "An egg in the grass")
+            }
+            if (walk.value < 1f) {
+                AnimatedSprite(
+                    app.pokeplan.core.dex.Dex.defaultForm(visitor.speciesId).id, false, name,
+                    Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.XL).offset(x = (-walk.value * 300).dp),
+                    size = 160.dp, animate = !still,
+                    action = if (walk.value > 0f) SpriteAction.WALK_SIDE else SpriteAction.IDLE, mirror = walk.value > 0f,
+                )
+            }
+        }
+        SceneText(
+            text = if (gone) "$name left an egg behind in the meadow." else "$name has grown fond of you...",
+            detail = if (gone) "Something stirs inside it." else null,
+            done = gone, skip = { gone = true }, close = next,
         )
     }
 }

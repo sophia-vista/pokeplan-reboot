@@ -633,6 +633,9 @@ SELECT name FROM live_document ORDER BY name;
 liveDelete:
 DELETE FROM live_document WHERE name = ?;
 
+liveDeleteAside:
+DELETE FROM live_document WHERE name LIKE 'aside:%';
+
 -- Held reminders.
 holdPut:
 INSERT OR REPLACE INTO reminder_hold(id, module, source_ref, kind, occurrence, at_millis, reason, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
@@ -645,6 +648,9 @@ DELETE FROM reminder_hold WHERE id = ?;
 
 holdDeleteBefore:
 DELETE FROM reminder_hold WHERE at_millis < ?;
+
+holdDeleteAll:
+DELETE FROM reminder_hold;
 
 -- HOME's own records (version 9, REP-014): the Home save kept in tables from the start, one family per kind of private record (area, chore, chore entry,
 -- supply, stock adjustment, restocking entry, asset, maintenance schedule, maintenance record, warranty, reference note) so each can be read, exported or erased

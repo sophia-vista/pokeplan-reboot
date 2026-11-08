@@ -74,6 +74,9 @@ class LiveBackup(private val dir: File, private val keep: Int = 3, private val e
     }
 
     /** The newest finished backup folder, or null. */
+    /** Deletes every daily backup (a full-device erase). Returns how many were removed. */
+    fun deleteAll(): Int = (dir.listFiles()?.toList() ?: emptyList()).count { it.deleteRecursively() }
+
     fun newest(): File? = complete().maxByOrNull { it.name.toLong() }
 
     /** Puts the newest backup back (the documents it replaces are kept aside first). False when there is no backup. */

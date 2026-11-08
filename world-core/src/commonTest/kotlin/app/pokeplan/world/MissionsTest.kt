@@ -65,9 +65,9 @@ class MissionsTest {
         val r = WorldSim.settle(d, roster, 12L * 60 * 60 * 1000)
         assertTrue(r.events.any { it == WorldEvent.MissionDone("explore-woods-3") })
         assertTrue(r.data.missions.single().done)
-        val poke = r.data.poke
+        val poke = r.data.pokeEarned
         val claimed = r.data.claimMission("explore-woods-3")!!
-        assertEquals(poke + 40, claimed.poke)
+        assertEquals(poke + 40, claimed.pokeEarned)
         assertTrue(claimed.missions.isEmpty())
         assertNull(claimed.acceptMission("explore-woods-3"), "ordinary jobs wait two weeks")
         assertNotNull(claimed.copy(lastSeenAt = claimed.lastSeenAt + 15 * 86_400_000L).acceptMission("explore-woods-3"), "then they are repeatable")

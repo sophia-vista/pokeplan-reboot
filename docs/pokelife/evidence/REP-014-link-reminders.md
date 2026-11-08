@@ -1,4 +1,4 @@
-# REP-014, seventh slice: Link reminders, and the streak reminder and weekly recap on the shared scheduler (0.148.0)
+# REP-014, seventh slice: Link reminders, and the streak reminder and weekly recap on the shared scheduler (0.149.0)
 
 **Status:** built and tested on the JVM; the composeApp and the Android app are compiled by the gate; **not run on a device**. No reward number changed (`RewardRules.VERSION` stays 20).
 **Owner brief (8 November 2026):** "continue with next chunk", then "bigger chunk welcome". The backlog's open reminder items after Home's were Link (dates and follow-ups) and Plan's streak reminder and weekly recap; both are done here, on one branch.

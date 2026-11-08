@@ -1,5 +1,6 @@
 package app.pokeplan.app
 
+import app.pokeplan.core.pokemon.CandyRules
 import kotlinx.datetime.TimeZone
 import kotlin.random.Random
 import kotlin.test.Test
@@ -26,7 +27,7 @@ class WorldStoreTest {
         assertTrue(report.data.xp > 0)
         // Finds are rare (about 3% of floors), so keep exploring, half a day at a time, until one comes.
         repeat(20) { if (store.data.world.finds.isEmpty()) { clock.millis += 12L * 60 * 60 * 1000; store.worldSettle() } }
-        assertTrue(store.data.world.xp > 0 && store.data.world.poke > 0)
+        assertTrue(store.data.world.xp > 0 && store.data.player.coins > 0)
         assertTrue(store.data.world.finds.isNotEmpty(), "a few days find someone")
         val before = store.data.player.pokemon.size
         val recruit = assertNotNull(store.worldRecruit(0))
@@ -34,6 +35,45 @@ class WorldStoreTest {
         assertEquals(app.pokeplan.app.Origin.How.WORLD, store.data.origins[recruit.id]?.how)
         assertTrue(recruit.id in store.data.player.pokemon.map { it.id }, "the same persistent Pokémon as any other")
         assertNull(store.worldRecruit(999))
+    }
+
+    @Test
+    fun everyMemberOfATeamGetsTheFullExperienceForEachFloorOnce() {
+        val clock = Clock()
+        val store = store(clock)
+        val one = store.data.player.pokemon.first().id
+        val two = store.grantPokemon(25, "test").id
+        val three = store.grantPokemon(74, "test").id
+        val outside = store.grantPokemon(10, "test").id
+        assertTrue(store.worldAssign(1, listOf(one, two, three)))
+        assertTrue(store.worldStart(1, "tiny-woods"))
+        fun mon(id: String) = store.data.player.pokemon.first { it.id == id }
+        val before = listOf(one, two, three, outside).associateWith(::mon)
+        val partner = store.data.player.pokemon.filter { it.inParty }.maxOfOrNull { it.level }
+        clock.millis += 6L * 60 * 60 * 1000
+        val report = assertNotNull(store.worldSettle())
+        val floors = report.events.count { it is app.pokeplan.world.WorldEvent.FloorCleared }
+        assertTrue(floors > 0)
+        // Each member got all of it (not a share), through the Pokémon's own rule; the Pokémon outside the team got nothing.
+        listOf(one, two, three).forEach { assertEquals(before.getValue(it).gainXp(floors * CandyRules.XP_PER_FLOOR, partner ?: before.getValue(it).level), mon(it), "member $it") }
+        assertEquals(before.getValue(outside), mon(outside))
+        // Settling again without time passing pays nothing more.
+        val after = listOf(one, two, three).associateWith(::mon)
+        store.worldSettle()
+        assertEquals(after, listOf(one, two, three).associateWith(::mon))
+    }
+
+    @Test
+    fun sendMyStrongestSendsTheBestTeamForTheDungeon() {
+        val store = store()
+        listOf(7, 4, 1, 10, 16, 74).forEach { store.grantPokemon(it, "test") }
+        val dungeon = assertNotNull(app.pokeplan.world.Dungeons.byId("tiny-woods"))
+        val expected = app.pokeplan.world.WorldSim.bestTeam(dungeon, store.worldIdle().filter { !app.pokeplan.core.pokemon.Guardians.canBe(it) }).map { it.id }.toSet()
+        assertTrue(expected.isNotEmpty())
+        assertTrue(store.worldQuickSend("tiny-woods"))
+        assertEquals(expected, store.data.world.team(1)!!.members.toSet())
+        assertNotNull(store.data.world.team(1)!!.expedition)
+        assertFalse(store.worldQuickSend("no-such-dungeon"))
     }
 
     @Test

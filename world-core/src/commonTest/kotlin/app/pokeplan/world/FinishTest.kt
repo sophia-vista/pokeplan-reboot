@@ -66,12 +66,16 @@ class FinishTest {
 
     @Test
     fun cafeShopAndDojoSpendPoke() {
-        val d = WorldData(poke = 10_000)
-        assertEquals(7_500, d.buyCandy()!!.poke)
-        assertEquals(3_000, d.buyCandy()!!.candyPrice, "the second candy costs 500 more")
-        assertNull(WorldData(poke = 100).buyCandy())
-        val trained = d.train(WorldSkill.FORAGING)!!
-        assertEquals(9_800, trained.poke)
+        // The rules hold no balance: they are given it, and charge nothing (the app charges the price).
+        val d = WorldData()
+        assertEquals(2_500, d.candyPrice)
+        assertEquals(1, d.buyCandy(10_000)!!.shopCandies)
+        assertEquals(0, d.buyCandy(10_000)!!.pokeEarned)
+        assertEquals(3_000, d.buyCandy(10_000)!!.candyPrice, "the second candy costs 500 more")
+        assertNull(d.buyCandy(100))
+        assertNull(d.buyCandy(2_499), "one short")
+        val trained = d.train(WorldSkill.FORAGING, 10_000)!!
+        assertNull(d.train(WorldSkill.FORAGING, Dojo.COST - 1))
         assertEquals(60, trained.skillXp["FORAGING"])
         assertTrue(d.brew(1_000)!!.brewUntil > 1_000)
     }

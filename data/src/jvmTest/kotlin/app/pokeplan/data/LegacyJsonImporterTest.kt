@@ -29,7 +29,7 @@ class LegacyJsonImporterTest {
 
         assertFalse(report.alreadyImported)
         assertEquals(app.player.pokemon.size.toLong(), store.pokemon.count())
-        assertEquals((app.player.coins + app.world.poke).toLong(), store.economy.poke())
+        assertEquals((app.player.coins + app.world.legacyPoke).toLong(), store.economy.poke())
         assertEquals(app.player.inventory.counts.mapValues { it.value.toLong() } + app.world.items.mapValues { it.value.toLong() }.filter { it.key !in app.player.inventory.counts }, store.economy.bag())
         assertEquals(app.player.caught.map { it.toLong() }.sorted(), store.pokemon.dex(DexKind.CAUGHT_SPECIES))
         assertEquals(app.shinySpecies.map { it.toLong() }.sorted(), store.pokemon.dex(DexKind.SHINY_SPECIES))

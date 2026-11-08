@@ -106,7 +106,7 @@ internal fun WorldReportCard(model: AppModel) {
             Text("Since you last looked", style = MaterialTheme.typography.titleSmall)
             val where = report.byDungeon.entries.joinToString(", ") { (id, n) -> "${Dungeons.byId(id)?.name ?: id} $n" }
             Text("${report.floors} ${if (report.floors == 1) "floor" else "floors"} climbed", style = MaterialTheme.typography.bodyLarge)
-            Text("$where. ${report.xp} Exploration XP.", style = MaterialTheme.typography.bodyMedium)
+            Text("$where. ${report.xp} Exploration XP${if (report.memberXp > 0) ", ${report.memberXp} XP for each Pokémon on a team" else ""}.", style = MaterialTheme.typography.bodyMedium)
             // The haul at a glance, with the games' own art: the coin for Poké, a berry, and a box for each treasure tier.
             if (report.poke > 0 || report.berries > 0 || report.treasure.isNotEmpty()) Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 if (report.poke > 0) {

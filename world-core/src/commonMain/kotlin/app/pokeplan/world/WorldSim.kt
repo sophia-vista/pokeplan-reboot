@@ -52,7 +52,16 @@ data class SpeedExplanation(
 )
 
 /** What settling did: the new data and, per team, the floors climbed and what happened. */
-data class WorldReport(val data: WorldData, val perTeam: Map<Int, List<WorldEvent>>) {
+data class WorldReport(
+    val data: WorldData,
+    val perTeam: Map<Int, List<WorldEvent>>,
+    /**
+     * The floors each member climbed in this settle, by Pokémon id: the members of the team at settlement, one count per completed floor
+     * (WORLD.md 5.2). The app gives every one of them the full per-floor experience for each. A floor is counted once: the same step that
+     * counts it moves the team's cursor (`floorsClimbed` and `settledTo`), so the floor's id (team, expedition start, floor index) is never settled twice.
+     */
+    val memberFloors: Map<String, Int> = emptyMap(),
+) {
     val events: List<WorldEvent> get() = perTeam.values.flatten()
     val isEmpty: Boolean get() = events.isEmpty()
 }
@@ -82,10 +91,22 @@ object WorldSim {
 
     /** A team's power: the sum of its members' levels, with 20% more for each member of a type the dungeon favors. */
     fun power(members: List<OwnedPokemon>, dungeon: DungeonDef): Double =
-        members.sumOf { p ->
-            val favored = p.form.types.any { it in dungeon.favored }
-            p.level * if (favored) 1.2 else 1.0
-        }
+        members.sumOf { contribution(it, dungeon) }
+
+    /** What [p] adds to a team's power in [dungeon]: its level, 20% more for a type the dungeon favors (the one term of [power]). */
+    fun contribution(p: OwnedPokemon, dungeon: DungeonDef): Double = p.level * if (p.form.types.any { it in dungeon.favored }) 1.2 else 1.0
+
+    /**
+     * The strongest team of up to [size] from [candidates] for [dungeon]: [power] is a sum of each member's [contribution], so the best
+     * team is simply the biggest contributors (a favored type of a lower level can beat a higher level of another type). Ties go to the
+     * favored type, then the higher level, then the id, so the choice is the same every time.
+     */
+    fun bestTeam(dungeon: DungeonDef, candidates: List<OwnedPokemon>, size: Int = WorldTeam.MAX_MEMBERS): List<OwnedPokemon> =
+        candidates.sortedWith(
+            compareByDescending<OwnedPokemon> { contribution(it, dungeon) }
+                .thenByDescending { p -> p.form.types.any { it in dungeon.favored } }
+                .thenByDescending { it.level }.thenBy { it.id },
+        ).take(size)
 
     /** How long a floor takes a team of [power], in milliseconds: faster as the power grows, never under a quarter of the base. */
     fun floorMillis(dungeon: DungeonDef, power: Double, mastery: Boolean = false, fasterPercent: Int = 0): Long {
@@ -103,6 +124,7 @@ object WorldSim {
     fun settle(data: WorldData, roster: List<OwnedPokemon>, now: Long): WorldReport {
         var out = data
         val perTeam = mutableMapOf<Int, List<WorldEvent>>()
+        val memberFloors = mutableMapOf<String, Int>()
         for (team in data.teams) {
             val trip = team.expedition ?: continue
             val dungeon = Dungeons.byId(trip.dungeonId) ?: continue
@@ -124,6 +146,7 @@ object WorldSim {
             val current = out.team(team.id) ?: team
             out = out.withTeam(current.copy(expedition = trip.copy(settledTo = settled, floorsClimbed = trip.floorsClimbed + floors)))
             perTeam[team.id] = events
+            members.forEach { memberFloors[it.id] = (memberFloors[it.id] ?: 0) + floors }
         }
         // A dungeon cleared again and again in one stretch is one line ("... (3 times)"), not three.
         val lines = perTeam.flatMap { (teamId, events) -> events.mapNotNull { journalLine(out.team(teamId)?.title ?: "Team $teamId", it, now) } }
@@ -132,7 +155,7 @@ object WorldSim {
                 acc
             }.map { (l, n) -> if (n > 1) l.copy(text = l.text.removeSuffix(".") + " ($n times).") else l }
         out = Choices.expire(out, now)
-        return WorldReport(out.copy(lastSeenAt = now, journal = (out.journal + lines).takeLast(WorldData.JOURNAL_SIZE)), perTeam)
+        return WorldReport(out.copy(lastSeenAt = now, journal = (out.journal + lines).takeLast(WorldData.JOURNAL_SIZE)), perTeam, memberFloors)
     }
 
     /**
@@ -220,7 +243,7 @@ object WorldSim {
         }
         val poke = (5 + floor * 2 + random.nextInt(5)) * (100 + 2 * (d.skillLevel(WorldSkill.EXPLORATION) + perk.getValue(WorldSkill.EXPLORATION)) + if (modifier == DungeonModifier.BOUNTY) DungeonModifiers.POKE_PERCENT else 0) / 100
         events += WorldEvent.Poke(poke)
-        d = d.copy(poke = d.poke + poke)
+        d = d.copy(pokeEarned = d.pokeEarned + poke)
         if (random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP) + (if (brewed) 5 else 0) + (if (modifier == DungeonModifier.LUCKY) DungeonModifiers.TREASURE_POINTS else 0) + d.legendTreasurePercent(dungeon)) {
             val tier = if (floor >= dungeon.floors - 1) 3 else if (floor >= dungeon.floors / 2) 2 else 1
             events += WorldEvent.Treasure(tier)
@@ -252,7 +275,7 @@ object WorldSim {
             if (key !in d.milestonesPaid) {
                 events += WorldEvent.Milestone(dungeon.id, floor, reward)
                 d = d.copy(
-                    milestonesPaid = d.milestonesPaid + key, poke = d.poke + reward.poke,
+                    milestonesPaid = d.milestonesPaid + key, pokeEarned = d.pokeEarned + reward.poke,
                     items = reward.itemId?.let { d.items + (it to (d.items[it] ?: 0) + reward.count) } ?: d.items,
                 )
             }

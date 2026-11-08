@@ -30,12 +30,13 @@ class ProgressionTest {
 
     @Test
     fun facilitiesCostPokeAndTopOut() {
-        val d = WorldData(poke = 400)
-        assertEquals(1, d.upgrade(Facility.CAMP)!!.facilityLevel(Facility.CAMP))
-        assertEquals(0, d.upgrade(Facility.CAMP)!!.poke)
-        assertNull(d.upgrade(Facility.LAB), "the lab costs 600")
+        val d = WorldData()
+        assertEquals(400, d.upgradeCost(Facility.CAMP))
+        assertEquals(1, d.upgrade(Facility.CAMP, 400)!!.facilityLevel(Facility.CAMP))
+        assertNull(d.upgrade(Facility.CAMP, 399), "one short")
+        assertNull(d.upgrade(Facility.LAB, 400), "the lab costs 600")
         assertEquals(1_200, Facility.CAMP.cost(1))
-        assertNull(WorldData(poke = 10_000_000, facilities = mapOf("CAMP" to 5)).upgrade(Facility.CAMP))
+        assertNull(WorldData(facilities = mapOf("CAMP" to 5)).upgrade(Facility.CAMP, 10_000_000))
     }
 
     @Test
@@ -50,7 +51,7 @@ class ProgressionTest {
         val d = WorldData(discovered = setOf(1, 2, 3, 4))
         assertEquals(listOf(3), d.researchReady().map { it.species })
         val c = d.claimResearch(3)!!
-        assertEquals(100, c.poke)
+        assertEquals(100, c.pokeEarned)
         assertNull(c.claimResearch(3))
         assertNull(d.claimResearch(6))
         assertNotNull(Research.steps.size)
@@ -62,7 +63,7 @@ class ProgressionTest {
         val once = WorldSim.settle(start, roster, 10L * 3_600_000).data
         var often = start
         for (h in 1..10) often = WorldSim.settle(often, roster, h * 3_600_000L).data
-        assertEquals(once.poke, often.poke)
+        assertEquals(once.pokeEarned, often.pokeEarned)
         assertEquals(once.xp, often.xp)
         assertEquals(once.finds, often.finds)
     }
