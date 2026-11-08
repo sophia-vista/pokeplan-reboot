@@ -128,7 +128,7 @@ internal fun WorldReportCard(model: AppModel) {
                 },
                 style = MaterialTheme.typography.bodyMedium,
             )
-            if (report.treasure.isNotEmpty()) Text("Open treasure boxes in Finds and Bag.", style = MaterialTheme.typography.bodyMedium)
+            if (report.treasure.isNotEmpty()) Text("Open treasure boxes in Finds.", style = MaterialTheme.typography.bodyMedium)
             if (report.cleared.isNotEmpty()) Text("Cleared: ${report.cleared.distinct().joinToString(", ") { Dungeons.byId(it)?.name ?: it }}.", style = MaterialTheme.typography.bodyMedium)
             if (report.jobsDone.isNotEmpty()) Text("Jobs done: ${report.jobsDone.joinToString(", ") { app.pokeplan.world.Missions.byId(it)?.title ?: it }}. Claim them on the board.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             if (report.eventsOpened > 0 || report.eventsPassed > 0) Text(

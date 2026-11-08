@@ -83,8 +83,13 @@ import kotlinx.coroutines.delay
  * too, and bring back items, treasure and Pokémon to recruit. The map, the expeditions, the camp and the finds and bag are
  * its sections. Its progression (rank, Poké, dungeon depth) is its own; the Pokémon it recruits are the shared collection's.
  */
+/**
+ * World's five destinations (WORLD.md section 2): Base, Atlas ([MAP]), Expeditions ([TEAMS]), Guild ([MISSIONS]) and Journal ([ARCHIVE]).
+ * [SKILLS] and [BAG] (Finds) are reached from the Base, [SETTINGS] from the small button under the destinations; they stay sections of their own so a
+ * shortcut (the landing's "Open Finds") can open them directly.
+ */
 enum class WorldSection(val label: String, val icon: String) {
-    MAP("Map", "town-map"), MISSIONS("Missions", "oaks-parcel"), SKILLS("Skills", "ability-capsule"), BASE("Base", "scope-lens"), ARCHIVE("Story archive", "oaks-letter"), TEAMS("Expeditions", "exp-share"), BAG("Finds and Bag", "seal-bag"), SETTINGS("Settings", "storage-key"),
+    MAP("Atlas", "town-map"), MISSIONS("Guild", "oaks-parcel"), SKILLS("Skills", "ability-capsule"), BASE("Base", "scope-lens"), ARCHIVE("Journal", "oaks-letter"), TEAMS("Expeditions", "exp-share"), BAG("Finds", "seal-bag"), SETTINGS("Settings", "storage-key"),
 }
 
 private const val NAP_MILLIS = 30_000L
@@ -121,7 +126,7 @@ private fun WorldPage(model: AppModel, section: WorldSection?, openPokemon: (Str
             WorldSection.MISSIONS -> WorldMissionsView(model)
             WorldSection.SKILLS -> WorldSkillsView(model)
             WorldSection.BASE -> WorldBaseView(model)
-            WorldSection.ARCHIVE -> WorldArchiveView(model)
+            WorldSection.ARCHIVE -> WorldJournalView(model)
             WorldSection.TEAMS -> WorldTeamsView(model)
             WorldSection.BAG -> WorldBagView(model)
             WorldSection.SETTINGS -> WorldSettings(model)
@@ -157,21 +162,17 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String)
                 RegionCard(model)
                 ExpeditionOverview(model)
             }
-            // The four places that matter most, big; the rest as small buttons below.
+            // The five destinations, big (WORLD.md section 2); Settings is the one small button.
             MenuGrid(
                 listOf(
+                    MenuEntry(WorldSection.BASE.name, WorldSection.BASE.icon, WorldSection.BASE.label, if (world.finds.isEmpty()) "Camp level ${world.facilityLevel(Facility.CAMP)}" else "${world.finds.size} to meet", badge = world.researchReady().size + world.finds.size, tint = ModuleAccent.WORLD.accent),
                     MenuEntry(WorldSection.MAP.name, WorldSection.MAP.icon, WorldSection.MAP.label, "${Dungeons.all.size} dungeons", tint = ModuleAccent.WORLD.accent),
                     MenuEntry(WorldSection.TEAMS.name, WorldSection.TEAMS.icon, WorldSection.TEAMS.label, if (out == 0) "no team out" else "$out out", tint = ModuleAccent.WORLD.accent),
                     MenuEntry(WorldSection.MISSIONS.name, WorldSection.MISSIONS.icon, WorldSection.MISSIONS.label, if (!Missions.boardOpen(world)) "opens in the story" else "${world.missions.size} taken", badge = world.missions.count { it.done }, tint = ModuleAccent.WORLD.accent),
-                    MenuEntry(WorldSection.BASE.name, WorldSection.BASE.icon, WorldSection.BASE.label, badge = world.researchReady().size, tint = ModuleAccent.WORLD.accent),
+                    MenuEntry(WorldSection.ARCHIVE.name, WorldSection.ARCHIVE.icon, WorldSection.ARCHIVE.label, "${world.discovered.size} species met", tint = ModuleAccent.WORLD.accent),
                 ),
             ) { key -> model.worldSection = WorldSection.valueOf(key) }
-            FieldLabel("More")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                listOf(WorldSection.BAG to if (world.finds.isEmpty()) "Finds and Bag" else "Finds and Bag (${world.finds.size})", WorldSection.SKILLS to "Skills", WorldSection.ARCHIVE to "Story archive", WorldSection.SETTINGS to "Settings").forEach { (section, label) ->
-                    PixelButton(label, { model.worldSection = section }, color = ModuleAccent.WORLD.accent, compact = true)
-                }
-            }
+            PixelButton(WorldSection.SETTINGS.label, { model.worldSection = WorldSection.SETTINGS }, color = ModuleAccent.WORLD.accent, compact = true)
         }
     }
 }
@@ -508,7 +509,7 @@ private fun WorldSkillsView(model: AppModel) {
 
 /** The pages of the Base: its landing is the headquarters map and a menu, so nothing but the one page you opened is on screen (docs/pokelife/MODULES/WORLD.md section 2.1). */
 private enum class BasePage(val label: String, val icon: String) {
-    FACILITIES("Facilities", "heart-scale"), RESEARCH("Research", "journal"), CAFE("Café", "soothe-bell"),
+    FACILITIES("Facilities", "heart-scale"), CAFE("Café", "soothe-bell"),
     KECLEON("Kecleon Shop", "rare-candy"), SWAP("Swap Shop", "amulet-coin"), DOJO("Dojo", "scope-lens"),
 }
 
@@ -526,15 +527,18 @@ private fun WorldBaseView(model: AppModel) {
             BasePage.entries.map { p ->
                 val detail = when (p) {
                     BasePage.FACILITIES -> "Camp level ${world.facilityLevel(Facility.CAMP)}"
-                    BasePage.RESEARCH -> "${world.discovered.size} species"
                     BasePage.CAFE -> "a brew for the road"
                     BasePage.KECLEON -> "${world.candyPrice} Poké a candy"
                     BasePage.SWAP -> "berry for berry"
                     BasePage.DOJO -> "${app.pokeplan.world.Dojo.COST} Poké a lesson"
                 }
-                MenuEntry(p.name, p.icon, p.label, detail, badge = if (p == BasePage.RESEARCH) world.researchReady().size else 0, tint = Module.WORLD.look.accent)
-            },
-        ) { key -> page = BasePage.valueOf(key) }
+                MenuEntry(p.name, p.icon, p.label, detail, tint = Module.WORLD.look.accent)
+            } + listOf(
+                // Finds wait at the Base (WORLD.md 2.1); skills are the explorers' rank work. Both are sections of their own, opened from here.
+                MenuEntry(WorldSection.BAG.name, WorldSection.BAG.icon, WorldSection.BAG.label, if (world.finds.isEmpty()) "no one waiting" else "${world.finds.size} to meet", badge = world.finds.size, tint = Module.WORLD.look.accent),
+                MenuEntry(WorldSection.SKILLS.name, WorldSection.SKILLS.icon, WorldSection.SKILLS.label, "${app.pokeplan.world.WorldSkill.entries.size} skills", tint = Module.WORLD.look.accent),
+            ),
+        ) { key -> WorldSection.entries.firstOrNull { it.name == key && (it == WorldSection.BAG || it == WorldSection.SKILLS) }?.let { model.worldSection = it } ?: run { page = BasePage.valueOf(key) } }
         Text("Storage is the shared Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         return
     }
@@ -561,24 +565,6 @@ private fun WorldBaseView(model: AppModel) {
             }
         }
     }
-        }
-        BasePage.RESEARCH -> {
-    FieldLabel("Research: ${world.discovered.size} species discovered")
-    Research.steps.forEach { step ->
-        val reached = world.discovered.size >= step.species
-        val claimed = step.species in world.researchClaimed
-        TextBox {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Column(Modifier.weight(1f)) {
-                    Text("${step.species} species", style = MaterialTheme.typography.bodyLarge)
-                    Text(buildString { append("${step.poke} Poké"); step.itemId?.let { append(", ${Items.name(it)} x${step.count}") } }, style = MaterialTheme.typography.bodyMedium)
-                }
-                if (claimed) Text("Done", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
-                else PixelButton("Claim", { if (store.worldClaimResearch(step.species)) model.effect(Sfx.ITEM_GET) }, color = Module.WORLD.look.accent, enabled = reached, compact = true)
-            }
-        }
-    }
-    NotebookCard(model)
         }
         BasePage.CAFE -> {
     WorldBanner("cafe", "Spinda's Café", "A brew for the road", sky = Color(0xFF29180F), top = true, height = 150.dp)
@@ -737,22 +723,6 @@ private fun WorldTeamsView(model: AppModel) {
             }
         }
         if (outAt != null) TileBox(outAt.id, members.map { TileWalker(it.form.id, it.isShiny, it.nickname) }, animate = !model.data.settings.reduceMotion, scrolls = model.data.settings.worldScroll, content = body) else TextBox { body() }
-    }
-    // The expedition log: what the teams found and did, kept (newest first) so it is still there after a night away; filter it by kind.
-    if (world.journal.isNotEmpty()) TextBox {
-        var kind by remember { mutableStateOf<String?>(null) }
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-            FieldLabel("Expedition log")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                TabButton("All", kind == null, { kind = null })
-                JournalLine.KINDS.filter { k -> world.journal.any { it.kind == k } }.forEach { k -> TabButton(journalKindLabel(k), kind == k, { kind = k }) }
-            }
-            val lines = world.journal.filter { kind == null || it.kind == kind }
-            if (lines.isEmpty()) Text("Nothing of that kind yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            lines.takeLast(if (kind == null) 8 else 20).reversed().forEach { line ->
-                Text(if (line.place.isNotEmpty() && kind != null) "${line.text} (${line.place})" else line.text, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
     }
     Text(
         "Side paths: about one floor in ten has something a field move can open (Cut, Surf, Rock Smash, Strength, Flash, Dig, Fly), found by a Pokémon of level ${FloorEvents.MIN_LEVEL} or more that can learn the move. It adds a small bonus; a team that cannot open one goes around and loses nothing. A hazard (fumes, a heat vent, ice, static) is weathered by a member of the right type. Now and then the team also comes to a fork and waits for you to pick a way (the first is taken after 12 hours). Some days a dungeon is also bountiful, in berry season, lucky or curious: a small bonus on its rewards, never a penalty.",
@@ -952,6 +922,121 @@ private fun rewardText(r: app.pokeplan.world.EventReward): String = when (r) {
  * Every story moment reached, to watch again: the ranks, each layer's chapters and the legendary quests that joined. Playing one again changes
  * nothing (it is a scene, not a reward). Chapters not opened yet are not listed, so nothing is given away.
  */
+/** Research (WORLD.md 2.5): the species discovered, the steps that pay and each layer's notebook. A page of the Journal. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ResearchPage(model: AppModel) {
+    val world = model.data.world
+    val store = model.store
+    FieldLabel("Research: ${world.discovered.size} species discovered")
+    Research.steps.forEach { step ->
+        val reached = world.discovered.size >= step.species
+        val claimed = step.species in world.researchClaimed
+        TextBox {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Column(Modifier.weight(1f)) {
+                    Text("${step.species} species", style = MaterialTheme.typography.bodyLarge)
+                    Text(buildString { append("${step.poke} Poké"); step.itemId?.let { append(", ${Items.name(it)} x${step.count}") } }, style = MaterialTheme.typography.bodyMedium)
+                }
+                if (claimed) Text("Done", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+                else PixelButton("Claim", { if (store.worldClaimResearch(step.species)) model.effect(Sfx.ITEM_GET) }, color = Module.WORLD.look.accent, enabled = reached, compact = true)
+            }
+        }
+    }
+    NotebookCard(model)
+}
+
+/** The expedition log (WORLD.md 2.5): what the teams found and did, newest first, kept through a night away; filter it by kind. A page of the Journal. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ExpeditionLogPage(world: WorldData) {
+    if (world.journal.isEmpty()) { Text("Nothing yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft); return }
+    var kind by remember { mutableStateOf<String?>(null) }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                TabButton("All", kind == null, { kind = null })
+                JournalLine.KINDS.filter { k -> world.journal.any { it.kind == k } }.forEach { k -> TabButton(journalKindLabel(k), kind == k, { kind = k }) }
+            }
+            val lines = world.journal.filter { kind == null || it.kind == kind }
+            if (lines.isEmpty()) Text("Nothing of that kind yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            lines.takeLast(if (kind == null) 20 else 40).reversed().forEach { line ->
+                Text(if (line.place.isNotEmpty() && kind != null) "${line.text} (${line.place})" else line.text, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+/** Dungeon records (WORLD.md 2.5): the deepest floor and the clears of every dungeon entered, and the Pokémon World's finds brought into the collection. */
+@Composable
+private fun RecordsPage(model: AppModel) {
+    val world = model.data.world
+    val entered = Dungeons.all.filter { (world.deepest[it.id] ?: 0) > 0 || (world.clears[it.id] ?: 0) > 0 }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            FieldLabel("Dungeons")
+            if (entered.isEmpty()) Text("No dungeon entered yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            entered.forEach { d ->
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Text(d.name, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                    Text("floor ${world.deepest[d.id] ?: 0} of ${d.floors}, cleared ${world.clears[d.id] ?: 0}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                }
+            }
+        }
+    }
+    val recruited = model.data.player.pokemon.filter { model.data.origins[it.id]?.how == Origin.How.WORLD }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            FieldLabel("Recruited")
+            if (recruited.isEmpty()) Text("No one has joined from a find yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            else FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                recruited.forEach { p ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = 48.dp, animate = false)
+                        Text(p.nickname, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** The pages of the Journal (WORLD.md section 2.5): a menu, so only the page you opened is on screen. */
+private enum class JournalPage(val label: String, val icon: String) {
+    LOG("Expedition log", "exp-share"), RESEARCH("Research", "journal"), STORY("Story archive", "oaks-letter"), RECORDS("Records", "town-map"),
+}
+
+/** The Journal: the expedition log, research, the story archive and the records, one at a time. */
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun WorldJournalView(model: AppModel) {
+    var page by remember { mutableStateOf<JournalPage?>(null) }
+    val world = model.data.world
+    val open = page
+    if (open == null) {
+        MenuGrid(
+            JournalPage.entries.map { p ->
+                val detail = when (p) {
+                    JournalPage.LOG -> "${world.journal.size} lines"
+                    JournalPage.RESEARCH -> "${world.discovered.size} species"
+                    JournalPage.STORY -> "${app.pokeplan.world.WorldMoments.reached(world).size} moments"
+                    JournalPage.RECORDS -> "${world.clears.values.sum()} clears"
+                }
+                MenuEntry(p.name, p.icon, p.label, detail, badge = if (p == JournalPage.RESEARCH) world.researchReady().size else 0, tint = Module.WORLD.look.accent)
+            },
+        ) { key -> page = JournalPage.valueOf(key) }
+        return
+    }
+    BackHandler(enabled = true) { page = null }
+    PixelButton("Back to the journal", { page = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+    when (open) {
+        JournalPage.LOG -> ExpeditionLogPage(world)
+        JournalPage.RESEARCH -> ResearchPage(model)
+        JournalPage.STORY -> WorldArchiveView(model)
+        JournalPage.RECORDS -> RecordsPage(model)
+    }
+}
+
 @Composable
 private fun WorldArchiveView(model: AppModel) {
     val world = model.data.world
