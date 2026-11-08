@@ -8,6 +8,8 @@ sealed interface WorldMoment {
     data class ChapterOpened(val layer: WorldLayer, val chapter: Chapter) : WorldMoment
     /** A legendary quest was completed: its Pokémon joined as a Guardian. */
     data class LegendJoined(val quest: LegendQuest) : WorldMoment
+    /** An optional episode after a layer's story (chapter 101 and up): never queued by itself, played from the Story archive. */
+    data class SpecialEpisode(val layer: WorldLayer, val chapter: Int) : WorldMoment
 }
 
 /**
@@ -52,6 +54,7 @@ object WorldMoments {
     /** [data] with [moment] counted as seen. */
     fun seen(data: WorldData, moment: WorldMoment): WorldData = when (moment) {
         WorldMoment.Welcome -> data
+        is WorldMoment.SpecialEpisode -> data
         is WorldMoment.RankUp -> data.copy(seenRank = maxOf(data.seenRank, moment.rank.ordinal))
         is WorldMoment.LegendJoined -> data.copy(legendsSeen = (data.legendsSeen ?: data.legends) + moment.quest.id)
         is WorldMoment.ChapterOpened -> data.copy(seenChapters = data.seenChapters + (moment.layer.id to maxOf(data.seenChapters[moment.layer.id] ?: 0, moment.chapter.number)))

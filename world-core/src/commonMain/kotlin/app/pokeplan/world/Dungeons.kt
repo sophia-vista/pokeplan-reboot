@@ -39,7 +39,7 @@ data class DungeonDef(
     val layer: WorldLayer = WorldLayer.EXPLORERS,
 )
 
-/** The first three dungeons (the MVP's world map): Tiny Woods, Thunderwave Cave and Mt. Steel, from Explorers of Sky. *(tune)* */
+/** The dungeons of the two Mystery Dungeon arcs: Rescue Team (Tiny Woods, Thunderwave Cave, Mt. Steel, Frosty Forest, Sky Tower) and Explorers (Beach Cave to the Temporal Tower), each its own layer. *(tune)* */
 object Dungeons {
     /** Every dungeon of every layer, the two Mystery Dungeon arcs first. */
     val all: List<DungeonDef> by lazy { home + KantoDungeons.all + JohtoDungeons.all + HoennDungeons.all + SinnohDungeons.all }
@@ -56,7 +56,7 @@ object Dungeons {
         ),
         DungeonDef(
             "thunderwave-cave", "Thunderwave Cave", WorldRegion.UNDERGROUND, floors = 8, favored = setOf(PokemonType.ELECTRIC, PokemonType.ROCK, PokemonType.GROUND),
-            baseFloorSeconds = 2880, needs = ExplorerRank.NORMAL,
+            baseFloorSeconds = 2880, needs = ExplorerRank.NORMAL, layer = WorldLayer.RESCUE,
             wild = listOf(WildEntry(41, 5), WildEntry(74, 4), WildEntry(81, 4, fromFloor = 2), WildEntry(100, 3, fromFloor = 3), WildEntry(25, 2, fromFloor = 3), WildEntry(239, 1, fromFloor = 5)),
             milestones = mapOf(4 to MilestoneReward(Items.berry("dry"), 2), 8 to MilestoneReward(Items.RARE_CANDY, 2, poke = 200)),
         ),
@@ -67,10 +67,28 @@ object Dungeons {
             milestones = mapOf(5 to MilestoneReward(Items.berry("spicy"), 2), 10 to MilestoneReward(Items.RARE_CANDY, 3, poke = 400)),
         ),
         DungeonDef(
+            "beach-cave", "Beach Cave", WorldRegion.AQUATIC, floors = 5, favored = setOf(PokemonType.WATER, PokemonType.GROUND, PokemonType.FLYING),
+            baseFloorSeconds = 1800, needs = ExplorerRank.NORMAL,
+            wild = listOf(WildEntry(98, 5), WildEntry(90, 4), WildEntry(278, 4), WildEntry(79, 3, fromFloor = 2), WildEntry(120, 2, fromFloor = 3), WildEntry(222, 1, fromFloor = 4)),
+            milestones = mapOf(3 to MilestoneReward(Items.berry("sweet"), 2), 5 to MilestoneReward(Items.RARE_CANDY, 1, poke = 100)),
+        ),
+        DungeonDef(
+            "drenched-bluff", "Drenched Bluff", WorldRegion.AQUATIC, floors = 8, favored = setOf(PokemonType.WATER, PokemonType.GROUND, PokemonType.NORMAL),
+            baseFloorSeconds = 2880, needs = ExplorerRank.BRONZE, chapter = 2,
+            wild = listOf(WildEntry(399, 5), WildEntry(60, 4), WildEntry(183, 4), WildEntry(194, 3, fromFloor = 2), WildEntry(422, 3, fromFloor = 3), WildEntry(453, 1, fromFloor = 6)),
+            milestones = mapOf(4 to MilestoneReward(Items.berry("dry"), 2), 8 to MilestoneReward(Items.RARE_CANDY, 2, poke = 200)),
+        ),
+        DungeonDef(
             "waterfall-cave", "Waterfall Cave", WorldRegion.AQUATIC, floors = 12, favored = setOf(PokemonType.WATER, PokemonType.ICE, PokemonType.GROUND),
             baseFloorSeconds = 5400, needs = ExplorerRank.SILVER, chapter = 3, canon = true,
             wild = listOf(WildEntry(54, 5), WildEntry(60, 5), WildEntry(118, 4), WildEntry(129, 3), WildEntry(194, 4, fromFloor = 3), WildEntry(131, 1, fromFloor = 9)),
             milestones = mapOf(6 to MilestoneReward(Items.berry("sour"), 3), 12 to MilestoneReward(Items.RARE_CANDY, 3, poke = 700)),
+        ),
+        DungeonDef(
+            "crystal-cave", "Crystal Cave", WorldRegion.UNDERGROUND, floors = 12, favored = setOf(PokemonType.ROCK, PokemonType.GROUND, PokemonType.STEEL),
+            baseFloorSeconds = 6000, needs = ExplorerRank.SILVER, chapter = 3,
+            wild = listOf(WildEntry(74, 5), WildEntry(95, 4), WildEntry(111, 3, fromFloor = 3), WildEntry(207, 3, fromFloor = 3), WildEntry(299, 3, fromFloor = 5), WildEntry(213, 1, fromFloor = 9)),
+            milestones = mapOf(6 to MilestoneReward(Items.berry("dry"), 3), 12 to MilestoneReward(Items.RARE_CANDY, 3, poke = 750)),
         ),
         DungeonDef(
             "glacier-palace", "Glacier Palace", WorldRegion.FROZEN, floors = 14, favored = setOf(PokemonType.ICE, PokemonType.WATER, PokemonType.STEEL),
@@ -85,10 +103,22 @@ object Dungeons {
             milestones = mapOf(8 to MilestoneReward(Items.berry("dry"), 4), 16 to MilestoneReward(Items.RARE_CANDY, 5, poke = 1_500)),
         ),
         DungeonDef(
+            "frosty-forest", "Frosty Forest", WorldRegion.FROZEN, floors = 12, favored = setOf(PokemonType.ICE, PokemonType.WATER, PokemonType.DARK),
+            baseFloorSeconds = 5400, needs = ExplorerRank.SILVER, chapter = 4, layer = WorldLayer.RESCUE,
+            wild = listOf(WildEntry(361, 5), WildEntry(220, 5), WildEntry(86, 4), WildEntry(215, 3, fromFloor = 3), WildEntry(225, 3, fromFloor = 4), WildEntry(359, 1, fromFloor = 9)),
+            milestones = mapOf(6 to MilestoneReward(Items.berry("sour"), 3), 12 to MilestoneReward(Items.RARE_CANDY, 3, poke = 700)),
+        ),
+        DungeonDef(
             "sky-tower", "Sky Tower", WorldRegion.SKY, floors = 18, favored = setOf(PokemonType.FLYING, PokemonType.DRAGON, PokemonType.PSYCHIC),
             baseFloorSeconds = 10800, needs = ExplorerRank.PLATINUM, chapter = 5, canon = true, guardian = true, layer = WorldLayer.RESCUE,
             wild = listOf(WildEntry(276, 5), WildEntry(278, 5), WildEntry(333, 4), WildEntry(371, 2, fromFloor = 6), WildEntry(334, 1, fromFloor = 12), WildEntry(147, 1, fromFloor = 14)),
             milestones = mapOf(9 to MilestoneReward(Items.berry("spicy"), 4), 18 to MilestoneReward(Items.RARE_CANDY, 6, poke = 2_000)),
+        ),
+        DungeonDef(
+            "hidden-land", "Hidden Land", WorldRegion.ANCIENT, floors = 16, favored = setOf(PokemonType.GRASS, PokemonType.PSYCHIC, PokemonType.NORMAL),
+            baseFloorSeconds = 9600, needs = ExplorerRank.PLATINUM, chapter = 6,
+            wild = listOf(WildEntry(315, 5), WildEntry(357, 4), WildEntry(327, 4), WildEntry(358, 3, fromFloor = 4), WildEntry(352, 2, fromFloor = 6), WildEntry(185, 2, fromFloor = 8)),
+            milestones = mapOf(8 to MilestoneReward(Items.berry("sweet"), 4), 16 to MilestoneReward(Items.RARE_CANDY, 5, poke = 1_600)),
         ),
         DungeonDef(
             "temporal-tower", "Temporal Tower", WorldRegion.OTHERWORLDLY, floors = 20, favored = setOf(PokemonType.PSYCHIC, PokemonType.GHOST, PokemonType.DRAGON, PokemonType.STEEL),

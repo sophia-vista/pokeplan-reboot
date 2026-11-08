@@ -19,10 +19,22 @@ Nothing here pays through the server reward engine; items go to the Bag, Poké s
 | Mt. Steel (10 fl) | 2 × Lv 20 | 1.4 | 3.3 | 0.0 | 0.0 | 13.1 | 25.9 | 1.0 | 0.10 | 0.43 |
 | Mt. Steel (10 fl) | 4 × Lv 20 | 1.8 | 4.3 | 0.0 | 0.0 | 17.4 | 34.5 | 1.3 | 0.14 | 0.71 |
 | Mt. Steel (10 fl) | 4 × Lv 50 | 3.1 | 7.5 | 0.0 | 0.0 | 30.1 | 61.1 | 2.3 | 0.21 | 1.86 |
+| Beach Cave (5 fl) | 2 × Lv 5 | 2.5 | 11.9 | 0.0 | 0.0 | 17.5 | 32.4 | 1.7 | 0.17 | 2.57 |
+| Beach Cave (5 fl) | 2 × Lv 20 | 3.2 | 15.6 | 0.0 | 0.0 | 23.1 | 43.8 | 2.3 | 0.21 | 3.86 |
+| Beach Cave (5 fl) | 4 × Lv 20 | 4.3 | 20.5 | 0.0 | 0.0 | 30.5 | 58.7 | 3.1 | 0.28 | 5.57 |
+| Beach Cave (5 fl) | 4 × Lv 50 | 7.5 | 36.1 | 0.0 | 0.0 | 53.5 | 105.1 | 5.5 | 0.52 | 10.43 |
+| Drenched Bluff (8 fl) | 2 × Lv 5 | 0.5 | 1.5 | 18.0 | 6.0 | 5.5 | 10.8 | 0.9 | 0.02 | 0.57 |
+| Drenched Bluff (8 fl) | 2 × Lv 20 | 2.0 | 6.1 | 0.0 | 0.0 | 17.7 | 35.3 | 1.5 | 0.19 | 2.00 |
+| Drenched Bluff (8 fl) | 4 × Lv 20 | 2.7 | 8.1 | 0.0 | 0.0 | 23.5 | 46.6 | 2.0 | 0.19 | 2.57 |
+| Drenched Bluff (8 fl) | 4 × Lv 50 | 4.8 | 14.4 | 0.0 | 0.0 | 41.5 | 83.4 | 3.6 | 0.38 | 4.57 |
 | Waterfall Cave (12 fl) | 2 × Lv 5 | 0.3 | 0.6 | 6.9 | 3.4 | 2.6 | 4.9 | 0.4 | 0.02 | 0.71 |
 | Waterfall Cave (12 fl) | 2 × Lv 20 | 0.8 | 1.6 | 6.4 | 0.0 | 9.5 | 18.5 | 0.8 | 0.07 | 0.29 |
 | Waterfall Cave (12 fl) | 4 × Lv 20 | 1.4 | 2.8 | 0.0 | 0.0 | 15.3 | 30.6 | 1.1 | 0.13 | 1.29 |
 | Waterfall Cave (12 fl) | 4 × Lv 50 | 2.5 | 5.0 | 0.0 | 0.0 | 26.7 | 54.1 | 2.0 | 0.23 | 2.57 |
+| Crystal Cave (12 fl) | 2 × Lv 5 | 0.3 | 0.6 | 6.9 | 3.4 | 2.6 | 5.0 | 0.5 | 0.01 | 0.14 |
+| Crystal Cave (12 fl) | 2 × Lv 20 | 0.8 | 1.5 | 5.6 | 0.0 | 8.6 | 17.3 | 0.7 | 0.05 | 0.57 |
+| Crystal Cave (12 fl) | 4 × Lv 20 | 1.3 | 2.6 | 0.0 | 0.0 | 14.1 | 27.8 | 1.0 | 0.08 | 1.14 |
+| Crystal Cave (12 fl) | 4 × Lv 50 | 2.3 | 4.6 | 0.0 | 0.0 | 24.7 | 49.9 | 1.7 | 0.14 | 2.00 |
 | Glacier Palace (14 fl) | 2 × Lv 5 | 0.1 | 0.2 | 6.9 | 3.4 | 1.6 | 3.0 | 0.3 | 0.01 | 0.00 |
 | Glacier Palace (14 fl) | 2 × Lv 20 | 0.3 | 0.6 | 9.0 | 1.3 | 5.1 | 9.9 | 0.5 | 0.02 | 0.29 |
 | Glacier Palace (14 fl) | 4 × Lv 20 | 0.9 | 1.6 | 1.7 | 0.0 | 11.0 | 21.0 | 0.8 | 0.06 | 0.71 |
@@ -31,10 +43,18 @@ Nothing here pays through the server reward engine; items go to the Bag, Poké s
 | Ancient Ruins (16 fl) | 2 × Lv 20 | 0.3 | 0.5 | 6.9 | 1.1 | 4.3 | 8.4 | 0.4 | 0.02 | 0.43 |
 | Ancient Ruins (16 fl) | 4 × Lv 20 | 0.6 | 1.0 | 5.1 | 0.0 | 8.9 | 17.6 | 0.6 | 0.05 | 0.43 |
 | Ancient Ruins (16 fl) | 4 × Lv 50 | 1.5 | 2.3 | 0.0 | 0.0 | 19.5 | 38.6 | 1.1 | 0.08 | 1.00 |
+| Frosty Forest (12 fl) | 2 × Lv 5 | 0.3 | 0.6 | 6.9 | 3.4 | 2.6 | 5.0 | 0.4 | 0.01 | 0.00 |
+| Frosty Forest (12 fl) | 2 × Lv 20 | 0.7 | 1.4 | 8.0 | 0.0 | 8.5 | 16.8 | 0.8 | 0.02 | 0.71 |
+| Frosty Forest (12 fl) | 4 × Lv 20 | 1.3 | 2.7 | 0.0 | 0.0 | 14.2 | 28.5 | 1.0 | 0.08 | 1.43 |
+| Frosty Forest (12 fl) | 4 × Lv 50 | 2.3 | 4.6 | 0.0 | 0.0 | 24.6 | 49.0 | 1.7 | 0.13 | 3.14 |
 | Sky Tower (18 fl) | 2 × Lv 5 | 0.1 | 0.1 | 4.9 | 2.3 | 1.1 | 2.0 | 0.2 | 0.00 | 0.00 |
 | Sky Tower (18 fl) | 2 × Lv 20 | 0.3 | 0.3 | 5.6 | 0.9 | 3.4 | 6.5 | 0.4 | 0.04 | 0.29 |
 | Sky Tower (18 fl) | 4 × Lv 20 | 0.5 | 0.6 | 5.1 | 0.0 | 6.7 | 13.4 | 0.5 | 0.05 | 1.14 |
 | Sky Tower (18 fl) | 4 × Lv 50 | 1.2 | 1.5 | 0.0 | 0.0 | 15.7 | 30.6 | 0.9 | 0.09 | 1.86 |
+| Hidden Land (16 fl) | 2 × Lv 5 | 0.1 | 0.2 | 3.4 | 3.4 | 1.1 | 2.1 | 0.2 | 0.01 | 0.00 |
+| Hidden Land (16 fl) | 2 × Lv 20 | 0.2 | 0.4 | 6.9 | 1.1 | 3.4 | 6.6 | 0.4 | 0.01 | 0.43 |
+| Hidden Land (16 fl) | 4 × Lv 20 | 0.5 | 0.8 | 5.7 | 0.0 | 7.4 | 14.2 | 0.6 | 0.05 | 0.86 |
+| Hidden Land (16 fl) | 4 × Lv 50 | 1.4 | 2.0 | 0.0 | 0.0 | 17.0 | 33.4 | 1.0 | 0.08 | 1.71 |
 | Temporal Tower (20 fl) | 2 × Lv 5 | 0.1 | 0.1 | 2.4 | 2.3 | 0.8 | 1.5 | 0.1 | 0.00 | 0.14 |
 | Temporal Tower (20 fl) | 2 × Lv 20 | 0.2 | 0.2 | 4.1 | 0.7 | 2.2 | 4.5 | 0.2 | 0.02 | 0.14 |
 | Temporal Tower (20 fl) | 4 × Lv 20 | 0.3 | 0.3 | 5.7 | 0.0 | 4.7 | 9.3 | 0.3 | 0.02 | 0.29 |
@@ -194,30 +214,30 @@ The Kanto layer's dungeons are in the same table, so their Poké, XP and finds p
 
 | Opens | Team | Span | XP | Rank | Poké | Finds waiting | Rare Candies | Boxes |
 |---|---|---|---|---|---|---|---|---|
-| 1/day | 2 × Lv 10 | 30 d | 2671 | Silver | 5854 | 6 | 3 | 15 |
-|  | first reached |  | Normal d1, Bronze d2, Silver d16 |  |  |  |  |  |
-| 1/day | 2 × Lv 10 | 120 d | 10192 | Gold | 21815 | 39 | 3 | 65 |
-|  | first reached |  | Normal d1, Bronze d2, Silver d16, Gold d70 |  |  |  |  |  |
-| 1/day | 4 × Lv 30 | 30 d | 7386 | Gold | 15991 | 41 | 4 | 57 |
+| 1/day | 2 × Lv 10 | 30 d | 3621 | Silver | 7630 | 12 | 2 | 16 |
+|  | first reached |  | Normal d1, Bronze d2, Silver d12 |  |  |  |  |  |
+| 1/day | 2 × Lv 10 | 120 d | 14039 | Gold | 29824 | 48 | 2 | 84 |
+|  | first reached |  | Normal d1, Bronze d2, Silver d12, Gold d51 |  |  |  |  |  |
+| 1/day | 4 × Lv 30 | 30 d | 11462 | Gold | 24009 | 69 | 1 | 120 |
+|  | first reached |  | Bronze d1, Silver d4, Gold d16 |  |  |  |  |  |
+| 1/day | 4 × Lv 30 | 120 d | 45879 | Platinum | 101504 | 359 | 1 | 434 |
+|  | first reached |  | Bronze d1, Silver d4, Gold d16, Platinum d53 |  |  |  |  |  |
+| 2/day | 2 × Lv 10 | 30 d | 7131 | Gold | 15095 | 30 | 2 | 51 |
+|  | first reached |  | Bronze d1, Silver d6, Gold d26 |  |  |  |  |  |
+| 2/day | 2 × Lv 10 | 120 d | 27961 | Platinum | 61277 | 148 | 2 | 177 |
+|  | first reached |  | Bronze d1, Silver d6, Gold d26, Platinum d86 |  |  |  |  |  |
+| 2/day | 4 × Lv 30 | 30 d | 22911 | Platinum | 49203 | 176 | 1 | 237 |
+|  | first reached |  | Bronze d1, Silver d2, Gold d8, Platinum d27 |  |  |  |  |  |
+| 2/day | 4 × Lv 30 | 120 d | 91984 | Diamond | 206155 | 782 | 1 | 839 |
+|  | first reached |  | Bronze d1, Silver d2, Gold d8, Platinum d27, Diamond d79 |  |  |  |  |  |
+| 4/day | 2 × Lv 10 | 30 d | 7317 | Gold | 15479 | 28 | 2 | 54 |
 |  | first reached |  | Bronze d1, Silver d6, Gold d25 |  |  |  |  |  |
-| 1/day | 4 × Lv 30 | 120 d | 24753 | Platinum | 57272 | 137 | 10 | 160 |
-|  | first reached |  | Bronze d1, Silver d6, Gold d25, Platinum d83 |  |  |  |  |  |
-| 2/day | 2 × Lv 10 | 30 d | 5220 | Silver | 10993 | 26 | 3 | 38 |
-|  | first reached |  | Bronze d1, Silver d8 |  |  |  |  |  |
-| 2/day | 2 × Lv 10 | 120 d | 20307 | Platinum | 44262 | 98 | 3 | 120 |
-|  | first reached |  | Bronze d1, Silver d8, Gold d35, Platinum d119 |  |  |  |  |  |
-| 2/day | 4 × Lv 30 | 30 d | 14635 | Gold | 32057 | 69 | 4 | 100 |
-|  | first reached |  | Bronze d1, Silver d3, Gold d13 |  |  |  |  |  |
-| 2/day | 4 × Lv 30 | 120 d | 39564 | Platinum | 92579 | 180 | 10 | 213 |
-|  | first reached |  | Bronze d1, Silver d3, Gold d13, Platinum d42 |  |  |  |  |  |
-| 4/day | 2 × Lv 10 | 30 d | 5334 | Silver | 11310 | 26 | 3 | 39 |
-|  | first reached |  | Bronze d1, Silver d8 |  |  |  |  |  |
-| 4/day | 2 × Lv 10 | 120 d | 20826 | Platinum | 45504 | 102 | 3 | 135 |
-|  | first reached |  | Bronze d1, Silver d8, Gold d34, Platinum d116 |  |  |  |  |  |
-| 4/day | 4 × Lv 30 | 30 d | 11292 | Gold | 26649 | 53 | 13 | 71 |
-|  | first reached |  | Bronze d1, Silver d3, Gold d14 |  |  |  |  |  |
-| 4/day | 4 × Lv 30 | 120 d | 36043 | Platinum | 85167 | 184 | 19 | 176 |
-|  | first reached |  | Bronze d1, Silver d3, Gold d14, Platinum d57 |  |  |  |  |  |
+| 4/day | 2 × Lv 10 | 120 d | 28713 | Platinum | 62942 | 152 | 2 | 184 |
+|  | first reached |  | Bronze d1, Silver d6, Gold d25, Platinum d84 |  |  |  |  |  |
+| 4/day | 4 × Lv 30 | 30 d | 19361 | Gold | 42050 | 112 | 4 | 135 |
+|  | first reached |  | Bronze d1, Silver d3, Gold d10 |  |  |  |  |  |
+| 4/day | 4 × Lv 30 | 120 d | 77361 | Diamond | 174781 | 511 | 4 | 565 |
+|  | first reached |  | Bronze d1, Silver d3, Gold d10, Platinum d31, Diamond d94 |  |  |  |  |  |
 
 ## A year of play (one team; missions, research, facilities, Café, Swap Shop, Dojo and shop played)
 
@@ -225,11 +245,11 @@ Rare Candies: **free** is milestones, jobs and research; **boxes** is the expect
 
 | Player | Rank | XP | Species found | Free candies | Box candies | Bought | Poké earned | Facilities | Shop | Jobs claimed | Skills (E/F/S) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1/day, 2 × Lv 10 | Diamond | 88598 | 46 | 21 | 91 | 9 | 167933 | 121000 | 40500 | 360 | 10/10/10 |
-| 2/day, 4 × Lv 30 | Diamond | 331873 | 87 | 83 | 301 | 39 | 595253 | 121000 | 468000 | 668 | 10/10/10 |
-| 2/day, 4 × Lv 30, Café | Diamond | 338729 | 86 | 81 | 339 | 39 | 591015 | 121000 | 468000 | 668 | 10/10/10 |
-| 4/day, 4 × Lv 30, Café | Diamond | 291643 | 81 | 87 | 222 | 35 | 507277 | 121000 | 385000 | 734 | 10/10/10 |
-| 2/day, 4 × Lv 30, Café, Dojo | Diamond | 338729 | 86 | 81 | 339 | 39 | 591010 | 121000 | 468000 | 668 | 10/10/10 |
+| 1/day, 2 × Lv 10 | Diamond | 97339 | 45 | 22 | 111 | 11 | 181705 | 121000 | 55000 | 385 | 10/10/10 |
+| 2/day, 4 × Lv 30 | Diamond | 332599 | 94 | 93 | 310 | 39 | 600311 | 121000 | 468000 | 681 | 10/10/10 |
+| 2/day, 4 × Lv 30, Café | Diamond | 340565 | 88 | 91 | 324 | 39 | 595424 | 121000 | 468000 | 668 | 10/10/10 |
+| 4/day, 4 × Lv 30, Café | Diamond | 289498 | 86 | 93 | 209 | 34 | 505743 | 121000 | 365500 | 713 | 10/10/10 |
+| 2/day, 4 × Lv 30, Café, Dojo | Diamond | 340565 | 88 | 91 | 324 | 39 | 595420 | 121000 | 468000 | 668 | 10/10/10 |
 
 ### Jobs, the Swap Shop and the Dojo over that year
 
@@ -237,18 +257,18 @@ Jobs: ordinary jobs wait 7 days, daily ones 1. **Job Poké and XP** are what cla
 
 | Player | Jobs claimed | Explore | Find items | Rescue | Deliver | Escort | Defeat | Job Poké | Poké share | Job XP | XP share | Job candies | Delivered | Missed | Swaps | Dojo sessions | Dojo Poké |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1/day, 2 × Lv 10 | 360 | 218 | 99 | 3 | 40 | 0 | 0 | 42050 | 25% | 20489 | 23% | 0 | 40 | 0 | 0 | 0 | 0 |
-| 2/day, 4 × Lv 30 | 668 | 424 | 104 | 8 | 44 | 66 | 22 | 197810 | 33% | 97619 | 29% | 25 | 44 | 0 | 0 | 0 | 0 |
-| 2/day, 4 × Lv 30, Café | 668 | 420 | 108 | 8 | 44 | 66 | 22 | 196160 | 33% | 96849 | 29% | 23 | 44 | 0 | 0 | 0 | 0 |
-| 4/day, 4 × Lv 30, Café | 734 | 433 | 157 | 8 | 46 | 68 | 22 | 208390 | 41% | 102189 | 35% | 29 | 46 | 0 | 0 | 0 | 0 |
-| 2/day, 4 × Lv 30, Café, Dojo | 668 | 420 | 108 | 8 | 44 | 66 | 22 | 196160 | 33% | 96849 | 29% | 23 | 44 | 0 | 0 | 5 | 1000 |
+| 1/day, 2 × Lv 10 | 385 | 233 | 105 | 3 | 44 | 0 | 0 | 45090 | 25% | 21967 | 23% | 0 | 44 | 0 | 0 | 0 | 0 |
+| 2/day, 4 × Lv 30 | 681 | 426 | 115 | 8 | 44 | 66 | 22 | 199820 | 33% | 98474 | 30% | 26 | 44 | 0 | 0 | 0 | 0 |
+| 2/day, 4 × Lv 30, Café | 668 | 422 | 106 | 8 | 44 | 66 | 22 | 196140 | 33% | 96814 | 28% | 24 | 44 | 0 | 0 | 0 | 0 |
+| 4/day, 4 × Lv 30, Café | 713 | 424 | 148 | 8 | 45 | 66 | 22 | 202230 | 40% | 99334 | 34% | 26 | 45 | 0 | 0 | 0 | 0 |
+| 2/day, 4 × Lv 30, Café, Dojo | 668 | 422 | 106 | 8 | 44 | 66 | 22 | 196140 | 33% | 96814 | 28% | 24 | 44 | 0 | 0 | 7 | 1400 |
 
 ### When things happen (day number)
 
-- **1/day, 2 × Lv 10:** Rank Normal d1, Story chapter 1 d1, Thunderwave Cave cleared d2, Rank Bronze d3, Story chapter 2 d4, Tiny Woods cleared d4, Rank Silver d8, Rank Gold d27, Rank Platinum d89, Camp maxed d158, All skills at the top d201, Rank Diamond d254, Research Lab maxed d263
-- **2/day, 4 × Lv 30:** Rank Bronze d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 4 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d7, Glacier Palace cleared d9, Rank Platinum d24, Story chapter 5 d24, Story chapter 6 d27, Sky Tower cleared d27, Ancient Ruins cleared d28, Camp maxed d35, Research Lab maxed d63, Rank Diamond d68, All skills at the top d71
-- **2/day, 4 × Lv 30, Café:** Rank Bronze d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 4 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d7, Glacier Palace cleared d9, Rank Platinum d23, Story chapter 5 d23, Story chapter 6 d25, Sky Tower cleared d25, Ancient Ruins cleared d27, Camp maxed d37, Research Lab maxed d63, Rank Diamond d66, All skills at the top d72
-- **4/day, 4 × Lv 30, Café:** Rank Bronze d1, Story chapter 2 d1, Tiny Woods cleared d1, Thunderwave Cave cleared d1, Rank Silver d2, Story chapter 4 d2, Mt. Steel cleared d2, Waterfall Cave cleared d3, Rank Gold d6, Glacier Palace cleared d7, Rank Platinum d23, Story chapter 5 d23, Ancient Ruins cleared d26, Story chapter 6 d27, Sky Tower cleared d27, Camp maxed d37, Research Lab maxed d67, Rank Diamond d69, All skills at the top d103
-- **2/day, 4 × Lv 30, Café, Dojo:** Rank Bronze d1, Story chapter 1 d1, Thunderwave Cave cleared d1, Story chapter 2 d2, Tiny Woods cleared d2, Rank Silver d3, Story chapter 4 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d7, Glacier Palace cleared d9, Rank Platinum d23, Story chapter 5 d23, Story chapter 6 d25, Sky Tower cleared d25, Ancient Ruins cleared d27, Camp maxed d37, Research Lab maxed d63, All skills at the top d64, Rank Diamond d66
+- **1/day, 2 × Lv 10:** Rank Normal d1, Story chapter 1 d1, Beach Cave cleared d2, Rank Bronze d3, Story chapter 2 d4, Tiny Woods cleared d4, Story chapter 3 d5, Thunderwave Cave cleared d5, Rank Silver d7, Story chapter 4 d7, Rank Gold d26, Rank Platinum d83, Story chapter 5 d83, Camp maxed d145, All skills at the top d183, Rank Diamond d234, Research Lab maxed d237
+- **2/day, 4 × Lv 30:** Rank Bronze d1, Story chapter 1 d1, Beach Cave cleared d1, Story chapter 3 d2, Tiny Woods cleared d2, Thunderwave Cave cleared d2, Rank Silver d3, Story chapter 4 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d7, Glacier Palace cleared d9, Frosty Forest cleared d15, Rank Platinum d23, Story chapter 6 d23, Sky Tower cleared d24, Ancient Ruins cleared d25, Camp maxed d34, Research Lab maxed d60, Hidden Land cleared d65, Rank Diamond d66, All skills at the top d69
+- **2/day, 4 × Lv 30, Café:** Rank Bronze d1, Story chapter 1 d1, Beach Cave cleared d1, Story chapter 3 d2, Tiny Woods cleared d2, Thunderwave Cave cleared d2, Rank Silver d3, Story chapter 4 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d7, Glacier Palace cleared d9, Frosty Forest cleared d15, Rank Platinum d22, Story chapter 6 d22, Sky Tower cleared d24, Ancient Ruins cleared d25, Camp maxed d31, Hidden Land cleared d34, Research Lab maxed d60, Rank Diamond d64, All skills at the top d71
+- **4/day, 4 × Lv 30, Café:** Rank Bronze d1, Story chapter 2 d1, Tiny Woods cleared d1, Beach Cave cleared d1, Rank Silver d2, Story chapter 4 d2, Thunderwave Cave cleared d2, Mt. Steel cleared d2, Frosty Forest cleared d3, Waterfall Cave cleared d4, Rank Gold d6, Glacier Palace cleared d8, Rank Platinum d23, Story chapter 6 d23, Ancient Ruins cleared d25, Sky Tower cleared d26, Hidden Land cleared d32, Camp maxed d32, Research Lab maxed d67, Rank Diamond d70, All skills at the top d97
+- **2/day, 4 × Lv 30, Café, Dojo:** Rank Bronze d1, Story chapter 1 d1, Beach Cave cleared d1, Story chapter 3 d2, Tiny Woods cleared d2, Thunderwave Cave cleared d2, Rank Silver d3, Story chapter 4 d3, Mt. Steel cleared d3, Waterfall Cave cleared d5, Rank Gold d7, Glacier Palace cleared d9, Frosty Forest cleared d15, Rank Platinum d22, Story chapter 6 d22, Sky Tower cleared d24, Ancient Ruins cleared d25, Camp maxed d31, Hidden Land cleared d34, All skills at the top d60, Research Lab maxed d60, Rank Diamond d64
 
 Rank XP: Normal 0, Bronze 300, Silver 1500, Gold 6000, Platinum 20000, Diamond 60000.

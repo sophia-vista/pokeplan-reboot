@@ -47,7 +47,12 @@ fun SceneImage(name: String, modifier: Modifier = Modifier, darkness: Float = 0f
         // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = scenes[name]
         if (value == null) {
-            val path = if (app.pokeplan.ui.launcher.FriendAreas.isArea(name)) app.pokeplan.ui.launcher.FriendAreas.file(name) else "files/scenes/$name.png"
+            // A Friend Area ("fa-..."), a ground map of the Mystery Dungeon games the story uses ("map:..."), else a stock scene.
+            val path = when {
+                app.pokeplan.ui.launcher.FriendAreas.isArea(name) -> app.pokeplan.ui.launcher.FriendAreas.file(name)
+                name.startsWith("map:") -> "files/maps/${name.removePrefix("map:")}.png"
+                else -> "files/scenes/$name.png"
+            }
             value = orNull { Res.readBytes(path).decodeToImageBitmap() }
             scenes[name] = value
         }
