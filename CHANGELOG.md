@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.150.0
+
+- **PLAN's and CARE's rewards settle under their own ledger event ids** (REP-014, `DATA_AND_MIGRATIONS.md` section 7.3.0 step 2). A finished task (`plan:task:<id>:complete`), a recurring task's day, a step, a milestone, a weekly review, a mini-quest, a welcome-back gift, a focus session or Magic Guard egg (`plan:focus:<egg id>`), a Care moment (`care:<kind>:<day>:<count>`), a befriended visitor and a Shop purchase now leave a `LedgerNote` like HEAL, MINT, HOME and LINK already did, so the database ledger says why the balance and the Bag moved instead of one net change per save. The notes hold only opaque ids and amounts, never a task title. No number changed (`RewardRules.VERSION` stays 20). Tested on the JVM (`PlanCareLedgerNotesTest`).
+
 ## 0.149.0
 
 Link reminders, and the streak reminder and weekly recap on the shared scheduler (REP-014, REP-011). No reward number changes (`RewardRules.VERSION` stays 20).
