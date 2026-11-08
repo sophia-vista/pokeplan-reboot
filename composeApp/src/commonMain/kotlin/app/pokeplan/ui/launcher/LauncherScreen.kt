@@ -160,6 +160,13 @@ interface LauncherHost {
     fun releaseWidget(id: Int) {}
     /** The name of a hosted widget, for the Widgets list. */
     fun widgetLabel(id: Int): String? = null
+    /** Whether this device can host other apps' widgets at all (a phone can; the desktop and the web cannot, and show nothing). */
+    val hostsWidgets: Boolean get() = false
+    /**
+     * What widget [id] asks of its host, or null when its provider is gone (the app was uninstalled, disabled or is being
+     * updated): the slot then shows a note instead of an empty space and keeps its place until the user removes it.
+     */
+    fun widgetSpec(id: Int): HostedWidgetSpec? = null
     /** Opens PokéLife itself on [place] (Focus from the Focus button, Home from the buddy). */
     fun openApp(place: Place)
 }
@@ -551,6 +558,8 @@ internal fun edgeColor(image: ImageBitmap): Color {
 private sealed interface ListRow {
     data class Header(val letter: Char) : ListRow
     data class Entry(val app: LauncherApp) : ListRow
+    /** A place in PokéLife itself that matches the search (see [LauncherSearch]). */
+    data class Destination(val to: LauncherDestination) : ListRow
 }
 
 /** Every app A to Z over the wallpaper, blurred and darkened (the blur shows from Android 12; the dark veil always). */
@@ -568,7 +577,8 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
     if (showHidden && !anyHidden) showHidden = false
     val shown = remember(apps, prefs, query, category, showHidden) { LauncherList.visible(apps, prefs, query, category, hidden = showHidden) }
     val sections = query.isBlank()
-    val rows = remember(shown, sections) { if (sections) buildList<ListRow> { shown.forEach { app -> if ((lastOrNull() as? ListRow.Entry)?.app?.letter() != app.letter()) add(ListRow.Header(app.letter())); add(ListRow.Entry(app)) } } else shown.map<LauncherApp, ListRow> { ListRow.Entry(it) } }
+    val places = remember(query, category, showHidden) { if (category == null && !showHidden) LauncherSearch.find(query) else emptyList() }
+    val rows = remember(shown, sections, places) { places.map<LauncherDestination, ListRow> { ListRow.Destination(it) } + (if (sections) buildList<ListRow> { shown.forEach { app -> if ((lastOrNull() as? ListRow.Entry)?.app?.letter() != app.letter()) add(ListRow.Header(app.letter())); add(ListRow.Entry(app)) } } else shown.map<LauncherApp, ListRow> { ListRow.Entry(it) }) }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     BackHandler(enabled = true) { if (query.isNotEmpty()) query = "" else onClose() }
@@ -582,9 +592,9 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
                     Modifier.weight(1f).height(Spacing.Target).background(Color.White.copy(alpha = 0.14f), rowShape).padding(horizontal = Spacing.L),
                     contentAlignment = Alignment.CenterStart,
                 ) {
-                    if (query.isEmpty()) Text("Search apps", style = MaterialTheme.typography.bodyLarge, color = soft)
+                    if (query.isEmpty()) Text("Search apps and PokéLife", style = MaterialTheme.typography.bodyLarge, color = soft)
                     BasicTextField(
-                        query, { query = it }, singleLine = true, modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Search apps" },
+                        query, { query = it }, singleLine = true, modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Search apps and PokéLife" },
                         textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White), cursorBrush = SolidColor(Color.White),
                     )
                 }
@@ -601,10 +611,18 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
                 if (anyHidden) item { Chip("Hidden", "", showHidden, pixel) { showHidden = true; category = null } }
             }
             Box(Modifier.weight(1f).fillMaxWidth()) {
-                if (rows.isEmpty()) PmdText(if (query.isBlank()) "No apps here" else "No app matches " + query.trim(), pixel, Modifier.align(Alignment.Center), alpha = 0.7f)
+                if (rows.isEmpty()) PmdText(if (query.isBlank()) "No apps here" else "Nothing matches " + query.trim(), pixel, Modifier.align(Alignment.Center), alpha = 0.7f)
                 LazyColumn(Modifier.fillMaxSize(), state = listState, contentPadding = PaddingValues(start = Spacing.Page, end = Spacing.Page + 32.dp, top = Spacing.M, bottom = Spacing.XXL)) {
-                    items(rows, key = { row -> when (row) { is ListRow.Header -> "#h${row.letter}"; is ListRow.Entry -> row.app.key } }) { row ->
+                    items(rows, key = { row -> when (row) { is ListRow.Header -> "#h${row.letter}"; is ListRow.Entry -> row.app.key; is ListRow.Destination -> "#p${row.to.place.name}" } }) { row ->
                         when (row) {
+                            is ListRow.Destination -> Row(
+                                Modifier.fillMaxWidth().clip(rowShape).clickable(role = Role.Button, onClickLabel = "Open ${row.to.label} in PokéLife") { ui(Sfx.CONFIRM); host.openApp(row.to.place) }.padding(vertical = Spacing.M, horizontal = Spacing.S),
+                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.L),
+                            ) {
+                                Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) { ItemIcon(row.to.icon, size = 32.dp, description = null) }
+                                PmdText(row.to.label, pixel, Modifier.weight(1f))
+                                PmdText("PokéLife", pixel, alpha = 0.6f)
+                            }
                             is ListRow.Header -> PmdText(row.letter.toString(), pixel, Modifier.padding(top = Spacing.XL, bottom = Spacing.S, start = Spacing.S), alpha = 0.7f)
                             is ListRow.Entry -> { val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }; Row(
                                 Modifier.fillMaxWidth().pressScale(source).clip(rowShape).combinedClickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onLongClick = { ui(Sfx.LONG_PRESS); onHold(row.app) }, onClick = { ui(Sfx.CONFIRM); host.open(row.app.key) })

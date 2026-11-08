@@ -47,13 +47,18 @@ data class GridWidget(val page: WidgetPage, val kind: WidgetKind, val arg: Strin
 object WidgetGrid {
     const val COLUMNS = 4
 
+    /** A column's width in dp on a typical phone (a 360 dp screen less its margins), for sizing a widget before the grid is on screen to measure. */
+    const val NOMINAL_COLUMN_DP = 82f
+
+    /** The margin kept round each widget inside its cells, in dp (the grid draws it as [CELL_GAP]). */
+    const val CELL_GAP_DP = 4
+
     /** One row, in dp: about a twelfth of a phone's width, so the old stacked layout (about 17 rows) fits one screen, and a half-width widget is not tall and thin. */
     const val ROW_DP = 36
 
     fun onPage(all: List<GridWidget>, page: WidgetPage) = all.filter { it.page == page }
 
-    private fun clamped(w: GridWidget): GridWidget {
-        val l = w.kind.limits()
+    private fun clamped(w: GridWidget, l: WidgetLimits = w.kind.limits()): GridWidget {
         val width = w.w.coerceIn(l.minW, minOf(l.maxW, COLUMNS))
         val height = w.h.coerceIn(l.minH, l.maxH)
         return w.copy(w = width, h = height, col = w.col.coerceIn(0, COLUMNS - width), row = maxOf(0, w.row))
@@ -101,10 +106,13 @@ object WidgetGrid {
         return settle(all, clamped(current.copy(col = col, row = row)))
     }
 
-    /** Gives [widget] the size [w] by [h] cells, within its kind's limits; it stays at its top-left cell (shifting left only to stay on the grid) and anything in the way goes down. */
-    fun resize(all: List<GridWidget>, widget: GridWidget, w: Int, h: Int): List<GridWidget> {
+    /**
+     * Gives [widget] the size [w] by [h] cells, within its kind's limits (or [limits], which another app's widget takes from
+     * what its provider allows); it stays at its top-left cell (shifting left only to stay on the grid) and anything in the way goes down.
+     */
+    fun resize(all: List<GridWidget>, widget: GridWidget, w: Int, h: Int, limits: WidgetLimits = widget.kind.limits()): List<GridWidget> {
         val current = all.firstOrNull { it.sameAs(widget) } ?: return all
-        return settle(all, clamped(current.copy(w = w, h = h)))
+        return settle(all, clamped(current.copy(w = w, h = h), limits))
     }
 
     /**
@@ -122,8 +130,7 @@ object WidgetGrid {
         (w.col + (dxPx / colPx).roundToInt()).coerceIn(0, COLUMNS - w.w) to maxOf(0, w.row + (dyPx / rowPx).roundToInt())
 
     /** The size a widget takes when its corner handle has been dragged ([dxPx], [dyPx]), within its kind's limits. */
-    fun resizedTo(w: GridWidget, dxPx: Float, dyPx: Float, colPx: Float, rowPx: Float): Pair<Int, Int> {
-        val l = w.kind.limits()
+    fun resizedTo(w: GridWidget, dxPx: Float, dyPx: Float, colPx: Float, rowPx: Float, l: WidgetLimits = w.kind.limits()): Pair<Int, Int> {
         val width = (w.w + (dxPx / colPx).roundToInt()).coerceIn(l.minW, minOf(l.maxW, COLUMNS - w.col))
         return width to (w.h + (dyPx / rowPx).roundToInt()).coerceIn(l.minH, l.maxH)
     }
