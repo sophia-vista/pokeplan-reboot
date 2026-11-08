@@ -388,6 +388,9 @@ private fun missionIcon(kind: MissionKind): String = when (kind) {
     MissionKind.DELIVER -> "journal"
     MissionKind.ESCORT -> "exp-share"
     MissionKind.DEFEAT -> "scope-lens"
+    MissionKind.INVESTIGATION -> "scope-lens"
+    MissionKind.CHALLENGE -> "exp-share"
+    MissionKind.STORY -> "oaks-letter"
 }
 
 
@@ -430,6 +433,9 @@ private fun WorldMissionsView(model: AppModel) {
                             val best = here?.let { d -> world.teams.maxOfOrNull { t -> WorldSim.power(t.members.mapNotNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } }, d) } } ?: 0.0
                             "Reach $where with a team of power ${m.count} or more (your best team: ${best.toInt()})."
                         }
+                        MissionKind.INVESTIGATION -> "Open ${m.count} side paths in ${m.dungeonId?.let { Dungeons.byId(it)?.name }}: ${minOf(p.progress, m.count)} so far."
+                        MissionKind.CHALLENGE -> "Reach $where with a team of at most ${m.count} ${if (m.count == 1) "Pokémon" else "Pokémon"}."
+                        MissionKind.STORY -> "Open chapter ${m.count} of the ${Missions.layerOf(m).label} story."
                         MissionKind.DELIVER -> "Reach $where, then hand over ${m.giveCount} x ${Items.name(m.give ?: "")} from your Bag."
                     },
                     style = MaterialTheme.typography.bodyLarge,

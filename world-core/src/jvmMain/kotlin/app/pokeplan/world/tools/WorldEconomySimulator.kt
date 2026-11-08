@@ -155,7 +155,7 @@ private fun journey(opens: Int, size: Int, level: Int, days: Int, cafe: Boolean,
             Missions.available(data).filter { m ->
                 // Only the jobs this team can do: an Escort needs enough Pokémon and a Defeat enough power, and a job that cannot be done would sit in one of the three slots for ever.
                 val dungeon = m.dungeonId?.let { Dungeons.byId(it) }
-                startable(m.dungeonId) && (m.kind != MissionKind.ESCORT || roster.size >= m.count) && (m.kind != MissionKind.DEFEAT || (dungeon != null && WorldSim.power(roster, dungeon) >= m.count))
+                startable(m.dungeonId) && m.kind != MissionKind.INVESTIGATION && m.kind != MissionKind.CHALLENGE && m.kind != MissionKind.STORY && (m.kind != MissionKind.ESCORT || roster.size >= m.count) && (m.kind != MissionKind.DEFEAT || (dungeon != null && WorldSim.power(roster, dungeon) >= m.count))
             }.forEach { m -> data.acceptMission(m.id)?.let { data = it } }
             // Spend: facilities (lower level first), then shop candies.
             while (true) {

@@ -117,4 +117,60 @@ class EscortDefeatTest {
         val strong = open.copy(xp = 400).acceptMission("defeat-geodude")!!.assign(1, listOf("a", "b", "c", "d"))!!.start(1, "mt-steel", 0L)!!
         assertTrue(WorldSim.settle(strong, roster, day * 2).data.missions.single().done, "four level 40 Pokémon have 160")
     }
+
+    // ----- The three kinds of WORLD.md 2.4: investigation, challenge, story -----
+
+    @Test
+    fun aChallengeCountsOnlyForASmallTeam() {
+        val duo = open.acceptMission("challenge-woods-duo")!!.copy(teams = listOf(WorldTeam(1, listOf("a", "b"), Expedition("tiny-woods", 0, 0))))
+        val crowd = open.acceptMission("challenge-woods-duo")!!.copy(teams = listOf(WorldTeam(1, listOf("a", "b", "c"), Expedition("tiny-woods", 0, 0))))
+        val day = 3L * 24 * 3_600_000
+        assertTrue(WorldSim.settle(duo, roster, day).data.missions.single().done, "two Pokémon do it")
+        assertTrue(WorldSim.settle(crowd, roster, day).data.missions.none { it.done }, "three do not, however far they climb")
+        assertNotNull(WorldSim.jobsDoneAt(duo, roster)["challenge-woods-duo"])
+        assertNull(WorldSim.jobsDoneAt(crowd, roster)["challenge-woods-duo"], "no forecast for a team that is too big")
+    }
+
+    @Test
+    fun aStoryRequestIsDoneByTheStoryAndAskedOnlyWhileItsChapterIsClosed() {
+        val m = Missions.byId("story-rescue-3")!!
+        val ahead = WorldData(xp = 400, clears = mapOf("tiny-woods" to 1))
+        assertTrue(Story.opened(ahead, WorldLayer.RESCUE) < m.count, "the test needs chapter ${m.count} closed")
+        assertTrue(m.id in Missions.available(ahead).map { it.id })
+        // With the chapter open there is nothing left to ask.
+        val rich = ahead.copy(xp = 100_000, clears = Dungeons.all.associate { it.id to 3 })
+        if (Story.opened(rich, WorldLayer.RESCUE) >= m.count) {
+            assertTrue(m.id !in Missions.available(rich).map { it.id })
+            assertEquals(Missions.BoardState.UNAVAILABLE, Missions.board(rich).first { it.mission.id == m.id }.state)
+        }
+        assertNull(WorldSim.jobsDoneAt(ahead.acceptMission(m.id)!!.copy(teams = listOf(WorldTeam(1, listOf("a"), Expedition("tiny-woods", 0, 0)))), roster)[m.id], "no floor forecast")
+    }
+
+    @Test
+    fun anInvestigationCountsOpenedSidePathsOfItsDungeonOnly() {
+        val m = Missions.byId("investigate-woods")!!
+        val events = mutableListOf<WorldEvent>()
+        val accepted = open.acceptMission(m.id)!!
+        val elsewhere = Missions.advance(accepted, "thunderwave-cave", 3, 0, 0L, 2, 10.0, events, opened = 5)
+        assertEquals(0, elsewhere.missions.single().progress, "another dungeon does not count")
+        val one = Missions.advance(accepted, "tiny-woods", 3, 0, 0L, 2, 10.0, events, opened = 1)
+        assertEquals(1, one.missions.single().progress)
+        assertTrue(!one.missions.single().done)
+        val done = Missions.advance(one, "tiny-woods", 4, 0, 0L, 2, 10.0, events, opened = 1)
+        assertTrue(done.missions.single().done)
+    }
+
+    @Test
+    fun everyJobNamesARealDungeonAndAReachableFloorOrCount() {
+        Missions.all.forEach { m ->
+            when (m.kind) {
+                MissionKind.CHALLENGE -> assertTrue(m.count in 1..3 && m.floor in 1..Dungeons.byId(m.dungeonId!!)!!.floors, m.id)
+                MissionKind.INVESTIGATION -> assertTrue(m.count in 1..5 && Dungeons.byId(m.dungeonId!!) != null, m.id)
+                MissionKind.STORY -> assertTrue(m.count <= Story.chaptersOf(layerOfJob(m)).size && m.once, m.id)
+                else -> {}
+            }
+        }
+    }
+
+    private fun layerOfJob(m: MissionDef) = Missions.layerOf(m)
 }

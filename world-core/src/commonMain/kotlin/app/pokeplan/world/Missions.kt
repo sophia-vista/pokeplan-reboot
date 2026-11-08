@@ -4,13 +4,19 @@ import app.pokeplan.core.pokemon.Items
 import kotlinx.serialization.Serializable
 
 /** What a mission asks (docs/world.md, section 8). */
-enum class MissionKind(val label: String) { EXPLORE("Explore"), COLLECT("Find items"), RESCUE("Rescue"), DELIVER("Deliver"), ESCORT("Escort"), DEFEAT("Defeat") }
+enum class MissionKind(val label: String) {
+    EXPLORE("Explore"), COLLECT("Find items"), RESCUE("Rescue"), DELIVER("Deliver"), ESCORT("Escort"), DEFEAT("Defeat"),
+    INVESTIGATION("Investigate"), CHALLENGE("Challenge"), STORY("Story"),
+}
 
 /**
  * A job on the board. [EXPLORE] is done when any team reaches [floor] of [dungeonId] while it is accepted; [COLLECT] when
  * [count] berries have been found anywhere; [RESCUE] when a team reaches [floor] of [dungeonId], and the lost Pokémon
  * ([rescued], a species id) then waits among the Finds; [ESCORT] is an Explore job that only counts for a team of at least [count]
- * Pokémon, and [DEFEAT] one that only counts for a team whose power is at least [count] (docs/world.md, section 8). A job that is [once] never comes back; the others are repeatable.
+ * Pokémon, and [DEFEAT] one that only counts for a team whose power is at least [count] (docs/world.md, section 8). The three kinds of WORLD.md 2.4:
+ * [INVESTIGATION] is done when [count] side paths (floor events a team member could open) were opened in [dungeonId] while it is accepted;
+ * [CHALLENGE] is an Explore job that only counts for a team of at most [count] Pokémon (a small team on purpose, the opposite of an Escort);
+ * [STORY] is done when the story of [dungeonId]'s region has opened chapter [count] (its progress is the story's own, not floors). A job that is [once] never comes back; the others are repeatable.
  * Rewards are paid when the player claims the finished job. Numbers are *(tune)*.
  */
 data class MissionDef(
@@ -91,6 +97,25 @@ object Missions {
         MissionDef("sinnoh-island-14", "Escort a collector to Iron Island", "A collector wants to see the mine's old steel, with company.", MissionKind.ESCORT, ExplorerRank.GOLD, false, "iron-island", floor = 14, count = 3, poke = 590, xp = 295, period = 14),
         MissionDef("sinnoh-road-18", "Walk Victory Road", "The road to the League needs a patrol.", MissionKind.EXPLORE, ExplorerRank.PLATINUM, false, "victory-road-sinnoh", floor = 18, poke = 970, xp = 485, period = 14),
         MissionDef("sinnoh-pillar-18", "Climb to the Spear Pillar", "The pillar hums. Go and see why.", MissionKind.EXPLORE, ExplorerRank.PLATINUM, false, "spear-pillar", floor = 18, poke = 970, xp = 485, period = 14),
+        // Investigations (open side paths), challenges (a small team on purpose) and story requests (a chapter of the region's story), WORLD.md 2.4.
+        MissionDef("investigate-woods", "Look into the side paths of Tiny Woods", "Travellers talk of hidden ways off the trail. Open two of them.", MissionKind.INVESTIGATION, ExplorerRank.NORMAL, false, "tiny-woods", count = 2, poke = 90, xp = 45, period = 14),
+        MissionDef("investigate-cave", "Look into Thunderwave Cave", "Something blocks the side tunnels. Open three of them.", MissionKind.INVESTIGATION, ExplorerRank.BRONZE, false, "thunderwave-cave", count = 3, poke = 220, xp = 110, period = 14),
+        MissionDef("kanto-investigate-moon", "Look into Mt. Moon's side tunnels", "Strange marks lead off the main path. Open two side paths.", MissionKind.INVESTIGATION, ExplorerRank.BRONZE, false, "mt-moon", count = 2, poke = 180, xp = 90, period = 14),
+        MissionDef("johto-investigate-ilex", "Look into Ilex Forest's hidden ways", "The shrine keeper wants the hidden ways checked. Open two side paths.", MissionKind.INVESTIGATION, ExplorerRank.BRONZE, false, "ilex-forest", count = 2, poke = 180, xp = 90, period = 14),
+        MissionDef("hoenn-investigate-granite", "Look into Granite Cave's side rooms", "A researcher wants the side rooms opened. Open two side paths.", MissionKind.INVESTIGATION, ExplorerRank.BRONZE, false, "granite-cave", count = 2, poke = 180, xp = 90, period = 14),
+        MissionDef("sinnoh-investigate-mine", "Look into Oreburgh Mine's shafts", "The foreman wants the old shafts opened. Open two side paths.", MissionKind.INVESTIGATION, ExplorerRank.NORMAL, false, "oreburgh-mine", count = 2, poke = 150, xp = 75, period = 14),
+        MissionDef("challenge-woods-duo", "Duo run through Tiny Woods", "Cross the woods with only two Pokémon: no crowd, no help.", MissionKind.CHALLENGE, ExplorerRank.NORMAL, false, "tiny-woods", floor = 5, count = 2, poke = 110, xp = 55, period = 14),
+        MissionDef("challenge-cave-solo", "Solo run in Thunderwave Cave", "One Pokémon, one cave, six floors.", MissionKind.CHALLENGE, ExplorerRank.BRONZE, false, "thunderwave-cave", floor = 6, count = 1, poke = 240, xp = 120, period = 14),
+        MissionDef("challenge-steel-duo", "Duo trial on Mt. Steel", "Climb the mountain with only two Pokémon.", MissionKind.CHALLENGE, ExplorerRank.BRONZE, false, "mt-steel", floor = 8, count = 2, poke = 280, xp = 140, period = 14),
+        MissionDef("kanto-challenge-moon", "Duo trial in Mt. Moon", "Cross the cave with two Pokémon and no more.", MissionKind.CHALLENGE, ExplorerRank.BRONZE, false, "mt-moon", floor = 6, count = 2, poke = 230, xp = 115, period = 14),
+        MissionDef("johto-challenge-ilex", "Duo trial in Ilex Forest", "Cross the forest with two Pokémon and no more.", MissionKind.CHALLENGE, ExplorerRank.BRONZE, false, "ilex-forest", floor = 6, count = 2, poke = 230, xp = 115, period = 14),
+        MissionDef("hoenn-challenge-granite", "Duo trial in Granite Cave", "Cross the cave with two Pokémon and no more.", MissionKind.CHALLENGE, ExplorerRank.BRONZE, false, "granite-cave", floor = 6, count = 2, poke = 230, xp = 115, period = 14),
+        MissionDef("sinnoh-challenge-forest", "Duo trial in Eterna Forest", "Cross the forest with two Pokémon and no more.", MissionKind.CHALLENGE, ExplorerRank.NORMAL, false, "eterna-forest", floor = 5, count = 2, poke = 150, xp = 75, period = 14),
+        MissionDef("story-rescue-3", "The next chapter of the guild's story", "Keep exploring until the guild's third chapter opens.", MissionKind.STORY, ExplorerRank.NORMAL, true, "tiny-woods", count = 3, poke = 150, xp = 100),
+        MissionDef("story-kanto-3", "A third chapter in Kanto", "Keep exploring until Kanto's third chapter opens.", MissionKind.STORY, ExplorerRank.NORMAL, true, "viridian-forest", count = 3, poke = 250, xp = 150),
+        MissionDef("story-johto-3", "A third chapter in Johto", "Keep exploring until Johto's third chapter opens.", MissionKind.STORY, ExplorerRank.NORMAL, true, "sprout-tower", count = 3, poke = 250, xp = 150),
+        MissionDef("story-hoenn-3", "A third chapter in Hoenn", "Keep exploring until Hoenn's third chapter opens.", MissionKind.STORY, ExplorerRank.NORMAL, true, "petalburg-woods", count = 3, poke = 250, xp = 150),
+        MissionDef("story-sinnoh-3", "A third chapter in Sinnoh", "Keep exploring until Sinnoh's third chapter opens.", MissionKind.STORY, ExplorerRank.NORMAL, true, "eterna-forest", count = 3, poke = 250, xp = 150),
         MissionDef("daily-berries", "Daily berry run", "Today's berry order.", MissionKind.COLLECT, ExplorerRank.NORMAL, false, count = 15, poke = 100, xp = 40, period = 1),
         MissionDef("weekly-steel", "Weekly patrol of Mt. Steel", "The mountain needs a patrol once a week.", MissionKind.EXPLORE, ExplorerRank.BRONZE, false, "mt-steel", floor = 10, poke = 900, xp = 400, itemId = Items.RARE_CANDY, itemCount = 1, period = 7),
     )
@@ -111,11 +136,14 @@ object Missions {
         return Story.opened(data, d.layer) >= d.chapter && (!d.postStory || data.layerDone(d.layer))
     }
 
+    /** A [MissionKind.STORY] job whose chapter is already open has nothing left to ask. */
+    private fun told(data: WorldData, m: MissionDef): Boolean = m.kind == MissionKind.STORY && Story.opened(data, layerOf(m)) >= m.count
+
     /** The jobs [data] can take at [now] (the settle time unless given: the screens pass the clock, which a quiet World would not have stored): the board is open, the rank is reached, and a one-time job is not done or already taken. */
     fun available(data: WorldData, now: Long = data.lastSeenAt, utcOffsetMillis: Long = 0): List<MissionDef> =
         if (!boardOpen(data)) emptyList()
         else all.filter { m ->
-            data.rank >= m.needs && dungeonOpen(data, m) && data.missions.none { it.id == m.id } && !(m.once && m.id in data.missionsDone) &&
+            data.rank >= m.needs && dungeonOpen(data, m) && !told(data, m) && data.missions.none { it.id == m.id } && !(m.once && m.id in data.missionsDone) &&
                 (m.period == 0 || data.missionClaimedDay[m.id].let { it == null || day(now, utcOffsetMillis) - it >= m.period })
         }
 
@@ -140,6 +168,7 @@ object Missions {
                 held != null -> BoardEntry(m, if (held.done) BoardState.DONE else BoardState.HELD)
                 m.once && m.id in data.missionsDone -> BoardEntry(m, BoardState.UNAVAILABLE, "Done for good.")
                 data.rank < m.needs -> BoardEntry(m, BoardState.UNAVAILABLE, "Needs ${m.needs.label} rank.")
+                told(data, m) -> BoardEntry(m, BoardState.UNAVAILABLE, "That chapter is already open.")
                 !dungeonOpen(data, m) -> BoardEntry(m, BoardState.UNAVAILABLE, "Go further in the ${m.dungeonId?.let { Dungeons.byId(it)?.layer?.label }} story first.")
                 m.period > 0 && claimed != null && day(now, utcOffsetMillis) - claimed < m.period -> {
                     val left = (m.period - (day(now, utcOffsetMillis) - claimed)).toInt()
@@ -157,7 +186,7 @@ object Missions {
     fun day(now: Long, utcOffsetMillis: Long): Long = (now + utcOffsetMillis).floorDiv(86_400_000L)
 
     /** What one climbed floor does to the accepted jobs. [berries] is how many berries it gave. Reports each job it finishes. */
-    internal fun advance(data: WorldData, dungeonId: String, floor: Int, berries: Int, at: Long, teamSize: Int, power: Double, events: MutableList<WorldEvent>): WorldData {
+    internal fun advance(data: WorldData, dungeonId: String, floor: Int, berries: Int, at: Long, teamSize: Int, power: Double, events: MutableList<WorldEvent>, opened: Int = 0): WorldData {
         if (data.missions.isEmpty()) return data
         var d = data
         val updated = data.missions.map { p ->
@@ -167,7 +196,10 @@ object Missions {
                 (m.kind != MissionKind.ESCORT || teamSize >= m.count) && (m.kind != MissionKind.DEFEAT || power >= m.count)
             val next = when (m.kind) {
                 MissionKind.EXPLORE, MissionKind.RESCUE, MissionKind.DELIVER, MissionKind.ESCORT, MissionKind.DEFEAT -> if (reached) p.copy(progress = 1, done = true) else p
+                MissionKind.CHALLENGE -> if (reached && teamSize <= m.count) p.copy(progress = 1, done = true) else p
                 MissionKind.COLLECT -> p.copy(progress = p.progress + berries).let { if (it.progress >= m.count) it.copy(done = true) else it }
+                MissionKind.INVESTIGATION -> if (m.dungeonId == dungeonId && opened > 0) p.copy(progress = p.progress + opened).let { if (it.progress >= m.count) it.copy(done = true) else it } else p
+                MissionKind.STORY -> if (Story.opened(data, layerOf(m)) >= m.count) p.copy(progress = m.count, done = true) else p
             }
             if (next.done) {
                 events += WorldEvent.MissionDone(m.id)

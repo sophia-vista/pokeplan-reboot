@@ -192,7 +192,9 @@ object WorldSim {
                 val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
                 if (members.isEmpty()) continue
                 val power = power(members, dungeon)
-                if ((m.kind == MissionKind.ESCORT && members.size < m.count) || (m.kind == MissionKind.DEFEAT && power < m.count)) continue
+                // An investigation depends on what the floors hold and a story request on the story, so neither has a forecast.
+                if (m.kind == MissionKind.INVESTIGATION || m.kind == MissionKind.STORY) continue
+                if ((m.kind == MissionKind.ESCORT && members.size < m.count) || (m.kind == MissionKind.DEFEAT && power < m.count) || (m.kind == MissionKind.CHALLENGE && members.size > m.count)) continue
                 // The next floor to climb is index floorsClimbed; floors rise to the top of the dungeon, then start again at 1.
                 val next = trip.floorsClimbed % dungeon.floors
                 val floors = maxOf(0, m.floor - 1 - next) + 1
@@ -243,6 +245,7 @@ object WorldSim {
     /** One floor climbed: the floor number in the dungeon is its index modulo the floors, so a cleared dungeon starts again. */
     private fun climb(data: WorldData, teamId: Int, trip: Expedition, dungeon: DungeonDef, index: Int, at: Long, members: List<OwnedPokemon>, power: Double, perk: Map<WorldSkill, Int>, events: MutableList<WorldEvent>): WorldData {
         val teamSize = members.size
+        val firstEvent = events.size
         val floor = index % dungeon.floors + 1
         val random = Random(seed(teamId, trip, index))
         var d = data
@@ -298,7 +301,7 @@ object WorldSim {
             }
         }
         d = d.withSkillXp(WorldSkill.EXPLORATION, 1).withSkillXp(WorldSkill.SCOUTING, 1).withSkillXp(WorldSkill.FORAGING, berries)
-        d = Missions.advance(d, dungeon.id, floor, berries, at, teamSize, power, events)
+        d = Missions.advance(d, dungeon.id, floor, berries, at, teamSize, power, events, opened = events.drop(firstEvent).count { it is WorldEvent.FloorEvent && it.userName != null })
         if (floor == dungeon.floors && dungeon.guardian && !d.layerDone(dungeon.layer)) {
             if (dungeon.layer == WorldLayer.EXPLORERS) {
                 events += WorldEvent.GuardianFaced
