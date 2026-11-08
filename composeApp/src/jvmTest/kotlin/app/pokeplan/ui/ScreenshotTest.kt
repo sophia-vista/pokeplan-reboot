@@ -757,7 +757,7 @@ class ScreenshotTest {
     }
 
     @Test
-    fun pokemonDetailWhole() = pokemonDetailFull("pokemon-detail-whole", 1f, 3000)
+    fun pokemonDetailWhole() = pokemonDetailFull("pokemon-detail-whole", 1f, 3700)
 
     @Test
     fun pokemonDetailLargeText() = pokemonDetailFull("pokemon-detail-large-text", 1.8f, 4600)

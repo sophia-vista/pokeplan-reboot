@@ -293,7 +293,7 @@ Preserve official species identity, types, base-stat relationships, abilities, m
 - The existing Nature and StatCalculator logic is a starting point; audit and consolidate rather than reimplement blindly.
 - Nature remains a stable owned-Pokémon attribute and affects stats only through the selected documented model.
 - Abilities and moves must have clear deterministic expedition effects where supported; do not imply a move/ability is active if the simulator ignores it.
-- Keep an active moveset to a manageable four moves by default, with clear replacement and learning behavior.
+- Keep an active moveset to a manageable four moves by default, with clear replacement and learning behavior. *(Implemented 0.159.0, `Moveset`: `OwnedPokemon.moves` holds the choice as move identifiers and is absent until one is made; absent means the last four level-up moves by level. A Pokémon may be given its level-up moves up to its level, its egg moves and, from level 30, its tutor and machine moves; choosing is free and can be undone with Natural. WORLD's team power is the only reader, see WORLD.md 3.2.)*
 - Held items reference the shared Bag/inventory model and use one authoritative effect calculation.
 - No competitive PvP or breeding loop.
 

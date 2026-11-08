@@ -28,6 +28,18 @@ object HeldItems {
         "leftovers" to HeldPerk(PerkBucket.STREAK_KEEPER, 4.0),
         "amulet-coin" to HeldPerk(PerkBucket.COINS, 10.0),
     )
+
+    /**
+     * What a held item adds to a WORLD team's power, in percent of its holder's level (the one place that reads it is `BattleIdentity` in world-core,
+     * and it says so when it counts). Only items that would help in a fight are here; the others keep their perk above and add nothing. *(tune)*
+     */
+    val battle: Map<String, Int> = mapOf(
+        "leftovers" to 4,
+        "scope-lens" to 4,
+    )
+
+    /** What a Mega Stone adds when its holder is the Pokémon it is for, in percent. *(tune)* */
+    const val MEGA_STONE_BATTLE_PERCENT = 6
 }
 
 /** When an ability perk applies. */

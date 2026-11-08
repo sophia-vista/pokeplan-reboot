@@ -38,6 +38,23 @@ class WorldStoreTest {
     }
 
     @Test
+    fun moveChoicesAreCheckedSavedAndCanGoBackToNatural() {
+        val store = store()
+        val id = store.data.player.pokemon.first().id
+        fun mon() = store.data.player.pokemon.first { it.id == id }
+        val options = app.pokeplan.core.pokemon.Moveset.learnable(mon()).map { it.identifier }
+        assertTrue(options.size >= 2)
+        assertTrue(mon().moves.isEmpty(), "natural until a choice is made")
+        assertTrue(store.setMoves(id, options.take(2)))
+        assertEquals(options.take(2), mon().activeMoves.map { it.identifier })
+        assertFalse(store.setMoves(id, listOf("not-a-move")))
+        assertFalse(store.setMoves("nobody", options.take(1)))
+        assertEquals(options.take(2), mon().moves, "a refused choice changes nothing")
+        assertTrue(store.setMoves(id, emptyList()))
+        assertTrue(mon().moves.isEmpty())
+    }
+
+    @Test
     fun everyMemberOfATeamGetsTheFullExperienceForEachFloorOnce() {
         val clock = Clock()
         val store = store(clock)

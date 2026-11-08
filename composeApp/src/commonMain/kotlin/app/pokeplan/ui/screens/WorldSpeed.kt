@@ -40,6 +40,10 @@ internal fun durationText(millis: Long): String {
 internal fun speedLines(e: SpeedExplanation): List<String> = buildList {
     add("Levels of the team: ${e.levels}.")
     add(if (e.favoredMembers == 0) "No one is of a type this place favours (+0)." else "${e.favoredMembers} of the team ${if (e.favoredMembers == 1) "is" else "are"} of a favoured type: +20% of their levels, +${oneDecimal(e.favoredBonus)}.")
+    if (e.identityLines.isNotEmpty()) {
+        add("Moves, abilities and held items add +${oneDecimal(e.identityBonus)} (a share of each level):")
+        addAll(e.identityLines)
+    } else add("No move, ability or held item of this team helps here (+0).")
     add("Power: ${oneDecimal(e.power)}. A floor takes the base time (${durationText(e.baseMillis)}) divided by 1 + power/100, so ${durationText(e.afterPowerMillis)}${if (e.atMinimum) ", the shortest it can be (a quarter of the base)" else ""}.")
     if (e.masteryPercent > 0) add("Temporal Mastery: ${e.masteryPercent}% faster.")
     if (e.legendPercent > 0) add("Legendary Guardians of this region: ${e.legendPercent}% faster.")
