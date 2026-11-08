@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.148.0
+
+- **PLAN's and CARE's rewards settle under their own ledger event ids** (REP-014, `DATA_AND_MIGRATIONS.md` section 7.3.0 step 2). A finished task (`plan:task:<id>:complete`), a recurring task's day, a step, a milestone, a weekly review, a mini-quest, a welcome-back gift, a focus session or Magic Guard egg (`plan:focus:<egg id>`), a Care moment (`care:<kind>:<day>:<count>`), a befriended visitor and a Shop purchase now leave a `LedgerNote` like HEAL, MINT, HOME and LINK already did, so the database ledger says why the balance and the Bag moved instead of one net change per save. The notes hold only opaque ids and amounts, never a task title. No number changed (`RewardRules.VERSION` stays 20). Tested on the JVM (`PlanCareLedgerNotesTest`).
+
 ## 0.147.0
 
 - **23 more Pokémon get their Mystery Dungeon sprite.** An audit of the 64 species that had none found that SpriteCollab's current files hold sprites for 26 of them (its status list is behind): Jellicent, Stunfisk, Aromatisse, Toucannon, Rolycoly, Sirfetch'd, Milcery, Stonjourner, Cufant, Copperajah, Arctovish, Tarountula, Dolliv, Grafaiai, Toedscool, Bombirdier, Orthworm, Iron Treads, Ting-Lu, Gouging Fire, Raging Bolt, Pecharunt and Miraidon's Low Power Mode are in (`tools/sprites/fetch_pmd_new.py`, artists in the credits). Five of them (Rolycoly, Milcery, Cufant, Tarountula, Bombirdier) have the full set of animations.

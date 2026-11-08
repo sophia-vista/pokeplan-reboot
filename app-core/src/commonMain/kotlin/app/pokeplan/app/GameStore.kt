@@ -319,7 +319,7 @@ class GameStore(
 
     fun markRewardsSeen() = update { d -> d.copy(rewardLog = d.rewardLog.map { it.copy(seen = true) }) }
 
-    private fun achieve(d: AppData, tier: Int, source: String, onTime: Boolean = false, focusedOnIt: Boolean = false, picked: Boolean = false): AppData {
+    private fun achieve(d: AppData, tier: Int, source: String, eventId: String, ref: String, onTime: Boolean = false, focusedOnIt: Boolean = false, picked: Boolean = false): AppData {
         val firstOfDay = streakDay !in d.activeDays
         val warmed = Counters.WARM.get(d.counters, streakDay)
         val event = AchievementEvent(
@@ -328,7 +328,7 @@ class GameStore(
         )
         val outcome = RewardEngine.achievement(d.player, event, rng)
         val counters = Counters.WARM.set(d.counters, streakDay, warmed + 1)
-        return log(source, outcome.rewards, d.copy(player = outcome.state, activeDays = d.activeDays + streakDay, counters = counters))
+        return noted(d, log(source, outcome.rewards, d.copy(player = outcome.state, activeDays = d.activeDays + streakDay, counters = counters)), eventId, "PLAN", ref, "task", nowMillis)
     }
 
     /** The Pokémon Care's screens show: Care's lead, or the Plan buddy until Care has one (it takes Care's friendship then). */
@@ -354,7 +354,9 @@ class GameStore(
         val rewards = outcome.rewards + egg?.rewards.orEmpty()
         update { d ->
             val counters = tally.set(d.counters, today, paidToday + 1) + (Counters.CARE_EGG_METER to meter % RewardEngine.CARE_EGG_METER_SIZE)
-            log(CARE_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters), origin = Origin(Origin.How.CARE_EGG, Region.CARE))
+            // CareEvent has no id of its own: the kind, the day and the count paid that day name it, and the same count never repeats (the tally above is what caps it).
+            val kind = event.kind.name.lowercase()
+            noted(d, log(CARE_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters), origin = Origin(Origin.How.CARE_EGG, Region.CARE)), "care:$kind:${today.toEpochDays()}:${paidToday + 1}", "CARE", "$kind:${today.toEpochDays()}", kind, event.nowMillis)
         }
         return rewards
     }
@@ -502,7 +504,7 @@ class GameStore(
         if (n <= 0) return 0
         update { d ->
             val player = d.player.copy(coins = d.player.coins - n * Shop.COINS_PER_RARE_CANDY, inventory = d.player.inventory.add(Items.RARE_CANDY, n))
-            log("Shop", listOf(Reward.Candies(CandyType.RARE, n)), d.copy(player = player), seen = true)
+            noted(d, log("Shop", listOf(Reward.Candies(CandyType.RARE, n)), d.copy(player = player), seen = true), "app:shop:$nowMillis", "APP", "shop", "purchase", nowMillis)
         }
         return n
     }
@@ -533,8 +535,8 @@ class GameStore(
             val counters = Counters.BEFRIEND.set(d.counters, today, made + 1)
             val tickets = if (ticket == null) d.eggTickets
             else d.eggTickets.copy(stock = d.eggTickets.stock.drop(1), spent = d.eggTickets.spent + SpentTicket(ticket.id, nowMillis, event.newPokemonId))
-            log(CARE_FRIEND_SOURCE, outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets),
-                origin = Origin(Origin.How.BEFRIENDED, Region.CARE, visitor = visitorOrigin(event, outcome.rewards)))
+            noted(d, log(CARE_FRIEND_SOURCE, outcome.rewards, d.copy(player = outcome.state, counters = counters, eggTickets = tickets),
+                origin = Origin(Origin.How.BEFRIENDED, Region.CARE, visitor = visitorOrigin(event, outcome.rewards))), "care:befriend:${event.newPokemonId}", "CARE", event.visitorId.ifEmpty { event.newPokemonId }, "befriend", event.nowMillis)
         }
         return outcome.rewards
     }
@@ -831,8 +833,8 @@ class GameStore(
             if (!pays) withTask else {
                 val (bag, overflow) = withTask.player.inventory.addCapped(Items.RARE_CANDY, TaskRules.SUBTASK_RARE_CANDIES)
                 val rewards = listOf(Reward.Candies(app.pokeplan.core.reward.CandyType.RARE, TaskRules.SUBTASK_RARE_CANDIES))
-                log("Step: ${task.subtasks.first { it.id == subtaskId }.title}", rewards,
-                    withTask.copy(player = withTask.player.copy(inventory = bag, coins = withTask.player.coins + overflow)))
+                noted(withTask, log("Step: ${task.subtasks.first { it.id == subtaskId }.title}", rewards,
+                    withTask.copy(player = withTask.player.copy(inventory = bag, coins = withTask.player.coins + overflow))), "plan:step:$taskId:$subtaskId", "PLAN", taskId, "step", nowMillis)
             }
         }
         return pays
@@ -931,7 +933,7 @@ class GameStore(
             var next = d.copy(pending = d.pending - due.toSet())
             for (p in due) {
                 val picked = p.done.id == next.pickedTaskId
-                if (p.pays) next = achieve(next, p.tier, "Task: ${p.done.title}", p.onTime, p.focusedOnIt, picked)
+                if (p.pays) next = achieve(next, p.tier, "Task: ${p.done.title}", "plan:task:${p.done.id}:complete", p.done.id, p.onTime, p.focusedOnIt, picked)
                 if (picked) next = next.copy(pickedTaskId = null)
             }
             next
@@ -960,7 +962,7 @@ class GameStore(
         val pays = habit.paysOn(date) && date == today
         update { d ->
             val next = d.copy(series = d.series.map { if (it.template.id == id) it.copy(completions = it.completions + date, paidOn = if (pays) date else it.paidOn) else it })
-            if (pays) achieve(next, series.template.rank.tier, "Recurring: ${series.template.title}") else next
+            if (pays) achieve(next, series.template.rank.tier, "Recurring: ${series.template.title}", "plan:series:$id:${date.toEpochDays()}", id) else next
         }
     }
 
@@ -1006,7 +1008,7 @@ class GameStore(
                 val rewards = gifts.map { (item, n) ->
                     if (item == Items.SUPER_CANDY) Reward.Candies(app.pokeplan.core.reward.CandyType.SUPER, n) else Reward.ItemDrop(item, n)
                 }
-                next = log("Goal: ${goal.title}", rewards, next.copy(player = next.player.copy(inventory = bag, coins = coins)))
+                next = noted(next, log("Goal: ${goal.title}", rewards, next.copy(player = next.player.copy(inventory = bag, coins = coins))), "plan:milestone:$goalId:$milestoneId", "PLAN", goalId, "milestone", nowMillis)
             }
             next
         }
@@ -1034,7 +1036,7 @@ class GameStore(
                 tasks = d.tasks.map { byId[it.id] ?: it }, reviews = d.reviews + review,
                 player = d.player.copy(inventory = d.player.inventory.add(berry, Reviews.REWARD_BERRIES)),
             )
-            log("Weekly review", listOf(Reward.ItemDrop(berry, Reviews.REWARD_BERRIES)), next)
+            noted(d, log("Weekly review", listOf(Reward.ItemDrop(berry, Reviews.REWARD_BERRIES)), next), "plan:review:${weekStart.toEpochDays()}", "PLAN", "week:${weekStart.toEpochDays()}", "review", nowMillis)
         }
     }
 
@@ -1081,9 +1083,9 @@ class GameStore(
             val counters = Counters.MINI_QUEST.set(d.counters, day, 1, detail = id)
             val (withBerry, berryOverflow) = d.player.inventory.addCapped(berry, berries)
             val (bag, candyOverflow) = withBerry.addCapped(Items.RARE_CANDY, candies)
-            log(MINI_QUEST_SOURCE, listOf(Reward.ItemDrop(berry, berries), Reward.Candies(CandyType.RARE, candies)), d.copy(
+            noted(d, log(MINI_QUEST_SOURCE, listOf(Reward.ItemDrop(berry, berries), Reward.Candies(CandyType.RARE, candies)), d.copy(
                 counters = counters, player = d.player.copy(inventory = bag, coins = d.player.coins + berryOverflow + candyOverflow),
-            ), seen = true)
+            ), seen = true), "plan:quest:${day.toEpochDays()}:$id", "PLAN", id, "mini-quest", nowMillis)
         }
         return true
     }
@@ -1117,7 +1119,7 @@ class GameStore(
                 bag.addCapped(item, n).let { (b, over) -> bag = b; coins += over }
             }
             val counters = Counters.WELCOME.set(d.counters, last, 1)
-            log("Welcome back", rewards, d.copy(counters = counters, player = d.player.copy(inventory = bag, coins = coins)))
+            noted(d, log("Welcome back", rewards, d.copy(counters = counters, player = d.player.copy(inventory = bag, coins = coins))), "plan:welcome:${last.toEpochDays()}", "PLAN", "absence:${last.toEpochDays()}", "welcome-back", nowMillis)
         }
         return rewards
     }
@@ -1242,12 +1244,12 @@ class GameStore(
                 val ticket = data.eggTickets.inSession
                 val outcome = RewardEngine.effort(player.atStartOf(session), event, ticket?.let { Random(it.seed) } ?: rng)
                 update { d ->
-                    log("Focus: $minutes min", outcome.rewards, d.copy(
+                    noted(d, log("Focus: $minutes min", outcome.rewards, d.copy(
                         eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
                         player = outcome.state.copy(planLeadId = d.player.planLeadId), focus = null, activeDays = d.activeDays + streakDay, lastFocusEnd = FocusEnd(nowMillis, true),
                         focusHistory = d.focusHistory + session.record(minutes, completed = true),
                         tasks = d.tasks.map { if (it.id == session.taskId) it.copy(focusedMinutes = it.focusedMinutes + minutes) else it },
-                    ), origin = Origin(Origin.How.FOCUS_EGG, event.region))
+                    ), origin = Origin(Origin.How.FOCUS_EGG, event.region)), "plan:focus:${event.newPokemonId}", "PLAN", event.newPokemonId, "focus", nowMillis)
                 }
                 FocusResult.Hatched(outcome.rewards)
             }
@@ -1280,13 +1282,13 @@ class GameStore(
         val event = EffortEvent(minutes, false, session.region.open, session.lure, epochDay, newId(), nowMillis)
         val outcome = RewardEngine.effort(player, event, ticket?.let { Random(it.seed) } ?: rng)
         update { d ->
-            log("Magic Guard: $minutes min", outcome.rewards, d.copy(
+            noted(d, log("Magic Guard: $minutes min", outcome.rewards, d.copy(
                 eggTickets = d.eggTickets.spend(ticket, session.startedAtMillis, event.newPokemonId),
                 player = outcome.state.copy(planLeadId = d.player.planLeadId), focus = null,
                 lastFocusEnd = FocusEnd(nowMillis, true, reason, guarded = true),
                 focusHistory = d.focusHistory + session.record(minutes, completed = false),
                 counters = Counters.MAGIC_GUARD.set(d.counters, weekStart, 1),
-            ), origin = Origin(Origin.How.FOCUS_EGG, event.region))
+            ), origin = Origin(Origin.How.FOCUS_EGG, event.region)), "plan:focus:${event.newPokemonId}", "PLAN", event.newPokemonId, "magic-guard", nowMillis)
         }
         return FocusResult.Hatched(outcome.rewards)
     }
