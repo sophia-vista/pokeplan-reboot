@@ -40,6 +40,12 @@ interface World {
      */
     fun link(event: LinkEvent): List<Reward>? = null
 
+    /** The PLAN task a LINK follow-up was converted into (LINK.md 2.4), if one still exists: PLAN owns it, its completion and its reward. */
+    fun followUpTask(followUpId: String): FollowUpTask? = null
+
+    /** Converts a follow-up into a PLAN task by the user's choice; the same follow-up gives the same task. Null when there is no Plan to receive it. */
+    fun planFollowUp(followUpId: String, title: String, planned: kotlinx.datetime.LocalDate?): FollowUpTask? = null
+
     /** Makes a friend of a Care visitor (one a day); null when nothing was paid (not started, or today's is used). */
     fun befriend(event: BefriendEvent): List<Reward>? = null
 
@@ -52,3 +58,6 @@ interface World {
     /** Takes one [berry] from the shared bag for a visitor's treat; false when there is none. */
     fun spendBerry(berry: String): Boolean = false
 }
+
+/** What LINK may know of the PLAN task a follow-up became: that it exists, whether it is done and when. Never the task's other fields. */
+data class FollowUpTask(val taskId: String, val done: Boolean, val doneAtMillis: Long? = null)

@@ -73,6 +73,11 @@ data class FollowUp(
     val completedMillis: Long? = null,
     val completedDay: LocalDate? = null,
     val paid: Boolean = false,
+    /**
+     * Set the moment the user turns it into a PLAN task and never cleared: from then on PLAN owns the task, its completion and its reward, and LINK pays
+     * nothing for it, even if the task is later deleted (LINK.md 2.4 and 9.2).
+     */
+    val converted: Boolean = false,
 )
 
 /** What a follow-up is today, neutrally named (LINK.md 2.4): nothing here is a warning. */
