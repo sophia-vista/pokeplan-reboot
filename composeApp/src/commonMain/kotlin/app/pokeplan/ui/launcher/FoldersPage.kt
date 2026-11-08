@@ -1,5 +1,7 @@
 package app.pokeplan.ui.launcher
 
+import app.pokeplan.ui.theme.PixelShape
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -12,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +36,7 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PmdText
 import app.pokeplan.ui.theme.Spacing
 
-private val fieldShape = RoundedCornerShape(4.dp)
+private val fieldShape = PixelShape
 
 /** A one-line text field in the launcher's look, with [hint] while it is empty. */
 @Composable

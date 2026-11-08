@@ -151,6 +151,7 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
+            ModuleLeadStage(model, Module.PLAN, data.player.planLead, store.moduleEvent(null), resting = session != null, openPokemon = openPokemon)
             RewardBox(model)
             TutorialCard(model, app.pokeplan.app.Tutorials.PLAN_FOCUS)
             PlanPartyPanel(model, openPokemon)

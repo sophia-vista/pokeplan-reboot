@@ -25,8 +25,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -121,7 +119,7 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
             PixelTitle(entry.title)
         }
         if (entry.badge > 0) {
-            Box(Modifier.align(Alignment.TopEnd).size(26.dp).background(Pixel.Red, CircleShape), contentAlignment = Alignment.Center) {
+            Box(Modifier.align(Alignment.TopEnd).size(26.dp).background(Pixel.Red, DialogueShape), contentAlignment = Alignment.Center) {
                 Text("${entry.badge}", style = MaterialTheme.typography.labelMedium, color = Color.White)
             }
         }

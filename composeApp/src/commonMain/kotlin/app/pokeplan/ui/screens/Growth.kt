@@ -8,20 +8,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import app.pokeplan.ui.theme.FieldLabel
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import app.pokeplan.ui.theme.ToggleRow
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
 import kotlin.math.roundToInt
@@ -223,7 +220,7 @@ internal fun GoalsView(model: AppModel) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Text(g.title, style = MaterialTheme.typography.titleMedium)
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Box(Modifier.size(10.dp).background(categoryColor(g.category), CircleShape))
+                    Box(Modifier.size(10.dp).background(categoryColor(g.category), PixelShape))
                     Text(
                         listOfNotNull(g.category.label, g.targetDate?.let { "aiming for ${it.short()}" }).joinToString(", "),
                         style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,

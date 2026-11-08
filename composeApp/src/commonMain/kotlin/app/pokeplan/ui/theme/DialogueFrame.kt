@@ -112,3 +112,35 @@ fun Modifier.dialogueBox(fill: Color = Pixel.Panel.copy(alpha = CARD_OPACITY), p
     val deep = tone?.deep ?: if (Pixel.dark) DialogueColors.Deep else DialogueColors.CardDeep
     return drawBehind { dialogueFrame(pixel.toPx(), fill, sideBand = 2, topBand = 1, edge = edge, band = band, deep = deep) }
 }
+
+/**
+ * A disc drawn in whole pixels: one flat span per row of [p] pixels, so its edge is stairs like every other corner in the app and never an
+ * anti-aliased curve. The centre and each row snap to the pixel grid, so a ring and its fill line up.
+ */
+fun pixelDiscPath(c: Offset, radius: Float, p: Float): Path = Path().apply {
+    if (radius <= 0f) return@apply
+    val top = kotlin.math.floor((c.y - radius) / p) * p
+    var y = top
+    while (y < c.y + radius) {
+        val dy = y + p / 2 - c.y
+        if (kotlin.math.abs(dy) < radius) {
+            val half = kotlin.math.round(kotlin.math.sqrt(radius * radius - dy * dy) / p).coerceAtLeast(1f) * p
+            val left = kotlin.math.round((c.x - half) / p) * p
+            addRect(androidx.compose.ui.geometry.Rect(left, y, left + 2 * half, y + p))
+        }
+        y += p
+    }
+}
+
+/** A filled disc in whole pixels (the pixel version of `drawCircle`). */
+fun DrawScope.drawPixelDisc(color: Color, center: Offset, radius: Float, p: Float = 2.dp.toPx()) = drawPath(pixelDiscPath(center, radius, p), color)
+
+/** A ring in whole pixels, [width] thick (the pixel version of `drawCircle` with a stroke). */
+fun DrawScope.drawPixelRing(color: Color, center: Offset, radius: Float, width: Float, p: Float = 2.dp.toPx()) {
+    val ring = Path().apply {
+        fillType = PathFillType.EvenOdd
+        addPath(pixelDiscPath(center, radius + width / 2, p))
+        addPath(pixelDiscPath(center, (radius - width / 2).coerceAtLeast(0f), p))
+    }
+    drawPath(ring, color)
+}

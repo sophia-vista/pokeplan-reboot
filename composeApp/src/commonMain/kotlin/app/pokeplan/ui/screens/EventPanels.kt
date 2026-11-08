@@ -1,5 +1,7 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.DialogueShape
+
 import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.drag
@@ -16,12 +18,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -223,11 +222,11 @@ private fun EventColors(selected: Long?, pick: (Long) -> Unit) {
         TaskList.COLORS.forEachIndexed { i, c ->
             val on = c == (selected ?: TaskList.COLORS[4])
             Box(
-                Modifier.size(36.dp).clip(CircleShape).selectable(on, role = Role.RadioButton) { pick(c) }
+                Modifier.size(36.dp).clip(DialogueShape).selectable(on, role = Role.RadioButton) { pick(c) }
                     .semantics { contentDescription = eventColorNames[i] },
                 contentAlignment = Alignment.Center,
             ) {
-                Box(Modifier.size(26.dp).background(Color(c), CircleShape).border(if (on) 3.dp else 0.dp, if (on) Pixel.Ink else Color.Transparent, CircleShape))
+                Box(Modifier.size(26.dp).background(Color(c), DialogueShape).border(if (on) 3.dp else 0.dp, if (on) Pixel.Ink else Color.Transparent, DialogueShape))
             }
         }
     }

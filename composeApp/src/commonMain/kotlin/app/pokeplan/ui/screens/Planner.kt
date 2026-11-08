@@ -1,5 +1,7 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.DialogueShape
+
 import app.pokeplan.ui.theme.frameToneOf
 import app.pokeplan.ui.theme.dialogueBox
 import androidx.compose.ui.semantics.contentDescription
@@ -23,7 +25,6 @@ import kotlinx.datetime.isoDayNumber
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -75,8 +76,6 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
@@ -487,7 +486,7 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
                 val shownList = list?.takeIf { showList }
                 if (line.isNotEmpty() || shownList != null) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                     if (shownList != null) {
-                        Box(Modifier.size(8.dp).background(Color(shownList.color), CircleShape))
+                        Box(Modifier.size(8.dp).background(Color(shownList.color), PixelShape))
                         Text(shownList.name, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     if (line.isNotEmpty()) Text(if (shownList != null) "· $line" else line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)

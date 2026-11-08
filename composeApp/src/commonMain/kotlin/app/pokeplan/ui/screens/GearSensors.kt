@@ -1,5 +1,8 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.drawPixelDisc
+import app.pokeplan.ui.theme.drawPixelRing
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -62,7 +65,7 @@ internal fun CompassTool(model: AppModel, onUse: () -> Unit) {
             Canvas(Modifier.size(220.dp)) {
                 val r = size.minDimension / 2 - 8f
                 val c = Offset(size.width / 2, size.height / 2)
-                drawCircle(Pixel.Border, r, c, style = Stroke(4f))
+                drawPixelRing(Pixel.Border, c, r, 6f)
                 // The dial turns the other way from the heading, so north stays where it really is.
                 val turn = -(h ?: 0f)
                 for (i in 0 until 16) {
@@ -73,7 +76,7 @@ internal fun CompassTool(model: AppModel, onUse: () -> Unit) {
                 }
                 val (nx, ny) = SensorMath.pointOnCircle(turn, r * 0.7f)
                 drawLine(Pixel.Red, c, c + Offset(nx, ny), strokeWidth = 8f)
-                drawCircle(Pixel.Ink, 8f, c)
+                drawPixelDisc(Pixel.Ink, c, 8f)
             }
             Text(if (h == null) "Reading the sensors" else "${h.toInt()}° ${SensorMath.cardinal(h)}", style = MaterialTheme.typography.headlineMedium)
         }
@@ -100,12 +103,12 @@ internal fun LevelTool(model: AppModel, onUse: () -> Unit) {
             Canvas(Modifier.size(200.dp)) {
                 val r = size.minDimension / 2 - 8f
                 val c = Offset(size.width / 2, size.height / 2)
-                drawCircle(if (level) Pixel.Green else Pixel.Border, r, c, style = Stroke(6f))
+                drawPixelRing(if (level) Pixel.Green else Pixel.Border, c, r, 8f)
                 drawLine(Pixel.Border, Offset(c.x - r, c.y), Offset(c.x + r, c.y), 2f); drawLine(Pixel.Border, Offset(c.x, c.y - r), Offset(c.x, c.y + r), 2f)
                 // The bubble drifts to the high side, about 4 px per degree, kept inside the ring.
                 t?.let {
                     val dx = (it.roll * -6f).coerceIn(-r * 0.8f, r * 0.8f); val dy = (it.pitch * 6f).coerceIn(-r * 0.8f, r * 0.8f)
-                    drawCircle(if (level) Pixel.Green else Pixel.Blue, 18f, c + Offset(dx, dy))
+                    drawPixelDisc(if (level) Pixel.Green else Pixel.Blue, c + Offset(dx, dy), 18f)
                 }
             }
             Text(if (t == null) "Reading the sensor" else if (level) "Level" else SensorMath.degreesText(t.fromFlat) + " off", style = MaterialTheme.typography.headlineMedium)

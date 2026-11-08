@@ -29,7 +29,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.semantics.heading
@@ -40,7 +39,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -466,7 +464,7 @@ private fun DayCell(day: LocalDate, today: LocalDate, chosen: Boolean, busy: Boo
                 .size(32.dp)
                 .background(
                     when { chosen && isToday -> Pixel.Red; chosen -> Pixel.Ink; else -> Color.Transparent },
-                    CircleShape,
+                    PixelShape,
                 ),
             contentAlignment = Alignment.Center,
         ) {
@@ -475,7 +473,7 @@ private fun DayCell(day: LocalDate, today: LocalDate, chosen: Boolean, busy: Boo
                 color = when { chosen -> if (isToday) Color.White else Pixel.OnInk; isToday -> Pixel.Red; else -> Pixel.Ink },
             )
         }
-        Box(Modifier.size(5.dp).background(if (busy) Pixel.InkSoft else Color.Transparent, CircleShape))
+        Box(Modifier.size(5.dp).background(if (busy) Pixel.InkSoft else Color.Transparent, PixelShape))
     }
 }
 
@@ -789,7 +787,7 @@ private fun Hours(
                     if (now >= origin && now < endHour * 60) {
                         val y = HourHeight * ((now - origin) / 60f)
                         Box(Modifier.offset(x = x, y = y - 1.dp).width(columnWidth).height(2.dp).background(Pixel.Red))
-                        Box(Modifier.offset(x = x - 5.dp, y = y - 5.dp).size(10.dp).background(Pixel.Red, CircleShape))
+                        Box(Modifier.offset(x = x - 5.dp, y = y - 5.dp).size(10.dp).background(Pixel.Red, PixelShape))
                     }
                 }
             }

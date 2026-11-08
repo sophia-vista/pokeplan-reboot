@@ -1,10 +1,11 @@
 package app.pokeplan.ui
 
+import app.pokeplan.ui.theme.PixelShape
+
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -79,14 +80,14 @@ fun PixelBackground(name: String, modifier: Modifier = Modifier, scale: Int = 3,
 /** A rounded wallpaper banner, the place a Pokémon or an egg stands. */
 @Composable
 fun Stage(name: String, height: Dp, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
-    val shape = RoundedCornerShape(Spacing.CardRadius)
+    val shape = PixelShape
     PixelBackground(name, modifier.fillMaxWidth().height(height).clip(shape).border(1.dp, Pixel.Border, shape), content = content)
 }
 
 /** A rounded scene banner, like [Stage] but with a real battle scene ([SceneImage]) where the Pokémon stands. */
 @Composable
 fun SceneStage(scene: String, height: Dp, modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
-    val shape = RoundedCornerShape(Spacing.CardRadius)
+    val shape = PixelShape
     Box(modifier.fillMaxWidth().height(height).clip(shape).border(1.dp, Pixel.Border, shape)) {
         SceneImage(scene, Modifier.matchParentSize())
         content()

@@ -217,6 +217,7 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
+            ModuleLeadStage(model, Module.LINK, model.data.player.linkLead, model.store.moduleEvent(app.pokeplan.app.GameStore.LINK_LOG_PREFIX), openPokemon = openPokemon)
             RewardBox(model)
             TutorialCard(model, Tutorials.LINK_POSTCARD, linkRecords = data.people.size + data.dates.size + data.followUps.size)
             LinkOverview(model)
