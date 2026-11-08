@@ -20,7 +20,8 @@ class KantoTest {
     fun kantoHasNineDungeonsWithIdsThatAreUniqueAcrossLayers() {
         assertEquals(9, kanto.size)
         assertEquals(Dungeons.all.size, Dungeons.all.map { it.id }.toSet().size)
-        assertEquals(9, Dungeons.of(WorldLayer.RESCUE).size + Dungeons.of(WorldLayer.EXPLORERS).size, "the two Mystery Dungeon arcs share the nine old home dungeons")
+        assertEquals(5, Dungeons.of(WorldLayer.RESCUE).size, "the Rescue Team arc")
+        assertEquals(9, Dungeons.of(WorldLayer.EXPLORERS).size, "the Explorers arc")
         assertEquals("cerulean-cave", kanto.single { it.guardian }.id)
     }
 

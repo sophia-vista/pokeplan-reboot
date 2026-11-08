@@ -75,7 +75,7 @@ class ScreenshotTest {
             render("story-${scene.id}", frames = 90) { PixelTheme { app.pokeplan.ui.screens.StoryPlayer(model, episode.copy(scenes = listOf(scene)), {}) } }
         }
         // A cinematic (a legendary's appearance) and a choice.
-        listOf("kanto-5-cave", "kanto-4-camp", "intro-mew-1", "intro-mew-3", "intro-mew-5").forEach { id ->
+        listOf("kanto-5-cave", "kanto-4-camp", "intro-mew-1", "intro-mew-3", "intro-mew-5", "rescue-1-square", "rescue-4-absol", "explorers-1-guild", "explorers-6-hidden-land", "explorers-post-106-arrival").forEach { id ->
             val scene = app.pokeplan.world.story.StoryCatalog.scene(id)!!
             render("story-$id", frames = 120) { PixelTheme { app.pokeplan.ui.screens.StoryPlayer(model, episode.copy(scenes = listOf(scene)), {}) } }
         }

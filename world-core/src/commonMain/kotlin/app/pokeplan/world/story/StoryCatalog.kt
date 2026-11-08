@@ -8,7 +8,9 @@ import app.pokeplan.world.WorldLayer
  */
 object StoryCatalog {
     private val episodes: List<StoryEpisode> by lazy {
-        listOf(IntroMewChapter.episode()) + RescueChapters.all() + ExplorersChaptersA.all() + ExplorersChaptersB.all() + KantoChapters.all() + JohtoChapters.all() + HoennChapters.all() + SinnohChapters.all()
+        listOf(IntroMewChapter.episode()) + RescueChapters.all() + ExplorersChaptersA.all() + ExplorersChaptersB.all() + KantoChapters.all() + JohtoChapters.all() + HoennChapters.all() + SinnohChapters.all() +
+            RescuePostStory.all().map { it.copy(summary = RescuePostStory.summaries[it.chapter].orEmpty()) } +
+            ExplorersPostStory.all().map { it.copy(summary = ExplorersPostStory.summaries[it.chapter].orEmpty()) }
     }
 
     fun all(): List<StoryEpisode> = episodes
@@ -17,6 +19,12 @@ object StoryCatalog {
     fun intro(): StoryEpisode = episodes.first { it.layer == null }
 
     fun episodeFor(layer: WorldLayer, chapter: Int): StoryEpisode? = episodes.firstOrNull { it.layer == layer && it.chapter == chapter }
+
+    /** The optional episodes after [layer]'s story, in order (empty for a layer with none). They open when the layer's Guardian has been faced. */
+    fun specialsOf(layer: WorldLayer): List<StoryEpisode> = episodes.filter { it.layer == layer && it.special }
+
+    /** The story chapters of a layer (not its optional episodes). */
+    fun chaptersOf(layer: WorldLayer): List<StoryEpisode> = episodes.filter { it.layer == layer && !it.special }
 
     fun scene(id: String): StoryScene? = episodes.flatMap { it.scenes }.firstOrNull { it.id == id }
 

@@ -28,6 +28,8 @@ Work list, in order (one PR each, tests green, the story-engine and Dungeons tes
 4. **Story catalog.** Delete `MysteryDungeonChapters.kt`; add `RescueChapters.kt` (chapters 1 to 6 from this brief, scene ids `rescue-N-*` as written) and `ExplorersChapters.kt` (chapters 1 to 8, `explorers-N-*`); `IntroMewChapter` loses its layer (a standalone `intro` episode: the catalog and archive need a layer-less entry). Mew's 'witness' framing (a memory echo) is a premise line of each arc's first scene; `{player}` stays a name in text until the engine can put the player's Pokémon on stage.
 5. **Guide, map and archive** show the two arcs as optional layers; nothing in them gates ordinary exploration.
 
+Status (0.160.0): items 1 to 5 are done. The dungeons are split (Rescue: Tiny Woods, Thunderwave Cave, Mt. Steel, Frosty Forest, Sky Tower; Explorers: Beach Cave, Drenched Bluff, Waterfall Cave, Crystal Cave, Glacier Palace, Ancient Ruins, Hidden Land, Temporal Tower, Distortion Rift); scenes are set on real ground maps of the two games (`StoryPlaces`, background `map:<name>`); the post-story episodes of both arcs are chapters 101 and up (`StoryEpisode.special`), played from the Story archive once the arc's story is complete. Not built: Mew's "witness mode" framing line in each arc's first scene, and a world-map picture of the Rescue Team's own.
+
 Read the Explorers chapters 4 to 8 (lines from "The Thief of Time" on) in full before writing them; chapters 1 to 3 and the Rescue Team arc are above.
 
 

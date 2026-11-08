@@ -93,4 +93,21 @@ class StoryEngineTest {
         val three = dialogue("t-3", "t", "bg", duo) { show(BUDDY, 3f, 3f); show("a", 5f, 3f); show("b", 7f, 3f); say(BUDDY, "hi") }
         assertTrue(three.problems().any { "at most" in it }, three.problems().toString())
     }
+    @Test
+    fun theOptionalEpisodesAfterEachArcAreWrittenAndNeverPartOfTheChapters() {
+        val rescue = StoryCatalog.specialsOf(WorldLayer.RESCUE)
+        val explorers = StoryCatalog.specialsOf(WorldLayer.EXPLORERS)
+        assertEquals(listOf(101, 102, 103, 104, 105), rescue.map { it.chapter })
+        assertEquals(listOf(101, 102, 103, 104, 105, 106), explorers.map { it.chapter })
+        (rescue + explorers).forEach { ep ->
+            assertTrue(ep.special && ep.summary.isNotBlank() && ep.scenes.isNotEmpty(), ep.key)
+            // Never a prize in a scene: nothing on the floor to take.
+            assertTrue(ep.scenes.flatMap { it.events }.none { it is SceneEvent.TakeItem }, ep.key)
+        }
+        for (layer in listOf(WorldLayer.RESCUE, WorldLayer.EXPLORERS)) {
+            assertTrue(StoryCatalog.chaptersOf(layer).none { it.special })
+            assertEquals(app.pokeplan.world.Story.chaptersOf(layer).size, StoryCatalog.chaptersOf(layer).size)
+        }
+        assertTrue(StoryCatalog.specialsOf(WorldLayer.KANTO).isEmpty())
+    }
 }

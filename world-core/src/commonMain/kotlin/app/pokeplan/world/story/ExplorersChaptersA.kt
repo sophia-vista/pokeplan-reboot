@@ -27,7 +27,7 @@ internal object ExplorersChaptersA {
     fun all(): List<StoryEpisode> = listOf(c1(), c2(), c3(), c4())
 
     private fun c1() = StoryEpisode(WorldLayer.EXPLORERS, 1, "The Beach", listOf(
-        stage("explorers-1-beach", "Washed ashore", "beach", listOf(buddy, koffing)) {
+        stage("explorers-1-beach", "Washed ashore", StoryPlaces.SEA_CLIFF, listOf(buddy, koffing)) {
             narr("Waves roll over the shore. A ring of light closes above the water. The team lands on the sand in a tangle of limbs and startled cries.")
             show(BUDDY, 3.0f, 3.2f)
             say(BUDDY, "Hoopa could have warned us about the landing!", SURPRISED)
@@ -48,7 +48,7 @@ internal object ExplorersChaptersA {
             say(BUDDY, "Sorry. I can't just let them get away. Can you stand?", WORRIED)
             narr("The two of you pursue the thieves.")
         },
-        dungeon("explorers-1-cliff", "The stolen treasure", "waterfall-cave", listOf(buddy, koffing, zubat)) {
+        dungeon("explorers-1-cliff", "The stolen treasure", "beach-cave", listOf(buddy, koffing, zubat)) {
             enter(BUDDY, 3.0f, 2.8f)
             narr("The path narrows into a rocky passage. The Koffing hover near the exit, laughing.")
             show("koffing", 9.0f, 2.4f, Facing.LEFT)
@@ -68,7 +68,7 @@ internal object ExplorersChaptersA {
             say(BUDDY, "Hoopa's mark. So the passage brought us here deliberately.", SURPRISED)
             say(BUDDY, "We should find the town and ask for directions. If the ring opens again, I want to know where it leads before we step through.", NORMAL)
         },
-        stage("explorers-1-town", "Treasure Town", "city", listOf(buddy, kecleon, marill, azurill, duskull)) {
+        stage("explorers-1-town", "Treasure Town", StoryPlaces.TREASURE_TOWN, listOf(buddy, kecleon, marill, azurill, duskull)) {
             narr("Treasure Town is lively. Shops line the square, and Pokémon come and go carrying supplies.")
             show(BUDDY, 4.0f, 3.2f)
             show("kecleon", 8.5f, 2.4f, Facing.LEFT)
@@ -89,7 +89,7 @@ internal object ExplorersChaptersA {
             face(BUDDY, Facing.UP)
             say(BUDDY, "That's the Exploration Guild. If anyone knows about that fragment, it'll be someone there.", HAPPY)
         },
-        stage("explorers-1-guild", "The guild's entrance", "city", listOf(buddy, diglett, chatot, wigglytuff)) {
+        stage("explorers-1-guild", "The guild's entrance", StoryPlaces.GUILD_GATE, listOf(buddy, diglett, chatot, wigglytuff)) {
             narr("The guild's entrance is guarded by a Diglett lookout. The two of you approach the grate.")
             show(BUDDY, 2.0f, 3.2f)
             show("diglett", 6.0f, 3.0f, Facing.LEFT)
@@ -124,7 +124,7 @@ internal object ExplorersChaptersA {
     ))
 
     private fun c2() = StoryEpisode(WorldLayer.EXPLORERS, 2, "Guild Life", listOf(
-        stage("explorers-2-morning", "The guild's morning", "city", listOf(buddy, chatot, wigglytuff, bidoof, sunflora, loudred)) {
+        stage("explorers-2-morning", "The guild's morning", StoryPlaces.GUILD_BEDROOM, listOf(buddy, chatot, wigglytuff, bidoof, sunflora, loudred)) {
             narr("The guild is already noisy. Loudred's voice shakes dust from the rafters.")
             show(BUDDY, 2.0f, 3.2f)
             show("loudred", 9.0f, 3.4f, Facing.LEFT)
@@ -147,7 +147,7 @@ internal object ExplorersChaptersA {
             say("chatot", "Your first assignment is simple. Accompany Bidoof on a short expedition.", NORMAL)
             say("bidoof", "Me? Oh! Well, sure! I'd be happy to!", SURPRISED)
         },
-        dungeon("explorers-2-bidoof", "Bidoof's lesson", "thunderwave-cave", listOf(buddy, bidoof)) {
+        dungeon("explorers-2-bidoof", "Bidoof's lesson", "drenched-bluff", listOf(buddy, bidoof)) {
             enter(BUDDY, 3.0f, 3.2f)
             enter("bidoof", 5.0f, 2.6f)
             narr("Bidoof walks ahead, stopping every few steps to point out something interesting.")
@@ -170,7 +170,7 @@ internal object ExplorersChaptersA {
     ))
 
     private fun c3() = StoryEpisode(WorldLayer.EXPLORERS, 3, "The Famous Explorer", listOf(
-        stage("explorers-3-dusknoir", "A celebrated arrival", "city", listOf(buddy, dusknoir, chatot, wigglytuff, kecleon, sunflora, loudred)) {
+        stage("explorers-3-dusknoir", "A celebrated arrival", StoryPlaces.TREASURE_TOWN, listOf(buddy, dusknoir, chatot, wigglytuff, kecleon, sunflora, loudred)) {
             narr("The town square is crowded. Pokémon whisper excitedly as a distinguished Dusknoir approaches.")
             show(BUDDY, 3.0f, 3.6f)
             show("kecleon", 1.0f, 2.2f); show("sunflora", 2.2f, 1.8f); show("loudred", 4.4f, 2.0f)
@@ -196,7 +196,7 @@ internal object ExplorersChaptersA {
             narr("Dusknoir smiles, but the pause lasts a little too long.")
             say("dusknoir", "I hope we meet again.", HAPPY)
         },
-        dialogue("explorers-3-warning", "A private warning", "city", listOf(buddy, dusknoir)) {
+        dialogue("explorers-3-warning", "A private warning", StoryPlaces.GUILD_GATE_SUNSET, listOf(buddy, dusknoir)) {
             narr("Later, Dusknoir finds the two of you outside the guild.")
             say("dusknoir", "May I ask you something?", NORMAL)
             say(BUDDY, "Sure.", NORMAL)
@@ -215,7 +215,7 @@ internal object ExplorersChaptersA {
     ))
 
     private fun c4() = StoryEpisode(WorldLayer.EXPLORERS, 4, "The Thief of Time", listOf(
-        dungeon("explorers-4-frozen", "The frozen pond", "glacier-palace", listOf(buddy, bidoof)) {
+        dungeon("explorers-4-frozen", "The frozen pond", "crystal-cave", listOf(buddy, bidoof)) {
             enter(BUDDY, 3.5f, 3.0f)
             enter("bidoof", 2.0f, 3.4f)
             narr("The water in a cavern pond is frozen in the shape of a splash. A drop hangs in midair.")
@@ -231,7 +231,7 @@ internal object ExplorersChaptersA {
             say(BUDDY, "Hey! Who's there?", SURPRISED)
             narr("The figure vanishes.")
         },
-        cinematic("explorers-4-grovyle", "The accusation", "forest", listOf(buddy, grovyle)) {
+        cinematic("explorers-4-grovyle", "The accusation", StoryPlaces.FOREST_CLEARING, listOf(buddy, grovyle)) {
             show(BUDDY, 2.0f, 4.6f)
             narr("Deep in a forest, a Time Gear rests within an ancient stone structure. A green Pokémon approaches silently.")
             show("grovyle", 8.0f, 4.0f, Facing.LEFT)
@@ -249,7 +249,7 @@ internal object ExplorersChaptersA {
             walk("grovyle", 11.0f to 3.2f)
             hide("grovyle")
         },
-        stage("explorers-4-briefing", "The guild's investigation", "city", listOf(buddy, chatot, dusknoir, loudred, sunflora)) {
+        stage("explorers-4-briefing", "The guild's investigation", StoryPlaces.GUILD_HALL, listOf(buddy, chatot, dusknoir, loudred, sunflora)) {
             show(BUDDY, 2.0f, 3.4f)
             show("chatot", 6.0f, 2.2f, Facing.LEFT)
             show("loudred", 4.4f, 1.8f); show("sunflora", 7.6f, 1.8f, Facing.LEFT)

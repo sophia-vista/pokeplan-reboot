@@ -34,7 +34,7 @@ internal object RescueChapters {
     fun all(): List<StoryEpisode> = listOf(c1(), c2(), c3(), c4(), c5(), c6())
 
     private fun c1() = StoryEpisode(WorldLayer.RESCUE, 1, "A Pokémon Out of Place", listOf(
-        dialogue("rescue-1-voice", "The voice in the grass", "meadow", listOf(buddy, mew)) {
+        dialogue("rescue-1-voice", "The voice in the grass", StoryPlaces.WILD_PLAINS, listOf(buddy, mew)) {
             narr("The Frontier's forest disappears in a wash of green light. The team lands in soft grass beneath an unfamiliar sky.")
             say(BUDDY, "That was not a normal portal.", SURPRISED)
             narr("Mew floats upside down in front of them, looking delighted.")
@@ -51,7 +51,7 @@ internal object RescueChapters {
             cry("mew")
             hide("mew")
         },
-        stage("rescue-1-square", "Pokémon Square", "city", listOf(buddy, kecleon, gulpin, persian, wigglytuff)) {
+        stage("rescue-1-square", "Pokémon Square", StoryPlaces.SQUARE_TOWN, listOf(buddy, kecleon, gulpin, persian, wigglytuff)) {
             show("kecleon", 8.0f, 2.2f, Facing.LEFT)
             show("gulpin", 9.5f, 2.8f, Facing.LEFT)
             show("persian", 6.5f, 1.8f, Facing.DOWN)
@@ -69,7 +69,7 @@ internal object RescueChapters {
             say(BUDDY, "You haven't? Oh. Right. We should fix that.", SURPRISED)
             narr("The square's request board catches your eye. A small Caterpie is standing in front of it, looking increasingly distressed.")
         },
-        dialogue("rescue-1-caterpie", "A tiny rescue", "meadow", listOf(buddy, caterpie)) {
+        dialogue("rescue-1-caterpie", "A tiny rescue", StoryPlaces.DARK_WOODS, listOf(buddy, caterpie)) {
             say("caterpie", "Excuse me... Are you a rescue team?", WORRIED)
             say(BUDDY, "Us? Well, not exactly. We're...", SURPRISED)
             say("caterpie", "My friend Metapod went into Tiny Woods and hasn't come back!", WORRIED)
@@ -99,7 +99,7 @@ internal object RescueChapters {
             narr("{buddy} looks ahead.")
             say(BUDDY, "I think we're going to make a good team.", HAPPY)
         },
-        stage("rescue-1-team", "A team takes shape", "city", listOf(buddy, caterpie, persian)) {
+        stage("rescue-1-team", "A team takes shape", StoryPlaces.SQUARE_VILLAGE, listOf(buddy, caterpie, persian)) {
             show(BUDDY, 4.0f, 3.2f)
             show("caterpie", 6.0f, 3.4f, Facing.LEFT)
             narr("Back at the square, Caterpie is overjoyed to see Metapod.")
@@ -123,7 +123,7 @@ internal object RescueChapters {
     ))
 
     private fun c2() = StoryEpisode(WorldLayer.RESCUE, 2, "The World Needs Helping", listOf(
-        dialogue("rescue-2-base", "The first morning at the base", "meadow", listOf(buddy)) {
+        dialogue("rescue-2-base", "The first morning at the base", StoryPlaces.SQUARE_VILLAGE, listOf(buddy)) {
             narr("Morning light falls across the team's new base. It is small, a little dusty, and not particularly impressive.")
             say(BUDDY, "Our very own rescue base!", HAPPY)
             narr("{buddy} steps inside. A little dust puffs into the air.")
@@ -136,7 +136,7 @@ internal object RescueChapters {
             narr("The shaking stops.")
             say(BUDDY, "Maybe a small one. They've been happening more often lately.", NORMAL)
         },
-        dialogue("rescue-2-whiscash", "Whiscash's warning", "city", listOf(buddy, whiscash)) {
+        dialogue("rescue-2-whiscash", "Whiscash's warning", StoryPlaces.SQUARE_VILLAGE, listOf(buddy, whiscash)) {
             narr("At the pond, Whiscash floats with his eyes half closed. He looks as though he has been waiting for someone to ask him a question.")
             say("whiscash", "Wooo-hooo! A new rescue team! Come closer, young ones!", HAPPY)
             say(BUDDY, "Hello, Whiscash. We wanted to ask about the earthquakes.", NORMAL)
@@ -164,7 +164,7 @@ internal object RescueChapters {
     ))
 
     private fun c3() = StoryEpisode(WorldLayer.RESCUE, 3, "The Fugitive", listOf(
-        dialogue("rescue-3-dream", "The dream", "dampcave", listOf(gardevoir)) {
+        dialogue("rescue-3-dream", "The dream", StoryPlaces.NIGHTMARE, listOf(gardevoir)) {
             narr("You stand in a dark place. A Gardevoir appears, her outline faint and distant.")
             say("gardevoir", "Please... You must leave.", WORRIED)
             narr("The ground trembles. The darkness ripples.")
@@ -173,7 +173,7 @@ internal object RescueChapters {
             say("gardevoir", "I'm sorry. I couldn't protect you.", WORRIED)
             narr("You wake.")
         },
-        stage("rescue-3-gengar", "Gengar's story", "city", listOf(buddy, gengar, ekans, medicham)) {
+        stage("rescue-3-gengar", "Gengar's story", StoryPlaces.SQUARE_TOWN, listOf(buddy, gengar, ekans, medicham)) {
             show("gengar", 8.0f, 2.4f, Facing.LEFT)
             show("ekans", 6.5f, 3.2f, Facing.RIGHT)
             show("medicham", 9.5f, 3.2f, Facing.LEFT)
@@ -194,7 +194,7 @@ internal object RescueChapters {
             narr("Gengar turns away, smiling.")
             exit("gengar", 2.4f, toRight = true)
         },
-        stage("rescue-3-exile", "The square turns", "city", listOf(buddy, alakazam, charizard, tyranitar)) {
+        stage("rescue-3-exile", "The square turns", StoryPlaces.SQUARE_TOWN, listOf(buddy, alakazam, charizard, tyranitar)) {
             show(BUDDY, 3.5f, 3.2f)
             narr("Whispers follow you through the square. Some Pokémon avoid your eyes. Others stare openly.")
             say(BUDDY, "They really believe him...", WORRIED)
@@ -216,7 +216,7 @@ internal object RescueChapters {
     ))
 
     private fun c4() = StoryEpisode(WorldLayer.RESCUE, 4, "Beyond the Village", listOf(
-        stage("rescue-4-absol", "A stranger in the snow", "icecave", listOf(buddy, absol)) {
+        dungeon("rescue-4-absol", "A stranger in the snow", "frosty-forest", listOf(buddy, absol)) {
             enter(BUDDY, 3.5f, 3.0f)
             narr("Snow falls over a forest of pale trees. The wind carries a low, distant rumble.")
             say(BUDDY, "I don't like this place. The snow is getting heavier.", WORRIED)
@@ -236,7 +236,7 @@ internal object RescueChapters {
             say("absol", "I know what it is like to be mistaken for an omen. If you will allow it, I would like to travel with you.", NORMAL)
             say(BUDDY, "You can join us. We could use someone who knows what to look for.", HAPPY)
         },
-        dialogue("rescue-4-camp", "A hard night", "mountain", listOf(buddy, absol)) {
+        dialogue("rescue-4-camp", "A hard night", StoryPlaces.SNOW_FOREST, listOf(buddy, absol)) {
             narr("The three of you shelter beneath a rocky overhang. Wind howls outside.")
             say(BUDDY, "Do you think the others will ever believe us?", SAD)
             say("absol", "Some will. Some won't. You cannot build your life around convincing every Pokémon who misunderstands you.", NORMAL)
@@ -251,7 +251,7 @@ internal object RescueChapters {
     ))
 
     private fun c5() = StoryEpisode(WorldLayer.RESCUE, 5, "The Sky Is Falling", listOf(
-        stage("rescue-5-ninetales", "The mountain's message", "mountain", listOf(buddy, ninetales, alakazam)) {
+        stage("rescue-5-ninetales", "The mountain's message", StoryPlaces.SKY_BLUE_PLAINS, listOf(buddy, ninetales, alakazam)) {
             show(BUDDY, 3.5f, 3.2f)
             show("ninetales", 8.0f, 2.4f, Facing.LEFT)
             narr("Atop a remote mountain, Ninetales watches the clouds move below.")
@@ -266,7 +266,7 @@ internal object RescueChapters {
             flash()
             say("ninetales", "The disasters are not the work of one Pokémon. Something is falling from the sky.", WORRIED)
         },
-        cinematic("rescue-5-birds", "The legendary birds", "thunderplains", listOf(buddy, articuno, zapdos, moltres)) {
+        cinematic("rescue-5-birds", "The legendary birds", StoryPlaces.LEGENDARY_ISLAND, listOf(buddy, articuno, zapdos, moltres)) {
             show(BUDDY, 5.0f, 5.0f)
             narr("The air turns bitterly cold. A shadow sweeps across the snow.")
             show("big_articuno", 5.0f, 2.8f, Facing.DOWN); cry("big_articuno")
@@ -284,7 +284,7 @@ internal object RescueChapters {
             narr("Articuno studies the distant sky. For a moment, the anger gives way to concern.")
             say("big_articuno", "Then prove it. Show us what you have seen.", NORMAL)
         },
-        cinematic("rescue-5-meteor", "The falling star", "mountain", listOf(buddy, absol, rayquaza)) {
+        cinematic("rescue-5-meteor", "The falling star", StoryPlaces.COMET, listOf(buddy, absol, rayquaza)) {
             show(BUDDY, 3.0f, 5.0f); show("absol", 1.5f, 5.2f)
             narr("A burning point appears beyond the clouds. It grows brighter, larger, and impossibly close.")
             say(BUDDY, "That's no ordinary star...", SURPRISED)
@@ -330,7 +330,7 @@ internal object RescueChapters {
     ))
 
     private fun c6() = StoryEpisode(WorldLayer.RESCUE, 6, "A Place to Return To", listOf(
-        stage("rescue-6-return", "The square again", "city", listOf(buddy, alakazam, charizard, tyranitar, gengar)) {
+        stage("rescue-6-return", "The square again", StoryPlaces.SQUARE_TOWN, listOf(buddy, alakazam, charizard, tyranitar, gengar)) {
             show(BUDDY, 3.5f, 3.2f)
             show("alakazam", 6.5f, 2.4f, Facing.LEFT)
             show("charizard", 8.0f, 3.2f, Facing.LEFT)
@@ -352,7 +352,7 @@ internal object RescueChapters {
             say(BUDDY, "I don't think he'll ever apologize.", SAD)
             say("alakazam", "Perhaps not. But the rest of us can do better.", NORMAL)
         },
-        stage("rescue-6-home", "Back at the base", "meadow", listOf(buddy, absol, caterpie)) {
+        stage("rescue-6-home", "Back at the base", StoryPlaces.SQUARE_VILLAGE, listOf(buddy, absol, caterpie)) {
             show(BUDDY, 4.0f, 3.2f)
             show("absol", 8.5f, 2.2f, Facing.LEFT)
             narr("The base is still small. The roof still needs work. But someone has left fresh berries by the entrance.")

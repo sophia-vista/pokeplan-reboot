@@ -457,6 +457,12 @@ private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMo
         val episode = app.pokeplan.world.story.StoryCatalog.episodeFor(moment.layer, moment.chapter.number)
         if (episode != null) { StoryPlayer(model, episode, close, fromStart = episode.key in model.data.world.episodesDone); return }
     }
+    if (moment is app.pokeplan.world.WorldMoment.SpecialEpisode) {
+        // An optional episode after a story: played from the archive, resumed where it was left (a finished one starts again).
+        val episode = app.pokeplan.world.story.StoryCatalog.episodeFor(moment.layer, moment.chapter)
+        if (episode != null) StoryPlayer(model, episode, close, fromStart = episode.key in model.data.world.episodesDone) else LaunchedEffect(moment) { close() }
+        return
+    }
     val still = model.data.settings.reduceMotion
     var done by remember(moment) { mutableStateOf(still) }
     val flash = remember(moment) { Animatable(0f) }
@@ -471,7 +477,7 @@ private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMo
     }
     SceneFrame({ done = true }, flash.value, FlashGold) {
         when (moment) {
-            app.pokeplan.world.WorldMoment.Welcome -> {}
+            app.pokeplan.world.WorldMoment.Welcome, is app.pokeplan.world.WorldMoment.SpecialEpisode -> {}
             is app.pokeplan.world.WorldMoment.RankUp -> {
                 val rank = moment.rank
                 Stage("bw08", 220.dp) {
