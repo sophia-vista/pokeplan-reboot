@@ -66,10 +66,12 @@ private fun career(opens: Int, size: Int, level: Int, days: Int): List<String> {
     val rankDay = mutableMapOf<ExplorerRank, Int>()
     data = data.start(1, dungeon, 0L)!!
     val unlocked = mutableMapOf<String, Int>()
+    var poke = 0
     repeat(days) { d ->
         repeat(opens) {
             now += gap
             data = WorldSim.settle(data, roster, now).data
+            poke += data.pokeEarned; data = data.copy(pokeEarned = 0)
             val best = Dungeons.home.filter { data.rank >= it.needs }.last().id
             if (best != dungeon || data.team(1)?.expedition == null) {
                 dungeon = best
@@ -80,7 +82,7 @@ private fun career(opens: Int, size: Int, level: Int, days: Int): List<String> {
         Dungeons.home.forEach { if (data.clears[it.id] != null) unlocked.putIfAbsent(it.id, d + 1) }
     }
     val lines = mutableListOf<String>()
-    lines += "| ${opens}/day | $size × Lv $level | ${days} d | ${data.xp} | ${data.rank.label} | ${data.poke} | ${data.finds.size} | ${data.items.filterKeys { it.contains("rare") }.values.sum()} | ${data.treasure.values.sum()} |"
+    lines += "| ${opens}/day | $size × Lv $level | ${days} d | ${data.xp} | ${data.rank.label} | $poke | ${data.finds.size} | ${data.items.filterKeys { it.contains("rare") }.values.sum()} | ${data.treasure.values.sum()} |"
     lines += "|  | first reached |  | ${rankDay.entries.joinToString(", ") { "${it.key.label} d${it.value}" }} |  |  |  |  |  |"
     return lines
 }
@@ -89,6 +91,8 @@ private fun career(opens: Int, size: Int, level: Int, days: Int): List<String> {
 /** What a simulated player did over a long stretch, for the report. */
 private class Journey(val label: String) {
     val milestoneDays = linkedMapOf<String, Int>()
+    /** The Poké balance of the player: the rules hold none, so the simulation keeps it (earned is banked after every call that can earn). */
+    var balance = 0
     var spentFacilities = 0
     var spentShop = 0
     var candiesBought = 0
@@ -117,13 +121,14 @@ private fun journey(opens: Int, size: Int, level: Int, days: Int, cafe: Boolean,
     val j = Journey("${opens}/day, $size × Lv $level${if (cafe) ", Café" else ""}${if (dojo) ", Dojo" else ""}")
     var data = WorldData().assign(1, roster.map { it.id })!!
     val gap = DAY / opens
+    fun bank() { j.balance += data.pokeEarned; data = data.copy(pokeEarned = 0) }
     var now = 0L
     var current: String? = null
     fun bestDungeon(): String? = Dungeons.home.reversed().firstOrNull { (data.recall(1) ?: data).start(1, it.id, now) != null }?.id
     repeat(days) { d ->
         repeat(opens) {
             now += gap
-            data = WorldSim.settle(data, roster, now).data
+            data = WorldSim.settle(data, roster, now).data; bank()
             // Claim what is done, take the jobs that fit.
             for (m in data.missions.filter { it.done }) {
                 val def = Missions.byId(m.id) ?: continue
@@ -139,13 +144,13 @@ private fun journey(opens: Int, size: Int, level: Int, days: Int, cafe: Boolean,
                     if ((data.items[give] ?: 0) < def.giveCount) { j.deliveriesMissed++; continue }
                     data = data.copy(items = data.items + (give to data.items.getValue(give) - def.giveCount)); j.deliveries++
                 }
-                val before = Triple(data.poke, data.xp, data.items[Items.RARE_CANDY] ?: 0)
+                val before = Triple(j.balance, data.xp, data.items[Items.RARE_CANDY] ?: 0)
                 data.claimMission(m.id)?.let {
-                    data = it; j.jobsClaimed++; j.jobsByKind[def.kind] = (j.jobsByKind[def.kind] ?: 0) + 1
-                    j.jobPoke += data.poke - before.first; j.jobXp += data.xp - before.second; j.jobCandies += (data.items[Items.RARE_CANDY] ?: 0) - before.third
+                    data = it; bank(); j.jobsClaimed++; j.jobsByKind[def.kind] = (j.jobsByKind[def.kind] ?: 0) + 1
+                    j.jobPoke += j.balance - before.first; j.jobXp += data.xp - before.second; j.jobCandies += (data.items[Items.RARE_CANDY] ?: 0) - before.third
                 }
             }
-            data.researchReady().forEach { r -> data.claimResearch(r.species)?.let { data = it } }
+            data.researchReady().forEach { r -> data.claimResearch(r.species)?.let { data = it; bank() } }
             fun startable(id: String?) = id == null || (data.recall(1) ?: data).start(1, id, now) != null
             Missions.available(data).filter { m ->
                 // Only the jobs this team can do: an Escort needs enough Pokémon and a Defeat enough power, and a job that cannot be done would sit in one of the three slots for ever.
@@ -154,17 +159,17 @@ private fun journey(opens: Int, size: Int, level: Int, days: Int, cafe: Boolean,
             }.forEach { m -> data.acceptMission(m.id)?.let { data = it } }
             // Spend: facilities (lower level first), then shop candies.
             while (true) {
-                val f = Facility.entries.sortedBy { data.facilityLevel(it) }.firstOrNull { data.facilityLevel(it) < Facility.MAX_LEVEL && data.poke >= it.cost(data.facilityLevel(it)) } ?: break
+                val f = Facility.entries.sortedBy { data.facilityLevel(it) }.firstOrNull { data.facilityLevel(it) < Facility.MAX_LEVEL && j.balance >= it.cost(data.facilityLevel(it)) } ?: break
                 val cost = f.cost(data.facilityLevel(f))
-                data = data.upgrade(f)!!; j.spentFacilities += cost
+                data = data.upgrade(f, j.balance)!!; j.balance -= cost; j.spentFacilities += cost
             }
             val facilitiesDone = Facility.entries.all { data.facilityLevel(it) >= Facility.MAX_LEVEL }
             // The Dojo, when played, trains the lowest skill until all are at the top; then the shop.
-            while (dojo && facilitiesDone && data.poke >= Dojo.COST) {
+            while (dojo && facilitiesDone && j.balance >= Dojo.COST) {
                 val skill = WorldSkill.entries.minByOrNull { data.skillLevel(it) }!!
-                data = data.train(skill) ?: break; j.dojoSessions++; j.spentDojo += Dojo.COST
+                data = data.train(skill, j.balance) ?: break; j.balance -= Dojo.COST; j.dojoSessions++; j.spentDojo += Dojo.COST
             }
-            while (facilitiesDone && data.poke >= data.candyPrice) { j.spentShop += data.candyPrice; data = data.buyCandy()!!; j.candiesBought++ }
+            while (facilitiesDone && j.balance >= data.candyPrice) { val price = data.candyPrice; j.spentShop += price; data = data.buyCandy(j.balance)!!; j.balance -= price; j.candiesBought++ }
             if (cafe) {
                 val berryId = data.items.keys.firstOrNull { it.startsWith("berry-") && (data.items[it] ?: 0) >= Cafe.BERRIES }
                 if (berryId != null && data.brewUntil <= now) { data = (data.brew(now) ?: data).copy(items = data.items + (berryId to data.items.getValue(berryId) - Cafe.BERRIES)); j.brews++ }
@@ -212,7 +217,7 @@ fun main(args: Array<String>) {
         val d = j.data
         val free = d.items[Items.RARE_CANDY] ?: 0
         val boxes = (d.treasure[2] ?: 0) * 0.15 + (d.treasure[3] ?: 0) * 0.35
-        val earned = d.poke + j.spentFacilities + j.spentShop + j.spentDojo
+        val earned = j.balance + j.spentFacilities + j.spentShop + j.spentDojo
         out.append("| ${j.label} | ${d.rank.label} | ${d.xp} | ${d.discovered.size} | $free | ${"%.0f".format(boxes)} | ${j.candiesBought} | $earned | ${j.spentFacilities} | ${j.spentShop} | ${j.jobsClaimed} | ${WorldSkill.entries.joinToString("/") { d.skillLevel(it).toString() }} |\n")
     }
     out.append("\n### Jobs, the Swap Shop and the Dojo over that year\n\n")
@@ -220,7 +225,7 @@ fun main(args: Array<String>) {
     out.append("| Player | Jobs claimed | Explore | Find items | Rescue | Deliver | Escort | Defeat | Job Poké | Poké share | Job XP | XP share | Job candies | Delivered | Missed | Swaps | Dojo sessions | Dojo Poké |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n")
     for (j in journeys) {
         val d = j.data
-        val earned = d.poke + j.spentFacilities + j.spentShop + j.spentDojo
+        val earned = j.balance + j.spentFacilities + j.spentShop + j.spentDojo
         fun n(k: MissionKind) = j.jobsByKind[k] ?: 0
         out.append("| ${j.label} | ${j.jobsClaimed} | ${n(MissionKind.EXPLORE)} | ${n(MissionKind.COLLECT)} | ${n(MissionKind.RESCUE)} | ${n(MissionKind.DELIVER)} | ${n(MissionKind.ESCORT)} | ${n(MissionKind.DEFEAT)} | ${j.jobPoke} | ${"%.0f".format(100.0 * j.jobPoke / earned.coerceAtLeast(1))}% | ${j.jobXp} | ${"%.0f".format(100.0 * j.jobXp / d.xp.coerceAtLeast(1))}% | ${j.jobCandies} | ${j.deliveries} | ${j.deliveriesMissed} | ${j.swaps} | ${j.dojoSessions} | ${j.spentDojo} |\n")
     }

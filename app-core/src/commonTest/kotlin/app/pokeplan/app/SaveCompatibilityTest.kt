@@ -68,7 +68,8 @@ class SaveCompatibilityTest {
         store.worldStart(1, "tiny-woods")
         clock.millis += 12L * 3_600_000
         store.worldSettle()
-        assertTrue(store.data.world.poke > 0)
+        assertEquals(0, store.data.world.pokeEarned, "what World earned is in the one balance")
+        assertTrue(store.data.player.coins > 0)
         val exported = Json.parseToJsonElement(store.exportJson()) as JsonObject
         assertNotNull(exported["world"], "the export has World's save")
         assertNotNull(exported["rewardLog"], "and the reward history")

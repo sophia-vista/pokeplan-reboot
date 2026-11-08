@@ -69,7 +69,7 @@ class WorldTest {
         assertEquals(3, three.perTeam.getValue(1).count { it is WorldEvent.FloorCleared })
         assertEquals(3, three.data.team(1)!!.expedition!!.floorsClimbed)
         assertEquals(3, three.data.deepest["tiny-woods"])
-        assertTrue(three.data.xp > 0 && three.data.poke > 0)
+        assertTrue(three.data.xp > 0 && three.data.pokeEarned > 0)
     }
 
     @Test
@@ -81,7 +81,7 @@ class WorldTest {
         var t = 0L
         while (t < end) { t += 37_000; stepped = WorldSim.settle(stepped, roster, minOf(t, end)).data }
         assertEquals(once.data.xp, stepped.xp)
-        assertEquals(once.data.poke, stepped.poke)
+        assertEquals(once.data.pokeEarned, stepped.pokeEarned)
         assertEquals(once.data.items, stepped.items)
         assertEquals(once.data.finds.map { it.speciesId }, stepped.finds.map { it.speciesId })
         // Three days away counts only the cap.
@@ -142,6 +142,24 @@ class WorldTest {
         var sum = 0
         for (step in 1..20) { val r = WorldSim.settle(d, roster, step * per); d = r.data; sum += r.memberFloors["a"] ?: 0 }
         assertEquals(once, sum)
+    }
+
+    @Test
+    fun theBestTeamForADungeonCountsTypesNotJustLevels() {
+        val woods = Dungeons.byId("tiny-woods")!!   // favors Grass, Bug and Flying
+        val pool = listOf(mon("water", 7, 40), mon("fire", 4, 39), mon("grass", 1, 34), mon("bug", 10, 33), mon("flying", 16, 33), mon("rock", 74, 20))
+        val best = WorldSim.bestTeam(woods, pool)
+        // 34 x 1.2 = 40.8 and 33 x 1.2 = 39.6 beat a plain level 40 and 39: levels alone would have picked Water and Fire.
+        assertEquals(listOf("grass", "water", "bug", "flying"), best.map { it.id })
+        val byLevel = pool.sortedByDescending { it.level }.take(4)
+        assertTrue(WorldSim.power(best, woods) > WorldSim.power(byLevel, woods))
+        // The same choice every time, whatever the order given; fewer than four is fine; nothing gives nothing.
+        assertEquals(best.map { it.id }, WorldSim.bestTeam(woods, pool.reversed()).map { it.id })
+        assertEquals(2, WorldSim.bestTeam(woods, pool.take(2)).size)
+        assertEquals(emptyList(), WorldSim.bestTeam(woods, emptyList()))
+        // Another dungeon favors other types, and so another team.
+        val other = Dungeons.all.first { it.favored.intersect(woods.favored).isEmpty() }
+        assertTrue(WorldSim.bestTeam(other, pool).map { it.id } != best.map { it.id } || other.favored.none { f -> pool.any { f in it.form.types } })
     }
 
     @Test

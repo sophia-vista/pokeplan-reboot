@@ -91,10 +91,22 @@ object WorldSim {
 
     /** A team's power: the sum of its members' levels, with 20% more for each member of a type the dungeon favors. */
     fun power(members: List<OwnedPokemon>, dungeon: DungeonDef): Double =
-        members.sumOf { p ->
-            val favored = p.form.types.any { it in dungeon.favored }
-            p.level * if (favored) 1.2 else 1.0
-        }
+        members.sumOf { contribution(it, dungeon) }
+
+    /** What [p] adds to a team's power in [dungeon]: its level, 20% more for a type the dungeon favors (the one term of [power]). */
+    fun contribution(p: OwnedPokemon, dungeon: DungeonDef): Double = p.level * if (p.form.types.any { it in dungeon.favored }) 1.2 else 1.0
+
+    /**
+     * The strongest team of up to [size] from [candidates] for [dungeon]: [power] is a sum of each member's [contribution], so the best
+     * team is simply the biggest contributors (a favored type of a lower level can beat a higher level of another type). Ties go to the
+     * favored type, then the higher level, then the id, so the choice is the same every time.
+     */
+    fun bestTeam(dungeon: DungeonDef, candidates: List<OwnedPokemon>, size: Int = WorldTeam.MAX_MEMBERS): List<OwnedPokemon> =
+        candidates.sortedWith(
+            compareByDescending<OwnedPokemon> { contribution(it, dungeon) }
+                .thenByDescending { p -> p.form.types.any { it in dungeon.favored } }
+                .thenByDescending { it.level }.thenBy { it.id },
+        ).take(size)
 
     /** How long a floor takes a team of [power], in milliseconds: faster as the power grows, never under a quarter of the base. */
     fun floorMillis(dungeon: DungeonDef, power: Double, mastery: Boolean = false, fasterPercent: Int = 0): Long {
@@ -231,7 +243,7 @@ object WorldSim {
         }
         val poke = (5 + floor * 2 + random.nextInt(5)) * (100 + 2 * (d.skillLevel(WorldSkill.EXPLORATION) + perk.getValue(WorldSkill.EXPLORATION)) + if (modifier == DungeonModifier.BOUNTY) DungeonModifiers.POKE_PERCENT else 0) / 100
         events += WorldEvent.Poke(poke)
-        d = d.copy(poke = d.poke + poke)
+        d = d.copy(pokeEarned = d.pokeEarned + poke)
         if (random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP) + (if (brewed) 5 else 0) + (if (modifier == DungeonModifier.LUCKY) DungeonModifiers.TREASURE_POINTS else 0) + d.legendTreasurePercent(dungeon)) {
             val tier = if (floor >= dungeon.floors - 1) 3 else if (floor >= dungeon.floors / 2) 2 else 1
             events += WorldEvent.Treasure(tier)
@@ -263,7 +275,7 @@ object WorldSim {
             if (key !in d.milestonesPaid) {
                 events += WorldEvent.Milestone(dungeon.id, floor, reward)
                 d = d.copy(
-                    milestonesPaid = d.milestonesPaid + key, poke = d.poke + reward.poke,
+                    milestonesPaid = d.milestonesPaid + key, pokeEarned = d.pokeEarned + reward.poke,
                     items = reward.itemId?.let { d.items + (it to (d.items[it] ?: 0) + reward.count) } ?: d.items,
                 )
             }

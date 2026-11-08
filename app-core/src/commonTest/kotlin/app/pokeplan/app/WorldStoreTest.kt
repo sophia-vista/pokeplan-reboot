@@ -27,7 +27,7 @@ class WorldStoreTest {
         assertTrue(report.data.xp > 0)
         // Finds are rare (about 3% of floors), so keep exploring, half a day at a time, until one comes.
         repeat(20) { if (store.data.world.finds.isEmpty()) { clock.millis += 12L * 60 * 60 * 1000; store.worldSettle() } }
-        assertTrue(store.data.world.xp > 0 && store.data.world.poke > 0)
+        assertTrue(store.data.world.xp > 0 && store.data.player.coins > 0)
         assertTrue(store.data.world.finds.isNotEmpty(), "a few days find someone")
         val before = store.data.player.pokemon.size
         val recruit = assertNotNull(store.worldRecruit(0))
@@ -61,6 +61,19 @@ class WorldStoreTest {
         val after = listOf(one, two, three).associateWith(::mon)
         store.worldSettle()
         assertEquals(after, listOf(one, two, three).associateWith(::mon))
+    }
+
+    @Test
+    fun sendMyStrongestSendsTheBestTeamForTheDungeon() {
+        val store = store()
+        listOf(7, 4, 1, 10, 16, 74).forEach { store.grantPokemon(it, "test") }
+        val dungeon = assertNotNull(app.pokeplan.world.Dungeons.byId("tiny-woods"))
+        val expected = app.pokeplan.world.WorldSim.bestTeam(dungeon, store.worldIdle().filter { !app.pokeplan.core.pokemon.Guardians.canBe(it) }).map { it.id }.toSet()
+        assertTrue(expected.isNotEmpty())
+        assertTrue(store.worldQuickSend("tiny-woods"))
+        assertEquals(expected, store.data.world.team(1)!!.members.toSet())
+        assertNotNull(store.data.world.team(1)!!.expedition)
+        assertFalse(store.worldQuickSend("no-such-dungeon"))
     }
 
     @Test

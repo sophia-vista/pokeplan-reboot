@@ -992,7 +992,7 @@ class GameStoreTest {
         val storage = MemoryStorage(GameStore.json.encodeToString(AppData.serializer(), old))
         val reopened = GameStore(storage, FakeClock(start), utc, Random(7))
         assertEquals(155, reopened.data.player.coins)
-        assertEquals(155, reopened.data.world.poke, "World's field is only a working copy of the one balance")
+        assertEquals(0, reopened.data.world.pokeEarned, "World holds no balance of its own")
         assertEquals(0, reopened.data.world.legacyPoke, "the old stored balance is read once and gone")
         assertFalse("\"poke\"" in GameStore.json.encodeToString(app.pokeplan.world.WorldData.serializer(), reopened.data.world), "and never written again")
         val audit = assertNotNull(reopened.data.pokeMigration)
@@ -1015,16 +1015,15 @@ class GameStoreTest {
         storage.save(GameStore.json.encodeToString(AppData.serializer(), s.data.copy(player = s.data.player.copy(coins = base + 5_000))))
         s.reload()
         assertEquals(base + 5_000, s.data.player.coins)
-        assertEquals(base + 5_000, s.data.world.poke, "World sees what Plan earned")
         val candyBefore = s.data.player.inventory[app.pokeplan.core.pokemon.Items.RARE_CANDY]
         assertTrue(s.worldBuyCandy(), "World's shop is paid from Plan's earnings")
         assertTrue(s.data.player.coins < base + 5_000)
-        assertEquals(s.data.player.coins, s.data.world.poke)
+        assertEquals(0, s.data.world.pokeEarned)
         assertTrue(s.data.player.inventory[app.pokeplan.core.pokemon.Items.RARE_CANDY] > candyBefore)
         val afterShop = s.data.player.coins
         assertEquals(1, s.buyRareCandies(1))
         assertEquals(afterShop - app.pokeplan.core.pokemon.Shop.COINS_PER_RARE_CANDY, s.data.player.coins, "Plan's shop is paid from the same balance")
-        assertEquals(s.data.player.coins, s.data.world.poke)
+        assertEquals(0, s.data.world.pokeEarned)
     }
 }
 
