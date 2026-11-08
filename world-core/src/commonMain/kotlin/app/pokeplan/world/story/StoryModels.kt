@@ -69,9 +69,15 @@ data class StoryScene(
 )
 
 /** A chapter's episode: its scenes in order. [key] is "<layer id>:<chapter number>"; the opening, which belongs to no layer ([layer] null), is "intro:1". */
-data class StoryEpisode(val layer: WorldLayer?, val chapter: Int, val title: String, val scenes: List<StoryScene>) {
+data class StoryEpisode(val layer: WorldLayer?, val chapter: Int, val title: String, val scenes: List<StoryScene>, val summary: String = "") {
     val key: String get() = "${layer?.id ?: INTRO}:$chapter"
+
+    /** An optional episode after the story ([SPECIAL_BASE] and up): it opens when its layer's story is complete and is never played on its own. */
+    val special: Boolean get() = layer != null && chapter >= SPECIAL_BASE
 }
+
+/** The first chapter number of the optional post-story episodes (101, 102, ...): a layer's chapters count up from 1 and never get this far. */
+const val SPECIAL_BASE = 101
 
 /** The key prefix of the opening episode, which belongs to no layer. */
 const val INTRO = "intro"

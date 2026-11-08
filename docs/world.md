@@ -726,7 +726,7 @@ What the code does now, against this concept (details: `CHANGELOG.md`, rules: `d
 
 ## Regions of the games (decided in outline, 1 November 2026)
 
-The Mystery Dungeon world is the main map. Beside it, as layers behind a switch on the Map screen: the nine mainline regions (Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea; eight to nine dungeons each, wild tables from the region's regional dex, Guardians per region that are its main legendaries, each reached by a quest, one layer each, built in release order, the special spaces as Guardian-tier places in their region), then the spin-off settings, starting with the Ranger regions and Orre. The owner's atlas, the decisions and what is still open are in `docs/ecosystem.md`, "World regions". Not built; the dungeons that exist (Tiny Woods to the Distortion Rift) are the home layer.
+The Mystery Dungeon world is the main map. Beside it, as layers behind a switch on the Map screen: the nine mainline regions (Kanto, Johto, Hoenn, Sinnoh, Unova, Kalos, Alola, Galar, Paldea; eight to nine dungeons each, wild tables from the region's regional dex, Guardians per region that are its main legendaries, each reached by a quest, one layer each, built in release order, the special spaces as Guardian-tier places in their region), then the spin-off settings, starting with the Ranger regions and Orre. The owner's atlas, the decisions and what is still open are in `docs/ecosystem.md`, "World regions". Not built; the dungeons that exist (since 0.160.0 five of the Rescue Team arc and nine of the Explorers arc, Tiny Woods to the Distortion Rift) are the two Mystery Dungeon layers.
 
 ## Kanto, the first region layer (design, 1 November 2026)
 

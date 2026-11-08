@@ -242,7 +242,7 @@ private fun WorldMapView(model: AppModel) {
     WorldLayerSwitch(model) { selected = null }
     val spots = when (layer) { WorldLayer.RESCUE, WorldLayer.EXPLORERS -> mapSpots; WorldLayer.KANTO -> kantoSpots; WorldLayer.JOHTO -> johtoSpots; WorldLayer.HOENN -> hoennSpots; WorldLayer.SINNOH -> sinnohSpots }
     WorldMapPicture(
-        stage = 1 + clearedCount,
+        stage = 1 + clearedCount * 7 / dungeons.size.coerceAtLeast(1),
         markers = dungeons.mapNotNull { d ->
             spots[d.id]?.let { (x, y) ->
                 val open = world.rank >= d.needs && Story.opened(world, layer) >= d.chapter && !(d.postStory && !world.layerDone(layer))
@@ -300,7 +300,8 @@ private fun WorldMapView(model: AppModel) {
 private val mapSpots = mapOf(
     "tiny-woods" to (235 to 123), "thunderwave-cave" to (179 to 107), "mt-steel" to (347 to 139), "waterfall-cave" to (299 to 67),
     "glacier-palace" to (107 to 291), "ancient-ruins" to (411 to 227), "sky-tower" to (459 to 43), "temporal-tower" to (59 to 179),
-    "distortion-rift" to (83 to 75),
+    "distortion-rift" to (83 to 75), "beach-cave" to (205 to 172), "drenched-bluff" to (156 to 130), "crystal-cave" to (393 to 100),
+    "frosty-forest" to (72 to 270), "hidden-land" to (346 to 288),
 )
 
 /** The layer buttons (every layer is open from the first day): the one on show is lit; [onChange] runs after a switch. */
@@ -1089,6 +1090,17 @@ private fun WorldArchiveView(model: AppModel) {
                         else -> {}
                     }
                 }
+            }
+        }
+    }
+    // The optional episodes after a story: each opens when its layer's story is complete.
+    WorldLayer.entries.forEach { layer ->
+        val specials = app.pokeplan.world.story.StoryCatalog.specialsOf(layer)
+        if (specials.isEmpty() || !world.layerDone(layer)) return@forEach
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                FieldLabel("${layer.label}: after the story")
+                specials.forEach { e -> ArchiveRow(e.title, e.summary, app.pokeplan.world.WorldMoment.SpecialEpisode(layer, e.chapter), model, icon = "town-map") }
             }
         }
     }

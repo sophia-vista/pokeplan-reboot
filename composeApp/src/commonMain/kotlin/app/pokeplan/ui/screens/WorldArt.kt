@@ -160,6 +160,8 @@ internal fun dungeonTiles(dungeonId: String): String = when (dungeonId) {
     "ancient-ruins" -> "wish-cave"
     "sky-tower" -> "sky-tower"
     "temporal-tower" -> "temporal-tower"
+    // The two Mystery Dungeon arcs' other places: the game's own sheet where one is here (Explorers), else the Rescue Team tileset of the same name.
+    "beach-cave" -> "beach-cave"; "drenched-bluff" -> "drenched-bluff"; "crystal-cave" -> "crystal-cave"; "hidden-land" -> "ex-042"; "frosty-forest" -> "rr-36"
     // The other dungeons borrow the Red Rescue Team tileset (assets/tiles/rr-NN) closest to their look; the rifts keep the World Abyss.
     "viridian-forest" -> "rr-11"; "ilex-forest" -> "rr-20"; "petalburg-woods" -> "rr-26"; "eterna-forest" -> "rr-32"
     "mt-moon" -> "rr-28"; "meteor-falls" -> "rr-10"; "rock-tunnel" -> "rr-05"; "mt-mortar" -> "rr-05"; "oreburgh-mine" -> "rr-05"

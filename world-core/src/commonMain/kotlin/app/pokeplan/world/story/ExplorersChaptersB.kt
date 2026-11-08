@@ -20,7 +20,7 @@ internal object ExplorersChaptersB {
     fun all(): List<StoryEpisode> = listOf(c5(), c6(), c7(), c8())
 
     private fun c5() = StoryEpisode(WorldLayer.EXPLORERS, 5, "The Hidden Future", listOf(
-        cinematic("explorers-5-reveal", "The future's shadow", "dampcave", listOf(buddy, grovyle, dusknoir)) {
+        cinematic("explorers-5-reveal", "The future's shadow", StoryPlaces.DARK_FUTURE, listOf(buddy, grovyle, dusknoir)) {
             show(BUDDY, 3.0f, 4.6f); show("grovyle", 7.0f, 4.2f, Facing.LEFT); show("dusknoir", 10.5f, 4.8f, Facing.LEFT)
             narr("The dungeon falls silent. Grovyle stands beside a damaged Time Gear chamber.")
             say(BUDDY, "Why are you doing this? Do you know what's happening to these places?", ANGRY)
@@ -45,7 +45,7 @@ internal object ExplorersChaptersB {
             shake(450)
             say("dusknoir", "And I will not fail.", ANGRY)
         },
-        stage("explorers-5-celebi", "Celebi", "forest", listOf(buddy, grovyle, celebi)) {
+        stage("explorers-5-celebi", "Celebi", StoryPlaces.FOREST_CLEARING, listOf(buddy, grovyle, celebi)) {
             show(BUDDY, 3.0f, 3.0f); show("grovyle", 5.0f, 3.2f, Facing.LEFT); show("celebi", 8.0f, 2.8f, Facing.LEFT)
             narr("In a hidden grove, a small pink Pokémon waits beneath a tree. The air around it shimmers.")
             say("celebi", "Grovyle...", WORRIED)
@@ -65,7 +65,7 @@ internal object ExplorersChaptersB {
 
     private fun c6() = StoryEpisode(WorldLayer.EXPLORERS, 6, "The World's Edge", listOf(
         // The script names a "hidden-land" dungeon that the game does not have; the cliffs and the dark sea are the mountain scene.
-        stage("explorers-6-hidden-land", "The Hidden Land", "mountain", listOf(buddy, grovyle, celebi)) {
+        dungeon("explorers-6-hidden-land", "The Hidden Land", "hidden-land", listOf(buddy, grovyle, celebi)) {
             enter(BUDDY, 3.0f, 3.0f)
             enter("grovyle", 4.8f, 3.2f)
             enter("celebi", 6.2f, 2.8f)
@@ -80,7 +80,7 @@ internal object ExplorersChaptersB {
             narr("Grovyle looks at {player}.")
             say("grovyle", "But you came this far. That counts for something.", NORMAL)
         },
-        cinematic("explorers-6-future", "The passage to the future", "dampcave", listOf(buddy, grovyle, celebi, dusknoir)) {
+        cinematic("explorers-6-future", "The passage to the future", StoryPlaces.TEMPORAL_TOWER_RED, listOf(buddy, grovyle, celebi, dusknoir)) {
             show(BUDDY, 2.5f, 4.6f); show("grovyle", 4.0f, 4.4f); show("celebi", 5.4f, 3.8f)
             narr("The passage opens. A cold wind comes from the other side.")
             shake(500)
@@ -98,7 +98,7 @@ internal object ExplorersChaptersB {
     ))
 
     private fun c7() = StoryEpisode(WorldLayer.EXPLORERS, 7, "A Future Worth Fighting For", listOf(
-        cinematic("explorers-7-dark-future", "The dark future", "dampcave", listOf(buddy, grovyle, celebi, dusknoir)) {
+        cinematic("explorers-7-dark-future", "The dark future", StoryPlaces.DARK_FUTURE, listOf(buddy, grovyle, celebi, dusknoir)) {
             show(BUDDY, 2.5f, 4.6f); show("grovyle", 4.0f, 4.4f); show("celebi", 5.4f, 3.8f); show("dusknoir", 7.5f, 4.6f, Facing.LEFT)
             narr("The world is still. The sky has no sun. A tree stands without leaves, its branches frozen in place.")
             say(BUDDY, "So this is what happens...", SAD)
@@ -116,7 +116,7 @@ internal object ExplorersChaptersB {
             shake(600)
             say("grovyle", "Dialga.", WORRIED)
         },
-        cinematic("explorers-7-primal-dialga", "Primal Dialga", "dampcave", listOf(buddy, grovyle, celebi, dusknoir, primalDialga, dialga), dungeonId = "temporal-tower") {
+        cinematic("explorers-7-primal-dialga", "Primal Dialga", StoryPlaces.TEMPORAL_TOWER_RED, listOf(buddy, grovyle, celebi, dusknoir, primalDialga, dialga), dungeonId = "temporal-tower") {
             show(BUDDY, 1.8f, 4.8f); show("grovyle", 3.2f, 4.6f); show("celebi", 4.4f, 4.0f); show("dusknoir", 2.6f, 5.4f)
             narr("At the top of Temporal Tower, the structure groans. Gears turn without rhythm. A vast shape looms beyond the broken arches.")
             show("big_dialga", 8.2f, 4.6f, Facing.LEFT); cry("big_dialga"); sound("STORY_TEMPORAL"); flash(); shake(600)
@@ -141,7 +141,7 @@ internal object ExplorersChaptersB {
             show("big_dialga_calm", 8.2f, 4.6f, Facing.LEFT)
             say("big_dialga_calm", "The flow... has returned.", NORMAL)
         },
-        stage("explorers-7-sacrifice", "The choice to return", "dampcave", listOf(buddy, grovyle, celebi, dusknoir)) {
+        stage("explorers-7-sacrifice", "The choice to return", StoryPlaces.TEMPORAL_TOWER_CALM, listOf(buddy, grovyle, celebi, dusknoir)) {
             show(BUDDY, 2.5f, 3.2f); show("dusknoir", 1.2f, 3.6f)
             show("grovyle", 8.0f, 3.0f, Facing.LEFT); show("celebi", 9.2f, 2.6f, Facing.LEFT)
             narr("The passage home begins to close. Grovyle and Celebi stand on the far side.")
@@ -163,7 +163,7 @@ internal object ExplorersChaptersB {
     ))
 
     private fun c8() = StoryEpisode(WorldLayer.EXPLORERS, 8, "The Morning After", listOf(
-        stage("explorers-8-guild", "A guild breakfast", "city", listOf(buddy, chatot, wigglytuff, bidoof, sunflora, loudred)) {
+        stage("explorers-8-guild", "A guild breakfast", StoryPlaces.GUILD_MESS, listOf(buddy, chatot, wigglytuff, bidoof, sunflora, loudred)) {
             show(BUDDY, 5.0f, 3.4f); show("loudred", 2.0f, 2.2f); show("sunflora", 3.4f, 2.4f); show("bidoof", 7.4f, 2.4f, Facing.LEFT)
             show("chatot", 8.6f, 3.4f, Facing.LEFT)
             narr("The guild is noisy again. Loudred is arguing with the breakfast pot. Sunflora is trying to calm him down.")
