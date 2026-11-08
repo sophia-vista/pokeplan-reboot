@@ -40,9 +40,10 @@ class OutcomesTest {
     }
 
     @Test
-    fun aNormalRankDungeonNeverMakesATeamTurnBack() {
+    fun aNormalRankDungeonAlwaysClearsSoANewPlayerIsNeverStuck() {
         assertNull(Outcomes.retreatsAt(0.0, woods))
-        assertEquals(Outcomes.Outcome.SETBACK, Outcomes.of(0.0, woods, woods.floors))
+        assertEquals(Outcomes.Outcome.CLEARED, Outcomes.of(0.0, woods, woods.floors))
+        assertEquals(woods.floors, Outcomes.clearsUpTo(0.0, woods))
     }
 
     @Test
@@ -106,6 +107,6 @@ class OutcomesTest {
         assertTrue(Outcomes.explain(1_000.0, steel).contains("every floor"))
         val weak = Outcomes.explain(5.0, steel)
         assertTrue(weak.contains("setbacks") && weak.contains("turns back safely"), weak)
-        assertTrue(!Outcomes.explain(5.0, woods).contains("turns back"), "a Normal-rank dungeon only has setbacks")
+        assertTrue(Outcomes.explain(0.0, woods).contains("every floor"), "a Normal-rank dungeon always clears")
     }
 }

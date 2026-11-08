@@ -10,7 +10,7 @@ package app.pokeplan.world
  * - **Setback** (at least [RETREAT] but under [CLEAR]): the floor is not cleared. The team keeps going, but earns half the Exploration XP and Poké of the floor, and
  *   the floor gives no treasure, find, milestone, side path or choice, does not count as a clear of the dungeon, and does not move a job forward (berries still count).
  * - **Retreat** (under [RETREAT]): the team turns back and comes home safely: the expedition ends at that floor and the report says why. Floors already climbed keep
- *   everything they paid. Only dungeons of Bronze rank and above can make a team retreat; the first floor and a Normal-rank dungeon are never worse than a setback.
+ *   everything they paid. The first floor and every Normal-rank dungeon (the first places a new player goes, with a single starter) always clear in full: only dungeons of Bronze rank and above can set a team back or make it turn back.
  *
  * Nothing is lost, injured or locked: no Pokémon is hurt, no item destroyed, no timer started, and the team can be sent again at once (WORLD.md 3.6). The numbers
  * are *(tune)*; [VERSION] changes with them, so a report can say which rule it was settled under.
@@ -25,7 +25,7 @@ object Outcomes {
 
     /** The power a team should bring to the top floor of a dungeon needing [rank]. *(tune: close to what the Defeat jobs ask at Bronze, Gold and Platinum, a bit under)* */
     fun recommended(rank: ExplorerRank): Int = when (rank) {
-        ExplorerRank.NORMAL -> 24
+        ExplorerRank.NORMAL -> 24 // not used to judge a floor (a Normal-rank dungeon always clears); kept so the scale is complete
         ExplorerRank.BRONZE -> 90
         ExplorerRank.SILVER -> 150
         ExplorerRank.GOLD -> 220
@@ -40,10 +40,11 @@ object Outcomes {
 
     /** The outcome of floor [floor] of [dungeon] for a team of [power]. */
     fun of(power: Double, dungeon: DungeonDef, floor: Int): Outcome {
+        if (floor <= 1 || dungeon.needs <= ExplorerRank.NORMAL) return Outcome.CLEARED
         val ratio = power / required(dungeon, floor)
         return when {
-            floor <= 1 || ratio >= CLEAR -> Outcome.CLEARED
-            ratio >= RETREAT || dungeon.needs <= ExplorerRank.NORMAL -> Outcome.SETBACK
+            ratio >= CLEAR -> Outcome.CLEARED
+            ratio >= RETREAT -> Outcome.SETBACK
             else -> Outcome.RETREAT
         }
     }
