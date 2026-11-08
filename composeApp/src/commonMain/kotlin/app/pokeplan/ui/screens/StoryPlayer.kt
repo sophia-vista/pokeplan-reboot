@@ -158,6 +158,12 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<Stri
 
     LaunchedEffect(scene.id, skipped) {
         if (skipped) { val end = SceneState.finalOf(scene, startFlags); state = end; positions.clear(); walking.clear(); blackout = 0f; onEnd(end.flags); return@LaunchedEffect }
+        // Who is speaking, for the cries: the species on the stage (the player's buddy for the buddy), and the seed of their personal voice.
+        fun buddyOf() = model.data.player.buddy ?: model.data.player.pokemon.firstOrNull()
+        fun speciesOf(who: String): Int? = faceSpecies(scene, who) ?: if (who == app.pokeplan.world.story.BUDDY) buddyOf()?.speciesId else null
+        fun voiceSeed(who: String): String = if (who == app.pokeplan.world.story.BUDDY) buddyOf()?.id ?: who else who
+        var lineNo = 0
+        val criedAt = mutableMapOf<String, Int>()
         // What the scene opens with: the stairs of a dungeon, the place's ambience (StoryCues).
         if (!still) StoryCues.opening(scene).forEach { model.effect(it) }
         suspend fun runEvent(e: SceneEvent) {
@@ -179,7 +185,18 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<Stri
                 is SceneEvent.Say -> {
                     // A speaker whose face changes gets the sound of that feeling (StoryCues).
                     val said = e.expression
-                    if (e.who != null && said != null) StoryCues.expression(state.actors[e.who]?.expression, said)?.let { model.effect(it) }
+                    val who = e.who
+                    lineNo++
+                    if (who != null && said != null) {
+                        val before = state.actors[who]?.expression
+                        val species = speciesOf(who)
+                        if (species != null && StoryCues.cries(before, said) && lineNo - (criedAt[who] ?: -StoryCues.CRY_COOLDOWN_LINES) >= StoryCues.CRY_COOLDOWN_LINES) {
+                            // The cry comes just before the feeling is shown (what the games do), in the speaker's own voice.
+                            criedAt[who] = lineNo
+                            model.cry(species, CryVoice.of(voiceSeed(who), said, StoryCues.distance(scene, state.actors[who])))
+                            if (!still) delay(StoryCues.CRY_LEAD_MILLIS)
+                        } else StoryCues.expression(before, said)?.let { model.effect(it) }
+                    }
                     state = state.apply(e)
                     val full = fill(model, e.text)
                     typing = true; fast = false; shown = ""
@@ -195,10 +212,9 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<Stri
                 is SceneEvent.Shake -> if (!still) { model.effect(StoryCues.shake(e.millis)); for (k in 0 until e.millis / 50) { shake = if (k % 2 == 0) 6f else -6f; delay(50) }; shake = 0f }
                 is SceneEvent.Flash -> if (!still) { model.effect(StoryCues.flash()); flash = 1f; Animatable(1f).animateTo(0f, tween(450)) { flash = value } }
                 is SceneEvent.Cry -> {
-                    // The cry of whoever it is, with their own small detune and the feeling they last showed (CryVoice).
-                    val buddy = model.data.player.buddy ?: model.data.player.pokemon.firstOrNull()
-                    val voice = CryVoice.of(buddy?.id.takeIf { e.who == app.pokeplan.world.story.BUDDY } ?: e.who, state.actors[e.who]?.expression)
-                    (faceSpecies(scene, e.who) ?: buddy?.speciesId)?.let { model.cry(it, voice) }
+                    // The cry of whoever it is, with their own small detune, the feeling they last showed and how far they stand (CryVoice).
+                    val voice = CryVoice.of(voiceSeed(e.who), state.actors[e.who]?.expression, StoryCues.distance(scene, state.actors[e.who]))
+                    (speciesOf(e.who) ?: buddyOf()?.speciesId)?.let { model.cry(it, voice) }
                 }
                 is SceneEvent.Sound -> runCatching { app.pokeplan.ui.Sfx.valueOf(e.name) }.getOrNull()?.let { model.effect(it) }
                 is SceneEvent.Choice -> {

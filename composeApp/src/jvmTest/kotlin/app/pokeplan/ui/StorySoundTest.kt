@@ -42,6 +42,21 @@ class StorySoundTest {
     }
 
     @Test
+    fun aStrongFeelingCriesBeforeItIsShownAndACalmOneDoesNot() {
+        assertTrue(StoryCues.cries(Expression.NORMAL, Expression.ANGRY))
+        assertTrue(StoryCues.cries(null, Expression.SURPRISED))
+        assertTrue(!StoryCues.cries(Expression.ANGRY, Expression.ANGRY), "no change, no cry")
+        assertTrue(!StoryCues.cries(Expression.NORMAL, Expression.HAPPY) && !StoryCues.cries(Expression.NORMAL, Expression.DETERMINED))
+        val stage = StoryCatalog.all().flatMap { it.scenes }.first { it.type == app.pokeplan.world.story.SceneType.STAGE }
+        val conversation = StoryCatalog.all().flatMap { it.scenes }.first { it.type == app.pokeplan.world.story.SceneType.DIALOGUE }
+        fun at(y: Float) = app.pokeplan.world.story.Actor("a", 5f, y, app.pokeplan.world.story.Facing.DOWN, Expression.NORMAL)
+        assertEquals(CryVoice.Distance.FAR, StoryCues.distance(stage, at(1f)))
+        assertEquals(CryVoice.Distance.MEDIUM, StoryCues.distance(stage, at(3f)))
+        assertEquals(CryVoice.Distance.NEAR, StoryCues.distance(stage, at(5f)))
+        assertEquals(CryVoice.Distance.NEAR, StoryCues.distance(conversation, at(1f)), "a conversation is always near")
+    }
+
+    @Test
     fun aDungeonSceneOpensWithTheStairsAndAColdPlaceWithWind() {
         val dungeon = StoryCatalog.all().flatMap { it.scenes }.first { it.dungeonId != null && it.type == app.pokeplan.world.story.SceneType.DUNGEON }
         assertTrue(Sfx.STAIRS_DOWN in StoryCues.opening(dungeon))
@@ -60,6 +75,11 @@ class StorySoundTest {
         }
         assertEquals(CryVoice.NEUTRAL, CryVoice.mood(Expression.NORMAL))
         assertTrue(CryVoice.mood(Expression.JOYOUS).pitch > 1f && CryVoice.mood(Expression.SAD).pitch < 1f && CryVoice.mood(Expression.SAD).speed < 1f)
+        // The levels of the games' sound design: default 100%, loud 120%, low 80%, injured 95%, seriously injured 85%.
+        assertEquals(listOf(1f, 1.2f, 0.8f, 0.95f, 0.85f), CryVoice.Condition.entries.map { it.gain })
+        assertTrue(CryVoice.mood(Expression.ANGRY).gain == CryVoice.Condition.LOUD.gain && CryVoice.mood(Expression.SAD).gain == CryVoice.Condition.LOW.gain)
+        assertTrue(CryVoice.of("x", Expression.NORMAL, CryVoice.Distance.FAR).gain < CryVoice.of("x", Expression.NORMAL, CryVoice.Distance.MEDIUM).gain)
+        assertTrue(CryVoice.of("x", Expression.JOYOUS, CryVoice.Distance.NEAR, CryVoice.Condition.LOUD).gain <= CryVoice.LOUD, "never past the loudest")
         // However it feels, it is still the cry: never far from the recording.
         Expression.entries.forEach { e ->
             val v = CryVoice.of("x", e)

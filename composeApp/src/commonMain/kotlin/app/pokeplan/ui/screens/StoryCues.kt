@@ -1,6 +1,8 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.CryVoice
 import app.pokeplan.ui.Sfx
+import app.pokeplan.world.story.Actor
 import app.pokeplan.world.story.Expression
 import app.pokeplan.world.story.SceneType
 import app.pokeplan.world.story.StoryScene
@@ -38,6 +40,28 @@ object StoryCues {
         Expression.ANGRY -> Sfx.MAD
         Expression.SAD, Expression.TEARY -> Sfx.SAD
         else -> null
+    }
+
+    /**
+     * Whether a speaker whose face goes from [before] to [now] cries as it does (what the games' sound design does: the cry comes **immediately before** the
+     * feeling is shown, so what is heard and what is seen agree). Only a change into a strong feeling, so a calm or pleased face is silent.
+     */
+    fun cries(before: Expression?, now: Expression): Boolean = before != now && now in STRONG
+
+    private val STRONG = setOf(Expression.JOYOUS, Expression.SURPRISED, Expression.ANGRY, Expression.SAD, Expression.TEARY, Expression.WORRIED)
+
+    /** How long the cry leads the face, in milliseconds. */
+    const val CRY_LEAD_MILLIS = 140L
+
+    /** The fewest lines between two feeling-cries of one speaker, so an argument does not become a chorus. */
+    const val CRY_COOLDOWN_LINES = 3
+
+    /** How far a speaker sounds from the viewer: a conversation and a cinematic are near; on a stage the farther up the grid, the farther the voice (Legends: Arceus's near, medium and far cries). */
+    fun distance(scene: StoryScene, actor: Actor?): CryVoice.Distance = when {
+        actor == null || scene.type == SceneType.DIALOGUE || scene.type == SceneType.CINEMATIC -> CryVoice.Distance.NEAR
+        actor.y < 2.0f -> CryVoice.Distance.FAR
+        actor.y < 3.4f -> CryVoice.Distance.MEDIUM
+        else -> CryVoice.Distance.NEAR
     }
 
     /** Under a shake: a long one is the ground rumbling, a short one a hit. */
