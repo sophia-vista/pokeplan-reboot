@@ -30,9 +30,13 @@ fun careStore(context: Context, world: GameStore = widgetStore(context)): CareSt
 
 /**
  * The Heal module's own save (private health records), apart from Plan's and Care's: its own tables in the database, created there from the start
- * (`heal.json` exists only as a fallback while the database has never opened). It is never read by a widget.
+ * (`heal.json` exists only as a fallback while the database has never opened). Its rows are sealed with a Keystore key (`KeystoreHealKey`) since 0.154.0. It is never read by a widget.
  */
-fun healStorage(context: Context): Storage = LiveStore.storage(context, "heal", "heal.json")
+fun healStorage(context: Context): Storage {
+    val s = LiveStore.get(context)
+    // Once the rows are sealed, no key means no access: memory only for this run, never a clear copy of what is sealed (the rows are untouched and open again at the next start with the key).
+    return if (s != null && s.healTables.isSealed() && s.healCipher == null) MemoryStorage() else LiveStore.storage(context, "heal", "heal.json")
+}
 
 /**
  * The Home module's own save (private household records, serial numbers among them), apart from every other module's: its own tables in the database,

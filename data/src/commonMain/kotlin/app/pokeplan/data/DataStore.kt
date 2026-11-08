@@ -32,6 +32,13 @@ class DataStore private constructor(internal val driver: SqlDriver) {
      * none, Mint's tables refuse to start, so a build that forgets it can never store a financial record in clear.
      */
     @Volatile var mintCipher: RowCipher? = null
+
+    /**
+     * The key that seals Heal's rows and every copy of Heal that leaves its tables, once [HealTables.seal] has run (0.154.0). Unlike Mint, Heal existed in clear before
+     * it was sealed, so with no key an unsealed Heal keeps working in clear for that run and is sealed at the first start that has the key; a sealed Heal with no key
+     * refuses to read or write (fail closed).
+     */
+    @Volatile var healCipher: RowCipher? = null
     val pokemonTables = PokemonTables(this)
     val live = LiveDocuments(this)
     val reminders = ReminderRepository(this)
