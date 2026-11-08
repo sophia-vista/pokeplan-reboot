@@ -87,10 +87,22 @@ enum class WorldSection(val label: String, val icon: String) {
     MAP("Map", "town-map"), MISSIONS("Missions", "oaks-parcel"), SKILLS("Skills", "ability-capsule"), BASE("Base", "scope-lens"), ARCHIVE("Story archive", "oaks-letter"), TEAMS("Expeditions", "exp-share"), BAG("Finds and Bag", "seal-bag"), SETTINGS("Settings", "storage-key"),
 }
 
+private const val NAP_MILLIS = 30_000L
+private const val MIN_WAIT_MILLIS = 250L
+
 @Composable
 internal fun WorldScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
-    // The teams climb while the screen is open: settle every few seconds (and once on opening, which counts the time away).
-    LaunchedEffect(Unit) { while (true) { model.store.worldSettle(); model.worldNow = model.store.nowMillis; delay(3_000) } }
+    // Settlement is by timestamp (WORLD.md 3.1): once on opening, which counts the time away, then at the moment the next floor of a team that is out
+    // is done (the screen waits for that instant; it does not poll). The wait is cut into short naps so a clock that jumped or a phone that slept is noticed.
+    LaunchedEffect(Unit) { model.store.worldSettle(); model.worldNow = model.store.nowMillis }
+    val roster = model.data.player.pokemon
+    val due = remember(model.data.world, roster) { WorldSim.nextFloorAt(model.data.world, roster, model.store.nowMillis) }
+    LaunchedEffect(due) {
+        if (due == null) return@LaunchedEffect
+        while (model.store.nowMillis < due) delay(minOf(due - model.store.nowMillis, NAP_MILLIS).coerceAtLeast(MIN_WAIT_MILLIS))
+        model.store.worldSettle()
+        model.worldNow = model.store.nowMillis
+    }
     ScreenSwitch(model.worldSection, depth = { if (it == null) 0 else 1 }) { section -> WorldPage(model, section, openPokemon) }
 }
 

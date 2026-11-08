@@ -159,6 +159,23 @@ object WorldSim {
     }
 
     /**
+     * The moment the next floor of any team that is out will be done, or null when no team is exploring (WORLD.md 3.1: the screen waits for this instant
+     * instead of polling). A team whose clock was set back is due at [now], so it is settled and its cursor moved at once; a team is never due before [now].
+     */
+    fun nextFloorAt(data: WorldData, roster: List<OwnedPokemon>, now: Long): Long? {
+        var next: Long? = null
+        for (team in data.teams) {
+            val trip = team.expedition ?: continue
+            val dungeon = Dungeons.byId(trip.dungeonId) ?: continue
+            val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
+            if (members.isEmpty()) continue
+            val at = if (trip.settledTo > now) now else trip.settledTo + floorMillis(dungeon, power(members, dungeon), data.guardianDone, data.legendFaster(dungeon))
+            if (next == null || at < next) next = at
+        }
+        return next
+    }
+
+    /**
      * When each accepted, unfinished job will be done if its team keeps exploring, by job id: the moment a team in the job's
      * dungeon climbs to the job's floor (and meets its team size or power). A job no team can finish, and a [MissionKind.COLLECT]
      * job (it depends on what the floors give), has no entry. This is what the "job done" alarm is set for; the alarm settles
