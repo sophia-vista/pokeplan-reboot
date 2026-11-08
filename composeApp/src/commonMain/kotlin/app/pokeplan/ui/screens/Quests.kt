@@ -41,7 +41,7 @@ internal fun QuestsView(model: AppModel) {
     val world = data.world
     if (app.pokeplan.world.Missions.boardOpen(world)) TextBox {
         Text(
-            "World jobs: ${world.missions.size} taken, ${world.missions.count { it.done }} ready to claim. They are on the mission board, in Modules, World, Missions.",
+            "World jobs: ${world.missions.size} taken, ${world.missions.count { it.done }} done and ready to report. They are on the mission board, in Modules, World, Missions.",
             style = MaterialTheme.typography.bodyLarge,
         )
     }
@@ -88,7 +88,7 @@ private fun QuestCard(model: AppModel, quest: Quest) {
             }
             when {
                 state == null -> PixelButton("Take on this quest", { store.acceptQuest(quest.id) }, Modifier.fillMaxWidth(), Pixel.Blue, enabled = store.activeQuests.size < Quests.MAX_ACTIVE, compact = true)
-                ready -> PixelButton("Claim ${Dex.species(quest.speciesId).name}", { store.claimQuest(quest.id) }, Modifier.fillMaxWidth(), Pixel.Green)
+                ready -> PixelButton("Welcome ${Dex.species(quest.speciesId).name}", { store.claimQuest(quest.id) }, Modifier.fillMaxWidth(), Pixel.Green)
             }
         }
     }

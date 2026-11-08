@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.163.0
+
+- **Story scenes on a ground map are shown the way the games show them.** The map is no longer squeezed into a ten by six box with black bands round it: it fills the screen at a whole-number pixel scale (about 256 pixels of the art across, as on the DS), never smoothed, and the characters are drawn at that same scale, so a Pokémon is the size it is next to a house instead of towering over the square. A camera looks at the characters: it centres on them when they fit in the view, follows the speaker when they are further apart, glides between the two, stays inside the map and rests on a whole map pixel. Conversations on a map put the two speakers close together in the middle of the view; cinematics are one step closer, with a "big_" character at twice the scale. The script's grid is now a window of ten by six cells (about a tile and a half each) centred on the map, so existing scripts keep their layout. Scenes on stock backdrops and a dungeon's own tiles are unchanged for now.
+- **Nothing is "claimed" any more.** Finishing a quest now says **Welcome Wigglytuff** (the Pokémon joins you), a finished World job says **Report back** (on the board, in the journal and in the primary action), and a research step says **Collect**. The rules are unchanged.
+
 ## 0.162.0
 
 HEAL and MINT external integrations (REP-014, `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` sections 5, 7 and 14; `MODULES/HEAL.md` section 10; `MODULES/MINT.md` section 10). No reward number changes (`RewardRules.VERSION` stays 20): nothing imported ever pays. Tested on the JVM and compiled for Android; **not run on a device, and Health Connect has not been tried on a real phone or the Huawei Watch Fit 4 Pro**.

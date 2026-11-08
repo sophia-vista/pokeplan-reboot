@@ -4,6 +4,8 @@ import app.pokeplan.ui.launcher.drawInnerCorners
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.animateValueAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -11,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,6 +39,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
@@ -57,7 +62,9 @@ import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Portrait
 import app.pokeplan.ui.SceneImage
 import app.pokeplan.ui.SpriteAction
+import app.pokeplan.ui.isGroundMap
 import app.pokeplan.ui.orNull
+import app.pokeplan.ui.rememberScene
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.PixelIconButton
@@ -76,7 +83,11 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
+import kotlin.math.ceil
 import kotlin.math.hypot
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
 
 /** Columns across a stage or dungeon scene; rows are six. */
 private const val GRID_COLUMNS = 10
@@ -240,7 +251,9 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<Stri
                 SceneType.DIALOGUE -> DialogueView(model, scene, state, still)
                 SceneType.CINEMATIC -> Box(Modifier.fillMaxSize().offset(x = shake.dp)) { CinematicView(model, scene, state, positions, walking, still) }
                 // A stage or a dungeon is a ten by six grid, centred in the space with a black band round it.
-                else -> Box(Modifier.align(Alignment.Center).fillMaxWidth().aspectRatio(GRID_COLUMNS.toFloat() / GRID_ROWS)) { StageView(model, scene, state, positions, walking, still) }
+                // ... except on a ground map, which fills the screen through a camera (MapStage) like the games' own scenes.
+                else -> if (onMap(scene)) StageView(model, scene, state, positions, walking, still)
+                else Box(Modifier.align(Alignment.Center).fillMaxWidth().aspectRatio(GRID_COLUMNS.toFloat() / GRID_ROWS)) { StageView(model, scene, state, positions, walking, still) }
             }
             if (flash > 0f) Box(Modifier.fillMaxSize().background(Color.White.copy(alpha = flash)))
             if (blackout > 0f) Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = blackout)))
@@ -277,13 +290,26 @@ private fun SceneRunner(model: AppModel, scene: StoryScene, startFlags: Set<Stri
 private fun DialogueView(model: AppModel, scene: StoryScene, state: SceneState, still: Boolean) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val cell = maxWidth / GRID_COLUMNS
-        SceneImage(scene.background, Modifier.fillMaxSize(), darkness = 0.1f)
         val onStage = state.actors.values.toList().take(2)
-        onStage.forEachIndexed { i, a ->
-            val face = faceOf(model, scene, a.id) ?: return@forEachIndexed
-            val size = cell * 2.4f
-            Box(Modifier.offset(x = cell * (if (i == 0) 3.0f else 7.0f) - size / 2, y = maxHeight * 0.66f - size)) {
-                AnimatedSprite(face.formId, face.shiny, face.name, size = size, animate = !still, ground = 0.dp, mirror = i == 1)
+        if (onMap(scene)) {
+            // On a ground map the two stand close together, at the map's own pixel scale, in the middle of the camera's view.
+            val spots = onStage.indices.map { Offset(if (it == 0) 3.6f else 6.4f, 3.6f) }
+            MapStage(scene.background, spots, null, still) { map ->
+                onStage.forEachIndexed { i, a ->
+                    val face = faceOf(model, scene, a.id) ?: return@forEachIndexed
+                    Box(Modifier.offset { map.feet(spots[i].x, spots[i].y) - IntOffset(map.box / 2, map.box) }.size(map.dp(map.box))) {
+                        AnimatedSprite(face.formId, face.shiny, face.name, size = map.dp(map.box), animate = !still, ground = 0.dp, mirror = i == 1, fixedScale = map.pixel)
+                    }
+                }
+            }
+        } else {
+            SceneImage(scene.background, Modifier.fillMaxSize(), darkness = 0.1f)
+            onStage.forEachIndexed { i, a ->
+                val face = faceOf(model, scene, a.id) ?: return@forEachIndexed
+                val size = cell * 2.4f
+                Box(Modifier.offset(x = cell * (if (i == 0) 3.0f else 7.0f) - size / 2, y = maxHeight * 0.66f - size)) {
+                    AnimatedSprite(face.formId, face.shiny, face.name, size = size, animate = !still, ground = 0.dp, mirror = i == 1)
+                }
             }
         }
         val speaker = state.line?.who?.let { who -> onStage.indexOfFirst { it.id == who }.takeIf { it >= 0 }?.let { it to onStage[it] } }
@@ -297,9 +323,128 @@ private fun DialogueView(model: AppModel, scene: StoryScene, state: SceneState, 
     }
 }
 
+// ----- the camera on a ground map ---------------------------------------------------------------------------------------
+
+/** The size of a ground map's tile, in the pixels of the art, and the size of the box a character's sprite is drawn in (three tiles). */
+private const val MAP_TILE = 24
+private const val SPRITE_BOX = MAP_TILE * 3
+
+/** How many map pixels one cell of a script's grid is on a ground map (about a tile and a half: people stand near each other, as in the games). */
+private const val STAGE_CELL = 40f
+
+/** From the feet up to about the middle of a sprite, in map pixels: the camera looks at the middle of a character, not at its feet. */
+private const val SPRITE_MIDDLE = 20f
+
+/** Where on a map the script's grid of [GRID_COLUMNS] by [GRID_ROWS] cells lies: centred, [cell] map pixels a cell (smaller on a map too small for it). */
+private class StageGrid(val cell: Float, private val x0: Float, private val y0: Float) {
+    fun mapX(x: Float) = x0 + x * cell
+    fun mapY(y: Float) = y0 + y * cell
+
+    companion object {
+        fun of(mapWidth: Int, mapHeight: Int): StageGrid {
+            val cell = min(STAGE_CELL, min(mapWidth / GRID_COLUMNS.toFloat(), mapHeight / GRID_ROWS.toFloat()))
+            return StageGrid(cell, (mapWidth - cell * GRID_COLUMNS) / 2, (mapHeight - cell * GRID_ROWS) / 2)
+        }
+    }
+}
+
+/**
+ * What a scene on a ground map draws with: the map's [pixel] (screen pixels per pixel of the art, one whole number for the map and every
+ * sprite, so all the art has the same pixel size), and where the camera is, to put a character's feet on a whole map pixel.
+ */
+private class MapScope(val pixel: Int, private val originX: Int, private val originY: Int, private val grid: StageGrid, private val density: Float) {
+    /** The size of a sprite's box on the screen, in pixels. */
+    val box: Int = SPRITE_BOX * pixel
+
+    /** The screen pixel of the feet of a character standing at ([x], [y]) of the script's grid. */
+    fun feet(x: Float, y: Float) = IntOffset((grid.mapX(x).roundToInt() - originX) * pixel, (grid.mapY(y).roundToInt() - originY) * pixel)
+
+    fun dp(px: Int): Dp = (px / density).dp
+}
+
+/** Is the scene set on a ground map (shown through the camera) rather than a stock scene, or a dungeon's own tiles? */
+private fun onMap(scene: StoryScene) = scene.dungeonId == null && isGroundMap(scene.background)
+
+/**
+ * A ground map seen the way the games show it: at a whole-number pixel scale (about 256 pixels of the art across, so a tile is about a
+ * tenth of the width), never squeezed to fit, with a camera that looks at the characters. When they all fit in the view it centres on
+ * them; when they are further apart it follows the speaker. The camera glides, stays inside the map and always rests on a whole map pixel.
+ * [actorsAt] and [speakerAt] are positions of the script's grid; [zoom] steps the pixel up for a closer view.
+ */
+@Composable
+private fun MapStage(
+    background: String, actorsAt: List<Offset>, speakerAt: Offset?, still: Boolean, modifier: Modifier = Modifier.fillMaxSize(),
+    darkness: Float = 0.1f, zoom: Int = 0, content: @Composable BoxScope.(MapScope) -> Unit,
+) {
+    val image = rememberScene(background)
+    BoxWithConstraints(modifier.clipToBounds()) {
+        val w = constraints.maxWidth
+        val h = constraints.maxHeight
+        if (image == null) { Box(Modifier.fillMaxSize().background(Color(0xFF8FCB7F))); return@BoxWithConstraints }
+        // Not smaller than the games' own scale, and large enough that the map covers the screen.
+        val pixel = max(max((w / 256f).roundToInt(), ceil(w / image.width.toFloat()).toInt()), ceil(h / image.height.toFloat()).toInt()).coerceAtLeast(1) + zoom
+        val viewW = ceil(w / pixel.toFloat()).toInt().coerceAtMost(image.width)
+        val viewH = ceil(h / pixel.toFloat()).toInt().coerceAtMost(image.height)
+        val grid = remember(image) { StageGrid.of(image.width, image.height) }
+        fun mapAt(p: Offset) = Offset(grid.mapX(p.x), grid.mapY(p.y) - SPRITE_MIDDLE)
+        val points = actorsAt.map(::mapAt)
+        val target = when {
+            points.isEmpty() -> Offset(image.width / 2f, image.height / 2f)
+            else -> {
+                val left = points.minOf { it.x }; val right = points.maxOf { it.x }; val top = points.minOf { it.y }; val bottom = points.maxOf { it.y }
+                if (right - left + SPRITE_BOX <= viewW * 0.85f && bottom - top + SPRITE_BOX <= viewH * 0.85f) Offset((left + right) / 2, (top + bottom) / 2)
+                else speakerAt?.let(::mapAt) ?: Offset(points.sumOf { it.x.toDouble() }.toFloat() / points.size, points.sumOf { it.y.toDouble() }.toFloat() / points.size)
+            }
+        }
+        val look by animateValueAsState(target, Offset.VectorConverter, animationSpec = if (still) snap() else tween(500))
+        val originX = (look.x - viewW / 2f).roundToInt().coerceIn(0, image.width - viewW)
+        val originY = (look.y - viewH / 2f).roundToInt().coerceIn(0, image.height - viewH)
+        Canvas(Modifier.fillMaxSize()) {
+            val src = IntSize(viewW, viewH)
+            drawImage(image, IntOffset(originX, originY), src, IntOffset.Zero, IntSize(src.width * pixel, src.height * pixel), filterQuality = FilterQuality.None)
+            if (darkness > 0f) drawRect(Pixel.Night.copy(alpha = darkness.coerceIn(0f, 1f)))
+        }
+        content(MapScope(pixel, originX, originY, grid, LocalDensity.current.density))
+    }
+}
+
+private fun actionOf(move: Facing?) = when (move) {
+    Facing.UP -> SpriteAction.WALK_UP; Facing.DOWN -> SpriteAction.WALK_DOWN; Facing.LEFT, Facing.RIGHT -> SpriteAction.WALK_SIDE; null -> SpriteAction.IDLE
+}
+
+/** Where everyone on the stage stands (the grid), by where they are now: walking ones are between cells. */
+private fun spotsOf(state: SceneState, positions: Map<String, Offset>): List<Offset> = state.actors.values.map { positions[it.id] ?: Offset(it.x, it.y) }
+
+/** The characters of a scene on a ground map, back to front, each at the map's pixel scale (a "big_" one of a cinematic at twice it). */
+@Composable
+private fun MapActors(model: AppModel, scene: StoryScene, state: SceneState, positions: Map<String, Offset>, walking: Map<String, Facing>, map: MapScope, still: Boolean, big: Boolean = false) {
+    state.actors.values.sortedBy { positions[it.id]?.y ?: it.y }.forEach { a ->
+        val face = faceOf(model, scene, a.id) ?: return@forEach
+        val scale = if (big && a.id.startsWith("big_")) 2 else 1
+        val boxPx = map.box * scale
+        val move = walking[a.id]
+        Box(Modifier.offset { (positions[a.id] ?: Offset(a.x, a.y)).let { at -> map.feet(at.x, at.y) } - IntOffset(boxPx / 2, boxPx) }.size(map.dp(boxPx))) {
+            AnimatedSprite(
+                face.formId, face.shiny, face.name, size = map.dp(boxPx), animate = !still, ground = 0.dp, action = actionOf(move),
+                mirror = move == Facing.LEFT, fixedScale = map.pixel * scale,
+            )
+            a.emote?.let { Text(it, Modifier.align(Alignment.BottomCenter).offset(y = -map.dp(map.pixel * 44 * scale)), style = MaterialTheme.typography.headlineMedium, color = Color(0xFFFFD33D)) }
+        }
+    }
+}
+
 /** A stage or a dungeon walk: the place, the items on the floor and the sprites at their cells, walking when they move. */
 @Composable
 private fun StageView(model: AppModel, scene: StoryScene, state: SceneState, positions: Map<String, Offset>, walking: Map<String, Facing>, still: Boolean) {
+    if (onMap(scene)) {
+        val speaker = state.line?.who?.let { who -> state.actors[who] }?.let { positions[it.id] ?: Offset(it.x, it.y) }
+        MapStage(scene.background, spotsOf(state, positions), speaker, still) { map ->
+            // The items on the floor stand on a cell like a character does.
+            state.items.forEach { (id, p) -> ItemIcon(id, Modifier.offset { map.feet(p.first, p.second) - IntOffset(map.box / 6, map.box / 3) }, size = map.dp(map.box / 3), description = null) }
+            MapActors(model, scene, state, positions, walking, map, still)
+        }
+        return
+    }
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val cell = maxWidth / GRID_COLUMNS
         if (scene.type == SceneType.DUNGEON && scene.dungeonId != null) DungeonFloor(scene.dungeonId!!) else SceneImage(scene.background, Modifier.fillMaxSize(), darkness = 0.1f)
@@ -362,7 +507,12 @@ private fun faceSpecies(scene: StoryScene, who: String): Int? = scene.cast.first
 @Composable
 private fun CinematicView(model: AppModel, scene: StoryScene, state: SceneState, positions: Map<String, Offset>, walking: Map<String, Facing>, still: Boolean) {
     Box(Modifier.fillMaxSize().background(Color.Black)) {
-        Box(Modifier.align(Alignment.Center).fillMaxWidth().aspectRatio(GRID_COLUMNS.toFloat() / GRID_ROWS)) {
+        if (onMap(scene)) {
+            // A step closer than a stage, filling the screen under the bars.
+            MapStage(scene.background, spotsOf(state, positions), state.line?.who?.let { who -> state.actors[who] }?.let { positions[it.id] ?: Offset(it.x, it.y) }, still, darkness = 0.3f, zoom = 1) { map ->
+                MapActors(model, scene, state, positions, walking, map, still, big = true)
+            }
+        } else Box(Modifier.align(Alignment.Center).fillMaxWidth().aspectRatio(GRID_COLUMNS.toFloat() / GRID_ROWS)) {
             if (scene.dungeonId != null) DungeonFloor(scene.dungeonId!!) else SceneImage(scene.background, Modifier.fillMaxSize(), darkness = 0.3f)
             BoxWithConstraints(Modifier.fillMaxSize()) {
                 val cell = maxWidth / GRID_COLUMNS

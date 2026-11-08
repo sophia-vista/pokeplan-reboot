@@ -90,7 +90,7 @@ internal fun ExpeditionOverview(model: AppModel) {
             }
             if (Missions.boardOpen(world)) {
                 val ready = world.missions.count { it.done }
-                Text("Jobs: ${world.missions.size} of ${Missions.MAX_ACTIVE} taken" + if (ready > 0) ", $ready ready to claim." else ".", style = MaterialTheme.typography.bodyMedium, color = if (ready > 0) Pixel.Green else Pixel.InkSoft)
+                Text("Jobs: ${world.missions.size} of ${Missions.MAX_ACTIVE} taken" + if (ready > 0) ", $ready ready to report." else ".", style = MaterialTheme.typography.bodyMedium, color = if (ready > 0) Pixel.Green else Pixel.InkSoft)
             }
             val waiting = world.finds.size
             Text(

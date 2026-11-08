@@ -410,7 +410,7 @@ private fun WorldMissionsView(model: AppModel) {
         append("${m.poke} Poké, ${m.xp} XP")
         m.itemId?.let { append(", ${Items.name(it)} x${m.itemCount}") }
     }
-    WorldBanner("guild-room", "The mission board", "${world.missions.count { it.done }} ready to claim, ${world.missions.size} of ${Missions.MAX_ACTIVE} taken", sky = Color(0xFF101038), top = true)
+    WorldBanner("guild-room", "The mission board", "${world.missions.count { it.done }} ready to report, ${world.missions.size} of ${Missions.MAX_ACTIVE} taken", sky = Color(0xFF101038), top = true)
     FieldLabel("Taken (${world.missions.size} of ${Missions.MAX_ACTIVE})")
     if (world.missions.isEmpty()) Text("No jobs taken.", style = MaterialTheme.typography.bodyMedium)
     world.missions.forEach { p ->
@@ -445,7 +445,7 @@ private fun WorldMissionsView(model: AppModel) {
                 val needed = m.give?.let { it to m.giveCount }
                 val haveIt = needed == null || model.data.player.inventory.has(needed.first, needed.second)
                 if (p.done && !haveIt) Text("Needs ${needed!!.second} x ${Items.name(needed.first)} in your Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
-                if (p.done) PixelButton("Claim", { if (store.worldClaimMission(p.id)) model.effect(Sfx.MISSION_SUCCESS) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = haveIt, compact = true)
+                if (p.done) PixelButton("Report back", { if (store.worldClaimMission(p.id)) model.effect(Sfx.MISSION_SUCCESS) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = haveIt, compact = true)
                 else PixelButton("Give up", { store.worldAbandonMission(p.id) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
         }
@@ -947,7 +947,7 @@ private fun ResearchPage(model: AppModel) {
                     Text(buildString { append("${step.poke} Poké"); step.itemId?.let { append(", ${Items.name(it)} x${step.count}") } }, style = MaterialTheme.typography.bodyMedium)
                 }
                 if (claimed) Text("Done", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
-                else PixelButton("Claim", { if (store.worldClaimResearch(step.species)) model.effect(Sfx.ITEM_GET) }, color = Module.WORLD.look.accent, enabled = reached, compact = true)
+                else PixelButton("Collect", { if (store.worldClaimResearch(step.species)) model.effect(Sfx.ITEM_GET) }, color = Module.WORLD.look.accent, enabled = reached, compact = true)
             }
         }
     }
