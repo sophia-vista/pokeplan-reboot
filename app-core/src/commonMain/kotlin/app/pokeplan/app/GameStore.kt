@@ -1858,9 +1858,20 @@ class GameStore(
      * The meaningful thing that happened in the last few minutes (an egg hatched, a task or session paid out), or null.
      * The buddy only speaks and celebrates for these; the rest of the time it just idles.
      */
-    fun buddyEvent(care: Boolean = false): BuddyEventNow? {
-        // On Care's screens only Care's own moments count (a routine, a calm break, a skill, a friend made).
-        val recent = data.rewardLog.filter { nowMillis - it.atMillis < EVENT_MILLIS && (!care || it.source.startsWith(CARE_LOG_PREFIX)) }
+    fun buddyEvent(care: Boolean = false): BuddyEventNow? = eventWhere { !care || it.startsWith(CARE_LOG_PREFIX) }
+
+    /**
+     * The moment a module's lead celebrates on that module's page: only what that module paid. [prefix] is the module's log prefix
+     * ([HEAL_LOG_PREFIX], [MINT_LOG_PREFIX], [HOME_LOG_PREFIX], [CARE_LOG_PREFIX]); null is Plan, whose rewards carry no prefix (a finished
+     * task, a hatched egg), so nothing another module, World or a mini-quest paid counts.
+     */
+    fun moduleEvent(prefix: String?): BuddyEventNow? = eventWhere { source ->
+        if (prefix != null) source.startsWith(prefix)
+        else MODULE_LOG_PREFIXES.none { source.startsWith(it) } && source != WORLD_SOURCE && source != MINI_QUEST_SOURCE
+    }
+
+    private fun eventWhere(counts: (String) -> Boolean): BuddyEventNow? {
+        val recent = data.rewardLog.filter { nowMillis - it.atMillis < EVENT_MILLIS && counts(it.source) }
         val latest = recent.lastOrNull() ?: return null
         // A Pokémon the World gives is not an egg hatching, so it is not a hatch moment.
         val hatches = recent.filter { it.source != WORLD_SOURCE }.flatMap { e -> e.rewards.filterIsInstance<Reward.Hatched>() }
@@ -2004,6 +2015,7 @@ class GameStore(
 
         /** Every HEAL entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val HEAL_LOG_PREFIX = "Heal: "
+        private val MODULE_LOG_PREFIXES by lazy { listOf(CARE_LOG_PREFIX, HEAL_LOG_PREFIX, MINT_LOG_PREFIX, HOME_LOG_PREFIX, LINK_LOG_PREFIX) }
         private val HEAL_SOURCES = mapOf(HealKind.ACTIVITY to "Field Research", HealKind.PARTICIPATION to "Field Research").mapValues { HEAL_LOG_PREFIX + it.value }
 
         /** The most of each MINT kind the world pays in its period *(tune)*, a backstop to the same limits in `MintRules`: reconciled accounts a day, reviews a week. */

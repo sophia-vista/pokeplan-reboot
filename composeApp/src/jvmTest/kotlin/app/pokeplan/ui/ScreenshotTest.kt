@@ -649,6 +649,26 @@ class ScreenshotTest {
     @Test
     fun darkPlan() = dark("dark-plan", Place.PLAN)
 
+    /** Every module's page opens on its lead in its own scene , light and dark. */
+    @Test
+    fun moduleLeadStages() {
+        val store = storeWithTeam(hatched = 7)
+        store.markRewardsSeen(); store.markVersionSeen(AppVersion.NAME)
+        val others = store.data.player.pokemon.filter { it.id != store.data.player.buddyId }
+        val ids = app.pokeplan.core.pokemon.PartyIds
+        listOf(ids.PLAN, ids.HEAL, ids.MINT, ids.HOME, ids.LINK).forEachIndexed { i, party -> others.getOrNull(i)?.let { store.setInParty(it.id, true, party) } }
+        others.getOrNull(5)?.let { p -> store.worldAssign(0, listOf(p.id)) }
+        val model = AppModel(store)
+        for (dark in listOf(false, true)) {
+            val tag = if (dark) "dark" else "light"
+            for (module in listOf(app.pokeplan.ui.screens.Module.PLAN, app.pokeplan.ui.screens.Module.HEAL, app.pokeplan.ui.screens.Module.MINT, app.pokeplan.ui.screens.Module.HOME, app.pokeplan.ui.screens.Module.LINK, app.pokeplan.ui.screens.Module.WORLD)) {
+                model.module = module
+                render("lead-$tag-${module.name.lowercase()}", height = 1500) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+            }
+        }
+        model.module = null
+    }
+
     /** The module pages in both palettes side by side by name, so each accent can be checked on the light and the dark panel. */
     @Test
     fun moduleAccentsBothPalettes() {

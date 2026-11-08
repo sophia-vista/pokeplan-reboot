@@ -1,5 +1,9 @@
 package app.pokeplan.ui.launcher
 
+import app.pokeplan.ui.theme.DialogueShape
+
+import app.pokeplan.ui.theme.PixelShape
+
 import kotlinx.datetime.plus
 import kotlinx.datetime.minus
 import kotlinx.datetime.DatePeriod
@@ -15,8 +19,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Slider
 import kotlin.math.abs
 import androidx.compose.foundation.gestures.draggable
 import app.pokeplan.ui.pressScale
@@ -62,8 +64,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -164,7 +164,7 @@ interface LauncherHost {
     fun openApp(place: Place)
 }
 
-private val rowShape = RoundedCornerShape(14.dp)
+private val rowShape = DialogueShape
 
 /** The page position (0 the town, 1 Today and on to [last], and -1 and on to [first] for pages left of Home) for a finger at [x]: past either end it stretches a little and no more, like a rubber band. */
 private fun rubberPage(x: Float, last: Float = 1f, first: Float = 0f): Float = when {
@@ -628,7 +628,7 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
 
 @Composable
 private fun Chip(label: String, count: String, selected: Boolean, pixel: Int, icon: String? = null, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(50)
+    val shape = DialogueShape
     Row(
         Modifier.height(Spacing.Target).clip(shape).background(if (selected) Color.White else Color.White.copy(alpha = 0.14f), shape)
             .clickable(role = Role.Tab, onClick = onClick).padding(horizontal = Spacing.L),
@@ -732,7 +732,7 @@ internal fun TownPicker(current: String, onPick: (String) -> Unit, onClose: () -
     val none = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)).clickable(indication = null, interactionSource = none, onClick = onClose)) {
         Column(
-            Modifier.align(Alignment.BottomCenter).fillMaxWidth().safeDrawingPadding().padding(Spacing.L).background(Pixel.Panel, RoundedCornerShape(24.dp))
+            Modifier.align(Alignment.BottomCenter).fillMaxWidth().safeDrawingPadding().padding(Spacing.L).background(Pixel.Panel, DialogueShape)
                 .padding(Spacing.L).clickable(indication = null, interactionSource = none) {},
             verticalArrangement = Arrangement.spacedBy(Spacing.S),
         ) {

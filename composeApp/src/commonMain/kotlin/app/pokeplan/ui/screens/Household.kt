@@ -199,6 +199,7 @@ private fun HouseholdMenu(model: AppModel, onBack: () -> Unit, openPokemon: (Str
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
+            ModuleLeadStage(model, Module.HOME, model.data.player.homeLead, model.store.moduleEvent(app.pokeplan.app.GameStore.HOME_LOG_PREFIX), openPokemon = openPokemon)
             RewardBox(model)
             TutorialCard(model, Tutorials.HOME_TIDY, homeRecords = data.chores.size + data.supplies.size + data.assets.size)
             HouseholdOverview(model)

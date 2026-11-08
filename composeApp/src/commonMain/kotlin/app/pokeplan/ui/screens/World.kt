@@ -100,7 +100,7 @@ private fun WorldPage(model: AppModel, section: WorldSection?, openPokemon: (Str
     if (section == null) {
         val toModules = { model.module = null }
         BackHandler(enabled = true, onBack = toModules)
-        WorldMenu(model, toModules)
+        WorldMenu(model, toModules, openPokemon)
         return
     }
     SectionScaffold(section.label, null, onBack = { model.worldSection = null }, icon = section.icon, color = Module.WORLD.look.header) {
@@ -118,7 +118,7 @@ private fun WorldPage(model: AppModel, section: WorldSection?, openPokemon: (Str
 }
 
 @Composable
-private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
+private fun WorldMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) -> Unit) {
     val world = model.data.world
     val out = world.teams.count { it.expedition != null }
     Column(Modifier.fillMaxSize()) {
@@ -126,6 +126,10 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             // The order of the page: where you are and the one thing worth doing (the region, its chapter, the next step), what the teams
             // are doing and brought back, then the places to go. Rank sits in one quiet strip. The first time, one card says what World is.
+            // The lead of the team out exploring (else the first team with members), in World's own scene; nothing before a team has a member.
+            val stageTeam = world.teams.firstOrNull { it.expedition != null && it.members.isNotEmpty() } ?: world.teams.firstOrNull { it.members.isNotEmpty() }
+            val stageLead = stageTeam?.members?.firstNotNullOfOrNull { id -> model.data.player.pokemon.firstOrNull { it.id == id } }
+            ModuleLeadStage(model, Module.WORLD, stageLead, null, openPokemon = openPokemon)
             val firstTime = world.teams.none { it.expedition != null || it.members.isNotEmpty() } && world.clears.isEmpty()
             RankStrip(model)
             WorldReportCard(model)

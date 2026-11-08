@@ -1,5 +1,7 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.PixelShape
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,8 +14,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,7 +47,7 @@ internal fun CategoryChip(category: Category, selected: Boolean, onClick: () -> 
     PixelKey(onClick, key = color, selected = selected, fill = true, role = Role.Tab, horizontal = Spacing.M) { look ->
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
             // The dot keeps the category's colour on a filled key too: white ring so it shows on its own colour.
-            Box(Modifier.size(10.dp).background(color, CircleShape).then(if (selected) Modifier.border(2.dp, Color.White, CircleShape) else Modifier))
+            Box(Modifier.size(10.dp).background(color, PixelShape).then(if (selected) Modifier.border(2.dp, Color.White, PixelShape) else Modifier))
             KeyLabel(category.label, look)
         }
     }

@@ -1,5 +1,8 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.drawPixelDisc
+import app.pokeplan.ui.theme.drawPixelRing
+
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -136,7 +139,7 @@ internal fun RangerStyler(model: AppModel, tool: GearTool, onClose: () -> Unit) 
                 Canvas(Modifier.fillMaxWidth().height(260.dp)) {
                     drawRect(Pixel.Border.copy(alpha = 0.25f))
                     if (line.size > 1) for (i in 1 until line.size) drawLine(Pixel.Red, line[i - 1], line[i], strokeWidth = 5f * density, cap = StrokeCap.Round)
-                    drawCircle(Pixel.Red.copy(alpha = 0.18f), radius = spriteDp * density * 0.7f, center = pos, style = Stroke(width = 3f * density))
+                    drawPixelRing(Pixel.Red.copy(alpha = 0.18f), pos, spriteDp * density * 0.7f, 4f * density)
                 }
                 Box(Modifier.offset { IntOffset((pos.x - spriteDp * density / 2).roundToInt(), (pos.y - spriteDp * density / 2).roundToInt()) }.size(spriteDp.dp), contentAlignment = Alignment.Center) {
                     AnimatedSprite(Dex.defaultForm(species).id, false, Dex.species(species).name, size = spriteDp.dp, animate = !reduce)

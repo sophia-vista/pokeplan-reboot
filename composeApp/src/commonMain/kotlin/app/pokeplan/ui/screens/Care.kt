@@ -1,5 +1,8 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.drawPixelDisc
+import app.pokeplan.ui.theme.drawPixelRing
+
 import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.platform.LocalDensity
@@ -24,9 +27,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -534,8 +537,9 @@ private fun BreathCircle(inhale: Boolean, still: Boolean) {
     val edge = Pixel.Blue
     Canvas(Modifier.size(160.dp).semantics { contentDescription = if (inhale) "Breathe in" else "Breathe out" }) {
         val radius = size.minDimension / 2 * (if (still) 0.8f else scale)
-        drawCircle(fill, radius)
-        drawCircle(edge, radius, style = androidx.compose.ui.graphics.drawscope.Stroke(3.dp.toPx()))
+        val center = Offset(size.width / 2, size.height / 2)
+        drawPixelDisc(fill, center, radius)
+        drawPixelRing(edge, center, radius, 4.dp.toPx())
     }
 }
 

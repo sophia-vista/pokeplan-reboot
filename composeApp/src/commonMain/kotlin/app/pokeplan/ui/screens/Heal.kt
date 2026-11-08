@@ -112,6 +112,7 @@ private fun HealMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
+            ModuleLeadStage(model, Module.HEAL, model.data.player.healLead, model.store.moduleEvent(app.pokeplan.app.GameStore.HEAL_LOG_PREFIX), openPokemon = openPokemon)
             RewardBox(model)
             TutorialCard(model, Tutorials.HEAL_WALK, healActivities = data.activities.size)
             TodayCard(model)

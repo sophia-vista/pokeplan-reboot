@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.146.0
+
+Every module opens on its lead, and the rounded parts that were left are pixel parts. No reward number changes.
+
+- **A lead scene on every module page** (`ModuleLeadStage`, the Care meadow's window): the module's lead idles in the module's own scene, a tap pets it, its level and progress sit small in the corner, and it celebrates what its module paid (`GameStore.moduleEvent`: a finished task or hatch for Plan, Field Research for Heal, Ledger Research for Mint, Habitat Discovery for Home, Postcard Trail for Link). World shows the lead of the team out exploring. Nothing shows until the module has a lead; the global buddy stays on Home.
+- **Pixel audit.** Picture windows (`Stage`, `SceneStage`: Calm break, hatch and visitor scenes, Pokédex, Focus), the background picker, the whole launcher (search field, category chips, rows, sheets) and the Gear unit drop-down (now a pixel list in a dialogue frame, not Material's menu) use stair corners. Colour swatches, the Menu badge, calendar day markers and the dots on lists are pixel squares, and the breathing circle, the compass and level, the Ranger ring and the World map markers are drawn as pixel discs (`drawPixelDisc`, `drawPixelRing`). The buddy's progress bar and its berry button lost their round shapes. Unused Material imports are gone.
+
 ## 0.145.0
 
 Link, the connection module, built manual first (REP-014). Stacked on the cross-module links of 0.144.0.
