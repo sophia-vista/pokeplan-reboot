@@ -523,6 +523,31 @@ class ScreenshotTest {
         app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last(), fromTask = false, how = app.pokeplan.app.Origin.How.CARE_EGG)
     }
 
+    /** A visitor's egg (owner, 8 November 2026): first the visitor leaves it in the meadow, then it hatches at once. [still] shows the end of the first part. */
+    private fun visitorEgg(name: String, still: Boolean, frames: Int) {
+        val base = storeWithTeam(hatched = 1)
+        val gift = base.data.player.pokemon.last()
+        val origin = app.pokeplan.app.Origin(
+            app.pokeplan.app.Origin.How.BEFRIENDED, app.pokeplan.core.dex.Region.CARE,
+            visitor = app.pokeplan.app.VisitorOrigin(speciesId = 25, visitorId = "v-test", epochDay = 20_000L, note = "Befriended on a sunny day."),
+        )
+        val withOrigin = base.data.copy(origins = base.data.origins + (gift.id to origin))
+        val store = GameStore(MemoryStorage(GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), withOrigin)), clock)
+        store.changeSettings { it.copy(reduceMotion = still) }
+        store.markRewardsSeen()
+        val model = AppModel(store)
+        model.cutscene = app.pokeplan.ui.screens.Cutscene.Hatch(gift, fromTask = false, how = app.pokeplan.app.Origin.How.BEFRIENDED)
+        render(name, frames = frames) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.CutsceneHost(model) } }
+        }
+    }
+
+    @Test
+    fun visitorLeavesAnEgg() = visitorEgg("visitor-leaves-egg", still = true, frames = 30)
+
+    @Test
+    fun visitorLeavesAnEggMoving() = visitorEgg("visitor-leaves-egg-moving", still = false, frames = 170)
+
     @Test
     fun arrivalHeal() = cutscene("arrival-heal", frames = 60, still = true) {
         app.pokeplan.ui.screens.Cutscene.Hatch(it.data.player.pokemon.last(), fromTask = false, how = app.pokeplan.app.Origin.How.FIELD_EGG)

@@ -246,7 +246,7 @@ Rules:
 
 ### 6.6 Egg hatching and inheritance
 
-- Visitor eggs enter the shared Pokémon Egg collection and use the shared hatching/progression system.
+- **Owner decision, 8 November 2026: a visitor's egg hatches at once** (it does not wait in the Egg collection). The moment the visitor becomes a friend, a scene plays on Care's meadow: the visitor says goodbye, walks off and leaves an egg in the grass, and then the egg hatches (the shared hatching scene). The hatchling still uses the shared hatching and origin systems. This replaces the earlier wording that visitor eggs persist in the shared Egg collection.
 - No real-time countdown, expiry or forced hatching schedule.
 - Egg species is the visitor's first evolutionary stage.
 - Visitor eggs may lightly inherit selected characteristics from the visitor: personality/nature influence, potential stat strengths, and a rare special trait. There is no cosmetic variation (owner, 7 November 2026: scrapped).
