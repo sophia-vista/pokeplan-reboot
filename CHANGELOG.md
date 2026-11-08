@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.161.0
+
+- **Launcher: who walks the town follows the spec** (`LAUNCHER.md` 6.1). The buddy first, then the favourites, then the other Pokémon; inside the favourites and the others, those with an animation sheet (PMD SpriteCollab or Black/White) come before those without one, then by level. With more than 24 owned, the Pokémon without a sprite are the first to stay out of the town. Tested on the JVM (`LauncherModelTest`), **not run on a device**.
+
 ## 0.160.0
 
 - **The two Mystery Dungeon arcs have their own places and real pictures.** The old home dungeon list is split by the brief (`docs/world-story-rewrite.md`, work item 2): **Rescue Team** has Tiny Woods, Thunderwave Cave, Mt. Steel, the new **Frosty Forest** and Sky Tower; **Explorers** has the new **Beach Cave**, **Drenched Bluff**, **Crystal Cave** and **Hidden Land** besides Waterfall Cave, Glacier Palace, Ancient Ruins, the Temporal Tower and the Distortion Rift (14 dungeons in all; every id kept, so clears, missions and teams in old saves still resolve; Thunderwave Cave moved to the Rescue Team layer). The new places use the game's own tilesets (`beach-cave`, `drenched-bluff`, `crystal-cave`, the Explorers sheet 42 for Hidden Land, Rescue Team's 36 for Frosty Forest) and sit on the world map; the map now uncovers in eight steps whatever the layer's number of dungeons. The scenes that were set in a stand-in dungeon (the stolen treasure, Bidoof's lesson, the frozen pond, the Hidden Land, Absol in the snow) now play in their own.
