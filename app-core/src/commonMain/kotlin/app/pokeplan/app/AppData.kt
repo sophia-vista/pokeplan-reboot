@@ -118,6 +118,8 @@ data class AppData(
     val mintPaid: List<String> = emptyList(),
     /** The ids of HOME events already paid (`HomeEvent.id`, opaque, no household word in them), kept like [mintPaid]. The newest [GameStore.HOME_PAID_KEPT] are kept. */
     val homePaid: List<String> = emptyList(),
+    /** The ids of LINK events already paid (`LinkEvent.id`, opaque, no word of a person or a follow-up in them), kept like [homePaid]. The newest [GameStore.LINK_PAID_KEPT] are kept. */
+    val linkPaid: List<String> = emptyList(),
     /**
      * What each module reward really was, for the ledger (DATA_AND_MIGRATIONS.md section 7.3.0): one [LedgerNote] per paid HEAL, MINT or HOME event, with the event's own id,
      * so the live database settles `home:chore:<id>:<day>` instead of one coarse "net change of one save". The database turns a note into a ledger event once (the id is the
@@ -166,6 +168,9 @@ object Tutorials {
 
     /** Home: a 5-second tidy that finds a Habitat Egg for Home's party. */
     const val HOME_TIDY = "home-tidy"
+
+    /** Link: a 5-second postcard that finds a Postcard Egg for Link's party. */
+    const val LINK_POSTCARD = "link-postcard"
 
     /** How long each demo runs, in seconds. */
     const val DEMO_SECONDS = 5
@@ -410,6 +415,7 @@ data class Origin(val how: How, val region: Region? = null, val visitor: Visitor
         FIELD_EGG("Found by Field Research"),
         LEDGER_EGG("Found by Ledger Research"),
         HABITAT_EGG("Found by Habitat Discovery"),
+        POSTCARD_EGG("Found by Postcard Trail"),
         BEFRIENDED("Befriended on a Care visit"),
         QUEST("Earned on a quest"),
         WORLD("Found in the World"),

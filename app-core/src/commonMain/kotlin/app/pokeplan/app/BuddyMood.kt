@@ -25,6 +25,9 @@ object BuddyScene {
     /** Home's region scene: the town, for the household's upkeep. */
     const val HOME = "city"
 
+    /** Link's region scene: the route, a postcard trail. */
+    const val LINK = "route"
+
     /** The scene file name (without .png) for a Pokémon whose types are [types]. */
     fun of(types: List<PokemonType>): String = when (types.firstOrNull()) {
         PokemonType.FIRE -> "mountain"

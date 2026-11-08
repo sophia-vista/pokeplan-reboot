@@ -30,13 +30,14 @@ import kotlinx.coroutines.delay
  * is not a focus session or a calm break and leaves no record. [id] is a [Tutorials] id.
  */
 @Composable
-internal fun TutorialCard(model: AppModel, id: String, careBreaks: Int = 0, healActivities: Int = 0, mintRecords: Int = 0, homeRecords: Int = 0) {
+internal fun TutorialCard(model: AppModel, id: String, careBreaks: Int = 0, healActivities: Int = 0, mintRecords: Int = 0, homeRecords: Int = 0, linkRecords: Int = 0) {
     model.data // observe the save: the store itself is not Compose state
-    if (!model.store.tutorialOffered(id, careBreaks, healActivities, mintRecords, homeRecords)) return
+    if (!model.store.tutorialOffered(id, careBreaks, healActivities, mintRecords, homeRecords, linkRecords)) return
     val plan = id == Tutorials.PLAN_FOCUS
     val heal = id == Tutorials.HEAL_WALK
     val mint = id == Tutorials.MINT_TALLY
     val home = id == Tutorials.HOME_TIDY
+    val link = id == Tutorials.LINK_POSTCARD
     var running by remember(id) { mutableStateOf(false) }
     var seconds by remember(id) { mutableStateOf(0f) }
     var cancelled by remember(id) { mutableStateOf(false) }
@@ -50,21 +51,22 @@ internal fun TutorialCard(model: AppModel, id: String, careBreaks: Int = 0, heal
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle(if (plan) "Try a focus session" else if (heal) "Go on a short walk" else if (mint) "Count a few coins" else if (home) "Tidy up a little" else "Take a breath")
+            PixelTitle(if (plan) "Try a focus session" else if (heal) "Go on a short walk" else if (mint) "Count a few coins" else if (home) "Tidy up a little" else if (link) "Write a postcard" else "Take a breath")
             if (!running) {
                 Text(
                     if (plan) "A ${Tutorials.DEMO_SECONDS} second focus gives you a first Pokémon for Plan's party."
                     else if (heal) "A ${Tutorials.DEMO_SECONDS} second walk gives you a first Pokémon for Heal's party."
                     else if (mint) "A ${Tutorials.DEMO_SECONDS} second tally gives you a first Pokémon for Mint's party."
                     else if (home) "A ${Tutorials.DEMO_SECONDS} second tidy gives you a first Pokémon for Home's party."
+                    else if (link) "A ${Tutorials.DEMO_SECONDS} second postcard gives you a first Pokémon for Link's party."
                     else "One breath gives you a first Pokémon for Care's party.",
                     style = MaterialTheme.typography.bodyLarge,
                 )
-                PixelButton(if (plan) "Start the ${Tutorials.DEMO_SECONDS} second focus" else if (heal) "Walk for ${Tutorials.DEMO_SECONDS} seconds" else if (mint) "Tally for ${Tutorials.DEMO_SECONDS} seconds" else if (home) "Tidy for ${Tutorials.DEMO_SECONDS} seconds" else "Breathe for ${Tutorials.DEMO_SECONDS} seconds", { seconds = 0f; cancelled = false; running = true }, color = Pixel.Green, compact = true)
+                PixelButton(if (plan) "Start the ${Tutorials.DEMO_SECONDS} second focus" else if (heal) "Walk for ${Tutorials.DEMO_SECONDS} seconds" else if (mint) "Tally for ${Tutorials.DEMO_SECONDS} seconds" else if (home) "Tidy for ${Tutorials.DEMO_SECONDS} seconds" else if (link) "Write for ${Tutorials.DEMO_SECONDS} seconds" else "Breathe for ${Tutorials.DEMO_SECONDS} seconds", { seconds = 0f; cancelled = false; running = true }, color = Pixel.Green, compact = true)
             } else {
                 val left = (Tutorials.DEMO_SECONDS - seconds).coerceAtLeast(0f)
                 Text(
-                    if (plan) "Focusing… ${kotlin.math.ceil(left.toDouble()).toInt()}" else if (heal) "Walking… ${kotlin.math.ceil(left.toDouble()).toInt()}" else if (mint) "Counting… ${kotlin.math.ceil(left.toDouble()).toInt()}" else if (home) "Tidying… ${kotlin.math.ceil(left.toDouble()).toInt()}" else if (seconds < Tutorials.DEMO_SECONDS / 2f) "Breathe in…" else "…and out",
+                    if (plan) "Focusing… ${kotlin.math.ceil(left.toDouble()).toInt()}" else if (heal) "Walking… ${kotlin.math.ceil(left.toDouble()).toInt()}" else if (mint) "Counting… ${kotlin.math.ceil(left.toDouble()).toInt()}" else if (home) "Tidying… ${kotlin.math.ceil(left.toDouble()).toInt()}" else if (link) "Writing… ${kotlin.math.ceil(left.toDouble()).toInt()}" else if (seconds < Tutorials.DEMO_SECONDS / 2f) "Breathe in…" else "…and out",
                     style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 )
                 PixelBar(seconds / Tutorials.DEMO_SECONDS, color = Pixel.Green, label = "Demo: ${kotlin.math.ceil(left.toDouble()).toInt()} seconds left")

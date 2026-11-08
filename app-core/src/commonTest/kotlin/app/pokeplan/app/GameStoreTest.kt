@@ -611,6 +611,17 @@ class GameStoreTest {
     }
 
     @Test
+    fun a_module_lead_celebrates_only_what_its_module_paid() {
+        val (s, clock) = started()
+        s.completeTask(s.data.tasks.single().id)
+        clock.advance(11_000)
+        s.tick()
+        assertNotNull(s.moduleEvent(null), "a finished task is Plan's moment")
+        assertNull(s.moduleEvent(GameStore.HEAL_LOG_PREFIX), "and not Heal's")
+        assertNull(s.moduleEvent(GameStore.CARE_LOG_PREFIX), "nor Care's")
+    }
+
+    @Test
     fun level_progress_follows_the_candies_fed() {
         val (s, _) = started()
         val buddy = s.data.player.buddy!!

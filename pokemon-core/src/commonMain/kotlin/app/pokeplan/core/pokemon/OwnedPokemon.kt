@@ -155,4 +155,5 @@ object PartyIds {
     const val HEAL = "heal"
     const val MINT = "mint"
     const val HOME = "home"
+    const val LINK = "link"
 }

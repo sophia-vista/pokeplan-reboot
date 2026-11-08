@@ -1,5 +1,7 @@
 package app.pokeplan.ui.launcher
 
+import app.pokeplan.ui.theme.PixelShape
+
 import app.pokeplan.ui.pressScale
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -56,7 +58,6 @@ import app.pokeplan.ui.theme.PmdText
 import app.pokeplan.ui.theme.dialogueFrame
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.focusRing
-import androidx.compose.foundation.shape.RoundedCornerShape
 import app.pokeplan.ui.orNull
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
@@ -122,7 +123,7 @@ internal fun PmdMenuLine(text: String, pixel: Int, modifier: Modifier = Modifier
     val ui = app.pokeplan.ui.LocalUiSound.current
     val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     Box(
-        modifier.pressScale(source).fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).focusRing(RoundedCornerShape(4.dp), Color.White).combinedClickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onLongClick = onHold?.let { h -> { ui(app.pokeplan.ui.Sfx.LONG_PRESS); h() } }, onClick = { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }).semantics(mergeDescendants = true) {},
+        modifier.pressScale(source).fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).focusRing(PixelShape, Color.White).combinedClickable(interactionSource = source, indication = androidx.compose.foundation.LocalIndication.current, role = Role.Button, onLongClick = onHold?.let { h -> { ui(app.pokeplan.ui.Sfx.LONG_PRESS); h() } }, onClick = { ui(app.pokeplan.ui.Sfx.CURSOR); onClick() }).semantics(mergeDescendants = true) {},
         contentAlignment = if (center) Alignment.Center else Alignment.CenterStart,
     ) {
         if (selected) Canvas(Modifier.padding(start = (2 * pixel / density).dp).size((3 * pixel / density).dp, (5 * pixel / density).dp)) {
@@ -152,7 +153,7 @@ internal fun PmdRule(pixel: Int, modifier: Modifier = Modifier) {
 internal fun PmdNavItem(label: String, icon: String, pixel: Int, modifier: Modifier = Modifier, selected: Boolean = false, showLabel: Boolean = true, onClick: () -> Unit) {
     val density = LocalDensity.current.density
     Column(
-        modifier.defaultMinSize(minHeight = if (showLabel) 56.dp else 40.dp).focusRing(RoundedCornerShape(4.dp), Color.White).clickable(role = Role.Button, onClick = onClick).semantics(mergeDescendants = true) { contentDescription = label }
+        modifier.defaultMinSize(minHeight = if (showLabel) 56.dp else 40.dp).focusRing(PixelShape, Color.White).clickable(role = Role.Button, onClick = onClick).semantics(mergeDescendants = true) { contentDescription = label }
             .padding(vertical = (2 * pixel / density).dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {

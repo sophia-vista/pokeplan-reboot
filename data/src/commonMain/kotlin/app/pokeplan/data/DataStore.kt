@@ -25,6 +25,7 @@ class DataStore private constructor(internal val driver: SqlDriver) {
     val healTables = HealTables(this)
     val mintTables = MintTables(this)
     val homeTables = HomeTables(this)
+    val linkTables = LinkTables(this)
 
     /**
      * The key that seals Mint's rows and every copy of Mint that leaves its tables (a snapshot for a backup, a kept-aside document). Set before Mint is used; with

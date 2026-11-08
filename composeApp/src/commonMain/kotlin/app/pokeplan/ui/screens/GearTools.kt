@@ -4,6 +4,10 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
+import app.pokeplan.ui.theme.dialogueBox
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,10 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -68,8 +69,23 @@ internal fun OptionPicker(label: String, options: List<String>, selected: Int, m
         FieldLabel(label)
         Box {
             PixelButton((short ?: options).getOrElse(selected) { "" }, { open = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-            DropdownMenu(open, { open = false }) {
-                options.forEachIndexed { i, option -> DropdownMenuItem({ Text(option) }, { onSelect(i); open = false }) }
+            // A pixel list in a dialogue frame, not Material's rounded menu: it opens under the key and scrolls when long.
+            if (open) androidx.compose.ui.window.Popup(
+                alignment = Alignment.TopStart, offset = androidx.compose.ui.unit.IntOffset(0, with(androidx.compose.ui.platform.LocalDensity.current) { 52.dp.roundToPx() }),
+                onDismissRequest = { open = false }, properties = androidx.compose.ui.window.PopupProperties(focusable = true),
+            ) {
+                Column(
+                    Modifier.width(220.dp).heightIn(max = 320.dp).dialogueBox(fill = Pixel.Panel)
+                        .verticalScroll(androidx.compose.foundation.rememberScrollState()).padding(horizontal = 12.dp, vertical = 10.dp),
+                ) {
+                    options.forEachIndexed { i, option ->
+                        Box(
+                            Modifier.fillMaxWidth().heightIn(min = Spacing.Target)
+                                .clickable(role = androidx.compose.ui.semantics.Role.Button, onClickLabel = "Choose $option") { onSelect(i); open = false },
+                            contentAlignment = Alignment.CenterStart,
+                        ) { Text(option, style = MaterialTheme.typography.bodyLarge, color = if (i == selected) Pixel.Blue else Pixel.Ink) }
+                    }
+                }
             }
         }
     }

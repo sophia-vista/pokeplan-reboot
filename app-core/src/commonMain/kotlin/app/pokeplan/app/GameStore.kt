@@ -44,6 +44,8 @@ import app.pokeplan.core.reward.HealEvent
 import app.pokeplan.core.reward.HealKind
 import app.pokeplan.core.reward.HomeEvent
 import app.pokeplan.core.reward.HomeKind
+import app.pokeplan.core.reward.LinkEvent
+import app.pokeplan.core.reward.LinkMoment
 import app.pokeplan.core.reward.MintEvent
 import app.pokeplan.core.reward.MintKind
 import app.pokeplan.heal.HealRules
@@ -243,12 +245,13 @@ class GameStore(
      * Whether the tutorial [id] is still on offer: not done, and the player has not done the real thing (a finished focus session for
      * Plan's). Care's tutorial also stays off for a player with calm breaks; [careBreaks] is how many Care has recorded (Care keeps its own save).
      */
-    fun tutorialOffered(id: String, careBreaks: Int = 0, healActivities: Int = 0, mintRecords: Int = 0, homeRecords: Int = 0): Boolean = data.onboarded && id !in data.tutorials && when (id) {
+    fun tutorialOffered(id: String, careBreaks: Int = 0, healActivities: Int = 0, mintRecords: Int = 0, homeRecords: Int = 0, linkRecords: Int = 0): Boolean = data.onboarded && id !in data.tutorials && when (id) {
         Tutorials.PLAN_FOCUS -> data.focusHistory.none { it.completed }
         Tutorials.CARE_BREATH -> careBreaks == 0
         Tutorials.HEAL_WALK -> healActivities == 0
         Tutorials.MINT_TALLY -> mintRecords == 0
         Tutorials.HOME_TIDY -> homeRecords == 0
+        Tutorials.LINK_POSTCARD -> linkRecords == 0
         else -> false
     }
 
@@ -265,10 +268,11 @@ class GameStore(
             Tutorials.HEAL_WALK -> Triple(Region.HEAL, PartyIds.HEAL, Origin.How.FIELD_EGG)
             Tutorials.MINT_TALLY -> Triple(Region.MINT, PartyIds.MINT, Origin.How.LEDGER_EGG)
             Tutorials.HOME_TIDY -> Triple(Region.HOUSEHOLD, PartyIds.HOME, Origin.How.HABITAT_EGG)
+            Tutorials.LINK_POSTCARD -> Triple(Region.LINK, PartyIds.LINK, Origin.How.POSTCARD_EGG)
             else -> return null
         }
         val outcome = RewardEngine.tutorialEgg(data.player, region, party, newId(), nowMillis, rng)
-        update { d -> log((if (id == Tutorials.CARE_BREATH) CARE_LOG_PREFIX else if (id == Tutorials.HEAL_WALK) HEAL_LOG_PREFIX else if (id == Tutorials.MINT_TALLY) MINT_LOG_PREFIX else if (id == Tutorials.HOME_TIDY) HOME_LOG_PREFIX else "") + "first egg", outcome.rewards, d.copy(player = outcome.state, tutorials = d.tutorials + id), origin = Origin(how, region)) }
+        update { d -> log((if (id == Tutorials.CARE_BREATH) CARE_LOG_PREFIX else if (id == Tutorials.HEAL_WALK) HEAL_LOG_PREFIX else if (id == Tutorials.MINT_TALLY) MINT_LOG_PREFIX else if (id == Tutorials.HOME_TIDY) HOME_LOG_PREFIX else if (id == Tutorials.LINK_POSTCARD) LINK_LOG_PREFIX else "") + "first egg", outcome.rewards, d.copy(player = outcome.state, tutorials = d.tutorials + id), origin = Origin(how, region)) }
         return outcome.rewards
     }
 
@@ -420,6 +424,39 @@ class GameStore(
             noted(d, log(HOME_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, homePaid = (d.homePaid + event.id).takeLast(HOME_PAID_KEPT)), origin = Origin(Origin.How.HABITAT_EGG, Region.HOUSEHOLD)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
         }
         return rewards
+    }
+
+    /**
+     * Pays a LINK moment into the shared world (Postcard Trail, LINK.md section 9): once per event id whatever LINK does with its records (so a reopen and
+     * a second completion of the same follow-up pay once), at most [LINK_CAPS] of each kind a day, and a full track finds a Postcard Egg on top. The log
+     * says only "Link" and the kind of moment. Nothing about a person, a note, a date or a follow-up exists in the event to be read here.
+     */
+    override fun link(event: LinkEvent): List<Reward>? {
+        // A follow-up converted into a PLAN task is PLAN's: it pays by Plan's rules, once, and LINK never pays for the same follow-up (LINK.md 2.4).
+        if (!data.onboarded || event.id in data.linkPaid || linkedTask(LinkKind.LINK_FOLLOW_UP, event.ref) != null) return null
+        val tally = Counters.link(event.kind)
+        val paidToday = tally.get(data.counters, today)
+        if (paidToday >= LINK_CAPS.getValue(event.kind)) return null
+        val outcome = RewardEngine.link(data.player, event, rng)
+        val meter = linkEggMeter() + RewardEngine.LINK_EGG_POINTS.getValue(event.kind)
+        val egg = if (meter >= RewardEngine.LINK_EGG_METER_SIZE) RewardEngine.linkEgg(outcome.state, newId(), nowMillis, rng) else null
+        val rewards = outcome.rewards + egg?.rewards.orEmpty()
+        update { d ->
+            val counters = tally.set(d.counters, today, paidToday + 1) + (Counters.LINK_EGG_METER to meter % RewardEngine.LINK_EGG_METER_SIZE)
+            noted(d, log(LINK_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, linkPaid = (d.linkPaid + event.id).takeLast(LINK_PAID_KEPT)), origin = Origin(Origin.How.POSTCARD_EGG, Region.LINK)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
+        }
+        return rewards
+    }
+
+    /** Points towards the next Postcard Egg, out of [RewardEngine.LINK_EGG_METER_SIZE]. */
+    fun linkEggMeter(): Int = data.counters[Counters.LINK_EGG_METER] ?: 0
+
+    /** Makes [id], who must be in Link's party, its lead: the Pokémon that takes Postcard Trail's friendship and gives its perks. */
+    fun setLinkLead(id: String): Boolean {
+        val p = pokemon(id)
+        if (!p.inParty || p.partyId != PartyIds.LINK) return false
+        update { d -> d.copy(player = d.player.copy(linkLeadId = id)) }
+        return true
     }
 
     /** Points towards the next Habitat Egg, out of [RewardEngine.HOME_EGG_METER_SIZE]. */
@@ -581,6 +618,12 @@ class GameStore(
      * rules and paid once; the link only lets LINK show this task's status ([linkedTask]) and keeps LINK from paying for the same follow-up. Converting the same
      * follow-up again returns the same task, so it can never exist twice.
      */
+    override fun followUpTask(followUpId: String): FollowUpTask? =
+        linkedTask(LinkKind.LINK_FOLLOW_UP, followUpId)?.let { FollowUpTask(it.id, it.state == TaskState.DONE, it.completedAtMillis) }
+
+    override fun planFollowUp(followUpId: String, title: String, planned: LocalDate?): FollowUpTask? =
+        convertFollowUp(followUpId, title, planned)?.let { FollowUpTask(it.id, it.state == TaskState.DONE, it.completedAtMillis) }
+
     fun convertFollowUp(followUpId: String, title: String, planned: LocalDate? = null, due: LocalDateTime? = null): Task? {
         linkedTask(LinkKind.LINK_FOLLOW_UP, followUpId)?.let { return it }
         val clean = title.trim().ifEmpty { return null }
@@ -1389,7 +1432,7 @@ class GameStore(
     fun transferBlock(id: String): TransferBlock? =
         pokemon(id).let { p ->
             // The "last party member" rule guards Plan's party only; other modules' parties may be emptied.
-            Transfer.block(p, id == data.player.buddyId || id == data.player.planLead?.id || id == data.player.careLead?.id || id == data.player.healLead?.id || id == data.player.mintLead?.id || id == data.player.homeLead?.id, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
+            Transfer.block(p, id == data.player.buddyId || id == data.player.planLead?.id || id == data.player.careLead?.id || id == data.player.healLead?.id || id == data.player.mintLead?.id || id == data.player.homeLead?.id || id == data.player.linkLead?.id, if (p.partyId == PartyIds.PLAN) data.player.party.size else OwnedPokemon.PARTY_SIZE)
         }
 
     /** Whether [feature] has appeared yet at the player's trainer rank (the gradual reveal). */
@@ -1837,9 +1880,20 @@ class GameStore(
      * The meaningful thing that happened in the last few minutes (an egg hatched, a task or session paid out), or null.
      * The buddy only speaks and celebrates for these; the rest of the time it just idles.
      */
-    fun buddyEvent(care: Boolean = false): BuddyEventNow? {
-        // On Care's screens only Care's own moments count (a routine, a calm break, a skill, a friend made).
-        val recent = data.rewardLog.filter { nowMillis - it.atMillis < EVENT_MILLIS && (!care || it.source.startsWith(CARE_LOG_PREFIX)) }
+    fun buddyEvent(care: Boolean = false): BuddyEventNow? = eventWhere { !care || it.startsWith(CARE_LOG_PREFIX) }
+
+    /**
+     * The moment a module's lead celebrates on that module's page: only what that module paid. [prefix] is the module's log prefix
+     * ([HEAL_LOG_PREFIX], [MINT_LOG_PREFIX], [HOME_LOG_PREFIX], [CARE_LOG_PREFIX]); null is Plan, whose rewards carry no prefix (a finished
+     * task, a hatched egg), so nothing another module, World or a mini-quest paid counts.
+     */
+    fun moduleEvent(prefix: String?): BuddyEventNow? = eventWhere { source ->
+        if (prefix != null) source.startsWith(prefix)
+        else MODULE_LOG_PREFIXES.none { source.startsWith(it) } && source != WORLD_SOURCE && source != MINI_QUEST_SOURCE
+    }
+
+    private fun eventWhere(counts: (String) -> Boolean): BuddyEventNow? {
+        val recent = data.rewardLog.filter { nowMillis - it.atMillis < EVENT_MILLIS && counts(it.source) }
         val latest = recent.lastOrNull() ?: return null
         // A Pokémon the World gives is not an egg hatching, so it is not a hatch moment.
         val hatches = recent.filter { it.source != WORLD_SOURCE }.flatMap { e -> e.rewards.filterIsInstance<Reward.Hatched>() }
@@ -1983,6 +2037,7 @@ class GameStore(
 
         /** Every HEAL entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val HEAL_LOG_PREFIX = "Heal: "
+        private val MODULE_LOG_PREFIXES by lazy { listOf(CARE_LOG_PREFIX, HEAL_LOG_PREFIX, MINT_LOG_PREFIX, HOME_LOG_PREFIX, LINK_LOG_PREFIX) }
         private val HEAL_SOURCES = mapOf(HealKind.ACTIVITY to "Field Research", HealKind.PARTICIPATION to "Field Research").mapValues { HEAL_LOG_PREFIX + it.value }
 
         /** The most of each MINT kind the world pays in its period *(tune)*, a backstop to the same limits in `MintRules`: reconciled accounts a day, reviews a week. */
@@ -1998,6 +2053,16 @@ class GameStore(
         /** Every HOME entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val HOME_LOG_PREFIX = "Home: "
         private val HOME_SOURCES = mapOf(HomeKind.CHORE to "Habitat Discovery", HomeKind.MAINTENANCE to "Habitat Discovery").mapValues { HOME_LOG_PREFIX + it.value }
+
+        /** The most of each LINK kind the world pays in a day *(tune)*, a backstop to the same limit in `LinkRules`. */
+        val LINK_CAPS: Map<LinkMoment, Int> = mapOf(LinkMoment.FOLLOW_UP to app.pokeplan.link.LinkRules.FOLLOW_UPS_PAID_PER_DAY)
+
+        /** Every LINK entry in the reward log starts with this (the kind of moment only, never what it was). */
+        const val LINK_LOG_PREFIX = "Link: "
+        private val LINK_SOURCES = mapOf(LinkMoment.FOLLOW_UP to "Postcard Trail").mapValues { LINK_LOG_PREFIX + it.value }
+
+        /** How many paid LINK event ids the save remembers. */
+        const val LINK_PAID_KEPT = 1000
 
         /** How many paid HOME event ids the save remembers. */
         const val HOME_PAID_KEPT = 1000

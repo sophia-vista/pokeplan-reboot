@@ -1,5 +1,7 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.DialogueShape
+
 import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.layout.Arrangement
@@ -11,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,8 +42,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
@@ -137,12 +136,12 @@ private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit
                 TaskList.COLORS.forEachIndexed { i, c ->
                     val on = c == color
                     Box(
-                        Modifier.size(Spacing.Target).clip(CircleShape)
+                        Modifier.size(Spacing.Target).clip(DialogueShape)
                             .selectable(on, role = Role.RadioButton) { color = c }
                             .semantics { contentDescription = listColorNames[i] },
                         contentAlignment = Alignment.Center,
                     ) {
-                        Box(Modifier.size(32.dp).background(Color(c), CircleShape).border(if (on) 3.dp else 0.dp, if (on) Pixel.Ink else Color.Transparent, CircleShape))
+                        Box(Modifier.size(32.dp).background(Color(c), DialogueShape).border(if (on) 3.dp else 0.dp, if (on) Pixel.Ink else Color.Transparent, DialogueShape))
                     }
                 }
             }

@@ -40,6 +40,12 @@ fun healStorage(context: Context): Storage = LiveStore.storage(context, "heal", 
 fun homeStorage(context: Context): Storage = LiveStore.storage(context, "home", "home.json")
 
 /**
+ * The Link module's own save (people, notes, dates and follow-ups), apart from every other module's: its own tables in the database, created there from
+ * the start (`link.json` exists only as a fallback while the database has never opened). No widget reads it.
+ */
+fun linkStorage(context: Context): Storage = LiveStore.storage(context, "link", "link.json")
+
+/**
  * The Mint module's own save (private financial records), apart from every other module's: its own tables in the database, created there from the start
  * with every row sealed by a Keystore key (`KeystoreMintKey`); there is no file fallback. No widget, notification or reminder reads it.
  */

@@ -176,6 +176,7 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
+            ModuleLeadStage(model, Module.MINT, model.data.player.mintLead, model.store.moduleEvent(app.pokeplan.app.GameStore.MINT_LOG_PREFIX), openPokemon = openPokemon)
             RewardBox(model)
             TutorialCard(model, Tutorials.MINT_TALLY, mintRecords = data.accounts.size + data.transactions.size)
             OverviewCard(model)
