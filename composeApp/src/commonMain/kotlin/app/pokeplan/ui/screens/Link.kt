@@ -598,6 +598,14 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
         ToggleRow("Every year", annual, detail = "A 29 February is kept on 28 February in years without one.") { annual = it }
         PersonPicker(data.people, personId) { personId = it }
         PixelField(note, { note = it.take(LinkRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note, optional", singleLine = true, keyboardOptions = sentenceKeys)
+        if (initial != null && data.settings.reminders) {
+            val saved = data.dates.firstOrNull { it.id == initial.id }?.remindDays
+            SectionLabel("Remind me")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Chip("No", saved == null, { link.setDateRemind(initial.id, null) })
+                LinkRules.REMIND_PRESETS.forEach { n -> Chip(remindLabel(n), saved == n, { link.setDateRemind(initial.id, n) }) }
+            }
+        }
         Actions {
             PixelButton(if (initial == null) "Add" else "Save", {
                 val m = month.toIntOrNull(); val d = day.toIntOrNull()
@@ -676,6 +684,8 @@ private fun FollowUpsView(model: AppModel) {
     }
 }
 
+private fun remindLabel(days: Int) = when (days) { 0 -> "On the day"; 1 -> "1 day before"; 7 -> "A week before"; else -> "$days days before" }
+
 @Composable
 private fun FollowUpOptions(model: AppModel, f: FollowUp, onDone: () -> Unit) {
     val link = model.link
@@ -704,6 +714,11 @@ private fun FollowUpOptions(model: AppModel, f: FollowUp, onDone: () -> Unit) {
             PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
         val task = planTask(model, f)
+        // A reminder needs a day, and a follow-up handed to Plan is reminded about by Plan alone.
+        if (data.settings.reminders && f.status == FollowUpStatus.OPEN && f.due != null && !f.converted) {
+            val now = data.followUps.firstOrNull { it.id == f.id }?.remind == true
+            PixelButton(if (now) "Reminder on" else "Remind me on the day", { link.setFollowUpRemind(f.id, !now) }, Modifier.fillMaxWidth(), if (now) accent else Pixel.InkSoft, compact = true)
+        }
         if (f.status == FollowUpStatus.OPEN) {
             if (task == null) PixelButton("Make it a Plan task", { model.link.convertToPlan(f.id); model.haptic() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             else PixelButton("Stop linking to Plan", { model.store.unlinkTask(task.id) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
@@ -730,6 +745,23 @@ private fun LinkSettingsView(model: AppModel) {
                 "Find Pokémon from finished follow-ups", data.settings.postcardTrail,
                 detail = "A follow-up you finish counts once; people, notes, dates and edits never do. Off keeps everything in Link.",
             ) { link.setPostcardTrail(it) }
+        }
+    }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelTitle("Reminders")
+            ToggleRow(
+                "Remind me about dates and follow-ups", data.settings.reminders,
+                detail = "Off by default, and each date and follow-up is switched on by itself. One reminder each, never a nag for something late. The lock screen only says that you have a reminder, and dismissing one changes nothing.",
+            ) { link.setReminders(it) }
+            if (data.settings.reminders) {
+                SectionLabel("At")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    listOf(8, 9, 12, 18, 20).forEach { h -> Chip("${h.toString().padStart(2, '0')}:00", h == data.settings.reminderHour, { link.setReminderHour(h) }) }
+                }
+                Text("Your quiet hours and focus sessions still hold a reminder back.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                ToggleRow("Name it", data.settings.reminderNames, detail = "After you unlock your phone it shows the date's or follow-up's title. Never a person, a note or a number.") { link.setReminderNames(it) }
+            }
         }
     }
     TextBox {

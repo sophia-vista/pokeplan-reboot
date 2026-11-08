@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.149.0
+
+Link reminders, and the streak reminder and weekly recap on the shared scheduler (REP-014, REP-011). No reward number changes (`RewardRules.VERSION` stays 20).
+
+- **Link can remind you** (`LinkReminders`, `LinkReminderAdapter`, Link → Settings → Reminders; LINK.md section 5). **Off until you turn it on**, and then each important date (the day itself, or 1, 3 or 7 days before) and each follow-up (on its day) is switched on by itself. One reminder each, never repeated and never for something late; a date that has passed, a follow-up that is done, cancelled or moved, or a record you deleted asks nothing, and a follow-up you hand to Plan is Plan's to remind about. The lock screen always says "You have an upcoming reminder"; after unlocking it shows the date's or follow-up's title only if you turned on "Name it", never a person, a note or a number. A follow-up's notification has Done (its own completion, paid once as in Link) and Tomorrow; a date's has Tomorrow. Quiet hours and focus sessions still hold it back, and dismissing one changes nothing.
+- **The streak reminder and the Sunday recap go through the same scheduler** as every other reminder (Plan's `PlanReminderAdapter`), instead of alarms of their own. The words, the channel and the settings are unchanged; a nudge held back by a focus session or quiet hours until the next day is now dropped instead of arriving a day late, and the separate "after the session" alarms are gone. Alarms an older version set are cancelled on the next planning.
+- **A nightly refresh** (one inexact alarm at 04:00) plans every reminder again, because the planner only looks three days ahead and used to be re-run only when the app opened or another alarm fired. A "a week before" birthday, or a warranty two months out, no longer depends on opening the app in the right three days.
+- Tests: `LinkRemindersTest` (10) and `PlanNudgeRemindersTest` (6). `docs/pokelife/evidence/REP-014-link-reminders.md`.
+
 ## 0.148.0
 
 World: expedition Pokémon experience (WORLD.md 5.2), and a fix for Guardians that could not be seen. `RewardRules.VERSION` stays 20 (World pays outside the reward engine).

@@ -51,6 +51,8 @@ data class ImportantDate(
     val personId: String? = null,
     val note: String = "",
     val createdMillis: Long = 0,
+    /** Days before the date a reminder goes off (one of [LinkRules.REMIND_PRESETS]; 0 is the day itself), or null for none. Off until the user chooses (LINK.md 5). */
+    val remindDays: Int? = null,
 )
 
 @Serializable
@@ -78,6 +80,8 @@ data class FollowUp(
      * nothing for it, even if the task is later deleted (LINK.md 2.4 and 9.2).
      */
     val converted: Boolean = false,
+    /** Asks the shared reminders for one nudge on [due]. Off until the user turns it on; never once the follow-up is a Plan task (Plan is then the source). */
+    val remind: Boolean = false,
 )
 
 /** What a follow-up is today, neutrally named (LINK.md 2.4): nothing here is a warning. */
@@ -90,6 +94,12 @@ data class LinkSettings(
     val tutorialSeen: Boolean = false,
     /** Relationship words the user added beside the starting ones. */
     val categories: List<String> = emptyList(),
+    /** The master switch for Link's reminders (LINK.md 5): **off**, and even on a date or follow-up asks only when the user turned its own reminder on. */
+    val reminders: Boolean = false,
+    /** The hour (0 to 23) a reminder goes off on its day. */
+    val reminderHour: Int = 9,
+    /** Whether a notification may say which date or follow-up after the phone is unlocked. The lock screen never does. */
+    val reminderNames: Boolean = false,
 )
 
 /** Everything LINK keeps on this device as one document that `LinkTables` takes apart into one table family per kind of record. It holds nothing about Pokémon or rewards. */

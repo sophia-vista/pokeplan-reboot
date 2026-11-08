@@ -9,7 +9,7 @@
 | PLAN task reminders | `Reminders.upcoming` (up to 3 per task, quiet hours, rest days, focus) | request code = hash of (task id, time); snooze `(task,-1)`; repeat `(task,-2)` | `task-reminders-2` | `ReminderReceiver` | SharedPreferences `task_reminders` (alarm codes, "asked" flag) |
 | CARE routine reminders | `CareReminders.upcoming` (own time, own days, not done, not repeated) | hash of (routine, day); "in 30 min" = code+1 | `care-routines-2` | `RoutineReminderReceiver` | SharedPreferences `routine_reminders` (alarm codes) |
 | Focus halfway and end | `Nudges.focusAlerts` | `AppAlerts` | `focus-halfway`, `focus-end-2` | `NudgeReceiver` | `AppAlerts` prefs |
-| Streak reminder, weekly recap | `Nudges.streakAtRisk`, `weeklyRecap` | `AppAlerts` | `evening-nudges` | `NudgeReceiver` | `AppAlerts` prefs |
+| Streak reminder, weekly recap | `Nudges.streakAtRisk`, `weeklyRecap` | `AppAlerts` | `evening-nudges` | `NudgeReceiver` | `AppAlerts` prefs (**0.149.0: now `PlanReminderAdapter` kinds `streak` and `recap` on the shared scheduler; the old alarms are cancelled and ignored**, `evidence/REP-014-link-reminders.md` section 2) |
 | World jobs, GEAR timers | World and Pokégear | `AppAlerts` | `world-jobs`, `gear-timers` | `NudgeReceiver`, `TimerActionReceiver` | `AppAlerts` prefs |
 
 ## 2. Decision: what moves to the shared feature and what stays

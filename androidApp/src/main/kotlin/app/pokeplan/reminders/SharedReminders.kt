@@ -1,5 +1,6 @@
 package app.pokeplan.reminders
 
+import android.app.AlarmManager
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -10,13 +11,17 @@ import app.pokeplan.app.ActionResult
 import app.pokeplan.app.CareReminderAdapter
 import app.pokeplan.app.HealReminderAdapter
 import app.pokeplan.app.HomeReminderAdapter
+import app.pokeplan.app.LinkReminderAdapter
+import app.pokeplan.linkStore
 import app.pokeplan.app.MintReminderAdapter
 import app.pokeplan.homeStore
 import app.pokeplan.mintStore
 import app.pokeplan.healStore
 import app.pokeplan.app.FireDecision
 import app.pokeplan.app.FocusWindow
+import app.pokeplan.app.Nudges
 import app.pokeplan.app.PlanReminderAdapter
+import app.pokeplan.ui.Place
 import app.pokeplan.app.ReminderActions
 import app.pokeplan.app.ReminderCoordinator
 import app.pokeplan.app.ReminderModule
@@ -27,11 +32,17 @@ import app.pokeplan.data.HeldReminder
 import app.pokeplan.data.ReminderRepository
 import app.pokeplan.widgetStore
 import app.pokeplan.widgets.updateWidgets
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.plus
+import app.pokeplan.plan.toEpochMillis
+import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.TimeZone
 
 /**
- * The one reminder scheduler for PLAN, CARE, HEAL, MINT and HOME (INTEGRATIONS_AND_PRIVACY.md section 9). The policy and the decisions are in
+ * The one reminder scheduler for PLAN, CARE, HEAL, MINT, HOME and LINK (INTEGRATIONS_AND_PRIVACY.md section 9). The policy and the decisions are in
  * [ReminderCoordinator] (JVM-tested); this object only sets alarms at the times it plans, posts what it says to show, and routes
  * a tapped action to the module that owns the source. Alarms carry only the opaque request (module, reference, kind,
  * occurrence), never a title or a note. Snoozes and repeats are the one thing it stores (`reminder_hold`); everything else is
@@ -44,6 +55,8 @@ object SharedReminders {
 
     const val ACTION_FIRE = "app.pokeplan.reminders.SHARED_FIRE"
     const val ACTION_ACT = "app.pokeplan.reminders.SHARED_ACT"
+    const val ACTION_REFRESH = "app.pokeplan.reminders.SHARED_REFRESH"
+    private const val REFRESH_CODE = 0x5EF5
     private const val X_MODULE = "module"
     private const val X_REF = "ref"
     private const val X_KIND = "kind"
@@ -58,13 +71,16 @@ object SharedReminders {
         val heal = healStore(context, game)
         val mint = mintStore(context, game)
         val home = homeStore(context, game)
+        val link = linkStore(context, game)
         val coordinator = ReminderCoordinator(
             listOf(
-                PlanReminderAdapter({ game.data }) { id -> if (game.data.tasks.any { it.id == id && it.isOpen }) { game.completeTask(id); game.data.tasks.any { it.id == id && !it.isOpen } } else false },
+                PlanReminderAdapter({ game.data }, { System.currentTimeMillis() }) { id -> if (game.data.tasks.any { it.id == id && it.isOpen }) { game.completeTask(id); game.data.tasks.any { it.id == id && !it.isOpen } } else false },
                 HealReminderAdapter({ heal.data }, { game.data }, { heal.today }),
                 MintReminderAdapter({ mint.data }, { game.data }, { mint.today }),
                 // A chore's "Done" is Home's own completion, the one that pays Habitat Discovery once; nothing else of Home is ever done from a notification.
                 HomeReminderAdapter({ home.data }, { game.data }, { home.today }) { id -> home.complete(id).record != null },
+                // A follow-up's "Done" is Link's own completion, the one that pays Postcard Trail once; a date's reminder offers no action but "Tomorrow".
+                LinkReminderAdapter({ link.data }, { game.data }, { link.today }) { id -> link.complete(id).record != null },
                 CareReminderAdapter({ care.data }, { game.data }) { id, day ->
                     // Ticked like on the Care screen, and paid the same way, only for today's routine.
                     if (day == care.today && care.data.routines.any { it.id == id && !it.doneOn(day) }) { care.completeRoutine(id); true } else false
@@ -90,6 +106,23 @@ object SharedReminders {
         val plan = live.coordinator.schedule(now, TimeZone.currentSystemDefault(), live.quiet, live.focus, held, now + HORIZON_MILLIS)
         Alarms.reschedule(app, PREFS, plan, { it.first.id.hashCode() }, { it.second }) { code, item, flags -> fireIntent(app, code, item?.first, flags) }
         LegacyReminders.cancelOnce(app)
+        setDailyRefresh(app, now)
+    }
+
+    /**
+     * One inexact alarm a night that only plans everything again. The planner looks [HORIZON_MILLIS] ahead, so without it a reminder set days before a date
+     * (Link's "a week before" birthday) would be planned only if the app happened to open, or another alarm happened to fire, in the last three days.
+     */
+    private fun setDailyRefresh(app: Context, now: Long) {
+        val alarms = app.getSystemService(AlarmManager::class.java) ?: return
+        val zone = TimeZone.currentSystemDefault()
+        val day = now.toLocalDateTime(zone).date
+        val at = LocalDateTime(day.plus(1, DateTimeUnit.DAY), LocalTime(4, 0)).toEpochMillis(zone)
+        val intent = PendingIntent.getBroadcast(
+            app, REFRESH_CODE, Intent(app, SharedReminderReceiver::class.java).setAction(ACTION_REFRESH),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        try { alarms.setAndAllowWhileIdle(AlarmManager.RTC, at, intent) } catch (e: SecurityException) { /* the next opening plans again */ }
     }
 
     private fun fireIntent(context: Context, code: Int, request: ReminderRequest?, flags: Int): PendingIntent? =
@@ -158,11 +191,17 @@ object SharedReminders {
 
     private fun present(context: Context, request: ReminderRequest, title: String, now: Long) {
         when (request.module) {
-            ReminderModule.PLAN -> widgetStore(context).data.tasks.firstOrNull { it.id == request.sourceRef }?.let { TaskReminders.show(context, it, now, request) }
+            ReminderModule.PLAN -> when (request.kind) {
+                // The evening streak reminder and the Sunday recap: the shared scheduler decided; the words and the channel are the app's own.
+                PlanReminderAdapter.KIND_STREAK -> AppAlerts.show(context, AppAlerts.Kind.STREAK, title, widgetStore(context).let { Nudges.streakText(it.data, now, TimeZone.currentSystemDefault()).body }, Place.HOME.name)
+                PlanReminderAdapter.KIND_RECAP -> AppAlerts.show(context, AppAlerts.Kind.RECAP, title, Nudges.weeklyRecap(widgetStore(context).data, now, TimeZone.currentSystemDefault(), quietApplies = false)?.body.orEmpty(), Place.ME.name)
+                else -> widgetStore(context).data.tasks.firstOrNull { it.id == request.sourceRef }?.let { TaskReminders.show(context, it, now, request) }
+            }
             ReminderModule.CARE -> RoutineReminders.show(context, request.sourceRef, title, LocalDate.parse(request.occurrence), request)
             ReminderModule.HEAL -> HydrationReminders.show(context, request.sourceRef, title, request)
             ReminderModule.MINT -> BillReminders.show(context, request.sourceRef, title, request)
             ReminderModule.HOME -> UpkeepReminders.show(context, request, title)
+            ReminderModule.LINK -> LinkNotices.show(context, request, title)
             else -> Unit
         }
     }
@@ -201,6 +240,7 @@ object SharedReminders {
             ReminderModule.HEAL -> HydrationReminders.notificationId(request.sourceRef)
             ReminderModule.MINT -> BillReminders.notificationId(request.sourceRef)
             ReminderModule.HOME -> UpkeepReminders.notificationId(request.sourceRef, request.kind)
+            ReminderModule.LINK -> LinkNotices.notificationId(request.sourceRef, request.kind)
             else -> return
         }
         context.getSystemService(NotificationManager::class.java)?.cancel(id)
@@ -213,6 +253,11 @@ object SharedReminders {
 /** An alarm going off, or a notification button tapped. */
 class SharedReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == SharedReminders.ACTION_REFRESH) {
+            val app = context.applicationContext
+            doAsync { SharedReminders.reschedule(app) }
+            return
+        }
         val request = SharedReminders.requestOf(intent) ?: return
         val key = SharedReminders.keyOf(intent)
         val app = context.applicationContext
