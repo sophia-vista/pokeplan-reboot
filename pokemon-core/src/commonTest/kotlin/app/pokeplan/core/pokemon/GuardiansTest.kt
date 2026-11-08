@@ -1,6 +1,7 @@
 package app.pokeplan.core.pokemon
 
 import app.pokeplan.core.dex.Dex
+import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.reward.PlayerState
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,13 +15,8 @@ class GuardiansTest {
     }
 
     @Test
-    fun slotsOpenWithRank() {
-        assertEquals(0, Guardians.slots(0))
-        assertEquals(0, Guardians.slots(3))
-        assertEquals(1, Guardians.slots(4))
-        assertEquals(1, Guardians.slots(5))
-        assertEquals(2, Guardians.slots(6))
-        assertEquals(3, Guardians.slots(9))
+    fun everyModuleHasOneGuardianSlotInAFixedOrder() {
+        assertEquals(listOf("plan", "care", "heal", "mint", "home", "link"), Guardians.MODULES)
     }
 
     @Test
@@ -78,7 +74,42 @@ class GuardiansTest {
     @Test
     fun theStateResolvesItsSlottedGuardians() {
         val mew = guardian("mew", "g1")
-        val state = PlayerState(pokemon = listOf(pokemon(Ids.PIKACHU).copy(id = "p"), mew), guardians = listOf("g1", "missing"))
+        val state = PlayerState(pokemon = listOf(pokemon(Ids.PIKACHU).copy(id = "p"), mew), moduleGuardians = mapOf(PartyIds.CARE to "g1", PartyIds.HEAL to "missing"))
         assertEquals(listOf(mew), state.guardianPokemon)
+        assertEquals(mew, state.guardianOf(PartyIds.CARE))
+        assertEquals(null, state.guardianOf(PartyIds.HEAL), "a Guardian that is not owned any more is none")
+        assertEquals(null, state.guardianOf(PartyIds.PLAN))
+    }
+
+    @Test
+    fun aModulesGuardianAddsItsTypePerkInThatModuleOnly() {
+        val lugia = guardian("lugia")                              // Psychic / Flying
+        val lead = pokemon(Ids.PIKACHU, level = 50, friendship = 200)
+        val without = CarePerks.total(lead, listOf(lead))
+        val with = CarePerks.total(lead, listOf(lead), lugia)
+        // Care's buckets: Psychic and Flying both feed Visitor luck; the second type gives half.
+        val added = Guardians.SIGNATURE_PERCENT + Guardians.SIGNATURE_PERCENT * Guardians.SECOND_TYPE_SHARE
+        assertEquals((without[CareBucket.VISITOR_LUCK] ?: 0.0) + added.coerceAtMost(Guardians.BUCKET_CAP), with.getValue(CareBucket.VISITOR_LUCK), 1e-9)
+        // The same Guardian given to Heal changes Heal's buckets by Heal's mapping, not Care's.
+        assertTrue(HealPerks.total(lead, listOf(lead), lugia) != HealPerks.total(lead, listOf(lead)) || HealPerks.bucket(PokemonType.PSYCHIC) == null && HealPerks.bucket(PokemonType.FLYING) != null)
+    }
+
+    @Test
+    fun aGuardianAloneWorksWithNoLeadAndANonGuardianAddsNothing() {
+        val uxie = guardian("uxie")
+        assertTrue(MintPerks.total(null, emptyList(), uxie).isNotEmpty() || MintPerks.bucket(uxie.form.types.first()) == null, "no lead needed")
+        assertTrue(MintPerks.total(null, emptyList()).isEmpty())
+        assertTrue(LinkPerks.total(null, emptyList(), pokemon(Ids.PIKACHU)).isEmpty(), "an ordinary Pokémon in the Guardian slot gives nothing")
+    }
+
+    @Test
+    fun theGuardianPartAddsOnTopOfTheOrdinaryCapButHasItsOwn() {
+        val strong = pokemon(Ids.GARCHOMP, level = 100, friendship = 255)
+        val party = List(6) { strong.copy(id = "m$it") }
+        val groundish = guardian("groudon")
+        val capped = HomePerks.total(party.first(), party)
+        val with = HomePerks.total(party.first(), party, groundish)
+        for ((b, v) in with) assertTrue(v <= Perks.BUCKET_CAP + Guardians.BUCKET_CAP + 1e-9, "$b $v")
+        assertTrue(with.entries.any { (b, v) -> v > (capped[b] ?: 0.0) } || HomePerks.bucket(groundish.form.types.first()) == null)
     }
 }

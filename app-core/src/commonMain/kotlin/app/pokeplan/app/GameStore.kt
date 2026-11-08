@@ -199,7 +199,7 @@ class GameStore(
 
     /** What every save that comes in (from the device or the cloud) goes through: numbers back in their range. */
     // The Modules setting is gone from Settings: Care is always shown, so a save that switched it off is switched back on when loaded.
-    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player)).let(::migratePoke).let(Places::resolve).let(::mergeHabits)
+    private fun tidy(d: AppData): AppData = d.copy(settings = d.settings.clamped().copy(careModule = true), player = migrateRoles(d.player)).let(::migratePoke).let(Places::resolve).let(Places::guardiansToModules).let(::mergeHabits)
 
     /**
      * Saves from before the Pokémon roles were split (docs/pokelife POKEMON_ECOSYSTEM.md, section 2.2) used the buddy as
@@ -510,7 +510,7 @@ class GameStore(
     }
 
     override fun visitorLuck(): Double =
-        app.pokeplan.core.pokemon.CarePerks.total(data.player.careLead, data.player.partyOf(PartyIds.CARE))[app.pokeplan.core.pokemon.CareBucket.VISITOR_LUCK] ?: 0.0
+        app.pokeplan.core.pokemon.CarePerks.total(data.player.careLead, data.player.partyOf(PartyIds.CARE), data.player.guardianOf(PartyIds.CARE))[app.pokeplan.core.pokemon.CareBucket.VISITOR_LUCK] ?: 0.0
 
     override fun berries(): Map<String, Int> =
         data.player.inventory.counts.filter { (id, n) -> n > 0 && Items.category(id) == ItemCategory.BERRY }
@@ -1195,7 +1195,7 @@ class GameStore(
     val perks: PerkBonuses get() = data.perks
 
     /** Where [perks] come from, part by part, for the perks panel. */
-    val perkSources: List<PerkSource> get() = data.player.let { Perks.sources(it.planLead, it.party, it.guardianPokemon) }
+    val perkSources: List<PerkSource> get() = data.player.let { Perks.sources(it.planLead, it.party, listOfNotNull(it.guardianOf(PartyIds.PLAN))) }
 
     // --- focus --------------------------------------------------------------------------------------------------------
 
@@ -1277,7 +1277,7 @@ class GameStore(
     private fun magicGuard(session: FocusSession, reason: FailReason, minutes: Int): FocusResult? {
         val player = data.player.atStartOf(session)
         if (minutes < Egg.MIN_MINUTES || Counters.MAGIC_GUARD.isSet(data.counters, weekStart)) return null
-        if (!Perks.total(player.planLead, player.party, guardians = player.guardianPokemon).keepsFailedEgg) return null
+        if (!Perks.total(player.planLead, player.party, guardians = listOfNotNull(player.guardianOf(PartyIds.PLAN))).keepsFailedEgg) return null
         val ticket = data.eggTickets.inSession
         val event = EffortEvent(minutes, false, session.region.open, session.lure, epochDay, newId(), nowMillis)
         val outcome = RewardEngine.effort(player, event, ticket?.let { Random(it.seed) } ?: rng)
@@ -1323,7 +1323,7 @@ class GameStore(
     }
 
     /**
-     * Makes a Pokémon the buddy. Guardians (legendaries and mythicals) cannot be buddies. A Pokémon in a party, on a team or helping a tool
+     * Makes a Pokémon the buddy. Guardian species (legendaries and mythicals) cannot be buddies. A Pokémon in a party, on a team or helping a tool
      * is taken from there (one place only) and the previous buddy goes to the PC. Returns false if refused.
      */
     fun setBuddy(id: String): Boolean {
@@ -1334,13 +1334,12 @@ class GameStore(
     fun rename(id: String, nickname: String) = replace(pokemon(id).withNickname(nickname))
 
     /**
-     * Puts a Pokémon in or out of a module's party (up to six, in one party only: joining takes it from the buddy, a team, a helper job or
-     * another party). Returns false if the party is full, it is a Guardian species, or it is on an expedition under way, or if it would leave
+     * Puts a Pokémon in or out of a module's party (up to six, in one party only: joining takes it from the buddy, a team, a helper job, a Guardian
+     * slot or another party; a legendary or mythical is a normal Pokémon here). Returns false if the party is full or it is on an expedition under way, or if it would leave
      * Plan's party empty by going out (use a place to move it instead). A lead that leaves passes the lead on to the party's first member.
      */
     fun setInParty(id: String, inParty: Boolean, partyId: String = PartyIds.PLAN): Boolean {
         val p = pokemon(id)
-        if (inParty && Guardians.canBe(p)) return false
         val staying = inParty && p.inParty && p.partyId == partyId
         if (inParty && !staying && data.player.partyOf(partyId).size >= OwnedPokemon.PARTY_SIZE) return false
         val leavingPlan = p.inParty && p.partyId == PartyIds.PLAN && !(inParty && partyId == PartyIds.PLAN)
@@ -1367,21 +1366,26 @@ class GameStore(
 
     // --- Guardians ----------------------------------------------------------------------------------------------------
 
-    /** How many Guardians the player can slot at their rank. */
-    val guardianSlots: Int get() = Guardians.slots(data.player.rank)
 
     /** Owned legendaries and mythicals, slotted or not. */
     val guardianCandidates: List<OwnedPokemon> get() = data.player.pokemon.filter(Guardians::canBe)
 
-    /** Puts a Guardian in a free slot. Returns false if it is not a Guardian, is already slotted, is on an expedition, or every slot is taken. Slotting takes it off its World team or helper job. */
-    fun slotGuardian(id: String): Boolean {
+    /** [module]'s Guardian, if it has one. */
+    fun guardianOf(module: String): OwnedPokemon? = data.player.guardianOf(module)
+
+    /**
+     * Makes [id] the Guardian of [module] (a party id: `PartyIds.PLAN`, `CARE`, ...), in place of whoever was. One slot per module, no rank to wait for. Returns false if it is
+     * not a Guardian species, [module] has no Guardian slot, or it is on an expedition under way. Slotting takes it from its old place (a party, a World team, a helper job or
+     * another module's slot); the old Guardian of [module] goes to the PC.
+     */
+    fun slotGuardian(id: String, module: String): Boolean {
         val p = pokemon(id)
-        if (!Guardians.canBe(p) || id in data.player.guardians || data.player.guardians.size >= guardianSlots) return false
-        // A Guardian on a World team is taken off it (one place only) unless its team is out on an expedition.
-        return moveTo(id) { d -> d.copy(player = d.player.copy(guardians = d.player.guardians + id)) }
+        if (!Guardians.canBe(p) || module !in Guardians.MODULES) return false
+        return moveTo(id) { d -> d.copy(player = d.player.copy(moduleGuardians = d.player.moduleGuardians - module + (module to id))) }
     }
 
-    fun unslotGuardian(id: String) = update { d -> d.copy(player = d.player.copy(guardians = d.player.guardians - id)) }
+    /** Empties [module]'s Guardian slot: the Pokémon goes to the PC. */
+    fun unslotGuardian(module: String) = update { d -> d.copy(player = d.player.copy(moduleGuardians = d.player.moduleGuardians - module)) }
 
     /** Gives the player a Pokémon outright (a quest reward). It goes to the Guardian collection if it is a legendary or mythical. */
     fun grantPokemon(speciesId: Int, source: String, how: Origin.How = Origin.How.QUEST, form: String? = null): OwnedPokemon {
@@ -1626,7 +1630,7 @@ class GameStore(
         val dungeon = app.pokeplan.world.Dungeons.byId(dungeonId) ?: return false
         val slot = data.world.slots().firstOrNull { it.expedition == null } ?: return false
         val own = slot.members.mapNotNull { id -> data.player.pokemon.firstOrNull { it.id == id } }
-        val best = WorldSim.bestTeam(dungeon, (own + worldIdle()).filter { !Guardians.canBe(it) }.distinctBy { it.id })
+        val best = WorldSim.bestTeam(dungeon, (own + worldIdle()).distinctBy { it.id })
         if (best.isEmpty()) return false
         if (best.map { it.id }.toSet() != slot.members.toSet() && !worldAssign(slot.id, best.map { it.id })) return false
         return worldStart(slot.id, dungeonId)

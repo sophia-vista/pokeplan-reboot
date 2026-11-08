@@ -330,28 +330,18 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
     val isBuddy = p.id == player.buddyId
     val isLead = p.id == player.careLead?.id
     val isPlanLead = p.id == player.planLead?.id
-    if (isGuardian) {
-        val slotted = p.id in player.guardians
-        Text(perkText(p), style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
-        PixelButton(
-            if (slotted) "Remove from slot" else "Slot as Guardian",
-            { if (slotted) store.unslotGuardian(p.id) else store.slotGuardian(p.id) },
-            Modifier.fillMaxWidth(), if (slotted) Pixel.InkSoft else Pixel.Blue,
-            enabled = slotted || player.guardians.size < store.guardianSlots, compact = true,
-        )
-    } else {
-        val place = app.pokeplan.app.Places.label(model.data, p.id)
-        Text(place, style = MaterialTheme.typography.bodyLarge)
-    }
+    // A legendary or mythical Pokémon is a normal Pokémon (a party, a team, the PC); it can also be one module's Guardian.
+    Text(app.pokeplan.app.Places.label(model.data, p.id), style = MaterialTheme.typography.bodyLarge)
+    if (isGuardian) GuardianChoice(model, p)
     val regions = Region.entries.filter { it.isModule && it.released && (care || it != Region.CARE) }
         .filter { r -> Dex.regionDex(r).any { it.id == p.speciesId } }
     Text(
         if (regions.isEmpty()) "Not in a module region's Pokédex" else "Counts for the " + regions.joinToString(" and ") { it.label } + " Pokédex",
         style = soft, color = Pixel.InkSoft,
     )
-    if (!isGuardian) {
+    run {
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p.speciesId) }, Modifier.weight(1f), Pixel.Red, enabled = !isBuddy, compact = true)
+            PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p.speciesId) }, Modifier.weight(1f), Pixel.Red, enabled = !isBuddy && !isGuardian, compact = true)
             PixelButton(if (inPlan) "To PC" else "To Plan party", { store.setInParty(p.id, !inPlan); model.effect(if (inPlan) Sfx.MOVE_DROP else Sfx.RECRUIT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
