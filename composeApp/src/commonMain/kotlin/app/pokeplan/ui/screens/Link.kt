@@ -179,6 +179,8 @@ internal fun linkSubtitle(model: AppModel): String {
 
 @Composable
 internal fun LinkScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
+    // A follow-up PLAN finished is finished here too, without a reward: PLAN paid once (LINK.md 2.4).
+    LaunchedEffect(model.data.tasks, model.linkData.followUps) { model.link.syncFromPlan() }
     ScreenSwitch(model.linkSection, depth = { if (it == null) 0 else 1 }) { section -> LinkPage(model, section, openPokemon) }
 }
 
@@ -702,7 +704,7 @@ private fun FollowUpOptions(model: AppModel, f: FollowUp, onDone: () -> Unit) {
         }
         val task = planTask(model, f)
         if (f.status == FollowUpStatus.OPEN) {
-            if (task == null) PixelButton("Make it a Plan task", { model.store.convertFollowUp(f.id, f.title, f.due); model.haptic() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            if (task == null) PixelButton("Make it a Plan task", { model.link.convertToPlan(f.id); model.haptic() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             else PixelButton("Stop linking to Plan", { model.store.unlinkTask(task.id) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
         message?.let { Notice(it, tone = NoticeTone.WARNING) }

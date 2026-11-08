@@ -440,7 +440,7 @@ class GameStore(
         val rewards = outcome.rewards + egg?.rewards.orEmpty()
         update { d ->
             val counters = tally.set(d.counters, today, paidToday + 1) + (Counters.LINK_EGG_METER to meter % RewardEngine.LINK_EGG_METER_SIZE)
-            log(LINK_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, linkPaid = (d.linkPaid + event.id).takeLast(LINK_PAID_KEPT)), origin = Origin(Origin.How.POSTCARD_EGG, Region.LINK))
+            noted(d, log(LINK_SOURCES.getValue(event.kind), rewards, d.copy(player = (egg ?: outcome).state, counters = counters, linkPaid = (d.linkPaid + event.id).takeLast(LINK_PAID_KEPT)), origin = Origin(Origin.How.POSTCARD_EGG, Region.LINK)), event.id, event.module, event.ref, event.kind.name.lowercase(), event.nowMillis)
         }
         return rewards
     }
@@ -615,6 +615,12 @@ class GameStore(
      * rules and paid once; the link only lets LINK show this task's status ([linkedTask]) and keeps LINK from paying for the same follow-up. Converting the same
      * follow-up again returns the same task, so it can never exist twice.
      */
+    override fun followUpTask(followUpId: String): FollowUpTask? =
+        linkedTask(LinkKind.LINK_FOLLOW_UP, followUpId)?.let { FollowUpTask(it.id, it.state == TaskState.DONE, it.completedAtMillis) }
+
+    override fun planFollowUp(followUpId: String, title: String, planned: LocalDate?): FollowUpTask? =
+        convertFollowUp(followUpId, title, planned)?.let { FollowUpTask(it.id, it.state == TaskState.DONE, it.completedAtMillis) }
+
     fun convertFollowUp(followUpId: String, title: String, planned: LocalDate? = null, due: LocalDateTime? = null): Task? {
         linkedTask(LinkKind.LINK_FOLLOW_UP, followUpId)?.let { return it }
         val clean = title.trim().ifEmpty { return null }

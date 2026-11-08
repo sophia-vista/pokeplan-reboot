@@ -1,6 +1,6 @@
 # REP-014, sixth slice: LINK, manual first (0.145.0)
 
-**Status:** built and tested on the JVM, compiled for desktop and web (the Android app is compiled by the gate); **not run on a device**. No reminder or contact import was started; the PLAN conversion is hooked up to the one built in 0.144.0.
+**Status:** built and tested on the JVM, compiled for desktop and web (the Android app is compiled by the gate); **not run on a device**. No reminder or contact import was started; the PLAN conversion is hooked up to the one built in 0.144.0, with the `converted` mark that keeps Link from ever paying for a follow-up Plan owns, and Link's payout leaves a per-event ledger note.
 **Owner brief (8 November 2026):** "continue with next chunk of items" (the backlog's next item after HOME: LINK). Built on the HOME branch, which was not yet merged, so this slice stacks on it (schema 10, rules version 20, version 0.145.0); the HOME branch first took in `main` (the Mint follow-ups, version 0.142.0), which made HOME 0.143.0.
 
 ## 1. What was chosen from the spec, and why
