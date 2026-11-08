@@ -20,7 +20,8 @@ class KantoTest {
     fun kantoHasNineDungeonsWithIdsThatAreUniqueAcrossLayers() {
         assertEquals(9, kanto.size)
         assertEquals(Dungeons.all.size, Dungeons.all.map { it.id }.toSet().size)
-        assertEquals(9, Dungeons.of(WorldLayer.RESCUE).size + Dungeons.of(WorldLayer.EXPLORERS).size, "the two Mystery Dungeon arcs share the nine old home dungeons")
+        assertEquals(5, Dungeons.of(WorldLayer.RESCUE).size, "the Rescue Team arc")
+        assertEquals(9, Dungeons.of(WorldLayer.EXPLORERS).size, "the Explorers arc")
         assertEquals("cerulean-cave", kanto.single { it.guardian }.id)
     }
 
@@ -90,13 +91,15 @@ class KantoTest {
     fun facingMewtwoFinishesKantoOnceAndNotTheHomeStory() {
         val d = Dungeons.byId("cerulean-cave")!!
         val mon = Hatching.create("a", HatchOption(25, Dex.defaultForm(25).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = 100)
-        var data = WorldData(xp = 1_000_000, clears = kanto.associate { it.id to 1 }).assign(1, listOf("a"))!!.start(1, d.id, 0L)!!
+        // A full team of level 100: Mewtwo's cave asks for real power (WORLD.md 3.6), and a lone Pokémon would turn back.
+        val team = listOf(mon, mon.copy(id = "b"), mon.copy(id = "c"), mon.copy(id = "d"))
+        var data = WorldData(xp = 1_000_000, clears = kanto.associate { it.id to 1 }).assign(1, team.map { it.id })!!.start(1, d.id, 0L)!!
         var faced = 0
         var now = 0L
         // At most 12 hours of away time count at once, so settle in steps until the top floor is reached.
         repeat(8) {
             now += WorldSim.MAX_AWAY_MILLIS
-            val report = WorldSim.settle(data, listOf(mon), now)
+            val report = WorldSim.settle(data, team, now)
             data = report.data
             faced += report.events.count { it == WorldEvent.LayerGuardianFaced(WorldLayer.KANTO) }
         }
@@ -148,7 +151,7 @@ class SpeedExplanationTest {
             val e = WorldSim.explainSpeed(d, members, data)
             assertEquals(WorldSim.floorMillis(d, WorldSim.power(members, d), data.guardianDone, data.legendFaster(d)), e.floorMillis, d.id)
             assertEquals(90, e.levels)
-            assertEquals(e.levels + e.favoredBonus, e.power, 1e-9, d.id)
+            assertEquals(e.levels + e.favoredBonus + e.identityBonus, e.power, 1e-9, d.id)
         }
         // A strong team reaches the floor of a quarter of the base time and is told so.
         val strong = listOf(mon("a", 25, 100), mon("b", 74, 100), mon("c", 10, 100), mon("d", 1, 100))

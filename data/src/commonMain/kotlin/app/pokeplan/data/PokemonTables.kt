@@ -58,15 +58,23 @@ class PokemonTables(private val store: DataStore) {
         val idSet = ids.toSet()
 
         val buddy = player.text("buddyId")
-        val guardians = player.textList("guardians")
+        // A module's Guardian (0.158.0): its slot is the module's place in GUARDIAN_MODULES. A save that still has the old global list (a restored backup) has it
+        // read into the free module slots in order, the same slots the old rows had.
+        val moduleGuardians = linkedMapOf<Int, String>()
+        (player["moduleGuardians"] as? JsonObject).orEmpty().forEach { (module, v) ->
+            val slot = GUARDIAN_MODULES.indexOf(module) + 1
+            if (slot == 0) throw SaveNotRepresentableException("$module has no Guardian slot")
+            moduleGuardians[slot] = (v as? JsonPrimitive)?.contentOrNull ?: throw SaveNotRepresentableException("a Guardian is not an id")
+        }
+        for (id in player.textList("guardians")) moduleGuardians[(1..GUARDIAN_MODULES.size).first { it !in moduleGuardians }] = id
         if (buddy != null && buddy !in idSet) throw SaveNotRepresentableException("the buddy is not an owned Pokémon")
-        guardians.firstOrNull { it !in idSet }?.let { throw SaveNotRepresentableException("a Guardian is not an owned Pokémon") }
+        moduleGuardians.values.firstOrNull { it !in idSet }?.let { throw SaveNotRepresentableException("a Guardian is not an owned Pokémon") }
 
         // Where each one is. A Pokémon can be named by only one place, here or on a World team or as a helper.
         val places = linkedMapOf<String, Place>()
         fun put(id: String, place: Place, what: String) { if (places.put(id, place) != null) throw SaveNotRepresentableException("$id is in two places ($what)") }
         buddy?.let { put(it, Place(KIND_BUDDY, "", 0), "the buddy") }
-        guardians.forEachIndexed { i, id -> put(id, Place(KIND_GUARDIAN, "", i + 1), "a Guardian") }
+        moduleGuardians.forEach { (slot, id) -> put(id, Place(KIND_GUARDIAN, "", slot), "a Guardian") }
         val byParty = linkedMapOf<String, MutableList<String>>()
         for ((index, o) in owned.withIndex()) if (o.bool("inParty") == true) byParty.getOrPut(o.text("partyId") ?: "") { mutableListOf() } += ids[index]
         for ((party, members) in byParty) {
@@ -149,7 +157,8 @@ class PokemonTables(private val store: DataStore) {
         val state = rows.state("pokemon_state").mapValues { JSON.parseToJsonElement(it.value) }
         val leftover = state["player"] as? JsonObject ?: JsonObject(emptyMap())
         val buddy = places.values.firstOrNull { it.kind == KIND_BUDDY }?.owned_id
-        val guardians = places.values.filter { it.kind == KIND_GUARDIAN }.sortedBy { it.slot }.map { it.owned_id }
+        val guardians = places.values.filter { it.kind == KIND_GUARDIAN }.sortedBy { it.slot }
+            .mapNotNull { row -> GUARDIAN_MODULES.getOrNull(row.slot.toInt() - 1)?.let { it to row.owned_id } }
         val bag = store.economy.bag()
         val inventory = JsonObject(
             mapOf("counts" to JsonObject(bag.mapValues { JsonPrimitive(it.value) })) + ((leftover["inventory"] as? JsonObject) ?: JsonObject(emptyMap())),
@@ -163,7 +172,8 @@ class PokemonTables(private val store: DataStore) {
                 "eggMeter" to JsonPrimitive(progress.eggMeter),
                 "trainerPoints" to JsonPrimitive(progress.trainerPoints),
                 "caught" to numbers(DexKind.CAUGHT_SPECIES),
-                "guardians" to JsonArray(guardians.map { JsonPrimitive(it) }),
+                "guardians" to JsonArray(emptyList()),
+                "moduleGuardians" to JsonObject(guardians.associate { (module, id) -> module to JsonPrimitive(id) }),
             ),
         )
         val favoriteIds = records.filter { it.isFavorite }.map { it.id } + ((state["favorites"] as? JsonArray).orEmpty().mapNotNull { (it as? JsonPrimitive)?.contentOrNull })
@@ -397,6 +407,9 @@ class PokemonTables(private val store: DataStore) {
         private const val KIND_PARTY = PokemonRepository.KIND_PARTY
         private const val KIND_GUARDIAN = PokemonRepository.KIND_GUARDIAN
 
+        /** The modules that have a Guardian slot, in slot order (1 is the first): the same list as `Guardians.MODULES`; the table stores only the number. */
+        internal val GUARDIAN_MODULES = listOf("plan", "care", "heal", "mint", "home", "link")
+
         private val JSON = Json { encodeDefaults = true }
 
         /** The save's top-level fields that belong here; the rest of the save is not the player's. */
@@ -405,7 +418,7 @@ class PokemonTables(private val store: DataStore) {
         private val SET_FIELDS = setOf("favorites", "shinySpecies", "caughtForms", "shinyForms", "seenSpecies")
 
         /** The fields of the player that have a table; every other field (the leads, the roles version, a newer build's) goes to `pokemon_state`. */
-        private val HANDLED_PLAYER_FIELDS = setOf("pokemon", "buddyId", "inventory", "coins", "eggMeter", "trainerPoints", "caught", "guardians")
+        private val HANDLED_PLAYER_FIELDS = setOf("pokemon", "buddyId", "inventory", "coins", "eggMeter", "trainerPoints", "caught", "guardians", "moduleGuardians")
 
         /** The fields of a Pokémon that have a column (`inParty` and `partyId` are its place). */
         private val KNOWN_POKEMON_FIELDS = setOf(
@@ -419,7 +432,12 @@ class PokemonTables(private val store: DataStore) {
          */
         internal fun canonical(document: JsonObject): JsonObject {
             fun sorted(e: JsonElement?): JsonElement? = (e as? JsonArray)?.let { a -> JsonArray(a.sortedBy { (it as? JsonPrimitive)?.contentOrNull.orEmpty() }.distinct()) } ?: e
-            val player = (document["player"] as? JsonObject)?.let { p ->
+            val player = (document["player"] as? JsonObject)?.let { p0 ->
+                // The Guardians (per module since 0.158.0): the old global list is the first modules' in order, and an empty list or map is the same as none.
+                val modules = linkedMapOf<String, JsonElement>()
+                (p0["moduleGuardians"] as? JsonObject)?.forEach { (m, v) -> modules[m] = v }
+                (p0["guardians"] as? JsonArray)?.forEach { v -> GUARDIAN_MODULES.firstOrNull { it !in modules }?.let { modules[it] = v } }
+                val p = JsonObject(p0.filterKeys { it != "guardians" && it != "moduleGuardians" } + (if (modules.isEmpty()) emptyMap() else mapOf("moduleGuardians" to JsonObject(modules))))
                 JsonObject(
                     p.mapValues { (key, value) ->
                         when {

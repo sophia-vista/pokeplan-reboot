@@ -152,10 +152,14 @@ class AppModel(
         if (data.settings.haptics) haptics?.tick()
     }
 
-    /** Plays [speciesId]'s cry if the platform can and Sound is on. */
-    fun cry(speciesId: Int) {
+    /** Plays [speciesId]'s cry if the platform can and Sound is on, with the [voice] (the cry as recorded unless given; see [CryVoice]). */
+    fun cry(speciesId: Int, voice: CryVoice.Voice = CryVoice.NEUTRAL) {
         val volume = data.settings.criesLevel
-        if (volume > 0f) cries?.play(speciesId, volume)
+        if (volume <= 0f) return
+        // A voice's gain is shown against the loudest (CryVoice.LOUD): the player has no headroom above full volume, so a default cry in a story plays a
+        // sixth under the Sound level and a loud one at it.
+        if (voice == CryVoice.NEUTRAL) cries?.play(speciesId, volume)
+        else cries?.playVoiced(speciesId, volume * (voice.gain / CryVoice.LOUD).coerceIn(0f, 1f), voice.pitch, voice.speed)
     }
 
     /** Plays one of the real game sound effects if the platform can and Sound is on. */

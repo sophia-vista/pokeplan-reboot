@@ -47,7 +47,7 @@ No module may create a local shadow collection, local copy of a Pokémon's progr
 
 ### 2.2 Pokémon roles *(owner decision, 6 November 2026)*
 
-An owned Pokémon is in **exactly one place** at any time (owner decision, 7 November 2026, replacing the earlier "independent roles"): the global buddy, one module's party, a Guardian slot, a WORLD expedition team, a GEAR tool as its helper, or the PC. Putting a Pokémon in a place takes it out of the place it was in (the PC is the place of every Pokémon that holds no other); nothing is ever copied, and taking a Pokémon from a place never releases or deletes it. A Pokémon on an expedition under way cannot be moved until the expedition ends. The roles themselves stay independent of each other (changing one place never changes another place's other members).
+An owned Pokémon is in **exactly one place** at any time (owner decision, 7 November 2026, replacing the earlier "independent roles"): the global buddy, one module's party, a module's Guardian slot (one per module, owner decision 8 November 2026: a legendary or mythical is a normal Pokémon that can also be one module's Guardian, its perk applying in that module only), a WORLD expedition team, a GEAR tool as its helper, or the PC. Putting a Pokémon in a place takes it out of the place it was in (the PC is the place of every Pokémon that holds no other); nothing is ever copied, and taking a Pokémon from a place never releases or deletes it. A Pokémon on an expedition under way cannot be moved until the expedition ends. The roles themselves stay independent of each other (changing one place never changes another place's other members).
 
 | Role | Scope | What it does | What it never does |
 |---|---|---|---|
@@ -293,7 +293,7 @@ Preserve official species identity, types, base-stat relationships, abilities, m
 - The existing Nature and StatCalculator logic is a starting point; audit and consolidate rather than reimplement blindly.
 - Nature remains a stable owned-Pokémon attribute and affects stats only through the selected documented model.
 - Abilities and moves must have clear deterministic expedition effects where supported; do not imply a move/ability is active if the simulator ignores it.
-- Keep an active moveset to a manageable four moves by default, with clear replacement and learning behavior.
+- Keep an active moveset to a manageable four moves by default, with clear replacement and learning behavior. *(Implemented 0.159.0, `Moveset`: `OwnedPokemon.moves` holds the choice as move identifiers and is absent until one is made; absent means the last four level-up moves by level. A Pokémon may be given its level-up moves up to its level, its egg moves and, from level 30, its tutor and machine moves; choosing is free and can be undone with Natural. WORLD's team power is the only reader, see WORLD.md 3.2.)*
 - Held items reference the shared Bag/inventory model and use one authoritative effect calculation.
 - No competitive PvP or breeding loop.
 

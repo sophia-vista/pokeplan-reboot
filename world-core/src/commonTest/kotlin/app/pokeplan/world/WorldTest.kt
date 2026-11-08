@@ -149,8 +149,10 @@ class WorldTest {
         val woods = Dungeons.byId("tiny-woods")!!   // favors Grass, Bug and Flying
         val pool = listOf(mon("water", 7, 40), mon("fire", 4, 39), mon("grass", 1, 34), mon("bug", 10, 33), mon("flying", 16, 33), mon("rock", 74, 20))
         val best = WorldSim.bestTeam(woods, pool)
-        // 34 x 1.2 = 40.8 and 33 x 1.2 = 39.6 beat a plain level 40 and 39: levels alone would have picked Water and Fire.
-        assertEquals(listOf("grass", "water", "bug", "flying"), best.map { it.id })
+        // 34 x 1.2 = 40.8 and 33 x 1.2 = 39.6 beat a plain level 40 and 39: levels alone would have picked Water and Fire. (Moves, abilities and items add
+        // a little on top, so the order inside the team follows the whole contribution, but the three favoured types are in and Fire is out.)
+        assertEquals(pool.sortedByDescending { WorldSim.contribution(it, woods) }.take(4).map { it.id }, best.map { it.id })
+        assertTrue(listOf("grass", "bug", "flying").all { id -> id in best.map { it.id } } && "fire" !in best.map { it.id })
         val byLevel = pool.sortedByDescending { it.level }.take(4)
         assertTrue(WorldSim.power(best, woods) > WorldSim.power(byLevel, woods))
         // The same choice every time, whatever the order given; fewer than four is fine; nothing gives nothing.
@@ -167,9 +169,9 @@ class WorldTest {
         assertEquals(1, Story.opened(WorldData()))
         assertEquals(2, Story.opened(WorldData(xp = 300, clears = mapOf("tiny-woods" to 1))))
         assertEquals("The World Needs Helping", Story.next(WorldData())!!.title)
-        assertNull(Story.next(WorldData(xp = 1_000_000, clears = SEVEN)))
+        assertNull(Story.next(WorldData(xp = 1_000_000, clears = CLEARED)))
     }
 }
 
 /** Seven different dungeons cleared: every chapter that rank allows. */
-private val SEVEN = listOf("tiny-woods", "thunderwave-cave", "mt-steel", "waterfall-cave", "glacier-palace", "ancient-ruins", "sky-tower").associateWith { 1 }
+private val CLEARED = listOf("tiny-woods", "thunderwave-cave", "mt-steel", "waterfall-cave", "glacier-palace", "ancient-ruins", "sky-tower").associateWith { 1 }

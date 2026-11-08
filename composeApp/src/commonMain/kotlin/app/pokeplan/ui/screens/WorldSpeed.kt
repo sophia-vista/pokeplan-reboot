@@ -22,6 +22,7 @@ import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.world.DungeonDef
 import app.pokeplan.world.Dungeons
 import app.pokeplan.world.Missions
+import app.pokeplan.world.Outcomes
 import app.pokeplan.world.SpeedExplanation
 import app.pokeplan.world.WorldData
 import app.pokeplan.world.WorldSim
@@ -39,6 +40,10 @@ internal fun durationText(millis: Long): String {
 internal fun speedLines(e: SpeedExplanation): List<String> = buildList {
     add("Levels of the team: ${e.levels}.")
     add(if (e.favoredMembers == 0) "No one is of a type this place favours (+0)." else "${e.favoredMembers} of the team ${if (e.favoredMembers == 1) "is" else "are"} of a favoured type: +20% of their levels, +${oneDecimal(e.favoredBonus)}.")
+    if (e.identityLines.isNotEmpty()) {
+        add("Moves, abilities and held items add +${oneDecimal(e.identityBonus)} (a share of each level):")
+        addAll(e.identityLines)
+    } else add("No move, ability or held item of this team helps here (+0).")
     add("Power: ${oneDecimal(e.power)}. A floor takes the base time (${durationText(e.baseMillis)}) divided by 1 + power/100, so ${durationText(e.afterPowerMillis)}${if (e.atMinimum) ", the shortest it can be (a quarter of the base)" else ""}.")
     if (e.masteryPercent > 0) add("Temporal Mastery: ${e.masteryPercent}% faster.")
     if (e.legendPercent > 0) add("Legendary Guardians of this region: ${e.legendPercent}% faster.")
@@ -52,7 +57,12 @@ internal fun SpeedExplainer(members: List<OwnedPokemon>, dungeon: DungeonDef, wo
     var open by remember(dungeon.id, members.map { it.id }) { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
         PixelButton(if (open) "Hide how fast" else "How fast?", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-        if (open) speedLines(WorldSim.explainSpeed(dungeon, members, world)).forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
+        if (open) {
+            val explained = WorldSim.explainSpeed(dungeon, members, world)
+            speedLines(explained).forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
+            // What the floors ask of this team (WORLD.md 3.6): how far it clears in full, and what happens beyond.
+            Text(Outcomes.explain(explained.power, dungeon), style = MaterialTheme.typography.bodyMedium)
+        }
     }
 }
 
@@ -128,7 +138,9 @@ internal fun WorldReportCard(model: AppModel) {
                 },
                 style = MaterialTheme.typography.bodyMedium,
             )
-            if (report.treasure.isNotEmpty()) Text("Open treasure boxes in Finds and Bag.", style = MaterialTheme.typography.bodyMedium)
+            if (report.treasure.isNotEmpty()) Text("Open treasure boxes in Finds.", style = MaterialTheme.typography.bodyMedium)
+            if (report.setbacks > 0) Text("${report.setbacks} ${if (report.setbacks == 1) "floor was" else "floors were"} a setback: half the Poké and Exploration XP, no treasure or finds. A stronger team clears them in full.", style = MaterialTheme.typography.bodyMedium)
+            report.retreats.distinct().forEach { id -> Text("A team turned back in ${Dungeons.byId(id)?.name ?: id} and came home safely. Nothing was lost; send it again, or a stronger team.", style = MaterialTheme.typography.bodyMedium) }
             if (report.cleared.isNotEmpty()) Text("Cleared: ${report.cleared.distinct().joinToString(", ") { Dungeons.byId(it)?.name ?: it }}.", style = MaterialTheme.typography.bodyMedium)
             if (report.jobsDone.isNotEmpty()) Text("Jobs done: ${report.jobsDone.joinToString(", ") { app.pokeplan.world.Missions.byId(it)?.title ?: it }}. Claim them on the board.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
             if (report.eventsOpened > 0 || report.eventsPassed > 0) Text(

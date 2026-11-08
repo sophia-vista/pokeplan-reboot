@@ -27,8 +27,11 @@ data class ReportSummary(
     val eventsPassed: Int = 0,
     /** Floor choices that came up (waiting for an answer or already answered by the default). */
     val choicesOffered: Int = 0,
+    /** Floors the team was too weak for (half the Poké and Exploration XP, nothing else) and the dungeons a team turned back in (WORLD.md 3.6). */
+    val setbacks: Int = 0,
+    val retreats: List<String> = emptyList(),
 ) {
-    val isEmpty: Boolean get() = floors == 0 && milestones.isEmpty() && finds.isEmpty() && jobsDone.isEmpty() && !guardianFaced
+    val isEmpty: Boolean get() = floors == 0 && setbacks == 0 && retreats.isEmpty() && milestones.isEmpty() && finds.isEmpty() && jobsDone.isEmpty() && !guardianFaced
 
     operator fun plus(o: ReportSummary): ReportSummary = ReportSummary(
         floors + o.floors, (byDungeon.keys + o.byDungeon.keys).associateWith { (byDungeon[it] ?: 0) + (o.byDungeon[it] ?: 0) },
@@ -36,6 +39,7 @@ data class ReportSummary(
         (treasure.keys + o.treasure.keys).associateWith { (treasure[it] ?: 0) + (o.treasure[it] ?: 0) },
         milestones + o.milestones, finds + o.finds, cleared + o.cleared, jobsDone + o.jobsDone, guardianFaced || o.guardianFaced,
         eventsOpened + o.eventsOpened, eventsPassed + o.eventsPassed, choicesOffered + o.choicesOffered,
+        setbacks + o.setbacks, retreats + o.retreats,
     )
 
     companion object {
@@ -51,6 +55,8 @@ data class ReportSummary(
                 is WorldEvent.Found -> s.copy(finds = s.finds + e.speciesId)
                 is WorldEvent.Cleared -> s.copy(cleared = s.cleared + e.dungeonId)
                 is WorldEvent.MissionDone -> s.copy(jobsDone = s.jobsDone + e.missionId)
+                is WorldEvent.Setback -> s.copy(setbacks = s.setbacks + 1)
+                is WorldEvent.Retreat -> s.copy(retreats = s.retreats + e.dungeonId)
                 is WorldEvent.ChoiceOffered -> s.copy(choicesOffered = s.choicesOffered + 1)
                 is WorldEvent.FloorEvent -> if (e.userName != null) s.copy(eventsOpened = s.eventsOpened + 1) else s.copy(eventsPassed = s.eventsPassed + 1)
                 WorldEvent.GuardianFaced, is WorldEvent.LayerGuardianFaced -> s.copy(guardianFaced = true)

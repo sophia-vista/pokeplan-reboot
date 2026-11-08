@@ -41,9 +41,9 @@ class FinishTest {
     fun chapterAndStoryGateDungeons() {
         val high = WorldData(xp = 1_000_000, clears = mapOf("tiny-woods" to 1)) // rank Diamond, one clear: only chapter 2
         val d = high.assign(1, ids)!!
-        assertNull(d.start(1, "temporal-tower", 0L), "chapter 6 needs seven different dungeons cleared")
-        assertNull(d.start(1, "waterfall-cave", 0L), "chapter 3 needs three different dungeons cleared")
-        val done = WorldData(xp = 1_000_000, clears = SEVEN)
+        assertNull(d.start(1, "temporal-tower", 0L), "chapter 7 needs four different Explorers dungeons cleared")
+        assertNull(d.start(1, "waterfall-cave", 0L), "chapter 3 needs an Explorers dungeon cleared (Tiny Woods is Rescue Team's)")
+        val done = WorldData(xp = 1_000_000, clears = CLEARED)
         assertNotNull(done.assign(1, ids)!!.start(1, "temporal-tower", 0L))
         assertNull(done.assign(1, ids)!!.start(1, "distortion-rift", 0L), "a Distortion Dungeon opens after the story")
         assertNotNull(done.copy(guardianDone = true).assign(1, ids)!!.start(1, "distortion-rift", 0L))
@@ -51,7 +51,7 @@ class FinishTest {
 
     @Test
     fun clearingTheGuardiansDungeonCompletesTheStoryOnceAndSpeedsUpFloors() {
-        val start = WorldData(xp = 1_000_000, clears = SEVEN).assign(1, ids)!!.start(1, "temporal-tower", 0L)!!
+        val start = WorldData(xp = 1_000_000, clears = CLEARED).assign(1, ids)!!.start(1, "temporal-tower", 0L)!!
         val r = WorldSim.settle(start, roster, 12L * 3_600_000)
         val d = Dungeons.byId("temporal-tower")!!
         val per = WorldSim.floorMillis(d, WorldSim.power(roster, d))
@@ -193,7 +193,8 @@ class AbilityPerksTest {
 }
 
 /** Seven different dungeons cleared: every chapter that rank allows. */
-private val SEVEN = listOf("tiny-woods", "thunderwave-cave", "mt-steel", "waterfall-cave", "glacier-palace", "ancient-ruins", "sky-tower").associateWith { 1 }
+/** Every dungeon of the Rescue Team arc and the Explorers ones before the Temporal Tower, cleared once. */
+private val CLEARED = listOf("tiny-woods", "thunderwave-cave", "mt-steel", "frosty-forest", "sky-tower", "beach-cave", "drenched-bluff", "waterfall-cave", "crystal-cave", "glacier-palace", "ancient-ruins", "hidden-land").associateWith { 1 }
 
 class GuideAndLogTest {
     private fun mon(id: String, species: Int, level: Int) = Hatching.create(id, HatchOption(species, Dex.defaultForm(species).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = level)
@@ -202,7 +203,7 @@ class GuideAndLogTest {
     fun theNextStepFollowsProgress() {
         assertEquals("Explore Tiny Woods", WorldGuide.nextStep(WorldData()).title)
         // Everything open is cleared: the next closed one says what it waits for.
-        val cleared = WorldData(clears = mapOf("tiny-woods" to 1))
+        val cleared = WorldData(clears = mapOf("tiny-woods" to 1, "thunderwave-cave" to 1))
         val step = WorldGuide.nextStep(cleared)
         assertEquals("Work towards Mt. Steel", step.title)
         assertTrue("Bronze" in step.reason && "Exploration XP" in step.reason, step.reason)

@@ -20,12 +20,10 @@ class StoryEngineTest {
         assertEquals("intro:1", ch1.key)
         assertEquals(setOf(SceneType.STAGE, SceneType.DUNGEON), ch1.scenes.map { it.type }.toSet())
         // Every chapter of every layer has its episode, matching the chapter's number and title.
-        // (The two Mystery Dungeon arcs are being rewritten: their chapters may have no episode yet, but one that exists matches its chapter.)
-        val written = WorldLayer.entries - setOf(WorldLayer.RESCUE, WorldLayer.EXPLORERS)
+        // (Rescue Team and Explorers have their episodes since 0.156.0, ported from the owner's brief.)
         for (layer in WorldLayer.entries) for (c in app.pokeplan.world.Story.chaptersOf(layer)) {
-            val ep = StoryCatalog.episodeFor(layer, c.number)
-            if (layer in written) assertNotNull(ep, "${layer.id} chapter ${c.number}")
-            if (ep != null) assertEquals(c.title, ep.title, "${layer.id}:${c.number} title")
+            val ep = assertNotNull(StoryCatalog.episodeFor(layer, c.number), "${layer.id} chapter ${c.number}")
+            assertEquals(c.title, ep.title, "${layer.id}:${c.number} title")
         }
         assertEquals(StoryCatalog.all().size, StoryCatalog.all().map { it.key }.distinct().size)
         assertNull(StoryCatalog.episodeFor(WorldLayer.KANTO, 99), "no such chapter")
@@ -94,5 +92,22 @@ class StoryEngineTest {
     fun aDialogueShowsAtMostTwoAtOnce() {
         val three = dialogue("t-3", "t", "bg", duo) { show(BUDDY, 3f, 3f); show("a", 5f, 3f); show("b", 7f, 3f); say(BUDDY, "hi") }
         assertTrue(three.problems().any { "at most" in it }, three.problems().toString())
+    }
+    @Test
+    fun theOptionalEpisodesAfterEachArcAreWrittenAndNeverPartOfTheChapters() {
+        val rescue = StoryCatalog.specialsOf(WorldLayer.RESCUE)
+        val explorers = StoryCatalog.specialsOf(WorldLayer.EXPLORERS)
+        assertEquals(listOf(101, 102, 103, 104, 105), rescue.map { it.chapter })
+        assertEquals(listOf(101, 102, 103, 104, 105, 106), explorers.map { it.chapter })
+        (rescue + explorers).forEach { ep ->
+            assertTrue(ep.special && ep.summary.isNotBlank() && ep.scenes.isNotEmpty(), ep.key)
+            // Never a prize in a scene: nothing on the floor to take.
+            assertTrue(ep.scenes.flatMap { it.events }.none { it is SceneEvent.TakeItem }, ep.key)
+        }
+        for (layer in listOf(WorldLayer.RESCUE, WorldLayer.EXPLORERS)) {
+            assertTrue(StoryCatalog.chaptersOf(layer).none { it.special })
+            assertEquals(app.pokeplan.world.Story.chaptersOf(layer).size, StoryCatalog.chaptersOf(layer).size)
+        }
+        assertTrue(StoryCatalog.specialsOf(WorldLayer.KANTO).isEmpty())
     }
 }

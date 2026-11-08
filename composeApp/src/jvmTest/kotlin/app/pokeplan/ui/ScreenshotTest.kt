@@ -75,7 +75,7 @@ class ScreenshotTest {
             render("story-${scene.id}", frames = 90) { PixelTheme { app.pokeplan.ui.screens.StoryPlayer(model, episode.copy(scenes = listOf(scene)), {}) } }
         }
         // A cinematic (a legendary's appearance) and a choice.
-        listOf("kanto-5-cave", "kanto-4-camp", "intro-mew-1", "intro-mew-3", "intro-mew-5").forEach { id ->
+        listOf("kanto-5-cave", "kanto-4-camp", "intro-mew-1", "intro-mew-3", "intro-mew-5", "rescue-1-square", "rescue-4-absol", "explorers-1-guild", "explorers-6-hidden-land", "explorers-post-106-arrival").forEach { id ->
             val scene = app.pokeplan.world.story.StoryCatalog.scene(id)!!
             render("story-$id", frames = 120) { PixelTheme { app.pokeplan.ui.screens.StoryPlayer(model, episode.copy(scenes = listOf(scene)), {}) } }
         }
@@ -757,7 +757,7 @@ class ScreenshotTest {
     }
 
     @Test
-    fun pokemonDetailWhole() = pokemonDetailFull("pokemon-detail-whole", 1f, 3000)
+    fun pokemonDetailWhole() = pokemonDetailFull("pokemon-detail-whole", 1f, 3700)
 
     @Test
     fun pokemonDetailLargeText() = pokemonDetailFull("pokemon-detail-large-text", 1.8f, 4600)
@@ -1225,19 +1225,11 @@ class ScreenshotTest {
     @Test
     fun meHelp() = me("me-help", 1)
 
+    /** A module's Guardian slot under its party, with the six-module switcher above it (the owner's phone showed the old tabs cut to "Pl..." and "Ca..."). */
     @Test
-    fun collectionGuardians() {
-        val base = started()
-        val text = GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), base.data.copy(player = base.data.player.copy(trainerPoints = 3_300)))
-        val store = GameStore(MemoryStorage(text), clock)
-        val ids = listOf("uxie", "mew", "celebi").map { name ->
-            store.grantPokemon(app.pokeplan.core.dex.Dex.species.first { it.identifier == name }.id, "Quest").id
-        }
-        store.slotGuardian(ids[0])
-        val model = AppModel(store)
-        render("collection-guardians") {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.CollectionScreen(model, 4) } }
-        }
+    fun collectionGuardians() = collection("collection-guardians", 0, hatched = 6) { store ->
+        val ids = listOf("uxie", "mew", "celebi").map { name -> store.grantPokemon(app.pokeplan.core.dex.Dex.species.first { it.identifier == name }.id, "Quest").id }
+        store.slotGuardian(ids[0], app.pokeplan.core.pokemon.PartyIds.PLAN)
     }
 
     @Test

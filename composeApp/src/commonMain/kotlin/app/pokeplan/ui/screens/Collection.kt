@@ -59,7 +59,7 @@ import app.pokeplan.ui.theme.SectionLabel
 
 private enum class Section(val title: String, val icon: String) {
     PARTY("Party", "poke-ball"), PC("PC boxes", "storage-key"), DEX("Pokédex", "great-ball"), BAG("Bag", "seal-bag"),
-    GUARDIANS("Guardians", "master-ball"), QUESTS("Quests", "oaks-letter"),
+    QUESTS("Quests", "oaks-letter"),
 }
 
 /** What the Pokémon tab shows: its menu, a section, a Pokédex entry or one Pokémon; each one opened goes a level deeper. */
@@ -104,7 +104,6 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                             MenuEntry("PC", "storage-key", "PC boxes", "${player.pokemon.count { inPc(store, it) }} stored", tint = Pixel.Warning),
                             MenuEntry("DEX", "great-ball", "Pokédex", "${player.caught.size} caught", tint = Pixel.Blue),
                             if (store.sees(Feature.BAG)) MenuEntry("BAG", "seal-bag", "Bag", "${player.inventory.counts.count { it.value > 0 }} items", tint = Pixel.Green) else null,
-                            if (!store.sees(Feature.GUARDIANS)) null else MenuEntry("GUARDIANS", "master-ball", "Guardians", if (store.guardianSlots == 0) "opens at rank ${TrainerRank.names[4]}" else "${player.guardians.size} of ${store.guardianSlots} slotted", tint = Pixel.Violet),
                             if (!store.sees(Feature.LEGENDARY_QUESTS)) null else MenuEntry("QUESTS", "oaks-letter", "Quests", "${store.activeQuests.size} active", badge = ready, tint = Pixel.Warning),
                         ),
                     ) { key -> section = Section.valueOf(key) }
@@ -121,8 +120,13 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                     val regions = listOfNotNull(Region.PLAN, Region.CARE.takeIf { model.data.settings.careModule }, Region.HEAL, Region.MINT, Region.HOUSEHOLD, Region.LINK)
                     var shown by remember { mutableStateOf(Region.PLAN) }
                     val current = shown.takeIf { it in regions } ?: Region.PLAN
-                    PartyTabs(regions, current, { r -> partyOf(player, r).size }, { shown = it })
-                    PartyGroup(model, current, partyOf(player, current), leadOf(player, current)?.id, "Lead", { PerksOf(model, current) }) { selected = it }
+                    val at = regions.indexOf(current)
+                    PartySwitcher(model, regions, current, { r -> partyOf(player, r) }, { r -> leadOf(player, r) }, ::accentOf) { shown = it }
+                    // A swipe along the party goes to the next module's, as the arrows do.
+                    Column(Modifier.fillMaxWidth().swipeBetween(current, { shown = regions[(at - 1 + regions.size) % regions.size] }, { shown = regions[(at + 1) % regions.size] }), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                        PartyGroup(model, current, partyOf(player, current), leadOf(player, current)?.id, "Lead", { PerksOf(model, current) }) { selected = it }
+                        GuardianSlot(model, current, accentOf(current))
+                    }
                 }
                 Section.PC -> {
                     // One PC for every region's party (docs/design.md, "Parties per module"), in boxes of 30 like the games.
@@ -145,7 +149,6 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                 }
                 Section.DEX -> PokedexView(model, dexView, { dexView = it }) { dexEntry = it }
                 Section.BAG -> BagView(model)
-                Section.GUARDIANS -> GuardiansView(model) { selected = it }
                 Section.QUESTS -> QuestsView(model)
             }
         }
@@ -165,14 +168,6 @@ private fun accentOf(region: Region) = when (region) { Region.CARE -> RegionLook
 @Composable
 private fun PerksOf(model: AppModel, region: Region) = when (region) {
     Region.CARE -> CarePerksCard(model); Region.HEAL -> HealPerksCard(model); Region.MINT -> MintPerksCard(model); Region.HOUSEHOLD -> HomePerksCard(model); Region.LINK -> LinkPerksCard(model); else -> PartyPerksCard(model)
-}
-
-/** The regions that have a party, each with how many it holds, in its own colour; the open one is filled. */
-@Composable
-private fun PartyTabs(regions: List<Region>, selected: Region, count: (Region) -> Int, onSelect: (Region) -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        regions.forEach { r -> app.pokeplan.ui.screens.TabButton("${r.label.removeSuffix(" Region")} ${count(r)}", r == selected, { onSelect(r) }, Modifier.weight(1f), key = accentOf(r)) }
-    }
 }
 
 /** One region's party: its six places (a tap opens one), and its perks behind one button. */
@@ -275,16 +270,7 @@ private fun PcTile(p: OwnedPokemon, favorite: Boolean, onClick: () -> Unit) {
 
 // ----- Pokédex -------------------------------------------------------------------------------------------------------
 
-/** "+10% Super Candy chance" for a Guardian's signature perk(s). */
-internal fun perkText(p: OwnedPokemon): String =
-    Guardians.signature(p).entries.joinToString(", ") { (b, v) -> "+${v.toInt()}% ${b.label()}" }
-
 internal val statNames = listOf("HP", "Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed")
 
-/**
- * In the PC: in no other place (not the buddy, a party, a World team or a Pokégear helper) and, once the Guardians screen is open, not a
- * Guardian candidate (it is shown there). Until then a legendary or mythical Pokémon (Mew from the World opening, say) stays in the PC,
- * so no Pokémon is in a place the player cannot see.
- */
-private fun inPc(store: app.pokeplan.app.GameStore, p: OwnedPokemon) =
-    app.pokeplan.app.Places.of(store.data, p.id) == app.pokeplan.app.Place.Pc && (!Guardians.canBe(p) || !store.sees(Feature.GUARDIANS))
+/** In the PC: in no other place (not the buddy, a party, a Guardian slot, a World team or a Pokégear helper). A legendary or mythical Pokémon is a normal Pokémon here. */
+private fun inPc(store: app.pokeplan.app.GameStore, p: OwnedPokemon) = app.pokeplan.app.Places.of(store.data, p.id) == app.pokeplan.app.Place.Pc

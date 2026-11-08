@@ -839,7 +839,7 @@ Target actions:
 
 **Exit:** all acceptance criteria below pass; remaining provider limitations are documented honestly.
 
-### As built, 0.155.0 (REP-014): the first adapters
+### As built, 0.161.0 (REP-014): the first adapters
 
 *Compiled for Android and tested on the JVM; **not run on a device**.* Phase 3's Health Connect adapter and import preview, provenance, deduplication, freshness, disconnect and deletion are built for HEAL (`MODULES/HEAL.md` 22A), and Phase 4's CSV import and reconciliation-safe provenance for MINT (`MODULES/MINT.md` 22A). Each module's page lists its integrations with class and status (`Integrations`, section 14 per module; there is no single Settings destination yet). **Exit gates not met:** no advertised data type has been verified on a real device, the Huawei feasibility matrix is not done, and no provider due diligence for GCash, Maya, MariBank, GoTyme or UnionBank has been done, so every one of them is listed unsupported. Manifest additions: five `READ_*` health permissions (read only), the Health Connect package query, a rationale activity and the permission-usage alias; no storage permission (the document picker is used).
 

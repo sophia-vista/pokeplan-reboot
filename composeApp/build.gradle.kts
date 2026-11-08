@@ -7,6 +7,18 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
+// The ground maps story scenes are set on: the places of Red Rescue Team and Explorers of Sky, a few hundred KB each at most (not all 685).
+val storyRescueMaps = arrayOf(
+    "POKEMON_SQUARE", "SQUARE", "MAKUHITA_DOJO", "PELIPPER_POST_OFFICE", "HILL_OF_THE_ANCIENTS", "LUMINOUS_CAVE", "COMET", "NIGHT_SKY_1", "NIGHT_SKY_2",
+    "SUMMIT_SUNSET", "SKY_TOWER", "SKY_TOWER_ENTRY", "NIGHTMARE", "FUGITIVES_SNOW_FOREST", "FUGITIVES_SNOW_ROAD", "FUGITIVES_BLIZZARD_ROAD",
+    "SINISTER_WOODS_ENTRY", "GREAT_CANYON_ENTRY", "MT_THUNDER_ENTRY", "LAPIS_CAVE_ENTRY", "FROSTY_FOREST_ENTRY", "MT_STEEL_ENTRY", "FUGITIVES_LAPIS_CAVE",
+).map { "$it.png" }.toTypedArray()
+
+val storySkyMaps = arrayOf(
+    "T00P02", "T00P03", "G01P01A", "G01P01B", "G01P01C", "G01P02A", "G01P03A", "G01P06A", "G01P07A", "H01P99A", "V09P04A", "V25P01A", "V26P02A",
+    "P05P01A", "D51P41A", "P02P01A", "V31P01A", "V38P06C", "D73P11A",
+).map { "$it.png" }.toTypedArray()
+
 // The sprites (assets/sprites) and the pixel font (assets/fonts) live outside the module; they are copied into the shape
 // Compose resources expect (files/sprites/<formId>.png, font/<name>.ttf) so every target can load them.
 val composeAssets = tasks.register<Sync>("prepareComposeAssets") {
@@ -30,6 +42,17 @@ val composeAssets = tasks.register<Sync>("prepareComposeAssets") {
         exclude("TEAM_BASE_INSIDE_*")
         rename { it.lowercase().replace('_', '-') }
         into("files/world")
+    }
+    // Ground maps of the two Mystery Dungeon games that story scenes are set on (background "map:<name>", see world-core `StoryPlaces`): the Red Rescue Team ones lower-cased with hyphens.
+    from(rootProject.file("assets/rescue-maps")) {
+        include(*storyRescueMaps)
+        rename { it.lowercase().replace('_', '-') }
+        into("files/maps")
+    }
+    from(rootProject.file("assets/sky-maps")) {
+        include(*storySkyMaps)
+        rename { "sky-" + it.lowercase() }
+        into("files/maps")
     }
     from(rootProject.file("assets/cries")) { include("*.ogg"); into("files/cries") }
     from(rootProject.file("assets/sfx")) { include("*.ogg"); into("files/sfx") }

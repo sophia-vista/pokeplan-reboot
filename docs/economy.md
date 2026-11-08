@@ -185,7 +185,7 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Heal perk bucket | 25 (Friendship gain, Berry finder), from Heal's party only | `HealPerks` |
 | Mint perk bucket | 25 (Candy finder, Friendship gain), from Mint's party only | `MintPerks` |
 | Home perk bucket | 25 (Candy finder, Friendship gain), from Home's party only | `HomePerks` |
-| Guardian slots | 0, then 1 at rank 4, 2 at rank 6, 3 at rank 9 | `Guardians.slots` |
+| Guardian slots | One per module (Plan, Care, Heal, Mint, Home, Link), no rank gate (0.158.0, `RewardRules.VERSION` 21) | `Guardians.MODULES` |
 | Active quests | 3 | `Quests.MAX_ACTIVE` |
 | Egg meter | 10 | `EGG_METER_SIZE` |
 | Paid subtasks | 5 a task | `MAX_PAID_SUBTASKS` |
@@ -236,6 +236,8 @@ Found while writing this down; each is its own change, none is in this rules ver
 - **Who decides.** The app computes every reward itself and the server checks the snapshot on sync (points never drop, the party and Guardians fit, column ranges). The server's `effort`, `task` and `achievement` kinds exist and are tested but no app calls them yet. Moving rewards to them (and adding the daily caps) is the step before a public release (`supabase/README.md`, Known limits).
 
 ## World (0.83.1)
+
+**Floor outcomes (0.156.0, `Outcomes`):** a floor a team is too weak for pays half the Poké and Exploration XP (a setback) or ends the expedition safely (a turn-back); see `MODULES/WORLD.md` 3.6. `docs/world-economy-report.md` was re-run with it (a team that turns back is sent again; the career and year simulations pick the deepest dungeon the team would not turn back in, and take only jobs it can clear). Investigation, Challenge and Story jobs are on the board; the simulations do not play them.
 
 World pays through `AppData.world` and the Bag only, not the server reward engine, so `RewardRules.VERSION` is unchanged. Sources: per floor Exploration XP (`XP_BASE` + floor), Poké (5 + 2 × floor + 0 to 4), a berry (70%), a treasure box (6%) and a wild find (3%); a milestone (Rare Candies and Poké) once per dungeon floor, never repeated. The only sink is rank. Floors take `baseFloorSeconds / (1 + power / 100)` (never under a quarter of it), at most 12 hours of away time counts per open. Numbers and pacing (about 1 find a day, Gold in about 4 weeks, Platinum in about 3 months at two opens a day): `docs/world-economy-report.md`, regenerate with `./gradlew :world-core:simulateWorldEconomy` after changing any World number. All *(tune)*; Poké has no sink yet, so it only piles up.
 

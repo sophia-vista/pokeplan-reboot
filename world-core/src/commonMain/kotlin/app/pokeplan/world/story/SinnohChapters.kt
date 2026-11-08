@@ -87,7 +87,7 @@ internal object SinnohChapters {
         cinematic("sinnoh-4-dialga", "Time itself", "mountain", listOf(buddy, dialga), dungeonId = "mt-coronet") {
             show(BUDDY, 2.0f, 4.8f)
             narr("At the summit, the air shimmers. Clocks tick backwards.")
-            show("big_dialga", 7.0f, 4.8f, Facing.LEFT); flash(); shake(700); cry("big_dialga")
+            show("big_dialga", 7.0f, 4.8f, Facing.LEFT); flash(); shake(700); cry("big_dialga"); sound("STORY_TEMPORAL")
             say("big_dialga", "Those who bend time will find it bends back.", NORMAL)
             say(BUDDY, "We want to stop them, not to command you.", DETERMINED)
             say("big_dialga", "Then go to the Spear Pillar, small ones, and do not be late.", NORMAL)

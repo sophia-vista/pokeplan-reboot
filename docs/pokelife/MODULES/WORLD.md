@@ -183,6 +183,8 @@ Inputs include:
 
 The current baseline uses the sum of member levels, adding 20% for each member with a type favored by the dungeon. Floor time is calculated from dungeon base time divided by `1 + power / 100`, with a floor-time minimum of 25% of base; Guardian mastery and relevant legendary bonuses may further reduce time. This is a verified starting implementation, not the final battle model. Preserve its understandable explanatory output while evolving the formula through balance simulations. Skills that improve reward discovery must not silently change floor time unless explicitly documented.
 
+**Implemented (0.159.0, `BattleIdentity`, rule version 1; numbers *(tune)*):** each member's contribution is its level times (1 + 20% for a favoured type + its identity share), where the share is the sum of named parts, at most 25%: each damaging move of a type the dungeon favours +6% (at most two), one damaging move of power 80 or more +4%, a support (status) move +2%, an ability tied to a favoured type +6% or a general fighting ability +3% (the abilities World's skills use never count here), a held Leftovers or Scope Lens +4%, a Mega Stone held by its own Pokémon +6%. The moves are the owned record's moveset (`OwnedPokemon.moves`; none stored means the natural moves, the last four level-up moves by level). "How fast?" lists every part by name; a move, ability or item not in these rules adds nothing and is not said to. Not done: move effects beyond type and power, conditional abilities, held items beyond the two and the Mega Stone, and tests across level bands for the whole rank range (the economy report covers the common teams).
+
 The final model must provide a human-readable suitability explanation and must be tested across team sizes, level bands, type matchups, abilities, moves, dungeon modifiers and rank tiers. No single species, move or type should dominate every dungeon. Broad experimentation must remain viable.
 
 ### 3.3 Exploration Rank and skills
@@ -234,6 +236,8 @@ Reuse and extend the existing floor-event foundation:
 Events must be deterministic per expedition/floor seed. A missing capability may mean a bonus is unavailable, never that an essential route or reward is permanently lost. No event may permanently injure, delete or release Pokémon, destroy owned items, or create a punitive recovery timer. Pending choices must have bounded storage and a safe default resolution after their response window.
 
 ### 3.6 Expedition outcomes, defeat and recall
+
+**Implemented (0.156.0, `Outcomes`, rule version 1; the numbers are *(tune)*, a decision the owner may reverse):** a floor is cleared, a setback or a safe retreat by one deterministic comparison of the team's power (the sum of levels, 20% more for a favored type) with what the floor asks: the dungeon's recommended power (by the rank it needs: Bronze 90, Silver 150, Gold 220, Platinum 300, Diamond 400) times floor/floors. At 40% or more the floor is cleared in full; from 20% to 40% it is a **setback** (half the Poké and Exploration XP, no treasure, find, milestone, side path or choice, no dungeon clear, a job does not move on; the members still get their Pokémon XP and berries still count); under 20% the team **turns back** and comes home safely (the expedition ends). The first floor and every Normal-rank dungeon always clear in full, so a new player with a single starter is never stuck; only Bronze rank and above can set a team back. Nothing earned is rolled back, nothing is injured or locked, the team can be sent again at once, the report and the journal say what happened, and the team page explains how far it clears in full. Moves, abilities and held items now count in the power (3.2, 0.159.0; `Outcomes` rule version 2). Not done: the shared battle service.
 
 Expeditions must have meaningful outcomes without making Pokémon disposable or turning failure into a punishment loop.
 
@@ -300,7 +304,7 @@ Reuse the current story DSL/runtime, scene models, branch execution, resume stat
 - Cinematic scenes for significant events.
 - Background and environment changes.
 - Scripted sprite movement and expressions.
-- Narration, dialogue, sound effects and Pokémon cries.
+- Narration, dialogue, sound effects and Pokémon cries. **Implemented (0.157.0):** the engine adds sounds on its own (`StoryCues`: the emote clips of the Mystery Dungeon games for a speaker's changing face and for emotes, the stairs on entering a dungeon, a rumble under a long shake, wind, fire or electricity for a cold, fiery or stormy place, a tick on advancing a line), a script can name any `Sfx` with `sound("NAME")` (the Explorers of Sky cutscene clips are `STORY_*`, levelled to sit with the cries), and a cry takes a small voice (`CryVoice`): a stable detune of its own and a pitch and speed for the line's feeling, never more than 15% from the recording, a level by feeling and distance (default 100%, loud 120%, low 80%, injured 95%, seriously injured 85%; near, medium, far), and the cry of a speaker whose face turns strongly plays just before the face changes. Not built: a modulation curve over the cry's length (the report's "stroke") and cries guided by voice acting, which need the cries re-rendered offline, not a player setting.
 - Branches, conditional lines, callbacks and flags.
 - Scene/episode resume, replay and archive completion state.
 

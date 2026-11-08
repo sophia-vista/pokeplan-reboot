@@ -38,6 +38,23 @@ class WorldStoreTest {
     }
 
     @Test
+    fun moveChoicesAreCheckedSavedAndCanGoBackToNatural() {
+        val store = store()
+        val id = store.data.player.pokemon.first().id
+        fun mon() = store.data.player.pokemon.first { it.id == id }
+        val options = app.pokeplan.core.pokemon.Moveset.learnable(mon()).map { it.identifier }
+        assertTrue(options.size >= 2)
+        assertTrue(mon().moves.isEmpty(), "natural until a choice is made")
+        assertTrue(store.setMoves(id, options.take(2)))
+        assertEquals(options.take(2), mon().activeMoves.map { it.identifier })
+        assertFalse(store.setMoves(id, listOf("not-a-move")))
+        assertFalse(store.setMoves("nobody", options.take(1)))
+        assertEquals(options.take(2), mon().moves, "a refused choice changes nothing")
+        assertTrue(store.setMoves(id, emptyList()))
+        assertTrue(mon().moves.isEmpty())
+    }
+
+    @Test
     fun everyMemberOfATeamGetsTheFullExperienceForEachFloorOnce() {
         val clock = Clock()
         val store = store(clock)
@@ -52,7 +69,7 @@ class WorldStoreTest {
         val partner = store.data.player.pokemon.filter { it.inParty }.maxOfOrNull { it.level }
         clock.millis += 6L * 60 * 60 * 1000
         val report = assertNotNull(store.worldSettle())
-        val floors = report.events.count { it is app.pokeplan.world.WorldEvent.FloorCleared }
+        val floors = report.events.count { it is app.pokeplan.world.WorldEvent.FloorCleared || it is app.pokeplan.world.WorldEvent.Setback }
         assertTrue(floors > 0)
         // Each member got all of it (not a share), through the Pokémon's own rule; the Pokémon outside the team got nothing.
         listOf(one, two, three).forEach { assertEquals(before.getValue(it).gainXp(floors * CandyRules.XP_PER_FLOOR, partner ?: before.getValue(it).level), mon(it), "member $it") }
@@ -274,14 +291,15 @@ class WorldStoreTest {
     }
 
     @Test
-    fun quickSendPicksTheStrongestFreePokemonAndNeverGuardians() {
+    fun quickSendPicksTheStrongestFreePokemonAGuardianIncludedWhenItIsOne() {
         val store = store()
         store.grantPokemon(25, "test"); store.grantPokemon(74, "test"); store.grantPokemon(10, "test")
         val legend = store.grantPokemon(150, "test")
         assertTrue(store.worldQuickSend("tiny-woods"))
         val team = store.data.world.team(1)!!
         assertTrue(team.members.isNotEmpty() && team.members.size <= 4 && team.expedition != null)
-        assertTrue(legend.id !in team.members, "a Guardian never goes exploring")
+        // A legendary is a normal Pokémon: it is picked like any other, by power for the dungeon.
+        assertTrue(team.members.all { id -> store.data.player.pokemon.any { it.id == id } })
         assertTrue(store.worldQuickSend("tiny-woods").not() || store.data.world.team(2) != null)
     }
 }
