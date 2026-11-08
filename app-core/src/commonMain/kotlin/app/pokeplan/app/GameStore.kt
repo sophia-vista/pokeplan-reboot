@@ -24,6 +24,7 @@ import app.pokeplan.world.Missions
 import app.pokeplan.world.WorldReport
 import app.pokeplan.world.ReportSummary
 import app.pokeplan.world.WorldSim
+import app.pokeplan.core.pokemon.Moveset
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.PartyIds
 import app.pokeplan.core.pokemon.PerkBonuses
@@ -1952,6 +1953,19 @@ class GameStore(
             p.heldItem?.let { bag = bag.add(it) }
             d.copy(player = d.player.copy(inventory = bag, pokemon = d.player.pokemon.map { if (it.id == pokemonId) p.withHeldItem(itemId) else it }))
         }
+        return true
+    }
+
+    /**
+     * Chooses [pokemonId]'s moves by identifier (one to four it may be given, see [Moveset.canSet]); an empty list goes back to its natural moves.
+     * Returns false when the choice is not allowed. Free: moves cost nothing and can be changed any time (POKEMON_ECOSYSTEM.md 8.3). The World teams are settled first,
+     * so the floors already climbed count with the moves they were climbed with.
+     */
+    fun setMoves(pokemonId: String, identifiers: List<String>): Boolean {
+        val p = data.player.pokemon.firstOrNull { it.id == pokemonId } ?: return false
+        if (!Moveset.canSet(p, identifiers)) return false
+        worldSettle()
+        update { d -> d.copy(player = d.player.copy(pokemon = d.player.pokemon.map { if (it.id == pokemonId) it.withMoves(identifiers) else it })) }
         return true
     }
 

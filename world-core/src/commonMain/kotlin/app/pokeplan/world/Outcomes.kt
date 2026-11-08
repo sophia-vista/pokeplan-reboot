@@ -2,7 +2,7 @@ package app.pokeplan.world
 
 /**
  * What a floor does to a team (WORLD.md 3.6): it is **cleared**, a **setback**, or the team **retreats**. The rule is a plain comparison of the team's power
- * (the sum of its members' levels, 20% more for a favored type: [WorldSim.power]) with what the floor asks, so the player can read it in advance and the same
+ * (the sum of its members' levels, 20% more for a favored type, and what their moves, ability and held item add: [WorldSim.power], [BattleIdentity]) with what the floor asks, so the player can read it in advance and the same
  * team on the same floor always has the same outcome (no dice; deterministic whatever the settle frequency).
  *
  * - **Required power** of floor f in a dungeon of F floors: [recommended] (set by the rank the dungeon needs) times f/F, so the top floor asks the most.
@@ -17,7 +17,7 @@ package app.pokeplan.world
  */
 object Outcomes {
     /** The version of this rule; bump it with any number below. */
-    const val VERSION = 1
+    const val VERSION = 2
 
     /** The share of a floor's required power a team needs to clear it, and under which it retreats. *(tune)* */
     const val CLEAR = 0.4

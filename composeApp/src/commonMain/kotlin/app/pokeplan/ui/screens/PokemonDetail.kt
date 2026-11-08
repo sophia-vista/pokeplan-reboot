@@ -50,6 +50,7 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.PixelBar
 import app.pokeplan.ui.theme.PixelButton
+import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.quietClickable
 import app.pokeplan.ui.theme.ScreenHeader
@@ -139,6 +140,7 @@ internal fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
             GrowthBox(model, p, isGuardian, stats)
             EvolutionBox(model, p)
             RoleBox(model, p, isGuardian)
+            MovesBox(model, p)
             if (!isGuardian && store.sees(Feature.HELD_ITEMS)) PokemonPerksBox(model, p)
             OriginBox(model, p)
             TransferBox(model, p, back)
@@ -171,6 +173,48 @@ private fun IdentityBox(model: AppModel, p: OwnedPokemon) {
                     placeholder = p.species.name,
                 )
                 PixelIconButton("check", "Save", { store.rename(p.id, nickname); renaming = false }, Pixel.Green)
+            }
+        }
+    }
+}
+
+/** One move as a line: its name, then its category and power. */
+private fun moveText(m: app.pokeplan.core.dex.MoveInfo): String =
+    m.name + " · " + m.category.name.lowercase().replaceFirstChar { it.uppercase() } + (m.power?.let { " · power $it" } ?: "")
+
+/**
+ * Its moves (up to four). They are the natural ones, the last it has learned by its level, until some are chosen here; Choose lists what it may be
+ * given and a tap puts a move in or out. Only WORLD reads them, to add to a team's power where a move fits the dungeon (WORLD.md 3.2).
+ */
+@Composable
+private fun MovesBox(model: AppModel, p: OwnedPokemon) = DetailBox("Moves") {
+    val store = model.store
+    var choosing by remember(p.id) { mutableStateOf(false) }
+    val active = p.activeMoves
+    active.forEach { m ->
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            TypePlate(m.type, width = 56.dp)
+            Text(moveText(m), style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        PixelButton(if (choosing) "Close" else "Choose", { choosing = !choosing }, Modifier.weight(1f), Pixel.Blue, compact = true)
+        if (p.moves.isNotEmpty()) PixelButton("Natural", { store.setMoves(p.id, emptyList()) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+    }
+    if (choosing) {
+        Text("Up to ${app.pokeplan.core.pokemon.Moveset.MAX}. Tap to put a move in or out.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        val chosen = active.map { it.identifier }
+        app.pokeplan.core.pokemon.Moveset.learnable(p).forEach { m ->
+            val on = m.identifier in chosen
+            ListRow(
+                lead = { TypePlate(m.type, width = 56.dp) },
+                onClick = {
+                    val next = if (on) chosen - m.identifier else if (chosen.size < app.pokeplan.core.pokemon.Moveset.MAX) chosen + m.identifier else chosen
+                    if (next.isNotEmpty() && next != chosen) store.setMoves(p.id, next)
+                },
+                onClickLabel = if (on) "Remove ${m.name}" else "Add ${m.name}",
+            ) {
+                Text(moveText(m) + if (on) " (chosen)" else "", style = MaterialTheme.typography.bodyMedium, color = if (on) Pixel.Green else Pixel.Ink)
             }
         }
     }
