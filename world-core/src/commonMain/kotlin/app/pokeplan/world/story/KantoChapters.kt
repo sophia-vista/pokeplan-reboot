@@ -72,9 +72,9 @@ internal object KantoChapters {
         cinematic("kanto-3-birds", "Three wings", "thunderplains", listOf(buddy, zapdos, articuno, moltres)) {
             show(BUDDY, 5.0f, 5.0f)
             narr("Far above Kanto, three shapes cross the sky: lightning, ice and flame.")
-            show("big_zapdos", 2.2f, 3.4f, Facing.RIGHT); cry("big_zapdos"); flash()
+            show("big_zapdos", 2.2f, 3.4f, Facing.RIGHT); cry("big_zapdos"); sound("STORY_ELECTRICITY"); flash()
             show("big_articuno", 5.0f, 2.8f, Facing.DOWN); cry("big_articuno")
-            show("big_moltres", 8.0f, 3.4f, Facing.LEFT); cry("big_moltres"); shake(500)
+            show("big_moltres", 8.0f, 3.4f, Facing.LEFT); cry("big_moltres"); sound("STORY_FIRE"); shake(500)
             say(BUDDY, "The legendary birds. They are heading to Cerulean.", SURPRISED)
             narr("Whatever stirs them, it is stronger than any one of them.")
         },
@@ -102,7 +102,7 @@ internal object KantoChapters {
         cinematic("kanto-5-cave", "Cerulean Cave", "dampcave", listOf(buddy, nia, mewtwo), dungeonId = "cerulean-cave") {
             show(BUDDY, 2.0f, 4.4f); show("nia", 1.0f, 4.6f)
             narr("In the deepest chamber of Cerulean Cave, a single Pokémon waits in the dark.")
-            show("big_mewtwo", 7.2f, 5.2f, Facing.LEFT); flash(); shake(600); cry("big_mewtwo")
+            show("big_mewtwo", 7.2f, 5.2f, Facing.LEFT); flash(); shake(600); cry("big_mewtwo"); sound("STORY_OMINOUS")
             say("big_mewtwo", "I was made, not born. I did not ask for this power.", NORMAL)
             say(BUDDY, "We came to find the truth. Not to hurt you.", DETERMINED)
             say("big_mewtwo", "Then you are the first. Go. I will watch over this place.", NORMAL)

@@ -119,7 +119,7 @@ internal object ExplorersChaptersB {
         cinematic("explorers-7-primal-dialga", "Primal Dialga", "dampcave", listOf(buddy, grovyle, celebi, dusknoir, primalDialga, dialga), dungeonId = "temporal-tower") {
             show(BUDDY, 1.8f, 4.8f); show("grovyle", 3.2f, 4.6f); show("celebi", 4.4f, 4.0f); show("dusknoir", 2.6f, 5.4f)
             narr("At the top of Temporal Tower, the structure groans. Gears turn without rhythm. A vast shape looms beyond the broken arches.")
-            show("big_dialga", 8.2f, 4.6f, Facing.LEFT); cry("big_dialga"); flash(); shake(600)
+            show("big_dialga", 8.2f, 4.6f, Facing.LEFT); cry("big_dialga"); sound("STORY_TEMPORAL"); flash(); shake(600)
             say("big_dialga", "GRAAAAAH!", ANGRY)
             say(BUDDY, "It can't hear us!", WORRIED)
             say("grovyle", "It's lost to the distortion. There may be nothing left of the guardian we hoped to find.", NORMAL)

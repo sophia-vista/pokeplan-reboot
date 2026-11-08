@@ -302,7 +302,7 @@ Reuse the current story DSL/runtime, scene models, branch execution, resume stat
 - Cinematic scenes for significant events.
 - Background and environment changes.
 - Scripted sprite movement and expressions.
-- Narration, dialogue, sound effects and Pokémon cries.
+- Narration, dialogue, sound effects and Pokémon cries. **Implemented (0.157.0):** the engine adds sounds on its own (`StoryCues`: the emote clips of the Mystery Dungeon games for a speaker's changing face and for emotes, the stairs on entering a dungeon, a rumble under a long shake, wind, fire or electricity for a cold, fiery or stormy place, a tick on advancing a line), a script can name any `Sfx` with `sound("NAME")` (the Explorers of Sky cutscene clips are `STORY_*`, levelled to sit with the cries), and a cry takes a small voice (`CryVoice`): a stable detune of its own and a pitch and speed for the line's feeling, never more than 15% from the recording, a level by feeling and distance (default 100%, loud 120%, low 80%, injured 95%, seriously injured 85%; near, medium, far), and the cry of a speaker whose face turns strongly plays just before the face changes. Not built: a modulation curve over the cry's length (the report's "stroke") and cries guided by voice acting, which need the cries re-rendered offline, not a player setting.
 - Branches, conditional lines, callbacks and flags.
 - Scene/episode resume, replay and archive completion state.
 
