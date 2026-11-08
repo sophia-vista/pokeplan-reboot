@@ -26,6 +26,9 @@ object LinkRules {
     /** The most follow-ups Postcard Trail pays in one day *(tune)*: a backstop so making and ticking small items is never a way to earn (LINK.md 9.4). */
     const val FOLLOW_UPS_PAID_PER_DAY = 3
 
+    /** The days-before choices a date's reminder offers (LINK.md 5): the day itself, one day, three days or a week before. */
+    val REMIND_PRESETS = listOf(0, 1, 3, 7)
+
     /** How far ahead the Overview shows dates. */
     const val DATES_SOON_DAYS = 30
 

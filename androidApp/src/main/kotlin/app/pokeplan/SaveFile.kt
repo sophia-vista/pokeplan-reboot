@@ -7,6 +7,7 @@ import app.pokeplan.app.GameStore
 import app.pokeplan.app.HealStore
 import app.pokeplan.app.HomeLinkOwner
 import app.pokeplan.app.HomeStore
+import app.pokeplan.app.LinkStore
 import app.pokeplan.app.MintStore
 import app.pokeplan.app.MemoryStorage
 import app.pokeplan.app.Storage
@@ -65,6 +66,10 @@ fun healStore(context: Context, world: GameStore = widgetStore(context)): HealSt
 /** Home's store outside the app (reminders): its own records; a chore reminder's "Done" completes the chore like the app does and pays Habitat Discovery into [world]. */
 fun homeStore(context: Context, world: GameStore = widgetStore(context)): HomeStore =
     HomeStore(homeStorage(context), Clock { System.currentTimeMillis() }, world)
+
+/** Link's store outside the app (reminders): its own records; a follow-up reminder's "Done" completes it like the app does and pays Postcard Trail into [world]. */
+fun linkStore(context: Context, world: GameStore = widgetStore(context)): LinkStore =
+    LinkStore(linkStorage(context), Clock { System.currentTimeMillis() }, world)
 
 /** Mint's store outside the app (bill reminders): its own sealed records, read only; the reminder never pays or changes a record. */
 fun mintStore(context: Context, world: GameStore = widgetStore(context)): MintStore =

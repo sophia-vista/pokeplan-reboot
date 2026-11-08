@@ -33,10 +33,13 @@ object AppAlerts {
     enum class Kind(val code: Int, val channel: String, val notificationId: Int) {
         HALFWAY(9101, Channels.FOCUS_HALFWAY, 7101),
         END(9102, Channels.FOCUS_END, 7102),
+        /**
+         * The evening streak reminder and the Sunday recap now go through the shared scheduler ([SharedReminders], Plan's adapter), which shows them here.
+         * The four kinds below keep their notification ids and channel; as alarms they are legacy: [schedule] cancels any an older version set, and one that
+         * still fires does nothing.
+         */
         STREAK(9103, Channels.EVENING_NUDGES, 7103),
         RECAP(9104, Channels.EVENING_NUDGES, 7104),
-
-        /** A streak reminder or recap that came due during a focus session and waits for its end. */
         STREAK_LATER(9105, Channels.EVENING_NUDGES, 7103),
         RECAP_LATER(9106, Channels.EVENING_NUDGES, 7104),
 
@@ -52,7 +55,7 @@ object AppAlerts {
     const val EXTRA_SESSION = "session"
 
     /** What the alarms should be: when each one goes off, and the running session they belong to. Equal plans need no new alarms. */
-    data class Plan(val halfway: Long?, val end: Long?, val sessionId: String?, val streak: Long?, val recap: Long?, val job: Long? = null, val timer: Long? = null)
+    data class Plan(val halfway: Long?, val end: Long?, val sessionId: String?, val job: Long? = null, val timer: Long? = null)
 
     fun plan(data: AppData, nowMillis: Long, zone: TimeZone): Plan {
         val alerts = Nudges.focusAlerts(data.focus, data.settings, nowMillis)
@@ -60,8 +63,6 @@ object AppAlerts {
             halfway = alerts.firstOrNull { it.kind == FocusAlert.Kind.HALFWAY }?.atMillis,
             end = alerts.firstOrNull { it.kind == FocusAlert.Kind.END }?.atMillis,
             sessionId = data.focus?.takeIf { !it.isFinished }?.id,
-            streak = Nudges.nextStreakCheck(data, nowMillis, zone),
-            recap = Nudges.nextRecap(data, nowMillis, zone),
             job = WorldAlerts.nextJobDone(data, nowMillis),
             timer = GearTimers.nextEnd(data, nowMillis),
         )
@@ -73,8 +74,7 @@ object AppAlerts {
         if (plan.sessionId == null) cancel(context, Kind.HALFWAY)
         set(context, alarms, Kind.HALFWAY, plan.halfway, plan.sessionId, exact = true)
         set(context, alarms, Kind.END, plan.end, plan.sessionId, exact = true)
-        set(context, alarms, Kind.STREAK, plan.streak, null, exact = false)
-        set(context, alarms, Kind.RECAP, plan.recap, null, exact = false)
+        for (legacy in listOf(Kind.STREAK, Kind.RECAP, Kind.STREAK_LATER, Kind.RECAP_LATER)) set(context, alarms, legacy, null, null, exact = false)
         set(context, alarms, Kind.JOB, plan.job, null, exact = false)
         set(context, alarms, Kind.TIMER, plan.timer, null, exact = true)
     }
@@ -190,17 +190,8 @@ class NudgeReceiver : BroadcastReceiver() {
                     AppAlerts.show(context, kind, "Focus time is up", "Open PokéLife to see your Egg hatch.", Place.FOCUS.name)
                 }
             }
-            AppAlerts.Kind.STREAK, AppAlerts.Kind.STREAK_LATER -> {
-                if (!deferDuringFocus(context, kind, session) && Nudges.streakAtRisk(data, now, zone)) {
-                    val text = Nudges.streakText(data, now, zone)
-                    AppAlerts.show(context, AppAlerts.Kind.STREAK, text.title, text.body, Place.HOME.name)
-                }
-            }
-            AppAlerts.Kind.RECAP, AppAlerts.Kind.RECAP_LATER -> {
-                if (!deferDuringFocus(context, kind, session)) {
-                    Nudges.weeklyRecap(data, now, zone)?.let { AppAlerts.show(context, AppAlerts.Kind.RECAP, it.title, it.body, Place.ME.name) }
-                }
-            }
+            // Legacy alarms of an older version: the shared scheduler owns these two now.
+            AppAlerts.Kind.STREAK, AppAlerts.Kind.STREAK_LATER, AppAlerts.Kind.RECAP, AppAlerts.Kind.RECAP_LATER -> Unit
             AppAlerts.Kind.TIMER -> {
                 // Mark what ran out and announce every timer that is still ringing (the player may have stopped one in the app already).
                 store.timersTick()
@@ -220,15 +211,6 @@ class NudgeReceiver : BroadcastReceiver() {
             }
         }
         AppAlerts.rescheduleFromSave(context)
-    }
-
-    /** Evening notifications are silenced during focus: a running session sets them again for its end. */
-    private fun deferDuringFocus(context: Context, kind: AppAlerts.Kind, session: FocusSession?): Boolean {
-        if (session == null || session.isFinished) return false
-        val later = if (kind == AppAlerts.Kind.STREAK || kind == AppAlerts.Kind.STREAK_LATER) AppAlerts.Kind.STREAK_LATER else AppAlerts.Kind.RECAP_LATER
-        val alarms = context.getSystemService(AlarmManager::class.java) ?: return true
-        AppAlerts.set(context, alarms, later, session.startedAtMillis + session.pausedMillis + session.durationMillis + 60_000L, null, exact = false)
-        return true
     }
 }
 

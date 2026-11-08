@@ -255,6 +255,28 @@ class LinkStore(
         name.trim().take(LinkRules.TAG_MAX).let { n -> if (n.isEmpty() || n.lowercase() in LinkRules.categories(LinkData(settings = s)).map { it.lowercase() }) s else s.copy(categories = s.categories + n) }
     }
 
+    // --- reminders (LINK.md 5): all off until the user turns them on, per record ---------------------------------------------------
+
+    /** The master switch. On, a date or follow-up still asks only when its own reminder is on. Neither pays nor changes a record. */
+    fun setReminders(on: Boolean) = settings { it.copy(reminders = on) }
+
+    fun setReminderHour(hour: Int) = settings { it.copy(reminderHour = hour.coerceIn(0, 23)) }
+
+    /** Lets a notification say which date or follow-up once the phone is unlocked; the lock screen never does. */
+    fun setReminderNames(on: Boolean) = settings { it.copy(reminderNames = on) }
+
+    /** Reminds [days] before the date ([LinkRules.REMIND_PRESETS]; anything else is ignored), or not at all for null. */
+    fun setDateRemind(id: String, days: Int?) {
+        if (days != null && days !in LinkRules.REMIND_PRESETS) return
+        update { d -> d.copy(dates = d.dates.map { if (it.id == id) it.copy(remindDays = days) else it }) }
+    }
+
+    /** Reminds on the follow-up's day. A follow-up handed to Plan cannot: Plan is its reminder source from then on. */
+    fun setFollowUpRemind(id: String, on: Boolean) {
+        if (on && data.followUps.firstOrNull { it.id == id }?.converted == true) return
+        change(id) { it.copy(remind = on) }
+    }
+
     // --- export and erase (one kind at a time, or all) ----------------------------------------------------------------------
 
     /** The chosen kinds of record (all by default) as readable JSON, exactly as saved. Nothing of the game is in it. */

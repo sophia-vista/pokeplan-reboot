@@ -60,12 +60,12 @@ object Nudges {
      * True when the reminder should show at [nowMillis]: it is switched on, a streak is running, nothing has counted today
      * (a paid task or a finished session), today is not a rest day, and the hour is not in quiet hours.
      */
-    fun streakAtRisk(data: AppData, nowMillis: Long, zone: TimeZone): Boolean {
+    fun streakAtRisk(data: AppData, nowMillis: Long, zone: TimeZone, quietApplies: Boolean = true): Boolean {
         if (!data.settings.streakReminder) return false
         val now = nowMillis.toLocalDateTime(zone)
         val day = Streaks.streakDay(now)
         if (day in data.activeDays || day in data.restDays) return false
-        if (data.settings.quietHours.contains(now.time)) return false
+        if (quietApplies && data.settings.quietHours.contains(now.time)) return false
         return data.streakAt(now).current > 0
     }
 
@@ -77,12 +77,13 @@ object Nudges {
 
     /**
      * The week behind [nowMillis] (the last seven days, today included): tasks finished, focus minutes and the category with
-     * the most finished tasks. Null when it is switched off, it is quiet hours, or the week was empty (no scolding).
+     * the most finished tasks. Null when it is switched off, it is quiet hours (unless [quietApplies] is false, when the shared scheduler has already
+     * moved delivery out of them), or the week was empty (no scolding).
      */
-    fun weeklyRecap(data: AppData, nowMillis: Long, zone: TimeZone): NudgeText? {
+    fun weeklyRecap(data: AppData, nowMillis: Long, zone: TimeZone, quietApplies: Boolean = true): NudgeText? {
         if (!data.settings.weeklyRecap) return null
         val now = nowMillis.toLocalDateTime(zone)
-        if (data.settings.quietHours.contains(now.time)) return null
+        if (quietApplies && data.settings.quietHours.contains(now.time)) return null
         val start: LocalDate = now.date.plus(DatePeriod(days = -6))
         val s = Reviews.summary(start, data.tasks, data.focusHistory, data.series.mapNotNull { it.asHabit() }, zone)
         if (s.tasksDone == 0 && s.focusMinutes == 0) return null

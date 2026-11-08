@@ -343,6 +343,8 @@ fun App(
     onMintChanged: ((MintData) -> Unit)? = null,
     /** Called after every change to Home's records (the Android app keeps Home's reminders up to date). Only the host's own reminder code looks inside; nothing is sent anywhere. */
     onHomeChanged: ((HomeData) -> Unit)? = null,
+    /** Called after every change to Link's records (the Android app keeps Link's reminders up to date). Only the host's own reminder code looks inside; nothing is sent anywhere. */
+    onLinkChanged: ((LinkData) -> Unit)? = null,
     /** Called when the app switches between the light and dark colours, so the host can match the system bar icons. */
     onDark: ((Boolean) -> Unit)? = null,
 ) {
@@ -382,6 +384,11 @@ fun App(
     if (onHomeChanged != null) DisposableEffect(model.home) {
         val stop = model.home.observe(onHomeChanged)
         onHomeChanged(model.home.data)
+        onDispose(stop)
+    }
+    if (onLinkChanged != null) DisposableEffect(model.link) {
+        val stop = model.link.observe(onLinkChanged)
+        onLinkChanged(model.link.data)
         onDispose(stop)
     }
     if (externalChanges != null) LaunchedEffect(externalChanges) {

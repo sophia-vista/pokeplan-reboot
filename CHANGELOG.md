@@ -9,6 +9,15 @@ release always has the newest merge).
 
 - **PLAN's and CARE's rewards settle under their own ledger event ids** (REP-014, `DATA_AND_MIGRATIONS.md` section 7.3.0 step 2). A finished task (`plan:task:<id>:complete`), a recurring task's day, a step, a milestone, a weekly review, a mini-quest, a welcome-back gift, a focus session or Magic Guard egg (`plan:focus:<egg id>`), a Care moment (`care:<kind>:<day>:<count>`), a befriended visitor and a Shop purchase now leave a `LedgerNote` like HEAL, MINT, HOME and LINK already did, so the database ledger says why the balance and the Bag moved instead of one net change per save. The notes hold only opaque ids and amounts, never a task title. No number changed (`RewardRules.VERSION` stays 20). Tested on the JVM (`PlanCareLedgerNotesTest`).
 
+## 0.149.0
+
+Link reminders, and the streak reminder and weekly recap on the shared scheduler (REP-014, REP-011). No reward number changes (`RewardRules.VERSION` stays 20).
+
+- **Link can remind you** (`LinkReminders`, `LinkReminderAdapter`, Link → Settings → Reminders; LINK.md section 5). **Off until you turn it on**, and then each important date (the day itself, or 1, 3 or 7 days before) and each follow-up (on its day) is switched on by itself. One reminder each, never repeated and never for something late; a date that has passed, a follow-up that is done, cancelled or moved, or a record you deleted asks nothing, and a follow-up you hand to Plan is Plan's to remind about. The lock screen always says "You have an upcoming reminder"; after unlocking it shows the date's or follow-up's title only if you turned on "Name it", never a person, a note or a number. A follow-up's notification has Done (its own completion, paid once as in Link) and Tomorrow; a date's has Tomorrow. Quiet hours and focus sessions still hold it back, and dismissing one changes nothing.
+- **The streak reminder and the Sunday recap go through the same scheduler** as every other reminder (Plan's `PlanReminderAdapter`), instead of alarms of their own. The words, the channel and the settings are unchanged; a nudge held back by a focus session or quiet hours until the next day is now dropped instead of arriving a day late, and the separate "after the session" alarms are gone. Alarms an older version set are cancelled on the next planning.
+- **A nightly refresh** (one inexact alarm at 04:00) plans every reminder again, because the planner only looks three days ahead and used to be re-run only when the app opened or another alarm fired. A "a week before" birthday, or a warranty two months out, no longer depends on opening the app in the right three days.
+- Tests: `LinkRemindersTest` (10) and `PlanNudgeRemindersTest` (6). `docs/pokelife/evidence/REP-014-link-reminders.md`.
+
 ## 0.148.0
 
 World: expedition Pokémon experience (WORLD.md 5.2), and a fix for Guardians that could not be seen. `RewardRules.VERSION` stays 20 (World pays outside the reward engine).
