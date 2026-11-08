@@ -21,10 +21,10 @@ class NotebookTest {
     @Test
     fun regionalJobsAreInRangeAndOnlyOpenWhereTheStoryAllows() {
         val regional = Missions.all.filter { it.id.startsWith("kanto-") || it.id.startsWith("johto-") || it.id.startsWith("hoenn-") || it.id.startsWith("sinnoh-") }
-        assertEquals(32, regional.size)
+        assertEquals(40, regional.size)
         for (m in regional) {
             val d = Dungeons.byId(m.dungeonId!!)!!
-            assertTrue(m.floor in 1..d.floors, "${m.id} floor within ${d.name}")
+            assertTrue(m.kind == MissionKind.INVESTIGATION || m.floor in 1..d.floors, "${m.id} floor within ${d.name}")
             assertTrue(m.needs >= d.needs, "${m.id} rank is not below the dungeon's")
         }
         // A fresh save has the board shut. With everything cleared and a high rank the regional jobs are open; with a high rank alone, the ones

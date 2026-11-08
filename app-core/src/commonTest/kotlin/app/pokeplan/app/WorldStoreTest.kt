@@ -52,7 +52,7 @@ class WorldStoreTest {
         val partner = store.data.player.pokemon.filter { it.inParty }.maxOfOrNull { it.level }
         clock.millis += 6L * 60 * 60 * 1000
         val report = assertNotNull(store.worldSettle())
-        val floors = report.events.count { it is app.pokeplan.world.WorldEvent.FloorCleared }
+        val floors = report.events.count { it is app.pokeplan.world.WorldEvent.FloorCleared || it is app.pokeplan.world.WorldEvent.Setback }
         assertTrue(floors > 0)
         // Each member got all of it (not a share), through the Pokémon's own rule; the Pokémon outside the team got nothing.
         listOf(one, two, three).forEach { assertEquals(before.getValue(it).gainXp(floors * CandyRules.XP_PER_FLOOR, partner ?: before.getValue(it).level), mon(it), "member $it") }

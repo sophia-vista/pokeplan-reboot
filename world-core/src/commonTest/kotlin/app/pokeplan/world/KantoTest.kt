@@ -90,13 +90,15 @@ class KantoTest {
     fun facingMewtwoFinishesKantoOnceAndNotTheHomeStory() {
         val d = Dungeons.byId("cerulean-cave")!!
         val mon = Hatching.create("a", HatchOption(25, Dex.defaultForm(25).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(1)).copy(level = 100)
-        var data = WorldData(xp = 1_000_000, clears = kanto.associate { it.id to 1 }).assign(1, listOf("a"))!!.start(1, d.id, 0L)!!
+        // A full team of level 100: Mewtwo's cave asks for real power (WORLD.md 3.6), and a lone Pokémon would turn back.
+        val team = listOf(mon, mon.copy(id = "b"), mon.copy(id = "c"), mon.copy(id = "d"))
+        var data = WorldData(xp = 1_000_000, clears = kanto.associate { it.id to 1 }).assign(1, team.map { it.id })!!.start(1, d.id, 0L)!!
         var faced = 0
         var now = 0L
         // At most 12 hours of away time count at once, so settle in steps until the top floor is reached.
         repeat(8) {
             now += WorldSim.MAX_AWAY_MILLIS
-            val report = WorldSim.settle(data, listOf(mon), now)
+            val report = WorldSim.settle(data, team, now)
             data = report.data
             faced += report.events.count { it == WorldEvent.LayerGuardianFaced(WorldLayer.KANTO) }
         }

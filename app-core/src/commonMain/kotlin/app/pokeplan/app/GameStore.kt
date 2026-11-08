@@ -153,18 +153,14 @@ class GameStore(
      * One Poké balance (`PlayerState.coins`), written by the ledger (the live save turns a change of it into a ledger event, REP-014).
      * World's rules hold no balance: what they earn arrives as `WorldData.pokeEarned`, which is added to the coins here and cleared in the
      * same update, and the rules that spend are given the balance and charged by the store (`worldUpgrade`, `worldBuyCandy`, `worldTrain`).
-     * What was added is kept in [worldPokeEarned] for the reward log until [worldPaid] writes it.
+     * [worldPay] reads `pokeEarned` itself, in the same update, for the reward log and the ledger note.
      */
     private fun foldPoke(before: AppData, after: AppData): AppData {
         val migrated = if (before.pokeMigration == null || after.pokeMigration == null) migratePoke(after) else after
         val earned = migrated.world.pokeEarned
         if (earned == 0) return migrated
-        worldPokeEarned += earned
         return migrated.copy(player = migrated.player.copy(coins = migrated.player.coins + earned), world = migrated.world.copy(pokeEarned = 0))
     }
-
-    /** Poké World rules earned and the update added to the balance, until the reward log has it. */
-    private var worldPokeEarned = 0
 
     /**
      * Habits of an older save become recurring tasks with a frequency target (PLAN.md sections 5 and 11.2): same id, creation day,
@@ -312,8 +308,8 @@ class GameStore(
      * Notes what a module reward added to the Poké balance and the Bag, under the event's own id, so the database ledger can record the real event
      * (DATA_AND_MIGRATIONS.md section 7.3.0). [before] and [after] are the player's state around the change; a reward that added nothing leaves no note.
      */
-    private fun noted(before: AppData, after: AppData, id: String, module: String, ref: String, kind: String, at: Long): AppData {
-        val poke = (after.player.coins - before.player.coins).toLong()
+    private fun noted(before: AppData, after: AppData, id: String, module: String, ref: String, kind: String, at: Long, extraPoke: Int = 0): AppData {
+        val poke = (after.player.coins - before.player.coins + extraPoke).toLong()
         val items = (before.player.inventory.counts.keys + after.player.inventory.counts.keys)
             .associateWith { (after.player.inventory[it] - before.player.inventory[it]).toLong() }.filterValues { it != 0L }
         if (poke == 0L && items.isEmpty()) return after
@@ -1474,30 +1470,31 @@ class GameStore(
         if (kept !== data.world) update { it.copy(world = kept) }
         val before = data.world
         val report = WorldSim.settle(before, data.player.pokemon, nowMillis)
-        if (report.isEmpty) { worldLegends(); return null }
-        update { it.copy(world = report.data) }
-        worldMemberXp(report)
-        worldSummary = (worldSummary ?: ReportSummary()) + ReportSummary.of(report, report.data.xp - before.xp, CandyRules.XP_PER_FLOOR)
-        worldPaid("World: exploring", before)
-        worldGuardian()
-        worldLegends()
-        return report
-    }
-
-    /**
-     * Every Pokémon that climbed floors in [report] gets the full experience for each (WORLD.md 5.2): [CandyRules.XP_PER_FLOOR] a floor,
-     * not divided among the team. It goes through the Pokémon's own progression (candy progress and level), and the floors were counted
-     * by the same settle that moved the team's cursor, so a floor is paid once however often the app settles.
-     */
-    private fun worldMemberXp(report: WorldReport) {
-        if (report.memberFloors.isEmpty()) return
-        update { d ->
+        if (report.isEmpty) {
+            // A clock set back moves a team's settle point to now without any floor (WORLD.md 3.1): keep that, or the team waits for the clock to catch up.
+            if (report.data.teams != before.teams) update { it.copy(world = it.world.copy(teams = report.data.teams)) }
+            worldLegends()
+            return null
+        }
+        // One write carries the floors, the members' experience, the Poké, the items in the Bag and the ledger note (event id below), so the database
+        // settles this climb as one event of its own. The id names each team's expedition and the floors it covers; the cursor moves with them, so a
+        // floor has one id and is never settled twice.
+        val id = "world:expedition:" + report.perTeam.keys.sorted().joinToString("+") { t ->
+            val from = before.team(t)?.expedition
+            "$t.${from?.startedAt}.${from?.floorsClimbed}-${report.data.team(t)?.expedition?.floorsClimbed}"
+        }
+        worldPay("World: exploring", id, "expedition", "expedition") { d ->
             val partner = d.player.pokemon.filter { it.inParty }.maxOfOrNull { it.level }
-            d.copy(player = d.player.copy(pokemon = d.player.pokemon.map { p ->
+            d.copy(world = report.data, player = d.player.copy(pokemon = d.player.pokemon.map { p ->
                 val floors = report.memberFloors[p.id] ?: return@map p
+                // Every Pokémon that climbed floors gets the full experience for each (WORLD.md 5.2): [CandyRules.XP_PER_FLOOR] a floor, not divided among the team.
                 p.gainXp(floors * CandyRules.XP_PER_FLOOR, partner ?: p.level)
             }))
         }
+        worldSummary = (worldSummary ?: ReportSummary()) + ReportSummary.of(report, report.data.xp - before.xp, CandyRules.XP_PER_FLOOR)
+        worldGuardian()
+        worldLegends()
+        return report
     }
 
     /** The story's end: the Guardian, Primal Dialga, joins the Guardian collection once (docs/world.md, section 15). The mastery bonus is [app.pokeplan.world.Story.GUARDIAN_BONUS]. */
@@ -1525,25 +1522,35 @@ class GameStore(
     }
 
     /**
-     * Writes what World paid between [before] and now (Poké and items) into the reward log, so World's rewards have the same record as
-     * every other source, then moves the items into the shared Bag (one inventory, no staging area). Entries from the same source
-     * within ten minutes are merged, so a team that climbs while the screen is open does not flood the log.
+     * Applies a World change that pays (floors, a job, research, a treasure box) as ONE write: the change, the Poké it earned
+     * (`WorldData.pokeEarned`, folded into the balance by [update]), the items World staged moved into the shared Bag, the line in the reward log
+     * and a [LedgerNote] under [eventId], so the database ledger records this event by its own stable id instead of a net change
+     * (DATA_AND_MIGRATIONS.md section 7.3.0; WORLD.md 3.1 and 6). Entries of the same [source] within ten minutes share a log line, so a team that
+     * climbs while the screen is open does not flood the log.
      */
-    private fun worldPaid(source: String, before: app.pokeplan.world.WorldData) {
-        val after = data.world
-        val paid = mutableListOf<Reward>()
-        worldPokeEarned.also { worldPokeEarned = 0 }.takeIf { it > 0 }?.let { paid += Reward.Poke(it) }
-        after.items.forEach { (id, n) -> (n - (before.items[id] ?: 0)).takeIf { it > 0 }?.let { paid += Reward.ItemDrop(id, it) } }
-        if (paid.isNotEmpty()) update { d ->
-            val last = d.rewardLog.lastOrNull()
-            val merged = if (last != null && last.source == source && nowMillis - last.atMillis < 10 * 60_000L) {
-                val poke = (last.rewards + paid).filterIsInstance<Reward.Poke>().sumOf { it.amount }
-                val items = (last.rewards + paid).filterIsInstance<Reward.ItemDrop>().groupBy { it.itemId }.map { (id, l) -> Reward.ItemDrop(id, l.sumOf { it.amount }) }
-                d.rewardLog.dropLast(1) + last.copy(atMillis = nowMillis, rewards = listOfNotNull(poke.takeIf { it > 0 }?.let { Reward.Poke(it) }) + items)
-            } else (d.rewardLog + RewardEntry(nowMillis, source, paid, seen = true)).takeLast(LOG_SIZE)
-            d.copy(rewardLog = merged)
+    private fun worldPay(source: String, eventId: String, ref: String, kind: String, change: (AppData) -> AppData) {
+        update { d ->
+            val changed = change(d)
+            val earned = changed.world.pokeEarned - d.world.pokeEarned
+            val staged = changed.world.items
+            val paid = mutableListOf<Reward>()
+            earned.takeIf { it > 0 }?.let { paid += Reward.Poke(it) }
+            staged.forEach { (id, n) -> (n - (d.world.items[id] ?: 0)).takeIf { it > 0 }?.let { paid += Reward.ItemDrop(id, it) } }
+            // The staging area is emptied into the Bag in the same write (one inventory).
+            val moved = changed.copy(
+                player = changed.player.copy(inventory = staged.entries.fold(changed.player.inventory) { bag, (id, n) -> bag.add(id, n) }),
+                world = changed.world.copy(items = emptyMap()),
+            )
+            val logged = if (paid.isEmpty()) moved else {
+                val last = moved.rewardLog.lastOrNull()
+                moved.copy(rewardLog = if (last != null && last.source == source && nowMillis - last.atMillis < 10 * 60_000L) {
+                    val poke = (last.rewards + paid).filterIsInstance<Reward.Poke>().sumOf { it.amount }
+                    val items = (last.rewards + paid).filterIsInstance<Reward.ItemDrop>().groupBy { it.itemId }.map { (id, l) -> Reward.ItemDrop(id, l.sumOf { it.amount }) }
+                    moved.rewardLog.dropLast(1) + last.copy(atMillis = nowMillis, rewards = listOfNotNull(poke.takeIf { it > 0 }?.let { Reward.Poke(it) }) + items)
+                } else (moved.rewardLog + RewardEntry(nowMillis, source, paid, seen = true)).takeLast(LOG_SIZE))
+            }
+            noted(d, logged, eventId, "WORLD", ref, kind, nowMillis, extraPoke = earned)
         }
-        worldClaimItems()
     }
 
     /**
@@ -1630,10 +1637,8 @@ class GameStore(
     /** Answers the World choice [id] with [option] (0 or 1), after settling what is due; false when there is no such choice. */
     fun worldChoose(id: String, option: Int): Boolean {
         worldSettle()
-        val before = data.world
         val next = data.world.resolveChoice(id, option, nowMillis) ?: return false
-        update { it.copy(world = next) }
-        worldPaid("World: exploring", before)
+        worldPay("World: exploring", "world:choice:$id", id, "choice") { it.copy(world = next) }
         return true
     }
 
@@ -1704,10 +1709,11 @@ class GameStore(
         worldSettle()
         val give = Missions.byId(id)?.takeIf { it.give != null }
         if (give != null && !data.player.inventory.has(give.give!!, give.giveCount)) return false
-        val before = data.world
-        val next = before.copy(lastSeenAt = nowMillis).claimMission(id, utcOffsetMillis) ?: return false
-        update { d -> d.copy(world = next, player = if (give != null) d.player.copy(inventory = d.player.inventory.remove(give.give!!, give.giveCount)) else d.player) }
-        worldPaid("World: jobs", before)
+        val next = data.world.copy(lastSeenAt = nowMillis).claimMission(id, utcOffsetMillis) ?: return false
+        // A job can come back on another day, so the day (in the player's zone) is part of its event id.
+        worldPay("World: jobs", "world:job:$id:${(nowMillis + utcOffsetMillis).floorDiv(86_400_000L)}", id, "job") { d ->
+            d.copy(world = next, player = if (give != null) d.player.copy(inventory = d.player.inventory.remove(give.give!!, give.giveCount)) else d.player)
+        }
         return true
     }
 
@@ -1723,10 +1729,8 @@ class GameStore(
     /** Claims the World research milestone at [species] discovered species. */
     fun worldClaimResearch(species: Int): Boolean {
         worldSettle()
-        val before = data.world
-        val next = before.claimResearch(species) ?: return false
-        update { it.copy(world = next) }
-        worldPaid("World: research", before)
+        val next = data.world.claimResearch(species) ?: return false
+        worldPay("World: research", "world:research:$species", "research:$species", "research") { it.copy(world = next) }
         return true
     }
 
@@ -1777,14 +1781,12 @@ class GameStore(
         repeat(1 + tier) { add(Items.berry(listOf("sweet", "dry", "sour", "spicy", "bitter").random(random)), 1) }
         // A Rare Candy: 15% from a silver box, 35% from a gold one (the simulation showed the first guesses of 60% and 175% paid hundreds a year).
         if (tier >= 2 && random.nextInt(100) < (if (tier >= 3) 35 else 15)) add(Items.RARE_CANDY, 1)
-        val before = data.world
-        update { d ->
+        worldPay("World: treasure", "world:treasure:$tier:$nowMillis", "treasure:$tier", "treasure") { d ->
             d.copy(world = d.world.copy(
                 treasure = d.world.treasure + (tier to d.world.treasure.getValue(tier) - 1),
                 items = found.entries.fold(d.world.items) { m, (id, n) -> m + (id to (m[id] ?: 0) + n) },
             ))
         }
-        worldPaid("World: treasure", before)
         return found
     }
 

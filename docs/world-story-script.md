@@ -208,37 +208,661 @@ Pokémon Square, a rumour about a team that arrived before the disasters, and a 
 
 *Summary:* A Pokémon with no memory of arriving is found, and the first rescue becomes the beginning of a team.
 
-(no scenes yet: the chapter plays its title card)
+#### Scene: The voice in the grass  
+`rescue-1-voice` · dialogue · background meadow · cast: {buddy}, Mew (Mew)
+
+- {buddy} appears
+- Mew appears
+
+*The Frontier's forest disappears in a wash of green light. The team lands in soft grass beneath an unfamiliar sky.*
+
+**{buddy}** (surprised): That was not a normal portal.
+
+*Mew floats upside down in front of them, looking delighted.*
+
+**Mew** (happy): Mew!
+
+**{buddy}** (worried): You brought us somewhere without asking.
+
+*Mew tilts its head, then points toward the distant settlement.*
+
+**{buddy}** (normal): Is this a place you want us to see?
+
+*Mew nods. The air shimmers. For a heartbeat, the team sees two versions of the same landscape.*
+
+*One is quiet and empty. The other is full of Pokémon hurrying through a busy day.*
+
+**{buddy}** (surprised): A memory?
+
+*Mew circles them. The image settles into the busy version.*
+
+**{buddy}** (determined): All right. We'll look around. But you're explaining this when we get back.
+
+*Mew gives a cheerful cry and vanishes into the trees.*
+
+- Mew cries out
+- Mew leaves
+#### Scene: Pokémon Square  
+`rescue-1-square` · stage · background city · cast: {buddy}, Kecleon (Kecleon), Gulpin (Gulpin), Persian (Persian), Wigglytuff (Wigglytuff)
+
+- Kecleon appears
+- Gulpin appears
+- Persian appears
+- Wigglytuff appears
+
+*Pokémon Square is busy. Kecleon tends his shop, Gulpin arranges items outside his stall, and several Pokémon argue over the notice board.*
+
+- {buddy} appears
+- {buddy} walks
+
+**{buddy}** (happy): Welcome to Pokémon Square! It's not much, but you'll get used to it.
+
+**Kecleon** (happy): Welcome, welcome! Looking for anything? Supplies? A bargain? A very reasonable bargain?
+
+**{buddy}** (normal): We just got here, Kecleon.
+
+**Kecleon** (surprised): And? Looking is free!
+
+*Gulpin chuckles from his stall.*
+
+**Gulpin** (happy): Let them breathe, Kecleon. They haven't even had lunch.
+
+**{buddy}** (worried): Actually... that's a good point. Have you eaten?
+
+*You shake your head.*
+
+**{buddy}** (surprised): You haven't? Oh. Right. We should fix that.
+
+*The square's request board catches your eye. A small Caterpie is standing in front of it, looking increasingly distressed.*
+
+#### Scene: A tiny rescue  
+`rescue-1-caterpie` · dialogue · background meadow · cast: {buddy}, Caterpie (Caterpie)
+
+- {buddy} appears
+- Caterpie appears
+
+**Caterpie** (worried): Excuse me... Are you a rescue team?
+
+**{buddy}** (surprised): Us? Well, not exactly. We're...
+
+**Caterpie** (worried): My friend Metapod went into Tiny Woods and hasn't come back!
+
+*Caterpie's antennae droop.*
+
+**Caterpie** (worried): I know it's not very far. But what if something happened? I don't know what to do.
+
+*{buddy} looks at you. This is not the kind of day either of you expected.*
+
+**{buddy}** (determined): We'll go find them.
+
+**Caterpie** (surprised): You will?
+
+**{buddy}** (happy): Of course. That's what we're here for. ...I think.
+
+*{buddy} gives you a quick, uncertain glance.*
+
+**{buddy}** (normal): Come on. Let's not keep Caterpie waiting.
+
+#### Scene: Tiny Woods  
+`rescue-1-tiny-woods` · dungeon · dungeon tiny-woods · cast: {buddy}, Metapod (Metapod)
+
+- {buddy} appears
+- {buddy} walks
+
+*Sunlight filters through the canopy. The woods are peaceful, but unfamiliar sounds echo between the trees.*
+
+*Near a bend in the path, a small shape is wedged between two roots.*
+
+- Metapod appears
+
+**Metapod** (worried): ...Metapod.
+
+- {buddy} walks
+
+**{buddy}** (surprised): There you are! Caterpie's been worried sick!
+
+*The two of you help Metapod out. It wobbles, then settles.*
+
+**{buddy}** (happy): There. Not a scratch.
+
+**Metapod** (happy): Metapod!
+
+**{buddy}** (happy): I think that's a thank-you.
+
+*On the way back, {buddy} keeps glancing at you.*
+
+**{buddy}** (normal): You didn't hesitate back there.
+
+*{buddy} looks ahead.*
+
+**{buddy}** (happy): I think we're going to make a good team.
+
+#### Scene: A team takes shape  
+`rescue-1-team` · stage · background city · cast: {buddy}, Caterpie (Caterpie), Persian (Persian)
+
+- {buddy} appears
+- Caterpie appears
+
+*Back at the square, Caterpie is overjoyed to see Metapod.*
+
+**Caterpie** (joyous): Metapod! You're okay!
+
+*The two friends celebrate. Caterpie turns to you.*
+
+**Caterpie** (happy): Thank you! I won't forget this!
+
+*Persian, who has been watching from the square, approaches.*
+
+- Persian appears
+- Persian walks
+
+**Persian** (normal): A rescue completed without a team badge, a proper base, or even a plan. Hm.
+
+**{buddy}** (worried): We had a plan.
+
+**Persian** (normal): You followed a path into the woods and brought someone back.
+
+**{buddy}** (normal): ...A simple plan.
+
+**Persian** (happy): Still. Pokémon who help others are welcome here. If you intend to keep doing it, you should make it official.
+
+*Persian gestures toward an empty patch of land outside the square.*
+
+**Persian** (normal): There is a place you could use as a base. Nothing fancy. It will need work.
+
+**{buddy}** (surprised): A base? For us?
+
+**Persian** (happy): Every rescue team needs somewhere to return to.
+
+*{buddy} turns to you. The uncertainty has not entirely gone away, but there is a little excitement in their expression.*
+
+**{buddy}** (determined): What do you say? Shall we become a rescue team?
 
 ### Chapter 2: The World Needs Helping
 
 *Summary:* The team takes more requests as the disasters grow worse.
 
-(no scenes yet: the chapter plays its title card)
+#### Scene: The first morning at the base  
+`rescue-2-base` · dialogue · background meadow · cast: {buddy}
+
+- {buddy} appears
+
+*Morning light falls across the team's new base. It is small, a little dusty, and not particularly impressive.*
+
+**{buddy}** (happy): Our very own rescue base!
+
+*{buddy} steps inside. A little dust puffs into the air.*
+
+**{buddy}** (surprised): ...It needs some work.
+
+*{buddy} looks around, then grins.*
+
+**{buddy}** (happy): But it's ours.
+
+*Outside, the ground gives a faint shudder. A few pebbles tumble from the hillside.*
+
+- the screen shakes
+
+**{buddy}** (worried): Was that an earthquake?
+
+*The shaking stops.*
+
+**{buddy}** (normal): Maybe a small one. They've been happening more often lately.
+
+#### Scene: Whiscash's warning  
+`rescue-2-whiscash` · dialogue · background city · cast: {buddy}, Whiscash (Whiscash)
+
+- {buddy} appears
+- Whiscash appears
+
+*At the pond, Whiscash floats with his eyes half closed. He looks as though he has been waiting for someone to ask him a question.*
+
+**Whiscash** (happy): Wooo-hooo! A new rescue team! Come closer, young ones!
+
+**{buddy}** (normal): Hello, Whiscash. We wanted to ask about the earthquakes.
+
+**Whiscash** (normal): Ahhh. The ground has been restless. The mountains rumble, the seas swell, and even the quiet places have begun to tremble.
+
+**{buddy}** (worried): Is it going to get worse?
+
+**Whiscash** (normal): The world has its own rhythms. Sometimes they change. Sometimes they are warning us.
+
+*Whiscash opens one eye.*
+
+**Whiscash** (normal): There is an older tale about a rescue team that arrived shortly before the great disasters began.
+
+**{buddy}** (worried): So the team caused them?
+
+**Whiscash** (normal): That is what some Pokémon believed. It was easier to blame a newcomer than to admit that nobody understood what was happening.
+
+**{buddy}** (normal): Did the team leave?
+
+**Whiscash** (normal): They kept helping. That is the part worth remembering.
+
+#### Scene: The first signs  
+`rescue-2-disasters` · dungeon · dungeon mt-steel · cast: {buddy}
+
+- {buddy} appears
+- {buddy} walks
+
+*Across the region, disasters interrupt ordinary life.*
+
+*A sudden tremor cracks the floor of a cave. Diglett scrambles to safety.*
+
+- the screen shakes
+
+*A river swells without warning. Wooper and Quagsire help stranded Pokémon reach higher ground.*
+
+*A gust tears through a forest. Hoothoot cling to branches as leaves spiral through the air.*
+
+**{buddy}** (worried): These aren't ordinary accidents.
+
+**{buddy}** (determined): We'll keep taking requests. If Pokémon are in trouble, we can at least help them.
+
+*The team earns a reputation. Requests arrive faster than they can be pinned to the board.*
 
 ### Chapter 3: The Fugitive
 
 *Summary:* A rumour turns the square against the team.
 
-(no scenes yet: the chapter plays its title card)
+#### Scene: The dream  
+`rescue-3-dream` · dialogue · background dampcave · cast: Gardevoir (Gardevoir)
 
+- Gardevoir appears
+
+*You stand in a dark place. A Gardevoir appears, her outline faint and distant.*
+
+**Gardevoir** (worried): Please... You must leave.
+
+*The ground trembles. The darkness ripples.*
+
+**Gardevoir** (sad): They will come for you. They won't understand.
+
+*She reaches toward you, but the dream begins to break apart.*
+
+**Gardevoir** (worried): I'm sorry. I couldn't protect you.
+
+*You wake.*
+
+#### Scene: Gengar's story  
+`rescue-3-gengar` · stage · background city · cast: {buddy}, Gengar (Gengar), Ekans (Ekans), Medicham (Medicham)
+
+- Gengar appears
+- Ekans appears
+- Medicham appears
+
+*Gengar has gathered a small crowd near the square's notice board.*
+
+**Gengar** (happy): Oh, don't mind me. I was just telling a little story.
+
+**Ekans** (happy): The old omen? The one about a strange team arriving before the disasters?
+
+**Gengar** (happy): That's the one! The tale says a newcomer appears whenever the world is about to turn upside down.
+
+**Medicham** (worried): And you think the Rescue Team is that omen?
+
+**Gengar** (normal): I didn't say that. I only said it's an interesting coincidence.
+
+*Gengar notices you.*
+
+- {buddy} appears
+- {buddy} walks
+- Gengar: !
+
+**Gengar** (surprised): Ah! And here is the visiting team. You arrived just as the rumors began.
+
+**{buddy}** (angry): We arrived because Mew brought us here. We didn't cause anything.
+
+**Gengar** (normal): I never said you did. I only wonder why so many unusual things happen around newcomers.
+
+**{buddy}** (determined): Then investigate the facts. Don't turn frightened Pokémon against a team that is trying to help.
+
+**Gengar** (happy): If you say so.
+
+*Gengar turns away, smiling.*
+
+- Gengar walks
+- Gengar leaves
+#### Scene: The square turns  
+`rescue-3-exile` · stage · background city · cast: {buddy}, Alakazam (Alakazam), Charizard (Charizard), Tyranitar (Tyranitar)
+
+- {buddy} appears
+
+*Whispers follow you through the square. Some Pokémon avoid your eyes. Others stare openly.*
+
+**{buddy}** (worried): They really believe him...
+
+*Alakazam approaches with Charizard and Tyranitar.*
+
+- Alakazam appears
+- Charizard appears
+- Tyranitar appears
+
+**Alakazam** (normal): We have heard the rumors. We have also seen your team's work.
+
+**{buddy}** (worried): Then you know we didn't cause the disasters.
+
+**Alakazam** (normal): We know that there is no proof. But the square is frightened, and frightened Pokémon are not always reasonable.
+
+**Charizard** (angry): If you stay, this could turn ugly.
+
+**{buddy}** (angry): So we're supposed to leave?
+
+**Tyranitar** (normal): For now. Until we know more.
+
+*{buddy} looks at you, then back at the three rescuers.*
+
+**{buddy}** (sad): Fine. We'll go.
+
+*The two of you leave the square. Nobody follows.*
+
+- {buddy} walks
+- {buddy} leaves
 ### Chapter 4: Beyond the Village
 
 *Summary:* Branded as a danger, the team travels through harsh country with Absol.
 
-(no scenes yet: the chapter plays its title card)
+#### Scene: A stranger in the snow  
+`rescue-4-absol` · stage · background icecave · cast: {buddy}, Absol (Absol)
+
+- {buddy} appears
+- {buddy} walks
+
+*Snow falls over a forest of pale trees. The wind carries a low, distant rumble.*
+
+**{buddy}** (worried): I don't like this place. The snow is getting heavier.
+
+*A white shape watches from between the trees.*
+
+- Absol appears
+
+**Absol** (normal): You should turn back.
+
+**{buddy}** (surprised): Who are you?
+
+**Absol** (normal): Someone who has learned not to ignore warnings.
+
+**{buddy}** (angry): If you're here to tell us we're causing the disasters, save your breath.
+
+**Absol** (surprised): I never said that.
+
+*Absol steps into view.*
+
+- Absol walks
+
+**Absol** (normal): I can sense disasters before they happen. I have followed their signs from one region to another.
+
+**{buddy}** (worried): Then you know what's causing them?
+
+**Absol** (sad): No. Only that something is coming. And that Pokémon often blame the one who appears just before trouble begins.
+
+*Absol looks at you.*
+
+**Absol** (normal): I know what it is like to be mistaken for an omen. If you will allow it, I would like to travel with you.
+
+**{buddy}** (happy): You can join us. We could use someone who knows what to look for.
+
+#### Scene: A hard night  
+`rescue-4-camp` · dialogue · background mountain · cast: {buddy}, Absol (Absol)
+
+- {buddy} appears
+- Absol appears
+
+*The three of you shelter beneath a rocky overhang. Wind howls outside.*
+
+**{buddy}** (sad): Do you think the others will ever believe us?
+
+**Absol** (normal): Some will. Some won't. You cannot build your life around convincing every Pokémon who misunderstands you.
+
+**{buddy}** (worried): That's easy to say when you're used to being alone.
+
+*Absol looks away.*
+
+**Absol** (sad): It is not easy. I simply learned that waiting for others to understand can become its own kind of prison.
+
+*There is a long pause. {buddy} nudges a berry toward Absol.*
+
+**{buddy}** (normal): You should eat. You look like you haven't had a proper meal in days.
+
+**Absol** (surprised): ...Thank you.
+
+*For the first time, Absol's expression softens.*
 
 ### Chapter 5: The Sky Is Falling
 
 *Summary:* The meteor, the legendary birds and Rayquaza.
 
-(no scenes yet: the chapter plays its title card)
+#### Scene: The mountain's message  
+`rescue-5-ninetales` · stage · background mountain · cast: {buddy}, Ninetales (Ninetales), Alakazam (Alakazam)
+
+- {buddy} appears
+- Ninetales appears
+
+*Atop a remote mountain, Ninetales watches the clouds move below.*
+
+**Ninetales** (normal): So. The one from the old tale has come.
+
+**{buddy}** (worried): You know about the story?
+
+**Ninetales** (normal): I know what happened. A curse was laid upon a Pokémon long ago. A Gardevoir gave everything to protect her partner.
+
+*Ninetales turns toward you.*
+
+**Ninetales** (normal): But the tale was never a verdict. It was a warning about how easily fear becomes cruelty.
+
+**{buddy}** (angry): Then tell everyone! Tell them we didn't cause this!
+
+**Ninetales** (sad): They must learn it for themselves.
+
+*The sky darkens. A distant flash lights the clouds.*
+
+- a flash
+
+**Ninetales** (worried): The disasters are not the work of one Pokémon. Something is falling from the sky.
+
+#### Scene: The legendary birds  
+`rescue-5-birds` · cinematic · background thunderplains · cast: {buddy}, Articuno (Articuno), Zapdos (Zapdos), Moltres (Moltres)
+
+- {buddy} appears
+
+*The air turns bitterly cold. A shadow sweeps across the snow.*
+
+- Articuno appears
+- Articuno cries out
+
+**Articuno** (angry): Who trespasses upon my mountain?
+
+**{buddy}** (worried): We need to reach the sky. Something is coming.
+
+**Articuno** (angry): The mountain is restless. The air is disturbed. I will not allow strangers to pass.
+
+*Lightning splits the clouds. Zapdos descends onto a nearby ridge.*
+
+- Zapdos appears
+- Zapdos cries out
+- a flash
+
+**Zapdos** (angry): Enough! The whole sky is crackling. I can feel it in my wings!
+
+*Moltres appears in a burst of heat.*
+
+- Moltres appears
+- Moltres cries out
+- the screen shakes
+
+**Moltres** (angry): And my flames have not burned steadily for days.
+
+*The three birds glare at one another.*
+
+**{buddy}** (worried): You're all feeling the same thing. Whatever is coming is affecting the whole world!
+
+*Articuno studies the distant sky. For a moment, the anger gives way to concern.*
+
+**Articuno** (normal): Then prove it. Show us what you have seen.
+
+#### Scene: The falling star  
+`rescue-5-meteor` · cinematic · background mountain · cast: {buddy}, Absol (Absol), Rayquaza (Rayquaza)
+
+- {buddy} appears
+- Absol appears
+
+*A burning point appears beyond the clouds. It grows brighter, larger, and impossibly close.*
+
+**{buddy}** (surprised): That's no ordinary star...
+
+**Absol** (worried): The disasters. The tremors. The strange weather. They were warnings.
+
+*The sky tears with a streak of fire.*
+
+- a flash
+- the screen shakes
+- Rayquaza appears
+- Rayquaza cries out
+
+**Rayquaza** (angry): Who summons me to the heavens?
+
+**{buddy}** (determined): We need your help. A meteor is on its way!
+
+**Rayquaza** (angry): I guard the skies. I know what approaches them.
+
+**{buddy}** (worried): Then you know it will destroy everything!
+
+*Rayquaza looks toward the approaching meteor.*
+
+**Rayquaza** (normal): I will not let it pass.
+
+#### Scene: A path through the clouds  
+`rescue-5-ascent` · dungeon · dungeon sky-tower · cast: {buddy}, Absol (Absol)
+
+- {buddy} appears
+- {buddy} walks
+- Absol appears
+- Absol walks
+
+*The climb is exhausting. The air thins, the wind grows sharp, and the world below becomes a patchwork of clouds and distant mountains.*
+
+**{buddy}** (worried): I thought the sky would be... friendlier.
+
+**Absol** (normal): It is not a place that was made for walking.
+
+**{buddy}** (happy): You could have mentioned that before we started.
+
+**Absol** (normal): You would have come anyway.
+
+*{buddy} pauses, then laughs despite the exhaustion.*
+
+**{buddy}** (happy): ...Yeah. Probably.
+
+#### Scene: Rayquaza's decision  
+`rescue-5-rayquaza` · cinematic · dungeon sky-tower · cast: {buddy}, Rayquaza (Rayquaza)
+
+- {buddy} appears
+
+*At the summit, Rayquaza coils above the clouds. The meteor burns across the heavens.*
+
+- Rayquaza appears
+
+**Rayquaza** (normal): You have climbed far for a request that may cost you everything.
+
+**{buddy}** (determined): We didn't come this far to watch the world end.
+
+**Rayquaza** (normal): Brave words. But bravery does not make you invulnerable.
+
+*Rayquaza turns toward the meteor.*
+
+**Rayquaza** (determined): Stand back.
+
+*Green light gathers around Rayquaza. The sky shakes. A brilliant beam strikes the meteor, splitting it into blazing fragments.*
+
+- a flash
+- the screen shakes
+- Rayquaza cries out
+
+*The largest pieces burn away high above the clouds. The shockwave rolls across the world.*
+
+**{buddy}** (surprised): You did it...
+
+**Rayquaza** (normal): The danger has passed. For now.
+
+*Rayquaza looks down at the two small Pokémon before it.*
+
+**Rayquaza** (normal): You did not come seeking power. You came because others needed help. Remember that when the world begins to praise you.
 
 ### Chapter 6: A Place to Return To
 
 *Summary:* The square learns the truth, and the team has a home.
 
-(no scenes yet: the chapter plays its title card)
+#### Scene: The square again  
+`rescue-6-return` · stage · background city · cast: {buddy}, Alakazam (Alakazam), Charizard (Charizard), Tyranitar (Tyranitar), Gengar (Gengar)
+
+- {buddy} appears
+- Alakazam appears
+- Charizard appears
+- Tyranitar appears
+- Gengar appears
+
+*The square falls quiet as the team approaches. Alakazam steps forward.*
+
+**Alakazam** (sad): We owe you an apology.
+
+**Charizard** (sad): We should have listened.
+
+**Tyranitar** (normal): You saved us, even after we turned you away.
+
+**{buddy}** (normal): We didn't do it so you'd owe us anything.
+
+*Gengar edges away from the crowd.*
+
+- Gengar walks
+
+**{buddy}** (angry): And you. You started all of this.
+
+**Gengar** (normal): I told a story. Pokémon believed what they wanted to believe.
+
+**Alakazam** (angry): You used their fear for your own amusement.
+
+**Gengar** (normal): Hmph.
+
+*Gengar slips away before anyone can stop him.*
+
+- Gengar leaves
+
+**{buddy}** (sad): I don't think he'll ever apologize.
+
+**Alakazam** (normal): Perhaps not. But the rest of us can do better.
+
+#### Scene: Back at the base  
+`rescue-6-home` · stage · background meadow · cast: {buddy}, Absol (Absol), Caterpie (Caterpie)
+
+- {buddy} appears
+- Absol appears
+
+*The base is still small. The roof still needs work. But someone has left fresh berries by the entrance.*
+
+- Caterpie appears
+- Caterpie walks
+
+**Caterpie** (joyous): You're back!
+
+**{buddy}** (happy): We are.
+
+**Caterpie** (happy): I told everyone you'd come back!
+
+*Absol watches the two of you from the doorway.*
+
+**Absol** (normal): You have a place here now.
+
+**{buddy}** (happy): We do.
+
+*{buddy} looks at you.*
+
+**{buddy}** (normal): Funny. At first, I thought we were just helping you figure out where you came from.
+
+*They glance toward the request board.*
+
+**{buddy}** (happy): I think we found something else along the way.
+
+*Outside, another request arrives.*
 
 ## Explorers
 
@@ -248,49 +872,788 @@ Treasure Town, the Exploration Guild and a thief of time.
 
 *Summary:* A ring of light drops the team on a beach beside Treasure Town.
 
-(no scenes yet: the chapter plays its title card)
+#### Scene: Washed ashore  
+`explorers-1-beach` · stage · background beach · cast: {buddy}, Koffing (Koffing)
+
+*Waves roll over the shore. A ring of light closes above the water. The team lands on the sand in a tangle of limbs and startled cries.*
+
+- {buddy} appears
+
+**{buddy}** (surprised): Hoopa could have warned us about the landing!
+
+*The ring shrinks to a glowing speck and disappears.*
+
+**{buddy}** (worried): We are definitely not on the Frontier coast.
+
+*The beach stretches toward a town. A pair of Koffing drift past, snickering, with a small satchel between them.*
+
+- Koffing appears
+- Koffing walks
+
+**{buddy}** (normal): At least the locals are familiar.
+
+*The Koffing notice the team and hurry toward the rocks.*
+
+- Koffing: !
+- Koffing walks
+- Koffing leaves
+
+**{buddy}** (angry): Hey! You two! Give that back!
+
+*The Koffing flee with a small object. {buddy} starts after them, then looks back at you.*
+
+- {buddy} walks
+
+**{buddy}** (worried): Sorry. I can't just let them get away. Can you stand?
+
+*The two of you pursue the thieves.*
+
+#### Scene: The stolen treasure  
+`explorers-1-cliff` · dungeon · dungeon waterfall-cave · cast: {buddy}, Koffing (Koffing), Zubat (Zubat)
+
+- {buddy} appears
+- {buddy} walks
+
+*The path narrows into a rocky passage. The Koffing hover near the exit, laughing.*
+
+- Koffing appears
+- Zubat appears
+
+**Koffing** (happy): Hehehe! Look what we found!
+
+**Zubat** (happy): Shiny! Shiny!
+
+**{buddy}** (angry): That's not yours! Give it back!
+
+**Koffing** (angry): Finders keepers!
+
+*The Koffing attack. After the encounter, they retreat and drop the stolen object.*
+
+- the screen shakes
+- Koffing walks
+- Koffing leaves
+- Zubat walks
+- Zubat leaves
+- {buddy} walks
+
+**{buddy}** (happy): Got it!
+
+*{buddy} picks up the item, then looks at you.*
+
+**{buddy}** (normal): You helped me back there. Thanks.
+
+*A faint ring-shaped mark glimmers in the wet sand where the portal closed.*
+
+**{buddy}** (surprised): Hoopa's mark. So the passage brought us here deliberately.
+
+**{buddy}** (normal): We should find the town and ask for directions. If the ring opens again, I want to know where it leads before we step through.
+
+#### Scene: Treasure Town  
+`explorers-1-town` · stage · background city · cast: {buddy}, Kecleon (Kecleon), Marill (Marill), Azurill (Azurill), Duskull (Duskull)
+
+*Treasure Town is lively. Shops line the square, and Pokémon come and go carrying supplies.*
+
+- {buddy} appears
+- Kecleon appears
+- Duskull appears
+
+**Kecleon** (happy): Welcome! Welcome! Fresh stock today!
+
+**{buddy}** (normal): We'll come back later, Kecleon.
+
+**Kecleon** (happy): I'll be here! Unless I sell out!
+
+*Marill and Azurill hurry past.*
+
+- Marill appears
+- Azurill appears
+- Marill walks
+- Azurill walks
+
+**Marill** (worried): Excuse us! We have to find someone!
+
+**Azurill** (worried): Hurry, Marill!
+
+*They disappear around a corner.*
+
+- Marill walks
+- Azurill walks
+- Marill leaves
+- Azurill leaves
+
+**{buddy}** (normal): Something's always happening here.
+
+*{buddy} points toward a building on the hill.*
+
+**{buddy}** (happy): That's the Exploration Guild. If anyone knows about that fragment, it'll be someone there.
+
+#### Scene: The guild's entrance  
+`explorers-1-guild` · stage · background city · cast: {buddy}, Diglett (Diglett), Chatot (Chatot), Wigglytuff (Wigglytuff)
+
+*The guild's entrance is guarded by a Diglett lookout. The two of you approach the grate.*
+
+- {buddy} appears
+- Diglett appears
+
+**Diglett** (normal): Halt! Who goes there?
+
+**{buddy}** (surprised): It's me! I'm here to join the guild!
+
+**Diglett** (normal): Name?
+
+**{buddy}** (happy): I'm {buddy}. And this is---
+
+*You introduce yourself.*
+
+**Diglett** (normal): Hm. Two applicants. Wait here.
+
+*Diglett disappears underground. A moment later, Chatot appears.*
+
+- Diglett leaves
+- Chatot appears
+
+**Chatot** (normal): So, you're the new applicants. Hm. You look... enthusiastic.
+
+**{buddy}** (happy): We are!
+
+**Chatot** (normal): Enthusiasm is not a substitute for discipline. The guild has rules, schedules, and responsibilities.
+
+**{buddy}** (worried): Right. Of course.
+
+*From somewhere inside the guild comes a cheerful voice.*
+
+- Wigglytuff appears
+- Wigglytuff walks
+
+**Wigglytuff** (happy): Friends!
+
+**Chatot** (surprised): Guildmaster! Please don't interrupt the entrance examination!
+
+**Wigglytuff** (happy): But they're here!
+
+**Chatot** (angry): I can see that!
+
+*Wigglytuff leans toward the two applicants.*
+
+- Wigglytuff walks
+
+**Wigglytuff** (happy): Welcome! Do you like apples?
+
+**{buddy}** (surprised): ...Apples?
+
+**Wigglytuff** (happy): Hee-hee! Good answer!
+
+*Chatot sighs.*
+
+**Chatot** (normal): Please ignore that. Come inside. We'll begin your registration.
 
 ### Chapter 2: Guild Life
 
 *Summary:* The Guild's work, its residents and the first signs that time is skipping.
 
-(no scenes yet: the chapter plays its title card)
+#### Scene: The guild's morning  
+`explorers-2-morning` · stage · background city · cast: {buddy}, Chatot (Chatot), Wigglytuff (Wigglytuff), Bidoof (Bidoof), Sunflora (Sunflora), Loudred (Loudred)
+
+*The guild is already noisy. Loudred's voice shakes dust from the rafters.*
+
+- {buddy} appears
+- Loudred appears
+- Chatot appears
+
+**Loudred** (happy): GOOD MORNING!
+
+**Chatot** (angry): Loudred! The morning briefing has not started!
+
+**Loudred** (surprised): But it's morning!
+
+- Sunflora appears
+
+**Sunflora** (happy): Oh! The new team is here! Good morning!
+
+- Bidoof appears
+
+**Bidoof** (happy): Hey, hey! Welcome! I'm Bidoof. If you need help with anything, just ask!
+
+**{buddy}** (happy): Thanks! Everyone seems nice.
+
+**Bidoof** (normal): Heheh. Most of the time.
+
+**Chatot** (normal): This is an exploration guild, not a holiday camp. You'll learn to read the boards, prepare supplies, and report your findings.
+
+- Wigglytuff appears
+- Wigglytuff walks
+
+**Wigglytuff** (happy): And eat plenty!
+
+**Chatot** (angry): Guildmaster!
+
+*Wigglytuff smiles. Chatot takes a long breath.*
+
+**Chatot** (normal): Your first assignment is simple. Accompany Bidoof on a short expedition.
+
+**Bidoof** (surprised): Me? Oh! Well, sure! I'd be happy to!
+
+#### Scene: Bidoof's lesson  
+`explorers-2-bidoof` · dungeon · dungeon thunderwave-cave · cast: {buddy}, Bidoof (Bidoof)
+
+- {buddy} appears
+- {buddy} walks
+- Bidoof appears
+- Bidoof walks
+
+*Bidoof walks ahead, stopping every few steps to point out something interesting.*
+
+**Bidoof** (happy): See that? A perfect spot for a treasure chest!
+
+**{buddy}** (happy): That's a rock.
+
+**Bidoof** (normal): Aye. But it could be hiding something.
+
+*Bidoof nudges the rock. It does not move.*
+
+**Bidoof** (surprised): Huh.
+
+**{buddy}** (happy): Maybe the treasure is the rock.
+
+**Bidoof** (happy): Heheh! Could be!
+
+*Farther inside, the floor gives a faint pulse. The light seems to dim for a moment.*
+
+- the screen shakes
+- fade to black
+- fade in
+
+**Bidoof** (worried): Did you feel that?
+
+**{buddy}** (normal): The ground moved.
+
+**Bidoof** (worried): Not like an earthquake. More like... something skipped.
+
+*Bidoof looks around, suddenly serious.*
+
+**Bidoof** (normal): Let's head back and tell Chatot.
 
 ### Chapter 3: The Famous Explorer
 
 *Summary:* Dusknoir arrives, admired and unsettling.
 
-(no scenes yet: the chapter plays its title card)
+#### Scene: A celebrated arrival  
+`explorers-3-dusknoir` · stage · background city · cast: {buddy}, Dusknoir (Dusknoir), Chatot (Chatot), Wigglytuff (Wigglytuff), Kecleon (Kecleon), Sunflora (Sunflora), Loudred (Loudred)
+
+*The town square is crowded. Pokémon whisper excitedly as a distinguished Dusknoir approaches.*
+
+- {buddy} appears
+- Kecleon appears
+- Sunflora appears
+- Loudred appears
+- Chatot appears
+- Wigglytuff appears
+- Dusknoir appears
+- Dusknoir walks
+
+**Kecleon** (happy): A famous explorer! Here in Treasure Town!
+
+**Sunflora** (happy): I've heard so much about him!
+
+**Loudred** (happy): I BET HE'S REALLY STRONG!
+
+**Chatot** (normal): Everyone, please. Let our guest speak.
+
+**Dusknoir** (happy): Thank you. It is a pleasure to be here.
+
+*Dusknoir's single eye moves across the crowd. It pauses briefly on {player}.*
+
+**Dusknoir** (normal): And who might you be?
+
+**{buddy}** (happy): We're a new team at the guild!
+
+**Dusknoir** (happy): Ah. New explorers. The world always has room for those willing to venture into the unknown.
+
+*Dusknoir looks again at the Relic Fragment.*
+
+- Dusknoir: !
+
+**Dusknoir** (surprised): That fragment...
+
+**{buddy}** (normal): You recognize it?
+
+**Dusknoir** (normal): Perhaps. There are many old relics in this world. I would be interested to hear where you found it.
+
+**{buddy}** (happy): We found it near the beach.
+
+**Dusknoir** (normal): I see.
+
+*Dusknoir smiles, but the pause lasts a little too long.*
+
+**Dusknoir** (happy): I hope we meet again.
+
+#### Scene: A private warning  
+`explorers-3-warning` · dialogue · background city · cast: {buddy}, Dusknoir (Dusknoir)
+
+- {buddy} appears
+- Dusknoir appears
+
+*Later, Dusknoir finds the two of you outside the guild.*
+
+**Dusknoir** (normal): May I ask you something?
+
+**{buddy}** (normal): Sure.
+
+**Dusknoir** (normal): Have you noticed anything unusual in the dungeons? A strange light, perhaps. A place where the air feels... incomplete?
+
+**{buddy}** (worried): We felt something on our last expedition.
+
+**Dusknoir** (normal): I thought as much.
+
+*Dusknoir looks toward the horizon.*
+
+**Dusknoir** (normal): If you encounter anything unusual, tell me. Time is more fragile than most Pokémon realize.
+
+*He turns to leave.*
+
+**{buddy}** (worried): That's a strange thing to say.
+
+**Dusknoir** (happy): Is it?
+
+- Dusknoir leaves
+
+*He disappears into the crowd.*
 
 ### Chapter 4: The Thief of Time
 
 *Summary:* Time gears begin to vanish.
 
-(no scenes yet: the chapter plays its title card)
+#### Scene: The frozen pond  
+`explorers-4-frozen` · dungeon · dungeon glacier-palace · cast: {buddy}, Bidoof (Bidoof)
+
+- {buddy} appears
+- {buddy} walks
+- Bidoof appears
+- Bidoof walks
+
+*The water in a cavern pond is frozen in the shape of a splash. A drop hangs in midair.*
+
+**Bidoof** (surprised): That's... not right.
+
+**{buddy}** (worried): The water stopped.
+
+**Bidoof** (normal): Not froze. Stopped. Look at that drop!
+
+*The drop remains suspended.*
+
+**Bidoof** (worried): I've heard stories about Time Gears. They're hidden in places where time flows strong.
+
+**{buddy}** (normal): Time Gears?
+
+**Bidoof** (normal): Ancient treasures. They're supposed to keep time moving in the world. Nobody's meant to take them.
+
+*Something moves at the far end of the cavern. A shadow slips between the rocks.*
+
+- {buddy}: !
+
+**{buddy}** (surprised): Hey! Who's there?
+
+*The figure vanishes.*
+
+#### Scene: The accusation  
+`explorers-4-grovyle` · cinematic · background forest · cast: {buddy}, Grovyle (Grovyle)
+
+- {buddy} appears
+
+*Deep in a forest, a Time Gear rests within an ancient stone structure. A green Pokémon approaches silently.*
+
+- Grovyle appears
+
+**Grovyle** (normal): One more.
+
+*Grovyle takes the Time Gear. The surrounding light fades.*
+
+- a flash
+- fade to black
+- fade in
+- {buddy}: !
+
+**{buddy}** (angry): Stop!
+
+*Grovyle turns. There is no surprise in his expression.*
+
+**Grovyle** (normal): You're too late.
+
+**{buddy}** (determined): Put it back!
+
+**Grovyle** (normal): I can't.
+
+*Grovyle leaps into the shadows and escapes.*
+
+- Grovyle walks
+- Grovyle leaves
+#### Scene: The guild's investigation  
+`explorers-4-briefing` · stage · background city · cast: {buddy}, Chatot (Chatot), Dusknoir (Dusknoir), Loudred (Loudred), Sunflora (Sunflora)
+
+- {buddy} appears
+- Chatot appears
+- Loudred appears
+- Sunflora appears
+- Dusknoir appears
+
+**Chatot** (angry): A Time Gear has been stolen! This is a serious matter!
+
+**Loudred** (angry): THEN WE'LL CATCH HIM!
+
+**Sunflora** (worried): But what happens to the forest without its Time Gear?
+
+**Dusknoir** (normal): Time will stop there. Eventually, the disturbance may spread.
+
+**Chatot** (normal): Dusknoir, you know more about this than we do. Can you help us?
+
+**Dusknoir** (normal): I will do what I can.
+
+*Dusknoir looks toward {player}.*
+
+**Dusknoir** (normal): You have encountered the thief before. If you see him again, do not approach alone.
+
+**{buddy}** (determined): We're not going to let him take another one.
+
+**Dusknoir** (normal): Courage is admirable. But it is not always enough.
 
 ### Chapter 5: The Hidden Future
 
 *Summary:* What the future is, and who has seen it.
 
-(no scenes yet: the chapter plays its title card)
+#### Scene: The future's shadow  
+`explorers-5-reveal` · cinematic · background dampcave · cast: {buddy}, Grovyle (Grovyle), Dusknoir (Dusknoir)
+
+- {buddy} appears
+- Grovyle appears
+- Dusknoir appears
+
+*The dungeon falls silent. Grovyle stands beside a damaged Time Gear chamber.*
+
+**{buddy}** (angry): Why are you doing this? Do you know what's happening to these places?
+
+**Grovyle** (normal): Better than you do.
+
+**Dusknoir** (normal): Enough, Grovyle.
+
+*Dusknoir emerges from the darkness. His voice is calm, almost gentle.*
+
+- Dusknoir walks
+- {buddy}: !
+
+**{buddy}** (surprised): Dusknoir? You followed us?
+
+**Dusknoir** (normal): I have followed you for a very long time.
+
+*Grovyle's expression hardens.*
+
+**Grovyle** (angry): Don't listen to him.
+
+**Dusknoir** (normal): I came from a future where time no longer flows. A world of darkness. A world that cannot be allowed to continue.
+
+**{buddy}** (worried): Then why are you helping him?
+
+**Dusknoir** (normal): Because Grovyle intends to change the past. He would undo the future from which I came.
+
+**Grovyle** (angry): That future is already lost!
+
+**Grovyle** (normal): I am gathering the Time Gears to stop the collapse of time. I know what happens if I fail.
+
+**{buddy}** (worried): And Dusknoir wants to stop you?
+
+**Dusknoir** (normal): I was sent to bring him back.
+
+*Dusknoir's shadow stretches across the floor.*
+
+- the screen shakes
+
+**Dusknoir** (angry): And I will not fail.
+
+#### Scene: Celebi  
+`explorers-5-celebi` · stage · background forest · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi)
+
+- {buddy} appears
+- Grovyle appears
+- Celebi appears
+
+*In a hidden grove, a small pink Pokémon waits beneath a tree. The air around it shimmers.*
+
+**Celebi** (worried): Grovyle...
+
+**Grovyle** (normal): Celebi. We don't have much time.
+
+**{buddy}** (surprised): You know each other?
+
+**Celebi** (sad): We came from the same future.
+
+*Celebi looks toward the darkened sky.*
+
+**Celebi** (worried): There isn't much left there. The sun never rises. The wind never changes. Even the flowers have stopped growing.
+
+**Grovyle** (normal): We came here because this world still has a future.
+
+**{buddy}** (sad): You came all this way to save it?
+
+**Grovyle** (normal): I came because someone had to.
+
+*Celebi moves closer to Grovyle.*
+
+- Celebi walks
+
+**Celebi** (sad): And because he shouldn't have to do it alone.
 
 ### Chapter 6: The World's Edge
 
 *Summary:* The way to the heart of the trouble.
 
-(no scenes yet: the chapter plays its title card)
+#### Scene: The Hidden Land  
+`explorers-6-hidden-land` · stage · background mountain · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi)
+
+- {buddy} appears
+- {buddy} walks
+- Grovyle appears
+- Grovyle walks
+- Celebi appears
+- Celebi walks
+
+*The Hidden Land is quiet. Ancient stone paths wind between cliffs. The sea below is dark and still.*
+
+**{buddy}** (worried): This place feels like it's been waiting for us.
+
+**Grovyle** (normal): It has.
+
+**{buddy}** (angry): You could have told us the truth earlier.
+
+**Grovyle** (normal): Would you have believed me?
+
+*{buddy} opens their mouth, then stops.*
+
+**Celebi** (sad): He didn't know who he could trust.
+
+**Grovyle** (normal): I still don't.
+
+*Grovyle looks at {player}.*
+
+**Grovyle** (normal): But you came this far. That counts for something.
+
+#### Scene: The passage to the future  
+`explorers-6-future` · cinematic · background dampcave · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi), Dusknoir (Dusknoir)
+
+- {buddy} appears
+- Grovyle appears
+- Celebi appears
+
+*The passage opens. A cold wind comes from the other side.*
+
+- the screen shakes
+- Dusknoir appears
+- Dusknoir walks
+
+**Dusknoir** (normal): You should not have come here.
+
+**{buddy}** (angry): We're not leaving.
+
+**Dusknoir** (normal): You don't understand what awaits you.
+
+**Grovyle** (angry): We understand perfectly.
+
+*Dusknoir's expression shifts. For the first time, he looks tired.*
+
+**Dusknoir** (sad): I remember a world with no dawn. I remember the silence. I remember what it cost to survive there.
+
+**Celebi** (sad): And you think that makes it right to take this future away from everyone?
+
+**Dusknoir** (normal): I think I cannot bear to lose it twice.
+
+*The passage shudders. The future waits beyond it.*
 
 ### Chapter 7: A Future Worth Fighting For
 
 *Summary:* The Temporal Tower and its Guardian.
 
-(no scenes yet: the chapter plays its title card)
+#### Scene: The dark future  
+`explorers-7-dark-future` · cinematic · background dampcave · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi), Dusknoir (Dusknoir)
+
+- {buddy} appears
+- Grovyle appears
+- Celebi appears
+- Dusknoir appears
+
+*The world is still. The sky has no sun. A tree stands without leaves, its branches frozen in place.*
+
+**{buddy}** (sad): So this is what happens...
+
+**Grovyle** (normal): This is what we're trying to prevent.
+
+**Dusknoir** (sad): I lived here. I knew every path, every shelter, every place where a little warmth remained.
+
+*Dusknoir looks toward the empty horizon.*
+
+**Dusknoir** (sad): I told myself that if I could preserve this world, it would mean something. That the suffering would have a purpose.
+
+**Celebi** (worried): But it doesn't have to end this way.
+
+**Dusknoir** (normal): No. It doesn't.
+
+*Dusknoir turns toward the team.*
+
+**Dusknoir** (determined): I was wrong.
+
+*The ground trembles. A distant roar rolls across the darkness.*
+
+- the screen shakes
+
+**Grovyle** (worried): Dialga.
+
+#### Scene: Primal Dialga  
+`explorers-7-primal-dialga` · cinematic · dungeon temporal-tower · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi), Dusknoir (Dusknoir), Primal Dialga (Dialga), Dialga (Dialga)
+
+- {buddy} appears
+- Grovyle appears
+- Celebi appears
+- Dusknoir appears
+
+*At the top of Temporal Tower, the structure groans. Gears turn without rhythm. A vast shape looms beyond the broken arches.*
+
+- Primal Dialga appears
+- Primal Dialga cries out
+- a flash
+- the screen shakes
+
+**Primal Dialga** (angry): GRAAAAAH!
+
+**{buddy}** (worried): It can't hear us!
+
+**Grovyle** (normal): It's lost to the distortion. There may be nothing left of the guardian we hoped to find.
+
+**Dusknoir** (determined): Then we must reach it.
+
+*The battle begins. Time fractures around the tower.*
+
+- a flash
+- the screen shakes
+
+*At the turning point, the team creates an opening. Grovyle moves toward the central mechanism.*
+
+- Grovyle walks
+
+**Celebi** (worried): Grovyle! Be careful!
+
+**Grovyle** (normal): I know.
+
+*Grovyle looks back at {player} and {buddy}.*
+
+**Grovyle** (happy): You gave me a reason to believe this world could be saved.
+
+*The mechanism begins to turn. Light returns to the tower.*
+
+- a flash
+
+**Primal Dialga** (surprised): ...Time...
+
+*The red glow fades. Dialga lowers its head.*
+
+- Primal Dialga leaves
+- Dialga appears
+
+**Dialga** (normal): The flow... has returned.
+
+#### Scene: The choice to return  
+`explorers-7-sacrifice` · stage · background dampcave · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi), Dusknoir (Dusknoir)
+
+- {buddy} appears
+- Dusknoir appears
+- Grovyle appears
+- Celebi appears
+
+*The passage home begins to close. Grovyle and Celebi stand on the far side.*
+
+**{buddy}** (worried): Come with us!
+
+**Grovyle** (normal): I can't.
+
+**{buddy}** (angry): Don't do this!
+
+**Grovyle** (sad): This world has a future now. Someone has to make sure it stays that way.
+
+*Celebi takes Grovyle's hand.*
+
+- Celebi walks
+
+**Celebi** (sad): We knew this might happen.
+
+*Grovyle looks at {player}.*
+
+**Grovyle** (happy): Thank you. Both of you.
+
+*The light closes. The two disappear into the restored future.*
+
+- a flash
+- Grovyle leaves
+- Celebi leaves
+
+*{buddy} stands very still.*
+
+**{buddy}** (sad): ...I wanted them to come home.
+
+*There is no answer.*
 
 ### Chapter 8: The Morning After
 
 *Summary:* After the storm, a morning in Treasure Town.
 
-(no scenes yet: the chapter plays its title card)
+#### Scene: A guild breakfast  
+`explorers-8-guild` · stage · background city · cast: {buddy}, Chatot (Chatot), Wigglytuff (Wigglytuff), Bidoof (Bidoof), Sunflora (Sunflora), Loudred (Loudred)
+
+- {buddy} appears
+- Loudred appears
+- Sunflora appears
+- Bidoof appears
+- Chatot appears
+
+*The guild is noisy again. Loudred is arguing with the breakfast pot. Sunflora is trying to calm him down.*
+
+**Loudred** (angry): IT'S EMPTY!
+
+**Sunflora** (angry): Because you ate all of it!
+
+**Bidoof** (happy): Hey, hey! There's more in the kitchen!
+
+**Chatot** (normal): Please, everyone. We have guests!
+
+*Wigglytuff appears with a large apple.*
+
+- Wigglytuff appears
+- Wigglytuff walks
+
+**Wigglytuff** (happy): Breakfast!
+
+**Chatot** (angry): Guildmaster, that is your third breakfast!
+
+**Wigglytuff** (happy): I know!
+
+*The guild laughs. {buddy} watches the scene quietly.*
+
+**{buddy}** (sad): It feels strange.
+
+**{buddy}** (normal): Everything is back to normal. But they're not here to see it.
+
+*Chatot approaches.*
+
+- Chatot walks
+
+**Chatot** (normal): You two have done more for this guild than we could have asked.
+
+**Bidoof** (happy): And you're still part of the team! Don't go forgetting that!
+
+**Wigglytuff** (happy): Friends stay friends!
+
+*{buddy} looks at you.*
+
+**{buddy}** (happy): We still have a lot of exploring to do, don't we?
+
+- fade to black
+
+*Outside, the sun rises over Treasure Town.*
 
 ## Kanto
 

@@ -20,12 +20,10 @@ class StoryEngineTest {
         assertEquals("intro:1", ch1.key)
         assertEquals(setOf(SceneType.STAGE, SceneType.DUNGEON), ch1.scenes.map { it.type }.toSet())
         // Every chapter of every layer has its episode, matching the chapter's number and title.
-        // (The two Mystery Dungeon arcs are being rewritten: their chapters may have no episode yet, but one that exists matches its chapter.)
-        val written = WorldLayer.entries - setOf(WorldLayer.RESCUE, WorldLayer.EXPLORERS)
+        // (Rescue Team and Explorers have their episodes since 0.156.0, ported from the owner's brief.)
         for (layer in WorldLayer.entries) for (c in app.pokeplan.world.Story.chaptersOf(layer)) {
-            val ep = StoryCatalog.episodeFor(layer, c.number)
-            if (layer in written) assertNotNull(ep, "${layer.id} chapter ${c.number}")
-            if (ep != null) assertEquals(c.title, ep.title, "${layer.id}:${c.number} title")
+            val ep = assertNotNull(StoryCatalog.episodeFor(layer, c.number), "${layer.id} chapter ${c.number}")
+            assertEquals(c.title, ep.title, "${layer.id}:${c.number} title")
         }
         assertEquals(StoryCatalog.all().size, StoryCatalog.all().map { it.key }.distinct().size)
         assertNull(StoryCatalog.episodeFor(WorldLayer.KANTO, 99), "no such chapter")

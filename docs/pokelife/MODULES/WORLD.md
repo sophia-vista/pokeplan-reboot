@@ -235,6 +235,8 @@ Events must be deterministic per expedition/floor seed. A missing capability may
 
 ### 3.6 Expedition outcomes, defeat and recall
 
+**Implemented (0.156.0, `Outcomes`, rule version 1; the numbers are *(tune)*, a decision the owner may reverse):** a floor is cleared, a setback or a safe retreat by one deterministic comparison of the team's power (the sum of levels, 20% more for a favored type) with what the floor asks: the dungeon's recommended power (by the rank it needs: Bronze 90, Silver 150, Gold 220, Platinum 300, Diamond 400) times floor/floors. At 40% or more the floor is cleared in full; from 20% to 40% it is a **setback** (half the Poké and Exploration XP, no treasure, find, milestone, side path or choice, no dungeon clear, a job does not move on; the members still get their Pokémon XP and berries still count); under 20% the team **turns back** and comes home safely (the expedition ends). The first floor and every Normal-rank dungeon always clear in full, so a new player with a single starter is never stuck; only Bronze rank and above can set a team back. Nothing earned is rolled back, nothing is injured or locked, the team can be sent again at once, the report and the journal say what happened, and the team page explains how far it clears in full. Not done: moves, abilities and held items in the power, and the shared battle service.
+
 Expeditions must have meaningful outcomes without making Pokémon disposable or turning failure into a punishment loop.
 
 - A team may clear a floor, encounter a setback, retreat or be defeated. These outcomes are resolved by the shared expedition model and recorded against the floor's stable event ID.
