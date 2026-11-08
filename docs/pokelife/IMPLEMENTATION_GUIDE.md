@@ -162,7 +162,7 @@ This section supersedes the status column of section 3, which stays as the 0.123
 
 1. **Device acceptance for everything since 0.129.0**: the database cutover recovery cases, Mint's Keystore key, access gate, bill reminders and portable backup, the module tables on a device, the new arrival scenes, reminders, and a visual review of every new screen in both palettes and at 130% text.
 2. **LINK** (sequence 8): phases 1 to 5 and 7 of `MODULES/LINK.md` are built (0.145.0); reminders (phase 5's second half) and device-contact import (phase 6) remain.
-3. **Cross-module links**: HOME chore to PLAN task and PLAN's half of the LINK follow-up conversion are built (0.144.0); LINK's own side of the conversion is wired in 0.145.0; still open: MINT bill state, a PLAN shopping task for a supply.
+3. **Cross-module links**: HOME chore to PLAN task and PLAN's half of the LINK follow-up conversion are built (0.144.0); still open: the LINK module itself, MINT bill state, a PLAN shopping task for a supply.
 4. **Reminders through the shared scheduler**: Home's (chores, maintenance, low stock, warranty) are built (0.144.0, not run on a device); still open: Link (dates and follow-ups), the Plan streak reminder and weekly recap.
 5. **Typed repositories per module** and the removal of the single-`AppData` view; REP-010's World rules taking the balance as an input. Started (0.144.0): HEAL, MINT and HOME rewards settle their real event ids in the ledger (`DATA_AND_MIGRATIONS.md` 7.3.0 step 1); the rest is open.
 6. **Open module scope**: HEAL (workouts, nutrition, imports, history), MINT (import, providers, splits, rollover, savings targets), HOME (attachments, widgets, imports).

@@ -44,6 +44,7 @@ import app.pokeplan.link.LinkKinds
 import app.pokeplan.link.LinkRules
 import app.pokeplan.link.Person
 import app.pokeplan.link.Sort
+import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.theme.ModuleAccent
@@ -244,14 +245,19 @@ private fun dateLine(u: app.pokeplan.link.Upcoming): String {
     return listOfNotNull(u.day.short(), LinkRules.inDays(u.daysAway), years).joinToString(" · ")
 }
 
-/** Whether a PLAN task still owns this follow-up: LINK then shows its status and offers no second way to finish it. */
-private fun ownedByPlan(model: AppModel, f: FollowUp): Boolean = f.converted && f.status == FollowUpStatus.OPEN && model.link.planTask(f.id) != null
+/** The PLAN task a follow-up was converted into, if any: from then on PLAN owns it (LINK.md 2.4), so Link shows its status and offers no tick. */
+private fun planTask(model: AppModel, f: FollowUp): app.pokeplan.plan.Task? {
+    model.data // observe the save: the store itself is not Compose state
+    return model.store.linkedTask(app.pokeplan.plan.LinkKind.LINK_FOLLOW_UP, f.id)
+}
+
+private fun planWord(t: app.pokeplan.plan.Task): String = when (t.state) { TaskState.DONE -> "Done in Plan"; TaskState.OPEN -> "In Plan"; else -> "In Plan, closed" }
 
 private fun dueText(f: FollowUp, today: LocalDate): String? = f.due?.let { if (it < today) "Due since ${it.short()}" else if (it == today) "Due today" else "Due ${it.short()}" }
 
 private fun followUpLine(data: app.pokeplan.link.LinkData, f: FollowUp, today: LocalDate): String {
     val who = f.personId?.let { id -> data.people.firstOrNull { it.id == id }?.let(LinkRules::displayName) }
-    return listOfNotNull(who, dueText(f, today), "In Plan".takeIf { f.converted && f.status == FollowUpStatus.OPEN }).joinToString(" · ")
+    return listOfNotNull(who, dueText(f, today)).joinToString(" · ")
 }
 
 /** Only what needs attention (LINK.md 2.4, no pressure): follow-ups that are due and dates coming soon; never a count of everything and never a nudge to contact. */
@@ -260,7 +266,7 @@ private fun LinkOverview(model: AppModel) {
     val data = model.linkData
     val link = model.link
     val today = model.store.today
-    val due = LinkRules.open(data, today).filter { LinkRules.state(it, today) == FollowUpState.DUE }
+    val due = LinkRules.open(data, today).filter { LinkRules.state(it, today) == FollowUpState.DUE && planTask(model, it) == null }
     val soon = LinkRules.upcoming(data, today, 14)
     val attention = due.isNotEmpty() || soon.isNotEmpty()
     TextBox {
@@ -271,7 +277,7 @@ private fun LinkOverview(model: AppModel) {
                 due.take(5).forEach { f ->
                     LRow(
                         f.title, followUpLine(data, f, today),
-                        lead = { if (!ownedByPlan(model, f)) PixelIconButton("check", "Mark ${f.title} done", { link.complete(f.id); model.haptic() }, accent) },
+                        lead = { PixelIconButton("check", "Mark ${f.title} done", { link.complete(f.id); model.haptic() }, accent) },
                         onClick = { go(model, LinkSection.FOLLOW_UPS, f.id, 0) }, onClickLabel = "Open follow-ups",
                     )
                 }
@@ -481,7 +487,8 @@ private fun PersonFollowUps(model: AppModel, p: Person) {
     val history = link.followUpHistory(p.id).take(10)
     if (open.isEmpty() && history.isEmpty()) Text("Nothing to follow up.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     open.forEach { f ->
-        LRow(f.title, dueText(f, today).orEmpty(), lead = { if (!ownedByPlan(model, f)) PixelIconButton("check", "Mark ${f.title} done", { link.complete(f.id); model.haptic() }, accent) })
+        val task = planTask(model, f)
+        LRow(f.title, listOfNotNull(task?.let(::planWord), dueText(f, today)).joinToString(" · "), lead = { if (task == null) PixelIconButton("check", "Mark ${f.title} done", { link.complete(f.id); model.haptic() }, accent) })
     }
     history.forEach { f ->
         LRow(f.title, "${if (f.status == FollowUpStatus.COMPLETED) "Done" else "Cancelled"} · ${(f.completedDay ?: today).short()}", trail = { PixelButton("Reopen", { link.reopen(f.id) }, color = Pixel.InkSoft, compact = true) })
@@ -653,11 +660,12 @@ private fun FollowUpsView(model: AppModel) {
             if (rows.isEmpty()) PixelTitle(if (data.followUps.isEmpty()) "No follow-ups yet" else if (tab == 0) "Nothing open" else "Nothing here yet")
             rows.forEachIndexed { i, f ->
                 if (i > 0) Rule()
-                val detail = if (tab == 0) followUpLine(data, f, today)
+                val task = planTask(model, f)
+                val detail = if (tab == 0) listOfNotNull(task?.let(::planWord), followUpLine(data, f, today).takeIf { it.isNotEmpty() }).joinToString(" · ")
                 else listOfNotNull(f.personId?.let { id -> data.people.firstOrNull { it.id == id }?.let(LinkRules::displayName) }, "${if (f.status == FollowUpStatus.COMPLETED) "Done" else "Cancelled"} · ${(f.completedDay ?: today).short()}").joinToString(" · ")
                 LRow(
                     f.title, detail,
-                    lead = { if (f.status == FollowUpStatus.OPEN && !ownedByPlan(model, f)) PixelIconButton("check", "Mark ${f.title} done", { link.complete(f.id); model.haptic() }, accent) },
+                    lead = { if (f.status == FollowUpStatus.OPEN && task == null) PixelIconButton("check", "Mark ${f.title} done", { link.complete(f.id); model.haptic() }, accent) },
                     trail = { if (f.status != FollowUpStatus.OPEN) PixelButton("Reopen", { link.reopen(f.id) }, color = Pixel.InkSoft, compact = true) },
                     onClick = { openId = if (openId == f.id) null else f.id }, onClickLabel = if (openId == f.id) "Hide options" else "Show options",
                 )
@@ -691,16 +699,14 @@ private fun FollowUpOptions(model: AppModel, f: FollowUp, onDone: () -> Unit) {
                 val out = link.updateFollowUp(f.copy(title = title, due = due, note = note, personId = personId))
                 if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
             }, Modifier.weight(1f), accent, enabled = title.isNotBlank(), compact = true)
-            if (f.status == FollowUpStatus.OPEN && !ownedByPlan(model, f)) PixelButton("Cancel it", { link.cancel(f.id); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            if (f.status == FollowUpStatus.OPEN && planTask(model, f) == null) PixelButton("Cancel it", { link.cancel(f.id); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        if (f.status == FollowUpStatus.OPEN && !f.converted) PixelButton("Do it in Plan", {
-            if (link.convertToPlan(f.id) != null) onDone() else message = "Plan could not take it."
-        }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-        if (f.status == FollowUpStatus.OPEN && f.converted) Text(
-            if (link.planTask(f.id) != null) "This is a task in Plan now. Finish it there." else "Its task in Plan is gone. You can finish or cancel it here; it earns nothing.",
-            style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-        )
+        val task = planTask(model, f)
+        if (f.status == FollowUpStatus.OPEN) {
+            if (task == null) PixelButton("Make it a Plan task", { model.link.convertToPlan(f.id); model.haptic() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            else PixelButton("Stop linking to Plan", { model.store.unlinkTask(task.id) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+        }
         message?.let { Notice(it, tone = NoticeTone.WARNING) }
     }
 }

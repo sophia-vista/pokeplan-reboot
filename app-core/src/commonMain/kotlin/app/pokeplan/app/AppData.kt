@@ -120,6 +120,8 @@ data class AppData(
     val mintPaid: List<String> = emptyList(),
     /** The ids of HOME events already paid (`HomeEvent.id`, opaque, no household word in them), kept like [mintPaid]. The newest [GameStore.HOME_PAID_KEPT] are kept. */
     val homePaid: List<String> = emptyList(),
+    /** The ids of LINK events already paid (`LinkEvent.id`, opaque, no word of a person or a follow-up in them), kept like [homePaid]. The newest [GameStore.LINK_PAID_KEPT] are kept. */
+    val linkPaid: List<String> = emptyList(),
     /**
      * What each module reward really was, for the ledger (DATA_AND_MIGRATIONS.md section 7.3.0): one [LedgerNote] per paid HEAL, MINT or HOME event, with the event's own id,
      * so the live database settles `home:chore:<id>:<day>` instead of one coarse "net change of one save". The database turns a note into a ledger event once (the id is the
@@ -127,8 +129,6 @@ data class AppData(
      * only the event's opaque id and reference, the broad kind and the amounts.
      */
     val ledgerNotes: List<LedgerNote> = emptyList(),
-    /** The ids of LINK events already paid (`LinkEvent.id`, opaque, no word of a person or a follow-up in them), kept like [homePaid]. The newest [GameStore.LINK_PAID_KEPT] are kept. */
-    val linkPaid: List<String> = emptyList(),
 ) {
     companion object {
         const val SCHEMA = 1

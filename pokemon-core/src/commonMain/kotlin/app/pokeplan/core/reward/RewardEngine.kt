@@ -291,7 +291,7 @@ data class HomeEvent(
  * dates, tags, favourites, and cancelling, reopening, editing or rescheduling a follow-up are never events.
  */
 @Serializable
-enum class LinkKind {
+enum class LinkMoment {
     @SerialName("followup_completed") FOLLOW_UP,
 }
 
@@ -304,7 +304,7 @@ enum class LinkKind {
 @Serializable
 data class LinkEvent(
     val id: String,
-    val kind: LinkKind,
+    val kind: LinkMoment,
     val nowMillis: Long,
     val ref: String,
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.ALWAYS)
@@ -443,10 +443,10 @@ object RewardEngine {
     const val HOME_POINTS = 1
 
     /** Rare Candies for each LINK moment (Postcard Trail). *(tune)* */
-    val LINK_CANDIES: Map<LinkKind, Int> = mapOf(LinkKind.FOLLOW_UP to 2)
+    val LINK_CANDIES: Map<LinkMoment, Int> = mapOf(LinkMoment.FOLLOW_UP to 2)
 
     /** Postcard Trail's track, kept by the app: each finished follow-up adds its points and a full track discovers a Postcard Egg ([linkEgg]); three follow-ups, as LINK.md 9.3 asks. *(tune)* */
-    val LINK_EGG_POINTS: Map<LinkKind, Int> = mapOf(LinkKind.FOLLOW_UP to 1)
+    val LINK_EGG_POINTS: Map<LinkMoment, Int> = mapOf(LinkMoment.FOLLOW_UP to 1)
     const val LINK_EGG_METER_SIZE = 3
     const val LINK_POINTS = 1
 

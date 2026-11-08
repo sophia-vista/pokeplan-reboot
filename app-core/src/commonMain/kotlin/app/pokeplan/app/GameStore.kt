@@ -45,7 +45,7 @@ import app.pokeplan.core.reward.HealKind
 import app.pokeplan.core.reward.HomeEvent
 import app.pokeplan.core.reward.HomeKind
 import app.pokeplan.core.reward.LinkEvent
-import app.pokeplan.core.reward.LinkKind as PostcardKind
+import app.pokeplan.core.reward.LinkMoment
 import app.pokeplan.core.reward.MintEvent
 import app.pokeplan.core.reward.MintKind
 import app.pokeplan.heal.HealRules
@@ -429,7 +429,8 @@ class GameStore(
      * says only "Link" and the kind of moment. Nothing about a person, a note, a date or a follow-up exists in the event to be read here.
      */
     override fun link(event: LinkEvent): List<Reward>? {
-        if (!data.onboarded || event.id in data.linkPaid) return null
+        // A follow-up converted into a PLAN task is PLAN's: it pays by Plan's rules, once, and LINK never pays for the same follow-up (LINK.md 2.4).
+        if (!data.onboarded || event.id in data.linkPaid || linkedTask(LinkKind.LINK_FOLLOW_UP, event.ref) != null) return null
         val tally = Counters.link(event.kind)
         val paidToday = tally.get(data.counters, today)
         if (paidToday >= LINK_CAPS.getValue(event.kind)) return null
@@ -2020,11 +2021,11 @@ class GameStore(
         private val HOME_SOURCES = mapOf(HomeKind.CHORE to "Habitat Discovery", HomeKind.MAINTENANCE to "Habitat Discovery").mapValues { HOME_LOG_PREFIX + it.value }
 
         /** The most of each LINK kind the world pays in a day *(tune)*, a backstop to the same limit in `LinkRules`. */
-        val LINK_CAPS: Map<PostcardKind, Int> = mapOf(PostcardKind.FOLLOW_UP to app.pokeplan.link.LinkRules.FOLLOW_UPS_PAID_PER_DAY)
+        val LINK_CAPS: Map<LinkMoment, Int> = mapOf(LinkMoment.FOLLOW_UP to app.pokeplan.link.LinkRules.FOLLOW_UPS_PAID_PER_DAY)
 
         /** Every LINK entry in the reward log starts with this (the kind of moment only, never what it was). */
         const val LINK_LOG_PREFIX = "Link: "
-        private val LINK_SOURCES = mapOf(PostcardKind.FOLLOW_UP to "Postcard Trail").mapValues { LINK_LOG_PREFIX + it.value }
+        private val LINK_SOURCES = mapOf(LinkMoment.FOLLOW_UP to "Postcard Trail").mapValues { LINK_LOG_PREFIX + it.value }
 
         /** How many paid LINK event ids the save remembers. */
         const val LINK_PAID_KEPT = 1000
