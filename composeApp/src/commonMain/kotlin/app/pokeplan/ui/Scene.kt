@@ -36,13 +36,12 @@ internal fun rememberFadeIn(ready: Boolean): State<Float> {
     return fade.asState()
 }
 
-/**
- * A real Pokémon scene (assets/scenes, "meadow", "mountain"...) filling the box like a photo: scaled to cover it and
- * anchored at the bottom, where the ground is. With [darkness] it is dimmed with a cool tint. With [crisp] it is scaled by a
- * whole number (the next one up that covers the box) and drawn without smoothing, so its pixels stay square and sharp.
- */
+/** True for a background that is a ground map of the Mystery Dungeon games or a Friend Area (pixel art with a grid of its own), not a stock scene. */
+internal fun isGroundMap(name: String): Boolean = app.pokeplan.ui.launcher.FriendAreas.isArea(name) || name.startsWith("map:")
+
+/** The picture of a scene, a ground map or a Friend Area by its name (null while it is read or if it is missing), kept once read. */
 @Composable
-fun SceneImage(name: String, modifier: Modifier = Modifier, darkness: Float = 0f, crisp: Boolean = false) {
+internal fun rememberScene(name: String): ImageBitmap? {
     val image by produceState(scenes[name], name) {
         // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = scenes[name]
@@ -57,6 +56,17 @@ fun SceneImage(name: String, modifier: Modifier = Modifier, darkness: Float = 0f
             scenes[name] = value
         }
     }
+    return image
+}
+
+/**
+ * A real Pokémon scene (assets/scenes, "meadow", "mountain"...) filling the box like a photo: scaled to cover it and
+ * anchored at the bottom, where the ground is. With [darkness] it is dimmed with a cool tint. With [crisp] it is scaled by a
+ * whole number (the next one up that covers the box) and drawn without smoothing, so its pixels stay square and sharp.
+ */
+@Composable
+fun SceneImage(name: String, modifier: Modifier = Modifier, darkness: Float = 0f, crisp: Boolean = false) {
+    val image = rememberScene(name)
     val fade by rememberFadeIn(image != null)
     Canvas(modifier) {
         val scene = image ?: return@Canvas drawRect(Color(0xFF8FCB7F))

@@ -23,7 +23,7 @@ object WorldGuide {
         val finds = data.finds.size
         if (finds > 0) return PrimaryAction(PrimaryKind.REVIEW_FINDS, "Recruit ${if (finds == 1) "a new friend" else "$finds new friends"}", "${if (finds == 1) "A Pokémon is" else "$finds Pokémon are"} waiting to join you. They stay in Finds until you decide.")
         val done = data.missions.count { it.done }
-        if (done > 0) return PrimaryAction(PrimaryKind.CLAIM_JOB, "Claim ${if (done == 1) "a finished job" else "$done finished jobs"}", "The reward is waiting on the mission board.")
+        if (done > 0) return PrimaryAction(PrimaryKind.CLAIM_JOB, "Report back: ${if (done == 1) "a job is done" else "$done jobs are done"}", "Thanks and a reward are waiting on the mission board.")
         if (data.slots().any { it.expedition == null }) {
             val next = nextStep(data, layer)
             return PrimaryAction(PrimaryKind.EXPLORE, next.title, next.reason, next.dungeonId)
