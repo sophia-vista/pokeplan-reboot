@@ -28,8 +28,8 @@ interface BackupAccess {
 
     /**
      * Saves a backup (the automatic one at [millis], else a fresh one) where the player chooses, as one file. [onDone] gets a short note.
-     * With a [passphrase] Mint travels sealed under it, so the file opens on any phone that is given the passphrase; without one Mint is sealed to this
-     * phone's key and the file opens only here. The passphrase is used once and kept nowhere.
+     * With a [passphrase] Mint and Heal travel sealed under it, so the file opens on any phone that is given the passphrase; without one they are sealed to this
+     * phone's keys and the file opens only here. The passphrase is used once and kept nowhere.
      */
     fun saveCopy(millis: Long?, passphrase: String? = null, onDone: (String) -> Unit)
 
@@ -42,6 +42,6 @@ interface BackupAccess {
     /** Lets the player pick a backup file; it is read and checked whole. [onChosen] gets what it holds, or the reason it was refused. Nothing changes yet. */
     fun chooseFile(onChosen: (StagedBackup?, String?) -> Unit)
 
-    /** Puts the chosen file back (what it replaces is kept aside); [passphrase] opens a portable Mint. [onDone] gets a short note; a wrong passphrase changes nothing. */
+    /** Puts the chosen file back (what it replaces is kept aside); [passphrase] opens a portable Mint and Heal. [onDone] gets a short note; a wrong passphrase changes nothing. */
     fun applyChosen(passphrase: String? = null, onDone: (String) -> Unit)
 }

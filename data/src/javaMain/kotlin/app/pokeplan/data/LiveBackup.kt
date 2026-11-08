@@ -55,7 +55,7 @@ class LiveBackup(private val dir: File, private val keep: Int = 3, private val e
         return folder
     }
 
-    /** The documents of the backup taken at [millis], exactly as stored (Mint sealed with this phone's key); null when it is not there. */
+    /** The documents of the backup taken at [millis], exactly as stored (Mint and Heal sealed with this phone's keys); null when it is not there. */
     fun documentsOf(millis: Long): Map<String, String>? {
         val folder = complete().firstOrNull { it.name.toLong() == millis } ?: return null
         val names = File(folder, DONE).readText().split(",").filter { it.isNotEmpty() }
@@ -73,10 +73,24 @@ class LiveBackup(private val dir: File, private val keep: Int = 3, private val e
         return true
     }
 
-    /** The newest finished backup folder, or null. */
+    /**
+     * After Heal's rows were sealed (0.154.0): takes a fresh backup now (Heal sealed in it) and deletes the older ones that still hold Heal in clear, so no daily copy
+     * outlives the sealing with a plaintext measurement in it. Older copies stay when the new one could not be written (no room): they rotate out as usual.
+     */
+    fun refreshAfterSealing(live: LiveDocuments, nowMillis: Long): Boolean {
+        val fresh = take(live, nowMillis) ?: return false
+        for (f in complete()) {
+            if (f == fresh) continue
+            val heal = File(f, "heal.json")
+            if (heal.exists() && !RowCipher.isSealed(heal.readText())) f.deleteRecursively()
+        }
+        return true
+    }
+
     /** Deletes every daily backup (a full-device erase). Returns how many were removed. */
     fun deleteAll(): Int = (dir.listFiles()?.toList() ?: emptyList()).count { it.deleteRecursively() }
 
+    /** The newest finished backup folder, or null. */
     fun newest(): File? = complete().maxByOrNull { it.name.toLong() }
 
     /** Puts the newest backup back (the documents it replaces are kept aside first). False when there is no backup. */

@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.153.0
+## 0.155.0
 
 HEAL and MINT external integrations (REP-014, `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` sections 5, 7 and 14; `MODULES/HEAL.md` section 10; `MODULES/MINT.md` section 10). No reward number changes (`RewardRules.VERSION` stays 20): nothing imported ever pays. Tested on the JVM and compiled for Android; **not run on a device, and Health Connect has not been tried on a real phone or the Huawei Watch Fit 4 Pro**.
 
@@ -14,6 +14,17 @@ HEAL and MINT external integrations (REP-014, `ARCHITECTURE/INTEGRATIONS_AND_PRI
 - **Honest status** (`Integrations`): each page lists its integrations with class and status. The statement file is a user-assisted import. GCash, Maya, MariBank, GoTyme and UnionBank, reading payment notifications and a direct Huawei link are listed as unsupported or unverified, with why; nothing logs in, scrapes or asks for a password, PIN or code. HEAL lists what it does not read (steps, heart rate, HRV, stress, SpO2, calories, sleep stages, nutrition).
 - **Android:** `androidx.health.connect:connect-client:1.1.0` (read permissions for the five record types, the `com.google.android.apps.healthdata` query, a rationale screen and the Android 14 permission-usage alias), `AndroidHealthConnect`, `AndroidTextFiles`.
 - **Data:** no schema change. `Transaction` gains `importBatch`, `importLabel`, `fingerprint` and `unreviewed`; the four HEAL record kinds gain `provenance`; HEAL's settings keep the chosen kinds and the last successful read. All are optional with defaults, so older saves and backups read as before.
+
+## 0.154.0
+
+Heal is sealed (REP-014; owner decision 6 of 8 November 2026, `docs/pokelife/evidence/REP-014-heal-sealing.md`). No reward number changes (`RewardRules.VERSION` stays 20) and no schema change (schema 10).
+
+- **Heal's records are sealed with a key that lives in the Android Keystore**, as Mint's are. Every row of the `heal_*` tables (activity, drinks, sleep, measurements, goals and the settings) is AES-256-GCM text under Heal's own key (`KeystoreHealKey`, not Mint's), with no date left beside it, so the database shows no measurement, time, note or day. The daily backups, a saved backup file and every copy Heal leaves aside are sealed too.
+- **An install that already has Heal records is moved once**, at its first start with the key (`HealTables.seal`): every row is rewritten, the whole of Heal is read back and compared, and any difference puts everything back as it was and tries again at the next start. Then the file's free pages and write-ahead log are cleared (`VACUUM`), and the daily copies made before the move, which hold Heal in clear, are replaced by one sealed copy. A new install is sealed from its first row.
+- **No key, no guessing.** If the Keystore gives no key on an old install, Heal carries on in clear for that run and is sealed at the next start that has one (Mint refuses to start without it; Heal already exists in clear on phones, and locking the player out would be worse). Once Heal is sealed, a run without the key reads and writes nothing (memory only) and opens again with the key. A database copied to another phone reads as empty there and the old rows are kept aside, still sealed, before anything is written.
+- **The passphrase backup ("Save a copy that opens on any phone") seals Heal with Mint**, one passphrase for both, and Restore from a file asks for it for either. An ordinary copy holds Heal sealed to this phone only (the backup text says so). A backup from an older build, with Heal in clear, still restores and is sealed as it is written.
+- **Fix: recovery from a damaged database gave Mint no key** before putting the newest backup back, so a sealed Mint in that backup would have been kept aside as locked instead of restored. Both keys are now set before the restore.
+- Tests: `HealSealingTest` (15) and `PortableBackupTest` (new `portable(documents, devices, ...)`); the 10 `HealTablesTest` cases run unchanged. Not run on a device (the Keystore, the first-start move and the passphrase backup are the phone checks in the evidence file).
 
 ## 0.152.0
 
