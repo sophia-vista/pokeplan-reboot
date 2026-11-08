@@ -70,7 +70,7 @@ internal fun WidgetsPage(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit,
                             WidgetKind.entries.filter { it != WidgetKind.FOLDER && it != WidgetKind.ANDROID && (it to "") !in placed }.forEach { kind ->
                                 PmdMenuLine(kind.label, pixel) { onPrefs(prefs.addWidget(WidgetSlot(area, kind))); adding = null }
                             }
-                            PmdMenuLine("Android widget from another app", pixel) { adding = null; host.pickWidget { id -> onPrefs(prefs.addWidget(WidgetSlot(area, WidgetKind.ANDROID, id.toString()))) } }
+                            PmdMenuLine("Android widget from another app", pixel) { adding = null; host.pickWidget { id -> onPrefs(prefs.addWidget(WidgetSlot(area, WidgetKind.ANDROID, id.toString()), host.startingCells(id))) } }
                             prefs.folders.filter { (WidgetKind.FOLDER to it.name) !in placed }.forEach { f ->
                                 PmdMenuLine("Folder: ${f.name}", pixel) { onPrefs(prefs.addWidget(WidgetSlot(area, WidgetKind.FOLDER, f.name))); adding = null }
                             }
@@ -126,7 +126,7 @@ private fun GridSections(prefs: LauncherPrefs, onPrefs: (LauncherPrefs) -> Unit,
                     WidgetKind.entries.filter { it != WidgetKind.FOLDER && it != WidgetKind.ANDROID && (it to "") !in placed }.forEach { kind ->
                         PmdMenuLine(kind.label, pixel) { onPrefs(prefs.addGridWidget(page, kind)); adding = null }
                     }
-                    PmdMenuLine("Android widget from another app", pixel) { adding = null; host.pickWidget { id -> onPrefs(prefs.addGridWidget(page, WidgetKind.ANDROID, id.toString())) } }
+                    PmdMenuLine("Android widget from another app", pixel) { adding = null; host.pickWidget { id -> onPrefs(prefs.addGridWidget(page, WidgetKind.ANDROID, id.toString(), host.startingCells(id))) } }
                     prefs.folders.filter { (WidgetKind.FOLDER to it.name) !in placed }.forEach { f ->
                         PmdMenuLine("Folder: ${f.name}", pixel) { onPrefs(prefs.addGridWidget(page, WidgetKind.FOLDER, f.name)); adding = null }
                     }
