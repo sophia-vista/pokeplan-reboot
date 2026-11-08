@@ -135,6 +135,10 @@ class AppModel(
     val backups: BackupAccess? = null,
     /** The phone's screen lock for Mint's optional gate; null where there is none (desktop, web), and then the gate is not offered. */
     val gate: DeviceGate? = null,
+    /** Health Connect for HEAL's optional, read-only import; null where there is none (desktop, web). */
+    val health: HealthSource? = null,
+    /** Chooses a statement file for MINT's CSV import; null where there is none, and then the import is not offered. */
+    val textFiles: TextFileChooser? = null,
 ) {
     /** When Mint was last opened with the gate (millis), and when the Mint screens were last left; see `MintGate` in screens/Mint.kt. */
     var mintUnlockedAt: Long = 0L
@@ -333,6 +337,8 @@ fun App(
     services: app.pokeplan.ui.gear.GearServices = app.pokeplan.ui.gear.GearServices(),
     backups: BackupAccess? = null,
     deviceGate: DeviceGate? = null,
+    health: HealthSource? = null,
+    textFiles: TextFileChooser? = null,
     /** Called after every change to the saved data (the Android app uses it to keep its widgets up to date). */
     onDataChanged: ((AppData) -> Unit)? = null,
     /** Called after every change to Care's save (the Android app keeps routine reminders and the Care widget up to date). */
@@ -356,7 +362,7 @@ fun App(
         val mint = MintStore(mintStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val home = HomeStore(homeStorage ?: MemoryStorage(), clock, store)
         val link = LinkStore(linkStorage ?: MemoryStorage(), clock, store)
-        AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, home, link, torch, capabilities, sensors, services, backups, deviceGate).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
+        AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, home, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
     }
     // The phone's power saver is read now and then; World's animations stand still while it is on.
     LaunchedEffect(model) { while (true) { model.powerSaving = phone?.powerSaving == true; kotlinx.coroutines.delay(30_000) } }

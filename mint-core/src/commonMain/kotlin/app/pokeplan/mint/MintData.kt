@@ -56,7 +56,7 @@ enum class TxType(val label: String) {
 @Serializable
 enum class TxStatus { PENDING, POSTED, EXCLUDED, VOIDED }
 
-/** How a record got here: [MANUAL] is the only source built (no import and no provider yet); [ADJUSTMENT] is made by a reconciliation. */
+/** How a record got here: [MANUAL] typed by the player; [ADJUSTMENT] made by a reconciliation; [IMPORTED] from a statement file the player chose (a user-assisted import; no provider is connected). */
 @Serializable
 enum class TxSource { MANUAL, ADJUSTMENT, IMPORTED }
 
@@ -88,6 +88,15 @@ data class Transaction(
     val billId: String? = null,
     val billDueDay: LocalDate? = null,
     val createdMillis: Long = atMillis,
+    /**
+     * Provenance of an imported record (INTEGRATIONS_AND_PRIVACY.md 10.2, MINT.md 5.3): the batch it came in with (`csv:<millis>`), the file's name as the player knew it,
+     * and the fingerprint that lets the same row be recognised on a second import. All null for a record the player wrote. [unreviewed] is true until the player has
+     * looked at an imported record (MINT.md 9.1), which changes nothing about it.
+     */
+    val importBatch: String? = null,
+    val importLabel: String = "",
+    val fingerprint: String? = null,
+    val unreviewed: Boolean = false,
 )
 
 @Serializable

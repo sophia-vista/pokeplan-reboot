@@ -48,4 +48,6 @@ dependencies {
     implementation(libs.androidx.glance.appwidget)
     // The QR scanner: Google's own scanning screen, which needs no camera permission from this app.
     implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
+    // HEAL's optional, read-only Health Connect import (androidx, no telemetry, no network of its own; reviewed under INTEGRATIONS_AND_PRIVACY.md 12.1).
+    implementation("androidx.health.connect:connect-client:1.1.0")
 }
