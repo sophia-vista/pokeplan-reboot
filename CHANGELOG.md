@@ -5,6 +5,10 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.161.0
+
+- **Launcher: who walks the town follows the spec** (`LAUNCHER.md` 6.1). The buddy first, then the favourites, then the other Pokémon; inside the favourites and the others, those with an animation sheet (PMD SpriteCollab or Black/White) come before those without one, then by level. With more than 24 owned, the Pokémon without a sprite are the first to stay out of the town. Tested on the JVM (`LauncherModelTest`), **not run on a device**.
+
 ## 0.159.0
 
 - **Battle identity: moves, abilities and held items count in a World team's power** (WORLD.md 3.2, `POKEMON_ECOSYSTEM.md` 4.1 and 8.3). An owned Pokémon now has a **moveset** (`OwnedPokemon.moves`, up to four move identifiers; none stored means its natural moves, the last four level-up moves its form has learned by its level, so an old save needs no migration and the field is only written once a choice is made; it travels in the row's `extra_json`). The Pokémon page has a **Moves** box: what it has, and Choose, which lists what it may be given (its level-up moves up to its level, its egg moves, and from level 30 its tutor and machine moves) and puts a move in or out with a tap; Natural goes back. `GameStore.setMoves` checks the choice and settles the World teams first, so floors already climbed count with the moves they were climbed with.
