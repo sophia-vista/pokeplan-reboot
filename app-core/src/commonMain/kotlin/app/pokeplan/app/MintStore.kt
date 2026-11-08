@@ -21,6 +21,7 @@ import app.pokeplan.mint.PlanStatus
 import app.pokeplan.mint.Reconciliation
 import app.pokeplan.mint.ReviewRecord
 import app.pokeplan.mint.SettleStatus
+import app.pokeplan.mint.StatementImport
 import app.pokeplan.mint.Transaction
 import app.pokeplan.mint.TxSource
 import app.pokeplan.mint.TxStatus
@@ -29,6 +30,7 @@ import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -165,13 +167,85 @@ class MintStore(
     /** Changes what was written down. The account's currency can not change under a record; a source of [TxSource.ADJUSTMENT] stays an adjustment. */
     fun updateTransaction(t: Transaction): Logged<Transaction> {
         val old = data.transactions.firstOrNull { it.id == t.id } ?: return Logged(null, "That record is gone.")
-        val next = t.copy(source = old.source, createdMillis = old.createdMillis, day = dayOf(t.atMillis), payee = t.payee.trim().take(MintRules.NAME_MAX * 2), note = t.note.trim().take(MintRules.NOTE_MAX))
+        val next = t.copy(source = old.source, createdMillis = old.createdMillis, importBatch = old.importBatch, importLabel = old.importLabel, fingerprint = old.fingerprint, day = dayOf(t.atMillis), payee = t.payee.trim().take(MintRules.NAME_MAX * 2), note = t.note.trim().take(MintRules.NOTE_MAX))
         // Editing a record on an account that was since closed is allowed to keep its history readable; only the amount rules apply there.
         (MintRules.checkAmount(next.amountMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val open = data.copy(accounts = data.accounts.map { it.copy(status = AccountStatus.ACTIVE) })
         (MintRules.checkTransaction(open, next) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { d -> d.copy(transactions = d.transactions.map { if (it.id == t.id) next else it }) }
         return Logged(next)
+    }
+
+    // --- statement import (a user-assisted import of a CSV file; no provider is connected) -----------------------------------
+
+    /** What an import did, for the screen: the records added, and the rows left out because they were already here, looked like one of yours, or could not be read. */
+    data class ImportResult(val batch: String?, val added: Int, val skipped: Int, val note: String)
+
+    /** One import as it stands now: the records still in it, derived from the records themselves (nothing else is kept). */
+    data class ImportBatchInfo(val id: String, val label: String, val importedMillis: Long, val accountId: String, val count: Int, val unreviewed: Int)
+
+    /** Reads the file's text and proposes the columns, the date order and the preview for [accountId]; nothing is saved. [refused] is the reason, in words, when it can not be read at all. */
+    fun previewStatement(text: String, accountId: String, columns: StatementImport.Columns? = null, order: StatementImport.DateOrder? = null): StatementPreview {
+        val account = data.accounts.firstOrNull { it.id == accountId } ?: return StatementPreview(refused = "Choose an account first.")
+        val table = when (val p = StatementImport.parse(text)) { is StatementImport.Parsed.Refused -> return StatementPreview(refused = p.reason); is StatementImport.Parsed.Table -> p.rows }
+        val cols = columns ?: StatementImport.guess(table.first())
+        val dates = table.drop(1).mapNotNull { cols.date?.let { i -> it.getOrNull(i) } }
+        val detected = StatementImport.detectOrder(dates)
+        val used = order ?: detected ?: StatementImport.DateOrder.DAY_FIRST
+        val preview = if (cols.usable) StatementImport.preview(table, account, cols, used, data) else null
+        return StatementPreview(table = table, columns = cols, order = used, orderCertain = order != null || detected != null || dates.any { it.trim().length >= 4 && it.trim().take(4).all(Char::isDigit) }, preview = preview)
+    }
+
+    /**
+     * Saves the rows of [preview] listed in [keep] (their line numbers) as posted transactions of the preview's account, in **one write**, each tagged with a new
+     * batch, [label] (the file's name) and its fingerprint, and marked unreviewed. A row whose fingerprint is already here is never added, so a retry or a second
+     * import of the same file changes nothing (idempotent). **Nothing is paid** and nothing leaves Mint: an import is not a reward event (MINT.md section 16.2).
+     */
+    fun importStatement(preview: StatementImport.Preview, keep: Set<Int>, label: String): ImportResult {
+        val account = data.accounts.firstOrNull { it.id == preview.account.id } ?: return ImportResult(null, 0, 0, "That account is gone.")
+        if (account.status != AccountStatus.ACTIVE) return ImportResult(null, 0, 0, "That account is not open.")
+        val have = data.transactions.mapNotNull { it.fingerprint }.toHashSet()
+        val batch = "csv:$nowMillis"
+        val name = label.trim().take(MintRules.NAME_MAX * 2)
+        val chosen = preview.rows.filter { it.line in keep && it.state != StatementImport.RowState.PROBLEM && it.state != StatementImport.RowState.DUPLICATE && it.day != null && it.fingerprint !in have }
+        val added = chosen.mapIndexedNotNull { i, r ->
+            val day = r.day ?: return@mapIndexedNotNull null
+            val noon = day.atStartOfDayIn(zone).toEpochMilliseconds() + 12 * 3_600_000L + i * 1000L
+            val tx = Transaction(
+                newId(), r.type, r.amountMinor, account.currency, noon, day, account.id, null, null, r.description, "", TxStatus.POSTED, TxSource.IMPORTED,
+                createdMillis = nowMillis, importBatch = batch, importLabel = name, fingerprint = r.fingerprint, unreviewed = true,
+            )
+            tx.takeIf { MintRules.checkTransaction(data, it) is Check.Ok }
+        }
+        if (added.isEmpty()) return ImportResult(null, 0, preview.rows.size, "Nothing new to add.")
+        update { it.copy(transactions = it.transactions + added) }
+        return ImportResult(batch, added.size, preview.rows.size - added.size, "Added ${added.size} ${if (added.size == 1) "record" else "records"}.")
+    }
+
+    /** The imports still holding records, newest first. */
+    fun importBatches(): List<ImportBatchInfo> =
+        data.transactions.filter { it.importBatch != null }.groupBy { it.importBatch!! }.map { (id, list) ->
+            ImportBatchInfo(id, list.first().importLabel, list.first().createdMillis, list.first().accountId, list.size, list.count { it.unreviewed })
+        }.sortedByDescending { it.importedMillis }
+
+    /** Marks every record of a batch as looked at (MINT.md 9.1); changes nothing else about them. */
+    fun markBatchReviewed(batch: String) = update { d -> d.copy(transactions = d.transactions.map { if (it.importBatch == batch) it.copy(unreviewed = false) else it }) }
+
+    /**
+     * Removes **only** the records that one import added (INTEGRATIONS_AND_PRIVACY.md 10.3): a record the player wrote, a reconciliation and a bill stay. A bill payment
+     * or reconciliation that pointed to one of them loses only that link. Returns how many were removed.
+     */
+    fun removeImportBatch(batch: String): Int {
+        val ids = data.transactions.filter { it.importBatch == batch }.map { it.id }.toSet()
+        if (ids.isEmpty()) return 0
+        update { d ->
+            d.copy(
+                transactions = d.transactions.filterNot { it.id in ids },
+                reconciliations = d.reconciliations.map { if (it.adjustmentTxId in ids) it.copy(adjustmentTxId = null) else it },
+                billPayments = d.billPayments.map { if (it.txId in ids) it.copy(txId = null) else it },
+            )
+        }
+        return ids.size
     }
 
     /** Pending, posted, excluded (kept in history, left out of spending) or voided (kept, counted nowhere). */
@@ -375,3 +449,12 @@ object MintExport {
         MintKinds.REVIEWS -> d.copy(reconciliations = emptyList(), reviews = emptyList())
     }
 }
+/** What reading a statement file gave: the table, the columns and date order in use (guessed, or chosen), whether the order is certain, and the preview; or [refused], in words. */
+data class StatementPreview(
+    val table: List<List<String>> = emptyList(),
+    val columns: StatementImport.Columns = StatementImport.Columns(),
+    val order: StatementImport.DateOrder = StatementImport.DateOrder.DAY_FIRST,
+    val orderCertain: Boolean = true,
+    val preview: StatementImport.Preview? = null,
+    val refused: String? = null,
+)

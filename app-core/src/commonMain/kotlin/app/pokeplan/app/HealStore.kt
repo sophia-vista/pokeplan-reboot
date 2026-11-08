@@ -10,6 +10,11 @@ import app.pokeplan.heal.GoalKind
 import app.pokeplan.heal.GoalStatus
 import app.pokeplan.heal.HealData
 import app.pokeplan.heal.HealGoal
+import app.pokeplan.heal.HealImport
+import app.pokeplan.heal.HealKindOf
+import app.pokeplan.heal.HealthKind
+import app.pokeplan.heal.ImportPlan
+import app.pokeplan.heal.ProviderRead
 import app.pokeplan.heal.HealKinds
 import app.pokeplan.heal.HealRules
 import app.pokeplan.heal.HealSettings
@@ -89,7 +94,7 @@ class HealStore(
     fun updateActivity(a: ActivityRecord): Logged<ActivityRecord> {
         (HealRules.checkActivity(a.minutes, a.distanceMeters) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val old = data.activities.firstOrNull { it.id == a.id } ?: return Logged(null, "That activity is gone.")
-        val next = a.copy(paid = old.paid, day = dayOf(a.startMillis), note = a.note.trim().take(HealRules.NOTE_MAX))
+        val next = a.copy(paid = old.paid, source = old.source, provenance = old.provenance, day = dayOf(a.startMillis), note = a.note.trim().take(HealRules.NOTE_MAX))
         update { d -> d.copy(activities = d.activities.map { if (it.id == a.id) next else it }) }
         return Logged(next)
     }
@@ -112,7 +117,7 @@ class HealStore(
     fun updateDrink(e: HydrationEntry): Logged<HydrationEntry> {
         (HealRules.checkHydration(e.ml) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val old = data.hydration.firstOrNull { it.id == e.id } ?: return Logged(null, "That drink is gone.")
-        val next = e.copy(paid = old.paid, day = dayOf(e.atMillis), drink = e.drink.trim().take(60))
+        val next = e.copy(paid = old.paid, source = old.source, provenance = old.provenance, day = dayOf(e.atMillis), drink = e.drink.trim().take(60))
         update { d -> d.copy(hydration = d.hydration.map { if (it.id == e.id) next else it }) }
         return Logged(next)
     }
@@ -133,8 +138,8 @@ class HealStore(
 
     fun updateSleep(s: SleepRecord): Logged<SleepRecord> {
         (HealRules.checkSleep(s.startMillis, s.endMillis) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        if (data.sleep.none { it.id == s.id }) return Logged(null, "That night is gone.")
-        val next = s.copy(day = dayOf(s.endMillis), note = s.note.trim().take(HealRules.NOTE_MAX))
+        val old = data.sleep.firstOrNull { it.id == s.id } ?: return Logged(null, "That night is gone.")
+        val next = s.copy(source = old.source, provenance = old.provenance, day = dayOf(s.endMillis), note = s.note.trim().take(HealRules.NOTE_MAX))
         update { d -> d.copy(sleep = d.sleep.map { if (it.id == s.id) next else it }) }
         return Logged(next)
     }
@@ -184,6 +189,44 @@ class HealStore(
     fun setHydrationReminders(times: List<LocalTime>) = settings { it.copy(hydrationReminders = times.distinct().sorted().take(HealSettings.MAX_REMINDERS)) }
 
     fun markTutorialSeen() = settings { it.copy(tutorialSeen = true) }
+
+    // --- Health Connect (an Android platform API, read on request; no record is ever written back) ---------------------------------
+
+    /** What reading [read] would add, skip and reject, for the preview shown before anything is saved. Pure: nothing changes. */
+    fun previewImport(read: ProviderRead): ImportPlan = HealImport.plan(data, read.records, nowMillis)
+
+    /**
+     * Saves what [read] returned, in one write, and notes the time of the last successful read (a failed or partial read still imports what came and does not
+     * move that time). Records already here (same provider id) are skipped, so a retry is harmless; a possible match with a record the player wrote is added beside
+     * it and flagged. **Nothing is paid**: imported records are never a Field Research event (HEAL.md 10.3). Returns the plan that was applied.
+     */
+    fun importFromProvider(read: ProviderRead): ImportPlan {
+        val plan = previewImport(read)
+        update { d ->
+            val added = HealImport.apply(d, plan, nowMillis, ::newId, ::dayOf)
+            if (read.failed) added else added.copy(settings = added.settings.copy(healthLastSyncMillis = nowMillis))
+        }
+        return plan
+    }
+
+    /** The kinds the player chose to import; none disconnects HEAL from Health Connect in the app (the screen also revokes Android's permissions). Imported records stay. */
+    fun setHealthKinds(kinds: Set<HealthKind>) = settings { it.copy(healthKinds = kinds, healthLastSyncMillis = if (kinds.isEmpty()) 0 else it.healthLastSyncMillis) }
+
+    /** Imported records by the app that wrote them. */
+    fun importedSources(): List<HealImport.SourceCount> = HealImport.sources(data)
+
+    /** Imported records that may repeat one already here, as (id, family). */
+    fun possibleDuplicates(): List<Pair<String, HealKindOf>> = HealImport.flagged(data)
+
+    /** The player looked at a flagged record and wants both. */
+    fun keepBoth(id: String) = update { HealImport.keepBoth(it, id) }
+
+    /** Deletes the imported records of [provider] (one writing app only, if [app] is given). Records the player wrote are never touched. Returns how many were removed. */
+    fun removeImported(provider: String = HealImport.PROVIDER_HEALTH_CONNECT, app: String? = null): Int {
+        val before = importedSources().filter { it.provider == provider && (app == null || it.app == app) }.sumOf { it.total }
+        update { HealImport.withoutImported(it, provider, app) }
+        return before
+    }
 
     // --- export and erase (one kind at a time, or all) ----------------------------------------------------------------------
 

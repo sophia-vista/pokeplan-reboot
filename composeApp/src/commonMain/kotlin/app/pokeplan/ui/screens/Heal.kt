@@ -61,7 +61,7 @@ import kotlin.math.roundToInt
 /** Heal's screens (docs/pokelife `MODULES/HEAL.md`), the manual slice: activity, hydration, sleep, body measurements and optional goals. */
 enum class HealSection(val label: String, val icon: String) {
     ACTIVITY("Activity", "x-speed"), HYDRATION("Hydration", "fresh-water"), SLEEP("Sleep", "moon-stone"), BODY("Body", "scope-lens"),
-    GOALS("Goals", "star-piece"), SETTINGS("Settings", "storage-key"),
+    GOALS("Goals", "star-piece"), CONNECTIONS("Connections", "town-map"), SETTINGS("Settings", "storage-key"),
 }
 
 private val zone: TimeZone get() = TimeZone.currentSystemDefault()
@@ -98,6 +98,7 @@ private fun HealPage(model: AppModel, section: HealSection?, openPokemon: (Strin
             HealSection.SLEEP -> SleepView(model)
             HealSection.BODY -> BodyView(model)
             HealSection.GOALS -> GoalsHealView(model)
+            HealSection.CONNECTIONS -> HealConnectionsView(model)
             HealSection.SETTINGS -> HealSettingsView(model)
         }
     }
@@ -123,6 +124,7 @@ private fun HealMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                     MenuEntry(HealSection.SLEEP.name, HealSection.SLEEP.icon, "Sleep", if (data.sleep.isEmpty()) "log a night" else "${data.sleep.size} nights", tint = ModuleAccent.HEAL.accent),
                     MenuEntry(HealSection.BODY.name, HealSection.BODY.icon, "Body", if (data.measurements.isEmpty()) "optional" else "${data.measurements.size} entries", tint = ModuleAccent.HEAL.accent),
                     MenuEntry(HealSection.GOALS.name, HealSection.GOALS.icon, "Goals", if (data.goals.none { it.status == GoalStatus.ACTIVE }) "optional" else "${data.goals.count { it.status == GoalStatus.ACTIVE }} active", tint = Pixel.Warning),
+                    MenuEntry(HealSection.CONNECTIONS.name, HealSection.CONNECTIONS.icon, "Connections", if (data.settings.healthKinds.isEmpty()) "optional" else "Health Connect", tint = ModuleAccent.HEAL.accent),
                     MenuEntry(HealSection.SETTINGS.name, HealSection.SETTINGS.icon, "Settings", "Field Research, reminders, your data", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.healSection = HealSection.valueOf(key) }
@@ -251,7 +253,7 @@ private fun ActivityView(model: AppModel) {
 private fun ActivityRow(a: ActivityRecord, onClick: () -> Unit) {
     ListRow(onClick = onClick, onClickLabel = "Show options") {
         Text("${a.type.label} · ${HealRules.duration(a.minutes)}", style = MaterialTheme.typography.bodyLarge)
-        val extra = listOfNotNull(a.distanceMeters?.let { HealRules.format(it / 1000.0) + " km" }, a.note.takeIf { it.isNotBlank() })
+        val extra = listOfNotNull(a.distanceMeters?.let { HealRules.format(it / 1000.0) + " km" }, a.note.takeIf { it.isNotBlank() }, a.provenance?.let { "imported" })
         Text((listOf(a.day.short() + " " + clockText(a.startMillis.localTime())) + extra).joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     }
 }
@@ -593,7 +595,7 @@ private fun HealSettingsView(model: AppModel) {
         }
     }
     Text(
-        "Connecting a watch or Health Connect is not available yet. Heal is complete without them.",
+        "Health Connect is under Connections. Heal is complete without it, and without a watch.",
         style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
     )
 }
