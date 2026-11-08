@@ -106,7 +106,7 @@ This section supersedes the status column of section 3, which stays as the 0.123
 
 | Area | Status at 0.145.0 | Evidence | Not established |
 |---|---|---|---|
-| PLAN | Partial. Own `plan_*` tables since 0.133.0; Habit merged into recurring tasks; one reminder scheduler | REP-014, `evidence/REP-014-plan-tables.md`, REP-011 | Streak reminder and weekly recap adapters; device acceptance; target workflows against `PLAN.md` not re-audited |
+| PLAN | Partial. Own `plan_*` tables since 0.133.0; Habit merged into recurring tasks; one reminder scheduler | REP-014, `evidence/REP-014-plan-tables.md`, REP-011 | Streak reminder and weekly recap on the shared scheduler since 0.148.0 (not run on a device); device acceptance; target workflows against `PLAN.md` not re-audited |
 | CARE | Partial. Own `care_*` tables since 0.132.0; visitor rules of `CARE.md` section 6; reunions, Care Play, Meadow and egg inheritance built (0.133.0) | `evidence/REP-014-care-tables.md`, `REP-014-plan-tables.md` | Device acceptance; the rest of `CARE.md` not re-audited |
 | HEAL | **Built, manual first** (0.136.0): activity, hydration, sleep, measurements, goals, Field Research (rules version 17) | `MODULES/HEAL.md` section 22, `evidence/REP-014-heal.md`, `HealStoreTest`, `HealTablesTest` | Exercise library and workouts, nutrition, health records, imports (Health Connect, Huawei), history and charts, medication reminders, encryption; **device acceptance; wearable claims withheld** |
 | MINT | **Built, manual first** (0.141.0): accounts, activity, budgets, bills, review and reconciliation, exact integer money, Ledger Research (version 18); rows and backups sealed with an Android Keystore key; follow-ups (0.142.0): a passphrase-sealed backup that opens on any phone, bill reminders through the shared scheduler (off until turned on), the optional screen-lock access gate, full account edit | `MODULES/MINT.md` section 22, `evidence/REP-014-mint.md`, `MintStoreTest`, `MintTablesTest`, `PortableBackupTest`, `MintRemindersTest` | Providers, statement import, splits, rollover, savings targets, foreign currency; **device acceptance, including the Keystore path, the access gate and the reminders**
@@ -131,7 +131,7 @@ This section supersedes the status column of section 3, which stays as the 0.123
 | 3 Shared Pokémon, economy and reminders | Built for the contracts above; reminders are shared for Plan, Care, Heal's hydration and Mint's bills only. **Gate C is partial**: ownership, one Bag and one Poké balance and privacy-safe events hold in tests; shared reminders are not yet used by every module |
 | 3B Expanded Pokémon foundations | Partial (see the shared row above) |
 | 4 Design system and app shell | Partial; tokens and components applied, device rendering not reviewed |
-| 5 PLAN and CARE refactor | Largely done on the data side (own tables, one owner per record); the reminder adapters for the streak reminder and weekly recap remain |
+| 5 PLAN and CARE refactor | Largely done on the data side (own tables, one owner per record); the streak reminder and weekly recap adapters are built (0.148.0) |
 | 6 HEAL | Manual slice built; imports, nutrition and exercise library not built |
 | 7 MINT | Manual slice built; import and providers not built |
 | 8 HOME and LINK | **HOME manual slice built (0.143.0); LINK manual slice built (0.145.0)** |
@@ -163,7 +163,7 @@ This section supersedes the status column of section 3, which stays as the 0.123
 1. **Device acceptance for everything since 0.129.0**: the database cutover recovery cases, Mint's Keystore key, access gate, bill reminders and portable backup, the module tables on a device, the new arrival scenes, reminders, and a visual review of every new screen in both palettes and at 130% text.
 2. **LINK** (sequence 8): phases 1 to 5 and 7 of `MODULES/LINK.md` are built (0.145.0); reminders (phase 5's second half) and device-contact import (phase 6) remain.
 3. **Cross-module links**: HOME chore to PLAN task and PLAN's half of the LINK follow-up conversion are built (0.144.0); still open: the LINK module itself, MINT bill state, a PLAN shopping task for a supply.
-4. **Reminders through the shared scheduler**: Home's (chores, maintenance, low stock, warranty) are built (0.144.0, not run on a device); still open: Link (dates and follow-ups), the Plan streak reminder and weekly recap.
+4. **Reminders through the shared scheduler**: Home's (chores, maintenance, low stock, warranty) are built (0.144.0), and Link's (dates and follow-ups), the Plan streak reminder and the weekly recap are built (0.148.0, `evidence/REP-014-link-reminders.md`); none has run on a device. A nightly refresh alarm keeps the three-day planning window rolling.
 5. **Typed repositories per module** and the removal of the single-`AppData` view; REP-010's World rules taking the balance as an input. Started (0.144.0): HEAL, MINT and HOME rewards settle their real event ids in the ledger (`DATA_AND_MIGRATIONS.md` 7.3.0 step 1); the rest is open.
 6. **Open module scope**: HEAL (workouts, nutrition, imports, history), MINT (import, providers, splits, rollover, savings targets), HOME (attachments, widgets, imports).
 7. **GEAR completion, WORLD completion and the launcher** (sequences 9 to 11), not re-audited since 0.123.0.

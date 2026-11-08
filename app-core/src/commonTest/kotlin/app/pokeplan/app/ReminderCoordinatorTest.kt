@@ -73,7 +73,7 @@ class PlanReminderAdapterTest {
     )
     private var data = AppData(tasks = listOf(task()))
     private val done = mutableListOf<String>()
-    private val adapter = PlanReminderAdapter({ data }, { done += it; true })
+    private val adapter = PlanReminderAdapter({ data }, complete = { done += it; true })
 
     @Test
     fun requestsKeepOnlyAnOpaqueReferenceAndTheTaskCompletesOnlyThroughPlan() {

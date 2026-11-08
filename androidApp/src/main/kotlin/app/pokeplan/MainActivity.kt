@@ -20,6 +20,8 @@ import app.pokeplan.mint.MintData
 import app.pokeplan.app.HomeReminders
 import app.pokeplan.app.MintReminders
 import app.pokeplan.home.HomeData
+import app.pokeplan.link.LinkData
+import app.pokeplan.app.LinkReminders
 import app.pokeplan.app.upcomingReminders
 import app.pokeplan.care.CareData
 import app.pokeplan.core.pokemon.ItemCategory
@@ -83,7 +85,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             App(
                 storage, careStorage = careStorage(this), healStorage = healStorage(this), mintStorage = mintStorage(this), homeStorage = homeStorage(this), linkStorage = linkStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
-                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = AndroidSensorFeed(this), services = gearServices, backups = backups, deviceGate = gate, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onHomeChanged = ::homeChanged, onDark = ::matchSystemBars,
+                cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = AndroidSensorFeed(this), services = gearServices, backups = backups, deviceGate = gate, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onHomeChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars,
             )
         }
     }
@@ -132,7 +134,10 @@ class MainActivity : ComponentActivity() {
         val upcoming = data.upcomingReminders(now, zone)
         val alerts = AppAlerts.plan(data, now, zone)
         if (upcoming.isNotEmpty() || alerts.sessionId != null || alerts.timer != null || data.activeDays.isNotEmpty()) askForNotifications()
-        val signature = listOf(upcoming.map { it.taskId to it.atMillis }, alerts).hashCode()
+        // The streak reminder and the recap are shared-scheduler requests now, so what plans them is part of the signature.
+        val s = data.settings
+        val nudges = listOf(s.streakReminder, s.streakReminderHour, s.weeklyRecap, s.quietHours)
+        val signature = listOf(upcoming.map { it.taskId to it.atMillis }, alerts, nudges).hashCode()
         if (signature == reminderSignature) return
         reminderSignature = signature
         reminderRefresh?.cancel()
@@ -213,6 +218,25 @@ class MainActivity : ComponentActivity() {
         homeSignature = signature
         homeRefresh?.cancel()
         homeRefresh = lifecycleScope.launch {
+            delay(800)
+            SharedReminders.reschedule(applicationContext)
+        }
+    }
+
+    private var linkSignature: Int? = null
+    private var linkRefresh: Job? = null
+
+    /** Sets Link's reminders again when a date, a follow-up or a reminder setting changes, a moment after the last change. Nothing of Link leaves the module but a reminder's own id, kind and day. */
+    private fun linkChanged(data: LinkData) {
+        val app = appData ?: return
+        val upcoming = LinkReminders.upcoming(data, app, System.currentTimeMillis(), TimeZone.currentSystemDefault())
+        if (upcoming.isNotEmpty()) askForNotifications()
+        val signature = upcoming.map { Triple(it.recordId, it.kind, it.atMillis) }.hashCode()
+        if (linkSignature == null) { linkSignature = signature; if (upcoming.isEmpty()) return }
+        else if (signature == linkSignature) return
+        linkSignature = signature
+        linkRefresh?.cancel()
+        linkRefresh = lifecycleScope.launch {
             delay(800)
             SharedReminders.reschedule(applicationContext)
         }

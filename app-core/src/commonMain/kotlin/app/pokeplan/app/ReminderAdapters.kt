@@ -1,11 +1,16 @@
 package app.pokeplan.app
 
 import app.pokeplan.care.CareData
+import app.pokeplan.plan.Streaks
 import app.pokeplan.plan.Task
 import app.pokeplan.plan.toEpochMillis
 import app.pokeplan.plan.toLocalDateTime
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
 
 /** The stable action keys a notification may carry (INTEGRATIONS_AND_PRIVACY.md, section 9.6.2). */
 object ReminderActions {
@@ -32,8 +37,8 @@ object ReminderSnooze {
             else -> null
         }
         ReminderModule.CARE, ReminderModule.HEAL -> if (action == ReminderActions.SNOOZE_30 || action == ReminderActions.SNOOZE) nowMillis + 30 * MINUTE else null
-        // A bill or a household reminder is not a minute-by-minute matter: its one snooze is until tomorrow morning, and nothing overdue repeats by itself.
-        ReminderModule.MINT, ReminderModule.HOME -> if (action == ReminderActions.TOMORROW) app.pokeplan.plan.Reminders.snoozedTo(nowMillis.toLocalDateTime(zone), app.pokeplan.plan.Snooze.TOMORROW, zone).toEpochMillis(zone) else null
+        // A bill, a household or a connection reminder is not a minute-by-minute matter: its one snooze is until tomorrow morning, and nothing overdue repeats by itself.
+        ReminderModule.MINT, ReminderModule.HOME, ReminderModule.LINK -> if (action == ReminderActions.TOMORROW) app.pokeplan.plan.Reminders.snoozedTo(nowMillis.toLocalDateTime(zone), app.pokeplan.plan.Snooze.TOMORROW, zone).toEpochMillis(zone) else null
         else -> null
     }
 }
@@ -78,16 +83,54 @@ class ReminderRouter(adapters: List<ReminderSourceAdapter>) {
  */
 class PlanReminderAdapter(
     private val app: () -> AppData,
+    /**
+     * The clock for Plan's two evening nudges, the streak reminder and the Sunday recap (docs/design.md, "Notifications"), which ask the shared scheduler like
+     * a task does. Without one only task reminders exist (the default, and what the older tests build).
+     */
+    private val clock: (() -> Long)? = null,
+    private val zone: TimeZone = TimeZone.currentSystemDefault(),
     private val complete: (taskId: String) -> Boolean,
 ) : ReminderSourceAdapter {
     override val module = ReminderModule.PLAN
 
     override fun requests(nowMillis: Long, zone: TimeZone): List<ReminderRequest> =
-        app().upcomingReminders(nowMillis, zone).map { ReminderRequest(module, it.taskId, "task", it.atMillis, occurrence = it.atMillis.toString()) }
+        app().upcomingReminders(nowMillis, zone).map { ReminderRequest(module, it.taskId, KIND_TASK, it.atMillis, occurrence = it.atMillis.toString()) } +
+            if (clock != null) nudgeRequests(nowMillis, zone) else emptyList()
+
+    /**
+     * The streak reminder for each of the next days at its hour and the next Sunday recap. The request names the day it is for, so one that fires late (held
+     * out of quiet hours or a focus session until the next day) is stale and shows nothing. A request inside quiet hours is not made at all, as before.
+     */
+    private fun nudgeRequests(nowMillis: Long, zone: TimeZone): List<ReminderRequest> {
+        val data = app()
+        val quiet = data.settings.quietHours
+        val today = nowMillis.toLocalDateTime(zone).date
+        return buildList {
+            if (data.settings.streakReminder) for (offset in 0..2) {
+                val day = today.plus(DatePeriod(days = offset))
+                val at = LocalDateTime(day, LocalTime(data.settings.streakReminderHour, 0))
+                if (!quiet.contains(at.time)) add(ReminderRequest(module, SOURCE_STREAK, KIND_STREAK, at.toEpochMillis(zone), occurrence = Streaks.streakDay(at).toString()))
+            }
+            Nudges.nextRecap(data, nowMillis, zone)?.let { at ->
+                val local = at.toLocalDateTime(zone)
+                if (!quiet.contains(local.time)) add(ReminderRequest(module, SOURCE_RECAP, KIND_RECAP, at, occurrence = local.date.toString()))
+            }
+        }
+    }
 
     private fun task(request: ReminderRequest): Task? = app().tasks.firstOrNull { it.id == request.sourceRef }?.takeIf { it.isOpen }
 
     override fun isStillWanted(request: ReminderRequest): Boolean {
+        when (request.kind) {
+            KIND_STREAK -> {
+                val now = clock?.invoke() ?: return false
+                return Streaks.streakDay(now.toLocalDateTime(zone)).toString() == request.occurrence && Nudges.streakAtRisk(app(), now, zone, quietApplies = false)
+            }
+            KIND_RECAP -> {
+                val now = clock?.invoke() ?: return false
+                return now.toLocalDateTime(zone).date.toString() == request.occurrence && Nudges.weeklyRecap(app(), now, zone, quietApplies = false) != null
+            }
+        }
         val t = task(request) ?: return false
         return app().settings.reminders && when (request.kind) {
             KIND_REPEAT -> app().settings.repeatReminders
@@ -97,6 +140,7 @@ class PlanReminderAdapter(
 
     /** An unanswered reminder repeats up to [Nudges.REMINDER_REPEATS] times, [Nudges.REMINDER_REPEAT_MILLIS] apart (Plan's own policy, kept). */
     override fun followUp(request: ReminderRequest, nowMillis: Long): ReminderRequest? {
+        if (request.kind != KIND_TASK && request.kind != KIND_REPEAT) return null
         if (!app().settings.repeatReminders) return null
         val base = request.occurrence.substringBefore('#')
         val n = request.occurrence.substringAfter('#', "0").toIntOrNull() ?: 0
@@ -105,13 +149,23 @@ class PlanReminderAdapter(
     }
 
     companion object {
+        const val KIND_TASK = "task"
         const val KIND_REPEAT = "task-repeat"
+        const val KIND_STREAK = "streak"
+        const val KIND_RECAP = "recap"
+        const val SOURCE_STREAK = "streak"
+        const val SOURCE_RECAP = "week"
     }
 
-    override fun present(request: ReminderRequest): NudgeText? = task(request)?.let { NudgeText(it.title, "") }
+    override fun present(request: ReminderRequest): NudgeText? = when (request.kind) {
+        KIND_STREAK -> clock?.invoke()?.let { Nudges.streakText(app(), it, zone) }
+        KIND_RECAP -> clock?.invoke()?.let { Nudges.weeklyRecap(app(), it, zone, quietApplies = false) }
+        else -> task(request)?.let { NudgeText(it.title, "") }
+    }
 
+    // A streak reminder or a recap has no action but the shared Tomorrow-less dismiss: opening the app is the only thing it asks for.
     override fun execute(request: ReminderRequest, action: String): Boolean =
-        action == ReminderActions.DONE && task(request) != null && complete(request.sourceRef)
+        action == ReminderActions.DONE && request.kind != KIND_STREAK && request.kind != KIND_RECAP && task(request) != null && complete(request.sourceRef)
 }
 
 /** CARE's side: routine reminders. Completion runs through Care's own rules; nothing is routed through Plan. */

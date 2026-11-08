@@ -928,7 +928,7 @@ class ScreenshotTest {
     }
 
     /** The Link module with a little recorded (two people, a note, two dates, follow-ups), open on [section] (null for its menu). Synthetic text only. */
-    private fun link(name: String, section: app.pokeplan.ui.screens.LinkSection?, height: Int = 1500, linkParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false) {
+    private fun link(name: String, section: app.pokeplan.ui.screens.LinkSection?, height: Int = 1500, linkParty: Int = 0, fontScale: Float = 1f, empty: Boolean = false, dark: Boolean = false, prepare: (AppModel) -> Unit = {}) {
         val store = storeWithTeam()
         store.markRewardsSeen()
         store.data.player.pokemon.filter { it.id != store.data.player.buddyId }.take(linkParty).forEach { store.setInParty(it.id, true, app.pokeplan.core.pokemon.PartyIds.LINK) }
@@ -946,6 +946,7 @@ class ScreenshotTest {
             link.complete(link.addFollowUp("Return the book").record!!.id)
             store.markRewardsSeen()
         }
+        prepare(model)
         model.module = app.pokeplan.ui.screens.Module.LINK
         model.linkSection = section
         render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
@@ -959,6 +960,18 @@ class ScreenshotTest {
 
     @Test
     fun linkMenuDark() = link("link-menu-dark", null, height = 2600, linkParty = 3, dark = true)
+
+    /** Link's reminders switched on: the Settings card, and a date and an open follow-up with their own reminder choice (light and dark). */
+    @Test
+    fun linkReminders() {
+        val on: (AppModel) -> Unit = { m ->
+            m.link.setReminders(true)
+            m.link.data.dates.firstOrNull()?.let { m.link.setDateRemind(it.id, 3) }
+            m.link.data.followUps.firstOrNull { it.due != null }?.let { m.link.setFollowUpRemind(it.id, true) }
+        }
+        link("link-settings-reminders", app.pokeplan.ui.screens.LinkSection.SETTINGS, height = 2600, prepare = on)
+        link("link-settings-reminders-dark", app.pokeplan.ui.screens.LinkSection.SETTINGS, height = 2600, dark = true, prepare = on)
+    }
 
     /** Every Link section at the system's text at 130%: nothing clipped or pushed out of its box. */
     @Test
