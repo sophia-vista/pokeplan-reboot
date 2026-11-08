@@ -1218,19 +1218,11 @@ class ScreenshotTest {
     @Test
     fun meHelp() = me("me-help", 1)
 
+    /** A module's Guardian slot under its party, with the six-module switcher above it (the owner's phone showed the old tabs cut to "Pl..." and "Ca..."). */
     @Test
-    fun collectionGuardians() {
-        val base = started()
-        val text = GameStore.json.encodeToString(app.pokeplan.app.AppData.serializer(), base.data.copy(player = base.data.player.copy(trainerPoints = 3_300)))
-        val store = GameStore(MemoryStorage(text), clock)
-        val ids = listOf("uxie", "mew", "celebi").map { name ->
-            store.grantPokemon(app.pokeplan.core.dex.Dex.species.first { it.identifier == name }.id, "Quest").id
-        }
-        store.slotGuardian(ids[0])
-        val model = AppModel(store)
-        render("collection-guardians") {
-            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.CollectionScreen(model, 4) } }
-        }
+    fun collectionGuardians() = collection("collection-guardians", 0, hatched = 6) { store ->
+        val ids = listOf("uxie", "mew", "celebi").map { name -> store.grantPokemon(app.pokeplan.core.dex.Dex.species.first { it.identifier == name }.id, "Quest").id }
+        store.slotGuardian(ids[0], app.pokeplan.core.pokemon.PartyIds.PLAN)
     }
 
     @Test

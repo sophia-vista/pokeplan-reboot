@@ -99,7 +99,7 @@ fun CarePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val player = model.data.player
     val party = player.partyOf(PartyIds.CARE)
     val opened = model.store.sees(Feature.PERKS)
-    val totals = CarePerks.total(player.careLead, party)
+    val totals = CarePerks.total(player.careLead, party, player.guardianOf(app.pokeplan.core.pokemon.PartyIds.CARE))
     PartyPanel(
         model, party, player.careLead?.id, lead = "Lead", perksTitle = "Care perks",
         perks = if (opened) CareBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
@@ -119,7 +119,7 @@ fun HealPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val player = model.data.player
     val party = player.partyOf(PartyIds.HEAL)
     val opened = model.store.sees(Feature.PERKS)
-    val totals = HealPerks.total(player.healLead, party)
+    val totals = HealPerks.total(player.healLead, party, player.guardianOf(app.pokeplan.core.pokemon.PartyIds.HEAL))
     PartyPanel(
         model, party, player.healLead?.id, lead = "Lead", perksTitle = "Heal perks",
         perks = if (opened) HealBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
@@ -139,7 +139,7 @@ fun MintPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val player = model.data.player
     val party = player.partyOf(PartyIds.MINT)
     val opened = model.store.sees(Feature.PERKS)
-    val totals = MintPerks.total(player.mintLead, party)
+    val totals = MintPerks.total(player.mintLead, party, player.guardianOf(app.pokeplan.core.pokemon.PartyIds.MINT))
     PartyPanel(
         model, party, player.mintLead?.id, lead = "Lead", perksTitle = "Mint perks",
         perks = if (opened) MintBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
@@ -293,7 +293,7 @@ fun HomePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val player = model.data.player
     val party = player.partyOf(PartyIds.HOME)
     val opened = model.store.sees(Feature.PERKS)
-    val totals = HomePerks.total(player.homeLead, party)
+    val totals = HomePerks.total(player.homeLead, party, player.guardianOf(app.pokeplan.core.pokemon.PartyIds.HOME))
     PartyPanel(
         model, party, player.homeLead?.id, lead = "Lead", perksTitle = "Home perks",
         perks = if (opened) HomeBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
@@ -313,7 +313,7 @@ fun LinkPartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val player = model.data.player
     val party = player.partyOf(PartyIds.LINK)
     val opened = model.store.sees(Feature.PERKS)
-    val totals = LinkPerks.total(player.linkLead, party)
+    val totals = LinkPerks.total(player.linkLead, party, player.guardianOf(app.pokeplan.core.pokemon.PartyIds.LINK))
     PartyPanel(
         model, party, player.linkLead?.id, lead = "Lead", perksTitle = "Link perks",
         perks = if (opened) LinkBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),

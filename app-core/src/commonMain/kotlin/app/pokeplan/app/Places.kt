@@ -14,7 +14,8 @@ import app.pokeplan.core.reward.PlayerState
 sealed interface Place {
     data object Buddy : Place
     data class Party(val partyId: String) : Place
-    data object Guardian : Place
+    /** [module] is the party id of the module whose Guardian it is (`PartyIds`): a Guardian is one module's, in addition to a normal Pokémon. */
+    data class Guardian(val module: String) : Place
     data class WorldTeam(val team: Int) : Place
     data class GearHelper(val tool: String) : Place
     data object Pc : Place
@@ -24,7 +25,7 @@ object Places {
     /** Where [id] is, by the priority that resolves a save with two ([resolve]): Guardian, World team, buddy, party, Pokégear helper, else the PC. */
     fun of(d: AppData, id: String): Place {
         val p = d.player.pokemon.firstOrNull { it.id == id } ?: return Place.Pc
-        if (id in d.player.guardians) return Place.Guardian
+        d.player.moduleGuardians.entries.firstOrNull { it.value == id }?.let { return Place.Guardian(it.key) }
         d.world.teams.firstOrNull { id in it.members }?.let { return Place.WorldTeam(it.id) }
         if (d.player.buddyId == id) return Place.Buddy
         if (p.inParty) return Place.Party(p.partyId)
@@ -51,7 +52,7 @@ object Places {
             }
             if (lead == id) "${partyName(place.partyId)}'s lead, in ${partyName(place.partyId)}'s party" else "In ${partyName(place.partyId)}'s party"
         }
-        Place.Guardian -> "In a Guardian slot"
+        is Place.Guardian -> "${partyName(place.module)}'s Guardian"
         is Place.WorldTeam -> "On ${d.world.team(place.team)?.title ?: "a World team"}"
         is Place.GearHelper -> "Helping a Gear tool"
         Place.Pc -> "Resting in the PC"
@@ -69,6 +70,7 @@ object Places {
         val player = d.player.copy(
             buddyId = d.player.buddyId.takeIf { it != id },
             guardians = d.player.guardians - id,
+            moduleGuardians = d.player.moduleGuardians.filterValues { it != id },
             pokemon = d.player.pokemon.map { if (it.id == id && it.inParty) it.copy(inParty = false) else it },
         )
         val teams = d.world.teams.map { t -> if (id in t.members) t.copy(members = t.members - id) else t }
@@ -82,6 +84,23 @@ object Places {
             return chosen?.takeIf { c -> members.any { it.id == c } } ?: members.firstOrNull()?.id
         }
         return p.copy(planLeadId = lead(PartyIds.PLAN, p.planLeadId), careLeadId = lead(PartyIds.CARE, p.careLeadId), healLeadId = lead(PartyIds.HEAL, p.healLeadId), mintLeadId = lead(PartyIds.MINT, p.mintLeadId), homeLeadId = lead(PartyIds.HOME, p.homeLeadId), linkLeadId = lead(PartyIds.LINK, p.linkLeadId))
+    }
+
+    /**
+     * A save from before the Guardians were per module (0.158.0): the old global slots, in order, become Plan's, Care's, Heal's, Mint's, Home's and Link's Guardian
+     * (the order the database already stored them in, so nothing moves in the tables), and the old list is emptied. A Pokémon that is not a Guardian species is dropped
+     * to the PC. Nothing is removed from the collection and nothing is paid. Idempotent.
+     */
+    fun guardiansToModules(d: AppData): AppData {
+        if (d.player.guardians.isEmpty()) return d
+        val taken = d.player.moduleGuardians.toMutableMap()
+        val free = Guardians.MODULES.filter { it !in taken }.toMutableList()
+        for (id in d.player.guardians) {
+            val p = d.player.pokemon.firstOrNull { it.id == id } ?: continue
+            if (!Guardians.canBe(p) || taken.containsValue(id)) continue
+            taken[free.removeFirstOrNull() ?: break] = id
+        }
+        return d.copy(player = d.player.copy(guardians = emptyList(), moduleGuardians = taken))
     }
 
     /** The version a save carries once [resolve] has run. */
@@ -113,7 +132,7 @@ object Places {
     private fun keepOnly(d: AppData, id: String, keep: Place): AppData {
         var next = d
         if (keep !is Place.Buddy && next.player.buddyId == id) next = next.copy(player = next.player.copy(buddyId = null))
-        if (keep !is Place.Guardian && id in next.player.guardians) next = next.copy(player = next.player.copy(guardians = next.player.guardians - id))
+        if (keep !is Place.Guardian && next.player.moduleGuardians.containsValue(id)) next = next.copy(player = next.player.copy(moduleGuardians = next.player.moduleGuardians.filterValues { it != id }))
         if (keep !is Place.WorldTeam && next.world.teams.any { id in it.members }) next = next.copy(world = next.world.copy(teams = next.world.teams.map { t -> if (id in t.members) t.copy(members = t.members - id) else t }))
         if (keep !is Place.Party && next.player.pokemon.any { it.id == id && it.inParty }) next = next.copy(player = next.player.copy(pokemon = next.player.pokemon.map { if (it.id == id) it.copy(inParty = false) else it }))
         if (keep !is Place.GearHelper && next.gearHelpers.values.any { it == id }) next = next.copy(gearHelpers = next.gearHelpers.filterValues { it != id })

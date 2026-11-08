@@ -363,9 +363,9 @@ private fun LegendsCard(model: AppModel, layer: WorldLayer) {
                                     val mon = model.data.player.pokemon.firstOrNull { it.speciesId == q.speciesId }
                                     when {
                                         mon == null -> "Joined your Guardians (no longer in your collection)."
-                                        mon.id in model.data.player.guardians -> "Joined you, and slotted as a Guardian too."
+                                        model.data.player.moduleGuardians.containsValue(mon.id) -> "Joined you, and is a module's Guardian too."
                                         mon.id in model.data.world.assigned -> "Joined you and is out exploring with a team."
-                                        else -> "Joined you. Slot it as a Guardian in Pokémon to add its Guardian perks."
+                                        else -> "Joined you. Make it a module's Guardian in Pokémon to add its Guardian perks."
                                     }
                                 }
                                 q.afterGuardian && !world.layerDone(layer) -> if (q.clears == 1) q.blurb else "Face the Guardian of ${layer.label} first. ${q.blurb}"

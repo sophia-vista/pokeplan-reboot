@@ -185,7 +185,7 @@ signature perk (10, +5 for a second type). Caps in section 3.
 | Heal perk bucket | 25 (Friendship gain, Berry finder), from Heal's party only | `HealPerks` |
 | Mint perk bucket | 25 (Candy finder, Friendship gain), from Mint's party only | `MintPerks` |
 | Home perk bucket | 25 (Candy finder, Friendship gain), from Home's party only | `HomePerks` |
-| Guardian slots | 0, then 1 at rank 4, 2 at rank 6, 3 at rank 9 | `Guardians.slots` |
+| Guardian slots | One per module (Plan, Care, Heal, Mint, Home, Link), no rank gate (0.158.0, `RewardRules.VERSION` 21) | `Guardians.MODULES` |
 | Active quests | 3 | `Quests.MAX_ACTIVE` |
 | Egg meter | 10 | `EGG_METER_SIZE` |
 | Paid subtasks | 5 a task | `MAX_PAID_SUBTASKS` |

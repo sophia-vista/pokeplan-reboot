@@ -274,14 +274,15 @@ class WorldStoreTest {
     }
 
     @Test
-    fun quickSendPicksTheStrongestFreePokemonAndNeverGuardians() {
+    fun quickSendPicksTheStrongestFreePokemonAGuardianIncludedWhenItIsOne() {
         val store = store()
         store.grantPokemon(25, "test"); store.grantPokemon(74, "test"); store.grantPokemon(10, "test")
         val legend = store.grantPokemon(150, "test")
         assertTrue(store.worldQuickSend("tiny-woods"))
         val team = store.data.world.team(1)!!
         assertTrue(team.members.isNotEmpty() && team.members.size <= 4 && team.expedition != null)
-        assertTrue(legend.id !in team.members, "a Guardian never goes exploring")
+        // A legendary is a normal Pokémon: it is picked like any other, by power for the dungeon.
+        assertTrue(team.members.all { id -> store.data.player.pokemon.any { it.id == id } })
         assertTrue(store.worldQuickSend("tiny-woods").not() || store.data.world.team(2) != null)
     }
 }

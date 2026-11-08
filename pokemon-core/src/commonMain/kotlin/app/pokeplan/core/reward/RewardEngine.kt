@@ -8,6 +8,7 @@ import app.pokeplan.core.dex.Egg
 import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.dex.Rarity
 import app.pokeplan.core.pokemon.FriendshipRules
+import app.pokeplan.core.pokemon.Guardians
 import app.pokeplan.core.pokemon.Hatching
 import app.pokeplan.core.pokemon.Inventory
 import app.pokeplan.core.pokemon.Items
@@ -46,8 +47,10 @@ data class PlayerState(
     val trainerPoints: Int = 0,
     /** Every species ever owned (the Pokédex's "caught"); it never shrinks, even after a transfer. */
     val caught: Set<Int> = emptySet(),
-    /** Ids of the Pokémon slotted as Guardians (legendaries and mythicals), at most as many as the rank has slots. */
+    /** The old global Guardian slots (before 0.158.0): the app moves them into [moduleGuardians] once on load and empties this. */
     val guardians: List<String> = emptyList(),
+    /** Each module's Guardian (a legendary or mythical), by party id (`PartyIds`): one slot per module, its signature perk applying to that module only. */
+    val moduleGuardians: Map<String, String> = emptyMap(),
     /** The lead of Care's party (slot 1); null means its first member. */
     val careLeadId: String? = null,
     /** The lead of Heal's party (slot 1); null means its first member. */
@@ -64,7 +67,11 @@ data class PlayerState(
     val rolesVersion: Int = 0,
 ) {
     val buddy: OwnedPokemon? get() = pokemon.firstOrNull { it.id == buddyId }
-    val guardianPokemon: List<OwnedPokemon> get() = guardians.mapNotNull { id -> pokemon.firstOrNull { it.id == id } }
+    /** The module's Guardian, if it has one and still owns it. */
+    fun guardianOf(partyId: String): OwnedPokemon? = moduleGuardians[partyId]?.let { id -> pokemon.firstOrNull { it.id == id } }
+
+    /** Every module's Guardian, in slot order. */
+    val guardianPokemon: List<OwnedPokemon> get() = Guardians.MODULES.mapNotNull { guardianOf(it) }
     /** Plan's party, the one whose lead and perks the reward engine uses for Plan's rewards. */
     val party: List<OwnedPokemon> get() = partyOf(PartyIds.PLAN)
 
@@ -470,7 +477,7 @@ object RewardEngine {
 
     fun effort(state: PlayerState, e: EffortEvent, rng: Random): Outcome {
         val buddy = state.planLead
-        val perks = Perks.total(buddy, state.party, PerkContext(sessionMinutes = e.minutes, megaActive = buddy != null && Perks.megaReady(buddy)), state.guardianPokemon)
+        val perks = Perks.total(buddy, state.party, PerkContext(sessionMinutes = e.minutes, megaActive = buddy != null && Perks.megaReady(buddy)), listOfNotNull(state.guardianOf(PartyIds.PLAN)))
         val rewards = mutableListOf<Reward>()
         var inventory = state.inventory
 
@@ -520,7 +527,7 @@ object RewardEngine {
     fun achievement(state: PlayerState, e: AchievementEvent, rng: Random): Outcome {
         val tier = e.tier
         val buddy = state.planLead
-        val perks = Perks.total(buddy, state.party, PerkContext(taskRank = tier, hourOfDay = e.hourOfDay, firstTaskOfDay = e.firstOfDay), state.guardianPokemon)
+        val perks = Perks.total(buddy, state.party, PerkContext(taskRank = tier, hourOfDay = e.hourOfDay, firstTaskOfDay = e.firstOfDay), listOfNotNull(state.guardianOf(PartyIds.PLAN)))
         val rewards = mutableListOf<Reward>()
         var inventory = state.inventory
         var coins = state.coins
@@ -595,7 +602,7 @@ object RewardEngine {
      * raises the floor and the chance a little. [rng] is the egg ticket's seed when the device has one.
      */
     fun befriend(state: PlayerState, e: BefriendEvent, rng: Random): Outcome {
-        val luck = CarePerks.total(state.careLead, state.partyOf(PartyIds.CARE))[CareBucket.VISITOR_LUCK] ?: 0.0
+        val luck = CarePerks.total(state.careLead, state.partyOf(PartyIds.CARE), state.guardianOf(PartyIds.CARE))[CareBucket.VISITOR_LUCK] ?: 0.0
         val careParty = state.partyOf(PartyIds.CARE).size
         val joins = rng.nextDouble() * 100 < BEFRIEND_DIRECT_JOIN_PERCENT + luck * BEFRIEND_LUCK_JOIN_SHARE
         val first = Dex.lineRoot(e.speciesId)
@@ -669,7 +676,7 @@ object RewardEngine {
         val rewards = mutableListOf<Reward>()
         var pokemon = state.pokemon
         val buddy = if (e.kind == CareKind.PLAY) state.pokemon.firstOrNull { it.id == e.pokemonId } ?: state.careLead else state.careLead
-        val perks = CarePerks.total(state.careLead, state.partyOf(PartyIds.CARE))
+        val perks = CarePerks.total(state.careLead, state.partyOf(PartyIds.CARE), state.guardianOf(PartyIds.CARE))
         val source = when (e.kind) {
             CareKind.ROUTINE -> FriendshipRules.Source.ROUTINE
             CareKind.CALM_BREAK -> FriendshipRules.Source.CALM_BREAK
@@ -735,7 +742,7 @@ object RewardEngine {
         val rewards = mutableListOf<Reward>()
         var pokemon = state.pokemon
         val lead = state.healLead
-        val perks = HealPerks.total(lead, state.partyOf(PartyIds.HEAL))
+        val perks = HealPerks.total(lead, state.partyOf(PartyIds.HEAL), state.guardianOf(PartyIds.HEAL))
         if (lead != null && e.kind == HealKind.ACTIVITY) {
             var grown = lead.gainFriendship(FriendshipRules.Source.ACTIVITY)
             val extra = perks[HealBucket.FRIENDSHIP_GAIN] ?: 0.0
@@ -790,7 +797,7 @@ object RewardEngine {
         val rewards = mutableListOf<Reward>()
         var pokemon = state.pokemon
         val lead = state.mintLead
-        val perks = MintPerks.total(lead, state.partyOf(PartyIds.MINT))
+        val perks = MintPerks.total(lead, state.partyOf(PartyIds.MINT), state.guardianOf(PartyIds.MINT))
         if (lead != null) {
             var grown = lead.gainFriendship(FriendshipRules.Source.LEDGER)
             val extra = perks[MintBucket.FRIENDSHIP_GAIN] ?: 0.0
@@ -832,7 +839,7 @@ object RewardEngine {
         val rewards = mutableListOf<Reward>()
         var pokemon = state.pokemon
         val lead = state.homeLead
-        val perks = HomePerks.total(lead, state.partyOf(PartyIds.HOME))
+        val perks = HomePerks.total(lead, state.partyOf(PartyIds.HOME), state.guardianOf(PartyIds.HOME))
         if (lead != null) {
             var grown = lead.gainFriendship(FriendshipRules.Source.HABITAT)
             val extra = perks[HomeBucket.FRIENDSHIP_GAIN] ?: 0.0
@@ -874,7 +881,7 @@ object RewardEngine {
         val rewards = mutableListOf<Reward>()
         var pokemon = state.pokemon
         val lead = state.linkLead
-        val perks = LinkPerks.total(lead, state.partyOf(PartyIds.LINK))
+        val perks = LinkPerks.total(lead, state.partyOf(PartyIds.LINK), state.guardianOf(PartyIds.LINK))
         if (lead != null) {
             var grown = lead.gainFriendship(FriendshipRules.Source.FOLLOW_UP)
             val extra = perks[LinkBucket.FRIENDSHIP_GAIN] ?: 0.0
