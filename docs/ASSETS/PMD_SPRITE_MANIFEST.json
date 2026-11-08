@@ -1,0 +1,5330 @@
+{
+  "generated_from": {
+    "SpriteCollab_master": "709f2e32ae4b21d11628883fd2356bb2d5f75244",
+    "fetch_pmd_new_commit": "709f2e32ae4b21d11628883fd2356bb2d5f75244",
+    "repositories": {
+      "SpriteCollab": "https://github.com/PMDCollab/SpriteCollab",
+      "CustomSpriteCollab": "https://github.com/audinowho/CustomSpriteCollab",
+      "RawAsset": "https://github.com/PMDCollab/RawAsset",
+      "lxsmnsyc": "https://github.com/lxsmnsyc/SpriteCollab",
+      "sylvainpolletvillard": "https://github.com/sylvainpolletvillard/SpriteCollab",
+      "PokeBattle": "https://github.com/GustavoGFV/PokeBattle",
+      "GameDataPacks": "https://github.com/PokemonWorkshop/GameDataPacks",
+      "pokemonAutoChess": "https://github.com/keldaanCommunity/pokemonAutoChess"
+    }
+  },
+  "classes": [
+    "complete_pmd",
+    "partial_pmd",
+    "pmd_static",
+    "alternative_style",
+    "portrait_only",
+    "missing",
+    "permission_pending"
+  ],
+  "leads": {
+    "fork_sheets": {
+      "repository": "lxsmnsyc/SpriteCollab (branch master, path compact/<region>/<dex>/0000)",
+      "kind": "repacked SpriteCollab-format sheets (sheet.json + frames.bin + regular.png), built by the fork maintainer",
+      "species": {
+        "514": "regular coat; credit recorded as Discord id 298217315294773251, no name; dated 2026-09-26",
+        "516": "regular coat; the sheet records no credit",
+        "520": "regular coat; credit Pokejavi. (compact/EDITS.md: built from the artist zip sprite-0520.zip, credits.txt added by the maintainer)",
+        "558": "regular coat; credit JFain (same note, sprite-0558.zip)",
+        "592": "regular + female coats; credit Pokejavi.",
+        "616": "regular coat; credit Pokejavi. (sprite-0616.zip)",
+        "626": "regular coat; credit Pokejavi. per compact/EDITS.md (sprite-0626.zip); the sheet itself records no credit"
+      },
+      "why_pending": "The fork's own notes say these are 'not in the collection yet': they were never approved upstream, and the CC BY-NC 4.0 credit was added by the fork maintainer, not shown by the artist."
+    },
+    "sylvain_fork": {
+      "repository": "sylvainpolletvillard/SpriteCollab (master) sprite/0520: a full SpriteCollab-format folder for Tranquill",
+      "species": {
+        "520": "folder with AnimData.xml and 14 animation sheets; no credits.txt in the tree"
+      }
+    },
+    "auto_chess": {
+      "repository": "keldaanCommunity/pokemonAutoChess app/public/src/assets/pokemons/<dex>.png + .json (texture atlases)",
+      "kind": "frames cut from PMD sheets and packed per Pokémon (anim names Attack, Hop, Hurt, Idle, Shoot, Sleep, Walk, 8 directions)",
+      "species": {
+        "520": "Tranquill",
+        "558": "Crustle",
+        "868": "Milcery",
+        "870": "Falinks",
+        "874": "Stonjourner",
+        "883": "Arctovish",
+        "917": "Tarountula",
+        "929": "Dolliv",
+        "962": "Bombirdier",
+        "968": "Orthworm",
+        "999": "Gimmighoul",
+        "1014": "Okidogi",
+        "1025": "Pecharunt"
+      },
+      "only_here": [
+        520,
+        558,
+        1014
+      ],
+      "why_pending": "Code is GPL-3; the repository states no licence or artist for these atlases (pokemons/credits.json has no entry for them). Frame timings are not stored."
+    },
+    "pokebattle": {
+      "repository": "GustavoGFV/PokeBattle src/data/PokemonSprites/Bouffalant",
+      "species": {
+        "626": "AnimData.xml (13 animations) but only Walk, Attack, Faint sheets and a portrait; no artist named"
+      }
+    },
+    "darkusshadow": {
+      "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+      "kind": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+      "species": [
+        917,
+        929,
+        931,
+        943,
+        944,
+        945,
+        947,
+        948,
+        949,
+        950,
+        954,
+        956,
+        962,
+        973
+      ],
+      "note": "Named in the pages' credits text. Maschiff and every DLC species are not named. The artist says 'free for everyone to use in their Pokémon projects, please give credits'. The sheet files were not inspected."
+    }
+  },
+  "duplicates_in_assets_pmd": [
+    [
+      "assets/pmd/55-shiny.png",
+      "assets/pmd/walk-down/55-shiny.png"
+    ],
+    [
+      "assets/pmd/774.png",
+      "assets/pmd/walk-down/774.png"
+    ],
+    [
+      "assets/pmd/10086.png",
+      "assets/pmd/walk-down/10086.png"
+    ],
+    [
+      "assets/pmd/865-shiny.png",
+      "assets/pmd/walk-down/865-shiny.png"
+    ],
+    [
+      "assets/pmd/153.png",
+      "assets/pmd/walk-down/153.png"
+    ],
+    [
+      "assets/pmd/15.png",
+      "assets/pmd/walk-down/15.png"
+    ],
+    [
+      "assets/pmd/593.png",
+      "assets/pmd/walk-down/593.png"
+    ],
+    [
+      "assets/pmd/562-shiny.png",
+      "assets/pmd/walk-down/562-shiny.png"
+    ],
+    [
+      "assets/pmd/10077.png",
+      "assets/pmd/walk-down/10077.png"
+    ],
+    [
+      "assets/pmd/885-shiny.png",
+      "assets/pmd/walk-down/885-shiny.png"
+    ],
+    [
+      "assets/pmd/268-shiny.png",
+      "assets/pmd/walk-down/268-shiny.png"
+    ],
+    [
+      "assets/pmd/957.png",
+      "assets/pmd/walk-down/957.png"
+    ],
+    [
+      "assets/pmd/200-shiny.png",
+      "assets/pmd/walk-down/200-shiny.png"
+    ],
+    [
+      "assets/pmd/250-shiny.png",
+      "assets/pmd/walk-down/250-shiny.png"
+    ],
+    [
+      "assets/pmd/679-shiny.png",
+      "assets/pmd/walk-down/679-shiny.png"
+    ],
+    [
+      "assets/pmd/781-shiny.png",
+      "assets/pmd/walk-down/781-shiny.png"
+    ],
+    [
+      "assets/pmd/414.png",
+      "assets/pmd/walk-down/414.png"
+    ],
+    [
+      "assets/pmd/602.png",
+      "assets/pmd/walk-down/602.png"
+    ],
+    [
+      "assets/pmd/353-shiny.png",
+      "assets/pmd/walk-down/353-shiny.png"
+    ],
+    [
+      "assets/pmd/148.png",
+      "assets/pmd/walk-down/148.png"
+    ],
+    [
+      "assets/pmd/681-shiny.png",
+      "assets/pmd/walk-down/681-shiny.png"
+    ],
+    [
+      "assets/pmd/602-shiny.png",
+      "assets/pmd/walk-down/602-shiny.png"
+    ],
+    [
+      "assets/pmd/705-shiny.png",
+      "assets/pmd/walk-down/705-shiny.png"
+    ],
+    [
+      "assets/pmd/375.png",
+      "assets/pmd/walk-down/375.png"
+    ],
+    [
+      "assets/pmd/964.png",
+      "assets/pmd/963.png"
+    ],
+    [
+      "assets/pmd/798-shiny.png",
+      "assets/pmd/walk-down/798-shiny.png"
+    ],
+    [
+      "assets/pmd/320-shiny.png",
+      "assets/pmd/walk-down/320-shiny.png"
+    ],
+    [
+      "assets/pmd/259-shiny.png",
+      "assets/pmd/walk-down/259-shiny.png"
+    ],
+    [
+      "assets/pmd/563.png",
+      "assets/pmd/walk-down/563.png"
+    ],
+    [
+      "assets/pmd/415.png",
+      "assets/pmd/walk-down/415.png"
+    ],
+    [
+      "assets/pmd/800.png",
+      "assets/pmd/walk-down/800.png"
+    ],
+    [
+      "assets/pmd/10166.png",
+      "assets/pmd/walk-down/10166.png"
+    ],
+    [
+      "assets/pmd/579-shiny.png",
+      "assets/pmd/walk-down/579-shiny.png"
+    ],
+    [
+      "assets/pmd/957-shiny.png",
+      "assets/pmd/walk-down/957-shiny.png"
+    ],
+    [
+      "assets/pmd/958.png",
+      "assets/pmd/walk-down/958.png"
+    ],
+    [
+      "assets/pmd/268.png",
+      "assets/pmd/walk-down/268.png"
+    ],
+    [
+      "assets/pmd/291.png",
+      "assets/pmd/walk-down/291.png"
+    ],
+    [
+      "assets/pmd/6.png",
+      "assets/pmd/walk-down/6.png"
+    ],
+    [
+      "assets/pmd/345.png",
+      "assets/pmd/walk-down/345.png"
+    ],
+    [
+      "assets/pmd/885.png",
+      "assets/pmd/walk-down/885.png"
+    ],
+    [
+      "assets/pmd/10102.png",
+      "assets/pmd/walk-down/10102.png"
+    ],
+    [
+      "assets/pmd/248.png",
+      "assets/pmd/walk-down/248.png"
+    ],
+    [
+      "assets/pmd/793-shiny.png",
+      "assets/pmd/walk-down/793-shiny.png"
+    ],
+    [
+      "assets/pmd/963-shiny.png",
+      "assets/pmd/964-shiny.png"
+    ],
+    [
+      "assets/pmd/865.png",
+      "assets/pmd/walk-down/865.png"
+    ],
+    [
+      "assets/pmd/543.png",
+      "assets/pmd/walk-down/543.png"
+    ],
+    [
+      "assets/pmd/125.png",
+      "assets/pmd/walk-down/125.png"
+    ],
+    [
+      "assets/pmd/336.png",
+      "assets/pmd/walk-down/336.png"
+    ],
+    [
+      "assets/pmd/705.png",
+      "assets/pmd/walk-down/705.png"
+    ],
+    [
+      "assets/pmd/563-shiny.png",
+      "assets/pmd/walk-down/563-shiny.png"
+    ],
+    [
+      "assets/pmd/414-shiny.png",
+      "assets/pmd/walk-down/414-shiny.png"
+    ],
+    [
+      "assets/pmd/336-shiny.png",
+      "assets/pmd/walk-down/336-shiny.png"
+    ],
+    [
+      "assets/pmd/681.png",
+      "assets/pmd/walk-down/681.png"
+    ],
+    [
+      "assets/pmd/28-shiny.png",
+      "assets/pmd/walk-down/28-shiny.png"
+    ],
+    [
+      "assets/pmd/955.png",
+      "assets/pmd/walk-down/955.png"
+    ],
+    [
+      "assets/pmd/553.png",
+      "assets/pmd/walk-down/553.png"
+    ],
+    [
+      "assets/pmd/55.png",
+      "assets/pmd/walk-down/55.png"
+    ],
+    [
+      "assets/pmd/375-shiny.png",
+      "assets/pmd/walk-down/375-shiny.png"
+    ],
+    [
+      "assets/pmd/200.png",
+      "assets/pmd/walk-down/200.png"
+    ],
+    [
+      "assets/pmd/83.png",
+      "assets/pmd/walk-down/83.png"
+    ],
+    [
+      "assets/pmd/846.png",
+      "assets/pmd/walk-down/846.png"
+    ],
+    [
+      "assets/pmd/3.png",
+      "assets/pmd/walk-down/3.png"
+    ],
+    [
+      "assets/pmd/1025-shiny.png",
+      "assets/pmd/1025.png"
+    ],
+    [
+      "assets/pmd/895.png",
+      "assets/pmd/walk-down/895.png"
+    ],
+    [
+      "assets/pmd/10049.png",
+      "assets/pmd/walk-down/10049.png"
+    ],
+    [
+      "assets/pmd/663-shiny.png",
+      "assets/pmd/walk-down/663-shiny.png"
+    ],
+    [
+      "assets/pmd/320.png",
+      "assets/pmd/walk-down/320.png"
+    ],
+    [
+      "assets/pmd/912.png",
+      "assets/pmd/walk-down/912.png"
+    ],
+    [
+      "assets/pmd/593-shiny.png",
+      "assets/pmd/walk-down/593-shiny.png"
+    ],
+    [
+      "assets/pmd/958-shiny.png",
+      "assets/pmd/walk-down/958-shiny.png"
+    ],
+    [
+      "assets/pmd/83-shiny.png",
+      "assets/pmd/walk-down/83-shiny.png"
+    ],
+    [
+      "assets/pmd/846-shiny.png",
+      "assets/pmd/walk-down/846-shiny.png"
+    ],
+    [
+      "assets/pmd/169.png",
+      "assets/pmd/walk-down/169.png"
+    ],
+    [
+      "assets/pmd/153-shiny.png",
+      "assets/pmd/walk-down/153-shiny.png"
+    ],
+    [
+      "assets/pmd/169-shiny.png",
+      "assets/pmd/walk-down/169-shiny.png"
+    ],
+    [
+      "assets/pmd/125-shiny.png",
+      "assets/pmd/walk-down/125-shiny.png"
+    ],
+    [
+      "assets/pmd/793.png",
+      "assets/pmd/walk-down/793.png"
+    ],
+    [
+      "assets/pmd/291-shiny.png",
+      "assets/pmd/walk-down/291-shiny.png"
+    ],
+    [
+      "assets/pmd/259.png",
+      "assets/pmd/walk-down/259.png"
+    ],
+    [
+      "assets/pmd/680-shiny.png",
+      "assets/pmd/walk-down/680-shiny.png"
+    ],
+    [
+      "assets/pmd/266-shiny.png",
+      "assets/pmd/walk-down/266-shiny.png"
+    ],
+    [
+      "assets/pmd/54-shiny.png",
+      "assets/pmd/walk-down/54-shiny.png"
+    ],
+    [
+      "assets/pmd/144-shiny.png",
+      "assets/pmd/walk-down/144-shiny.png"
+    ],
+    [
+      "assets/pmd/266.png",
+      "assets/pmd/walk-down/266.png"
+    ],
+    [
+      "assets/pmd/798.png",
+      "assets/pmd/walk-down/798.png"
+    ],
+    [
+      "assets/pmd/148-shiny.png",
+      "assets/pmd/walk-down/148-shiny.png"
+    ],
+    [
+      "assets/pmd/144.png",
+      "assets/pmd/walk-down/144.png"
+    ],
+    [
+      "assets/pmd/10170.png",
+      "assets/pmd/walk-down/10170.png"
+    ],
+    [
+      "assets/pmd/382-shiny.png",
+      "assets/pmd/walk-down/382-shiny.png"
+    ],
+    [
+      "assets/pmd/895-shiny.png",
+      "assets/pmd/walk-down/895-shiny.png"
+    ],
+    [
+      "assets/pmd/708-shiny.png",
+      "assets/pmd/walk-down/708-shiny.png"
+    ],
+    [
+      "assets/pmd/218-shiny.png",
+      "assets/pmd/walk-down/218-shiny.png"
+    ],
+    [
+      "assets/pmd/386.png",
+      "assets/pmd/walk-down/386.png"
+    ],
+    [
+      "assets/pmd/345-shiny.png",
+      "assets/pmd/walk-down/345-shiny.png"
+    ],
+    [
+      "assets/pmd/663.png",
+      "assets/pmd/walk-down/663.png"
+    ],
+    [
+      "assets/pmd/3-shiny.png",
+      "assets/pmd/walk-down/3-shiny.png"
+    ],
+    [
+      "assets/pmd/10034.png",
+      "assets/pmd/walk-down/10034.png"
+    ],
+    [
+      "assets/pmd/386-shiny.png",
+      "assets/pmd/walk-down/386-shiny.png"
+    ],
+    [
+      "assets/pmd/145-shiny.png",
+      "assets/pmd/walk-down/145-shiny.png"
+    ],
+    [
+      "assets/pmd/145.png",
+      "assets/pmd/walk-down/145.png"
+    ],
+    [
+      "assets/pmd/250.png",
+      "assets/pmd/walk-down/250.png"
+    ],
+    [
+      "assets/pmd/680.png",
+      "assets/pmd/walk-down/680.png"
+    ],
+    [
+      "assets/pmd/679.png",
+      "assets/pmd/walk-down/679.png"
+    ],
+    [
+      "assets/pmd/553-shiny.png",
+      "assets/pmd/walk-down/553-shiny.png"
+    ],
+    [
+      "assets/pmd/6-shiny.png",
+      "assets/pmd/walk-down/6-shiny.png"
+    ],
+    [
+      "assets/pmd/579.png",
+      "assets/pmd/walk-down/579.png"
+    ],
+    [
+      "assets/pmd/353.png",
+      "assets/pmd/walk-down/353.png"
+    ],
+    [
+      "assets/pmd/54.png",
+      "assets/pmd/walk-down/54.png"
+    ],
+    [
+      "assets/pmd/382.png",
+      "assets/pmd/walk-down/382.png"
+    ],
+    [
+      "assets/pmd/955-shiny.png",
+      "assets/pmd/walk-down/955-shiny.png"
+    ],
+    [
+      "assets/pmd/781.png",
+      "assets/pmd/walk-down/781.png"
+    ],
+    [
+      "assets/pmd/218.png",
+      "assets/pmd/walk-down/218.png"
+    ],
+    [
+      "assets/pmd/15-shiny.png",
+      "assets/pmd/walk-down/15-shiny.png"
+    ],
+    [
+      "assets/pmd/415-shiny.png",
+      "assets/pmd/walk-down/415-shiny.png"
+    ],
+    [
+      "assets/pmd/708.png",
+      "assets/pmd/walk-down/708.png"
+    ],
+    [
+      "assets/pmd/562.png",
+      "assets/pmd/walk-down/562.png"
+    ],
+    [
+      "assets/pmd/248-shiny.png",
+      "assets/pmd/walk-down/248-shiny.png"
+    ],
+    [
+      "assets/pmd/28.png",
+      "assets/pmd/walk-down/28.png"
+    ],
+    [
+      "assets/pmd/10179.png",
+      "assets/pmd/walk-down/10179.png"
+    ],
+    [
+      "assets/pmd/walk-up/50-shiny.png",
+      "assets/pmd/walk-up/50.png"
+    ],
+    [
+      "assets/pmd/walk-up/1017-shiny.png",
+      "assets/pmd/walk-up/1017.png"
+    ],
+    [
+      "assets/pmd/walk-up/10039.png",
+      "assets/pmd/walk-up/115.png"
+    ],
+    [
+      "assets/pmd/walk-up/93-shiny.png",
+      "assets/pmd/walk-up/93.png"
+    ],
+    [
+      "assets/pmd/walk-up/964.png",
+      "assets/pmd/walk-up/963.png"
+    ],
+    [
+      "assets/pmd/walk-up/936-shiny.png",
+      "assets/pmd/walk-up/936.png"
+    ],
+    [
+      "assets/pmd/walk-up/961.png",
+      "assets/pmd/walk-up/961-shiny.png"
+    ],
+    [
+      "assets/pmd/walk-up/937-shiny.png",
+      "assets/pmd/walk-up/937.png"
+    ],
+    [
+      "assets/pmd/walk-up/960-shiny.png",
+      "assets/pmd/walk-up/960.png"
+    ],
+    [
+      "assets/pmd/walk-up/963-shiny.png",
+      "assets/pmd/walk-up/964-shiny.png"
+    ],
+    [
+      "assets/pmd/walk-up/935-shiny.png",
+      "assets/pmd/walk-up/935.png"
+    ],
+    [
+      "assets/pmd/walk-up/1025-shiny.png",
+      "assets/pmd/walk-up/1025.png"
+    ],
+    [
+      "assets/pmd/walk-up/51-shiny.png",
+      "assets/pmd/walk-up/51.png"
+    ],
+    [
+      "assets/pmd/walk-down/50-shiny.png",
+      "assets/pmd/walk-down/50.png"
+    ],
+    [
+      "assets/pmd/walk-down/964.png",
+      "assets/pmd/walk-down/963.png"
+    ],
+    [
+      "assets/pmd/walk-down/961.png",
+      "assets/pmd/walk-down/961-shiny.png"
+    ],
+    [
+      "assets/pmd/walk-down/960-shiny.png",
+      "assets/pmd/walk-down/960.png"
+    ],
+    [
+      "assets/pmd/walk-down/963-shiny.png",
+      "assets/pmd/walk-down/964-shiny.png"
+    ],
+    [
+      "assets/pmd/walk-down/1025-shiny.png",
+      "assets/pmd/walk-down/1025.png"
+    ],
+    [
+      "assets/pmd/walk-down/51-shiny.png",
+      "assets/pmd/walk-down/51.png"
+    ],
+    [
+      "assets/pmd/sleep/688.png",
+      "assets/pmd/sleep/688-shiny.png"
+    ],
+    [
+      "assets/pmd/sleep/961.png",
+      "assets/pmd/sleep/961-shiny.png"
+    ],
+    [
+      "assets/pmd/sleep/937-shiny.png",
+      "assets/pmd/sleep/937.png"
+    ],
+    [
+      "assets/pmd/sleep/1025-shiny.png",
+      "assets/pmd/sleep/1025.png"
+    ],
+    [
+      "assets/pmd/walk-side/50-shiny.png",
+      "assets/pmd/walk-side/50.png"
+    ],
+    [
+      "assets/pmd/walk-side/1017-shiny.png",
+      "assets/pmd/walk-side/1017.png"
+    ],
+    [
+      "assets/pmd/walk-side/961.png",
+      "assets/pmd/walk-side/961-shiny.png"
+    ],
+    [
+      "assets/pmd/walk-side/960-shiny.png",
+      "assets/pmd/walk-side/960.png"
+    ],
+    [
+      "assets/pmd/walk-side/1025-shiny.png",
+      "assets/pmd/walk-side/1025.png"
+    ],
+    [
+      "assets/pmd/walk-side/51-shiny.png",
+      "assets/pmd/walk-side/51.png"
+    ],
+    [
+      "assets/pmd/hop/964.png",
+      "assets/pmd/hop/963.png"
+    ],
+    [
+      "assets/pmd/hop/961.png",
+      "assets/pmd/hop/961-shiny.png"
+    ]
+  ],
+  "records": [
+    {
+      "national_dex": 514,
+      "species": "Simisear",
+      "asset_type": "pmd_sprite",
+      "status": "permission_pending",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "exists only outside the official collection",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "lxsmnsyc/SpriteCollab (branch master, path compact/<region>/<dex>/0000)",
+          "detail": "regular coat; credit recorded as Discord id 298217315294773251, no name; dated 2026-09-26",
+          "files_inspected": true
+        }
+      ]
+    },
+    {
+      "national_dex": 516,
+      "species": "Simipour",
+      "asset_type": "pmd_sprite",
+      "status": "permission_pending",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "exists only outside the official collection",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "lxsmnsyc/SpriteCollab (branch master, path compact/<region>/<dex>/0000)",
+          "detail": "regular coat; the sheet records no credit",
+          "files_inspected": true
+        }
+      ]
+    },
+    {
+      "national_dex": 520,
+      "species": "Tranquill",
+      "asset_type": "pmd_sprite",
+      "status": "permission_pending",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "exists only outside the official collection",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "lxsmnsyc/SpriteCollab (branch master, path compact/<region>/<dex>/0000)",
+          "detail": "regular coat; credit Pokejavi. (compact/EDITS.md: built from the artist zip sprite-0520.zip, credits.txt added by the maintainer)",
+          "files_inspected": true
+        },
+        {
+          "repository": "sylvainpolletvillard/SpriteCollab (master) sprite/0520: a full SpriteCollab-format folder for Tranquill",
+          "detail": "folder with AnimData.xml and 14 animation sheets; no credits.txt in the tree",
+          "files_inspected": true
+        },
+        {
+          "repository": "keldaanCommunity/pokemonAutoChess app/public/src/assets/pokemons/<dex>.png + .json (texture atlases)",
+          "detail": "Tranquill",
+          "files_inspected": true
+        }
+      ]
+    },
+    {
+      "national_dex": 522,
+      "species": "Blitzle",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 523,
+      "species": "Zebstrika",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 538,
+      "species": "Throh",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 558,
+      "species": "Crustle",
+      "asset_type": "pmd_sprite",
+      "status": "permission_pending",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "exists only outside the official collection",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "lxsmnsyc/SpriteCollab (branch master, path compact/<region>/<dex>/0000)",
+          "detail": "regular coat; credit JFain (same note, sprite-0558.zip)",
+          "files_inspected": true
+        },
+        {
+          "repository": "keldaanCommunity/pokemonAutoChess app/public/src/assets/pokemons/<dex>.png + .json (texture atlases)",
+          "detail": "Crustle",
+          "files_inspected": true
+        }
+      ]
+    },
+    {
+      "national_dex": 564,
+      "species": "Tirtouga",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 565,
+      "species": "Carracosta",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 591,
+      "species": "Amoonguss",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 592,
+      "species": "Frillish",
+      "asset_type": "pmd_sprite",
+      "status": "permission_pending",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "exists only outside the official collection",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "lxsmnsyc/SpriteCollab (branch master, path compact/<region>/<dex>/0000)",
+          "detail": "regular + female coats; credit Pokejavi.",
+          "files_inspected": true
+        }
+      ]
+    },
+    {
+      "national_dex": 593,
+      "species": "Jellicent",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0593",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": true,
+        "attack": false,
+        "hurt": false,
+        "sleep": true,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/593.png",
+          "sha256": "266e5576c46a4ff0da339b30bbcabe01132846b41add3e3c9a45367d9a3639f2"
+        },
+        {
+          "path": "assets/pmd/593-shiny.png",
+          "sha256": "27a39ed3a5fdcc03574a1aa001771b998d250c54f836c4c4cea5751cd1345084"
+        },
+        {
+          "path": "assets/pmd/sleep/593.png",
+          "sha256": "5124a1437dba730586ec9c4c3c99e7c82d3ceddaa331ea3b6bd5e2e4e6fe820f"
+        },
+        {
+          "path": "assets/pmd/sleep/593-shiny.png",
+          "sha256": "17428fe215fb132c7eacc24065124f107fbf1e17a6a8b5d92f5d2f3d2164c69f"
+        },
+        {
+          "path": "assets/pmd/walk-down/593.png",
+          "sha256": "266e5576c46a4ff0da339b30bbcabe01132846b41add3e3c9a45367d9a3639f2"
+        },
+        {
+          "path": "assets/pmd/walk-down/593-shiny.png",
+          "sha256": "27a39ed3a5fdcc03574a1aa001771b998d250c54f836c4c4cea5751cd1345084"
+        },
+        {
+          "path": "assets/pmd/walk-side/593.png",
+          "sha256": "86efab08af7e2687fdc601ab9b60acde63e17d0116ad7367e728f3faa0c7516c"
+        },
+        {
+          "path": "assets/pmd/walk-side/593-shiny.png",
+          "sha256": "9c85a1c478f8ed601993777a281bcb60bd909266c15772c8ee1396380df4d78a"
+        },
+        {
+          "path": "assets/pmd/walk-up/593.png",
+          "sha256": "7173087c06244ac43a22b5ec8fc51861a1de00ab03daa42f84086c4a85edcb1f"
+        },
+        {
+          "path": "assets/pmd/walk-up/593-shiny.png",
+          "sha256": "65b39aa394c944689ebb3b540f715aab1ad0cbf0a32bc7cf67b1e2f797a55204"
+        }
+      ],
+      "sha256": [
+        "266e5576c46a4ff0da339b30bbcabe01132846b41add3e3c9a45367d9a3639f2",
+        "27a39ed3a5fdcc03574a1aa001771b998d250c54f836c4c4cea5751cd1345084",
+        "5124a1437dba730586ec9c4c3c99e7c82d3ceddaa331ea3b6bd5e2e4e6fe820f",
+        "17428fe215fb132c7eacc24065124f107fbf1e17a6a8b5d92f5d2f3d2164c69f",
+        "266e5576c46a4ff0da339b30bbcabe01132846b41add3e3c9a45367d9a3639f2",
+        "27a39ed3a5fdcc03574a1aa001771b998d250c54f836c4c4cea5751cd1345084",
+        "86efab08af7e2687fdc601ab9b60acde63e17d0116ad7367e728f3faa0c7516c",
+        "9c85a1c478f8ed601993777a281bcb60bd909266c15772c8ee1396380df4d78a",
+        "7173087c06244ac43a22b5ec8fc51861a1de00ab03daa42f84086c4a85edcb1f",
+        "65b39aa394c944689ebb3b540f715aab1ad0cbf0a32bc7cf67b1e2f797a55204"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "b7cd47434744a635047dda38ba7eb2b14fef0f7ee82effcf3018da333257f25b"
+        },
+        "0000/0000/0002": {
+          "animations": [
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "6af516797d4d1954fa6938925f7e0dc168c2b7abab6850c920380beae76379b7"
+        },
+        "0000/0001": {
+          "animations": [
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "b7cd47434744a635047dda38ba7eb2b14fef0f7ee82effcf3018da333257f25b"
+        },
+        "0000/0001/0002": {
+          "animations": [
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "6af516797d4d1954fa6938925f7e0dc168c2b7abab6850c920380beae76379b7"
+        }
+      }
+    },
+    {
+      "national_dex": 616,
+      "species": "Shelmet",
+      "asset_type": "pmd_sprite",
+      "status": "permission_pending",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "exists only outside the official collection",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "lxsmnsyc/SpriteCollab (branch master, path compact/<region>/<dex>/0000)",
+          "detail": "regular coat; credit Pokejavi. (sprite-0616.zip)",
+          "files_inspected": true
+        }
+      ]
+    },
+    {
+      "national_dex": 618,
+      "species": "Stunfisk",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0618",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/618.png",
+          "sha256": "8b264da1cc154cced0ea237089df30757ae78ddd53b64791e7c93e900191c60e"
+        },
+        {
+          "path": "assets/pmd/618-shiny.png",
+          "sha256": "d9853e529892a00df356629f0fb35d60cb03cc6901e544145a49ef6605314600"
+        }
+      ],
+      "sha256": [
+        "8b264da1cc154cced0ea237089df30757ae78ddd53b64791e7c93e900191c60e",
+        "d9853e529892a00df356629f0fb35d60cb03cc6901e544145a49ef6605314600"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Idle",
+            "Rotate"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "d73b04658a8274788a19e417099536bae73113d9ef8fd36ee9fb9ca279f54615"
+        },
+        "0000/0001": {
+          "animations": [
+            "Idle",
+            "Rotate"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "d73b04658a8274788a19e417099536bae73113d9ef8fd36ee9fb9ca279f54615"
+        }
+      }
+    },
+    {
+      "national_dex": 626,
+      "species": "Bouffalant",
+      "asset_type": "pmd_sprite",
+      "status": "permission_pending",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "exists only outside the official collection",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "lxsmnsyc/SpriteCollab (branch master, path compact/<region>/<dex>/0000)",
+          "detail": "regular coat; credit Pokejavi. per compact/EDITS.md (sprite-0626.zip); the sheet itself records no credit",
+          "files_inspected": true
+        },
+        {
+          "repository": "GustavoGFV/PokeBattle src/data/PokemonSprites/Bouffalant",
+          "detail": "AnimData.xml (13 animations) but only Walk, Attack, Faint sheets and a portrait; no artist named",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 668,
+      "species": "Pyroar",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0668",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "only alternate forms are drawn upstream (no regular coat); the default form is not available",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {
+        "0000/0000/0002": {
+          "animations": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "8ca6a979845568da1ec52d6b182b0373be73f0d42d9feaa294ae91982baab079"
+        },
+        "0000/0001/0002": {
+          "animations": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "8ca6a979845568da1ec52d6b182b0373be73f0d42d9feaa294ae91982baab079"
+        }
+      }
+    },
+    {
+      "national_dex": 683,
+      "species": "Aromatisse",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0683",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/683.png",
+          "sha256": "7c6b2bb756a4f4fde64ec94b285996aa99e03dd074b74910a021021e0c61bb53"
+        },
+        {
+          "path": "assets/pmd/683-shiny.png",
+          "sha256": "22f9fd47afef42aa95139fc52aaab652e57693869b83268b2d8fe66b9e21593c"
+        }
+      ],
+      "sha256": [
+        "7c6b2bb756a4f4fde64ec94b285996aa99e03dd074b74910a021021e0c61bb53",
+        "22f9fd47afef42aa95139fc52aaab652e57693869b83268b2d8fe66b9e21593c"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Idle",
+            "Rotate"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "35d0deacdc3fc56912b88a80ed8ed4068bcf51b54ce99502c00286c492f737f8"
+        },
+        "0000/0001": {
+          "animations": [
+            "Idle",
+            "Rotate"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "35d0deacdc3fc56912b88a80ed8ed4068bcf51b54ce99502c00286c492f737f8"
+        }
+      }
+    },
+    {
+      "national_dex": 732,
+      "species": "Trumbeak",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 733,
+      "species": "Toucannon",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0733",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/733.png",
+          "sha256": "499a19c5b3ccbfeabd5d8190b031647930582c491bd563d8ba9144e242dadda6"
+        },
+        {
+          "path": "assets/pmd/733-shiny.png",
+          "sha256": "589851e555802ece3c128beb3b80c39f7791ba6f63881466c7aefd0fed38348f"
+        }
+      ],
+      "sha256": [
+        "499a19c5b3ccbfeabd5d8190b031647930582c491bd563d8ba9144e242dadda6",
+        "589851e555802ece3c128beb3b80c39f7791ba6f63881466c7aefd0fed38348f"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Idle",
+            "Rotate"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "2674047fc11cace1d6cd0709f26f5f779c5a79425931261f455a352743898411"
+        },
+        "0000/0001": {
+          "animations": [
+            "Idle",
+            "Rotate"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "2674047fc11cace1d6cd0709f26f5f779c5a79425931261f455a352743898411"
+        }
+      }
+    },
+    {
+      "national_dex": 735,
+      "species": "Gumshoos",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 756,
+      "species": "Shiinotic",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 765,
+      "species": "Oranguru",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 837,
+      "species": "Rolycoly",
+      "asset_type": "pmd_sprite",
+      "status": "complete_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0837",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": true,
+        "attack": true,
+        "hurt": true,
+        "sleep": true,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/837.png",
+          "sha256": "96c71e193ad07185359696f5ece896ef0c520ca8216956b3c23c2d67f2d2ceca"
+        },
+        {
+          "path": "assets/pmd/sleep/837.png",
+          "sha256": "33474597d5664a712d390b233844a67bb52afcb53131eca807e3626f72b80563"
+        },
+        {
+          "path": "assets/pmd/hop/837.png",
+          "sha256": "d145c4815db5e34857a6be9330f498bc1b3dfcdd25cea2663c2a47a2c95b66e4"
+        },
+        {
+          "path": "assets/pmd/walk-down/837.png",
+          "sha256": "97852a741eb14189d39a17350943b5e44dabb212a7eea69e00db515c7f3ebe41"
+        },
+        {
+          "path": "assets/pmd/walk-side/837.png",
+          "sha256": "c1c2821d2579da69cfa21d93af74d2b69e69a965269d2520cf9c3d6fe9815649"
+        },
+        {
+          "path": "assets/pmd/walk-up/837.png",
+          "sha256": "0853d8fc68ceb0599ecb5cb2cc5f2ff503580ca59abe7ba6795acd02912a87f8"
+        }
+      ],
+      "sha256": [
+        "96c71e193ad07185359696f5ece896ef0c520ca8216956b3c23c2d67f2d2ceca",
+        "33474597d5664a712d390b233844a67bb52afcb53131eca807e3626f72b80563",
+        "d145c4815db5e34857a6be9330f498bc1b3dfcdd25cea2663c2a47a2c95b66e4",
+        "97852a741eb14189d39a17350943b5e44dabb212a7eea69e00db515c7f3ebe41",
+        "c1c2821d2579da69cfa21d93af74d2b69e69a965269d2520cf9c3d6fe9815649",
+        "0853d8fc68ceb0599ecb5cb2cc5f2ff503580ca59abe7ba6795acd02912a87f8"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "SpAttack",
+            "Strike",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack",
+            "Shoot": "Charge",
+            "SpAttack": "Charge"
+          },
+          "anim_data_sha256": "8ec68eb772d0701c34e10ec9f50ede4e43d15104afdef8f01ebd82930ff57c58"
+        }
+      }
+    },
+    {
+      "national_dex": 838,
+      "species": "Carkol",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 839,
+      "species": "Coalossal",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 865,
+      "species": "Sirfetch'd",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0865",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": true,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/865.png",
+          "sha256": "1cb29a34ea53edd95922e526e0bdc12644139b53f81f6c4b1decb30a7c80f3fc"
+        },
+        {
+          "path": "assets/pmd/865-shiny.png",
+          "sha256": "44b64c349620f04ff9aa3ec252d9df690a4f3b2ca26b258f745e9d516a768722"
+        },
+        {
+          "path": "assets/pmd/walk-down/865.png",
+          "sha256": "1cb29a34ea53edd95922e526e0bdc12644139b53f81f6c4b1decb30a7c80f3fc"
+        },
+        {
+          "path": "assets/pmd/walk-down/865-shiny.png",
+          "sha256": "44b64c349620f04ff9aa3ec252d9df690a4f3b2ca26b258f745e9d516a768722"
+        },
+        {
+          "path": "assets/pmd/walk-side/865.png",
+          "sha256": "1de6637dd343327f3e79e397915b5d8a6fcbc7c09de5dd469ffec80373119a80"
+        },
+        {
+          "path": "assets/pmd/walk-side/865-shiny.png",
+          "sha256": "30e028c07bdfb99d71c6d1698f883f74ca17e4410b915c5549640a3c53854b53"
+        },
+        {
+          "path": "assets/pmd/walk-up/865.png",
+          "sha256": "53a38eb3a7fb9da5b21c6440fc925f317b001c45dcc248a0d14b217efbcf84fb"
+        },
+        {
+          "path": "assets/pmd/walk-up/865-shiny.png",
+          "sha256": "c36b08b899cf8eea01742a61ab95ecfcf2339e34eaf925d0dddc94bf3a18f617"
+        }
+      ],
+      "sha256": [
+        "1cb29a34ea53edd95922e526e0bdc12644139b53f81f6c4b1decb30a7c80f3fc",
+        "44b64c349620f04ff9aa3ec252d9df690a4f3b2ca26b258f745e9d516a768722",
+        "1cb29a34ea53edd95922e526e0bdc12644139b53f81f6c4b1decb30a7c80f3fc",
+        "44b64c349620f04ff9aa3ec252d9df690a4f3b2ca26b258f745e9d516a768722",
+        "1de6637dd343327f3e79e397915b5d8a6fcbc7c09de5dd469ffec80373119a80",
+        "30e028c07bdfb99d71c6d1698f883f74ca17e4410b915c5549640a3c53854b53",
+        "53a38eb3a7fb9da5b21c6440fc925f317b001c45dcc248a0d14b217efbcf84fb",
+        "c36b08b899cf8eea01742a61ab95ecfcf2339e34eaf925d0dddc94bf3a18f617"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "e29108cc954cb6cae5851e203d199307436fc759c856214beea287a618e85387"
+        },
+        "0000/0001": {
+          "animations": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "e29108cc954cb6cae5851e203d199307436fc759c856214beea287a618e85387"
+        }
+      }
+    },
+    {
+      "national_dex": 866,
+      "species": "Mr. Rime",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 868,
+      "species": "Milcery",
+      "asset_type": "pmd_sprite",
+      "status": "complete_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0868",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": true,
+        "attack": true,
+        "hurt": true,
+        "sleep": true,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/868.png",
+          "sha256": "16dd8ee24f3c66a0666991a881eab198cc318847f84d52d4b8cd457d0a7236a7"
+        },
+        {
+          "path": "assets/pmd/sleep/868.png",
+          "sha256": "593519544f96c2c7c6a257f29629ffa35bf38ede24acb5ddcf2eaa79f8d0f71b"
+        },
+        {
+          "path": "assets/pmd/hop/868.png",
+          "sha256": "b3789425b968af38af84df5a4bdb0a0be074a2d41cca434478357708ac738fe0"
+        },
+        {
+          "path": "assets/pmd/walk-down/868.png",
+          "sha256": "267e5a9382fc6203771e1d34ac80e9c83049439c72b7983b5acb5ddff4a74dc7"
+        },
+        {
+          "path": "assets/pmd/walk-side/868.png",
+          "sha256": "d9c2bd04e80512b6110e54b20d178cdeaff9084467d36243c1a85019c38d15fa"
+        },
+        {
+          "path": "assets/pmd/walk-up/868.png",
+          "sha256": "65f6f890fc3e40b6366af988365317cc636379d2663b2505e44251f05a8c006f"
+        }
+      ],
+      "sha256": [
+        "16dd8ee24f3c66a0666991a881eab198cc318847f84d52d4b8cd457d0a7236a7",
+        "593519544f96c2c7c6a257f29629ffa35bf38ede24acb5ddcf2eaa79f8d0f71b",
+        "b3789425b968af38af84df5a4bdb0a0be074a2d41cca434478357708ac738fe0",
+        "267e5a9382fc6203771e1d34ac80e9c83049439c72b7983b5acb5ddff4a74dc7",
+        "d9c2bd04e80512b6110e54b20d178cdeaff9084467d36243c1a85019c38d15fa",
+        "65f6f890fc3e40b6366af988365317cc636379d2663b2505e44251f05a8c006f"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Attack",
+            "DeepBreath",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "DeepBreath",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "f9f8bb11b50cf7bed158d0ec905705a8f473a9124ef14c9f2a63e983243a0c70"
+        }
+      },
+      "other_sources": [
+        {
+          "repository": "keldaanCommunity/pokemonAutoChess app/public/src/assets/pokemons/<dex>.png + .json (texture atlases)",
+          "detail": "Milcery",
+          "files_inspected": true
+        }
+      ]
+    },
+    {
+      "national_dex": 870,
+      "species": "Falinks",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0870",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [
+        {
+          "form_id": null,
+          "name": "upstream form 0002",
+          "folder": "0002",
+          "animations": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Strike",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "integrated_in_pokelife": false
+        },
+        {
+          "form_id": null,
+          "name": "upstream form 0003",
+          "folder": "0003",
+          "animations": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Strike",
+            "Swing",
+            "Twirl",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "integrated_in_pokelife": false
+        }
+      ],
+      "files": [],
+      "sha256": [],
+      "notes": "only alternate forms are drawn upstream (no regular coat); the default form is not available",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {
+        "0002": {
+          "animations": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Strike",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack"
+          },
+          "anim_data_sha256": "aa3498f3f9e0563b12bc77278626b6f45e111d53ccecc0f41ba4f15d33bc8026"
+        },
+        "0002/0001": {
+          "animations": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Strike",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack"
+          },
+          "anim_data_sha256": "aa3498f3f9e0563b12bc77278626b6f45e111d53ccecc0f41ba4f15d33bc8026"
+        },
+        "0003": {
+          "animations": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Strike",
+            "Swing",
+            "Twirl",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack",
+            "Twirl": "Rotate"
+          },
+          "anim_data_sha256": "0374151777ffc2139f1fb466c0ffc9d5f748e699b6748a362340fe128abca6cf"
+        },
+        "0003/0001": {
+          "animations": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Strike",
+            "Swing",
+            "Twirl",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack",
+            "Twirl": "Rotate"
+          },
+          "anim_data_sha256": "0374151777ffc2139f1fb466c0ffc9d5f748e699b6748a362340fe128abca6cf"
+        }
+      },
+      "other_sources": [
+        {
+          "repository": "keldaanCommunity/pokemonAutoChess app/public/src/assets/pokemons/<dex>.png + .json (texture atlases)",
+          "detail": "Falinks",
+          "files_inspected": true
+        }
+      ]
+    },
+    {
+      "national_dex": 874,
+      "species": "Stonjourner",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0874",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": true,
+        "attack": true,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/874.png",
+          "sha256": "fcfe6926f5ff340df61663d2bd5cc25b480220fcfb50fd2a2d242899361da3c9"
+        },
+        {
+          "path": "assets/pmd/874-shiny.png",
+          "sha256": "9ec4fec84fa12a92d5163d1f826f6edc2d0e7473049c53f966e5d8ea2cceabe4"
+        },
+        {
+          "path": "assets/pmd/walk-down/874.png",
+          "sha256": "778032b5d66b6c2c91b5c0b333b2af98ac898b6a10f3bdf36afa13e41876883c"
+        },
+        {
+          "path": "assets/pmd/walk-down/874-shiny.png",
+          "sha256": "6bb49e9b697fc3af8d43c1c02a070307c04b6896da7e8024d634e9cdcacea9ec"
+        },
+        {
+          "path": "assets/pmd/walk-side/874.png",
+          "sha256": "b97afb07e65d7f8449a7247b45782fe540ca028ea73b1dc1b4368b8af3464582"
+        },
+        {
+          "path": "assets/pmd/walk-side/874-shiny.png",
+          "sha256": "a6ae1e678ea2102c03d855faa0040590b1e3ff90ccbcb31ab193b330a284f4fc"
+        },
+        {
+          "path": "assets/pmd/walk-up/874.png",
+          "sha256": "9b4951d96b4d98f6e4f691dce0bd191c4b819acf71d9d779079dd1ec35e14a0f"
+        },
+        {
+          "path": "assets/pmd/walk-up/874-shiny.png",
+          "sha256": "52d34b02351f4f5a46a34629abf7104b844cccb2004bb7a6116d450eef0f9c6b"
+        }
+      ],
+      "sha256": [
+        "fcfe6926f5ff340df61663d2bd5cc25b480220fcfb50fd2a2d242899361da3c9",
+        "9ec4fec84fa12a92d5163d1f826f6edc2d0e7473049c53f966e5d8ea2cceabe4",
+        "778032b5d66b6c2c91b5c0b333b2af98ac898b6a10f3bdf36afa13e41876883c",
+        "6bb49e9b697fc3af8d43c1c02a070307c04b6896da7e8024d634e9cdcacea9ec",
+        "b97afb07e65d7f8449a7247b45782fe540ca028ea73b1dc1b4368b8af3464582",
+        "a6ae1e678ea2102c03d855faa0040590b1e3ff90ccbcb31ab193b330a284f4fc",
+        "9b4951d96b4d98f6e4f691dce0bd191c4b819acf71d9d779079dd1ec35e14a0f",
+        "52d34b02351f4f5a46a34629abf7104b844cccb2004bb7a6116d450eef0f9c6b"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Attack",
+            "Dance",
+            "Double",
+            "Idle",
+            "Rotate",
+            "Shake",
+            "Strike",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Double",
+            "Idle",
+            "Rotate",
+            "Shake",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack",
+            "Dance": "Shake"
+          },
+          "anim_data_sha256": "7502db2dc8efcb0220e2d5d33cc64bc95bd288e56c37c0c8ae321111825c0eb0"
+        },
+        "0000/0001": {
+          "animations": [
+            "Attack",
+            "Dance",
+            "Double",
+            "Idle",
+            "Rotate",
+            "Shake",
+            "Strike",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Double",
+            "Idle",
+            "Rotate",
+            "Shake",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack",
+            "Dance": "Shake"
+          },
+          "anim_data_sha256": "7502db2dc8efcb0220e2d5d33cc64bc95bd288e56c37c0c8ae321111825c0eb0"
+        }
+      },
+      "other_sources": [
+        {
+          "repository": "keldaanCommunity/pokemonAutoChess app/public/src/assets/pokemons/<dex>.png + .json (texture atlases)",
+          "detail": "Stonjourner",
+          "files_inspected": true
+        }
+      ]
+    },
+    {
+      "national_dex": 878,
+      "species": "Cufant",
+      "asset_type": "pmd_sprite",
+      "status": "complete_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0878",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": true,
+        "attack": true,
+        "hurt": true,
+        "sleep": true,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/878.png",
+          "sha256": "8947fcdf2a0d0a3b5c2ca9d73b365b400a86260af528ba96e7f34a874a40eefd"
+        },
+        {
+          "path": "assets/pmd/sleep/878.png",
+          "sha256": "326b012159c33bc8929bf52d1456148fc4cd58f455c68fe8dd357e7f078670cd"
+        },
+        {
+          "path": "assets/pmd/hop/878.png",
+          "sha256": "a21c181682a3961ed8f77db3d73c9546162257847c02f407f81fbd935034aa1e"
+        },
+        {
+          "path": "assets/pmd/walk-down/878.png",
+          "sha256": "c0cfe391fc75f0b2cd2c812170bf04df1c7f1237bff3641d9c23c6df1079282d"
+        },
+        {
+          "path": "assets/pmd/walk-side/878.png",
+          "sha256": "25e9753240413b9a73e6e7ec83489a15dac88d6133f7fa8bc81e4ba8658f8d53"
+        },
+        {
+          "path": "assets/pmd/walk-up/878.png",
+          "sha256": "30bc0dd7df9040548c7de9dd39596d45c2c945e8b9bc76d7d376c3edd17eeaab"
+        }
+      ],
+      "sha256": [
+        "8947fcdf2a0d0a3b5c2ca9d73b365b400a86260af528ba96e7f34a874a40eefd",
+        "326b012159c33bc8929bf52d1456148fc4cd58f455c68fe8dd357e7f078670cd",
+        "a21c181682a3961ed8f77db3d73c9546162257847c02f407f81fbd935034aa1e",
+        "c0cfe391fc75f0b2cd2c812170bf04df1c7f1237bff3641d9c23c6df1079282d",
+        "25e9753240413b9a73e6e7ec83489a15dac88d6133f7fa8bc81e4ba8658f8d53",
+        "30bc0dd7df9040548c7de9dd39596d45c2c945e8b9bc76d7d376c3edd17eeaab"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Attack",
+            "Charge",
+            "Cringe",
+            "Dance",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Strike",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Charge",
+            "Cringe",
+            "Dance",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack"
+          },
+          "anim_data_sha256": "cb16095bf9161ba8a3975c3b077a6fd3196d6ace06b68f850748a56f1dc2612a"
+        }
+      }
+    },
+    {
+      "national_dex": 879,
+      "species": "Copperajah",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0879",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": true,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/879.png",
+          "sha256": "7232d5515afe9126caff2dfc8f57667fa6f7b4ebed2e44aca79cdd5d650d97c6"
+        },
+        {
+          "path": "assets/pmd/879-shiny.png",
+          "sha256": "cf105dfc6974bbd47b39d22bf40242552bf90e6b72dab13a7bf1ddc2655d2f83"
+        },
+        {
+          "path": "assets/pmd/walk-down/879.png",
+          "sha256": "f73f0eb5c7a1e96f864c9a9183c75fe7f30bd4ef38aa2b6638393c95e9d7b769"
+        },
+        {
+          "path": "assets/pmd/walk-down/879-shiny.png",
+          "sha256": "838eea7a90e6fd13af7a4b57a356824d5a76c00608da1b888fd172c08086ea82"
+        },
+        {
+          "path": "assets/pmd/walk-side/879.png",
+          "sha256": "b7c070ecdbd0d25266019b69e9d738ccf8305d1ecd084859f3a20d580f36f768"
+        },
+        {
+          "path": "assets/pmd/walk-side/879-shiny.png",
+          "sha256": "061ed8e3db82a3d6c59e435eebbc405d04144c4dab727d8ff37406dcd6dba0b7"
+        },
+        {
+          "path": "assets/pmd/walk-up/879.png",
+          "sha256": "93dafc6ba2e42d8c97638ca5b630847b960f666f316a28314bffe6eaa32c01a6"
+        },
+        {
+          "path": "assets/pmd/walk-up/879-shiny.png",
+          "sha256": "27e598c6645ad584994f24adc43a3b4c34cfe8910add179834a9af816a2feccd"
+        }
+      ],
+      "sha256": [
+        "7232d5515afe9126caff2dfc8f57667fa6f7b4ebed2e44aca79cdd5d650d97c6",
+        "cf105dfc6974bbd47b39d22bf40242552bf90e6b72dab13a7bf1ddc2655d2f83",
+        "f73f0eb5c7a1e96f864c9a9183c75fe7f30bd4ef38aa2b6638393c95e9d7b769",
+        "838eea7a90e6fd13af7a4b57a356824d5a76c00608da1b888fd172c08086ea82",
+        "b7c070ecdbd0d25266019b69e9d738ccf8305d1ecd084859f3a20d580f36f768",
+        "061ed8e3db82a3d6c59e435eebbc405d04144c4dab727d8ff37406dcd6dba0b7",
+        "93dafc6ba2e42d8c97638ca5b630847b960f666f316a28314bffe6eaa32c01a6",
+        "27e598c6645ad584994f24adc43a3b4c34cfe8910add179834a9af816a2feccd"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Idle",
+            "Rotate",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "476a31903051d697015b38fd02990961828757d9ef5f6cf77a8fc8a6de06fb37"
+        },
+        "0000/0001": {
+          "animations": [
+            "Idle",
+            "Rotate",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "476a31903051d697015b38fd02990961828757d9ef5f6cf77a8fc8a6de06fb37"
+        }
+      }
+    },
+    {
+      "national_dex": 883,
+      "species": "Arctovish",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0883",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": true,
+        "attack": true,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/883.png",
+          "sha256": "95bb338e2fa0ccff0830ad55682e110503aebf0ff00a027a3758381b300b36ad"
+        },
+        {
+          "path": "assets/pmd/883-shiny.png",
+          "sha256": "41c603c0581b2a28c8f6bbfc1942d0d83440b6e36465a066eaa9507318272489"
+        },
+        {
+          "path": "assets/pmd/walk-down/883.png",
+          "sha256": "841cc367413ea1f29e6508d08b81a3a05a61f75034eceeb04ffd6efb2459f55f"
+        },
+        {
+          "path": "assets/pmd/walk-down/883-shiny.png",
+          "sha256": "90624cd87d0410e002778b4eaf37922b66d116e32981875295e59715f5d4ef33"
+        },
+        {
+          "path": "assets/pmd/walk-side/883.png",
+          "sha256": "aff4cf24f12f3f119e90f5a9940b56992f752bfa1117320199da29a8a53a0b2a"
+        },
+        {
+          "path": "assets/pmd/walk-side/883-shiny.png",
+          "sha256": "f60d63f30a4feb1601e8efb3c3adc48e227e1fe79980756399c9b70a50d70a4e"
+        },
+        {
+          "path": "assets/pmd/walk-up/883.png",
+          "sha256": "c05e02b87da6f555dc346c3382558416b8ba9e98ecc757df25ce6d544da5315f"
+        },
+        {
+          "path": "assets/pmd/walk-up/883-shiny.png",
+          "sha256": "73179e559c8f69e5d309295787f3435c81aaa749693e792415a73d9ce1617066"
+        }
+      ],
+      "sha256": [
+        "95bb338e2fa0ccff0830ad55682e110503aebf0ff00a027a3758381b300b36ad",
+        "41c603c0581b2a28c8f6bbfc1942d0d83440b6e36465a066eaa9507318272489",
+        "841cc367413ea1f29e6508d08b81a3a05a61f75034eceeb04ffd6efb2459f55f",
+        "90624cd87d0410e002778b4eaf37922b66d116e32981875295e59715f5d4ef33",
+        "aff4cf24f12f3f119e90f5a9940b56992f752bfa1117320199da29a8a53a0b2a",
+        "f60d63f30a4feb1601e8efb3c3adc48e227e1fe79980756399c9b70a50d70a4e",
+        "c05e02b87da6f555dc346c3382558416b8ba9e98ecc757df25ce6d544da5315f",
+        "73179e559c8f69e5d309295787f3435c81aaa749693e792415a73d9ce1617066"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Attack",
+            "Double",
+            "Idle",
+            "Rotate",
+            "Strike",
+            "Twirl",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Double",
+            "Idle",
+            "Rotate",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack",
+            "Twirl": "Rotate"
+          },
+          "anim_data_sha256": "8b4314bfce63c0a50ea215c92e4d06227f920a2e6c7f47f313c633d25327e65c"
+        },
+        "0000/0001": {
+          "animations": [
+            "Attack",
+            "Double",
+            "Idle",
+            "Rotate",
+            "Strike",
+            "Twirl",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Double",
+            "Idle",
+            "Rotate",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack",
+            "Twirl": "Rotate"
+          },
+          "anim_data_sha256": "8b4314bfce63c0a50ea215c92e4d06227f920a2e6c7f47f313c633d25327e65c"
+        }
+      },
+      "other_sources": [
+        {
+          "repository": "keldaanCommunity/pokemonAutoChess app/public/src/assets/pokemons/<dex>.png + .json (texture atlases)",
+          "detail": "Arctovish",
+          "files_inspected": true
+        }
+      ]
+    },
+    {
+      "national_dex": 893,
+      "species": "Zarude",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 917,
+      "species": "Tarountula",
+      "asset_type": "pmd_sprite",
+      "status": "complete_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0917",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": true,
+        "attack": true,
+        "hurt": true,
+        "sleep": true,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/917.png",
+          "sha256": "5f21f11800accac0b878701dcdec771bc2d5b1f51760aa9abb7c3ce05d8313a6"
+        },
+        {
+          "path": "assets/pmd/917-shiny.png",
+          "sha256": "d08e5f2e824c8584a2460dec89b7e963e5f428b26cc207001f108e1561990d64"
+        },
+        {
+          "path": "assets/pmd/sleep/917.png",
+          "sha256": "4537a05d47daedc2a0d24993497407517232996f99dbd3ee1b945aff8d543652"
+        },
+        {
+          "path": "assets/pmd/sleep/917-shiny.png",
+          "sha256": "f99451bf6c5ea653fa7a53ab43ce7a3dae6797cd8414ceb2fa19f08da3fa45f1"
+        },
+        {
+          "path": "assets/pmd/walk-down/917.png",
+          "sha256": "4d354531a3709b03abf3313d0a238a51e298e2c9e5b388d3f55eaf726f36516f"
+        },
+        {
+          "path": "assets/pmd/walk-down/917-shiny.png",
+          "sha256": "6e1c185ed7de1511ea58508517b794996649c21d8e936e15152e5a713ba52941"
+        },
+        {
+          "path": "assets/pmd/walk-side/917.png",
+          "sha256": "4a81d854b105bbb9c34ca9b5c95e5a2c170ed6d5d7bce026041dcb2d48527b61"
+        },
+        {
+          "path": "assets/pmd/walk-side/917-shiny.png",
+          "sha256": "4cc2fa0bfea6e67122252843b99ae50ca521ecdfd7e2186fd8e0968e8d4309cb"
+        },
+        {
+          "path": "assets/pmd/walk-up/917.png",
+          "sha256": "509a0930f11ddda2daee5694ca9facf74547420045f46f91d05479d5d59206d7"
+        },
+        {
+          "path": "assets/pmd/walk-up/917-shiny.png",
+          "sha256": "5b41f11aab3b8c66545395738cf01ce1f29b69ba1ea50049702f827c898f0425"
+        }
+      ],
+      "sha256": [
+        "5f21f11800accac0b878701dcdec771bc2d5b1f51760aa9abb7c3ce05d8313a6",
+        "d08e5f2e824c8584a2460dec89b7e963e5f428b26cc207001f108e1561990d64",
+        "4537a05d47daedc2a0d24993497407517232996f99dbd3ee1b945aff8d543652",
+        "f99451bf6c5ea653fa7a53ab43ce7a3dae6797cd8414ceb2fa19f08da3fa45f1",
+        "4d354531a3709b03abf3313d0a238a51e298e2c9e5b388d3f55eaf726f36516f",
+        "6e1c185ed7de1511ea58508517b794996649c21d8e936e15152e5a713ba52941",
+        "4a81d854b105bbb9c34ca9b5c95e5a2c170ed6d5d7bce026041dcb2d48527b61",
+        "4cc2fa0bfea6e67122252843b99ae50ca521ecdfd7e2186fd8e0968e8d4309cb",
+        "509a0930f11ddda2daee5694ca9facf74547420045f46f91d05479d5d59206d7",
+        "5b41f11aab3b8c66545395738cf01ce1f29b69ba1ea50049702f827c898f0425"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Attack",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Strike",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack"
+          },
+          "anim_data_sha256": "cd997f2f07ce77c817ebc155916bae3d72bffc7d7eb571bfa743390e63968915"
+        },
+        "0000/0001": {
+          "animations": [
+            "Attack",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Strike",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack"
+          },
+          "anim_data_sha256": "cd997f2f07ce77c817ebc155916bae3d72bffc7d7eb571bfa743390e63968915"
+        }
+      },
+      "other_sources": [
+        {
+          "repository": "keldaanCommunity/pokemonAutoChess app/public/src/assets/pokemons/<dex>.png + .json (texture atlases)",
+          "detail": "Tarountula",
+          "files_inspected": true
+        },
+        {
+          "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+          "detail": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 929,
+      "species": "Dolliv",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0929",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/929.png",
+          "sha256": "aeed8c2836b6104f2d245fcc7fcb3b43f61986ff460858cd3342a86fe0aec7e9"
+        },
+        {
+          "path": "assets/pmd/929-shiny.png",
+          "sha256": "69b9403d645b3a2fcbd26622674e8126a3bc9dd7012d6cd086529e37fa64ec50"
+        }
+      ],
+      "sha256": [
+        "aeed8c2836b6104f2d245fcc7fcb3b43f61986ff460858cd3342a86fe0aec7e9",
+        "69b9403d645b3a2fcbd26622674e8126a3bc9dd7012d6cd086529e37fa64ec50"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Idle",
+            "Rotate"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "35d0deacdc3fc56912b88a80ed8ed4068bcf51b54ce99502c00286c492f737f8"
+        },
+        "0000/0001": {
+          "animations": [
+            "Idle",
+            "Rotate"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "35d0deacdc3fc56912b88a80ed8ed4068bcf51b54ce99502c00286c492f737f8"
+        }
+      },
+      "other_sources": [
+        {
+          "repository": "keldaanCommunity/pokemonAutoChess app/public/src/assets/pokemons/<dex>.png + .json (texture atlases)",
+          "detail": "Dolliv",
+          "files_inspected": true
+        },
+        {
+          "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+          "detail": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 931,
+      "species": "Squawkabilly",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+          "detail": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 942,
+      "species": "Maschiff",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 943,
+      "species": "Mabosstiff",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+          "detail": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 944,
+      "species": "Shroodle",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+          "detail": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 945,
+      "species": "Grafaiai",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0945",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/945.png",
+          "sha256": "e6be582465869b565405dceca661a07d69a9365ea28b319e8af4177f8141f9cc"
+        },
+        {
+          "path": "assets/pmd/945-shiny.png",
+          "sha256": "08fbb3abbdc863a43ff04c23cc7219b8ccb10fd785f891d6748b647fd76a548c"
+        }
+      ],
+      "sha256": [
+        "e6be582465869b565405dceca661a07d69a9365ea28b319e8af4177f8141f9cc",
+        "08fbb3abbdc863a43ff04c23cc7219b8ccb10fd785f891d6748b647fd76a548c"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Idle",
+            "Rotate"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "f207fdd790befe4311a38d53d57a9befda9157bc0c257bbdc3ffab04993be303"
+        },
+        "0000/0001": {
+          "animations": [
+            "Idle",
+            "Rotate"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "f207fdd790befe4311a38d53d57a9befda9157bc0c257bbdc3ffab04993be303"
+        }
+      },
+      "other_sources": [
+        {
+          "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+          "detail": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 947,
+      "species": "Brambleghast",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+          "detail": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 948,
+      "species": "Toedscool",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0948",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": true,
+        "attack": false,
+        "hurt": false,
+        "sleep": true,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/948.png",
+          "sha256": "81970c8452e217fcb4523b79e40cb4b7ca1511ffdfe6add8f9065f2324d28d9f"
+        },
+        {
+          "path": "assets/pmd/948-shiny.png",
+          "sha256": "f42dcc5c047a824c07808a73e8b57a79f2a6c173b0df43fe2b544fcc5fe57f88"
+        },
+        {
+          "path": "assets/pmd/sleep/948.png",
+          "sha256": "d24706920f9fd0a23b434d1d8b0820a2f17dda80fa1bc5c1bb29ab2cf78bdc56"
+        },
+        {
+          "path": "assets/pmd/sleep/948-shiny.png",
+          "sha256": "5eadeff6104314162dff9d6541aa94ebfb968f379c6acb1f1bb76f2da0946f2b"
+        },
+        {
+          "path": "assets/pmd/walk-down/948.png",
+          "sha256": "8445f22b9a13bfff11c5fceb095f292bf3bf8ff66b471eff942847946a8a7399"
+        },
+        {
+          "path": "assets/pmd/walk-down/948-shiny.png",
+          "sha256": "c4d15d711bc4573781a651cb97d525aed3bf4c42711ed8097431b24da25d2566"
+        },
+        {
+          "path": "assets/pmd/walk-side/948.png",
+          "sha256": "27d66811363bd5d03665d403589c81b5a9d214eaa5fdbea2663fa7c4d1ed6298"
+        },
+        {
+          "path": "assets/pmd/walk-side/948-shiny.png",
+          "sha256": "1ac1ad30254c9d3d9bf94f1ca874ddb9d07607eca378e61104bdeea162d6fe4f"
+        },
+        {
+          "path": "assets/pmd/walk-up/948.png",
+          "sha256": "d1999502053f6b8075b9ab3f79e30ed85a9b406bf6bdf6caa3a02b4188f2b928"
+        },
+        {
+          "path": "assets/pmd/walk-up/948-shiny.png",
+          "sha256": "b6b850d664bbf0ebd50a2f4c9d3854754127a681bf7de6e52df5c7232eaadb6d"
+        }
+      ],
+      "sha256": [
+        "81970c8452e217fcb4523b79e40cb4b7ca1511ffdfe6add8f9065f2324d28d9f",
+        "f42dcc5c047a824c07808a73e8b57a79f2a6c173b0df43fe2b544fcc5fe57f88",
+        "d24706920f9fd0a23b434d1d8b0820a2f17dda80fa1bc5c1bb29ab2cf78bdc56",
+        "5eadeff6104314162dff9d6541aa94ebfb968f379c6acb1f1bb76f2da0946f2b",
+        "8445f22b9a13bfff11c5fceb095f292bf3bf8ff66b471eff942847946a8a7399",
+        "c4d15d711bc4573781a651cb97d525aed3bf4c42711ed8097431b24da25d2566",
+        "27d66811363bd5d03665d403589c81b5a9d214eaa5fdbea2663fa7c4d1ed6298",
+        "1ac1ad30254c9d3d9bf94f1ca874ddb9d07607eca378e61104bdeea162d6fe4f",
+        "d1999502053f6b8075b9ab3f79e30ed85a9b406bf6bdf6caa3a02b4188f2b928",
+        "b6b850d664bbf0ebd50a2f4c9d3854754127a681bf7de6e52df5c7232eaadb6d"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "e32a4c74ea7ede25c56d982c12f4ebb238b581c97f7ab570b2d0aff7ef954a25"
+        },
+        "0000/0001": {
+          "animations": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "e32a4c74ea7ede25c56d982c12f4ebb238b581c97f7ab570b2d0aff7ef954a25"
+        }
+      },
+      "other_sources": [
+        {
+          "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+          "detail": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 949,
+      "species": "Toedscruel",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+          "detail": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 950,
+      "species": "Klawf",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+          "detail": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 954,
+      "species": "Rabsca",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+          "detail": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 956,
+      "species": "Espathra",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+          "detail": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 962,
+      "species": "Bombirdier",
+      "asset_type": "pmd_sprite",
+      "status": "complete_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0962",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": true,
+        "attack": true,
+        "hurt": true,
+        "sleep": true,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/962.png",
+          "sha256": "4241407ce5e8cd9ece1196785fc03b0d6d8cfdcb83e7f27246a0118094b3f368"
+        },
+        {
+          "path": "assets/pmd/sleep/962.png",
+          "sha256": "23ee713608a96060a2800fdf45754c01abac41b6f3a3e4890d6cf9873bb4b082"
+        },
+        {
+          "path": "assets/pmd/hop/962.png",
+          "sha256": "33ea6134928a3522ddf81b9bc9e87db2f53b1ed0bb393e27e9b76aaa1ea27053"
+        },
+        {
+          "path": "assets/pmd/walk-down/962.png",
+          "sha256": "3db1391f6498c9456cf78ded150aa8b932a019346c62f80efb8cc72146ef7d1c"
+        },
+        {
+          "path": "assets/pmd/walk-side/962.png",
+          "sha256": "5b247e6f82910e544e4c357f27fb29e84a5cef33bffef4d0b41a1300482e7b73"
+        },
+        {
+          "path": "assets/pmd/walk-up/962.png",
+          "sha256": "67f777881ff346ac671b03f73575d55c5047c46ab5cbdd1c644e7ed32b910999"
+        }
+      ],
+      "sha256": [
+        "4241407ce5e8cd9ece1196785fc03b0d6d8cfdcb83e7f27246a0118094b3f368",
+        "23ee713608a96060a2800fdf45754c01abac41b6f3a3e4890d6cf9873bb4b082",
+        "33ea6134928a3522ddf81b9bc9e87db2f53b1ed0bb393e27e9b76aaa1ea27053",
+        "3db1391f6498c9456cf78ded150aa8b932a019346c62f80efb8cc72146ef7d1c",
+        "5b247e6f82910e544e4c357f27fb29e84a5cef33bffef4d0b41a1300482e7b73",
+        "67f777881ff346ac671b03f73575d55c5047c46ab5cbdd1c644e7ed32b910999"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hover",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Strike",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hover",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack"
+          },
+          "anim_data_sha256": "640f99b858b4d719b0f7ba12706d841fb7c0a54e0438dff98e14dcb62030edcf"
+        }
+      },
+      "other_sources": [
+        {
+          "repository": "keldaanCommunity/pokemonAutoChess app/public/src/assets/pokemons/<dex>.png + .json (texture atlases)",
+          "detail": "Bombirdier",
+          "files_inspected": true
+        },
+        {
+          "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+          "detail": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 968,
+      "species": "Orthworm",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0968",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": true,
+        "attack": true,
+        "hurt": false,
+        "sleep": true,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/968.png",
+          "sha256": "84ae93275068606e10f7e2857e78448ca0dbbf564606ba4603295e5ac2d3ca3e"
+        },
+        {
+          "path": "assets/pmd/968-shiny.png",
+          "sha256": "ecc3549bca532b2b0182ec1179f16f38d7a08a6161756b1a7e08a3d43ccb6bad"
+        },
+        {
+          "path": "assets/pmd/sleep/968.png",
+          "sha256": "fed27d60c57314f34280c83feaacb81f47a6919838fc0ae094e03e6d2261aaf3"
+        },
+        {
+          "path": "assets/pmd/sleep/968-shiny.png",
+          "sha256": "10ba70bc9e922ef9badc542cd5992ead4b4998c30b7d84513e31bc1b6c532c7b"
+        },
+        {
+          "path": "assets/pmd/hop/968.png",
+          "sha256": "5a7c4efcef50cefe7972f4b6cdb50a5318a042316614dba6fdf62267e839e5c7"
+        },
+        {
+          "path": "assets/pmd/hop/968-shiny.png",
+          "sha256": "7fccfd357a9ed9e689117d49d28c3ca4ecfaa3d82d686844578888e1cd6e9479"
+        },
+        {
+          "path": "assets/pmd/walk-down/968.png",
+          "sha256": "ae6ff2748b78c9d2abc3aa4745c68183ab740df64e748fd871d711b8e38ca78a"
+        },
+        {
+          "path": "assets/pmd/walk-down/968-shiny.png",
+          "sha256": "40dca174d1897201a24a8de3b8cf70aa318b3ba670a0613020ffe77eb1f4f721"
+        },
+        {
+          "path": "assets/pmd/walk-side/968.png",
+          "sha256": "d2bd379cb32da08506563ee7eef9020404a370724f7c0b1ba96549c3bed5545c"
+        },
+        {
+          "path": "assets/pmd/walk-side/968-shiny.png",
+          "sha256": "b14bd440402120db3d73c90970a10ae9280c6d114c860c746c7e5fba879dd825"
+        },
+        {
+          "path": "assets/pmd/walk-up/968.png",
+          "sha256": "a27d35afb660683e0113368736d75440cda94f82e8ef0000ec2da78cc1fbef97"
+        },
+        {
+          "path": "assets/pmd/walk-up/968-shiny.png",
+          "sha256": "0e50d9de9c034d47f78f9efa0e0dcaaddbd3dea1165a4a4975d83d25f156b029"
+        }
+      ],
+      "sha256": [
+        "84ae93275068606e10f7e2857e78448ca0dbbf564606ba4603295e5ac2d3ca3e",
+        "ecc3549bca532b2b0182ec1179f16f38d7a08a6161756b1a7e08a3d43ccb6bad",
+        "fed27d60c57314f34280c83feaacb81f47a6919838fc0ae094e03e6d2261aaf3",
+        "10ba70bc9e922ef9badc542cd5992ead4b4998c30b7d84513e31bc1b6c532c7b",
+        "5a7c4efcef50cefe7972f4b6cdb50a5318a042316614dba6fdf62267e839e5c7",
+        "7fccfd357a9ed9e689117d49d28c3ca4ecfaa3d82d686844578888e1cd6e9479",
+        "ae6ff2748b78c9d2abc3aa4745c68183ab740df64e748fd871d711b8e38ca78a",
+        "40dca174d1897201a24a8de3b8cf70aa318b3ba670a0613020ffe77eb1f4f721",
+        "d2bd379cb32da08506563ee7eef9020404a370724f7c0b1ba96549c3bed5545c",
+        "b14bd440402120db3d73c90970a10ae9280c6d114c860c746c7e5fba879dd825",
+        "a27d35afb660683e0113368736d75440cda94f82e8ef0000ec2da78cc1fbef97",
+        "0e50d9de9c034d47f78f9efa0e0dcaaddbd3dea1165a4a4975d83d25f156b029"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Idle",
+            "Lick",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Strike",
+            "Swing",
+            "Twirl",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": false,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack",
+            "Lick": "Shoot",
+            "Twirl": "Rotate"
+          },
+          "anim_data_sha256": "46fd77b813d7ba633a20c9d18277390d4d408a9afc8a6a30917ff8fa54408e78"
+        },
+        "0000/0001": {
+          "animations": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Idle",
+            "Lick",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Strike",
+            "Swing",
+            "Twirl",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": false,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack",
+            "Lick": "Shoot",
+            "Twirl": "Rotate"
+          },
+          "anim_data_sha256": "46fd77b813d7ba633a20c9d18277390d4d408a9afc8a6a30917ff8fa54408e78"
+        }
+      },
+      "other_sources": [
+        {
+          "repository": "keldaanCommunity/pokemonAutoChess app/public/src/assets/pokemons/<dex>.png + .json (texture atlases)",
+          "detail": "Orthworm",
+          "files_inspected": true
+        }
+      ]
+    },
+    {
+      "national_dex": 973,
+      "species": "Flamigo",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "https://www.deviantart.com/darkusshadow (pages 967776690 and 967779547, published 2023-06-18)",
+          "detail": "ALTERNATIVE_STYLE: Paldea overworld sprite sheets, not PMD; download needs a DeviantArt login",
+          "files_inspected": false
+        }
+      ]
+    },
+    {
+      "national_dex": 986,
+      "species": "Brute Bonnet",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 990,
+      "species": "Iron Treads",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0990",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": true,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/990.png",
+          "sha256": "735f106aceca50b48a72cb90a4c98c92e386ae1f4ec22e7ff9846c59d151fdd3"
+        },
+        {
+          "path": "assets/pmd/990-shiny.png",
+          "sha256": "04e7d315cff9ac7177037af165000b928065e42f99fb942f5209cd8c40a82428"
+        },
+        {
+          "path": "assets/pmd/sleep/990.png",
+          "sha256": "b9ebb9b687c1067d280a48debda701f66031562ce5d06c74ca8e3b239b119ad0"
+        },
+        {
+          "path": "assets/pmd/sleep/990-shiny.png",
+          "sha256": "b56f36f3c632b759adb5ba9ee0f7526e8d17ff9220cefff66b81da2cecbb50a1"
+        }
+      ],
+      "sha256": [
+        "735f106aceca50b48a72cb90a4c98c92e386ae1f4ec22e7ff9846c59d151fdd3",
+        "04e7d315cff9ac7177037af165000b928065e42f99fb942f5209cd8c40a82428",
+        "b9ebb9b687c1067d280a48debda701f66031562ce5d06c74ca8e3b239b119ad0",
+        "b56f36f3c632b759adb5ba9ee0f7526e8d17ff9220cefff66b81da2cecbb50a1"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Idle",
+            "Rotate",
+            "Sleep"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate",
+            "Sleep"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "d5f9e242b9864d2749ada6d731a1a75739889bd29be6b3dc3d68da43f3d46680"
+        },
+        "0000/0001": {
+          "animations": [
+            "Idle",
+            "Rotate",
+            "Sleep"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate",
+            "Sleep"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "d5f9e242b9864d2749ada6d731a1a75739889bd29be6b3dc3d68da43f3d46680"
+        }
+      }
+    },
+    {
+      "national_dex": 993,
+      "species": "Iron Jugulis",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 999,
+      "species": "Gimmighoul",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/0999",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [
+        {
+          "form_id": 10263,
+          "name": "Roaming",
+          "folder": "0001",
+          "animations": [
+            "Attack",
+            "Charge",
+            "Cringe",
+            "DeepBreath",
+            "Double",
+            "Eat",
+            "EventSleep",
+            "Float",
+            "Head",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Laying",
+            "LeapForth",
+            "LostBalance",
+            "Nod",
+            "Pain",
+            "Pose",
+            "RearUp",
+            "Rotate",
+            "Shoot",
+            "Sink",
+            "Sit",
+            "Sleep",
+            "Swing",
+            "Wake",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "integrated_in_pokelife": true,
+          "files": [
+            {
+              "path": "assets/pmd/10263.png",
+              "sha256": "49830e0d2a0d75c1459f07f3ee80f23a7f1c95e81783a1dbda52f5feeb8280ae"
+            },
+            {
+              "path": "assets/pmd/sleep/10263.png",
+              "sha256": "0e3a7e95149dd4561a0b567727134b46bfd10c8ffaacedb03dd1722c9d3073f7"
+            },
+            {
+              "path": "assets/pmd/hop/10263.png",
+              "sha256": "b8864a9ad07f9aab8925750ad35cff2301b01993bd19ac5282cb76227591a605"
+            },
+            {
+              "path": "assets/pmd/eat/10263.png",
+              "sha256": "37ba8ddb463a776b65633e6f0212466eeb8fa4fda1c0fe62f92eab842f3efe19"
+            },
+            {
+              "path": "assets/pmd/walk-down/10263.png",
+              "sha256": "374ecea3d1f27834fb7496663deb9185aef4739666cddee10ea54913a5d93ab2"
+            },
+            {
+              "path": "assets/pmd/walk-side/10263.png",
+              "sha256": "6effec6bd308c4744abfa5479cb2be0db3acbf2c4ebdb471e183d80264bd6003"
+            },
+            {
+              "path": "assets/pmd/walk-up/10263.png",
+              "sha256": "84f32278522b726d10af9d377572f0ff731f3ace5cbe2cc33b2e210281587b2f"
+            }
+          ]
+        }
+      ],
+      "files": [],
+      "sha256": [],
+      "notes": "only alternate forms are drawn upstream (no regular coat); the default form is not available",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {
+        "0001": {
+          "animations": [
+            "Attack",
+            "Charge",
+            "Cringe",
+            "DeepBreath",
+            "Double",
+            "Eat",
+            "EventSleep",
+            "Float",
+            "Head",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Laying",
+            "LeapForth",
+            "LostBalance",
+            "Nod",
+            "Pain",
+            "Pose",
+            "RearUp",
+            "Rotate",
+            "Shoot",
+            "Sink",
+            "Sit",
+            "Sleep",
+            "Swing",
+            "Wake",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Charge",
+            "Cringe",
+            "DeepBreath",
+            "Double",
+            "Eat",
+            "EventSleep",
+            "Float",
+            "Head",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Laying",
+            "LeapForth",
+            "LostBalance",
+            "Nod",
+            "Pain",
+            "Pose",
+            "RearUp",
+            "Rotate",
+            "Sink",
+            "Sit",
+            "Sleep",
+            "Swing",
+            "Wake",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Shoot": "RearUp"
+          },
+          "anim_data_sha256": "89db10efc9a56baf176054ff625c63bf7b9fe3e160f6b7ab6a216dc3ce837513"
+        },
+        "0001/0001": {
+          "animations": [
+            "Attack",
+            "Charge",
+            "Cringe",
+            "DeepBreath",
+            "Double",
+            "Eat",
+            "EventSleep",
+            "Float",
+            "Head",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Laying",
+            "LeapForth",
+            "LostBalance",
+            "Nod",
+            "Pain",
+            "Pose",
+            "RearUp",
+            "Rotate",
+            "Shoot",
+            "Sink",
+            "Sit",
+            "Sleep",
+            "Swing",
+            "Wake",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Charge",
+            "Cringe",
+            "DeepBreath",
+            "Double",
+            "Eat",
+            "EventSleep",
+            "Float",
+            "Head",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Laying",
+            "LeapForth",
+            "LostBalance",
+            "Nod",
+            "Pain",
+            "Pose",
+            "RearUp",
+            "Rotate",
+            "Sink",
+            "Sit",
+            "Sleep",
+            "Swing",
+            "Wake",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Shoot": "RearUp"
+          },
+          "anim_data_sha256": "89db10efc9a56baf176054ff625c63bf7b9fe3e160f6b7ab6a216dc3ce837513"
+        }
+      },
+      "other_sources": [
+        {
+          "repository": "keldaanCommunity/pokemonAutoChess app/public/src/assets/pokemons/<dex>.png + .json (texture atlases)",
+          "detail": "Gimmighoul",
+          "files_inspected": true
+        }
+      ]
+    },
+    {
+      "national_dex": 1001,
+      "species": "Wo-Chien",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 1002,
+      "species": "Chien-Pao",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 1003,
+      "species": "Ting-Lu",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/1003",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [
+        {
+          "form_id": null,
+          "name": "upstream form 0001",
+          "folder": "0001",
+          "animations": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "RearUp",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Strike",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "integrated_in_pokelife": false
+        }
+      ],
+      "files": [
+        {
+          "path": "assets/pmd/1003.png",
+          "sha256": "e5cc03bd8df8be93630d6c74dbfe9c00749ad2b938ad0996f86e6060951607f7"
+        },
+        {
+          "path": "assets/pmd/1003-shiny.png",
+          "sha256": "70ccb923230a98c4c0d043f53d20eb2d146712d155ea887b8e99cf04d9cdb2bc"
+        }
+      ],
+      "sha256": [
+        "e5cc03bd8df8be93630d6c74dbfe9c00749ad2b938ad0996f86e6060951607f7",
+        "70ccb923230a98c4c0d043f53d20eb2d146712d155ea887b8e99cf04d9cdb2bc"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Idle",
+            "Rotate"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "a4b70beb06bf38b750d525b8c9fb1d3389a941c68041e4db880ef49dd10b4fa5"
+        },
+        "0000/0001": {
+          "animations": [
+            "Idle",
+            "Rotate"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "a4b70beb06bf38b750d525b8c9fb1d3389a941c68041e4db880ef49dd10b4fa5"
+        },
+        "0001": {
+          "animations": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "RearUp",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Strike",
+            "Swing",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Charge",
+            "Double",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "RearUp",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Strike": "Attack"
+          },
+          "anim_data_sha256": "ede5eadbbfe2a03036714a96bbc8734e27c688fc6a2bbaec2fa76181e0013945"
+        }
+      }
+    },
+    {
+      "national_dex": 1008,
+      "species": "Miraidon",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/1008",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [
+        {
+          "form_id": 10268,
+          "name": "Low Power Mode",
+          "folder": "0001",
+          "animations": [
+            "Attack",
+            "Charge",
+            "Cringe",
+            "DeepBreath",
+            "Double",
+            "Eat",
+            "EventSleep",
+            "Faint",
+            "Float",
+            "Head",
+            "HitGround",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Laying",
+            "LeapForth",
+            "LookUp",
+            "LostBalance",
+            "Nod",
+            "Pain",
+            "Pose",
+            "Pull",
+            "Rotate",
+            "Rumble",
+            "Shoot",
+            "Sink",
+            "Sit",
+            "Sleep",
+            "SpAttack",
+            "Strike",
+            "Swing",
+            "Trip",
+            "Tumble",
+            "TumbleBack",
+            "Wake",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": true
+          },
+          "integrated_in_pokelife": true,
+          "files": [
+            {
+              "path": "assets/pmd/10268.png",
+              "sha256": "63d85886beb4d04ca2877038a838b44a5f7f01409ec990a055081a10c4cb9f3a"
+            },
+            {
+              "path": "assets/pmd/10268-shiny.png",
+              "sha256": "e96b71be1b4c225a2793f4ca9b89073029a569020e598bec544711360db99b00"
+            },
+            {
+              "path": "assets/pmd/sleep/10268.png",
+              "sha256": "661fe645aefb2b92d4d3f4b46baa8de29ff0b9e170346f101c2f698a0e51c229"
+            },
+            {
+              "path": "assets/pmd/sleep/10268-shiny.png",
+              "sha256": "f851b6b23e730b7bc75989b408063aeaabc54d278943ff3110cc8b459dd1131b"
+            },
+            {
+              "path": "assets/pmd/hop/10268.png",
+              "sha256": "d815f5948b618941f1928c9f42e3bd2085d07abfaef84f1a8e61108674ed5c89"
+            },
+            {
+              "path": "assets/pmd/hop/10268-shiny.png",
+              "sha256": "931548a9b0e67b1216d7716e5bc21eb548c55e6ca763fe82407e0875aa955844"
+            },
+            {
+              "path": "assets/pmd/eat/10268.png",
+              "sha256": "d428ff041feec59dca50bbecb89cf51f3038eacc989803ba251a0fb2cf0b8638"
+            },
+            {
+              "path": "assets/pmd/eat/10268-shiny.png",
+              "sha256": "7c340ab98d299136233bf0fb5fecc2e04d70844a2d143dec0019901c448975d2"
+            },
+            {
+              "path": "assets/pmd/walk-down/10268.png",
+              "sha256": "f87304afce2c92b2b3e28c1cd87404987695136010a5bdbfa9cf3a1e3977822c"
+            },
+            {
+              "path": "assets/pmd/walk-down/10268-shiny.png",
+              "sha256": "f3c6f74a3c51dc22682674a562eda35618a97d0db26633536c833bf9c96a14fe"
+            },
+            {
+              "path": "assets/pmd/walk-side/10268.png",
+              "sha256": "51112368f3a6d565a6beddc417f4b9fe6c31a894517298d7a0845531be0a55ce"
+            },
+            {
+              "path": "assets/pmd/walk-side/10268-shiny.png",
+              "sha256": "02ac35e4586dc0bccf4623424475583e0016ab8a169aa803a48c550715e9b942"
+            },
+            {
+              "path": "assets/pmd/walk-up/10268.png",
+              "sha256": "6883f35e1bb28437c6fd1271eaa98051a7f1e8c1b0339fc544f39ddc428a7b19"
+            },
+            {
+              "path": "assets/pmd/walk-up/10268-shiny.png",
+              "sha256": "b8860c0e0cf440fcefc9e8ba16c421fc9acff1a9e46bf9ba63bfc2bb5b940a44"
+            }
+          ]
+        }
+      ],
+      "files": [],
+      "sha256": [],
+      "notes": "only alternate forms are drawn upstream (no regular coat); the default form is not available",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {
+        "0001": {
+          "animations": [
+            "Attack",
+            "Charge",
+            "Cringe",
+            "DeepBreath",
+            "Double",
+            "Eat",
+            "EventSleep",
+            "Faint",
+            "Float",
+            "Head",
+            "HitGround",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Laying",
+            "LeapForth",
+            "LookUp",
+            "LostBalance",
+            "Nod",
+            "Pain",
+            "Pose",
+            "Pull",
+            "Rotate",
+            "Rumble",
+            "Shoot",
+            "Sink",
+            "Sit",
+            "Sleep",
+            "SpAttack",
+            "Strike",
+            "Swing",
+            "Trip",
+            "Tumble",
+            "TumbleBack",
+            "Wake",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Charge",
+            "Cringe",
+            "DeepBreath",
+            "Double",
+            "Eat",
+            "EventSleep",
+            "Faint",
+            "Float",
+            "Head",
+            "HitGround",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Laying",
+            "LeapForth",
+            "LookUp",
+            "LostBalance",
+            "Nod",
+            "Pain",
+            "Pose",
+            "Pull",
+            "Rotate",
+            "Shoot",
+            "Sink",
+            "Sit",
+            "Sleep",
+            "SpAttack",
+            "Swing",
+            "Trip",
+            "Tumble",
+            "TumbleBack",
+            "Wake",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": true
+          },
+          "copy_of": {
+            "Strike": "Attack",
+            "Rumble": "SpAttack"
+          },
+          "anim_data_sha256": "06c2a3181c8b10eebba7582533ca53693c9f39a7d29a3eef3f058b7532f05702"
+        },
+        "0001/0001": {
+          "animations": [
+            "Attack",
+            "Charge",
+            "Cringe",
+            "DeepBreath",
+            "Double",
+            "Eat",
+            "EventSleep",
+            "Faint",
+            "Float",
+            "Head",
+            "HitGround",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Laying",
+            "LeapForth",
+            "LookUp",
+            "LostBalance",
+            "Nod",
+            "Pain",
+            "Pose",
+            "Pull",
+            "Rotate",
+            "Rumble",
+            "Shoot",
+            "Sink",
+            "Sit",
+            "Sleep",
+            "SpAttack",
+            "Strike",
+            "Swing",
+            "Trip",
+            "Tumble",
+            "TumbleBack",
+            "Wake",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Attack",
+            "Charge",
+            "Cringe",
+            "DeepBreath",
+            "Double",
+            "Eat",
+            "EventSleep",
+            "Faint",
+            "Float",
+            "Head",
+            "HitGround",
+            "Hop",
+            "Hurt",
+            "Idle",
+            "Laying",
+            "LeapForth",
+            "LookUp",
+            "LostBalance",
+            "Nod",
+            "Pain",
+            "Pose",
+            "Pull",
+            "Rotate",
+            "Shoot",
+            "Sink",
+            "Sit",
+            "Sleep",
+            "SpAttack",
+            "Swing",
+            "Trip",
+            "Tumble",
+            "TumbleBack",
+            "Wake",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": true,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": true
+          },
+          "copy_of": {
+            "Strike": "Attack",
+            "Rumble": "SpAttack"
+          },
+          "anim_data_sha256": "06c2a3181c8b10eebba7582533ca53693c9f39a7d29a3eef3f058b7532f05702"
+        }
+      }
+    },
+    {
+      "national_dex": 1014,
+      "species": "Okidogi",
+      "asset_type": "pmd_sprite",
+      "status": "permission_pending",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "exists only outside the official collection",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {},
+      "other_sources": [
+        {
+          "repository": "keldaanCommunity/pokemonAutoChess app/public/src/assets/pokemons/<dex>.png + .json (texture atlases)",
+          "detail": "Okidogi",
+          "files_inspected": true
+        }
+      ]
+    },
+    {
+      "national_dex": 1020,
+      "species": "Gouging Fire",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/1020",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/1020.png",
+          "sha256": "8a941c3fcc58d70458525c44bd581cdff4a3d6eee232e15d5f7e1883694a31eb"
+        },
+        {
+          "path": "assets/pmd/1020-shiny.png",
+          "sha256": "68e49c76fc0ec0a0d280c227f441e318ddaab33a3483570f18fc00742cd2eb7a"
+        }
+      ],
+      "sha256": [
+        "8a941c3fcc58d70458525c44bd581cdff4a3d6eee232e15d5f7e1883694a31eb",
+        "68e49c76fc0ec0a0d280c227f441e318ddaab33a3483570f18fc00742cd2eb7a"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Idle",
+            "Rotate"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "66d125bdcccdb2b4c97f0e137081ccdea1f7f5173edc1d4ddb7928b67122d13a"
+        },
+        "0000/0001": {
+          "animations": [
+            "Idle",
+            "Rotate"
+          ],
+          "with_sheets": [
+            "Idle",
+            "Rotate"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": false,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "66d125bdcccdb2b4c97f0e137081ccdea1f7f5173edc1d4ddb7928b67122d13a"
+        }
+      }
+    },
+    {
+      "national_dex": 1021,
+      "species": "Raging Bolt",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/1021",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": true,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/1021.png",
+          "sha256": "054c406e8ed12c9cf5213d47e143fe63500f94274cd6d25525719322b33dd3ec"
+        },
+        {
+          "path": "assets/pmd/1021-shiny.png",
+          "sha256": "a9bfe2c7abdd12d663173e5f4ceac84963cfeb7c008eb2cb49abc6cee5ae82b4"
+        },
+        {
+          "path": "assets/pmd/sleep/1021.png",
+          "sha256": "2e919c008a474fc4faa29d423d67c8760fa15e2a24d8233fe7e87a07ac88e5ef"
+        },
+        {
+          "path": "assets/pmd/sleep/1021-shiny.png",
+          "sha256": "d26ab18632e4d4fc42e8a648e8ed9f1544fafb17174ee1dbaa41a32976a84e8d"
+        }
+      ],
+      "sha256": [
+        "054c406e8ed12c9cf5213d47e143fe63500f94274cd6d25525719322b33dd3ec",
+        "a9bfe2c7abdd12d663173e5f4ceac84963cfeb7c008eb2cb49abc6cee5ae82b4",
+        "2e919c008a474fc4faa29d423d67c8760fa15e2a24d8233fe7e87a07ac88e5ef",
+        "d26ab18632e4d4fc42e8a648e8ed9f1544fafb17174ee1dbaa41a32976a84e8d"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing"
+          ],
+          "with_sheets": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "cb3709cc14e57384ac1a64adb8b10140f7e1e4950bdfde2cd02f23266924a175"
+        },
+        "0000/0001": {
+          "animations": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing"
+          ],
+          "with_sheets": [
+            "Double",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": false,
+            "Attack": false,
+            "Hurt": false,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {},
+          "anim_data_sha256": "cb3709cc14e57384ac1a64adb8b10140f7e1e4950bdfde2cd02f23266924a175"
+        }
+      }
+    },
+    {
+      "national_dex": 1022,
+      "species": "Iron Boulder",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 1023,
+      "species": "Iron Crown",
+      "asset_type": "pmd_sprite",
+      "status": "portrait_only",
+      "source_repository": null,
+      "source_url": null,
+      "contributor": null,
+      "license": null,
+      "permission_status": "unknown",
+      "animations": {
+        "idle": false,
+        "walk": false,
+        "attack": false,
+        "hurt": false,
+        "sleep": false,
+        "faint": false
+      },
+      "forms": [],
+      "files": [],
+      "sha256": [],
+      "notes": "SpriteCollab has portraits but no character sprite folder",
+      "portrait_available": true,
+      "integrated_in_pokelife": false,
+      "upstream_folders": {}
+    },
+    {
+      "national_dex": 1025,
+      "species": "Pecharunt",
+      "asset_type": "pmd_sprite",
+      "status": "partial_pmd",
+      "source_repository": "https://github.com/PMDCollab/SpriteCollab",
+      "source_url": "https://github.com/PMDCollab/SpriteCollab/tree/master/sprite/1025",
+      "contributor": null,
+      "license": "CC BY-NC 4.0",
+      "permission_status": "verified_cc_by_nc_4",
+      "animations": {
+        "idle": true,
+        "walk": true,
+        "attack": false,
+        "hurt": true,
+        "sleep": true,
+        "faint": false
+      },
+      "forms": [],
+      "files": [
+        {
+          "path": "assets/pmd/1025.png",
+          "sha256": "85daa1762dc2874a2e2752a9df8650d1274a18e3401d454a80c72b4d80bf1028"
+        },
+        {
+          "path": "assets/pmd/1025-shiny.png",
+          "sha256": "85daa1762dc2874a2e2752a9df8650d1274a18e3401d454a80c72b4d80bf1028"
+        },
+        {
+          "path": "assets/pmd/sleep/1025.png",
+          "sha256": "45a8fe360461789d9547c13ab1dab2e031bbf2e02a8d5f8d4b46292456a8382c"
+        },
+        {
+          "path": "assets/pmd/sleep/1025-shiny.png",
+          "sha256": "45a8fe360461789d9547c13ab1dab2e031bbf2e02a8d5f8d4b46292456a8382c"
+        },
+        {
+          "path": "assets/pmd/walk-down/1025.png",
+          "sha256": "1ddbd1e121a775fe542540f03fe119174b8bb7dcdc323e863d36f5aea84f1036"
+        },
+        {
+          "path": "assets/pmd/walk-down/1025-shiny.png",
+          "sha256": "1ddbd1e121a775fe542540f03fe119174b8bb7dcdc323e863d36f5aea84f1036"
+        },
+        {
+          "path": "assets/pmd/walk-side/1025.png",
+          "sha256": "76cee04c4899ebe194712b86e11e62a86b5c4e8b3f67b50d7fa145ca9681eb9b"
+        },
+        {
+          "path": "assets/pmd/walk-side/1025-shiny.png",
+          "sha256": "76cee04c4899ebe194712b86e11e62a86b5c4e8b3f67b50d7fa145ca9681eb9b"
+        },
+        {
+          "path": "assets/pmd/walk-up/1025.png",
+          "sha256": "7d5b3b2ae37478b95f830410ebf40124e3bbf3ce6597cb6e251923dafb8adad4"
+        },
+        {
+          "path": "assets/pmd/walk-up/1025-shiny.png",
+          "sha256": "7d5b3b2ae37478b95f830410ebf40124e3bbf3ce6597cb6e251923dafb8adad4"
+        }
+      ],
+      "sha256": [
+        "85daa1762dc2874a2e2752a9df8650d1274a18e3401d454a80c72b4d80bf1028",
+        "85daa1762dc2874a2e2752a9df8650d1274a18e3401d454a80c72b4d80bf1028",
+        "45a8fe360461789d9547c13ab1dab2e031bbf2e02a8d5f8d4b46292456a8382c",
+        "45a8fe360461789d9547c13ab1dab2e031bbf2e02a8d5f8d4b46292456a8382c",
+        "1ddbd1e121a775fe542540f03fe119174b8bb7dcdc323e863d36f5aea84f1036",
+        "1ddbd1e121a775fe542540f03fe119174b8bb7dcdc323e863d36f5aea84f1036",
+        "76cee04c4899ebe194712b86e11e62a86b5c4e8b3f67b50d7fa145ca9681eb9b",
+        "76cee04c4899ebe194712b86e11e62a86b5c4e8b3f67b50d7fa145ca9681eb9b",
+        "7d5b3b2ae37478b95f830410ebf40124e3bbf3ce6597cb6e251923dafb8adad4",
+        "7d5b3b2ae37478b95f830410ebf40124e3bbf3ce6597cb6e251923dafb8adad4"
+      ],
+      "notes": "",
+      "portrait_available": true,
+      "integrated_in_pokelife": true,
+      "upstream_folders": {
+        "(root)": {
+          "animations": [
+            "Charge",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Swing",
+            "Twirl",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Charge",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": false,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Shoot": "Charge",
+            "Twirl": "Rotate"
+          },
+          "anim_data_sha256": "ab9eaeb6776fd3543a6fea8f57d1da983efa563523f38ad06206dcb3361b0a86"
+        },
+        "0000/0001": {
+          "animations": [
+            "Charge",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Shoot",
+            "Sleep",
+            "Swing",
+            "Twirl",
+            "Walk"
+          ],
+          "with_sheets": [
+            "Charge",
+            "Hurt",
+            "Idle",
+            "Rotate",
+            "Sleep",
+            "Swing",
+            "Walk"
+          ],
+          "wanted": {
+            "Idle": true,
+            "Walk": true,
+            "Attack": false,
+            "Hurt": true,
+            "Sleep": true,
+            "Faint": false
+          },
+          "copy_of": {
+            "Shoot": "Charge",
+            "Twirl": "Rotate"
+          },
+          "anim_data_sha256": "ab9eaeb6776fd3543a6fea8f57d1da983efa563523f38ad06206dcb3361b0a86"
+        }
+      },
+      "other_sources": [
+        {
+          "repository": "keldaanCommunity/pokemonAutoChess app/public/src/assets/pokemons/<dex>.png + .json (texture atlases)",
+          "detail": "Pecharunt",
+          "files_inspected": true
+        }
+      ]
+    }
+  ]
+}
