@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.152.0
+
+Launcher: other apps' widgets are hosted by what their provider allows, a removed provider no longer leaves a hole, and search finds PokéLife's own places (REP-014, `FEATURES/LAUNCHER.md` sections 5.2 and 11.5). No reward number changes (`RewardRules.VERSION` stays 20). Tested on the JVM and compiled for Android; **not run on a device**.
+
+- **Sizes come from the provider.** A hosted widget starts at the room it asked for, rounded up to whole cells so it is not clipped, and can be resized only between its provider's minimum and maximum resize size; a widget that cannot be resized in a direction keeps its start size there (`HostedWidgetSpec`, `WidgetGrid.resize`/`resizedTo` with limits). The corner handle and the accessibility actions use the same limits.
+- **A measurement bug fixed.** Android reports a provider's sizes in pixels, and the launcher used them as dp (and, in the list form, multiplied by the density again), so widgets were told they were several times too large or small. They are converted once, at the host.
+- **A removed provider keeps its place.** When an app is uninstalled, disabled or being updated, its widget shows "Widget unavailable" in its cells until the user removes it, instead of an empty hole; it comes back by itself when the app does (the host looks widgets up again on every package change and every return to the launcher). An updated provider gets a fresh view.
+- **No leaked widget ids.** The id being chosen in the system picker is kept on the device; one the process never got to use (killed with the picker open) is let go of at the next start and when a late result arrives with nothing waiting for it.
+- **Search finds PokéLife.** The app list's search also lists the modules and shared places that match by name or keyword (Plan, Focus, Care, Heal, Mint, Home, Link, Gear, World, Pokémon, Party, Me, PokéLife), above the apps, each opening that place. Names only: a search never reads a record.
+
 ## 0.150.0
 
 - **PLAN's and CARE's rewards settle under their own ledger event ids** (REP-014, `DATA_AND_MIGRATIONS.md` section 7.3.0 step 2). A finished task (`plan:task:<id>:complete`), a recurring task's day, a step, a milestone, a weekly review, a mini-quest, a welcome-back gift, a focus session or Magic Guard egg (`plan:focus:<egg id>`), a Care moment (`care:<kind>:<day>:<count>`), a befriended visitor and a Shop purchase now leave a `LedgerNote` like HEAL, MINT, HOME and LINK already did, so the database ledger says why the balance and the Bag moved instead of one net change per save. The notes hold only opaque ids and amounts, never a task title. No number changed (`RewardRules.VERSION` stays 20). Tested on the JVM (`PlanCareLedgerNotesTest`).

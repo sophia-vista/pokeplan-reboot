@@ -203,12 +203,12 @@ data class LauncherPrefs(
     private fun withWidgets(next: List<WidgetSlot>) = copy(layout = next)
 
     /** Adds a widget at the end of its area; a folder widget needs an existing folder, and no widget is added twice. */
-    fun addWidget(slot: WidgetSlot): LauncherPrefs {
+    fun addWidget(slot: WidgetSlot, limits: WidgetLimits? = null): LauncherPrefs {
         if (slot.kind == WidgetKind.FOLDER && folders.none { it.name == slot.arg }) return this
         if (widgets.any { it.sameAs(slot) }) return this
         // Once the grid has been changed it is the layout that counts, so a new widget goes in its first free spot there too.
         val onGrid = grid?.let { g ->
-            val l = slot.kind.limits()
+            val l = limits ?: slot.kind.limits()
             WidgetGrid.add(g, GridWidget(if (slot.area == WidgetArea.TODAY) WidgetPage.TODAY else WidgetPage.HOME, slot.kind, slot.arg, 0, 0, l.defW, l.defH))
         }
         return withWidgets(widgets + slot).let { if (onGrid != null) it.withGrid(onGrid) else it }
@@ -318,12 +318,12 @@ data class LauncherPrefs(
      * Adds a widget to [page], in its first free spot (once only: a widget is on one page). On Home and Today the old stacked layout
      * learns of it too, so switching the grid off shows it; a widget on a page of the user's own lives only on the grid.
      */
-    fun addGridWidget(page: WidgetPage, kind: WidgetKind, arg: String = ""): LauncherPrefs {
+    fun addGridWidget(page: WidgetPage, kind: WidgetKind, arg: String = "", limits: WidgetLimits? = null): LauncherPrefs {
         if (gridWidgets.any { it.kind == kind && it.arg == arg }) return this
         if (kind == WidgetKind.FOLDER && folders.none { it.name == arg }) return this
         val base = withGrid(gridWidgets)
-        if (page == WidgetPage.HOME || page == WidgetPage.TODAY) return base.addWidget(WidgetSlot(areaOf(page), kind, arg))
-        val l = kind.limits()
+        if (page == WidgetPage.HOME || page == WidgetPage.TODAY) return base.addWidget(WidgetSlot(areaOf(page), kind, arg), limits)
+        val l = limits ?: kind.limits()
         return base.withGrid(WidgetGrid.add(base.grid!!, GridWidget(page, kind, arg, 0, 0, l.defW, l.defH)))
     }
 

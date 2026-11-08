@@ -31,10 +31,12 @@ import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.Place
 import app.pokeplan.ui.launcher.AppCategory
+import app.pokeplan.ui.launcher.HostedWidgetSpec
 import app.pokeplan.ui.launcher.LauncherApp
 import app.pokeplan.ui.launcher.LauncherHost
 import app.pokeplan.ui.launcher.LauncherPrefs
 import app.pokeplan.ui.launcher.LauncherScreen
+import app.pokeplan.ui.launcher.hostedWidgetIds
 import app.pokeplan.widgetStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -65,16 +67,18 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
 
     /** False while the launcher is out of sight, so the town's Pokémon stop walking and the battery is left alone. */
     private var active by mutableStateOf(true)
+    /** Bumped when a widget's provider may have changed (an app was updated, removed or came back), so the hosted widgets are looked up again. */
+    private var widgetEpoch by mutableIntStateOf(0)
     private var reloading: Job? = null
     private var iconsStale = false
     private val icons = object : LruCache<String, ImageBitmap>(256) {}
 
     private val packageChanges = object : LauncherApps.Callback() {
-        override fun onPackageRemoved(packageName: String, user: UserHandle) = reloadApps()
-        override fun onPackageAdded(packageName: String, user: UserHandle) { iconsStale = true; reloadApps() }
-        override fun onPackageChanged(packageName: String, user: UserHandle) { iconsStale = true; reloadApps() }
-        override fun onPackagesAvailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) = reloadApps()
-        override fun onPackagesUnavailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) = reloadApps()
+        override fun onPackageRemoved(packageName: String, user: UserHandle) { widgetEpoch++; reloadApps() }
+        override fun onPackageAdded(packageName: String, user: UserHandle) { iconsStale = true; widgetEpoch++; reloadApps() }
+        override fun onPackageChanged(packageName: String, user: UserHandle) { iconsStale = true; widgetEpoch++; reloadApps() }
+        override fun onPackagesAvailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) { widgetEpoch++; reloadApps() }
+        override fun onPackagesUnavailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) { widgetEpoch++; reloadApps() }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +89,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         prefs = LauncherPrefs.decode(getSharedPreferences(PREFS, MODE_PRIVATE).getString(PREFS_KEY, null))
         model = AppModel(store, cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), calendars = app.pokeplan.AndroidCalendars(this))
         launcherApps.registerCallback(packageChanges)
+        releaseUnusedWidgetId()
         reloadApps()
         setContent { LauncherScreen(model, apps, prefs, ::savePrefs, isDefault, this, homePresses, active) }
         keepFocusScreen()
@@ -114,6 +119,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         // A widget, or the app, may have changed the save, or the user may just have chosen this as the home app.
         store.reload()
         isDefault = isDefaultHome()
+        widgetEpoch++
         reloadApps()
     }
 
@@ -239,64 +245,105 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
 
     private val configureWidget = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
         val id = pendingWidget
+        if (id < 0) return@registerForActivityResult
         if (result.resultCode == RESULT_OK) onWidgetPicked?.invoke(id) else widgetHost.deleteAppWidgetId(id)
-        pendingWidget = -1
+        setPendingWidget(-1)
     }
 
     private val chooseWidget = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
-        val id = pendingWidget
-        if (result.resultCode != RESULT_OK || id < 0) { if (id >= 0) widgetHost.deleteAppWidgetId(id); pendingWidget = -1; return@registerForActivityResult }
+        // After the process was killed while the picker was open, the callback below is gone; the id is then released at the next start.
+        val recovered = pendingWidget < 0
+        val id = if (recovered) getSharedPreferences(PREFS, MODE_PRIVATE).getInt(PREFS_PENDING_WIDGET, -1) else pendingWidget
+        // Nothing is waiting for the widget any more (the process was killed meanwhile): let its id go rather than keep one no slot names.
+        if (recovered || result.resultCode != RESULT_OK || id < 0) { if (id >= 0) widgetHost.deleteAppWidgetId(id); setPendingWidget(-1); return@registerForActivityResult }
         val info = widgetManager.getAppWidgetInfo(id)
         if (info?.configure != null) {
             try {
                 configureWidget.launch(Intent(android.appwidget.AppWidgetManager.ACTION_APPWIDGET_CONFIGURE).setComponent(info.configure).putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID, id))
             } catch (e: Exception) {
                 onWidgetPicked?.invoke(id) // it can be used without its set-up screen
+                setPendingWidget(-1)
             }
         } else {
             onWidgetPicked?.invoke(id)
-            pendingWidget = -1
+            setPendingWidget(-1)
         }
+    }
+
+    /** The id being chosen is kept on the device too, so one that the process never got to use (it was killed with the picker open) is let go of at the next start instead of staying allocated for ever. */
+    private fun setPendingWidget(id: Int) {
+        pendingWidget = id
+        getSharedPreferences(PREFS, MODE_PRIVATE).edit().putInt(PREFS_PENDING_WIDGET, id).apply()
+        if (id < 0) onWidgetPicked = null
+    }
+
+    private fun releaseUnusedWidgetId() {
+        val saved = getSharedPreferences(PREFS, MODE_PRIVATE)
+        val id = saved.getInt(PREFS_PENDING_WIDGET, -1)
+        if (id >= 0 && id !in prefs.hostedWidgetIds()) widgetHost.deleteAppWidgetId(id)
+        if (id >= 0) saved.edit().putInt(PREFS_PENDING_WIDGET, -1).apply()
     }
 
     override fun pickWidget(onPicked: (Int) -> Unit) {
         val id = widgetHost.allocateAppWidgetId()
-        pendingWidget = id
+        setPendingWidget(id)
         onWidgetPicked = onPicked
         try {
             chooseWidget.launch(Intent(android.appwidget.AppWidgetManager.ACTION_APPWIDGET_PICK).putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID, id))
         } catch (e: Exception) {
             widgetHost.deleteAppWidgetId(id)
-            pendingWidget = -1
+            setPendingWidget(-1)
         }
     }
 
     override fun releaseWidget(id: Int) = widgetHost.deleteAppWidgetId(id)
 
-    override fun widgetLabel(id: Int): String? = widgetManager.getAppWidgetInfo(id)?.loadLabel(packageManager)
+    override fun widgetLabel(id: Int): String? { widgetEpoch; return widgetManager.getAppWidgetInfo(id)?.loadLabel(packageManager) }
+
+    override val hostsWidgets: Boolean get() = true
+
+    /** The provider's sizes are in pixels (not dp, as they look): these are converted with the screen's density, once, here. */
+    override fun widgetSpec(id: Int): HostedWidgetSpec? {
+        widgetEpoch // read so a provider that came or went draws again
+        val info = widgetManager.getAppWidgetInfo(id) ?: return null
+        val density = resources.displayMetrics.density
+        fun dp(px: Int) = (px / density).toInt()
+        val max = android.os.Build.VERSION.SDK_INT >= 31
+        return HostedWidgetSpec(
+            dp(info.minWidth), dp(info.minHeight), dp(info.minResizeWidth), dp(info.minResizeHeight),
+            resizeHorizontal = info.resizeMode and android.appwidget.AppWidgetProviderInfo.RESIZE_HORIZONTAL != 0,
+            resizeVertical = info.resizeMode and android.appwidget.AppWidgetProviderInfo.RESIZE_VERTICAL != 0,
+            maxResizeWidthDp = if (max) dp(info.maxResizeWidth) else 0, maxResizeHeightDp = if (max) dp(info.maxResizeHeight) else 0,
+        )
+    }
 
     @androidx.compose.runtime.Composable
     override fun HostedWidget(id: Int, size: Int, widthDp: Int, heightDp: Int, modifier: androidx.compose.ui.Modifier) {
         val info = widgetManager.getAppWidgetInfo(id) ?: return
+        val spec = widgetSpec(id) ?: return
         // On the grid the widget is told the room its cells really give it. In a list it has the height it asks for, times 1, 1.5 or 2 for small, medium and large.
         val onGrid = heightDp > 0 && widthDp > 0
-        val height = if (onGrid) heightDp else (info.minHeight.coerceAtLeast(48) * (1f + size.coerceIn(0, 2) / 2f)).toInt().coerceAtMost(640)
-        androidx.compose.ui.viewinterop.AndroidView(
-            factory = { context ->
-                widgetHost.createView(context, id, info).apply {
-                    setAppWidget(id, info)
-                    layoutParams = android.view.ViewGroup.LayoutParams(
-                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                        if (onGrid) android.view.ViewGroup.LayoutParams.MATCH_PARENT else (height * context.resources.displayMetrics.density).toInt(),
-                    )
-                }
-            },
-            modifier = modifier,
-            update = { view ->
-                if (onGrid) view.updateAppWidgetSize(null, widthDp, heightDp, widthDp, heightDp)
-                else view.updateAppWidgetSize(null, info.minWidth, info.minHeight, info.minWidth * 2, height)
-            },
-        )
+        val height = if (onGrid) heightDp else (spec.minHeightDp.coerceAtLeast(48) * (1f + size.coerceIn(0, 2) / 2f)).toInt().coerceAtMost(640)
+        // A new provider (the app was updated) is a new view, so the old one's size and layout are not kept.
+        androidx.compose.runtime.key(id, info.provider) {
+            androidx.compose.ui.viewinterop.AndroidView(
+                factory = { context ->
+                    widgetHost.createView(context, id, info).apply {
+                        setAppWidget(id, info)
+                        layoutParams = android.view.ViewGroup.LayoutParams(
+                            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                            if (onGrid) android.view.ViewGroup.LayoutParams.MATCH_PARENT else (height * context.resources.displayMetrics.density).toInt(),
+                        )
+                    }
+                },
+                modifier = modifier,
+                // Told again whenever the room changes, so a resized or re-laid-out widget never keeps a stale size.
+                update = { view ->
+                    if (onGrid) view.updateAppWidgetSize(null, widthDp, heightDp, widthDp, heightDp)
+                    else view.updateAppWidgetSize(null, spec.minWidthDp, spec.minHeightDp, spec.minWidthDp * 2, height)
+                },
+            )
+        }
     }
 
     private val weather by lazy { WeatherClient(this) }
@@ -335,6 +382,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     private companion object {
         const val PREFS = "launcher"
         const val PREFS_KEY = "prefs"
+        const val PREFS_PENDING_WIDGET = "pendingWidget"
         const val WIDGET_HOST_ID = 4242
     }
 }
