@@ -1,0 +1,31 @@
+# PMD sprite source catalogue
+
+Every source investigated for the 64 species. "Files inspected" means real files (tree listings, AnimData.xml, sheets) were read, not
+only a web page. Licences are quoted from the source; where a source states none, that is said.
+
+| Source | URL | Asset type | Relevant Pokémon | Files inspected | Independent of SpriteCollab | Licence | Reuse suitability | Result |
+|---|---|---|---|---|---|---|---|---|
+| PMD SpriteCollab | https://github.com/PMDCollab/SpriteCollab | PMD sprite folders (AnimData.xml + per-animation sheets, offsets, shadows) and portraits | 26 of the 64 have sprite folders at master `709f2e3` | yes | n/a (the source) | CC BY-NC 4.0 | Yes for PokéLife's non-commercial use, with per-artist credit; the licence is non-commercial only | 23 forms integrated; its `tracker.json` is behind the folders |
+| CustomSpriteCollab | https://github.com/audinowho/CustomSpriteCollab | custom PMD sprites | none (holds dex 0001 and 0774) | listing | yes | not checked (none relevant) | n/a | nothing for the 64 |
+| RawAsset | https://github.com/PMDCollab/RawAsset | raw Sprite, Portrait, font, tile folders | 21 of the 64, all also in SpriteCollab | listing | no | as SpriteCollab | no gain | not used |
+| lxsmnsyc fork | https://github.com/lxsmnsyc/SpriteCollab (branch master) | SpriteCollab repacked into `compact/` (sheet.json, frames.bin, regular/shiny png) | Simisear, Simipour, Tranquill, Crustle, Frillish, Shelmet, Bouffalant not in SpriteCollab; others repack SpriteCollab | yes (sheets, sheet.json, EDITS.md, GAPS.md, commit history) | partly: the seven were added by the maintainer from artists' zips (`compact/EDITS.md`) | CC BY-NC 4.0 stated for the repository; for the seven the fork maintainer added the credit | Not cleared: never approved upstream; credits written by the maintainer | PERMISSION_PENDING |
+| lxsmnsyc fork (branch compact-sprites) | same, other branch | same repack | same | listing | no | same | same | not separately inspected |
+| sylvainpolletvillard fork | https://github.com/sylvainpolletvillard/SpriteCollab | full SpriteCollab clone, newer than a few days | Tranquill (sprite/0520, full folder, no credits.txt) | listing | no | CC BY-NC 4.0 (inherited) | Not cleared for the unapproved folder | lead for Tranquill only |
+| GustavoGFV/PokeBattle | https://github.com/GustavoGFV/PokeBattle | fan battle simulator, SpriteCollab-format folders for 233 species | Bouffalant (AnimData + Walk, Attack, Faint sheets) | listing and AnimData | no (states SpriteCollab) | repository says SpriteCollab CC BY-NC 4.0; no artist for Bouffalant | Not cleared; incomplete | lead only |
+| PokemonWorkshop/GameDataPacks | https://github.com/PokemonWorkshop/GameDataPacks | Pokémon Studio game data | none | listing | n/a | Pokémon Studio licence | not a sprite source | none |
+| pmd-agents | https://github.com/kevanwee/pmd-agents | VS Code extension; importer downloads SpriteCollab (pinned) | none | README and importer | no | proprietary code licence; third-party art separate | not a source | none |
+| Pokémon Auto Chess | https://github.com/keldaanCommunity/pokemonAutoChess | game; atlases `app/public/src/assets/pokemons/<dex>.png/.json` (frames for Attack, Hop, Hurt, Idle, Shoot, Sleep, Walk in 8 directions) | 13 of the 64; Tranquill, Crustle and Okidogi are not in SpriteCollab | yes (atlas JSON, previews of three) | for those three, apparently yes | code GPL-3; no licence or artist for the atlases (`pokemons/credits.json` has no entry) | Not cleared; no frame timings | PERMISSION_PENDING (Okidogi); Tranquill and Crustle also pending |
+| DarkusShadow | https://www.deviantart.com/darkusshadow (pages 967776690, 967779547) | Paldea overworld sheets (regular and shiny), 2023-06-18, base game only | Tarountula, Dolliv, Squawkabilly, Mabosstiff, Shroodle, Grafaiai, Brambleghast, Toedscool, Toedscruel, Klawf, Rabsca, Espathra, Bombirdier, Flamigo (not Maschiff, not the DLC) | page text and preview, not the sheets | yes | the artist's words: "free for everyone to use in their Pokémon projects, please give credits" | ALTERNATIVE_STYLE: not PMD; a separate fallback only | lead; nine species have nothing else |
+| Eevee Expo, Generation 9 Resource Pack | https://eeveeexpo.com/resources/1101/ | Pokémon Essentials Gen 9 resource pack (battlers, icons) | many Gen 9 species | page only | yes | per resource page; not checked file by file | ALTERNATIVE_STYLE (mainline), not PMD | not pursued |
+| Eevee Expo, Following Pokémon EX | https://eeveeexpo.com/resources/516/ | Essentials plugin for following Pokémon | n/a | page only | yes | per page | not a sprite source | not pursued |
+| PMD Sprite Repository site | https://sprites.pmdcollab.org/ | JavaScript front end of the SpriteCollab data | all | page (a script shell) | no | CC BY-NC 4.0 | n/a | no files of its own |
+| Smogon PMD credits | https://www.smogon.com/pmd_credits | credit list (portrait "Neutral" lines per artist) | all 64 have portraits listed | yes (text) | no | CC BY-NC 4.0 | credits only | confirms PORTRAIT_ONLY entries |
+| Pokémon Battlegrounds | https://pokemonbattlegrounds.com | fan animation channel | n/a | page text | no | states SpriteCollab CC BY-NC 4.0 | n/a | publishes no assets |
+| Arène Pokémon (TikTok) | https://www.tiktok.com/@arenepokemon | videos (user screenshot) | many Gen 7 on screen | none | unknown | unknown | not downloadable | lead; ask the creator |
+| pret/pmd-red, pret/pmd-sky | https://github.com/pret/pmd-red | decompilations (maps, sound) | none: games hold Gen 1 to 3 (Red) and 1 to 4 (Sky) | previously | yes | game art, private use only | no species here | none |
+| PokeAPI sprites | https://github.com/PokeAPI/sprites | mainline stills (already in `assets/sprites`) | all | yes | yes | Game Freak art, private use | fallback only, not PMD | already used |
+| Web search (standard mode, three queries) | n/a | n/a | n/a | n/a | n/a | n/a | n/a | no source for Arena videos, Oranguru, Gumshoos, Shiinotic or Trumbeak |
+
+Not searched, and why: PMD fan games and ROM hacks beyond the two decompilations (no public asset repositories turned up in the
+web search and the sandbox cannot browse game communities); other DeviantArt collections and artist portfolios (none named; the
+DarkusShadow pages were the only named leads); public Discord archives (not reachable).

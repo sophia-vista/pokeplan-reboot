@@ -5,6 +5,11 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.146.0
+
+- **23 more Pokémon get their Mystery Dungeon sprite.** An audit of the 64 species that had none found that SpriteCollab's current files hold sprites for 26 of them (its status list is behind): Jellicent, Stunfisk, Aromatisse, Toucannon, Rolycoly, Sirfetch'd, Milcery, Stonjourner, Cufant, Copperajah, Arctovish, Tarountula, Dolliv, Grafaiai, Toedscool, Bombirdier, Orthworm, Iron Treads, Ting-Lu, Gouging Fire, Raging Bolt, Pecharunt and Miraidon's Low Power Mode are in (`tools/sprites/fetch_pmd_new.py`, artists in the credits). Five of them (Rolycoly, Milcery, Cufant, Tarountula, Bombirdier) have the full set of animations.
+- **Audit documents** in `docs/ASSETS/`: every one of the 64 species with its status, sources and licences, a source catalogue, the gaps, and a machine-readable manifest (`tools/sprites/pmd_audit.py`). Eight more species exist only in forks or in Pokémon Auto Chess and are marked permission pending (not in the app); 30 have portraits only.
+
 ## 0.145.0
 
 Link, the connection module, built manual first (REP-014). Stacked on the cross-module links of 0.144.0.
