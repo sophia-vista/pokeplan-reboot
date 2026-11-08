@@ -7,6 +7,7 @@ import app.pokeplan.app.GameStore
 import app.pokeplan.app.Storage
 import app.pokeplan.data.AndroidDatabase
 import app.pokeplan.data.DataStore
+import app.pokeplan.data.KeystoreHealKey
 import app.pokeplan.data.KeystoreMintKey
 import app.pokeplan.data.LiveBackup
 import app.pokeplan.data.LiveDocuments
@@ -77,10 +78,15 @@ object LiveStore {
             // The same for PLAN's part of the save (schema 5): its records move into PLAN's tables, the rest of the save stays a row.
             runCatching { s.live.movePlanToTables(now) }.onFailure { Log.w(TAG, "Plan tables not active this run: ${it.javaClass.simpleName}") }
             // HEAL lives in its own tables from the start (schema 7). A heal.json written while the database could not be opened is taken in once, so nothing logged then is lost.
+            // Since 0.152.0 its rows are sealed with a Keystore key too: the first start with the key rewrites every row as sealed text (read back, one transaction) and
+            // forgets what the clear rows left in the file. With no key the rows are used in clear for that run and sealed at the next start that has it; once sealed, no key means no access.
+            useKeys(s)
             runCatching {
                 read(app, "heal.json")?.let { legacy -> if (!s.healTables.isActive() && s.live.read("heal") == null) s.live.write("heal", legacy, now) }
                 s.live.moveHealToTables(now)
             }.onFailure { Log.w(TAG, "Heal tables not active this run: ${it.javaClass.simpleName}") }
+            val healSealedNow = runCatching { s.healTables.seal(now).also { if (it) s.healTables.scrub() } }
+                .onFailure { Log.w(TAG, "Heal rows not sealed this run: ${it.javaClass.simpleName}") }.getOrDefault(false)
             // HOME lives in its own tables from the start (schema 9), like HEAL and unsealed. A home.json written while the database could not be opened is taken in once.
             runCatching {
                 read(app, "home.json")?.let { legacy -> if (!s.homeTables.isActive() && s.live.read("home") == null) s.live.write("home", legacy, now) }
@@ -93,14 +99,13 @@ object LiveStore {
             }.onFailure { Log.w(TAG, "Link tables not active this run: ${it.javaClass.simpleName}") }
             // MINT lives in its own tables from the start (schema 8), every row sealed with a key that lives in the Android Keystore. If the Keystore cannot give
             // the key, Mint does not start this run (nothing of it is ever written in clear: `mintStorage` then keeps it in memory only), and it is tried again at the next start.
-            runCatching {
-                s.mintCipher = KeystoreMintKey.cipher()
-                s.live.moveMintToTables(now)
-            }.onFailure { s.mintCipher = null; Log.w(TAG, "Mint tables not active this run: ${it.javaClass.simpleName}") }
+            runCatching { s.live.moveMintToTables(now) }.onFailure { s.mintCipher = null; Log.w(TAG, "Mint tables not active this run: ${it.javaClass.simpleName}") }
             // And the player's side (schema 6): the Pokémon, their places, the Bag, the Poké balance and its ledger, once PLAN's move has run.
             // The save is checked the way the app checks every save it loads, written as rows, read back and compared; any difference or a
             // save the tables cannot represent changes nothing, the rows stay the live save, and it is tried again at the next start.
             runCatching { s.live.movePokemonToTables(now) }.onFailure { Log.w(TAG, "Pokémon tables not active this run: ${it.javaClass.simpleName}") }
+            // The daily copies made before Heal was sealed hold it in clear: one sealed copy replaces them, once all the moves above have run.
+            if (healSealedNow) runCatching { backups.refreshAfterSealing(s.live, now) }.onFailure { Log.w(TAG, "backup refresh failed: ${it.javaClass.simpleName}") }
             runCatching { backups.takeIfDue(s.live, now) }.onFailure { Log.w(TAG, "backup failed: ${it.javaClass.simpleName}") }
             backupStore = backups
             store = s
@@ -148,11 +153,18 @@ object LiveStore {
         }
         val fresh = AndroidDatabase.open(context)
         fresh.live.normalizer = GameStore::normalizeDocument
+        useKeys(fresh) // the newest backup holds Mint and Heal sealed: the keys must be there before it is put back, or they would be set aside as locked
         if (backups.restoreNewest(fresh.live, now)) {
             fresh.live.activate(null, null, now) // the restore is the live data; set the marker without reading the stale files
             Log.w(TAG, "the database was damaged; the newest backup was restored")
         }
         return fresh
+    }
+
+    /** Gives [s] the Keystore keys of Mint and of Heal, each only if it does not have it yet; a key the Keystore cannot give leaves that module without one (see their callers). */
+    private fun useKeys(s: DataStore) {
+        if (s.mintCipher == null) runCatching { s.mintCipher = KeystoreMintKey.cipher() }.onFailure { Log.w(TAG, "no Mint key this run: ${it.javaClass.simpleName}") }
+        if (s.healCipher == null) runCatching { s.healCipher = KeystoreHealKey.cipher() }.onFailure { Log.w(TAG, "no Heal key this run: ${it.javaClass.simpleName}") }
     }
 
     private fun looksCorrupt(t: Throwable): Boolean = generateSequence(t) { it.cause }.any {

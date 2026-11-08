@@ -187,7 +187,7 @@ private fun BackupsCard(model: AppModel) {
             }
             PixelButton(if (portable) "Not now" else "Save a copy that opens on any phone", { portable = !portable; pass = ""; again = ""; shown = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             if (portable) {
-                Text("Mint's records are sealed to this phone, so an ordinary copy shows Mint only here. A passphrase seals Mint in this copy so any phone can open it with the passphrase. It is not stored anywhere, and if you forget it Mint in that copy cannot be opened, by anyone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                Text("Mint's and Heal's records are sealed to this phone, so an ordinary copy shows them only here. A passphrase seals them in this copy so any phone can open it with the passphrase. It is not stored anywhere, and if you forget it Mint and Heal in that copy cannot be opened, by anyone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 PixelField(pass, { pass = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase (at least ${backups.minPassphrase} characters)", singleLine = true, visualTransformation = hide, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
                 PixelField(again, { again = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase again", singleLine = true, visualTransformation = hide, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     error = if (again.isNotEmpty() && again != pass) "The two do not match." else null)
@@ -216,7 +216,7 @@ private fun BackupsCard(model: AppModel) {
             PixelButton("Restore from a file", { asking = null; chosen = null; pass = ""; backups.chooseFile { staged, why -> chosen = staged; note = why } }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             chosen?.let { c ->
                 Text("This file is a backup from ${backupLabel(c.createdAtMillis)} (${c.documents.joinToString(", ")}). Replace what is on this phone with it? What is here now is kept aside.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
-                if (c.needsPassphrase) PixelField(pass, { pass = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase for Mint in this backup", singleLine = true, visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
+                if (c.needsPassphrase) PixelField(pass, { pass = it.take(128) }, Modifier.fillMaxWidth(), label = "Passphrase for Mint and Heal in this backup", singleLine = true, visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password))
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton("Restore", { busy = true; backups.applyChosen(pass.takeIf { c.needsPassphrase }) { busy = false; restored(it); if (it.startsWith("Restored")) { chosen = null; pass = "" } } }, Modifier.weight(1f), Pixel.Warning, enabled = !busy && (!c.needsPassphrase || pass.isNotEmpty()), compact = true)
                     PixelButton("Cancel", { chosen = null; pass = "" }, Modifier.weight(1f), Pixel.InkSoft, compact = true)

@@ -5,6 +5,17 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.152.0
+
+Heal is sealed (REP-014; owner decision 6 of 8 November 2026, `docs/pokelife/evidence/REP-014-heal-sealing.md`). No reward number changes (`RewardRules.VERSION` stays 20) and no schema change (schema 10).
+
+- **Heal's records are sealed with a key that lives in the Android Keystore**, as Mint's are. Every row of the `heal_*` tables (activity, drinks, sleep, measurements, goals and the settings) is AES-256-GCM text under Heal's own key (`KeystoreHealKey`, not Mint's), with no date left beside it, so the database shows no measurement, time, note or day. The daily backups, a saved backup file and every copy Heal leaves aside are sealed too.
+- **An install that already has Heal records is moved once**, at its first start with the key (`HealTables.seal`): every row is rewritten, the whole of Heal is read back and compared, and any difference puts everything back as it was and tries again at the next start. Then the file's free pages and write-ahead log are cleared (`VACUUM`), and the daily copies made before the move, which hold Heal in clear, are replaced by one sealed copy. A new install is sealed from its first row.
+- **No key, no guessing.** If the Keystore gives no key on an old install, Heal carries on in clear for that run and is sealed at the next start that has one (Mint refuses to start without it; Heal already exists in clear on phones, and locking the player out would be worse). Once Heal is sealed, a run without the key reads and writes nothing (memory only) and opens again with the key. A database copied to another phone reads as empty there and the old rows are kept aside, still sealed, before anything is written.
+- **The passphrase backup ("Save a copy that opens on any phone") seals Heal with Mint**, one passphrase for both, and Restore from a file asks for it for either. An ordinary copy holds Heal sealed to this phone only (the backup text says so). A backup from an older build, with Heal in clear, still restores and is sealed as it is written.
+- **Fix: recovery from a damaged database gave Mint no key** before putting the newest backup back, so a sealed Mint in that backup would have been kept aside as locked instead of restored. Both keys are now set before the restore.
+- Tests: `HealSealingTest` (15) and `PortableBackupTest` (new `portable(documents, devices, ...)`); the 10 `HealTablesTest` cases run unchanged. Not run on a device (the Keystore, the first-start move and the passphrase backup are the phone checks in the evidence file).
+
 ## 0.150.0
 
 - **PLAN's and CARE's rewards settle under their own ledger event ids** (REP-014, `DATA_AND_MIGRATIONS.md` section 7.3.0 step 2). A finished task (`plan:task:<id>:complete`), a recurring task's day, a step, a milestone, a weekly review, a mini-quest, a welcome-back gift, a focus session or Magic Guard egg (`plan:focus:<egg id>`), a Care moment (`care:<kind>:<day>:<count>`), a befriended visitor and a Shop purchase now leave a `LedgerNote` like HEAL, MINT, HOME and LINK already did, so the database ledger says why the balance and the Bag moved instead of one net change per save. The notes hold only opaque ids and amounts, never a task title. No number changed (`RewardRules.VERSION` stays 20). Tested on the JVM (`PlanCareLedgerNotesTest`).

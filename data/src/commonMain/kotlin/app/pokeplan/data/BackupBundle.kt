@@ -25,11 +25,14 @@ object BackupBundle {
     /** The documents a bundle may carry; anything else is refused rather than written into the live store. */
     val KNOWN = setOf(LiveDocuments.SAVE, LiveDocuments.CARE, LiveDocuments.HEAL, LiveDocuments.MINT, LiveDocuments.HOME, LiveDocuments.LINK)
 
+    /** The documents that leave the phone sealed: Mint always, Heal since 0.152.0 (they are sealed to this phone's keys, or under a passphrase for a portable backup). */
+    val SEALED = listOf(LiveDocuments.MINT, LiveDocuments.HEAL)
+
     sealed interface Staged {
         /** A bundle that passed every check: [documents] are ready to swap in. */
         data class Ready(val documents: Map<String, String>, val schema: Int, val createdAtMillis: Long) : Staged {
             /** The Mint in this backup is sealed under a passphrase (a portable backup): it must be given before [unlock] can open it. */
-            val needsPassphrase: Boolean get() = documents[LiveDocuments.MINT]?.let(PassphraseSealer::isSealed) == true
+            val needsPassphrase: Boolean get() = SEALED.any { documents[it]?.let(PassphraseSealer::isSealed) == true }
         }
 
         /** A bundle that was refused, with a reason in the player's words. Nothing was changed. */
@@ -65,30 +68,41 @@ object BackupBundle {
         if (documents.keys.any { it !in KNOWN }) return Staged.Refused("That backup holds something this version does not know.")
         if (checksum(documents) != (root["sha256"] as? JsonPrimitive)?.contentOrNull) return Staged.Refused("That backup is damaged: its checksum does not match.")
         for ((name, doc) in documents) {
-            val ok = if (name == LiveDocuments.MINT && (RowCipher.isSealed(doc) || PassphraseSealer.isSealed(doc))) true else try { json.parseToJsonElement(doc) is JsonObject } catch (e: Exception) { false }
+            val ok = if (name in SEALED && (RowCipher.isSealed(doc) || PassphraseSealer.isSealed(doc))) true else try { json.parseToJsonElement(doc) is JsonObject } catch (e: Exception) { false }
             if (!ok) return Staged.Refused("The $name in that backup is damaged.")
         }
         return Staged.Ready(documents, schema, (root["createdAtMillis"] as? JsonPrimitive)?.longOrNull ?: 0L)
     }
 
     /**
-     * [documents] with Mint re-sealed under [passphrase], for a backup that opens on any phone. Mint arrives from a snapshot or a daily backup sealed with this
-     * phone's key, so it is opened with [device] first; null when it cannot be opened here (it came from another phone's key), because then there is nothing this
-     * phone can honestly re-seal. A backup without Mint is returned as it is. The passphrase is checked by [PassphraseSealer.refusal] before this is called.
+     * [documents] with Mint and Heal re-sealed under [passphrase], for a backup that opens on any phone. They arrive from a snapshot or a daily backup sealed with this
+     * phone's keys ([devices], by document name), so each is opened with its key first; null when one cannot be opened here (it came from another phone's key, or the
+     * key is not open on this run), because then there is nothing this phone can honestly re-seal. A document that is not sealed (an older backup's, or Heal on a phone
+     * whose key was not available) is sealed under the passphrase as it is; a backup with neither is returned as it is. The passphrase is checked by
+     * [PassphraseSealer.refusal] before this is called.
      */
-    fun portable(documents: Map<String, String>, device: RowCipher, passphrase: String, sealer: PassphraseSealer): Map<String, String>? {
-        val sealed = documents[LiveDocuments.MINT] ?: return documents
-        val plain = if (RowCipher.isSealed(sealed)) device.open(sealed) ?: return null else if (PassphraseSealer.isSealed(sealed)) return documents else sealed
-        return documents + (LiveDocuments.MINT to sealer.seal(plain, passphrase))
+    fun portable(documents: Map<String, String>, devices: Map<String, RowCipher>, passphrase: String, sealer: PassphraseSealer): Map<String, String>? {
+        var out = documents
+        for (name in SEALED) {
+            val sealed = documents[name] ?: continue
+            val plain = if (RowCipher.isSealed(sealed)) devices[name]?.open(sealed) ?: return null else if (PassphraseSealer.isSealed(sealed)) continue else sealed
+            out = out + (name to sealer.seal(plain, passphrase))
+        }
+        return out
     }
 
     /**
-     * The documents of a staged backup ready to be put back. A portable Mint is opened with [passphrase] and handed over as its plain JSON, which
+     * The documents of a staged backup ready to be put back. A portable Mint or Heal is opened with [passphrase] and handed over as its plain JSON, which
      * `LiveDocuments.replaceAll` seals again with this phone's key as it writes it; null when the passphrase is missing or wrong, so nothing is changed.
      */
     fun unlock(ready: Staged.Ready, passphrase: String?, sealer: PassphraseSealer): Map<String, String>? {
         if (!ready.needsPassphrase) return ready.documents
-        val plain = passphrase?.let { sealer.open(ready.documents.getValue(LiveDocuments.MINT), it) } ?: return null
-        return ready.documents + (LiveDocuments.MINT to plain)
+        var out = ready.documents
+        for (name in SEALED) {
+            val text = out[name] ?: continue
+            if (!PassphraseSealer.isSealed(text)) continue
+            out = out + (name to (passphrase?.let { sealer.open(text, it) } ?: return null))
+        }
+        return out
     }
 }
