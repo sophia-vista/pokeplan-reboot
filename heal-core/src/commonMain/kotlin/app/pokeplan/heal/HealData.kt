@@ -5,11 +5,19 @@ import kotlinx.datetime.LocalTime
 import kotlinx.serialization.Serializable
 
 /**
- * Where a record came from (HEAL.md section 11.1). Only [MANUAL] is produced today: no provider is connected, so nothing is imported,
- * derived or estimated yet; the other kinds exist so a record never has to be migrated when one is.
+ * Where a record came from (HEAL.md section 11.1). [MANUAL] is what the player typed. [IMPORTED] came from Health Connect, read once on request (it carries a [Provenance]); [DERIVED] and [ESTIMATED]
+ * are not produced yet and exist so a record never has to be migrated when one is.
  */
 @Serializable
 enum class SourceKind { MANUAL, IMPORTED, DERIVED, ESTIMATED }
+
+/**
+ * Where an imported record came from (INTEGRATIONS_AND_PRIVACY.md 5.1, HEAL.md 10.3 and 11.1): the [provider] ("healthconnect"), the [app] that wrote it into that provider (for
+ * Health Connect, the writing app's package name, so the player can see which app a record really came from), the provider's own [externalId], when it was
+ * [importedMillis], and, when it looked like a record already here, which one ([possibleDuplicateOf]; both are kept until the player chooses). A record the player wrote has none.
+ */
+@Serializable
+data class Provenance(val provider: String, val app: String, val externalId: String, val importedMillis: Long, val possibleDuplicateOf: String? = null)
 
 /** The kinds of activity a manual entry offers (HEAL.md section 3). */
 @Serializable
@@ -34,6 +42,7 @@ data class ActivityRecord(
     val source: SourceKind = SourceKind.MANUAL,
     val createdMillis: Long = startMillis,
     val paid: Boolean = false,
+    val provenance: Provenance? = null,
 ) {
     val endMillis: Long get() = startMillis + minutes * 60_000L
 }
@@ -48,6 +57,7 @@ data class HydrationEntry(
     val drink: String = "",
     val source: SourceKind = SourceKind.MANUAL,
     val paid: Boolean = false,
+    val provenance: Provenance? = null,
 )
 
 /** One finished night's sleep (HEAL.md section 6). [day] is the day the user woke on. Stages are not stored: nothing here infers them. */
@@ -59,6 +69,7 @@ data class SleepRecord(
     val day: LocalDate,
     val note: String = "",
     val source: SourceKind = SourceKind.MANUAL,
+    val provenance: Provenance? = null,
 ) {
     val minutes: Int get() = ((endMillis - startMillis) / 60_000L).toInt()
 }
@@ -85,6 +96,7 @@ data class Measurement(
     val label: String = "",
     val method: String = "",
     val source: SourceKind = SourceKind.MANUAL,
+    val provenance: Provenance? = null,
 )
 
 @Serializable
@@ -120,6 +132,10 @@ data class HealSettings(
     val showMeasurementsOnToday: Boolean = false,
     val weightUnit: String = "kg",
     val tutorialSeen: Boolean = false,
+    /** The Health Connect record types the player chose to import (a subset of [HealthKind]); empty means not connected. Only a choice: access itself is Android's, and is rechecked each time. */
+    val healthKinds: Set<HealthKind> = emptySet(),
+    /** When Health Connect was last read successfully, and what it returned then ("last successful sync", HEAL.md 10.3); 0 when never. */
+    val healthLastSyncMillis: Long = 0,
 ) {
     companion object { const val MAX_REMINDERS = 3 }
 }

@@ -1024,6 +1024,13 @@ class ScreenshotTest {
 
     /** The optional access gate (locked card) and Mint's settings with bill reminders on and the gate offered. */
     @Test
+    fun mintImportAndHealConnections() {
+        mint("mint-import", app.pokeplan.ui.screens.MintSection.IMPORT, height = 3000)
+        mint("mint-import-dark", app.pokeplan.ui.screens.MintSection.IMPORT, height = 3000, dark = true)
+        heal("heal-connections", app.pokeplan.ui.screens.HealSection.CONNECTIONS, height = 2200)
+    }
+
+    @Test
     fun mintLockedAndSettings() {
         mint("mint-locked", null, height = 900, gate = true, settings = { it.mint.setGate(true) })
         mint("mint-settings", app.pokeplan.ui.screens.MintSection.SETTINGS, height = 3200, gate = true, settings = { it.mint.setBillReminders(true) })

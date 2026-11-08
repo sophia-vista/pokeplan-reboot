@@ -75,7 +75,7 @@ import kotlinx.datetime.plus
  */
 enum class MintSection(val label: String, val icon: String) {
     ACCOUNTS("Accounts", "member-card"), ACTIVITY("Activity", "journal"), BUDGETS("Budgets", "heart-scale"), BILLS("Bills", "oaks-letter"),
-    REVIEW("Review", "scope-lens"), SETTINGS("Settings", "storage-key"),
+    REVIEW("Review", "scope-lens"), IMPORT("Import", "town-map"), SETTINGS("Settings", "storage-key"),
 }
 
 private val zone: TimeZone get() = TimeZone.currentSystemDefault()
@@ -162,6 +162,7 @@ private fun MintPage(model: AppModel, section: MintSection?, openPokemon: (Strin
             MintSection.BUDGETS -> BudgetsView(model)
             MintSection.BILLS -> BillsView(model)
             MintSection.REVIEW -> MintReviewView(model)
+            MintSection.IMPORT -> MintImportView(model)
             MintSection.SETTINGS -> MintSettingsView(model)
         }
     }
@@ -187,6 +188,7 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                     MenuEntry(MintSection.BUDGETS.name, MintSection.BUDGETS.icon, "Budgets", if (data.budgets.none { it.status == PlanStatus.ACTIVE }) "optional" else "${data.budgets.count { it.status == PlanStatus.ACTIVE }} active", tint = ModuleAccent.MINT.accent),
                     MenuEntry(MintSection.BILLS.name, MintSection.BILLS.icon, "Bills", billsDetail(model), tint = ModuleAccent.MINT.accent),
                     MenuEntry(MintSection.REVIEW.name, MintSection.REVIEW.icon, "Review", "reports and reconcile", tint = ModuleAccent.MINT.accent),
+                    MenuEntry(MintSection.IMPORT.name, MintSection.IMPORT.icon, "Import", if (model.mint.importBatches().isEmpty()) "statement file" else "${model.mint.importBatches().size} imports", tint = ModuleAccent.MINT.accent),
                     MenuEntry(MintSection.SETTINGS.name, MintSection.SETTINGS.icon, "Settings", "Ledger Research, privacy, your data", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.mintSection = MintSection.valueOf(key) }
@@ -502,7 +504,7 @@ private fun TransactionRow(model: AppModel, t: Transaction, open: Boolean, onCli
     val account = data.accounts.firstOrNull { it.id == t.accountId }?.name.orEmpty()
     val to = data.accounts.firstOrNull { it.id == t.toAccountId }?.name
     val title = t.payee.ifBlank { category ?: t.type.label }
-    val line = listOfNotNull(t.day.short(), if (to != null) "$account to $to" else account, category.takeIf { t.payee.isNotBlank() }, t.status.name.lowercase().takeIf { t.status != TxStatus.POSTED }).joinToString(" · ")
+    val line = listOfNotNull(t.day.short(), if (to != null) "$account to $to" else account, category.takeIf { t.payee.isNotBlank() }, t.status.name.lowercase().takeIf { t.status != TxStatus.POSTED }, (if (t.unreviewed) "imported, unreviewed" else "imported").takeIf { t.importBatch != null }).joinToString(" · ")
     ListRow(
         trail = { Text(t.signed() + model.mint.show(t.amountMinor, t.currency), style = MaterialTheme.typography.titleSmall) },
         onClick = onClick, onClickLabel = if (open) "Hide options" else "Show options",
@@ -905,5 +907,5 @@ private fun MintSettingsView(model: AppModel) {
             else PixelButton("Erase all Mint records", { askingAll = true; asking = null }, Modifier.fillMaxWidth(), Pixel.Danger, compact = true)
         }
     }
-    Text("Connecting a bank or e-wallet and importing statements are not available yet. Mint is complete without them.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    Text("Statement files are under Import. No bank or e-wallet is connected, and Mint is complete without one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
