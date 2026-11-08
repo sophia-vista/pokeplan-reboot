@@ -3,6 +3,7 @@ package app.pokeplan.core.pokemon
 import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.dex.FormInfo
 import app.pokeplan.core.dex.Gender
+import app.pokeplan.core.dex.MoveInfo
 import app.pokeplan.core.dex.SpeciesInfo
 import app.pokeplan.core.dex.PokemonType
 import kotlinx.serialization.EncodeDefault
@@ -35,6 +36,8 @@ data class OwnedPokemon(
     val friendship: Int = FriendshipRules.START,
     val isShiny: Boolean = false,
     val heldItem: String? = null,
+    /** The moves chosen for it, as move identifiers (at most [Moveset.MAX]); none stored means its natural moves ([Moveset]). */
+    @OptIn(ExperimentalSerializationApi::class) @EncodeDefault(EncodeDefault.Mode.NEVER) val moves: List<String> = emptyList(),
     val teraType: PokemonType? = null,
     val cosmeticForm: String? = null,
     val personality: Int = 0,
@@ -55,6 +58,9 @@ data class OwnedPokemon(
     val form: FormInfo get() = checkNotNull(Dex.form(formIdentifier)) { "unknown form $formIdentifier" }
 
     val stats: StatSpread get() = StatCalculator.compute(form.stats, ivs, evs, level, nature)
+
+    /** The moves it has now ([Moveset.active]): the chosen ones, or its natural moves. */
+    val activeMoves: List<MoveInfo> get() = Moveset.active(this)
 
     /** The types that decide this Pokémon's type perk: its Tera type if it has one, otherwise its own types. */
     val perkTypes: List<PokemonType> get() = teraType?.let { listOf(it) } ?: form.types
@@ -110,6 +116,9 @@ data class OwnedPokemon(
     fun withNickname(name: String): OwnedPokemon = copy(nickname = name.trim().ifEmpty { species.name })
 
     fun withHeldItem(item: String?): OwnedPokemon = copy(heldItem = item)
+
+    /** The same Pokémon with [identifiers] as its moves (an empty list: back to the natural moves). Check [Moveset.canSet] first. */
+    fun withMoves(identifiers: List<String>): OwnedPokemon = copy(moves = identifiers)
 
     fun withNature(nature: Nature): OwnedPokemon = copy(nature = nature)
 

@@ -43,6 +43,10 @@ data class SpeedExplanation(
     val favoredMembers: Int,
     /** The extra power from members of a favoured type: 20% of their levels. */
     val favoredBonus: Double,
+    /** What the members' moves, abilities and held items add ([BattleIdentity]); [levels] + [favoredBonus] + [identityBonus] is [power]. */
+    val identityBonus: Double = 0.0,
+    /** Each member's named parts of that, as lines ("Pikachu: Thunderbolt (electric, favoured here) +6%"). */
+    val identityLines: List<String> = emptyList(),
     val power: Double,
     val baseMillis: Long,
     /** The time after power alone, never under a quarter of [baseMillis]. */
@@ -93,12 +97,15 @@ object WorldSim {
     const val BERRY_PERCENT = 70
     const val TREASURE_PERCENT = 6
 
-    /** A team's power: the sum of its members' levels, with 20% more for each member of a type the dungeon favors. */
+    /**
+     * A team's power: the sum of its members' [contribution]s, each its level, 20% more for a type the dungeon favors, and what its moves, ability and
+     * held item add ([BattleIdentity], at most 25% of the level).
+     */
     fun power(members: List<OwnedPokemon>, dungeon: DungeonDef): Double =
         members.sumOf { contribution(it, dungeon) }
 
-    /** What [p] adds to a team's power in [dungeon]: its level, 20% more for a type the dungeon favors (the one term of [power]). */
-    fun contribution(p: OwnedPokemon, dungeon: DungeonDef): Double = p.level * if (p.form.types.any { it in dungeon.favored }) 1.2 else 1.0
+    /** What [p] adds to a team's power in [dungeon] (the one term of [power]); [BattleIdentity.breakdown] says what it is made of. */
+    fun contribution(p: OwnedPokemon, dungeon: DungeonDef): Double = BattleIdentity.breakdown(p, dungeon).power
 
     /**
      * The strongest team of up to [size] from [candidates] for [dungeon]: [power] is a sum of each member's [contribution], so the best
@@ -244,8 +251,11 @@ object WorldSim {
         val afterPower = maxOf(base / 4, (base / (1.0 + power / 100.0)).toLong())
         val favored = members.filter { p -> p.form.types.any { it in dungeon.favored } }
         val legend = data.legendFaster(dungeon).coerceAtMost(50)
+        val identity = members.map { BattleIdentity.breakdown(it, dungeon) }
         return SpeedExplanation(
-            levels = members.sumOf { it.level }, favoredMembers = favored.size, favoredBonus = favored.sumOf { it.level } * 0.2, power = power,
+            levels = members.sumOf { it.level }, favoredMembers = favored.size, favoredBonus = favored.sumOf { it.level } * BattleIdentity.FAVORED_TYPE_FACTOR, power = power,
+            identityBonus = identity.sumOf { it.identityPower },
+            identityLines = identity.filter { it.parts.isNotEmpty() }.map { b -> "${b.member.nickname}: " + b.parts.joinToString(", ") { "${it.label} +${it.percent}%" } + (if (b.percent < b.parts.sumOf { it.percent }) " (capped at +${BattleIdentity.MAX_PERCENT}%)" else "") },
             baseMillis = base, afterPowerMillis = afterPower, atMinimum = afterPower == base / 4,
             masteryPercent = if (data.guardianDone) 10 else 0, legendPercent = legend,
             floorMillis = floorMillis(dungeon, power, data.guardianDone, data.legendFaster(dungeon)),

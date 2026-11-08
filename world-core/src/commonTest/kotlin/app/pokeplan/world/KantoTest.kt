@@ -150,7 +150,7 @@ class SpeedExplanationTest {
             val e = WorldSim.explainSpeed(d, members, data)
             assertEquals(WorldSim.floorMillis(d, WorldSim.power(members, d), data.guardianDone, data.legendFaster(d)), e.floorMillis, d.id)
             assertEquals(90, e.levels)
-            assertEquals(e.levels + e.favoredBonus, e.power, 1e-9, d.id)
+            assertEquals(e.levels + e.favoredBonus + e.identityBonus, e.power, 1e-9, d.id)
         }
         // A strong team reaches the floor of a quarter of the base time and is told so.
         val strong = listOf(mon("a", 25, 100), mon("b", 74, 100), mon("c", 10, 100), mon("d", 1, 100))
