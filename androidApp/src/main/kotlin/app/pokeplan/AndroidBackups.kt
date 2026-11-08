@@ -52,6 +52,13 @@ class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
 
     override fun automatic(): List<BackupEntry> = backups?.list()?.map { BackupEntry(it.millis, it.bytes) }.orEmpty()
 
+    override fun eraseLeftovers(): String = runCatching {
+        store?.live?.eraseKeptCopiesAndHolds()
+        backups?.deleteAll()
+        listOf("save.json", "care.json").forEach { java.io.File(activity.filesDir, it).delete() }
+        "The daily backups, kept-aside copies and old save files were removed too."
+    }.getOrElse { Log.w(tag, "erase leftovers failed: ${it.javaClass.simpleName}"); "Some backups could not be removed." }
+
     override fun lowStorage(): Boolean = backups?.lowStorage == true || LiveStore.writeFailed
 
     override fun backupNow(): String {

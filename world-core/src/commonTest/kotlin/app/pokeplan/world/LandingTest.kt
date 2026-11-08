@@ -77,7 +77,7 @@ class LandingTest {
         assertTrue(summary.floors > 0 && summary.floors == report.events.count { it is WorldEvent.FloorCleared })
         assertEquals(summary.xp, report.data.xp - start.xp)
         // Poké: what every floor gave plus the milestones' Poké is all the data gained.
-        assertEquals(report.data.poke - start.poke, summary.poke + summary.milestones.sumOf { it.second.poke })
+        assertEquals(report.data.pokeEarned - start.pokeEarned, summary.poke + summary.milestones.sumOf { it.second.poke })
         // Berries found by chance are in the data's items (milestone berries come on top).
         val milestoneBerries = summary.milestones.filter { it.second.itemId?.startsWith("berry") == true }.sumOf { it.second.count }
         assertEquals(report.data.items.filterKeys { it.startsWith("berry") }.values.sum(), summary.berries + milestoneBerries)

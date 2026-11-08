@@ -151,17 +151,20 @@ class GameStore(
 
     /**
      * One Poké balance (`PlayerState.coins`), written by the ledger (the live save turns a change of it into a ledger event, REP-014).
-     * World's pure rules still read and write `WorldData.poke`, so that field is the rules' working copy of the balance in memory, never
-     * a second wallet and never saved: whatever changed it or the coins in one update is folded into both. Retired when World's rules
-     * take the balance as an input (docs/pokelife IMPLEMENTATION_BACKLOG.md, REP-014).
+     * World's rules hold no balance: what they earn arrives as `WorldData.pokeEarned`, which is added to the coins here and cleared in the
+     * same update, and the rules that spend are given the balance and charged by the store (`worldUpgrade`, `worldBuyCandy`, `worldTrain`).
+     * What was added is kept in [worldPokeEarned] for the reward log until [worldPaid] writes it.
      */
     private fun foldPoke(before: AppData, after: AppData): AppData {
-        if (before.pokeMigration == null || after.pokeMigration == null) return migratePoke(after)
-        val migrated = after
-        val balance = (before.player.coins + (migrated.player.coins - before.player.coins) + (migrated.world.poke - before.world.poke)).coerceAtLeast(0)
-        if (balance == migrated.player.coins && balance == migrated.world.poke) return migrated
-        return migrated.copy(player = migrated.player.copy(coins = balance), world = migrated.world.copy(poke = balance))
+        val migrated = if (before.pokeMigration == null || after.pokeMigration == null) migratePoke(after) else after
+        val earned = migrated.world.pokeEarned
+        if (earned == 0) return migrated
+        worldPokeEarned += earned
+        return migrated.copy(player = migrated.player.copy(coins = migrated.player.coins + earned), world = migrated.world.copy(pokeEarned = 0))
     }
+
+    /** Poké World rules earned and the update added to the balance, until the reward log has it. */
+    private var worldPokeEarned = 0
 
     /**
      * Habits of an older save become recurring tasks with a frequency target (PLAN.md sections 5 and 11.2): same id, creation day,
@@ -177,11 +180,11 @@ class GameStore(
 
     /** The one-time merge of Plan's coins and World's Poké, 1:1, recording both sources. Does nothing once it has run. */
     private fun migratePoke(d: AppData): AppData {
-        // The World balance of a save is read once (`legacyPoke`), then it is 0 and not written; `poke` is only the rules' working copy of the balance.
-        if (d.pokeMigration != null) return d.copy(world = d.world.copy(poke = d.player.coins, legacyPoke = 0))
+        // The World balance of a save is read once (`legacyPoke`), then it is 0 and not written.
+        if (d.pokeMigration != null) return if (d.world.legacyPoke == 0) d else d.copy(world = d.world.copy(legacyPoke = 0))
         val total = d.player.coins + d.world.legacyPoke
         return d.copy(
-            player = d.player.copy(coins = total), world = d.world.copy(poke = total, legacyPoke = 0),
+            player = d.player.copy(coins = total), world = d.world.copy(legacyPoke = 0),
             pokeMigration = PokeMigration(d.player.coins, d.world.legacyPoke, nowMillis, RewardRules.VERSION),
         )
     }
@@ -1473,11 +1476,28 @@ class GameStore(
         val report = WorldSim.settle(before, data.player.pokemon, nowMillis)
         if (report.isEmpty) { worldLegends(); return null }
         update { it.copy(world = report.data) }
-        worldSummary = (worldSummary ?: ReportSummary()) + ReportSummary.of(report, report.data.xp - before.xp)
+        worldMemberXp(report)
+        worldSummary = (worldSummary ?: ReportSummary()) + ReportSummary.of(report, report.data.xp - before.xp, CandyRules.XP_PER_FLOOR)
         worldPaid("World: exploring", before)
         worldGuardian()
         worldLegends()
         return report
+    }
+
+    /**
+     * Every Pokémon that climbed floors in [report] gets the full experience for each (WORLD.md 5.2): [CandyRules.XP_PER_FLOOR] a floor,
+     * not divided among the team. It goes through the Pokémon's own progression (candy progress and level), and the floors were counted
+     * by the same settle that moved the team's cursor, so a floor is paid once however often the app settles.
+     */
+    private fun worldMemberXp(report: WorldReport) {
+        if (report.memberFloors.isEmpty()) return
+        update { d ->
+            val partner = d.player.pokemon.filter { it.inParty }.maxOfOrNull { it.level }
+            d.copy(player = d.player.copy(pokemon = d.player.pokemon.map { p ->
+                val floors = report.memberFloors[p.id] ?: return@map p
+                p.gainXp(floors * CandyRules.XP_PER_FLOOR, partner ?: p.level)
+            }))
+        }
     }
 
     /** The story's end: the Guardian, Primal Dialga, joins the Guardian collection once (docs/world.md, section 15). The mastery bonus is [app.pokeplan.world.Story.GUARDIAN_BONUS]. */
@@ -1512,7 +1532,7 @@ class GameStore(
     private fun worldPaid(source: String, before: app.pokeplan.world.WorldData) {
         val after = data.world
         val paid = mutableListOf<Reward>()
-        (after.poke - before.poke).takeIf { it > 0 }?.let { paid += Reward.Poke(it) }
+        worldPokeEarned.also { worldPokeEarned = 0 }.takeIf { it > 0 }?.let { paid += Reward.Poke(it) }
         after.items.forEach { (id, n) -> (n - (before.items[id] ?: 0)).takeIf { it > 0 }?.let { paid += Reward.ItemDrop(id, it) } }
         if (paid.isNotEmpty()) update { d ->
             val last = d.rewardLog.lastOrNull()
@@ -1583,17 +1603,19 @@ class GameStore(
     }
 
     /**
-     * Sends the strongest free Pokémon to [dungeonId] in one step: the first team slot that is not out takes the (up to four) highest
-     * level Pokémon that are idle (see [worldIdle]), keeping its members if it already has some.
-     * False when every team is out, no one is free, or the dungeon is not open.
+     * Sends the strongest team to [dungeonId] in one step: the first team slot that is not out takes the best (up to four) of its own
+     * members and the idle Pokémon (see [worldIdle]) **for that dungeon**, so a type the dungeon favors counts for its 20% more
+     * ([WorldSim.bestTeam]) rather than levels alone; a Guardian candidate is never picked. The team keeps its members when they are
+     * already the best. False when every team is out, no one is free, or the dungeon is not open.
      */
     fun worldQuickSend(dungeonId: String): Boolean {
         worldSettle()
+        val dungeon = app.pokeplan.world.Dungeons.byId(dungeonId) ?: return false
         val slot = data.world.slots().firstOrNull { it.expedition == null } ?: return false
-        if (slot.members.isEmpty()) {
-            val free = worldIdle().filter { !Guardians.canBe(it) }.take(app.pokeplan.world.WorldTeam.MAX_MEMBERS)
-            if (free.isEmpty() || !worldAssign(slot.id, free.map { it.id })) return false
-        }
+        val own = slot.members.mapNotNull { id -> data.player.pokemon.firstOrNull { it.id == id } }
+        val best = WorldSim.bestTeam(dungeon, (own + worldIdle()).filter { !Guardians.canBe(it) }.distinctBy { it.id })
+        if (best.isEmpty()) return false
+        if (best.map { it.id }.toSet() != slot.members.toSet() && !worldAssign(slot.id, best.map { it.id })) return false
         return worldStart(slot.id, dungeonId)
     }
 
@@ -1608,8 +1630,10 @@ class GameStore(
     /** Answers the World choice [id] with [option] (0 or 1), after settling what is due; false when there is no such choice. */
     fun worldChoose(id: String, option: Int): Boolean {
         worldSettle()
+        val before = data.world
         val next = data.world.resolveChoice(id, option, nowMillis) ?: return false
         update { it.copy(world = next) }
+        worldPaid("World: exploring", before)
         return true
     }
 
@@ -1690,8 +1714,9 @@ class GameStore(
     /** Builds the next level of a World facility for Poké. False when it is at the top or Poké is short. */
     fun worldUpgrade(facility: app.pokeplan.world.Facility): Boolean {
         worldSettle()
-        val next = data.world.upgrade(facility) ?: return false
-        update { it.copy(world = next) }
+        val cost = data.world.upgradeCost(facility)
+        val next = data.world.upgrade(facility, data.player.coins) ?: return false
+        update { it.copy(world = next, player = it.player.copy(coins = it.player.coins - cost)) }
         return true
     }
 
@@ -1721,8 +1746,9 @@ class GameStore(
 
     /** Buys a Rare Candy at the Kecleon Shop for Poké. False when Poké is short. */
     fun worldBuyCandy(): Boolean {
-        val next = data.world.buyCandy() ?: return false
-        update { d -> d.copy(world = next, player = d.player.copy(inventory = d.player.inventory.add(Items.RARE_CANDY, 1))) }
+        val price = data.world.candyPrice
+        val next = data.world.buyCandy(data.player.coins) ?: return false
+        update { d -> d.copy(world = next, player = d.player.copy(coins = d.player.coins - price, inventory = d.player.inventory.add(Items.RARE_CANDY, 1))) }
         return true
     }
 
@@ -1737,8 +1763,8 @@ class GameStore(
 
     /** Dojo training: Poké into skill XP. */
     fun worldTrain(skill: app.pokeplan.world.WorldSkill): Boolean {
-        val next = data.world.train(skill) ?: return false
-        update { it.copy(world = next) }
+        val next = data.world.train(skill, data.player.coins) ?: return false
+        update { it.copy(world = next, player = it.player.copy(coins = it.player.coins - app.pokeplan.world.Dojo.COST)) }
         return true
     }
 
@@ -1768,13 +1794,12 @@ class GameStore(
     fun gearCandidates(tool: GearTool): List<OwnedPokemon> =
         data.player.pokemon.filter { tool.helps(it.speciesId) }.sortedWith(compareByDescending<OwnedPokemon> { it.friendship }.thenByDescending { it.level }.thenBy { it.id })
 
-    /** Who helps [tool] now: the one the player chose (while they still own them), else a Ranger loaner, else no one. */
+    /** Who helps [tool] now: the one the player chose (while they still own them), else no one. */
     fun gearHelper(tool: GearTool): GearHelper {
         // Only a helper the player chose counts: picking one from the collection by itself would take it out of the PC (one place only).
         val owned = data.gearHelpers[tool.name]?.let { id -> data.player.pokemon.firstOrNull { it.id == id && tool.helps(it.speciesId) } }
         return when {
             owned != null -> GearHelper.Owned(owned)
-            tool.name in data.gearLoans -> GearHelper.Loaner(tool.loaner)
             else -> GearHelper.None
         }
     }
@@ -1789,11 +1814,8 @@ class GameStore(
         return moveTo(pokemonId) { d -> d.copy(gearHelpers = d.gearHelpers - tool.name + (tool.name to pokemonId)) }
     }
 
-    /** Forgets the chosen helper: it goes back to the PC, and the tool shows its loaner or its own icon. */
+    /** Forgets the chosen helper: it goes back to the PC, and the tool shows its own icon. */
     fun clearGearHelper(tool: GearTool) = update { it.copy(gearHelpers = it.gearHelpers - tool.name) }
-
-    /** A Ranger request succeeded: the tool gets its loaner. It stays a loan (never owned, never in the Dex) until an owned Pokémon can help. */
-    fun lendGearHelper(tool: GearTool) = update { it.copy(gearLoans = it.gearLoans + tool.name) }
 
     fun setPickerOptions(options: List<String>) = update { it.copy(pickerOptions = options.map { o -> o.trim() }.filter { o -> o.isNotEmpty() }.distinct().take(MAX_PICKER_OPTIONS)) }
 
@@ -1889,7 +1911,7 @@ class GameStore(
     fun levelProgress(p: OwnedPokemon): Float {
         if (!p.canFeed) return 1f
         val partner = data.player.pokemon.filter { it.inParty }.maxOfOrNull { it.level } ?: p.level
-        return (p.candyProgress.toFloat() / CandyRules.candiesNeeded(p.level, partner)).coerceIn(0f, 1f)
+        return ((p.candyProgress + p.xp.toFloat() / CandyRules.XP_PER_CANDY) / CandyRules.candiesNeeded(p.level, partner)).coerceIn(0f, 1f)
     }
 
     /**
@@ -2093,9 +2115,8 @@ class GameStore(
     }
 }
 
-/** Who helps a Pokégear tool: an owned Pokémon, a loaner from a Ranger request (only its species, it is never owned), or no one. */
+/** Who helps a Pokégear tool: an owned Pokémon the player chose, or no one. */
 sealed interface GearHelper {
     data class Owned(val pokemon: OwnedPokemon) : GearHelper
-    data class Loaner(val speciesId: Int) : GearHelper
     data object None : GearHelper
 }

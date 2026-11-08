@@ -33,6 +33,12 @@ interface BackupAccess {
      */
     fun saveCopy(millis: Long?, passphrase: String? = null, onDone: (String) -> Unit)
 
+    /**
+     * What a full-device erase must also remove, beyond what the stores write blank: the daily backups, the copies a migration or a restore kept
+     * aside, held reminders, and the old `save.json` and `care.json` rollback files. Returns a short note. Nothing to do where the platform has none.
+     */
+    fun eraseLeftovers(): String = ""
+
     /** Lets the player pick a backup file; it is read and checked whole. [onChosen] gets what it holds, or the reason it was refused. Nothing changes yet. */
     fun chooseFile(onChosen: (StagedBackup?, String?) -> Unit)
 

@@ -67,7 +67,7 @@ Done once, deterministically and without removing any Pokémon, by this priority
 - A party's bonuses apply **only to rewards and effects of its own module's activities** (for example PLAN's party affects PLAN's rewards, not CARE's). The party of one module never boosts another module or WORLD.
 - The **lead** (slot 1) carries the strongest bonus; the five members add smaller assists. The mechanics and values start from the current implementation (buddy types, abilities, held items and assists in `docs/design.md`, "Party perks") and move into this document with the first migration that touches them.
 - Bonuses are **capped per bonus type** (starting value: +25% per bucket, a *tune* number) so no single Pokémon or build breaks the economy, and every bonus is **shown to the player**, not hidden.
-- Bonuses **never make shinies, high IVs or a chosen nature easier** to obtain, and never gate or degrade a module's utility: every module works fully with an empty party.
+- **Owner decision, 8 November 2026: the Shiny hunter and Egg luck buckets and the Mega boost stay**, so a party bonus may raise shiny and egg-luck odds; they stay capped per bucket and shown. Bonuses **never make high IVs or a chosen nature easier** to obtain, and never gate or degrade a module's utility: every module works fully with an empty party.
 - Bonuses are settled through the shared reward ledger: the party composition and the bonus applied are recorded with the settled event, so settlement stays deterministic and idempotent. Anything locked at the start of an action (for example a focus session's egg luck) stays locked if the party changes mid-action.
 - Party bonuses are a Pokémon-side effect. They are never a reason for a module's private content to reach WORLD or the ledger.
 

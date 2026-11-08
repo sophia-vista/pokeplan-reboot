@@ -69,11 +69,12 @@ data class WorldData(
     val clears: Map<String, Int> = emptyMap(),
     val xp: Int = 0,
     /**
-     * The Poké the World rules read and spend while one runs. **Never saved**: the one Poké balance is `PlayerState.coins`, which the ledger
-     * writes (docs/pokelife POKEMON_ECOSYSTEM.md section 11.2). The app sets this from the balance when a save loads and folds what a rule
-     * changed back into it after every action; it is a working input of these pure rules, not a wallet.
+     * Poké the World rules earned in the last call (floors, milestones, floor events, a job, a research step) and the app has not yet put in
+     * the one balance, `PlayerState.coins`. **Never saved**, and never a balance: the app adds it to the coins (through the ledger) and sets
+     * it back to 0 after every action, and the rules that spend Poké are given the balance as an input and charge nothing themselves
+     * (docs/pokelife POKEMON_ECOSYSTEM.md section 11.2).
      */
-    @Transient val poke: Int = 0,
+    @Transient val pokeEarned: Int = 0,
     /** Legacy: the World balance of a save from before the Poké merge, read once by the app's merge into the balance and then 0 (and so not written). */
     @SerialName("poke") @EncodeDefault(EncodeDefault.Mode.NEVER) val legacyPoke: Int = 0,
     val finds: List<Find> = emptyList(),
@@ -253,7 +254,7 @@ data class WorldData(
         val m = Missions.byId(id) ?: return copy(missions = missions - p)
         val bag = m.itemId?.let { items + (it to (items[it] ?: 0) + m.itemCount) } ?: items
         return copy(
-            missions = missions - p, poke = poke + m.poke, xp = xp + m.xp, items = bag,
+            missions = missions - p, pokeEarned = pokeEarned + m.poke, xp = xp + m.xp, items = bag,
             missionsDone = if (m.once) missionsDone + m.id else missionsDone,
             missionClaimedDay = if (m.period > 0) missionClaimedDay + (m.id to Missions.day(lastSeenAt, utcOffsetMillis)) else missionClaimedDay,
         )
@@ -265,12 +266,14 @@ data class WorldData(
 
     internal fun withSkillXp(skill: WorldSkill, amount: Int) = copy(skillXp = skillXp + (skill.name to (skillXp[skill.name] ?: 0) + amount))
 
-    /** Builds the next level of [facility] for Poké; null when it is at the top or Poké is short. */
-    fun upgrade(facility: Facility): WorldData? {
+    /** What the next level of [facility] costs in Poké. */
+    fun upgradeCost(facility: Facility): Int = facility.cost(facilityLevel(facility))
+
+    /** Builds the next level of [facility]; null when it is at the top or the [balance] is short. The caller charges [upgradeCost]. */
+    fun upgrade(facility: Facility, balance: Int): WorldData? {
         val level = facilityLevel(facility)
-        val cost = facility.cost(level)
-        if (level >= Facility.MAX_LEVEL || poke < cost) return null
-        return copy(poke = poke - cost, facilities = facilities + (facility.name to level + 1))
+        if (level >= Facility.MAX_LEVEL || balance < facility.cost(level)) return null
+        return copy(facilities = facilities + (facility.name to level + 1))
     }
 
     /** Research milestones reached by the species discovered and not yet claimed. */
@@ -280,25 +283,25 @@ data class WorldData(
     fun claimResearch(species: Int): WorldData? {
         val step = researchReady().firstOrNull { it.species == species } ?: return null
         val bag = step.itemId?.let { items + (it to (items[it] ?: 0) + step.count) } ?: items
-        return copy(poke = poke + step.poke, items = bag, researchClaimed = researchClaimed + species)
+        return copy(pokeEarned = pokeEarned + step.poke, items = bag, researchClaimed = researchClaimed + species)
     }
 
     /** The Poké the next shop Rare Candy costs. *(tune)* */
     val candyPrice: Int get() = Shop.CANDY_BASE + Shop.CANDY_STEP * shopCandies
 
-    /** Buys a Rare Candy at the Kecleon Shop; null when Poké is short. The caller puts the candy in the Bag. */
-    fun buyCandy(): WorldData? {
-        if (poke < candyPrice) return null
-        return copy(poke = poke - candyPrice, shopCandies = shopCandies + 1)
+    /** Buys a Rare Candy at the Kecleon Shop; null when the [balance] is short. The caller charges [candyPrice] (as it was before) and puts the candy in the Bag. */
+    fun buyCandy(balance: Int): WorldData? {
+        if (balance < candyPrice) return null
+        return copy(shopCandies = shopCandies + 1)
     }
 
     /** Brews at the Café at [now] (the caller took the berries; null while a brew still works, so berries are never wasted): every floor finished in the next [Cafe.HOURS] hours is luckier. */
     fun brew(now: Long): WorldData? = if (now < brewUntil) null else copy(brewUntil = now + Cafe.HOURS * 3_600_000L)
 
-    /** Dojo training: [Dojo.COST] Poké for [Dojo.SKILL_XP] XP in [skill]; null when Poké is short or the skill is at the top. */
-    fun train(skill: WorldSkill): WorldData? {
-        if (poke < Dojo.COST || skillLevel(skill) >= WorldSkill.MAX_LEVEL) return null
-        return copy(poke = poke - Dojo.COST).withSkillXp(skill, Dojo.SKILL_XP)
+    /** Dojo training: [Dojo.SKILL_XP] XP in [skill] for [Dojo.COST] Poké, which the caller charges; null when the [balance] is short or the skill is at the top. */
+    fun train(skill: WorldSkill, balance: Int): WorldData? {
+        if (balance < Dojo.COST || skillLevel(skill) >= WorldSkill.MAX_LEVEL) return null
+        return withSkillXp(skill, Dojo.SKILL_XP)
     }
 
     /** Takes out of every team the Pokémon no longer in [roster] (transferred away); a team left with no one comes home. */
