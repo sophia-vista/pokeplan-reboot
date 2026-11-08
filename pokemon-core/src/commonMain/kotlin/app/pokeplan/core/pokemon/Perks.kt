@@ -241,7 +241,8 @@ data class PerkSource(
 }
 
 /**
- * The Guardian role of legendary-class and mythical Pokémon: slotted by trainer rank, a big perk each, outside the usual cap.
+ * The Guardian role of legendary-class and mythical Pokémon: a normal Pokémon (in the PC, a party or a World team like any other) that can also be a
+ * module's Guardian, one slot per module (owner decision, 8 November 2026), with a big perk in that module only, outside the usual cap.
  * See "Guardians" in docs/design.md. Numbers are *(tune)*.
  */
 object Guardians {
@@ -263,14 +264,6 @@ object Guardians {
         "celebi" to PerkBucket.STREAK_KEEPER, // time
     )
 
-    /** How many Guardian slots a trainer of [rankIndex] (0 is the first rank) has. */
-    fun slots(rankIndex: Int): Int = when {
-        rankIndex >= 9 -> 3
-        rankIndex >= 6 -> 2
-        rankIndex >= 4 -> 1
-        else -> 0
-    }
-
     /** Only legendary-class and mythical Pokémon can be Guardians. */
     fun canBe(p: OwnedPokemon): Boolean = p.species.isSpecial
 
@@ -284,6 +277,27 @@ object Guardians {
             result[bucket] = (result[bucket] ?: 0.0) + SIGNATURE_PERCENT * SECOND_TYPE_SHARE
         }
         return result
+    }
+
+    /** The modules that have a Guardian slot, in slot order (slot 1 is Plan's): `pokemon_place` stores the slot, so the order never changes. */
+    val MODULES: List<String> = listOf(PartyIds.PLAN, PartyIds.CARE, PartyIds.HEAL, PartyIds.MINT, PartyIds.HOME, PartyIds.LINK)
+
+    /** A Guardian's signature in another module's buckets: its type perk at [SIGNATURE_PERCENT] (the second type half), by that module's [bucketOf]. */
+    fun <B> signatureIn(p: OwnedPokemon, bucketOf: (PokemonType) -> B?): Map<B, Double> {
+        val result = mutableMapOf<B, Double>()
+        p.form.types.forEachIndexed { i, type ->
+            val bucket = bucketOf(type) ?: return@forEachIndexed
+            result[bucket] = (result[bucket] ?: 0.0) + SIGNATURE_PERCENT * if (i == 0) 1.0 else SECOND_TYPE_SHARE
+        }
+        return result
+    }
+
+    /** [base] (a module's party perks, already capped) plus the module's [guardian]'s signature in its buckets, that part capped at [BUCKET_CAP] on top of the ordinary cap. A Pokémon that is not a Guardian species adds nothing. */
+    fun <B> addTo(base: Map<B, Double>, guardian: OwnedPokemon?, bucketOf: (PokemonType) -> B?): Map<B, Double> {
+        if (guardian == null || !canBe(guardian)) return base
+        val out = base.toMutableMap()
+        signatureIn(guardian, bucketOf).forEach { (b, v) -> out[b] = (out[b] ?: 0.0) + v.coerceAtMost(BUCKET_CAP) }
+        return out
     }
 
     /** The combined Guardian perks, each bucket capped at [BUCKET_CAP]. Anything that is not a Guardian species is ignored. */
@@ -321,15 +335,15 @@ object CarePerks {
         return result
     }
 
-    /** The percent per bucket for a party led by [lead]; empty with no lead. */
-    fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList()): Map<CareBucket, Double> {
-        if (lead == null) return emptyMap()
+    /** The percent per bucket for a party led by [lead], with the module's [guardian] on top of the cap (see [Guardians]); empty with neither. */
+    fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList(), guardian: OwnedPokemon? = null): Map<CareBucket, Double> {
+        if (lead == null && guardian == null) return emptyMap()
         val sums = mutableMapOf<CareBucket, Double>()
-        typePerks(lead).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v }
-        party.filter { it.id != lead.id }.take(5).forEach { a ->
+        lead?.let { typePerks(it) }?.forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v }
+        party.filter { it.id != lead?.id }.take(5).forEach { a ->
             typePerks(a).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v * Perks.ASSIST_SHARE }
         }
-        return sums.mapValues { it.value.coerceAtMost(Perks.BUCKET_CAP) }
+        return Guardians.addTo(sums.mapValues { it.value.coerceAtMost(Perks.BUCKET_CAP) }, guardian, ::bucket)
     }
 }
 
@@ -358,15 +372,15 @@ object HealPerks {
         return result
     }
 
-    /** The percent per bucket for a party led by [lead]; empty with no lead. */
-    fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList()): Map<HealBucket, Double> {
-        if (lead == null) return emptyMap()
+    /** The percent per bucket for a party led by [lead], with the module's [guardian] on top of the cap (see [Guardians]); empty with neither. */
+    fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList(), guardian: OwnedPokemon? = null): Map<HealBucket, Double> {
+        if (lead == null && guardian == null) return emptyMap()
         val sums = mutableMapOf<HealBucket, Double>()
-        typePerks(lead).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v }
-        party.filter { it.id != lead.id }.take(5).forEach { a ->
+        lead?.let { typePerks(it) }?.forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v }
+        party.filter { it.id != lead?.id }.take(5).forEach { a ->
             typePerks(a).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v * Perks.ASSIST_SHARE }
         }
-        return sums.mapValues { it.value.coerceAtMost(Perks.BUCKET_CAP) }
+        return Guardians.addTo(sums.mapValues { it.value.coerceAtMost(Perks.BUCKET_CAP) }, guardian, ::bucket)
     }
 }
 
@@ -395,15 +409,15 @@ object MintPerks {
         return result
     }
 
-    /** The percent per bucket for a party led by [lead]; empty with no lead. */
-    fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList()): Map<MintBucket, Double> {
-        if (lead == null) return emptyMap()
+    /** The percent per bucket for a party led by [lead], with the module's [guardian] on top of the cap (see [Guardians]); empty with neither. */
+    fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList(), guardian: OwnedPokemon? = null): Map<MintBucket, Double> {
+        if (lead == null && guardian == null) return emptyMap()
         val sums = mutableMapOf<MintBucket, Double>()
-        typePerks(lead).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v }
-        party.filter { it.id != lead.id }.take(5).forEach { a ->
+        lead?.let { typePerks(it) }?.forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v }
+        party.filter { it.id != lead?.id }.take(5).forEach { a ->
             typePerks(a).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v * Perks.ASSIST_SHARE }
         }
-        return sums.mapValues { it.value.coerceAtMost(Perks.BUCKET_CAP) }
+        return Guardians.addTo(sums.mapValues { it.value.coerceAtMost(Perks.BUCKET_CAP) }, guardian, ::bucket)
     }
 }
 
@@ -432,15 +446,15 @@ object HomePerks {
         return result
     }
 
-    /** The percent per bucket for a party led by [lead]; empty with no lead. */
-    fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList()): Map<HomeBucket, Double> {
-        if (lead == null) return emptyMap()
+    /** The percent per bucket for a party led by [lead], with the module's [guardian] on top of the cap (see [Guardians]); empty with neither. */
+    fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList(), guardian: OwnedPokemon? = null): Map<HomeBucket, Double> {
+        if (lead == null && guardian == null) return emptyMap()
         val sums = mutableMapOf<HomeBucket, Double>()
-        typePerks(lead).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v }
-        party.filter { it.id != lead.id }.take(5).forEach { a ->
+        lead?.let { typePerks(it) }?.forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v }
+        party.filter { it.id != lead?.id }.take(5).forEach { a ->
             typePerks(a).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v * Perks.ASSIST_SHARE }
         }
-        return sums.mapValues { it.value.coerceAtMost(Perks.BUCKET_CAP) }
+        return Guardians.addTo(sums.mapValues { it.value.coerceAtMost(Perks.BUCKET_CAP) }, guardian, ::bucket)
     }
 }
 
@@ -469,14 +483,14 @@ object LinkPerks {
         return result
     }
 
-    /** The percent per bucket for a party led by [lead]; empty with no lead. */
-    fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList()): Map<LinkBucket, Double> {
-        if (lead == null) return emptyMap()
+    /** The percent per bucket for a party led by [lead], with the module's [guardian] on top of the cap (see [Guardians]); empty with neither. */
+    fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList(), guardian: OwnedPokemon? = null): Map<LinkBucket, Double> {
+        if (lead == null && guardian == null) return emptyMap()
         val sums = mutableMapOf<LinkBucket, Double>()
-        typePerks(lead).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v }
-        party.filter { it.id != lead.id }.take(5).forEach { a ->
+        lead?.let { typePerks(it) }?.forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v }
+        party.filter { it.id != lead?.id }.take(5).forEach { a ->
             typePerks(a).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v * Perks.ASSIST_SHARE }
         }
-        return sums.mapValues { it.value.coerceAtMost(Perks.BUCKET_CAP) }
+        return Guardians.addTo(sums.mapValues { it.value.coerceAtMost(Perks.BUCKET_CAP) }, guardian, ::bucket)
     }
 }

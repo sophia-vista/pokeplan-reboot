@@ -403,6 +403,29 @@ class PokemonTablesTest {
     }
 
     @Test
+    fun aModulesGuardianIsOneRowWithTheModulesSlotAndComesBackAsTheMap() {
+        val s = moved("main-heavy-70-days.json")
+        val doc = save(s)
+        val inPc = pokemon(doc).filter { (it["inParty"] as JsonPrimitive).content == "false" && text(it, "id") != text(player(doc), "buddyId") }
+        val a = text(inPc[0], "id")!!
+        val b = text(inPc[1], "id")!!
+        val two = withPlayer(doc) { it.with("moduleGuardians" to JsonObject(mapOf("care" to JsonPrimitive(a), "link" to JsonPrimitive(b)))) }
+        write(s, two)
+        // Care is the second module and Link the sixth: their slots in the table.
+        assertEquals(PokemonPlace.Guardian, s.pokemon.placeOf(a))
+        assertEquals(2L, scalar(s, "SELECT slot FROM pokemon_place WHERE owned_id = '$a'"))
+        assertEquals(6L, scalar(s, "SELECT slot FROM pokemon_place WHERE owned_id = '$b'"))
+        val back = player(save(s))
+        assertEquals(mapOf("care" to a, "link" to b), (back["moduleGuardians"] as JsonObject).mapValues { (it.value as JsonPrimitive).content })
+        assertEquals(0, (back["guardians"] as JsonArray).size, "the old list is always empty on the way out")
+        // Emptying a slot sends the Pokémon back to the PC.
+        write(s, withPlayer(doc) { it.with("moduleGuardians" to JsonObject(mapOf("link" to JsonPrimitive(b)))) }, now = 200)
+        assertNull(s.pokemon.placeOf(a))
+        // A module with no slot is refused whole.
+        assertFailsWith<SaveNotRepresentableException> { write(s, withPlayer(doc) { it.with("moduleGuardians" to JsonObject(mapOf("gear" to JsonPrimitive(a)))) }, now = 300) }
+    }
+
+    @Test
     fun aSaveThatPutsAPokemonInTwoPlacesIsRefusedWholeBeforeAnythingIsWritten() {
         val s = moved("main-heavy-70-days.json")
         val doc = save(s)

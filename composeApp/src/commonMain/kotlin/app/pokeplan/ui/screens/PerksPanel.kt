@@ -153,7 +153,7 @@ fun CarePerksCard(model: AppModel) {
     val player = model.data.player
     val lead = player.careLead
     val party = player.partyOf(PartyIds.CARE)
-    val totals = CarePerks.total(lead, party)
+    val totals = CarePerks.total(lead, party, model.data.player.guardianOf(app.pokeplan.core.pokemon.PartyIds.CARE))
     var open by remember { mutableStateOf(false) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -195,7 +195,7 @@ fun HealPerksCard(model: AppModel) {
     val player = model.data.player
     val lead = player.healLead
     val party = player.partyOf(PartyIds.HEAL)
-    val totals = HealPerks.total(lead, party)
+    val totals = HealPerks.total(lead, party, model.data.player.guardianOf(app.pokeplan.core.pokemon.PartyIds.HEAL))
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Heal perks")
@@ -222,7 +222,7 @@ fun MintPerksCard(model: AppModel) {
     val player = model.data.player
     val lead = player.mintLead
     val party = player.partyOf(PartyIds.MINT)
-    val totals = MintPerks.total(lead, party)
+    val totals = MintPerks.total(lead, party, model.data.player.guardianOf(app.pokeplan.core.pokemon.PartyIds.MINT))
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Mint perks")
@@ -249,7 +249,7 @@ fun HomePerksCard(model: AppModel) {
     val player = model.data.player
     val lead = player.homeLead
     val party = player.partyOf(PartyIds.HOME)
-    val totals = HomePerks.total(lead, party)
+    val totals = HomePerks.total(lead, party, model.data.player.guardianOf(app.pokeplan.core.pokemon.PartyIds.HOME))
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Home perks")
@@ -276,7 +276,7 @@ fun LinkPerksCard(model: AppModel) {
     val player = model.data.player
     val lead = player.linkLead
     val party = player.partyOf(PartyIds.LINK)
-    val totals = LinkPerks.total(lead, party)
+    val totals = LinkPerks.total(lead, party, model.data.player.guardianOf(app.pokeplan.core.pokemon.PartyIds.LINK))
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Link perks")

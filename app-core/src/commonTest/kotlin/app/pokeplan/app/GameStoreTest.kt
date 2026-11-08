@@ -474,37 +474,64 @@ class GameStoreTest {
     private val uxieSpecies = app.pokeplan.core.dex.Dex.species.first { it.identifier == "uxie" }.id
 
     @Test
-    fun aGuardianCannotBeTheBuddyOrJoinTheParty() {
+    fun aGuardianCannotBeTheBuddyButCanJoinAParty() {
         val (s0, _) = started()
         val s = s0.withPoints(3_300)
         val mew = s.grantPokemon(mewSpecies, "Quest: Mew")
         assertFalse(mew.inParty)
         assertFalse(s.setBuddy(mew.id))
-        assertFalse(s.setInParty(mew.id, true))
+        assertTrue(s.setInParty(mew.id, true), "a legendary is a normal Pokémon for a party")
         assertEquals(0, s.feedRareCandy(mew.id, 5))
         assertFalse(s.transfer(mew.id), "legendaries cannot be transferred")
         assertTrue(mewSpecies in s.data.player.caught)
     }
 
     @Test
-    fun guardiansNeedASlotAndSlotsOpenWithRank() {
-        val (s0, _) = started()
-        val low = s0.withPoints(TrainerRank.thresholds[1])
-        val mew = low.grantPokemon(mewSpecies, "Quest")
-        assertEquals(0, low.guardianSlots)
-        assertFalse(low.slotGuardian(mew.id))
+    fun everyModuleHasOneGuardianSlotAtAnyRank() {
+        val (s, _) = started()
+        val mew = s.grantPokemon(mewSpecies, "Quest")
+        val uxie = s.grantPokemon(uxieSpecies, "Quest")
+        assertTrue(s.slotGuardian(mew.id, PartyIds.CARE), "no rank to wait for")
+        assertEquals(mew.id, s.guardianOf(PartyIds.CARE)?.id)
+        assertEquals(app.pokeplan.app.Place.Guardian(PartyIds.CARE), app.pokeplan.app.Places.of(s.data, mew.id))
+        // One place only: moving it to another module empties the first slot.
+        assertTrue(s.slotGuardian(mew.id, PartyIds.HEAL))
+        assertEquals(null, s.guardianOf(PartyIds.CARE))
+        assertEquals(mew.id, s.guardianOf(PartyIds.HEAL)?.id)
+        // A second Guardian can hold another module, and replacing one sends the old one to the PC.
+        assertTrue(s.slotGuardian(uxie.id, PartyIds.PLAN))
+        assertTrue(s.slotGuardian(uxie.id, PartyIds.HEAL))
+        assertEquals(uxie.id, s.guardianOf(PartyIds.HEAL)?.id)
+        assertEquals(app.pokeplan.app.Place.Pc, app.pokeplan.app.Places.of(s.data, mew.id), "the one it replaced goes to the PC")
+        s.unslotGuardian(PartyIds.HEAL)
+        assertEquals(app.pokeplan.app.Place.Pc, app.pokeplan.app.Places.of(s.data, uxie.id))
+        assertFalse(s.slotGuardian(s.data.player.buddyId!!, PartyIds.PLAN), "an ordinary Pokémon is not a Guardian")
+        assertFalse(s.slotGuardian(mew.id, "gear"), "a place that is not a module has no slot")
+    }
 
-        val s = s0.withPoints(TrainerRank.thresholds[4]) // rank 4: one slot
-        val m = s.grantPokemon(mewSpecies, "Quest")
-        val u = s.grantPokemon(uxieSpecies, "Quest")
-        assertEquals(1, s.guardianSlots)
-        assertTrue(s.slotGuardian(m.id))
-        assertFalse(s.slotGuardian(m.id), "already slotted")
-        assertFalse(s.slotGuardian(u.id), "no free slot")
-        s.unslotGuardian(m.id)
-        assertTrue(s.slotGuardian(u.id))
-        assertEquals(listOf(u.id), s.data.player.guardians)
-        assertFalse(s.slotGuardian(s.data.player.buddyId!!), "an ordinary Pokémon is not a Guardian")
+    @Test
+    fun aGuardianIsANormalPokemonForPartiesAndTeamsAndTheSlotTakesItFromThem() {
+        val (s, _) = started()
+        val mew = s.grantPokemon(mewSpecies, "Quest")
+        assertTrue(s.setInParty(mew.id, true, PartyIds.CARE))
+        assertTrue(s.slotGuardian(mew.id, PartyIds.PLAN), "slotting takes it out of the party")
+        assertFalse(s.data.player.pokemon.first { it.id == mew.id }.inParty)
+        assertTrue(s.setInParty(mew.id, true, PartyIds.CARE), "joining a party takes it out of the slot")
+        assertEquals(null, s.guardianOf(PartyIds.PLAN))
+        assertTrue(s.worldAssign(1, listOf(mew.id)), "and it can be on a World team")
+        assertEquals(app.pokeplan.app.Place.WorldTeam(1), app.pokeplan.app.Places.of(s.data, mew.id))
+    }
+
+    @Test
+    fun anOldGlobalGuardianListBecomesTheFirstModulesInOrder() {
+        val (s, _) = started()
+        val a = s.grantPokemon(mewSpecies, "Quest")
+        val b = s.grantPokemon(uxieSpecies, "Quest")
+        val old = s.data.copy(player = s.data.player.copy(guardians = listOf(a.id, "gone", b.id)))
+        val moved = app.pokeplan.app.Places.guardiansToModules(old)
+        assertEquals(mapOf(PartyIds.PLAN to a.id, PartyIds.CARE to b.id), moved.player.moduleGuardians)
+        assertTrue(moved.player.guardians.isEmpty())
+        assertEquals(moved, app.pokeplan.app.Places.guardiansToModules(moved), "once")
     }
 
     @Test
@@ -512,7 +539,7 @@ class GameStoreTest {
         val (s0, clock) = started()
         val s = s0.withPoints(TrainerRank.thresholds[4])
         val u = s.grantPokemon(uxieSpecies, "Quest")
-        s.slotGuardian(u.id)
+        s.slotGuardian(u.id, PartyIds.PLAN)
         val perks = app.pokeplan.core.pokemon.Perks.total(s.data.player.buddy, s.data.player.party, guardians = s.data.player.guardianPokemon)
         assertEquals(app.pokeplan.core.pokemon.Guardians.SIGNATURE_PERCENT,
             perks[app.pokeplan.core.pokemon.PerkBucket.SUPER_CANDY_CHANCE] - app.pokeplan.core.pokemon.Perks.total(s.data.player.buddy, s.data.player.party)[app.pokeplan.core.pokemon.PerkBucket.SUPER_CANDY_CHANCE], 1e-9)

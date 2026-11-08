@@ -40,7 +40,7 @@ class PlacesTest {
         val claims = buildList {
             resolved.player.buddyId?.let { add(it) }
             addAll(resolved.player.pokemon.filter { it.inParty }.map { it.id })
-            addAll(resolved.player.guardians); addAll(resolved.world.assigned); addAll(resolved.gearHelpers.values)
+            addAll(resolved.player.guardians); addAll(resolved.player.moduleGuardians.values); addAll(resolved.world.assigned); addAll(resolved.gearHelpers.values)
         }
         assertEquals(claims.size, claims.toSet().size)
         // The buddy was lost, so the best Pokémon in the PC takes it; it runs once.
