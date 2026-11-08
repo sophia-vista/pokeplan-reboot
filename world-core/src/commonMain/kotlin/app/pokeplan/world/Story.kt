@@ -2,8 +2,9 @@ package app.pokeplan.world
 
 /**
  * The story foundation (docs/world.md, section 15): chapters that each introduce a mechanic or a meaning, and the Guardian
- * at the end. A chapter opens when its condition is met and is never lost: missing a day does not undo story progress. Only
- * the first chapters are written; the rest are data to fill when their mechanics exist.
+ * at the end. A chapter opens when its condition is met and is never lost: missing a day does not undo story progress. The
+ * Rescue Team and Explorers chapters here are title cards (their scenes are not written); the Mew opening and the Kanto, Johto, Hoenn and
+ * Sinnoh episodes are authored in `story/`.
  */
 data class Chapter(val number: Int, val title: String, val summary: String, val unlocks: String, val needsRank: ExplorerRank, val needsDungeons: Int)
 

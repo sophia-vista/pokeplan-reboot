@@ -52,7 +52,7 @@ class Phase3Test {
         val once = WorldSim.settle(start, roster, end).data
         var split = start
         for (t in listOf(1_000L + 3 * 3_600_000L, 1_000L + 3 * 3_600_000L + 17, 1_000L + 7 * 3_600_000L, end)) split = WorldSim.settle(split, roster, t).data
-        assertEquals(once.poke, split.poke); assertEquals(once.xp, split.xp); assertEquals(once.items, split.items); assertEquals(once.treasure, split.treasure)
+        assertEquals(once.pokeEarned, split.pokeEarned); assertEquals(once.xp, split.xp); assertEquals(once.items, split.items); assertEquals(once.treasure, split.treasure)
     }
 
     @Test
@@ -171,10 +171,10 @@ class ChoicesTest {
         val before = r.data
         val answered = before.resolveChoice(waiting.id, 1, 5_000_000L)!!
         assertTrue(answered.choices.none { it.id == waiting.id }, "it is gone once answered")
-        assertTrue(answered.poke >= before.poke && answered.xp >= before.xp && (answered.items.values.sum() >= before.items.values.sum()) && answered.treasure.values.sum() >= before.treasure.values.sum())
+        assertTrue(answered.pokeEarned >= before.pokeEarned && answered.xp >= before.xp && (answered.items.values.sum() >= before.items.values.sum()) && answered.treasure.values.sum() >= before.treasure.values.sum())
         assertNull(answered.resolveChoice(waiting.id, 0, 5_000_000L), "answering twice does nothing")
         val first = before.resolveChoice(waiting.id, 0, 5_000_000L)!!
-        assertEquals(before.resolveChoice(waiting.id, 0, 9_000_000L)!!.poke, first.poke, "the answer's reward does not depend on when it is given")
+        assertEquals(before.resolveChoice(waiting.id, 0, 9_000_000L)!!.pokeEarned, first.pokeEarned, "the answer's reward does not depend on when it is given")
     }
 
     @Test
@@ -183,7 +183,7 @@ class ChoicesTest {
         val once = WorldSim.settle(start(), roster, end).data
         var split = start()
         for (t in listOf(1_000L + 2 * 3_600_000L, 1_000L + 2 * 3_600_000L + 5, 1_000L + 6 * 3_600_000L, end)) split = WorldSim.settle(split, roster, t).data
-        assertEquals(once.choices, split.choices); assertEquals(once.poke, split.poke); assertEquals(once.xp, split.xp); assertEquals(once.items, split.items); assertEquals(once.treasure, split.treasure)
+        assertEquals(once.choices, split.choices); assertEquals(once.pokeEarned, split.pokeEarned); assertEquals(once.xp, split.xp); assertEquals(once.items, split.items); assertEquals(once.treasure, split.treasure)
     }
 
     @Test

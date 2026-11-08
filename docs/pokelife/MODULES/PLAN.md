@@ -223,7 +223,7 @@ Remain reliable through app backgrounding, screen lock, incoming calls, process 
 
 ### 6.3 Interruption behavior
 
-Allow pause, resume, end, and return after interruption. Do not treat every interruption as failure. When a session ends, publish the focus-state change so the shared reminder feature can re-evaluate eligible deferred requests under its policy.
+**Owner decision, 8 November 2026: focus is strict.** A focus session must hold: leaving the app for more than ten seconds, or the phone moving in Deep Focus, ends the session as not completed, and nothing is paid. The allowances are the existing ones: two emergency pauses a day of up to three minutes, a pause for a phone call, and Magic Guard. This replaces the earlier wording that every interruption is not a failure and that a session can be paused and resumed freely; gentle pause and resume belong to the Care calm break, not to focus. A session can still be ended by the player and the app can be returned to. When a session ends, publish the focus-state change so the shared reminder feature can re-evaluate eligible deferred requests under its policy.
 
 ### 6.4 History and rewards
 
@@ -265,7 +265,7 @@ Keep the hierarchy simple: goal describes outcome; project groups work; mileston
 
 Goals: ID, title, optional description, created date, optional target date, status (active/on hold/completed/archived), optional linked project, milestones, and tasks. Completion is deliberate.
 
-Milestones: title, optional target date, status, optional linked tasks, completion date. Milestones are not recurring tasks and do not independently generate task rewards.
+Milestones: title, optional target date, status, optional linked tasks, completion date. Milestones are not recurring tasks and do not generate *task* rewards. **Owner decision, 8 November 2026: the current payout stays**: a goal milestone reached pays a Super Candy, and a finished goal pays a bonus item (`Goal.kt`; `docs/design.md`). Goal completion is still to be made deliberate (see the implementation guide).
 
 Project progress derives only from relevant tasks/milestones. Archived tasks are not incomplete work; unrelated tasks do not affect progress. User may complete/on-hold a project independently of task count.
 

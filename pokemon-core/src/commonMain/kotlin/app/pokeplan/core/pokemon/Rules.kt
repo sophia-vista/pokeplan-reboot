@@ -13,6 +13,12 @@ object CandyRules {
     const val BASE = 2
     const val CURVE = 300
 
+    /** Expedition experience points that make one step of candy progress. *(tune)* */
+    const val XP_PER_CANDY = 20
+
+    /** Experience points each member of a World team gets for each floor it climbs; not divided among the members (WORLD.md 5.2). *(tune)* */
+    const val XP_PER_FLOOR = 1
+
     /** A Pokémon more than this many levels below your partner levels up on half the candies (rounded up). *(tune)* */
     const val CATCH_UP_GAP = 5
 

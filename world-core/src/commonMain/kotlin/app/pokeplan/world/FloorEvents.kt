@@ -92,7 +92,7 @@ internal fun grantEventReward(data: WorldData, reward: EventReward, dungeon: Dun
             events?.add(WorldEvent.Item(berry, 2))
             d = d.copy(items = d.items + (berry to (d.items[berry] ?: 0) + 2)); gave = "2 berries"
         }
-        EventReward.POKE -> { val p = FloorEvents.poke(floor); events?.add(WorldEvent.Poke(p)); d = d.copy(poke = d.poke + p); gave = "$p Poké" }
+        EventReward.POKE -> { val p = FloorEvents.poke(floor); events?.add(WorldEvent.Poke(p)); d = d.copy(pokeEarned = d.pokeEarned + p); gave = "$p Poké" }
         EventReward.XP -> { val x = FloorEvents.xp(floor); d = d.copy(xp = d.xp + x); gave = "$x XP" }
         EventReward.TREASURE -> { val t = FloorEvents.treasureTier(dungeon, floor); events?.add(WorldEvent.Treasure(t)); d = d.copy(treasure = d.treasure + (t to (d.treasure[t] ?: 0) + 1)); gave = "a treasure box" }
     }

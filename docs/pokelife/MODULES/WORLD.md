@@ -547,7 +547,7 @@ The supplied source archive contains a substantial WORLD foundation. The impleme
 
 ### 10.2 Refactor and improve
 
-**Persistence and ownership:** `WorldData` currently stores WORLD-local `xp`, `poke`, item quantities and treasure counts alongside teams, story, Finds and research. These balances/quantities conflict with the Product Bible's shared Exploration Rank, shared Poké and shared Bag. Move authoritative values to shared services; retain only WORLD source events and pending delivery references. Review `GameStore`'s WORLD-specific functions and establish module-owned repositories/use cases with transactions and migration.
+**Persistence and ownership** *(status 0.145.0: Poké is done, since World holds no balance and earns through `pokeEarned`; items go to the Bag as they arrive; `xp` and unopened `treasure` are still World's own)*: `WorldData` at the 0.123.0 baseline stored WORLD-local `xp`, `poke`, item quantities and treasure counts alongside teams, story, Finds and research. These balances/quantities conflict with the Product Bible's shared Exploration Rank, shared Poké and shared Bag. Move authoritative values to shared services; retain only WORLD source events and pending delivery references. Review `GameStore`'s WORLD-specific functions and establish module-owned repositories/use cases with transactions and migration.
 
 **Expedition rewards:** current `WorldSim` deterministically calculates floor XP, Poké, berries, treasure, Finds, milestones and events. Keep deterministic settlement, but route each reward through shared idempotent services. Add the approved individual Pokémon XP award to every participating member per completed eligible floor; do not split the award.
 

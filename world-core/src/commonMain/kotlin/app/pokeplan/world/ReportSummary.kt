@@ -11,6 +11,8 @@ data class ReportSummary(
     val byDungeon: Map<String, Int> = emptyMap(),
     val xp: Int = 0,
     val poke: Int = 0,
+    /** Pokémon XP each member of the busiest team earned (every member gets the full amount, WORLD.md 5.2); a team that climbed fewer floors earned less. */
+    val memberXp: Int = 0,
     val berries: Int = 0,
     /** Treasure boxes found, by tier (1 plain, 2 silver, 3 gold). */
     val treasure: Map<Int, Int> = emptyMap(),
@@ -30,16 +32,16 @@ data class ReportSummary(
 
     operator fun plus(o: ReportSummary): ReportSummary = ReportSummary(
         floors + o.floors, (byDungeon.keys + o.byDungeon.keys).associateWith { (byDungeon[it] ?: 0) + (o.byDungeon[it] ?: 0) },
-        xp + o.xp, poke + o.poke, berries + o.berries,
+        xp + o.xp, poke + o.poke, memberXp + o.memberXp, berries + o.berries,
         (treasure.keys + o.treasure.keys).associateWith { (treasure[it] ?: 0) + (o.treasure[it] ?: 0) },
         milestones + o.milestones, finds + o.finds, cleared + o.cleared, jobsDone + o.jobsDone, guardianFaced || o.guardianFaced,
         eventsOpened + o.eventsOpened, eventsPassed + o.eventsPassed, choicesOffered + o.choicesOffered,
     )
 
     companion object {
-        /** The summary of [report]: the events of every team, with the Exploration XP the settle gave ([xpGained], from the data before and after). */
-        fun of(report: WorldReport, xpGained: Int): ReportSummary {
-            var s = ReportSummary(xp = xpGained)
+        /** The summary of [report]: the events of every team, with the Exploration XP the settle gave ([xpGained], from the data before and after) and [xpPerFloor] Pokémon XP for each floor a member climbed. */
+        fun of(report: WorldReport, xpGained: Int, xpPerFloor: Int = 0): ReportSummary {
+            var s = ReportSummary(xp = xpGained, memberXp = (report.memberFloors.values.maxOrNull() ?: 0) * xpPerFloor)
             for (e in report.events) s = when (e) {
                 is WorldEvent.FloorCleared -> s.copy(floors = s.floors + 1, byDungeon = s.byDungeon + (e.dungeonId to (s.byDungeon[e.dungeonId] ?: 0) + 1))
                 is WorldEvent.Poke -> s.copy(poke = s.poke + e.amount)

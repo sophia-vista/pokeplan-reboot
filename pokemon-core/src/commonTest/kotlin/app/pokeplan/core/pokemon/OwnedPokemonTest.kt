@@ -90,4 +90,41 @@ class OwnedPokemonTest {
         assertEquals(listOf(PokemonType.WATER), tera.perkTypes)
         assertEquals(listOf(PokemonType.ELECTRIC), tera.form.types)
     }
+
+    @Test
+    fun expeditionExperienceIsCandyProgressOnTheSameCurve() {
+        val p = pokemon(Ids.BULBASAUR, level = 30, nature = Nature.ADAMANT)
+        // Under a step of candy progress it only collects; nothing is spent or counted as a candy.
+        val some = p.gainXp(CandyRules.XP_PER_CANDY - 1)
+        assertEquals(CandyRules.XP_PER_CANDY - 1, some.xp)
+        assertEquals(0, some.candyProgress)
+        assertEquals(0, some.totalCandies)
+        // A step of progress, with the points over kept.
+        val step = some.gainXp(2)
+        assertEquals(1, step.candyProgress)
+        assertEquals(1, step.xp)
+        // A level costs exactly as much experience as candies: points fed in many small pieces equal one big award.
+        val need = CandyRules.candiesNeeded(30, 30) * CandyRules.XP_PER_CANDY
+        val up = (1..need).fold(p) { acc, _ -> acc.gainXp(1) }
+        assertEquals(31, up.level)
+        assertEquals(0, up.candyProgress)
+        assertEquals(0, up.xp)
+        assertEquals(FriendshipRules.START + 1, up.friendship)
+        assertEquals(up, p.gainXp(need))
+    }
+
+    @Test
+    fun aBigAwardCanRaiseSeveralLevelsAndAGuardianOrAMaxedPokemonGainsNothing() {
+        val p = pokemon(Ids.BULBASAUR, level = 10, nature = Nature.ADAMANT)
+        val many = p.gainXp(CandyRules.XP_PER_CANDY * CandyRules.candiesBetween(10, 13) + 5)
+        assertEquals(13, many.level)
+        assertEquals(5, many.xp)
+        val top = pokemon(Ids.BULBASAUR, level = CandyRules.MAX_LEVEL, nature = Nature.ADAMANT)
+        assertEquals(top, top.gainXp(1_000))
+        // A Pokémon that reaches the top level on the way keeps no points it can never use.
+        val last = pokemon(Ids.BULBASAUR, level = CandyRules.MAX_LEVEL - 1, nature = Nature.ADAMANT).gainXp(1_000_000)
+        assertEquals(CandyRules.MAX_LEVEL, last.level)
+        assertEquals(0, last.xp)
+        assertEquals(p, p.gainXp(0))
+    }
 }

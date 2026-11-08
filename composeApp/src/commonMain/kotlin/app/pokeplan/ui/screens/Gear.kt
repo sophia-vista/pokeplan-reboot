@@ -44,7 +44,7 @@ import kotlinx.coroutines.delay
 
 /**
  * The Pokégear (docs/ecosystem.md, "Pokégear: utilities and helper Pokémon"): a hub of handy tools reachable from anywhere.
- * Every tool works from the first day; a helper Pokémon (one of the tool's signature line, or a loaner from a Ranger
+ * Every tool works from the first day; a helper Pokémon (one of the tool's signature line that the player chose
  * request) is flavour only: its sprite beside the tool and one reaction when the tool is used. Nothing here pays anything
  * or is read by any other module.
  */
@@ -121,13 +121,12 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
     }
 }
 
-/** The helper of a tool: its sprite and name, a way to change it, and a Ranger request when there is none. [used] changes on each use of the tool. */
+/** The helper of a tool: its sprite and name, and a way to change it. [used] changes on each use of the tool. */
 @Composable
 private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
     val store = model.store
     val helper = store.gearHelper(tool)
     var choosing by remember(tool) { mutableStateOf(false) }
-    var ranger by remember(tool) { mutableStateOf(false) }
     // One emoji over the helper after each use, then it fades.
     var reaction by remember(tool) { mutableStateOf(false) }
     LaunchedEffect(used) { if (used > 0) { reaction = true; delay(1400); reaction = false } }
@@ -139,11 +138,10 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
             Box(Modifier.size(40.dp)) {
                 when (helper) {
                     is GearHelper.Owned -> AnimatedSprite(helper.pokemon.form.id, helper.pokemon.isShiny, helper.pokemon.nickname, size = 40.dp, animate = false)
-                    is GearHelper.Loaner -> AnimatedSprite(Dex.defaultForm(helper.speciesId).id, false, Dex.species(helper.speciesId).name, size = 40.dp, animate = false)
                     GearHelper.None -> ItemIcon(tool.icon, Modifier.align(Alignment.Center), size = 32.dp, description = null)
                 }
             }
-            Text(when (helper) { is GearHelper.Owned -> "${helper.pokemon.nickname} helps"; is GearHelper.Loaner -> "${Dex.species(helper.speciesId).name} is lending a hand"; GearHelper.None -> "Helper" }, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Text(when (helper) { is GearHelper.Owned -> "${helper.pokemon.nickname} helps"; GearHelper.None -> "Helper" }, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             PixelButton("Show", { store.changeGear { it.copy(helperCompact = false) } }, color = Pixel.InkSoft, compact = true)
         }
         return
@@ -154,7 +152,6 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
                 Box(Modifier.size(72.dp)) {
                     when (helper) {
                         is GearHelper.Owned -> AnimatedSprite(helper.pokemon.form.id, helper.pokemon.isShiny, helper.pokemon.nickname, size = 72.dp, animate = !reduce)
-                        is GearHelper.Loaner -> AnimatedSprite(Dex.defaultForm(helper.speciesId).id, false, Dex.species(helper.speciesId).name, size = 72.dp, animate = !reduce)
                         GearHelper.None -> ItemIcon(tool.icon, Modifier.align(Alignment.Center), size = 48.dp, description = null)
                     }
                     if (reaction && helper !is GearHelper.None) reactionFor(tool).let { (art, name) -> if (art) ItemIcon(name, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = 28.dp, description = null) else Glyph(name, Pixel.Blue, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = 28.dp) }
@@ -163,9 +160,6 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
                     when (helper) {
                         is GearHelper.Owned -> {
                             Text("${helper.pokemon.nickname} helps", style = MaterialTheme.typography.titleSmall)
-                        }
-                        is GearHelper.Loaner -> {
-                            Text("${Dex.species(helper.speciesId).name} is lending a hand", style = MaterialTheme.typography.titleSmall)
                         }
                         GearHelper.None -> {
                             Text("No helper yet", style = MaterialTheme.typography.titleSmall)
@@ -177,7 +171,6 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Make it small", { store.changeGear { it.copy(helperCompact = true) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 if (store.gearCandidates(tool).isNotEmpty()) PixelButton(if (choosing) "Done" else "Change helper", { choosing = !choosing }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                if (helper is GearHelper.None) PixelButton("Ask a Ranger", { ranger = !ranger }, Modifier.weight(1f), Pixel.Blue, compact = true)
             }
             if (choosing) {
                 FieldLabel("Who helps ${tool.label}")
@@ -188,7 +181,6 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
                 }
                 if (model.data.gearHelpers[tool.name] != null) PixelButton("The best friend helps", { store.clearGearHelper(tool) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
-            if (ranger && helper is GearHelper.None) RangerStyler(model, tool) { ranger = false }
         }
     }
 }

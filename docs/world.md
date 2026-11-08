@@ -705,22 +705,23 @@ other PMD games.\
 **Incremental design reference:** *Legends of IdleOn*.
 
 
-## Implementation status (0.89.0)
+## Implementation status (0.145.0, audited 8 November 2026)
 
-What the code does now, against this concept (details: `CHANGELOG.md`, rules: `docs/economy.md`, numbers: `docs/world-economy-report.md`).
+What the code does now, against this concept (details: `CHANGELOG.md`, rules: `docs/economy.md`, numbers: `docs/world-economy-report.md`; the target and its acceptance list are `docs/pokelife/MODULES/WORLD.md`, and `docs/pokelife/IMPLEMENTATION_GUIDE.md` carries the module's status). The earlier table here (0.89.0) was far behind the code and is replaced.
 
 | Section | Built | Not built |
 |---|---|---|
-| 5 Dungeon exploration | Nine dungeons across all eight regions, each with its own tiles, floors, offline settlement (bounded to 12 hours), finds, milestones, treasure | Hazards, active choices, floor events |
-| 6 Expedition teams | Up to four teams by rank, four Pokémon each, "Send my strongest" | Held items and moves in the team summary |
-| 7 Pokémon utility | Type bonus to speed, ability helpers for skills | Moves (the Dex has none) |
-| 8 Missions | Explore, Find items, Rescue, Deliver, Escort, Defeat; daily, weekly and ordinary jobs | Special jobs, the shared quest engine |
-| 9 and 10 Rank, skills | Six ranks, three skills, research | Mining, Archaeology, Survival, Navigation |
-| 11 Items and treasure | Berries, boxes, Rare Candies, milestone rewards, Bag staging | Item effects specific to World |
+| 5 Dungeon exploration | Dungeons in six layers (the home Mystery Dungeon layer, nine each in Kanto, Johto, Hoenn and Sinnoh), tiles, floors, offline settlement (bounded to 12 hours, deterministic whatever the settle frequency), finds, milestones, treasure; floor events with seven field moves, four hazards and a traveller; forks answered with a safe default (`FloorEvents`, `Choices`); dungeon modifiers | Defeat or setback outcomes (floors always clear); an active-play scene |
+| 6 Expedition teams | Up to four teams by rank, four Pokémon each, presets, names and colours, recall; "Send my strongest" picks the best team for the dungeon, types included (0.145.0); every member gets the full per-floor Pokémon XP (0.145.0) | A battle-identity model: power is the sum of levels plus 20% for a favored type, with no stats, moves or abilities; held items and moves in the team summary |
+| 7 Pokémon utility | Type bonus to speed, ability helpers for skills | Moves and abilities in the strength model |
+| 8 Missions | Explore, Find items, Rescue, Deliver, Escort, Defeat; daily, weekly, one-time and ordinary jobs (57 definitions); three at a time | Investigation, Challenge and Story requests |
+| 9 and 10 Rank, skills | Six ranks, three skills, research; Exploration XP is World's own (`WorldData.xp`) | Mining, Archaeology, Survival, Navigation; Exploration XP and rank as the shared progression record |
+| 11 Items and treasure | Berries, Rare Candies, milestone rewards go straight to the shared Bag; Poké is the one shared balance and World holds none (0.145.0) | Unopened treasure boxes are still a World-owned count; a stable ledger id per reward (HEAL, MINT and HOME have them; World's go to the reward log merged over ten minutes) |
 | 12 and 13 Camp, facilities | Camp (yard), Research Lab, Café, Kecleon Shop, Swap Shop, Dojo | Storage, Duskull Bank |
-| 14 Map | The world map with markers, eight reveal stages | Regions beyond the nine dungeons |
-| 15 Story and Guardian | Six chapters, Temporal Tower, Dialga and the 10% mastery, Distortion Rift | Story text and scenes |
-| 16 Post-story | One Distortion Rift | Modifiers, more dungeons |
+| 14 Map | The world map with markers, eight reveal stages, a map per layer | Settlements and routes as nodes, fog of war |
+| 15 Story and Guardian | 21 authored episodes with scenes (the Mew opening and five each for Kanto, Johto, Hoenn and Sinnoh; ten scenes per region), the story runtime (branches, resume, replay without re-awarding), Mew's gift once, the Guardian and its mastery bonus, the story archive | **Rescue Team and Explorers of Sky have chapter title cards only (`PmdStories`), no scenes**; branching in Johto, Hoenn and Sinnoh; the other Mythical episodes; Unova, Kalos, Alola, Galar and Paldea; Ranger regions (Fiore, Almia, Oblivia); other PMD settings; Orre and Hisui |
+| 16 Post-story | One Distortion Rift | Modifiers, more dungeons, postgame chapters for the mainline regions |
+| Surface | A job-finished alert, the World widget (teams, Finds, ready jobs) | The five destinations of WORLD.md 2 (Base, Atlas, Expeditions, Guild, Journal; the screen still has Map, Missions, Skills, Base, Story archive, Expeditions, Finds and Bag, Settings); settling on entry and resume instead of the three-second poll (`World.kt`); notifications for Finds and story; a read-only widget (it settles when loaded); World migration fixtures (`worldVersion` is still 1) |
 
 
 ## Regions of the games (decided in outline, 1 November 2026)
@@ -782,7 +783,7 @@ The brief makes a region a *journey across its real map*, not a list of dungeons
 - **Tilesets:** the Explorers of Sky sheets already in `assets/tiles/` cover every kind needed (Apple Woods or Lush Prairie for the forest; Crystal Cave for Mt. Moon; Beach Cave for Seafoam; Deep Sealed Ruin for the tower). No new sheet is required for the first release. Since 0.135.0 the 64 Red Rescue Team tilesets (`assets/tiles/rr-NN`, `docs/assets.md`) also exist, and a dungeon without its own Explorers of Sky sheet (every Kanto, Johto, Hoenn and Sinnoh one) borrows the Rescue Team tileset closest to its look in `dungeonTiles` (`WorldArt.kt`) instead of the World Abyss; only the two rifts keep the Abyss.
 - **Sprites, cries and portraits:** SpriteCollab and the existing assets, as for every Pokémon.
 
-### Status (0.99.0)
+### Status (0.99.0, superseded by the table above)
 Built (Kanto, with Johto after it): the layer (`WorldLayer`, `DungeonDef.layer`, the Map switch), the nine dungeons, the story chapters, the five legendary quests and their boosts, the map picture and markers, and the economy run. Not built: settlements and routes as nodes of the map, fog of war, Kanto jobs on the mission board, the Sevii Islands and postgame floors, Kanto story text beyond the chapter summaries, and the Guardian slot bonuses per module. The marker positions are read by eye from the picture and may need nudging after a device test.
 
 ### Build order (one PR each, combined where small)
