@@ -148,7 +148,8 @@ internal fun WidgetBody(slot: WidgetSlot, env: WidgetEnv) {
         WidgetKind.AGENDA -> AgendaWidget(env, env.today, slot.size)
         WidgetKind.FORECAST -> ForecastWidget(env, slot.size)
         WidgetKind.ANDROID -> slot.arg.toIntOrNull()?.let { id ->
-            if (LocalGridFill.current) {
+            if (env.host.hostsWidgets && env.host.widgetSpec(id) == null) UnavailableWidget(env.pixel)
+            else if (LocalGridFill.current) {
                 // On the grid the provider gets exactly the cells' room, with no frame of ours around it, and is told that size.
                 androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
                     env.host.HostedWidget(id, slot.size.ordinal, maxWidth.value.toInt(), maxHeight.value.toInt(), Modifier.fillMaxSize())
@@ -156,6 +157,12 @@ internal fun WidgetBody(slot: WidgetSlot, env: WidgetEnv) {
             } else PmdBox(env.pixel, Modifier.fillMaxWidth()) { env.host.HostedWidget(id, slot.size.ordinal, 0, 0, Modifier.fillMaxWidth()) }
         }
     }
+}
+
+/** Where another app's widget stood when its app is gone: it keeps its cells, so nothing moves, until the user removes it (hold, then the X). */
+@Composable
+private fun UnavailableWidget(pixel: Int) {
+    PmdBox(pixel, Modifier.fillMaxWidth()) { PmdText("Widget unavailable", pixel, Modifier.padding(horizontal = Spacing.S), alpha = 0.8f) }
 }
 
 @Composable

@@ -5,11 +5,32 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.151.0
+## 0.156.0
 
 - **WORLD has its five destinations** (WORLD.md section 2): the World menu is now Base, Atlas (the map), Expeditions, Guild (the jobs) and Journal, with Settings as the one small button. Finds and Skills moved into Base's menu (Research left it), and the Journal is a menu of its own: the expedition log (moved from Expeditions), Research with its notebook (moved from Base), the Story archive and Records (deepest floor and clears per dungeon, and the Pokémon recruited from finds). Screens only; no rule or number changed. Not run on a device.
 
 - **WORLD settles by timestamp, not by polling, and every World reward has a stable ledger id** (REP-014, WORLD.md 3.1 and 6). The World screen settled every three seconds while open; it now settles once on opening (which counts the time away) and then waits for the instant the next floor of a team that is out is done (`WorldSim.nextFloorAt`, in naps of at most 30 seconds so a slept phone or a jumped clock is noticed), so there is no polling and no settle when no team is out. A climb, a finished job, a research step, a floor choice and a treasure box are each **one write** that carries the change, the members' experience, the Poké, the items moved into the Bag, the reward-log line and a `LedgerNote` (`GameStore.worldPay`): `world:expedition:<team>.<expedition start>.<from floor>-<to floor>` (the cursor moves with it, so a floor has one id), `world:job:<id>:<day>`, `world:research:<species>`, `world:choice:<id>` and `world:treasure:<tier>:<time>`. A clock set back now also moves a team's settle point in the store when no floor was climbed (the rules already did, the store dropped it). No number changed (`RewardRules.VERSION` stays 20); not run on a device.
+
+## 0.154.0
+
+Heal is sealed (REP-014; owner decision 6 of 8 November 2026, `docs/pokelife/evidence/REP-014-heal-sealing.md`). No reward number changes (`RewardRules.VERSION` stays 20) and no schema change (schema 10).
+
+- **Heal's records are sealed with a key that lives in the Android Keystore**, as Mint's are. Every row of the `heal_*` tables (activity, drinks, sleep, measurements, goals and the settings) is AES-256-GCM text under Heal's own key (`KeystoreHealKey`, not Mint's), with no date left beside it, so the database shows no measurement, time, note or day. The daily backups, a saved backup file and every copy Heal leaves aside are sealed too.
+- **An install that already has Heal records is moved once**, at its first start with the key (`HealTables.seal`): every row is rewritten, the whole of Heal is read back and compared, and any difference puts everything back as it was and tries again at the next start. Then the file's free pages and write-ahead log are cleared (`VACUUM`), and the daily copies made before the move, which hold Heal in clear, are replaced by one sealed copy. A new install is sealed from its first row.
+- **No key, no guessing.** If the Keystore gives no key on an old install, Heal carries on in clear for that run and is sealed at the next start that has one (Mint refuses to start without it; Heal already exists in clear on phones, and locking the player out would be worse). Once Heal is sealed, a run without the key reads and writes nothing (memory only) and opens again with the key. A database copied to another phone reads as empty there and the old rows are kept aside, still sealed, before anything is written.
+- **The passphrase backup ("Save a copy that opens on any phone") seals Heal with Mint**, one passphrase for both, and Restore from a file asks for it for either. An ordinary copy holds Heal sealed to this phone only (the backup text says so). A backup from an older build, with Heal in clear, still restores and is sealed as it is written.
+- **Fix: recovery from a damaged database gave Mint no key** before putting the newest backup back, so a sealed Mint in that backup would have been kept aside as locked instead of restored. Both keys are now set before the restore.
+- Tests: `HealSealingTest` (15) and `PortableBackupTest` (new `portable(documents, devices, ...)`); the 10 `HealTablesTest` cases run unchanged. Not run on a device (the Keystore, the first-start move and the passphrase backup are the phone checks in the evidence file).
+
+## 0.152.0
+
+Launcher: other apps' widgets are hosted by what their provider allows, a removed provider no longer leaves a hole, and search finds PokéLife's own places (REP-014, `FEATURES/LAUNCHER.md` sections 5.2 and 11.5). No reward number changes (`RewardRules.VERSION` stays 20). Tested on the JVM and compiled for Android; **not run on a device**.
+
+- **Sizes come from the provider.** A hosted widget starts at the room it asked for, rounded up to whole cells so it is not clipped, and can be resized only between its provider's minimum and maximum resize size; a widget that cannot be resized in a direction keeps its start size there (`HostedWidgetSpec`, `WidgetGrid.resize`/`resizedTo` with limits). The corner handle and the accessibility actions use the same limits.
+- **A measurement bug fixed.** Android reports a provider's sizes in pixels, and the launcher used them as dp (and, in the list form, multiplied by the density again), so widgets were told they were several times too large or small. They are converted once, at the host.
+- **A removed provider keeps its place.** When an app is uninstalled, disabled or being updated, its widget shows "Widget unavailable" in its cells until the user removes it, instead of an empty hole; it comes back by itself when the app does (the host looks widgets up again on every package change and every return to the launcher). An updated provider gets a fresh view.
+- **No leaked widget ids.** The id being chosen in the system picker is kept on the device; one the process never got to use (killed with the picker open) is let go of at the next start and when a late result arrives with nothing waiting for it.
+- **Search finds PokéLife.** The app list's search also lists the modules and shared places that match by name or keyword (Plan, Focus, Care, Heal, Mint, Home, Link, Gear, World, Pokémon, Party, Me, PokéLife), above the apps, each opening that place. Names only: a search never reads a record.
 
 ## 0.150.0
 

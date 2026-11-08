@@ -13,14 +13,25 @@ import javax.crypto.SecretKey
  * holds Mint only as text nobody else can open. Not yet exercised on a device.
  */
 object KeystoreMintKey {
-    private const val ALIAS = "pokelife.mint.v1"
+    fun cipher(): AesGcmCipher = KeystoreKeys.cipher("pokelife.mint.v1", "pokelife-mint")
+}
 
-    fun cipher(): AesGcmCipher {
+/**
+ * Heal's key (0.154.0, owner decision 6): its own AES-256-GCM key in the Android Keystore, apart from Mint's, so one module's key can be lost or reset without the
+ * other, and a text sealed for one never opens as the other (the associated data differs too). Made the first time Heal is sealed; non-exportable; no screen-lock
+ * prompt. Not yet exercised on a device.
+ */
+object KeystoreHealKey {
+    fun cipher(): AesGcmCipher = KeystoreKeys.cipher("pokelife.heal.v1", "pokelife-heal")
+}
+
+internal object KeystoreKeys {
+    fun cipher(alias: String, context: String): AesGcmCipher {
         val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
-        if (!store.containsAlias(ALIAS)) {
+        if (!store.containsAlias(alias)) {
             KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore").apply {
                 init(
-                    KeyGenParameterSpec.Builder(ALIAS, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+                    KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
                         .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                         .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                         .setKeySize(256)
@@ -28,6 +39,6 @@ object KeystoreMintKey {
                 )
             }.generateKey()
         }
-        return AesGcmCipher(store.getKey(ALIAS, null) as SecretKey)
+        return AesGcmCipher(store.getKey(alias, null) as SecretKey, context)
     }
 }

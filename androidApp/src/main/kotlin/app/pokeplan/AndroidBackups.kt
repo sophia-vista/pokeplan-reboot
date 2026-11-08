@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import app.pokeplan.data.BackupBundle
 import app.pokeplan.data.DataStore
+import app.pokeplan.data.LiveDocuments
 import app.pokeplan.data.Pbkdf2Sealer
 import app.pokeplan.ui.BackupAccess
 import app.pokeplan.ui.BackupEntry
@@ -77,7 +78,7 @@ class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
 
     override fun saveCopy(millis: Long?, passphrase: String?, onDone: (String) -> Unit) {
         val s = store ?: return onDone("The data could not be opened.")
-        val key = s.mintCipher
+        val keys = listOfNotNull(s.mintCipher?.let { LiveDocuments.MINT to it }, s.healCipher?.let { LiveDocuments.HEAL to it }).toMap()
         val sealer = Pbkdf2Sealer()
         // Stretching a passphrase takes a moment on a phone, so it is done off the main thread; the picker opens when it is ready.
         Thread {
@@ -85,8 +86,7 @@ class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
                 val docs = (if (millis != null) backups?.documentsOf(millis) else s.live.snapshot()) ?: return@runCatching "That backup is gone." to null
                 val made = if (passphrase == null) docs else {
                     app.pokeplan.data.PassphraseSealer.refusal(passphrase)?.let { return@runCatching it to null }
-                    if (key == null) return@runCatching "Mint is not open on this run, so it cannot be sealed. Close the app and open it again." to null
-                    BackupBundle.portable(docs, key, passphrase, sealer) ?: return@runCatching "Mint in that backup was sealed on another phone, so this phone cannot open it to re-seal it." to null
+                    BackupBundle.portable(docs, keys, passphrase, sealer) ?: return@runCatching "Mint or Heal in that backup was sealed on another phone, or its key is not open on this run, so this phone cannot open it to re-seal it." to null
                 }
                 null to BackupBundle.encode(made, DataStore.SCHEMA_VERSION, millis ?: System.currentTimeMillis())
             }.getOrElse { Log.w(tag, "copy failed: ${it.javaClass.simpleName}"); "The copy could not be made." to null }

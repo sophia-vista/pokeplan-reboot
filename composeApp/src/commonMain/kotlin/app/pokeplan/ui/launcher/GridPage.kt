@@ -51,7 +51,7 @@ import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.Spacing
 
 /** Space kept round each widget inside its cells, so neighbours never touch. */
-internal val CELL_GAP = 4.dp
+internal val CELL_GAP = WidgetGrid.CELL_GAP_DP.dp
 
 /** A finger on a widget being edited: moving it, or (resize) pulling its corner; [dx] and [dy] are how far it has gone, in px, and [startX] where in the widget it took hold. */
 private data class Gesture(val widget: GridWidget, val resize: Boolean, val startX: Float = 0f, val dx: Float = 0f, val dy: Float = 0f)
@@ -86,10 +86,14 @@ internal fun GridCanvas(env: WidgetEnv, page: WidgetPage, modifier: Modifier = M
         val rowPx = with(density) { row.toPx() }
         val widthPx = with(density) { maxWidth.toPx() }
         fun commit(next: List<GridWidget>) = live.onPrefs(live.prefs.withGrid(next))
+        // Another app's widget may be resized only as far as its provider allows; the rest by their kind.
+        val columnDp = column.value
+        fun limitsOf(w: GridWidget): WidgetLimits =
+            if (w.kind == WidgetKind.ANDROID) w.arg.toIntOrNull()?.let { live.host.widgetSpec(it) }?.limits(columnDp) ?: w.kind.limits() else w.kind.limits()
         // What the page would look like if the finger let go now: the others make way for the widget.
         val shown = gesture?.let { g ->
             val at = current.firstOrNull { it.sameAs(g.widget) } ?: g.widget
-            if (g.resize) WidgetGrid.resizedTo(at, g.dx, g.dy, colPx, rowPx).let { (w, h) -> WidgetGrid.resize(current, at, w, h) }
+            if (g.resize) WidgetGrid.resizedTo(at, g.dx, g.dy, colPx, rowPx, limitsOf(at)).let { (w, h) -> WidgetGrid.resize(current, at, w, h, limitsOf(at)) }
             else WidgetGrid.droppedAt(at, g.dx, g.dy, colPx, rowPx).let { (c, r) -> WidgetGrid.move(current, at, c, r) }
         } ?: all
         val onThis = WidgetGrid.onPage(shown, page)
@@ -114,7 +118,7 @@ internal fun GridCanvas(env: WidgetEnv, page: WidgetPage, modifier: Modifier = M
         val rows = WidgetGrid.rows(onThis, page) + if (env.editing) 2 else 0
         Box(Modifier.fillMaxWidth().height(row * rows)) {
             gesture?.let { g ->
-                val target = if (g.resize) WidgetGrid.resizedTo(g.widget, g.dx, g.dy, colPx, rowPx).let { (w, h) -> g.widget.copy(w = w, h = h) }
+                val target = if (g.resize) WidgetGrid.resizedTo(g.widget, g.dx, g.dy, colPx, rowPx, limitsOf(g.widget)).let { (w, h) -> g.widget.copy(w = w, h = h) }
                 else WidgetGrid.droppedAt(g.widget, g.dx, g.dy, colPx, rowPx).let { (c, r) -> g.widget.copy(col = c, row = r) }
                 Box(Modifier.offset(inset + column * target.col, row * target.row).size(column * target.w, row * target.h).padding(CELL_GAP).border(2.dp, Pixel.Yellow))
             }
@@ -145,14 +149,14 @@ internal fun GridCanvas(env: WidgetEnv, page: WidgetPage, modifier: Modifier = M
                             onEnd = {
                                 gesture?.let { done ->
                                     val latest = current.firstOrNull { it.sameAs(done.widget) } ?: done.widget
-                                    if (done.resize) WidgetGrid.resizedTo(latest, done.dx, done.dy, colPx, rowPx).let { (nw, nh) -> commit(WidgetGrid.resize(current, latest, nw, nh)) }
+                                    if (done.resize) WidgetGrid.resizedTo(latest, done.dx, done.dy, colPx, rowPx, limitsOf(latest)).let { (nw, nh) -> commit(WidgetGrid.resize(current, latest, nw, nh, limitsOf(latest))) }
                                     else WidgetGrid.droppedAt(latest, done.dx, done.dy, colPx, rowPx).let { (c, r) -> commit(WidgetGrid.move(current, latest, c, r)) }
                                 }
                                 gesture = null
                             },
                             onCancel = { gesture = null },
                             nudge = { dc, dr -> commit(WidgetGrid.move(current, w, w.col + dc, w.row + dr)) },
-                            grow = { dw, dh -> commit(WidgetGrid.resize(current, w, w.w + dw, w.h + dh)) },
+                            grow = { dw, dh -> commit(WidgetGrid.resize(current, w, w.w + dw, w.h + dh, limitsOf(w))) },
                             toPage = { dir ->
                                 val order = live.prefs.pageOrder
                                 val to = order.indexOf(page) + dir

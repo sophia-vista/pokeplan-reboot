@@ -72,7 +72,7 @@ class PortableBackupTest {
         mintOn(home, g).apply { addAccount("Savings", AccountType.BANK, "PHP", 100_000); addAccount("Wallet", AccountType.CASH, "PHP", 2_500) }
         home.live.write("save", GameStore.json.encodeToString(AppData.serializer(), g.data), 3)
         val snap = home.live.snapshot()
-        val portable = assertNotNull(BackupBundle.portable(snap, key(1), phrase, sealer))
+        val portable = assertNotNull(BackupBundle.portable(snap, mapOf("mint" to key(1)), phrase, sealer))
         assertTrue(PassphraseSealer.isSealed(portable.getValue("mint")))
         val file = BackupBundle.encode(portable, DataStore.SCHEMA_VERSION, 9)
         for (secret in listOf("Savings", "Wallet", "100000")) assertFalse(secret in file, "the file holds $secret in clear")
@@ -97,9 +97,9 @@ class PortableBackupTest {
         val home = phone(1)
         mintOn(home, game()).addAccount("Savings", AccountType.BANK, "PHP", 1)
         val snap = home.live.snapshot()
-        assertNull(BackupBundle.portable(snap, key(2), phrase, sealer), "this phone cannot open that Mint, so it cannot honestly re-seal it")
+        assertNull(BackupBundle.portable(snap, mapOf("mint" to key(2)), phrase, sealer), "this phone cannot open that Mint, so it cannot honestly re-seal it")
         val noMint = mapOf("save" to "{}")
-        assertEquals(noMint, BackupBundle.portable(noMint, key(2), phrase, sealer), "a backup with no Mint needs no passphrase")
+        assertEquals(noMint, BackupBundle.portable(noMint, mapOf("mint" to key(2)), phrase, sealer), "a backup with no Mint needs no passphrase")
     }
 
     @Test
