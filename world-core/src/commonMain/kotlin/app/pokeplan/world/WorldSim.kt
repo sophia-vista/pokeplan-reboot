@@ -16,6 +16,10 @@ sealed interface WorldEvent {
     data class Treasure(val tier: Int) : WorldEvent
     data class Milestone(val dungeonId: String, val floor: Int, val reward: MilestoneReward) : WorldEvent
     data class Cleared(val dungeonId: String) : WorldEvent
+    /** A floor the team was too weak for (see [Outcomes]): not cleared, half the Poké and Exploration XP, nothing else. */
+    data class Setback(val dungeonId: String, val floor: Int) : WorldEvent
+    /** The team turned back at [floor] and came home safely: the expedition is over. */
+    data class Retreat(val dungeonId: String, val floor: Int) : WorldEvent
     data class MissionDone(val missionId: String) : WorldEvent
     /** A floor event: [user] opened it (null: the team went around), and [gave] says what it gave. */
     /** A floor offered a choice, now waiting for an answer (or the default). */
@@ -140,13 +144,20 @@ object WorldSim {
             val floors = ((until - trip.settledTo) / per).toInt()
             if (floors <= 0) continue
             val events = mutableListOf<WorldEvent>()
-            for (n in 0 until floors) out = climb(out, team.id, trip, dungeon, trip.floorsClimbed + n, trip.settledTo + (n + 1) * per, members, power(members, dungeon), WorldSkill.entries.associateWith { AbilityPerks.bonus(members.map { m -> m.ability }, it) }, events)
+            var done = 0
+            var retreated = false
+            for (n in 0 until floors) {
+                out = climb(out, team.id, trip, dungeon, trip.floorsClimbed + n, trip.settledTo + (n + 1) * per, members, power(members, dungeon), WorldSkill.entries.associateWith { AbilityPerks.bonus(members.map { m -> m.ability }, it) }, events)
+                if (events.lastOrNull() is WorldEvent.Retreat) { retreated = true; break }
+                done = n + 1
+            }
             // The rest of the time carries over (unless the cap cut it, when the clock jumps to now).
             val settled = if (now - trip.settledTo > MAX_AWAY_MILLIS) now else trip.settledTo + floors * per
             val current = out.team(team.id) ?: team
-            out = out.withTeam(current.copy(expedition = trip.copy(settledTo = settled, floorsClimbed = trip.floorsClimbed + floors)))
+            // A team that turned back is home (WORLD.md 3.6): the expedition ends, the floors before it keep what they paid.
+            out = out.withTeam(current.copy(expedition = if (retreated) null else trip.copy(settledTo = settled, floorsClimbed = trip.floorsClimbed + floors)))
             perTeam[team.id] = events
-            members.forEach { memberFloors[it.id] = (memberFloors[it.id] ?: 0) + floors }
+            members.forEach { memberFloors[it.id] = (memberFloors[it.id] ?: 0) + done }
         }
         // A dungeon cleared again and again in one stretch is one line ("... (3 times)"), not three.
         val lines = perTeam.flatMap { (teamId, events) -> events.mapNotNull { journalLine(out.team(teamId)?.title ?: "Team $teamId", it, now) } }
@@ -192,6 +203,8 @@ object WorldSim {
                 val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
                 if (members.isEmpty()) continue
                 val power = power(members, dungeon)
+                // A team too weak to clear the job's floor never finishes it (WORLD.md 3.6: a setback floor does not move a job on, and a team that turns back is home).
+                if (m.floor > 0 && Outcomes.of(power, dungeon, m.floor) != Outcomes.Outcome.CLEARED) continue
                 // An investigation depends on what the floors hold and a story request on the story, so neither has a forecast.
                 if (m.kind == MissionKind.INVESTIGATION || m.kind == MissionKind.STORY) continue
                 if ((m.kind == MissionKind.ESCORT && members.size < m.count) || (m.kind == MissionKind.DEFEAT && power < m.count) || (m.kind == MissionKind.CHALLENGE && members.size > m.count)) continue
@@ -214,6 +227,8 @@ object WorldSim {
             is WorldEvent.Milestone -> { kind = JournalLine.KIND_MILESTONE; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title reached floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name} and was rewarded." }
             is WorldEvent.Cleared -> { kind = JournalLine.KIND_CLEAR; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title cleared ${Dungeons.byId(event.dungeonId)?.name}." }
             is WorldEvent.FloorEvent -> { if (event.userName == null) return null; kind = JournalLine.KIND_EVENT; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "${event.kind.title}: ${event.userName} ${event.kind.opened} on floor ${event.floor} of $place (${event.gave})." }
+            is WorldEvent.Setback -> { kind = JournalLine.KIND_SETBACK; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title had a setback on floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name} and went on." }
+            is WorldEvent.Retreat -> { kind = JournalLine.KIND_SETBACK; place = Dungeons.byId(event.dungeonId)?.name.orEmpty(); "$title turned back at floor ${event.floor} of ${Dungeons.byId(event.dungeonId)?.name} and came home safely." }
             is WorldEvent.MissionDone -> { kind = JournalLine.KIND_JOB; "A job is done: ${Missions.byId(event.missionId)?.title}. Claim it on the board." }
             WorldEvent.GuardianFaced -> { kind = JournalLine.KIND_GUARDIAN; "The Guardian was faced. The story is complete." }
             is WorldEvent.LayerGuardianFaced -> { kind = JournalLine.KIND_GUARDIAN; "The Guardian of ${event.layer.label} was faced. Its story is complete." }
@@ -250,8 +265,13 @@ object WorldSim {
         val random = Random(seed(teamId, trip, index))
         var d = data
         val brewed = at < d.brewUntil
-        events += WorldEvent.FloorCleared(dungeon.id, floor)
-        d = d.copy(xp = d.xp + (XP_BASE + floor) * (10 + d.facilityLevel(Facility.LAB) + if (brewed) 3 else 0) / 10, deepest = d.deepest + (dungeon.id to maxOf(floor, d.deepest[dungeon.id] ?: 0)))
+        // WORLD.md 3.6: the floor is cleared in full, a setback (half the Poké and Exploration XP, no treasure, find, milestone, side path or choice), or the team turns back.
+        val outcome = Outcomes.of(power, dungeon, floor)
+        if (outcome == Outcomes.Outcome.RETREAT) { events += WorldEvent.Retreat(dungeon.id, floor); return data }
+        val partial = outcome == Outcomes.Outcome.SETBACK
+        events += if (partial) WorldEvent.Setback(dungeon.id, floor) else WorldEvent.FloorCleared(dungeon.id, floor)
+        val gained = (XP_BASE + floor) * (10 + d.facilityLevel(Facility.LAB) + if (brewed) 3 else 0) / 10
+        d = d.copy(xp = d.xp + if (partial) gained / 2 else gained, deepest = if (partial) d.deepest else d.deepest + (dungeon.id to maxOf(floor, d.deepest[dungeon.id] ?: 0)))
         val modifier = DungeonModifiers.at(dungeon.id, at)
         var berries = 0
         if (random.nextInt(100) < BERRY_PERCENT + (d.skillLevel(WorldSkill.FORAGING) + perk.getValue(WorldSkill.FORAGING)) + if (modifier == DungeonModifier.BERRY_SEASON) DungeonModifiers.BERRY_POINTS else 0) {
@@ -262,26 +282,27 @@ object WorldSim {
             d = d.copy(items = d.items + (berry to (d.items[berry] ?: 0) + 1))
         }
         val poke = (5 + floor * 2 + random.nextInt(5)) * (100 + 2 * (d.skillLevel(WorldSkill.EXPLORATION) + perk.getValue(WorldSkill.EXPLORATION)) + if (modifier == DungeonModifier.BOUNTY) DungeonModifiers.POKE_PERCENT else 0) / 100
-        events += WorldEvent.Poke(poke)
-        d = d.copy(pokeEarned = d.pokeEarned + poke)
-        if (random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP) + (if (brewed) 5 else 0) + (if (modifier == DungeonModifier.LUCKY) DungeonModifiers.TREASURE_POINTS else 0) + d.legendTreasurePercent(dungeon)) {
+        val paid = if (partial) poke / 2 else poke
+        events += WorldEvent.Poke(paid)
+        d = d.copy(pokeEarned = d.pokeEarned + paid)
+        if (!partial && random.nextInt(100) < TREASURE_PERCENT + d.facilityLevel(Facility.CAMP) + (if (brewed) 5 else 0) + (if (modifier == DungeonModifier.LUCKY) DungeonModifiers.TREASURE_POINTS else 0) + d.legendTreasurePercent(dungeon)) {
             val tier = if (floor >= dungeon.floors - 1) 3 else if (floor >= dungeon.floors / 2) 2 else 1
             events += WorldEvent.Treasure(tier)
             d = d.copy(treasure = d.treasure + (tier to (d.treasure[tier] ?: 0) + 1))
         }
-        findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * (d.skillLevel(WorldSkill.SCOUTING) + perk.getValue(WorldSkill.SCOUTING)) + (if (brewed) 10 else 0) + (if (modifier == DungeonModifier.CURIOUS) DungeonModifiers.FIND_PERMILLE else 0) + d.legendFindPermille(dungeon))?.let { species ->
+        if (!partial) findFor(dungeon, floor, random, 10 * FIND_PERCENT + 3 * (d.skillLevel(WorldSkill.SCOUTING) + perk.getValue(WorldSkill.SCOUTING)) + (if (brewed) 10 else 0) + (if (modifier == DungeonModifier.CURIOUS) DungeonModifiers.FIND_PERMILLE else 0) + d.legendFindPermille(dungeon))?.let { species ->
             events += WorldEvent.Found(species, dungeon.id, floor)
             d = d.copy(finds = d.finds + Find(species, dungeon.id, floor, at), discovered = d.discovered + species).withSkillXp(WorldSkill.SCOUTING, 20)
         }
         // A floor choice: choices whose time is up (by this floor's own time) take their default first; then this floor may offer one.
         d = Choices.expire(d, at)
-        Choices.kindAt(teamId, trip, floor, index)?.let { ck ->
+        if (!partial) Choices.kindAt(teamId, trip, floor, index)?.let { ck ->
             val pending = PendingChoice(Choices.idFor(teamId, trip, index, dungeon.id), ck.name, dungeon.id, floor, at, at + Choices.WAIT_MILLIS)
             d = if (d.choices.size >= Choices.MAX_PENDING) Choices.answer(d.copy(choices = d.choices + pending), pending, 0, at) else d.copy(choices = d.choices + pending)
             events += WorldEvent.ChoiceOffered(ck, dungeon.id, floor)
         }
         // A floor event, if the floor has one: a bonus when a team member can open it, nothing lost when none can.
-        FloorEvents.kindAt(teamId, trip, floor, index)?.let { kind ->
+        if (!partial) FloorEvents.kindAt(teamId, trip, floor, index)?.let { kind ->
             val user = FloorEvents.opener(kind, members)
             var gave = ""
             if (user != null) {
@@ -290,7 +311,7 @@ object WorldSim {
             }
             events += WorldEvent.FloorEvent(kind, dungeon.id, floor, user?.nickname, gave)
         }
-        dungeon.milestones[floor]?.let { reward ->
+        if (!partial) dungeon.milestones[floor]?.let { reward ->
             val key = "${dungeon.id}:$floor"
             if (key !in d.milestonesPaid) {
                 events += WorldEvent.Milestone(dungeon.id, floor, reward)
@@ -301,8 +322,8 @@ object WorldSim {
             }
         }
         d = d.withSkillXp(WorldSkill.EXPLORATION, 1).withSkillXp(WorldSkill.SCOUTING, 1).withSkillXp(WorldSkill.FORAGING, berries)
-        d = Missions.advance(d, dungeon.id, floor, berries, at, teamSize, power, events, opened = events.drop(firstEvent).count { it is WorldEvent.FloorEvent && it.userName != null })
-        if (floor == dungeon.floors && dungeon.guardian && !d.layerDone(dungeon.layer)) {
+        d = Missions.advance(d, dungeon.id, if (partial) 0 else floor, berries, at, teamSize, power, events, opened = events.drop(firstEvent).count { it is WorldEvent.FloorEvent && it.userName != null })
+        if (!partial && floor == dungeon.floors && dungeon.guardian && !d.layerDone(dungeon.layer)) {
             if (dungeon.layer == WorldLayer.EXPLORERS) {
                 events += WorldEvent.GuardianFaced
                 d = d.copy(guardianDone = true)
@@ -311,7 +332,7 @@ object WorldSim {
                 d = d.copy(layersDone = d.layersDone + dungeon.layer.id)
             }
         }
-        if (floor == dungeon.floors) {
+        if (!partial && floor == dungeon.floors) {
             events += WorldEvent.Cleared(dungeon.id)
             d = d.copy(clears = d.clears + (dungeon.id to (d.clears[dungeon.id] ?: 0) + 1))
         }

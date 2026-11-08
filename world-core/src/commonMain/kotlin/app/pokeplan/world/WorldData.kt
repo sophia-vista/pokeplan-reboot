@@ -18,8 +18,9 @@ data class JournalLine(val at: Long, val text: String, val kind: String = KIND_N
         const val KIND_JOB = "job"
         const val KIND_EVENT = "event"
         const val KIND_GUARDIAN = "guardian"
+        const val KIND_SETBACK = "setback"
         /** The kinds in the order the Journal's filter shows them. */
-        val KINDS = listOf(KIND_FIND, KIND_CLEAR, KIND_MILESTONE, KIND_EVENT, KIND_JOB, KIND_GUARDIAN)
+        val KINDS = listOf(KIND_FIND, KIND_CLEAR, KIND_MILESTONE, KIND_EVENT, KIND_JOB, KIND_GUARDIAN, KIND_SETBACK)
     }
 }
 

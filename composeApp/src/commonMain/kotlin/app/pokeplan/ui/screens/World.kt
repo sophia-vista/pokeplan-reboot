@@ -855,6 +855,7 @@ private fun journalKindLabel(kind: String) = when (kind) {
     JournalLine.KIND_EVENT -> "Events"
     JournalLine.KIND_JOB -> "Jobs"
     JournalLine.KIND_GUARDIAN -> "Guardians"
+    JournalLine.KIND_SETBACK -> "Setbacks"
     else -> "Notes"
 }
 

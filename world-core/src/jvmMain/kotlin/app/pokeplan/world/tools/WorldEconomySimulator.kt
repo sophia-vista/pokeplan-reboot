@@ -15,6 +15,7 @@ import app.pokeplan.world.SwapShop
 import app.pokeplan.world.Story
 import app.pokeplan.world.WorldSkill
 import app.pokeplan.world.ExplorerRank
+import app.pokeplan.world.Outcomes
 import app.pokeplan.world.WorldData
 import app.pokeplan.world.WorldEvent
 import app.pokeplan.world.WorldSim
@@ -30,7 +31,7 @@ private fun mon(id: String, species: Int, level: Int): OwnedPokemon =
 /** A team of [size] Pokémon, all at [level] (species 25 is Electric, so it favors Thunderwave Cave; the rest of the pool is neutral). */
 private fun team(size: Int, level: Int, prefix: String = "t") = List(size) { mon("$prefix$it", if (it % 2 == 0) 25 else 74, level) }
 
-private data class Totals(var floors: Int = 0, var xp: Int = 0, var poke: Int = 0, var berries: Int = 0, var treasure: Int = 0, var finds: Int = 0, var candies: Int = 0)
+private data class Totals(var floors: Int = 0, var setbacks: Int = 0, var retreats: Int = 0, var xp: Int = 0, var poke: Int = 0, var berries: Int = 0, var treasure: Int = 0, var finds: Int = 0, var candies: Int = 0)
 
 /** Hourly yield of one team in one dungeon, measured over 24 h of staying (no cap hit because each settle is one hour). */
 private fun hourly(dungeonId: String, size: Int, level: Int): Pair<Double, Totals> {
@@ -40,9 +41,13 @@ private fun hourly(dungeonId: String, size: Int, level: Int): Pair<Double, Total
     for (h in 1..24 * 7) {
         val r = WorldSim.settle(data, roster, h * HOUR)
         data = r.data
+        // A team that turned back is home (WORLD.md 3.6): the player sends it again, here at the next hour.
+        if (data.team(1)?.expedition == null) data = data.start(1, dungeonId, h * HOUR) ?: data
         r.events.forEach { e ->
             when (e) {
                 is WorldEvent.FloorCleared -> t.floors++
+                is WorldEvent.Setback -> t.setbacks++
+                is WorldEvent.Retreat -> t.retreats++
                 is WorldEvent.Poke -> t.poke += e.amount
                 is WorldEvent.Item -> t.berries += e.count
                 is WorldEvent.Treasure -> t.treasure++
@@ -72,7 +77,7 @@ private fun career(opens: Int, size: Int, level: Int, days: Int): List<String> {
             now += gap
             data = WorldSim.settle(data, roster, now).data
             poke += data.pokeEarned; data = data.copy(pokeEarned = 0)
-            val best = Dungeons.home.filter { data.rank >= it.needs }.last().id
+            val best = Dungeons.home.filter { data.rank >= it.needs && Outcomes.retreatsAt(WorldSim.power(roster, it), it) == null }.lastOrNull()?.id ?: "tiny-woods"
             if (best != dungeon || data.team(1)?.expedition == null) {
                 dungeon = best
                 data = (data.recall(1) ?: data).start(1, dungeon, now) ?: data
@@ -124,7 +129,9 @@ private fun journey(opens: Int, size: Int, level: Int, days: Int, cafe: Boolean,
     fun bank() { j.balance += data.pokeEarned; data = data.copy(pokeEarned = 0) }
     var now = 0L
     var current: String? = null
-    fun bestDungeon(): String? = Dungeons.home.reversed().firstOrNull { (data.recall(1) ?: data).start(1, it.id, now) != null }?.id
+    // The deepest dungeon the player can start and the team would not turn back in (a player reads the team page's explanation, WORLD.md 3.6; the roster's levels stay fixed here, which is
+    // the pessimistic case, since the real members gain a level's worth of experience from the floors).
+    fun bestDungeon(): String? = Dungeons.home.reversed().firstOrNull { (data.recall(1) ?: data).start(1, it.id, now) != null && Outcomes.retreatsAt(WorldSim.power(roster, it), it) == null }?.id
     repeat(days) { d ->
         repeat(opens) {
             now += gap
@@ -155,7 +162,7 @@ private fun journey(opens: Int, size: Int, level: Int, days: Int, cafe: Boolean,
             Missions.available(data).filter { m ->
                 // Only the jobs this team can do: an Escort needs enough Pokémon and a Defeat enough power, and a job that cannot be done would sit in one of the three slots for ever.
                 val dungeon = m.dungeonId?.let { Dungeons.byId(it) }
-                startable(m.dungeonId) && m.kind != MissionKind.INVESTIGATION && m.kind != MissionKind.CHALLENGE && m.kind != MissionKind.STORY && (m.kind != MissionKind.ESCORT || roster.size >= m.count) && (m.kind != MissionKind.DEFEAT || (dungeon != null && WorldSim.power(roster, dungeon) >= m.count))
+                startable(m.dungeonId) && (dungeon == null || m.floor <= 0 || Outcomes.of(WorldSim.power(roster, dungeon), dungeon, m.floor) == Outcomes.Outcome.CLEARED) && m.kind != MissionKind.INVESTIGATION && m.kind != MissionKind.CHALLENGE && m.kind != MissionKind.STORY && (m.kind != MissionKind.ESCORT || roster.size >= m.count) && (m.kind != MissionKind.DEFEAT || (dungeon != null && WorldSim.power(roster, dungeon) >= m.count))
             }.forEach { m -> data.acceptMission(m.id)?.let { data = it } }
             // Spend: facilities (lower level first), then shop candies.
             while (true) {
@@ -196,12 +203,12 @@ private fun journey(opens: Int, size: Int, level: Int, days: Int, cafe: Boolean,
 
 fun main(args: Array<String>) {
     val out = StringBuilder("# World economy report\n\nGenerated by `./gradlew :world-core:simulateWorldEconomy` (World numbers are *(tune)* first guesses, `docs/world.md`).\nNothing here pays through the server reward engine; items go to the Bag, Poké stays in `AppData.world`.\n\n")
-    out.append("## Yield per team-hour (a team that stays out, measured over 7 days)\n\n")
-    out.append("| Dungeon | Team | Floors/h | Cleared/day | XP/h | Poké/h | Berries/h | Boxes/h | Finds/day |\n|---|---|---|---|---|---|---|---|---|\n")
+    out.append("## Yield per team-hour (a team that stays out, measured over 7 days; one that turns back is sent again at the next hour)\n\n")
+    out.append("| Dungeon | Team | Floors/h | Cleared/day | Setbacks/day | Turn-backs/day | XP/h | Poké/h | Berries/h | Boxes/h | Finds/day |\n|---|---|---|---|---|---|---|---|---|---|---|\n")
     for (dg in Dungeons.all) for ((size, lv) in listOf(2 to 5, 2 to 20, 4 to 20, 4 to 50)) {
         val (hours, t) = hourly(dg.id, size, lv)
         fun h(v: Int) = "%.1f".format(v / hours)
-        out.append("| ${dg.name} (${dg.floors} fl) | $size × Lv $lv | ${h(t.floors)} | ${"%.1f".format(t.floors / hours * 24 / dg.floors)} | ${h(t.xp)} | ${h(t.poke)} | ${h(t.berries)} | ${"%.2f".format(t.treasure / hours)} | ${"%.2f".format(t.finds / hours * 24)} |\n")
+        out.append("| ${dg.name} (${dg.floors} fl) | $size × Lv $lv | ${h(t.floors)} | ${"%.1f".format(t.floors / hours * 24 / dg.floors)} | ${"%.1f".format(t.setbacks / hours * 24)} | ${"%.1f".format(t.retreats / hours * 24)} | ${h(t.xp)} | ${h(t.poke)} | ${h(t.berries)} | ${"%.2f".format(t.treasure / hours)} | ${"%.2f".format(t.finds / hours * 24)} |\n")
     }
     out.append("\nThe Kanto layer's dungeons are in the same table, so their Poké, XP and finds per hour can be compared with the home layer's at the same rank gate (Viridian Forest and Mt. Moon with Tiny Woods and Thunderwave Cave; Cerulean Cave with the Temporal Tower). The careers and the year below follow the home layer only.\n")
     out.append("\n## One team over a career (best open dungeon; the 12 h away cap applies per open)\n\n")
