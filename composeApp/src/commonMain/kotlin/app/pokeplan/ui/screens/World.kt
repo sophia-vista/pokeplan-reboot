@@ -1003,7 +1003,7 @@ private fun RecordsPage(model: AppModel) {
 
 /** The pages of the Journal (WORLD.md section 2.5): a menu, so only the page you opened is on screen. */
 private enum class JournalPage(val label: String, val icon: String) {
-    LOG("Expedition log", "exp-share"), RESEARCH("Research", "journal"), STORY("Story archive", "oaks-letter"), RECORDS("Records", "town-map"),
+    LOG("Log", "exp-share"), RESEARCH("Research", "journal"), STORY("Story", "oaks-letter"), RECORDS("Records", "town-map"),
 }
 
 /** The Journal: the expedition log, research, the story archive and the records, one at a time. */
