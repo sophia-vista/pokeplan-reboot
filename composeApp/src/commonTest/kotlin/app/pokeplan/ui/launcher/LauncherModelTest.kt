@@ -1,5 +1,10 @@
 package app.pokeplan.ui.launcher
 
+import app.pokeplan.core.dex.Dex
+import app.pokeplan.core.pokemon.Hatching
+import app.pokeplan.core.dex.HatchOption
+import app.pokeplan.core.pokemon.OwnedPokemon
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -388,5 +393,22 @@ class LauncherGestureTest {
         assertEquals(GestureAction.NONE, back.action(GestureTrigger.TRIPLE_TAP))
         // A job it does not know is ignored, not a crash.
         assertEquals(GestureAction.NONE, LauncherPrefs.decode("K gesture.DOUBLE_TAP\tFLY\nK gesture.SHAKE\tAPPS\n").action(GestureTrigger.DOUBLE_TAP))
+    }
+
+    @Test
+    fun townPicksTheBuddyThenFavoritesAndPutsPokemonWithoutSpritesLast() {
+        fun mon(id: String, species: Int, level: Int) =
+            Hatching.create(id, HatchOption(species, Dex.defaultForm(species).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(species)).copy(level = level)
+        val buddy = mon("buddy", 1, 1)
+        val fav = mon("fav", 4, 2)
+        val strong = mon("strong", 7, 50)
+        val weak = mon("weak", 25, 3)
+        val spriteless = mon("none", 133, 99)
+        val order = townResidents(
+            listOf(spriteless, weak, strong, fav, buddy), "buddy", favorites = setOf("fav"), hasSprite = { it.id != "none" },
+        ).map { it.id }
+        assertEquals(listOf("buddy", "fav", "strong", "weak", "none"), order)
+        // A cap keeps the ones with sprites.
+        assertEquals(listOf("buddy", "fav"), townResidents(listOf(spriteless, weak, fav, buddy), "buddy", cap = 2, favorites = setOf("fav"), hasSprite = { it.id != "none" }).map { it.id })
     }
 }

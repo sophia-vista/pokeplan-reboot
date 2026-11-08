@@ -844,7 +844,7 @@ MINT-specific documents may link to shared specifications but must not duplicate
 
 ## 22. As built (0.142.0, REP-014): the manual slice
 
-*Built and tested on the JVM, compiled for Android; **not run on a device**. Statement-file import came in 0.161.0 (section 22A); no bank or e-wallet is connected, and the pages say so.*
+*Built and tested on the JVM, compiled for Android; **not run on a device**. Statement-file import came in 0.162.0 (section 22A); no bank or e-wallet is connected, and the pages say so.*
 
 **What exists.** Section 3's destinations as a menu with Overview on top: **Accounts** (4: bank, e-wallet, digital bank, cash, card, loan, other asset and liability; a short optional suffix and group; archive, close, reopen; deletion refused when history exists), **Activity** (5: expense, income, transfer, refund, fee, balance adjustment; fast entry of amount, account, category; pending, posted, excluded, voided; search and type filters; edit, exclude, void, delete), **Budgets** (7: monthly or weekly, overall or one category, planned, spent, left or over, percent), **Bills** (8: one time, weekly, monthly, yearly; the month-end and leap-day rules; paid, part paid, skipped, undo; paying creates no transaction), **Review** (9: this month's money in and out, spending by category, the reconcile flow of 5.8 and the weekly review), and **Settings** (Ledger Research, hide amounts, default currency, export and erase by kind). Overview shows net position per currency, available money with its basis (liquid accounts less known bills due in 14 days; a card's balance is never cash) and the next bills.
 
@@ -862,7 +862,7 @@ MINT-specific documents may link to shared specifications but must not duplicate
 
 **Not built, not offered:** splits and bulk categorisation (5.7), reconciliation sessions with imported statements (5.8), rollover and savings targets (7.3, 7.4), account groups as their own records (a group is a label), foreign currency, exchange rates, CSV and statement import, provider connections and notification parsing (10), the budget and bill review events (`budget_review_completed`, `bill_review_completed`), charts, and the Android widget for Mint.
 
-## 22A. As built (0.161.0, REP-014): statement import and provider status
+## 22A. As built (0.162.0, REP-014): statement import and provider status
 
 *Built and tested on the JVM, compiled for Android; **not run on a device**.*
 

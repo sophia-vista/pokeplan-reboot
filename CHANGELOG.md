@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.161.0
+## 0.162.0
 
 HEAL and MINT external integrations (REP-014, `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` sections 5, 7 and 14; `MODULES/HEAL.md` section 10; `MODULES/MINT.md` section 10). No reward number changes (`RewardRules.VERSION` stays 20): nothing imported ever pays. Tested on the JVM and compiled for Android; **not run on a device, and Health Connect has not been tried on a real phone or the Huawei Watch Fit 4 Pro**.
 
@@ -14,6 +14,10 @@ HEAL and MINT external integrations (REP-014, `ARCHITECTURE/INTEGRATIONS_AND_PRI
 - **Honest status** (`Integrations`; research in `evidence/REP-014-integration-research.md`): each page lists its integrations with class and status. The statement file is a user-assisted import. GCash, Maya, MariBank, GoTyme and UnionBank, reading payment notifications and a direct Huawei link are listed as unsupported or unverified, with why; nothing logs in, scrapes or asks for a password, PIN or code. HEAL lists what it does not read (steps, heart rate, HRV, stress, SpO2, calories, sleep stages, nutrition).
 - **Android:** `androidx.health.connect:connect-client:1.1.0` (read permissions for the five record types, the `com.google.android.apps.healthdata` query, a rationale screen and the Android 14 permission-usage alias), `AndroidHealthConnect`, `AndroidTextFiles`.
 - **Data:** no schema change. `Transaction` gains `importBatch`, `importLabel`, `fingerprint` and `unreviewed`; the four HEAL record kinds gain `provenance`; HEAL's settings keep the chosen kinds and the last successful read. All are optional with defaults, so older saves and backups read as before.
+
+## 0.161.0
+
+- **Launcher: who walks the town follows the spec** (`LAUNCHER.md` 6.1). The buddy first, then the favourites, then the other Pokémon; inside the favourites and the others, those with an animation sheet (PMD SpriteCollab or Black/White) come before those without one, then by level. With more than 24 owned, the Pokémon without a sprite are the first to stay out of the town. Tested on the JVM (`LauncherModelTest`), **not run on a device**.
 
 ## 0.160.0
 
