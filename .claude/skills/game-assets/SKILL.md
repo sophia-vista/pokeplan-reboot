@@ -1,6 +1,6 @@
 ---
 name: game-assets
-description: Where the real game assets come from and how to fetch or regenerate them: the Dex data generator, sprites, animated sprites, cries, scenes, item icons, PC box wallpapers and the module region curation kit. Use before running or changing tools/species or tools/sprites, adding or replacing anything in assets/, or regenerating DexData.kt.
+description: Where the real game assets come from and how to fetch or regenerate them: the Dex data generator, sprites, animated sprites, cries, scenes, item icons, PC box wallpapers and the module region curation kit. Use before running or changing tools/species or tools/sprites, adding or replacing anything in assets/, or regenerating the Dex JSON.
 ---
 
 # Game assets
@@ -8,12 +8,12 @@ description: Where the real game assets come from and how to fetch or regenerate
 The art rule in `CLAUDE.md` always applies: real game assets only. Sources and licences are in `docs/assets.md`.
 
 ## Token care
-- `DexData.kt` is generated and about 340 KB: never read it whole; grep for the species or form you need. Never edit it by hand: change `generate.py` and regenerate (CI fails if regenerating changes anything).
+- The Dex tables are generated JSON, `pokemon-core/src/commonMain/resources/dex/*.json` (`species`, `forms`, `evolutions`, `regions`, `entries`, `moves`, `learnsets`; about 900 KB in all, one row per line): never read them whole; grep for the species or form you need. Never edit them by hand: change `generate.py` (and `DexParser.kt` if a column changes) and regenerate (CI fails if regenerating changes anything). The JVM and Android read them as resources; the web build gets them built into its code by the `generateDexWebSources` task (nothing generated is committed besides the JSON).
 - `assets/sprites`, `assets/animated` and `assets/cries` hold thousands of files: never list them; grep `manifest.tsv` or `animated.tsv`, or count with `ls | wc -l`. Open a sprite image only when you must see it.
 - The fetch scripts download a lot: run them only when the assets have to change, and keep `tools/species/cache` (git-ignored) between runs.
 
 ## Dex data and assets
-- `tools/species/generate.py`: stdlib Python that regenerates `DexData.kt` from the public PokeAPI CSVs. Run `python3 -I tools/species/generate.py`; it caches downloads in `tools/species/cache` (git-ignored).
+- `tools/species/generate.py`: stdlib Python that regenerates the Dex JSON from the public PokeAPI CSVs. Run `python3 -I tools/species/generate.py`; it caches downloads in `tools/species/cache` (git-ignored).
 - `assets/sprites/`: Pokémon sprites (96×96 PNG, `<formId>.png` and `<formId>-shiny.png`, plus `manifest.tsv`) from the public PokeAPI/sprites repo, fetched with `python3 -I tools/sprites/fetch.py` (needs `tools/species/cache`, so run the species generator first). Form ids match `FormInfo.id`.
 - `assets/animated/` and `assets/cries/`: the real Black/White animated sprites (Gen 1 to 5, `python3 -I tools/sprites/fetch_animated.py` converts the PokeAPI GIFs to sprite sheets plus `animated.tsv`; needs Pillow for that step only) and the real cries of species 1 to 1025 (`python3 -I tools/sprites/fetch_cries.py`). `AnimatedSprite` plays a sheet (still `Sprite` for species without one), `CryPlayer` plays a cry (Android MediaPlayer, web audio element, none on desktop); both honour Sound and Reduce motion.
 - `assets/sfx/`: a few real game sound effects (select, jump, heal, escape, the Pokémon Center jingle) from hexparrot/pokemon-assets, as mono Ogg (`python3 -I tools/sprites/fetch_sfx.py`, needs ffmpeg). Each is an `Sfx` value played by `CryPlayer.effect` beside the cry player, so a cry and an effect never cut each other off.

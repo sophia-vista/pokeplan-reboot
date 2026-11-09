@@ -46,6 +46,8 @@ dependencies {
     implementation(project(":data"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.glance.appwidget)
+    // The daily backup runs on its own schedule, whether or not the app is open (Glance already pulls WorkManager in; this names it).
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
     // The QR scanner: Google's own scanning screen, which needs no camera permission from this app.
     implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
     // HEAL's optional, read-only Health Connect import (androidx, no telemetry, no network of its own; reviewed under INTEGRATIONS_AND_PRIVACY.md 12.1).

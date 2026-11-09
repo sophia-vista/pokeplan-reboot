@@ -19,11 +19,13 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import app.pokeplan.ui.orNull
+import app.pokeplan.ui.CacheBudget
+import app.pokeplan.ui.BitmapCache
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
 import kotlin.math.ceil
 
-private val sheets = mutableMapOf<String, ImageBitmap?>()
+private val sheets = BitmapCache(CacheBudget.SMALL)
 
 @Composable
 private fun weatherSheet(name: String): ImageBitmap? {
@@ -54,7 +56,8 @@ internal fun WeatherLayer(weather: Weather, pixel: Int, dungeon: Boolean, calm: 
     val sand2 = weatherSheet("sand-2")
     val clouds = weatherSheet("clouds")
     var now by remember { mutableLongStateOf(0L) }
-    if (!calm) LaunchedEffect(weather) { while (true) withFrameMillis { now = it } }
+    val foreground = app.pokeplan.ui.rememberInForeground()
+    if (!calm) LaunchedEffect(weather, foreground) { while (foreground) withFrameMillis { now = it } }
     Canvas(modifier) {
         val t = if (calm) 0L else now
         when (weather) {

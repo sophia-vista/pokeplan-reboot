@@ -431,6 +431,14 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     if (p.tags.isNotEmpty()) Text(p.tags.joinToString("  ") { "#$it" }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     dates.forEach { d -> LinkRules.next(d, today)?.let { u -> LRow(d.title, dateLine(u)) } ?: LRow(d.title, "${d.day}/${d.month}${d.year?.let { "/$it" }.orEmpty()}") }
     next?.let { LRow(it.title, dueText(it, today) ?: "Next follow-up") }
+    val contact = model.phone?.takeIf { it.canContact }
+    if (contact != null && (p.phone.isNotBlank() || p.email.isNotBlank())) Actions {
+        if (p.phone.isNotBlank()) {
+            PixelButton("Call", { contact.call(p.phone) }, Modifier.weight(1f), Pixel.Blue, compact = true)
+            PixelButton("Message", { contact.message(p.phone) }, Modifier.weight(1f), Pixel.Blue, compact = true)
+        }
+        if (p.email.isNotBlank()) PixelButton("Email", { contact.email(p.email) }, Modifier.weight(1f), Pixel.Blue, compact = true)
+    }
     Actions {
         PixelButton("Edit", onEdit, Modifier.weight(1f), accent, compact = true)
         PixelButton(if (p.favorite) "Unpin" else "Pin", { link.setFavorite(p.id, !p.favorite) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)

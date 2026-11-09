@@ -69,14 +69,26 @@ internal object Alarms {
         prefs.edit().putStringSet("codes", wanted.keys.map { it.toString() }.toSet()).apply()
     }
 
-    /** On time where the phone allows exact alarms, otherwise as close as it lets us. */
-    fun set(context: Context, alarms: AlarmManager, atMillis: Long, intent: PendingIntent) {
-        try {
-            if (Build.VERSION.SDK_INT >= 31 && !alarms.canScheduleExactAlarms()) alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMillis, intent)
-            else alarms.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMillis, intent)
+    /** Whether the phone lets this app set exact alarms right now (the player can switch that off under Android 12 and 13; Android 14 grants it to alarm apps). */
+    fun canSetExact(context: Context): Boolean =
+        Build.VERSION.SDK_INT < 31 || context.getSystemService(AlarmManager::class.java)?.canScheduleExactAlarms() == true
+
+    /**
+     * On time where the phone allows exact alarms; otherwise as close as it lets us, which can be minutes late. Returns whether the alarm is exact,
+     * and never hides the other case: it is logged, and [canSetExact] is what Settings shows with a button to the phone's permission screen.
+     */
+    fun set(context: Context, alarms: AlarmManager, atMillis: Long, intent: PendingIntent): Boolean {
+        val exact = try {
+            if (Build.VERSION.SDK_INT >= 31 && !alarms.canScheduleExactAlarms()) false
+            else { alarms.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMillis, intent); true }
         } catch (e: SecurityException) {
+            false
+        }
+        if (!exact) {
+            android.util.Log.w("Alarms", "exact alarms are not allowed; a reminder is set as an inexact alarm and can be late")
             alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, atMillis, intent)
         }
+        return exact
     }
 }
 

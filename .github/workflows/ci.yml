@@ -43,7 +43,7 @@ jobs:
       - name: The Pokédex data is up to date
         run: |
           python3 -I tools/species/generate.py
-          git diff --exit-code -- pokemon-core/src/commonMain/kotlin/app/pokeplan/core/dex/generated
+          git diff --exit-code -- pokemon-core/src/commonMain/resources/dex
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

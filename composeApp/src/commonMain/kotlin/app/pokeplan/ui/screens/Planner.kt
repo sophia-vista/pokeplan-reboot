@@ -381,6 +381,9 @@ private const val WEEKEND = 100
 
 private const val NO_DATE = -1
 
+/** The most of a shared text that is typed into quick add. */
+private const val QUICK_ADD_SHARED_MAX = 200
+
 /** Days from [today] to the coming Saturday (today on a Saturday or Sunday). */
 private fun daysToWeekend(today: LocalDate): Int = today.dayOfWeek.isoDayNumber.let { if (it >= 6) 0 else 6 - it }
 
@@ -397,6 +400,14 @@ internal fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
         if (model.addTaskRequested) {
             focus.requestFocus()
             model.addTaskRequested = false
+        }
+    }
+    // Text shared from another app is typed in for the player to look at, change and add.
+    LaunchedEffect(model.sharedText) {
+        model.sharedText?.let { shared ->
+            text = shared.trim().take(QUICK_ADD_SHARED_MAX)
+            focus.requestFocus()
+            model.sharedText = null
         }
     }
     var more by remember { mutableStateOf(false) }

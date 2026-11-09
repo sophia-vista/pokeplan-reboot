@@ -7,6 +7,7 @@ import app.pokeplan.app.GameStore
 import app.pokeplan.app.Storage
 import app.pokeplan.data.AndroidDatabase
 import app.pokeplan.data.DataStore
+import app.pokeplan.data.KeystoreBackupKey
 import app.pokeplan.data.KeystoreHealKey
 import app.pokeplan.data.KeystoreMintKey
 import app.pokeplan.data.LiveBackup
@@ -66,7 +67,12 @@ object LiveStore {
         if (gaveUp) return null
         val app = context.applicationContext
         val now = System.currentTimeMillis()
-        val backups = LiveBackup(File(app.filesDir, "backups"))
+        // Every file of a daily backup is sealed with a Keystore key (and no backup is taken without it). 20 hours, not 24, so the daily job never skips a day by being a little late.
+        val backups = LiveBackup(
+            File(app.filesDir, "backups"), everyMillis = 20 * 60 * 60 * 1000L,
+            sealWith = runCatching { KeystoreBackupKey.cipher() }.onFailure { Log.w(TAG, "no backup key this run: ${it.javaClass.simpleName}") }.getOrNull(),
+            requireSeal = true, offsetMillis = { java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis()).toLong() },
+        )
         return try {
             val s = openOrRecover(app, backups, now)
             s.live.normalizer = GameStore::normalizeDocument

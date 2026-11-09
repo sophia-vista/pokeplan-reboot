@@ -45,7 +45,9 @@ internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
     val store = model.store
     var now by remember { mutableLongStateOf(store.nowMillis) }
     // The clock face follows the clock twice a second while the tool is open; a timer that ran out is marked finished once.
-    LaunchedEffect(Unit) { while (true) { now = store.nowMillis; store.timersTick(); delay(500) } }
+    // Only while the app is in sight: a stopped Activity keeps its composition, and the timers' alarms ring on their own.
+    val foreground = app.pokeplan.ui.rememberInForeground()
+    LaunchedEffect(foreground) { while (foreground) { now = store.nowMillis; store.timersTick(); delay(500) } }
     val timers = model.data.gear.timers
     var label by remember { mutableStateOf("") }
     var minutesText by remember { mutableStateOf("") }

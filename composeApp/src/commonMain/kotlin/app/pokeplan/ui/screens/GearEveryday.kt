@@ -24,6 +24,9 @@ import app.pokeplan.ui.theme.PixelField
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 
+/** What a number field says when its text is not a number. */
+internal const val NOT_A_NUMBER = "Enter a number, like 12.5."
+
 private enum class Sum(val label: String) { TIP("Tip and split"), PERCENT("Percent"), SALE("Sale and tax"), LOAN("Loan"), SAVINGS("Savings"), TRIP("Trip cost") }
 
 /** Everyday sums: each a few numbers in and a plain answer out, nothing kept. A comma works as the decimal point. */
@@ -34,16 +37,18 @@ internal fun EverydayTool(model: AppModel, onUse: () -> Unit) {
     val inputs = remember(sum) { mutableStateOf(List(4) { "" }) }
     var values by inputs
     fun num(i: Int): Double? = values[i].trim().replace(',', '.').toDoubleOrNull()
+    // Text that is not a number is said so under its field and gives no answer; it is never read as 0 or as the field's default.
+    fun bad(i: Int): Boolean = values[i].isNotBlank() && num(i) == null
     @Composable
     fun field(i: Int, label: String) {
-        PixelField(values[i], { v -> values = values.toMutableList().also { it[i] = v.take(14) }; onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = label)
+        PixelField(values[i], { v -> values = values.toMutableList().also { it[i] = v.take(14) }; onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = label, error = if (bad(i)) NOT_A_NUMBER else null)
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Sum.entries.forEach { s -> TabButton(s.label, sum == s, { sum = s }) }
             }
-            val answer: List<String>? = when (sum) {
+            val answer: List<String>? = if (values.indices.any(::bad)) null else when (sum) {
                 Sum.TIP -> {
                     field(0, "Bill"); field(1, "Tip percent (15)"); field(2, "People (1)")
                     val people = num(2)?.toInt() ?: 1

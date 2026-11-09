@@ -7,8 +7,20 @@ import java.io.File
  * marker written last, so a folder cut short is never used). The files are the same JSON the app has always saved, so the
  * newest backup is also the rollback copy for an older build: put its `save.json` and `care.json` back in the app's files.
  * Each backup reads the database in one transaction, so it is consistent however the app is writing at the time.
+ *
+ * Which backups stay is [BackupRetention] (seven daily and four weekly), or simply the newest [keep] when that is given. With [sealWith] every
+ * document file is written as [SEALED]`<sealed text>` (AES-GCM with a key that never leaves the phone), so a copy of the backup folder opens
+ * for nobody else; the readers open it again and still read the plain files of earlier builds. With [requireSeal] a backup is not taken at all
+ * while there is no cipher, rather than written in clear.
  */
-class LiveBackup(private val dir: File, private val keep: Int = 3, private val everyMillis: Long = DAY) {
+class LiveBackup(
+    private val dir: File,
+    private val keep: Int? = null,
+    private val everyMillis: Long = DAY,
+    private val sealWith: RowCipher? = null,
+    private val requireSeal: Boolean = false,
+    private val offsetMillis: () -> Long = { 0L },
+) {
     /** Writes a backup when the newest is older than the interval (or there is none); returns its folder, else null. */
     fun takeIfDue(live: LiveDocuments, nowMillis: Long): File? {
         val last = complete().maxOfOrNull { it.name.toLong() }
@@ -39,6 +51,7 @@ class LiveBackup(private val dir: File, private val keep: Int = 3, private val e
 
     /** Takes a backup of the live documents, or returns null when there is nothing to back up or no room ([lowStorage] says which). */
     fun take(live: LiveDocuments, nowMillis: Long): File? {
+        if (requireSeal && sealWith == null) return null
         val docs = live.snapshot()
         if (docs.isEmpty()) return null
         lowStorage = !hasRoomFor(docs.values.sumOf { it.length.toLong() })
@@ -47,19 +60,37 @@ class LiveBackup(private val dir: File, private val keep: Int = 3, private val e
         folder.mkdirs()
         for ((name, json) in docs) {
             val temp = File(folder, "$name.json.tmp")
-            temp.writeText(json)
+            temp.writeText(sealWith?.let { SEALED + it.seal(json) } ?: json)
             check(temp.renameTo(File(folder, "$name.json"))) { "could not finish the backup of '$name'" }
         }
         File(folder, DONE).writeText(docs.keys.sorted().joinToString(","))
-        complete().sortedBy { it.name.toLong() }.dropLast(keep).forEach { it.deleteRecursively() }
+        prune()
         return folder
     }
 
-    /** The documents of the backup taken at [millis], exactly as stored (Mint and Heal sealed with this phone's keys); null when it is not there. */
+    /** Deletes the finished backups that [BackupRetention] (or [keep]) no longer keeps. */
+    fun prune() {
+        val all = complete().associateBy { it.name.toLong() }
+        val stay = if (keep != null) all.keys.sortedDescending().take(keep).toSet() else BackupRetention.keep(all.keys, offsetMillis())
+        all.filterKeys { it !in stay }.values.forEach { it.deleteRecursively() }
+    }
+
+    /** When the newest finished backup was taken, or null if there is none. */
+    fun lastBackupMillis(): Long? = complete().maxOfOrNull { it.name.toLong() }
+
+    /** A document file as the app reads it: opened if it was sealed. Null when it is sealed and cannot be opened (another phone's key, or none). */
+    private fun read(file: File): String? {
+        val text = file.readText()
+        if (!text.startsWith(SEALED)) return text
+        return sealWith?.open(text.removePrefix(SEALED))
+    }
+
+    /** The documents of the backup taken at [millis] (Mint and Heal still sealed with their own keys); null when it is not there or cannot be opened. */
     fun documentsOf(millis: Long): Map<String, String>? {
         val folder = complete().firstOrNull { it.name.toLong() == millis } ?: return null
         val names = File(folder, DONE).readText().split(",").filter { it.isNotEmpty() }
-        return names.associateWith { File(folder, "$it.json").readText() }
+        val docs = names.associateWith { read(File(folder, "$it.json")) }
+        return if (docs.values.any { it == null }) null else docs.mapValues { it.value!! }
     }
 
     /** The backup taken at [millis] as one bundle file's text ([BackupBundle]), for the player to save anywhere; null when it is not there. */
@@ -67,9 +98,8 @@ class LiveBackup(private val dir: File, private val keep: Int = 3, private val e
 
     /** Puts the backup taken at [millis] back (the documents it replaces are kept aside first). False when there is no such backup. */
     fun restore(live: LiveDocuments, millis: Long, nowMillis: Long): Boolean {
-        val folder = complete().firstOrNull { it.name.toLong() == millis } ?: return false
-        val names = File(folder, DONE).readText().split(",").filter { it.isNotEmpty() }
-        live.replaceAll(names.associateWith { File(folder, "$it.json").readText() }, nowMillis)
+        val docs = documentsOf(millis) ?: return false
+        live.replaceAll(docs, nowMillis)
         return true
     }
 
@@ -82,7 +112,7 @@ class LiveBackup(private val dir: File, private val keep: Int = 3, private val e
         for (f in complete()) {
             if (f == fresh) continue
             val heal = File(f, "heal.json")
-            if (heal.exists() && !RowCipher.isSealed(heal.readText())) f.deleteRecursively()
+            if (heal.exists() && read(heal)?.let { !RowCipher.isSealed(it) } == true) f.deleteRecursively()
         }
         return true
     }
@@ -95,9 +125,9 @@ class LiveBackup(private val dir: File, private val keep: Int = 3, private val e
 
     /** Puts the newest backup back (the documents it replaces are kept aside first). False when there is no backup. */
     fun restoreNewest(live: LiveDocuments, nowMillis: Long): Boolean {
-        val folder = newest() ?: return false
-        val names = File(folder, DONE).readText().split(",").filter { it.isNotEmpty() }
-        live.replaceAll(names.associateWith { File(folder, "$it.json").readText() }, nowMillis)
+        // The newest one that can be opened: a backup sealed with a key this phone no longer has is passed over for the one before it.
+        val docs = complete().sortedByDescending { it.name.toLong() }.firstNotNullOfOrNull { documentsOf(it.name.toLong()) } ?: return false
+        live.replaceAll(docs, nowMillis)
         return true
     }
 
@@ -107,6 +137,9 @@ class LiveBackup(private val dir: File, private val keep: Int = 3, private val e
     companion object {
         const val DAY = 24 * 60 * 60 * 1000L
         private const val DONE = "DONE"
+
+        /** Starts a document file that is sealed, so it can never be mistaken for JSON or for a module's own sealed text ([RowCipher.PREFIX]). */
+        const val SEALED = "BK1:"
 
         /** Free space kept beyond a backup itself. */
         const val MARGIN = 5L * 1024 * 1024

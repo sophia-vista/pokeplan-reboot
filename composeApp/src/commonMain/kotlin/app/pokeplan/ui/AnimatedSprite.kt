@@ -49,7 +49,7 @@ internal fun pixelScale(boxPx: Float, a: Animation): Int {
 }
 
 private var animations: Map<Int, Animation>? = null
-private val sheets = mutableMapOf<String, ImageBitmap?>()
+private val sheets = BitmapCache(CacheBudget.SPRITE_SHEETS)
 
 /** A sheet table: `id, frames, width, height, comma separated frame times, shiny`. */
 private suspend fun table(dir: String, file: String): Map<Int, Animation> = orNull {

@@ -382,6 +382,16 @@ private fun SleepView(model: AppModel) {
             message?.let { (text, tone) -> Notice(text, tone = tone) }
         }
     }
+    model.phone?.takeIf { it.canSetAlarm }?.let { phone ->
+        var alarm by remember { mutableStateOf(LocalTime(7, 0)) }
+        TextBox {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                PixelTitle("Wake-up alarm")
+                Stepper("Ring at", clockText(alarm), { alarm = shift(alarm, -15) }, { alarm = shift(alarm, 15) })
+                PixelButton("Set the alarm", { phone.setAlarm(alarm.hour, alarm.minute, "PokéLife") }, Modifier.fillMaxWidth(), Pixel.Blue)
+            }
+        }
+    }
     val nights = data.sleep.sortedByDescending { it.endMillis }
     if (nights.isEmpty()) EmptyState("No nights logged", "Add how long you slept whenever you like. Heal never tells you a night was too short or too long.", icon = HealSection.SLEEP.icon)
     else {

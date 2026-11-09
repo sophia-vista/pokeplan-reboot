@@ -23,7 +23,7 @@ import pokeplan.composeapp.generated.resources.Res
 import app.pokeplan.ui.theme.Pixel
 import kotlin.math.max
 
-private val scenes = mutableMapOf<String, ImageBitmap?>()
+private val scenes = BitmapCache(CacheBudget.SCENES)
 
 /** 0 until [ready], then fades to 1 over 150 ms (at once under Reduce motion), so a picture arriving late does not pop in. */
 @Composable

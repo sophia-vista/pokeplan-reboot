@@ -10,6 +10,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import app.pokeplan.ui.rememberInForeground
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.background
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -84,15 +90,23 @@ fun SpeakerBox(model: AppModel, emotion: Emotion, modifier: Modifier = Modifier,
 fun UndoBar(model: AppModel, modifier: Modifier = Modifier) {
     val deleted = model.deletedTask
     // A deleted task can be brought back for as long as a finished one can be undone.
+    var deletedAt by remember { mutableLongStateOf(model.store.nowMillis) }
     LaunchedEffect(deleted?.id) {
         if (deleted != null) {
+            deletedAt = model.store.nowMillis
             delay(UNDO_SHOWN_MILLIS)
             model.deletedTask = null
         }
     }
-    val rows: List<Pair<String, () -> Unit>> =
-        model.data.pending.takeLast(2).map { p -> "Done: ${p.done.title}" to { model.store.undoCompletion(p.original.id); Unit } } +
-            listOfNotNull(deleted?.let { t -> "Deleted: ${t.title}" to { model.store.restoreTask(t.id); model.deletedTask = null } })
+    // How much of the time left to undo is left, for the bar under each row; it follows the clock ten times a second, and only while something can be undone.
+    var now by remember { mutableLongStateOf(model.store.nowMillis) }
+    val foreground = rememberInForeground()
+    val anyRows = model.data.pending.isNotEmpty() || deleted != null
+    LaunchedEffect(anyRows, foreground) { while (anyRows && foreground) { now = model.store.nowMillis; delay(UNDO_TICK_MILLIS) } }
+    fun left(untilMillis: Long) = ((untilMillis - now).toFloat() / UNDO_SHOWN_MILLIS).coerceIn(0f, 1f)
+    val rows: List<Triple<String, () -> Unit, Float>> =
+        model.data.pending.takeLast(2).map { p -> Triple("Done: ${p.done.title}", { model.store.undoCompletion(p.original.id); Unit }, left(p.finalAtMillis)) } +
+            listOfNotNull(deleted?.let { t -> Triple("Deleted: ${t.title}", { model.store.restoreTask(t.id); model.deletedTask = null }, left(deletedAt + UNDO_SHOWN_MILLIS)) })
     if (rows.isEmpty()) return
     Column(
         modifier.fillMaxWidth().padding(horizontal = Spacing.M, vertical = Spacing.S)
@@ -100,16 +114,21 @@ fun UndoBar(model: AppModel, modifier: Modifier = Modifier) {
             .padding(horizontal = Spacing.L, vertical = Spacing.XS)
             .semantics { liveRegion = LiveRegionMode.Polite },
     ) {
-        rows.forEach { (label, undo) ->
+        rows.forEach { (label, undo, fraction) ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
                 Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = Pixel.OnInk, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 PixelIconButton("undo", "Undo", undo, Pixel.Blue)
+            }
+            // The time left to undo, draining to the right; it carries no words, the row already says what can be undone.
+            Box(Modifier.fillMaxWidth().height(Spacing.XS).background(Pixel.InkSoft.copy(alpha = 0.4f))) {
+                Box(Modifier.fillMaxWidth(fraction).height(Spacing.XS).background(Pixel.Blue))
             }
         }
     }
 }
 
 private const val UNDO_SHOWN_MILLIS = 10_000L
+private const val UNDO_TICK_MILLIS = 100L
 
 internal val dayNames = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 private val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")

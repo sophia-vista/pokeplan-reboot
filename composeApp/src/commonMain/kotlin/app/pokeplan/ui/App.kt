@@ -144,6 +144,10 @@ class AppModel(
     var mintUnlockedAt: Long = 0L
     var mintLeftAt: Long = 0L
 
+    /** The same for the other modules behind the screen lock (`Settings.lockedModules`), by module name; see `ModuleGate`. */
+    val moduleUnlockedAt: MutableMap<String, Long> = mutableMapOf()
+    val moduleLeftAt: MutableMap<String, Long> = mutableMapOf()
+
     /** Whether the Pokégear is open: a screen over whichever tab is showing, reached from the button at the top of every tab. */
     var gearOpen: Boolean by mutableStateOf(false)
 
@@ -222,6 +226,9 @@ class AppModel(
 
     /** Set by the widget's "+" and the app icon's "Add task" shortcut: the Planner opens on Today with the keyboard up. */
     var addTaskRequested: Boolean by mutableStateOf(false)
+
+    /** Text another app shared to PokéLife: the Planner's quick add opens with it typed in (not added until the player says so). Used once. */
+    var sharedText: String? by mutableStateOf(null)
 
     /** A Pokémon the Pokémon tab should open on (the buddy's level chip on Home, the widget's chip). Used once. */
     var openPokemonId: String? by mutableStateOf(null)
@@ -302,7 +309,7 @@ class AppModel(
 }
 
 /** A request to open the app on a place, a Pokémon, or the add-task box. */
-data class AppLaunch(val place: Place?, val pokemon: String? = null, val addTask: Boolean = false)
+data class AppLaunch(val place: Place?, val pokemon: String? = null, val addTask: Boolean = false, val sharedText: String? = null)
 
 /**
  * The whole app. [storage] is where the save lives on this platform; [focusTab] is false on desktop and the web, where
@@ -326,6 +333,7 @@ fun App(
     start: Place = Place.HOME,
     startPokemon: String? = null,
     startAddTask: Boolean = false,
+    startSharedText: String? = null,
     /** Where the app was asked to go while it was already open (a widget tap or a shortcut). */
     launches: Flow<AppLaunch>? = null,
     /** Emits when something outside the app may have changed the save (the Android app coming back after a widget tap). */
@@ -366,7 +374,7 @@ fun App(
         val mint = MintStore(mintStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val home = HomeStore(homeStorage ?: MemoryStorage(), clock, store)
         val link = LinkStore(linkStorage ?: MemoryStorage(), clock, store)
-        AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, home, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.open(start, focusTab) }
+        AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, home, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.sharedText = startSharedText; it.open(start, focusTab) }
     }
     // The phone's power saver is read now and then; World's animations stand still while it is on.
     LaunchedEffect(model) { while (true) { model.powerSaving = phone?.powerSaving == true; kotlinx.coroutines.delay(30_000) } }
@@ -456,6 +464,7 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
         launches?.collect { launch ->
             model.openPokemonId = launch.pokemon
             model.addTaskRequested = launch.addTask
+            model.sharedText = launch.sharedText
             launch.place?.let(go)
         }
     }

@@ -98,6 +98,15 @@ internal fun SettingsView(model: AppModel) {
         ToggleRow("Reduce motion", settings.reduceMotion) { store.changeSettings { s -> s.copy(reduceMotion = it) } }
     }
     SettingsGroup("Notifications", "bell") {
+        model.phone?.let { phone ->
+            // Read again when the player comes back from the phone's permission screen.
+            var exact by remember { mutableStateOf(phone.exactAlarms) }
+            androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { exact = phone.exactAlarms }
+            if (!exact) {
+                Text("Android is not letting PokéLife set exact alarms, so reminders and timers can arrive minutes late.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
+                PixelButton("Allow exact alarms", { phone.allowExactAlarms() }, Modifier.fillMaxWidth(), Pixel.Blue)
+            }
+        }
         ToggleRow(
             "Routine reminders", model.careData.settings.reminders,
         ) { on -> model.care.changeSettings { it.copy(reminders = on) } }
@@ -123,9 +132,27 @@ internal fun SettingsView(model: AppModel) {
         }
         ToggleRow("Weekly recap", settings.weeklyRecap) { store.changeSettings { s -> s.copy(weeklyRecap = it) } }
     }
+    PrivacyCard(model)
     DataCard(model)
     BackupsCard(model)
     AboutCard()
+}
+
+/** The screen lock in front of the private modules (Care's journal, Heal, Home, Link); Mint's switch is in Mint. Only where the phone has a lock to ask. */
+@Composable
+private fun PrivacyCard(model: AppModel) {
+    val gate = model.gate ?: return
+    if (!gate.available() && model.data.settings.lockedModules.isEmpty()) return
+    SettingsGroup("Private modules", "storage-key") {
+        gateableModules.forEach { m ->
+            val on = m.name in model.data.settings.lockedModules
+            ToggleRow("Lock ${m.label}", on, detail = if (m == gateableModules.first()) "Opens with your phone's own lock (PIN, pattern, password, fingerprint or face), and closes again after you leave. It does not change how anything is kept." else null) { want ->
+                fun set(value: Boolean) = model.store.changeSettings { s -> s.copy(lockedModules = if (value) s.lockedModules + m.name else s.lockedModules - m.name) }
+                if (!want) set(false)
+                else gate.authenticate { ok -> if (ok) { set(true); model.moduleUnlockedAt[m.name] = model.store.nowMillis } }
+            }
+        }
+    }
 }
 
 /** Which of the phone's calendars show on Planner → Calendar. Only where the platform can read them (Android). */
@@ -180,7 +207,11 @@ private fun BackupsCard(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             GlyphTitle("Backups", "download")
             if (backups.lowStorage()) Text("This phone is almost out of storage, so a backup was skipped and some changes may not be saved. Free some space and it carries on by itself.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
-            Text("The app keeps a copy of your data every day (the newest three). You can also save a copy anywhere, and put one back.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Text(
+                (entries.firstOrNull()?.let { "Last backup: ${backupLabel(it.millis)}. " } ?: "No backup yet. ") +
+                    "A copy is made every day, sealed to this phone: the last seven days, then one a week for four weeks. You can also save a copy anywhere, and put one back.",
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Back up now", { note = backups.backupNow(); entries = backups.automatic() }, Modifier.weight(1f), Pixel.Blue, compact = true)
                 PixelButton("Save a copy", { backups.saveCopy(null) { note = it } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)

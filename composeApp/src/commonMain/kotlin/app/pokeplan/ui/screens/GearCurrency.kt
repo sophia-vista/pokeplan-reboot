@@ -123,7 +123,7 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
             if (foreign != home) {
                 FieldLabel("A rate you were offered ($foreign per 1 $home)")
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    PixelField(manualText, { manualText = it.take(14) }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), placeholder = "Your rate")
+                    PixelField(manualText, { manualText = it.take(14) }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), placeholder = "Your rate", error = if (manualText.isNotBlank() && manualText.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 && it.isFinite() } == null) "Enter a rate above 0, like 56.2." else null)
                     PixelButton("Use", { manualText.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 && it.isFinite() }?.let { v -> store.changeGear { g -> g.copy(manualRates = g.manualRates + (foreign to v)) } } }, Modifier.weight(0.5f), Pixel.Blue, compact = true)
                     PixelIconButton("close", "Clear", { manualText = ""; store.changeGear { g -> g.copy(manualRates = g.manualRates - foreign) } }, Pixel.InkSoft)
                 }
@@ -134,10 +134,20 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
                 var priceText by remember { mutableStateOf("") }
                 var percentText by remember { mutableStateOf(if (gear.feePercent > 0) CalcEngine.format(gear.feePercent) else "") }
                 var fixedText by remember { mutableStateOf(if (gear.feeFixed > 0) CalcEngine.format(gear.feeFixed) else "") }
-                PixelField(priceText, { priceText = it.take(14) }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Price in $foreign")
+                PixelField(priceText, { priceText = it.take(14) }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Price in $foreign", error = if (priceText.isNotBlank() && priceText.replace(',', '.').toDoubleOrNull() == null) NOT_A_NUMBER else null)
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    PixelField(percentText, { percentText = it.take(8); store.changeGear { g -> g.copy(feePercent = it.replace(',', '.').toDoubleOrNull()?.takeIf { v -> v >= 0 } ?: 0.0) } }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Fee %")
-                    PixelField(fixedText, { fixedText = it.take(10); store.changeGear { g -> g.copy(feeFixed = it.replace(',', '.').toDoubleOrNull()?.takeIf { v -> v >= 0 } ?: 0.0) } }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Fixed fee ($home)")
+                    // A fee that is not a number is said so and leaves the saved fee as it was; it is never turned into 0.
+                    fun fee(text: String): Double? = text.replace(',', '.').toDoubleOrNull()?.takeIf { v -> v >= 0 && v.isFinite() }
+                    PixelField(
+                        percentText, { percentText = it.take(8); if (it.isBlank()) store.changeGear { g -> g.copy(feePercent = 0.0) } else fee(it)?.let { v -> store.changeGear { g -> g.copy(feePercent = v) } } },
+                        Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Fee %",
+                        error = if (percentText.isNotBlank() && fee(percentText) == null) NOT_A_NUMBER else null,
+                    )
+                    PixelField(
+                        fixedText, { fixedText = it.take(10); if (it.isBlank()) store.changeGear { g -> g.copy(feeFixed = 0.0) } else fee(it)?.let { v -> store.changeGear { g -> g.copy(feeFixed = v) } } },
+                        Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), label = "Fixed fee ($home)",
+                        error = if (fixedText.isNotBlank() && fee(fixedText) == null) NOT_A_NUMBER else null,
+                    )
                 }
                 val price = priceText.replace(',', '.').toDoubleOrNull()
                 val reference = Currencies.rate(home, foreign, rates, home, emptyMap())
