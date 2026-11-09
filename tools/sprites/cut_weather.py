@@ -49,8 +49,8 @@ def main():
     grid(misc, [8, 80, 152, 224], rows, 64, 32).save(os.path.join(DIR, 'snow.png'))
     grid(misc, [304, 344, 384, 424], rows, 32, 32).save(os.path.join(DIR, 'blizzard.png'))
     grid(misc, [472, 512, 552, 592], rows, 32, 32).save(os.path.join(DIR, 'snow-dungeon.png'))
-    grid(misc, [8], [600], 120, 32).save(os.path.join(DIR, 'sand-1.png'))
-    grid(misc, [136], [600], 120, 32).save(os.path.join(DIR, 'sand-2.png'))
+    grid(misc, [8], [608], 120, 32).save(os.path.join(DIR, 'sand-1.png'))
+    grid(misc, [136], [608], 120, 32).save(os.path.join(DIR, 'sand-2.png'))
     clouds = misc.crop((8, 16, 728, 424)).convert('RGBA')
     px = clouds.load()
     for y in range(clouds.height):
