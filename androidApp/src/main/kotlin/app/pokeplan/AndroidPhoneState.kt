@@ -32,6 +32,27 @@ class AndroidPhoneState(private val context: Context) : PhoneState {
         try { context.startActivity(intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) { /* no such screen on this phone */ }
     }
 
+    override val canContact: Boolean = true
+
+    // The dialer, messages and mail apps are opened with what the person has written down; none of them is started without the player pressing send or call, and no permission is needed.
+    override fun call(number: String) = open(android.content.Intent(android.content.Intent.ACTION_DIAL, android.net.Uri.fromParts("tel", number.trim(), null)))
+    override fun message(number: String) = open(android.content.Intent(android.content.Intent.ACTION_SENDTO, android.net.Uri.fromParts("smsto", number.trim(), null)))
+    override fun email(address: String) = open(android.content.Intent(android.content.Intent.ACTION_SENDTO, android.net.Uri.fromParts("mailto", address.trim(), null)))
+
+    override val canSetAlarm: Boolean
+        get() = context.packageManager.queryIntentActivities(android.content.Intent(android.provider.AlarmClock.ACTION_SET_ALARM), 0).isNotEmpty()
+
+    // The clock app shows the alarm for the player to save: a wake-up alarm is the phone's own, so it rings loudly and on time whatever this app is doing.
+    override fun setAlarm(hour: Int, minute: Int, label: String) = open(
+        android.content.Intent(android.provider.AlarmClock.ACTION_SET_ALARM)
+            .putExtra(android.provider.AlarmClock.EXTRA_HOUR, hour).putExtra(android.provider.AlarmClock.EXTRA_MINUTES, minute)
+            .putExtra(android.provider.AlarmClock.EXTRA_MESSAGE, label).putExtra(android.provider.AlarmClock.EXTRA_SKIP_UI, false),
+    )
+
+    private fun open(intent: android.content.Intent) {
+        try { context.startActivity(intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) { /* no app on this phone handles it */ }
+    }
+
     private companion object {
         val CALL_MODES = setOf(AudioManager.MODE_RINGTONE, AudioManager.MODE_IN_CALL, AudioManager.MODE_CALL_SCREENING)
     }

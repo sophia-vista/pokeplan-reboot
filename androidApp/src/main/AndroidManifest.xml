@@ -10,6 +10,9 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Hand a wake-up alarm to the phone's clock app. -->
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <queries><intent><action android:name="android.intent.action.SET_ALARM" /></intent></queries>
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- The launcher's Uninstall action (Android 9 and later ask for it). -->
@@ -47,6 +50,12 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Share a link or some text to PokéLife from any app: it opens the Planner's quick add with the text typed in. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
             </intent-filter>
             <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity>
@@ -123,5 +132,12 @@
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_world" />
         </receiver>
+        <!-- Quick Settings tiles: they only open the app on one screen. -->
+        <service android:name=".AddTaskTile" android:exported="true" android:label="Add task" android:icon="@drawable/ic_tile_check" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+        </service>
+        <service android:name=".FocusTile" android:exported="true" android:label="Focus" android:icon="@drawable/ic_tile_timer" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+        </service>
     </application>
 </manifest>

@@ -316,6 +316,8 @@ data class Settings(
     /** A notification when a World job is done, so there is something to claim (Android). */
     val worldJobAlerts: Boolean = true,
     /** An evening reminder when nothing has counted today and a streak is running (Android). */
+    /** The modules (by name: CARE, HEAL, HOME, LINK) that stay closed until the phone's screen lock opens them; Mint has its own switch in its settings. A door only: nothing is encrypted with it. */
+    val lockedModules: Set<String> = emptySet(),
     val streakReminder: Boolean = true,
     /** The hour of that reminder, local time. */
     val streakReminderHour: Int = 20,

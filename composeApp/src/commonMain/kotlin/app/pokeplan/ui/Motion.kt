@@ -26,4 +26,22 @@ interface PhoneState {
 
     /** Opens the phone's screen where the player allows exact alarms. */
     fun allowExactAlarms() {}
+
+    /** Whether this device can hand a number or an address to its dialer, messages and mail apps (Link shows Call, Message and Email only then). */
+    val canContact: Boolean get() = false
+
+    /** Opens the dialer with [number] typed in; it never places the call, the player does. */
+    fun call(number: String) {}
+
+    /** Opens the messages app with a new message to [number]. */
+    fun message(number: String) {}
+
+    /** Opens the mail app with a new message to [address]. */
+    fun email(address: String) {}
+
+    /** Whether the phone's own clock app can be asked to set an alarm. */
+    val canSetAlarm: Boolean get() = false
+
+    /** Hands a wake-up alarm for [hour]:[minute] to the phone's clock app, which shows it for the player to keep; it rings with the phone's alarm sound, even in Doze or silent mode. */
+    fun setAlarm(hour: Int, minute: Int, label: String) {}
 }

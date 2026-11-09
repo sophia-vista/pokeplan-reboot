@@ -87,7 +87,7 @@ class MainActivity : ComponentActivity() {
         val place = first.place ?: Place.HOME
         setContent {
             App(
-                storage, careStorage = careStorage(this), healStorage = healStorage(this), mintStorage = mintStorage(this), homeStorage = homeStorage(this), linkStorage = linkStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, launches = launches, externalChanges = resumes,
+                storage, careStorage = careStorage(this), healStorage = healStorage(this), mintStorage = mintStorage(this), homeStorage = homeStorage(this), linkStorage = linkStorage(this), focusTab = true, motion = motion, start = place, startPokemon = first.pokemon, startAddTask = first.addTask, startSharedText = first.sharedText, launches = launches, externalChanges = resumes,
                 cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), files = AndroidFileSaver(this), calendars = calendars, phone = AndroidPhoneState(this), torch = torch, capabilities = AndroidCapabilities(this), sensors = AndroidSensorFeed(this), services = gearServices, backups = backups, deviceGate = gate, health = health, textFiles = textFiles, onDataChanged = ::keepWidgetsCurrent, onCareChanged = ::careChanged, onHealChanged = ::healChanged, onMintChanged = ::mintChanged, onHomeChanged = ::homeChanged, onLinkChanged = ::linkChanged, onDark = ::matchSystemBars,
             )
         }
@@ -276,12 +276,18 @@ class MainActivity : ComponentActivity() {
         if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
-    private fun launchFrom(intent: Intent?) = AppLaunch(
-        place = intent?.getStringExtra(EXTRA_TAB)?.let { name -> Place.entries.firstOrNull { it.name == name } },
-        pokemon = intent?.getStringExtra(EXTRA_POKEMON),
-        // A shortcut's extra may arrive as a boolean or as text.
-        addTask = intent?.extras?.get(EXTRA_ADD_TASK)?.toString() == "true",
-    )
+    private fun launchFrom(intent: Intent?): AppLaunch {
+        // Text shared to PokéLife from another app's Share sheet lands in the Planner's quick add; nothing is added until the player says so.
+        val shared = intent?.takeIf { it.action == Intent.ACTION_SEND && it.type?.startsWith("text/") == true }
+            ?.let { it.getStringExtra(Intent.EXTRA_TEXT) ?: it.getStringExtra(Intent.EXTRA_SUBJECT) }?.takeIf { it.isNotBlank() }
+        return AppLaunch(
+            place = if (shared != null) Place.PLANNER else intent?.getStringExtra(EXTRA_TAB)?.let { name -> Place.entries.firstOrNull { it.name == name } },
+            pokemon = intent?.getStringExtra(EXTRA_POKEMON),
+            // A shortcut's extra may arrive as a boolean or as text.
+            addTask = intent?.extras?.get(EXTRA_ADD_TASK)?.toString() == "true",
+            sharedText = shared,
+        )
+    }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)

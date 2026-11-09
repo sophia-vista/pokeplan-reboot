@@ -132,9 +132,27 @@ internal fun SettingsView(model: AppModel) {
         }
         ToggleRow("Weekly recap", settings.weeklyRecap) { store.changeSettings { s -> s.copy(weeklyRecap = it) } }
     }
+    PrivacyCard(model)
     DataCard(model)
     BackupsCard(model)
     AboutCard()
+}
+
+/** The screen lock in front of the private modules (Care's journal, Heal, Home, Link); Mint's switch is in Mint. Only where the phone has a lock to ask. */
+@Composable
+private fun PrivacyCard(model: AppModel) {
+    val gate = model.gate ?: return
+    if (!gate.available() && model.data.settings.lockedModules.isEmpty()) return
+    SettingsGroup("Private modules", "storage-key") {
+        gateableModules.forEach { m ->
+            val on = m.name in model.data.settings.lockedModules
+            ToggleRow("Lock ${m.label}", on, detail = if (m == gateableModules.first()) "Opens with your phone's own lock (PIN, pattern, password, fingerprint or face), and closes again after you leave. It does not change how anything is kept." else null) { want ->
+                fun set(value: Boolean) = model.store.changeSettings { s -> s.copy(lockedModules = if (value) s.lockedModules + m.name else s.lockedModules - m.name) }
+                if (!want) set(false)
+                else gate.authenticate { ok -> if (ok) { set(true); model.moduleUnlockedAt[m.name] = model.store.nowMillis } }
+            }
+        }
+    }
 }
 
 /** Which of the phone's calendars show on Planner → Calendar. Only where the platform can read them (Android). */
