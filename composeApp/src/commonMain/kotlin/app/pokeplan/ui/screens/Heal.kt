@@ -37,6 +37,7 @@ import app.pokeplan.heal.HealUnits
 import app.pokeplan.heal.MeasureType
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Report
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
@@ -201,7 +202,7 @@ private fun ActivityView(model: AppModel) {
         val km = distance.replace(',', '.').toDoubleOrNull()
         val out = heal.logActivity(type, minutes.toIntOrNull() ?: 0, endedAtMillis = model.store.nowMillis - ago * 60_000L, distanceMeters = km?.let { (it * 1000).roundToInt() }, note = note)
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-        else { message = "Saved." to NoticeTone.INFO; note = ""; distance = ""; more = false; model.haptic(); model.effect(Sfx.HEAL) }
+        else { message = null; model.say("Saved."); note = ""; distance = ""; more = false; model.haptic(); model.effect(Sfx.HEAL) }
     }
     RewardBox(model)
     TextBox {
@@ -230,7 +231,7 @@ private fun ActivityView(model: AppModel) {
                 PixelField(note, { note = it.take(HealRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note, optional", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
             }
             PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Green, enabled = (minutes.toIntOrNull() ?: 0) > 0)
-            message?.let { (text, tone) -> Notice(text, tone = tone) }
+            message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
     if (!model.healData.settings.fieldResearch) Text(
@@ -238,7 +239,7 @@ private fun ActivityView(model: AppModel) {
         style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
     )
     val all = model.healData.activities.sortedByDescending { it.startMillis }
-    if (all.isEmpty()) EmptyState("Nothing logged yet", "A type and how long it lasted are enough. Walks, stretching and everything else count.", icon = HealSection.ACTIVITY.icon)
+    if (all.isEmpty()) EmptyState("Nothing logged yet", "A type and how long it lasted are enough. Walks, stretching and everything else count.", icon = HealSection.ACTIVITY.icon, addAbove = "Log activity")
     else {
         SectionLabel("History")
         all.take(30).forEach { a ->
@@ -332,11 +333,11 @@ private fun HydrationView(model: AppModel) {
                 )
                 PixelButton("Add", { custom.toIntOrNull()?.let(::add) }, color = Pixel.Green, enabled = custom.toIntOrNull() != null, compact = true)
             }
-            message?.let { Notice(it, tone = NoticeTone.WARNING) }
+            message?.let { Report(model, it, NoticeTone.WARNING) }
         }
     }
     val drinks = heal.drinksToday()
-    if (drinks.isEmpty()) EmptyState("No drinks today", "Tap an amount above. Any drink counts the same here: this only keeps your own record.", icon = HealSection.HYDRATION.icon)
+    if (drinks.isEmpty()) EmptyState("No drinks today", "Tap an amount above. Any drink counts the same here: this only keeps your own record.", icon = HealSection.HYDRATION.icon, addAbove = "Log a drink")
     else drinks.forEach { d ->
         ListRow(trail = { PixelButton("Delete", { heal.deleteDrink(d.id) }, color = Pixel.InkSoft, compact = true) }) {
             Text(ml(d.ml) + d.drink.takeIf { it.isNotBlank() }?.let { " · $it" }.orEmpty(), style = MaterialTheme.typography.bodyLarge)
@@ -367,7 +368,7 @@ private fun SleepView(model: AppModel) {
         val day = LocalDate.fromEpochDays(model.store.today.toEpochDays() - if (yesterday) 1 else 0)
         val end = LocalDateTime(day, wake).toInstant(zone).toEpochMilliseconds()
         val out = heal.logSleep(end - length * 60_000L, end)
-        message = if (out.record == null) (out.refused ?: "That could not be saved.") to NoticeTone.WARNING else { model.effect(Sfx.HEAL); "Saved." to NoticeTone.INFO }
+        message = if (out.record == null) (out.refused ?: "That could not be saved.") to NoticeTone.WARNING else { model.effect(Sfx.HEAL); model.say("Saved."); null }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -379,7 +380,7 @@ private fun SleepView(model: AppModel) {
             Stepper("Woke at", clockText(wake), { wake = shift(wake, -15) }, { wake = shift(wake, 15) })
             Stepper("Slept for", HealRules.duration(length), { length = (length - 15).coerceAtLeast(15) }, { length = (length + 15).coerceAtMost(HealRules.SLEEP_MAX_MINUTES) })
             PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Green)
-            message?.let { (text, tone) -> Notice(text, tone = tone) }
+            message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
     model.phone?.takeIf { it.canSetAlarm }?.let { phone ->
@@ -393,7 +394,7 @@ private fun SleepView(model: AppModel) {
         }
     }
     val nights = data.sleep.sortedByDescending { it.endMillis }
-    if (nights.isEmpty()) EmptyState("No nights logged", "Add how long you slept whenever you like. Heal never tells you a night was too short or too long.", icon = HealSection.SLEEP.icon)
+    if (nights.isEmpty()) EmptyState("No nights logged", "Add how long you slept whenever you like. Heal never tells you a night was too short or too long.", icon = HealSection.SLEEP.icon, addAbove = "Log a night")
     else {
         SectionLabel("History")
         nights.take(21).forEach { s ->
@@ -434,9 +435,9 @@ private fun BodyView(model: AppModel) {
         message = when {
             out == null -> "Enter a number." to NoticeTone.WARNING
             out.record == null -> (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-            else -> "Saved." to NoticeTone.INFO
+            else -> null
         }
-        if (out?.record != null) { value = ""; label = "" }
+        if (out?.record != null) { value = ""; label = ""; model.say("Saved.") }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -451,11 +452,11 @@ private fun BodyView(model: AppModel) {
                 else if (type.units.first().isNotEmpty()) Text(type.units.first(), style = MaterialTheme.typography.bodyLarge)
             }
             PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Green, enabled = value.isNotBlank())
-            message?.let { (text, tone) -> Notice(text, tone = tone) }
+            message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
     ToggleRow("Show my weight on Today", data.settings.showMeasurementsOnToday, detail = "Off by default.") { heal.setShowMeasurementsOnToday(it) }
-    if (data.measurements.isEmpty()) EmptyState("Nothing here", "You never need to enter a body measurement to use Heal.", icon = HealSection.BODY.icon)
+    if (data.measurements.isEmpty()) EmptyState("Nothing here", "You never need to enter a body measurement to use Heal.", icon = HealSection.BODY.icon, addAbove = "Add a measurement")
     else {
         MeasureType.entries.forEach { t ->
             val own = data.measurements.filter { it.type == t }
@@ -493,7 +494,7 @@ private fun GoalsHealView(model: AppModel) {
             PixelButton("Add goal", { target.toIntOrNull()?.let { heal.addGoal(kind, it); target = "" } }, Modifier.fillMaxWidth(), Pixel.Green, enabled = (target.toIntOrNull() ?: 0) > 0)
         }
     }
-    if (data.goals.isEmpty()) EmptyState("No goals", "Heal works fine without one.", icon = HealSection.GOALS.icon)
+    if (data.goals.isEmpty()) EmptyState("No goals", "Heal works fine without one.", icon = HealSection.GOALS.icon, addAbove = "Add a goal")
     data.goals.filter { it.status != GoalStatus.ARCHIVED }.forEach { g ->
         val p = HealRules.progress(g, data, model.store.today, model.data.settings.weekStart)
         TextBox {
@@ -585,7 +586,7 @@ private fun HealSettingsView(model: AppModel) {
                     HealKinds.entries.forEach { k -> PixelButton("Export ${k.label.lowercase()}", { note = files.save("pokelife-heal-${k.name.lowercase()}.json", heal.export(setOf(k))) }, color = Pixel.InkSoft, compact = true) }
                 }
             } else Text("Exporting is not available on this device.", style = MaterialTheme.typography.bodyMedium)
-            note?.let { Notice(it) }
+            note?.let { Report(model, it) }
             HealKinds.entries.forEach { k ->
                 if (asking == k) {
                     Text("Erase all ${k.label.lowercase()} records? This cannot be undone.", style = MaterialTheme.typography.bodyLarge)

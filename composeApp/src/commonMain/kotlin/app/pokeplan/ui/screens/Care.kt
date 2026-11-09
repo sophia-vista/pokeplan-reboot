@@ -367,7 +367,7 @@ private fun RoutinesView(model: AppModel) {
     }
 
     val (archived, active) = data.routines.partition { it.archived }
-    if (active.isEmpty()) EmptyState("No routines yet", "Add one above: drink water, stretch, take a walk, wind down.", icon = CareSection.ROUTINES.icon)
+    if (active.isEmpty()) EmptyState("No routines yet", "Add one above: drink water, stretch, take a walk, wind down.", icon = CareSection.ROUTINES.icon, addAbove = "Add a routine")
     active.sortedWith(compareBy(nullsLast()) { it.time }).forEach { r ->
         RoutineRow(model, r) { open = if (open == r.id) null else r.id }
         if (open == r.id) RoutineOptions(model, r) { open = null }
@@ -744,7 +744,7 @@ private fun JournalView(model: AppModel) {
         placeholder = "Search the journal",
     )
     val entries = care.searchJournal(query).take(30)
-    if (data.journal.isNotEmpty() && entries.isEmpty()) EmptyState("Nothing found", "No entry has \"${query.trim()}\" in it.", icon = CareSection.JOURNAL.icon)
+    if (data.journal.isNotEmpty() && entries.isEmpty()) EmptyState("Nothing found", "No entry has \"${query.trim()}\" in it.", icon = CareSection.JOURNAL.icon, action = "Clear the search" to { query = "" })
     entries.forEach { e ->
         ListRow(trail = { PixelIconButton("trash", "Delete", { care.deleteEntry(e.id) }, Pixel.InkSoft) }) {
             Text(e.day.short(), style = MaterialTheme.typography.bodyMedium)

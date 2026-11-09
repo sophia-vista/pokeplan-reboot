@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.Place
 import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
@@ -131,13 +132,13 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
                 Section.PC -> {
                     // One PC for every region's party (docs/design.md, "Parties per module"), in boxes of 30 like the games.
                     val box = player.pokemon.filter { inPc(store, it) }
-                    if (box.isEmpty()) EmptyState("The PC is empty", "New eggs go to their region's party first, then here once it is full. One PC serves every region.", icon = "storage-key")
+                    if (box.isEmpty()) EmptyState("The PC is empty", "New eggs go to their region's party first, then here once it is full. One PC serves every region.", icon = "storage-key", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
                     else {
                         val shown = pcView.apply(box) { store.isFavorite(it) }
                         val boxes = pcView.boxCount(shown.size)
                         val at = pcView.box.coerceIn(0, boxes - 1)
                         PcControls(pcView, { pcView = it }, shown.size, box.size)
-                        if (shown.isEmpty()) EmptyState("Nothing matches", "Try another type or clear the filters.")
+                        if (shown.isEmpty()) EmptyState("Nothing matches", "Try another type or clear the filters.", action = "Clear filters" to { pcView = pcView.copy(type = null, shinyOnly = false, starredOnly = false, search = "") })
                         else {
                             if (boxes > 1) PcBoxBar(at, boxes) { pcView = pcView.copy(box = it) }
                             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -185,7 +186,7 @@ private fun PartyGroup(
         else if (region == Region.HOUSEHOLD) "Open a Pokémon and choose \"To Home party\", or try the tidy in Home. Its first member leads."
         else if (region == Region.LINK) "Open a Pokémon and choose \"To Link party\", or try the postcard in Link. Its first member leads."
         else "Hatch an egg with a focus session, or move a Pokémon here from the PC."
-        EmptyState("No one here yet", how, icon = "poke-ball", sleeper = true)
+        EmptyState("No one here yet", how, icon = "poke-ball", sleeper = true, action = "Start a focus session" to { model.open(Place.FOCUS, true) })
         return
     }
     PartyGrid(model, party, leadId, leadLabel, open, tapOpens = true)

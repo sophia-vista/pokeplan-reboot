@@ -18,6 +18,7 @@ import app.pokeplan.mint.AccountStatus
 import app.pokeplan.mint.Money
 import app.pokeplan.mint.StatementImport
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Report
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
@@ -69,7 +70,7 @@ internal fun MintImportView(model: AppModel) {
                     }
                 }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = chosen != null, compact = true)
             }
-            note?.let { Notice(it) }
+            note?.let { Report(model, it) }
         }
     }
 
@@ -77,7 +78,7 @@ internal fun MintImportView(model: AppModel) {
     if (body != null && chosen != null) {
         val read = remember(body, chosen.id, columns, order, data.transactions.size) { mint.previewStatement(body, chosen.id, columns, order) }
         if (read.refused != null) {
-            Notice(read.refused!!, tone = NoticeTone.WARNING)
+            Report(model, read.refused!!, tone = NoticeTone.WARNING)
         } else {
             val header = read.table.first()
             val cols = read.columns

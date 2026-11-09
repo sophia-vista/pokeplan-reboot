@@ -119,7 +119,7 @@ internal fun FrequencyView(model: AppModel) {
         }
     }
     val targets = model.data.series.filter { it.isFrequency }
-    if (targets.isEmpty()) EmptyState(emptyTitle(View.TARGETS), emptyLine(View.TARGETS), icon = View.TARGETS.icon)
+    if (targets.isEmpty()) EmptyState(emptyTitle(View.TARGETS), emptyLine(View.TARGETS), icon = View.TARGETS.icon, action = "Add a task" to { model.addTaskRequested = true })
     targets.forEach { h ->
         val target = h.target ?: return@forEach
         val doneToday = store.today in h.completions

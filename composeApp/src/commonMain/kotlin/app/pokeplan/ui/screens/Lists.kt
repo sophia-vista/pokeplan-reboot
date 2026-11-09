@@ -109,7 +109,7 @@ internal fun ListScreen(model: AppModel, list: TaskList, tasks: List<Task>, card
         else PixelButton("Edit list", { editing = true }, color = Pixel.InkSoft, compact = true)
         if (!list.archived) QuickAddBox(model, View.INBOX, listId = list.id)
         WhenGroups(model, tasks, card)
-        if (tasks.isEmpty()) EmptyState("Nothing in ${list.name}", "Add a task above, or file one here from its options.", icon = list.icon)
+        if (tasks.isEmpty()) EmptyState("Nothing in ${list.name}", "Add a task above, or file one here from its options.", icon = list.icon, action = "Add a task" to { model.addTaskRequested = true })
     }
 }
 

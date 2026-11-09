@@ -22,6 +22,7 @@ import app.pokeplan.heal.HealthKind
 import app.pokeplan.heal.ImportPlan
 import app.pokeplan.heal.ProviderRead
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Report
 import app.pokeplan.ui.theme.ListRow
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
@@ -96,7 +97,7 @@ internal fun HealConnectionsView(model: AppModel) {
                 if (read != null) ImportPreview(heal.previewImport(read),
                     onAdd = { val p = heal.importFromProvider(read); pending = null; note = "Added ${p.candidates.size} ${if (p.candidates.size == 1) "record" else "records"}." },
                     onCancel = { pending = null })
-                note?.let { Notice(it) }
+                note?.let { Report(model, it) }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     PixelButton("Open Health Connect", { health.openSettings() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     if (connected) PixelButton("Disconnect", {

@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.Place
 import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -189,7 +190,7 @@ internal fun PlayView(model: AppModel, initial: String?) {
     var result by remember { mutableStateOf<String?>(null) }
     var inviting by remember { mutableStateOf(false) }
     val pokemon = all.firstOrNull { it.id == chosen }
-    if (pokemon == null) { EmptyState("No one to spend time with yet", "Hatch an egg first."); return }
+    if (pokemon == null) { EmptyState("No one to spend time with yet", "Hatch an egg first.", action = "Start a focus session" to { model.open(Place.FOCUS, true) }); return }
     val name = pokemon.nickname
     val known = care.discoveredLikes(pokemon.id)
     fun finish(done: PlayActivity) {

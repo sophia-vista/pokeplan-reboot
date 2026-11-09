@@ -172,7 +172,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
                         View.INBOX -> WhenGroups(model, shown, card)
                         else -> if (shown.isNotEmpty()) TaskGroup(null, shown, card = card)
                     }
-                    if (shown.isEmpty() && current != View.TODAY) EmptyState(emptyTitle(current), emptyLine(current), icon = current.icon)
+                    if (shown.isEmpty() && current != View.TODAY) EmptyState(emptyTitle(current), emptyLine(current), icon = current.icon, action = "Add a task" to { model.addTaskRequested = true })
                 }
             }
         }
@@ -245,8 +245,8 @@ private fun TodayList(model: AppModel, tasks: List<Task>, card: @Composable (Tas
         }
     }
     if (tasks.isEmpty()) {
-        if (done > 0) EmptyState("All clear for today", "$done finished. The rest can wait for tomorrow.", icon = View.TODAY.icon, sleeper = true)
-        else EmptyState(emptyTitle(View.TODAY), emptyLine(View.TODAY), icon = View.TODAY.icon, sleeper = true)
+        if (done > 0) EmptyState("All clear for today", "$done finished. The rest can wait for tomorrow.", icon = View.TODAY.icon, sleeper = true, action = "Add another" to { model.addTaskRequested = true })
+        else EmptyState(emptyTitle(View.TODAY), emptyLine(View.TODAY), icon = View.TODAY.icon, sleeper = true, action = "Add a task" to { model.addTaskRequested = true })
         return
     }
     val before = TaskViews.overdue(tasks, store.now).toSet()
@@ -295,7 +295,13 @@ internal fun TaskGroup(
  * action. [line] is not drawn (an empty screen needs no explanation; the Help screen has the rules); a screen reader reads it after the title.
  */
 @Composable
-fun EmptyState(title: String, line: String? = null, icon: String? = null, action: Pair<String, () -> Unit>? = null, sleeper: Boolean = false) {
+fun EmptyState(
+    title: String, line: String? = null, icon: String? = null, action: Pair<String, () -> Unit>? = null, sleeper: Boolean = false,
+    /** For a list whose form sits right above it: the button is labelled [addAbove] and moves the focus to the field above, so there is always one next step on the screen. */
+    addAbove: String? = null,
+) {
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    val action = action ?: addAbove?.let { it to { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Up); Unit } }
     // With [sleeper] the global buddy dozes beside the words (its own SpriteCollab Sleep animation, still with Reduce motion).
     val buddy = if (sleeper) LocalBuddy.current else null
     TextBox {
@@ -304,7 +310,7 @@ fun EmptyState(title: String, line: String? = null, icon: String? = null, action
             else if (icon != null) ItemIcon(icon, size = 40.dp, description = null)
             Column(Modifier.weight(1f).semantics(mergeDescendants = true) { if (line != null) contentDescription = "$title. $line" }, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 Text(title, style = MaterialTheme.typography.titleSmall)
-                if (action != null) PixelButton(action.first, action.second, Modifier.padding(top = Spacing.XS), Pixel.InkSoft, compact = true)
+                if (action != null) PixelButton(action.first, action.second, Modifier.padding(top = Spacing.XS), Pixel.Blue, compact = true)
             }
         }
     }
