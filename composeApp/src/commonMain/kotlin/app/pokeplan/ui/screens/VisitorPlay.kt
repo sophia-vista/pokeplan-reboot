@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.Emote
 import app.pokeplan.ui.EmoteIcon
@@ -122,7 +123,7 @@ internal fun StageGuestSprite(guest: StageGuest, calm: Boolean, modifier: Modifi
             action = action, actionKey = taps, onActionDone = { action = SpriteAction.IDLE },
         )
         AnimatedVisibility(heart, Modifier.align(Alignment.TopCenter).offset(y = (-14).dp), enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut()) {
-            EmoteIcon(Emote.HEART, size = 24.dp)
+            EmoteIcon(Emote.HEART, size = Sizes.IconS)
         }
     }
 }
@@ -353,7 +354,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         AnimatedVisibility(
             emote != null, Modifier.align(Alignment.TopCenter).padding(top = Spacing.L).offset { IntOffset(roam.value.dp.roundToPx(), 0) },
             enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut(),
-        ) { emote?.let { EmoteIcon(it, size = 32.dp) } }
+        ) { emote?.let { EmoteIcon(it, size = Sizes.Icon) } }
         // Treats wait in a row along the top: drag one to the visitor, or tap it.
         if (treats) Row(Modifier.align(Alignment.TopStart).padding(Spacing.S).zIndex(1f), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             DraggableTreat("Treat", null, "a little treat", { p -> if (offered(p)) { if (visiting) act(CareAction.GIFT) else played(Play.TREAT) } }) {
@@ -442,7 +443,7 @@ private fun DraggableTreat(label: String, berry: String?, description: String, o
                     onDragCancel = { drag = Offset.Zero },
                 ) { change, amount -> change.consume(); drag += amount }
             }
-            .background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape)
+            .background(Pixel.Panel, shape).border(Sizes.Hairline, Pixel.Border, shape)
             .clickable(onClickLabel = "Offer $description", role = Role.Button, onClick = onTap)
             .defaultMinSize(minHeight = Spacing.Target)
             .padding(horizontal = Spacing.M)

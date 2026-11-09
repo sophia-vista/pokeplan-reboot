@@ -135,6 +135,18 @@ object Spacing {
     val Target = 48.dp
 }
 
+/** Sizes of pictures and lines, in steps, so a sprite or an icon is one of a few sizes and not a number typed where it is used (spacing is [Spacing]). */
+object Sizes {
+    val Hairline = 1.dp
+    val Line = 2.dp
+    val IconS = 24.dp
+    val Icon = 32.dp
+    val IconL = 40.dp
+    val SpriteS = 56.dp
+    val SpriteM = 72.dp
+    val SpriteL = 96.dp
+}
+
 /** The Pokémon DS-era (Diamond and Pearl) font, from the pokemon-assets package: for headings, big numbers and button labels. */
 @Composable
 fun pixelFont(): FontFamily = FontFamily(

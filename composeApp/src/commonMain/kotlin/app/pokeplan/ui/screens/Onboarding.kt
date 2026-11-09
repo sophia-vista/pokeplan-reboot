@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.animation.core.RepeatMode
@@ -143,7 +144,7 @@ private fun StarterPicker(selected: Int, onSelect: (Int) -> Unit) {
                         Modifier.background(if (chosen) Pixel.Yellow else Pixel.Panel, PixelShape)
                             .selectable(selected = chosen, role = Role.RadioButton) { onSelect(id) }
                             .padding(Spacing.XS),
-                    ) { Sprite(Dex.defaultForm(id).id, false, Dex.species(id).name, size = 56.dp) }
+                    ) { Sprite(Dex.defaultForm(id).id, false, Dex.species(id).name, size = Sizes.SpriteS) }
                 }
             }
         }
@@ -170,7 +171,7 @@ private fun Dialogue(text: String, onNext: () -> Unit) {
     GameBox(Modifier.clickable(onClickLabel = if (done) "Next" else "Show all", role = Role.Button) { if (!done) shown = text.length else onNext() }) {
         Box(Modifier.fillMaxWidth().padding(bottom = Spacing.XS)) {
             Text(text.take(shown), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().padding(end = 28.dp, bottom = Spacing.M))
-            if (done) ItemIcon("poke-ball", Modifier.align(Alignment.BottomEnd).alpha(blink), size = 24.dp)
+            if (done) ItemIcon("poke-ball", Modifier.align(Alignment.BottomEnd).alpha(blink), size = Sizes.IconS)
         }
     }
 }

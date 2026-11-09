@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.Place
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.layout.Arrangement
@@ -57,7 +58,7 @@ internal fun QuestsView(model: AppModel) {
     if (locked.isNotEmpty()) {
         SectionLabel("Coming up")
         locked.forEach { q ->
-            ListRow(lead = { Sprite(Dex.defaultForm(q.speciesId).id, false, "Locked", size = 56.dp, silhouette = Pixel.Shade) }) {
+            ListRow(lead = { Sprite(Dex.defaultForm(q.speciesId).id, false, "Locked", size = Sizes.SpriteS, silhouette = Pixel.Shade) }) {
                 Text(q.title, style = MaterialTheme.typography.bodyLarge)
                 Text(Quests.lockedReason(q, data) ?: "", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }

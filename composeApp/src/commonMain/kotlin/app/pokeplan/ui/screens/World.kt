@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -217,12 +218,12 @@ private fun RankStrip(model: AppModel) {
     val rank = world.rank
     val next = rank.next()
     TextBox { Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        ItemIcon(rank.badge, size = 40.dp, description = "${rank.label} rank badge")
+        ItemIcon(rank.badge, size = Sizes.IconL, description = "${rank.label} rank badge")
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             Text(if (next != null) "${rank.label} rank, ${world.xp} of ${next.points} to ${next.label}" else "${rank.label} rank, the top", style = MaterialTheme.typography.bodyMedium)
             if (next != null) PixelBar(((world.xp - rank.points).toFloat() / (next.points - rank.points)).coerceIn(0f, 1f), Modifier.fillMaxWidth(), Module.WORLD.look.accent, label = "${world.xp} of ${next.points} to ${next.label}")
         }
-        ItemIcon(app.pokeplan.world.PmdArt.POKE_COIN, size = 24.dp, description = null)
+        ItemIcon(app.pokeplan.world.PmdArt.POKE_COIN, size = Sizes.IconS, description = null)
         Text("${model.data.player.coins}", style = MaterialTheme.typography.bodyMedium)
     } }
 }
@@ -355,7 +356,7 @@ private fun LegendsCard(model: AppModel, layer: WorldLayer) {
             quests.forEach { q ->
                 val done = world.hasLegend(q.id)
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    AnimatedSprite(Dex.defaultForm(q.speciesId).id, false, q.name, size = 48.dp, animate = false)
+                    AnimatedSprite(Dex.defaultForm(q.speciesId).id, false, q.name, size = Spacing.Target, animate = false)
                     Column(Modifier.weight(1f)) {
                         Text(q.name, style = MaterialTheme.typography.bodyLarge)
                         Text(
@@ -418,7 +419,7 @@ private fun WorldMissionsView(model: AppModel) {
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    ItemIcon(missionIcon(m.kind), size = 32.dp, description = null)
+                    ItemIcon(missionIcon(m.kind), size = Sizes.Icon, description = null)
                     Text(m.title, Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                     if (p.done) Text("Done", style = MaterialTheme.typography.bodyLarge, color = Pixel.Green)
                 }
@@ -467,7 +468,7 @@ private fun WorldMissionsView(model: AppModel) {
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    ItemIcon(missionIcon(m.kind), size = 32.dp, description = null)
+                    ItemIcon(missionIcon(m.kind), size = Sizes.Icon, description = null)
                     Text("${m.kind.label}: ${m.title}", Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                 }
                 Text(m.story, style = MaterialTheme.typography.bodyMedium)
@@ -671,7 +672,7 @@ private fun WorldTeamsView(model: AppModel) {
                 }
                 if (members.isEmpty()) Text("No one yet.", style = MaterialTheme.typography.bodyMedium)
                 else if (team.expedition == null) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    members.forEach { p -> AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = 48.dp, animate = false) }
+                    members.forEach { p -> AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = Spacing.Target, animate = false) }
                 }
                 val trip = team.expedition
                 if (trip != null) {
@@ -695,7 +696,7 @@ private fun WorldTeamsView(model: AppModel) {
                         // This team's own members and what is picked stay on the list so they can be taken off; the rest is the 20 strongest idle Pokémon.
                         val shown = (roster.filter { it.id in team.members || it.id in picked } + store.worldIdle().take(20)).distinctBy { it.id }
                         shown.forEach { p ->
-                            ChoiceRow(selected = p.id in picked, onClick = { picked = if (p.id in picked) picked - p.id else if (picked.size < WorldTeam.MAX_MEMBERS) picked + p.id else picked }, lead = { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = 40.dp, animate = false) }) {
+                            ChoiceRow(selected = p.id in picked, onClick = { picked = if (p.id in picked) picked - p.id else if (picked.size < WorldTeam.MAX_MEMBERS) picked + p.id else picked }, lead = { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = Sizes.IconL, animate = false) }) {
                                 Text("${p.nickname}, level ${p.level}", style = MaterialTheme.typography.bodyLarge)
                             }
                         }
@@ -710,7 +711,7 @@ private fun WorldTeamsView(model: AppModel) {
                             repeat(WorldTeam.ACCENTS) { i ->
                                 Box(
                                     Modifier.size(Spacing.Target).clickable(role = Role.Button, onClickLabel = "Colour ${i + 1}") { store.worldRecolourTeam(team.id, i) }.padding(10.dp)
-                                        .background(teamAccent(i)).then(if (i == team.accent) Modifier.border(2.dp, Pixel.Ink) else Modifier),
+                                        .background(teamAccent(i)).then(if (i == team.accent) Modifier.border(Sizes.Line, Pixel.Ink) else Modifier),
                                 )
                             }
                         }
@@ -806,7 +807,7 @@ private fun WorldBagView(model: AppModel) {
             if (world.finds.isEmpty()) Text("Nothing waiting.", style = MaterialTheme.typography.bodyMedium)
             world.finds.forEachIndexed { i, f ->
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Sprite(Dex.defaultForm(f.speciesId).id, false, Dex.species(f.speciesId).name, size = 48.dp)
+                    Sprite(Dex.defaultForm(f.speciesId).id, false, Dex.species(f.speciesId).name, size = Spacing.Target)
                     Column(Modifier.weight(1f)) {
                         Text(Dex.species(f.speciesId).name, style = MaterialTheme.typography.bodyLarge)
                         Text("Floor ${f.floor}, ${Dungeons.byId(f.dungeonId)?.name}", style = MaterialTheme.typography.bodyMedium)
@@ -826,7 +827,7 @@ private fun WorldBagView(model: AppModel) {
             if (world.treasure.isEmpty()) Text("No treasure boxes waiting.", style = MaterialTheme.typography.bodyMedium)
             world.treasure.entries.sortedBy { it.key }.forEach { (tier, n) ->
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    ItemIcon(app.pokeplan.world.PmdArt.treasureBox(tier.coerceIn(1, 3)), size = 32.dp, description = null)
+                    ItemIcon(app.pokeplan.world.PmdArt.treasureBox(tier.coerceIn(1, 3)), size = Sizes.Icon, description = null)
                     Text("${listOf("", "Plain", "Silver", "Gold")[tier.coerceIn(1, 3)]} treasure box x$n", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
                     PixelButton("Open", { val found = store.worldOpenTreasure(tier); message = "Inside: " + found.entries.joinToString { (id, c) -> "${Items.name(id)} x$c" }; sparkle++ }, color = Pixel.InkSoft, compact = true)
                 }
@@ -880,10 +881,10 @@ private fun NotebookCard(model: AppModel) {
             val entries = app.pokeplan.world.Notebook.of(layer, world, owned)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 entries.forEach { e ->
-                    Box(Modifier.size(48.dp)) {
+                    Box(Modifier.size(Spacing.Target)) {
                         val name = app.pokeplan.core.dex.Dex.species(e.speciesId).name
-                        AnimatedSprite(Dex.defaultForm(e.speciesId).id, false, if (e.met) name else "Not met yet", size = 48.dp, animate = false)
-                        if (!e.met) Box(Modifier.size(48.dp).background(Pixel.Panel.copy(alpha = 0.85f)))
+                        AnimatedSprite(Dex.defaultForm(e.speciesId).id, false, if (e.met) name else "Not met yet", size = Spacing.Target, animate = false)
+                        if (!e.met) Box(Modifier.size(Spacing.Target).background(Pixel.Panel.copy(alpha = 0.85f)))
                         if (e.owned) app.pokeplan.ui.Glyph("check", Pixel.Green, Modifier.align(Alignment.BottomEnd), size = 16.dp)
                     }
                 }
@@ -1000,7 +1001,7 @@ private fun RecordsPage(model: AppModel) {
             else FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 recruited.forEach { p ->
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = 48.dp, animate = false)
+                        AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = Spacing.Target, animate = false)
                         Text(p.nickname, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
@@ -1070,7 +1071,7 @@ private fun WorldArchiveView(model: AppModel) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 people.forEach { c ->
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        AnimatedSprite(Dex.defaultForm(c.speciesId!!).id, false, c.displayName, size = 48.dp, animate = false)
+                        AnimatedSprite(Dex.defaultForm(c.speciesId!!).id, false, c.displayName, size = Spacing.Target, animate = false)
                         Text(c.displayName, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
@@ -1110,8 +1111,8 @@ private fun WorldArchiveView(model: AppModel) {
 @Composable
 private fun ArchiveRow(title: String, detail: String, moment: app.pokeplan.world.WorldMoment, model: AppModel, icon: String?, speciesId: Int? = null) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        if (speciesId != null) AnimatedSprite(Dex.defaultForm(speciesId).id, false, title, size = 40.dp, animate = false)
-        else if (icon != null) ItemIcon(icon, size = 40.dp, description = null)
+        if (speciesId != null) AnimatedSprite(Dex.defaultForm(speciesId).id, false, title, size = Sizes.IconL, animate = false)
+        else if (icon != null) ItemIcon(icon, size = Sizes.IconL, description = null)
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyLarge)
             Text(detail, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)

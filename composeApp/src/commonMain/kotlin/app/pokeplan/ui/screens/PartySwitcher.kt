@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -82,7 +83,7 @@ internal fun PartySwitcher(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S, Alignment.CenterHorizontally)) {
             regions.forEach { r ->
                 val on = r == selected
-                Box(Modifier.size(10.dp).background(if (on) accent(r) else Color.Transparent).border(2.dp, accent(r)))
+                Box(Modifier.size(10.dp).background(if (on) accent(r) else Color.Transparent).border(Sizes.Line, accent(r)))
             }
         }
         if (open) {
@@ -90,7 +91,7 @@ internal fun PartySwitcher(
                 val members = party(r)
                 val guardian = model.data.player.guardianOf(partyIdOf(r))
                 ListRow(
-                    lead = { (lead(r) ?: members.firstOrNull())?.let { Sprite(it.form.id, it.isShiny, "", size = 40.dp) } ?: Box(Modifier.size(40.dp)) },
+                    lead = { (lead(r) ?: members.firstOrNull())?.let { Sprite(it.form.id, it.isShiny, "", size = Sizes.IconL) } ?: Box(Modifier.size(Sizes.IconL)) },
                     onClick = { onSelect(r); open = false },
                 ) {
                     Text(moduleName(r) + if (r == selected) " (open)" else "", style = MaterialTheme.typography.titleMedium, color = accent(r))
@@ -163,7 +164,7 @@ internal fun GuardianSlot(model: AppModel, region: Region, accent: Color) {
             SectionLabel("${moduleName(region)}'s Guardian")
             if (current != null) {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
-                    Sprite(current.form.id, current.isShiny, current.nickname, size = 56.dp)
+                    Sprite(current.form.id, current.isShiny, current.nickname, size = Sizes.SpriteS)
                     Column(Modifier.weight(1f)) {
                         Text(current.nickname, style = MaterialTheme.typography.titleMedium)
                         Text(guardianPerkText(current, partyId), style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
@@ -178,7 +179,7 @@ internal fun GuardianSlot(model: AppModel, region: Region, accent: Color) {
             }
             if (picking) candidates.forEach { c ->
                 ListRow(
-                    lead = { Sprite(c.form.id, c.isShiny, c.nickname, size = 40.dp) },
+                    lead = { Sprite(c.form.id, c.isShiny, c.nickname, size = Sizes.IconL) },
                     onClick = { store.slotGuardian(c.id, partyId); picking = false },
                 ) {
                     Text(c.nickname, style = MaterialTheme.typography.titleMedium)

@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -75,7 +76,7 @@ private fun TrainerCard(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                if (buddy != null) Sprite(buddy.form.id, buddy.isShiny, buddy.nickname, size = 96.dp)
+                if (buddy != null) Sprite(buddy.form.id, buddy.isShiny, buddy.nickname, size = Sizes.SpriteL)
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(data.trainerName, style = MaterialTheme.typography.titleMedium)
                     Text("${TrainerRank.names[rank.coerceIn(0, TrainerRank.names.lastIndex)]}, ${data.player.trainerPoints} trainer points", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)

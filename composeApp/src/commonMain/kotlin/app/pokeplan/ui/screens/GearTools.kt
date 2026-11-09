@@ -76,7 +76,7 @@ internal fun OptionPicker(label: String, options: List<String>, selected: Int, m
             ) {
                 Column(
                     Modifier.width(220.dp).heightIn(max = 320.dp).dialogueBox(fill = Pixel.Panel)
-                        .verticalScroll(androidx.compose.foundation.rememberScrollState()).padding(horizontal = 12.dp, vertical = 10.dp),
+                        .verticalScroll(androidx.compose.foundation.rememberScrollState()).padding(horizontal = Spacing.M, vertical = 10.dp),
                 ) {
                     options.forEachIndexed { i, option ->
                         Box(

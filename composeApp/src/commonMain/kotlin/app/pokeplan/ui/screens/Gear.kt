@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import androidx.compose.foundation.layout.Spacer
 import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.foundation.layout.Arrangement
@@ -135,10 +136,10 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
     // A small strip by default, so the helper never takes the room the tool needs; "Show" opens the full bar and "Make it small" folds it back.
     if (compact) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Box(Modifier.size(40.dp)) {
+            Box(Modifier.size(Sizes.IconL)) {
                 when (helper) {
-                    is GearHelper.Owned -> AnimatedSprite(helper.pokemon.form.id, helper.pokemon.isShiny, helper.pokemon.nickname, size = 40.dp, animate = false)
-                    GearHelper.None -> ItemIcon(tool.icon, Modifier.align(Alignment.Center), size = 32.dp, description = null)
+                    is GearHelper.Owned -> AnimatedSprite(helper.pokemon.form.id, helper.pokemon.isShiny, helper.pokemon.nickname, size = Sizes.IconL, animate = false)
+                    GearHelper.None -> ItemIcon(tool.icon, Modifier.align(Alignment.Center), size = Sizes.Icon, description = null)
                 }
             }
             Text(when (helper) { is GearHelper.Owned -> "${helper.pokemon.nickname} helps"; GearHelper.None -> "Helper" }, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -149,10 +150,10 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                Box(Modifier.size(72.dp)) {
+                Box(Modifier.size(Sizes.SpriteM)) {
                     when (helper) {
-                        is GearHelper.Owned -> AnimatedSprite(helper.pokemon.form.id, helper.pokemon.isShiny, helper.pokemon.nickname, size = 72.dp, animate = !reduce)
-                        GearHelper.None -> ItemIcon(tool.icon, Modifier.align(Alignment.Center), size = 48.dp, description = null)
+                        is GearHelper.Owned -> AnimatedSprite(helper.pokemon.form.id, helper.pokemon.isShiny, helper.pokemon.nickname, size = Sizes.SpriteM, animate = !reduce)
+                        GearHelper.None -> ItemIcon(tool.icon, Modifier.align(Alignment.Center), size = Spacing.Target, description = null)
                     }
                     if (reaction && helper !is GearHelper.None) reactionFor(tool).let { (art, name) -> if (art) ItemIcon(name, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = 28.dp, description = null) else Glyph(name, Pixel.Blue, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = 28.dp) }
                 }
@@ -175,7 +176,7 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
             if (choosing) {
                 FieldLabel("Who helps ${tool.label}")
                 store.gearCandidates(tool).forEach { p ->
-                    ChoiceRow(selected = helper is GearHelper.Owned && helper.pokemon.id == p.id, onClick = { store.assignGearHelper(tool, p.id) }, lead = { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = 40.dp, animate = false) }) {
+                    ChoiceRow(selected = helper is GearHelper.Owned && helper.pokemon.id == p.id, onClick = { store.assignGearHelper(tool, p.id) }, lead = { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = Sizes.IconL, animate = false) }) {
                         Text("${p.nickname}, level ${p.level}", style = MaterialTheme.typography.bodyLarge)
                     }
                 }

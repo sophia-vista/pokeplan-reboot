@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.DialogueShape
 
 import app.pokeplan.ui.theme.PixelShape
@@ -133,10 +134,10 @@ fun BuddyStage(
 
     val shape = PixelShape
     // Tall enough for a whole hop: its frames hold the jump and draw at the idle scale, about 200 dp high at the peak.
-    Box(modifier.fillMaxWidth().height(248.dp).clip(shape).border(1.dp, Pixel.Border, shape)) {
+    Box(modifier.fillMaxWidth().height(248.dp).clip(shape).border(Sizes.Hairline, Pixel.Border, shape)) {
         SceneImage(scene, Modifier.matchParentSize(), darkness)
         // A small shadow made of a few flat rows, so it matches the pixels of the sprite.
-        Canvas(Modifier.align(Alignment.BottomCenter).padding(bottom = 40.dp).size(72.dp, 12.dp)) {
+        Canvas(Modifier.align(Alignment.BottomCenter).padding(bottom = 40.dp).size(Sizes.SpriteM, 12.dp)) {
             val rows = floatArrayOf(0.55f, 0.85f, 1f, 0.85f, 0.55f)
             val rowHeight = size.height / rows.size
             rows.forEachIndexed { i, share ->

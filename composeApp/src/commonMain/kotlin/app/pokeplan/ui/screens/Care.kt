@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.drawPixelDisc
 import app.pokeplan.ui.theme.drawPixelRing
 
@@ -225,8 +226,8 @@ private fun VisitorsCard(model: AppModel) {
                     lead = {
                         AnimatedSprite(
                             Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, species.name,
-                            Modifier.size(56.dp).clickable(onClickLabel = "Hear ${species.name}", role = Role.Button) { model.cry(v.speciesId) },
-                            size = 56.dp, animate = !model.data.settings.reduceMotion,
+                            Modifier.size(Sizes.SpriteS).clickable(onClickLabel = "Hear ${species.name}", role = Role.Button) { model.cry(v.speciesId) },
+                            size = Sizes.SpriteS, animate = !model.data.settings.reduceMotion,
                         )
                     },
                     trail = {
@@ -257,7 +258,7 @@ private fun VisitorsCard(model: AppModel) {
             if (waiting.isNotEmpty()) {
                 SectionLabel("Waiting for a place (${waiting.size})")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    waiting.forEach { v -> Sprite(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, "${Dex.species(v.speciesId).name}, waiting for a place", size = 40.dp) }
+                    waiting.forEach { v -> Sprite(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, "${Dex.species(v.speciesId).name}, waiting for a place", size = Sizes.IconL) }
                 }
             }
             // Sending a visitor away is a deliberate choice, not a chore: it asks once, keeps what the visitor earned and can be undone.
@@ -276,7 +277,7 @@ private fun VisitorsCard(model: AppModel) {
                 if (showAway) away.asReversed().forEach { v ->
                     val species = Dex.species(v.speciesId)
                     ListRow(
-                        lead = { Sprite(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, species.name, size = 40.dp) },
+                        lead = { Sprite(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, species.name, size = Sizes.IconL) },
                         trail = { PixelButton("Ask back", { note = if (care.restore(v.id)) "${species.name} is back, waiting for a place." else "No room just now." }, color = Pixel.Green, compact = true) },
                         highlight = false,
                     ) { Text(species.name, style = MaterialTheme.typography.bodyLarge) }
@@ -294,7 +295,7 @@ private fun MetAlbum(model: AppModel) {
     if (met.isEmpty()) return
     SectionLabel("Met")
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        met.forEach { id -> Sprite(Dex.defaultForm(id).id, false, Dex.species(id).name, size = 40.dp) }
+        met.forEach { id -> Sprite(Dex.defaultForm(id).id, false, Dex.species(id).name, size = Sizes.IconL) }
     }
 }
 

@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.DialogueShape
 
 import app.pokeplan.ui.theme.frameToneOf
@@ -203,8 +204,8 @@ private fun ListTiles(tiles: List<ListTile>, onOpen: (View) -> Unit) {
                         verticalArrangement = Arrangement.spacedBy(Spacing.XS),
                     ) {
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Box(Modifier.size(48.dp).background(tile.view.tint().copy(alpha = 0.14f), app.pokeplan.ui.theme.PixelDisc), contentAlignment = Alignment.Center) {
-                                ItemIcon(tile.view.icon, size = 40.dp, description = null)
+                            Box(Modifier.size(Spacing.Target).background(tile.view.tint().copy(alpha = 0.14f), app.pokeplan.ui.theme.PixelDisc), contentAlignment = Alignment.Center) {
+                                ItemIcon(tile.view.icon, size = Sizes.IconL, description = null)
                             }
                             Spacer(Modifier.weight(1f))
                             if (tile.count != null) Text(tile.count, style = MaterialTheme.typography.headlineMedium)
@@ -281,7 +282,7 @@ internal fun TaskGroup(
             }
         }
         val shape = PixelShape
-        Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)) {
+        Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(Sizes.Hairline, Pixel.Border, shape).clip(shape)) {
             tasks.forEachIndexed { i, t ->
                 if (i > 0) HorizontalDivider(Modifier.padding(start = Spacing.M), color = Pixel.Border)
                 card(t, dayOf)
@@ -306,8 +307,8 @@ fun EmptyState(
     val buddy = if (sleeper) LocalBuddy.current else null
     TextBox {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            if (buddy != null) AnimatedSprite(buddy.form.id, buddy.isShiny, "", size = 56.dp, animate = !LocalReduceMotion.current, ground = 4.dp, action = SpriteAction.SLEEP, actionKey = 1)
-            else if (icon != null) ItemIcon(icon, size = 40.dp, description = null)
+            if (buddy != null) AnimatedSprite(buddy.form.id, buddy.isShiny, "", size = Sizes.SpriteS, animate = !LocalReduceMotion.current, ground = 4.dp, action = SpriteAction.SLEEP, actionKey = 1)
+            else if (icon != null) ItemIcon(icon, size = Sizes.IconL, description = null)
             Column(Modifier.weight(1f).semantics(mergeDescendants = true) { if (line != null) contentDescription = "$title. $line" }, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 Text(title, style = MaterialTheme.typography.titleSmall)
                 if (action != null) PixelButton(action.first, action.second, Modifier.padding(top = Spacing.XS), Pixel.Blue, compact = true)

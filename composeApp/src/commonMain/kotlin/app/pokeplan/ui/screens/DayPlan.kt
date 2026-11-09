@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -378,7 +379,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
                 Modifier
                     .fillMaxWidth()
                     .background(Pixel.Panel, panelShape)
-                    .border(1.dp, Pixel.Border, panelShape)
+                    .border(Sizes.Hairline, Pixel.Border, panelShape)
                     .padding(start = Spacing.XS, end = Spacing.S, top = Spacing.S, bottom = Spacing.M),
                 verticalArrangement = Arrangement.spacedBy(Spacing.S),
             ) {
@@ -461,7 +462,7 @@ private fun DayCell(day: LocalDate, today: LocalDate, chosen: Boolean, busy: Boo
         Text(dayNames[day.dayOfWeek.ordinal].take(2), style = MaterialTheme.typography.bodyMedium, color = if (isToday) Pixel.Red else Pixel.InkSoft)
         Box(
             Modifier
-                .size(32.dp)
+                .size(Sizes.Icon)
                 .background(
                     when { chosen && isToday -> Pixel.Red; chosen -> Pixel.Ink; else -> Color.Transparent },
                     PixelShape,
@@ -655,14 +656,14 @@ private fun TrayChip(t: Task, selected: Boolean, onClick: () -> Unit, modifier: 
             .widthIn(max = 260.dp)
             .clip(shape)
             .background(if (selected) Pixel.Ink else color.copy(alpha = 0.12f), shape)
-            .border(1.dp, if (selected) Pixel.Ink else color.copy(alpha = 0.45f), shape)
+            .border(Sizes.Hairline, if (selected) Pixel.Ink else color.copy(alpha = 0.45f), shape)
             .clickable(role = Role.Button, onClickLabel = "Pick", onClick = onClick)
             .semantics { this.selected = selected }
             .padding(start = Spacing.S, end = Spacing.M),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Spacing.XS),
     ) {
-        ItemIcon(taskIcon(t), size = 24.dp, description = null)
+        ItemIcon(taskIcon(t), size = Sizes.IconS, description = null)
         Text(
             t.title, style = MaterialTheme.typography.labelMedium, color = if (selected) Pixel.OnInk else Pixel.Ink,
             maxLines = 1, overflow = TextOverflow.Ellipsis,
@@ -801,7 +802,7 @@ private fun Hours(
                         .height((HourHeight * (target.minutes / 60f)).coerceAtLeast(28.dp))
                         .padding(end = 2.dp, bottom = 2.dp)
                         .background(Pixel.Ink.copy(alpha = 0.08f), blockShape)
-                        .border(2.dp, Pixel.Ink, blockShape),
+                        .border(Sizes.Line, Pixel.Ink, blockShape),
                 )
             }
         }
@@ -864,7 +865,7 @@ private fun TimelineBlock(
             }
         } else {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                ItemIcon(taskIcon(t), size = 24.dp, description = null)
+                ItemIcon(taskIcon(t), size = Sizes.IconS, description = null)
                 Column {
                     BlockTitle(t.title, if (t.isOpen) Pixel.Ink else Pixel.InkSoft, lines = if (minutes >= 60) 2 else 1, strike)
                     if (minutes >= 45) BlockTime(start, block.endMinute)
@@ -953,7 +954,7 @@ private fun Modifier.blockLook(color: Color, fill: Float, accent: Float, selecte
     .clip(blockShape)
     .background(color.copy(alpha = fill), blockShape)
     .drawBehind { drawRect(color.copy(alpha = accent), size = Size(AccentWidth.toPx(), size.height)) }
-    .let { if (selected) it.border(2.dp, Pixel.Ink, blockShape) else it }
+    .let { if (selected) it.border(Sizes.Line, Pixel.Ink, blockShape) else it }
 
 /** A block's title: bold enough to read at a glance; [small] for the narrow columns of a week. */
 @Composable

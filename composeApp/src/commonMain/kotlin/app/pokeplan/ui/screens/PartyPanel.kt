@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -229,7 +230,7 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
     Box(
         modifier
             .background(if (leads) leadColor.copy(alpha = 0.10f) else Pixel.Shade.copy(alpha = 0.6f), slotShape)
-            .let { if (leads) it.border(2.dp, leadColor, slotShape) else it }
+            .let { if (leads) it.border(Sizes.Line, leadColor, slotShape) else it }
             .combinedClickable(
                 role = Role.Button, onClickLabel = if (tapOpens) "Open ${p.nickname}" else "Hear ${p.nickname}", onLongClickLabel = if (tapOpens) "Hear ${p.nickname}" else "Open ${p.nickname}",
                 onLongClick = { model.haptic(); if (tapOpens) hear(model, p, calm) { action = SpriteAction.HOP; hops++ } else onOpen(p.id) },
@@ -245,7 +246,7 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             AnimatedSprite(
                 p.form.id, p.isShiny, p.nickname, Modifier.offset { IntOffset(0, lift.value.dp.roundToPx()) },
-                size = 56.dp, animate = !calm, ground = 4.dp,
+                size = Sizes.SpriteS, animate = !calm, ground = 4.dp,
                 action = action, actionKey = hops, onActionDone = { action = SpriteAction.IDLE },
             )
             Text(
@@ -279,11 +280,11 @@ private fun EmptySlot(modifier: Modifier) {
         contentAlignment = Alignment.Center,
     ) {
         Column(Modifier.padding(vertical = Spacing.S).alpha(0f)) {
-            Box(Modifier.size(56.dp))
+            Box(Modifier.size(Sizes.SpriteS))
             Text(" ", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
             Text(" ", style = MaterialTheme.typography.labelMedium)
         }
-        ItemIcon("poke-ball", Modifier.alpha(0.22f), size = 32.dp, description = null)
+        ItemIcon("poke-ball", Modifier.alpha(0.22f), size = Sizes.Icon, description = null)
     }
 }
 

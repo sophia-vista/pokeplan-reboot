@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -158,7 +159,7 @@ private fun IdentityBox(model: AppModel, p: OwnedPokemon) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
                 // Its face, the way a Mystery Dungeon team menu shows each member.
-                Portrait(p.form.id, p.isShiny, "${p.nickname}'s portrait", size = 72.dp)
+                Portrait(p.form.id, p.isShiny, "${p.nickname}'s portrait", size = Sizes.SpriteM)
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text("No. ${p.speciesId.toString().padStart(4, '0')}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     Text(p.form.name, style = MaterialTheme.typography.titleMedium)
@@ -249,7 +250,7 @@ private fun GrowthBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean, sta
             PixelBar(p.candyProgress.toFloat() / need, color = Pixel.Yellow, label = "${p.candyProgress} of $need Rare Candies to the next level")
             val have = player.inventory[Items.RARE_CANDY]
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                ItemIcon("rare-candy", size = 32.dp, description = null)
+                ItemIcon("rare-candy", size = Sizes.Icon, description = null)
                 Text("$have Rare Candies", style = MaterialTheme.typography.bodyLarge)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -296,7 +297,7 @@ private fun EvolutionBox(model: AppModel, p: OwnedPokemon) {
         if (options.isEmpty()) Text("This is its final form.", style = soft, color = Pixel.InkSoft)
         options.forEach { o ->
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Sprite(o.target.id, false, o.target.name, size = 56.dp)
+                Sprite(o.target.id, false, o.target.name, size = Sizes.SpriteS)
                 Column(Modifier.weight(1f)) {
                     Text(o.target.name, style = MaterialTheme.typography.bodyLarge)
                     if (!o.available) Text("Needs ${o.missing.joinToString()}", style = soft, color = Pixel.InkSoft)
