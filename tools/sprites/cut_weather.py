@@ -7,7 +7,7 @@ Usage: python3 -I tools/sprites/cut_weather.py
 rain    5 x 13 grid of 240 x 160 frames (61 used): rain streaks and splashes, play in order and tile
 snow    4 x 4 grid of 64 x 32 frames, snow-dungeon and blizzard 4 x 4 grids of 32 x 32: tiles that repeat across the screen
 sand    two 120 x 32 textures, one above the other, that scroll sideways
-clouds  the 720 x 408 shadow of drifting clouds, drawn black (it is faded when drawn)
+clouds  the 720 x 408 shadow of drifting clouds in the game's own colour (82, 115, 189: the 5-bit colour 10, 14, 23 of W01.bpl), blended in at the game's 4/16 when drawn
 Needs Pillow.
 """
 import os
@@ -49,14 +49,14 @@ def main():
     grid(misc, [8, 80, 152, 224], rows, 64, 32).save(os.path.join(DIR, 'snow.png'))
     grid(misc, [304, 344, 384, 424], rows, 32, 32).save(os.path.join(DIR, 'blizzard.png'))
     grid(misc, [472, 512, 552, 592], rows, 32, 32).save(os.path.join(DIR, 'snow-dungeon.png'))
-    grid(misc, [8], [600], 120, 32).save(os.path.join(DIR, 'sand-1.png'))
-    grid(misc, [136], [600], 120, 32).save(os.path.join(DIR, 'sand-2.png'))
+    grid(misc, [8], [608], 120, 32).save(os.path.join(DIR, 'sand-1.png'))
+    grid(misc, [136], [608], 120, 32).save(os.path.join(DIR, 'sand-2.png'))
     clouds = misc.crop((8, 16, 728, 424)).convert('RGBA')
     px = clouds.load()
     for y in range(clouds.height):
         for x in range(clouds.width):
             r, g, b, _ = px[x, y]
-            px[x, y] = (0, 0, 0, 255) if (r, g, b) == (82, 115, 189) else (0, 0, 0, 0)
+            px[x, y] = (82, 115, 189, 255) if (r, g, b) == (82, 115, 189) else (0, 0, 0, 0)
     clouds.save(os.path.join(DIR, 'clouds.png'))
     print('done')
 

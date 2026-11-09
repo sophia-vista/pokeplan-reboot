@@ -61,18 +61,18 @@ internal fun WeatherLayer(weather: Weather, pixel: Int, dungeon: Boolean, calm: 
     Canvas(modifier) {
         val t = if (calm) 0L else now
         when (weather) {
+            // The rain sheet is the dungeon's rain effect; its timing is not in the files read so far (see the evidence file), so it keeps the pace it had.
             Weather.RAIN -> rain?.let { tile(it, pixel, 240, 160, (t / 70 % 61).toInt(), 5) }
-            Weather.SNOW -> snow?.let { if (dungeon) tile(it, pixel, 32, 32, (t / 220 % 16).toInt(), 4) else tile(it, pixel, 64, 32, (t / 220 % 16).toInt(), 4) }
-            Weather.BLIZZARD -> {
-                drawRect(Color.White.copy(alpha = 0.1f), Offset.Zero, size)
-                blizzard?.let { tile(it, pixel, 32, 32, (t / 80 % 16).toInt(), 4) }
-            }
+            // Snow and blizzard are tile animations of 16 frames (W03P01 and W03P03), opaque where there is a flake: no tint, no overlay.
+            Weather.SNOW -> snow?.let { tile(it, pixel, if (dungeon) 32 else 64, 32, GbaWeather.frame(t, GbaWeather.SNOW_TICKS), 4) }
+            Weather.BLIZZARD -> blizzard?.let { tile(it, pixel, 32, 32, GbaWeather.frame(t, GbaWeather.BLIZZARD_TICKS), 4) }
+            // The sand textures are blended in at a quarter, like the game's other texture layers, and slide right at the speeds of the two layers that do (kinds 15 and 14).
             Weather.SANDSTORM -> {
-                drawRect(Color(0xFFC89040).copy(alpha = 0.16f), Offset.Zero, size)
-                sand1?.let { scrolling(it, pixel, t, 18f, 0.4f) }
-                sand2?.let { scrolling(it, pixel, t, 9f, 0.3f) }
+                val tick = GbaWeather.ticks(t)
+                sand1?.let { scrolling(it, pixel, GbaWeather.fastTextureShift(tick), 0, GbaWeather.TEXTURE_ALPHA) }
+                sand2?.let { scrolling(it, pixel, GbaWeather.slowTextureShift(tick), 0, GbaWeather.TEXTURE_ALPHA) }
             }
-            Weather.CLOUDS -> clouds?.let { shadows(it, pixel, t) }
+            Weather.CLOUDS -> clouds?.let { val (dx, dy) = GbaWeather.cloudShift(GbaWeather.ticks(t)); scrolling(it, pixel, dx, dy, GbaWeather.TEXTURE_ALPHA) }
             Weather.CLEAR, Weather.LIVE, Weather.GUARDIAN -> Unit
         }
     }
@@ -88,22 +88,19 @@ private fun DrawScope.tile(image: ImageBitmap, pixel: Int, w: Int, h: Int, index
     }
 }
 
-/** A texture sliding sideways at [speed] art pixels a second and repeated to cover the canvas. */
-private fun DrawScope.scrolling(image: ImageBitmap, pixel: Int, t: Long, speed: Float, alpha: Float) {
+/**
+ * A texture moved by [dx] and [dy] game pixels (wrapping, as the game's layers do) and repeated to cover the canvas, blended in at [alpha]. The shift is a whole number
+ * of game pixels, so the texture always sits on the same pixel grid as the town.
+ */
+private fun DrawScope.scrolling(image: ImageBitmap, pixel: Int, dx: Int, dy: Int, alpha: Float) {
     val tw = image.width * pixel
     val th = image.height * pixel
-    val shift = ((t / 1000f * speed * pixel) % tw).toInt() / pixel * pixel
-    for (y in 0 until ceil(size.height / th).toInt()) for (x in -1 until ceil(size.width / tw).toInt()) {
-        drawImage(image, IntOffset.Zero, IntSize(image.width, image.height), IntOffset(x * tw + shift, y * th), IntSize(tw, th), alpha = alpha, filterQuality = FilterQuality.None)
+    val sx = wrap(dx, image.width) * pixel
+    val sy = wrap(dy, image.height) * pixel
+    for (y in -1 until ceil(size.height / th).toInt()) for (x in -1 until ceil(size.width / tw).toInt()) {
+        drawImage(image, IntOffset.Zero, IntSize(image.width, image.height), IntOffset(x * tw + sx, y * th + sy), IntSize(tw, th), alpha = alpha, filterQuality = FilterQuality.None)
     }
 }
 
-/** The cloud shadows, faint and slow, drifting across and wrapping round. */
-private fun DrawScope.shadows(image: ImageBitmap, pixel: Int, t: Long) {
-    val tw = image.width * pixel
-    val th = image.height * pixel
-    val shift = ((t / 1000f * 6f * pixel) % tw).toInt() / pixel * pixel
-    for (y in 0 until ceil(size.height / th).toInt()) for (x in -1 until ceil(size.width / tw).toInt()) {
-        drawImage(image, IntOffset.Zero, IntSize(image.width, image.height), IntOffset(x * tw + shift, y * th), IntSize(tw, th), alpha = 0.16f, filterQuality = FilterQuality.None)
-    }
-}
+/** [value] wrapped into 0 until [size], also for a negative value. */
+private fun wrap(value: Int, size: Int): Int = ((value % size) + size) % size

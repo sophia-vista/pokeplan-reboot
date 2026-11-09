@@ -32,9 +32,13 @@ internal fun TownChirps(model: AppModel, life: TownLife, residents: List<OwnedPo
             val pick = awake.first { m -> roll -= weight(m); roll < 0 }
             val big = pick.id == guardianId
             model.cry(pick.speciesId, CryVoice.Voice(pitch = if (big) 0.9f else 1.05f, speed = if (big) 0.9f else 1.1f, gain = if (big) CHIRP_GAIN_BIG else CHIRP_GAIN))
-            life.holds[pick.id] = Hold(null, hop = 1)
-            delay(CHIRP_HOLD_MILLIS)
-            life.holds.remove(pick.id)
+            // Taken off in a finally: the effect is cancelled when the town stops being calm, and a hold left behind would keep this Pokémon standing for good.
+            try {
+                life.holds[pick.id] = Hold(null, hop = 1)
+                delay(CHIRP_HOLD_MILLIS)
+            } finally {
+                life.holds.remove(pick.id)
+            }
         }
     }
 }

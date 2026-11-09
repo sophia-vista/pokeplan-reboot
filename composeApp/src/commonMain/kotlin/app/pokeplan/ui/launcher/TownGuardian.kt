@@ -8,8 +8,6 @@ import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.ui.Emotion
 import app.pokeplan.ui.StatusKind
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.coroutineScope
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeMark
@@ -66,15 +64,16 @@ internal fun TownGuardianAwe(life: TownLife, residents: List<OwnedPokemon>, guar
             noticed[near.id] = TimeSource.Monotonic.markNow()
             val p = life.spots[near.id]?.invoke() ?: continue
             val guardianIsLeft = at.x < p.x
-            coroutineScope {
-                launch {
-                    life.holds[near.id] = Hold(StatusKind.ALERT, hop = 1, faceLeft = guardianIsLeft)
-                    life.holds[guardian.id] = Hold(StatusKind.TWINKLE, faceLeft = !guardianIsLeft)
-                    if (near.id == buddyId) mood?.meet(guardian, Emotion.NORMAL, Emotion.SURPRISED)
-                    delay(1600)
-                    life.holds.remove(near.id)
-                    life.holds.remove(guardian.id)
-                }
+            // The holds are taken off in a finally: this effect is cancelled when the town stops being calm (the page is swiped away, the launcher goes out of sight),
+            // and a hold left behind would keep the Guardian and the Pokémon it met standing for good.
+            try {
+                life.holds[near.id] = Hold(StatusKind.ALERT, hop = 1, faceLeft = guardianIsLeft)
+                life.holds[guardian.id] = Hold(StatusKind.TWINKLE, faceLeft = !guardianIsLeft)
+                if (near.id == buddyId) mood?.meet(guardian, Emotion.NORMAL, Emotion.SURPRISED)
+                delay(1600)
+            } finally {
+                life.holds.remove(near.id)
+                life.holds.remove(guardian.id)
             }
         }
     }
