@@ -129,6 +129,26 @@ class ScreenshotTest {
         }
     }
 
+    /** The open task card is a sheet of three tabs (When, Steps, Edit), in both palettes. */
+    @Test
+    fun taskCardSheet() {
+        val store = started()
+        val task = store.addTask("Write the report", planned = store.today)
+        store.addSubtask(task.id, "Outline it")
+        val model = AppModel(store)
+        listOf(false, true).forEach { dark ->
+            app.pokeplan.ui.screens.CardTab.entries.forEach { tab ->
+                render("task-card-${tab.name.lowercase()}-${if (dark) "dark" else "light"}", height = 1400, frames = 8) {
+                    PixelTheme(dark) {
+                        Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                            app.pokeplan.ui.screens.TaskCard(model, store.data.tasks.first { it.id == task.id }, store.today, expanded = true, toggle = {}, onDeleted = {}, startTab = tab)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /** The Kanto layer's whole dungeon list, tall: each card's title, types and tiles must belong to the same dungeon. */
     @Test
     fun worldMapKantoList() {
