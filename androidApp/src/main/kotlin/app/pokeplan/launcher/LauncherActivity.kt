@@ -62,6 +62,10 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     private var isDefault by mutableStateOf(false)
     private lateinit var model: AppModel
 
+    /** True when the launcher started after a crash loop ([app.pokeplan.CrashGuard.safeMode]): a plain app list, and nothing that opens the save. */
+    private var safeMode = false
+    private var safeView: SafeModeView? = null
+
     /** How many times Home was pressed while this was open: the screens go back to the home page on each. */
     private var homePresses by mutableIntStateOf(0)
 
@@ -86,6 +90,20 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         enableEdgeToEdge()
         launcherApps = getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
         users = getSystemService(Context.USER_SERVICE) as UserManager
+        if (app.pokeplan.CrashGuard.safeMode(this)) {
+            // A crash loop: nothing of the normal launcher is started (not the save, not the widgets), only the list of apps and the log.
+            safeMode = true
+            launcherApps.registerCallback(packageChanges)
+            reloadApps()
+            val view = SafeModeView(
+                this, ::open,
+                onCopyLog = { app.pokeplan.CrashGuard.copyLog(this) },
+                onTryAgain = { app.pokeplan.CrashGuard.clear(this); recreate() },
+            )
+            safeView = view
+            setContentView(view.root)
+            return
+        }
         prefs = LauncherPrefs.decode(getSharedPreferences(PREFS, MODE_PRIVATE).getString(PREFS_KEY, null))
         model = AppModel(store, cries = AndroidCryPlayer(this), haptics = AndroidHaptics(this), calendars = app.pokeplan.AndroidCalendars(this))
         launcherApps.registerCallback(packageChanges)
@@ -99,23 +117,26 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         super.onNewIntent(intent)
         // Home pressed while this is the home app: back to the home page, from the app list, a sheet or the town picker.
         homePresses++
-        keepFocusScreen()
+        if (!safeMode) keepFocusScreen()
     }
 
     override fun onStart() {
         super.onStart()
         active = true
+        if (safeMode) return
         try { widgetHost.startListening() } catch (e: Exception) { /* a widget host that cannot listen just shows what it has */ }
     }
 
     override fun onStop() {
         active = false
+        if (safeMode) return super.onStop()
         try { widgetHost.stopListening() } catch (e: Exception) { }
         super.onStop()
     }
 
     override fun onResume() {
         super.onResume()
+        if (safeMode) return reloadApps()
         // A widget, or the app, may have changed the save, or the user may just have chosen this as the home app.
         store.reload()
         isDefault = isDefaultHome()
@@ -177,6 +198,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
             if (changed || iconsStale) icons.evictAll() else icons.snapshot().keys.filter { it !in entries }.forEach { icons.remove(it) }
             iconsStale = false
             apps = next
+            safeView?.show(next)
         }
     }
 

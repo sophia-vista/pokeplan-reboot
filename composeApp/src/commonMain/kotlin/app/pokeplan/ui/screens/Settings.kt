@@ -98,6 +98,15 @@ internal fun SettingsView(model: AppModel) {
         ToggleRow("Reduce motion", settings.reduceMotion) { store.changeSettings { s -> s.copy(reduceMotion = it) } }
     }
     SettingsGroup("Notifications", "bell") {
+        model.phone?.let { phone ->
+            // Read again when the player comes back from the phone's permission screen.
+            var exact by remember { mutableStateOf(phone.exactAlarms) }
+            androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { exact = phone.exactAlarms }
+            if (!exact) {
+                Text("Android is not letting PokéLife set exact alarms, so reminders and timers can arrive minutes late.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
+                PixelButton("Allow exact alarms", { phone.allowExactAlarms() }, Modifier.fillMaxWidth(), Pixel.Blue)
+            }
+        }
         ToggleRow(
             "Routine reminders", model.careData.settings.reminders,
         ) { on -> model.care.changeSettings { it.copy(reminders = on) } }
@@ -180,7 +189,11 @@ private fun BackupsCard(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             GlyphTitle("Backups", "download")
             if (backups.lowStorage()) Text("This phone is almost out of storage, so a backup was skipped and some changes may not be saved. Free some space and it carries on by itself.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
-            Text("The app keeps a copy of your data every day (the newest three). You can also save a copy anywhere, and put one back.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Text(
+                (entries.firstOrNull()?.let { "Last backup: ${backupLabel(it.millis)}. " } ?: "No backup yet. ") +
+                    "A copy is made every day, sealed to this phone: the last seven days, then one a week for four weeks. You can also save a copy anywhere, and put one back.",
+                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Back up now", { note = backups.backupNow(); entries = backups.automatic() }, Modifier.weight(1f), Pixel.Blue, compact = true)
                 PixelButton("Save a copy", { backups.saveCopy(null) { note = it } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)

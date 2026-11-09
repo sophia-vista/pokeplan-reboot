@@ -25,6 +25,14 @@ object KeystoreHealKey {
     fun cipher(): AesGcmCipher = KeystoreKeys.cipher("pokelife.heal.v1", "pokelife-heal")
 }
 
+/**
+ * The key that seals the app's own daily backup files (every document in them, Care's journal and the rest, not only Mint and Heal): its own AES-256-GCM key in
+ * the Android Keystore, non-exportable, so a copy of the backup folder opens for nobody else. A backup to open anywhere is the passphrase one instead.
+ */
+object KeystoreBackupKey {
+    fun cipher(): AesGcmCipher = KeystoreKeys.cipher("pokelife.backup.v1", "pokelife-backup")
+}
+
 internal object KeystoreKeys {
     fun cipher(alias: String, context: String): AesGcmCipher {
         val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }

@@ -20,4 +20,10 @@ interface PhoneState {
 
     /** True while the phone's power saver (battery saver) is on. */
     val powerSaving: Boolean get() = false
+
+    /** False when the phone does not let the app set exact alarms, so reminders and timers can arrive minutes late; Settings then says so. */
+    val exactAlarms: Boolean get() = true
+
+    /** Opens the phone's screen where the player allows exact alarms. */
+    fun allowExactAlarms() {}
 }
