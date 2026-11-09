@@ -1,5 +1,7 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
+import app.pokeplan.ui.Place
 import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -81,7 +83,7 @@ internal fun MeadowView(model: AppModel, goPlay: (String) -> Unit) {
     // The four fixed spots for visitors, as shares of the scene (x, y of the sprite's bottom centre); the buddy has the centre.
     val spots = listOf(0.17f to 0.70f, 0.83f to 0.70f, 0.30f to 0.97f, 0.70f to 0.97f)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth().height(300.dp).clip(PixelShape).border(1.dp, Pixel.Border, PixelShape)) {
+        androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth().height(300.dp).clip(PixelShape).border(Sizes.Hairline, Pixel.Border, PixelShape)) {
             SceneImage(Module.CARE.look.scene, Modifier.matchParentSize(), 0f)
             @Composable
             fun Resident(id: Int, shiny: Boolean, name: String, key: String, speciesId: Int, x: Float, y: Float, size: Int) {
@@ -121,7 +123,7 @@ internal fun MeadowView(model: AppModel, goPlay: (String) -> Unit) {
             val name = Dex.species(r.friend.speciesId).name
             TextBox {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
-                    AnimatedSprite(Dex.form(r.friend.formIdentifier)?.id ?: Dex.defaultForm(r.friend.speciesId).id, false, name, Modifier.size(56.dp), size = 56.dp, animate = !calm)
+                    AnimatedSprite(Dex.form(r.friend.formIdentifier)?.id ?: Dex.defaultForm(r.friend.speciesId).id, false, name, Modifier.size(Sizes.SpriteS), size = Sizes.SpriteS, animate = !calm)
                     Column(Modifier.weight(1f)) {
                         Text("$name came back to say hello.", style = MaterialTheme.typography.bodyLarge)
                     }
@@ -189,7 +191,7 @@ internal fun PlayView(model: AppModel, initial: String?) {
     var result by remember { mutableStateOf<String?>(null) }
     var inviting by remember { mutableStateOf(false) }
     val pokemon = all.firstOrNull { it.id == chosen }
-    if (pokemon == null) { EmptyState("No one to spend time with yet", "Hatch an egg first."); return }
+    if (pokemon == null) { EmptyState("No one to spend time with yet", "Hatch an egg first.", action = "Start a focus session" to { model.open(Place.FOCUS, true) }); return }
     val name = pokemon.nickname
     val known = care.discoveredLikes(pokemon.id)
     fun finish(done: PlayActivity) {
@@ -200,7 +202,7 @@ internal fun PlayView(model: AppModel, initial: String?) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
-                AnimatedSprite(pokemon.form.id, pokemon.isShiny, name, Modifier.size(72.dp), size = 72.dp, animate = !model.data.settings.reduceMotion)
+                AnimatedSprite(pokemon.form.id, pokemon.isShiny, name, Modifier.size(Sizes.SpriteM), size = Sizes.SpriteM, animate = !model.data.settings.reduceMotion)
                 Column(Modifier.weight(1f)) {
                     PixelTitle(name)
                     Text(

@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.app.GameStore
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.animation.core.Animatable
@@ -255,7 +256,7 @@ private fun VisitorLeavesEggScene(model: AppModel, visitor: app.pokeplan.app.Vis
     SceneFrame({ gone = true }, 0f, FlashWhite) {
         SceneStage(BuddyScene.CARE, 260.dp) {
             Box(Modifier.align(Alignment.Center).graphicsLayer { alpha = eggIn.value }) {
-                ItemIcon("mystery-egg", size = 96.dp, description = "An egg in the grass")
+                ItemIcon("mystery-egg", size = Sizes.SpriteL, description = "An egg in the grass")
             }
             if (walk.value < 1f) {
                 AnimatedSprite(
@@ -338,7 +339,7 @@ private fun ArrivalScene(model: AppModel, scene: Cutscene.Hatch, kind: Acquisiti
                 else -> Modifier.offset(y = ((1f - t) * 200).dp)
             }
             if (kind == Acquisition.LEDGER && !arrived) {
-                ItemIcon("star-piece", Modifier.align(Alignment.Center).graphicsLayer { alpha = 0.3f + 0.7f * glint.value; scaleX = 1f + 0.25f * glint.value; scaleY = 1f + 0.25f * glint.value }, size = 72.dp, description = null)
+                ItemIcon("star-piece", Modifier.align(Alignment.Center).graphicsLayer { alpha = 0.3f + 0.7f * glint.value; scaleX = 1f + 0.25f * glint.value; scaleY = 1f + 0.25f * glint.value }, size = Sizes.SpriteM, description = null)
             }
             if (arrived || kind != Acquisition.LEDGER || t > 0f) {
                 val walking = !arrived && t < 1f && kind != Acquisition.LEDGER
@@ -485,7 +486,7 @@ private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMo
                         Text("Exploration rank", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.8f))
                         Text(rank.label, style = MaterialTheme.typography.displaySmall, color = FlashGold)
                         // The games' own rank badge, big.
-                        ItemIcon(rank.badge, size = 96.dp, description = "${rank.label} rank badge")
+                        ItemIcon(rank.badge, size = Sizes.SpriteL, description = "${rank.label} rank badge")
                     }
                 }
                 val opens = app.pokeplan.world.WorldMoments.rankOpened(rank)
@@ -513,7 +514,7 @@ private fun WorldMomentScene(model: AppModel, moment: app.pokeplan.world.WorldMo
                     Column(Modifier.align(Alignment.Center).padding(horizontal = Spacing.M), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                         Text("${moment.layer.label}, chapter ${c.number}", style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.8f))
                         Text(c.title, style = MaterialTheme.typography.headlineMedium, color = FlashGold, textAlign = TextAlign.Center)
-                        ItemIcon("town-map", size = 48.dp, description = null)
+                        ItemIcon("town-map", size = Spacing.Target, description = null)
                     }
                 }
                 SceneText(text = c.summary, detail = if (c.unlocks.isBlank()) null else "New: ${c.unlocks}.", done = done, skip = { done = true }, close = close)

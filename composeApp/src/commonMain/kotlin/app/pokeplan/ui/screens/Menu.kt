@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import androidx.compose.runtime.remember
 import app.pokeplan.ui.pressScale
 import androidx.compose.animation.AnimatedContent
@@ -105,8 +106,8 @@ private fun MenuCard(entry: MenuEntry, modifier: Modifier, wide: Boolean = false
             .padding(horizontal = Spacing.XL, vertical = Spacing.XL),
     ) {
         val picture = @Composable {
-            Box(Modifier.size(72.dp).background(entry.tint.copy(alpha = 0.12f), app.pokeplan.ui.theme.PixelDisc), contentAlignment = Alignment.Center) {
-                ItemIcon(entry.icon, size = 56.dp, description = null)
+            Box(Modifier.size(Sizes.SpriteM).background(entry.tint.copy(alpha = 0.12f), app.pokeplan.ui.theme.PixelDisc), contentAlignment = Alignment.Center) {
+                ItemIcon(entry.icon, size = Sizes.SpriteS, description = null)
             }
         }
         if (wide) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.L)) {

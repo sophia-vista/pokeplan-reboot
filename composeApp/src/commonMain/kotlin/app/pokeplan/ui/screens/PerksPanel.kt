@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.Spacing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -318,7 +319,7 @@ fun PokemonPerksBox(model: AppModel, p: OwnedPokemon) {
             Text("In the party: " + type.entries.joinToString(", ") { (b, v) -> "${pct(v * Perks.ASSIST_SHARE)} ${b.label()}" }.ifEmpty { "none" }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 
             val held = p.heldItem
-            ListRow(lead = { if (held != null) ItemIcon(held, size = 32.dp) else ItemIcon("seal-bag", size = 32.dp, description = null) }, trail = {
+            ListRow(lead = { if (held != null) ItemIcon(held, size = Sizes.Icon) else ItemIcon("seal-bag", size = Sizes.Icon, description = null) }, trail = {
                 if (held != null) PixelButton("Take", { store.takeItem(p.id) }, color = Pixel.InkSoft, compact = true)
                 else PixelButton(if (choosing) "Close" else "Give", { choosing = !choosing }, color = Pixel.Blue, compact = true)
             }) {
@@ -329,7 +330,7 @@ fun PokemonPerksBox(model: AppModel, p: OwnedPokemon) {
                 val holdable = bag.counts.filter { it.value > 0 && Items.holdable(it.key) }.keys.sorted()
                 holdable.forEach { id ->
                     val perk = HeldItems.perks[id]?.let { " (${pct(it.percent)} ${it.bucket.label()})" } ?: ""
-                    ListRow(lead = { ItemIcon(id, size = 32.dp) }, onClick = { if (store.holdItem(p.id, id)) choosing = false }, onClickLabel = "Give ${Items.name(id)}") {
+                    ListRow(lead = { ItemIcon(id, size = Sizes.Icon) }, onClick = { if (store.holdItem(p.id, id)) choosing = false }, onClickLabel = "Give ${Items.name(id)}") {
                         Text("${Items.name(id)}$perk", style = MaterialTheme.typography.bodyMedium)
                     }
                 }

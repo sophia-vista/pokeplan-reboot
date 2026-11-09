@@ -47,6 +47,7 @@ import app.pokeplan.link.Sort
 import app.pokeplan.plan.TaskState
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Report
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
@@ -352,7 +353,7 @@ private fun PeopleView(model: AppModel) {
                     if (out.record == null) message = out.refused else { name = ""; message = null; openId = out.record!!.id; model.haptic() }
                 }, color = accent, enabled = name.isNotBlank())
             }
-            message?.let { Notice(it, tone = NoticeTone.WARNING) }
+            message?.let { Report(model, it, NoticeTone.WARNING) }
             val similar = if (name.isBlank()) emptyList() else link.possibleDuplicates(name)
             if (similar.isNotEmpty()) Text("Already in your list: ${similar.joinToString { LinkRules.displayName(it) }}. You can still add another.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
@@ -461,7 +462,7 @@ private fun PersonNotes(model: AppModel, p: Person) {
             if (out.record == null) message = out.refused else { text = ""; message = null; model.haptic() }
         }, color = accent, enabled = text.isNotBlank())
     }
-    message?.let { Notice(it, tone = NoticeTone.WARNING) }
+    message?.let { Report(model, it, NoticeTone.WARNING) }
     val notes = link.notesOf(p.id)
     if (notes.isEmpty()) Text("No notes yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     notes.forEachIndexed { i, n ->
@@ -541,7 +542,7 @@ private fun PersonForm(model: AppModel, p: Person, onDone: () -> Unit) {
             }, Modifier.weight(1f), accent, enabled = name.isNotBlank(), compact = true)
             PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        message?.let { Notice(it, tone = NoticeTone.WARNING) }
+        message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
@@ -630,7 +631,7 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
                 PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
         }
-        message?.let { Notice(it, tone = NoticeTone.WARNING) }
+        message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
@@ -731,7 +732,7 @@ private fun FollowUpOptions(model: AppModel, f: FollowUp, onDone: () -> Unit) {
             if (task == null) PixelButton("Make it a Plan task", { model.link.convertToPlan(f.id); model.haptic() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             else PixelButton("Stop linking to Plan", { model.store.unlinkTask(task.id) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
-        message?.let { Notice(it, tone = NoticeTone.WARNING) }
+        message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
@@ -795,7 +796,7 @@ private fun LinkSettingsView(model: AppModel) {
                     LinkKinds.entries.forEach { k -> PixelButton("Export ${k.label.lowercase()}", { note = files.save("pokelife-link-${k.name.lowercase()}.json", link.export(setOf(k))) }, color = Pixel.InkSoft, compact = true) }
                 }
             } else Text("Exporting is not available on this device.", style = MaterialTheme.typography.bodyMedium)
-            note?.let { Notice(it) }
+            note?.let { Report(model, it) }
             LinkKinds.entries.forEach { k ->
                 if (asking == k) Confirm(
                     if (k == LinkKinds.PEOPLE) "Erase all people and their notes? Dates and follow-ups stay, with no person on them. This cannot be undone." else "Erase all ${k.label.lowercase()}? This cannot be undone.",

@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.PixelShape
 import app.pokeplan.ui.theme.ModuleAccent
 import androidx.compose.runtime.LaunchedEffect
@@ -147,10 +148,10 @@ private fun RegionCard(
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             val window = PixelShape
-            Box(Modifier.size(80.dp).clip(window).border(1.dp, Pixel.Border, window), contentAlignment = Alignment.BottomCenter) {
+            Box(Modifier.size(80.dp).clip(window).border(Sizes.Hairline, Pixel.Border, window), contentAlignment = Alignment.BottomCenter) {
                 SceneImage(look.scene, Modifier.matchParentSize(), darkness)
-                if (lead != null) AnimatedSprite(lead.form.id, lead.isShiny, lead.nickname, size = 72.dp, animate = !still, ground = 4.dp)
-                else ItemIcon(icon, size = 56.dp, description = null, modifier = Modifier.align(Alignment.Center))
+                if (lead != null) AnimatedSprite(lead.form.id, lead.isShiny, lead.nickname, size = Sizes.SpriteM, animate = !still, ground = 4.dp)
+                else ItemIcon(icon, size = Sizes.SpriteS, description = null, modifier = Modifier.align(Alignment.Center))
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 PixelTitle(name)
@@ -289,9 +290,9 @@ private fun RecentCard(model: AppModel, go: (Place) -> Unit) {
         val owned = hatched?.let { h -> model.data.player.pokemon.firstOrNull { it.id == h.id } }
         ListRow(
             lead = {
-                Box(Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-                    if (hatched != null) Sprite(hatched.form.id, hatched.isShiny, hatched.nickname, size = 48.dp)
-                    else entry.rewards.firstNotNullOfOrNull { it.iconItem() }?.let { ItemIcon(it, size = 32.dp, description = null) }
+                Box(Modifier.size(Spacing.Target), contentAlignment = Alignment.Center) {
+                    if (hatched != null) Sprite(hatched.form.id, hatched.isShiny, hatched.nickname, size = Spacing.Target)
+                    else entry.rewards.firstNotNullOfOrNull { it.iconItem() }?.let { ItemIcon(it, size = Sizes.Icon, description = null) }
                 }
             },
             onClick = owned?.let { p -> { model.openPokemonId = p.id; go(Place.COLLECTION) } },
@@ -426,7 +427,7 @@ private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
             val got = store.miniQuestRewards()
             got.forEach { r ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    r.iconItem()?.let { ItemIcon(it, size = 24.dp) }
+                    r.iconItem()?.let { ItemIcon(it, size = Sizes.IconS) }
                     Text("You got ${r.describe()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
                 }
             }

@@ -1,5 +1,7 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
+import app.pokeplan.ui.Place
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -48,7 +50,7 @@ internal fun BagView(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("${player.coins} Poké", style = MaterialTheme.typography.titleMedium)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                ItemIcon(Items.RARE_CANDY, size = 32.dp)
+                ItemIcon(Items.RARE_CANDY, size = Sizes.Icon)
                 Text("Rare Candy: $each Poké each", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -59,7 +61,7 @@ internal fun BagView(model: AppModel) {
             }
         }
     }
-    if (items.isEmpty()) EmptyState("The bag is empty", "Finish tasks and focus sessions to find candies, berries and more.", icon = "seal-bag", sleeper = true)
+    if (items.isEmpty()) EmptyState("The bag is empty", "Finish tasks and focus sessions to find candies, berries and more.", icon = "seal-bag", sleeper = true, action = "Start a focus session" to { model.open(Place.FOCUS, true) })
     items.groupBy { Items.category(it.key) }.forEach { (category, group) ->
         SectionLabel(category.bagLabel())
         group.forEach { (id, n) ->
@@ -69,7 +71,7 @@ internal fun BagView(model: AppModel) {
             val toggle = { open = if (open == id) null else id }
             // A usable item says so with its own Use button, so it does not look the same as one that only sits in the bag.
             ListRow(
-                lead = { ItemIcon(id, size = 40.dp) },
+                lead = { ItemIcon(id, size = Sizes.IconL) },
                 onClick = if (usable) toggle else null,
                 onClickLabel = "Use ${Items.name(id)}",
                 trail = {

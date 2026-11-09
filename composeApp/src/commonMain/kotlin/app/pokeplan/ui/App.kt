@@ -218,6 +218,24 @@ class AppModel(
     /** The screen open inside Link (null shows Link's menu). */
     var linkSection: LinkSection? by mutableStateOf(null)
 
+    /** The one line the feedback bar shows (see [Feedback]); say it with [say] or keep it up with [Report]. */
+    var feedback: Feedback? by mutableStateOf(null)
+        private set
+    private var feedbackSerial = 0L
+
+    /** Tells the player how something went, once: [text] shows in the feedback bar for a moment ([FeedbackKind]) and goes. */
+    fun say(text: String, kind: FeedbackKind = FeedbackKind.SAVED) = showFeedback(text, kind, sticky = false)
+
+    internal fun showFeedback(text: String, kind: FeedbackKind, sticky: Boolean) {
+        // An error already up stays over a plain saved line that arrives with it.
+        val current = feedback
+        if (current != null && current.kind == FeedbackKind.ERROR && kind == FeedbackKind.SAVED && current.text != text) return
+        feedback = Feedback(text, kind, sticky, ++feedbackSerial)
+    }
+
+    internal fun dropFeedback(text: String) { if (feedback?.text == text) feedback = null }
+    internal fun dropFeedback(serial: Long) { if (feedback?.serial == serial) feedback = null }
+
     /** A task just deleted, which the undo bar can bring back for a few seconds. */
     var deletedTask: Task? by mutableStateOf(null)
 
@@ -497,7 +515,11 @@ private fun MainShell(model: AppModel, focusTab: Boolean, start: Place, launches
                                 Tab.ME -> MeScreen(model)
                             }
                         }
-                        UndoBar(model, Modifier.align(Alignment.BottomCenter))
+                        // One bar for how things went, and the undo bar under it: they stack, so neither hides the other.
+                        androidx.compose.foundation.layout.Column(Modifier.align(Alignment.BottomCenter)) {
+                            FeedbackHost(model)
+                            UndoBar(model)
+                        }
                         // The Pokégear covers whichever tab is open until it is closed.
                         if (model.gearOpen) Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
                             androidx.compose.runtime.CompositionLocalProvider(app.pokeplan.ui.theme.LocalFrameTone provides app.pokeplan.ui.theme.frameToneOf(app.pokeplan.ui.theme.ModuleAccent.GEAR.accent)) {

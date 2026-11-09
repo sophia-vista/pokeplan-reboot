@@ -5,6 +5,17 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.165.0
+
+REP-023 (UI consistency) and a launcher pass. No reward number changes.
+
+- **The open task card is a sheet with three tabs.** **When** (move to, list, time, reminder, repeat), **Steps** (notes and small steps) and **Edit** (title, notes, difficulty, category, deadline, estimate, and Won't do and Delete, apart from the day-to-day tabs); a finished task shows only its notes and steps. About twenty controls in one column became one tab at a time. Screenshots in both palettes (`task-card-*`).
+- **One feedback system.** `AppModel.say(text, kind)` and `Report(model, text, tone)` put saved, reward and error lines in one bar above the tabs (`FeedbackHost`, over the undo bar), the same on every screen: saved 2.5 seconds, reward 4, error 6, tap to dismiss, errors announced assertively, an error not hidden by a "Saved." arriving with it, the same words again shown again. Heal, Mint, Home, Link and the module lock use it instead of their own notice boxes; a field that cannot be read still says so under the field.
+- **Every empty state has a next step.** Its button is in the primary colour: add a task, add a routine or log (the focus moves to the field above), start a focus session for eggs, or Clear for a search or filters that found nothing.
+- **Tokens.** `Sizes` (hairline, line, icon and sprite steps) beside `Spacing`; the screens use them for icon and sprite sizes, borders and the last typed gaps.
+- **Launcher: one Guardian, and the town notices it.** At most one Guardian walks the town (the buddy if it is one, else the highest level); a Pokémon that walks close to it stops and is startled while the Guardian sparkles. A new weather choice, **Guardian's weather**, gives the town the Guardian's own (Kyogre rain, Articuno snow, Kyurem a blizzard, Landorus a sandstorm, Rayquaza cloud shadows; none of its own is a clear sky); Live forecast stays the default.
+- **Launcher: Pokémon chirp.** Now and then one Pokémon in the town says its own cry, quiet and short, with a hop (the buddy more often, the Guardian rarely and lower); only while the town is in sight, never in Reduce motion, battery saver, a call or with Sound off. Settings → Town → Pokémon chirp turns it off.
+
 ## 0.164.0
 
 Code-review fixes (saving, memory, battery) and a first batch of Android hooks. No reward number changes.

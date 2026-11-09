@@ -59,6 +59,7 @@ import app.pokeplan.home.Supply
 import app.pokeplan.home.Warranty
 import app.pokeplan.home.WarrantyState
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Report
 import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.Notice
 import app.pokeplan.ui.theme.NoticeTone
@@ -607,7 +608,7 @@ private fun ChoreForm(model: AppModel, initial: Chore?, onDone: () -> Unit, onCa
             PixelButton("Save", ::save, Modifier.weight(1f), accent, enabled = title.isNotBlank(), compact = true)
             PixelButton("Cancel", { onCancel?.invoke() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        message?.let { Notice(it, tone = NoticeTone.WARNING) }
+        message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
@@ -691,7 +692,7 @@ private fun SupplyOptions(model: AppModel, s: Supply, onDone: () -> Unit) {
             PixelButton("Archive", { home.setSupplyArchived(s.id, true); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        refused?.let { Notice(it, tone = NoticeTone.WARNING) }
+        refused?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
@@ -747,7 +748,7 @@ private fun RestockTab(model: AppModel, focus: String?) {
         PixelField(name, { name = it.take(HomeRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add to the list", singleLine = true, keyboardOptions = wordKeys)
         PixelButton("Add", { if (home.addRestock(name) != null) name = "" }, color = accent, enabled = name.isNotBlank())
     }
-    refused?.let { Notice(it, tone = NoticeTone.WARNING) }
+    refused?.let { Report(model, it, NoticeTone.WARNING) }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -804,7 +805,7 @@ private fun SupplyForm(model: AppModel, initial: Supply?, onDone: () -> Unit, on
             PixelButton("Save", ::save, Modifier.weight(1f), accent, enabled = name.isNotBlank(), compact = true)
             PixelButton("Cancel", { onCancel?.invoke() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        message?.let { Notice(it, tone = NoticeTone.WARNING) }
+        message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
@@ -915,7 +916,7 @@ private fun ScheduleOptions(model: AppModel, s: MaintenanceSchedule, onDone: () 
             else PixelButton("Pause", { home.setScheduleStatus(s.id, RecordStatus.PAUSED); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        refused?.let { Notice(it, tone = NoticeTone.WARNING) }
+        refused?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
@@ -965,7 +966,7 @@ private fun ScheduleForm(model: AppModel, initial: MaintenanceSchedule?, onDone:
             PixelButton("Save", ::save, Modifier.weight(1f), accent, enabled = title.isNotBlank() && due != null, compact = true)
             PixelButton("Cancel", { onCancel?.invoke() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        message?.let { Notice(it, tone = NoticeTone.WARNING) }
+        message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
@@ -995,7 +996,7 @@ private fun LogWorkForm(model: AppModel, onDone: () -> Unit) {
                 else { model.haptic(); onDone() }
             }
         }, Modifier.fillMaxWidth(), accent, enabled = title.isNotBlank() && day != null)
-        message?.let { Notice(it, tone = NoticeTone.WARNING) }
+        message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
@@ -1065,7 +1066,7 @@ private fun WarrantyForm(model: AppModel, assetId: String, onDone: () -> Unit) {
             }, Modifier.weight(1f), accent, compact = true)
             PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        message?.let { Notice(it, tone = NoticeTone.WARNING) }
+        message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
@@ -1112,7 +1113,7 @@ private fun AssetForm(model: AppModel, initial: Asset?, onDone: () -> Unit, onCa
             PixelButton("Save", ::save, Modifier.weight(1f), accent, enabled = name.isNotBlank(), compact = true)
             PixelButton("Cancel", { onCancel?.invoke() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        message?.let { Notice(it, tone = NoticeTone.WARNING) }
+        message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
@@ -1138,7 +1139,7 @@ private fun NotesView(model: AppModel) {
                     if (out.record == null) message = out.refused else { title = ""; message = null; openId = out.record!!.id; model.haptic() }
                 }, color = accent, enabled = title.isNotBlank())
             }
-            message?.let { Notice(it, tone = NoticeTone.WARNING) }
+            message?.let { Report(model, it, NoticeTone.WARNING) }
         }
     }
     if (data.references.isEmpty()) return
@@ -1187,7 +1188,7 @@ private fun NoteEditor(model: AppModel, n: Reference, onDone: () -> Unit) {
             PixelButton("Close", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        message?.let { Notice(it, tone = NoticeTone.WARNING) }
+        message?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
@@ -1256,7 +1257,7 @@ private fun HouseholdSettingsView(model: AppModel) {
                     HomeKinds.entries.forEach { k -> PixelButton("Export ${k.label.lowercase()}", { note = files.save("pokelife-home-${k.name.lowercase()}.json", home.export(setOf(k))) }, color = Pixel.InkSoft, compact = true) }
                 }
             } else Text("Exporting is not available on this device.", style = MaterialTheme.typography.bodyMedium)
-            note?.let { Notice(it) }
+            note?.let { Report(model, it) }
             HomeKinds.entries.forEach { k ->
                 if (asking == k) Confirm(
                     if (k == HomeKinds.ASSETS) "Erase all belongings with their maintenance and warranties? This cannot be undone." else "Erase all ${k.label.lowercase()}? This cannot be undone.",

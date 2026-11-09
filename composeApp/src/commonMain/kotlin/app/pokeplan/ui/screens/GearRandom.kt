@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
@@ -157,7 +158,7 @@ internal fun CoinTool(model: AppModel, onUse: () -> Unit) {
     TextBox {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Box(Modifier.height(120.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                ItemIcon("bottle-cap", Modifier.size(96.dp).graphicsLayer { rotationX = spin.value }, size = 96.dp, description = "Coin")
+                ItemIcon("bottle-cap", Modifier.size(Sizes.SpriteL).graphicsLayer { rotationX = spin.value }, size = Sizes.SpriteL, description = "Coin")
             }
             Text(side ?: "Flip it", Modifier.semantics { liveRegion = LiveRegionMode.Polite }, style = MaterialTheme.typography.headlineSmall)
             PixelButton(if (flipping) "Flipping" else "Toss the coin", {

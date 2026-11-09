@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.DialogueShape
 
 import app.pokeplan.ui.theme.frameToneOf
@@ -172,7 +173,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
                         View.INBOX -> WhenGroups(model, shown, card)
                         else -> if (shown.isNotEmpty()) TaskGroup(null, shown, card = card)
                     }
-                    if (shown.isEmpty() && current != View.TODAY) EmptyState(emptyTitle(current), emptyLine(current), icon = current.icon)
+                    if (shown.isEmpty() && current != View.TODAY) EmptyState(emptyTitle(current), emptyLine(current), icon = current.icon, action = "Add a task" to { model.addTaskRequested = true })
                 }
             }
         }
@@ -203,8 +204,8 @@ private fun ListTiles(tiles: List<ListTile>, onOpen: (View) -> Unit) {
                         verticalArrangement = Arrangement.spacedBy(Spacing.XS),
                     ) {
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Box(Modifier.size(48.dp).background(tile.view.tint().copy(alpha = 0.14f), app.pokeplan.ui.theme.PixelDisc), contentAlignment = Alignment.Center) {
-                                ItemIcon(tile.view.icon, size = 40.dp, description = null)
+                            Box(Modifier.size(Spacing.Target).background(tile.view.tint().copy(alpha = 0.14f), app.pokeplan.ui.theme.PixelDisc), contentAlignment = Alignment.Center) {
+                                ItemIcon(tile.view.icon, size = Sizes.IconL, description = null)
                             }
                             Spacer(Modifier.weight(1f))
                             if (tile.count != null) Text(tile.count, style = MaterialTheme.typography.headlineMedium)
@@ -245,8 +246,8 @@ private fun TodayList(model: AppModel, tasks: List<Task>, card: @Composable (Tas
         }
     }
     if (tasks.isEmpty()) {
-        if (done > 0) EmptyState("All clear for today", "$done finished. The rest can wait for tomorrow.", icon = View.TODAY.icon, sleeper = true)
-        else EmptyState(emptyTitle(View.TODAY), emptyLine(View.TODAY), icon = View.TODAY.icon, sleeper = true)
+        if (done > 0) EmptyState("All clear for today", "$done finished. The rest can wait for tomorrow.", icon = View.TODAY.icon, sleeper = true, action = "Add another" to { model.addTaskRequested = true })
+        else EmptyState(emptyTitle(View.TODAY), emptyLine(View.TODAY), icon = View.TODAY.icon, sleeper = true, action = "Add a task" to { model.addTaskRequested = true })
         return
     }
     val before = TaskViews.overdue(tasks, store.now).toSet()
@@ -281,7 +282,7 @@ internal fun TaskGroup(
             }
         }
         val shape = PixelShape
-        Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)) {
+        Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(Sizes.Hairline, Pixel.Border, shape).clip(shape)) {
             tasks.forEachIndexed { i, t ->
                 if (i > 0) HorizontalDivider(Modifier.padding(start = Spacing.M), color = Pixel.Border)
                 card(t, dayOf)
@@ -295,16 +296,22 @@ internal fun TaskGroup(
  * action. [line] is not drawn (an empty screen needs no explanation; the Help screen has the rules); a screen reader reads it after the title.
  */
 @Composable
-fun EmptyState(title: String, line: String? = null, icon: String? = null, action: Pair<String, () -> Unit>? = null, sleeper: Boolean = false) {
+fun EmptyState(
+    title: String, line: String? = null, icon: String? = null, action: Pair<String, () -> Unit>? = null, sleeper: Boolean = false,
+    /** For a list whose form sits right above it: the button is labelled [addAbove] and moves the focus to the field above, so there is always one next step on the screen. */
+    addAbove: String? = null,
+) {
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    val action = action ?: addAbove?.let { it to { focusManager.moveFocus(androidx.compose.ui.focus.FocusDirection.Up); Unit } }
     // With [sleeper] the global buddy dozes beside the words (its own SpriteCollab Sleep animation, still with Reduce motion).
     val buddy = if (sleeper) LocalBuddy.current else null
     TextBox {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            if (buddy != null) AnimatedSprite(buddy.form.id, buddy.isShiny, "", size = 56.dp, animate = !LocalReduceMotion.current, ground = 4.dp, action = SpriteAction.SLEEP, actionKey = 1)
-            else if (icon != null) ItemIcon(icon, size = 40.dp, description = null)
+            if (buddy != null) AnimatedSprite(buddy.form.id, buddy.isShiny, "", size = Sizes.SpriteS, animate = !LocalReduceMotion.current, ground = 4.dp, action = SpriteAction.SLEEP, actionKey = 1)
+            else if (icon != null) ItemIcon(icon, size = Sizes.IconL, description = null)
             Column(Modifier.weight(1f).semantics(mergeDescendants = true) { if (line != null) contentDescription = "$title. $line" }, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 Text(title, style = MaterialTheme.typography.titleSmall)
-                if (action != null) PixelButton(action.first, action.second, Modifier.padding(top = Spacing.XS), Pixel.InkSoft, compact = true)
+                if (action != null) PixelButton(action.first, action.second, Modifier.padding(top = Spacing.XS), Pixel.Blue, compact = true)
             }
         }
     }
@@ -473,10 +480,9 @@ internal fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
 }
 
 @Composable
-private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boolean, toggle: () -> Unit, onDeleted: () -> Unit, showList: Boolean = true) {
+internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boolean, toggle: () -> Unit, onDeleted: () -> Unit, showList: Boolean = true, startTab: CardTab = CardTab.WHEN) {
     val store = model.store
     val list = task.listId?.let { id -> model.data.lists.firstOrNull { it.id == id } }
-    var editing by remember(task.id) { mutableStateOf(false) }
     Column {
         Row(
             Modifier.fillMaxWidth()
@@ -507,93 +513,125 @@ private fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Boo
             else PixelButton("Reopen", { store.reopen(task.id) }, color = Pixel.InkSoft, compact = true)
         }
         if (expanded) {
+            // The open card is a sheet of three tabs instead of one long column of controls: When (where and when it goes), Steps (its notes and small steps) and
+            // Edit (its words, difficulty and category, and the ways to be rid of it). A finished task has no tabs: only its notes and steps.
+            var tab by remember(task.id) { mutableStateOf(startTab) }
             Box(Modifier.fillMaxWidth().background(Pixel.Shade.copy(alpha = 0.5f)).padding(Spacing.M)) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                     Text("${task.rank.letter}: ${task.rank.title}, ${task.category.label}", style = MaterialTheme.typography.bodyMedium)
-                    if (editing) {
-                        var title by remember { mutableStateOf(task.title) }
-                        var rank by remember { mutableStateOf(task.rank) }
-                        var minutes by remember { mutableStateOf(task.estimateMinutes ?: 0) }
-                        var category by remember { mutableStateOf(task.category) }
-                        var notes by remember { mutableStateOf(task.notes) }
-                        var dueDay by remember { mutableStateOf(task.due?.date) }
-                        PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Title")
-                        PixelField(
-                            notes, { notes = it }, Modifier.fillMaxWidth(), minLines = 2, maxLines = 6, label = "Notes",
-                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                        )
-                        DifficultyPicker(rank) { rank = it }
-                        FieldLabel("Category")
-                        CategoryChips(category) { category = it ?: category }
-                        // A deadline is not the day you plan to do it (that is "Move to"); it keeps its time of day, or 23:59.
-                        DayPicker("Deadline", dueDay, store.today, listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7), noneLabel = "No deadline") { dueDay = it }
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                            PixelButton("-5", { minutes = (minutes - 5).coerceAtLeast(0) }, color = Pixel.InkSoft, compact = true)
-                            Text(if (minutes == 0) "No estimate" else "$minutes min", style = MaterialTheme.typography.bodyLarge)
-                            PixelButton("+5", { minutes += 5 }, color = Pixel.InkSoft, compact = true)
+                    if (task.state != TaskState.OPEN) TaskStepsTab(model, task)
+                    else {
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            CardTab.entries.forEach { t -> TabButton(t.label, tab == t, { tab = t }, Modifier.weight(1f)) }
                         }
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            PixelIconButton("check", "Save", {
-                                store.updateTask(
-                                    task.copy(
-                                        title = title.trim().ifEmpty { task.title }, rank = rank, estimateMinutes = minutes.takeIf { it > 0 },
-                                        category = category, notes = notes.trim(),
-                                        due = dueDay?.let { LocalDateTime(it, task.due?.time ?: LocalTime(23, 59)) },
-                                    ),
-                                )
-                                editing = false
-                            }, Pixel.Green)
-                            PixelIconButton("close", "Cancel", { editing = false }, Pixel.InkSoft)
-                        }
-                    } else {
-                        if (task.notes.isNotBlank()) Text(task.notes, style = MaterialTheme.typography.bodyLarge)
-                        task.subtasks.forEach { sub ->
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                Text(sub.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (sub.done) Pixel.InkSoft else Pixel.Ink)
-                                if (!sub.done && task.state == TaskState.OPEN) PixelButton("Step done", { store.completeSubtask(task.id, sub.id) }, color = Pixel.Green, compact = true)
-                            }
-                        }
-                        if (task.state == TaskState.OPEN) {
-                            var step by remember { mutableStateOf("") }
-                            if (task.subtasks.size < GameStore.MAX_SUBTASKS) {
-                                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                                    PixelField(
-                                        step, { step = it }, Modifier.weight(1f), singleLine = true,
-                                        placeholder = "Add a small step",
-                                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
-                                        keyboardActions = KeyboardActions(onDone = { if (step.isNotBlank()) { store.addSubtask(task.id, step); step = "" } }),
-                                    )
-                                    PixelIconButton("plus", "Add", { store.addSubtask(task.id, step); step = "" }, Pixel.InkSoft, enabled = step.isNotBlank())
-                                }
-                            }
-                            FieldLabel("Move to")
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                                val today = store.today
-                                TabButton("Today", task.planned == today, { store.updateTask(task.copy(planned = today)) })
-                                TabButton("Tomorrow", task.planned == today.plus(DatePeriod(days = 1)), { store.updateTask(task.copy(planned = today.plus(DatePeriod(days = 1)))) })
-                                TabButton("Next week", task.planned == today.plus(DatePeriod(days = 7)), { store.updateTask(task.copy(planned = today.plus(DatePeriod(days = 7)))) })
-                                TabButton("No date", task.planned == null && task.due == null, { store.updateTask(task.copy(planned = null, plannedTime = null, due = null)) })
-                            }
-                            if (store.activeLists.isNotEmpty()) {
-                                FieldLabel("List")
-                                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                                    TabButton("Inbox", task.listId == null, { store.moveToList(task.id, null) })
-                                    store.activeLists.forEach { l -> TabButton(l.name, task.listId == l.id, { store.moveToList(task.id, l.id) }) }
-                                }
-                            }
-                            PlannedTime(model, task)
-                            RemindMe(model, task)
-                            RepeatRow(model, task)
-                            HorizontalDivider(color = Pixel.Border)
-                            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                                PixelIconButton("pencil", "Edit", { editing = true }, Pixel.InkSoft)
-                                PixelButton("Won't do", { store.wontDo(task.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                                PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.Danger)
-                            }
+                        when (tab) {
+                            CardTab.WHEN -> TaskWhenTab(model, task)
+                            CardTab.STEPS -> TaskStepsTab(model, task)
+                            CardTab.EDIT -> TaskEditTab(model, task, onSaved = { tab = CardTab.WHEN }, onDeleted = onDeleted)
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+internal enum class CardTab(val label: String) { WHEN("When"), STEPS("Steps"), EDIT("Edit") }
+
+/** When and where a task goes: the day, the list, the time, the reminder and whether it repeats. */
+@Composable
+private fun TaskWhenTab(model: AppModel, task: Task) {
+    val store = model.store
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        FieldLabel("Move to")
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            val today = store.today
+            TabButton("Today", task.planned == today, { store.updateTask(task.copy(planned = today)) })
+            TabButton("Tomorrow", task.planned == today.plus(DatePeriod(days = 1)), { store.updateTask(task.copy(planned = today.plus(DatePeriod(days = 1)))) })
+            TabButton("Next week", task.planned == today.plus(DatePeriod(days = 7)), { store.updateTask(task.copy(planned = today.plus(DatePeriod(days = 7)))) })
+            TabButton("No date", task.planned == null && task.due == null, { store.updateTask(task.copy(planned = null, plannedTime = null, due = null)) })
+        }
+        if (store.activeLists.isNotEmpty()) {
+            FieldLabel("List")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                TabButton("Inbox", task.listId == null, { store.moveToList(task.id, null) })
+                store.activeLists.forEach { l -> TabButton(l.name, task.listId == l.id, { store.moveToList(task.id, l.id) }) }
+            }
+        }
+        PlannedTime(model, task)
+        RemindMe(model, task)
+        RepeatRow(model, task)
+    }
+}
+
+/** A task's notes and small steps; an open task also gets the field to add a step. */
+@Composable
+private fun TaskStepsTab(model: AppModel, task: Task) {
+    val store = model.store
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        if (task.notes.isNotBlank()) Text(task.notes, style = MaterialTheme.typography.bodyLarge)
+        task.subtasks.forEach { sub ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(sub.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (sub.done) Pixel.InkSoft else Pixel.Ink)
+                if (!sub.done && task.state == TaskState.OPEN) PixelButton("Step done", { store.completeSubtask(task.id, sub.id) }, color = Pixel.Green, compact = true)
+            }
+        }
+        if (task.state == TaskState.OPEN && task.subtasks.size < GameStore.MAX_SUBTASKS) {
+            var step by remember(task.id) { mutableStateOf("") }
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelField(
+                    step, { step = it }, Modifier.weight(1f), singleLine = true,
+                    placeholder = "Add a small step",
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { if (step.isNotBlank()) { store.addSubtask(task.id, step); step = "" } }),
+                )
+                PixelIconButton("plus", "Add", { store.addSubtask(task.id, step); step = "" }, Pixel.InkSoft, enabled = step.isNotBlank())
+            }
+        }
+    }
+}
+
+/** A task's words, difficulty, category, deadline and estimate; Save returns to the first tab. Won't do and Delete are here, apart from the day-to-day tabs. */
+@Composable
+private fun TaskEditTab(model: AppModel, task: Task, onSaved: () -> Unit, onDeleted: () -> Unit) {
+    val store = model.store
+    var title by remember(task.id) { mutableStateOf(task.title) }
+    var rank by remember(task.id) { mutableStateOf(task.rank) }
+    var minutes by remember(task.id) { mutableStateOf(task.estimateMinutes ?: 0) }
+    var category by remember(task.id) { mutableStateOf(task.category) }
+    var notes by remember(task.id) { mutableStateOf(task.notes) }
+    var dueDay by remember(task.id) { mutableStateOf(task.due?.date) }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Title")
+        PixelField(
+            notes, { notes = it }, Modifier.fillMaxWidth(), minLines = 2, maxLines = 6, label = "Notes",
+            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+        )
+        DifficultyPicker(rank) { rank = it }
+        FieldLabel("Category")
+        CategoryChips(category) { category = it ?: category }
+        // A deadline is not the day you plan to do it (that is "Move to"); it keeps its time of day, or 23:59.
+        DayPicker("Deadline", dueDay, store.today, listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7), noneLabel = "No deadline") { dueDay = it }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelButton("-5", { minutes = (minutes - 5).coerceAtLeast(0) }, color = Pixel.InkSoft, compact = true)
+            Text(if (minutes == 0) "No estimate" else "$minutes min", style = MaterialTheme.typography.bodyLarge)
+            PixelButton("+5", { minutes += 5 }, color = Pixel.InkSoft, compact = true)
+        }
+        PixelButton("Save", {
+            store.updateTask(
+                task.copy(
+                    title = title.trim().ifEmpty { task.title }, rank = rank, estimateMinutes = minutes.takeIf { it > 0 },
+                    category = category, notes = notes.trim(),
+                    due = dueDay?.let { LocalDateTime(it, task.due?.time ?: LocalTime(23, 59)) },
+                ),
+            )
+            model.say("Saved.")
+            onSaved()
+        }, Modifier.fillMaxWidth(), Pixel.Green)
+        HorizontalDivider(color = Pixel.Border)
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            PixelButton("Won't do", { store.wontDo(task.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.Danger)
         }
     }
 }

@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.PixelShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,8 +55,8 @@ fun RewardBox(model: AppModel) {
                 Text(entry.source, style = MaterialTheme.typography.titleMedium)
                 entry.rewards.forEach { r ->
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        if (r is Reward.Hatched) AnimatedSprite(r.pokemon.form.id, r.pokemon.isShiny, r.pokemon.nickname, size = 72.dp, animate = !model.data.settings.reduceMotion, ground = 4.dp)
-                        else r.iconItem()?.let { ItemIcon(it, size = 32.dp) }
+                        if (r is Reward.Hatched) AnimatedSprite(r.pokemon.form.id, r.pokemon.isShiny, r.pokemon.nickname, size = Sizes.SpriteM, animate = !model.data.settings.reduceMotion, ground = 4.dp)
+                        else r.iconItem()?.let { ItemIcon(it, size = Sizes.Icon) }
                         Text(r.describe(entry.source), style = MaterialTheme.typography.bodyLarge)
                     }
                 }

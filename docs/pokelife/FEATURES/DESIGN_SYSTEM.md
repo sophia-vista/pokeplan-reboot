@@ -198,7 +198,8 @@ The following are canonical component families. Implement shared variants rather
 - `EmptyState`: concise explanation and one useful next action; no unrelated feature promotion.
 - `LoadingState`: stable placeholder or restrained progress feedback; never spinner-only for long waits.
 - `ErrorState`: what failed, whether data is safe, and the next useful action (retry, edit, reconnect or continue offline).
-- `SuccessFeedback`: compact confirmation, inline state change or restrained toast/dialogue panel. Avoid repeated reward-like fanfare for routine actions.
+- `SuccessFeedback`: compact confirmation, inline state change or restrained toast/dialogue panel. Avoid repeated reward-like fanfare for routine actions. **One feedback line (0.165.0):** saved, reward and error all go through `AppModel.say` or `Report` and show in one bar above the tabs (`FeedbackHost`), the same on every screen; a screen never draws its own message box. A problem that stays until it is fixed uses `Report` (kept up while the screen holds it); a field that cannot be read still says so under the field.
+- **Empty states (0.165.0):** every `EmptyState` has one button, in the primary colour: where something can be added, it adds (or moves to the field above); otherwise it takes the player to the thing that fills the list (a focus session for eggs, Clear for a search or filters that found nothing).
 - Include stale/offline, permission-denied and partial-data states where relevant.
 
 ### 6.11 Tooltips and contextual menus

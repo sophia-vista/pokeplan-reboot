@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.drawPixelDisc
 import app.pokeplan.ui.theme.drawPixelRing
 
@@ -108,7 +109,7 @@ internal fun WorldPicture(name: String, modifier: Modifier = Modifier, crop: Boo
  */
 @Composable
 internal fun WorldMapHero(name: String, title: String, subtitle: String? = null, aspect: Float = 1f) {
-    Box(Modifier.fillMaxWidth().aspectRatio(aspect).border(2.dp, Pixel.Ink).background(Color(0xFF0B0B12)).clipToBounds()) {
+    Box(Modifier.fillMaxWidth().aspectRatio(aspect).border(Sizes.Line, Pixel.Ink).background(Color(0xFF0B0B12)).clipToBounds()) {
         WorldPicture(name, Modifier.fillMaxSize(), crop = true)
         Box(Modifier.align(Alignment.BottomStart).fillMaxWidth().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xCC1B2230)))).padding(horizontal = Spacing.M, vertical = Spacing.S)) {
             Column {
@@ -142,7 +143,7 @@ internal fun baseMap(starter: Int?, campLevel: Int): String {
 /** A framed picture ([top] shows the top of it, where a scene's sky and buildings are) with a caption plate along its bottom, to open a World screen. */
 @Composable
 internal fun WorldBanner(name: String, title: String, subtitle: String? = null, sky: Color = Color(0xFFBFE3F2), height: Dp = 132.dp, top: Boolean = false) {
-    Box(Modifier.fillMaxWidth().height(height).border(2.dp, Pixel.Ink).background(sky).clipToBounds()) {
+    Box(Modifier.fillMaxWidth().height(height).border(Sizes.Line, Pixel.Ink).background(sky).clipToBounds()) {
         WorldPicture(name, Modifier.fillMaxSize(), crop = true, top = top)
         Box(Modifier.align(Alignment.BottomStart).fillMaxWidth().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xCC1B2230)))).padding(horizontal = Spacing.M, vertical = Spacing.S)) {
             Column {
@@ -250,7 +251,7 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
                     }
                 }
             }
-            Column(Modifier.padding(start = Spacing.BoxX + 8.dp, end = Spacing.BoxX + 8.dp, top = FRAME - 2.dp + tile * (STRIP_ROWS + 3) + Spacing.L, bottom = Spacing.BoxY + 12.dp)) { onWall(content) }
+            Column(Modifier.padding(start = Spacing.BoxX + Spacing.S, end = Spacing.BoxX + Spacing.S, top = FRAME - 2.dp + tile * (STRIP_ROWS + 3) + Spacing.L, bottom = Spacing.BoxY + Spacing.M)) { onWall(content) }
         }
     }
 }
@@ -374,7 +375,7 @@ internal fun WorldMapPicture(stage: Int, markers: List<MapMarker>, selected: Str
         val left = (widthPx - drawnW) / 2f
         val heightDp = with(density) { (pictureH * scale).toDp() }
         Canvas(
-            Modifier.fillMaxWidth().height(heightDp).border(2.dp, Pixel.Ink)
+            Modifier.fillMaxWidth().height(heightDp).border(Sizes.Line, Pixel.Ink)
                 .semantics { contentDescription = "World map with ${markers.size} dungeons: ${markers.count { it.state == MarkerState.CLEARED }} cleared, ${markers.count { it.state == MarkerState.OPEN }} open, ${markers.count { it.state == MarkerState.EXPLORING }} being explored. The list below has every dungeon." }
                 .pointerInput(markers, scale, left) {
                     detectTapGestures { tap ->

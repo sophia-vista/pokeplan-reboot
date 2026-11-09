@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.DialogueShape
 
 import app.pokeplan.ui.theme.PixelShape
@@ -80,7 +81,7 @@ internal fun ListsSection(model: AppModel, tasks: List<Task>, open: (String) -> 
 private fun ListRows(lists: List<TaskList>, tasks: List<Task>, open: (String) -> Unit) {
     if (lists.isEmpty()) return
     val shape = PixelShape
-    Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).clip(shape)) {
+    Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(Sizes.Hairline, Pixel.Border, shape).clip(shape)) {
         lists.forEachIndexed { i, l ->
             if (i > 0) HorizontalDivider(Modifier.padding(start = Spacing.M), color = Pixel.Border)
             val count = tasks.count { it.isOpen && it.listId == l.id }
@@ -89,8 +90,8 @@ private fun ListRows(lists: List<TaskList>, tasks: List<Task>, open: (String) ->
                     .defaultMinSize(minHeight = 56.dp).padding(horizontal = Spacing.M, vertical = Spacing.S),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
             ) {
-                Box(Modifier.size(40.dp).background(Color(l.color).copy(alpha = 0.16f), app.pokeplan.ui.theme.PixelDisc), contentAlignment = Alignment.Center) {
-                    ItemIcon(l.icon, size = 32.dp, description = null)
+                Box(Modifier.size(Sizes.IconL).background(Color(l.color).copy(alpha = 0.16f), app.pokeplan.ui.theme.PixelDisc), contentAlignment = Alignment.Center) {
+                    ItemIcon(l.icon, size = Sizes.Icon, description = null)
                 }
                 Text(l.name, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (count > 0) Text("$count", style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft)
@@ -109,7 +110,7 @@ internal fun ListScreen(model: AppModel, list: TaskList, tasks: List<Task>, card
         else PixelButton("Edit list", { editing = true }, color = Pixel.InkSoft, compact = true)
         if (!list.archived) QuickAddBox(model, View.INBOX, listId = list.id)
         WhenGroups(model, tasks, card)
-        if (tasks.isEmpty()) EmptyState("Nothing in ${list.name}", "Add a task above, or file one here from its options.", icon = list.icon)
+        if (tasks.isEmpty()) EmptyState("Nothing in ${list.name}", "Add a task above, or file one here from its options.", icon = list.icon, action = "Add a task" to { model.addTaskRequested = true })
     }
 }
 
@@ -141,7 +142,7 @@ private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit
                             .semantics { contentDescription = listColorNames[i] },
                         contentAlignment = Alignment.Center,
                     ) {
-                        Box(Modifier.size(32.dp).background(Color(c), DialogueShape).border(if (on) 3.dp else 0.dp, if (on) Pixel.Ink else Color.Transparent, DialogueShape))
+                        Box(Modifier.size(Sizes.Icon).background(Color(c), DialogueShape).border(if (on) 3.dp else 0.dp, if (on) Pixel.Ink else Color.Transparent, DialogueShape))
                     }
                 }
             }

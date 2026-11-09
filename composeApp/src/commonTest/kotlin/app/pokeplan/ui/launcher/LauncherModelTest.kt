@@ -7,6 +7,7 @@ import app.pokeplan.core.pokemon.OwnedPokemon
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class LauncherModelTest {
@@ -410,5 +411,39 @@ class LauncherGestureTest {
         assertEquals(listOf("buddy", "fav", "strong", "weak", "none"), order)
         // A cap keeps the ones with sprites.
         assertEquals(listOf("buddy", "fav"), townResidents(listOf(spriteless, weak, fav, buddy), "buddy", cap = 2, favorites = setOf("fav"), hasSprite = { it.id != "none" }).map { it.id })
+    }
+
+    private fun townMon(id: String, species: Int, level: Int) =
+        Hatching.create(id, HatchOption(species, Dex.defaultForm(species).identifier), OwnedPokemon.PARTY_SIZE, 0L, 60, Random(species)).copy(level = level)
+
+    @Test
+    fun theTownShowsAtMostOneGuardianAndTheBuddyWinsIfItIsOne() {
+        val kyogre = townMon("kyogre", 382, 40)
+        val groudon = townMon("groudon", 383, 60)
+        val rayquaza = townMon("rayquaza", 384, 50)
+        val plain = townMon("plain", 25, 5)
+        val all = listOf(plain, kyogre, groudon, rayquaza)
+        val guardians = listOf("kyogre", "groudon", "rayquaza")
+        // The strongest Guardian walks the town; the others stay in their modules.
+        assertEquals(listOf("groudon", "plain"), townResidents(all, null, guardianIds = guardians).map { it.id })
+        // A Guardian that is the buddy is the one shown.
+        assertEquals(listOf("kyogre", "plain"), townResidents(all, "kyogre", guardianIds = guardians).map { it.id })
+        // No Guardians: nothing changes.
+        assertEquals(4, townResidents(all, null).size)
+    }
+
+    @Test
+    fun aGuardianBringsItsOwnWeatherOnlyUnderGuardiansWeather() {
+        assertEquals(Weather.RAIN, guardianWeather(townMon("k", 382, 40)))
+        assertEquals(Weather.CLEAR, guardianWeather(townMon("p", 25, 5)), "no weather of its own: a clear sky")
+        assertEquals(Weather.CLEAR, guardianWeather(null as OwnedPokemon?))
+        assertEquals(Weather.GUARDIAN, LauncherPrefs.decode(LauncherPrefs().copy(weather = Weather.GUARDIAN).encode()).weather)
+    }
+
+    @Test
+    fun chirpsAreOnByDefaultAndTheSwitchIsRemembered() {
+        assertTrue(LauncherPrefs().chirps)
+        assertFalse(LauncherPrefs.decode(LauncherPrefs().withChirps(false).encode()).chirps)
+        assertTrue(LauncherPrefs.decode("").chirps)
     }
 }

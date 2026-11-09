@@ -45,6 +45,7 @@ import app.pokeplan.mint.TxStatus
 import app.pokeplan.mint.TxType
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.Report
 import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.DeviceGate
 import androidx.compose.runtime.DisposableEffect
@@ -139,7 +140,7 @@ private fun MintGate(model: AppModel, content: @Composable () -> Unit) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Mint is locked")
             Text("Use your phone's screen lock to open it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            if (failed) Notice("That did not open it.", tone = NoticeTone.WARNING)
+            if (failed) Report(model, "That did not open it.", tone = NoticeTone.WARNING)
             PixelButton("Unlock", ::ask, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent)
             PixelButton("Back", toModules, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
@@ -324,7 +325,7 @@ private fun AccountsView(model: AppModel) {
                 PixelField(suffix, { suffix = it.filter(Char::isLetterOrDigit).take(MintRules.SUFFIX_MAX) }, Modifier.fillMaxWidth(), label = "Last ${MintRules.SUFFIX_MAX} digits, optional", singleLine = true, helper = "Never a full number, a PIN or a code.")
             }
             PixelButton("Save", ::save, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = name.isNotBlank())
-            message?.let { (text, tone) -> Notice(text, tone = tone) }
+            message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
 }
@@ -384,7 +385,7 @@ internal fun AccountOptions(model: AppModel, a: FinancialAccount, startEditing: 
             }
             PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        refused?.let { Notice(it, tone = NoticeTone.WARNING) }
+        refused?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
@@ -427,7 +428,7 @@ private fun ActivityView(model: AppModel) {
             categoryId = categoryId.takeIf { type != TxType.TRANSFER && type != TxType.ADJUSTMENT }, payee = payee, note = note, atMillis = at, up = up,
         )
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-        else { message = "Saved." to NoticeTone.INFO; amount = ""; payee = ""; note = ""; more = false; model.haptic() }
+        else { message = null; model.say("Saved."); amount = ""; payee = ""; note = ""; more = false; model.haptic() }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -469,7 +470,7 @@ private fun ActivityView(model: AppModel) {
                 PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note, optional", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
             }
             PixelButton("Save", ::save, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = amount.isNotBlank())
-            message?.let { (text, tone) -> Notice(text, tone = tone) }
+            message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
     val found = MintRules.search(data, query, filter).take(50)
@@ -558,7 +559,7 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
                 PixelButton("Close", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
         }
-        refused?.let { Notice(it, tone = NoticeTone.WARNING) }
+        refused?.let { Report(model, it, NoticeTone.WARNING) }
     }
 }
 
@@ -627,7 +628,7 @@ private fun BudgetsView(model: AppModel) {
                 message = if (minor == null) "Check the amount." else out?.refused
                 if (out?.record != null) { amount = ""; model.haptic() }
             }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = amount.isNotBlank())
-            message?.let { Notice(it, tone = NoticeTone.WARNING) }
+            message?.let { Report(model, it, NoticeTone.WARNING) }
         }
     }
 }
@@ -695,7 +696,7 @@ private fun BillsView(model: AppModel) {
                     if (out.record != null) { name = ""; amount = ""; model.haptic() }
                 }
             }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = name.isNotBlank())
-            message?.let { Notice(it, tone = NoticeTone.WARNING) }
+            message?.let { Report(model, it, NoticeTone.WARNING) }
         }
     }
     if (data.bills.isNotEmpty()) TextBox {
@@ -771,8 +772,8 @@ private fun MintReviewView(model: AppModel) {
                 "${data.accounts.count { it.status == AccountStatus.ACTIVE }} open accounts · ${soon.size} bill${if (soon.size == 1) "" else "s"} to settle this week · ${data.budgets.count { it.status == PlanStatus.ACTIVE }} budgets",
                 style = MaterialTheme.typography.bodyLarge,
             )
-            PixelButton(if (weekDone) "Reviewed this week" else "Finish this week's review", { mint.finishReview(); model.effect(Sfx.ITEM_GET); message = "Saved." }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = !weekDone && data.accounts.isNotEmpty())
-            message?.let { Notice(it) }
+            PixelButton(if (weekDone) "Reviewed this week" else "Finish this week's review", { mint.finishReview(); model.effect(Sfx.ITEM_GET); message = null; model.say("Saved.") }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = !weekDone && data.accounts.isNotEmpty())
+            message?.let { Report(model, it) }
         }
     }
 }
@@ -805,7 +806,7 @@ private fun ReconcileCard(model: AppModel) {
             PixelButton("Compare", {
                 if (parsed == null) { message = "Check the amount." to NoticeTone.WARNING; return@PixelButton }
                 val diff = MintRules.reconcileDifference(parsed, book)
-                if (diff == 0L) { mint.reconcile(account.id, parsed); model.effect(Sfx.ITEM_GET); message = "They match. Saved." to NoticeTone.INFO; statement = ""; difference = null }
+                if (diff == 0L) { mint.reconcile(account.id, parsed); model.effect(Sfx.ITEM_GET); message = null; model.say("They match. Saved."); statement = ""; difference = null }
                 else { difference = diff; message = null }
             }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = parsed != null)
             difference?.let { diff ->
@@ -813,12 +814,12 @@ private fun ReconcileCard(model: AppModel) {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     PixelButton("Accept the difference", {
                         parsed?.let { mint.reconcile(account.id, it, acceptAdjustment = true); model.effect(Sfx.ITEM_GET) }
-                        message = "Adjustment recorded. Saved." to NoticeTone.INFO; statement = ""; difference = null
+                        message = null; model.say("Adjustment recorded. Saved."); statement = ""; difference = null
                     }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
                     PixelButton("Not now", { difference = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
-            message?.let { (text, tone) -> Notice(text, tone = tone) }
+            message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
 }
@@ -896,7 +897,7 @@ private fun MintSettingsView(model: AppModel) {
                     MintKinds.entries.forEach { k -> PixelButton("Export ${k.label.lowercase()}", { note = files.save("pokelife-mint-${k.name.lowercase()}.json", mint.export(setOf(k))) }, color = Pixel.InkSoft, compact = true) }
                 }
             } else Text("Exporting is not available on this device.", style = MaterialTheme.typography.bodyMedium)
-            note?.let { Notice(it) }
+            note?.let { Report(model, it) }
             MintKinds.entries.forEach { k ->
                 if (asking == k) Confirm(
                     if (k == MintKinds.ACCOUNTS) "Erase all accounts and the records that belong to them? This cannot be undone." else "Erase all ${k.label.lowercase()}? This cannot be undone.",

@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.theme.DialogueShape
 
 import app.pokeplan.ui.theme.PixelShape
@@ -134,7 +135,7 @@ internal fun MonthView(
 
         val shape = PixelShape
         Column(
-            Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(1.dp, Pixel.Border, shape).padding(Spacing.XS),
+            Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(Sizes.Hairline, Pixel.Border, shape).padding(Spacing.XS),
             verticalArrangement = Arrangement.spacedBy(Spacing.XS),
         ) {
             Row(Modifier.fillMaxWidth()) {
@@ -256,7 +257,7 @@ private fun DayAgenda(
             }
             tasks.forEach { t ->
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Box(Modifier.size(10.dp).border(2.dp, categoryColor(t.category), PixelShape))
+                    Box(Modifier.size(10.dp).border(Sizes.Line, categoryColor(t.category), PixelShape))
                     (t.plannedTime ?: t.due?.time)?.let { Text(clock(it), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
                     Text(t.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
