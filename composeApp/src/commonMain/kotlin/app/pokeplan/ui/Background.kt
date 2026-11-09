@@ -27,7 +27,7 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 import pokeplan.composeapp.generated.resources.Res
 import kotlin.math.roundToInt
 
-private val cache = mutableMapOf<String, ImageBitmap?>()
+private val cache = BitmapCache(CacheBudget.SMALL)
 
 /**
  * A real game box wallpaper tiled behind [content], scaled by a whole number so the pixels stay sharp.

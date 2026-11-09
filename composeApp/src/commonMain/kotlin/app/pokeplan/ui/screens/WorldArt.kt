@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +49,11 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.orNull
+import app.pokeplan.ui.rememberRunningSeconds
+import app.pokeplan.ui.rememberInForeground
+import app.pokeplan.ui.onScreen
+import app.pokeplan.ui.CacheBudget
+import app.pokeplan.ui.BitmapCache
 import app.pokeplan.ui.theme.DialogueShape
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.dialogueBox
@@ -58,7 +64,7 @@ import pokeplan.composeapp.generated.resources.Res
 import kotlin.math.max
 import kotlin.math.min
 
-private val worldArt = mutableMapOf<String, ImageBitmap?>()
+private val worldArt = BitmapCache(CacheBudget.WORLD_ART)
 
 
 /**
@@ -147,7 +153,7 @@ internal fun WorldBanner(name: String, title: String, subtitle: String? = null, 
     }
 }
 
-private val tileAtlases = mutableMapOf<String, ImageBitmap?>()
+private val tileAtlases = BitmapCache(CacheBudget.TILES)
 private val layouts = mutableMapOf<Pair<Int, Int>, app.pokeplan.ui.launcher.TownMap>()
 
 /** The tileset atlas (assets/tiles) a dungeon is drawn with: its own where the game's Explorers of Sky sheet is here, else a Red Rescue Team one by theme; the rifts use the World Abyss. */
@@ -192,12 +198,12 @@ internal fun TileBox(dungeonId: String, walkers: List<TileWalker>, animate: Bool
         }
     }
     val alternates = remember(atlas) { atlas?.let { app.pokeplan.ui.launcher.alternatesFit(it) } ?: booleanArrayOf(true, false, false) }
-    var seconds by remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(animate && scrolls) {
-        if (animate && scrolls) { val start = withFrameNanos { it }; while (true) withFrameNanos { seconds = (it - start) / 1_000_000_000f } }
-    }
+    // Moves only while the app is in sight and this box is on the screen; the time is read in the draw block, so a frame redraws and recomposes nothing.
+    var onScreen by remember { mutableStateOf(true) }
+    val foreground = rememberInForeground()
+    val seconds by rememberRunningSeconds(animate && scrolls && onScreen && foreground)
     val density = LocalDensity.current
-    BoxWithConstraints(modifier.fillMaxWidth()) {
+    BoxWithConstraints(modifier.fillMaxWidth().onScreen { onScreen = it }) {
         val stripWidth = maxWidth - FRAME * 2
         val widthPx = with(density) { stripWidth.toPx() }
         val pixel = (widthPx / (TILE_PX * 8)).toInt().coerceAtLeast(1)
@@ -294,12 +300,11 @@ internal fun CampYard(level: Int, residents: List<TileWalker>, animate: Boolean)
             tileAtlases[tiles] = value
         }
     }
-    var seconds by remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(animate) {
-        if (animate) { val start = withFrameNanos { it }; while (true) withFrameNanos { seconds = (it - start) / 1_000_000_000f } }
-    }
+    var onScreen by remember { mutableStateOf(true) }
+    val foreground = rememberInForeground()
+    val seconds = rememberRunningSeconds(animate && onScreen && foreground)
     val density = LocalDensity.current
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
+    BoxWithConstraints(Modifier.fillMaxWidth().onScreen { onScreen = it }) {
         val inner = maxWidth - FRAME * 2
         val pixel = (with(density) { inner.toPx() } / (TILE_PX * 8)).toInt().coerceAtLeast(1)
         val tilePx = TILE_PX * pixel
@@ -319,12 +324,11 @@ internal fun CampYard(level: Int, residents: List<TileWalker>, animate: Boolean)
                     // Each walks a sine path along its own strip of floor; the cosine says which way it faces.
                     val speed = 0.35f + (i * 7 % 5) * 0.08f
                     val phase = i * 1.7f
-                    val angle = seconds * speed + phase
                     val span = (inner - spriteSize).value.coerceAtLeast(1f)
-                    val x = span / 2f * (1f + kotlin.math.sin(angle))
-                    val facingLeft = animate && kotlin.math.cos(angle) < 0f
                     val feet = tile * (1.5f + (i % 3) * 0.95f)
-                    Box(Modifier.offset(x = x.dp, y = feet - spriteSize)) {
+                    // The time is read where it is laid out and where the facing is derived: a frame moves the Pokémon without recomposing the yard.
+                    val facingLeft by remember(animate, speed, phase) { derivedStateOf { animate && kotlin.math.cos(seconds.value * speed + phase) < 0f } }
+                    Box(Modifier.offset { IntOffset((span / 2f * (1f + kotlin.math.sin(seconds.value * speed + phase))).dp.roundToPx(), (feet - spriteSize).roundToPx()) }) {
                         app.pokeplan.ui.AnimatedSprite(p.formId, p.shiny, p.name, size = spriteSize, animate = animate, ground = 0.dp, action = app.pokeplan.ui.SpriteAction.WALK_SIDE, mirror = facingLeft)
                     }
                 }
@@ -427,7 +431,7 @@ private const val MAP_W = 504f
 private const val MAP_H = 336f
 
 
-private val fxSheets = mutableMapOf<String, ImageBitmap?>()
+private val fxSheets = BitmapCache(CacheBudget.SMALL)
 
 /** The strips of attack-effect frames in assets/world/fx: name, frame width and height, frame count (fx.tsv). */
 private val fxFrames = mapOf("hit" to Triple(72, 72, 24), "welcome" to Triple(64, 64, 24), "steam" to Triple(60, 60, 22), "sparkle" to Triple(24, 24, 24))

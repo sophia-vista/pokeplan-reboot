@@ -52,6 +52,8 @@ import app.pokeplan.ui.SpriteAction
 import app.pokeplan.ui.StatusIcon
 import app.pokeplan.ui.StatusKind
 import app.pokeplan.ui.orNull
+import app.pokeplan.ui.CacheBudget
+import app.pokeplan.ui.BitmapCache
 import app.pokeplan.ui.rememberFadeIn
 import app.pokeplan.ui.theme.Pixel
 import androidx.compose.foundation.background
@@ -356,7 +358,7 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
 /** [value] rounded to a multiple of [pixel], so a position always falls on the pixel grid of the art. */
 internal fun snap(value: Float, pixel: Int): Int = (value / pixel).roundToInt() * pixel
 
-private val atlases = mutableMapOf<String, ImageBitmap?>()
+private val atlases = BitmapCache(CacheBudget.TILES)
 
 /** The town's backdrop: a real Pokémon scene (whole-number scale, no smoothing), or a town laid out from a dungeon's tiles. */
 @Composable

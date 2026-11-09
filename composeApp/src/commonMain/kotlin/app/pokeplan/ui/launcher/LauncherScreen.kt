@@ -606,9 +606,9 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
                 }
             }
             LazyRow(Modifier.fillMaxWidth(), contentPadding = PaddingValues(horizontal = Spacing.Page, vertical = Spacing.XS), horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                item { Chip("All", "", category == null && !showHidden, pixel) { category = null; showHidden = false } }
-                items(categories) { (c, n) -> Chip(c.label, "$n", category == c && !showHidden, pixel, icon = c.icon) { category = c; showHidden = false } }
-                if (anyHidden) item { Chip("Hidden", "", showHidden, pixel) { showHidden = true; category = null } }
+                item(key = "#all") { Chip("All", "", category == null && !showHidden, pixel) { category = null; showHidden = false } }
+                items(categories, key = { (c, _) -> "#c${c.name}" }) { (c, n) -> Chip(c.label, "$n", category == c && !showHidden, pixel, icon = c.icon) { category = c; showHidden = false } }
+                if (anyHidden) item(key = "#hidden") { Chip("Hidden", "", showHidden, pixel) { showHidden = true; category = null } }
             }
             Box(Modifier.weight(1f).fillMaxWidth()) {
                 if (rows.isEmpty()) PmdText(if (query.isBlank()) "No apps here" else "Nothing matches " + query.trim(), pixel, Modifier.align(Alignment.Center), alpha = 0.7f)

@@ -25,7 +25,7 @@ import org.jetbrains.compose.resources.decodeToImageBitmap
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.min
 
-private val cache = mutableMapOf<String, ImageBitmap?>()
+private val cache = BitmapCache(CacheBudget.STILL_SPRITES)
 
 /**
  * [block]'s result, or null when it fails (a missing or broken file). A cancelled load is not a failure and is passed on:
