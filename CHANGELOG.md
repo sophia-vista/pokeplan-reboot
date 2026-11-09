@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.165.1
+
+Weather against Red Rescue Team (REP-024; `docs/pokelife/evidence/WEATHER-original.md`, `tools/weather/`). No reward number changes.
+
+- **Fix: Guardian and the Pokémon it met stayed frozen on the launcher.** The reaction and chirp holds were taken off only after their delay; when the town stopped being calm in the middle (a page swiped, the launcher out of sight) the effect was cancelled and the hold stayed for good. They are cleared in a `finally` now.
+- **Fix: the sandstorm showed the sheet's caption.** The two sand textures were cut from 8 rows too high, so the word "Sandstorm" and a dark band repeated over the town. Cut from the right rows.
+- **Snow, blizzard, clouds and sand follow the game's own numbers.** From the decompiled ground-weather code: a snow frame lasts 5 ticks (83.7 ms, was 220), a blizzard frame 2 ticks (33.5 ms, was 80) and neither has a veil any more (the flakes are opaque in the game); the cloud shadows are the game's blue at a quarter (was black at 16%) and drift 30 pixels right and 15 up a second in whole game pixels (was 6 right); the sand textures are blended at a quarter with no tint rectangle and slide at the game's two texture speeds.
+- **Towns built from a dungeon's tiles are graded like the dungeon.** The game sends every tile colour through a per-weather table for red, green and blue (`colvec`: sandstorm yellow-brown, rain dark blue, cloudy cool, hail and snow cold); the town does the same through the real tables (`assets/weather/ramps.tsv`) instead of keeping its clear colours.
+- Tools: `tools/weather/decode_bg.py` rebuilds the game's weather layers from its files, `match_sheets.py` proves which layer each sheet is (snow = W03P01, blizzard = W03P03, clouds = W01), `inspect_sheets.py` reports every frame, `extract_ramps.py` writes the ramps. The rain's timing and loop points and the sandstorm's own effect are still open (REP-024).
+
 ## 0.165.0
 
 REP-023 (UI consistency) and a launcher pass. No reward number changes.

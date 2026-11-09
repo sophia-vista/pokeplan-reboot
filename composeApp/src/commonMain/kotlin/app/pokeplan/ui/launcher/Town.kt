@@ -135,7 +135,7 @@ internal fun Town(
         val screenPx = widthPx / screens
         val pixel = townScale(screenPx)
         androidx.compose.foundation.layout.Row(Modifier.fillMaxSize()) {
-            repeat(screens) { TownBackdrop(scene, Modifier.weight(1f).fillMaxHeight()) }
+            repeat(screens) { TownBackdrop(scene, Modifier.weight(1f).fillMaxHeight(), weather = weather) }
         }
         // The night tint is one sheet over every screen of the town, not one per backdrop, so it reaches the right edge whatever the backdrops' widths.
         val dark = BuddyScene.darkness(model.store.now.hour, model.store.now.minute)
@@ -372,8 +372,8 @@ private val atlases = BitmapCache(CacheBudget.TILES)
 
 /** The town's backdrop: a real Pokémon scene (whole-number scale, no smoothing), or a town laid out from a dungeon's tiles. */
 @Composable
-internal fun TownBackdrop(scene: String, modifier: Modifier = Modifier, darkness: Float = 0f) {
-    if (TownScenes.isDungeon(scene)) TileTown(scene, modifier, darkness) else SceneImage(scene, modifier, darkness, crisp = true)
+internal fun TownBackdrop(scene: String, modifier: Modifier = Modifier, darkness: Float = 0f, weather: Weather = Weather.CLEAR) {
+    if (TownScenes.isDungeon(scene)) TileTown(scene, modifier, darkness, weather) else SceneImage(scene, modifier, darkness, crisp = true)
 }
 
 /**
@@ -381,7 +381,7 @@ internal fun TownBackdrop(scene: String, modifier: Modifier = Modifier, darkness
  * multiple of the scale, with the day's darkness over it like [SceneImage].
  */
 @Composable
-private fun TileTown(name: String, modifier: Modifier, darkness: Float) {
+private fun TileTown(name: String, modifier: Modifier, darkness: Float, weather: Weather) {
     val atlas by produceState(atlases[name], name) {
         // The key may have changed under the same composable: start from what is cached for the new one, never the old one's image.
         value = atlases[name]
@@ -390,9 +390,11 @@ private fun TileTown(name: String, modifier: Modifier, darkness: Float) {
             atlases[name] = value
         }
     }
+    // The dungeon's weather grades the colours of its tiles (WeatherGrade.kt); the picture shows as it was until the graded one is made.
+    val shown by produceState(atlas, atlas, weather) { value = atlas?.let { gradedFor(name, it, weather) } }
     val fade by rememberFadeIn(atlas != null)
     Canvas(modifier) {
-        val image = atlas ?: return@Canvas drawRect(PmdPalette.Loading)
+        val image = shown ?: atlas ?: return@Canvas drawRect(PmdPalette.Loading)
         val pixel = townScale(size.width)
         val tile = TILE * pixel
         val cols = (size.width / tile).toInt() + 2

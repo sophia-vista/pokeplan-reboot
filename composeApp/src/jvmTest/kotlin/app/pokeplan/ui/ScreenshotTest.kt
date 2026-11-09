@@ -129,6 +129,23 @@ class ScreenshotTest {
         }
     }
 
+    /** A dungeon town graded by each weather's colour ramp, with the weather's own layer over it (WeatherLayer, WeatherGrade). */
+    @Test
+    fun weatherTown() {
+        val weathers = listOf(
+            app.pokeplan.ui.launcher.Weather.CLEAR, app.pokeplan.ui.launcher.Weather.RAIN, app.pokeplan.ui.launcher.Weather.SNOW,
+            app.pokeplan.ui.launcher.Weather.BLIZZARD, app.pokeplan.ui.launcher.Weather.SANDSTORM, app.pokeplan.ui.launcher.Weather.CLOUDS,
+        )
+        weathers.forEach { w ->
+            render("weather-town-${w.name.lowercase()}", width = 360, height = 540, density = 1f, frames = 70) {
+                Box(Modifier.fillMaxSize()) {
+                    app.pokeplan.ui.launcher.TownBackdrop("lush-prairie", Modifier.fillMaxSize(), weather = w)
+                    app.pokeplan.ui.launcher.WeatherLayer(w, 2, dungeon = true, calm = false, modifier = Modifier.fillMaxSize())
+                }
+            }
+        }
+    }
+
     /** The open task card is a sheet of three tabs (When, Steps, Edit), in both palettes. */
     @Test
     fun taskCardSheet() {

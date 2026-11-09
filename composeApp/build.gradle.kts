@@ -58,7 +58,7 @@ val composeAssets = tasks.register<Sync>("prepareComposeAssets") {
     from(rootProject.file("assets/sfx")) { include("*.ogg"); into("files/sfx") }
     from(rootProject.file("assets/sky-sfx")) { include("jingle-mission-success.ogg"); into("files/sfx") }
     from(rootProject.file("assets/status")) { include("*.png"); exclude("sheet.png", "sheet2.png"); into("files/status") }
-    from(rootProject.file("assets/weather")) { include("*.png"); into("files/weather") }
+    from(rootProject.file("assets/weather")) { include("*.png", "ramps.tsv"); into("files/weather") }
     from(rootProject.file("assets/fonts")) { include("*.ttf"); into("font") }
     from(rootProject.file("assets/fonts")) { include("pmd-dialogue.*"); into("files/fonts") }
 }
