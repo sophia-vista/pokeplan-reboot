@@ -1,108 +1,110 @@
 package app.pokeplan.core.dex
 
-import app.pokeplan.core.dex.generated.DEX_ENTRIES
-import app.pokeplan.core.dex.generated.DEX_EVOLUTIONS
-import app.pokeplan.core.dex.generated.DEX_FORMS
-import app.pokeplan.core.dex.generated.DEX_LEARNSETS
-import app.pokeplan.core.dex.generated.DEX_MOVES
-import app.pokeplan.core.dex.generated.DEX_REGIONS
-import app.pokeplan.core.dex.generated.DEX_SPECIES
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonPrimitive
 
-/** Parses the generated tables (see tools/species/generate.py). Fields are `|` separated, `-` means empty. */
+/**
+ * Reads the Dex tables, which are JSON files in the `dex` resources (see tools/species/generate.py): each an array of rows, a row an array of
+ * numbers, text, nulls (nothing) and lists, in the column order read below. Read once, each when first asked for.
+ */
 internal object DexParser {
-    private fun rows(chunks: List<String>): List<List<String>> =
-        chunks.joinToString("").lineSequence().filter { it.isNotBlank() }.map { it.split('|') }.toList()
+    private fun table(name: String): List<JsonArray> = Json.parseToJsonElement(dexJson(name)).jsonArray.map { it.jsonArray }
 
-    private fun String.orNull(): String? = if (this == "-") null else this
+    private fun JsonArray.text(i: Int): String = this[i].jsonPrimitive.content
+    private fun JsonArray.textOrNull(i: Int): String? = this[i].takeIf { it !is JsonNull }?.jsonPrimitive?.content
+    private fun JsonArray.number(i: Int): Int = this[i].jsonPrimitive.int
+    private fun JsonArray.numberOrNull(i: Int): Int? = this[i].takeIf { it !is JsonNull }?.jsonPrimitive?.int
+    private fun JsonArray.texts(i: Int): List<String> = this[i].jsonArray.map { it.jsonPrimitive.content }
+    private fun JsonArray.numbers(i: Int): List<Int> = this[i].jsonArray.map { it.jsonPrimitive.int }
 
-    private fun list(value: String, separator: Char = ','): List<String> =
-        if (value == "-") emptyList() else value.split(separator)
-
-    fun species(): List<SpeciesInfo> = rows(DEX_SPECIES).map { f ->
-        val gender = f[5].toInt()
+    fun species(): List<SpeciesInfo> = table("species").map { f ->
+        val gender = f.number(5)
         SpeciesInfo(
-            id = f[0].toInt(),
-            identifier = f[1],
-            name = f[2],
-            generation = f[3].toInt(),
-            evolvesFrom = f[4].orNull()?.toInt(),
+            id = f.number(0),
+            identifier = f.text(1),
+            name = f.text(2),
+            generation = f.number(3),
+            evolvesFrom = f.numberOrNull(4),
             femaleEighths = if (gender < 0) null else gender,
-            isBaby = f[6] == "1",
-            isLegendary = f[7] == "1",
-            isMythical = f[8] == "1",
-            cosmeticForms = list(f[9]),
-            genus = f[10].orNull() ?: "",
-            heightDm = f[11].toInt(),
-            weightHg = f[12].toInt(),
+            isBaby = f.number(6) == 1,
+            isLegendary = f.number(7) == 1,
+            isMythical = f.number(8) == 1,
+            cosmeticForms = f.texts(9),
+            genus = f.textOrNull(10) ?: "",
+            heightDm = f.number(11),
+            weightHg = f.number(12),
         )
     }
 
-    fun forms(): List<FormInfo> = rows(DEX_FORMS).map { f ->
-        val s = f[6].split(',').map { it.toInt() }
+    fun forms(): List<FormInfo> = table("forms").map { f ->
+        val s = f.numbers(6)
         FormInfo(
-            id = f[0].toInt(),
-            identifier = f[1],
-            speciesId = f[2].toInt(),
-            kind = FormKind.valueOf(f[3]),
-            name = f[4],
-            types = list(f[5]).map { PokemonType.valueOf(it.uppercase()) },
+            id = f.number(0),
+            identifier = f.text(1),
+            speciesId = f.number(2),
+            kind = FormKind.valueOf(f.text(3)),
+            name = f.text(4),
+            types = f.texts(5).map { PokemonType.valueOf(it.uppercase()) },
             stats = BaseStats(s[0], s[1], s[2], s[3], s[4], s[5]),
-            abilities = list(f[7]),
-            hiddenAbility = f[8].orNull(),
+            abilities = f.texts(7),
+            hiddenAbility = f.textOrNull(8),
         )
     }
 
-    fun evolutions(): List<Evolution> = rows(DEX_EVOLUTIONS).map { f ->
+    fun evolutions(): List<Evolution> = table("evolutions").map { f ->
         Evolution(
-            from = f[0].toInt(),
-            to = f[1].toInt(),
-            kind = EvolutionKind.valueOf(f[2]),
-            level = f[3].orNull()?.toInt(),
-            item = f[4].orNull(),
-            heldItem = f[5].orNull(),
-            timeOfDay = f[6].orNull()?.let { TimeOfDay.valueOf(it.uppercase()) },
-            gender = when (f[7]) {
+            from = f.number(0),
+            to = f.number(1),
+            kind = EvolutionKind.valueOf(f.text(2)),
+            level = f.numberOrNull(3),
+            item = f.textOrNull(4),
+            heldItem = f.textOrNull(5),
+            timeOfDay = f.textOrNull(6)?.let { TimeOfDay.valueOf(it.uppercase()) },
+            gender = when (f.textOrNull(7)) {
                 "F" -> Gender.FEMALE
                 "M" -> Gender.MALE
                 else -> null
             },
-            friendship = f[8].orNull()?.toInt(),
-            requiredForm = f[9].orNull(),
-            evolvedForm = f[10].orNull(),
-            chancePercent = f[11].orNull()?.toInt(),
-            conditions = list(f[12], ';'),
+            friendship = f.numberOrNull(8),
+            requiredForm = f.textOrNull(9),
+            evolvedForm = f.textOrNull(10),
+            chancePercent = f.numberOrNull(11),
+            conditions = f.texts(12),
         )
     }
 
     /** Pokédex text per species id. */
-    fun entries(): Map<Int, String> = DEX_ENTRIES.joinToString("").lineSequence().filter { it.isNotBlank() }
-        .associate { line -> line.substringBefore('|').toInt() to line.substringAfter('|') }
+    fun entries(): Map<Int, String> = table("entries").associate { f -> f.number(0) to f.text(1) }
 
     /** Region name to ordered species ids. Includes the extra "HISUI" list used to pick Hisuian variants. */
-    fun regions(): Map<String, List<Int>> = rows(DEX_REGIONS).associate { f -> f[0] to f[1].split(',').map { it.toInt() } }
+    fun regions(): Map<String, List<Int>> = table("regions").associate { f -> f.text(0) to f.numbers(1) }
 
-    fun moves(): List<MoveInfo> = rows(DEX_MOVES).map { f ->
+    fun moves(): List<MoveInfo> = table("moves").map { f ->
         MoveInfo(
-            id = f[0].toInt(),
-            identifier = f[1],
-            name = f[2],
-            type = PokemonType.valueOf(f[3].uppercase()),
-            category = MoveCategory.valueOf(f[4]),
-            power = f[5].orNull()?.toInt(),
-            pp = f[6].orNull()?.toInt(),
-            accuracy = f[7].orNull()?.toInt(),
-            priority = f[8].toInt(),
-            generation = f[9].toInt(),
+            id = f.number(0),
+            identifier = f.text(1),
+            name = f.text(2),
+            type = PokemonType.valueOf(f.text(3).uppercase()),
+            category = MoveCategory.valueOf(f.text(4)),
+            power = f.numberOrNull(5),
+            pp = f.numberOrNull(6),
+            accuracy = f.numberOrNull(7),
+            priority = f.number(8),
+            generation = f.number(9),
         )
     }
 
     /** Form (Pokémon row) id to its learnset. */
-    fun learnsets(): Map<Int, Learnset> = rows(DEX_LEARNSETS).associate { f ->
-        f[0].toInt() to Learnset(
-            levelUp = list(f[1]).map { it.substringBefore('@').toInt() to it.substringAfter('@').toInt() },
-            egg = list(f[2]).map { it.toInt() },
-            tutor = list(f[3]).map { it.toInt() },
-            machine = list(f[4]).map { it.toInt() },
+    fun learnsets(): Map<Int, Learnset> = table("learnsets").associate { f ->
+        f.number(0) to Learnset(
+            levelUp = f[1].jsonArray.map { it.jsonArray.let { pair -> pair[0].jsonPrimitive.int to pair[1].jsonPrimitive.int } },
+            egg = f.numbers(2),
+            tutor = f.numbers(3),
+            machine = f.numbers(4),
         )
     }
 }
