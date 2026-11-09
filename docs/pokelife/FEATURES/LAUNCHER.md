@@ -128,8 +128,11 @@ Folders open in a compact floating panel, support rename/reorder/add/remove and 
 Visible inhabitants are projections of the canonical owned-Pokémon collection. Priority order:
 
 1. Selected global buddy.
-2. User-favorited Pokémon.
-3. Other eligible owned Pokémon according to rotation settings or an explicitly selected launcher display roster.
+2. The Guardian (owner, 9 November 2026): at most one Guardian walks the town, however many the player has (one per module). It is the buddy if the buddy is a Guardian, else the Guardian of the highest level (then the smallest id). The others stay in their modules.
+3. User-favorited Pokémon.
+4. Other eligible owned Pokémon according to rotation settings or an explicitly selected launcher display roster.
+
+The shown Guardian is noticed: a Pokémon that walks close to it stops, turns and is startled (and the Guardian answers with a sparkle), once in a while per Pokémon, never in Reduce motion. The town weather has a "Guardian's weather" choice: the shown Guardian brings its own (Kyogre and Suicune rain, Articuno snow, Kyurem and Regice a blizzard, Regirock and Landorus a sandstorm, Lugia and Rayquaza cloud shadows; none of its own means a clear sky). "Live forecast" stays the default. Now and then one Pokémon in the town chirps (its own cry, quiet and short, with a hop; the Guardian rarely and lower), only while the town is in sight on Home, never in Reduce motion, battery saver, a call or with Sound off, and it can be switched off in the launcher's settings.
 
 There is no global active party. Module parties are independent; the launcher must not infer or merge them into one. WORLD expedition teams are also not a launcher party.
 
