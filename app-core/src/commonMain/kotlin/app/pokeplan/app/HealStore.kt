@@ -64,7 +64,7 @@ class HealStore(
     /** Picks up a change another process made, without writing anything back; see [SavedDocument.reload]. */
     fun reload() = document.reload()
 
-    private fun update(change: (HealData) -> HealData) = document.write(change(data))
+    private fun update(change: (HealData) -> HealData) = document.update(change)
 
     private fun newId(): String = newId(nowMillis, rng)
 

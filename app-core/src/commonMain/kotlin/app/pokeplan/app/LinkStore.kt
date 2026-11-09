@@ -51,7 +51,7 @@ class LinkStore(
     /** Picks up a change another process made, without writing anything back; see [SavedDocument.reload]. */
     fun reload() = document.reload()
 
-    private fun update(change: (LinkData) -> LinkData) = document.write(change(data))
+    private fun update(change: (LinkData) -> LinkData) = document.update(change)
 
     private fun newId(): String = newId(nowMillis, rng)
 

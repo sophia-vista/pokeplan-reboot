@@ -66,7 +66,7 @@ class MintStore(
     /** Picks up a change another process made, without writing anything back; see [SavedDocument.reload]. */
     fun reload() = document.reload()
 
-    private fun update(change: (MintData) -> MintData) = document.write(change(data))
+    private fun update(change: (MintData) -> MintData) = document.update(change)
 
     private fun newId(): String = newId(nowMillis, rng)
 

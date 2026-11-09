@@ -68,9 +68,7 @@ class CareStore(
     /** Picks up a change another process made (a widget), without writing anything back; see [SavedDocument.reload]. */
     fun reload() = document.reload()
 
-    private fun update(change: (CareData) -> CareData) {
-        document.write(change(data))
-    }
+    private fun update(change: (CareData) -> CareData) = document.update(change)
 
     private fun newId(): String = newId(nowMillis, rng)
 
@@ -376,7 +374,7 @@ class CareStore(
      */
     fun setJournalDraft(text: String) {
         if (text == data.journalDraft) return
-        document.write(data.copy(journalDraft = text.take(5_000)))
+        document.update { it.copy(journalDraft = text.take(5_000)) }
     }
 
     fun editEntry(id: String, text: String) {

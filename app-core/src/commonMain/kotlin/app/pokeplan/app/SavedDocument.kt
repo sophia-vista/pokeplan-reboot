@@ -17,22 +17,50 @@ internal class SavedDocument<T>(
     private val tidy: (T) -> T = { it },
     empty: () -> T,
 ) {
-    var value: T = storage.load()?.let { text -> decode(text) ?: empty().also { storage.keepAside(text) } } ?: empty()
+    private val lock = newStoreLock()
+
+    @Volatile
+    var value: T = open(empty)
         private set
 
     private val listeners = mutableListOf<(T) -> Unit>()
 
+    /**
+     * The saved document. One that cannot be read is kept aside, and the storage's copy from before its last write is used instead
+     * (and written back, so the next write keeps a good copy, not the damaged one); only without one does the document start empty.
+     */
+    private fun open(empty: () -> T): T {
+        val text = storage.load() ?: return empty()
+        decode(text)?.let { return it }
+        storage.keepAside(text)
+        val backup = storage.loadBackup() ?: return empty()
+        val restored = decode(backup) ?: return empty()
+        storage.save(backup)
+        return restored
+    }
+
     /** Calls [listener] after every change. Returns a function that stops listening. */
     fun observe(listener: (T) -> Unit): () -> Unit {
-        listeners += listener
-        return { listeners -= listener }
+        lock.withLock { listeners += listener }
+        return { lock.withLock { listeners -= listener } }
+    }
+
+    /**
+     * Makes the next document from the current one with [change] and saves it, as one step: another thread's change waits, so
+     * neither starts from a document the other has already replaced. Listeners hear of it after the lock is let go.
+     */
+    fun update(change: (T) -> T) {
+        lock.withLock { writeLocked(change(value)) }
+        notifyListeners()
     }
 
     /** Saves [next] and tells the listeners. */
-    fun write(next: T) {
-        value = next
+    fun write(next: T) = update { next }
+
+    // The memory follows the disk: a save that throws leaves the document, and every listener, as it was.
+    private fun writeLocked(next: T) {
         storage.save(json.encodeToString(serializer, next))
-        notifyListeners()
+        value = next
     }
 
     /**
@@ -40,13 +68,14 @@ internal class SavedDocument<T>(
      * overwrites a widget's tap with its older copy, and a save caught half-written changes nothing.
      */
     fun reload() {
-        val fresh = storage.load()?.let(::decode) ?: return
-        if (fresh == value) return
-        value = fresh
-        notifyListeners()
+        val changed = lock.withLock {
+            val fresh = storage.load()?.let(::decode)
+            if (fresh == null || fresh == value) false else { value = fresh; true }
+        }
+        if (changed) notifyListeners()
     }
 
-    private fun notifyListeners() = listeners.toList().forEach { it(value) }
+    private fun notifyListeners() = lock.withLock { listeners.toList() }.forEach { it(value) }
 
     // A SerializationException is an IllegalArgumentException, and so is a rule's `require` failing on a decoded value.
     private fun decode(text: String): T? = try {

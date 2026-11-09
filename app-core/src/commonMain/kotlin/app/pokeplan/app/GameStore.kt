@@ -141,13 +141,13 @@ class GameStore(
     /** Picks up a change another process made to the save (an Android widget); see [SavedDocument.reload]. */
     fun reload() = document.reload()
 
-    private fun update(change: (AppData) -> AppData) {
-        val before = data
+    /** One change at a time: [SavedDocument.update] holds the document's lock from reading `before` to the save, so two threads never start from the same one. */
+    private fun update(change: (AppData) -> AppData) = document.update { before ->
         var after = foldPoke(before, change(before))
         // A shiny stays in the Shiny Dex, and a form in the form dex, even if the Pokémon is transferred later.
         val shinyNow = after.player.pokemon.filter { it.isShiny }.map { it.speciesId }.toSet()
         if (!after.shinySpecies.containsAll(shinyNow)) after = after.copy(shinySpecies = after.shinySpecies + shinyNow)
-        document.write(FormDex.record(after))
+        FormDex.record(after)
     }
 
     /**
