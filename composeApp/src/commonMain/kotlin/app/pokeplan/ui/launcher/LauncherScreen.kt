@@ -362,7 +362,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     ),
                 ) {
                     Town(
-                        model, prefs.scene, active && prefs.walking && !saver, onMenu = { menuMon = it }, size = prefs.townSize, mood = mood, weather = if (prefs.weather == Weather.LIVE) forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR else prefs.weather, screens = pageCount, home = left, avoid = avoidRects, tapper = tapper, interactive = abs(page.value) < 0.02f, gather = gather,
+                        model, prefs.scene, active && prefs.walking && !saver, onMenu = { menuMon = it }, size = prefs.townSize, mood = mood, chirps = prefs.chirps && !saver, weather = when (prefs.weather) { Weather.LIVE -> forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR; Weather.GUARDIAN -> guardianWeather(shownGuardian(model.data.player.pokemon, model.data.player.moduleGuardians.values, model.data.player.buddy?.id)); else -> prefs.weather }, screens = pageCount, home = left, avoid = avoidRects, tapper = tapper, interactive = abs(page.value) < 0.02f, gather = gather,
                         modifier = Modifier.layout { measurable, constraints ->
                             // As many screens wide as there are pages, placed from the left edge and slid by the page (a required size would be centred instead).
                             val placeable = measurable.measure(androidx.compose.ui.unit.Constraints.fixed(constraints.maxWidth * pageCount, constraints.maxHeight))
@@ -839,6 +839,7 @@ internal fun LauncherSettings(
                 PmdMenuLine("Scene: ${(TownScenes.all.firstOrNull { it.first == prefs.scene } ?: TownScenes.all.first()).second}", pixel, icon = "pa-layout", onClick = onTown)
                 PmdMenuLine("Pokémon in the town: ${prefs.townSize}", pixel, icon = "pa-heart") { onPrefs(prefs.nextTownSize()) }
                 PmdMenuLine("Pokémon walk about: ${onOff(prefs.walking)}", pixel, icon = "pa-zap") { onPrefs(prefs.withWalking(!prefs.walking)) }
+                PmdMenuLine("Pokémon chirp: ${onOff(prefs.chirps)}", pixel, icon = "pa-heart") { onPrefs(prefs.withChirps(!prefs.chirps)) }
                 PmdMenuLine("Weather: ${prefs.weather.label}", pixel, icon = "pa-cloud") { onPrefs(prefs.nextWeather()) }
             }
             Section("Home screen", "home") {

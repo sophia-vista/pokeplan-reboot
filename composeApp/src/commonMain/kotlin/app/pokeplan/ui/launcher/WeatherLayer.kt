@@ -73,7 +73,7 @@ internal fun WeatherLayer(weather: Weather, pixel: Int, dungeon: Boolean, calm: 
                 sand2?.let { scrolling(it, pixel, t, 9f, 0.3f) }
             }
             Weather.CLOUDS -> clouds?.let { shadows(it, pixel, t) }
-            Weather.CLEAR, Weather.LIVE -> Unit
+            Weather.CLEAR, Weather.LIVE, Weather.GUARDIAN -> Unit
         }
     }
 }

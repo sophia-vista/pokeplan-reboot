@@ -88,16 +88,20 @@ private const val TILES_ACROSS = 14f
 internal fun townScale(widthPx: Float): Int = (widthPx / (TILE * TILES_ACROSS)).roundToInt().coerceAtLeast(1)
 
 /**
- * Who lives in the town (LAUNCHER.md 6.1): the buddy first, then the favourites, then the others; inside each of the last
- * two, Pokémon with a sprite sheet ([hasSprite]) before those without one, then by level (highest first), up to [TOWN_CAP].
+ * Who lives in the town (LAUNCHER.md 6.1): the buddy first, then the Guardian, then the favourites, then the others; inside each of the last
+ * two, Pokémon with a sprite sheet ([hasSprite]) before those without one, then by level (highest first), up to [TOWN_CAP]. At most one Guardian
+ * walks the town ([shownGuardian] among [guardianIds]); the other Guardians stay in their modules.
  */
 internal fun townResidents(
     all: List<OwnedPokemon>, buddyId: String?, cap: Int = TOWN_CAP, favorites: Set<String> = emptySet(), hasSprite: (OwnedPokemon) -> Boolean = { true },
-): List<OwnedPokemon> =
-    all.sortedWith(
-        compareByDescending<OwnedPokemon> { it.id == buddyId }.thenByDescending { it.id in favorites }.thenByDescending { hasSprite(it) }
+    guardianIds: Collection<String> = emptySet(),
+): List<OwnedPokemon> {
+    val shown = shownGuardian(all, guardianIds, buddyId)?.id
+    return all.filter { it.id !in guardianIds || it.id == shown }.sortedWith(
+        compareByDescending<OwnedPokemon> { it.id == buddyId }.thenByDescending { it.id == shown }.thenByDescending { it.id in favorites }.thenByDescending { hasSprite(it) }
             .thenByDescending { it.level }.thenBy { it.id },
     ).take(cap.coerceAtMost(TOWN_CAP))
+}
 
 /**
  * The home screen's town: a real scene or a town of a dungeon's tiles, with every Pokémon you own (up to [TOWN_CAP])
@@ -108,6 +112,8 @@ internal fun townResidents(
 internal fun Town(
     model: AppModel, scene: String, active: Boolean, onMenu: (OwnedPokemon) -> Unit, modifier: Modifier = Modifier, size: Int = TOWN_CAP, weather: Weather = Weather.CLEAR,
     screens: Int = 1, interactive: Boolean = true, gather: Int = 0, mood: BuddyMood? = null,
+    /** Whether now and then one of them chirps (its cry, quietly, with a hop); see [TownChirps]. */
+    chirps: Boolean = false,
     /** Which of the [screens] is Home: the one a gathering calls to and where meetings happen. */
     home: Int = 0,
     /** Where widgets cover the town (x in screens, y as a fraction of the height): a Pokémon prefers to walk elsewhere. */
@@ -118,7 +124,9 @@ internal fun Town(
     val data = model.data
     // The sprite sheets are read once; until then everyone counts as having one, and the town re-picks when they arrive.
     val sheets by produceState(loadedAnimations()) { value = animations() }
-    val residents = townResidents(data.player.pokemon, data.player.buddy?.id, size, data.favorites, hasSprite = { m -> sheets?.containsKey(m.form.id) ?: true })
+    val guardianIds = data.player.moduleGuardians.values
+    val residents = townResidents(data.player.pokemon, data.player.buddy?.id, size, data.favorites, hasSprite = { m -> sheets?.containsKey(m.form.id) ?: true }, guardianIds = guardianIds)
+    val guardian = shownGuardian(residents, guardianIds, data.player.buddy?.id)
     BoxWithConstraints(modifier) {
         val density = LocalDensity.current.density
         val widthPx = maxWidth.value * density
@@ -139,6 +147,8 @@ internal fun Town(
         val life = remember { TownLife() }
         val night = BuddyScene.darkness(model.store.now.hour, model.store.now.minute) >= NIGHT
         TownMeetings(model, life, residents, calm || !interactive, mood, home)
+        TownGuardianAwe(life, residents, guardian, data.player.buddy?.id, calm || !interactive, mood, home)
+        TownChirps(model, life, residents, guardian?.id, data.player.buddy?.id, enabled = chirps && !calm && interactive)
         val boxPx = TILE * 3 * pixel
         if (tapper != null) SideEffect {
             tapper.hit = hit@{ at ->
@@ -261,10 +271,10 @@ private fun Resident(model: AppModel, mon: OwnedPokemon, widthPx: Float, heightP
 private const val ICON_RISE = 22
 
 /** Where the night starts for the town: the darkness at which the sleepy ones lie down. */
-private const val NIGHT = 0.5f
+internal const val NIGHT = 0.5f
 
 /** Whether this Pokémon is one of those that sleep at night: a third of them, always the same ones. */
-private fun sleepsAtNight(mon: OwnedPokemon): Boolean = (mon.id.hashCode() and 0x7fffffff) % 3 == 0
+internal fun sleepsAtNight(mon: OwnedPokemon): Boolean = (mon.id.hashCode() and 0x7fffffff) % 3 == 0
 
 /**
  * What a Pokémon does instead of walking: it walks to [approach] if given, then stands turned to [faceLeft] (towards whoever
