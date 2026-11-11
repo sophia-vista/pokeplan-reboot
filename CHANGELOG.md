@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.170.0
+## 0.171.0
 
 Link audit (end to end: rules, store, screens, reminders, tables). No reward number changes.
 
@@ -19,6 +19,17 @@ Link audit (end to end: rules, store, screens, reminders, tables). No reward num
 - **A long directory shows 40 people at a time** (every row was composed at once).
 - **Categories:** a person's form has a New category field; Settings no longer has a Categories box whose chips did nothing.
 - Tests: three new in `LinkRulesTest` and `LinkStoreTest`.
+
+## 0.170.1
+
+HEAL audit (end to end). No reward number changes; `RewardRules.VERSION` is unchanged.
+
+- **Every record stays reachable.** Activity, Sleep and Body histories end with **Show older** (30 more each tap). Before, anything past the newest 30 activities, 21 nights or 10 measurements could not be seen, edited or deleted one at a time.
+- **A night that has not ended is refused** ("That night is not over yet."), as an imported one already was; "Woke today" at a time still to come used to save a night in the future and show it as the last sleep.
+- **An active-days goal is at most 7**; the goal field no longer accepts a number the store then silently dropped.
+- **One delete pattern.** Deleting an activity, or an import from "Might be the same", now offers Undo like drinks, nights, measurements and goals (the activity's confirm step is gone; the import had neither).
+- **One save per log.** A paid activity or drink is written once, already marked, instead of saved and then rewritten: half the passes over Heal's sealed rows for the commonest action.
+- Smaller: the 7 or 30 days choice in Connections is a pair of tab buttons like every other choice; histories are sorted once per change, not on every keystroke; two captions that restated the screen are gone; `updateDrink`, `updateSleep` and `drinksToday` (no caller) are deleted.
 
 ## 0.169.0
 
