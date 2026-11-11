@@ -5,6 +5,20 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.167.0
+
+A launcher audit and the town's behaviour pass. No reward number changes.
+
+- **Fix: the launcher no longer saves or pays on its own clock.** Its one-second tick settled tasks and focus sessions and wrote the launcher's copy of the save, even with the screen off; it now only moves the clock, and only while the launcher is in sight.
+- **Fix: widget set-up screens** are started through the widget host, so a provider whose set-up is not exported to other apps no longer fails and leaves the widget unconfigured.
+- **Swipe up and swipe down** on the open town (up opens the app list; down is free to set in Launcher settings → Gestures).
+- **Less work per frame.** A page swipe no longer composes the whole screen every frame; walking Pokémon move without composing; the dungeon-tile town builds its map once and sits on its own layer; weather draws at 30 frames a second; the town's Pokémon list, the widgets' room and each hosted widget's size are worked out once, not on every change.
+- **Less work on returning home.** One read of the save per Home press (was two), no widget reloads on every resume, icons drawn at the size they are shown, kept to a memory budget, and only the changed app's picture is drawn again after an install. The clock widget no longer polls the battery itself and redraws only each minute without seconds; the app list's blur is off in battery saver. A dark window shows before the first frame.
+- **Town behaviour.** Idle variation (turning, grazing, hopping), roaming in short legs around a favourite spot at each Pokémon's own pace, staggered bedtimes with a wake-up hop and breakfast, surprise at a tap or an arrival, weather felt through the game's own status icons, tap reactions (hop, happy, turn, flustered when tapped over and over).
+- **The Guardian is calmer and changes.** It is left out of the pairwise meetings, glances from others are rare and do not hold it, and a startle happens at most once every few minutes. Unless the buddy is a Guardian, the Guardians take turns one a day: the old one walks off the edge of Home and the new one walks in.
+- **Launcher polish.** Icons on the Folders, All apps, Widgets and Gear buttons, the search placeholder in the game's font, and TalkBack reaches the buddy, the Guardian and favourite Pokémon in the town by name (the rest of the crowd is scenery).
+- Docs: `LAUNCHER.md` 6.1 and 11.4.
+
 ## 0.165.1
 
 Weather against Red Rescue Team (REP-024; `docs/pokelife/evidence/WEATHER-original.md`, `tools/weather/`). No reward number changes.

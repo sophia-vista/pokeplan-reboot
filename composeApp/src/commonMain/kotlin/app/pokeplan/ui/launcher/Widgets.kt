@@ -56,6 +56,8 @@ internal class WidgetEnv(
     val today: TodayState, val mood: BuddyMood, val saver: Boolean, val editing: Boolean, val onPrefs: (LauncherPrefs) -> Unit, val onEdit: () -> Unit, val onDone: () -> Unit, val onAllApps: () -> Unit, val onFolders: () -> Unit, val onWidgets: () -> Unit, val onGear: () -> Unit, val onOpenFolder: (String) -> Unit, val onForecast: () -> Unit, val onHold: (LauncherApp) -> Unit,
     /** How many pages the launcher has, and a way to show one of them (by its place in the row). */
     val pages: Int = 2, val goToPage: (Int) -> Unit = {},
+    /** The battery, read by the launcher once a minute while it is in sight. */
+    val battery: BatteryStatus? = null,
 )
 
 /** The month and day the calendar and agenda widgets share, so choosing a day in one shows its agenda in the other. */
@@ -169,11 +171,12 @@ private fun UnavailableWidget(pixel: Int) {
 private fun ClockWidget(env: WidgetEnv) {
     val density = LocalDensity.current.density
     val gap = Modifier.padding(horizontal = pmdRowPad(env.pixel, density))
-    var battery by remember { mutableStateOf(env.host.battery()) }
-    LaunchedEffect(Unit) { while (true) { delay(30_000); battery = env.host.battery() } }
+    val battery = env.battery
     PmdBox(env.pixel, Modifier.fillMaxWidth()) {
-        // The seconds tick in the model, so reading it keeps the minute right.
-        env.model.now
+        // The seconds tick in the model, so reading it keeps the minute right; without seconds only a new minute draws this again.
+        val seconds = env.prefs.showSeconds && !env.saver
+        val stamp by remember(seconds) { androidx.compose.runtime.derivedStateOf { if (seconds) env.model.now else env.model.now / 60_000L } }
+        stamp
         val now = env.model.store.now
         val cells = LocalCells.current
         val time = formatTime(now.hour, now.minute, if (env.prefs.showSeconds && !env.saver) now.second else null, env.prefs.hour12)
@@ -277,18 +280,18 @@ private fun ActionsWidget(env: WidgetEnv) {
         Column(Modifier.fillMaxWidth()) {
             if (LocalCells.current.narrow) {
                 // Half the screen: one button to a line, the names whole.
-                PmdMenuLine(folders, env.pixel, Modifier.fillMaxWidth(), center = true, onClick = env.onFolders)
-                PmdMenuLine("All apps", env.pixel, Modifier.fillMaxWidth(), center = true, onClick = env.onAllApps)
-                PmdMenuLine("Widgets", env.pixel, Modifier.fillMaxWidth(), center = true, onClick = env.onWidgets)
-                PmdMenuLine("Gear", env.pixel, Modifier.fillMaxWidth(), center = true, onClick = env.onGear)
+                PmdMenuLine(folders, env.pixel, Modifier.fillMaxWidth(), center = true, icon = "pa-info-box", onClick = env.onFolders)
+                PmdMenuLine("All apps", env.pixel, Modifier.fillMaxWidth(), center = true, icon = "pa-layout", onClick = env.onAllApps)
+                PmdMenuLine("Widgets", env.pixel, Modifier.fillMaxWidth(), center = true, icon = "pa-grid-2x2-2", onClick = env.onWidgets)
+                PmdMenuLine("Gear", env.pixel, Modifier.fillMaxWidth(), center = true, icon = "pa-sliders", onClick = env.onGear)
             } else {
                 Row(Modifier.fillMaxWidth()) {
-                    PmdMenuLine(folders, env.pixel, Modifier.weight(1f), center = true, onClick = env.onFolders)
-                    PmdMenuLine("All apps", env.pixel, Modifier.weight(1f), center = true, onClick = env.onAllApps)
+                    PmdMenuLine(folders, env.pixel, Modifier.weight(1f), center = true, icon = "pa-info-box", onClick = env.onFolders)
+                    PmdMenuLine("All apps", env.pixel, Modifier.weight(1f), center = true, icon = "pa-layout", onClick = env.onAllApps)
                 }
                 Row(Modifier.fillMaxWidth()) {
-                    PmdMenuLine("Widgets", env.pixel, Modifier.weight(1f), center = true, onClick = env.onWidgets)
-                    PmdMenuLine("Gear", env.pixel, Modifier.weight(1f), center = true, onClick = env.onGear)
+                    PmdMenuLine("Widgets", env.pixel, Modifier.weight(1f), center = true, icon = "pa-grid-2x2-2", onClick = env.onWidgets)
+                    PmdMenuLine("Gear", env.pixel, Modifier.weight(1f), center = true, icon = "pa-sliders", onClick = env.onGear)
                 }
             }
         }

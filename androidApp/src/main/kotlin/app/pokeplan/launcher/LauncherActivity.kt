@@ -74,13 +74,20 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     /** Bumped when a widget's provider may have changed (an app was updated, removed or came back), so the hosted widgets are looked up again. */
     private var widgetEpoch by mutableIntStateOf(0)
     private var reloading: Job? = null
-    private var iconsStale = false
-    private val icons = object : LruCache<String, ImageBitmap>(256) {}
+    /** Packages whose icons may have changed (installed, updated): only those pictures are drawn again. */
+    private val staleIcons = mutableSetOf<String>()
+    private var lastReload = 0L
+    /** The drawn icons, bounded by the memory they take (about 8 MB), not by their number. */
+    private val icons = object : LruCache<String, ImageBitmap>(8 * 1024 * 1024) {
+        override fun sizeOf(key: String, value: ImageBitmap): Int = value.width * value.height * 4
+    }
+    /** What each hosted widget asks of its host, kept until a provider changes (reading it is a call to the system). */
+    private val specs = HashMap<Int, HostedWidgetSpec?>()
 
     private val packageChanges = object : LauncherApps.Callback() {
         override fun onPackageRemoved(packageName: String, user: UserHandle) { widgetEpoch++; reloadApps() }
-        override fun onPackageAdded(packageName: String, user: UserHandle) { iconsStale = true; widgetEpoch++; reloadApps() }
-        override fun onPackageChanged(packageName: String, user: UserHandle) { iconsStale = true; widgetEpoch++; reloadApps() }
+        override fun onPackageAdded(packageName: String, user: UserHandle) { staleIcons += packageName; widgetEpoch++; reloadApps() }
+        override fun onPackageChanged(packageName: String, user: UserHandle) { staleIcons += packageName; widgetEpoch++; reloadApps() }
         override fun onPackagesAvailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) { widgetEpoch++; reloadApps() }
         override fun onPackagesUnavailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) { widgetEpoch++; reloadApps() }
     }
@@ -138,9 +145,8 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         super.onResume()
         if (safeMode) return reloadApps()
         // A widget, or the app, may have changed the save, or the user may just have chosen this as the home app.
-        store.reload()
+        reloadSave()
         isDefault = isDefaultHome()
-        widgetEpoch++
         reloadApps()
     }
 
@@ -150,8 +156,16 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     }
 
     /** Strict focus: Home during a focus session keeps the Focus screen on instead of leaving it. */
-    private fun keepFocusScreen() {
+    /** Reads the save again unless that was done a moment ago (Home pressed arrives as a new intent and then a resume: one read, not two). */
+    private fun reloadSave() {
+        val now = System.currentTimeMillis()
+        if (now - lastReload < 400) return
+        lastReload = now
         store.reload()
+    }
+
+    private fun keepFocusScreen() {
+        reloadSave()
         if (store.data.focus != null) {
             // The low buzz says Home is shut while the timer runs.
             if (::model.isInitialized) model.effect(Sfx.FOCUS_LOCK)
@@ -192,11 +206,12 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
                 )
             }
             // Home and every return to the launcher reload the list: when nothing changed, keep the list and the drawn icons as they are (re-drawing every icon each time was the slowest part of coming back to the home screen).
-            if (next == apps && !iconsStale) return@launch
+            if (next == apps && staleIcons.isEmpty()) return@launch
             // An updated app may have a new icon; one that stayed the same keeps its picture.
-            val changed = apps.map { it.key }.toSet() != next.map { it.key }.toSet()
-            if (changed || iconsStale) icons.evictAll() else icons.snapshot().keys.filter { it !in entries }.forEach { icons.remove(it) }
-            iconsStale = false
+            val stale = staleIcons.toSet()
+            staleIcons.clear()
+            icons.snapshot().keys.filter { it !in entries || stale.any { pkg -> it.startsWith("$pkg/") } }.forEach { icons.remove(it) }
+            specs.clear()
             apps = next
             safeView?.show(next)
         }
@@ -211,7 +226,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         val info = entries[key] ?: return null
         return withContext(Dispatchers.Default) {
             try {
-                val size = (resources.displayMetrics.density * 56).toInt().coerceAtLeast(48)
+                val size = (resources.displayMetrics.density * 40).toInt().coerceAtLeast(40)
                 val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
                 val canvas = Canvas(bitmap)
                 val drawable = info.getBadgedIcon(0)
@@ -265,10 +280,14 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     private var pendingWidget: Int = -1
     private var onWidgetPicked: ((Int) -> Unit)? = null
 
-    private val configureWidget = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { result ->
+    /** The provider's set-up screen is started by the host (it may not be exported to other apps); its answer comes to [onActivityResult]. */
+    @Suppress("DEPRECATION")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != CONFIGURE_WIDGET) return
         val id = pendingWidget
-        if (id < 0) return@registerForActivityResult
-        if (result.resultCode == RESULT_OK) onWidgetPicked?.invoke(id) else widgetHost.deleteAppWidgetId(id)
+        if (id < 0) return
+        if (resultCode == RESULT_OK) onWidgetPicked?.invoke(id) else widgetHost.deleteAppWidgetId(id)
         setPendingWidget(-1)
     }
 
@@ -281,7 +300,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         val info = widgetManager.getAppWidgetInfo(id)
         if (info?.configure != null) {
             try {
-                configureWidget.launch(Intent(android.appwidget.AppWidgetManager.ACTION_APPWIDGET_CONFIGURE).setComponent(info.configure).putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID, id))
+                widgetHost.startAppWidgetConfigureActivityForResult(this, id, 0, CONFIGURE_WIDGET, null)
             } catch (e: Exception) {
                 onWidgetPicked?.invoke(id) // it can be used without its set-up screen
                 setPendingWidget(-1)
@@ -327,6 +346,11 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
     /** The provider's sizes are in pixels (not dp, as they look): these are converted with the screen's density, once, here. */
     override fun widgetSpec(id: Int): HostedWidgetSpec? {
         widgetEpoch // read so a provider that came or went draws again
+        if (specs.containsKey(id)) return specs[id]
+        return readSpec(id).also { specs[id] = it }
+    }
+
+    private fun readSpec(id: Int): HostedWidgetSpec? {
         val info = widgetManager.getAppWidgetInfo(id) ?: return null
         val density = resources.displayMetrics.density
         fun dp(px: Int) = (px / density).toInt()
@@ -406,5 +430,6 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         const val PREFS_KEY = "prefs"
         const val PREFS_PENDING_WIDGET = "pendingWidget"
         const val WIDGET_HOST_ID = 4242
+        const val CONFIGURE_WIDGET = 4243
     }
 }

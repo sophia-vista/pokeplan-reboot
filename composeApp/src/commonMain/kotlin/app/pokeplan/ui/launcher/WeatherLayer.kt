@@ -57,7 +57,7 @@ internal fun WeatherLayer(weather: Weather, pixel: Int, dungeon: Boolean, calm: 
     val clouds = weatherSheet("clouds")
     var now by remember { mutableLongStateOf(0L) }
     val foreground = app.pokeplan.ui.rememberInForeground()
-    if (!calm) LaunchedEffect(weather, foreground) { while (foreground) withFrameMillis { now = it } }
+    if (!calm) LaunchedEffect(weather, foreground) { while (foreground) withFrameMillis { val step = it / 33 * 33; if (step != now) now = step } }
     Canvas(modifier) {
         val t = if (calm) 0L else now
         when (weather) {

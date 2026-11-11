@@ -271,6 +271,8 @@ data class LauncherPrefs(
         GestureTrigger.EDGE_DRAG -> if (edgeDrag) GestureAction.APPS else GestureAction.NONE
         GestureTrigger.TRIPLE_TAP -> if (gatherTap) GestureAction.GATHER else GestureAction.NONE
         GestureTrigger.DOUBLE_TAP -> GestureAction.NONE
+        GestureTrigger.SWIPE_UP -> GestureAction.APPS
+        GestureTrigger.SWIPE_DOWN -> GestureAction.NONE
     }
 
     /** Makes [trigger] do [action] (only what the trigger can do: the edge drag is the one that follows the finger, so it can open the app list). */
@@ -687,4 +689,7 @@ enum class GestureTrigger(val label: String, val actions: List<GestureAction>) {
     EDGE_DRAG("Drag in from the right edge", GestureAction.entries),
     TRIPLE_TAP("Tap three times", GestureAction.entries),
     DOUBLE_TAP("Double tap empty space", GestureAction.entries),
+    /** A swipe up or down on the open town (LAUNCHER.md 11.4): up opens the app list, down is free for the user's choice. */
+    SWIPE_UP("Swipe up", GestureAction.entries),
+    SWIPE_DOWN("Swipe down", GestureAction.entries),
 }
