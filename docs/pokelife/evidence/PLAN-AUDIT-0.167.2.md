@@ -4,7 +4,7 @@
 **Method:** every PLAN screen file and the store actions behind it were read; the `ScreenshotTest` renders of the PLAN screens were looked at in both palettes. Nothing was run on a phone, so touch feel, the keyboard and drag on the hours are judged from code only.
 **Status:** evidence, not authority. A rule changes in `MODULES/PLAN.md` first.
 
-This goes deeper on one module than `DESIGN-REVIEW-0.165.1.md` (on branch `claude/pokelife-design-review-jllhji`, not yet on `main`). Findings that review already has are marked **(DR)** and not argued again; items its branch is already changing are marked **(in flight)**.
+This goes deeper on one module than `DESIGN-REVIEW-0.165.1.md`. Findings that review already has are marked **(DR)** and not argued again. The audit was made on 0.167.2; the review's first batches merged as 0.168.0 while it was written, and items they changed are marked **(0.168.0)**: re-check those on a current build.
 
 ## 1. Verdict
 
@@ -36,7 +36,7 @@ Also wrong against the design rules (section 7 has the visual list): the Targets
 
 Recommendation: one menu. Opening Plan lands on Today (quick add, From before, Today, This evening, today's targets, a compact Focus entry). Its menu cards are Inbox, Upcoming, Lists, Calendar, Focus, and one "More" card for Progress, Goals, Review, Done, All tasks and Settings. This keeps the card menu rule (`Menu.kt`) and removes a level.
 
-**3.2 Plan's page shows no task on the first screen.** In `lead-light-plan.png` the stage ends at about 500 px and the party panel at about 1,180 px of a 1,080 px screen; "Today" starts below the fold. (DR finding 2; the compact stage is in flight.) The party panel should also fold to one row here: the party is managed on the Pokémon tab and its perks line is a caption.
+**3.2 Plan's page shows no task on the first screen.** In `lead-light-plan.png` the stage ends at about 500 px and the party panel at about 1,180 px of a 1,080 px screen; "Today" starts below the fold. (DR finding 2; the compact stage shipped in 0.168.0.) The party panel should also fold to one row here: the party is managed on the Pokémon tab and its perks line is a caption.
 
 **3.3 The same information is shown three ways.** Today on Plan's page (`NextUp` plus two rows plus "N more in the Planner"), Today in the Planner, and the Today tile's count. If 3.1 is taken, Plan's page list goes and `NextUp` ("Focus on this", "Pick for me") moves to the top of Today, where it is currently missing: **"Pick for me" and "Focus on this" exist only on Plan's page, not on the Today list or a task card.**
 
@@ -68,7 +68,7 @@ Recommendation: one menu. Opening Plan lands on Today (quick add, From before, T
 
 **4.6 Quick add.** Strong. Gaps: the draft is not kept (DR; spec 4.6); the parser's syntax (`#List`, `!B`, `30m`, "tonight") is discoverable only by guessing, so the first empty Today could show one example as placeholder text ("Call mum tomorrow 5pm"); and on the Planner menu a task added goes to the Inbox with no sign of where it went (say "Added to Inbox" in the existing toast line).
 
-**4.7 Lists.** Fine for lists. The spec's project half (3.5: status, target date, milestones, progress) is not there, and Goals duplicate part of it (see 6.3). Deleting a list has no confirm (undo is in flight). "Edit list" is a text key at the top of the list above quick add; it belongs in the header's corner.
+**4.7 Lists.** Fine for lists. The spec's project half (3.5: status, target date, milestones, progress) is not there, and Goals duplicate part of it (see 6.3). Deleting a list had no confirm (the undo strip covers lists and events since 0.168.0). "Edit list" is a text key at the top of the list above quick add; it belongs in the header's corner.
 
 ## 5. Scheduling and the calendar
 
@@ -79,7 +79,7 @@ Recommendation: one menu. Opening Plan lands on Today (quick add, From before, T
 - A goal's target date nudges by 7 days.
 - Quick add's chips are Today, Tomorrow, Weekend, No date: a third vocabulary ("Weekend" here, "Next week" on the card).
 
-Recommendation: one shared day picker (a month grid in a dialogue box, pixel keys, with the preset chips above it) used for Move to, Deadline, quick add and goals. The review branch has built one for Heal, Home and Link (in flight); PLAN should take the same component rather than a second one. One preset set everywhere: Today, Tomorrow, This weekend, Next week (Monday), Pick a day, No date.
+Recommendation: one shared day picker (a month grid in a dialogue box, pixel keys, with the preset chips above it) used for Move to, Deadline, quick add and goals. `PixelDatePicker` (`screens/DatePicker.kt`, 0.168.0) is already used by Heal, Mint, Home and Link; PLAN is the one dated module that does not use it, and should take it rather than a second one. One preset set everywhere: Today, Tomorrow, This weekend, Next week (Monday), Pick a day, No date.
 
 **5.2 The calendar's window.** Day view: today to 13 days ahead (`DAYS_AHEAD`), never yesterday. Week view: exactly two pages ("Next 7 days" and "The week after"), starting on today rather than on the week's first day, so the Week ignores the "Week starts on Monday" setting that Month obeys. Month view scrolls freely but "Open day" works only inside the 14 days. So an event next month can be seen in Month and not opened, and last week cannot be looked at at all.
 Recommendation: Day and Week page freely both ways (repeating tasks beyond the generated 14 days can show as ghost occurrences or simply not at all); Week starts on the set first day.
@@ -117,12 +117,12 @@ Checked against DESIGN_SYSTEM 5.1 and 12A.
 | Issue | Where | Fix |
 |---|---|---|
 | Red used as chrome | Targets add key (`Frequency.kt:87`); today's date cell in the day strip and Month (`DayPlan.kt:467`, `MonthView.kt:178`); event delete keys use `Pixel.Red` where task and list delete use `Pixel.Danger` | Plan accent for the add key and for "today"; one danger colour for every delete. The red "now" line on the hours is a calendar convention and can stay if the owner agrees. |
-| Chips ignore the module accent | Every `TabButton` in PLAN is blue on amber frames (`Tabs.kt:38` default) | In flight ("module accents on keys"); check PLAN's cards after it merges. |
+| Chips ignore the module accent | Every `TabButton` in PLAN is blue on amber frames (`Tabs.kt:38` default) | Fixed in 0.168.0 (`TabButton` takes the frame tone); check PLAN's cards in a fresh screenshot. |
 | Captions that restate the screen | Card line "C: Medium, Personal"; "Hatching in"; the tray hint; "How it works"; Progress card notes; the Goals paragraph; repeat notes ("Every day, starting with its day.") | Remove, or show once. |
 | Sections outside a dialogue box | Task groups, list rows and the calendar panel are plain bordered panels (`Pixel.Panel` plus a hairline), while quick add and empty states are dialogue boxes | Decide one: the spec (10.1) allows rows without a card each, but the group panel should be the shared box so a screen does not mix two frames. |
 | Row centre line | `NextUp` stacks the check key alone on its own line under the meta row | Put the check key on the title's row, as `TaskRow` does. |
 | Primary action weight | Focus "Start" outlined (6.1); "Save" on the Edit tab outlined green | One filled key for the screen's primary action. |
-| Zero reads as eight | "60 min", "9:00", "10 min before" | In flight (DR finding 1). |
+| Zero reads as eight | "60 min", "9:00", "10 min before" | DR finding 1 (0.168.0 changed the zero; check these three). |
 | Menu tiles | Tiles are an icon, a count and a title, which follows the rule. The seventh tile leaves a hole in the grid; All tasks is the only grey one | Resolved by 3.1; otherwise make search a field at the top instead of a tile. |
 | Month cells | Task chips clip mid-word ("Finish you", "Pay the r") | Ellipsis, or dots with a count for tasks and bars only for events. |
 | Dark palette | `dark-planner.png` and the dark task card hold up; the Edit tab's Save and the bottom keys are low contrast (green outline on navy) | Covered by the filled primary key. |
@@ -135,7 +135,7 @@ Quick add and its "Understood" line. The undo window on completion and the undo 
 
 **A. Fixes (one small PR):** D1 to D6; red off the Targets key and the today marker; one delete colour; a confirm (or a 3-second hold) on Give up; name the task on the running focus view.
 
-**B. Dates (one PR, after the review branch merges its picker):** the shared day and time picker for Move to, Deadline, quick add, goals and reminders; one preset vocabulary; the calendar pages freely and Week starts on the set day.
+**B. Dates (one PR):** `PixelDatePicker` plus a time picker for Move to, Deadline, quick add, goals and reminders; one preset vocabulary; the calendar pages freely and Week starts on the set day.
 
 **C. Edit what can be added:** targets (rename, change, archive, delete, tick yesterday), goals and milestones (rename, re-date, archive, delete, untick inside an undo window), steps (untick, rename, remove), finished tasks (delete). Store actions and tests first, then the screens.
 
