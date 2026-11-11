@@ -23,8 +23,8 @@ internal fun TownChirps(model: AppModel, life: TownLife, residents: List<OwnedPo
         while (true) {
             delay(CHIRP_MIN_MILLIS + random.nextLong(CHIRP_SPREAD_MILLIS))
             if (model.phone?.inCall == true || model.phone?.screenOff == true || model.data.settings.criesLevel <= 0f) continue
-            val night = BuddyScene.darkness(model.store.now.hour, model.store.now.minute) >= NIGHT
-            val awake = residents.filter { it.id !in life.holds && !(night && sleepsAtNight(it)) }
+            val dark = BuddyScene.darkness(model.store.now.hour, model.store.now.minute)
+            val awake = residents.filter { it.id !in life.holds && !TownBehavior.asleep(it, dark) }
             if (awake.isEmpty()) continue
             // The buddy is picked twice as often as another Pokémon and the Guardian half as often.
             fun weight(m: OwnedPokemon) = when (m.id) { buddyId -> 4; guardianId -> 1; else -> 2 }
