@@ -171,8 +171,9 @@ class HomeTablesTest {
         assertTrue("home" in snap && snap.getValue("home").contains("Washing machine"))
         assertTrue("home" in s.live.names())
         // A backup made before HOME existed holds no home document: restoring it must not wipe household records.
-        s.live.replaceAll(mapOf("save" to snap.getValue("save")), 9)
+        val left = s.live.replaceAll(mapOf("save" to snap.getValue("save")), 9)
         assertEquals(1, count(s, "home_chore"))
+        assertTrue("home" in left && "save" !in left, "and the restore says what it left as it was")
         // A backup with a home document brings it back, and the replaced one is kept aside.
         val changed = obj(doc).toMutableMap().also { it["references"] = JsonArray(emptyList()) }
         s.live.write("home", Json.encodeToString(JsonObject.serializer(), JsonObject(changed)), 10)

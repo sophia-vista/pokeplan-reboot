@@ -631,6 +631,21 @@ class GameStoreTest {
     }
 
     @Test
+    fun a_full_phone_does_not_let_another_store_bring_the_older_save_back() {
+        val storage = MemoryStorage(shareKey = "a_full_phone_does_not_let")
+        val clock = FakeClock(start)
+        val app = GameStore(storage, clock, utc, Random(7)).also { it.start("Sophia", 25) }
+        storage.full = true
+        val kept = app.addTask("Only in memory")
+        // A widget opens its own store while nothing can be saved: it starts from what the app holds, not from the older save.
+        val widget = GameStore(storage, clock, utc, Random(8))
+        assertTrue(widget.data.tasks.any { it.id == kept.id })
+        storage.full = false
+        widget.addTask("Room again")
+        assertTrue(GameStore(storage, clock, utc, Random(9)).data.tasks.any { it.id == kept.id }, "the first save that fits has everything")
+    }
+
+    @Test
     fun reload_picks_up_a_change_made_by_another_store_on_the_same_save() {
         val storage = MemoryStorage()
         val clock = FakeClock(start)

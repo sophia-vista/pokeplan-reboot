@@ -93,10 +93,14 @@ class LiveBackup(
     /** The backup taken at [millis] as one bundle file's text ([BackupBundle]), for the player to save anywhere; null when it is not there. */
     fun bundleOf(millis: Long, schema: Int): String? = documentsOf(millis)?.let { BackupBundle.encode(it, schema, millis) }
 
+    /** The documents the last [restore] left as they were ([LiveDocuments.replaceAll]): not in that backup, or sealed with another phone's key. */
+    var leftByLastRestore: List<String> = emptyList()
+        private set
+
     /** Puts the backup taken at [millis] back (the documents it replaces are kept aside first). False when there is no such backup. */
     fun restore(live: LiveDocuments, millis: Long, nowMillis: Long): Boolean {
         val docs = documentsOf(millis) ?: return false
-        live.replaceAll(docs, nowMillis)
+        leftByLastRestore = live.replaceAll(docs, nowMillis)
         return true
     }
 

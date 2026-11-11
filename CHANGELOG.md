@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.167.2
+
+What the 0.167.1 audit found and left. No reward number changes.
+
+- **Fix: on a phone out of storage, another store could bring the older save back.** A save that does not fit is kept in memory; a widget or a reminder opening its own store then read the older one from the disk and could write it over the unsaved changes. The stores of the process share what could not be saved until a save fits (`Storage.saved`, `SharedDocuments.keep`).
+- **Fix: a snooze or a repeat that came due while the phone was off was never shown.** The planner looks only ahead, so it sat until it was dropped a day later. It goes off at the next plan (boot, opening the app), after the usual check that it is still wanted.
+- **Fix: putting one reminder off cleared every held reminder of the same thing.** A snooze lets go of its own reminder and its repeats; "Done" still clears them all.
+- **A restore says what it did not bring back.** A backup that lacks a module (an older one), or holds Heal or Mint sealed with another phone's key, leaves that module as it was; the message now names it instead of saying only "Restored" (`LiveDocuments.replaceAll` returns the names).
+
 ## 0.167.1
 
 Repo-wide audit (11 November 2026): fixes found by reading every state machine, dead code out, and the agent files brought up to date. No reward number changes.
