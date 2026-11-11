@@ -72,7 +72,7 @@ class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
 
     override fun restoreAutomatic(millis: Long): String {
         val s = store ?: return "The data could not be opened, so nothing was restored."
-        return runCatching { if (backups?.restore(s.live, millis, System.currentTimeMillis()) == true) "Restored. What was here is kept aside." else "That backup is gone." }
+        return runCatching { if (backups?.restore(s.live, millis, System.currentTimeMillis()) == true) restoredNote(backups?.leftByLastRestore.orEmpty()) else "That backup is gone." }
             .getOrElse { Log.w(tag, "restore failed: ${it.javaClass.simpleName}"); "Could not restore it; nothing was changed." }
     }
 
@@ -110,10 +110,16 @@ class AndroidBackups(private val activity: ComponentActivity) : BackupAccess {
             val note = runCatching {
                 val docs = BackupBundle.unlock(ready, passphrase, Pbkdf2Sealer())
                 if (docs == null) "That passphrase does not open this backup. Nothing was changed."
-                else { s.live.replaceAll(docs, System.currentTimeMillis()); "Restored. What was here is kept aside." }
+                else restoredNote(s.live.replaceAll(docs, System.currentTimeMillis()))
             }.getOrElse { Log.w(tag, "restore failed: ${it.javaClass.simpleName}"); "Could not restore it; nothing was changed." }
             activity.runOnUiThread { if (note.startsWith("Restored")) staged = null; onDone(note) }
         }.start()
+    }
+
+    /** A restore that could not bring everything back says which modules still hold what they held before, so nobody takes a mixed save for a whole one. */
+    private fun restoredNote(left: List<String>): String {
+        val names = left.map { if (it == LiveDocuments.SAVE) "Plan and Pokémon" else it.replaceFirstChar(Char::uppercase) }
+        return "Restored. What was here is kept aside." + if (names.isEmpty()) "" else " Not in this backup, so left as ${if (names.size == 1) "it was" else "they were"}: ${names.joinToString(", ")}."
     }
 
     private companion object { const val MAX_BYTES = 64 * 1024 * 1024 }

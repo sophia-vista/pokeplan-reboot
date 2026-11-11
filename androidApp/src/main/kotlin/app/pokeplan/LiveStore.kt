@@ -26,16 +26,20 @@ class DatabaseStorage(private val live: LiveDocuments, private val name: String)
      * One transaction. If the phone is out of storage the write is rolled back whole (nothing half saved), the app keeps working from memory
      * and says so ([LiveStore.writeFailed]); the next write that fits saves everything, since each save is the whole document.
      */
-    override fun save(text: String) {
+    override fun save(text: String) { saved(text) }
+
+    override fun saved(text: String): Boolean =
         try {
             live.write(name, text, System.currentTimeMillis())
             LiveStore.writeFailed = false
+            true
         } catch (e: android.database.sqlite.SQLiteFullException) {
             LiveStore.writeFailed = true
+            false
         } catch (e: android.database.sqlite.SQLiteDiskIOException) {
             LiveStore.writeFailed = true
+            false
         }
-    }
     override fun keepAside(text: String) = live.keepAside(name, text, System.currentTimeMillis())
 }
 

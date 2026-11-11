@@ -23,4 +23,10 @@ internal object SharedDocuments {
     private val revisions = mutableMapOf<Any, Long>()
     fun revision(key: Any): Long = revisions[key] ?: 0L
     fun written(key: Any): Long = (revision(key) + 1).also { revisions[key] = it }
+
+    // The newest document of a key that its storage could not keep (a full phone). Every store on the key reads this instead of the older
+    // one on the disk, so none of them writes that older one back over changes that live only in memory; the next save that fits clears it.
+    private val unsaved = mutableMapOf<Any, String>()
+    fun unsaved(key: Any): String? = unsaved[key]
+    fun keep(key: Any, text: String?) { if (text == null) unsaved.remove(key) else unsaved[key] = text }
 }

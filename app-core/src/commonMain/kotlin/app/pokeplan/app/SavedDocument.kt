@@ -35,6 +35,7 @@ internal class SavedDocument<T>(
      * (and written back, so the next write keeps a good copy, not the damaged one); only without one does the document start empty.
      */
     private fun open(empty: () -> T): T {
+        shareKey?.let { SharedDocuments.unsaved(it) }?.let(::decode)?.let { return it }
         val text = storage.load() ?: return empty()
         decode(text)?.let { return it }
         storage.keepAside(text)
@@ -77,11 +78,14 @@ internal class SavedDocument<T>(
         val key = shareKey ?: return false
         if (SharedDocuments.revision(key) == seen) return false
         markCurrent()
-        val fresh = storage.load()?.let(::decode) ?: return false
+        val fresh = current() ?: return false
         if (fresh == value) return false
         value = fresh
         return true
     }
+
+    // The document as every store in the process should see it: what could not be saved yet, else what is on the disk.
+    private fun current(): T? = (shareKey?.let { SharedDocuments.unsaved(it) } ?: storage.load())?.let(::decode)
 
     private fun markCurrent() { shareKey?.let { seen = SharedDocuments.revision(it) } }
 
@@ -90,9 +94,10 @@ internal class SavedDocument<T>(
 
     // The memory follows the disk: a save that throws leaves the document, and every listener, as it was.
     private fun writeLocked(next: T) {
-        storage.save(json.encodeToString(serializer, next))
+        val text = json.encodeToString(serializer, next)
+        val onDisk = storage.saved(text)
         value = next
-        shareKey?.let { seen = SharedDocuments.written(it) }
+        shareKey?.let { SharedDocuments.keep(it, text.takeUnless { onDisk }); seen = SharedDocuments.written(it) }
     }
 
     /**
@@ -102,7 +107,7 @@ internal class SavedDocument<T>(
     fun reload() {
         val changed = lock.withLock {
             markCurrent()
-            val fresh = storage.load()?.let(::decode)
+            val fresh = current()
             if (fresh == null || fresh == value) false else { value = fresh; true }
         }
         if (changed) notifyListeners()
