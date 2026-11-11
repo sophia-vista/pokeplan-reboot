@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.pokeplan.ui.ItemIcon
+import app.pokeplan.ui.theme.LocalFrameTone
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelLabel
 import app.pokeplan.ui.theme.Spacing
@@ -35,7 +36,7 @@ import app.pokeplan.ui.theme.PixelKey
 
 /** A filter or choice key (the planner's views, pickers): the selected one is filled, the others outlined. Same states as every key. */
 @Composable
-fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, key: Color = Pixel.Blue) {
+fun TabButton(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, key: Color = LocalFrameTone.current?.band ?: Pixel.Blue) {
     PixelKey(onClick, modifier, key = key, selected = selected, enabled = enabled, fill = true, role = Role.Tab, horizontal = Spacing.M) { look -> KeyLabel(label, look) }
 }
 

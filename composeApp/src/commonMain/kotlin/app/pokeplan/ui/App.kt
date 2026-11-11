@@ -242,6 +242,12 @@ class AppModel(
     /** A task just deleted, which the undo bar can bring back for a few seconds. */
     var deletedTask: Task? by mutableStateOf(null)
 
+    /** Anything else just deleted (a budget, a bill, a drink): the undo bar shows it for a few seconds and [UndoItem.undo] puts it back. */
+    var undoItem: app.pokeplan.ui.screens.UndoItem? by mutableStateOf(null)
+
+    /** Offers [undo] under [label] in the undo bar, replacing an earlier offer. Take [snapshot]s before the change, restore them in [undo]. */
+    fun offerUndo(label: String, undo: () -> Unit) { undoItem = app.pokeplan.ui.screens.UndoItem(label, undo) }
+
     /** A task picked on Home or in the Planner to focus on; the Focus screen offers it when it opens. */
     var focusTaskId: String? by mutableStateOf(null)
 

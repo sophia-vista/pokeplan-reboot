@@ -71,7 +71,13 @@ class MintStore(
 
     private fun update(change: (MintData) -> MintData) = document.update(change)
 
+    /** Puts back a [snapshot] taken before a delete, for the undo bar. */
+    fun restore(snapshot: MintData) = update { snapshot }
+
     private fun newId(): String = newId(nowMillis, rng)
+
+    /** Noon of [day] on this phone, for a record made for a day other than today (it keeps its day whatever the zone changes). */
+    fun noonOf(day: LocalDate): Long = day.atStartOfDayIn(zone).toEpochMilliseconds() + 12 * 3_600_000L
 
     private fun dayOf(millis: Long): LocalDate = millis.toLocalDateTime(zone).date
 

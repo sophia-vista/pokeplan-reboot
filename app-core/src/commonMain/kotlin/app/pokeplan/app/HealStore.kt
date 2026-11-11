@@ -27,6 +27,7 @@ import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlin.random.Random
@@ -69,7 +70,13 @@ class HealStore(
 
     private fun update(change: (HealData) -> HealData) = document.update(change)
 
+    /** Puts back a [snapshot] taken before a delete, for the undo bar. */
+    fun restore(snapshot: HealData) = update { snapshot }
+
     private fun newId(): String = newId(nowMillis, rng)
+
+    /** Noon of [day] on this phone, for a record made for a day other than today. */
+    fun noonOf(day: LocalDate): Long = day.atStartOfDayIn(zone).toEpochMilliseconds() + 12 * 3_600_000L
 
     private fun dayOf(millis: Long): LocalDate = millis.toLocalDateTime(zone).date
 

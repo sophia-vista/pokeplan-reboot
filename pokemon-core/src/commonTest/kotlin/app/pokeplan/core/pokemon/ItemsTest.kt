@@ -82,7 +82,7 @@ class ItemsTest {
 
     @Test
     fun catalogueNamesAndCategories() {
-        assertEquals("Rare Candy", Items.name(Items.RARE_CANDY))
+        assertEquals("Exp. Candy", Items.name(Items.RARE_CANDY))
         assertEquals(ItemCategory.VITAMIN, Items.category("protein"))
         assertEquals(ItemCategory.LURE, Items.category(Items.lure(PokemonType.FIRE)))
         assertEquals(ItemCategory.EVOLUTION, Items.category("fire-stone"))

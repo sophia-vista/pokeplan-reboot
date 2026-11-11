@@ -92,7 +92,11 @@ fun BuddyStage(
     celebrated: Long, onCelebrated: (Long) -> Unit,
     guests: List<StageGuest> = emptyList(),
     modifier: Modifier = Modifier,
+    /** A strip for a module page, where the work comes first: a shorter window and a smaller sprite. */
+    compact: Boolean = false,
 ) {
+    val stageHeight = if (compact) 144.dp else 248.dp
+    val spriteSize = if (compact) 96.dp else 144.dp
     var taps by remember { mutableIntStateOf(0) }
     var reaction by remember { mutableStateOf<ReactionIcon?>(null) }
     var longReaction by remember { mutableStateOf(false) }
@@ -144,7 +148,7 @@ fun BuddyStage(
 
     val shape = PixelShape
     // Tall enough for a whole hop: its frames hold the jump and draw at the idle scale, about 200 dp high at the peak.
-    Box(modifier.fillMaxWidth().height(248.dp).clip(shape).border(Sizes.Hairline, Pixel.Border, shape)) {
+    Box(modifier.fillMaxWidth().height(stageHeight).clip(shape).border(Sizes.Hairline, Pixel.Border, shape)) {
         SceneImage(scene, Modifier.matchParentSize(), darkness)
         // A small shadow made of a few flat rows, so it matches the pixels of the sprite.
         Canvas(Modifier.align(Alignment.BottomCenter).padding(bottom = 40.dp).size(Sizes.SpriteM, 12.dp)) {
@@ -166,13 +170,13 @@ fun BuddyStage(
                     onHaptic()
                     react(onPet(lastReaction))
                 },
-            size = 144.dp, animate = !calm,
+            size = spriteSize, animate = !calm,
             action = if (resting) SpriteAction.SLEEP else action, actionKey = reactionId, onActionDone = { action = SpriteAction.IDLE },
         )
 
         // The Zz while it sleeps through a focus session.
-        if (resting) StatusIcon(StatusKind.SLEEP, (3 * LocalDensity.current.density).roundToInt(), Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp + 104.dp).offset(x = 40.dp), loop = true, animate = !calm)
-        if (buddy.isShiny && !calm && !resting) ShinyGlints(Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp).size(144.dp))
+        if (resting) StatusIcon(StatusKind.SLEEP, (3 * LocalDensity.current.density).roundToInt(), Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp + spriteSize * 0.72f).offset(x = 40.dp), loop = true, animate = !calm)
+        if (buddy.isShiny && !calm && !resting) ShinyGlints(Modifier.align(Alignment.BottomCenter).padding(bottom = 34.dp).size(spriteSize))
 
         // Level and progress: small, in the corner, readable on any scene. Its corners are the stage's minus the inset, so
         // the two curves stay concentric.
@@ -190,7 +194,7 @@ fun BuddyStage(
             }
         }
 
-        AnimatedVisibility(reaction != null && face == null, Modifier.align(Alignment.Center).padding(bottom = 150.dp), enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut()) {
+        AnimatedVisibility(reaction != null && face == null, Modifier.align(Alignment.Center).padding(bottom = if (compact) 96.dp else 150.dp), enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut()) {
             reaction?.let { ReactionMark(it, Modifier.semantics { contentDescription = "reaction" }, size = 40.dp, animate = !calm) }
         }
         // A real event shows the buddy's own face in the corner, as the Mystery Dungeon games do beside a line of text.

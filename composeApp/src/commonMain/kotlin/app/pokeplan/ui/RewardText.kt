@@ -51,7 +51,7 @@ fun Reward.describe(source: String = ""): String = when (this) {
             else -> "Your egg hatched: $name!"
         }
     }
-    is Reward.Candies -> "$amount ${if (type == CandyType.SUPER) "Super" else "Rare"} ${if (amount == 1) "Candy" else "Candies"}"
+    is Reward.Candies -> "$amount ${if (type == CandyType.SUPER) "Super" else "Exp."} ${if (amount == 1) "Candy" else "Candies"}"
     is Reward.Coins -> "$amount Poké"
     is Reward.Poke -> "$amount Poké"
     is Reward.ItemDrop -> "${Items.name(itemId)}" + if (amount > 1) " x$amount" else ""

@@ -44,14 +44,14 @@ internal fun BagView(model: AppModel) {
     var open by remember { mutableStateOf<String?>(null) }
     val items = player.inventory.counts.entries.filter { it.value > 0 }.sortedWith(compareBy({ Items.category(it.key)?.ordinal ?: 99 }, { it.key }))
     if (store.sees(Feature.COINS)) TextBox {
-        // The shop: coins buy Rare Candies.
+        // The shop: coins buy Exp. Candies.
         val each = Shop.COINS_PER_RARE_CANDY
         val afford = player.coins / each
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("${player.coins} Poké", style = MaterialTheme.typography.titleMedium)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 ItemIcon(Items.RARE_CANDY, size = Sizes.Icon)
-                Text("Rare Candy: $each Poké each", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                Text("Exp. Candy: $each Poké each", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 listOf(1, 10).forEach { n ->

@@ -61,7 +61,7 @@ internal val helpTopics = listOf(
             HelpItem("Can I undo a task?", "For 10 seconds after you finish it. After that the reward is paid and it is final. A task finished from a widget is paid the next time you open the app."),
             HelpItem("How do I get a copy of my data, or delete it?", "Me, then Settings, then Your data. Export my data saves everything PokéLife keeps as a JSON file. Erase this device starts over."),
             HelpItem("How do reminders work?", "Open a task with a day and pick up to three times under Remind me: at the time, 10 minutes, an hour or a day before. They count from the time you planned it, or its deadline, or 9:00 on its day. A reminder waits during quiet hours (Settings), a focus session and rest days. Tap Done on the notification to finish the task, Snooze to hear again in an hour, or Tomorrow for 9:00 the next day. Set a time under At on the task to be reminded at that time."),
-            HelpItem("What are Rare Candies and Super Candies?", "Every finished task gives Rare Candies, and sometimes a Super Candy on top. Rare Candies level a Pokémon up; higher levels need more of them, as in the games. A Super Candy evolves it once it reaches its evolution level from the games (Charmander at 16); some Pokémon need a stone, a happy buddy or a time of day instead."),
+            HelpItem("What are Exp. Candies and Super Candies?", "Every finished task gives Exp. Candies, and sometimes a Super Candy on top. Exp. Candies level a Pokémon up; higher levels need more of them, as in the games. A Super Candy evolves it once it reaches its evolution level from the games (Charmander at 16); some Pokémon need a stone, a happy buddy or a time of day instead."),
         ),
     ),
     HelpTopic(

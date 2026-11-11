@@ -115,24 +115,11 @@ private fun Tabs(labels: List<String>, selected: Int, onSelect: (Int) -> Unit) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DateField(label: String, value: LocalDate?, onChange: (LocalDate?) -> Unit, today: LocalDate) {
-    var text by remember { mutableStateOf(value?.toString().orEmpty()) }
-    LaunchedEffect(value) { if (value != parseDay(text)) text = value?.toString().orEmpty() }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelField(
-            text, { t -> text = t.filter { it.isDigit() || it == '-' }.take(10); onChange(parseDay(text)) }, Modifier.fillMaxWidth(),
-            label = label, placeholder = today.toString(), singleLine = true, keyboardOptions = numberKeys,
-            error = if (text.length == 10 && parseDay(text) == null) "Write it like $today." else null,
-        )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            listOf(0 to "Today", 1 to "Tomorrow", 7 to "In a week", 30 to "In a month").forEach { (d, l) ->
-                val day = today.plus(d, DateTimeUnit.DAY)
-                Chip(l, value == day, { text = day.toString(); onChange(day) })
-            }
-            Chip("None", value == null, { text = ""; onChange(null) })
-        }
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        PixelDateField(value, today, accent, onChange, presets = listOf("Today" to 0, "Tomorrow" to 1, "In a week" to 7), noneLabel = "None")
     }
 }
 
@@ -455,7 +442,7 @@ private fun PersonNotes(model: AppModel, p: Person) {
             Actions {
                 PixelButton("Save", { if (link.updateNote(n.id, draft).record != null) editing = null }, Modifier.weight(1f), accent, enabled = draft.isNotBlank(), compact = true)
                 PixelButton("Close", { editing = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelButton("Delete", { link.deleteNote(n.id); editing = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                PixelButton("Delete", { val before = model.linkData; link.deleteNote(n.id); editing = null; model.offerUndo("Deleted: note") { link.restore(before) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
         }
     }
@@ -578,9 +565,13 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
             DateKind.entries.forEach { k -> Chip(k.label, kind == k, { kind = k; if (title.isBlank() || DateKind.entries.any { it.label == title }) title = k.label }) }
         }
         PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
+        // The month is a key, not a number to type; the day and the year (which may be unknown) stay short fields.
+        SectionLabel("Month")
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec").forEachIndexed { i, name -> Chip(name, month.toIntOrNull() == i + 1, { month = (i + 1).toString() }) }
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelField(day, { day = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f), label = "Day", singleLine = true, keyboardOptions = numberKeys)
-            PixelField(month, { month = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f), label = "Month", singleLine = true, keyboardOptions = numberKeys)
             PixelField(year, { year = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f), label = "Year", placeholder = "unknown", singleLine = true, keyboardOptions = numberKeys)
         }
         ToggleRow("Every year", annual, detail = "A 29 February is kept on 28 February in years without one.") { annual = it }

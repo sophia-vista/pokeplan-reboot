@@ -42,7 +42,7 @@ object Items {
     fun megaStone(formIdentifier: String) = "mega-stone-$formIdentifier"
 
     private val special = mapOf(
-        RARE_CANDY to ("Rare Candy" to ItemCategory.CANDY),
+        RARE_CANDY to ("Exp. Candy" to ItemCategory.CANDY),
         SUPER_CANDY to ("Super Candy" to ItemCategory.CANDY),
         LINK_CORD to ("Link Cord" to ItemCategory.EVOLUTION),
         NATURE_MINT to ("Nature Mint" to ItemCategory.TRAINING),
