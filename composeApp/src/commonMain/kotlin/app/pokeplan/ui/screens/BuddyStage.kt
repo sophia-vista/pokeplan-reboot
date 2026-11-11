@@ -59,6 +59,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.pokeplan.app.BuddyEvent
 import app.pokeplan.app.BuddyEventNow
+import app.pokeplan.app.ReactionIcon
+import app.pokeplan.ui.ReactionMark
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.ui.AnimatedSprite
@@ -77,14 +79,14 @@ import kotlinx.coroutines.delay
  * and nothing else loud. Its own idle animation plays (a gentle bob for species without one), and its SpriteCollab Sleep
  * animation while a focus session runs ([resting]); level and progress sit small in a corner; there is no speech bubble.
  * A real event ([event], once) shows the buddy's portrait with a happy face in the corner and a hop; a pet answers with
- * a hop and one emoji, a berry with its Eat animation and one emoji. Forms without those animations hop in code instead.
+ * a hop and one status icon, a berry with its Eat animation and one icon. Forms without those animations hop in code instead.
  * [guests] (Care's visitors) stand a little behind it on either side, each with its own idle; tapping one is a pat.
  */
 @Composable
 fun BuddyStage(
     buddy: OwnedPokemon, scene: String, darkness: Float, progress: Float, event: BuddyEventNow?,
     calm: Boolean, resting: Boolean, berry: String?,
-    onPet: (avoid: String?) -> String, onFeed: (avoid: String?) -> String, onOpen: () -> Unit, onHaptic: () -> Unit,
+    onPet: (avoid: ReactionIcon?) -> ReactionIcon, onFeed: (avoid: ReactionIcon?) -> ReactionIcon, onOpen: () -> Unit, onHaptic: () -> Unit,
     /** A real event is being celebrated: the buddy calls out. */
     onEvent: () -> Unit,
     celebrated: Long, onCelebrated: (Long) -> Unit,
@@ -96,19 +98,21 @@ fun BuddyStage(
     val stageHeight = if (compact) 144.dp else 248.dp
     val spriteSize = if (compact) 96.dp else 144.dp
     var taps by remember { mutableIntStateOf(0) }
-    var reaction by remember { mutableStateOf<String?>(null) }
+    var reaction by remember { mutableStateOf<ReactionIcon?>(null) }
+    var longReaction by remember { mutableStateOf(false) }
     var reactionId by remember { mutableIntStateOf(0) }
     val hop = remember { Animatable(0f) }
-    var lastReaction by remember { mutableStateOf<String?>(null) }
+    var lastReaction by remember { mutableStateOf<ReactionIcon?>(null) }
     // The one-off animation the reaction plays (a hop, a bite); sleeping through a focus session there is none.
     var action by remember { mutableStateOf(SpriteAction.IDLE) }
     // The face a real event shows in the corner, while its reaction lasts.
     var face by remember { mutableStateOf<Emotion?>(null) }
 
-    // Every reaction is one emoji above the buddy for a moment (an event shows its portrait instead), with a hop or a bite.
-    fun react(emoji: String, move: SpriteAction = SpriteAction.HOP, emotion: Emotion? = null) {
-        lastReaction = emoji
-        reaction = emoji
+    // Every reaction is one icon above the buddy for a moment (an event shows its portrait beside it), with a hop or a bite.
+    fun react(icon: ReactionIcon, move: SpriteAction = SpriteAction.HOP, emotion: Emotion? = null, long: Boolean = false) {
+        lastReaction = icon
+        reaction = icon
+        longReaction = long
         face = emotion
         action = if (resting) SpriteAction.IDLE else move
         reactionId++
@@ -120,16 +124,22 @@ fun BuddyStage(
             hop.animateTo(-16f, tween(110))
             hop.animateTo(0f, tween(150))
         }
-        delay(if (reaction == BuddyEvent.SHINY.emoji) 3_800 else 2_200)
+        delay(if (longReaction) 3_800 else 2_200)
         reaction = null
         face = null
+    }
+    // Waking when a focus session ends: it stretches awake (its Wake animation, else a hop) instead of cutting from asleep to standing.
+    var wasResting by remember { mutableStateOf(resting) }
+    LaunchedEffect(resting) {
+        if (wasResting && !resting && !calm) { action = SpriteAction.WAKE; reactionId++ }
+        wasResting = resting
     }
     // A real event: the buddy's happy face, once per event (not again each time Home is opened).
     LaunchedEffect(event?.atMillis) {
         if (event == null || event.atMillis <= celebrated) return@LaunchedEffect
         onCelebrated(event.atMillis)
         onEvent()
-        react(event.event.emoji, emotion = event.event.emotion())
+        react(event.event.icon, emotion = event.event.emotion(), long = event.event == BuddyEvent.SHINY)
     }
 
     // Species without an animation drift up and down very slowly so the scene is never frozen.
@@ -185,13 +195,13 @@ fun BuddyStage(
         }
 
         AnimatedVisibility(reaction != null && face == null, Modifier.align(Alignment.Center).padding(bottom = if (compact) 96.dp else 150.dp), enter = fadeIn() + scaleIn(initialScale = 0.5f), exit = fadeOut()) {
-            Text(reaction ?: "", fontSize = 30.sp, modifier = Modifier.semantics { contentDescription = "reaction" })
+            reaction?.let { ReactionMark(it, Modifier.semantics { contentDescription = "reaction" }, size = 40.dp, animate = !calm) }
         }
         // A real event shows the buddy's own face in the corner, as the Mystery Dungeon games do beside a line of text.
         AnimatedVisibility(face != null, Modifier.align(Alignment.TopStart).padding(Spacing.S), enter = fadeIn() + scaleIn(initialScale = 0.7f), exit = fadeOut()) {
             Box {
                 Portrait(buddy.form.id, buddy.isShiny, "${buddy.nickname} is delighted", emotion = face ?: Emotion.HAPPY, size = 64.dp)
-                Text(reaction ?: "", fontSize = 20.sp, modifier = Modifier.align(Alignment.BottomEnd).offset(8.dp, 6.dp))
+                reaction?.let { ReactionMark(it, Modifier.align(Alignment.BottomEnd).offset(8.dp, 6.dp), size = 28.dp, animate = !calm) }
             }
         }
 

@@ -179,10 +179,10 @@ private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
         buddy = buddy, scene = Module.CARE.look.scene, darkness = BuddyScene.darkness(store.now.hour, store.now.minute),
         progress = store.levelProgress(buddy), event = store.buddyEvent(care = true),
         calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
-        onPet = { avoid -> store.pet(buddy.id); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
+        onPet = { avoid -> store.pet(buddy.id); model.cry(buddy); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
         onFeed = { avoid -> berry?.let { store.useItem(it, buddy.id); model.effect(Sfx.EATING) }; BuddyReaction.feed(buddy, avoid = avoid) },
         onOpen = { openPokemon(buddy.id) }, onHaptic = { model.haptic() },
-        onEvent = { model.cry(buddy.speciesId) },
+        onEvent = { model.cry(buddy) },
         celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
         // The warmest visitors wait in the meadow beside the buddy; a tap is a pat, just for fun.
         guests = Visitors.meadow(model.careData.visitors).sortedByDescending { it.progress }.take(2).map { v ->
@@ -462,13 +462,15 @@ private fun CalmBreakView(model: AppModel) {
     val buddy = model.store.careBuddy
     var wake by remember { mutableStateOf(0) }
     var waking by remember { mutableStateOf(false) }
+    // Each breath it takes a deep one (its DeepBreath animation) in the middle of resting; a form without one just sleeps on.
+    var breathing by remember { mutableStateOf(false) }
 
     fun finish(length: Int) {
         val short = length < CareRules.BREAK_MIN_SECONDS
         val paid = care.finishCalmBreak(length).isNotEmpty()
         startedAt = null
         // It wakes up beside you: a stretch (its hop), its cry, and the healing chime when the break earned.
-        buddy?.let { model.cry(it.speciesId) }
+        buddy?.let { model.cry(it) }
         if (paid) model.effect(Sfx.CALM_BREAK_END)
         if (!reduce) { waking = true; wake++ }
         result = when {
@@ -482,20 +484,23 @@ private fun CalmBreakView(model: AppModel) {
     val elapsed = if (start == null) 0L else (model.now - start).coerceAtLeast(0)
     if (start != null && elapsed >= seconds * 1000L) finish(seconds)
 
+    val breath = if (start == null) -1L else elapsed / BREATH_MILLIS
+    LaunchedEffect(breath) { if (breath >= 0 && !reduce) { breathing = true; wake++ } }
     if (buddy != null) SceneStage(Module.CARE.look.scene, 200.dp) {
         AnimatedSprite(
             buddy.form.id, buddy.isShiny, if (start != null) "${buddy.nickname}, resting" else buddy.nickname,
             Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.XXL).clickable(enabled = start == null, onClickLabel = "Hear ${buddy.nickname}", role = Role.Button) {
-                model.haptic(); model.cry(buddy.speciesId)
+                model.haptic(); model.cry(buddy)
                 if (!reduce) { waking = true; wake++ }
             },
             size = 120.dp, animate = !reduce,
             action = when {
+                start != null && breathing -> SpriteAction.DEEP_BREATH
                 start != null -> SpriteAction.SLEEP
-                waking -> SpriteAction.HOP
+                waking -> SpriteAction.WAKE
                 else -> SpriteAction.IDLE
             },
-            actionKey = wake, onActionDone = { waking = false },
+            actionKey = wake, onActionDone = { waking = false; breathing = false },
         )
         // The Zz while it rests.
         if (start != null) StatusIcon(StatusKind.SLEEP, (3 * LocalDensity.current.density).roundToInt(), Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.XXL + 96.dp).offset(x = 36.dp), loop = true, animate = !reduce)

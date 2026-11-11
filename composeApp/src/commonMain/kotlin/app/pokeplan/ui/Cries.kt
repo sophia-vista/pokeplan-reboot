@@ -33,9 +33,6 @@ enum class Sfx(val file: String, val streams: Boolean = false) {
     /** Running from a battle: a Pokémon transferred to the Professor. */
     ESCAPE("escape"),
 
-    /** The Pokémon Center jingle: an evolution's "Congratulations!". */
-    POKEMON_CENTER("pokemon-center", streams = true),
-
     /** The opening of the games' evolution music, 6.5 seconds, faded out: "What? it is evolving". Not the healing jingle. */
     EVOLUTION("evolution", streams = true),
 
@@ -62,8 +59,6 @@ enum class Sfx(val file: String, val streams: Boolean = false) {
     ERROR("error"),
 
     // The launcher.
-    DRAWER_OPEN("drawer-open"),
-    DRAWER_CLOSE("drawer-close"),
     LONG_PRESS("long-press"),
     PIN("pin"),
     UNPIN("unpin"),
@@ -127,7 +122,6 @@ enum class Sfx(val file: String, val streams: Boolean = false) {
     GREAT_SHOCK("great-shock"),
     EATING("eating"),
 
-    /** Notification sounds (the channel needs them as res/raw files, not through this player). */
-    REMINDER("reminder"),
-    TIMER_DONE("timer-done"),
+    // The notification sound is not played through this player: the channel needs it as res/raw/pokelife_notify.ogg (the same clip as
+    // assets/sfx/reminder.ogg). assets/sfx also keeps pokemon-center, drawer-open, drawer-close and timer-done for later; the build does not bundle them.
 }

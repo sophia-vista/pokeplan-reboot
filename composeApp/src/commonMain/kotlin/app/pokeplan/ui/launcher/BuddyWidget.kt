@@ -63,7 +63,7 @@ internal fun BuddyWidget(env: WidgetEnv) {
     // The frame is 3 art pixels of room above and below the face, so the name box is made that tall (no intrinsic sizes: the text is measured lazily).
     val frameHeight = ((40 * 2 + 2 * 3) * env.pixel / density).dp
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalAlignment = Alignment.CenterVertically) {
-        PmdBox(env.pixel, Modifier.clickable(role = Role.Button, onClickLabel = "Pet ${buddy.nickname}") { env.model.cry(buddy.speciesId); mood.feel(Emotion.HAPPY) }, inset = 0, compact = true) {
+        PmdBox(env.pixel, Modifier.clickable(role = Role.Button, onClickLabel = "Pet ${buddy.nickname}") { env.model.cry(buddy); mood.feel(Emotion.HAPPY) }, inset = 0, compact = true) {
             Portrait(buddy.form.id, buddy.isShiny, "${buddy.nickname}, level ${buddy.level}", emotion = mood.emotion, size = face, framed = false)
         }
         PmdBox(env.pixel, Modifier.weight(1f).height(frameHeight).clickable(role = Role.Button, onClickLabel = "Open PokéLife") { env.host.openApp(Place.HOME) }, inset = 0, compact = true) {

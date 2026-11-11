@@ -26,9 +26,11 @@ import pokeplan.composeapp.generated.resources.Res
  * [loop] is the frames repeated from the first; [start] is where a looping one begins (the Zz grows before it settles).
  */
 enum class StatusKind(val file: String, val frames: Int, val start: Int = 0, val millis: Long = 110, val cell: Int = 16) {
-    ALERT("alert", 9), QUESTION("question", 10), CROSS("cross", 9), SLEEP("sleep", 9, start = 3, millis = 220), SKULL("skull", 8),
+    ALERT("alert", 9), QUESTION("question", 10), CROSS("cross", 9), SLEEP("sleep", 9, start = 3, millis = 220),
     /** The yellow flash of a shock, the blue drop of a nervous one and a white sparkle for something nice (24 px, 16 px and 24 px frames). */
     ZAP("zap", 2, millis = 140, cell = 24), SWEAT("sweat", 2, millis = 300), TWINKLE("twinkle", 3, millis = 160, cell = 24),
+    /** The stat icons of the games, for the buddy's type-flavoured reactions: a flame, a shield, a fist, and a block of ice (32 px frames). */
+    FLAME("flame", 7), SHIELD("shield", 13), FIST("fist", 8, millis = 130), ICE("ice", 6, millis = 160, cell = 32),
 }
 
 private val strips = mutableMapOf<StatusKind, ImageBitmap?>()

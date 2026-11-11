@@ -64,55 +64,75 @@ object BuddyScene {
 }
 
 /**
- * What just happened that is worth a small reaction: the buddy answers with one emoji above its head, like a game emote,
- * and never with sentences. There is no permanent speech bubble, no needs and no mood meter.
+ * What a reaction shows, above the buddy's head, as the Mystery Dungeon games show a feeling: a status icon where the games
+ * have one (the "!", the "?", a sparkle, a flame, a bolt, a block of ice, a fist, a shield, a drop, the Zz) and a real item
+ * icon or Pixelarticons glyph where they have none (a heart, a note, the sun, the moon, a star, an apple). The UI draws each
+ * from its asset; [key] is the stable name a widget keeps between runs.
  */
-enum class BuddyEvent(val emoji: String) {
-    SHINY("🌟"),
-    HATCHED("🎉"),
-    DONE("✨"),
+enum class ReactionIcon(val key: String) {
+    TWINKLE("twinkle"), ALERT("alert"), QUESTION("question"), SLEEP("sleep"),
+    FLAME("flame"), ZAP("zap"), ICE("ice"), FIST("fist"), SHIELD("shield"), DROP("drop"),
+    HEART("heart"), NOTE("note"), SUN("sun"), MOON("moon"), STAR("star"), APPLE("apple"),
+    ;
+
+    companion object {
+        fun of(key: String?): ReactionIcon? = entries.firstOrNull { it.key == key }
+    }
 }
 
 /**
- * The buddy's reactions to a pet or a berry: one emoji, chosen from how this particular Pokémon is. Its bond style (from
- * its nature) decides most of them, its type adds flavour, and the hour of the day sometimes adds a sleepy or a bright
- * one. Never words, never anything that reads as the buddy being unhappy.
+ * What just happened that is worth a small reaction: the buddy answers with one icon above its head, like a game emote,
+ * and never with sentences. There is no permanent speech bubble, no needs and no mood meter.
+ */
+enum class BuddyEvent(val icon: ReactionIcon) {
+    SHINY(ReactionIcon.STAR),
+    HATCHED(ReactionIcon.ALERT),
+    DONE(ReactionIcon.TWINKLE),
+}
+
+/**
+ * The buddy's reactions to a pet or a berry: one icon, chosen from how this particular Pokémon is. Its bond style (from
+ * its nature) decides most of them, its type adds flavour (a flame for Fire, a bolt for Electric), and the hour of the day
+ * sometimes adds a sleepy or a bright one. Never words, never anything that reads as the buddy being unhappy.
  */
 object BuddyReaction {
     private val byBond = mapOf(
-        BondStyle.COMFORT to listOf("🥰", "😌", "💞", "🤗", "☺️"),
-        BondStyle.PRESENCE to listOf("👀", "✨", "😊", "🙂", "💫"),
-        BondStyle.GIFTS to listOf("🎁", "😍", "🍓", "😋", "💝"),
-        BondStyle.BALANCED to listOf("❤️", "😊", "🎵", "😄", "🌟"),
+        BondStyle.COMFORT to listOf(ReactionIcon.HEART, ReactionIcon.TWINKLE, ReactionIcon.SUN, ReactionIcon.NOTE, ReactionIcon.STAR),
+        BondStyle.PRESENCE to listOf(ReactionIcon.QUESTION, ReactionIcon.TWINKLE, ReactionIcon.STAR, ReactionIcon.SUN, ReactionIcon.NOTE),
+        BondStyle.GIFTS to listOf(ReactionIcon.APPLE, ReactionIcon.HEART, ReactionIcon.STAR, ReactionIcon.TWINKLE, ReactionIcon.ALERT),
+        BondStyle.BALANCED to listOf(ReactionIcon.HEART, ReactionIcon.NOTE, ReactionIcon.SUN, ReactionIcon.STAR, ReactionIcon.TWINKLE),
     )
 
     private val byType = mapOf(
-        PokemonType.NORMAL to listOf("🎵", "🙂"), PokemonType.FIRE to listOf("🔥", "😤"), PokemonType.WATER to listOf("💧", "🌊"),
-        PokemonType.GRASS to listOf("🌱", "🍃"), PokemonType.ELECTRIC to listOf("⚡", "😆"), PokemonType.ICE to listOf("❄️", "⛄"),
-        PokemonType.FIGHTING to listOf("💪", "🥋"), PokemonType.POISON to listOf("🧪", "😏"), PokemonType.GROUND to listOf("🌵", "🏜️"),
-        PokemonType.FLYING to listOf("🪶", "🌤️"), PokemonType.PSYCHIC to listOf("🔮", "🌀"), PokemonType.BUG to listOf("🐛", "🍃"),
-        PokemonType.ROCK to listOf("🪨", "💎"), PokemonType.GHOST to listOf("👻", "🌙"), PokemonType.DRAGON to listOf("🐲", "💥"),
-        PokemonType.DARK to listOf("🌙", "😎"), PokemonType.STEEL to listOf("🛡️", "💪"), PokemonType.FAIRY to listOf("🎀", "🌸"),
+        PokemonType.NORMAL to listOf(ReactionIcon.NOTE, ReactionIcon.STAR), PokemonType.FIRE to listOf(ReactionIcon.FLAME, ReactionIcon.SUN),
+        PokemonType.WATER to listOf(ReactionIcon.DROP, ReactionIcon.NOTE), PokemonType.GRASS to listOf(ReactionIcon.SUN, ReactionIcon.APPLE),
+        PokemonType.ELECTRIC to listOf(ReactionIcon.ZAP, ReactionIcon.TWINKLE), PokemonType.ICE to listOf(ReactionIcon.ICE, ReactionIcon.TWINKLE),
+        PokemonType.FIGHTING to listOf(ReactionIcon.FIST, ReactionIcon.STAR), PokemonType.POISON to listOf(ReactionIcon.DROP, ReactionIcon.QUESTION),
+        PokemonType.GROUND to listOf(ReactionIcon.SUN, ReactionIcon.SHIELD), PokemonType.FLYING to listOf(ReactionIcon.NOTE, ReactionIcon.SUN),
+        PokemonType.PSYCHIC to listOf(ReactionIcon.QUESTION, ReactionIcon.TWINKLE), PokemonType.BUG to listOf(ReactionIcon.QUESTION, ReactionIcon.SUN),
+        PokemonType.ROCK to listOf(ReactionIcon.SHIELD, ReactionIcon.STAR), PokemonType.GHOST to listOf(ReactionIcon.MOON, ReactionIcon.QUESTION),
+        PokemonType.DRAGON to listOf(ReactionIcon.FLAME, ReactionIcon.STAR), PokemonType.DARK to listOf(ReactionIcon.MOON, ReactionIcon.STAR),
+        PokemonType.STEEL to listOf(ReactionIcon.SHIELD, ReactionIcon.FIST), PokemonType.FAIRY to listOf(ReactionIcon.HEART, ReactionIcon.TWINKLE),
     )
 
-    private val night = listOf("😴", "💤", "🌙")
-    private val morning = listOf("☀️", "🌅", "😊")
+    private val night = listOf(ReactionIcon.SLEEP, ReactionIcon.MOON)
+    private val morning = listOf(ReactionIcon.SUN, ReactionIcon.TWINKLE)
 
-    /** Every emoji a pet can show for [buddy]; for tests and for a future reaction picker. */
-    fun petPool(buddy: OwnedPokemon, hour: Int): List<String> =
+    /** Every icon a pet can show for [buddy]; for tests and for a future reaction picker. */
+    fun petPool(buddy: OwnedPokemon, hour: Int): List<ReactionIcon> =
         (byBond.getValue(buddy.bondStyle) + buddy.form.types.flatMap { byType[it].orEmpty() } + timeOfDay(hour)).distinct()
 
     private fun timeOfDay(hour: Int) = if (BuddyScene.isNight(hour)) night else if (hour in 6..9) morning else emptyList()
 
-    /** The emoji for a pet right now: about half from its bond style, a third from its type, the rest from the time of day. */
-    fun pet(buddy: OwnedPokemon, hour: Int, random: Random = Random, avoid: String? = null): String {
-        var emoji = pick(buddy, hour, random)
+    /** The icon for a pet right now: about half from its bond style, a third from its type, the rest from the time of day. */
+    fun pet(buddy: OwnedPokemon, hour: Int, random: Random = Random, avoid: ReactionIcon? = null): ReactionIcon {
+        var icon = pick(buddy, hour, random)
         // Never the same one twice in a row.
-        repeat(5) { if (emoji == avoid) emoji = pick(buddy, hour, random) }
-        return emoji
+        repeat(5) { if (icon == avoid) icon = pick(buddy, hour, random) }
+        return icon
     }
 
-    private fun pick(buddy: OwnedPokemon, hour: Int, random: Random): String {
+    private fun pick(buddy: OwnedPokemon, hour: Int, random: Random): ReactionIcon {
         val roll = random.nextInt(100)
         val pool = when {
             roll < 50 -> byBond.getValue(buddy.bondStyle)
@@ -122,9 +142,9 @@ object BuddyReaction {
         return pool.random(random)
     }
 
-    /** The emoji for a berry: delighted for a Pokémon that loves gifts, otherwise a happy bite. */
-    fun feed(buddy: OwnedPokemon, random: Random = Random, avoid: String? = null): String {
-        val pool = if (buddy.bondStyle == BondStyle.GIFTS) listOf("😍", "🥰", "💝") else listOf("😋", "🍓", "😊")
+    /** The icon for a berry: delighted for a Pokémon that loves gifts, otherwise a happy bite. */
+    fun feed(buddy: OwnedPokemon, random: Random = Random, avoid: ReactionIcon? = null): ReactionIcon {
+        val pool = if (buddy.bondStyle == BondStyle.GIFTS) listOf(ReactionIcon.HEART, ReactionIcon.APPLE, ReactionIcon.STAR) else listOf(ReactionIcon.APPLE, ReactionIcon.STAR, ReactionIcon.TWINKLE)
         return (pool - setOfNotNull(avoid)).random(random)
     }
 }

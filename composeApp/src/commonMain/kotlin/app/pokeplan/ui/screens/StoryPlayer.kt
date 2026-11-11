@@ -113,8 +113,10 @@ private fun fill(model: AppModel, text: String): String =
 
 private fun emotionOf(e: Expression): Emotion = when (e) {
     Expression.HAPPY -> Emotion.HAPPY; Expression.JOYOUS -> Emotion.JOYOUS; Expression.INSPIRED -> Emotion.INSPIRED
-    Expression.DETERMINED -> Emotion.DETERMINED; Expression.SURPRISED, Expression.WORRIED -> Emotion.SURPRISED
-    else -> Emotion.NORMAL
+    Expression.DETERMINED -> Emotion.DETERMINED; Expression.SURPRISED -> Emotion.SURPRISED
+    // A form without the face falls back to a near one (Portrait): sad to teary, worried to surprised, then Normal.
+    Expression.WORRIED -> Emotion.WORRIED; Expression.SAD -> Emotion.SAD; Expression.ANGRY -> Emotion.ANGRY; Expression.TEARY -> Emotion.TEARY
+    Expression.NORMAL -> Emotion.NORMAL
 }
 
 /**
