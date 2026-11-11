@@ -527,21 +527,43 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
     var payee by remember(t.id) { mutableStateOf(t.payee) }
     var note by remember(t.id) { mutableStateOf(t.note) }
     var refused by remember(t.id) { mutableStateOf<String?>(null) }
+    var day by remember(t.id) { mutableStateOf(t.day) }
+    var categoryId by remember(t.id) { mutableStateOf(t.categoryId) }
+    var accountId by remember(t.id) { mutableStateOf(t.accountId) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
         if (editing) {
             PixelField(amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount (${t.currency})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
             PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source", singleLine = true)
             PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note")
+            SectionLabel("Date")
+            PixelDatePicker(day, mint.today, ModuleAccent.MINT.accent, { day = it })
+            val accounts = model.mintData.accounts.filter { (it.status == AccountStatus.ACTIVE && it.currency == t.currency) || it.id == t.accountId }
+            if (accounts.size > 1 && t.type != TxType.TRANSFER) {
+                SectionLabel("Account")
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    accounts.forEach { a -> Chip(a.name, a.id == accountId, { accountId = a.id }) }
+                }
+            }
+            if (t.type != TxType.TRANSFER && t.type != TxType.ADJUSTMENT) {
+                SectionLabel("Category")
+                val kind = if (t.type == TxType.INCOME) CategoryKind.INCOME else CategoryKind.EXPENSE
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Chip("None", categoryId == null, { categoryId = null })
+                    model.mintData.categories.filter { it.kind == kind && (!it.archived || it.id == t.categoryId) }.forEach { c -> Chip(c.name, c.id == categoryId, { categoryId = c.id }) }
+                }
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Save", {
                     val minor = Money.parse(amount, t.currency)
+                    // A day that was not changed keeps the record's own time; another day is noon of it.
+                    val at = if (day == t.day) t.atMillis else mint.noonOf(day)
                     if (minor == null) refused = "Check the amount."
-                    else mint.updateTransaction(t.copy(amountMinor = minor, payee = payee, note = note)).let { if (it.record != null) { editing = false; onDone() } else refused = it.refused }
+                    else mint.updateTransaction(t.copy(amountMinor = minor, payee = payee, note = note, atMillis = at, accountId = accountId, categoryId = categoryId)).let { if (it.record != null) { editing = false; onDone() } else refused = it.refused }
                 }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
                 PixelButton("Cancel", { editing = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
         } else if (asking) {
-            Confirm("Delete this record? Your balance changes with it.", "Delete", onConfirm = { mint.deleteTransaction(t.id); onDone() }, onKeep = { asking = false })
+            Confirm("Delete this record? Your balance changes with it.", "Delete", onConfirm = { val before = model.mintData; mint.deleteTransaction(t.id); onDone(); model.offerUndo("Deleted: record") { mint.restore(before) } }, onKeep = { asking = false })
         } else {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)

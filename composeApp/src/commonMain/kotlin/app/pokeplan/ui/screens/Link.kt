@@ -136,24 +136,11 @@ private fun Actions(content: @Composable androidx.compose.foundation.layout.RowS
 
 private fun parseDay(text: String): LocalDate? = runCatching { LocalDate.parse(text.trim()) }.getOrNull()
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DateField(label: String, value: LocalDate?, onChange: (LocalDate?) -> Unit, today: LocalDate) {
-    var text by remember { mutableStateOf(value?.toString().orEmpty()) }
-    LaunchedEffect(value) { if (value != parseDay(text)) text = value?.toString().orEmpty() }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelField(
-            text, { t -> text = t.filter { it.isDigit() || it == '-' }.take(10); onChange(parseDay(text)) }, Modifier.fillMaxWidth(),
-            label = label, placeholder = today.toString(), singleLine = true, keyboardOptions = numberKeys,
-            error = if (text.length == 10 && parseDay(text) == null) "Write it like $today." else null,
-        )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            listOf(0 to "Today", 1 to "Tomorrow", 7 to "In a week", 30 to "In a month").forEach { (d, l) ->
-                val day = today.plus(d, DateTimeUnit.DAY)
-                Chip(l, value == day, { text = day.toString(); onChange(day) })
-            }
-            Chip("None", value == null, { text = ""; onChange(null) })
-        }
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        PixelDateField(value, today, accent, onChange, presets = listOf("Today" to 0, "Tomorrow" to 1, "In a week" to 7), noneLabel = "None")
     }
 }
 
@@ -476,7 +463,7 @@ private fun PersonNotes(model: AppModel, p: Person) {
             Actions {
                 PixelButton("Save", { if (link.updateNote(n.id, draft).record != null) editing = null }, Modifier.weight(1f), accent, enabled = draft.isNotBlank(), compact = true)
                 PixelButton("Close", { editing = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelButton("Delete", { link.deleteNote(n.id); editing = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                PixelButton("Delete", { val before = model.linkData; link.deleteNote(n.id); editing = null; model.offerUndo("Deleted: note") { link.restore(before) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
         }
     }

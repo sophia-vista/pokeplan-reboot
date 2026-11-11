@@ -238,7 +238,7 @@ fun PixelButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    color: Color = Pixel.Blue,
+    color: Color = LocalFrameTone.current?.band ?: Pixel.Blue,
     enabled: Boolean = true,
     compact: Boolean = false,
     sound: app.pokeplan.ui.Sfx? = null,

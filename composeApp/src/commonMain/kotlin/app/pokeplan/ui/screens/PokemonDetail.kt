@@ -263,7 +263,7 @@ private fun GrowthBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean, sta
     if (!isGuardian) {
         val friendship = "Friendship ${p.friendship * 100 / 255}%"
         Text(friendship, style = soft, color = Pixel.InkSoft)
-        PixelBar(p.friendship / 255f, color = Pixel.Red, label = friendship)
+        PixelBar(p.friendship / 255f, color = Pixel.Pink, label = friendship)
         if (stats) Text(bondText(p.bondStyle), style = soft, color = Pixel.InkSoft)
     }
     if (stats) {
@@ -346,26 +346,26 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
             PixelButton(if (inPlan) "To PC" else "To Plan party", { store.setInParty(p.id, !inPlan); model.effect(if (inPlan) Sfx.MOVE_DROP else Sfx.RECRUIT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            PixelButton(if (isPlanLead) "Is Plan's lead" else "Make Plan lead", { store.setPlanLead(p.id) }, Modifier.fillMaxWidth(), Pixel.Red, enabled = inPlan && !isPlanLead, compact = true)
+            PixelButton(if (isPlanLead) "Is Plan's lead" else "Make Plan lead", { store.setPlanLead(p.id) }, Modifier.fillMaxWidth(), app.pokeplan.ui.theme.ModuleAccent.PLAN.accent, enabled = inPlan && !isPlanLead, compact = true)
         }
         if (care) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            PixelButton(if (isLead) "Is Care's lead" else "Make Care lead", { store.setCareLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inCare && !isLead, compact = true)
+            PixelButton(if (isLead) "Is Care's lead" else "Make Care lead", { store.setCareLead(p.id) }, Modifier.weight(1f), app.pokeplan.ui.theme.ModuleAccent.CARE.accent, enabled = inCare && !isLead, compact = true)
             PixelButton(if (inCare) "To PC" else "To Care party", { store.setInParty(p.id, !inCare, PartyIds.CARE); model.effect(if (inCare) Sfx.MOVE_DROP else Sfx.RECRUIT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            PixelButton(if (isHealLead) "Is Heal's lead" else "Make Heal lead", { store.setHealLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inHeal && !isHealLead, compact = true)
+            PixelButton(if (isHealLead) "Is Heal's lead" else "Make Heal lead", { store.setHealLead(p.id) }, Modifier.weight(1f), app.pokeplan.ui.theme.ModuleAccent.HEAL.accent, enabled = inHeal && !isHealLead, compact = true)
             PixelButton(if (inHeal) "To PC" else "To Heal party", { store.setInParty(p.id, !inHeal, PartyIds.HEAL); model.effect(if (inHeal) Sfx.MOVE_DROP else Sfx.RECRUIT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            PixelButton(if (isMintLead) "Is Mint's lead" else "Make Mint lead", { store.setMintLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inMint && !isMintLead, compact = true)
+            PixelButton(if (isMintLead) "Is Mint's lead" else "Make Mint lead", { store.setMintLead(p.id) }, Modifier.weight(1f), app.pokeplan.ui.theme.ModuleAccent.MINT.accent, enabled = inMint && !isMintLead, compact = true)
             PixelButton(if (inMint) "To PC" else "To Mint party", { store.setInParty(p.id, !inMint, PartyIds.MINT); model.effect(if (inMint) Sfx.MOVE_DROP else Sfx.RECRUIT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            PixelButton(if (isHomeLead) "Is Home's lead" else "Make Home lead", { store.setHomeLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inHome && !isHomeLead, compact = true)
+            PixelButton(if (isHomeLead) "Is Home's lead" else "Make Home lead", { store.setHomeLead(p.id) }, Modifier.weight(1f), app.pokeplan.ui.theme.ModuleAccent.HOME.accent, enabled = inHome && !isHomeLead, compact = true)
             PixelButton(if (inHome) "To PC" else "To Home party", { store.setInParty(p.id, !inHome, PartyIds.HOME); model.effect(if (inHome) Sfx.MOVE_DROP else Sfx.RECRUIT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            PixelButton(if (isLinkLead) "Is Link's lead" else "Make Link lead", { store.setLinkLead(p.id) }, Modifier.weight(1f), Pixel.Red, enabled = inLink && !isLinkLead, compact = true)
+            PixelButton(if (isLinkLead) "Is Link's lead" else "Make Link lead", { store.setLinkLead(p.id) }, Modifier.weight(1f), app.pokeplan.ui.theme.ModuleAccent.LINK.accent, enabled = inLink && !isLinkLead, compact = true)
             PixelButton(if (inLink) "To PC" else "To Link party", { store.setInParty(p.id, !inLink, PartyIds.LINK); model.effect(if (inLink) Sfx.MOVE_DROP else Sfx.RECRUIT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
     }

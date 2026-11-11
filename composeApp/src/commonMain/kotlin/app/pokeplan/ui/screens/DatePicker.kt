@@ -28,21 +28,36 @@ import app.pokeplan.ui.theme.Spacing
  * [today]), and "Pick a date" opening a month to tap, so a record can be made for any day and no date is ever typed as `2026-11-07`.
  * Days after [max] are dimmed and cannot be chosen (a payment is not made in the future); [min] likewise. [accent] colours the keys.
  */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun PixelDatePicker(
     value: LocalDate, today: LocalDate, accent: Color, onChange: (LocalDate) -> Unit, modifier: Modifier = Modifier,
     presets: List<Pair<String, Int>> = listOf("Today" to 0, "Yesterday" to -1), max: LocalDate? = today, min: LocalDate? = null, mondayFirst: Boolean = true, initiallyOpen: Boolean = false,
+) = PixelDateField(value, today, accent, { it?.let(onChange) }, modifier, presets, null, max, min, mondayFirst, initiallyOpen)
+
+/**
+ * [PixelDatePicker] for a date that may be missing: with a [noneLabel] ("None", "No deadline") the field gets a key for no date and
+ * [value] may be null. Without a limit ([max] and [min] null) any day can be chosen, for a due date or a warranty end.
+ */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+fun PixelDateField(
+    value: LocalDate?, today: LocalDate, accent: Color, onChange: (LocalDate?) -> Unit, modifier: Modifier = Modifier,
+    presets: List<Pair<String, Int>> = listOf("Today" to 0, "Tomorrow" to 1), noneLabel: String? = null, max: LocalDate? = null, min: LocalDate? = null,
+    mondayFirst: Boolean = true, initiallyOpen: Boolean = false,
 ) {
     var open by remember { mutableStateOf(initiallyOpen) }
-    var offset by remember(value, open) { mutableStateOf(LocalDate(value.year, value.monthNumber, 1).let { (value.year * 12 + value.monthNumber) - (today.year * 12 + today.monthNumber) }) }
+    val shown = value ?: today
+    var offset by remember(value, open) { mutableStateOf((shown.year * 12 + shown.monthNumber) - (today.year * 12 + today.monthNumber)) }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+        androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            if (noneLabel != null) TabButton(noneLabel, value == null, { onChange(null); open = false }, key = accent)
             presets.forEach { (label, days) ->
                 val day = today.plus(DatePeriod(days = days))
-                TabButton(label, value == day, { onChange(day); open = false }, Modifier.weight(1f), key = accent)
+                TabButton(label, value == day, { onChange(day); open = false }, key = accent)
             }
-            val custom = presets.none { today.plus(DatePeriod(days = it.second)) == value }
-            TabButton(if (custom) value.short() else "Pick a date", custom || open, { open = !open }, Modifier.weight(1.4f), key = accent)
+            val custom = value != null && presets.none { today.plus(DatePeriod(days = it.second)) == value }
+            TabButton(if (custom) value!!.short() else "Pick a date", custom || open, { open = !open }, key = accent)
         }
         if (open) {
             val grid = monthGrid(today, offset, mondayFirst)

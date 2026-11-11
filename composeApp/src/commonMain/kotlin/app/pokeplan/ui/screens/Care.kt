@@ -631,7 +631,7 @@ private fun DiaryView(model: AppModel) {
     val past = data.diary.filter { it.day != care.today }.sortedByDescending { it.day }.take(14)
     if (past.isNotEmpty()) SectionLabel("Earlier cards")
     past.forEach { c ->
-        ListRow(trail = { PixelIconButton("trash", "Delete", { care.deleteDiary(c.id) }, Pixel.InkSoft) }) {
+        ListRow(trail = { PixelIconButton("trash", "Delete", { val before = model.careData; care.deleteDiary(c.id); model.offerUndo("Deleted: diary card") { care.restore(before) } }, Pixel.InkSoft) }) {
             Text(c.day.short(), style = MaterialTheme.typography.bodyLarge)
             val strongest = c.feelings.entries.sortedByDescending { it.value }.filter { it.value > 0 }.take(3)
             if (strongest.isNotEmpty()) Text(strongest.joinToString(", ") { "${it.key.label} ${it.value}" }, style = MaterialTheme.typography.bodyMedium)
@@ -747,7 +747,7 @@ private fun JournalView(model: AppModel) {
     val entries = care.searchJournal(query).take(30)
     if (data.journal.isNotEmpty() && entries.isEmpty()) EmptyState("Nothing found", "No entry has \"${query.trim()}\" in it.", icon = CareSection.JOURNAL.icon, action = "Clear the search" to { query = "" })
     entries.forEach { e ->
-        ListRow(trail = { PixelIconButton("trash", "Delete", { care.deleteEntry(e.id) }, Pixel.InkSoft) }) {
+        ListRow(trail = { PixelIconButton("trash", "Delete", { val before = model.careData; care.deleteEntry(e.id); model.offerUndo("Deleted: journal entry") { care.restore(before) } }, Pixel.InkSoft) }) {
             Text(e.day.short(), style = MaterialTheme.typography.bodyMedium)
             e.promptId?.let { Prompts.byId(it) }?.let { Text(it.text, style = MaterialTheme.typography.bodyMedium) }
             Text(e.text, style = MaterialTheme.typography.bodyLarge, maxLines = 8, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)

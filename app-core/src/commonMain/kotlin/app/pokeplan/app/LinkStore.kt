@@ -53,6 +53,9 @@ class LinkStore(
 
     private fun update(change: (LinkData) -> LinkData) = document.update(change)
 
+    /** Puts back a [snapshot] taken before a delete, for the undo bar. */
+    fun restore(snapshot: LinkData) = update { snapshot }
+
     private fun newId(): String = newId(nowMillis, rng)
 
     private fun pay(id: String, ref: String): List<Reward>? =

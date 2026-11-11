@@ -70,6 +70,9 @@ class CareStore(
 
     private fun update(change: (CareData) -> CareData) = document.update(change)
 
+    /** Puts back a [snapshot] taken before a delete, for the undo bar. */
+    fun restore(snapshot: CareData) = update { snapshot }
+
     private fun newId(): String = newId(nowMillis, rng)
 
     private fun pay(kind: CareKind): List<Reward>? = world.care(CareEvent(kind, nowMillis))

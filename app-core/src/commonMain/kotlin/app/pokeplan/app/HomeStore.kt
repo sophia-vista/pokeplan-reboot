@@ -66,6 +66,9 @@ class HomeStore(
 
     private fun update(change: (HomeData) -> HomeData) = document.update(change)
 
+    /** Puts back a [snapshot] taken before a delete, for the undo bar. */
+    fun restore(snapshot: HomeData) = update { snapshot }
+
     private fun newId(): String = newId(nowMillis, rng)
 
     private fun pay(kind: HomeKind, id: String, ref: String): List<Reward>? =
