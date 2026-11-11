@@ -5,6 +5,12 @@ interface Storage {
     fun load(): String?
     fun save(text: String)
 
+    /**
+     * [save], saying whether [text] is now on the disk. False when the storage could not keep it and chose not to throw (a full phone):
+     * the stores then carry on from memory, and share that memory ([SharedDocuments]) until a save fits.
+     */
+    fun saved(text: String): Boolean { save(text); return true }
+
     /** Keeps [text], a save that could not be read, somewhere [save] will not overwrite, so it can still be recovered. */
     fun keepAside(text: String)
 
@@ -27,9 +33,13 @@ class MemoryStorage(var text: String? = null, override val shareKey: Any? = null
     var backup: String? = null
 
     override fun load(): String? = text
+    /** Set to make the next saves fail quietly, as a full phone does. */
+    var full = false
+
     override fun save(text: String) {
-        this.text = text
+        if (!full) this.text = text
     }
+    override fun saved(text: String): Boolean { save(text); return !full }
     override fun keepAside(text: String) {
         keptAside = text
     }

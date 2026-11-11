@@ -52,6 +52,7 @@ object SharedReminders {
     private const val PREFS = "shared_reminders"
     private const val HORIZON_MILLIS = 3 * 24 * 60 * 60_000L
     private const val HOLD_GRACE_MILLIS = 24 * 60 * 60_000L
+    private const val OVERDUE_DELAY_MILLIS = 5_000L
 
     const val ACTION_FIRE = "app.pokeplan.reminders.SHARED_FIRE"
     const val ACTION_ACT = "app.pokeplan.reminders.SHARED_ACT"
@@ -102,7 +103,9 @@ object SharedReminders {
         val live = live(app)
         val repo = repo(app)
         repo?.dropOlderThan(now - HOLD_GRACE_MILLIS)
-        val held = repo?.all().orEmpty().map { it.toRequest() }
+        // A snooze or a repeat that came due while the phone was off (or the app was being replaced) is still owed: it goes off now, and
+        // fire() checks again that it is wanted. Without this the planner, which looks only ahead, would leave it until it was dropped.
+        val held = repo?.all().orEmpty().map { it.toRequest() }.map { if (it.atMillis <= now) it.copy(atMillis = now + OVERDUE_DELAY_MILLIS) else it }
         val plan = live.coordinator.schedule(now, TimeZone.currentSystemDefault(), live.quiet, live.focus, held, now + HORIZON_MILLIS)
         Alarms.reschedule(app, PREFS, plan, { it.first.id.hashCode() }, { it.second }) { code, item, flags -> fireIntent(app, code, item?.first, flags) }
         LegacyReminders.cancelOnce(app)
@@ -163,9 +166,11 @@ object SharedReminders {
         }
     }
 
-    private fun releaseSource(context: Context, request: ReminderRequest) {
+    /** Lets go of what is held for [request]'s source: all of it when the thing is done, only [occurrence]'s (and its repeats) when one reminder is put off. */
+    private fun releaseSource(context: Context, request: ReminderRequest, occurrence: String? = null) {
         val repo = repo(context) ?: return
-        repo.all().filter { it.module == request.module.name && it.sourceRef == request.sourceRef }.forEach { repo.release(it.id) }
+        repo.all().filter { it.module == request.module.name && it.sourceRef == request.sourceRef && (occurrence == null || it.occurrence.substringBefore('#') == occurrence) }
+            .forEach { repo.release(it.id) }
     }
 
     /** An alarm went off: re-check the source and the delivery rules, then show it, hold it for later, or drop it. */
@@ -219,7 +224,7 @@ object SharedReminders {
             ActionResult.SNOOZED -> {
                 val until = ReminderSnooze.untilMillis(request.module, key, now, TimeZone.currentSystemDefault())
                 if (until != null) {
-                    releaseSource(context, request)
+                    releaseSource(context, request, occurrence = request.occurrence.substringBefore('#'))
                     // The same logical reminder later (section 9.7): the base request keeps its id, a repeat becomes the base again.
                     val base = if (request.kind == PlanReminderAdapter.KIND_REPEAT) request.copy(kind = "task", occurrence = request.occurrence.substringBefore('#')) else request
                     hold(context, live.coordinator.router.snoozed(base, until), "snooze", now)

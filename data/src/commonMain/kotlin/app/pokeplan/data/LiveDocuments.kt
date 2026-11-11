@@ -269,21 +269,24 @@ class LiveDocuments(private val store: DataStore) {
 
     /**
      * Restores [docs] (a backup): in one transaction the documents being replaced are first kept aside, so a restore can itself
-     * be undone, then the backup's documents are written. Documents not in [docs] are left alone.
+     * be undone, then the backup's documents are written. Documents not in [docs] are left alone, and so is one that arrives sealed with a
+     * key this phone does not have: the names of those that hold something here are returned, so the person can be told the restore was not whole.
      */
-    fun replaceAll(docs: Map<String, String>, nowMillis: Long) {
+    fun replaceAll(docs: Map<String, String>, nowMillis: Long): List<String> {
+        val left = listOf(SAVE, CARE, HEAL, MINT, HOME, LINK).filter { it !in docs && read(it) != null }.toMutableList()
         store.transaction {
             for ((name, json0) in docs) {
                 read(name)?.let { q.liveWrite("$ASIDE$name:$nowMillis", asideText(name, it), nowMillis) }
                 // Mint arrives sealed (see snapshot), and so does Heal since 0.154.0. One sealed with another phone's key (or with no key on this run) stays sealed in the
                 // aside and changes nothing; a plain one (an older build's) is written.
                 val json = if ((name == MINT || name == HEAL) && RowCipher.isSealed(json0)) {
-                    cipherFor(name)?.open(json0) ?: run { q.liveWrite("$ASIDE$name:locked:$nowMillis", json0, nowMillis); continue }
+                    cipherFor(name)?.open(json0) ?: run { q.liveWrite("$ASIDE$name:locked:$nowMillis", json0, nowMillis); left += name; continue }
                 } else json0
                 // A backup is not the app's own write: it may be from an older build, so the save goes through the app's check first.
                 write(name, if (pokemonSplit(name)) normalizer?.invoke(json, nowMillis) ?: json else json, nowMillis)
             }
         }
+        return left
     }
 
     /**
