@@ -191,11 +191,21 @@ The foundation is unusually strong: one visual grammar, real assets, forgiving c
 17. World: canon-check the dungeon list, music, Storage and Bank, Friend Areas.
 18. Launcher: edit-mode layout, module widgets, a device pass.
 
-## 7. Decisions for the owner
+## 7. Owner decisions (11 November 2026, answering the review)
 
-1. **Trainer or team?** Mainline framing (a trainer, Oak) or PMD framing (a team, no humans). Everything in finding 11 follows from this.
-2. **Body font.** Keep Pokémon DP for body text with a fixed zero, or move numbers and long text to a sans as DESIGN_SYSTEM 5.3 says.
-3. **Strict focus.** May a normal session survive leaving the app, with strictness kept for Deep Focus?
-4. **Candies.** Rename the wage to Exp. Candy and drop Super Candy for level evolutions?
-5. **Module parties.** Keep six per module, or shrink to a lead and two?
-6. **Shiny odds** and **module-named Pokédexes:** keep as decided, or move toward canon?
+Recorded here as the owner's answers; each still has to be written into its owning `docs/pokelife/` file before code changes.
+
+1. **Identity: both.** The player is a **trainer** in every life module (name, trainer rank, Oak-style welcome stay). **WORLD uses teams** (the player's expedition team, Rescue/Explorers framing, no humans staged). So WORLD keeps its own team identity and Normal to Diamond ladder; the life modules keep the trainer rank. Open follow-up: give the two ladders clearly different names and places so one screen never shows both as "Rank". Also still needed: the missing Oak portrait.
+2. **Font: try the PMD dialogue font.** `pmd-dialogue` already exists and is used by the launcher; it has Latin letters, digits and a few marks and falls back to Nunito for anything else. To do: render numbers (focus minutes, money, quantities, the calculator) in it and check the zero, then decide how far it spreads. Per DESIGN_SYSTEM 5.3 it stays out of long reading, dense data and user-entered text, so money tables and notes keep a plain face. Check `TextCentreTest` for the new font.
+3. **Focus: follow Forest, with evidence.** Searched 11 November: Forest is itself strict (leave the app and the tree dies; its "Deep Focus" blocks apps, and its only exit is giving up). Its softener is an **allow list** of apps you may use without penalty, and a paid upgrade (not a gentler default). I could not confirm a grace period, count-up mode or notification behaviour from any source. So strictness is not the weakness; the missing allow list and ongoing notification are. Proposal: keep strict failure and the 10 s grace as they are; add an allow list (needs Usage Access, or a simpler "calls and these apps" list, to be decided against the permission policy in INTEGRATIONS_AND_PRIVACY); add an ongoing notification and break cycle; keep stopwatch mode optional. Needs a device check of how the 10 s grace behaves with a notification shade or a call.
+4. **Candies: add Exp. Candy, keep Super Candy.** Exp. Candy (XS to XL) becomes the everyday wage and Rare Candy the occasional prize; Super Candy stays as the evolution item. Economy numbers must be re-balanced and `RewardRules.VERSION` bumped with `docs/economy.md`.
+5. **Parties: keep six per module.** Instead, simplify the role section of a Pokémon (one "Move to..." picker rather than twelve buttons).
+6. **Shiny odds (1 in 128) and module-named Pokédexes: as is.**
+
+## 8. What this changes in the order of work
+
+- Item 14 (candies, growth rates, evolution at level) becomes: add Exp. Candy; **keep** Super Candy and the level-evolution cost for now; growth rates and base friendship remain open.
+- Item 16 becomes: keep the trainer rank in the life modules and the team ladder in WORLD; separate their names; add the Oak portrait.
+- Item 9 becomes: Forest-style allow list, ongoing notification, break cycle.
+- A new item: try `pmd-dialogue` for numbers (finding 1) before patching the DP zero.
+- Findings 6 (undo strip, picker, charts) and 10 (a place picker instead of twelve buttons) are unaffected.
