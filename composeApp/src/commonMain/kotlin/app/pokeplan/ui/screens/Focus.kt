@@ -104,7 +104,8 @@ private fun Ends(model: AppModel, openPokemon: ((String) -> Unit)?) {
 
 @Composable
 private fun FailedBox(model: AppModel, reason: FailReason?) {
-    TextBox {
+    // The buddy's face is a mild one: dizzy when the phone was moved, a sigh otherwise, never a sad or a crying one.
+    SpeakerBox(model, if (reason == FailReason.MOVED_PHONE) Emotion.DIZZY else Emotion.SIGH) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(FocusRules.FAILED_MESSAGE, style = MaterialTheme.typography.titleMedium)
             Text(
@@ -274,8 +275,8 @@ private fun RunningView(model: AppModel) {
     )
     Box(Modifier.rotate(if (model.data.settings.reduceMotion || paused) 0f else angle)) { ItemIcon("mystery-egg", size = 200.dp) }
 
-    // The buddy keeps you company beside the clock: set on it while you work, surprised when you leave.
-    SpeakerBox(model, if (away) Emotion.SURPRISED else if (paused) Emotion.NORMAL else Emotion.DETERMINED) {
+    // The buddy keeps you company beside the clock: set on it while you work, with a sigh when you leave (a form without that face shows a near one).
+    SpeakerBox(model, if (away) Emotion.SIGH else if (paused) Emotion.NORMAL else Emotion.DETERMINED) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth()) {
             Text(
                 clock(remaining), style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center,

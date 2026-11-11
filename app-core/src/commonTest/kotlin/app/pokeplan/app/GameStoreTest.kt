@@ -712,7 +712,7 @@ class GameStoreTest {
         val buddy = s.data.player.buddy!!
         val pool = BuddyReaction.petPool(buddy, hour = 22)
         assertTrue(pool.size >= 8, "a wide set, got $pool")
-        assertTrue(pool.any { it in listOf("😴", "💤", "🌙") }, "night adds a sleepy one")
+        assertTrue(pool.any { it == ReactionIcon.SLEEP || it == ReactionIcon.MOON }, "night adds a sleepy one")
         val random = Random(3)
         val seen = (1..200).map { BuddyReaction.pet(buddy, 22, random) }.toSet()
         assertTrue(seen.all { it in pool })
@@ -720,7 +720,7 @@ class GameStoreTest {
     }
 
     @Test
-    fun the_scene_darkens_slowly_and_a_pet_never_repeats_its_emoji() {
+    fun the_scene_darkens_slowly_and_a_pet_never_repeats_its_icon() {
         assertEquals(0f, BuddyScene.darkness(12, 0))
         assertEquals(BuddyScene.MAX_DARKNESS, BuddyScene.darkness(23, 0))
         assertTrue(BuddyScene.darkness(19, 30) > 0f && BuddyScene.darkness(19, 30) < BuddyScene.MAX_DARKNESS)
@@ -728,7 +728,7 @@ class GameStoreTest {
         val (s, _) = started()
         val buddy = s.data.player.buddy!!
         val random = Random(5)
-        var last: String? = null
+        var last: ReactionIcon? = null
         repeat(100) {
             val next = BuddyReaction.pet(buddy, 14, random, avoid = last)
             assertTrue(next != last, "repeated $next")

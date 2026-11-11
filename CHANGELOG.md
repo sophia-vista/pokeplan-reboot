@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.168.1
+## 0.169.1
 
 Mint audit: fixes only. No reward number changes.
 
@@ -15,6 +15,16 @@ Mint audit: fixes only. No reward number changes.
 - **Weekly review** uses the app's first day of the week on the screen, as the rule already did.
 - **Faster with a long history:** every account's balance is worked out in one pass over the records; the Activity search is not redone on every keystroke in the entry form; the import preview looks for look-alikes by day.
 - Removed: the "Close" key under a record (tapping the row closes it).
+## 0.169.0
+
+Pokémon asset audit (11 November 2026, `docs/ASSETS/ASSET_USAGE_AUDIT.md`) and what it found. No reward number changes. The app grows by roughly 25 MB of sprite sheets (the new rows and faces) and loses 12.5 MB of Black/White sheets it never drew.
+
+- **Story faces match the story.** Eight more SpriteCollab portrait faces (Sad, Angry, Worried, Teary-Eyed, Pain, Sigh, Dizzy, Stunned) join the first six. Sad, angry, teary and worried lines (about 225) show those faces instead of Normal or Surprised; a form without a face shows a near one, then Normal. Focus shows a sigh when you leave and a dizzy or sighing face when a session fails.
+- **A shiny is never in the regular colours.** The 282 forms SpriteCollab has no shiny for (sheets, portraits or both) get one recoloured from their real regular and shiny still sprites (`tools/sprites/derive_shiny.py`, listed in `assets/pmd/derived-shiny.tsv`); a real one replaces it on the next fetch.
+- **The buddy reacts with Mystery Dungeon status icons, not emoji** (`ReactionIcon`): a sparkle, "!" and "?", the Zz, and by type a flame, a bolt, a block of ice, a fist, a shield or a drop, with a heart, a note, the sun, the moon, a star and an apple (real item icons and glyphs) where the games have no icon. The Home and module stages and the buddy widget draw them. Four stat icons (flame, shield, fist, ice) were cut from the status sheet.
+- **Walking keeps its direction.** A Pokémon in the town that stops stands facing the way it went (new Idle side and up rows). New one-offs: Wake (the buddy stretches awake after a focus session), Pose (just hatched), Rotate (evolved, or a level gained on the Pokémon page), DeepBreath (Care's calm break). A form without a row hops instead; Eat falls back to Hop the same way, so feeding always shows a bite or a hop.
+- **Sound.** Every owned Pokémon's tap and pet plays its own slightly detuned cry; up to three cries overlap on Android; the town's meeting icons have their game sounds beside them when the buddy is in the meeting. Unused sounds (`pokemon-center`, the drawer pair, `reminder`, `timer-done`) and the skull icon are no longer bundled, nor the Black/White sheets of forms that have a Mystery Dungeon one.
+- Three portrait credits that were blank now name the SpriteCollab contributor. `PmdAssetsTest` checks every sheet table against its files.
 
 ## 0.168.0
 

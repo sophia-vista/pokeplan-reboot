@@ -366,9 +366,9 @@ fun HomeBuddyStage(model: AppModel, onOpen: () -> Unit) {
         buddy = buddy, scene = BuddyScene.of(buddy.form.types), darkness = BuddyScene.darkness(store.now.hour, store.now.minute),
         progress = store.levelProgress(buddy), event = store.buddyEvent(),
         calm = data.settings.reduceMotion, resting = data.focus != null, berry = berry,
-        onPet = { avoid -> store.pet(); model.cry(buddy.speciesId); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
+        onPet = { avoid -> store.pet(); model.cry(buddy); BuddyReaction.pet(buddy, store.now.hour, avoid = avoid) },
         onFeed = { avoid -> berry?.let { store.useItem(it, buddy.id); model.effect(Sfx.EATING) }; BuddyReaction.feed(buddy, avoid = avoid) },
-        onOpen = onOpen, onHaptic = { model.haptic() }, onEvent = { model.cry(buddy.speciesId) },
+        onOpen = onOpen, onHaptic = { model.haptic() }, onEvent = { model.cry(buddy) },
         celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
     )
 }

@@ -106,6 +106,30 @@ class ScreenshotTest {
 
     private fun millisNow(plus: Long) { clock.millis += plus }
 
+    /** Every reaction the buddy can show, and the new faces, in both palettes (a form with a derived shiny beside its regular one). */
+    @Test
+    fun reactionsAndFaces() {
+        for (dark in listOf(false, true)) {
+            render("reactions-${if (dark) "dark" else "light"}", width = 540, height = 420, frames = 20) {
+                PixelTheme(dark = dark) {
+                    androidx.compose.foundation.layout.Column(Modifier.fillMaxSize().background(Pixel.Paper).padding(Spacing.M), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Spacing.S)) {
+                        Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Spacing.S)) {
+                            app.pokeplan.app.ReactionIcon.entries.forEach { ReactionMark(it, size = 28.dp) }
+                        }
+                        Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Spacing.S)) {
+                            Emotion.entries.forEach { Portrait(1, false, it.name, emotion = it, size = 56.dp, framed = false) }
+                        }
+                        // 58 (Growlithe) has no SpriteCollab shiny: the second one is derived from its still sprites.
+                        Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Spacing.S)) {
+                            listOf(false, true).forEach { shiny -> AnimatedSprite(58, shiny, "growlithe", size = 96.dp); Portrait(58, shiny, "growlithe", size = 96.dp) }
+                            listOf(SpriteAction.IDLE_SIDE, SpriteAction.IDLE_UP, SpriteAction.POSE).forEach { AnimatedSprite(25, false, "pikachu", size = 96.dp, action = it) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @Test
     fun buttons() {
         listOf(false, true).forEach { dark ->

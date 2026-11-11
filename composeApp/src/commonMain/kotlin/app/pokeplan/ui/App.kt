@@ -157,6 +157,9 @@ class AppModel(
     }
 
     /** Plays [speciesId]'s cry if the platform can and Sound is on, with the [voice] (the cry as recorded unless given; see [CryVoice]). */
+    /** [pokemon]'s own cry: the recorded one with the small detune that is its alone, so two of a species do not sound the same, at the level a plain cry has (the voice's gain is shown against the loudest). */
+    fun cry(pokemon: app.pokeplan.core.pokemon.OwnedPokemon) = cry(pokemon.speciesId, CryVoice.individual(pokemon.id) * CryVoice.Voice(gain = CryVoice.LOUD))
+
     fun cry(speciesId: Int, voice: CryVoice.Voice = CryVoice.NEUTRAL) {
         val volume = data.settings.criesLevel
         if (volume <= 0f) return

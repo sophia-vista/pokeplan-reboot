@@ -45,7 +45,7 @@ sealed interface SceneEvent {
     data class Letterbox(val on: Boolean) : SceneEvent
     /** [who]'s cry (a Pokémon's real cry); nothing for a character with no species. */
     data class Cry(val who: String) : SceneEvent
-    /** A game sound effect by its name in the app's sound list (SELECT, JUMP, LEVEL_UP, POKEMON_CENTER...). */
+    /** A game sound effect by its name in the app's sound list (SELECT, JUMP, LEVEL_UP, UNLOCK...). */
     data class Sound(val name: String) : SceneEvent
     /** Two or three ways to answer; the one picked sets its flag. Skipped (or never answered), the first is taken. Tone only: never a reward and never a lock. */
     data class Choice(val prompt: String?, val options: List<StoryChoice>) : SceneEvent
