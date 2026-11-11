@@ -66,6 +66,9 @@ class HealStore(
 
     private fun update(change: (HealData) -> HealData) = document.update(change)
 
+    /** Puts back a [snapshot] taken before a delete, for the undo bar. */
+    fun restore(snapshot: HealData) = update { snapshot }
+
     private fun newId(): String = newId(nowMillis, rng)
 
     private fun dayOf(millis: Long): LocalDate = millis.toLocalDateTime(zone).date

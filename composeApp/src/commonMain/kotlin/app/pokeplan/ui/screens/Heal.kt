@@ -339,7 +339,7 @@ private fun HydrationView(model: AppModel) {
     val drinks = heal.drinksToday()
     if (drinks.isEmpty()) EmptyState("No drinks today", "Tap an amount above. Any drink counts the same here: this only keeps your own record.", icon = HealSection.HYDRATION.icon, addAbove = "Log a drink")
     else drinks.forEach { d ->
-        ListRow(trail = { PixelButton("Delete", { heal.deleteDrink(d.id) }, color = Pixel.InkSoft, compact = true) }) {
+        ListRow(trail = { PixelButton("Delete", { val before = model.healData; heal.deleteDrink(d.id); model.offerUndo("Deleted: drink") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true) }) {
             Text(ml(d.ml) + d.drink.takeIf { it.isNotBlank() }?.let { " · $it" }.orEmpty(), style = MaterialTheme.typography.bodyLarge)
             Text(clockText(d.atMillis.localTime()), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
@@ -398,7 +398,7 @@ private fun SleepView(model: AppModel) {
     else {
         SectionLabel("History")
         nights.take(21).forEach { s ->
-            ListRow(trail = { PixelButton("Delete", { heal.deleteSleep(s.id) }, color = Pixel.InkSoft, compact = true) }) {
+            ListRow(trail = { PixelButton("Delete", { val before = model.healData; heal.deleteSleep(s.id); model.offerUndo("Deleted: sleep") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true) }) {
                 Text(HealRules.duration(s.minutes), style = MaterialTheme.typography.bodyLarge)
                 Text("${clockText(s.startMillis.localTime())} to ${clockText(s.endMillis.localTime())}, woke ${s.day.short()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
@@ -466,7 +466,7 @@ private fun BodyView(model: AppModel) {
                 HealRules.trendText(data, t, u)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             }
             own.sortedByDescending { it.atMillis }.take(10).forEach { m ->
-                ListRow(trail = { PixelButton("Delete", { heal.deleteMeasurement(m.id) }, color = Pixel.InkSoft, compact = true) }) {
+                ListRow(trail = { PixelButton("Delete", { val before = model.healData; heal.deleteMeasurement(m.id); model.offerUndo("Deleted: measurement") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true) }) {
                     Text((m.label.takeIf { it.isNotBlank() }?.let { "$it: " }.orEmpty()) + HealUnits.show(m, m.unit), style = MaterialTheme.typography.bodyLarge)
                     Text(m.day.short(), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
@@ -508,7 +508,7 @@ private fun GoalsHealView(model: AppModel) {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton(if (g.status == GoalStatus.PAUSED) "Resume" else "Pause", { heal.setGoalStatus(g.id, if (g.status == GoalStatus.PAUSED) GoalStatus.ACTIVE else GoalStatus.PAUSED) }, Modifier.weight(1f), Pixel.Blue, compact = true)
                     PixelButton("Put away", { heal.setGoalStatus(g.id, GoalStatus.ARCHIVED) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                    PixelButton("Delete", { heal.deleteGoal(g.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Delete", { val before = model.healData; heal.deleteGoal(g.id); model.offerUndo("Deleted: goal") { heal.restore(before) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
         }

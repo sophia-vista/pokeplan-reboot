@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.166.0
+
+Design review batch 1 (`docs/pokelife/evidence/DESIGN-REVIEW-0.165.1.md`). No reward number changes.
+
+- **The zero is no longer an 8.** Both Pokémon DP font files get a bar through the middle of the 0 (`tools/fonts/patch_zero.py`, the licence covers the changed files). The PMD dialogue font's zero already has one; it is a bitmap drawn by `PmdText`, not a font family, so it is not used for running text.
+- **₱.** The font gains the peso sign (U+20B1, drawn as a P with two bars) and Mint shows `₱1,250.50` for PHP; other currencies keep their code.
+- **Mint categories.** Settings has a Categories box (spending and income: add, rename, put away, bring back, delete when nothing uses it), and the entry form has a New key beside the category keys. The store already supported all of it; no screen reached it.
+- **One date picker.** `PixelDatePicker`: Today and Yesterday as keys, and Pick a date opens a month to tap, up to today. Mint's entry form uses it, so a record can be made for any past day. Other modules and editing a record's date follow.
+- **Undo for more than tasks.** The undo bar now also brings back a deleted budget or bill (Mint) and a deleted drink, sleep, measurement or goal (Heal) for 10 seconds. Care, Home, Link and Plan's lists and events are still without it.
+
 ## 0.165.1
 
 Weather against Red Rescue Team (REP-024; `docs/pokelife/evidence/WEATHER-original.md`, `tools/weather/`). No reward number changes.

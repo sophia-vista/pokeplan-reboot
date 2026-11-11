@@ -37,11 +37,11 @@ class MintRulesTest {
 
     @Test
     fun moneyIsShownWithItsCurrencyAndCanBeHidden() {
-        assertEquals("PHP 1,250.50", Money.format(125050, "PHP"))
-        assertEquals("PHP 0.05", Money.format(5, "PHP"))
+        assertEquals("\u20B11,250.50", Money.format(125050, "PHP"))
+        assertEquals("\u20B10.05", Money.format(5, "PHP"))
         assertEquals("JPY 1,250", Money.format(1250, "JPY"))
-        assertEquals("-PHP 1.00".replace("-PHP", "-PHP"), Money.format(-100, "PHP"))
-        assertEquals("PHP ••••", Money.format(125050, "PHP", hidden = true))
+        assertEquals("-\u20B11.00", Money.format(-100, "PHP"))
+        assertEquals("\u20B1••••", Money.format(125050, "PHP", hidden = true))
         assertEquals("1250.50", Money.plain(125050, "PHP"))
     }
 

@@ -684,6 +684,25 @@ class ScreenshotTest {
         render(name) { App(storage, focusTab = true, start = place) }
     }
 
+    /** The shared date picker open on a day in the past, and the peso sign and the zero with its bar (design review, 11 November 2026). */
+    @Test
+    fun datePickerAndNumbers() {
+        val today = kotlinx.datetime.LocalDate(2026, 11, 11)
+        listOf(false, true).forEach { dark ->
+            render("date-picker-${if (dark) "dark" else "light"}", height = 900) {
+                PixelTheme(dark) {
+                    Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                        androidx.compose.foundation.layout.Column(Modifier.padding(16.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
+                            app.pokeplan.ui.screens.PixelDatePicker(kotlinx.datetime.LocalDate(2026, 11, 3), today, app.pokeplan.ui.theme.ModuleAccent.MINT.accent, {}, initiallyOpen = true)
+                            androidx.compose.material3.Text("\u20B11,250.50   60 min   308   1,000.00", style = androidx.compose.material3.MaterialTheme.typography.bodyLarge)
+                            androidx.compose.material3.Text("\u20B11,250.50   60 min   308", style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @Test
     fun darkHome() = dark("dark-home", Place.HOME)
 

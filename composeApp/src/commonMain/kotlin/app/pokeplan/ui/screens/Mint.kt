@@ -405,8 +405,9 @@ private fun ActivityView(model: AppModel) {
     var toId by remember { mutableStateOf<String?>(null) }
     var categoryId by remember { mutableStateOf<String?>(null) }
     var up by remember { mutableStateOf(true) }
-    var yesterday by remember { mutableStateOf(false) }
+    var day by remember { mutableStateOf<kotlinx.datetime.LocalDate?>(null) }
     var more by remember { mutableStateOf(false) }
+    var addingCategory by remember { mutableStateOf(false) }
     var payee by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var message by remember { mutableStateOf<Pair<String, NoticeTone>?>(null) }
@@ -422,13 +423,13 @@ private fun ActivityView(model: AppModel) {
     fun save() {
         val minor = Money.parse(amount, currency)
         if (minor == null) { message = "Check the amount." to NoticeTone.WARNING; return }
-        val at = model.store.nowMillis - if (yesterday) 86_400_000L else 0L
+        val at = day?.takeIf { it != mint.today }?.let { mint.noonOf(it) } ?: model.store.nowMillis
         val out = mint.record(
             type, minor, from!!.id, toAccountId = if (type == TxType.TRANSFER) (open.firstOrNull { it.id == toId && it.id != from.id } ?: open.firstOrNull { it.id != from.id })?.id else null,
             categoryId = categoryId.takeIf { type != TxType.TRANSFER && type != TxType.ADJUSTMENT }, payee = payee, note = note, atMillis = at, up = up,
         )
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-        else { message = null; model.say("Saved."); amount = ""; payee = ""; note = ""; more = false; model.haptic() }
+        else { message = null; model.say("Saved."); day = null; amount = ""; payee = ""; note = ""; more = false; model.haptic() }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -459,13 +460,13 @@ private fun ActivityView(model: AppModel) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Chip("None", categoryId == null, { categoryId = null })
                     data.categories.filter { it.kind == kind && !it.archived }.forEach { c -> Chip(c.name, c.id == categoryId, { categoryId = c.id }) }
+                    Chip(if (addingCategory) "Cancel" else "New", addingCategory, { addingCategory = !addingCategory })
                 }
+                if (addingCategory) NewCategoryRow(mint, kind) { categoryId = it.id; addingCategory = false }
             }
             PixelButton(if (more) "Fewer options" else "Date, payee and a note", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    Chip("Today", !yesterday, { yesterday = false }, Modifier.weight(1f)); Chip("Yesterday", yesterday, { yesterday = true }, Modifier.weight(1f))
-                }
+                PixelDatePicker(day ?: mint.today, mint.today, ModuleAccent.MINT.accent, { day = it })
                 PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source, optional", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
                 PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note, optional", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
             }
@@ -604,7 +605,7 @@ private fun BudgetsView(model: AppModel) {
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                             PixelButton("Save", { Money.parse(newAmount, b.currency)?.let { if (mint.updateBudgetAmount(b.id, it)) openId = null } }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
                             PixelButton(if (b.status == PlanStatus.PAUSED) "Resume" else "Pause", { mint.setBudgetStatus(b.id, if (b.status == PlanStatus.PAUSED) PlanStatus.ACTIVE else PlanStatus.PAUSED); openId = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                            PixelButton("Delete", { mint.deleteBudget(b.id); openId = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                            PixelButton("Delete", { val before = model.mintData; mint.deleteBudget(b.id); openId = null; model.offerUndo("Deleted: budget") { mint.restore(before) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         }
                     }
                 }
@@ -712,7 +713,7 @@ private fun BillsView(model: AppModel) {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     PixelButton(if (b.status == PlanStatus.PAUSED) "Resume" else "Pause", { mint.setBillStatus(b.id, if (b.status == PlanStatus.PAUSED) PlanStatus.ACTIVE else PlanStatus.PAUSED) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     if (data.settings.billReminders) PixelButton(if (b.remind) "Reminders on" else "Reminders off", { mint.setBillRemind(b.id, !b.remind) }, Modifier.weight(1f), if (b.remind) ModuleAccent.MINT.accent else Pixel.InkSoft, compact = true)
-                    PixelButton("Delete", { mint.deleteBill(b.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Delete", { val before = model.mintData; mint.deleteBill(b.id); model.offerUndo("Deleted: ${b.name}") { mint.restore(before) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
         }
@@ -864,6 +865,7 @@ private fun MintSettingsView(model: AppModel) {
             }
         }
     }
+    CategoriesBox(model)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Privacy")
@@ -909,4 +911,61 @@ private fun MintSettingsView(model: AppModel) {
         }
     }
     Text("Statement files are under Import. No bank or e-wallet is connected, and Mint is complete without one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+}
+
+/** A name field and an Add key for a new category of [kind]; [onAdded] gets it (the entry form selects it). */
+@Composable
+private fun NewCategoryRow(mint: app.pokeplan.app.MintStore, kind: CategoryKind, onAdded: (app.pokeplan.mint.Category) -> Unit) {
+    var name by remember { mutableStateOf("") }
+    var refused by remember { mutableStateOf(false) }
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+        PixelField(name, { name = it.take(MintRules.NAME_MAX); refused = false }, Modifier.weight(1f), placeholder = "Category name", singleLine = true)
+        PixelButton("Add", { mint.addCategory(name, kind)?.let(onAdded) ?: run { refused = true } }, color = ModuleAccent.MINT.accent, enabled = name.isNotBlank())
+    }
+    if (refused) Text("There is already one with that name.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+}
+
+/** Mint, Settings: the categories of spending and income, to add, rename, put away or delete (MINT.md section 6). */
+@Composable
+private fun CategoriesBox(model: AppModel) {
+    val mint = model.mint
+    val data = model.mintData
+    var kind by remember { mutableStateOf(CategoryKind.EXPENSE) }
+    var editing by remember { mutableStateOf<String?>(null) }
+    var draft by remember { mutableStateOf("") }
+    var deleting by remember { mutableStateOf<String?>(null) }
+    var note by remember { mutableStateOf<String?>(null) }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelTitle("Categories")
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                Chip("Spending", kind == CategoryKind.EXPENSE, { kind = CategoryKind.EXPENSE }, Modifier.weight(1f))
+                Chip("Income", kind == CategoryKind.INCOME, { kind = CategoryKind.INCOME }, Modifier.weight(1f))
+            }
+            data.categories.filter { it.kind == kind }.sortedBy { it.archived }.forEach { c ->
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    if (editing == c.id) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                            PixelField(draft, { draft = it.take(MintRules.NAME_MAX) }, Modifier.weight(1f), singleLine = true)
+                            PixelButton("Save", { mint.renameCategory(c.id, draft); editing = null }, color = ModuleAccent.MINT.accent, enabled = draft.isNotBlank())
+                        }
+                    } else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                        Text(if (c.archived) "${c.name} (put away)" else c.name, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (c.archived) Pixel.InkSoft else Pixel.Ink)
+                        PixelButton("Rename", { editing = c.id; draft = c.name; deleting = null }, color = Pixel.InkSoft, compact = true)
+                        PixelButton(if (c.archived) "Bring back" else "Put away", { mint.setCategoryArchived(c.id, !c.archived) }, color = Pixel.InkSoft, compact = true)
+                        PixelButton("Delete", { deleting = c.id; note = null }, color = Pixel.Danger, compact = true)
+                    }
+                    if (deleting == c.id) {
+                        Text("Delete ${c.name}?", style = MaterialTheme.typography.bodyLarge)
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            PixelButton("Delete", { note = mint.deleteCategory(c.id); deleting = null }, Modifier.weight(1f), Pixel.Danger, compact = true)
+                            PixelButton("Keep it", { deleting = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                        }
+                    }
+                }
+            }
+            note?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
+            NewCategoryRow(mint, kind) { }
+        }
+    }
 }
