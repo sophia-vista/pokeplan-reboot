@@ -589,6 +589,8 @@ This document is the single detailed requirements source for HEAL. Shared schedu
 
 **Reminders (section 13), as built.** Hydration only, off until the player adds a time (up to three a day), through the shared scheduler (`HealReminderAdapter`): the request holds only an opaque slot (`hyd-1000`), the words are the same for everyone ("A moment for a drink?"), the notification is private on the lock screen, the only button is "In 30 min" (there is no "done": a reminder is not a record and pays nothing), it follows the global quiet hours and focus deferral, and it stays silent once the player's own target for the day is met. Medication, appointment, goal check-in and the other sources of the table in section 13 are not built.
 
+**Audit, 0.169.1.** A night whose end is still to come is refused (only a finished night is a record, section 2.2); an active-days goal is 1 to 7; every history pages with "Show older" so no record is out of reach; every single delete offers Undo; a paid record is saved in one write. The store has no edit for a drink or a night (delete and add again).
+
 ## 22A. As built (0.162.0, REP-014): Health Connect, read only
 
 *Built and tested on the JVM, compiled for Android; **not run on a device**. Health Connect has not been tried on a real phone, and **nothing about the Huawei Watch Fit 4 Pro has been verified**.*

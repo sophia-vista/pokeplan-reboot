@@ -73,8 +73,8 @@ internal fun HealConnectionsView(model: AppModel) {
                 }, Modifier.fillMaxWidth(), Pixel.Blue, enabled = draft.isNotEmpty(), compact = true)
                 if (connected) {
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                        PixelButton("Last 7 days", { days = 7 }, Modifier.weight(1f), if (days == 7) Pixel.Blue else Pixel.InkSoft, compact = true)
-                        PixelButton("Last 30 days", { days = 30 }, Modifier.weight(1f), if (days == 30) Pixel.Blue else Pixel.InkSoft, compact = true)
+                        TabButton("Last 7 days", days == 7, { days = 7 }, Modifier.weight(1f))
+                        TabButton("Last 30 days", days == 30, { days = 30 }, Modifier.weight(1f))
                     }
                     PixelButton("Read now", {
                         val kinds = settings.healthKinds.intersect(granted)
@@ -146,6 +146,8 @@ internal fun HealConnectionsView(model: AppModel) {
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                         PixelButton("Keep both", { heal.keepBoth(id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         PixelButton("Delete the import", {
+                            val before = model.healData
+                            model.offerUndo("Deleted: import") { heal.restore(before) }
                             when (family) {
                                 HealKindOf.ACTIVITY -> heal.deleteActivity(id)
                                 HealKindOf.SLEEP -> heal.deleteSleep(id)

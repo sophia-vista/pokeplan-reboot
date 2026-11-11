@@ -124,6 +124,9 @@ object HealRules {
         val fraction: Float get() = if (done == null || target <= 0) 0f else (done.toFloat() / target).coerceIn(0f, 1f)
     }
 
+    /** Whether [target] can be a goal of [kind]: above zero, and a week has seven days. */
+    fun goalTargetOk(kind: GoalKind, target: Int): Boolean = target in 1..(if (kind == GoalKind.WEEKLY_ACTIVE_DAYS) 7 else 100_000)
+
     fun progress(goal: HealGoal, data: HealData, today: LocalDate, first: DayOfWeek = DayOfWeek.MONDAY): Progress {
         val done: Int? = when (goal.kind) {
             GoalKind.WEEKLY_ACTIVE_MINUTES -> weekActiveMinutes(data, weekStartOf(today, first))
