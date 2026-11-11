@@ -296,6 +296,11 @@ class AppModel(
         now = store.nowMillis
     }
 
+    /** Only the clock moves: for the launcher, which shows the time and settles nothing (the app owns the save). */
+    fun tickClock() {
+        now = store.nowMillis
+    }
+
     /** Opens a module's screen for [place] (Plan's page, Planner, Focus, Care) inside Modules; Focus only where there is one ([focusTab]). */
     fun open(place: Place, focusTab: Boolean) {
         when (place) {

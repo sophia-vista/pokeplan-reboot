@@ -222,12 +222,15 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
     var phoneSaving by remember { mutableStateOf(phone.powerSaving()) }
     LaunchedEffect(active) { while (active) { charge = phone.battery(); phoneSaving = phone.powerSaving(); delay(60_000) } }
     val saver = batterySaving(prefs.batterySaver, charge, phoneSaving)
-    LaunchedEffect(saver) {
-        while (true) {
-            model.tick()
+    // Only the clock ticks here: the launcher shows the time and pays nothing (a task or a focus session is settled by the app, which owns the save), and it stops with the screen.
+    LaunchedEffect(saver, active) {
+        while (active) {
+            model.tickClock()
             delay(if (saver) 10_000 else 1000)
         }
     }
+    // The Guardian that visits the town changes each day (see shownGuardian); read from the clock so it turns over at midnight without the town recomposing every second.
+    val rotation by remember(model) { androidx.compose.runtime.derivedStateOf { model.now; TownBehavior.rotation(model.store.today.toEpochDays()) } }
     var listOpen by remember { mutableStateOf(false) }
     // Three quick taps send every Pokémon to the main screen: each tap within 600 ms of the one before counts, and a third gathers them.
     var gather by remember { androidx.compose.runtime.mutableIntStateOf(0) }
@@ -316,17 +319,21 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 val pageCount = order.size
                 val left = order.indexOf(WidgetPage.HOME)
                 val right = pageCount - 1 - left
+                // What the page position means, read through derived state so the screen is composed again only when one of these changes, not on every frame of a swipe.
+                val atHome by remember { androidx.compose.runtime.derivedStateOf { abs(page.value) < 0.02f } }
+                val current by remember(left) { androidx.compose.runtime.derivedStateOf { (page.value + left + 0.5f).toInt() } }
+                val visibleSides by remember(left, right) { androidx.compose.runtime.derivedStateOf { (-left..right).filter { it != 0 && abs(page.value - it) < 1f } } }
                 val env = WidgetEnv(
                     model, apps, prefs, host, forecast, pixel, todayState, mood, saver, editing, onPrefs, onEdit = { editing = true }, onDone = { editing = false }, onAllApps = { listOpen = true }, onFolders = { foldersOpen = true }, onWidgets = { widgetsOpen = true; editing = false }, onGear = { host.openApp(Place.GEAR) },
                     onOpenFolder = { folderName = it; foldersOpen = true }, onForecast = { forecastOpen = true }, onHold = { sheetKey = it.key },
-                    pages = pageCount,
+                    pages = pageCount, battery = charge,
                     goToPage = { i -> scope.launch { if (data.settings.reduceMotion) page.snapTo((i - left).toFloat()) else page.animateTo((i - left).toFloat(), androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } },
                 )
                 // Two pages side by side: the town with its boxes, and Today (a calendar and the day's agenda and tasks). The town is two screens wide, so its Pokémon can wander over to Today (but only on the main screen can they be touched or meet). Swipe across, or press Home to come back.
                 val widthPx0 = maxWidth.value * LocalDensity.current.density
                 // Where widgets cover the town, so the Pokémon prefer to walk where they can be seen (on the grid; the old stacked layout has none).
                 val topInset = with(LocalDensity.current) { androidx.compose.foundation.layout.WindowInsets.Companion.safeDrawing.getTop(this).toDp() }
-                val avoidRects = if (!prefs.gridMode) emptyList() else {
+                val avoidRects = remember(prefs.gridMode, prefs.gridWidgets, order, maxWidth, maxHeight, topInset) { if (!prefs.gridMode) emptyList() else {
                     val inset = Spacing.Page - CELL_GAP
                     val column = (maxWidth - inset * 2) / WidgetGrid.COLUMNS
                     order.flatMapIndexed { i, pg ->
@@ -338,7 +345,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                             )
                         }
                     }
-                }
+                } }
                 LaunchedEffect(homePresses) { if (homePresses > 0) page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) }
                 Box(
                     Modifier.fillMaxSize().pointerInput(prefs.gestures, prefs.gatherTap) {
@@ -347,6 +354,19 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                         detectTapGestures(onDoubleTap = if (double == GestureAction.NONE) null else ({ at ->
                             if (abs(page.value) < 0.02f && !editing && !tapper.hit(Offset(at.x + (page.value + left) * widthPx0, at.y))) runAction(double)
                         }), onTap = { at -> if (abs(page.value) >= 0.02f || editing || !tapper.hit(Offset(at.x + (page.value + left) * widthPx0, at.y))) countTap() })
+                    }.pointerInput(prefs.gestures, editing) {
+                        // Swipe up opens the app list and swipe down does what it is set to (nothing at first): on the open town, where no widget took the touch, and a good way along.
+                        var travelled = 0f
+                        val reach = 96.dp.toPx()
+                        detectVerticalDragGestures(
+                            onDragStart = { travelled = 0f }, onDragCancel = { travelled = 0f },
+                            onDragEnd = {
+                                if (!editing && abs(page.value) < 0.02f) {
+                                    if (travelled < -reach) runAction(prefs.action(GestureTrigger.SWIPE_UP)) else if (travelled > reach) runAction(prefs.action(GestureTrigger.SWIPE_DOWN))
+                                }
+                                travelled = 0f
+                            },
+                        ) { _, dy -> travelled += dy }
                     }.draggable(
                         enabled = prefs.pageSwipe && !editing,
                         orientation = androidx.compose.foundation.gestures.Orientation.Horizontal,
@@ -362,7 +382,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                     ),
                 ) {
                     Town(
-                        model, prefs.scene, active && prefs.walking && !saver, onMenu = { menuMon = it }, size = prefs.townSize, mood = mood, chirps = prefs.chirps && !saver, weather = when (prefs.weather) { Weather.LIVE -> forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR; Weather.GUARDIAN -> guardianWeather(shownGuardian(model.data.player.pokemon, model.data.player.moduleGuardians.values, model.data.player.buddy?.id)); else -> prefs.weather }, screens = pageCount, home = left, avoid = avoidRects, tapper = tapper, interactive = abs(page.value) < 0.02f, gather = gather,
+                        model, prefs.scene, active && prefs.walking && !saver, onMenu = { menuMon = it }, size = prefs.townSize, mood = mood, chirps = prefs.chirps && !saver, weather = when (prefs.weather) { Weather.LIVE -> forecast?.let { WeatherCodes.town(it.code) } ?: Weather.CLEAR; Weather.GUARDIAN -> guardianWeather(shownGuardian(model.data.player.pokemon, model.data.player.moduleGuardians.values, model.data.player.buddy?.id, rotation)); else -> prefs.weather }, screens = pageCount, home = left, avoid = avoidRects, tapper = tapper, interactive = atHome, gather = gather, rotation = rotation,
                         modifier = Modifier.layout { measurable, constraints ->
                             // As many screens wide as there are pages, placed from the left edge and slid by the page (a required size would be centred instead).
                             val placeable = measurable.measure(androidx.compose.ui.unit.Constraints.fixed(constraints.maxWidth * pageCount, constraints.maxHeight))
@@ -377,21 +397,21 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                         }) else HomePage(env, isDefault)
                     }
                     // The other pages, each a screen from the one next to it (left of Home or after it), shown while any of it is on screen.
-                    for (k in -left..right) {
-                        if (k != 0 && abs(page.value - k) < 1f) androidx.compose.runtime.key(k) { Box(Modifier.fillMaxSize().graphicsLayer { translationX = (k - page.value) * widthPx0 }) { if (prefs.gridMode) GridSidePage(env, order[left + k]) else TodayPage(env) } }
+                    for (k in visibleSides) {
+                        androidx.compose.runtime.key(k) { Box(Modifier.fillMaxSize().graphicsLayer { translationX = (k - page.value) * widthPx0 }) { if (prefs.gridMode) GridSidePage(env, order[left + k]) else TodayPage(env) } }
                     }
                 }
                 // Which page: two small blocks at the top, the current one lit, shown only while the page is moving (and a moment after).
-                val moving = page.isRunning || abs(page.value - page.value.roundToInt()) > 0.001f
+                val moving by remember { androidx.compose.runtime.derivedStateOf { page.isRunning || abs(page.value - page.value.roundToInt()) > 0.001f } }
                 var lingering by remember { mutableStateOf(false) }
                 LaunchedEffect(moving) { if (moving) lingering = true else { delay(900); lingering = false } }
                 val indicator by androidx.compose.animation.core.animateFloatAsState(if (moving || lingering) 1f else 0f, androidx.compose.animation.core.tween(220, easing = app.pokeplan.ui.Ease.Smooth))
                 if (indicator > 0.01f) Row(Modifier.align(Alignment.TopCenter).safeDrawingPadding().padding(top = Spacing.S).graphicsLayer { alpha = indicator }, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    repeat(pageCount) { i -> Box(Modifier.size(width = 16.dp, height = 4.dp).background(Color.White.copy(alpha = if ((page.value + left + 0.5f).toInt() == i) 0.9f else 0.3f))) }
+                    repeat(pageCount) { i -> Box(Modifier.size(width = 16.dp, height = 4.dp).background(Color.White.copy(alpha = if (current == i) 0.9f else 0.3f))) }
                 }
                 // While editing the grid, its bar floats at the foot of the screen over whichever page is showing (nothing moves to make room for it).
                 if (prefs.gridMode && editing && !widgetsOpen) Box(Modifier.fillMaxSize().safeDrawingPadding(), contentAlignment = Alignment.BottomCenter) {
-                    GridEditBar(env, order[(page.value.roundToInt() + left).coerceIn(0, pageCount - 1)])
+                    GridEditBar(env, order[current.coerceIn(0, pageCount - 1)])
                 }
                 // Home is the one screen that must never close: back only steps out of the sheet or the list.
                 BackHandler(enabled = true) { if (menuMon != null) menuMon = null else if (pickingTown) pickingTown = false else if (placeOpen) placeOpen = false else if (widgetsOpen) widgetsOpen = false else if (editing) editing = false else if (forecastOpen) forecastOpen = false else if (folderName != null) folderName = null else if (foldersOpen) foldersOpen = false else if (settingsOpen) settingsOpen = false else if (sheetApp != null) sheetKey = null else if (listOpen) listOpen = false else if (abs(page.value) > 0.5f) scope.launch { page.animateTo(0f, androidx.compose.animation.core.tween(320, easing = app.pokeplan.ui.Ease.Smooth)) } }
@@ -432,7 +452,7 @@ fun LauncherScreen(model: AppModel, apps: List<LauncherApp>, prefs: LauncherPref
                 // The list comes in from the right and into focus: a short glide (56 dp, not the whole width) while it fades in and its blur clears, following the finger or the spring.
                 val shown = (1f - reveal.value).coerceIn(0f, 1f)
                 if (reveal.value < 1f) Box(
-                    Modifier.fillMaxSize().graphicsLayer { alpha = shown; translationX = (1f - shown) * 56.dp.toPx() }.then(if (shown < 0.97f && !data.settings.reduceMotion) Modifier.blur(((1f - shown) * 10f).dp) else Modifier),
+                    Modifier.fillMaxSize().graphicsLayer { alpha = shown; translationX = (1f - shown) * 56.dp.toPx() }.then(if (shown < 0.97f && !data.settings.reduceMotion && !saver) Modifier.blur(((1f - shown) * 10f).dp) else Modifier),
                 ) {
                     AppListPage(apps, prefs, host, onClose = { listOpen = false }, onHold = { sheetKey = it.key }, onTown = { settingsOpen = true }, startHidden = listHidden, pixel = pixel)
                 }
@@ -592,7 +612,7 @@ internal fun AppListPage(apps: List<LauncherApp>, prefs: LauncherPrefs, host: La
                     Modifier.weight(1f).height(Spacing.Target).background(Color.White.copy(alpha = 0.14f), rowShape).padding(horizontal = Spacing.L),
                     contentAlignment = Alignment.CenterStart,
                 ) {
-                    if (query.isEmpty()) Text("Search apps and PokéLife", style = MaterialTheme.typography.bodyLarge, color = soft)
+                    if (query.isEmpty()) PmdText("Search apps and PokéLife", pixel, alpha = 0.7f)
                     BasicTextField(
                         query, { query = it }, singleLine = true, modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Search apps and PokéLife" },
                         textStyle = MaterialTheme.typography.bodyLarge.copy(color = Color.White), cursorBrush = SolidColor(Color.White),

@@ -433,6 +433,16 @@ class LauncherGestureTest {
     }
 
     @Test
+    fun theGuardiansTakeTurnsADayAtATimeUnlessTheBuddyIsOne() {
+        val all = listOf(townMon("kyogre", 382, 40), townMon("groudon", 383, 60), townMon("rayquaza", 384, 50), townMon("plain", 25, 5))
+        val guardians = listOf("kyogre", "groudon", "rayquaza")
+        // By level: groudon, rayquaza, kyogre, then round again.
+        assertEquals(listOf("groudon", "rayquaza", "kyogre", "groudon"), (0..3).map { shownGuardian(all, guardians, null, it)?.id })
+        assertEquals("kyogre", shownGuardian(all, guardians, "kyogre", 1)?.id)
+        assertEquals(listOf("rayquaza", "plain"), townResidents(all, null, guardianIds = guardians, rotation = 1).map { it.id })
+    }
+
+    @Test
     fun aGuardianBringsItsOwnWeatherOnlyUnderGuardiansWeather() {
         assertEquals(Weather.RAIN, guardianWeather(townMon("k", 382, 40)))
         assertEquals(Weather.CLEAR, guardianWeather(townMon("p", 25, 5)), "no weather of its own: a clear sky")

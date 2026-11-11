@@ -128,11 +128,11 @@ Folders open in a compact floating panel, support rename/reorder/add/remove and 
 Visible inhabitants are projections of the canonical owned-Pokémon collection. Priority order:
 
 1. Selected global buddy.
-2. The Guardian (owner, 9 November 2026): at most one Guardian walks the town, however many the player has (one per module). It is the buddy if the buddy is a Guardian, else the Guardian of the highest level (then the smallest id). The others stay in their modules.
+2. The Guardian (owner, 9 November 2026; turns added 11 November 2026): at most one Guardian walks the town, however many the player has (one per module). It is the buddy if the buddy is a Guardian; otherwise the Guardians take turns, one a day, in order of level (then id), so the town changes without the player doing anything. When the Guardian changes, the old one walks off the edge of Home and the new one walks in (nothing happens in Reduce motion: it is just a change). The others stay in their modules.
 3. User-favorited Pokémon.
 4. Other eligible owned Pokémon according to rotation settings or an explicitly selected launcher display roster.
 
-The shown Guardian is noticed: a Pokémon that walks close to it stops, turns and is startled (and the Guardian answers with a sparkle), once in a while per Pokémon, never in Reduce motion. The town weather has a "Guardian's weather" choice: the shown Guardian brings its own (Kyogre and Suicune rain, Articuno snow, Kyurem and Regice a blizzard, Regirock and Landorus a sandstorm, Lugia and Rayquaza cloud shadows; none of its own means a clear sky). "Live forecast" stays the default. Now and then one Pokémon in the town chirps (its own cry, quiet and short, with a hop; the Guardian rarely and lower), only while the town is in sight on Home, never in Reduce motion, battery saver, a call or with Sound off, and it can be switched off in the launcher's settings.
+The shown Guardian is a presence, not a crowd-pleaser: it stands and looks far longer than the others, roams short and rarely, and takes no part in the town's pairwise meetings. A passing Pokémon may glance at it (stops and turns its head; the Guardian is not held), and once every few minutes one is startled and the Guardian sparkles back. Next to that, the shown Guardian is noticed: a Pokémon that walks close to it stops, turns and is startled (and the Guardian answers with a sparkle), once in a while per Pokémon, never in Reduce motion. The town weather has a "Guardian's weather" choice: the shown Guardian brings its own (Kyogre and Suicune rain, Articuno snow, Kyurem and Regice a blizzard, Regirock and Landorus a sandstorm, Lugia and Rayquaza cloud shadows; none of its own means a clear sky). "Live forecast" stays the default. Now and then one Pokémon in the town chirps (its own cry, quiet and short, with a hop; the Guardian rarely and lower), only while the town is in sight on Home, never in Reduce motion, battery saver, a call or with Sound off, and it can be switched off in the launcher's settings.
 
 There is no global active party. Module parties are independent; the launcher must not infer or merge them into one. WORLD expedition teams are also not a launcher party.
 
@@ -141,6 +141,8 @@ A configurable population ceiling may target 24 visible Pokémon, but the defaul
 ### 6.2 Behavior model
 
 Use a lightweight, bounded state machine with appropriate states such as idle, walk, rest, sleep, play, explore, interact and species-specific environmental behavior. Behavior must respect species capabilities, available assets, terrain, sprite direction, nearby objects, path boundaries and collision rules. Do not give every species an identical generic animation set.
+
+Behaviours in the town today (all cosmetic, built only from the sprite sheets' own animations and the status icons): idle variation (standing, turning to look the other way, grazing with the eat animation, a hop); roaming in one to three short legs with a look about between them, around a place each Pokémon likes (the buddy near the middle of Home) and at a pace of its own; staggered bedtimes, with a hop, a stretch and a bite of breakfast on waking; surprise (a Pokémon next to one that is tapped, or to a Guardian that has just arrived, may be startled); weather felt through status icons (a twinkle for a Pokémon at home in the weather, a drop of sweat for one that suffers in it, by type); a tap that hops, hops happily, turns about, or, tapped over and over, is flustered. Greetings, playing together, following, investigating objects, hiding, species-specific patterns and the Guardian's arrival and departure scenes wait for the capability registry.
 
 ### 6.3 Stable placement
 
@@ -245,7 +247,7 @@ Review `QUERY_ALL_PACKAGES` policy and distribution eligibility before using it.
 ### 11.4 Default gestures
 
 - Horizontal swipe: move between environment pages.
-- Swipe up: app drawer.
+- Swipe up: app drawer (on the open town; the right-edge drag stays, but Android's own back swipe also lives on that edge).
 - Swipe down: configured quick-access surface.
 - Long-press element: contextual editing.
 - Tap landmark: destination.
