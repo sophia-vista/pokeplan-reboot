@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.169.1
+## 0.170.1
 
 HEAL audit (end to end). No reward number changes; `RewardRules.VERSION` is unchanged.
 
