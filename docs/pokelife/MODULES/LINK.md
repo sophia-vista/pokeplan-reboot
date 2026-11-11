@@ -564,6 +564,8 @@ This document is the single detailed requirements source for LINK. Shared schedu
 
 **Audit changes (0.171.0):** the directory and search also find a person by phone (however spaced), email and address; a person's profile can add a date for them (3.3); deleting a person offers Undo; the directory shows 40 people at a time; a person can get a new category from their own form (Settings no longer has a Categories box with chips that did nothing); a cancelled follow-up shows the day it was cancelled; a follow-up PLAN finished is reopened in PLAN (Link follows its task both ways, unpaid); and "due" counts on Home and Modules leave out follow-ups Plan owns, as the Overview already did.
 
+Findings, the comparison with other relationship apps and the open items: `../evidence/LINK-AUDIT-0.171.0.md` (REP-027).
+
 **Not built, not offered:** importing device contacts and the Contacts permission (6.1), a link from HOME to a contact, contact source mapping and provenance, widgets, and a passphrase-sealed backup.
 
 ## Shared Pokémon ecosystem contract
