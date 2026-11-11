@@ -1,5 +1,7 @@
 # Design system
 
+> **Superseded by `docs/pokelife/FEATURES/DESIGN_SYSTEM.md`** (the owner's design rules of 8 November 2026: nothing is round, every control is pixel-drawn). Where this file disagrees (card radii, pills, `Spacing.CardRadius`, which no longer exists), that one wins. Kept as the history of the 0.64.0 audit.
+
 The rules the screens follow, so a change is made once. The tokens live in code (`composeApp/.../ui/theme/PixelTheme.kt`,
 `Widgets.kt`); the reasoning is in `docs/ui-ux-brief.md` and `docs/laws-of-ux-review.md`. Update this file in the same
 change as any token, component or rule it describes. Approved in the 0.64.0 design audit.

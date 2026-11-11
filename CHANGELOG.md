@@ -5,6 +5,21 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.165.2
+
+Repo-wide audit (11 November 2026): fixes found by reading every state machine, dead code out, and the agent files brought up to date. No reward number changes.
+
+- **Fix: a focus timer that ran out inside the 10 second grace failed the egg.** Leaving with less than 10 seconds to go and coming back later ended as "left the app", although time inside the grace counts as focus. It is a finished session now (`FocusSession.tick`).
+- **Fix: a recurring task moved to another day came back twice.** The day it was moved from had no task planned on it, so the next refresh made that day's instance again, with the same id. An instance is known by its id now (`RecurringTasks.instancesToCreate`).
+- **Fix: a transfer could leave a Pokémon's seat behind.** A Pokémon on a World team, in a Guardian slot or helping a Gear tool was removed while its place still named it, and one out on an expedition could be transferred. The transfer waits for the expedition and gives the place up (`Places.movable`, `Places.vacate`).
+- **Fix: the screen-lock door of Mint, Care, Heal, Home and Link could stay open.** The once-a-second "still here" tick kept running after the app was left, which counted as coming back. It counts only while the app is in front.
+- **Fix: restoring a backup did not reload Link**, so Link's next save could write the old records over the restored ones.
+- **Fix: a hatch scene could be replaced by a World moment** started in the same frame, and was then never shown.
+- **Fix: a second tap on "Start" (focus) or on the last onboarding line crashed** instead of doing nothing.
+- **Removed (nothing used them, tests included):** `GameStore.worldClaimItems` (the items go to the Bag in `worldPay`), `CareStore.hasEntries`, `LiveBackup.lastBackupMillis`, `LinkRules.tagsInUse`, `Learnset.methodsFor` and `LearnMethod`, `Inventory.removeAll` and `asContext`, `FloorEventResult`, `LauncherModel.pageIsEmpty`, `Pixel.RedDark`, `Spacing.XXXL`, `Spacing.CardRadius`, two private helpers and two imports.
+- **Simpler:** `Confirm`, `Rule`, `Actions` and `parseDay` were copied in the Home, Link and Mint screens; they are one each in `screens/ModuleParts.kt`. The launcher's agenda uses `CalendarEvent.shownTitle` for a private event.
+- **Agent files:** `CLAUDE.md` is a third shorter (its Layout detail moved, word for word, to `docs/code-map.md`); stale lines fixed (no server, `.idea/` is ignored, the backlog is the record of progress, cloud sessions work on their own branch); `.claude/settings.json` refuses a push to `main` and a forced push; `ci.yml`'s token is read-only; the old `docs/DESIGN_SYSTEM.md` says it is superseded.
+
 ## 0.165.1
 
 Weather against Red Rescue Team (REP-024; `docs/pokelife/evidence/WEATHER-original.md`, `tools/weather/`). No reward number changes.
