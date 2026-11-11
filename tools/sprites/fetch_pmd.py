@@ -3,10 +3,13 @@
 (https://github.com/PMDCollab/SpriteCollab) and turns each one's Idle, Sleep, Eat and Hop animations, facing the viewer, into
 sprite sheets the app plays on every platform, and a few of its portraits into one strip.
 
-Usage: python3 -I tools/sprites/fetch_pmd.py [walk]
+Usage: python3 -I tools/sprites/fetch_pmd.py [walk | extra | faces]
 
 With `walk` only the Walk rows facing down, to the side (right; the app mirrors it for left) and up are fetched, into
 assets/pmd/walk-down, walk-side and walk-up, and nothing else is touched.
+With `extra` only the later animations are fetched, each into its own folder: Idle facing the side and up (idle-side, idle-up),
+Rotate, Wake, DeepBreath and Pose (rotate, wake, deep-breath, pose). With `faces` only assets/pmd/portraits is rebuilt (the
+faces in EMOTIONS). Neither touches pmd.tsv or credits.tsv.
 
 Needs Pillow (pip install pillow) and assets/sprites/manifest.tsv (tools/sprites/fetch.py), which names every form id.
 
@@ -49,13 +52,25 @@ FRAME_MS = 1000 / 60
 ANIMS = {'': ('Idle', 'Walk'), 'sleep': ('Sleep',), 'eat': ('Eat',), 'hop': ('Hop',)}
 # SpriteCollab's rows run Down, DownRight, Right, UpRight, Up, UpLeft, Left, DownLeft: the Walk rows kept are Down, Right and Up.
 WALK = {'walk-down': 0, 'walk-side': 2, 'walk-up': 4}
-WALK_ONLY = 'walk' in sys.argv[1:]
-if WALK_ONLY:
+# The Idle rows facing the side and up are kept the same way; the front one is the idle sheet itself.
+ROWS = {**WALK, 'idle-side': 2, 'idle-up': 4}
+# The later animations: a Pokemon that stops walking keeps facing the way it went, and one-offs for a spin, waking up, a deep breath and a pose.
+EXTRA = {'idle-side': ('Idle',), 'idle-up': ('Idle',), 'rotate': ('Rotate',), 'wake': ('Wake',), 'deep-breath': ('DeepBreath',), 'pose': ('Pose',)}
+MODE = next((a for a in sys.argv[1:] if a in ('walk', 'extra', 'faces')), None)
+WALK_ONLY = MODE == 'walk'
+if MODE == 'walk':
     ANIMS = {sub: ('Walk',) for sub in WALK}
+elif MODE == 'extra':
+    ANIMS = dict(EXTRA)
+elif MODE == 'faces':
+    ANIMS = {}
 else:
     ANIMS = {**ANIMS, **{sub: ('Walk',) for sub in WALK}}
-# The portraits kept, in the order the strip holds them. Normal comes first and a form without it gets none.
-EMOTIONS = ('Normal', 'Happy', 'Joyous', 'Inspired', 'Determined', 'Surprised')
+PORTRAITS = MODE in (None, 'faces')
+# The portraits kept, in the order the strip holds them (new faces are added at the end, so a strip is read by the place in its own list).
+# Normal comes first and a form without it gets none.
+EMOTIONS = ('Normal', 'Happy', 'Joyous', 'Inspired', 'Determined', 'Surprised',
+            'Sad', 'Angry', 'Worried', 'Teary-Eyed', 'Pain', 'Sigh', 'Dizzy', 'Stunned')
 PORTRAIT = 40
 
 
@@ -170,8 +185,10 @@ def sheet(frames, box=None):
 
 def credit(node, names, kind='sprite'):
     ids = [node[f'{kind}_credit']['primary']] + node[f'{kind}_credit'].get('secondary', [])
-    # Some credit names are blank; those are left out rather than shown as an empty name.
-    return ', '.join(dict.fromkeys(n for n in (names.get(i, i.strip('<@!>')).strip() for i in ids if i) if n))
+    # Some credit names are blank; those are left out rather than shown as an empty name, unless that leaves no credit at all (a form drawn
+    # only by a contributor who has no name on file): then the contributor's id is the credit, so the licence's credit is never empty.
+    named = ', '.join(dict.fromkeys(n for n in (names.get(i, i.strip('<@!>')).strip() for i in ids if i) if n))
+    return named or ', '.join(dict.fromkeys(f'SpriteCollab contributor {i.strip("<@!>")}' for i in ids if i))
 
 
 def save(png, sub, name):
@@ -181,14 +198,14 @@ def save(png, sub, name):
 
 def fetch_anims(folder, node, fid, names):
     """{output folder: (frames, width, height, times, shiny)} for the form's animations, and the sprite credit."""
-    anims = anim_data(folder) if node.get('sprite_complete', 0) > 0 else None
+    anims = anim_data(folder) if ANIMS and node.get('sprite_complete', 0) > 0 else None
     if anims is None:
         return {}, None
     shiny = node.get('subgroups', {}).get('0000', {}).get('subgroups', {}).get('0001')
     shiny_anims = anim_data(folder + '/0000/0001') if shiny and shiny.get('sprite_complete', 0) > 0 else None
     out = {}
     for sub, wanted in ANIMS.items():
-        row = front_row(folder, anims, wanted, WALK.get(sub, 0))
+        row = front_row(folder, anims, wanted, ROWS.get(sub, 0))
         made = row and sheet(row[0])
         if not made:
             if sub == '':
@@ -197,7 +214,7 @@ def fetch_anims(folder, node, fid, names):
         png, w, h, box = made
         save(png, sub, fid)
         has_shiny = False
-        shiny_row = shiny_anims and front_row(folder + '/0000/0001', shiny_anims, wanted, WALK.get(sub, 0))
+        shiny_row = shiny_anims and front_row(folder + '/0000/0001', shiny_anims, wanted, ROWS.get(sub, 0))
         # The shiny is a recolour of the same frames: cut it the same way, and use it only if it has the same frames.
         same = shiny_row and len(shiny_row[0]) == len(row[0]) and shiny_row[0][0].size == row[0][0].size
         shiny_made = same and sheet(shiny_row[0], box)
@@ -231,7 +248,7 @@ def portrait_strip(folder, emotions):
 
 
 def fetch_portraits(folder, node, fid, names):
-    """(emotions, shiny, artists) for the form's portraits, or None."""
+    """(emotions, shiny, artists, the shiny strip's emotions when they differ from the regular ones) for the form's portraits, or None."""
     if node.get('portrait_complete', 0) <= 0:
         return None
     made = portrait_strip(folder, EMOTIONS)
@@ -240,19 +257,23 @@ def fetch_portraits(folder, node, fid, names):
     save(made[0], 'portraits', fid)
     shiny = node.get('subgroups', {}).get('0000', {}).get('subgroups', {}).get('0001')
     has_shiny = False
+    shiny_faces = None
     if shiny and shiny.get('portrait_complete', 0) > 0:
-        shiny_made = portrait_strip(folder + '/0000/0001', made[1])
-        # Only a shiny strip with the very same faces, so the app can pick a face by its place in either strip.
-        if shiny_made and shiny_made[1] == made[1]:
+        shiny_made = portrait_strip(folder + '/0000/0001', EMOTIONS)
+        # The shiny strip keeps its own faces: the app picks a face by its place in whichever strip it draws, and gets
+        # the list of the shiny one from the fifth column when it is not the regular one.
+        if shiny_made:
             save(shiny_made[0], 'portraits', f'{fid}-shiny')
             has_shiny = True
-    return made[1], has_shiny, credit(node, names, 'portrait')
+            if shiny_made[1] != made[1]:
+                shiny_faces = shiny_made[1]
+    return made[1], has_shiny, credit(node, names, 'portrait'), shiny_faces
 
 
 def fetch_one(target, names):
     fid, folder, node = target
     anims, artists = fetch_anims(folder, node, fid, names)
-    return fid, anims, artists, None if WALK_ONLY else fetch_portraits(folder, node, fid, names)
+    return fid, anims, artists, fetch_portraits(folder, node, fid, names) if PORTRAITS else None
 
 
 def write_table(sub, rows):
@@ -264,7 +285,7 @@ def write_table(sub, rows):
 
 
 def main():
-    for sub in list(ANIMS) + ([] if WALK_ONLY else ['portraits']):
+    for sub in list(ANIMS) + (['portraits'] if PORTRAITS else []):
         os.makedirs(os.path.join(OUT, sub), exist_ok=True)
     tracker = json.loads(download(BASE + 'tracker.json'))
     names = {}
@@ -289,15 +310,15 @@ def main():
     for sub, rows in tables.items():
         write_table(sub, rows)
         print(f'{sub or "idle"}: {len(rows)} sheets ({sum(r[4] for r in rows.values())} with a shiny)', file=sys.stderr)
-    if WALK_ONLY:
-        return
-    with open(os.path.join(OUT, 'credits.tsv'), 'w', encoding='utf-8') as fh:
-        for fid in sorted(credits):
-            fh.write(f'{fid}\t{credits[fid]}\n')
-    with open(os.path.join(OUT, 'portraits', 'portraits.tsv'), 'w', encoding='utf-8') as fh:
-        for fid in sorted(portraits):
-            emotions, shiny, artists = portraits[fid]
-            fh.write(f'{fid}\t{",".join(emotions)}\t{int(shiny)}\t{artists}\n')
+    if PORTRAITS:
+        with open(os.path.join(OUT, 'portraits', 'portraits.tsv'), 'w', encoding='utf-8') as fh:
+            for fid in sorted(portraits):
+                emotions, shiny, artists, shiny_faces = portraits[fid]
+                fh.write(f'{fid}\t{",".join(emotions)}\t{int(shiny)}\t{artists}' + (f'\t{",".join(shiny_faces)}' if shiny_faces else '') + '\n')
+    if MODE is None:
+        with open(os.path.join(OUT, 'credits.tsv'), 'w', encoding='utf-8') as fh:
+            for fid in sorted(credits):
+                fh.write(f'{fid}\t{credits[fid]}\n')
     print(f'portraits: {len(portraits)} strips ({sum(p[1] for p in portraits.values())} with a shiny)', file=sys.stderr)
 
 
