@@ -109,7 +109,9 @@ data class FocusSession(
             }
         }
         (s.phase as? Phase.Away)?.let { a ->
-            if (now - a.since > FocusRules.GRACE_MILLIS) {
+            // Time away inside the grace period counts as focus, so a timer that ran out before the grace did is a finished session, not a failed one.
+            val doneAt = s.startedAtMillis + s.pausedMillis + s.durationMillis
+            if (now - a.since > FocusRules.GRACE_MILLIS && doneAt > a.since + FocusRules.GRACE_MILLIS) {
                 return s.copy(phase = Phase.Failed(FailReason.LEFT_APP, a.since + FocusRules.GRACE_MILLIS))
             }
         }
@@ -147,7 +149,7 @@ data class FocusSession(
     private fun endPause(s: FocusSession, now: Long, reason: PauseReason): FocusSession {
         val p = s.phase as? Phase.Paused ?: return s
         if (p.reason != reason) return s
-        return s.copy(phase = Phase.Running, pausedMillis = s.pausedMillis + (now - p.since))
+        return s.copy(phase = Phase.Running, pausedMillis = s.pausedMillis + (now - p.since).coerceAtLeast(0)) // a clock set back must not shorten the pauses already counted
     }
 
     /**

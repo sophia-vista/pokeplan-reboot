@@ -99,15 +99,6 @@ private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalizati
 @Composable
 private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
 
-@Composable
-private fun Confirm(text: String, confirm: String, keep: String = "Keep it", onConfirm: () -> Unit, onKeep: () -> Unit) {
-    Text(text, style = MaterialTheme.typography.bodyLarge)
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-        PixelButton(confirm, onConfirm, Modifier.weight(1f), Pixel.Danger, compact = true)
-        PixelButton(keep, onKeep, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-    }
-}
-
 /** A plain list row: a lead, a title with one quiet line under it, a trail, all on one centre line, with a 48 dp target. No box of its own. */
 @Composable
 private fun HRow(
@@ -127,11 +118,6 @@ private fun HRow(
         }
         trail()
     }
-}
-
-@Composable
-private fun Rule() {
-    androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth().height(1.dp).background(Pixel.Border.copy(alpha = 0.6f)))
 }
 
 @Composable
@@ -323,8 +309,6 @@ private fun openHit(model: AppModel, kind: HitKind, id: String) {
 
 // ----- Shared words and fields ------------------------------------------------------------------------------------------------
 
-private fun parseDay(text: String): LocalDate? = runCatching { LocalDate.parse(text.trim()) }.getOrNull()
-
 private fun repeatText(r: Recurrence): String {
     if (r.kind == RepeatKind.ONCE) return ""
     val base = if (r.every <= 1) r.kind.label else "Every ${r.every} ${r.kind.unit}s"
@@ -416,12 +400,6 @@ private fun AssetChips(assets: List<Asset>, selected: String?, onPick: (String?)
         Chip("None", selected == null, { onPick(null) })
         shown.forEach { a -> Chip(a.name, a.id == selected, { onPick(a.id) }) }
     }
-}
-
-/** A compact row of the three or four buttons that act on one record. */
-@Composable
-private fun Actions(content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically, content = content)
 }
 
 // ----- Chores -----------------------------------------------------------------------------------------------------------------

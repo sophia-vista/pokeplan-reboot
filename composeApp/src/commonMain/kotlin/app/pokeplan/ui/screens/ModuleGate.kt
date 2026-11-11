@@ -15,6 +15,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Report
 import app.pokeplan.ui.DeviceGate
@@ -49,10 +51,13 @@ internal fun ModuleGate(model: AppModel, module: Module, content: @Composable ()
     var isLocked by remember { mutableStateOf(locked(model, gate, key, model.store.nowMillis)) }
     var failed by remember { mutableStateOf(false) }
     DisposableEffect(Unit) { onDispose { model.moduleLeftAt[key] = model.store.nowMillis } }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
     LaunchedEffect(isLocked) {
         while (!isLocked) {
             val now = model.store.nowMillis
-            if (locked(model, gate, key, now)) isLocked = true else model.moduleUnlockedAt[key] = now // coming back inside the grace keeps it open
+            // Coming back inside the grace keeps it open. Only while the app is in front: a tick after the app was left must not count as being back, or the door would never close again.
+            if (locked(model, gate, key, now)) isLocked = true
+            else if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) model.moduleUnlockedAt[key] = now
             kotlinx.coroutines.delay(1_000)
         }
     }

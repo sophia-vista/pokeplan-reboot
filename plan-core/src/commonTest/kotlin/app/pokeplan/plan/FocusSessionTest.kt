@@ -34,6 +34,17 @@ class FocusSessionTest {
     }
 
     @Test
+    fun aTimerThatRunsOutInsideTheGracePeriodIsAFinishedSession() {
+        // Left with 5 seconds to go and came back much later: the timer ended before the 10 second grace did.
+        val left = start().apply(FocusEvent.Left, 25 * minute - 5 * second)
+        assertEquals(Phase.Completed(25 * minute), left.tick(40 * minute).phase)
+        assertEquals(Phase.Completed(25 * minute), left.apply(FocusEvent.Returned, 40 * minute).phase)
+        // Left with 11 seconds to go: the grace ran out first, so it still fails.
+        val early = start().apply(FocusEvent.Left, 25 * minute - 11 * second)
+        assertEquals(Phase.Failed(FailReason.LEFT_APP, 25 * minute - 1 * second), early.tick(40 * minute).phase)
+    }
+
+    @Test
     fun stayingAwayPastTenSecondsFailsTheEgg() {
         val s = start().apply(FocusEvent.Left, 5 * minute)
         val failed = s.tick(5 * minute + 10 * second + 1)

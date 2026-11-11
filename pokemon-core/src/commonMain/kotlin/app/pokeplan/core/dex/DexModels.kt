@@ -176,9 +176,6 @@ data class MoveInfo(
     val generation: Int,
 )
 
-/** Where a Pokémon form can learn a move from (the newest game it appears in). */
-enum class LearnMethod { LEVEL_UP, EGG, TUTOR, MACHINE }
-
 /** The moves one form learns, from the newest game it appears in. [levelUp] pairs a move id with its level. */
 data class Learnset(
     val levelUp: List<Pair<Int, Int>>,
@@ -190,13 +187,6 @@ data class Learnset(
     val all: Set<Int> by lazy { levelUp.map { it.first }.toSet() + egg + tutor + machine }
 
     fun learns(moveId: Int): Boolean = moveId in all
-
-    fun methodsFor(moveId: Int): List<LearnMethod> = buildList {
-        if (levelUp.any { it.first == moveId }) add(LearnMethod.LEVEL_UP)
-        if (moveId in egg) add(LearnMethod.EGG)
-        if (moveId in tutor) add(LearnMethod.TUTOR)
-        if (moveId in machine) add(LearnMethod.MACHINE)
-    }
 
     companion object {
         val EMPTY = Learnset(emptyList(), emptyList(), emptyList(), emptyList())

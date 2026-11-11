@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.166.0
+## 0.168.0
 
 Design review batch 1 (`docs/pokelife/evidence/DESIGN-REVIEW-0.165.1.md`). No reward number changes.
 
@@ -21,6 +21,38 @@ Design review batch 1 (`docs/pokelife/evidence/DESIGN-REVIEW-0.165.1.md`). No re
 - **One tap for mood (Care).** "How is today?" on Care's page: Rough, Low, Okay, Good, Great as five keys, kept on today's diary card (`DiaryCard.mood`, no schema change), shown in Trends, never paid. PMD portraits for the faces are waiting on fetching more emotions (the strips hold only Normal, Happy, Joyous, Inspired, Determined and Surprised).
 - **One place list on a Pokémon.** Twelve role buttons became Make buddy and one Move to... list: the PC and each module's party with "n of 6", Move here, and Make lead in the party it is in.
 - **Module colour on keys.** Keys and chips default to the open module's accent (blue only outside a module), the lead buttons on a Pokémon use each module's accent, friendship is pink, and Heal's Log activity is no longer red.
+
+## 0.167.1
+
+Repo-wide audit (11 November 2026): fixes found by reading every state machine, dead code out, and the agent files brought up to date. No reward number changes.
+
+- **Fix: a focus timer that ran out inside the 10 second grace failed the egg.** Leaving with less than 10 seconds to go and coming back later ended as "left the app", although time inside the grace counts as focus. It is a finished session now (`FocusSession.tick`).
+- **Fix: a recurring task moved to another day came back twice.** The day it was moved from had no task planned on it, so the next refresh made that day's instance again, with the same id. An instance is known by its id now (`RecurringTasks.instancesToCreate`).
+- **Fix: a transfer could leave a Pokémon's seat behind.** A Pokémon on a World team, in a Guardian slot or helping a Gear tool was removed while its place still named it, and one out on an expedition could be transferred. The transfer waits for the expedition and gives the place up (`Places.movable`, `Places.vacate`).
+- **Fix: the screen-lock door of Mint, Care, Heal, Home and Link could stay open.** The once-a-second "still here" tick kept running after the app was left, which counted as coming back. It counts only while the app is in front.
+- **Fix: restoring a backup did not reload Link**, so Link's next save could write the old records over the restored ones.
+- **Fix: a hatch scene could be replaced by a World moment** started in the same frame, and was then never shown.
+- **Fix: a second tap on "Start" (focus) or on the last onboarding line crashed** instead of doing nothing.
+- **Fix: the open app could save an older copy over a widget's or a notification's change.** The app, each widget and each reminder open their own store on the same save, each with a lock of its own. There is one lock for the process now, every change starts from the saved document when another store wrote it (`SharedDocuments`, `Storage.shareKey`), and the app's tick picks such a change up within half a second (`sync()`). `worldAssign` builds its change from the document being written.
+- **Android's own backup is off** (`allowBackup="false"`, `data_extraction_rules.xml`): nothing goes to the system's cloud backup or to another phone by itself. Heal's and Mint's rows are sealed with a key that never leaves the phone, so such a copy could not be opened there; the app's own backups are the way to move a save (INTEGRATIONS_AND_PRIVACY.md).
+- **Fix: a repeatable World job the board offered could be refused** east of UTC: accepting counted the day in UTC, the board and the claim in the player's time.
+- **Fix: a clock set back during a focus pause** shortened the pauses already counted.
+- **Removed (nothing used them, tests included):** `GameStore.worldClaimItems` (the items go to the Bag in `worldPay`), `CareStore.hasEntries`, `LiveBackup.lastBackupMillis`, `LinkRules.tagsInUse`, `Learnset.methodsFor` and `LearnMethod`, `Inventory.removeAll` and `asContext`, `FloorEventResult`, `LauncherModel.pageIsEmpty`, `Pixel.RedDark`, `Spacing.XXXL`, `Spacing.CardRadius`, two private helpers and two imports.
+- **Simpler:** `Confirm`, `Rule`, `Actions` and `parseDay` were copied in the Home, Link and Mint screens; they are one each in `screens/ModuleParts.kt`. The launcher's agenda uses `CalendarEvent.shownTitle` for a private event.
+- **Agent files:** `CLAUDE.md` is a third shorter (its Layout detail moved, word for word, to `docs/code-map.md`); stale lines fixed (no server, `.idea/` is ignored, the backlog is the record of progress, cloud sessions work on their own branch); `.claude/settings.json` refuses a push to `main` and a forced push; `ci.yml`'s token is read-only; the old `docs/DESIGN_SYSTEM.md` says it is superseded.
+## 0.167.0
+
+A launcher audit and the town's behaviour pass. No reward number changes.
+
+- **Fix: the launcher no longer saves or pays on its own clock.** Its one-second tick settled tasks and focus sessions and wrote the launcher's copy of the save, even with the screen off; it now only moves the clock, and only while the launcher is in sight.
+- **Fix: widget set-up screens** are started through the widget host, so a provider whose set-up is not exported to other apps no longer fails and leaves the widget unconfigured.
+- **Swipe up and swipe down** on the open town (up opens the app list; down is free to set in Launcher settings → Gestures).
+- **Less work per frame.** A page swipe no longer composes the whole screen every frame; walking Pokémon move without composing; the dungeon-tile town builds its map once and sits on its own layer; weather draws at 30 frames a second; the town's Pokémon list, the widgets' room and each hosted widget's size are worked out once, not on every change.
+- **Less work on returning home.** One read of the save per Home press (was two), no widget reloads on every resume, icons drawn at the size they are shown, kept to a memory budget, and only the changed app's picture is drawn again after an install. The clock widget no longer polls the battery itself and redraws only each minute without seconds; the app list's blur is off in battery saver. A dark window shows before the first frame.
+- **Town behaviour.** Idle variation (turning, grazing, hopping), roaming in short legs around a favourite spot at each Pokémon's own pace, staggered bedtimes with a wake-up hop and breakfast, surprise at a tap or an arrival, weather felt through the game's own status icons, tap reactions (hop, happy, turn, flustered when tapped over and over).
+- **The Guardian is calmer and changes.** It is left out of the pairwise meetings, glances from others are rare and do not hold it, and a startle happens at most once every few minutes. Unless the buddy is a Guardian, the Guardians take turns one a day: the old one walks off the edge of Home and the new one walks in.
+- **Launcher polish.** Icons on the Folders, All apps, Widgets and Gear buttons, the search placeholder in the game's font, and TalkBack reaches the buddy, the Guardian and favourite Pokémon in the town by name (the rest of the crowd is scenery).
+- Docs: `LAUNCHER.md` 6.1 and 11.4.
 
 ## 0.165.1
 

@@ -19,9 +19,13 @@ internal class SavedDocument<T>(
     empty: () -> T,
 ) {
     private val lock = newStoreLock()
+    private val shareKey = storage.shareKey
+
+    /** The shared document's revision this copy matches (see [SharedDocuments]); unused for a storage nothing else opens. */
+    private var seen = 0L
 
     @Volatile
-    var value: T = open(empty)
+    var value: T = lock.withLock { open(empty).also { markCurrent() } }
         private set
 
     private val listeners = mutableListOf<(T) -> Unit>()
@@ -51,9 +55,35 @@ internal class SavedDocument<T>(
      * neither starts from a document the other has already replaced. Listeners hear of it after the lock is let go.
      */
     fun update(change: (T) -> T) {
-        lock.withLock { writeLocked(change(value)) }
+        lock.withLock {
+            catchUpLocked()
+            writeLocked(change(value))
+        }
         notifyListeners()
     }
+
+    /**
+     * Picks up what another store in this process wrote to the same document (a widget's tap, a notification's "Done") and tells the
+     * listeners. Cheap when nothing was written, so it can be called on every tick. Returns whether anything changed.
+     */
+    fun sync(): Boolean {
+        val changed = lock.withLock { catchUpLocked() }
+        if (changed) notifyListeners()
+        return changed
+    }
+
+    // If another store wrote the document since this one last read or wrote it, this copy is old: a change must start from the saved one.
+    private fun catchUpLocked(): Boolean {
+        val key = shareKey ?: return false
+        if (SharedDocuments.revision(key) == seen) return false
+        markCurrent()
+        val fresh = storage.load()?.let(::decode) ?: return false
+        if (fresh == value) return false
+        value = fresh
+        return true
+    }
+
+    private fun markCurrent() { shareKey?.let { seen = SharedDocuments.revision(it) } }
 
     /** Saves [next] and tells the listeners. */
     fun write(next: T) = update { next }
@@ -62,6 +92,7 @@ internal class SavedDocument<T>(
     private fun writeLocked(next: T) {
         storage.save(json.encodeToString(serializer, next))
         value = next
+        shareKey?.let { seen = SharedDocuments.written(it) }
     }
 
     /**
@@ -70,6 +101,7 @@ internal class SavedDocument<T>(
      */
     fun reload() {
         val changed = lock.withLock {
+            markCurrent()
             val fresh = storage.load()?.let(::decode)
             if (fresh == null || fresh == value) false else { value = fresh; true }
         }

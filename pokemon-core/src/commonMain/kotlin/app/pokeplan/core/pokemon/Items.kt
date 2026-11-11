@@ -115,8 +115,6 @@ data class Inventory(val counts: Map<String, Int> = emptyMap()) {
         return Inventory(if (left == 0) counts - id else counts + (id to left))
     }
 
-    fun removeAll(items: Map<String, Int>): Inventory = items.entries.fold(this) { inv, (id, n) -> inv.remove(id, n) }
-
     /**
      * Adds with the stack limits: 999 per item, 9,999 for candies. What does not fit becomes coins 1:1 *(tune)*;
      * returns the new inventory and the coins gained.
@@ -127,8 +125,6 @@ data class Inventory(val counts: Map<String, Int> = emptyMap()) {
         val stored = minOf(n, room)
         return add(id, stored) to (n - stored)
     }
-
-    fun asContext(hourOfDay: Int, completedTrials: Set<String> = emptySet()) = EvolutionContext(hourOfDay, counts, completedTrials)
 
     companion object {
         const val MAX_STACK = 999

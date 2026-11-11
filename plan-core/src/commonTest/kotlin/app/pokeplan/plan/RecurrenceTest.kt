@@ -91,6 +91,17 @@ class RecurrenceTest {
     }
 
     @Test
+    fun anInstanceMovedToAnotherDayIsNotCreatedAgain() {
+        val template = Task(id = "tpl", title = "Water plants", seriesId = "plants", createdAtMillis = 0)
+        val r = Recurrence(Repeat.Daily(), d(2026, 10, 1))
+        val today = d(2026, 10, 19)
+        val all = RecurringTasks.instancesToCreate(template, r, emptyList(), today, 5)
+        // Today's instance is put off to a day far outside the horizon: its own date now has no task planned on it.
+        val moved = listOf(all.first().copy(planned = d(2026, 12, 1))) + all.drop(1)
+        assertEquals(emptyList(), RecurringTasks.instancesToCreate(template, r, moved, today, 5), "no second task with the id plants-2026-10-19")
+    }
+
+    @Test
     fun instancesAreCreatedTwoWeeksAheadWithoutDuplicates() {
         val template = Task(id = "tpl", title = "Water plants", seriesId = "plants", plannedTime = LocalTime(9, 0), createdAtMillis = 0)
         val r = Recurrence(Repeat.Daily(), d(2026, 10, 1))

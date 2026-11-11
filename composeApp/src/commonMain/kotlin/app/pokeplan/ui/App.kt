@@ -299,6 +299,13 @@ class AppModel(
 
     fun tick() {
         store.tick()
+        // A reminder's "Done" may have changed a module's records while the app is open (the game's own save is picked up in store.tick()).
+        care.sync(); heal.sync(); mint.sync(); home.sync(); link.sync()
+        now = store.nowMillis
+    }
+
+    /** Only the clock moves: for the launcher, which shows the time and settles nothing (the app owns the save). */
+    fun tickClock() {
         now = store.nowMillis
     }
 

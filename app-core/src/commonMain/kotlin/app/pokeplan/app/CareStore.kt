@@ -69,6 +69,9 @@ class CareStore(
     /** Picks up a change another process made (a widget), without writing anything back; see [SavedDocument.reload]. */
     fun reload() = document.reload()
 
+    /** Picks up what another store in this process (a widget, a notification) wrote; cheap when nothing was. */
+    fun sync() = document.sync()
+
     private fun update(change: (CareData) -> CareData) = document.update(change)
 
     /** Puts back a [snapshot] taken before a delete, for the undo bar. */
@@ -428,11 +431,6 @@ class CareStore(
 
     /** Erases Care's save on this device. */
     fun erase() = update { CareData() }
-
-    /** Whether there is anything of the player's to lose: a device with only its settings has nothing yet. */
-    val hasEntries: Boolean
-        get() = data.routines.isNotEmpty() || data.diary.isNotEmpty() || data.breaks.isNotEmpty() || data.practices.isNotEmpty() ||
-            data.journal.isNotEmpty() || data.met.isNotEmpty() || data.friends.isNotEmpty() || data.play.isNotEmpty() || data.visitors.any { it.progress > 0 }
 
     companion object {
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }

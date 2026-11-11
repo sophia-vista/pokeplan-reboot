@@ -65,6 +65,9 @@ class HealStore(
     /** Picks up a change another process made, without writing anything back; see [SavedDocument.reload]. */
     fun reload() = document.reload()
 
+    /** Picks up what another store in this process (a widget, a notification) wrote; cheap when nothing was. */
+    fun sync() = document.sync()
+
     private fun update(change: (HealData) -> HealData) = document.update(change)
 
     /** Puts back a [snapshot] taken before a delete, for the undo bar. */

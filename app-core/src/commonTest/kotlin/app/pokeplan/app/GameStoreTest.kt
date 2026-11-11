@@ -607,6 +607,30 @@ class GameStoreTest {
     }
 
     @Test
+    fun a_change_never_writes_an_older_copy_over_another_stores_change() {
+        // The app and a notification each open their own store on the same document of the same process.
+        val storage = MemoryStorage(shareKey = "a_change_never_writes_an_older_copy")
+        val clock = FakeClock(start)
+        val app = GameStore(storage, clock, utc, Random(7)).also { it.start("Sophia", 25) }
+        val notification = GameStore(storage, clock, utc, Random(8))
+        val task = notification.addTask("Call the bank")
+        assertTrue(app.data.tasks.none { it.id == task.id }, "the open app has not looked yet")
+        // The app's next change starts from the saved document, not from its older copy.
+        app.addTask("Water the plants")
+        assertTrue(app.data.tasks.any { it.id == task.id })
+        assertTrue(GameStore(storage, clock, utc, Random(9)).data.tasks.any { it.id == task.id }, "and the save still has it")
+        // Without a change of its own, the tick picks it up and tells the screen once.
+        val second = notification.addTask("Post the letter")
+        var told = 0
+        app.observe { told++ }
+        app.tick()
+        assertTrue(app.data.tasks.any { it.id == second.id })
+        assertEquals(1, told)
+        app.tick()
+        assertEquals(1, told, "nothing new the second time")
+    }
+
+    @Test
     fun reload_picks_up_a_change_made_by_another_store_on_the_same_save() {
         val storage = MemoryStorage()
         val clock = FakeClock(start)
@@ -695,6 +719,27 @@ class GameStoreTest {
             assertTrue(next != last, "repeated $next")
             last = next
         }
+    }
+
+    @Test
+    fun a_second_tap_on_start_keeps_the_running_session() {
+        val (s, _) = started()
+        val first = s.startFocus(25, deepFocus = false)
+        assertEquals(first.id, s.startFocus(50, deepFocus = true).id)
+        assertEquals(first, s.data.focus)
+    }
+
+    @Test
+    fun a_transfer_gives_up_the_pokemons_world_team_seat_and_waits_for_an_expedition() {
+        val (s, _) = started()
+        val a = s.grantPokemon(16, "Test")
+        val b = s.grantPokemon(16, "Test")
+        assertTrue(s.worldAssign(1, listOf(a.id, b.id)))
+        assertTrue(s.transfer(a.id))
+        assertTrue(s.data.world.teams.none { a.id in it.members }, "no team keeps a Pokémon that is gone")
+        assertTrue(s.worldStart(1, "tiny-woods"))
+        assertFalse(s.transfer(b.id), "a Pokémon out on an expedition stays")
+        assertTrue(s.data.player.pokemon.any { it.id == b.id })
     }
 
     @Test
