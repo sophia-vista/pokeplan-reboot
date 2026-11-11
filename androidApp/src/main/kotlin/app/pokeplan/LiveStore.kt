@@ -17,6 +17,9 @@ import java.io.File
 
 /** A document of the live save, kept in the database one transaction at a time. */
 class DatabaseStorage(private val live: LiveDocuments, private val name: String) : Storage {
+    // The app, the widgets and the reminders each open their own store on this document, in one process.
+    override val shareKey: Any get() = name
+
     override fun load(): String? = live.read(name)
 
     /**

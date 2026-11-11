@@ -149,7 +149,7 @@ data class FocusSession(
     private fun endPause(s: FocusSession, now: Long, reason: PauseReason): FocusSession {
         val p = s.phase as? Phase.Paused ?: return s
         if (p.reason != reason) return s
-        return s.copy(phase = Phase.Running, pausedMillis = s.pausedMillis + (now - p.since))
+        return s.copy(phase = Phase.Running, pausedMillis = s.pausedMillis + (now - p.since).coerceAtLeast(0)) // a clock set back must not shorten the pauses already counted
     }
 
     /**

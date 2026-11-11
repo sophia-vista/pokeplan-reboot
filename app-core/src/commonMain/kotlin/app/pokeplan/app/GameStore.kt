@@ -141,6 +141,9 @@ class GameStore(
     /** Picks up a change another process made to the save (an Android widget); see [SavedDocument.reload]. */
     fun reload() = document.reload()
 
+    /** Picks up what another store in this process (a widget, a notification) wrote; cheap when nothing was. */
+    fun sync() = document.sync()
+
     /** One change at a time: [SavedDocument.update] holds the document's lock from reading `before` to the save, so two threads never start from the same one. */
     private fun update(change: (AppData) -> AppData) = document.update { before ->
         var after = foldPoke(before, change(before))
@@ -915,6 +918,7 @@ class GameStore(
 
     /** Settles finished undo windows and the focus timer, and creates upcoming recurring tasks. Cheap to call often. */
     fun tick() {
+        sync()
         settlePending()
         tickFocus()
     }
@@ -1573,10 +1577,12 @@ class GameStore(
         val already = data.world.team(team)?.members.orEmpty().toSet()
         val incoming = members.filter { it !in already }
         if (incoming.any { !Places.movable(data, it) }) return false
-        var moved = data
-        for (id in incoming) moved = Places.vacate(moved, id)
-        val next = moved.world.assign(team, members) ?: return false
-        update { _ -> moved.copy(player = Places.leads(moved.player), world = next) }
+        if (incoming.fold(data) { d, id -> Places.vacate(d, id) }.world.assign(team, members) == null) return false
+        // Built from the document being changed, not from the copy checked above: the save may have moved on in between (a widget, a notification).
+        update { d ->
+            val moved = incoming.fold(d) { m, id -> Places.vacate(m, id) }
+            moved.world.assign(team, members)?.let { moved.copy(player = Places.leads(moved.player), world = it) } ?: d
+        }
         return true
     }
 
@@ -1698,7 +1704,7 @@ class GameStore(
     /** Takes a job from the World mission board; false when it is not offered or three are held. */
     fun worldAcceptMission(id: String): Boolean {
         worldSettle()
-        val next = data.world.copy(lastSeenAt = nowMillis).acceptMission(id) ?: return false
+        val next = data.world.copy(lastSeenAt = nowMillis).acceptMission(id, utcOffsetMillis) ?: return false
         update { it.copy(world = next) }
         return true
     }

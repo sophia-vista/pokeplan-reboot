@@ -150,7 +150,7 @@ This section supersedes the status column of section 3, which stays as the 0.123
 | One owner, one source of truth (principle 2) | Holds for the built modules: each has its own tables and store and pays only through a minimal event. World's Poké copy is gone (0.145.0). Open: Exploration XP and unopened treasure in World; the app's single `AppData` view over the split tables |
 | Utility first; every module works without rewards (principle 1) | Holds: Field Research, Ledger Research and Habitat Discovery can be turned off in Settings without losing a record (tested) |
 | Forgiving, no punishment (principles 4 and 9) | Holds by design in Home (no backlog, no streak, no shaming words) and Care (no streaks). Focus is strict by the owner's decision (8 November 2026, PLAN.md 6.3), an accepted exception to this principle; the Plan streak text has not been checked against the no-pressure rules |
-| Local-first, no account, no cloud, no telemetry (principle 6, section 3) | Holds since 0.130.0, except that `allowBackup="true"` leaves the app data open to the system's cloud backup until the manifest is fixed |
+| Local-first, no account, no cloud, no telemetry (principle 6, section 3) | Holds since 0.130.0 (the system's cloud backup and phone-to-phone transfer are off since 0.165.2: `allowBackup="false"`, `data_extraction_rules.xml`) |
 | Android only (section 3) | Holds; desktop and web stay compile-only |
 | Cross-module links (section 4): HOME owns a chore a PLAN task is linked to; LINK owns a follow-up until converted; MINT owns bill state | **Partly built (0.144.0).** HOME chore to PLAN task is built (HOME completes and pays once, PLAN pays nothing, tested) and PLAN's half of a LINK follow-up conversion; LINK itself and MINT bill links are not built |
 | Roles (section 5): global buddy, module party of six, WORLD teams, GEAR helpers; one Pokémon in one place | Holds (0.124.0, 0.133.0); every module's party exists; the detail page names every place (8 November 2026) |
@@ -172,7 +172,7 @@ This section supersedes the status column of section 3, which stays as the 0.123
 | 5 | Mega and Dynamax | **Integrate them into PokéLife** | Roadmap item 9: a source for Mega Stones, the Mega form shown, the Dynamax Band given a use |
 | 6 | HEAL encryption | **Put in the roadmap** | **Built in 0.154.0** (`evidence/REP-014-heal-sealing.md`): `heal_*` rows, Heal's backup copies and kept-aside copies are sealed with Heal's own Keystore key; a passphrase backup seals it with Mint. Not run on a device |
 | 7 | Gear loans | **Retire** | Done 8 November 2026 |
-| 8 | Manifest (`allowBackup`, permissions) | **OK for now** | Left as it is; recorded in pending item 10 so it is revisited before any public release |
+| 8 | Manifest (`allowBackup`, permissions) | **Backup closed in 0.165.2**; permissions OK for now | System backup and device transfer are excluded (`allowBackup="false"`, `data_extraction_rules.xml`): a system copy of Heal's and Mint's sealed rows could not be opened on another phone, and INTEGRATIONS_AND_PRIVACY.md asks for it. The declared permissions stay in pending item 10 |
 
 ### Pending items (ordered by value)
 
@@ -185,7 +185,7 @@ This section supersedes the status column of section 3, which stays as the 0.123
 7. **Typed repositories per module**, the outbox consumer and the removal of the single-`AppData` view; the backup archive (DATA_AND_MIGRATIONS.md 10.2 to 10.4) with whole-bundle encryption and post-restore reconciliation. Started (0.144.0): HEAL, MINT and HOME rewards settle their real event ids in the ledger.
 8. **Open module scope**: HEAL (**sealing `heal_*` rows and backups: done in 0.154.0, owner decision 6**; workouts, nutrition, records, imports, History), MINT (import, providers, splits, rollover, savings, foreign currency, reports), HOME (search filters, attachments, widgets, imports), GEAR (see its row), Launcher (see its row).
 9. **Shared Pokémon expansion** (P2): **Mega and Dynamax integrated into PokéLife (owner decision 5)**: a source for Mega Stones (a shop or quest, to be designed), the Mega form shown for a focus session, the Dynamax Band given a use; then the owned-record provenance layer (original nature, Ball, moveset, Ribbons and Marks, history) with a migration, then moves and mastery, a larger held-item catalog, then the WORLD systems that depend on them (jobs, contests, Berry Garden, camps, raids).
-10. **Release hardening** (sequence 12): the manifest (`allowBackup` and the declared permissions were left as they are for now, owner decision 8), the asset registry, rights status and credits screen (REP-015), sound clean-ups (REP-016, REP-017), the protected release key (REP-005), real screenshot comparison, an androidApp test source set, lint and static analysis, a release-variant compile, and a device suite.
+10. **Release hardening** (sequence 12): the manifest (the declared permissions were left as they are for now, owner decision 8; `allowBackup` was closed in 0.165.2), the asset registry, rights status and credits screen (REP-015), sound clean-ups (REP-016, REP-017), the protected release key (REP-005), real screenshot comparison, an androidApp test source set, lint and static analysis, a release-variant compile, and a device suite.
 
 ### Documentation drift found by the audit
 

@@ -10,9 +10,16 @@ interface Storage {
 
     /** The save as it was before the last [save], if this storage keeps one, to fall back on when [load] gives something unreadable. */
     fun loadBackup(): String? = null
+
+    /**
+     * Names the document this storage holds, the same for every storage over that document in this process (the app's, a widget's, a
+     * notification's): stores opened on the same key then see each other's writes instead of saving an older copy over them.
+     * Null for a storage nothing else opens.
+     */
+    val shareKey: Any? get() = null
 }
 
-class MemoryStorage(var text: String? = null) : Storage {
+class MemoryStorage(var text: String? = null, override val shareKey: Any? = null) : Storage {
     var keptAside: String? = null
         private set
 
