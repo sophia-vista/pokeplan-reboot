@@ -6,6 +6,7 @@ import app.pokeplan.core.reward.Reward
 import app.pokeplan.link.Check
 import app.pokeplan.link.DateKind
 import app.pokeplan.link.FollowUp
+import app.pokeplan.link.FollowUpState
 import app.pokeplan.link.FollowUpStatus
 import app.pokeplan.link.ImportantDate
 import app.pokeplan.link.LinkData
@@ -216,24 +217,30 @@ class LinkStore(
     fun planTask(id: String): FollowUpTask? = world.followUpTask(id)
 
     /**
-     * Mirrors a converted follow-up whose PLAN task was finished as completed here too, without paying: PLAN already did, once. Call it when PLAN's data
-     * changes. A deleted or unlinked task leaves the follow-up open and owned by nobody but LINK, which still pays nothing for it.
+     * Keeps a converted follow-up in line with its PLAN task, without paying: PLAN already did, once. A task finished in PLAN completes the follow-up here,
+     * and a task taken back to open in PLAN opens it again. Call it when PLAN's data changes. A deleted or unlinked task leaves the follow-up as it is,
+     * owned by nobody but LINK, which still pays nothing for it.
      */
     fun syncFromPlan() {
-        val done = data.followUps.filter { it.converted && it.status == FollowUpStatus.OPEN }.mapNotNull { f -> world.followUpTask(f.id)?.takeIf { it.done }?.let { f.id to it } }
-        if (done.isEmpty()) return
-        val byId = done.toMap()
+        val tasks = data.followUps.filter { it.converted }.mapNotNull { f -> world.followUpTask(f.id)?.let { f.id to it } }.toMap()
+        if (tasks.none { (id, t) -> data.followUps.first { it.id == id }.status.let { s -> (t.done && s == FollowUpStatus.OPEN) || (!t.done && s == FollowUpStatus.COMPLETED) } }) return
         update { d ->
             d.copy(followUps = d.followUps.map { f ->
-                val t = byId[f.id] ?: return@map f
-                val at = t.doneAtMillis ?: nowMillis
-                f.copy(status = FollowUpStatus.COMPLETED, completedMillis = at, completedDay = at.toLocalDateTime(zone).date, updatedMillis = nowMillis)
+                val t = tasks[f.id] ?: return@map f
+                when {
+                    t.done && f.status == FollowUpStatus.OPEN -> {
+                        val at = t.doneAtMillis ?: nowMillis
+                        f.copy(status = FollowUpStatus.COMPLETED, completedMillis = at, completedDay = at.toLocalDateTime(zone).date, updatedMillis = nowMillis)
+                    }
+                    !t.done && f.status == FollowUpStatus.COMPLETED -> f.copy(status = FollowUpStatus.OPEN, updatedMillis = nowMillis)
+                    else -> f
+                }
             })
         }
     }
 
-    /** Puts a done or cancelled follow-up back to open. What was paid stays paid and is never paid twice. */
-    fun reopen(id: String) = change(id) { if (it.status == FollowUpStatus.OPEN) it else it.copy(status = FollowUpStatus.OPEN, updatedMillis = nowMillis) }
+    /** Puts a done or cancelled follow-up back to open. What was paid stays paid and is never paid twice. While PLAN owns the task it is reopened there, not here. */
+    fun reopen(id: String) = if (world.followUpTask(id) != null) Unit else change(id) { if (it.status == FollowUpStatus.OPEN) it else it.copy(status = FollowUpStatus.OPEN, updatedMillis = nowMillis) }
 
     /** Cancels an open follow-up. It earns nothing and leaves the open list. */
     fun cancel(id: String) = if (world.followUpTask(id) != null) Unit else change(id) { if (it.status == FollowUpStatus.OPEN) it.copy(status = FollowUpStatus.CANCELLED, completedMillis = nowMillis, updatedMillis = nowMillis) else it }
@@ -241,6 +248,9 @@ class LinkStore(
     fun deleteFollowUp(id: String) = update { d -> d.copy(followUps = d.followUps.filterNot { it.id == id }) }
 
     fun openFollowUps(personId: String? = null) = LinkRules.open(data, today, personId)
+
+    /** The follow-ups whose day has come and that LINK still owns: what the Overview, the Modules card and Home count. One handed to Plan is Plan's to show. */
+    fun dueNow(): List<FollowUp> = openFollowUps().filter { LinkRules.state(it, today) == FollowUpState.DUE && world.followUpTask(it.id) == null }
 
     fun followUpHistory(personId: String? = null) = LinkRules.history(data, personId)
 

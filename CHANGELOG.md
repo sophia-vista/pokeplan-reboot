@@ -5,6 +5,21 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.171.0
+
+Link audit (end to end: rules, store, screens, reminders, tables). No reward number changes.
+
+- **Find a person by phone, email or address.** The directory and the one search matched names, organization, role, category and tags only; a phone is matched by its digits however it is spaced (three digits or more).
+- **Add a date from a person's profile** (LINK.md 3.3). It was only possible from Dates, by picking the person again.
+- **Deleting a person can be undone** (their notes went with them for good).
+- **Opening one search hit no longer sets the tab of the next profile** (a note hit left every profile opening on Notes).
+- **A cancelled follow-up shows the day it was cancelled**, not always today.
+- **Link and Plan agree about a handed-over follow-up.** Reopening one Plan finished is done in Plan (the button is gone; it used to bounce back at once), and a task Plan takes back to open opens the follow-up here too. Neither pays.
+- **"N due" counts only what Link owns.** Home and the Modules card counted follow-ups that had become Plan tasks; the Overview already left them out (`LinkStore.dueNow`).
+- **A long directory shows 40 people at a time** (every row was composed at once).
+- **Categories:** a person's form has a New category field; Settings no longer has a Categories box whose chips did nothing.
+- Tests: three new in `LinkRulesTest` and `LinkStoreTest`.
+
 ## 0.170.1
 
 HEAL audit (end to end). No reward number changes; `RewardRules.VERSION` is unchanged.
