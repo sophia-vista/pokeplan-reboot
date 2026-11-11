@@ -16,6 +16,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +46,7 @@ import app.pokeplan.ui.Sfx
 import app.pokeplan.ui.ItemIcon
 import app.pokeplan.ui.Sprite
 import app.pokeplan.ui.AnimatedSprite
+import app.pokeplan.ui.SpriteAction
 import app.pokeplan.ui.Portrait
 import app.pokeplan.ui.Stage
 import app.pokeplan.ui.TypePlate
@@ -126,11 +129,20 @@ internal fun PokemonDetail(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            // A level gained while this page is open (a Rare Candy) turns it around once (its Rotate animation, else a hop).
+            var spin by remember(p.id) { mutableStateOf(false) }
+            var spinKey by remember(p.id) { mutableIntStateOf(0) }
+            var shownLevel by remember(p.id) { mutableIntStateOf(p.level) }
+            LaunchedEffect(p.level) {
+                if (p.level > shownLevel && !model.data.settings.reduceMotion) { spin = true; spinKey++ }
+                shownLevel = p.level
+            }
             Stage("bw08", 252.dp) {
                 AnimatedSprite(
                     p.form.id, p.isShiny, p.nickname,
-                    Modifier.align(Alignment.TopCenter).padding(top = Spacing.L).quietClickable(onClickLabel = "Hear ${p.nickname}") { model.cry(p.speciesId) },
+                    Modifier.align(Alignment.TopCenter).padding(top = Spacing.L).quietClickable(onClickLabel = "Hear ${p.nickname}") { model.cry(p) },
                     size = 176.dp, animate = !model.data.settings.reduceMotion,
+                    action = if (spin) SpriteAction.ROTATE else SpriteAction.IDLE, actionKey = spinKey, onActionDone = { spin = false },
                 )
                 Row(Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.M), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     p.form.types.forEach { TypePlate(it, width = 84.dp) }
@@ -342,7 +354,7 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
     )
     run {
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p.speciesId) }, Modifier.weight(1f), Pixel.Red, enabled = !isBuddy && !isGuardian, compact = true)
+            PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p) }, Modifier.weight(1f), Pixel.Red, enabled = !isBuddy && !isGuardian, compact = true)
             PixelButton(if (inPlan) "To PC" else "To Plan party", { store.setInParty(p.id, !inPlan); model.effect(if (inPlan) Sfx.MOVE_DROP else Sfx.RECRUIT) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {

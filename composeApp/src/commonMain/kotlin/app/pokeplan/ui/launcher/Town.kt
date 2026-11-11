@@ -248,6 +248,8 @@ private fun Resident(
     var grazing by remember(mon.id) { mutableStateOf(false) }
     // How it is walking now (null while it stands): to the side, towards the viewer or away, whichever way it mostly goes.
     var walk by remember(mon.id) { mutableStateOf<SpriteAction?>(null) }
+    // Which way it stands once it stops: the way it last went (its Idle facing the side or away, front where a form has no such row).
+    var facing by remember(mon.id) { mutableStateOf(SpriteAction.IDLE) }
     // The last gathering this one answered, so a meeting or a sleep does not send it off again.
     var gathered by remember(mon.id) { mutableIntStateOf(gather) }
     var entered by remember(mon.id) { mutableStateOf(!entering) }
@@ -269,11 +271,11 @@ private fun Resident(
             taps.removeAll { it.elapsedNow() > 2.seconds }
             taps += TimeSource.Monotonic.markNow()
             when (TownBehavior.tapReaction(random, taps.size)) {
-                TapReaction.HOP -> { model.cry(mon.speciesId); hopping = true; hopKey++ }
-                TapReaction.HAPPY -> { model.cry(mon.speciesId); hopping = true; hopKey++; feel(StatusKind.TWINKLE) }
-                TapReaction.TURN -> { facingLeft = !facingLeft; model.cry(mon.speciesId); hopping = true; hopKey++ }
+                TapReaction.HOP -> { model.cry(mon); hopping = true; hopKey++ }
+                TapReaction.HAPPY -> { model.cry(mon); hopping = true; hopKey++; feel(StatusKind.TWINKLE) }
+                TapReaction.TURN -> { facingLeft = !facingLeft; model.cry(mon); hopping = true; hopKey++ }
                 // Tapped over and over it is flustered and says nothing, rather than a cry per tap.
-                TapReaction.FLUSTERED -> feel(StatusKind.SWEAT, 1_400)
+                TapReaction.FLUSTERED -> { feel(StatusKind.SWEAT, 1_400); model.effect(Sfx.CONFUSION_STATUS) }
             }
             life.ripple(mon.id)
         }
@@ -305,6 +307,7 @@ private fun Resident(
         facingLeft = dx < 0
         // The ground is deeper than it looks (a step in depth covers more screen than a step across), so weigh it up before choosing a side or a front view.
         walk = if (abs(dx) * 2f >= abs(dy)) SpriteAction.WALK_SIDE else if (dy < 0) SpriteAction.WALK_UP else SpriteAction.WALK_DOWN
+        facing = when (walk) { SpriteAction.WALK_SIDE -> SpriteAction.IDLE_SIDE; SpriteAction.WALK_UP -> SpriteAction.IDLE_UP; else -> SpriteAction.IDLE }
         // A steady stroll, about 6 seconds for the width of the screen, a little quicker or slower for each Pokémon.
         val seconds = (0.8f + abs(dx) * 6f + abs(dy) * 2f) / speed
         spot.animateTo(to, tween((seconds * 1000).toInt(), easing = LinearEasing))
@@ -381,8 +384,8 @@ private fun Resident(
     ) {
         AnimatedSprite(
             mon.form.id, mon.isShiny, mon.nickname, Modifier.fillMaxSize(), size = sizeDp, animate = !calm && !(hold != null && walk == null), ground = 0.dp,
-            action = if (hopping) SpriteAction.HOP else if (asleep) SpriteAction.SLEEP else if (grazing) SpriteAction.EAT else walk ?: if (hold != null) SpriteAction.WALK_SIDE else SpriteAction.IDLE, actionKey = hopKey, onActionDone = { hopping = false; grazing = false },
-            fixedScale = pixel, mirror = if (hold != null) hold.faceLeft ?: facingLeft else facingLeft && (walk == null || walk == SpriteAction.WALK_SIDE),
+            action = if (hopping) SpriteAction.HOP else if (asleep) SpriteAction.SLEEP else if (grazing) SpriteAction.EAT else walk ?: if (hold != null) SpriteAction.IDLE_SIDE else facing, actionKey = hopKey, onActionDone = { hopping = false; grazing = false },
+            fixedScale = pixel, mirror = if (hold != null) hold.faceLeft ?: facingLeft else facingLeft && (walk == SpriteAction.WALK_SIDE || (walk == null && facing != SpriteAction.IDLE_UP)),
         )
         // Over its head: the Zz of sleep, or what the meeting makes it feel.
         val icon = if (hold != null) hold.icon else if (asleep) StatusKind.SLEEP else null
@@ -486,10 +489,11 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
                         in 0..5 -> {
                             life.holds[first.id] = Hold(StatusKind.QUESTION, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(null, faceLeft = true, approach = towardsSecond)
                             delay(700)
-                            if (withBuddy) mood?.meet(other, Emotion.NORMAL, Emotion.NORMAL)
+                            // Each icon has the games' own sound beside it, but only when the buddy is in the meeting (the Pokémon the person is watching).
+                            if (withBuddy) { model.effect(Sfx.CURIOUS); mood?.meet(other, Emotion.NORMAL, Emotion.NORMAL) }
                             delay(800)
                             life.holds[second.id] = Hold(StatusKind.ALERT, hop = 1, faceLeft = true)
-                            if (withBuddy) mood?.meet(other, Emotion.SURPRISED, Emotion.SURPRISED)
+                            if (withBuddy) { model.effect(Sfx.SURPRISE); mood?.meet(other, Emotion.SURPRISED, Emotion.SURPRISED) }
                             delay(900)
                             // Then they are pleased to meet.
                             life.holds[first.id] = Hold(StatusKind.TWINKLE, faceLeft = false); life.holds[second.id] = Hold(StatusKind.TWINKLE, faceLeft = true)
@@ -499,13 +503,13 @@ private fun TownMeetings(model: AppModel, life: TownLife, residents: List<OwnedP
                             life.holds[first.id] = Hold(StatusKind.CROSS, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(null, faceLeft = true, approach = towardsSecond)
                             delay(700)
                             // The one that is cross is the other Pokémon if the buddy is not the one that started it.
-                            if (withBuddy) mood?.meet(other, if (first.id == buddy) Emotion.NORMAL else Emotion.DETERMINED, if (first.id == buddy) Emotion.DETERMINED else Emotion.SURPRISED)
+                            if (withBuddy) { model.effect(Sfx.MAD); mood?.meet(other, if (first.id == buddy) Emotion.NORMAL else Emotion.DETERMINED, if (first.id == buddy) Emotion.DETERMINED else Emotion.SURPRISED) }
                             delay(700)
                             life.holds[second.id] = Hold(StatusKind.SWEAT, hop = 1, faceLeft = true)
                         }
                         else -> {
                             life.holds[first.id] = Hold(StatusKind.ZAP, hop = 1, faceLeft = false, approach = towardsFirst); life.holds[second.id] = Hold(StatusKind.ZAP, hop = 1, faceLeft = true, approach = towardsSecond)
-                            if (withBuddy) mood?.meet(other, Emotion.SURPRISED, Emotion.SURPRISED)
+                            if (withBuddy) { model.effect(Sfx.SHOCK); mood?.meet(other, Emotion.SURPRISED, Emotion.SURPRISED) }
                         }
                     }
                     delay(1800)

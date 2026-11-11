@@ -158,6 +158,8 @@ private fun HatchScene(model: AppModel, scene: Cutscene.Hatch, close: () -> Unit
     var hatched by remember(p.id) { mutableStateOf(false) }
     val tilt = remember(p.id) { Animatable(0f) }
     val flash = remember(p.id) { Animatable(0f) }
+    // Just out of the egg it strikes a pose (its Pose animation, else a hop), then stands.
+    var pose by remember(p.id) { mutableStateOf(!still) }
     LaunchedEffect(p.id, hatched) {
         if (hatched) return@LaunchedEffect
         if (!still) {
@@ -181,7 +183,7 @@ private fun HatchScene(model: AppModel, scene: Cutscene.Hatch, close: () -> Unit
         if (!hatched) return@LaunchedEffect
         tilt.snapTo(0f)
         model.effect(Sfx.RECRUIT)
-        model.cry(p.speciesId)
+        model.cry(p)
         model.haptic()
         if (still) {
             flash.snapTo(0f)
@@ -214,7 +216,10 @@ private fun HatchScene(model: AppModel, scene: Cutscene.Hatch, close: () -> Unit
                     size = 144.dp, description = "An egg",
                 )
             } else {
-                AnimatedSprite(p.form.id, p.isShiny, name, Modifier.align(Alignment.TopCenter).padding(top = Spacing.XL), size = 176.dp, animate = !still)
+                AnimatedSprite(
+                    p.form.id, p.isShiny, name, Modifier.align(Alignment.TopCenter).padding(top = Spacing.XL), size = 176.dp, animate = !still,
+                    action = if (pose) SpriteAction.POSE else SpriteAction.IDLE, onActionDone = { pose = false },
+                )
                 Row(Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.M), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     p.form.types.forEach { TypePlate(it, width = 84.dp) }
                 }
@@ -316,7 +321,7 @@ private fun ArrivalScene(model: AppModel, scene: Cutscene.Hatch, kind: Acquisiti
         travel.snapTo(1f)
         glint.snapTo(0f)
         model.effect(Sfx.RECRUIT)
-        model.cry(p.speciesId)
+        model.cry(p)
         model.haptic()
         if (still) return@LaunchedEffect
         if (p.isShiny) {
@@ -386,6 +391,8 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
     var showNew by remember(after) { mutableStateOf(false) }
     val white = remember(after) { Animatable(0f) }
     val flash = remember(after) { Animatable(0f) }
+    // Once evolved it turns around on the spot (its Rotate animation, else a hop), so the new body is seen all round.
+    var spin by remember(after) { mutableStateOf(!still) }
     LaunchedEffect(after, done) {
         if (done) return@LaunchedEffect
         if (!still) {
@@ -408,7 +415,7 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
         if (!done) return@LaunchedEffect
         showNew = true
         white.snapTo(0f)
-        model.cry(after.speciesId)
+        model.cry(after)
         model.haptic()
         if (still) {
             flash.snapTo(0f)
@@ -424,7 +431,10 @@ private fun EvolutionScene(model: AppModel, scene: Cutscene.Evolve, close: () ->
     SceneFrame({ done = true }, flash.value, FlashWhite) {
         Stage("bw08", 260.dp) {
             if (done) {
-                AnimatedSprite(after.form.id, after.isShiny, after.nickname, Modifier.align(Alignment.TopCenter).padding(top = Spacing.XL), size = 176.dp, animate = !still)
+                AnimatedSprite(
+                    after.form.id, after.isShiny, after.nickname, Modifier.align(Alignment.TopCenter).padding(top = Spacing.XL), size = 176.dp, animate = !still,
+                    action = if (spin) SpriteAction.ROTATE else SpriteAction.IDLE, onActionDone = { spin = false },
+                )
                 Row(Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.M), horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     after.form.types.forEach { TypePlate(it, width = 84.dp) }
                 }

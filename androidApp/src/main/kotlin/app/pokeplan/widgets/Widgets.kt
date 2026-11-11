@@ -69,6 +69,7 @@ import app.pokeplan.AndroidCryPlayer
 import app.pokeplan.R
 import app.pokeplan.MainActivity
 import app.pokeplan.app.BuddyReaction
+import app.pokeplan.app.ReactionIcon
 import app.pokeplan.app.BuddyScene
 import app.pokeplan.app.GameStore
 import app.pokeplan.care.Routine
@@ -93,7 +94,7 @@ private val soft = Color(0xFF666B7E)
 private val shade = Color(0xFFE9E9EF)
 private val green = Color(0xFF1E7F52)
 
-// Widget text uses two sizes: 15 sp for a widget's title and the tick, 13 sp for everything else (the 28 sp emoji is a picture).
+// Widget text uses two sizes: 15 sp for a widget's title and the tick, 13 sp for everything else (the reaction is a picture).
 
 private fun rankColor(rank: Rank) = when (rank) {
     Rank.E -> Color(0xFF666B7E)
@@ -278,7 +279,7 @@ private fun TodayContent(context: Context, state: TodayState, header: Bitmap?) {
 // ----- Buddy ----------------------------------------------------------------------------------------------------------
 
 /**
- * The buddy's reaction after a tap or an event, kept for a few seconds so the widget can show it: one emoji above its
+ * The buddy's reaction after a tap or an event, kept for a few seconds so the widget can show it: one status icon above its
  * head, like a game emote. Outside these moments the buddy only idles.
  */
 private object BuddyTalk {
@@ -286,18 +287,18 @@ private object BuddyTalk {
     private const val SHOWN_MILLIS = 4_000L
 
     /** The last reaction shown, so a pet never repeats it straight away. */
-    fun last(context: Context): String? = context.getSharedPreferences(FILE, Context.MODE_PRIVATE).getString("emoji", null)
+    fun last(context: Context): ReactionIcon? = ReactionIcon.of(context.getSharedPreferences(FILE, Context.MODE_PRIVATE).getString("icon", null))
 
-    fun show(context: Context, emoji: String) {
+    fun show(context: Context, icon: ReactionIcon) {
         context.getSharedPreferences(FILE, Context.MODE_PRIVATE).edit()
-            .putString("emoji", emoji).putLong("until", System.currentTimeMillis() + SHOWN_MILLIS).apply()
+            .putString("icon", icon.key).putLong("until", System.currentTimeMillis() + SHOWN_MILLIS).apply()
     }
 
-    /** The emoji to show now, or null once the moment has passed. */
-    fun current(context: Context): String? {
+    /** The icon to show now, or null once the moment has passed. */
+    fun current(context: Context): ReactionIcon? {
         val prefs = context.getSharedPreferences(FILE, Context.MODE_PRIVATE)
         if (System.currentTimeMillis() > prefs.getLong("until", 0)) return null
-        return prefs.getString("emoji", null)
+        return ReactionIcon.of(prefs.getString("icon", null))
     }
 
     /** Milliseconds until the current reaction ends, 0 if none. */
@@ -320,7 +321,7 @@ suspend fun announceBuddyEvent(context: Context) {
     val event = store.buddyEvent()
     if (event != null && event.atMillis > BuddyTalk.celebrated(context) && !store.data.settings.reduceMotion) {
         BuddyTalk.celebrate(context, event.atMillis)
-        BuddyTalk.show(context, event.event.emoji)
+        BuddyTalk.show(context, event.event.icon)
         updateWidgets(context)
         BuddyTalk.settleLater(context)
     } else {
@@ -337,7 +338,7 @@ class PetAction : ActionCallback {
         if (store.data.settings.haptics) app.pokeplan.AndroidHaptics(context).tick()
         // The callback stays alive while the hearts show (settleLater), long enough for the cry to play out.
         store.data.player.buddy?.takeIf { store.data.settings.criesLevel > 0f }?.let { AndroidCryPlayer(context).play(it.speciesId, store.data.settings.criesLevel) }
-        BuddyTalk.show(context, store.data.player.buddy?.let { BuddyReaction.pet(it, store.now.hour, avoid = BuddyTalk.last(context)) } ?: "❤️")
+        BuddyTalk.show(context, store.data.player.buddy?.let { BuddyReaction.pet(it, store.now.hour, avoid = BuddyTalk.last(context)) } ?: ReactionIcon.HEART)
         updateWidgets(context)
         BuddyTalk.settleLater(context)
     }
@@ -357,7 +358,7 @@ class FeedAction : ActionCallback {
 }
 
 private data class BuddyState(
-    val name: String?, val buddyId: String?, val level: Int, val progress: Float, val reaction: String?, val description: String,
+    val name: String?, val buddyId: String?, val level: Int, val progress: Float, val reaction: Bitmap?, val description: String,
     val scene: Bitmap?, val still: Bitmap?, val idle: RemoteViews?, val berryName: String?, val berryIcon: Bitmap?,
 )
 
@@ -371,7 +372,7 @@ class BuddyWidget : GlanceAppWidget() {
         val store = widgetStore(context)
         val buddy = store.data.player.buddy
         val moment = BuddyTalk.current(context)
-        // An alarm refreshes the widget when the reaction ends, to take the emoji away.
+        // An alarm refreshes the widget when the reaction ends, to take the icon away.
         if (moment != null) scheduleWidgetRefresh(context, BuddyTalk.remaining(context) + 300)
         val berry = store.buddyBerry()
         val d = density(context)
@@ -396,7 +397,7 @@ class BuddyWidget : GlanceAppWidget() {
         }
         return BuddyState(
             name = buddy?.nickname, buddyId = buddy?.id, level = buddy?.level ?: 1, progress = buddy?.let { store.levelProgress(it) } ?: 0f,
-            reaction = moment, description = "${buddy?.nickname}, level ${buddy?.level}",
+            reaction = moment?.let { WidgetArt.reaction(context, it, (36 * d).toInt()) }, description = "${buddy?.nickname}, level ${buddy?.level}",
             scene = buddy?.let { WidgetArt.scene(context, BuddyScene.PLAN, darkness, (420 * d).toInt(), (200 * d).toInt(), 20 * d) },
             still = if (idle == null) buddy?.let { sleep?.first() ?: WidgetArt.still(context, it.form.id, it.isShiny) } else null,
             idle = idle, berryName = berry?.let { Items.get(it)?.name }, berryIcon = berry?.let { WidgetArt.item(context, it, 2) },
@@ -408,7 +409,7 @@ class BuddyWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = BuddyWidget()
 }
 
-/** The buddy in its scene. Nothing else is loud: a small level chip in the corner, a berry if there is one, and an emoji reaction only for a real moment. */
+/** The buddy in its scene. Nothing else is loud: a small level chip in the corner, a berry if there is one, and a status-icon reaction only for a real moment. */
 @Composable
 private fun BuddyContent(context: Context, s: BuddyState) {
     val height = LocalSize.current.height
@@ -450,9 +451,9 @@ private fun BuddyContent(context: Context, s: BuddyState) {
                 contentAlignment = Alignment.Center,
             ) { Image(ImageProvider(s.berryIcon), contentDescription = null, modifier = GlanceModifier.size(28.dp)) }
         }
-        // The reaction: one emoji above the buddy, only for a moment after a pet, a berry or an event.
+        // The reaction: one status icon above the buddy, only for a moment after a pet, a berry or an event.
         if (s.reaction != null) Box(GlanceModifier.fillMaxSize().padding(top = 6.dp), contentAlignment = Alignment.TopCenter) {
-            Text(s.reaction, style = TextStyle(fontSize = 28.sp))
+            Image(ImageProvider(s.reaction), contentDescription = "reaction", modifier = GlanceModifier.size(36.dp))
         }
     }
 }

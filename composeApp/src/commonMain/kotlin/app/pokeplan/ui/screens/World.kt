@@ -792,7 +792,7 @@ private fun WorldBagView(model: AppModel) {
             meetFind, joined,
             onRecruit = {
                 val index = meeting ?: return@RecruitCard
-                store.worldRecruit(index)?.let { p -> joined = p; model.cry(p.speciesId); model.effect(Sfx.RECRUIT) }
+                store.worldRecruit(index)?.let { p -> joined = p; model.cry(p); model.effect(Sfx.RECRUIT) }
                 meeting = null
             },
             onLater = { meeting = null }, onOk = { joined = null },
