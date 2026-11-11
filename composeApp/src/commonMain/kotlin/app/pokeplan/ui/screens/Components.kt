@@ -45,6 +45,7 @@ import app.pokeplan.ui.theme.TextBox
 import kotlinx.datetime.LocalDate
 
 /** The newest rewards nobody has looked at yet, with an OK button. Shows nothing when there are none. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun RewardBox(model: AppModel) {
     val fresh = model.data.rewardLog.filter { !it.seen }.takeLast(3)
@@ -53,11 +54,19 @@ fun RewardBox(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             fresh.forEach { entry ->
                 Text(entry.source, style = MaterialTheme.typography.titleMedium)
-                entry.rewards.forEach { r ->
+                // A new Pokémon keeps its own row; everything else runs together as small icon-and-words pieces, so a payout is two lines, not a list.
+                entry.rewards.filterIsInstance<Reward.Hatched>().forEach { r ->
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        if (r is Reward.Hatched) AnimatedSprite(r.pokemon.form.id, r.pokemon.isShiny, r.pokemon.nickname, size = Sizes.SpriteM, animate = !model.data.settings.reduceMotion, ground = 4.dp)
-                        else r.iconItem()?.let { ItemIcon(it, size = Sizes.Icon) }
+                        AnimatedSprite(r.pokemon.form.id, r.pokemon.isShiny, r.pokemon.nickname, size = Sizes.SpriteM, animate = !model.data.settings.reduceMotion, ground = 4.dp)
                         Text(r.describe(entry.source), style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    entry.rewards.filter { it !is Reward.Hatched }.forEach { r ->
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                            r.iconItem()?.let { ItemIcon(it, size = 24.dp) }
+                            Text(r.describe(entry.source), style = MaterialTheme.typography.bodyMedium)
+                        }
                     }
                 }
             }
@@ -82,6 +91,9 @@ fun SpeakerBox(model: AppModel, emotion: Emotion, modifier: Modifier = Modifier,
     }
 }
 
+/** One thing just deleted that the undo bar can bring back: its [label] ("Deleted: Rent") and what [undo] does. */
+class UndoItem(val label: String, val undo: () -> Unit)
+
 /**
  * Tasks just ticked off, still inside the 10 second window where Undo cancels the reward, and a task just deleted. Shown in
  * one bar pinned above the tabs, near the thumb that tapped Done, on every tab; it floats over the page, so nothing on the
@@ -90,6 +102,15 @@ fun SpeakerBox(model: AppModel, emotion: Emotion, modifier: Modifier = Modifier,
 @Composable
 fun UndoBar(model: AppModel, modifier: Modifier = Modifier) {
     val deleted = model.deletedTask
+    val other = model.undoItem
+    var otherAt by remember { mutableLongStateOf(model.store.nowMillis) }
+    LaunchedEffect(other) {
+        if (other != null) {
+            otherAt = model.store.nowMillis
+            delay(UNDO_SHOWN_MILLIS)
+            if (model.undoItem === other) model.undoItem = null
+        }
+    }
     // A deleted task can be brought back for as long as a finished one can be undone.
     var deletedAt by remember { mutableLongStateOf(model.store.nowMillis) }
     LaunchedEffect(deleted?.id) {
@@ -102,12 +123,13 @@ fun UndoBar(model: AppModel, modifier: Modifier = Modifier) {
     // How much of the time left to undo is left, for the bar under each row; it follows the clock ten times a second, and only while something can be undone.
     var now by remember { mutableLongStateOf(model.store.nowMillis) }
     val foreground = rememberInForeground()
-    val anyRows = model.data.pending.isNotEmpty() || deleted != null
+    val anyRows = model.data.pending.isNotEmpty() || deleted != null || other != null
     LaunchedEffect(anyRows, foreground) { while (anyRows && foreground) { now = model.store.nowMillis; delay(UNDO_TICK_MILLIS) } }
     fun left(untilMillis: Long) = ((untilMillis - now).toFloat() / UNDO_SHOWN_MILLIS).coerceIn(0f, 1f)
     val rows: List<Triple<String, () -> Unit, Float>> =
         model.data.pending.takeLast(2).map { p -> Triple("Done: ${p.done.title}", { model.store.undoCompletion(p.original.id); Unit }, left(p.finalAtMillis)) } +
-            listOfNotNull(deleted?.let { t -> Triple("Deleted: ${t.title}", { model.store.restoreTask(t.id); model.deletedTask = null }, left(deletedAt + UNDO_SHOWN_MILLIS)) })
+            listOfNotNull(deleted?.let { t -> Triple("Deleted: ${t.title}", { model.store.restoreTask(t.id); model.deletedTask = null }, left(deletedAt + UNDO_SHOWN_MILLIS)) }) +
+            listOfNotNull(other?.let { o -> Triple(o.label, { o.undo(); model.undoItem = null }, left(otherAt + UNDO_SHOWN_MILLIS)) })
     if (rows.isEmpty()) return
     Column(
         modifier.fillMaxWidth().padding(horizontal = Spacing.M, vertical = Spacing.S)

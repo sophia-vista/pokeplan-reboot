@@ -5,6 +5,26 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.168.0
+
+Design review batch 1 (`docs/pokelife/evidence/DESIGN-REVIEW-0.165.1.md`). No reward number changes.
+
+- **The zero is no longer an 8.** Both Pokémon DP font files get a bar through the middle of the 0 (`tools/fonts/patch_zero.py`, the licence covers the changed files). The PMD dialogue font's zero already has one; it is a bitmap drawn by `PmdText`, not a font family, so it is not used for running text.
+- **₱.** The font gains the peso sign (U+20B1, drawn as a P with two bars) and Mint shows `₱1,250.50` for PHP; other currencies keep their code.
+- **Mint categories.** Settings has a Categories box (spending and income: add, rename, put away, bring back, delete when nothing uses it), and the entry form has a New key beside the category keys. The store already supported all of it; no screen reached it.
+- **One date picker.** `PixelDatePicker`: Today and Yesterday as keys, and Pick a date opens a month to tap, up to today. Mint's entry form uses it, so a record can be made for any past day. Other modules and editing a record's date follow.
+- **Undo for more than tasks.** The undo bar now also brings back, for 10 seconds, a deleted budget, bill or record (Mint), drink, sleep, measurement or goal (Heal), diary card or journal entry (Care), chore, supply or warranty (Home) and note (Link). Plan's lists and events are still without it.
+- **Any day for a record.** Heal drinks and body measurements take a past day, a Mint record's date, account and category can be edited, and Home and Link use the date picker instead of a typed `2026-11-07` (`PixelDateField` allows no date and future days).
+- **The work comes first on a module page.** The lead's picture window is a 144 dp strip (it was 248) with a smaller sprite, and the new-rewards box runs a payout together as small icon-and-words pieces (a new Pokémon keeps its own row).
+- **Also today, on Home.** One card, only when something waits: Mint bills to settle, Home things to do, Link follow-ups due, and Heal's water so far with a +250 ml key. Words are counts only, never a bill, chore or person; a module behind the screen lock (and Mint with its lock on) shows nothing.
+- **Exp. Candy.** The everyday level-up candy is shown as Exp. Candy (the games' Exp. Candy icon) instead of Rare Candy, which a fan reads as rare. Only the name and icon moved: its id, rules and every reward number are unchanged, so saves and the ledger are untouched and `RewardRules.VERSION` stays. Super Candy is unchanged. A true Rare Candy prize is not built (it needs an owner decision on where it is earned).
+- **One tap for mood (Care).** "How is today?" on Care's page: Rough, Low, Okay, Good, Great as five keys, kept on today's diary card (`DiaryCard.mood`, no schema change), shown in Trends, never paid. PMD portraits for the faces are waiting on fetching more emotions (the strips hold only Normal, Happy, Joyous, Inspired, Determined and Surprised).
+- **One place list on a Pokémon.** Twelve role buttons became Make buddy and one Move to... list: the PC and each module's party with "n of 6", Move here, and Make lead in the party it is in.
+- **Undo for Plan's lists and events too.** Deleting a list (its tasks return to it) or an event, one occurrence or all, shows the undo bar for 10 seconds.
+- **Two ranks, two names.** Home and Me say "Trainer rank" and World says "Exploration rank", so one word no longer means two ladders.
+- **Link: the month is a key.** A date's month is picked from twelve keys; the day and the optional year stay short fields.
+- **Module colour on keys.** Keys and chips default to the open module's accent (blue only outside a module), the lead buttons on a Pokémon use each module's accent, friendship is pink, and Heal's Log activity is no longer red.
+
 ## 0.167.2
 
 What the 0.167.1 audit found and left. No reward number changes.

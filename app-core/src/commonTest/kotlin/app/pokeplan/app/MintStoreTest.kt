@@ -270,9 +270,9 @@ class MintStoreTest {
     @Test
     fun hidingValuesCoversTheStoresOwnFormatting() {
         val s = setup()
-        assertEquals("PHP 1,250.50", s.mint.show(125_050, "PHP"))
+        assertEquals("\u20B11,250.50", s.mint.show(125_050, "PHP"))
         s.mint.setHideValues(true)
-        assertEquals("PHP ••••", s.mint.show(125_050, "PHP"))
+        assertEquals("\u20B1••••", s.mint.show(125_050, "PHP"))
     }
 
     @Test

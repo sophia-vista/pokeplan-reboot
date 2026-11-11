@@ -140,7 +140,7 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String)
     val world = model.data.world
     val out = world.teams.count { it.expedition != null }
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.WORLD.label, subtitle = "Rank: ${world.rank.label}", onBack = onBack, color = Module.WORLD.look.header)
+        ScreenHeader(Module.WORLD.label, subtitle = "Exploration rank: ${world.rank.label}", onBack = onBack, color = Module.WORLD.look.header)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             // The order of the page: where you are and the one thing worth doing (the region, its chapter, the next step), what the teams
             // are doing and brought back, then the places to go. Rank sits in one quiet strip. The first time, one card says what World is.
@@ -594,11 +594,11 @@ private fun WorldBaseView(model: AppModel) {
     }
         }
         BasePage.KECLEON -> {
-            WorldBanner("pokemon-square", "Kecleon Shop", "Rare Candy, for Poké", height = 150.dp)
+            WorldBanner("pokemon-square", "Kecleon Shop", "Exp. Candy, for Poké", height = 150.dp)
     FieldLabel("Kecleon Shop")
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Rare Candy", style = MaterialTheme.typography.titleSmall)
+            Text("Exp. Candy", style = MaterialTheme.typography.titleSmall)
             Text("${world.shopCandies} bought so far. Each costs a little more.", style = MaterialTheme.typography.bodyMedium)
             PixelButton("Buy one: ${world.candyPrice} Poké", { if (store.worldBuyCandy()) model.effect(Sfx.CANDY) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = store.data.player.coins >= world.candyPrice, compact = true)
         }

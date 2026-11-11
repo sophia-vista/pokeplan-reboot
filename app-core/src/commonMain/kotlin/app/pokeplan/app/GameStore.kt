@@ -697,6 +697,14 @@ class GameStore(
         d.copy(lists = d.lists.filter { it.id != id }, tasks = d.tasks.map { if (it.listId == id) it.copy(listId = null) else it })
     }
 
+    /** Puts back a list [list] deleted and the tasks that were in it ([taskIds]), for the undo bar. */
+    fun restoreList(list: TaskList, taskIds: Set<String>) = update { d ->
+        d.copy(lists = if (d.lists.any { it.id == list.id }) d.lists else d.lists + list, tasks = d.tasks.map { if (it.id in taskIds) it.copy(listId = list.id) else it })
+    }
+
+    /** Puts back the calendar as it was before an event was deleted, for the undo bar. */
+    fun restoreEvents(events: List<PlanEvent>) = update { it.copy(events = events) }
+
     /** Files a task in a list, or back in the Inbox with null. */
     fun moveToList(taskId: String, listId: String?) = update { d ->
         d.copy(tasks = d.tasks.map { if (it.id == taskId) it.copy(listId = listId?.takeIf { id -> d.lists.any { l -> l.id == id } }) else it })

@@ -35,6 +35,7 @@ import app.pokeplan.core.reward.RewardEngine
 import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.minus
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.serialization.json.Json
@@ -72,6 +73,9 @@ class CareStore(
     fun sync() = document.sync()
 
     private fun update(change: (CareData) -> CareData) = document.update(change)
+
+    /** Puts back a [snapshot] taken before a delete, for the undo bar. */
+    fun restore(snapshot: CareData) = update { snapshot }
 
     private fun newId(): String = newId(nowMillis, rng)
 
@@ -350,10 +354,24 @@ class CareStore(
             urges.filterKeys { it.isNotBlank() }.mapValues { it.value.coerceIn(0, 5) },
             skills.filter { Skills.byId(it) != null }.toSet(),
             note?.trim()?.ifEmpty { null },
+            mood = diaryToday()?.mood,
         )
         update { d -> d.copy(diary = d.diary.filterNot { it.day == today } + card) }
         return card
     }
+
+    /** Today's one-tap mood, 1 (rough) to 5 (great), or null to take it back. It lives on today's diary card and keeps whatever else is on it; a card left with nothing is dropped. Never pays. */
+    fun setMood(level: Int?) {
+        val existing = diaryToday()
+        val mood = level?.coerceIn(1, 5)
+        val card = (existing ?: DiaryCard(newId(), today, nowMillis)).copy(mood = mood)
+        val empty = card.mood == null && card.feelings.isEmpty() && card.urges.isEmpty() && card.skills.isEmpty() && card.note == null
+        update { d -> d.copy(diary = d.diary.filterNot { it.day == today } + listOfNotNull(card.takeUnless { empty })) }
+    }
+
+    /** The mood of each of the last [days] days ending today (oldest first), null where none was given. */
+    fun moodDays(days: Int = 7): List<Pair<kotlinx.datetime.LocalDate, Int?>> =
+        (days - 1 downTo 0).map { back -> today.minus(kotlinx.datetime.DatePeriod(days = back)).let { day -> day to data.diary.firstOrNull { it.day == day }?.mood } }
 
     fun deleteDiary(id: String) = update { d -> d.copy(diary = d.diary.filterNot { it.id == id }) }
 
