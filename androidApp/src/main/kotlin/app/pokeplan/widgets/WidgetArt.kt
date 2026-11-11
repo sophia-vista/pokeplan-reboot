@@ -8,6 +8,11 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import androidx.compose.ui.graphics.toArgb
+import app.pokeplan.app.ReactionIcon
+import app.pokeplan.ui.StatusKind
+import app.pokeplan.ui.emote
+import app.pokeplan.ui.status
 import kotlin.math.roundToInt
 
 /**
@@ -203,6 +208,28 @@ object WidgetArt {
     fun item(context: Context, id: String, scale: Int): Bitmap? = remember("item:$id:$scale") {
         val icon = asset(context, "items/$id.png") ?: return@remember null
         Bitmap.createScaledBitmap(icon, icon.width * scale, icon.height * scale, false)
+    }
+
+    /**
+     * The picture of a buddy's reaction (a status icon frame, an item icon or a tinted glyph) enlarged by a whole number to about
+     * [targetPx] pixels, without smoothing. The widget shows one still frame: the icon's best one, as a RemoteViews cannot play a strip.
+     */
+    fun reaction(context: Context, icon: ReactionIcon, targetPx: Int): Bitmap? = remember("reaction:${icon.key}:$targetPx") {
+        val kind = icon.status()
+        val (source, tint) = if (kind != null) {
+            val strip = asset(context, "status/${kind.file}.png") ?: return@remember null
+            val frame = when (kind) { StatusKind.SLEEP -> kind.frames - 1; StatusKind.TWINKLE -> 1; else -> kind.frames / 3 }
+            Bitmap.createBitmap(strip, frame * kind.cell, 0, kind.cell, strip.height) to null
+        } else {
+            val emote = icon.emote() ?: return@remember null
+            if (emote.item != null) (asset(context, "items/${emote.item}.png") ?: return@remember null) to null
+            else (asset(context, "pixelarticons/${emote.glyph}.png") ?: return@remember null) to emote.tint.toArgb()
+        }
+        val scale = (targetPx / maxOf(source.width, source.height)).coerceAtLeast(1)
+        val scaled = Bitmap.createScaledBitmap(source, source.width * scale, source.height * scale, false)
+        if (tint == null) scaled else Bitmap.createBitmap(scaled.width, scaled.height, Bitmap.Config.ARGB_8888).also {
+            Canvas(it).drawBitmap(scaled, 0f, 0f, Paint().apply { colorFilter = android.graphics.PorterDuffColorFilter(tint, android.graphics.PorterDuff.Mode.SRC_IN) })
+        }
     }
 
     private const val FRAME = 2

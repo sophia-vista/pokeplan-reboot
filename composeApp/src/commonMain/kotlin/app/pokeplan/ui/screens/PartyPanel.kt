@@ -265,7 +265,7 @@ private fun PartySlot(model: AppModel, p: OwnedPokemon, role: String?, modifier:
 
 /** A Pokémon's cry and, unless motion is reduced, its hop. */
 private inline fun hear(model: AppModel, p: OwnedPokemon, calm: Boolean, hop: () -> Unit) {
-    model.cry(p.speciesId)
+    model.cry(p)
     if (!calm) hop()
 }
 
