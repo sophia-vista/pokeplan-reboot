@@ -92,12 +92,12 @@ class HealStore(
     fun logActivity(type: ActivityType, minutes: Int, endedAtMillis: Long = nowMillis, distanceMeters: Int? = null, note: String = ""): Logged<ActivityRecord> {
         (HealRules.checkActivity(minutes, distanceMeters) as? Check.Refused)?.let { return Logged(null, it.reason) }
         val start = endedAtMillis - minutes * 60_000L
-        val record = ActivityRecord(newId(), type, start, minutes, dayOf(start), distanceMeters, note.trim().take(HealRules.NOTE_MAX), createdMillis = nowMillis)
+        val draft = ActivityRecord(newId(), type, start, minutes, dayOf(start), distanceMeters, note.trim().take(HealRules.NOTE_MAX), createdMillis = nowMillis)
+        val rewards = if (HealRules.activityPays(draft, nowMillis, HealRules.activitiesPaidOn(data, draft.day))) pay(HealKind.ACTIVITY, draft.id) else null
+        // One write: the record goes in already marked, so a save costs one pass over the sealed rows, not two.
+        val record = draft.copy(paid = rewards != null)
         update { it.copy(activities = it.activities + record) }
-        val pays = data.settings.fieldResearch && HealRules.activityPays(record, nowMillis, HealRules.activitiesPaidOn(data, record.day))
-        val rewards = if (pays) pay(HealKind.ACTIVITY, record.id) else null
-        if (rewards != null) update { d -> d.copy(activities = d.activities.map { if (it.id == record.id) it.copy(paid = true) else it }) }
-        return Logged(data.activities.first { it.id == record.id }, rewards = rewards.orEmpty())
+        return Logged(record, rewards = rewards.orEmpty())
     }
 
     /** Changes what was written down about an activity. Its payment is kept as it was: an edit never pays and never takes back. */
@@ -116,42 +116,24 @@ class HealStore(
     /** Logs a drink of [ml]. The day's first one is the only participation Field Research counts, and only when it is on. */
     fun logDrink(ml: Int, drink: String = "", atMillis: Long = nowMillis): Logged<HydrationEntry> {
         (HealRules.checkHydration(ml) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val entry = HydrationEntry(newId(), atMillis, dayOf(atMillis), ml, drink.trim().take(60))
+        val draft = HydrationEntry(newId(), atMillis, dayOf(atMillis), ml, drink.trim().take(60))
+        val rewards = if (HealRules.participationPays(draft, nowMillis, HealRules.participationPaidOn(data, draft.day))) pay(HealKind.PARTICIPATION, draft.id) else null
+        val entry = draft.copy(paid = rewards != null)
         update { it.copy(hydration = it.hydration + entry) }
-        val pays = data.settings.fieldResearch && HealRules.participationPays(entry, nowMillis, HealRules.participationPaidOn(data, entry.day))
-        val rewards = if (pays) pay(HealKind.PARTICIPATION, entry.id) else null
-        if (rewards != null) update { d -> d.copy(hydration = d.hydration.map { if (it.id == entry.id) it.copy(paid = true) else it }) }
-        return Logged(data.hydration.first { it.id == entry.id }, rewards = rewards.orEmpty())
-    }
-
-    fun updateDrink(e: HydrationEntry): Logged<HydrationEntry> {
-        (HealRules.checkHydration(e.ml) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val old = data.hydration.firstOrNull { it.id == e.id } ?: return Logged(null, "That drink is gone.")
-        val next = e.copy(paid = old.paid, source = old.source, provenance = old.provenance, day = dayOf(e.atMillis), drink = e.drink.trim().take(60))
-        update { d -> d.copy(hydration = d.hydration.map { if (it.id == e.id) next else it }) }
-        return Logged(next)
+        return Logged(entry, rewards = rewards.orEmpty())
     }
 
     fun deleteDrink(id: String) = update { d -> d.copy(hydration = d.hydration.filterNot { it.id == id }) }
-
-    /** The drinks logged today, oldest first. */
-    fun drinksToday(): List<HydrationEntry> = data.hydration.filter { it.day == today }.sortedBy { it.atMillis }
 
     // --- sleep (never pays) -------------------------------------------------------------------------------------------
 
     fun logSleep(startMillis: Long, endMillis: Long, note: String = ""): Logged<SleepRecord> {
         (HealRules.checkSleep(startMillis, endMillis) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        // Only a finished night is a record (section 2.2), as for an imported one.
+        if (endMillis > nowMillis + HealRules.FUTURE_SLACK_MILLIS) return Logged(null, "That night is not over yet.")
         val record = SleepRecord(newId(), startMillis, endMillis, dayOf(endMillis), note.trim().take(HealRules.NOTE_MAX))
         update { it.copy(sleep = it.sleep + record) }
         return Logged(record)
-    }
-
-    fun updateSleep(s: SleepRecord): Logged<SleepRecord> {
-        (HealRules.checkSleep(s.startMillis, s.endMillis) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val old = data.sleep.firstOrNull { it.id == s.id } ?: return Logged(null, "That night is gone.")
-        val next = s.copy(source = old.source, provenance = old.provenance, day = dayOf(s.endMillis), note = s.note.trim().take(HealRules.NOTE_MAX))
-        update { d -> d.copy(sleep = d.sleep.map { if (it.id == s.id) next else it }) }
-        return Logged(next)
     }
 
     fun deleteSleep(id: String) = update { d -> d.copy(sleep = d.sleep.filterNot { it.id == id }) }
@@ -170,7 +152,7 @@ class HealStore(
     // --- goals (optional; never pay, never punish) -----------------------------------------------------------------------
 
     fun addGoal(kind: GoalKind, target: Int): HealGoal? {
-        if (target <= 0 || target > 100_000) return null
+        if (!HealRules.goalTargetOk(kind, target)) return null
         val goal = HealGoal(newId(), kind, target, today, createdMillis = nowMillis)
         update { it.copy(goals = it.goals + goal) }
         return goal
