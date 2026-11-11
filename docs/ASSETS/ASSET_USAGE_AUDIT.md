@@ -143,3 +143,21 @@ Without fetching anything:
 3. Decide the shiny fallback and the single emote vocabulary (both change what the owner sees on Home).
 4. Listen to the sound set on a phone and record the result in `docs/assets.md`.
 5. New animations (`Rotate`, `Wake`, `DeepBreath`, `Pose`) as the screens that want them are built.
+
+## 6. Status after 0.169.0
+
+| Finding or task | State |
+|---|---|
+| Story faces (finding 1), more faces for Focus | Done: 14 faces; story, Focus away and failed use them |
+| Shiny shows regular colours (2) | Done by recolouring from the real stills (`derive_shiny.py`); Minior (774) and one other form have no usable still pair and stay regular |
+| Three emote styles (3) | Home, module stages and the buddy widget use `ReactionIcon`; Care's visitor play keeps its item icons and glyphs (`Emote`) |
+| Eat missing (4) | Done: Eat, Wake, Pose and Rotate fall back to Hop |
+| Mixed styles (5) | Open: the 13 Black/White species still draw larger; it needs a decision on a PMD-scale fit |
+| Idle faces the viewer (6) | Done in the town; other screens stay front-facing |
+| Unused assets | Black/White sheets, five sounds and the skull left the bundle; the story clips without a script stay |
+| Cries cut each other off | Up to three overlap on Android (not tried on a phone) |
+| Voices | Pets, taps and the Pokémon page use `CryVoice.individual` |
+| Emote clips | Town meetings play CURIOUS, SURPRISE, MAD, SHOCK and CONFUSION_STATUS beside the icons, only when the buddy is in the meeting |
+| New animations | Wake, Pose, Rotate, DeepBreath wired (focus end, hatch, evolution and level, calm break). **Not done:** a pose for a World recruit or a rank up (they show portraits only) and a "streak saved" sigh (no such screen) |
+| Credits | Three blank portrait credits name the contributor id |
+| Listening to the sound set | Open: needs a person with a phone |
