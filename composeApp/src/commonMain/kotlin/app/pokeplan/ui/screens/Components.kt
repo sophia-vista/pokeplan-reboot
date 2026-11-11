@@ -45,6 +45,7 @@ import app.pokeplan.ui.theme.TextBox
 import kotlinx.datetime.LocalDate
 
 /** The newest rewards nobody has looked at yet, with an OK button. Shows nothing when there are none. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun RewardBox(model: AppModel) {
     val fresh = model.data.rewardLog.filter { !it.seen }.takeLast(3)
@@ -53,11 +54,19 @@ fun RewardBox(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
             fresh.forEach { entry ->
                 Text(entry.source, style = MaterialTheme.typography.titleMedium)
-                entry.rewards.forEach { r ->
+                // A new Pokémon keeps its own row; everything else runs together as small icon-and-words pieces, so a payout is two lines, not a list.
+                entry.rewards.filterIsInstance<Reward.Hatched>().forEach { r ->
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        if (r is Reward.Hatched) AnimatedSprite(r.pokemon.form.id, r.pokemon.isShiny, r.pokemon.nickname, size = Sizes.SpriteM, animate = !model.data.settings.reduceMotion, ground = 4.dp)
-                        else r.iconItem()?.let { ItemIcon(it, size = Sizes.Icon) }
+                        AnimatedSprite(r.pokemon.form.id, r.pokemon.isShiny, r.pokemon.nickname, size = Sizes.SpriteM, animate = !model.data.settings.reduceMotion, ground = 4.dp)
                         Text(r.describe(entry.source), style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    entry.rewards.filter { it !is Reward.Hatched }.forEach { r ->
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                            r.iconItem()?.let { ItemIcon(it, size = 24.dp) }
+                            Text(r.describe(entry.source), style = MaterialTheme.typography.bodyMedium)
+                        }
                     }
                 }
             }

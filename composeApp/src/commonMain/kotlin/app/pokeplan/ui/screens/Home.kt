@@ -120,6 +120,7 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
 
             PlanRegionCard(model, go)
             if (data.settings.careModule) CareRegionCard(model, go)
+            AlsoTodayCard(model, go)
             WorldRegionCard(model, go)
 
             StreakCard(model)
@@ -236,6 +237,46 @@ private fun CareRegionCard(model: AppModel, go: (Place) -> Unit) {
             today.isNotEmpty() -> StepRow("Routines done for today. A calm break is always there.", "Calm break", Pixel.Blue) { open(CareSection.CALM) }
             model.careData.routines.none { !it.archived } -> StepRow("Small things you do for yourself, like a glass of water.", "Add a routine", Pixel.Green) { open(CareSection.ROUTINES) }
             else -> StepRow("No routines today. A calm break is always there.", "Calm break", Pixel.Blue) { open(CareSection.CALM) }
+        }
+    }
+}
+
+/**
+ * What else is waiting today, from the modules that have nothing of their own on Home (design review, 11 November 2026): a line only for
+ * what is due, in the module's own colour, with the one key that goes there. Words are counts, never a bill, a chore or a person's name,
+ * so nothing private shows on the first screen; a module behind the screen lock (or Mint with its lock on) shows nothing at all. When
+ * nothing is waiting the card is not there.
+ */
+@Composable
+private fun AlsoTodayCard(model: AppModel, go: (Place) -> Unit) {
+    model.mintData; model.homeData; model.linkData; model.healData // redraw when any of them changes
+    val today = model.store.today
+    val locked = model.data.settings.lockedModules
+    fun count(n: Int, one: String, many: String) = if (n == 1) "1 $one" else "$n $many"
+    val rows = buildList<@Composable () -> Unit> {
+        if (!model.mintData.settings.gate) {
+            val due = app.pokeplan.mint.MintRules.upcoming(model.mintData, today, 0).count { it.state == app.pokeplan.mint.OccurrenceState.DUE || it.state == app.pokeplan.mint.OccurrenceState.OVERDUE }
+            if (due > 0) add { StepRow("Mint: ${count(due, "bill", "bills")} to settle", "Open", ModuleAccent.MINT.accent) { go(Place.MINT) } }
+        }
+        if (Module.HOME.name !in locked) {
+            val o = app.pokeplan.home.HomeRules.overview(model.homeData, today)
+            val n = o.chores.size + o.maintenance.size
+            if (n > 0) add { StepRow("Home: ${count(n, "thing", "things")} to do", "Open", ModuleAccent.HOME.accent) { go(Place.HOUSEHOLD) } }
+        }
+        if (Module.LINK.name !in locked) {
+            val n = model.linkData.followUps.count { app.pokeplan.link.LinkRules.state(it, today) == app.pokeplan.link.FollowUpState.DUE }
+            if (n > 0) add { StepRow("Link: ${count(n, "follow-up", "follow-ups")} due", "Open", ModuleAccent.LINK.accent) { go(Place.LINK) } }
+        }
+        if (Module.HEAL.name !in locked && (model.healData.hydration.isNotEmpty() || model.healData.settings.hydrationTargetMl != null)) {
+            val ml = app.pokeplan.heal.HealRules.hydrationOn(model.healData, today) ?: 0
+            add { StepRow("Heal: $ml ml of water so far", "+250 ml", ModuleAccent.HEAL.accent) { model.heal.logDrink(250); model.haptic(); model.effect(Sfx.HEAL) } }
+        }
+    }
+    if (rows.isEmpty()) return
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelTitle("Also today")
+            rows.forEach { it() }
         }
     }
 }

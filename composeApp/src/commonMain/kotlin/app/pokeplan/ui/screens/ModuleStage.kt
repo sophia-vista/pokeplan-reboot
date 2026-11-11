@@ -25,6 +25,6 @@ internal fun ModuleLeadStage(model: AppModel, module: Module, lead: OwnedPokemon
         onPet = { avoid -> store.pet(pokemon.id); model.cry(pokemon.speciesId); BuddyReaction.pet(pokemon, store.now.hour, avoid = avoid) },
         onFeed = { avoid -> BuddyReaction.feed(pokemon, avoid = avoid) },
         onOpen = { openPokemon(pokemon.id) }, onHaptic = { model.haptic() }, onEvent = { model.cry(pokemon.speciesId) },
-        celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it },
+        celebrated = model.celebratedAt, onCelebrated = { model.celebratedAt = it }, compact = true,
     )
 }

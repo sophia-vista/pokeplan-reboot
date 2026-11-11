@@ -15,6 +15,8 @@ Design review batch 1 (`docs/pokelife/evidence/DESIGN-REVIEW-0.165.1.md`). No re
 - **One date picker.** `PixelDatePicker`: Today and Yesterday as keys, and Pick a date opens a month to tap, up to today. Mint's entry form uses it, so a record can be made for any past day. Other modules and editing a record's date follow.
 - **Undo for more than tasks.** The undo bar now also brings back, for 10 seconds, a deleted budget, bill or record (Mint), drink, sleep, measurement or goal (Heal), diary card or journal entry (Care), chore, supply or warranty (Home) and note (Link). Plan's lists and events are still without it.
 - **Any day for a record.** Heal drinks and body measurements take a past day, a Mint record's date, account and category can be edited, and Home and Link use the date picker instead of a typed `2026-11-07` (`PixelDateField` allows no date and future days).
+- **The work comes first on a module page.** The lead's picture window is a 144 dp strip (it was 248) with a smaller sprite, and the new-rewards box runs a payout together as small icon-and-words pieces (a new Pokémon keeps its own row).
+- **Also today, on Home.** One card, only when something waits: Mint bills to settle, Home things to do, Link follow-ups due, and Heal's water so far with a +250 ml key. Words are counts only, never a bill, chore or person; a module behind the screen lock (and Mint with its lock on) shows nothing.
 - **Module colour on keys.** Keys and chips default to the open module's accent (blue only outside a module), the lead buttons on a Pokémon use each module's accent, friendship is pink, and Heal's Log activity is no longer red.
 
 ## 0.165.1

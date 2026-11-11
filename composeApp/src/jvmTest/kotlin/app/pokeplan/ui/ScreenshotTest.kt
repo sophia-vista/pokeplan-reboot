@@ -703,6 +703,29 @@ class ScreenshotTest {
         }
     }
 
+    /** Home with something waiting in Mint, Home, Link and Heal, and a module page with the compact lead (design review batch 2). */
+    @Test
+    fun homeAlsoToday() {
+        val store = storeWithTeam()
+        store.markRewardsSeen()
+        store.markVersionSeen(AppVersion.NAME)
+        val model = AppModel(store)
+        val mint = model.mint
+        mint.addAccount("Daily", app.pokeplan.mint.AccountType.BANK, "PHP", 1_000_000)
+        mint.addBill("Internet", "PHP", app.pokeplan.mint.Frequency.MONTHLY, store.today, 149_900)
+        model.heal.logDrink(250)
+        model.home.addChore("Take out the bins")
+        model.link.addFollowUp("Reply to Ana", due = store.today)
+        listOf(false, true).forEach { dark ->
+            render("home-also-today-${if (dark) "dark" else "light"}", height = 2300) {
+                PixelTheme(dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.HomeScreen(model) {} } }
+            }
+        }
+        render("plan-compact-lead", height = 1100) {
+            PixelTheme { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { model.module = app.pokeplan.ui.screens.Module.PLAN; model.planSection = null; app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } }
+        }
+    }
+
     @Test
     fun darkHome() = dark("dark-home", Place.HOME)
 
