@@ -74,6 +74,8 @@ object Money {
         val scale = scale(currency)
         var divisor = 1L
         repeat(scale) { divisor *= 10 }
-        return if (scale == 0) minor.toString() else "${minor / divisor}.${(minor % divisor).toString().padStart(scale, '0')}"
+        if (scale == 0) return minor.toString()
+        val abs = kotlin.math.abs(minor)
+        return (if (minor < 0) "-" else "") + "${abs / divisor}.${(abs % divisor).toString().padStart(scale, '0')}"
     }
 }
