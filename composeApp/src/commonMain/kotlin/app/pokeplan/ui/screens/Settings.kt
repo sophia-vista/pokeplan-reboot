@@ -202,7 +202,7 @@ private fun BackupsCard(model: AppModel) {
     var shown by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
     val hide = if (shown) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation()
-    fun restored(text: String) { model.store.reload(); model.care.reload(); model.heal.reload(); model.mint.reload(); model.home.reload(); entries = backups.automatic(); note = text }
+    fun restored(text: String) { model.store.reload(); model.care.reload(); model.heal.reload(); model.mint.reload(); model.home.reload(); model.link.reload(); entries = backups.automatic(); note = text }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             GlyphTitle("Backups", "download")

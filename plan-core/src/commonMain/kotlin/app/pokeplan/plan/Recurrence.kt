@@ -189,8 +189,11 @@ object RecurringTasks {
      */
     fun instancesToCreate(template: Task, recurrence: Recurrence, existing: List<Task>, today: LocalDate, createdAtMillis: Long): List<Task> {
         val seriesId = requireNotNull(template.seriesId) { "a recurring template needs a series id" }
-        val have = existing.filter { it.seriesId == seriesId }.mapNotNull { it.planned }.toSet()
-        return recurrence.occurrences(today, today.plusDays(HORIZON_DAYS)).filter { it !in have }.map { date ->
+        val ours = existing.filter { it.seriesId == seriesId }
+        val have = ours.mapNotNull { it.planned }.toSet()
+        // An instance the player moved to another day is still that date's instance: its id says so, and no second task may take the id.
+        val ids = ours.mapTo(HashSet()) { it.id }
+        return recurrence.occurrences(today, today.plusDays(HORIZON_DAYS)).filter { it !in have && instanceId(seriesId, it) !in ids }.map { date ->
             template.copy(
                 id = instanceId(seriesId, date),
                 planned = date,

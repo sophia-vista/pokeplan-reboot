@@ -698,6 +698,27 @@ class GameStoreTest {
     }
 
     @Test
+    fun a_second_tap_on_start_keeps_the_running_session() {
+        val (s, _) = started()
+        val first = s.startFocus(25, deepFocus = false)
+        assertEquals(first.id, s.startFocus(50, deepFocus = true).id)
+        assertEquals(first, s.data.focus)
+    }
+
+    @Test
+    fun a_transfer_gives_up_the_pokemons_world_team_seat_and_waits_for_an_expedition() {
+        val (s, _) = started()
+        val a = s.grantPokemon(16, "Test")
+        val b = s.grantPokemon(16, "Test")
+        assertTrue(s.worldAssign(1, listOf(a.id, b.id)))
+        assertTrue(s.transfer(a.id))
+        assertTrue(s.data.world.teams.none { a.id in it.members }, "no team keeps a Pokémon that is gone")
+        assertTrue(s.worldStart(1, "tiny-woods"))
+        assertFalse(s.transfer(b.id), "a Pokémon out on an expedition stays")
+        assertTrue(s.data.player.pokemon.any { it.id == b.id })
+    }
+
+    @Test
     fun a_starred_pokemon_cannot_be_transferred_until_unstarred() {
         val (s, _) = started()
         val extra = s.grantPokemon(16, "Test")

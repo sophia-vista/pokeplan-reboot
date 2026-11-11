@@ -24,6 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.pokeplan.app.Tutorials
 import app.pokeplan.core.reward.RewardEngine
 import app.pokeplan.mint.AccountStatus
@@ -85,15 +87,6 @@ private val accent: androidx.compose.ui.graphics.Color @Composable get() = Modul
 @Composable
 private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
 
-@Composable
-private fun Confirm(text: String, confirm: String, keep: String = "Keep it", onConfirm: () -> Unit, onKeep: () -> Unit) {
-    Text(text, style = MaterialTheme.typography.bodyLarge)
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-        PixelButton(confirm, onConfirm, Modifier.weight(1f), Pixel.Danger, compact = true)
-        PixelButton(keep, onKeep, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-    }
-}
-
 /** The line under Mint's card in Modules: how many accounts, or what it is for. Never an amount, so the Modules list shows no figure. */
 internal fun mintSubtitle(model: AppModel): String {
     val n = model.mintData.accounts.count { it.status == AccountStatus.ACTIVE }
@@ -124,10 +117,13 @@ private fun MintGate(model: AppModel, content: @Composable () -> Unit) {
     var locked by remember { mutableStateOf(mintLocked(model, gate, model.store.nowMillis)) }
     var failed by remember { mutableStateOf(false) }
     DisposableEffect(Unit) { onDispose { model.mintLeftAt = model.store.nowMillis } }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
     LaunchedEffect(locked) {
         while (!locked) {
             val now = model.store.nowMillis
-            if (mintLocked(model, gate, now)) locked = true else model.mintUnlockedAt = now // coming back inside the grace keeps it open
+            // Coming back inside the grace keeps it open. Only while the app is in front: a tick after the app was left must not count as being back, or the door would never close again.
+            if (mintLocked(model, gate, now)) locked = true
+            else if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) model.mintUnlockedAt = now
             kotlinx.coroutines.delay(1_000)
         }
     }

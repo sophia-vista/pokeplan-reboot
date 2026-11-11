@@ -277,7 +277,7 @@ class GameStore(
 
     /** Starts as a guest: creates the trainer, the starter (which becomes the buddy, and is in no party: one place only) and a first task that pays at once. */
     fun start(trainerName: String, starterSpeciesId: Int) {
-        check(!data.onboarded) { "already started" }
+        if (data.onboarded) return // a second tap on the last onboarding line: the game has started, once
         val option = HatchOption(starterSpeciesId, Dex.defaultForm(starterSpeciesId).identifier)
         val starter = Hatching.create(newId(), option, 0, nowMillis, 25, rng).copy(isShiny = false, inParty = false)
         val first = Task(
@@ -1201,7 +1201,8 @@ class GameStore(
 
     /** Starts a strict focus session. */
     fun startFocus(minutes: Int, deepFocus: Boolean, taskId: String? = null, lure: PokemonType? = null): FocusSession {
-        check(data.focus == null) { "a session is already running" }
+        // A second tap on Start before the screen has changed: the session that is running is the answer, not a crash.
+        data.focus?.let { return it }
         val session = FocusRules.start(
             id = newId(), durationMinutes = minutes, nowMillis = nowMillis, deepFocus = deepFocus, region = data.settings.region.open,
             leadIdAtStart = data.player.planLead?.id, taskId = taskId, lure = lure, emergencyPausesUsedToday = emergencyPausesToday(),
@@ -1694,14 +1695,6 @@ class GameStore(
         return mon
     }
 
-    /** Moves the items World found into the shared Bag. Returns how many items moved. */
-    fun worldClaimItems(): Int {
-        val items = data.world.items
-        if (items.isEmpty()) return 0
-        update { d -> d.copy(player = d.player.copy(inventory = items.entries.fold(d.player.inventory) { bag, (id, n) -> bag.add(id, n) }), world = d.world.copy(items = emptyMap())) }
-        return items.values.sum()
-    }
-
     /** Takes a job from the World mission board; false when it is not offered or three are held. */
     fun worldAcceptMission(id: String): Boolean {
         worldSettle()
@@ -1874,10 +1867,12 @@ class GameStore(
 
     /** Sends a duplicate away for Rare Candies and coins. Returns false if it may not be transferred (or is starred). */
     fun transfer(id: String): Boolean {
-        if (transferBlock(id) != null || id in data.favorites) return false
+        // A Pokémon out on an expedition cannot leave (Places.movable); any other place it holds (a World team, a Guardian slot, a Gear helper) is given up with it.
+        if (transferBlock(id) != null || id in data.favorites || !Places.movable(data, id)) return false
         val p = pokemon(id)
         val quote = Transfer.quote(p)
-        update { d ->
+        update { before ->
+            val d = Places.vacate(before, id)
             var bag = d.player.inventory.add(Items.RARE_CANDY, quote.rareCandies)
             quote.returnedItem?.let { bag = bag.add(it) }
             d.copy(player = d.player.copy(
