@@ -13,7 +13,9 @@ Design review batch 1 (`docs/pokelife/evidence/DESIGN-REVIEW-0.165.1.md`). No re
 - **₱.** The font gains the peso sign (U+20B1, drawn as a P with two bars) and Mint shows `₱1,250.50` for PHP; other currencies keep their code.
 - **Mint categories.** Settings has a Categories box (spending and income: add, rename, put away, bring back, delete when nothing uses it), and the entry form has a New key beside the category keys. The store already supported all of it; no screen reached it.
 - **One date picker.** `PixelDatePicker`: Today and Yesterday as keys, and Pick a date opens a month to tap, up to today. Mint's entry form uses it, so a record can be made for any past day. Other modules and editing a record's date follow.
-- **Undo for more than tasks.** The undo bar now also brings back a deleted budget or bill (Mint) and a deleted drink, sleep, measurement or goal (Heal) for 10 seconds. Care, Home, Link and Plan's lists and events are still without it.
+- **Undo for more than tasks.** The undo bar now also brings back, for 10 seconds, a deleted budget, bill or record (Mint), drink, sleep, measurement or goal (Heal), diary card or journal entry (Care), chore, supply or warranty (Home) and note (Link). Plan's lists and events are still without it.
+- **Any day for a record.** Heal drinks and body measurements take a past day, a Mint record's date, account and category can be edited, and Home and Link use the date picker instead of a typed `2026-11-07` (`PixelDateField` allows no date and future days).
+- **Module colour on keys.** Keys and chips default to the open module's accent (blue only outside a module), the lead buttons on a Pokémon use each module's accent, friendship is pink, and Heal's Log activity is no longer red.
 
 ## 0.165.1
 
