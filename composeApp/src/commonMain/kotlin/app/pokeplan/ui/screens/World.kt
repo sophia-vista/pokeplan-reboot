@@ -740,9 +740,6 @@ private fun WorldTeamsView(model: AppModel) {
 
 // ----- Camp -----------------------------------------------------------------------------------------------------------
 
-@OptIn(ExperimentalLayoutApi::class)
-private fun Modifier.clickableNoRipple(onClick: () -> Unit): Modifier = this.then(Modifier.clickable(interactionSource = null, indication = null, onClick = onClick))
-
 /** The recruiting scene: the wild Pokémon's face beside the question ([find]), or, once it has joined, beside the welcome ([newcomer]). */
 @Composable
 internal fun RecruitCard(find: app.pokeplan.world.Find?, newcomer: app.pokeplan.core.pokemon.OwnedPokemon?, onRecruit: () -> Unit, onLater: () -> Unit, onOk: () -> Unit) {

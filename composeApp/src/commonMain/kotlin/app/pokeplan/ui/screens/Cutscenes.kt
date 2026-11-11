@@ -96,7 +96,8 @@ fun CutsceneHost(model: AppModel) {
     }
     // A new World rank or story chapter: one at a time, once, when nothing else is playing.
     LaunchedEffect(model.data.world, idle) {
-        if (idle) model.store.worldMoment()?.let { m -> model.store.worldMomentSeen(m); model.cutscene = Cutscene.World(m) }
+        // Read now, not from the composition: the effect above may just have started a hatch scene, which this one must not replace.
+        if (model.cutscene == null) model.store.worldMoment()?.let { m -> model.store.worldMomentSeen(m); model.cutscene = Cutscene.World(m) }
     }
     val scene = model.cutscene ?: return
     val close = { model.cutscene = null }

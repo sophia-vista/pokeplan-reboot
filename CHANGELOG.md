@@ -5,6 +5,24 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.167.1
+
+Repo-wide audit (11 November 2026): fixes found by reading every state machine, dead code out, and the agent files brought up to date. No reward number changes.
+
+- **Fix: a focus timer that ran out inside the 10 second grace failed the egg.** Leaving with less than 10 seconds to go and coming back later ended as "left the app", although time inside the grace counts as focus. It is a finished session now (`FocusSession.tick`).
+- **Fix: a recurring task moved to another day came back twice.** The day it was moved from had no task planned on it, so the next refresh made that day's instance again, with the same id. An instance is known by its id now (`RecurringTasks.instancesToCreate`).
+- **Fix: a transfer could leave a Pokémon's seat behind.** A Pokémon on a World team, in a Guardian slot or helping a Gear tool was removed while its place still named it, and one out on an expedition could be transferred. The transfer waits for the expedition and gives the place up (`Places.movable`, `Places.vacate`).
+- **Fix: the screen-lock door of Mint, Care, Heal, Home and Link could stay open.** The once-a-second "still here" tick kept running after the app was left, which counted as coming back. It counts only while the app is in front.
+- **Fix: restoring a backup did not reload Link**, so Link's next save could write the old records over the restored ones.
+- **Fix: a hatch scene could be replaced by a World moment** started in the same frame, and was then never shown.
+- **Fix: a second tap on "Start" (focus) or on the last onboarding line crashed** instead of doing nothing.
+- **Fix: the open app could save an older copy over a widget's or a notification's change.** The app, each widget and each reminder open their own store on the same save, each with a lock of its own. There is one lock for the process now, every change starts from the saved document when another store wrote it (`SharedDocuments`, `Storage.shareKey`), and the app's tick picks such a change up within half a second (`sync()`). `worldAssign` builds its change from the document being written.
+- **Android's own backup is off** (`allowBackup="false"`, `data_extraction_rules.xml`): nothing goes to the system's cloud backup or to another phone by itself. Heal's and Mint's rows are sealed with a key that never leaves the phone, so such a copy could not be opened there; the app's own backups are the way to move a save (INTEGRATIONS_AND_PRIVACY.md).
+- **Fix: a repeatable World job the board offered could be refused** east of UTC: accepting counted the day in UTC, the board and the claim in the player's time.
+- **Fix: a clock set back during a focus pause** shortened the pauses already counted.
+- **Removed (nothing used them, tests included):** `GameStore.worldClaimItems` (the items go to the Bag in `worldPay`), `CareStore.hasEntries`, `LiveBackup.lastBackupMillis`, `LinkRules.tagsInUse`, `Learnset.methodsFor` and `LearnMethod`, `Inventory.removeAll` and `asContext`, `FloorEventResult`, `LauncherModel.pageIsEmpty`, `Pixel.RedDark`, `Spacing.XXXL`, `Spacing.CardRadius`, two private helpers and two imports.
+- **Simpler:** `Confirm`, `Rule`, `Actions` and `parseDay` were copied in the Home, Link and Mint screens; they are one each in `screens/ModuleParts.kt`. The launcher's agenda uses `CalendarEvent.shownTitle` for a private event.
+- **Agent files:** `CLAUDE.md` is a third shorter (its Layout detail moved, word for word, to `docs/code-map.md`); stale lines fixed (no server, `.idea/` is ignored, the backlog is the record of progress, cloud sessions work on their own branch); `.claude/settings.json` refuses a push to `main` and a forced push; `ci.yml`'s token is read-only; the old `docs/DESIGN_SYSTEM.md` says it is superseded.
 ## 0.167.0
 
 A launcher audit and the town's behaviour pass. No reward number changes.

@@ -18,7 +18,6 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.setProgress
-import androidx.compose.material3.ExperimentalMaterial3Api
 import kotlin.math.abs
 import androidx.compose.foundation.gestures.draggable
 import app.pokeplan.ui.pressScale

@@ -35,9 +35,6 @@ enum class FloorEventKind(val title: String, val blocked: String, val opened: St
     TRAVELLER("A traveller", "A traveller passes by.", "was given berries by a traveller", null, EventReward.BERRIES),
 }
 
-/** One floor event on a floor: what it was, and who (if anyone) opened it. */
-data class FloorEventResult(val kind: FloorEventKind, val floor: Int, val user: OwnedPokemon?)
-
 /**
  * Floor events: now and then (about one floor in ten, never the first) something is on the floor that a field move can open. They only ever
  * add: a team that cannot open one goes around and loses nothing, and nothing on the way to a Guardian needs one. Whether and what is worked out

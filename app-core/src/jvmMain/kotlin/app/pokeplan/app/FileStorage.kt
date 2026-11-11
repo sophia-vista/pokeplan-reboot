@@ -15,6 +15,8 @@ import java.nio.file.StandardCopyOption.REPLACE_EXISTING
  */
 class FileStorage(private val file: File) : Storage {
     private val folder: File get() = file.absoluteFile.parentFile
+
+    override val shareKey: Any get() = file.absolutePath
     private val backup: File get() = File(folder, file.name + ".bak")
 
     override fun load(): String? = if (file.exists()) file.readText() else null

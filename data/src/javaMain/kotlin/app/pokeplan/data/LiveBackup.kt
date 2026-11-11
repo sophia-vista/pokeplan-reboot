@@ -75,9 +75,6 @@ class LiveBackup(
         all.filterKeys { it !in stay }.values.forEach { it.deleteRecursively() }
     }
 
-    /** When the newest finished backup was taken, or null if there is none. */
-    fun lastBackupMillis(): Long? = complete().maxOfOrNull { it.name.toLong() }
-
     /** A document file as the app reads it: opened if it was sealed. Null when it is sealed and cannot be opened (another phone's key, or none). */
     private fun read(file: File): String? {
         val text = file.readText()

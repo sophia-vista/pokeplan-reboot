@@ -236,9 +236,10 @@ data class WorldData(
     fun withoutFind(index: Int): WorldData = copy(finds = finds.filterIndexed { i, _ -> i != index })
 
     /** Takes a job from the board; null when it is not offered or [Missions.MAX_ACTIVE] are already held. */
-    fun acceptMission(id: String): WorldData? {
+    fun acceptMission(id: String, utcOffsetMillis: Long = 0): WorldData? {
         val m = Missions.byId(id) ?: return null
-        if (m !in Missions.available(this) || missions.size >= Missions.MAX_ACTIVE) return null
+        // The same day the board and the claim count in (the player's), or a job the board offers could be refused here.
+        if (m !in Missions.available(this, utcOffsetMillis = utcOffsetMillis) || missions.size >= Missions.MAX_ACTIVE) return null
         return copy(missions = missions + MissionProgress(m.id))
     }
 

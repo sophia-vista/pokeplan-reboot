@@ -83,7 +83,6 @@ object Pixel {
     val InkSoft: Color get() = if (dark) Color(0xFFA9AEC4) else Color(0xFF666B7E)
     /** `brandPrimary` */
     val Red: Color get() = if (dark) Color(0xFFF2665A) else Color(0xFFD23B2E)
-    val RedDark = Color(0xFFB62A1C)
     /** `info` */
     val Blue: Color get() = if (dark) Color(0xFF5B96EE) else Color(0xFF2C6CCC)
     /** `success` */
@@ -118,7 +117,6 @@ object Spacing {
     val L = 16.dp
     val XL = 20.dp
     val XXL = 24.dp
-    val XXXL = 32.dp
 
     /** Room between a dialogue box's outer edge and what is in it: its 8 dp frame plus a gap, sideways and above and below. */
     val BoxX = 24.dp
@@ -129,7 +127,6 @@ object Spacing {
 
     /** Space between sections. */
     val Section = 24.dp
-    val CardRadius = 16.dp
 
     /** Smallest touch target for an important control. */
     val Target = 48.dp
