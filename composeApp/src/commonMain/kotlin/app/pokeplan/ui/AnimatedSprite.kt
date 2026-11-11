@@ -88,20 +88,26 @@ suspend fun spriteCredit(formId: Int): String? {
  * What a Pokémon is doing: each action is one of its SpriteCollab animations (assets/pmd/<folder>). [plays] is how many
  * times a one-off action runs before it hands back to idle; 0 loops it.
  */
-enum class SpriteAction(internal val folder: String?, internal val plays: Int) {
-    IDLE(null, 0), SLEEP("sleep", 0), EAT("eat", 3), HOP("hop", 1),
+enum class SpriteAction(internal val folder: String?, internal val plays: Int, internal val stand: SpriteAction? = null) {
+    IDLE(null, 0), SLEEP("sleep", 0), HOP("hop", 1),
+    /** A bite; a form without an Eat row (most of them) hops for it. */
+    EAT("eat", 3, stand = HOP),
     /** Walking towards the viewer, to the side (facing right; mirror it for left) and away: they loop. */
     WALK_DOWN("walk-down", 0), WALK_SIDE("walk-side", 0), WALK_UP("walk-up", 0),
+    /** Standing still facing the side (right; mirror it for left) or away, where a form has those rows: a Pokémon that stopped walking keeps its direction. They loop; a form without them shows its front idle. */
+    IDLE_SIDE("idle-side", 0), IDLE_UP("idle-up", 0),
+    /** One-offs for a moment: a spin (a level up, an evolution), waking up, a pose (a hatch, a rank up, a recruit) and a deep breath. A form without the row hops instead, except for the breath. */
+    ROTATE("rotate", 2, stand = HOP), WAKE("wake", 1, stand = HOP), POSE("pose", 1, stand = HOP), DEEP_BREATH("deep-breath", 1),
 }
 
 private val actionTables = mutableMapOf<SpriteAction, Map<Int, Animation>>()
 
-/** The form's own animation for [action], or null without one (for a shiny, without its shiny recolour). */
+/** The form's own animation for [action] (else its stand-in's, a hop for a bite), or null without one (for a shiny, without its shiny recolour). */
 internal suspend fun actionAnimation(formId: Int, shiny: Boolean, action: SpriteAction): Animation? {
     val folder = action.folder ?: return null
     val all = actionTables[action] ?: table("pmd/$folder", "$folder.tsv").also { actionTables[action] = it }
     // The regular colours on a shiny would look like a different Pokémon for the length of the action.
-    return all[formId]?.takeIf { !shiny || it.hasShiny }
+    return all[formId]?.takeIf { !shiny || it.hasShiny } ?: action.stand?.let { actionAnimation(formId, shiny, it) }
 }
 
 /** Whether the form has its own animation for [action], so a screen can skip the stand-in it draws otherwise (a hop). */

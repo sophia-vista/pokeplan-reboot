@@ -29,7 +29,13 @@ val composeAssets = tasks.register<Sync>("prepareComposeAssets") {
     from(rootProject.file("assets/types")) { include("*.png"); into("files/types") }
     from(rootProject.file("assets/items")) { include("*.png"); into("files/items") }
     from(rootProject.file("assets/pixelarticons")) { include("*.png"); into("files/pixelarticons") }
-    from(rootProject.file("assets/animated")) { include("*.png", "*.tsv"); into("files/animated") }
+    // The Black/White animations are read only for a form SpriteCollab has no sprite for (the Mystery Dungeon sheet wins), so only those are bundled.
+    val pmdForms = rootProject.file("assets/pmd/pmd.tsv").readLines().filter { it.isNotBlank() }.map { it.substringBefore('\t') }.toSet()
+    from(rootProject.file("assets/animated")) {
+        include("*.png", "*.tsv")
+        exclude { it.name.endsWith(".png") && it.name.removeSuffix(".png").removeSuffix("-shiny") in pmdForms }
+        into("files/animated")
+    }
     from(rootProject.file("assets/pmd")) { include("**/*.png", "**/*.tsv"); into("files/pmd") }
     from(rootProject.file("assets/scenes")) { include("*.png"); into("files/scenes") }
     from(rootProject.file("assets/world")) { include("*.png", "fx/*.png", "fx/*.tsv"); into("files/world") }
@@ -55,9 +61,10 @@ val composeAssets = tasks.register<Sync>("prepareComposeAssets") {
         into("files/maps")
     }
     from(rootProject.file("assets/cries")) { include("*.ogg"); into("files/cries") }
-    from(rootProject.file("assets/sfx")) { include("*.ogg"); into("files/sfx") }
+    // Sounds the app has no use for yet stay in assets/sfx but are not bundled (reminder.ogg is the notification's res/raw copy).
+    from(rootProject.file("assets/sfx")) { include("*.ogg"); exclude("pokemon-center.ogg", "drawer-open.ogg", "drawer-close.ogg", "reminder.ogg", "timer-done.ogg"); into("files/sfx") }
     from(rootProject.file("assets/sky-sfx")) { include("jingle-mission-success.ogg"); into("files/sfx") }
-    from(rootProject.file("assets/status")) { include("*.png"); exclude("sheet.png", "sheet2.png"); into("files/status") }
+    from(rootProject.file("assets/status")) { include("*.png"); exclude("sheet.png", "sheet2.png", "skull.png"); into("files/status") }
     from(rootProject.file("assets/weather")) { include("*.png", "ramps.tsv"); into("files/weather") }
     from(rootProject.file("assets/fonts")) { include("*.ttf"); into("font") }
     from(rootProject.file("assets/fonts")) { include("pmd-dialogue.*"); into("files/fonts") }
