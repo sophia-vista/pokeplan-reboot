@@ -147,7 +147,7 @@ The data pipeline classifies every evolution into one of these.
 
 | Item | Effect | Source |
 |---|---|---|
-| Rare Candy, Super Candy | level up, evolve | task rewards |
+| Rare Candy (shown as Exp. Candy since 0.166.0; the id is still `rare-candy`), Super Candy | level up, evolve | task rewards |
 | Vitamins (HP Up, Protein, Iron, Calcium, Zinc, Carbos) | +10 EV in one stat | task drops, streak rewards |
 | Nature Mint | change the nature | rare drop, badge reward |
 | Ability Capsule | swap to the other ability | rare drop |

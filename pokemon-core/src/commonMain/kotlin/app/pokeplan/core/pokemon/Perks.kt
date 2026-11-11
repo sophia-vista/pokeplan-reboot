@@ -398,7 +398,7 @@ object HealPerks {
 
 /** What Mint's party can improve (POKEMON_ECOSYSTEM.md section 2.2.1). Perks only change what Ledger Research pays, never anything in MINT's records. */
 enum class MintBucket(val label: String, val effect: String) {
-    CANDY_FINDER("Candy finder", "a chance of an extra Rare Candy from a review or a reconciled account"),
+    CANDY_FINDER("Candy finder", "a chance of an extra Exp. Candy from a review or a reconciled account"),
     FRIENDSHIP_GAIN("Friendship gain", "a chance of extra friendship from a review or a reconciled account"),
 }
 
@@ -435,7 +435,7 @@ object MintPerks {
 
 /** What Home's party can improve (POKEMON_ECOSYSTEM.md section 2.2.1). Perks only change what Habitat Discovery pays, never anything in HOME's records. */
 enum class HomeBucket(val label: String, val effect: String) {
-    CANDY_FINDER("Candy finder", "a chance of an extra Rare Candy from a chore or a piece of maintenance done"),
+    CANDY_FINDER("Candy finder", "a chance of an extra Exp. Candy from a chore or a piece of maintenance done"),
     FRIENDSHIP_GAIN("Friendship gain", "a chance of extra friendship from a chore or a piece of maintenance done"),
 }
 
@@ -472,7 +472,7 @@ object HomePerks {
 
 /** What Link's party can improve (POKEMON_ECOSYSTEM.md section 2.2.1). Perks only change what Postcard Trail pays, never anything in LINK's records. */
 enum class LinkBucket(val label: String, val effect: String) {
-    CANDY_FINDER("Candy finder", "a chance of an extra Rare Candy from a finished follow-up"),
+    CANDY_FINDER("Candy finder", "a chance of an extra Exp. Candy from a finished follow-up"),
     FRIENDSHIP_GAIN("Friendship gain", "a chance of extra friendship from a finished follow-up"),
 }
 

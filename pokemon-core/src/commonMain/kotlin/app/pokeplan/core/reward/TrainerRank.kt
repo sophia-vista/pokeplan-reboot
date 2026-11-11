@@ -8,7 +8,7 @@ import app.pokeplan.core.dex.Region
  */
 enum class Feature(val step: Int, val label: String) {
     TASKS(0, "Tasks and habits"), FOCUS(0, "Focus and eggs"), BUDDY(0, "Your buddy"), PARTY(0, "Party and PC"),
-    POKEDEX(0, "Pokédex"), RARE_CANDY(0, "Rare Candy"), WEEKLY_REVIEW(0, "Weekly review"),
+    POKEDEX(0, "Pokédex"), RARE_CANDY(0, "Exp. Candy"), WEEKLY_REVIEW(0, "Weekly review"),
     EVOLUTION(1, "Evolution with Super Candy"), BAG(1, "The Bag"), GOALS(1, "Goals"), REGION_PICKER(1, "Choosing a hatching region"),
     MINI_QUESTS(1, "Daily mini-quests"),
     HELD_ITEMS(2, "Held items"), PERKS(2, "Party perks"), GROWTH_SCREEN(2, "Growth trends"), COINS(2, "Poké"),

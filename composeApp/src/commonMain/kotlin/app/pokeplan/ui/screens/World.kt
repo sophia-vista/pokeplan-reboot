@@ -594,11 +594,11 @@ private fun WorldBaseView(model: AppModel) {
     }
         }
         BasePage.KECLEON -> {
-            WorldBanner("pokemon-square", "Kecleon Shop", "Rare Candy, for Poké", height = 150.dp)
+            WorldBanner("pokemon-square", "Kecleon Shop", "Exp. Candy, for Poké", height = 150.dp)
     FieldLabel("Kecleon Shop")
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Rare Candy", style = MaterialTheme.typography.titleSmall)
+            Text("Exp. Candy", style = MaterialTheme.typography.titleSmall)
             Text("${world.shopCandies} bought so far. Each costs a little more.", style = MaterialTheme.typography.bodyMedium)
             PixelButton("Buy one: ${world.candyPrice} Poké", { if (store.worldBuyCandy()) model.effect(Sfx.CANDY) }, Modifier.fillMaxWidth(), Module.WORLD.look.accent, enabled = store.data.player.coins >= world.candyPrice, compact = true)
         }

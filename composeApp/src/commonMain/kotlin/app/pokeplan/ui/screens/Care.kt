@@ -145,6 +145,7 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                 )
             } else today.forEach { RoutineRow(model, it) }
             CareEggMeter(model)
+            MoodRow(model)
             MenuGrid(
                 listOf(
                     MenuEntry(CareSection.ROUTINES.name, CareSection.ROUTINES.icon, "Routines", if (today.isEmpty()) "none today" else "$done of ${today.size} today", tint = ModuleAccent.CARE.accent),
@@ -772,6 +773,19 @@ private fun TrendsView(model: AppModel) {
             Text("Your best week: ${care.bestWeek()} routines", style = MaterialTheme.typography.bodyLarge)
         }
     }
+    val moods = care.moodDays(14)
+    if (moods.any { it.second != null }) TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("How days felt")
+            moods.filter { it.second != null }.asReversed().forEach { (day, level) ->
+                val name = moodNames[level!! - 1]
+                Column(Modifier.semantics(mergeDescendants = true) {}) {
+                    Text("${day.dayMonth()}: $name", style = MaterialTheme.typography.bodyMedium)
+                    PixelBar(level / 5f, Modifier.fillMaxWidth(), ModuleAccent.CARE.accent, label = name)
+                }
+            }
+        }
+    }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Feelings, week by week")
@@ -808,6 +822,26 @@ private fun CareEggMeter(model: AppModel) {
             Text(label, style = MaterialTheme.typography.bodyLarge)
             PixelBar(points.toFloat() / size, color = Pixel.Green, label = label)
             Text("A routine adds 1, a calm break or a skill 2.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        }
+    }
+}
+
+private val moodNames = listOf("Rough", "Low", "Okay", "Good", "Great")
+
+/** "How is today?" in one tap: five keys, no card to fill in, nothing paid. Tapping the chosen one again takes it back. */
+@Composable
+private fun MoodRow(model: AppModel) {
+    model.careData // redraw when Care changes
+    val chosen = model.care.diaryToday()?.mood
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelTitle("How is today?")
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                moodNames.forEachIndexed { i, name ->
+                    val level = i + 1
+                    TabButton(name, chosen == level, { model.care.setMood(if (chosen == level) null else level); model.haptic() }, Modifier.weight(1f), key = ModuleAccent.CARE.accent)
+                }
+            }
         }
     }
 }

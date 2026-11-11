@@ -66,6 +66,8 @@ data class DiaryCard(
     /** Ids from [Skills]. */
     val skills: Set<String> = emptySet(),
     val note: String? = null,
+    /** A one-tap "how is today" from 1 (rough) to 5 (great), set without filling in the card; null when not given. Private like the rest: it never earns. */
+    val mood: Int? = null,
 )
 
 /** A finished calm break (the breathing moment); [paid] is whether it earned anything. */
