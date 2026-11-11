@@ -388,7 +388,7 @@ private fun AgendaWidget(env: WidgetEnv, state: TodayState, size: WidgetSize) {
     val lines = (model.data.events.flatMap { it.occurrences(day, day) }.map { e -> Line(if (e.allDay) "All day" else formatTime(e.start.hour, e.start.minute, null, env.prefs.hour12), e.title, if (e.allDay) -1 else e.start.hour * 60 + e.start.minute) } +
         state.device.filter { it.isOn(day) }.map { e ->
             val from = e.span(day)?.first
-            Line(if (e.allDay || from == null) "All day" else formatTime(from / 60, from % 60, null, env.prefs.hour12), if (e.private) "Busy" else e.title, if (e.allDay || from == null) -1 else from)
+            Line(if (e.allDay || from == null) "All day" else formatTime(from / 60, from % 60, null, env.prefs.hour12), e.shownTitle, if (e.allDay || from == null) -1 else from)
         }).sortedBy { it.sort }
     // Small lists three lines, medium six, large all.
     val room = when (size) { WidgetSize.SMALL -> 3; WidgetSize.MEDIUM -> 6; WidgetSize.LARGE -> Int.MAX_VALUE }

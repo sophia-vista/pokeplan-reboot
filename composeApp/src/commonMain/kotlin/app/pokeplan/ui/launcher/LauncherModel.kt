@@ -343,9 +343,6 @@ data class LauncherPrefs(
         }
     }
 
-    /** Whether nothing stands on [page] (a page of the user's own can then be deleted). */
-    fun pageIsEmpty(page: WidgetPage) = WidgetGrid.onPage(gridWidgets, page).isEmpty()
-
     /** Takes away the last page when it is one of the user's own and empty. */
     fun deleteLastPage(): LauncherPrefs = deletePage(pageOrder.last())
     fun withShowClock(on: Boolean) = copy(showClock = on)

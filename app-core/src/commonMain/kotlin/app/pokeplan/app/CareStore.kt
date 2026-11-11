@@ -411,11 +411,6 @@ class CareStore(
     /** Erases Care's save on this device. */
     fun erase() = update { CareData() }
 
-    /** Whether there is anything of the player's to lose: a device with only its settings has nothing yet. */
-    val hasEntries: Boolean
-        get() = data.routines.isNotEmpty() || data.diary.isNotEmpty() || data.breaks.isNotEmpty() || data.practices.isNotEmpty() ||
-            data.journal.isNotEmpty() || data.met.isNotEmpty() || data.friends.isNotEmpty() || data.play.isNotEmpty() || data.visitors.any { it.progress > 0 }
-
     companion object {
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 

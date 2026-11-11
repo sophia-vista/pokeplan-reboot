@@ -69,7 +69,6 @@ private val zone: TimeZone get() = TimeZone.currentSystemDefault()
 private fun clockText(t: LocalTime) = t.hour.toString().padStart(2, '0') + ":" + t.minute.toString().padStart(2, '0')
 private fun shift(t: LocalTime, minutes: Int): LocalTime { val m = ((t.hour * 60 + t.minute + minutes) % 1440 + 1440) % 1440; return LocalTime(m / 60, m % 60) }
 private fun Long.localTime(): LocalTime = toLocalDateTime(zone).time
-private fun Long.localDay(): LocalDate = toLocalDateTime(zone).date
 private fun ml(v: Int) = if (v >= 1000) HealRules.format(v / 1000.0) + " L" else "$v ml"
 
 /** The line under Heal's card in Modules: the plain count of what is logged today, or what it is for. Never a score. */

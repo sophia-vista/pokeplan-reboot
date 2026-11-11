@@ -174,8 +174,6 @@ object LinkRules {
     fun categories(data: LinkData): List<String> =
         (STARTING_CATEGORIES + data.settings.categories + data.people.map { it.category }).filter { it.isNotBlank() }.distinctBy { it.lowercase() }
 
-    fun tagsInUse(data: LinkData): List<String> = data.people.flatMap { it.tags }.distinctBy { it.lowercase() }.sortedBy { it.lowercase() }
-
     private fun digits(s: String) = s.filter { it.isDigit() }
 
     /**

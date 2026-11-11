@@ -87,15 +87,6 @@ private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalizati
 @Composable
 private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
 
-@Composable
-private fun Confirm(text: String, confirm: String, keep: String = "Keep it", onConfirm: () -> Unit, onKeep: () -> Unit) {
-    Text(text, style = MaterialTheme.typography.bodyLarge)
-    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-        PixelButton(confirm, onConfirm, Modifier.weight(1f), Pixel.Danger, compact = true)
-        PixelButton(keep, onKeep, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-    }
-}
-
 /** A plain list row: a lead, a title with one quiet line under it, a trail, all on one centre line, with a 48 dp target. No box of its own. */
 @Composable
 private fun LRow(
@@ -118,23 +109,11 @@ private fun LRow(
 }
 
 @Composable
-private fun Rule() {
-    androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth().height(1.dp).background(Pixel.Border.copy(alpha = 0.6f)))
-}
-
-@Composable
 private fun Tabs(labels: List<String>, selected: Int, onSelect: (Int) -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
         labels.forEachIndexed { i, l -> Chip(l, i == selected, { onSelect(i) }, Modifier.weight(1f)) }
     }
 }
-
-@Composable
-private fun Actions(content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically, content = content)
-}
-
-private fun parseDay(text: String): LocalDate? = runCatching { LocalDate.parse(text.trim()) }.getOrNull()
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
