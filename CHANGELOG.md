@@ -20,6 +20,9 @@ Design review batch 1 (`docs/pokelife/evidence/DESIGN-REVIEW-0.165.1.md`). No re
 - **Exp. Candy.** The everyday level-up candy is shown as Exp. Candy (the games' Exp. Candy icon) instead of Rare Candy, which a fan reads as rare. Only the name and icon moved: its id, rules and every reward number are unchanged, so saves and the ledger are untouched and `RewardRules.VERSION` stays. Super Candy is unchanged. A true Rare Candy prize is not built (it needs an owner decision on where it is earned).
 - **One tap for mood (Care).** "How is today?" on Care's page: Rough, Low, Okay, Good, Great as five keys, kept on today's diary card (`DiaryCard.mood`, no schema change), shown in Trends, never paid. PMD portraits for the faces are waiting on fetching more emotions (the strips hold only Normal, Happy, Joyous, Inspired, Determined and Surprised).
 - **One place list on a Pokémon.** Twelve role buttons became Make buddy and one Move to... list: the PC and each module's party with "n of 6", Move here, and Make lead in the party it is in.
+- **Undo for Plan's lists and events too.** Deleting a list (its tasks return to it) or an event, one occurrence or all, shows the undo bar for 10 seconds.
+- **Two ranks, two names.** Home and Me say "Trainer rank" and World says "Exploration rank", so one word no longer means two ladders.
+- **Link: the month is a key.** A date's month is picked from twelve keys; the day and the optional year stay short fields.
 - **Module colour on keys.** Keys and chips default to the open module's accent (blue only outside a module), the lead buttons on a Pokémon use each module's accent, friendship is pink, and Heal's Log activity is no longer red.
 
 ## 0.167.1

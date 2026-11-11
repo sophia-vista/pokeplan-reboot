@@ -140,7 +140,7 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String)
     val world = model.data.world
     val out = world.teams.count { it.expedition != null }
     Column(Modifier.fillMaxSize()) {
-        ScreenHeader(Module.WORLD.label, subtitle = "Rank: ${world.rank.label}", onBack = onBack, color = Module.WORLD.look.header)
+        ScreenHeader(Module.WORLD.label, subtitle = "Exploration rank: ${world.rank.label}", onBack = onBack, color = Module.WORLD.look.header)
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             // The order of the page: where you are and the one thing worth doing (the region, its chapter, the next step), what the teams
             // are doing and brought back, then the places to go. Rank sits in one quiet strip. The first time, one card says what World is.

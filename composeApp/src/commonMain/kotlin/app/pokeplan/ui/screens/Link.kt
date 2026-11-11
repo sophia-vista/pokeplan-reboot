@@ -565,9 +565,13 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
             DateKind.entries.forEach { k -> Chip(k.label, kind == k, { kind = k; if (title.isBlank() || DateKind.entries.any { it.label == title }) title = k.label }) }
         }
         PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
+        // The month is a key, not a number to type; the day and the year (which may be unknown) stay short fields.
+        SectionLabel("Month")
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec").forEachIndexed { i, name -> Chip(name, month.toIntOrNull() == i + 1, { month = (i + 1).toString() }) }
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelField(day, { day = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f), label = "Day", singleLine = true, keyboardOptions = numberKeys)
-            PixelField(month, { month = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f), label = "Month", singleLine = true, keyboardOptions = numberKeys)
             PixelField(year, { year = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f), label = "Year", placeholder = "unknown", singleLine = true, keyboardOptions = numberKeys)
         }
         ToggleRow("Every year", annual, detail = "A 29 February is kept on 28 February in years without one.") { annual = it }

@@ -42,7 +42,7 @@ fun MeScreen(model: AppModel, startSection: Int = -1) {
     ScreenSwitch(section, depth = { if (it == null) 0 else 1 }) { current ->
         if (current == null) {
             Column(Modifier.fillMaxSize()) {
-                ScreenHeader("Me", subtitle = "Rank: ${TrainerRank.nameFor(data.player.trainerPoints)}", icon = "member-card")
+                ScreenHeader("Me", subtitle = "Trainer rank: ${TrainerRank.nameFor(data.player.trainerPoints)}", icon = "member-card")
                 Column(
                     Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(Spacing.M),
                     verticalArrangement = Arrangement.spacedBy(Spacing.M),

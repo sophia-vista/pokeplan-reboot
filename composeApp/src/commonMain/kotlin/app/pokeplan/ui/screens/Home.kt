@@ -96,7 +96,7 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(
             title = data.trainerName,
-            subtitle = "Rank: ${TrainerRank.nameFor(points)}",
+            subtitle = "Trainer rank: ${TrainerRank.nameFor(points)}",
             icon = "town-map",
             footer = { RankProgress(points) },
             trailing = {

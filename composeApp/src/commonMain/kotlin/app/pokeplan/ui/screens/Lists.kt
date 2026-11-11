@@ -169,7 +169,7 @@ private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit
             }
             if (list != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton(if (list.archived) "Unarchive" else "Archive", { store.updateList(list.copy(archived = !list.archived)); done(list.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelIconButton("trash", "Delete", { store.deleteList(list.id); done(null) }, Pixel.Danger)
+                PixelIconButton("trash", "Delete", { val ids = model.data.tasks.filter { it.listId == list.id }.map { it.id }.toSet(); store.deleteList(list.id); done(null); model.offerUndo("Deleted: ${list.name}") { store.restoreList(list, ids) } }, Pixel.Danger)
             }
         }
     }
