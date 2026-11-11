@@ -25,6 +25,8 @@ TYPES = ['normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'gho
 # App item id -> the real item whose icon stands for it.
 MAPPED = {
     'super-candy': 'exp-candy-xl',
+    # The everyday candy is the Exp. Candy of the games (its id stays rare-candy: saves and the ledger name it).
+    'rare-candy': 'exp-candy-m',
     'link-cord': 'linking-cord',
     'nature-mint': 'adamant-mint',
     # The five flavours, each as the berry that has it in the games.
@@ -35,7 +37,7 @@ MAPPED.update({f'lure-{t}': f'{t}-gem' for t in TYPES})
 MAPPED.update({f'tera-shard-{t}': f'{t}-tera-shard' for t in TYPES})
 
 # Items whose id is already the PokeAPI name.
-SAME = ['rare-candy', 'ability-capsule', 'ability-patch', 'bottle-cap', 'dynamax-band',
+SAME = ['ability-capsule', 'ability-patch', 'bottle-cap', 'dynamax-band',
         'hp-up', 'protein', 'iron', 'calcium', 'zinc', 'carbos',
         'oval-charm', 'lucky-egg', 'star-piece', 'scope-lens', 'shiny-charm', 'leftovers', 'amulet-coin',
         # Tab icons: Home, Modules, Pokémon, Me; Plan's Planner and Focus.

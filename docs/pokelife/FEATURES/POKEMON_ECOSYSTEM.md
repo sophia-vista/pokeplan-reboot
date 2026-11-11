@@ -275,6 +275,8 @@ Existing `OwnedPokemon` supports levels 1–100 and Rare Candy progression but l
 
 ### 8.2 Rare Candy and Super Candy
 
+**Naming (owner, 11 November 2026): the everyday level-up candy is shown as Exp. Candy**, with the Exp. Candy icon of the games, because a wage that is paid several times a day is not "rare". Its item id (`rare-candy`), its rules and every number below are unchanged, so saves, the ledger and the reward tables did not move; this section and the code still say "Rare Candy" for the item id and in older text. Super Candy stays as it is. A true Rare Candy (one full level, an occasional prize) is **not built**; it needs an owner decision on where it is earned and a `RewardRules.VERSION` bump.
+
 Retain and reconcile existing Rare Candy and Super Candy semantics; do not introduce parallel candy types or progression currencies without approval.
 
 - Rare Candy grants direct level progression according to the existing `CandyRules` behavior, including its partner-level catch-up baseline where present. Preserve this rule unless a tested migration/rebalance is explicitly approved.

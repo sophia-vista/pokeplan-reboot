@@ -63,7 +63,7 @@ internal fun PerkBucket.label() = when (this) {
 /** What a bucket does, in one line, so a percentage means something. */
 private fun PerkBucket.effect() = when (this) {
     PerkBucket.EGG_LUCK -> "rarer eggs"
-    PerkBucket.CANDY_YIELD -> "more Rare Candies from tasks"
+    PerkBucket.CANDY_YIELD -> "more Exp. Candies from tasks"
     PerkBucket.SUPER_CANDY_CHANCE -> "more Super Candies"
     PerkBucket.ITEM_FINDER -> "more item drops"
     PerkBucket.SHINY_HUNTER -> "better shiny odds"

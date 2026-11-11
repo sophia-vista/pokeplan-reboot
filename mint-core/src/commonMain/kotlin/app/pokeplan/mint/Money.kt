@@ -8,6 +8,9 @@ object Money {
     /** Digits after the decimal point: whole units for yen, won and dong, two for everything else Mint offers. */
     fun scale(currency: String): Int = when (currency) { "JPY", "KRW", "VND" -> 0; else -> 2 }
 
+    private const val PESO_CODE = "PHP"
+    private const val PESO = "\u20B1"
+
     /** The currencies offered when an account is made; PHP first (MINT.md section 1). Any other three-letter code can be typed. */
     val common: List<String> = listOf("PHP", "USD", "EUR", "JPY", "GBP", "SGD", "AUD", "CAD", "HKD", "KRW")
 
@@ -52,9 +55,10 @@ object Money {
         return minor.takeIf { it in 0..MAX_MINOR }
     }
 
-    /** `PHP 1,250.50`. The code, not a symbol: no font has to carry a glyph for it, and it is never ambiguous. [hidden] gives `PHP ••••` (MINT.md section 3.3). */
+    /** `₱1,250.50` for the peso (the app's font carries that glyph since 0.166.0) and `USD 1,250.50` for the rest: a code is never ambiguous and
+     *  no font has to carry a symbol for it. [hidden] gives `₱••••` or `USD ••••` (MINT.md section 3.3). */
     fun format(minor: Long, currency: String, hidden: Boolean = false): String {
-        if (hidden) return "$currency ••••"
+        if (hidden) return if (currency == PESO_CODE) "$PESO••••" else "$currency ••••"
         val negative = minor < 0
         val abs = if (minor == Long.MIN_VALUE) Long.MAX_VALUE else kotlin.math.abs(minor)
         val scale = scale(currency)
@@ -62,7 +66,7 @@ object Money {
         repeat(scale) { divisor *= 10 }
         val whole = (abs / divisor).toString().reversed().chunked(3).joinToString(",").reversed()
         val fraction = if (scale == 0) "" else "." + (abs % divisor).toString().padStart(scale, '0')
-        return (if (negative) "-" else "") + "$currency $whole$fraction"
+        return (if (negative) "-" else "") + (if (currency == PESO_CODE) PESO else "$currency ") + "$whole$fraction"
     }
 
     /** The plain number for an edit field: `1250.50`, no separators and no code. */

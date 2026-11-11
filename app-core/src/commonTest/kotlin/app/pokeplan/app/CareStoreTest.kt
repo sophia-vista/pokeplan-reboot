@@ -158,6 +158,27 @@ class CareStoreTest {
     }
 
     @Test
+    fun oneTapMoodLivesOnTodaysCardAndPaysNothing() {
+        val s = setup()
+        val before = s.game.data.player.inventory
+        s.care.setMood(4)
+        assertEquals(4, s.care.diaryToday()?.mood)
+        // Filling in the card afterwards keeps the mood; tapping it again takes it back and drops a card left with nothing.
+        s.care.saveDiary(mapOf(Emotion.CALM to 2))
+        assertEquals(4, s.care.diaryToday()?.mood)
+        s.care.setMood(null)
+        assertEquals(null, s.care.diaryToday()?.mood)
+        assertEquals(1, s.care.data.diary.size)
+        s.care.deleteDiary(s.care.data.diary.single().id)
+        s.care.setMood(9)
+        assertEquals(5, s.care.diaryToday()?.mood)
+        s.care.setMood(null)
+        assertTrue(s.care.data.diary.isEmpty())
+        assertEquals(before, s.game.data.player.inventory)
+        assertEquals(7, s.care.moodDays(7).size)
+    }
+
+    @Test
     fun oneDiaryCardADay() {
         val s = setup()
         s.care.saveDiary(mapOf(Emotion.CALM to 2))

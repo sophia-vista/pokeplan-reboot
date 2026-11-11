@@ -119,9 +119,9 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, follow
             if (repeats) RepeatEnd(series, event) { store.endEventOn(event.id, it) }
             val deletes: @Composable () -> Unit = {
                 if (repeats) {
-                    PixelButton("Delete this one", { store.deleteOccurrence(event.id); close() }, color = Pixel.Red, compact = true)
-                    PixelButton("Delete all", { store.deleteEvent(event.id); close() }, color = Pixel.Red, compact = true)
-                } else PixelIconButton("trash", "Delete", { store.deleteEvent(event.id); close() }, Pixel.Red)
+                    PixelButton("Delete this one", { val before = model.data.events; store.deleteOccurrence(event.id); close(); model.offerUndo("Deleted: ${event.title}") { store.restoreEvents(before) } }, color = Pixel.Red, compact = true)
+                    PixelButton("Delete all", { val before = model.data.events; store.deleteEvent(event.id); close(); model.offerUndo("Deleted: ${event.title}") { store.restoreEvents(before) } }, color = Pixel.Red, compact = true)
+                } else PixelIconButton("trash", "Delete", { val before = model.data.events; store.deleteEvent(event.id); close(); model.offerUndo("Deleted: ${event.title}") { store.restoreEvents(before) } }, Pixel.Red)
             }
             if (event.allDay) {
                 DaySpanPicker(event.day, event.endDay, { follow(store.updateEvent(event.id, day = it)) }) { store.updateEvent(event.id, lastDay = it) }

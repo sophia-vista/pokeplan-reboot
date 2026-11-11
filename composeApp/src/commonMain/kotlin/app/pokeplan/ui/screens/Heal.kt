@@ -165,7 +165,7 @@ private fun TodayCard(model: AppModel) {
                 if (w != null) Text("Weight: ${HealUnits.show(w, data.settings.weightUnit)} (${w.day.short()})", style = MaterialTheme.typography.bodyLarge)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                PixelButton("Log activity", { model.healSection = HealSection.ACTIVITY }, Modifier.weight(1f), Pixel.Red, compact = true)
+                PixelButton("Log activity", { model.healSection = HealSection.ACTIVITY }, Modifier.weight(1f), ModuleAccent.HEAL.accent, compact = true)
                 PixelButton("Add a drink", { model.healSection = HealSection.HYDRATION }, Modifier.weight(1f), Pixel.Blue, compact = true)
             }
         }
@@ -307,16 +307,19 @@ private fun HydrationView(model: AppModel) {
     val today = model.store.today
     var custom by remember { mutableStateOf("") }
     var message by remember { mutableStateOf<String?>(null) }
+    // The day being looked at and added to: today, or an earlier one picked (a forgotten glass is still worth a record).
+    var day by remember { mutableStateOf(today) }
     fun add(v: Int) {
-        val out = heal.logDrink(v)
+        val out = heal.logDrink(v, atMillis = if (day == today) model.store.nowMillis else heal.noonOf(day))
         message = if (out.record == null) out.refused else null
         if (out.record != null) { model.haptic(); model.effect(Sfx.HEAL); custom = "" }
     }
     RewardBox(model)
-    val total = HealRules.hydrationOn(data, today)
+    val total = HealRules.hydrationOn(data, day)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("Today")
+            PixelTitle(if (day == today) "Today" else day.short())
+            PixelDatePicker(day, today, ModuleAccent.HEAL.accent, { day = it })
             Text(if (total == null) "Nothing logged yet" else ml(total), style = MaterialTheme.typography.titleSmall)
             data.settings.hydrationTargetMl?.let { target ->
                 PixelBar(((total ?: 0).toFloat() / target).coerceIn(0f, 1f), color = Pixel.Blue, label = "Your own target: ${ml(target)}")
@@ -335,10 +338,10 @@ private fun HydrationView(model: AppModel) {
             message?.let { Report(model, it, NoticeTone.WARNING) }
         }
     }
-    val drinks = heal.drinksToday()
-    if (drinks.isEmpty()) EmptyState("No drinks today", "Tap an amount above. Any drink counts the same here: this only keeps your own record.", icon = HealSection.HYDRATION.icon, addAbove = "Log a drink")
+    val drinks = data.hydration.filter { it.day == day }.sortedBy { it.atMillis }
+    if (drinks.isEmpty()) EmptyState(if (day == today) "No drinks today" else "No drinks on ${day.short()}", "Tap an amount above. Any drink counts the same here: this only keeps your own record.", icon = HealSection.HYDRATION.icon, addAbove = "Log a drink")
     else drinks.forEach { d ->
-        ListRow(trail = { PixelButton("Delete", { heal.deleteDrink(d.id) }, color = Pixel.InkSoft, compact = true) }) {
+        ListRow(trail = { PixelButton("Delete", { val before = model.healData; heal.deleteDrink(d.id); model.offerUndo("Deleted: drink") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true) }) {
             Text(ml(d.ml) + d.drink.takeIf { it.isNotBlank() }?.let { " · $it" }.orEmpty(), style = MaterialTheme.typography.bodyLarge)
             Text(clockText(d.atMillis.localTime()), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
@@ -397,7 +400,7 @@ private fun SleepView(model: AppModel) {
     else {
         SectionLabel("History")
         nights.take(21).forEach { s ->
-            ListRow(trail = { PixelButton("Delete", { heal.deleteSleep(s.id) }, color = Pixel.InkSoft, compact = true) }) {
+            ListRow(trail = { PixelButton("Delete", { val before = model.healData; heal.deleteSleep(s.id); model.offerUndo("Deleted: sleep") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true) }) {
                 Text(HealRules.duration(s.minutes), style = MaterialTheme.typography.bodyLarge)
                 Text("${clockText(s.startMillis.localTime())} to ${clockText(s.endMillis.localTime())}, woke ${s.day.short()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
@@ -423,6 +426,7 @@ private fun BodyView(model: AppModel) {
     val heal = model.heal
     val data = model.healData
     var type by remember { mutableStateOf(MeasureType.WEIGHT) }
+    var day by remember { mutableStateOf(model.store.today) }
     var unit by remember { mutableStateOf(data.settings.weightUnit) }
     var value by remember { mutableStateOf("") }
     var label by remember { mutableStateOf("") }
@@ -430,13 +434,13 @@ private fun BodyView(model: AppModel) {
     fun pick(t: MeasureType) { type = t; unit = if (t == MeasureType.WEIGHT) data.settings.weightUnit else t.units.first() }
     fun save() {
         val v = value.replace(',', '.').toDoubleOrNull()
-        val out = if (v == null) null else heal.logMeasurement(type, v, unit, label)
+        val out = if (v == null) null else heal.logMeasurement(type, v, unit, label, atMillis = if (day == model.store.today) model.store.nowMillis else heal.noonOf(day))
         message = when {
             out == null -> "Enter a number." to NoticeTone.WARNING
             out.record == null -> (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
             else -> null
         }
-        if (out?.record != null) { value = ""; label = ""; model.say("Saved.") }
+        if (out?.record != null) { value = ""; label = ""; day = model.store.today; model.say("Saved.") }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -450,6 +454,7 @@ private fun BodyView(model: AppModel) {
                 if (type.units.size > 1) type.units.forEach { u -> TabButton(u, u == unit, { unit = u }) }
                 else if (type.units.first().isNotEmpty()) Text(type.units.first(), style = MaterialTheme.typography.bodyLarge)
             }
+            PixelDatePicker(day, model.store.today, ModuleAccent.HEAL.accent, { day = it })
             PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Green, enabled = value.isNotBlank())
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
@@ -465,7 +470,7 @@ private fun BodyView(model: AppModel) {
                 HealRules.trendText(data, t, u)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             }
             own.sortedByDescending { it.atMillis }.take(10).forEach { m ->
-                ListRow(trail = { PixelButton("Delete", { heal.deleteMeasurement(m.id) }, color = Pixel.InkSoft, compact = true) }) {
+                ListRow(trail = { PixelButton("Delete", { val before = model.healData; heal.deleteMeasurement(m.id); model.offerUndo("Deleted: measurement") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true) }) {
                     Text((m.label.takeIf { it.isNotBlank() }?.let { "$it: " }.orEmpty()) + HealUnits.show(m, m.unit), style = MaterialTheme.typography.bodyLarge)
                     Text(m.day.short(), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
@@ -507,7 +512,7 @@ private fun GoalsHealView(model: AppModel) {
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton(if (g.status == GoalStatus.PAUSED) "Resume" else "Pause", { heal.setGoalStatus(g.id, if (g.status == GoalStatus.PAUSED) GoalStatus.ACTIVE else GoalStatus.PAUSED) }, Modifier.weight(1f), Pixel.Blue, compact = true)
                     PixelButton("Put away", { heal.setGoalStatus(g.id, GoalStatus.ARCHIVED) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                    PixelButton("Delete", { heal.deleteGoal(g.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    PixelButton("Delete", { val before = model.healData; heal.deleteGoal(g.id); model.offerUndo("Deleted: goal") { heal.restore(before) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
             }
         }

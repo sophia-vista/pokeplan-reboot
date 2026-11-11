@@ -345,26 +345,16 @@ private fun scheduleLine(data: app.pokeplan.home.HomeData, v: app.pokeplan.home.
     return listOfNotNull(when_, data.assets.firstOrNull { it.id == s.assetId }?.name, repeatText(s.recurrence).takeIf { it.isNotEmpty() }).joinToString(" · ")
 }
 
-/** A date typed as 2026-11-07, with quick buttons; a blank or unfinished field is no date. */
-@OptIn(ExperimentalLayoutApi::class)
+/** A date for a chore, an asset or a warranty: quick keys and a month to tap, never typed (design review, 11 November 2026); [past] limits it to today and before. */
 @Composable
 private fun DateField(label: String, value: LocalDate?, onChange: (LocalDate?) -> Unit, today: LocalDate, optional: Boolean = false, past: Boolean = false) {
-    var text by remember { mutableStateOf(value?.toString().orEmpty()) }
-    LaunchedEffect(value) { if (value != parseDay(text)) text = value?.toString().orEmpty() }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelField(
-            text, { t -> text = t.filter { it.isDigit() || it == '-' }.take(10); onChange(parseDay(text)) }, Modifier.fillMaxWidth(),
-            label = label, placeholder = today.toString(), singleLine = true, keyboardOptions = numberKeys,
-            error = if (text.length == 10 && parseDay(text) == null) "Write it like $today." else null,
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        PixelDateField(
+            value, today, accent, onChange,
+            presets = if (past) listOf("Today" to 0, "Yesterday" to -1, "A week ago" to -7) else listOf("Today" to 0, "Tomorrow" to 1, "In a week" to 7),
+            noneLabel = if (optional) "None" else null, max = if (past) today else null,
         )
-        val quick = if (past) listOf(0 to "Today", -1 to "Yesterday", -7 to "A week ago") else listOf(0 to "Today", 1 to "Tomorrow", 7 to "In a week", 30 to "In a month")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            quick.forEach { (d, l) ->
-                val day = today.plus(d, DateTimeUnit.DAY)
-                Chip(l, value == day, { text = day.toString(); onChange(day) })
-            }
-            if (optional) Chip("None", value == null, { text = ""; onChange(null) })
-        }
     }
 }
 
@@ -471,7 +461,7 @@ private fun ChoresView(model: AppModel) {
                             HRow(c.title, "Archived", trail = {
                                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                                     PixelButton("Restore", { home.setChoreStatus(c.id, RecordStatus.ACTIVE) }, color = accent, compact = true)
-                                    PixelIconButton("trash", "Delete ${c.title}", { home.deleteChore(c.id) }, Pixel.InkSoft)
+                                    PixelIconButton("trash", "Delete ${c.title}", { val before = model.homeData; home.deleteChore(c.id); model.offerUndo("Deleted: ${c.title}") { home.restore(before) } }, Pixel.InkSoft)
                                 }
                             })
                         }
@@ -627,7 +617,7 @@ private fun SuppliesView(model: AppModel) {
                             HRow(s.name, "Archived", trail = {
                                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                                     PixelButton("Restore", { home.setSupplyArchived(s.id, false) }, color = accent, compact = true)
-                                    PixelIconButton("trash", "Delete ${s.name}", { home.deleteSupply(s.id) }, Pixel.InkSoft)
+                                    PixelIconButton("trash", "Delete ${s.name}", { val before = model.homeData; home.deleteSupply(s.id); model.offerUndo("Deleted: ${s.name}") { home.restore(before) } }, Pixel.InkSoft)
                                 }
                             })
                         }
@@ -1004,7 +994,7 @@ private fun AssetDetail(model: AppModel, a: Asset, onDone: () -> Unit) {
             HRow(
                 listOf(w.provider, w.coverage).filter { it.isNotBlank() }.joinToString(" · ").ifBlank { "Warranty" },
                 listOfNotNull(state.label, w.expiryDay?.let { "until ${it.short()}" }, w.reference.takeIf { it.isNotBlank() }).joinToString(" · "), warn = state == WarrantyState.ENDING,
-                trail = { PixelIconButton("trash", "Delete this warranty", { home.deleteWarranty(w.id) }, Pixel.InkSoft) },
+                trail = { PixelIconButton("trash", "Delete this warranty", { val before = model.homeData; home.deleteWarranty(w.id); model.offerUndo("Deleted: warranty") { home.restore(before) } }, Pixel.InkSoft) },
             )
             if (model.homeData.settings.reminders && w.expiryDay != null) PixelButton(if (w.remind) "Reminder on" else "Remind me before it ends", { home.setWarrantyRemind(w.id, !w.remind) }, Modifier.fillMaxWidth(), if (w.remind) accent else Pixel.InkSoft, compact = true)
         }
