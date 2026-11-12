@@ -264,8 +264,12 @@ class HomeStore(
 
     fun removeRestock(id: String) = update { d -> d.copy(restock = d.restock.filterNot { it.id == id }) }
 
-    /** Marks a restocking entry bought: a supply gets its new quantity, and the entry leaves the list. Pays nothing. */
+    /**
+     * Marks a restocking entry bought: a supply gets its new quantity, and the entry leaves the list. A supply that is on the list because it is low
+     * needs the quantity (nothing else takes it off). Pays nothing.
+     */
     fun restocked(supplyId: String, newQuantityMilli: Long?, entryId: String? = null): String? {
+        if (newQuantityMilli == null && entryId == null && data.supplies.any { it.id == supplyId && HomeRules.isLow(it) }) return "Enter how much there is now."
         val reason = newQuantityMilli?.let { setQuantity(supplyId, it, "Restocked") }
         if (reason != null) return reason
         update { d -> d.copy(restock = d.restock.filterNot { it.id == entryId || it.supplyId == supplyId }) }
@@ -338,12 +342,16 @@ class HomeStore(
         return Logged(s)
     }
 
-    /** Changes a schedule's words, item, repeat, policy and next date. Records of work already done are never touched. */
+    /**
+     * Changes a schedule's words, item, repeat, policy and next date. Records of work already done are never touched. The date it counts from
+     * ([MaintenanceSchedule.firstDue]) moves only when the next date or the kind of repeat changed, so renaming a schedule that started on the 31st
+     * does not make it drift to the 28th.
+     */
     fun updateSchedule(s: MaintenanceSchedule): Logged<MaintenanceSchedule> {
         val old = data.schedules.firstOrNull { it.id == s.id } ?: return Logged(null, "That schedule is gone.")
         (HomeRules.checkTitle(s.title, "maintenance") as? Check.Refused)?.let { return Logged(null, it.reason) }
-        (HomeRules.checkRecurrence(s.recurrence, s.firstDue) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val next = old.copy(title = s.title.trim(), assetId = s.assetId, instructions = s.instructions.trim().take(HomeRules.TEXT_MAX), recurrence = s.recurrence, policy = s.policy, firstDue = s.firstDue, nextDue = s.nextDue)
+        (HomeRules.checkRecurrence(s.recurrence, s.nextDue) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val next = old.copy(title = s.title.trim(), assetId = s.assetId, instructions = s.instructions.trim().take(HomeRules.TEXT_MAX), recurrence = s.recurrence, policy = s.policy, firstDue = if (s.nextDue != old.nextDue || s.recurrence.kind != old.recurrence.kind) s.nextDue else old.firstDue, nextDue = s.nextDue)
         update { d -> d.copy(schedules = d.schedules.map { if (it.id == s.id) next else it }) }
         return Logged(next)
     }

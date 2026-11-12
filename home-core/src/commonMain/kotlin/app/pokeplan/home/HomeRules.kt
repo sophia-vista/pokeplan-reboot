@@ -20,15 +20,13 @@ sealed interface Check {
 object Schedules {
     private const val MAX_WEEK_SCAN = 7 * 100 + 7
 
-    private fun floorDiv(a: Int, b: Int): Int = a.floorDiv(b)
-
     private fun monthIndex(d: LocalDate): Int = d.year * 12 + d.monthNumber - 1
 
     private fun daysInMonth(year: Int, month: Int): Int = LocalDate(year, month, 1).plus(1, DateTimeUnit.MONTH).minus(1, DateTimeUnit.DAY).dayOfMonth
 
     /** The date in month number [index] (year * 12 + month - 1) that follows [anchor]'s day of the month, shortened to the month's last day. */
     private fun inMonth(index: Int, anchor: LocalDate): LocalDate {
-        val year = floorDiv(index, 12)
+        val year = index.floorDiv(12)
         val month = index - year * 12 + 1
         return LocalDate(year, month, minOf(anchor.dayOfMonth, daysInMonth(year, month)))
     }
@@ -57,7 +55,7 @@ object Schedules {
             RepeatKind.WEEKLY -> generateSequence(day) { it.minus(1, DateTimeUnit.DAY) }.take(MAX_WEEK_SCAN).takeWhile { it >= anchor }.firstOrNull { occursOn(r, anchor, it) }
             RepeatKind.MONTHLY, RepeatKind.YEARLY -> {
                 val step = monthStep(r)
-                var k = floorDiv(monthIndex(day) - monthIndex(anchor), step)
+                var k = (monthIndex(day) - monthIndex(anchor)).floorDiv(step)
                 var c = inMonth(monthIndex(anchor) + k * step, anchor)
                 if (c > day) { k -= 1; c = inMonth(monthIndex(anchor) + k * step, anchor) }
                 if (k < 0) null else c
@@ -67,18 +65,17 @@ object Schedules {
 
     /** The earliest occurrence on or after [day], or null when a one-time schedule is already past. */
     fun firstOnOrAfter(r: Recurrence, anchor: LocalDate, day: LocalDate): LocalDate? {
-        if (r.kind == RepeatKind.WEEKLY) return generateSequence(maxOf(day, anchor)) { it.plus(1, DateTimeUnit.DAY) }.take(MAX_WEEK_SCAN).firstOrNull { occursOn(r, anchor, it) }
-        if (day <= anchor) return anchor
+        if (r.kind != RepeatKind.WEEKLY && day <= anchor) return anchor
         return when (r.kind) {
             RepeatKind.ONCE -> null
             RepeatKind.DAILY -> {
                 val n = maxOf(1, r.every)
                 day.plus((n - anchor.daysUntil(day) % n) % n, DateTimeUnit.DAY)
             }
-            RepeatKind.WEEKLY -> generateSequence(day) { it.plus(1, DateTimeUnit.DAY) }.take(MAX_WEEK_SCAN).firstOrNull { occursOn(r, anchor, it) }
+            RepeatKind.WEEKLY -> generateSequence(maxOf(day, anchor)) { it.plus(1, DateTimeUnit.DAY) }.take(MAX_WEEK_SCAN).firstOrNull { occursOn(r, anchor, it) }
             RepeatKind.MONTHLY, RepeatKind.YEARLY -> {
                 val step = monthStep(r)
-                var k = -floorDiv(-(monthIndex(day) - monthIndex(anchor)), step)
+                var k = -(-(monthIndex(day) - monthIndex(anchor))).floorDiv(step)
                 var c = inMonth(monthIndex(anchor) + k * step, anchor)
                 if (c < day) { k += 1; c = inMonth(monthIndex(anchor) + k * step, anchor) }
                 c
@@ -200,7 +197,7 @@ object HomeRules {
 
     // --- chores -------------------------------------------------------------------------------------------------------------
 
-    private fun entryFor(data: HomeData, choreId: String, day: LocalDate): ChoreEntry? = data.entries.lastOrNull { it.choreId == choreId && it.dueDay == day }
+    private fun entryFor(entries: List<ChoreEntry>, day: LocalDate): ChoreEntry? = entries.lastOrNull { it.dueDay == day }
 
     private fun open(chore: Chore, occurrence: LocalDate, dueDay: LocalDate, entry: ChoreEntry?, today: LocalDate): ChoreView = ChoreView(
         chore, if (dueDay < today) ChoreState.OVERDUE else if (dueDay == today) ChoreState.DUE else ChoreState.UPCOMING, occurrence, dueDay, entry,
@@ -210,18 +207,21 @@ object HomeRules {
      * Where [chore] stands on [today]. For a repeating chore only the latest occurrence up to today is considered, so a month away leaves one overdue
      * chore, not thirty (HOME.md 4.2); one the user did, skipped or put off is read from its entry; an occurrence done early counts too.
      */
-    fun view(data: HomeData, chore: Chore, today: LocalDate): ChoreView {
+    fun view(data: HomeData, chore: Chore, today: LocalDate): ChoreView = view(chore, data.entries.filter { it.choreId == chore.id }, today)
+
+    /** [view] with the chore's own [entries] already picked out, so a list of chores reads the history once and not once per chore. */
+    private fun view(chore: Chore, entries: List<ChoreEntry>, today: LocalDate): ChoreView {
         if (chore.status == RecordStatus.ARCHIVED) return ChoreView(chore, ChoreState.ARCHIVED, null, null, null)
         if (chore.status == RecordStatus.PAUSED) return ChoreView(chore, ChoreState.PAUSED, null, null, null)
         val anchor = chore.firstDue
         if (anchor == null) {
-            val done = data.entries.lastOrNull { it.choreId == chore.id && it.status == EntryStatus.DONE }
+            val done = entries.lastOrNull { it.status == EntryStatus.DONE }
             return if (done != null) ChoreView(chore, ChoreState.DONE, done.dueDay, done.dueDay, done) else ChoreView(chore, ChoreState.ANYTIME, null, null, null)
         }
         val r = chore.recurrence
         val after = { entry: ChoreEntry -> if (entry.status == EntryStatus.SKIPPED) ChoreState.SKIPPED else ChoreState.DONE }
         if (r.kind == RepeatKind.ONCE) {
-            val e = entryFor(data, chore.id, anchor)
+            val e = entryFor(entries, anchor)
             return when (e?.status) {
                 EntryStatus.DONE, EntryStatus.SKIPPED -> ChoreView(chore, after(e), anchor, anchor, e)
                 EntryStatus.DEFERRED -> open(chore, anchor, e.deferTo ?: anchor, e, today)
@@ -230,8 +230,8 @@ object HomeRules {
         }
         val next = Schedules.nextAfter(r, anchor, today) ?: anchor
         val last = Schedules.lastOnOrBefore(r, anchor, today)
-        val lastEntry = last?.let { entryFor(data, chore.id, it) }
-        val nextEntry = entryFor(data, chore.id, next)
+        val lastEntry = last?.let { entryFor(entries, it) }
+        val nextEntry = entryFor(entries, next)
         val doneEarly = nextEntry != null && nextEntry.status != EntryStatus.DEFERRED
         if (last != null && lastEntry?.status == EntryStatus.DEFERRED) return open(chore, last, lastEntry.deferTo ?: last, lastEntry, today)
         if (last != null && lastEntry == null && !doneEarly) return open(chore, last, last, null, today)
@@ -242,9 +242,11 @@ object HomeRules {
     }
 
     /** Every chore that is not archived, most pressing first: overdue (oldest first), due today, upcoming by date, whenever, then done and paused. */
-    fun views(data: HomeData, today: LocalDate): List<ChoreView> =
-        data.chores.filter { it.status != RecordStatus.ARCHIVED }.map { view(data, it, today) }
+    fun views(data: HomeData, today: LocalDate): List<ChoreView> {
+        val entries = data.entries.groupBy { it.choreId }
+        return data.chores.filter { it.status != RecordStatus.ARCHIVED }.map { view(it, entries[it.id].orEmpty(), today) }
             .sortedWith(compareBy<ChoreView> { order(it.state) }.thenBy { it.dueDay ?: LocalDate(9999, 1, 1) }.thenBy { it.chore.title.lowercase() })
+    }
 
     private fun order(s: ChoreState): Int = when (s) {
         ChoreState.OVERDUE -> 0; ChoreState.DUE -> 1; ChoreState.UPCOMING -> 2; ChoreState.ANYTIME -> 3
@@ -338,7 +340,10 @@ object HomeRules {
 
     // --- search ---------------------------------------------------------------------------------------------------------------
 
-    /** Every record whose words contain [text] (case ignored), by kind then title. Local and offline; each hit names its kind and opens its own record. */
+    /**
+     * Every record whose words contain [text] (case ignored), by kind then title. Local and offline; each hit names its kind and opens its own record,
+     * so what no list shows is left out: archived chores, supplies and items, finished one-time maintenance, and the warranties of an archived item.
+     */
     fun search(data: HomeData, text: String): List<Hit> {
         val q = text.trim().lowercase()
         if (q.isEmpty()) return emptyList()
@@ -346,11 +351,11 @@ object HomeRules {
         fun area(id: String?): String? = id?.let { a -> data.areas.firstOrNull { it.id == a }?.name }
         fun asset(id: String?): String? = id?.let { a -> data.assets.firstOrNull { it.id == a }?.name }
         val hits = mutableListOf<Hit>()
-        data.chores.filter { has(it.title, it.instructions, it.category, area(it.areaId)) }.forEach { hits += Hit(HitKind.CHORE, it.id, it.title, area(it.areaId) ?: it.category) }
+        data.chores.filter { it.status != RecordStatus.ARCHIVED && has(it.title, it.instructions, it.category, area(it.areaId)) }.forEach { hits += Hit(HitKind.CHORE, it.id, it.title, area(it.areaId) ?: it.category) }
         data.supplies.filter { !it.archived && has(it.name, it.category, it.notes, area(it.areaId)) }.forEach { hits += Hit(HitKind.SUPPLY, it.id, it.name, it.category) }
         data.assets.filter { !it.archived && has(it.name, it.category, it.brand, it.model, it.serial, it.notes, area(it.areaId)) }.forEach { hits += Hit(HitKind.ASSET, it.id, it.name, listOf(it.brand, it.model).filter { p -> p.isNotBlank() }.joinToString(" ")) }
-        data.schedules.filter { has(it.title, it.instructions, asset(it.assetId)) }.forEach { hits += Hit(HitKind.MAINTENANCE, it.id, it.title, asset(it.assetId).orEmpty()) }
-        data.warranties.filter { has(it.provider, it.coverage, it.reference, it.notes, asset(it.assetId)) }.forEach { hits += Hit(HitKind.WARRANTY, it.id, asset(it.assetId) ?: "Warranty", it.provider) }
+        data.schedules.filter { it.status != RecordStatus.ARCHIVED && has(it.title, it.instructions, asset(it.assetId)) }.forEach { hits += Hit(HitKind.MAINTENANCE, it.id, it.title, asset(it.assetId).orEmpty()) }
+        data.warranties.filter { w -> data.assets.none { it.id == w.assetId && it.archived } }.filter { has(it.provider, it.coverage, it.reference, it.notes, asset(it.assetId)) }.forEach { hits += Hit(HitKind.WARRANTY, it.id, asset(it.assetId) ?: "Warranty", it.provider) }
         data.references.filter { has(it.title, it.text, it.category, area(it.areaId), asset(it.assetId)) }.forEach { hits += Hit(HitKind.REFERENCE, it.id, it.title, it.category) }
         return hits.sortedWith(compareBy<Hit> { it.kind.ordinal }.thenBy { it.title.lowercase() })
     }
