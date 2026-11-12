@@ -93,52 +93,7 @@ internal fun mintSubtitle(model: AppModel): String {
 
 @Composable
 internal fun MintScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
-    MintGate(model) { ScreenSwitch(model.mintSection, depth = { if (it == null) 0 else 1 }) { section -> MintPage(model, section, openPokemon) } }
-}
-
-/** Whether Mint must ask for the phone's screen lock now: it was never opened with it, or the app or the Mint screens were left for longer than the grace. */
-private fun mintLocked(model: AppModel, gate: DeviceGate, now: Long): Boolean {
-    val away = maxOf(gate.leftAt(), model.mintLeftAt)
-    return model.mintUnlockedAt == 0L || (away > model.mintUnlockedAt && now - away > DeviceGate.GRACE_MILLIS)
-}
-
-/**
- * The optional access gate (MINT.md section 13.2): with the setting on and a screen lock on the phone, the Mint screens show a locked card until the person proves
- * themselves with that lock, and lock again after the app or the module has been left for a while. A door only: nothing is encrypted with it and no password is
- * made, so it can never make a record unreadable. Without a gate or a lock on the phone it shows the screens at once.
- */
-@OptIn(ExperimentalComposeUiApi::class)
-@Composable
-private fun MintGate(model: AppModel, content: @Composable () -> Unit) {
-    val gate = model.gate
-    if (gate == null || !model.mintData.settings.gate || !gate.available()) { content(); return }
-    var locked by remember { mutableStateOf(mintLocked(model, gate, model.store.nowMillis)) }
-    var failed by remember { mutableStateOf(false) }
-    DisposableEffect(Unit) { onDispose { model.mintLeftAt = model.store.nowMillis } }
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    LaunchedEffect(locked) {
-        while (!locked) {
-            val now = model.store.nowMillis
-            // Coming back inside the grace keeps it open. Only while the app is in front: a tick after the app was left must not count as being back, or the door would never close again.
-            if (mintLocked(model, gate, now)) locked = true
-            else if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) model.mintUnlockedAt = now
-            kotlinx.coroutines.delay(1_000)
-        }
-    }
-    if (!locked) { content(); return }
-    fun ask() { gate.authenticate { ok -> if (ok) { model.mintUnlockedAt = model.store.nowMillis; failed = false; locked = false } else failed = true } }
-    LaunchedEffect(Unit) { ask() }
-    val toModules = { model.module = null }
-    BackHandler(enabled = true, onBack = toModules)
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("Mint is locked")
-            Text("Use your phone's screen lock to open it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            if (failed) Report(model, "That did not open it.", tone = NoticeTone.WARNING)
-            PixelButton("Unlock", ::ask, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent)
-            PixelButton("Back", toModules, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-        }
-    }
+    ScreenLockGate(model, Module.MINT, model.mintData.settings.gate) { ScreenSwitch(model.mintSection, depth = { if (it == null) 0 else 1 }) { section -> MintPage(model, section, openPokemon) } }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -599,6 +554,8 @@ private fun BudgetsView(model: AppModel) {
     var message by remember { mutableStateOf<String?>(null) }
     var openId by remember { mutableStateOf<String?>(null) }
     var newAmount by remember { mutableStateOf("") }
+    var newPeriod by remember { mutableStateOf(BudgetPeriod.MONTHLY) }
+    var editMessage by remember { mutableStateOf<String?>(null) }
     val currency = data.settings.currency
     val budgets = data.budgets.filter { it.status != PlanStatus.ARCHIVED }
     if (budgets.isNotEmpty()) TextBox {
@@ -609,7 +566,7 @@ private fun BudgetsView(model: AppModel) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                     ListRow(
                         trail = { Text(if (b.status == PlanStatus.PAUSED) "paused" else "${p.percent ?: 0}%", style = MaterialTheme.typography.titleSmall) },
-                        onClick = { openId = if (openId == b.id) null else b.id; newAmount = Money.plain(b.plannedMinor, b.currency) }, onClickLabel = "Show options",
+                        onClick = { openId = if (openId == b.id) null else b.id; newAmount = Money.plain(b.plannedMinor, b.currency); newPeriod = b.period; editMessage = null }, onClickLabel = "Show options",
                     ) {
                         Column {
                             Text("$label · ${b.period.label.lowercase()}", style = MaterialTheme.typography.bodyLarge)
@@ -624,7 +581,16 @@ private fun BudgetsView(model: AppModel) {
                     if (openId == b.id) {
                         PixelField(newAmount, { newAmount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Planned amount (${b.currency})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                            PixelButton("Save", { Money.parse(newAmount, b.currency)?.let { if (mint.updateBudgetAmount(b.id, it)) openId = null } }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
+                            BudgetPeriod.entries.forEach { per -> Chip(per.label, per == newPeriod, { newPeriod = per }, Modifier.weight(1f)) }
+                        }
+                        editMessage?.let { Report(model, it, NoticeTone.WARNING) }
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                            PixelButton("Save", {
+                                val minor = Money.parse(newAmount, b.currency)
+                                val out = minor?.let { mint.updateBudget(b.id, it, newPeriod) }
+                                editMessage = if (minor == null) "Check the amount." else out?.refused
+                                if (out?.record != null) openId = null
+                            }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = Money.parse(newAmount, b.currency) != null, compact = true)
                             PixelButton(if (b.status == PlanStatus.PAUSED) "Resume" else "Pause", { mint.setBudgetStatus(b.id, if (b.status == PlanStatus.PAUSED) PlanStatus.ACTIVE else PlanStatus.PAUSED); openId = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                             PixelButton("Delete", { val before = model.mintData; mint.deleteBudget(b.id); openId = null; model.offerUndo("Deleted: budget") { mint.restore(before) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         }
@@ -677,6 +643,7 @@ private fun BillsView(model: AppModel) {
     var partial by remember { mutableStateOf("") }
     var paidOn by remember { mutableStateOf<LocalDate?>(null) }
     var manage by remember { mutableStateOf(false) }
+    var showSettled by remember { mutableStateOf(false) }
     // Settling takes the occurrence off the list, so every settlement offers an undo.
     fun settle(o: Occurrence, status: SettleStatus, paid: Long, label: String) {
         val before = model.mintData
@@ -689,7 +656,7 @@ private fun BillsView(model: AppModel) {
             PixelTitle("To settle")
             upcoming.forEach { o ->
                 val key = o.bill.id + o.dueDay
-                OccurrenceRow(model, o, openKey == key) { openKey = if (openKey == key) null else key; partial = ""; paidOn = null }
+                OccurrenceRow(model, o, openKey == key) { openKey = if (openKey == key) null else key; partial = o.payment?.paidMinor?.let { Money.plain(it, o.bill.currency) }.orEmpty(); paidOn = null }
                 if (openKey == key) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
                     val full = o.remainingMinor ?: o.bill.expectedMinor
                     Text("Marking a bill paid does not add a transaction; add one in Activity if you want the money to leave an account.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -705,6 +672,34 @@ private fun BillsView(model: AppModel) {
                         if (full != null) PixelButton("Part", { Money.parse(partial, o.bill.currency)?.let { settle(o, SettleStatus.PARTIAL, it, "Part paid") } }, Modifier.weight(1f), Pixel.InkSoft, enabled = Money.parse(partial, o.bill.currency) != null, compact = true)
                         PixelButton("Skip", { settle(o, SettleStatus.SKIPPED, 0, "Skipped") }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                         if (o.payment != null) PixelButton("Undo", { mint.unsettle(o.bill.id, o.dueDay); openKey = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                    }
+                }
+            }
+        }
+    }
+    // Paid and skipped occurrences leave the list above; they stay here for a while, so a wrong amount or a slip can be settled again or taken back.
+    val settled = MintRules.settled(data, today)
+    if (settled.isNotEmpty()) TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            PixelButton(if (showSettled) "Hide settled" else "Settled lately (${settled.size})", { showSettled = !showSettled; openKey = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            if (showSettled) settled.forEach { o ->
+                val key = "settled" + o.bill.id + o.dueDay
+                val p = o.payment
+                OccurrenceRow(model, o, openKey == key, paid = true) {
+                    openKey = if (openKey == key) null else key
+                    partial = p?.takeIf { it.status != SettleStatus.SKIPPED }?.let { Money.plain(it.paidMinor, o.bill.currency) } ?: o.bill.expectedMinor?.let { Money.plain(it, o.bill.currency) }.orEmpty()
+                    paidOn = p?.settledDay
+                }
+                if (openKey == key) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
+                    val minor = Money.parse(partial, o.bill.currency)
+                    PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount paid (${o.bill.currency})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    SectionLabel("Settled on")
+                    PixelDateField(paidOn ?: today, today, ModuleAccent.MINT.accent, { paidOn = it }, presets = listOf("Today" to 0, "Yesterday" to -1), max = today)
+                    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                        PixelButton("Paid", { minor?.let { settle(o, SettleStatus.PAID, it, "Paid") } }, Modifier.weight(1f), ModuleAccent.MINT.accent, enabled = minor != null, compact = true)
+                        if (o.bill.expectedMinor != null) PixelButton("Part", { minor?.let { settle(o, SettleStatus.PARTIAL, it, "Part paid") } }, Modifier.weight(1f), Pixel.InkSoft, enabled = minor != null, compact = true)
+                        if (o.state != OccurrenceState.SKIPPED) PixelButton("Skip", { settle(o, SettleStatus.SKIPPED, 0, "Skipped") }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                        PixelButton("Undo", { val before = model.mintData; mint.unsettle(o.bill.id, o.dueDay); openKey = null; model.offerUndo("Unsettled: ${o.bill.name}") { mint.restore(before) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }
             }
@@ -772,10 +767,11 @@ private fun BillsView(model: AppModel) {
 }
 
 @Composable
-private fun OccurrenceRow(model: AppModel, o: Occurrence, open: Boolean, onClick: () -> Unit) {
-    val amount = o.remainingMinor ?: o.bill.expectedMinor
+private fun OccurrenceRow(model: AppModel, o: Occurrence, open: Boolean, paid: Boolean = false, onClick: () -> Unit) {
+    // A settled occurrence shows what was paid; one still to settle shows what is left.
+    val amount = if (paid) o.payment?.paidMinor?.takeIf { o.state != OccurrenceState.SKIPPED } else o.remainingMinor ?: o.bill.expectedMinor
     ListRow(
-        trail = { Text(amount?.let { model.mint.show(it, o.bill.currency) } ?: "varies", style = MaterialTheme.typography.titleSmall) },
+        trail = { Text(amount?.let { model.mint.show(it, o.bill.currency) } ?: if (paid) "" else "varies", style = MaterialTheme.typography.titleSmall) },
         onClick = onClick, onClickLabel = if (open) "Hide options" else "Show options",
     ) {
         Column {
@@ -926,7 +922,7 @@ private fun MintSettingsView(model: AppModel) {
                     detail = "Mint stays closed until your phone's own lock (PIN, pattern, password or fingerprint) opens it, and closes again after you leave. It does not change how your records are kept, and it cannot lock you out of them.",
                 ) { on ->
                     if (!on) mint.setGate(false)
-                    else gate.authenticate { ok -> if (ok) { mint.setGate(true); model.mintUnlockedAt = model.store.nowMillis } }
+                    else gate.authenticate { ok -> if (ok) { mint.setGate(true); model.moduleUnlockedAt[Module.MINT.name] = model.store.nowMillis } }
                 } else Text("Set a screen lock on this phone first, and Mint can ask for it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
             PixelTitle("Currency")

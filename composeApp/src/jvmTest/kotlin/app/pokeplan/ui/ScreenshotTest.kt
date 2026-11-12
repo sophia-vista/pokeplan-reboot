@@ -1163,6 +1163,13 @@ class ScreenshotTest {
         mint("mint-bills-reminders", app.pokeplan.ui.screens.MintSection.BILLS, height = 2600, settings = { it.mint.setBillReminders(true) })
     }
 
+    /** A paid bill leaves the list to settle and waits under "Settled lately", where it can be settled again (REP-025). */
+    @Test
+    fun mintBillsSettled() = mint("mint-bills-settled", app.pokeplan.ui.screens.MintSection.BILLS, height = 2200, settings = { m ->
+        val bill = m.mint.data.bills.first { it.name == "Internet" }
+        m.mint.settle(bill.id, bill.firstDue, app.pokeplan.mint.SettleStatus.PAID, 149_900)
+    })
+
     /** An expedition box at several points of its scroll: a bay's rim must close at the bottom and the frame corner stays whole (owner: "this L seems to be missing something"). */
     @Test
     fun tileBoxCorners() {
