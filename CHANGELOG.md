@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.171.3
+## 0.171.4
 
 HOME audit (end to end: rules, store, reminders, screens). No reward number changes; `RewardRules.VERSION` is unchanged.
 
@@ -17,6 +17,9 @@ HOME audit (end to end: rules, store, reminders, screens). No reward number chan
 - **A chore's instructions show when it is opened**, as maintenance instructions already did; they were visible only inside the edit form.
 - Faster: the chore list reads the history once instead of once per chore, and the Home menu works out the overview once, not twice. Smaller: an unreachable branch and a wrapper in `Schedules`, and a never-set error in the schedule options, are gone.
 - What was left for the owner to decide is REP-029 in the backlog.
+
+## 0.171.3
+
 WORLD story rewrite, first pass (scripts only; no rules, rewards or scene ids change).
 
 - **The opening, Rescue Team and the first four Explorers chapters are rewritten** for warmth and continuity: the lunch Mew steals in scene 1 comes back in scene 6, the Sentret siblings and Pelly's and Braviary's habits recur, the visiting team sleeps in the loft over Persian's bank and walks the Rescue Team's roads one step behind (blanket, berries and all), and Hoopa now drops the team into Explorers with a joke instead of a lecture. Side characters get small lives of their own (Dugtrio's worried family, Caterpie's waiting, Bidoof's third apple).
