@@ -714,6 +714,17 @@ class HomeRulesTest {
         assertEquals(listOf(Hit(HitKind.WARRANTY, "w", "Warranty", "Acme")), HomeRules.search(orphan, "acme"))
     }
 
+    @Test
+    fun searchLeavesOutWhatNoListShows() {
+        val data = HomeData(
+            chores = listOf(chore("live", title = "Dust shelf"), chore("old", status = RecordStatus.ARCHIVED, title = "Dust attic"), chore("held", status = RecordStatus.PAUSED, title = "Dust lamp")),
+            assets = listOf(Asset("gone", "Dusty fan", archived = true)),
+            schedules = listOf(schedule("Dust filter", "2026-12-01"), schedule("Dust vent", "2026-10-01", status = RecordStatus.ARCHIVED)),
+            warranties = listOf(Warranty("w", "gone", provider = "Dustco")),
+        )
+        assertEquals(listOf("held", "live", "Dust filter"), HomeRules.search(data, "dust").map { it.id })
+    }
+
     // --- Habitat Discovery: what may pay -------------------------------------------------------------------------------
 
     @Test

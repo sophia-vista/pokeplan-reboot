@@ -5,6 +5,19 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.171.4
+
+HOME audit (end to end: rules, store, reminders, screens). No reward number changes; `RewardRules.VERSION` is unchanged.
+
+- **Editing a maintenance schedule no longer moves the date it counts from.** Any edit, a rename included, reset the start date to the next date, so a monthly job begun on the 31st and standing at 28 February drifted to the 28th for good. The start now moves only when the next date or the kind of repeat changes.
+- **A tick can be taken back wherever it was made.** Ticking a chore or maintenance offers Undo. Before, a chore ticked on the overview, or an overdue repeating chore ticked anywhere, left no row to undo it from, and finished maintenance could not be undone at all (deleting its record left the schedule moved on).
+- **Search opens something every time.** Archived chores, finished one-time maintenance and the warranties of an archived item were found and then opened an empty list; a chore done today opened the wrong tab.
+- **Warranties can be edited** (tap one); before, a typo meant deleting and typing it again. Archived items can be deleted, like archived chores and supplies.
+- **"Bought" on a low supply asks for the new quantity.** Saving it blank did nothing and left the supply on the list.
+- **A chore's instructions show when it is opened**, as maintenance instructions already did; they were visible only inside the edit form.
+- Faster: the chore list reads the history once instead of once per chore, and the Home menu works out the overview once, not twice. Smaller: an unreachable branch and a wrapper in `Schedules`, and a never-set error in the schedule options, are gone.
+- What was left for the owner to decide is REP-029 in the backlog.
+
 ## 0.171.3
 
 WORLD story rewrite, first pass (scripts only; no rules, rewards or scene ids change).
