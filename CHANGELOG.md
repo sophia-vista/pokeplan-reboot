@@ -5,6 +5,13 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.171.3
+
+WORLD story rewrite, first pass (scripts only; no rules, rewards or scene ids change).
+
+- **The opening, Rescue Team and the first four Explorers chapters are rewritten** for warmth and continuity: the lunch Mew steals in scene 1 comes back in scene 6, the Sentret siblings and Pelly's and Braviary's habits recur, the visiting team sleeps in the loft over Persian's bank and walks the Rescue Team's roads one step behind (blanket, berries and all), and Hoopa now drops the team into Explorers with a joke instead of a lecture. Side characters get small lives of their own (Dugtrio's worried family, Caterpie's waiting, Bidoof's third apple).
+- Still to do: Explorers 5 to 8, both post-story sets and the four regions.
+
 ## 0.171.2
 
 Gear audit (end to end: the 18 tools, their saved state, the Android adapters). Nothing here pays, so no reward number changes.
