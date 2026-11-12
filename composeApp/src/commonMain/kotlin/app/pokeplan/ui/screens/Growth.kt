@@ -207,7 +207,7 @@ internal fun GoalsView(model: AppModel) {
                 // Optional, and only a date to aim for: nothing happens when it passes.
                 DayPicker(
                     "Target date", targetDate, store.today, listOf("In a month" to 30, "In 3 months" to 91, "In 6 months" to 182),
-                    noneLabel = "No date", step = 7, onChange = { targetDate = it },
+                    noneLabel = "No date", onChange = { targetDate = it },
                 )
             }
         }
@@ -215,10 +215,15 @@ internal fun GoalsView(model: AppModel) {
     if (model.data.goals.isEmpty()) {
         TextBox { Text("Goals are bigger aims. Break one into small milestones and each finished one earns a Super Candy.", style = MaterialTheme.typography.bodyLarge) }
     }
+    var editingGoal by remember { mutableStateOf<String?>(null) }
     model.data.goals.forEach { g ->
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Text(g.title, style = MaterialTheme.typography.titleMedium)
+                if (editingGoal == g.id) GoalEditor(model, g) { editingGoal = null }
+                else Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Text(g.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                    PixelIconButton("pencil", "Edit ${g.title}", { editingGoal = g.id }, Pixel.Blue)
+                }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Box(Modifier.size(10.dp).background(categoryColor(g.category), PixelShape))
                     Text(
@@ -231,10 +236,24 @@ internal fun GoalsView(model: AppModel) {
                 val progress = "$done of ${g.milestones.size} milestones"
                 PixelBar(GoalRules.progress(g, model.data.tasks).toFloat(), color = Pixel.Green, label = progress)
                 if (g.milestones.isNotEmpty()) Text(progress, style = MaterialTheme.typography.bodyMedium)
+                var editingMilestone by remember(g.id) { mutableStateOf<String?>(null) }
                 g.milestones.forEach { m ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    if (editingMilestone == m.id) {
+                        var text by remember(m.id) { mutableStateOf(m.title) }
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                            PixelField(text, { text = it }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
+                            PixelIconButton("check", "Save milestone", { store.renameMilestone(g.id, m.id, text); editingMilestone = null }, Pixel.Green, enabled = text.isNotBlank())
+                            PixelIconButton("trash", "Remove milestone", {
+                                val before = model.data.goals
+                                store.deleteMilestone(g.id, m.id); editingMilestone = null
+                                model.offerUndo("Removed: ${m.title}") { store.restoreGoals(before) }
+                            }, Pixel.InkSoft)
+                        }
+                    } else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                         Text(m.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (m.isDone) Pixel.InkSoft else Pixel.Ink)
-                        if (!m.isDone) PixelIconButton("check", "Done", { store.completeMilestone(g.id, m.id) }, Pixel.Green)
+                        PixelIconButton("pencil", "Edit ${m.title}", { editingMilestone = m.id }, Pixel.Blue)
+                        if (m.isDone) PixelIconButton("undo", "Untick ${m.title}", { store.reopenMilestone(g.id, m.id) }, Pixel.InkSoft)
+                        else PixelIconButton("check", "Done", { store.completeMilestone(g.id, m.id) }, Pixel.Green)
                     }
                 }
                 var step by remember(g.id) { mutableStateOf("") }
@@ -248,6 +267,30 @@ internal fun GoalsView(model: AppModel) {
                     PixelIconButton("plus", "Add", { store.addMilestone(g.id, step); step = "" }, Pixel.InkSoft, enabled = step.isNotBlank())
                 }
             }
+        }
+    }
+}
+
+/** A goal's words, category and date, and removing it (with an undo; its milestones go with it). */
+@Composable
+private fun GoalEditor(model: AppModel, g: app.pokeplan.plan.Goal, onClose: () -> Unit) {
+    val store = model.store
+    var title by remember(g.id) { mutableStateOf(g.title) }
+    var category by remember(g.id) { mutableStateOf(g.category) }
+    var date by remember(g.id) { mutableStateOf(g.targetDate) }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Goal")
+        FieldLabel("Category")
+        CategoryChips(category) { category = it ?: category }
+        DayPicker("Target date", date, store.today, listOf("In a month" to 30, "In 3 months" to 91, "In 6 months" to 182), noneLabel = "No date") { date = it }
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            PixelButton("Save", { store.editGoal(g.id, title, category, date); onClose() }, Modifier.weight(1f), Pixel.Green, enabled = title.isNotBlank())
+            PixelButton("Cancel", onClose, Modifier.weight(1f), Pixel.InkSoft)
+            PixelIconButton("trash", "Delete ${g.title}", {
+                val before = model.data.goals
+                store.deleteGoal(g.id); onClose()
+                model.offerUndo("Deleted: ${g.title}") { store.restoreGoals(before) }
+            }, Pixel.InkSoft)
         }
     }
 }

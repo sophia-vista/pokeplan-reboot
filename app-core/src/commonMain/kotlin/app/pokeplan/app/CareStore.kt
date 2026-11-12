@@ -190,6 +190,12 @@ class CareStore(
         return data.visitors
     }
 
+    /**
+     * Brings the day's arrivals and a possible reunion, once per day. Care's landing page and the Meadow call this when they open, so the
+     * landing page knows a friend is back too; the getters below still do the same on first use, for callers that skip it.
+     */
+    fun arrive() { visitors(); reunion() }
+
     /** The visitors in the meadow, and the ones waiting for a place. */
     fun meadow(): List<Visitor> = Visitors.meadow(visitors())
     fun queued(): List<Visitor> = Visitors.queue(visitors())
@@ -398,9 +404,9 @@ class CareStore(
         document.update { it.copy(journalDraft = text.take(5_000)) }
     }
 
-    fun editEntry(id: String, text: String) {
+    fun editEntry(id: String, text: String, tags: Set<String>? = null) {
         if (text.isBlank()) return
-        update { d -> d.copy(journal = d.journal.map { if (it.id == id) it.copy(text = text.trim()) else it }) }
+        update { d -> d.copy(journal = d.journal.map { if (it.id == id) it.copy(text = text.trim(), tags = tags ?: it.tags) else it }) }
     }
 
     fun deleteEntry(id: String) = update { d -> d.copy(journal = d.journal.filterNot { it.id == id }) }

@@ -216,6 +216,13 @@ class CareStoreTest {
         assertEquals(listOf("A walk by the river"), s.care.searchJournal("OUTSIDE").map { it.text })
         s.care.editEntry(s.care.data.journal.first().id, "A long walk")
         assertEquals(listOf("A long walk"), s.care.searchJournal("long").map { it.text })
+        // Tags change with the text; a blank text changes nothing.
+        val id = s.care.data.journal.first().id
+        s.care.editEntry(id, "A long walk", setOf("Rest"))
+        assertEquals(setOf("Rest"), s.care.data.journal.first { it.id == id }.tags)
+        s.care.editEntry(id, "   ", setOf("Work"))
+        assertEquals("A long walk", s.care.data.journal.first { it.id == id }.text)
+        assertEquals(setOf("Rest"), s.care.data.journal.first { it.id == id }.tags)
     }
 
     @Test

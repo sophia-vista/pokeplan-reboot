@@ -444,6 +444,70 @@ class GameStoreTest {
     }
 
     @Test
+    fun goalsAndMilestonesCanBeEditedRemovedAndUnticked() {
+        val (s, clock) = started()
+        val goal = s.addGoal("Learn guitar")
+        s.addMilestone(goal.id, "First chord")
+        s.addMilestone(goal.id, "Second chord")
+        val first = s.data.goals.single().milestones.first()
+        s.editGoal(goal.id, "  Learn the guitar ", app.pokeplan.plan.Category.PERSONAL, s.today)
+        assertEquals("Learn the guitar", s.data.goals.single().title)
+        assertEquals(s.today, s.data.goals.single().targetDate)
+        s.editGoal(goal.id, "   ", app.pokeplan.plan.Category.PERSONAL, null)
+        assertEquals("Learn the guitar", s.data.goals.single().title, "a blank title changes nothing")
+        s.renameMilestone(goal.id, first.id, "G chord")
+        assertEquals("G chord", s.data.goals.single().milestones.first().title)
+        // A paid milestone that is unticked and ticked again pays nothing more.
+        clock.advance(25 * 3_600_000L)
+        assertTrue(s.completeMilestone(goal.id, first.id).pays)
+        s.reopenMilestone(goal.id, first.id)
+        assertFalse(s.data.goals.single().milestones.first().isDone)
+        assertFalse(s.completeMilestone(goal.id, first.id).pays)
+        assertEquals(1, s.data.player.inventory[Items.SUPER_CANDY])
+        // Removing and undoing.
+        val before = s.data.goals
+        s.deleteMilestone(goal.id, first.id)
+        assertEquals(1, s.data.goals.single().milestones.size)
+        s.restoreGoals(before)
+        assertEquals(2, s.data.goals.single().milestones.size)
+        s.deleteGoal(goal.id)
+        assertTrue(s.data.goals.isEmpty())
+    }
+
+    @Test
+    fun stepsAndTargetsCanBeRenamedRemovedAndEdited() {
+        val (s, clock) = started()
+        val task = s.addTask("Tidy", Rank.E)
+        s.addSubtask(task.id, "Desk")
+        s.addSubtask(task.id, "Shelf")
+        val desk = s.data.tasks.first { it.id == task.id }.subtasks.first()
+        s.renameSubtask(task.id, desk.id, " Desk drawers ")
+        assertEquals("Desk drawers", s.data.tasks.first { it.id == task.id }.subtasks.first().title)
+        clock.advance(25 * 3_600_000L)
+        assertTrue(s.completeSubtask(task.id, desk.id))
+        s.reopenSubtask(task.id, desk.id)
+        assertFalse(s.data.tasks.first { it.id == task.id }.subtasks.first().done)
+        assertFalse(s.completeSubtask(task.id, desk.id), "a step pays once")
+        val steps = s.data.tasks.first { it.id == task.id }.subtasks
+        s.removeSubtask(task.id, desk.id)
+        assertEquals(1, s.data.tasks.first { it.id == task.id }.subtasks.size)
+        s.restoreSubtasks(task.id, steps)
+        assertEquals(2, s.data.tasks.first { it.id == task.id }.subtasks.size)
+
+        val series = s.addFrequencyTask("Stretch", HabitTarget.Daily)
+        s.completeFrequencyTask(series.template.id)
+        s.editFrequencyTask(series.template.id, "Stretch well", HabitTarget.PerWeek(3), Rank.D, app.pokeplan.plan.Category.HEALTH)
+        val edited = s.frequencyTasks().single()
+        assertEquals("Stretch well", edited.template.title)
+        assertEquals(1, edited.completions.size, "its history is kept")
+        val before = s.data.series
+        s.deleteFrequencyTask(series.template.id)
+        assertTrue(s.frequencyTasks().isEmpty())
+        s.restoreSeries(before)
+        assertEquals(1, s.frequencyTasks().size)
+    }
+
+    @Test
     fun theWeeklyReviewPaysABerryOnceAndCarriesTasksForward() {
         val (s, _) = started()
         val open = s.addTask("Unfinished", Rank.C, planned = s.today)

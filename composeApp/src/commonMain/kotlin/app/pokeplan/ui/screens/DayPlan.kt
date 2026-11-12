@@ -106,7 +106,6 @@ private val LabelWidth = 48.dp
 private val blockShape = PixelShape
 
 /** How far ahead the day view goes (recurring tasks are generated 14 days ahead). */
-private const val DAYS_AHEAD = 13
 
 internal fun categoryColor(c: Category) = when (c) {
     Category.WORK -> Pixel.Blue
@@ -266,7 +265,10 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     var draft by remember { mutableStateOf<Draft?>(null) }
     var monthOffset by remember { mutableStateOf(0) }
     val month = monthGrid(store.today, monthOffset, model.data.settings.weekStartsOnMonday)
-    val days = if (week) (0 until 7).map { store.today.plus(DatePeriod(days = weekOffset * 7 + it)) }
+    // A week is the calendar week (it starts on the day set in Settings), and the arrows page freely, back and forward.
+    val firstDow = model.data.settings.weekStart
+    val weekFirst = app.pokeplan.plan.Streaks.weekStartOf(store.today, firstDow).plus(DatePeriod(days = weekOffset * 7))
+    val days = if (week) (0 until 7).map { weekFirst.plus(DatePeriod(days = it)) }
     else listOf(store.today.plus(DatePeriod(days = offset)))
     // The days whose phone events are read: the grid's in a month.
     val range = if (mode == 2) month.days else days
@@ -317,8 +319,8 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
     if (mode == 2) {
         MonthView(
             model, month, tasks, shownEvents, monthOffset, { monthOffset = it }, mode, { mode = it },
-            openDay = { day -> offset = store.today.daysUntil(day).coerceIn(0, DAYS_AHEAD); mode = 0 },
-            canOpen = { day -> store.today.daysUntil(day) in 0..DAYS_AHEAD },
+            openDay = { day -> offset = store.today.daysUntil(day); mode = 0 },
+            canOpen = { true },
         )
         return
     }
@@ -327,23 +329,21 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             // Like Fantastical and Google Calendar: what is shown and the arrows on one line, the view switch and the one
             // action under it, then (for a day) a strip of the week's days to jump between, then straight to the hours.
-            val away = if (week) weekOffset > 0 else offset > 0
+            val away = if (week) weekOffset != 0 else offset != 0
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f).semantics(mergeDescendants = true) { heading() }) {
                     Text(
                         if (week) "${days.first().dayMonth()} – ${days.last().dayMonth()}"
-                        else when (offset) { 0 -> "Today"; 1 -> "Tomorrow"; else -> dayNames[days.first().dayOfWeek.ordinal] },
+                        else when (offset) { -1 -> "Yesterday"; 0 -> "Today"; 1 -> "Tomorrow"; else -> dayNames[days.first().dayOfWeek.ordinal] },
                         style = MaterialTheme.typography.titleSmall,
                     )
                     Text(
-                        if (week) (if (weekOffset == 0) "Next 7 days" else "The week after") else days.first().short(),
+                        if (week) (when (weekOffset) { -1 -> "Last week"; 0 -> "This week"; 1 -> "Next week"; else -> "" }) else days.first().short(),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
-                ArrowButton("‹", if (week) "Earlier week" else "Day before", enabled = away) { if (week) weekOffset = 0 else offset -= 1 }
-                ArrowButton("›", if (week) "Later week" else "Next day", enabled = if (week) weekOffset < 1 else offset < DAYS_AHEAD) {
-                    if (week) weekOffset = 1 else offset += 1
-                }
+                ArrowButton("‹", if (week) "Earlier week" else "Day before", enabled = true) { if (week) weekOffset -= 1 else offset -= 1 }
+                ArrowButton("›", if (week) "Later week" else "Next day", enabled = true) { if (week) weekOffset += 1 else offset += 1 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 Segmented(listOf("Day", "Week", "Month"), mode) { mode = it }
@@ -358,7 +358,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
             }
 
             if (!week) {
-                DayStrip(store.today, offset, busy = { day -> tasks.any { it.isOpen && it.planned == day } || own.any { it.isOn(day) } }) { offset = it }
+                DayStrip(store.today, offset, firstDow, busy = { day -> tasks.any { it.isOpen && it.planned == day } || own.any { it.isOn(day) } }) { offset = it }
                 val plan = plans.single()
                 val load = DayLoad.compute(plan.blocks.map { it.task }.filter { it.isOpen } + plan.tray, busyMinutes = plan.busyMinutes)
                 Text(
@@ -483,12 +483,13 @@ private fun DayCell(day: LocalDate, today: LocalDate, chosen: Boolean, busy: Boo
  * a dot marks a day that has something planned. Days past how far the planner looks ahead are greyed out.
  */
 @Composable
-private fun DayStrip(today: LocalDate, offset: Int, busy: (LocalDate) -> Boolean, open: (Int) -> Unit) {
-    val first = offset / 7 * 7
+private fun DayStrip(today: LocalDate, offset: Int, weekStart: kotlinx.datetime.DayOfWeek, busy: (LocalDate) -> Boolean, open: (Int) -> Unit) {
+    // The calendar week the day is in, starting on the day set in Settings.
+    val first = today.daysUntil(app.pokeplan.plan.Streaks.weekStartOf(today.plus(DatePeriod(days = offset)), weekStart))
     Row(Modifier.fillMaxWidth()) {
         (first until first + 7).forEach { i ->
             val day = today.plus(DatePeriod(days = i))
-            DayCell(day, today, chosen = i == offset, busy = busy(day), enabled = i <= DAYS_AHEAD, "Open the day", { open(i) }, Modifier.weight(1f))
+            DayCell(day, today, chosen = i == offset, busy = busy(day), enabled = true, "Open the day", { open(i) }, Modifier.weight(1f))
         }
     }
 }

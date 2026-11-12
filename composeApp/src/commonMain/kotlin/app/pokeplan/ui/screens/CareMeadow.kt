@@ -62,7 +62,7 @@ import androidx.compose.ui.semantics.liveRegion
 @Composable
 internal fun MeadowView(model: AppModel, goPlay: (String) -> Unit) {
     val care = model.care
-    androidx.compose.runtime.LaunchedEffect(care.today) { care.visitors(); care.reunion() }
+    androidx.compose.runtime.LaunchedEffect(care.today) { care.arrive() }
     val buddy = model.store.careBuddy ?: model.data.player.buddy
     val meadow = Visitors.meadow(model.careData.visitors)
     val waiting = Visitors.queue(model.careData.visitors).size

@@ -861,6 +861,24 @@ class GameStore(
         }
     }
 
+    /** Renames a step. A blank title changes nothing. */
+    fun renameSubtask(taskId: String, subtaskId: String, title: String) {
+        val clean = title.trim().ifEmpty { return }
+        update { d -> d.copy(tasks = d.tasks.map { t -> if (t.id == taskId) t.copy(subtasks = t.subtasks.map { if (it.id == subtaskId) it.copy(title = clean) else it }) else t }) }
+    }
+
+    /** Takes a step off a task. A step that already paid keeps its reward (nothing is taken back). */
+    fun removeSubtask(taskId: String, subtaskId: String) =
+        update { d -> d.copy(tasks = d.tasks.map { t -> if (t.id == taskId) t.copy(subtasks = t.subtasks.filterNot { it.id == subtaskId }) else t }) }
+
+    /** Unticks a step. It stays marked as paid, so ticking it again pays nothing more. */
+    fun reopenSubtask(taskId: String, subtaskId: String) =
+        update { d -> d.copy(tasks = d.tasks.map { t -> if (t.id == taskId) t.copy(subtasks = t.subtasks.map { if (it.id == subtaskId) it.copy(done = false) else it }) else t }) }
+
+    /** Puts a task's steps back as they were (for an undo). */
+    fun restoreSubtasks(taskId: String, subtasks: List<Subtask>) =
+        update { d -> d.copy(tasks = d.tasks.map { if (it.id == taskId) it.copy(subtasks = subtasks) else it }) }
+
     /** A repeating task. Its next instances are created straight away and topped up by [refresh]. */
     fun addRecurring(template: Task, recurrence: Recurrence) {
         val seriesId = newId()
@@ -967,6 +985,18 @@ class GameStore(
         return series
     }
 
+    /** Changes a target's words, how often, rank or category. Its history of completions is kept. A blank title changes nothing. */
+    fun editFrequencyTask(id: String, title: String, target: FrequencyTarget, rank: Rank, category: Category) {
+        val clean = title.trim().ifEmpty { return }
+        update { d -> d.copy(series = d.series.map { if (it.template.id == id && it.isFrequency) it.copy(template = it.template.copy(title = clean, rank = rank, category = category), target = target) else it }) }
+    }
+
+    /** Removes a target and its history. [restoreSeries] brings it back. */
+    fun deleteFrequencyTask(id: String) = update { d -> d.copy(series = d.series.filterNot { it.template.id == id && it.isFrequency }) }
+
+    /** Puts the recurring tasks and targets back as they were (for an undo). */
+    fun restoreSeries(series: List<TaskSeries>) = update { it.copy(series = series) }
+
     /** Marks a frequency task done for [date]; the first completion of the day pays like a task, and never twice for the same day. */
     fun completeFrequencyTask(id: String, date: LocalDate = today) {
         val series = data.series.first { it.template.id == id && it.isFrequency }
@@ -1000,6 +1030,31 @@ class GameStore(
         val clean = title.trim().ifEmpty { return }
         update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) GoalRules.addMilestone(g, Milestone(newId(), clean, nowMillis)) else g }) }
     }
+
+    /** Changes a goal's title, category and date. A blank title changes nothing. */
+    fun editGoal(goalId: String, title: String, category: Category, targetDate: LocalDate?) {
+        val clean = title.trim().ifEmpty { return }
+        update { d -> d.copy(goals = d.goals.map { if (it.id == goalId) it.copy(title = clean, category = category, targetDate = targetDate) else it }) }
+    }
+
+    fun deleteGoal(goalId: String) = update { d -> d.copy(goals = d.goals.filterNot { it.id == goalId }) }
+
+    /** Renames a milestone. A blank title changes nothing. */
+    fun renameMilestone(goalId: String, milestoneId: String, title: String) {
+        val clean = title.trim().ifEmpty { return }
+        update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) g.copy(milestones = g.milestones.map { if (it.id == milestoneId) it.copy(title = clean) else it }) else g }) }
+    }
+
+    /** Takes a milestone off a goal; one that already paid keeps its reward. */
+    fun deleteMilestone(goalId: String, milestoneId: String) =
+        update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) g.copy(milestones = g.milestones.filterNot { it.id == milestoneId }) else g }) }
+
+    /** Unticks a milestone. It stays marked as paid, so ticking it again pays nothing more. */
+    fun reopenMilestone(goalId: String, milestoneId: String) =
+        update { d -> d.copy(goals = d.goals.map { if (it.id == goalId) GoalRules.reopenMilestone(it, milestoneId) else it }) }
+
+    /** Puts the goals back as they were (for an undo). */
+    fun restoreGoals(goals: List<Goal>) = update { it.copy(goals = goals) }
 
     /** Ticks a milestone. It pays a Super Candy if it is old enough (and fewer than 3 paid today); finishing the goal gives a bonus item. */
     fun completeMilestone(goalId: String, milestoneId: String): MilestoneResult {

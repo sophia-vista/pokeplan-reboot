@@ -203,7 +203,7 @@ private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
 private fun VisitorsCard(model: AppModel) {
     val care = model.care
     // The day's arrivals are made the first time they are asked for.
-    LaunchedEffect(care.today) { care.visitors() }
+    LaunchedEffect(care.today) { care.arrive() }
     val all = model.careData.visitors
     val meadow = Visitors.meadow(all)
     val waiting = Visitors.queue(all)
@@ -762,12 +762,26 @@ private fun JournalView(model: AppModel) {
         // A tap reads the whole entry (a row shows eight lines); the next tap folds it again.
         ListRow(
             trail = { PixelIconButton("trash", "Delete", { val before = model.careData; care.deleteEntry(e.id); model.offerUndo("Deleted: journal entry") { care.restore(before) } }, Pixel.InkSoft) },
-            onClick = { openEntry = if (isOpen) null else e.id }, onClickLabel = if (isOpen) "Fold this entry" else "Read the whole entry",
+            onClick = { openEntry = if (isOpen) null else e.id }, onClickLabel = if (isOpen) "Fold this entry" else "Read and edit this entry",
         ) {
             Text(e.day.short(), style = MaterialTheme.typography.bodyMedium)
             e.promptId?.let { Prompts.byId(it) }?.let { Text(it.text, style = MaterialTheme.typography.bodyMedium) }
-            Text(e.text, style = MaterialTheme.typography.bodyLarge, maxLines = if (isOpen) Int.MAX_VALUE else 8, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-            if (e.tags.isNotEmpty()) Text(e.tags.sorted().joinToString(", "), style = MaterialTheme.typography.bodyMedium)
+            if (isOpen) {
+                // Open, an entry is its own editor: the whole text, its tags, and Save.
+                var draft by remember(e.id) { mutableStateOf(e.text) }
+                var draftTags by remember(e.id) { mutableStateOf(e.tags) }
+                PixelField(
+                    draft, { draft = it }, Modifier.fillMaxWidth(), minLines = 3, label = "Entry",
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                )
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    JOURNAL_TAGS.forEach { t -> TabButton(t, t in draftTags, { draftTags = if (t in draftTags) draftTags - t else draftTags + t }) }
+                }
+                PixelButton("Save", { care.editEntry(e.id, draft, draftTags); openEntry = null }, Modifier.fillMaxWidth(), Pixel.Green, enabled = draft.isNotBlank() && (draft.trim() != e.text || draftTags != e.tags))
+            } else {
+                Text(e.text, style = MaterialTheme.typography.bodyLarge, maxLines = 8, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                if (e.tags.isNotEmpty()) Text(e.tags.sorted().joinToString(", "), style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
     if (found.size > shown) PixelButton("Show older", { shown += 30 }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
