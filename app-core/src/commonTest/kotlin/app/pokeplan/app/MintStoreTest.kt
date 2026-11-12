@@ -264,6 +264,8 @@ class MintStoreTest {
         assertTrue(s.mint.data.transactions.isEmpty(), "marking paid fabricates no transaction")
         s.mint.unsettle(bill.id, due)
         assertEquals(OccurrenceState.DUE, MintRules.occurrence(s.mint.data, bill, due, s.mint.today).state)
+        assertTrue(s.mint.settle(bill.id, due, SettleStatus.PARTIAL, 150_000))
+        assertEquals(OccurrenceState.PAID, MintRules.occurrence(s.mint.data, bill, due, s.mint.today).state, "a part payment that covers the bill is paid, not left to settle at zero")
         assertTrue(s.spy.events.isEmpty())
     }
 

@@ -214,7 +214,7 @@ object StatementImport {
     fun preview(table: List<List<String>>, account: FinancialAccount, columns: Columns, order: DateOrder, data: MintData): Preview {
         val body = table.drop(1)
         val known = data.transactions.mapNotNull { it.fingerprint }.toHashSet()
-        val own = data.transactions.filter { it.accountId == account.id && it.status != TxStatus.VOIDED }
+        val own = data.transactions.filter { it.accountId == account.id && it.status != TxStatus.VOIDED }.groupBy { it.day }
         val seen = HashMap<String, Int>()
         val rows = body.take(MAX_ROWS).mapIndexed { index, cells ->
             val line = index + 2
@@ -239,7 +239,7 @@ object StatementImport {
             val fingerprint = "$base|#$count"
             val state = when {
                 fingerprint in known -> RowState.DUPLICATE
-                own.any { it.day == day && it.amountMinor == kotlin.math.abs(signed) && (it.type == TxType.EXPENSE || it.type == TxType.FEE) == (signed < 0) && it.type != TxType.TRANSFER && it.type != TxType.ADJUSTMENT } -> RowState.POSSIBLE
+                own[day].orEmpty().any { it.amountMinor == kotlin.math.abs(signed) && (it.type == TxType.EXPENSE || it.type == TxType.FEE) == (signed < 0) && it.type != TxType.TRANSFER && it.type != TxType.ADJUSTMENT } -> RowState.POSSIBLE
                 else -> RowState.NEW
             }
             Row(line, state, day, signed, description, ref, fingerprint)

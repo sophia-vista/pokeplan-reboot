@@ -61,6 +61,17 @@ class MintRulesTest {
     }
 
     @Test
+    fun allBalancesInOnePassAreTheSameAsEachAccountsOwn() {
+        val a = account("a", opening = 100_000); val b = account("b", opening = 1_000)
+        val s = data(a, b, txs = listOf(
+            tx("1", TxType.EXPENSE, 2_500, "a"), tx("2", TxType.TRANSFER, 20_000, "a", to = "b"), tx("3", TxType.INCOME, 700, "b", status = TxStatus.PENDING),
+            tx("4", TxType.EXPENSE, 7_777, "b", status = TxStatus.VOIDED), tx("5", TxType.EXPENSE, 1, "gone"),
+        ))
+        assertEquals(s.accounts.map { MintRules.balance(s, it) }, MintRules.balances(s))
+        assertEquals("-12.05", Money.plain(-1205, "PHP"), "a negative amount keeps one sign, in front")
+    }
+
+    @Test
     fun aTransferMovesBothLegsOnceAndIsNotSpending() {
         val a = account("a", opening = 50_000); val b = account("b", opening = 1_000)
         val s = data(a, b, txs = listOf(tx("t", TxType.TRANSFER, 20_000, "a", to = "b")))
