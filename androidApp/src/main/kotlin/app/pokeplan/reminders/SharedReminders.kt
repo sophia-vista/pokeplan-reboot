@@ -53,6 +53,10 @@ object SharedReminders {
     private const val HORIZON_MILLIS = 3 * 24 * 60 * 60_000L
     private const val HOLD_GRACE_MILLIS = 24 * 60 * 60_000L
     private const val OVERDUE_DELAY_MILLIS = 5_000L
+    /** A reminder due this recently may still be on its way to [fire]; it counts as missed only at the next plan, which looks back this far. */
+    private const val SETTLE_MILLIS = 60_000L
+    private const val LAST_PLANNED = "last_planned"
+    private const val DELIVERED = "delivered"
 
     const val ACTION_FIRE = "app.pokeplan.reminders.SHARED_FIRE"
     const val ACTION_ACT = "app.pokeplan.reminders.SHARED_ACT"
@@ -62,6 +66,7 @@ object SharedReminders {
     private const val X_REF = "ref"
     private const val X_KIND = "kind"
     private const val X_OCC = "occ"
+    private const val X_AT = "at"
     private const val X_KEY = "key"
 
     private class Live(val coordinator: ReminderCoordinator, val quiet: app.pokeplan.plan.QuietHours, val focus: FocusWindow?)
@@ -103,11 +108,27 @@ object SharedReminders {
         val live = live(app)
         val repo = repo(app)
         repo?.dropOlderThan(now - HOLD_GRACE_MILLIS)
+        val zone = TimeZone.currentSystemDefault()
+        // A reminder the modules planned that came due while the phone was off (or whose alarm came too late) is owed too, once (REP-026). It is held
+        // like a snooze (the hold table's "snooze" is any reminder held for later, as fire() does for quiet hours), so a plan made before it goes off keeps it.
+        val prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val delivered = prefs.getStringSet(DELIVERED, emptySet()).orEmpty().filter { (it.substringAfterLast('@').toLongOrNull() ?: 0) >= now - HOLD_GRACE_MILLIS }.toSet()
+        val since = prefs.getLong(LAST_PLANNED, 0L).takeIf { it > 0 }?.coerceAtLeast(now - HOLD_GRACE_MILLIS)
+        val missed = since?.let { live.coordinator.missed(it, now - SETTLE_MILLIS, zone, live.quiet, live.focus, delivered) }.orEmpty()
+            .map { it.copy(atMillis = now + OVERDUE_DELAY_MILLIS) }
+        if (repo != null) missed.forEach { repo.hold(it.hold("snooze"), now) }
         // A snooze or a repeat that came due while the phone was off (or the app was being replaced) is still owed: it goes off now, and
         // fire() checks again that it is wanted. Without this the planner, which looks only ahead, would leave it until it was dropped.
-        val held = repo?.all().orEmpty().map { it.toRequest() }.map { if (it.atMillis <= now) it.copy(atMillis = now + OVERDUE_DELAY_MILLIS) else it }
-        val plan = live.coordinator.schedule(now, TimeZone.currentSystemDefault(), live.quiet, live.focus, held, now + HORIZON_MILLIS)
-        Alarms.reschedule(app, PREFS, plan, { it.first.id.hashCode() }, { it.second }) { code, item, flags -> fireIntent(app, code, item?.first, flags) }
+        val held = repo?.all().orEmpty().map { it.toRequest() }.map { if (it.atMillis <= now) it.copy(atMillis = now + OVERDUE_DELAY_MILLIS) else it } +
+            (if (repo == null) missed else emptyList())
+        val plan = live.coordinator.schedule(now, zone, live.quiet, live.focus, held, now + HORIZON_MILLIS)
+        Alarms.reschedule(
+            app, PREFS, plan, { it.first.id }, { it.second },
+            intent = { key, item, flags -> fireIntent(app, key, item?.first, flags) },
+            legacy = { code -> PendingIntent.getBroadcast(app, code, Intent(app, SharedReminderReceiver::class.java).setAction(ACTION_FIRE), PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE) },
+        )
+        // The next plan looks back to just before now, so a reminder that was on its way to fire() is not taken for missed.
+        prefs.edit().putLong(LAST_PLANNED, maxOf(since ?: 0L, now - SETTLE_MILLIS)).putStringSet(DELIVERED, delivered).apply()
         LegacyReminders.cancelOnce(app)
         setDailyRefresh(app, now)
     }
@@ -128,28 +149,35 @@ object SharedReminders {
         try { alarms.setAndAllowWhileIdle(AlarmManager.RTC, at, intent) } catch (e: SecurityException) { /* the next opening plans again */ }
     }
 
-    private fun fireIntent(context: Context, code: Int, request: ReminderRequest?, flags: Int): PendingIntent? =
+    /**
+     * The alarm for the reminder whose id is [id]. The id is the intent's data, so two reminders never share an alarm even when their request codes
+     * (the id's hash) are the same; extras do not tell PendingIntents apart, and with a shared code one reminder's alarm would replace the other's.
+     */
+    private fun fireIntent(context: Context, id: String, request: ReminderRequest?, flags: Int): PendingIntent? =
         PendingIntent.getBroadcast(
-            context, code,
-            Intent(context, SharedReminderReceiver::class.java).setAction(ACTION_FIRE).apply { request?.let { putRequest(it) } },
+            context, id.hashCode(),
+            Intent(context, SharedReminderReceiver::class.java).setAction(ACTION_FIRE).setData(identity("fire", id)).apply { request?.let { putRequest(it) } },
             flags or PendingIntent.FLAG_IMMUTABLE,
         )
 
-    /** A button on a notification: the request and a stable action key. */
+    /** A button on a notification: the request and a stable action key, told apart from every other button by both (see [fireIntent]). */
     fun actionIntent(context: Context, request: ReminderRequest, key: String): PendingIntent =
         PendingIntent.getBroadcast(
             context, (request.id + key).hashCode(),
-            Intent(context, SharedReminderReceiver::class.java).setAction(ACTION_ACT).putRequest(request).putExtra(X_KEY, key),
+            Intent(context, SharedReminderReceiver::class.java).setAction(ACTION_ACT).setData(identity("act", "${request.id}/$key")).putRequest(request).putExtra(X_KEY, key),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
 
+    /** An opaque intent identity: the request id holds only the module, an opaque reference, the kind and the occurrence, never a title. */
+    private fun identity(what: String, id: String): android.net.Uri = android.net.Uri.fromParts("pokelife-reminder", "$what/$id", null)
+
     private fun Intent.putRequest(r: ReminderRequest): Intent =
-        putExtra(X_MODULE, r.module.name).putExtra(X_REF, r.sourceRef).putExtra(X_KIND, r.kind).putExtra(X_OCC, r.occurrence)
+        putExtra(X_MODULE, r.module.name).putExtra(X_REF, r.sourceRef).putExtra(X_KIND, r.kind).putExtra(X_OCC, r.occurrence).putExtra(X_AT, r.atMillis)
 
     private fun Intent.request(): ReminderRequest? = ReminderRequest(
         module = getStringExtra(X_MODULE)?.let { m -> ReminderModule.entries.firstOrNull { it.name == m } } ?: return null,
         sourceRef = getStringExtra(X_REF) ?: return null, kind = getStringExtra(X_KIND) ?: return null,
-        atMillis = 0, occurrence = getStringExtra(X_OCC).orEmpty(),
+        atMillis = getLongExtra(X_AT, 0L), occurrence = getStringExtra(X_OCC).orEmpty(),
     )
 
     private fun HeldReminder.toRequest() = ReminderRequest(
@@ -162,7 +190,7 @@ object SharedReminders {
     private fun hold(context: Context, request: ReminderRequest, reason: String, now: Long) {
         repo(context)?.hold(request.hold(reason), now) ?: run {
             val alarms = context.getSystemService(android.app.AlarmManager::class.java) ?: return
-            Alarms.set(context, alarms, request.atMillis, fireIntent(context, request.id.hashCode(), request, PendingIntent.FLAG_UPDATE_CURRENT)!!)
+            Alarms.set(context, alarms, request.atMillis, fireIntent(context, request.id, request, PendingIntent.FLAG_UPDATE_CURRENT)!!)
         }
     }
 
@@ -178,6 +206,7 @@ object SharedReminders {
         val now = System.currentTimeMillis()
         val live = live(context)
         val zone = TimeZone.currentSystemDefault()
+        markDelivered(context, live.coordinator.deliveredKey(request))
         repo(context)?.release(request.id)
         when (val decision = live.coordinator.onFire(request, now, zone, live.quiet, live.focus)) {
             is FireDecision.Defer -> hold(context, request.copy(atMillis = decision.untilMillis), "snooze", now)
@@ -192,6 +221,13 @@ object SharedReminders {
             }
         }
         reschedule(context)
+    }
+
+    /** Remembers that [key] went off, so the next plan does not take it for missed (kept as long as a missed one is looked for). */
+    @Synchronized
+    private fun markDelivered(context: Context, key: String) {
+        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        prefs.edit().putStringSet(DELIVERED, prefs.getStringSet(DELIVERED, emptySet()).orEmpty() + key).apply()
     }
 
     private fun present(context: Context, request: ReminderRequest, title: String, now: Long) {

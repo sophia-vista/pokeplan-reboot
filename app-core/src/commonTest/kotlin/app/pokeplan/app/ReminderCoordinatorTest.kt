@@ -35,6 +35,25 @@ class ReminderCoordinatorTest {
     }
 
     @Test
+    fun aReminderDueWhileThePhoneWasOffIsOwedOnceAndOnlyWhileWanted() {
+        // Planned at 9:00; the phone was off from before 10:00 until 12:00.
+        val missed = coordinator.missed(at(9), at(12), utc, quiet, null, emptySet())
+        assertEquals(listOf("w"), missed.map { it.sourceRef })
+        assertEquals(mon.toString(), missed.single().occurrence, "the one for today, not tomorrow's")
+        assertTrue(coordinator.missed(at(9), at(12), utc, quiet, null, setOf(coordinator.deliveredKey(missed.single()))).isEmpty(), "it went off already")
+        assertTrue(coordinator.missed(at(10, 30), at(12), utc, quiet, null, emptySet()).isEmpty(), "planned after it was due: nothing missed")
+        assertTrue(coordinator.missed(at(12), at(9), utc, quiet, null, emptySet()).isEmpty(), "a clock set back misses nothing")
+        care = CareData(routines = listOf(water.complete(mon)))
+        assertTrue(coordinator.missed(at(9), at(12), utc, quiet, null, emptySet()).isEmpty(), "done meanwhile: not owed")
+    }
+
+    @Test
+    fun aDailyReminderMissedOnSeveralDaysIsOwedOnce() {
+        val missed = coordinator.missed(at(9), at(12, day = mon.plusDays(2)), utc, quiet, null, emptySet())
+        assertTrue(missed.size <= 1, "at most one for the routine, got ${missed.map { it.occurrence }}")
+    }
+
+    @Test
     fun onFireShowsDefersOrDrops() {
         val r = coordinator.schedule(at(9), utc, quiet, null, emptyList()).first().first
         assertIs<FireDecision.Show>(coordinator.onFire(r, at(10), utc, quiet, null))

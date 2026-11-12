@@ -52,22 +52,30 @@ internal object Alarms {
     const val MAX_ALARMS = 24
 
     /**
-     * Sets alarms for the first [MAX_ALARMS] of [upcoming] and cancels the ones set earlier that are no longer wanted. The
-     * codes set are kept in [prefsName]. [intent] builds the broadcast for an alarm code: with its item when setting, and
-     * with null and `FLAG_NO_CREATE` when looking up a stale alarm to cancel.
+     * Sets alarms for the first [MAX_ALARMS] of [upcoming] and cancels the ones set earlier that are no longer wanted. Each alarm is known by its [key]
+     * (kept in [prefsName]); [intent] builds the broadcast for a key, with its item when setting and with null and `FLAG_NO_CREATE` when looking up a
+     * stale alarm to cancel, and must make the key part of the intent's identity (its data), so two keys never share an alarm whatever their request
+     * codes. [legacy] finds an alarm an older version set under a bare request code, to cancel those once.
      */
     fun <T> reschedule(
-        context: Context, prefsName: String, upcoming: List<T>, code: (T) -> Int, atMillis: (T) -> Long,
-        intent: (code: Int, item: T?, flags: Int) -> PendingIntent?,
+        context: Context, prefsName: String, upcoming: List<T>, key: (T) -> String, atMillis: (T) -> Long,
+        intent: (key: String, item: T?, flags: Int) -> PendingIntent?,
+        legacy: ((code: Int) -> PendingIntent?)? = null,
     ) {
         val alarms = context.getSystemService(AlarmManager::class.java) ?: return
         val prefs = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-        val wanted = upcoming.take(MAX_ALARMS).associateBy(code)
-        val before = prefs.getStringSet("codes", emptySet()).orEmpty().mapNotNull { it.toIntOrNull() }
+        val wanted = upcoming.take(MAX_ALARMS).associateBy(key)
+        val before = prefs.getStringSet(KEYS, emptySet()).orEmpty()
         for (stale in before) if (stale !in wanted) intent(stale, null, PendingIntent.FLAG_NO_CREATE)?.let { alarms.cancel(it); it.cancel() }
-        for ((c, item) in wanted) set(context, alarms, atMillis(item), intent(c, item, PendingIntent.FLAG_UPDATE_CURRENT)!!)
-        prefs.edit().putStringSet("codes", wanted.keys.map { it.toString() }.toSet()).apply()
+        if (legacy != null && prefs.contains(LEGACY_CODES)) {
+            prefs.getStringSet(LEGACY_CODES, emptySet()).orEmpty().mapNotNull { it.toIntOrNull() }.forEach { code -> legacy(code)?.let { alarms.cancel(it); it.cancel() } }
+        }
+        for ((k, item) in wanted) set(context, alarms, atMillis(item), intent(k, item, PendingIntent.FLAG_UPDATE_CURRENT)!!)
+        prefs.edit().putStringSet(KEYS, wanted.keys.toSet()).remove(LEGACY_CODES).apply()
     }
+
+    private const val KEYS = "keys"
+    private const val LEGACY_CODES = "codes"
 
     /** Whether the phone lets this app set exact alarms right now (the player can switch that off under Android 12 and 13; Android 14 grants it to alarm apps). */
     fun canSetExact(context: Context): Boolean =
