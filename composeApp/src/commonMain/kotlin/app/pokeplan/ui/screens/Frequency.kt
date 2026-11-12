@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,7 +32,9 @@ import app.pokeplan.ui.theme.RankBadge
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.theme.title
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.minus
 import androidx.compose.foundation.layout.size
 
 /** Per-week and per-month habits count weeks and months, the others days. */
@@ -140,6 +143,19 @@ internal fun FrequencyView(model: AppModel) {
                     if (streak >= 2) "streak $streak${streakUnit(target)}" else null,
                 ).joinToString(", "),
                 style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+        // Any earlier day can be marked or taken back. It counts toward the target and the streak, and never pays.
+        var other by remember(h.template.id) { mutableStateOf(false) }
+        var day by remember(h.template.id) { mutableStateOf(store.today.minus(DatePeriod(days = 1))) }
+        PixelButton(if (other) "Close" else "Another day", { other = !other }, color = Pixel.InkSoft, compact = true)
+        if (other) {
+            PixelDateField(day, store.today, Pixel.Blue, { it?.let { d -> day = d } }, presets = listOf("Today" to 0, "Yesterday" to -1), max = store.today)
+            val done = day in h.completions
+            PixelButton(
+                if (done) "Take back ${day.short()}" else "Mark ${day.short()} done",
+                { if (done) store.undoFrequencyTask(h.template.id, day) else store.completeFrequencyTask(h.template.id, day) },
+                Modifier.fillMaxWidth(), if (done) Pixel.InkSoft else Pixel.Green, compact = true,
             )
         }
     }

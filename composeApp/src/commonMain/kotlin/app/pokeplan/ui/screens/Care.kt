@@ -59,7 +59,11 @@ import app.pokeplan.ui.Sfx
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.semantics.Role
 import app.pokeplan.ui.Sprite
+import app.pokeplan.care.JournalEntry
 import app.pokeplan.care.Prompts
+import app.pokeplan.app.ExactInput
+import app.pokeplan.plan.toLocalDateTime
+import kotlinx.datetime.TimeZone
 import app.pokeplan.care.Routine
 import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.AppModel
@@ -392,14 +396,7 @@ private fun RoutinesView(model: AppModel) {
 @Composable
 private fun RoutineFields(time: LocalTime?, onTime: (LocalTime?) -> Unit, days: Set<DayOfWeek>, onDays: (Set<DayOfWeek>) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        PixelTitle("Time")
-        if (time == null) PixelButton("Give it a time", { onTime(LocalTime(9, 0)) }, color = Pixel.InkSoft, compact = true)
-        else Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelButton("-15", { onTime(shifted(time, -15)) }, color = Pixel.InkSoft, compact = true)
-            Text(clock(time), style = MaterialTheme.typography.bodyLarge)
-            PixelButton("+15", { onTime(shifted(time, 15)) }, color = Pixel.InkSoft, compact = true)
-            PixelButton("No time", { onTime(null) }, color = Pixel.InkSoft, compact = true)
-        }
+        PixelTimeField(time, onTime, ModuleAccent.CARE.accent, label = "Time", noneLabel = "No time", steps = listOf(5, 15, 60))
         PixelTitle("Days")
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             DayOfWeek.entries.forEach { d -> TabButton(dayNames[d.ordinal], d in days, { onDays(if (d in days) days - d else days + d) }) }
@@ -569,19 +566,27 @@ private fun Rating(label: String, value: Int?, onChange: (Int?) -> Unit) {
 private fun DiaryView(model: AppModel) {
     val care = model.care
     val data = model.careData
-    val saved = care.diaryToday()
+    // The card of any day up to today: a forgotten day can be filled in and an earlier card corrected.
+    var cardDay by remember { mutableStateOf(care.today) }
+    val saved = care.diaryOn(cardDay)
     // The skills practised today start ticked, so the card is quick to fill in.
-    var feelings by remember(saved?.id) { mutableStateOf(saved?.feelings ?: emptyMap()) }
-    var urges by remember(saved?.id) { mutableStateOf(saved?.urges ?: emptyMap()) }
-    var skills by remember(saved?.id) { mutableStateOf(saved?.skills ?: care.practisedToday()) }
-    var note by remember(saved?.id) { mutableStateOf(saved?.note ?: "") }
+    var feelings by remember(saved?.id, cardDay) { mutableStateOf(saved?.feelings ?: emptyMap()) }
+    var urges by remember(saved?.id, cardDay) { mutableStateOf(saved?.urges ?: emptyMap()) }
+    var skills by remember(saved?.id, cardDay) { mutableStateOf(saved?.skills ?: if (cardDay == care.today) care.practisedToday() else emptySet()) }
+    var note by remember(saved?.id, cardDay) { mutableStateOf(saved?.note ?: "") }
     var newUrge by remember { mutableStateOf("") }
     var allSkills by remember { mutableStateOf(false) }
     var done by remember { mutableStateOf(false) }
 
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle("How strongly did you feel each of these today?")
+            PixelTitle("Which day?")
+            PixelDateField(cardDay, care.today, ModuleAccent.CARE.accent, { it?.let { d -> cardDay = d; done = false } }, presets = listOf("Today" to 0, "Yesterday" to -1), max = care.today)
+        }
+    }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelTitle(if (cardDay == care.today) "How strongly did you feel each of these today?" else "How strongly did you feel each of these on ${cardDay.short()}?")
             Text("0 is not at all, 5 is very strongly. Leave out any you like.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Emotion.entries.forEach { e ->
                 Rating("${e.emoji} ${e.label}", feelings[e]) { v -> feelings = if (v == null) feelings - e else feelings + (e to v); done = false }
@@ -626,8 +631,9 @@ private fun DiaryView(model: AppModel) {
                 placeholder = "A note, if you like",
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
             )
-            PixelButton(if (saved == null) "Save today's card" else "Update today's card", {
-                care.saveDiary(feelings, urges, skills, note)
+            val dayWord = if (cardDay == care.today) "today's" else "the ${cardDay.short()}"
+            PixelButton(if (saved == null) "Save $dayWord card" else "Update $dayWord card", {
+                care.saveDiary(feelings, urges, skills, note, cardDay)
                 model.effect(Sfx.SELECT)
                 done = true
             }, Modifier.fillMaxWidth(), ModuleAccent.CARE.accent, enabled = feelings.isNotEmpty() || urges.isNotEmpty() || skills.isNotEmpty() || note.isNotBlank())
@@ -637,7 +643,7 @@ private fun DiaryView(model: AppModel) {
     val past = data.diary.filter { it.day != care.today }.sortedByDescending { it.day }.take(14)
     if (past.isNotEmpty()) SectionLabel("Earlier cards")
     past.forEach { c ->
-        ListRow(trail = { PixelIconButton("trash", "Delete", { val before = model.careData; care.deleteDiary(c.id); model.offerUndo("Deleted: diary card") { care.restore(before) } }, Pixel.InkSoft) }) {
+        ListRow(onClick = { cardDay = c.day; done = false }, onClickLabel = "Open this card to edit", trail = { PixelIconButton("trash", "Delete", { val before = model.careData; care.deleteDiary(c.id); model.offerUndo("Deleted: diary card") { care.restore(before) } }, Pixel.InkSoft) }) {
             Text(c.day.short(), style = MaterialTheme.typography.bodyLarge)
             val strongest = c.feelings.entries.sortedByDescending { it.value }.filter { it.value > 0 }.take(3)
             if (strongest.isNotEmpty()) Text(strongest.joinToString(", ") { "${it.key.label} ${it.value}" }, style = MaterialTheme.typography.bodyMedium)
@@ -714,8 +720,11 @@ private fun JournalView(model: AppModel) {
     var answering by remember { mutableStateOf<String?>(null) }
     var tags by remember { mutableStateOf(emptySet<String>()) }
     var query by remember { mutableStateOf("") }
+    // null: written just now.
+    var writtenAt by remember { mutableStateOf<Long?>(null) }
+    var editingId by remember { mutableStateOf<String?>(null) }
     fun save() {
-        if (care.write(text, answering, tags) != null) { text = ""; answering = null; tags = emptySet() }
+        if (care.write(text, answering, tags, writtenAt) != null) { text = ""; answering = null; tags = emptySet(); writtenAt = null }
     }
 
     if (prompt != null && answering == null) TextBox {
@@ -743,6 +752,7 @@ private fun JournalView(model: AppModel) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 JOURNAL_TAGS.forEach { t -> TabButton(t, t in tags, { tags = if (t in tags) tags - t else tags + t }) }
             }
+            PixelMomentField(writtenAt ?: model.store.nowMillis, { writtenAt = it }, model.store.nowMillis, ModuleAccent.CARE.accent, label = "Written")
             PixelButton("Save entry", ::save, Modifier.fillMaxWidth(), Pixel.Warning, enabled = text.isNotBlank())
         }
     }
@@ -753,11 +763,39 @@ private fun JournalView(model: AppModel) {
     val entries = care.searchJournal(query).take(30)
     if (data.journal.isNotEmpty() && entries.isEmpty()) EmptyState("Nothing found", "No entry has \"${query.trim()}\" in it.", icon = CareSection.JOURNAL.icon, action = "Clear the search" to { query = "" })
     entries.forEach { e ->
-        ListRow(trail = { PixelIconButton("trash", "Delete", { val before = model.careData; care.deleteEntry(e.id); model.offerUndo("Deleted: journal entry") { care.restore(before) } }, Pixel.InkSoft) }) {
-            Text(e.day.short(), style = MaterialTheme.typography.bodyMedium)
+        ListRow(
+            trail = {
+                PixelIconButton("pencil", "Edit", { editingId = if (editingId == e.id) null else e.id }, Pixel.InkSoft)
+                PixelIconButton("trash", "Delete", { val before = model.careData; care.deleteEntry(e.id); model.offerUndo("Deleted: journal entry") { care.restore(before) } }, Pixel.InkSoft)
+            },
+        ) {
+            Text(e.day.short() + " " + ExactInput.formatMinuteOfDay(e.atMillis.toLocalDateTime(TimeZone.currentSystemDefault()).let { it.hour * 60 + it.minute }), style = MaterialTheme.typography.bodyMedium)
             e.promptId?.let { Prompts.byId(it) }?.let { Text(it.text, style = MaterialTheme.typography.bodyMedium) }
             Text(e.text, style = MaterialTheme.typography.bodyLarge, maxLines = 8, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             if (e.tags.isNotEmpty()) Text(e.tags.sorted().joinToString(", "), style = MaterialTheme.typography.bodyMedium)
+        }
+        if (editingId == e.id) JournalEditor(model, e) { editingId = null }
+    }
+}
+
+/** An entry's words, tags and the exact moment it is dated to. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun JournalEditor(model: AppModel, e: JournalEntry, onDone: () -> Unit) {
+    var text by remember(e.id) { mutableStateOf(e.text) }
+    var at by remember(e.id) { mutableStateOf(e.atMillis) }
+    var tags by remember(e.id) { mutableStateOf(e.tags) }
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelField(text, { text = it.take(5_000) }, Modifier.fillMaxWidth(), minLines = 4, label = "Entry", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                JOURNAL_TAGS.forEach { t -> TabButton(t, t in tags, { tags = if (t in tags) tags - t else tags + t }) }
+            }
+            PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.CARE.accent, label = "Written", nowKey = false)
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelButton("Save", { model.care.editEntry(e.id, text, at, tags); model.say("Saved."); onDone() }, Modifier.weight(1f), Pixel.Green, enabled = text.isNotBlank(), compact = true)
+                PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            }
         }
     }
 }

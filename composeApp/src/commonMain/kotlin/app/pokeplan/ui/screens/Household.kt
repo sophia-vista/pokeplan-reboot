@@ -47,6 +47,7 @@ import app.pokeplan.home.HitKind
 import app.pokeplan.home.HomeArea
 import app.pokeplan.home.HomeKinds
 import app.pokeplan.home.HomeRules
+import app.pokeplan.home.MaintenanceRecord
 import app.pokeplan.home.MaintenanceSchedule
 import app.pokeplan.home.Overview
 import app.pokeplan.home.Quantity
@@ -362,7 +363,7 @@ private fun scheduleLine(data: app.pokeplan.home.HomeData, v: app.pokeplan.home.
     return listOfNotNull(when_, data.assets.firstOrNull { it.id == s.assetId }?.name, repeatText(s.recurrence).takeIf { it.isNotEmpty() }).joinToString(" · ")
 }
 
-/** A date for a chore, an asset or a warranty: quick keys and a month to tap, never typed (design review, 11 November 2026); [past] limits it to today and before. */
+/** A date for a chore, an asset or a warranty: quick keys, a month to tap, or the exact day typed (owner, 12 November 2026); [past] limits it to today and before. */
 @Composable
 private fun DateField(label: String, value: LocalDate?, onChange: (LocalDate?) -> Unit, today: LocalDate, optional: Boolean = false, past: Boolean = false) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -864,13 +865,18 @@ private fun MaintenanceView(model: AppModel) {
                 }
                 else -> {
                     if (history.isEmpty()) PixelTitle("Nothing here yet")
+                    var editingRec by remember { mutableStateOf<String?>(null) }
                     history.forEachIndexed { i, r ->
                         if (i > 0) Rule()
                         var asking by remember(r.id) { mutableStateOf(false) }
                         HRow(
                             r.title, listOfNotNull(r.day.short(), data.assets.firstOrNull { it.id == r.assetId }?.name, r.notes.takeIf { it.isNotBlank() }, r.cost.takeIf { it.isNotBlank() }).joinToString(" · "),
-                            trail = { PixelIconButton("trash", "Remove ${r.title} from the history", { asking = true }, Pixel.InkSoft) },
+                            trail = {
+                                PixelIconButton("pencil", "Edit ${r.title}", { editingRec = if (editingRec == r.id) null else r.id }, Pixel.InkSoft)
+                                PixelIconButton("trash", "Remove ${r.title} from the history", { asking = true }, Pixel.InkSoft)
+                            },
                         )
+                        if (editingRec == r.id) MaintenanceRecordForm(model, r) { editingRec = null }
                         if (asking) Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                             Confirm("Remove this record?", "Remove", onConfirm = { home.deleteMaintenanceRecord(r.id); asking = false }, onKeep = { asking = false })
                         }
@@ -962,6 +968,37 @@ private fun ScheduleForm(model: AppModel, initial: MaintenanceSchedule?, onDone:
     }
 }
 
+/** Corrects a record of work: what was done, the exact day, the item, notes and cost. */
+@Composable
+private fun MaintenanceRecordForm(model: AppModel, r: MaintenanceRecord, onDone: () -> Unit) {
+    val today = model.store.today
+    var title by remember(r.id) { mutableStateOf(r.title) }
+    var day by remember(r.id) { mutableStateOf<LocalDate?>(r.day) }
+    var assetId by remember(r.id) { mutableStateOf(r.assetId) }
+    var notes by remember(r.id) { mutableStateOf(r.notes) }
+    var cost by remember(r.id) { mutableStateOf(r.cost) }
+    var message by remember(r.id) { mutableStateOf<String?>(null) }
+    Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        PixelField(title, { title = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "What was done", singleLine = true, keyboardOptions = wordKeys)
+        DateField("Day", day, { day = it }, today, past = true)
+        AssetChips(model.homeData.assets, assetId) { assetId = it }
+        PixelField(notes, { notes = it.take(HomeRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", keyboardOptions = sentenceKeys)
+        PixelField(cost, { cost = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Cost, optional", singleLine = true)
+        Actions {
+            PixelButton("Save", {
+                val d = day
+                if (d == null) message = "Choose the day."
+                else {
+                    val out = model.home.updateMaintenanceRecord(r.copy(title = title, day = d, assetId = assetId, notes = notes, cost = cost))
+                    if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
+                }
+            }, Modifier.weight(1f), accent, enabled = title.isNotBlank() && day != null, compact = true)
+            PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        }
+        message?.let { Report(model, it, NoticeTone.WARNING) }
+    }
+}
+
 @Composable
 private fun LogWorkForm(model: AppModel, onDone: () -> Unit) {
     val home = model.home
@@ -1000,6 +1037,7 @@ private fun AssetDetail(model: AppModel, a: Asset, onDone: () -> Unit) {
     var editing by remember(a.id) { mutableStateOf(false) }
     var asking by remember(a.id) { mutableStateOf(false) }
     var warranty by remember(a.id) { mutableStateOf<String?>(null) } // the warranty being edited, or "" for a new one
+    var editingRecord by remember(a.id) { mutableStateOf<String?>(null) }
     if (editing) { AssetForm(model, a, onDone = { editing = false }, onCancel = { editing = false }); return }
     val warranties = data.warranties.filter { it.assetId == a.id }
     val schedules = HomeRules.schedules(data, today).filter { it.schedule.assetId == a.id }
@@ -1029,7 +1067,13 @@ private fun AssetDetail(model: AppModel, a: Asset, onDone: () -> Unit) {
         if (schedules.isNotEmpty()) SectionLabel("Maintenance")
         schedules.forEach { v -> HRow(v.schedule.title, scheduleLine(data, v).substringBefore(" · ${data.assets.firstOrNull { it.id == a.id }?.name}"), warn = v.state == DueState.OVERDUE) }
         if (history.isNotEmpty()) SectionLabel("History")
-        history.forEach { r -> HRow(r.title, listOfNotNull(r.day.short(), r.notes.takeIf { it.isNotBlank() }, r.cost.takeIf { it.isNotBlank() }).joinToString(" · ")) }
+        history.forEach { r ->
+            HRow(
+                r.title, listOfNotNull(r.day.short(), r.notes.takeIf { it.isNotBlank() }, r.cost.takeIf { it.isNotBlank() }).joinToString(" · "),
+                trail = { PixelIconButton("pencil", "Edit ${r.title}", { editingRecord = if (editingRecord == r.id) null else r.id }, Pixel.InkSoft) },
+            )
+            if (editingRecord == r.id) MaintenanceRecordForm(model, r) { editingRecord = null }
+        }
         Actions {
             PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             PixelButton("Archive", { home.setAssetArchived(a.id, true); onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)

@@ -17,6 +17,7 @@ import app.pokeplan.mint.TxStatus
 import app.pokeplan.mint.TxType
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.plus
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlin.random.Random
@@ -337,5 +338,20 @@ class MintStoreTest {
         assertNull(s.game.data.player.buddyId)
         assertTrue(s.game.setMintLead(buddy))
         assertEquals(buddy, s.game.data.player.mintLead?.id)
+    }
+
+    @Test
+    fun aBillsScheduleCanBeCorrectedUntilAPaymentIsRecordedAndASettlementKeepsTheDayEntered() {
+        val s = setup()
+        val bill = assertNotNull(s.mint.addBill("Rent", "PHP", Frequency.MONTHLY, LocalDate(2026, 11, 7), 800_000).record)
+        val fixed = assertNotNull(s.mint.updateBill(bill.copy(firstDue = LocalDate(2026, 11, 15), frequency = Frequency.WEEKLY)).record)
+        assertEquals(LocalDate(2026, 11, 15), fixed.firstDue)
+        assertEquals(Frequency.WEEKLY, fixed.frequency)
+        val due = LocalDate(2026, 11, 15)
+        assertTrue(s.mint.settle(bill.id, due, SettleStatus.PAID, 800_000, paidDay = LocalDate(2026, 11, 6)))
+        assertEquals(LocalDate(2026, 11, 6), s.mint.data.billPayments.single().settledDay)
+        assertFalse(s.mint.settle(bill.id, due, SettleStatus.PAID, 800_000, paidDay = s.mint.today.plus(kotlinx.datetime.DatePeriod(days = 1))), "a payment is not made in the future")
+        assertNull(s.mint.updateBill(fixed.copy(firstDue = LocalDate(2026, 12, 1))).record, "settled occurrences are never rewritten")
+        assertNotNull(s.mint.updateBill(fixed.copy(name = "Flat rent")).record)
     }
 }

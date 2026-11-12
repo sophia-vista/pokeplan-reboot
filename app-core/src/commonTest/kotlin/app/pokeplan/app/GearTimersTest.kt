@@ -121,4 +121,17 @@ class GearTimersTest {
         val saved = (store.data.gear)
         assertEquals(saved, GameStore.json.decodeFromString(AppData.serializer(), GameStore.json.encodeToString(AppData.serializer(), store.data)).gear)
     }
+
+    @Test
+    fun aTimerCanBeRenamedAndResizedAndGoesBackToReady() {
+        var g = GearTimers.add(GearData(), "a", "Tea", 180_000)!!
+        g = GearTimers.start(g, "a", t0)
+        g = GearTimers.edit(g, "a", " Pasta ", 600_000)
+        val t = g.timers.single()
+        assertEquals("Pasta", t.label)
+        assertEquals(600_000, t.durationMs)
+        assertFalse(t.running || t.paused || t.finished)
+        assertEquals(g, GearTimers.edit(g, "a", "Tea", 0), "a length outside the limits changes nothing")
+        assertEquals("Pasta", GearTimers.edit(g, "a", "  ", 60_000).timers.single().label, "a blank name keeps the old one")
+    }
 }

@@ -112,13 +112,14 @@ internal fun SettingsView(model: AppModel) {
         ) { on -> model.care.changeSettings { it.copy(reminders = on) } }
         ToggleRow("Task reminders", settings.reminders) { store.changeSettings { s -> s.copy(reminders = it) } }
         if (settings.reminders) {
-            fun shift(t: LocalTime, by: Int) = LocalTime((t.hour + by + 24) % 24, 0)
-            Stepper("Quiet from", hourText(settings.quietHours.start.hour), 1) { by ->
-                store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = shift(s.quietHours.start, by))) }
-            }
-            Stepper("Quiet until", hourText(settings.quietHours.end.hour), 1) { by ->
-                store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = shift(s.quietHours.end, by))) }
-            }
+            PixelTimeField(
+                settings.quietHours.start, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = it)) } } },
+                Pixel.Blue, label = "Quiet from", steps = listOf(15, 60), wrap = true,
+            )
+            PixelTimeField(
+                settings.quietHours.end, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = it)) } } },
+                Pixel.Blue, label = "Quiet until", steps = listOf(15, 60), wrap = true,
+            )
             ToggleRow("Repeat until answered", settings.repeatReminders) { store.changeSettings { s -> s.copy(repeatReminders = it) } }
         }
         ToggleRow("Focus halfway alert", settings.focusHalfway) { store.changeSettings { s -> s.copy(focusHalfway = it) } }
@@ -372,9 +373,10 @@ internal fun PlanSettings(model: AppModel) {
     val settings = model.data.settings
     SettingsGroup("Focus", "clock") {
         ToggleRow("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
-        Stepper("Usual focus length", "${settings.defaultFocusMinutes} min", 5) { by ->
-            store.changeSettings { s -> s.copy(defaultFocusMinutes = (s.defaultFocusMinutes + by).coerceIn(FocusRules.RETRY_MINUTES, FocusRules.MAX_MINUTES)) }
-        }
+        PixelDurationField(
+            settings.defaultFocusMinutes, { m -> m?.let { store.changeSettings { s -> s.copy(defaultFocusMinutes = it) } } }, Pixel.Blue,
+            label = "Usual focus length", presets = listOf(15, 25, 45, 60), step = 5, min = FocusRules.RETRY_MINUTES, max = FocusRules.MAX_MINUTES,
+        )
     }
     SettingsGroup("Week", "calendar") {
         ToggleRow("Week starts on Monday", settings.weekStartsOnMonday) { store.changeSettings { s -> s.copy(weekStartsOnMonday = it) } }

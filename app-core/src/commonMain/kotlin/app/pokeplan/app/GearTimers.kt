@@ -46,6 +46,13 @@ object GearTimers {
         }
     }
 
+    /** Renames a timer and sets its length. It goes back to ready (a running or paused one stops), since its time left would no longer mean anything. A length outside the limits changes nothing. */
+    fun edit(g: GearData, id: String, label: String, durationMs: Long): GearData {
+        if (durationMs !in MIN_MS..MAX_MS) return g
+        val name = label.trim().take(24)
+        return change(g, id) { it.copy(label = name.ifEmpty { it.label }, durationMs = durationMs, endsAt = 0, pausedLeftMs = -1, finished = false) }
+    }
+
     fun reset(g: GearData, id: String): GearData = change(g, id) { it.copy(endsAt = 0, pausedLeftMs = -1, finished = false) }
 
     fun remove(g: GearData, id: String): GearData = g.copy(timers = g.timers.filter { it.id != id })

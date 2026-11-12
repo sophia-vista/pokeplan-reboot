@@ -34,6 +34,9 @@ import app.pokeplan.heal.HealKinds
 import app.pokeplan.heal.HealRules
 import app.pokeplan.heal.HealSettings
 import app.pokeplan.heal.HealUnits
+import app.pokeplan.heal.HydrationEntry
+import app.pokeplan.heal.Measurement
+import app.pokeplan.heal.SleepRecord
 import app.pokeplan.heal.MeasureType
 import app.pokeplan.plan.toLocalDateTime
 import app.pokeplan.ui.AppModel
@@ -190,8 +193,9 @@ private fun FieldResearchLine(model: AppModel) {
 private fun ActivityView(model: AppModel) {
     val heal = model.heal
     var type by remember { mutableStateOf(ActivityType.WALK) }
-    var minutes by remember { mutableStateOf("30") }
-    var ago by remember { mutableStateOf(0) }
+    var minutes by remember { mutableStateOf<Int?>(30) }
+    // null: it ended just now (read when Save is pressed).
+    var endedAt by remember { mutableStateOf<Long?>(null) }
     var distance by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var more by remember { mutableStateOf(false) }
@@ -199,9 +203,9 @@ private fun ActivityView(model: AppModel) {
     var open by remember { mutableStateOf<String?>(null) }
     fun save() {
         val km = distance.replace(',', '.').toDoubleOrNull()
-        val out = heal.logActivity(type, minutes.toIntOrNull() ?: 0, endedAtMillis = model.store.nowMillis - ago * 60_000L, distanceMeters = km?.let { (it * 1000).roundToInt() }, note = note)
+        val out = heal.logActivity(type, minutes ?: 0, endedAtMillis = endedAt ?: model.store.nowMillis, distanceMeters = km?.let { (it * 1000).roundToInt() }, note = note)
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-        else { message = null; model.say("Saved."); note = ""; distance = ""; more = false; model.haptic(); model.effect(Sfx.HEAL) }
+        else { message = null; model.say("Saved."); note = ""; distance = ""; more = false; endedAt = null; model.haptic(); model.effect(Sfx.HEAL) }
     }
     RewardBox(model)
     TextBox {
@@ -210,17 +214,8 @@ private fun ActivityView(model: AppModel) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 ActivityType.entries.forEach { t -> TabButton(t.label, t == type, { type = t }) }
             }
-            PixelField(
-                minutes, { minutes = it.filter(Char::isDigit).take(4) }, Modifier.fillMaxWidth(), label = "Minutes", singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                listOf(15, 30, 45, 60).forEach { m -> PixelButton("$m", { minutes = m.toString() }, color = Pixel.InkSoft, compact = true) }
-            }
-            PixelTitle("It ended")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                listOf(0 to "Just now", 60 to "1 h ago", 180 to "3 h ago", 1440 to "Yesterday").forEach { (a, label) -> TabButton(label, a == ago, { ago = a }) }
-            }
+            PixelDurationField(minutes, { minutes = it }, ModuleAccent.HEAL.accent, label = "How long", presets = listOf(15, 30, 45, 60), step = 5)
+            PixelMomentField(endedAt ?: model.store.nowMillis, { endedAt = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "It ended")
             PixelButton(if (more) "Fewer options" else "Distance and a note", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
                 PixelField(
@@ -229,7 +224,7 @@ private fun ActivityView(model: AppModel) {
                 )
                 PixelField(note, { note = it.take(HealRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note, optional", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
             }
-            PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Green, enabled = (minutes.toIntOrNull() ?: 0) > 0)
+            PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Green, enabled = (minutes ?: 0) > 0)
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
@@ -265,7 +260,8 @@ private fun ActivityRow(a: ActivityRecord, onClick: () -> Unit) {
 private fun ActivityOptions(model: AppModel, a: ActivityRecord, onDone: () -> Unit) {
     var editing by remember(a.id) { mutableStateOf(false) }
     var type by remember(a.id) { mutableStateOf(a.type) }
-    var minutes by remember(a.id) { mutableStateOf(a.minutes.toString()) }
+    var minutes by remember(a.id) { mutableStateOf<Int?>(a.minutes) }
+    var started by remember(a.id) { mutableStateOf(a.startMillis) }
     var note by remember(a.id) { mutableStateOf(a.note) }
     var error by remember(a.id) { mutableStateOf<String?>(null) }
     TextBox {
@@ -274,11 +270,13 @@ private fun ActivityOptions(model: AppModel, a: ActivityRecord, onDone: () -> Un
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     ActivityType.entries.forEach { t -> TabButton(t.label, t == type, { type = t }) }
                 }
-                PixelField(minutes, { minutes = it.filter(Char::isDigit).take(4) }, Modifier.fillMaxWidth(), label = "Minutes", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), error = error)
+                PixelDurationField(minutes, { minutes = it }, ModuleAccent.HEAL.accent, label = "How long", presets = listOf(15, 30, 45, 60), step = 5)
+                PixelMomentField(started, { started = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "It started", nowKey = false)
+                error?.let { Report(model, it, NoticeTone.WARNING) }
                 PixelField(note, { note = it.take(HealRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note")
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelButton("Save", {
-                        val out = model.heal.updateActivity(a.copy(type = type, minutes = minutes.toIntOrNull() ?: 0, note = note))
+                        val out = model.heal.updateActivity(a.copy(type = type, minutes = minutes ?: 0, startMillis = started, note = note))
                         if (out.record == null) error = out.refused else onDone()
                     }, Modifier.weight(1f), Pixel.Green, compact = true)
                     PixelButton("Cancel", { editing = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -304,8 +302,11 @@ private fun HydrationView(model: AppModel) {
     var message by remember { mutableStateOf<String?>(null) }
     // The day being looked at and added to: today, or an earlier one picked (a forgotten glass is still worth a record).
     var day by remember { mutableStateOf(today) }
+    // null: now for today, noon for an earlier day.
+    var time by remember { mutableStateOf<LocalTime?>(null) }
     fun add(v: Int) {
-        val out = heal.logDrink(v, atMillis = if (day == today) model.store.nowMillis else heal.noonOf(day))
+        val at = time?.let { LocalDateTime(day, it).toInstant(zone).toEpochMilliseconds() } ?: if (day == today) model.store.nowMillis else heal.noonOf(day)
+        val out = heal.logDrink(v, atMillis = at)
         message = if (out.record == null) out.refused else null
         if (out.record != null) { model.haptic(); model.effect(Sfx.HEAL); custom = "" }
     }
@@ -315,6 +316,10 @@ private fun HydrationView(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle(if (day == today) "Today" else day.short())
             PixelDatePicker(day, today, ModuleAccent.HEAL.accent, { day = it })
+            PixelTimeField(
+                time, { time = it }, ModuleAccent.HEAL.accent, label = "At", noneLabel = if (day == today) "Now" else "Noon", steps = listOf(5, 60),
+                reject = { t -> if (day == today && t > model.store.nowMillis.localTime()) "That time has not happened yet" else null },
+            )
             Text(if (total == null) "Nothing logged yet" else ml(total), style = MaterialTheme.typography.titleSmall)
             data.settings.hydrationTargetMl?.let { target ->
                 PixelBar(((total ?: 0).toFloat() / target).coerceIn(0f, 1f), color = Pixel.Blue, label = "Your own target: ${ml(target)}")
@@ -335,12 +340,7 @@ private fun HydrationView(model: AppModel) {
     }
     val drinks = data.hydration.filter { it.day == day }.sortedBy { it.atMillis }
     if (drinks.isEmpty()) EmptyState(if (day == today) "No drinks today" else "No drinks on ${day.short()}", "Tap an amount above. Any drink counts the same here: this only keeps your own record.", icon = HealSection.HYDRATION.icon, addAbove = "Log a drink")
-    else drinks.forEach { d ->
-        ListRow(trail = { PixelButton("Delete", { val before = model.healData; heal.deleteDrink(d.id); model.offerUndo("Deleted: drink") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true) }) {
-            Text(ml(d.ml) + d.drink.takeIf { it.isNotBlank() }?.let { " · $it" }.orEmpty(), style = MaterialTheme.typography.bodyLarge)
-            Text(clockText(d.atMillis.localTime()), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        }
-    }
+    else drinks.forEach { d -> DrinkRow(model, d) }
     val earlier = (1..7).mapNotNull { back ->
         val day = LocalDate.fromEpochDays(today.toEpochDays() - back)
         HealRules.hydrationOn(data, day)?.let { day to it }
@@ -351,32 +351,68 @@ private fun HydrationView(model: AppModel) {
     }
 }
 
+/** One drink: its amount and time, with Edit for the amount, the name and the exact moment, and Delete. */
+@Composable
+private fun DrinkRow(model: AppModel, d: HydrationEntry) {
+    val heal = model.heal
+    var editing by remember(d.id) { mutableStateOf(false) }
+    var ml by remember(d.id) { mutableStateOf(d.ml.toString()) }
+    var name by remember(d.id) { mutableStateOf(d.drink) }
+    var at by remember(d.id) { mutableStateOf(d.atMillis) }
+    var error by remember(d.id) { mutableStateOf<String?>(null) }
+    ListRow(
+        trail = {
+            PixelButton(if (editing) "Close" else "Edit", { editing = !editing }, color = Pixel.Blue, compact = true)
+            PixelButton("Delete", { val before = model.healData; heal.deleteDrink(d.id); model.offerUndo("Deleted: drink") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true)
+        },
+    ) {
+        Text(ml(d.ml) + d.drink.takeIf { it.isNotBlank() }?.let { " · $it" }.orEmpty(), style = MaterialTheme.typography.bodyLarge)
+        Text(clockText(d.atMillis.localTime()), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    }
+    if (editing) TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelField(ml, { ml = it.filter(Char::isDigit).take(4) }, Modifier.fillMaxWidth(), label = "Amount (ml)", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+            PixelField(name, { name = it.take(60) }, Modifier.fillMaxWidth(), label = "What was it? (optional)", singleLine = true)
+            PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "When", nowKey = false)
+            error?.let { Report(model, it, NoticeTone.WARNING) }
+            PixelButton("Save", {
+                val out = heal.updateDrink(d.copy(ml = ml.toIntOrNull() ?: 0, drink = name, atMillis = at))
+                if (out.record == null) error = out.refused else { error = null; editing = false; model.say("Saved.") }
+            }, Modifier.fillMaxWidth(), Pixel.Green)
+        }
+    }
+}
+
 // ----- Sleep --------------------------------------------------------------------------------------------------------------
 
 @Composable
 private fun SleepView(model: AppModel) {
     val heal = model.heal
     val data = model.healData
-    var yesterday by remember { mutableStateOf(false) }
-    var wake by remember { mutableStateOf(LocalTime(7, 0)) }
-    var length by remember { mutableStateOf(8 * 60) }
+    val nowMillis = model.store.nowMillis
+    // Woke at 07:00 today, or yesterday if that is still to come; slept eight hours before it. Both can be typed.
+    val usual = remember {
+        val now = nowMillis.toLocalDateTime(zone)
+        val seven = LocalDateTime(now.date, LocalTime(7, 0)).toInstant(zone).toEpochMilliseconds()
+        if (seven <= nowMillis) seven else seven - 86_400_000L
+    }
+    var woke by remember { mutableStateOf(usual) }
+    var asleep by remember { mutableStateOf(usual - 8 * 3_600_000L) }
     var message by remember { mutableStateOf<Pair<String, NoticeTone>?>(null) }
     fun save() {
-        val day = LocalDate.fromEpochDays(model.store.today.toEpochDays() - if (yesterday) 1 else 0)
-        val end = LocalDateTime(day, wake).toInstant(zone).toEpochMilliseconds()
-        val out = heal.logSleep(end - length * 60_000L, end)
+        val out = heal.logSleep(asleep, woke)
         message = if (out.record == null) (out.refused ?: "That could not be saved.") to NoticeTone.WARNING else { model.effect(Sfx.HEAL); model.say("Saved."); null }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("A night")
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                TabButton("Woke today", !yesterday, { yesterday = false }, Modifier.weight(1f))
-                TabButton("Woke yesterday", yesterday, { yesterday = true }, Modifier.weight(1f))
-            }
-            Stepper("Woke at", clockText(wake), { wake = shift(wake, -15) }, { wake = shift(wake, 15) })
-            Stepper("Slept for", HealRules.duration(length), { length = (length - 15).coerceAtLeast(15) }, { length = (length + 15).coerceAtMost(HealRules.SLEEP_MAX_MINUTES) })
-            PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Green)
+            PixelMomentField(asleep, { asleep = it }, nowMillis, ModuleAccent.HEAL.accent, label = "Fell asleep", nowKey = false, dayPresets = listOf("Today" to 0, "Yesterday" to -1))
+            PixelMomentField(woke, { woke = it }, nowMillis, ModuleAccent.HEAL.accent, label = "Woke up", nowKey = false)
+            Text(
+                if (woke > asleep) "Slept for ${HealRules.duration(((woke - asleep) / 60_000L).toInt())}." else "Waking up has to be after falling asleep.",
+                style = MaterialTheme.typography.bodyLarge, color = if (woke > asleep) Pixel.Ink else Pixel.Danger,
+            )
+            PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Green, enabled = woke > asleep)
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
@@ -385,7 +421,7 @@ private fun SleepView(model: AppModel) {
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 PixelTitle("Wake-up alarm")
-                Stepper("Ring at", clockText(alarm), { alarm = shift(alarm, -15) }, { alarm = shift(alarm, 15) })
+                PixelTimeField(alarm, { it?.let { t -> alarm = t } }, ModuleAccent.HEAL.accent, label = "Ring at", steps = listOf(5, 15, 60), wrap = true)
                 PixelButton("Set the alarm", { phone.setAlarm(alarm.hour, alarm.minute, "PokéLife") }, Modifier.fillMaxWidth(), Pixel.Blue)
             }
         }
@@ -395,13 +431,40 @@ private fun SleepView(model: AppModel) {
     if (nights.isEmpty()) EmptyState("No nights logged", "Add how long you slept whenever you like. Heal never tells you a night was too short or too long.", icon = HealSection.SLEEP.icon, addAbove = "Log a night")
     else {
         SectionLabel("History")
-        nights.take(shown).forEach { s ->
-            ListRow(trail = { PixelButton("Delete", { val before = model.healData; heal.deleteSleep(s.id); model.offerUndo("Deleted: sleep") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true) }) {
-                Text(HealRules.duration(s.minutes), style = MaterialTheme.typography.bodyLarge)
-                Text("${clockText(s.startMillis.localTime())} to ${clockText(s.endMillis.localTime())}, woke ${s.day.short()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            }
-        }
+        nights.take(shown).forEach { s -> NightRow(model, s) }
         if (nights.size > shown) ShowOlder { shown += PAGE }
+    }
+}
+
+/** One night: its length and times, with Edit for when it began and ended, and Delete. */
+@Composable
+private fun NightRow(model: AppModel, s: SleepRecord) {
+    val heal = model.heal
+    var editing by remember(s.id) { mutableStateOf(false) }
+    var asleep by remember(s.id) { mutableStateOf(s.startMillis) }
+    var woke by remember(s.id) { mutableStateOf(s.endMillis) }
+    var note by remember(s.id) { mutableStateOf(s.note) }
+    var error by remember(s.id) { mutableStateOf<String?>(null) }
+    ListRow(
+        trail = {
+            PixelButton(if (editing) "Close" else "Edit", { editing = !editing }, color = Pixel.Blue, compact = true)
+            PixelButton("Delete", { val before = model.healData; heal.deleteSleep(s.id); model.offerUndo("Deleted: sleep") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true)
+        },
+    ) {
+        Text(HealRules.duration(s.minutes), style = MaterialTheme.typography.bodyLarge)
+        Text("${clockText(s.startMillis.localTime())} to ${clockText(s.endMillis.localTime())}, woke ${s.day.short()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    }
+    if (editing) TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelMomentField(asleep, { asleep = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "Fell asleep", nowKey = false)
+            PixelMomentField(woke, { woke = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "Woke up", nowKey = false)
+            PixelField(note, { note = it.take(HealRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note")
+            error?.let { Report(model, it, NoticeTone.WARNING) }
+            PixelButton("Save", {
+                val out = heal.updateSleep(s.copy(startMillis = asleep, endMillis = woke, note = note))
+                if (out.record == null) error = out.refused else { error = null; editing = false; model.say("Saved.") }
+            }, Modifier.fillMaxWidth(), Pixel.Green)
+        }
     }
 }
 
@@ -429,7 +492,8 @@ private fun BodyView(model: AppModel) {
     val heal = model.heal
     val data = model.healData
     var type by remember { mutableStateOf(MeasureType.WEIGHT) }
-    var day by remember { mutableStateOf(model.store.today) }
+    // null: measured just now.
+    var at by remember { mutableStateOf<Long?>(null) }
     var unit by remember { mutableStateOf(data.settings.weightUnit) }
     var value by remember { mutableStateOf("") }
     var label by remember { mutableStateOf("") }
@@ -437,13 +501,13 @@ private fun BodyView(model: AppModel) {
     fun pick(t: MeasureType) { type = t; unit = if (t == MeasureType.WEIGHT) data.settings.weightUnit else t.units.first() }
     fun save() {
         val v = value.replace(',', '.').toDoubleOrNull()
-        val out = if (v == null) null else heal.logMeasurement(type, v, unit, label, atMillis = if (day == model.store.today) model.store.nowMillis else heal.noonOf(day))
+        val out = if (v == null) null else heal.logMeasurement(type, v, unit, label, atMillis = at ?: model.store.nowMillis)
         message = when {
             out == null -> "Enter a number." to NoticeTone.WARNING
             out.record == null -> (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
             else -> null
         }
-        if (out?.record != null) { value = ""; label = ""; day = model.store.today; model.say("Saved.") }
+        if (out?.record != null) { value = ""; label = ""; at = null; model.say("Saved.") }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -457,7 +521,7 @@ private fun BodyView(model: AppModel) {
                 if (type.units.size > 1) type.units.forEach { u -> TabButton(u, u == unit, { unit = u }) }
                 else if (type.units.first().isNotEmpty()) Text(type.units.first(), style = MaterialTheme.typography.bodyLarge)
             }
-            PixelDatePicker(day, model.store.today, ModuleAccent.HEAL.accent, { day = it })
+            PixelMomentField(at ?: model.store.nowMillis, { at = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "When")
             PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Green, enabled = value.isNotBlank())
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
@@ -473,14 +537,44 @@ private fun BodyView(model: AppModel) {
             own.map { it.unit }.distinct().forEach { u ->
                 HealRules.trendText(data, t, u)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             }
-            own.sortedByDescending { it.atMillis }.take(shown).forEach { m ->
-                ListRow(trail = { PixelButton("Delete", { val before = model.healData; heal.deleteMeasurement(m.id); model.offerUndo("Deleted: measurement") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true) }) {
-                    Text((m.label.takeIf { it.isNotBlank() }?.let { "$it: " }.orEmpty()) + HealUnits.show(m, m.unit), style = MaterialTheme.typography.bodyLarge)
-                    Text(m.day.short(), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                }
-            }
+            own.sortedByDescending { it.atMillis }.take(shown).forEach { m -> MeasurementRow(model, m) }
         }
         if (MeasureType.entries.any { t -> data.measurements.count { it.type == t } > shown }) ShowOlder { shown += PAGE }
+    }
+}
+
+/** One measurement with Edit for its value, unit and exact moment, and Delete. */
+@Composable
+private fun MeasurementRow(model: AppModel, m: Measurement) {
+    val heal = model.heal
+    var editing by remember(m.id) { mutableStateOf(false) }
+    var value by remember(m.id) { mutableStateOf(HealRules.format(m.value)) }
+    var unit by remember(m.id) { mutableStateOf(m.unit) }
+    var at by remember(m.id) { mutableStateOf(m.atMillis) }
+    var error by remember(m.id) { mutableStateOf<String?>(null) }
+    ListRow(
+        trail = {
+            PixelButton(if (editing) "Close" else "Edit", { editing = !editing }, color = Pixel.Blue, compact = true)
+            PixelButton("Delete", { val before = model.healData; heal.deleteMeasurement(m.id); model.offerUndo("Deleted: measurement") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true)
+        },
+    ) {
+        Text((m.label.takeIf { it.isNotBlank() }?.let { "$it: " }.orEmpty()) + HealUnits.show(m, m.unit), style = MaterialTheme.typography.bodyLarge)
+        Text(m.day.short() + " " + clockText(m.atMillis.localTime()), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    }
+    if (editing) TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelField(value, { value = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(8) }, Modifier.weight(1f), label = "Value", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                if (m.type.units.size > 1) m.type.units.forEach { u -> TabButton(u, u == unit, { unit = u }) }
+            }
+            PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "When", nowKey = false)
+            error?.let { Report(model, it, NoticeTone.WARNING) }
+            PixelButton("Save", {
+                val v = value.replace(',', '.').toDoubleOrNull()
+                val out = if (v == null) null else heal.updateMeasurement(m.copy(value = v, unit = unit, atMillis = at))
+                if (out?.record != null) { error = null; editing = false; model.say("Saved.") } else error = out?.refused ?: "Enter a number."
+            }, Modifier.fillMaxWidth(), Pixel.Green)
+        }
     }
 }
 
@@ -559,15 +653,14 @@ private fun HealSettingsView(model: AppModel) {
             PixelTitle("Reminders")
             Text("Off by default. Up to ${HealSettings.MAX_REMINDERS} a day, quiet during your quiet hours. They only ask if you would like a drink; they never say how much.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             settings.hydrationReminders.forEach { t ->
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    Text(clockText(t), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                    PixelButton("-15", { heal.setHydrationReminders(settings.hydrationReminders - t + shift(t, -15)) }, color = Pixel.InkSoft, compact = true)
-                    PixelButton("+15", { heal.setHydrationReminders(settings.hydrationReminders - t + shift(t, 15)) }, color = Pixel.InkSoft, compact = true)
+                Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    PixelTimeField(t, { nt -> nt?.let { heal.setHydrationReminders(settings.hydrationReminders - t + it) } }, ModuleAccent.HEAL.accent, Modifier.weight(1f), steps = listOf(15, 60), wrap = true)
                     PixelButton("Remove", { heal.setHydrationReminders(settings.hydrationReminders - t) }, color = Pixel.InkSoft, compact = true)
                 }
             }
             if (settings.hydrationReminders.size < HealSettings.MAX_REMINDERS) {
-                val next = if (settings.hydrationReminders.isEmpty()) LocalTime(10, 0) else shift(settings.hydrationReminders.last(), 120)
+                var next by remember(settings.hydrationReminders) { mutableStateOf(if (settings.hydrationReminders.isEmpty()) LocalTime(10, 0) else shift(settings.hydrationReminders.last(), 120)) }
+                PixelTimeField(next, { it?.let { t -> next = t } }, ModuleAccent.HEAL.accent, label = "New reminder", steps = listOf(15, 60), wrap = true)
                 PixelButton("Add a reminder at ${clockText(next)}", { heal.setHydrationReminders(settings.hydrationReminders + next) }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
             }
         }

@@ -34,7 +34,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.plan.Category
 import app.pokeplan.plan.Insights
+import app.pokeplan.plan.Goal
 import app.pokeplan.plan.GoalRules
+import androidx.compose.runtime.mutableStateMapOf
 import app.pokeplan.plan.Reviews
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.theme.Pixel
@@ -205,9 +207,10 @@ internal fun GoalsView(model: AppModel) {
                 FieldLabel("Category")
                 CategoryChips(category) { category = it ?: category }
                 // Optional, and only a date to aim for: nothing happens when it passes.
-                DayPicker(
-                    "Target date", targetDate, store.today, listOf("In a month" to 30, "In 3 months" to 91, "In 6 months" to 182),
-                    noneLabel = "No date", step = 7, onChange = { targetDate = it },
+                FieldLabel("Target date")
+                PixelDateField(
+                    targetDate, store.today, Pixel.Blue, { targetDate = it },
+                    presets = listOf("In a month" to 30, "In 3 months" to 91, "In 6 months" to 182), noneLabel = "No date",
                 )
             }
         }
@@ -218,7 +221,12 @@ internal fun GoalsView(model: AppModel) {
     model.data.goals.forEach { g ->
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Text(g.title, style = MaterialTheme.typography.titleMedium)
+                var editing by remember(g.id) { mutableStateOf(false) }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    Text(g.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                    PixelIconButton("pencil", if (editing) "Close edit" else "Edit goal", { editing = !editing }, Pixel.InkSoft)
+                }
+                if (editing) GoalEditor(model, g) { editing = false }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Box(Modifier.size(10.dp).background(categoryColor(g.category), PixelShape))
                     Text(
@@ -249,6 +257,39 @@ internal fun GoalsView(model: AppModel) {
                 }
             }
         }
+    }
+}
+
+/** A goal's title, area and target date, and its milestones' names; Save applies all of it, Delete removes the goal. */
+@Composable
+private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
+    val store = model.store
+    var title by remember(g.id) { mutableStateOf(g.title) }
+    var category by remember(g.id) { mutableStateOf(g.category) }
+    var target by remember(g.id) { mutableStateOf(g.targetDate) }
+    val names = remember(g.id) { mutableStateMapOf<String, String>().apply { g.milestones.forEach { put(it.id, it.title) } } }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Title")
+        FieldLabel("Category")
+        CategoryChips(category) { category = it ?: category }
+        FieldLabel("Target date")
+        PixelDateField(
+            target, store.today, Pixel.Blue, { target = it },
+            presets = listOf("In a month" to 30, "In 3 months" to 91, "In 6 months" to 182), noneLabel = "No date",
+        )
+        g.milestones.forEach { m ->
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelField(names[m.id].orEmpty(), { names[m.id] = it }, Modifier.weight(1f), singleLine = true, label = "Milestone")
+                PixelIconButton("trash", "Delete milestone", { store.deleteMilestone(g.id, m.id); names.remove(m.id) }, Pixel.Danger)
+            }
+        }
+        PixelButton("Save", {
+            store.editGoal(g.id, title, category, target)
+            g.milestones.forEach { m -> names[m.id]?.let { n -> if (n.trim() != m.title) store.renameMilestone(g.id, m.id, n) } }
+            model.say("Saved.")
+            onClose()
+        }, Modifier.fillMaxWidth(), Pixel.Green)
+        PixelButton("Delete this goal", { store.deleteGoal(g.id) }, color = Pixel.Danger, compact = true)
     }
 }
 

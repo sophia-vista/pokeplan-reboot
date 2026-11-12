@@ -5,6 +5,20 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.172.0
+
+Exact dates, times and lengths in every module, and edit screens where a record could only be added or deleted (owner, 12 November 2026: "I would prefer to input specific dates and times, to have edit functions"). No reward number changes; `RewardRules.VERSION` is unchanged, and a correction never pays and never takes back.
+
+- **Typed entry, one set of fields everywhere** (`ExactInput` in app-core, `ExactFields.kt` in the UI, `docs/pokelife/FEATURES/DESIGN_SYSTEM.md` 6.4). Every date field (Plan, Heal, Mint, Home, Link) now has a text box beside its keys and month: `2026-11-07`, `7/11/2026`, `7 Nov 2026`, or `today`/`tomorrow`; a time takes `9`, `930`, `21:05`, `9pm`, `noon`; a length takes `45`, `1h30`, `1:30`. Each reads back what it understood, and a day or time out of range (a payment in the future, a day that does not exist) says so instead of being guessed. Tested spelling by spelling (`ExactInputTest`).
+- **Plan.** A task's day ("Move to") is a full date field (it had three keys and no calendar); its time of day is typed; a deadline has its own time (it could only keep 23:59); the estimate is typed (`1h30`) as well as nudged. A goal's target date is typed, and **goals and milestones can finally be edited and deleted** (title, area, target date, milestone names; before, a typo meant a new goal and a goal could never be removed). A repeating target (frequency task) can mark or take back **any earlier day** ("Another day"); it counts toward the target and never pays. A calendar event's day, start time and length are typed, an all-day event's first and last days are typed, and the focus length (the screen and the default in Settings) and quiet hours are typed.
+- **Care.** A routine's time is typed. The diary can be filled in for **any earlier day** and an earlier card opened and corrected (one tap on it); a journal entry can be dated to an exact moment when written, and **edited afterwards** (words, tags and moment). `CareStore.editEntry` existed with no screen.
+- **Heal.** An activity's end and start, a night's two moments ("fell asleep" and "woke up", with the length worked out), a drink's and a measurement's exact moment are typed. **Drinks, nights and measurements can be edited** (`updateDrink`, `updateSleep`, `updateMeasurement`, with tests); an activity's edit now also changes when it started. The wake-up alarm and each hydration reminder are typed times, and a new reminder time is chosen before it is added.
+- **Mint.** A record's moment (day and time) is always shown, not behind "Date, payee and a note"; a bill is settled on a day you choose (it was always today); a bill's first due day and frequency can be corrected **until a payment is recorded** (then they stay fixed, so no settled occurrence is rewritten).
+- **Home.** A record of work can be edited (what was done, the exact day, the item, notes, cost) from the maintenance history and from an item's page (`updateMaintenanceRecord`). Warranties are editable too (merged with the HOME audit's change).
+- **Link.** A follow-up takes its day when it is added (it could only be set afterwards), and a follow-up on a person's page opens the same editor as the main list.
+- **Gear.** A timer's length is typed as hours, minutes and seconds (`90`, `1h30`, `1:30:00`, `45s`) and an existing timer can be **renamed and resized** (it goes back to ready).
+- Not changed, for the owner: reminder hours in Mint, Home and Link and the streak reminder are whole hours (a stored number, so minutes need a schema change); a budget's period and a bill payment's amount stay as they are (settle again to correct a payment).
+
 ## 0.171.4
 
 HOME audit (end to end: rules, store, reminders, screens). No reward number changes; `RewardRules.VERSION` is unchanged.

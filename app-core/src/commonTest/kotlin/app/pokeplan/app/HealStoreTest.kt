@@ -289,4 +289,48 @@ class HealStoreTest {
         assertTrue(s.game.setHealLead(buddy))
         assertEquals(buddy, s.game.data.player.healLead?.id)
     }
+
+    @Test
+    fun aDrinkCanBeMovedToAnotherMomentAndKeepsItsPayment() {
+        val s = setup()
+        val d = assertNotNull(s.heal.logDrink(250).record)
+        val moved = LocalDateTime(2026, 11, 3, 8, 15).toInstant(utc).toEpochMilliseconds()
+        val out = s.heal.updateDrink(d.copy(ml = 300, atMillis = moved, drink = " tea "))
+        val e = assertNotNull(out.record)
+        assertEquals(300, e.ml)
+        assertEquals("tea", e.drink)
+        assertEquals(kotlinx.datetime.LocalDate(2026, 11, 3), e.day)
+        assertEquals(d.paid, e.paid)
+        assertEquals(1, s.heal.data.hydration.size)
+        assertNull(s.heal.updateDrink(d.copy(ml = 0)).record)
+        assertNull(s.heal.updateDrink(d.copy(id = "gone")).record)
+    }
+
+    @Test
+    fun aNightAndAMeasurementCanBeCorrectedUnderTheSameRulesAsNewOnes() {
+        val s = setup()
+        val wake = LocalDateTime(2026, 11, 7, 7, 0).toInstant(utc).toEpochMilliseconds()
+        val night = assertNotNull(s.heal.logSleep(wake - 7 * 3_600_000L, wake).record)
+        val fixed = assertNotNull(s.heal.updateSleep(night.copy(startMillis = wake - 8 * 3_600_000L + 30 * 60_000L)).record)
+        assertEquals(450, fixed.minutes)
+        assertNull(s.heal.updateSleep(night.copy(endMillis = night.startMillis)).record)
+        assertNull(s.heal.updateSleep(night.copy(endMillis = s.clock.millis + 3 * 3_600_000L)).record)
+
+        val m = assertNotNull(s.heal.logMeasurement(MeasureType.WEIGHT, 60.0, "kg").record)
+        val at = LocalDateTime(2026, 11, 1, 6, 30).toInstant(utc).toEpochMilliseconds()
+        val edited = assertNotNull(s.heal.updateMeasurement(m.copy(value = 59.4, atMillis = at)).record)
+        assertEquals(59.4, edited.value)
+        assertEquals(kotlinx.datetime.LocalDate(2026, 11, 1), edited.day)
+        assertNull(s.heal.updateMeasurement(m.copy(value = -1.0)).record)
+    }
+
+    @Test
+    fun anActivityCanBeMovedToAnotherDay() {
+        val s = setup()
+        val a = assertNotNull(s.heal.logActivity(ActivityType.WALK, 30).record)
+        val at = LocalDateTime(2026, 11, 2, 17, 0).toInstant(utc).toEpochMilliseconds()
+        val moved = assertNotNull(s.heal.updateActivity(a.copy(startMillis = at, minutes = 45)).record)
+        assertEquals(kotlinx.datetime.LocalDate(2026, 11, 2), moved.day)
+        assertEquals(a.paid, moved.paid)
+    }
 }

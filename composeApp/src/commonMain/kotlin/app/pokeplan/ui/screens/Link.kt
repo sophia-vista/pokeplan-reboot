@@ -477,16 +477,24 @@ private fun PersonFollowUps(model: AppModel, p: Person) {
     val link = model.link
     val today = model.store.today
     var title by remember(p.id) { mutableStateOf("") }
+    var due by remember(p.id) { mutableStateOf<LocalDate?>(null) }
+    var openId by remember(p.id) { mutableStateOf<String?>(null) }
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
         PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.weight(1f), placeholder = "Add a follow-up", singleLine = true, keyboardOptions = sentenceKeys)
-        PixelButton("Add", { if (link.addFollowUp(title, p.id).record != null) { title = ""; model.haptic() } }, color = accent, enabled = title.isNotBlank())
+        PixelButton("Add", { if (link.addFollowUp(title, p.id, due).record != null) { title = ""; due = null; model.haptic() } }, color = accent, enabled = title.isNotBlank())
     }
+    DateField("Day, optional", due, { due = it }, today)
     val open = link.openFollowUps(p.id)
     val history = link.followUpHistory(p.id).take(10)
     if (open.isEmpty() && history.isEmpty()) Text("Nothing to follow up.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     open.forEach { f ->
         val task = planTask(model, f)
-        LRow(f.title, listOfNotNull(task?.let(::planWord), dueText(f, today)).joinToString(" · "), lead = { if (task == null) PixelIconButton("check", "Mark ${f.title} done", { link.complete(f.id); model.haptic() }, accent) })
+        LRow(
+            f.title, listOfNotNull(task?.let(::planWord), dueText(f, today)).joinToString(" · "),
+            lead = { if (task == null) PixelIconButton("check", "Mark ${f.title} done", { link.complete(f.id); model.haptic() }, accent) },
+            onClick = { openId = if (openId == f.id) null else f.id }, onClickLabel = if (openId == f.id) "Hide options" else "Show options",
+        )
+        if (openId == f.id) FollowUpOptions(model, f) { openId = null }
     }
     history.forEach { f ->
         LRow(f.title, closedLine(f, today), trail = { if (planTask(model, f) == null) PixelButton("Reopen", { link.reopen(f.id) }, color = Pixel.InkSoft, compact = true) })
@@ -664,13 +672,15 @@ private fun FollowUpsView(model: AppModel) {
     val jump = remember { takeJump(LinkSection.FOLLOW_UPS) }
     var tab by remember { mutableStateOf(jump?.tab ?: 0) }
     var title by remember { mutableStateOf("") }
+    var newDue by remember { mutableStateOf<LocalDate?>(null) }
     var openId by remember { mutableStateOf(jump?.id) }
     RewardBox(model)
     TextBox {
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.weight(1f), placeholder = "Add a follow-up", singleLine = true, keyboardOptions = sentenceKeys)
-            PixelButton("Add", { if (link.addFollowUp(title).record != null) { title = ""; model.haptic() } }, color = accent, enabled = title.isNotBlank())
+            PixelButton("Add", { if (link.addFollowUp(title, null, newDue).record != null) { title = ""; newDue = null; model.haptic() } }, color = accent, enabled = title.isNotBlank())
         }
+        DateField("Day, optional", newDue, { newDue = it }, today)
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {

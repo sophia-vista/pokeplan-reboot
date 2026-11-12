@@ -163,11 +163,10 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
                 // The four lengths cover most sessions; any other length is one tap away.
                 var custom by remember { mutableStateOf(minutes !in listOf(15, 25, 45, 60)) }
                 if (!custom) TabButton("Another length", false, { custom = true }, Modifier.fillMaxWidth())
-                else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    PixelButton("-5", { minutes = (minutes - 5).coerceAtLeast(FocusRules.RETRY_MINUTES) }, color = Pixel.InkSoft, compact = true)
-                    Text("$minutes minutes", style = MaterialTheme.typography.titleMedium)
-                    PixelButton("+5", { minutes = (minutes + 5).coerceAtMost(FocusRules.MAX_MINUTES) }, color = Pixel.InkSoft, compact = true)
-                }
+                else PixelDurationField(
+                    minutes, { if (it != null) minutes = it }, Pixel.Blue, presets = emptyList(), step = 5,
+                    min = FocusRules.RETRY_MINUTES, max = FocusRules.MAX_MINUTES,
+                )
             }
         }
 
