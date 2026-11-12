@@ -105,7 +105,6 @@ private fun ListRows(lists: List<TaskList>, tasks: List<Task>, open: (String) ->
 internal fun ListScreen(model: AppModel, list: TaskList, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit, back: () -> Unit) {
     var editing by remember(list.id) { mutableStateOf(false) }
     SectionScaffold(list.name, if (list.archived) "Archived list" else null, onBack = back, icon = list.icon, color = ModuleAccent.PLAN.header) {
-        RewardBox(model)
         if (editing) ListEditor(model, list) { kept -> editing = false; if (kept == null) back() }
         else PixelButton("Edit list", { editing = true }, color = Pixel.InkSoft, compact = true)
         if (!list.archived) QuickAddBox(model, View.INBOX, listId = list.id)
@@ -169,7 +168,7 @@ private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit
             }
             if (list != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton(if (list.archived) "Unarchive" else "Archive", { store.updateList(list.copy(archived = !list.archived)); done(list.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelIconButton("trash", "Delete", { val ids = model.data.tasks.filter { it.listId == list.id }.map { it.id }.toSet(); store.deleteList(list.id); done(null); model.offerUndo("Deleted: ${list.name}") { store.restoreList(list, ids) } }, Pixel.Danger)
+                PixelIconButton("trash", "Delete", { val ids = model.data.tasks.filter { it.listId == list.id }.map { it.id }.toSet(); store.deleteList(list.id); done(null); model.offerUndo("Deleted: ${list.name}") { store.restoreList(list, ids) } }, Pixel.InkSoft)
             }
         }
     }

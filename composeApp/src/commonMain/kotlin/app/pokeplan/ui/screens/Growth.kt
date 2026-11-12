@@ -158,7 +158,7 @@ private fun GoalsSummary(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Goal progress")
             if (goals.isEmpty()) {
-                Text("No goals yet. Add one under Me, Goals.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                Text("No goals yet. Add one under Plan, Goals.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 return@Column
             }
             Text(
@@ -240,9 +240,11 @@ internal fun GoalsView(model: AppModel) {
                 PixelBar(GoalRules.progress(g, model.data.tasks).toFloat(), color = Pixel.Green, label = progress)
                 if (g.milestones.isNotEmpty()) Text(progress, style = MaterialTheme.typography.bodyMedium)
                 g.milestones.forEach { m ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                         Text(m.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (m.isDone) Pixel.InkSoft else Pixel.Ink)
-                        if (!m.isDone) PixelIconButton("check", "Done", { store.completeMilestone(g.id, m.id) }, Pixel.Green)
+                        // Unticking keeps "paid", so ticking again pays nothing more.
+                        if (m.isDone) PixelIconButton("undo", "Untick ${m.title}", { store.reopenMilestone(g.id, m.id) }, Pixel.InkSoft)
+                        else PixelIconButton("check", "Done", { store.completeMilestone(g.id, m.id) }, Pixel.Green)
                     }
                 }
                 var step by remember(g.id) { mutableStateOf("") }
@@ -280,7 +282,7 @@ private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
         g.milestones.forEach { m ->
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelField(names[m.id].orEmpty(), { names[m.id] = it }, Modifier.weight(1f), singleLine = true, label = "Milestone")
-                PixelIconButton("trash", "Delete milestone", { store.deleteMilestone(g.id, m.id); names.remove(m.id) }, Pixel.Danger)
+                PixelIconButton("trash", "Delete milestone", { store.deleteMilestone(g.id, m.id); names.remove(m.id) }, Pixel.InkSoft)
             }
         }
         PixelButton("Save", {
@@ -289,7 +291,7 @@ private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
             model.say("Saved.")
             onClose()
         }, Modifier.fillMaxWidth(), Pixel.Green)
-        PixelButton("Delete this goal", { store.deleteGoal(g.id) }, color = Pixel.Danger, compact = true)
+        PixelButton("Delete this goal", { val before = model.data.goals; store.deleteGoal(g.id); model.offerUndo("Deleted: ${g.title}") { store.restoreGoals(before) } }, color = Pixel.InkSoft, compact = true)
     }
 }
 
@@ -298,7 +300,6 @@ private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
 @Composable
 internal fun ReviewView(model: AppModel) {
     val store = model.store
-    RewardBox(model)
     if (!store.canReview()) {
         TextBox { Text("This week's review is done. See you next week!", style = MaterialTheme.typography.bodyLarge) }
         return

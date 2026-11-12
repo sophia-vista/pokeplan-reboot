@@ -149,7 +149,6 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             ModuleLeadStage(model, Module.LINK, model.data.player.linkLead, model.store.moduleEvent(app.pokeplan.app.GameStore.LINK_LOG_PREFIX), openPokemon = openPokemon)
-            RewardBox(model)
             TutorialCard(model, Tutorials.LINK_POSTCARD, linkRecords = data.people.size + data.dates.size + data.followUps.size)
             LinkOverview(model)
             LinkSearch(model)
@@ -280,7 +279,6 @@ private fun PeopleView(model: AppModel) {
     var message by remember { mutableStateOf<String?>(null) }
     var shown by remember { mutableStateOf(DIRECTORY_PAGE) }
     val people = link.directory(query, category, null, favorites, sort)
-    RewardBox(model)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -521,7 +519,6 @@ private fun DatesView(model: AppModel) {
     val today = model.store.today
     val jump = remember { takeJump(LinkSection.DATES) }
     var openId by remember { mutableStateOf(jump?.id) }
-    RewardBox(model)
     TextBox { DateForm(model, null, onDone = {}) }
     val all = link.allDates()
     if (all.isEmpty()) return
@@ -638,7 +635,6 @@ private fun FollowUpsView(model: AppModel) {
     var title by remember { mutableStateOf("") }
     var newDue by remember { mutableStateOf<LocalDate?>(null) }
     var openId by remember { mutableStateOf(jump?.id) }
-    RewardBox(model)
     TextBox {
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.weight(1f), placeholder = "Add a follow-up", singleLine = true, keyboardOptions = sentenceKeys)

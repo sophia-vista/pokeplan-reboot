@@ -1,6 +1,5 @@
 package app.pokeplan.ui.screens
 
-import app.pokeplan.ui.Place
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -41,7 +40,7 @@ private const val SHOWN = 60
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun AllTasksView(model: AppModel, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit) {
+internal fun AllTasksView(model: AppModel, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit, onAdd: () -> Unit) {
     var filter by remember { mutableStateOf(TaskFilter()) }
     val lists = model.store.activeLists
     TextBox {
@@ -82,6 +81,6 @@ internal fun AllTasksView(model: AppModel, tasks: List<Task>, card: @Composable 
         if (filter.isNarrowed) "Nothing matches" else "No open tasks",
         if (filter.isNarrowed) "Try fewer filters or other words." else "Add one from Today or the Inbox.",
         icon = "scope-lens",
-        action = if (filter.isNarrowed) "Clear filters" to { filter = TaskFilter() } else "Add a task" to { model.addTaskRequested = true; model.open(Place.PLANNER, true) },
+        action = if (filter.isNarrowed) "Clear filters" to { filter = TaskFilter() } else "Add a task" to onAdd,
     ) else TaskGroup(null, found.take(SHOWN), card = card)
 }

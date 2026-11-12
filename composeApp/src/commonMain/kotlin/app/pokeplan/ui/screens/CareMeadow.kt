@@ -62,13 +62,16 @@ import androidx.compose.ui.semantics.liveRegion
 @Composable
 internal fun MeadowView(model: AppModel, goPlay: (String) -> Unit) {
     val care = model.care
-    androidx.compose.runtime.LaunchedEffect(care.today) { care.visitors(); care.reunion() }
+    androidx.compose.runtime.LaunchedEffect(care.today) { care.arrive() }
     val buddy = model.store.careBuddy ?: model.data.player.buddy
     val meadow = Visitors.meadow(model.careData.visitors)
     val waiting = Visitors.queue(model.careData.visitors).size
     val reunion = model.careData.reunion
     var panel by remember { mutableStateOf<String?>(null) }
     var line by remember { mutableStateOf<String?>(null) }
+    // A visitor is visited or played with right here in the Meadow (the visit scene), never sent to Care Play, which is for Pokémon you own.
+    var playing by remember { mutableStateOf<Int?>(null) }
+    val visit = model.careData.visit
     val cooldown = remember { mutableStateOf(mapOf<String, Long>()) }
     val calm = model.data.settings.reduceMotion
 
@@ -108,15 +111,15 @@ internal fun MeadowView(model: AppModel, goPlay: (String) -> Unit) {
             // The queue and the Care Egg stay small in the corners.
             Text(
                 if (waiting == 0) "No one waiting" else "$waiting waiting",
-                style = MaterialTheme.typography.labelMedium, color = Pixel.Ink,
-                modifier = Modifier.align(Alignment.TopStart).padding(Spacing.S).clip(PixelShape).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.75f)).padding(horizontal = Spacing.S, vertical = 2.dp)
+                style = MaterialTheme.typography.labelMedium, color = androidx.compose.ui.graphics.Color.White,
+                modifier = Modifier.align(Alignment.TopStart).padding(Spacing.S).clip(PixelShape).background(Pixel.Scrim.copy(alpha = 0.5f)).padding(horizontal = Spacing.S, vertical = 2.dp)
                     .semantics { contentDescription = if (waiting == 0) "No visitors waiting" else "$waiting visitors waiting for a place" },
             )
             val points = model.store.careEggMeter()
             Text(
                 "Care Egg $points/${app.pokeplan.core.reward.RewardEngine.CARE_EGG_METER_SIZE}",
-                style = MaterialTheme.typography.labelMedium, color = Pixel.Ink,
-                modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.S).clip(PixelShape).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.75f)).padding(horizontal = Spacing.S, vertical = 2.dp),
+                style = MaterialTheme.typography.labelMedium, color = androidx.compose.ui.graphics.Color.White,
+                modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.S).clip(PixelShape).background(Pixel.Scrim.copy(alpha = 0.5f)).padding(horizontal = Spacing.S, vertical = 2.dp),
             )
         }
         reunion?.let { r ->
@@ -131,6 +134,9 @@ internal fun MeadowView(model: AppModel, goPlay: (String) -> Unit) {
                 }
             }
         }
+        meadow.firstOrNull { it.speciesId == (visit?.speciesId ?: playing) }?.let { open ->
+            VisitorScene(model, open, visit?.takeIf { it.speciesId == open.speciesId }, { line = it }) { playing = null }
+        }
         line?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
         // The compact Pokémon panel (long press, or Details from the accessibility actions).
         val key = panel
@@ -138,7 +144,18 @@ internal fun MeadowView(model: AppModel, goPlay: (String) -> Unit) {
             val visitor = meadow.firstOrNull { it.id == key }
             val owned = model.data.player.pokemon.firstOrNull { it.id == key }
             val speciesId = visitor?.speciesId ?: owned?.speciesId
-            if (speciesId != null) PokemonPlayPanel(model, key, Dex.species(speciesId).name, owned?.nickname, visitor?.let { it.progress to Visitors.FRIEND_PROGRESS }, { panel = null }) { goPlay(key) }
+            if (speciesId != null) {
+                val action: Pair<String, () -> Unit>? = when {
+                    visitor == null -> "Spend time" to { goPlay(key) }
+                    visit?.speciesId == visitor.speciesId -> null
+                    model.care.canVisit(visitor) -> "Visit" to {
+                        if (model.care.startVisit(visitor.speciesId) != null) { playing = null; line = null; panel = null; model.haptic(); model.cry(visitor.speciesId) } else line = "Not now."
+                    }
+                    visit == null -> "Play" to { playing = visitor.speciesId; line = null; panel = null; model.haptic() }
+                    else -> null
+                }
+                PokemonPlayPanel(model, key, Dex.species(speciesId).name, owned?.nickname, visitor?.let { it.progress to Visitors.FRIEND_PROGRESS }, { panel = null }, action)
+            }
         }
     }
 }
@@ -147,7 +164,7 @@ private const val TAP_COOLDOWN_MS = 900L
 
 /** Identity, what Care Play found out (only what it has shown), and the way into the activities. */
 @Composable
-private fun PokemonPlayPanel(model: AppModel, key: String, species: String, nickname: String?, warmth: Pair<Int, Int>?, onClose: () -> Unit, onPlay: () -> Unit) {
+private fun PokemonPlayPanel(model: AppModel, key: String, species: String, nickname: String?, warmth: Pair<Int, Int>?, onClose: () -> Unit, action: Pair<String, () -> Unit>?) {
     val known = model.care.discoveredLikes(key)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -159,7 +176,7 @@ private fun PokemonPlayPanel(model: AppModel, key: String, species: String, nick
                 style = MaterialTheme.typography.bodyMedium,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                PixelButton("Spend time", onPlay, color = Pixel.Green, compact = true)
+                if (action != null) PixelButton(action.first, action.second, color = Pixel.Green, compact = true)
                 PixelButton("Close", onClose, color = Pixel.InkSoft, compact = true)
             }
         }
@@ -190,6 +207,7 @@ internal fun PlayView(model: AppModel, initial: String?) {
     var taps by remember { mutableStateOf(0) }
     var result by remember { mutableStateOf<String?>(null) }
     var inviting by remember { mutableStateOf(false) }
+    var invited by remember { mutableStateOf(24) }
     val pokemon = all.firstOrNull { it.id == chosen }
     if (pokemon == null) { EmptyState("No one to spend time with yet", "Hatch an egg first.", action = "Start a focus session" to { model.open(Place.FOCUS, true) }); return }
     val name = pokemon.nickname
@@ -216,10 +234,12 @@ internal fun PlayView(model: AppModel, initial: String?) {
                 SectionLabel("Invite from your collection")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     val buddyId = model.data.player.buddyId
-                    val visitors = Visitors.meadow(model.careData.visitors).mapNotNull { v -> all.firstOrNull { it.speciesId == v.speciesId } }
-                    (listOfNotNull(all.firstOrNull { it.id == buddyId }) + visitors + all.sortedByDescending { it.friendship }).distinctBy { it.id }.take(24).forEach { p ->
+                    // Anyone you own, the buddy first, then by friendship; "Show more" reaches the rest (a visitor is visited in the Meadow, not here).
+                    val ordered = (listOfNotNull(all.firstOrNull { it.id == buddyId }) + all.sortedByDescending { it.friendship }).distinctBy { it.id }
+                    ordered.take(invited).forEach { p ->
                         TabButton(p.nickname, p.id == chosen, { chosen = p.id; inviting = false; activity = null; result = null })
                     }
+                    if (ordered.size > invited) PixelButton("Show more", { invited += 24 }, color = Pixel.InkSoft, compact = true)
                 }
             }
             val running = activity

@@ -25,6 +25,8 @@ import androidx.compose.material3.HorizontalDivider
 import kotlinx.datetime.isoDayNumber
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -132,7 +134,6 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
                     Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
                     verticalArrangement = Arrangement.spacedBy(Spacing.L),
                 ) {
-                    RewardBox(model)
                     QuickAddBox(model, View.INBOX)
                     // Smart lists, after Apple Reminders and Things: each tile says how many it holds, so the menu is also a glance at the day.
                     ListTiles(
@@ -156,11 +157,10 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
         }
 
         SectionScaffold(current.label, null, onBack = { view = null }, icon = current.icon, color = ModuleAccent.PLAN.header) {
-            RewardBox(model)
             when (current) {
                 View.TARGETS -> FrequencyView(model)
                 View.DAY -> DayView(model, pendingIds, startWeek)
-                View.ALL -> AllTasksView(model, live.filter { it.id !in pendingIds }, card(showList = true))
+                View.ALL -> AllTasksView(model, live.filter { it.id !in pendingIds }, card(showList = true), onAdd = { model.addTaskRequested = true; view = View.TODAY })
                 else -> {
                     if (current == View.TODAY || current == View.INBOX) QuickAddBox(model, current)
                     val shown = tasksFor(current)
@@ -173,7 +173,16 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
                         View.INBOX -> WhenGroups(model, shown, card)
                         else -> if (shown.isNotEmpty()) TaskGroup(null, shown, card = card)
                     }
-                    if (shown.isEmpty() && current != View.TODAY) EmptyState(emptyTitle(current), emptyLine(current), icon = current.icon, action = "Add a task" to { model.addTaskRequested = true })
+                    if (shown.isEmpty() && current != View.TODAY) EmptyState(
+                        emptyTitle(current), emptyLine(current), icon = current.icon,
+                        // Only Today and Inbox have a quick-add box; Next 7 days and Done send the player to Today with the keyboard open.
+                        addAbove = if (current == View.INBOX) "Add a task" else null,
+                        action = when (current) {
+                            View.UPCOMING -> "Add a task" to { model.addTaskRequested = true; view = View.TODAY }
+                            View.DONE -> "Open Today" to { view = View.TODAY }
+                            else -> null
+                        },
+                    )
                 }
             }
         }
@@ -519,7 +528,11 @@ internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Bo
             Box(Modifier.fillMaxWidth().background(Pixel.Shade.copy(alpha = 0.5f)).padding(Spacing.M)) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                     Text("${task.rank.letter}: ${task.rank.title}, ${task.category.label}", style = MaterialTheme.typography.bodyMedium)
-                    if (task.state != TaskState.OPEN) TaskStepsTab(model, task)
+                    if (task.state != TaskState.OPEN) {
+                        TaskStepsTab(model, task)
+                        // A finished task can be deleted too (the undo bar brings it back for a while).
+                        PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.InkSoft)
+                    }
                     else {
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                             CardTab.entries.forEach { t -> TabButton(t.label, tab == t, { tab = t }, Modifier.weight(1f)) }
@@ -527,7 +540,7 @@ internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Bo
                         when (tab) {
                             CardTab.WHEN -> TaskWhenTab(model, task)
                             CardTab.STEPS -> TaskStepsTab(model, task)
-                            CardTab.EDIT -> TaskEditTab(model, task, onSaved = { tab = CardTab.WHEN }, onDeleted = onDeleted)
+                            CardTab.EDIT -> TaskEditTab(model, task, onDeleted = onDeleted)
                         }
                     }
                 }
@@ -544,9 +557,10 @@ private fun TaskWhenTab(model: AppModel, task: Task) {
     val store = model.store
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         FieldLabel("Move to")
+        // Only the planned day goes with "No date"; a deadline is on the Edit tab and stays.
         PixelDateField(
             task.planned, store.today, Pixel.Blue,
-            { day -> store.updateTask(if (day == null) task.copy(planned = null, plannedTime = null, due = null) else task.copy(planned = day)) },
+            { day -> store.updateTask(task.copy(planned = day, plannedTime = if (day == null) null else task.plannedTime)) },
             presets = listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7), noneLabel = "No date",
         )
         if (store.activeLists.isNotEmpty()) {
@@ -568,10 +582,26 @@ private fun TaskStepsTab(model: AppModel, task: Task) {
     val store = model.store
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         if (task.notes.isNotBlank()) Text(task.notes, style = MaterialTheme.typography.bodyLarge)
+        var editing by remember(task.id) { mutableStateOf<String?>(null) }
         task.subtasks.forEach { sub ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            if (editing == sub.id && task.state == TaskState.OPEN) {
+                var text by remember(sub.id) { mutableStateOf(sub.title) }
+                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    PixelField(text, { text = it }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
+                    PixelIconButton("check", "Save step", { store.renameSubtask(task.id, sub.id, text); editing = null }, Pixel.Green, enabled = text.isNotBlank())
+                    PixelIconButton("trash", "Remove step", {
+                        val before = task.subtasks
+                        store.removeSubtask(task.id, sub.id); editing = null
+                        model.offerUndo("Removed: ${sub.title}") { store.restoreSubtasks(task.id, before) }
+                    }, Pixel.InkSoft)
+                }
+            } else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 Text(sub.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (sub.done) Pixel.InkSoft else Pixel.Ink)
-                if (!sub.done && task.state == TaskState.OPEN) PixelButton("Step done", { store.completeSubtask(task.id, sub.id) }, color = Pixel.Green, compact = true)
+                if (task.state == TaskState.OPEN) {
+                    PixelIconButton("pencil", "Edit step", { editing = sub.id }, Pixel.Blue)
+                    if (sub.done) PixelIconButton("undo", "Untick step", { store.reopenSubtask(task.id, sub.id) }, Pixel.InkSoft)
+                    else PixelButton("Step done", { store.completeSubtask(task.id, sub.id) }, color = Pixel.Green, compact = true)
+                }
             }
         }
         if (task.state == TaskState.OPEN && task.subtasks.size < GameStore.MAX_SUBTASKS) {
@@ -589,9 +619,9 @@ private fun TaskStepsTab(model: AppModel, task: Task) {
     }
 }
 
-/** A task's words, difficulty, category, deadline and estimate; Save returns to the first tab. Won't do and Delete are here, apart from the day-to-day tabs. */
+/** A task's words, difficulty, category, deadline and estimate, saved as they are made. Won't do and Delete are here, apart from the day-to-day tabs. */
 @Composable
-private fun TaskEditTab(model: AppModel, task: Task, onSaved: () -> Unit, onDeleted: () -> Unit) {
+private fun TaskEditTab(model: AppModel, task: Task, onDeleted: () -> Unit) {
     val store = model.store
     var title by remember(task.id) { mutableStateOf(task.title) }
     var rank by remember(task.id) { mutableStateOf(task.rank) }
@@ -617,21 +647,24 @@ private fun TaskEditTab(model: AppModel, task: Task, onSaved: () -> Unit, onDele
             dayPresets = listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7),
         )
         PixelDurationField(minutes.takeIf { it > 0 }, { minutes = it ?: 0 }, Pixel.Blue, label = "Estimate", noneLabel = "No estimate", presets = listOf(15, 30, 45, 60, 90))
-        PixelButton("Save", {
-            store.updateTask(
-                task.copy(
-                    title = title.trim().ifEmpty { task.title }, rank = rank, estimateMinutes = minutes.takeIf { it > 0 },
+        // Edits are saved as they are made (a short pause after typing, and when the tab closes), so nothing is lost by switching tabs.
+        val commit by rememberUpdatedState {
+            val live = store.data.tasks.firstOrNull { it.id == task.id }
+            if (live != null && live.state == TaskState.OPEN) {
+                val next = live.copy(
+                    title = title.trim().ifEmpty { live.title }, rank = rank, estimateMinutes = minutes.takeIf { it > 0 },
                     category = category, notes = notes.trim(),
                     due = dueDay?.let { LocalDateTime(it, dueTime ?: LocalTime(23, 59)) },
-                ),
-            )
-            model.say("Saved.")
-            onSaved()
-        }, Modifier.fillMaxWidth(), Pixel.Green)
+                )
+                if (next != live) store.updateTask(next)
+            }
+        }
+        LaunchedEffect(title, notes, rank, minutes, category, dueDay, dueTime) { kotlinx.coroutines.delay(600); commit() }
+        DisposableEffect(task.id) { onDispose { commit() } }
         HorizontalDivider(color = Pixel.Border)
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelButton("Won't do", { store.wontDo(task.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-            PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.Danger)
+            PixelButton("Won't do", { store.wontDo(task.id); model.offerUndo("Won't do: ${task.title}") { store.reopen(task.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.InkSoft)
         }
     }
 }

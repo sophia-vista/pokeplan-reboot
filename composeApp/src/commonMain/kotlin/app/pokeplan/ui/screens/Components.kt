@@ -44,7 +44,7 @@ import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.TextBox
 import kotlinx.datetime.LocalDate
 
-/** The newest rewards nobody has looked at yet, with an OK button. Shows nothing when there are none. */
+/** The newest rewards nobody has looked at yet, with an OK button. Shows nothing when there are none. Home is the only place that draws it: a module page never shows another module's payout (a World Pokémon in Care). */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun RewardBox(model: AppModel) {

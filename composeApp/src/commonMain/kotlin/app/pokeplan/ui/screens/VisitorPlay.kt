@@ -360,7 +360,7 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
             DraggableTreat("Treat", null, "a little treat", { p -> if (offered(p)) { if (visiting) act(CareAction.GIFT) else played(Play.TREAT) } }) {
                 if (visiting) act(CareAction.GIFT) else played(Play.TREAT)
             }
-            if (visiting) care.berries().entries.sortedBy { it.key }.take(4).forEach { (berry, n) ->
+            if (visiting) care.berries().entries.sortedBy { it.key }.forEach { (berry, n) ->
                 DraggableTreat("$n", berry, Items.name(berry), { p -> if (offered(p)) act(CareAction.GIFT, berry = berry) }) { act(CareAction.GIFT, berry = berry) }
             }
         }
