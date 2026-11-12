@@ -162,6 +162,9 @@ fun LocalDate.dayMonth(): String = "$dayOfMonth ${monthNames[monthNumber - 1]}"
 /** "Mon 19 Oct" */
 fun LocalDate.short(): String = "${dayNames[dayOfWeek.ordinal]} $dayOfMonth ${monthNames[monthNumber - 1]}"
 
+/** "Mon 19 Oct 2026": the year too, for a date that was typed and is read back. */
+fun LocalDate.long(): String = "${short()} $year"
+
 /** The bag item whose real icon stands for a reward. */
 fun Reward.iconItem(): String? = when (this) {
     is Reward.Candies -> if (type == CandyType.SUPER) "super-candy" else "rare-candy"

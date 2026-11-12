@@ -123,6 +123,15 @@ class HealStore(
         return Logged(entry, rewards = rewards.orEmpty())
     }
 
+    /** Changes a drink's amount, name or moment (the day follows the moment). Its payment is kept as it was: an edit never pays and never takes back. */
+    fun updateDrink(e: HydrationEntry): Logged<HydrationEntry> {
+        (HealRules.checkHydration(e.ml) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val old = data.hydration.firstOrNull { it.id == e.id } ?: return Logged(null, "That drink is gone.")
+        val next = e.copy(day = dayOf(e.atMillis), drink = e.drink.trim().take(60), paid = old.paid, source = old.source, provenance = old.provenance)
+        update { d -> d.copy(hydration = d.hydration.map { if (it.id == e.id) next else it }) }
+        return Logged(next)
+    }
+
     fun deleteDrink(id: String) = update { d -> d.copy(hydration = d.hydration.filterNot { it.id == id }) }
 
     // --- sleep (never pays) -------------------------------------------------------------------------------------------
@@ -136,6 +145,16 @@ class HealStore(
         return Logged(record)
     }
 
+    /** Changes when a night began and ended, and its note, under the same rules as a new one. Sleep never pays. */
+    fun updateSleep(r: SleepRecord): Logged<SleepRecord> {
+        (HealRules.checkSleep(r.startMillis, r.endMillis) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        if (r.endMillis > nowMillis + HealRules.FUTURE_SLACK_MILLIS) return Logged(null, "That night is not over yet.")
+        val old = data.sleep.firstOrNull { it.id == r.id } ?: return Logged(null, "That night is gone.")
+        val next = r.copy(day = dayOf(r.endMillis), note = r.note.trim().take(HealRules.NOTE_MAX), source = old.source, provenance = old.provenance)
+        update { d -> d.copy(sleep = d.sleep.map { if (it.id == r.id) next else it }) }
+        return Logged(next)
+    }
+
     fun deleteSleep(id: String) = update { d -> d.copy(sleep = d.sleep.filterNot { it.id == id }) }
 
     // --- body measurements (never pay) -----------------------------------------------------------------------------------
@@ -145,6 +164,15 @@ class HealStore(
         val record = Measurement(newId(), type, value, unit, atMillis, dayOf(atMillis), label.trim().take(40))
         update { it.copy(measurements = it.measurements + record) }
         return Logged(record)
+    }
+
+    /** Changes a measurement's value, unit, label or moment, under the same rules as a new one. */
+    fun updateMeasurement(m: Measurement): Logged<Measurement> {
+        (HealRules.checkMeasurement(m.type, m.value, m.unit) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val old = data.measurements.firstOrNull { it.id == m.id } ?: return Logged(null, "That measurement is gone.")
+        val next = m.copy(day = dayOf(m.atMillis), label = m.label.trim().take(40), source = old.source, provenance = old.provenance)
+        update { d -> d.copy(measurements = d.measurements.map { if (it.id == m.id) next else it }) }
+        return Logged(next)
     }
 
     fun deleteMeasurement(id: String) = update { d -> d.copy(measurements = d.measurements.filterNot { it.id == id }) }

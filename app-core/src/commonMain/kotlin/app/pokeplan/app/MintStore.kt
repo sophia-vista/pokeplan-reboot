@@ -302,12 +302,17 @@ class MintStore(
         return Logged(bill)
     }
 
-    /** Edits a bill's name, amount, account and category. The schedule's first date and frequency stay, so no past occurrence is rewritten (MINT.md section 8.3). */
+    /**
+     * Edits a bill's name, amount, account and category. The first due day and the frequency change only while no occurrence has been settled, so no
+     * past occurrence is rewritten (MINT.md section 8.3); with payments recorded they are kept as they were.
+     */
     fun updateBill(b: Bill): Logged<Bill> {
         val old = data.bills.firstOrNull { it.id == b.id } ?: return Logged(null, "That bill is gone.")
         if (b.name.isBlank()) return Logged(null, "Give the bill a name.")
         b.expectedMinor?.let { m -> (MintRules.checkAmount(m) as? Check.Refused)?.let { return Logged(null, it.reason) } }
-        val next = old.copy(name = b.name.trim().take(MintRules.NAME_MAX), expectedMinor = b.expectedMinor, categoryId = b.categoryId, accountId = b.accountId)
+        val rescheduled = b.firstDue != old.firstDue || b.frequency != old.frequency
+        if (rescheduled && data.billPayments.any { it.billId == old.id }) return Logged(null, "Payments are recorded for this bill, so its schedule cannot change. Pause it and add a new bill.")
+        val next = old.copy(name = b.name.trim().take(MintRules.NAME_MAX), expectedMinor = b.expectedMinor, categoryId = b.categoryId, accountId = b.accountId, firstDue = b.firstDue, frequency = b.frequency)
         update { d -> d.copy(bills = d.bills.map { if (it.id == b.id) next else it }) }
         return Logged(next)
     }
@@ -320,13 +325,14 @@ class MintStore(
      * Settles one occurrence: paid, partly paid or skipped. **It creates no transaction** (MINT.md section 8.2); [txId] only links one the user chose.
      * Settling again replaces the earlier settlement, so a mistake can be put right. A part payment that covers the whole expected amount is saved as paid.
      */
-    fun settle(billId: String, dueDay: LocalDate, status: SettleStatus, paidMinor: Long = 0, txId: String? = null): Boolean {
+    fun settle(billId: String, dueDay: LocalDate, status: SettleStatus, paidMinor: Long = 0, txId: String? = null, paidDay: LocalDate = today): Boolean {
         val bill = data.bills.firstOrNull { it.id == billId } ?: return false
+        if (paidDay > today) return false
         if (status != SettleStatus.SKIPPED && MintRules.checkAmount(paidMinor) is Check.Refused) return false
         val amount = if (status == SettleStatus.SKIPPED) 0L else paidMinor
         val full = bill.expectedMinor
         val settled = if (status == SettleStatus.PARTIAL && full != null && amount >= full) SettleStatus.PAID else status
-        val p = BillPayment(newId(), bill.id, dueDay, settled, amount, today, txId, nowMillis)
+        val p = BillPayment(newId(), bill.id, dueDay, settled, amount, paidDay, txId, nowMillis)
         update { d -> d.copy(billPayments = d.billPayments.filterNot { it.billId == billId && it.dueDay == dueDay } + p) }
         return true
     }

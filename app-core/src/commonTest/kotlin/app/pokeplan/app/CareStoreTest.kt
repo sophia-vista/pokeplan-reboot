@@ -1,5 +1,7 @@
 package app.pokeplan.app
 
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 import app.pokeplan.care.CareAction
 import app.pokeplan.care.CareRules
 import app.pokeplan.care.Emotion
@@ -218,9 +220,9 @@ class CareStoreTest {
         assertEquals(listOf("A long walk"), s.care.searchJournal("long").map { it.text })
         // Tags change with the text; a blank text changes nothing.
         val id = s.care.data.journal.first().id
-        s.care.editEntry(id, "A long walk", setOf("Rest"))
+        s.care.editEntry(id, "A long walk", tags = setOf("Rest"))
         assertEquals(setOf("Rest"), s.care.data.journal.first { it.id == id }.tags)
-        s.care.editEntry(id, "   ", setOf("Work"))
+        s.care.editEntry(id, "   ", tags = setOf("Work"))
         assertEquals("A long walk", s.care.data.journal.first { it.id == id }.text)
         assertEquals(setOf("Rest"), s.care.data.journal.first { it.id == id }.tags)
     }
@@ -520,5 +522,34 @@ class CareStoreTest {
         assertTrue(s.game.pet(buddy.id) > 0)
         assertTrue(s.game.data.player.pokemon.first { it.id == buddy.id }.friendship > before)
         assertEquals(0, s.game.pet("nobody"))
+    }
+
+    @Test
+    fun aDiaryCardCanBeKeptForAnEarlierDayAndNeverForAFutureOne() {
+        val s = setup()
+        val earlier = s.care.today.minus(kotlinx.datetime.DatePeriod(days = 3))
+        s.care.saveDiary(mapOf(Emotion.JOY to 3), note = "late entry", forDay = earlier)
+        assertEquals("late entry", s.care.diaryOn(earlier)?.note)
+        assertEquals(null, s.care.diaryToday())
+        s.care.saveDiary(mapOf(Emotion.JOY to 4), forDay = earlier)
+        assertEquals(1, s.care.data.diary.size, "saving the same day again replaces its card")
+        s.care.saveDiary(mapOf(Emotion.JOY to 1), forDay = s.care.today.plus(kotlinx.datetime.DatePeriod(days = 2)))
+        assertEquals(1, s.care.diaryToday()?.feelings?.get(Emotion.JOY), "a day still to come is today")
+    }
+
+    @Test
+    fun aJournalEntryCanBeDatedAndRedatedButNotToTheFuture() {
+        val s = setup()
+        val earlier = LocalDateTime(2026, 10, 12, 21, 30).toInstant(utc).toEpochMilliseconds()
+        val e = assertNotNull(s.care.write("Forgot to write this", atMillis = earlier))
+        assertEquals(kotlinx.datetime.LocalDate(2026, 10, 12), e.day)
+        val later = LocalDateTime(2026, 10, 14, 8, 5).toInstant(utc).toEpochMilliseconds()
+        s.care.editEntry(e.id, "  Wrote this later ", atMillis = later, tags = setOf("people"))
+        val edited = s.care.data.journal.single()
+        assertEquals("Wrote this later", edited.text)
+        assertEquals(kotlinx.datetime.LocalDate(2026, 10, 14), edited.day)
+        assertEquals(setOf("people"), edited.tags)
+        s.care.editEntry(e.id, "x", atMillis = s.clock.millis + 86_400_000L)
+        assertEquals(s.clock.millis, s.care.data.journal.single().atMillis, "never dated to a moment still to come")
     }
 }

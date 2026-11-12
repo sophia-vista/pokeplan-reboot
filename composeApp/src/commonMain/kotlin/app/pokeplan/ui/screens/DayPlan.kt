@@ -368,7 +368,7 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
                 )
             }
 
-            draft?.let { d -> NewEventPanel(d, days.size > 1, { draft = it }, { d.addTo(store); draft = null }) { draft = null } }
+            draft?.let { d -> NewEventPanel(d, days.size > 1, { draft = it }, { d.addTo(store); draft = null }, today = store.today) { draft = null } }
             if (chosen != null) PickedPanel(model, chosen, days) { picked = null }
             if (chosenEvent != null) EventPanel(model, chosenEvent, days.size > 1, { picked = it }) { picked = null }
 

@@ -34,7 +34,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.plan.Category
 import app.pokeplan.plan.Insights
+import app.pokeplan.plan.Goal
 import app.pokeplan.plan.GoalRules
+import androidx.compose.runtime.mutableStateMapOf
 import app.pokeplan.plan.Reviews
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.theme.Pixel
@@ -205,9 +207,10 @@ internal fun GoalsView(model: AppModel) {
                 FieldLabel("Category")
                 CategoryChips(category) { category = it ?: category }
                 // Optional, and only a date to aim for: nothing happens when it passes.
-                DayPicker(
-                    "Target date", targetDate, store.today, listOf("In a month" to 30, "In 3 months" to 91, "In 6 months" to 182),
-                    noneLabel = "No date", onChange = { targetDate = it },
+                FieldLabel("Target date")
+                PixelDateField(
+                    targetDate, store.today, Pixel.Blue, { targetDate = it },
+                    presets = listOf("In a month" to 30, "In 3 months" to 91, "In 6 months" to 182), noneLabel = "No date",
                 )
             }
         }
@@ -215,15 +218,15 @@ internal fun GoalsView(model: AppModel) {
     if (model.data.goals.isEmpty()) {
         TextBox { Text("Goals are bigger aims. Break one into small milestones and each finished one earns a Super Candy.", style = MaterialTheme.typography.bodyLarge) }
     }
-    var editingGoal by remember { mutableStateOf<String?>(null) }
     model.data.goals.forEach { g ->
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                if (editingGoal == g.id) GoalEditor(model, g) { editingGoal = null }
-                else Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                var editing by remember(g.id) { mutableStateOf(false) }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     Text(g.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
-                    PixelIconButton("pencil", "Edit ${g.title}", { editingGoal = g.id }, Pixel.Blue)
+                    PixelIconButton("pencil", if (editing) "Close edit" else "Edit goal", { editing = !editing }, Pixel.InkSoft)
                 }
+                if (editing) GoalEditor(model, g) { editing = false }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Box(Modifier.size(10.dp).background(categoryColor(g.category), PixelShape))
                     Text(
@@ -236,22 +239,10 @@ internal fun GoalsView(model: AppModel) {
                 val progress = "$done of ${g.milestones.size} milestones"
                 PixelBar(GoalRules.progress(g, model.data.tasks).toFloat(), color = Pixel.Green, label = progress)
                 if (g.milestones.isNotEmpty()) Text(progress, style = MaterialTheme.typography.bodyMedium)
-                var editingMilestone by remember(g.id) { mutableStateOf<String?>(null) }
                 g.milestones.forEach { m ->
-                    if (editingMilestone == m.id) {
-                        var text by remember(m.id) { mutableStateOf(m.title) }
-                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                            PixelField(text, { text = it }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
-                            PixelIconButton("check", "Save milestone", { store.renameMilestone(g.id, m.id, text); editingMilestone = null }, Pixel.Green, enabled = text.isNotBlank())
-                            PixelIconButton("trash", "Remove milestone", {
-                                val before = model.data.goals
-                                store.deleteMilestone(g.id, m.id); editingMilestone = null
-                                model.offerUndo("Removed: ${m.title}") { store.restoreGoals(before) }
-                            }, Pixel.InkSoft)
-                        }
-                    } else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                         Text(m.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge, color = if (m.isDone) Pixel.InkSoft else Pixel.Ink)
-                        PixelIconButton("pencil", "Edit ${m.title}", { editingMilestone = m.id }, Pixel.Blue)
+                        // Unticking keeps "paid", so ticking again pays nothing more.
                         if (m.isDone) PixelIconButton("undo", "Untick ${m.title}", { store.reopenMilestone(g.id, m.id) }, Pixel.InkSoft)
                         else PixelIconButton("check", "Done", { store.completeMilestone(g.id, m.id) }, Pixel.Green)
                     }
@@ -271,27 +262,36 @@ internal fun GoalsView(model: AppModel) {
     }
 }
 
-/** A goal's words, category and date, and removing it (with an undo; its milestones go with it). */
+/** A goal's title, area and target date, and its milestones' names; Save applies all of it, Delete removes the goal. */
 @Composable
-private fun GoalEditor(model: AppModel, g: app.pokeplan.plan.Goal, onClose: () -> Unit) {
+private fun GoalEditor(model: AppModel, g: Goal, onClose: () -> Unit) {
     val store = model.store
     var title by remember(g.id) { mutableStateOf(g.title) }
     var category by remember(g.id) { mutableStateOf(g.category) }
-    var date by remember(g.id) { mutableStateOf(g.targetDate) }
+    var target by remember(g.id) { mutableStateOf(g.targetDate) }
+    val names = remember(g.id) { mutableStateMapOf<String, String>().apply { g.milestones.forEach { put(it.id, it.title) } } }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Goal")
+        PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Title")
         FieldLabel("Category")
         CategoryChips(category) { category = it ?: category }
-        DayPicker("Target date", date, store.today, listOf("In a month" to 30, "In 3 months" to 91, "In 6 months" to 182), noneLabel = "No date") { date = it }
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelButton("Save", { store.editGoal(g.id, title, category, date); onClose() }, Modifier.weight(1f), Pixel.Green, enabled = title.isNotBlank())
-            PixelButton("Cancel", onClose, Modifier.weight(1f), Pixel.InkSoft)
-            PixelIconButton("trash", "Delete ${g.title}", {
-                val before = model.data.goals
-                store.deleteGoal(g.id); onClose()
-                model.offerUndo("Deleted: ${g.title}") { store.restoreGoals(before) }
-            }, Pixel.InkSoft)
+        FieldLabel("Target date")
+        PixelDateField(
+            target, store.today, Pixel.Blue, { target = it },
+            presets = listOf("In a month" to 30, "In 3 months" to 91, "In 6 months" to 182), noneLabel = "No date",
+        )
+        g.milestones.forEach { m ->
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelField(names[m.id].orEmpty(), { names[m.id] = it }, Modifier.weight(1f), singleLine = true, label = "Milestone")
+                PixelIconButton("trash", "Delete milestone", { store.deleteMilestone(g.id, m.id); names.remove(m.id) }, Pixel.InkSoft)
+            }
         }
+        PixelButton("Save", {
+            store.editGoal(g.id, title, category, target)
+            g.milestones.forEach { m -> names[m.id]?.let { n -> if (n.trim() != m.title) store.renameMilestone(g.id, m.id, n) } }
+            model.say("Saved.")
+            onClose()
+        }, Modifier.fillMaxWidth(), Pixel.Green)
+        PixelButton("Delete this goal", { val before = model.data.goals; store.deleteGoal(g.id); model.offerUndo("Deleted: ${g.title}") { store.restoreGoals(before) } }, color = Pixel.InkSoft, compact = true)
     }
 }
 

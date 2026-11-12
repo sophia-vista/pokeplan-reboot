@@ -999,6 +999,7 @@ class GameStore(
 
     /** Marks a frequency task done for [date]; the first completion of the day pays like a task, and never twice for the same day. */
     fun completeFrequencyTask(id: String, date: LocalDate = today) {
+        if (date > today) return
         val series = data.series.first { it.template.id == id && it.isFrequency }
         val habit = checkNotNull(series.asHabit())
         val pays = habit.paysOn(date) && date == today
@@ -1025,29 +1026,32 @@ class GameStore(
         return goal
     }
 
+    /** Changes a goal's words, area and target date (null: no date to aim for). A blank title keeps the old one. Milestones and progress are untouched. */
+    fun editGoal(goalId: String, title: String, category: Category, targetDate: LocalDate?) {
+        update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) g.copy(title = title.trim().ifEmpty { g.title }, category = category, targetDate = targetDate) else g }) }
+    }
+
+    /** Removes a goal and its milestones. Candies already paid stay paid; the tasks linked to it stay as tasks. */
+    fun deleteGoal(goalId: String) {
+        update { d -> d.copy(goals = d.goals.filterNot { it.id == goalId }) }
+    }
+
+    /** Renames a milestone (a blank name is ignored). Whether it is done, and whether it paid, do not change. */
+    fun renameMilestone(goalId: String, milestoneId: String, title: String) {
+        val clean = title.trim().ifEmpty { return }
+        update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) g.copy(milestones = g.milestones.map { m -> if (m.id == milestoneId) m.copy(title = clean) else m }) else g }) }
+    }
+
+    /** Removes a milestone. A paid one stays paid (the candy is not taken back); the goal's progress is worked out again from what is left. */
+    fun deleteMilestone(goalId: String, milestoneId: String) {
+        update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) g.copy(milestones = g.milestones.filterNot { it.id == milestoneId }) else g }) }
+    }
+
     /** Adds a milestone to a goal. A blank title is not a milestone. */
     fun addMilestone(goalId: String, title: String) {
         val clean = title.trim().ifEmpty { return }
         update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) GoalRules.addMilestone(g, Milestone(newId(), clean, nowMillis)) else g }) }
     }
-
-    /** Changes a goal's title, category and date. A blank title changes nothing. */
-    fun editGoal(goalId: String, title: String, category: Category, targetDate: LocalDate?) {
-        val clean = title.trim().ifEmpty { return }
-        update { d -> d.copy(goals = d.goals.map { if (it.id == goalId) it.copy(title = clean, category = category, targetDate = targetDate) else it }) }
-    }
-
-    fun deleteGoal(goalId: String) = update { d -> d.copy(goals = d.goals.filterNot { it.id == goalId }) }
-
-    /** Renames a milestone. A blank title changes nothing. */
-    fun renameMilestone(goalId: String, milestoneId: String, title: String) {
-        val clean = title.trim().ifEmpty { return }
-        update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) g.copy(milestones = g.milestones.map { if (it.id == milestoneId) it.copy(title = clean) else it }) else g }) }
-    }
-
-    /** Takes a milestone off a goal; one that already paid keeps its reward. */
-    fun deleteMilestone(goalId: String, milestoneId: String) =
-        update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) g.copy(milestones = g.milestones.filterNot { it.id == milestoneId }) else g }) }
 
     /** Unticks a milestone. It stays marked as paid, so ticking it again pays nothing more. */
     fun reopenMilestone(goalId: String, milestoneId: String) =
@@ -1911,6 +1915,7 @@ class GameStore(
     fun timerPause(id: String) = changeGear { GearTimers.pause(it, id, nowMillis) }
     fun timerAddTime(id: String, ms: Long) = changeGear { GearTimers.addTime(it, id, ms, nowMillis) }
     fun timerReset(id: String) = changeGear { GearTimers.reset(it, id) }
+    fun timerEdit(id: String, label: String, durationMs: Long) = changeGear { GearTimers.edit(it, id, label, durationMs) }
     fun timerRemove(id: String) = changeGear { GearTimers.remove(it, id) }
     fun timersDismissFinished() = changeGear { GearTimers.dismissFinished(it) }
 

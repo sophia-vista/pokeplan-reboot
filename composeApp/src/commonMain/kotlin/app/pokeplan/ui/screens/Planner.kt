@@ -556,10 +556,13 @@ internal enum class CardTab(val label: String) { WHEN("When"), STEPS("Steps"), E
 private fun TaskWhenTab(model: AppModel, task: Task) {
     val store = model.store
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        // Any day, not three: the presets, and a month to tap. Only the planned day goes with "No date"; a deadline is on the Edit tab.
-        DayPicker("Move to", task.planned, store.today, listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7), noneLabel = "No date") { d ->
-            store.updateTask(task.copy(planned = d, plannedTime = if (d == null) null else task.plannedTime))
-        }
+        FieldLabel("Move to")
+        // Only the planned day goes with "No date"; a deadline is on the Edit tab and stays.
+        PixelDateField(
+            task.planned, store.today, Pixel.Blue,
+            { day -> store.updateTask(task.copy(planned = day, plannedTime = if (day == null) null else task.plannedTime)) },
+            presets = listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7), noneLabel = "No date",
+        )
         if (store.activeLists.isNotEmpty()) {
             FieldLabel("List")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -626,6 +629,8 @@ private fun TaskEditTab(model: AppModel, task: Task, onDeleted: () -> Unit) {
     var category by remember(task.id) { mutableStateOf(task.category) }
     var notes by remember(task.id) { mutableStateOf(task.notes) }
     var dueDay by remember(task.id) { mutableStateOf(task.due?.date) }
+    // A deadline keeps its time of day; with none typed it is the end of that day (23:59).
+    var dueTime by remember(task.id) { mutableStateOf(task.due?.time?.takeIf { it != LocalTime(23, 59) }) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Title")
         PixelField(
@@ -635,13 +640,13 @@ private fun TaskEditTab(model: AppModel, task: Task, onDeleted: () -> Unit) {
         DifficultyPicker(rank) { rank = it }
         FieldLabel("Category")
         CategoryChips(category) { category = it ?: category }
-        // A deadline is not the day you plan to do it (that is "Move to"); it keeps its time of day, or 23:59.
-        DayPicker("Deadline", dueDay, store.today, listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7), noneLabel = "No deadline") { dueDay = it }
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelButton("-5", { minutes = (minutes - 5).coerceAtLeast(0) }, color = Pixel.InkSoft, compact = true)
-            Text(if (minutes == 0) "No estimate" else "$minutes min", style = MaterialTheme.typography.bodyLarge)
-            PixelButton("+5", { minutes += 5 }, color = Pixel.InkSoft, compact = true)
-        }
+        // A deadline is not the day you plan to do it (that is "Move to"); with no time it is the end of that day, 23:59.
+        PixelDateTimeField(
+            dueDay, dueTime, store.today, Pixel.Blue, { d, t -> dueDay = d; dueTime = t }, label = "Deadline",
+            noDayLabel = "No deadline", timeNoneLabel = "End of day (23:59)", timePresets = TIME_PRESETS,
+            dayPresets = listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7),
+        )
+        PixelDurationField(minutes.takeIf { it > 0 }, { minutes = it ?: 0 }, Pixel.Blue, label = "Estimate", noneLabel = "No estimate", presets = listOf(15, 30, 45, 60, 90))
         // Edits are saved as they are made (a short pause after typing, and when the tab closes), so nothing is lost by switching tabs.
         val commit by rememberUpdatedState {
             val live = store.data.tasks.firstOrNull { it.id == task.id }
@@ -649,12 +654,12 @@ private fun TaskEditTab(model: AppModel, task: Task, onDeleted: () -> Unit) {
                 val next = live.copy(
                     title = title.trim().ifEmpty { live.title }, rank = rank, estimateMinutes = minutes.takeIf { it > 0 },
                     category = category, notes = notes.trim(),
-                    due = dueDay?.let { LocalDateTime(it, live.due?.time ?: LocalTime(23, 59)) },
+                    due = dueDay?.let { LocalDateTime(it, dueTime ?: LocalTime(23, 59)) },
                 )
                 if (next != live) store.updateTask(next)
             }
         }
-        LaunchedEffect(title, notes, rank, minutes, category, dueDay) { kotlinx.coroutines.delay(600); commit() }
+        LaunchedEffect(title, notes, rank, minutes, category, dueDay, dueTime) { kotlinx.coroutines.delay(600); commit() }
         DisposableEffect(task.id) { onDispose { commit() } }
         HorizontalDivider(color = Pixel.Border)
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -683,23 +688,13 @@ private fun RepeatRow(model: AppModel, task: Task) {
     if (note.isNotEmpty()) Text(note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
-/** A few common times and a 15-minute nudge, rather than a clock dial. */
+/** The time of day a task is planned for: typed, a few common times as keys, and small steps. */
 @Composable
 private fun PlannedTime(model: AppModel, task: Task) {
-    val store = model.store
-    val time = task.plannedTime
-    FieldLabel("At")
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        TabButton("Any time", time == null, { store.setPlannedTime(task.id, null) })
-        TIME_PRESETS.forEach { preset -> TabButton(clock(preset), time == preset, { store.setPlannedTime(task.id, preset) }) }
-    }
-    if (time != null) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelButton("-15", { store.setPlannedTime(task.id, shifted(time, -15)) }, color = Pixel.InkSoft, compact = true)
-            Text(clock(time), style = MaterialTheme.typography.bodyLarge)
-            PixelButton("+15", { store.setPlannedTime(task.id, shifted(time, 15)) }, color = Pixel.InkSoft, compact = true)
-        }
-    }
+    PixelTimeField(
+        task.plannedTime, { model.store.setPlannedTime(task.id, it) }, Pixel.Blue, label = "At",
+        presets = TIME_PRESETS, noneLabel = "Any time",
+    )
 }
 
 private val TIME_PRESETS = listOf(LocalTime(9, 0), LocalTime(12, 0), LocalTime(15, 0), LocalTime(19, 0))

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -168,10 +169,23 @@ internal fun FrequencyView(model: AppModel) {
             )
         }
         if (editing == h.template.id) TargetEditor(model, h) { editing = null }
+        // Any earlier day can be marked or taken back. It counts toward the target and the streak, and never pays.
+        var other by remember(h.template.id) { mutableStateOf(false) }
+        var day by remember(h.template.id) { mutableStateOf(store.today.minus(DatePeriod(days = 1))) }
+        PixelButton(if (other) "Close" else "Another day", { other = !other }, color = Pixel.InkSoft, compact = true)
+        if (other) {
+            PixelDateField(day, store.today, Pixel.Blue, { it?.let { d -> day = d } }, presets = listOf("Today" to 0, "Yesterday" to -1), max = store.today)
+            val done = day in h.completions
+            PixelButton(
+                if (done) "Take back ${day.short()}" else "Mark ${day.short()} done",
+                { if (done) store.undoFrequencyTask(h.template.id, day) else store.completeFrequencyTask(h.template.id, day) },
+                Modifier.fillMaxWidth(), if (done) Pixel.InkSoft else Pixel.Green, compact = true,
+            )
+        }
     }
 }
 
-/** Edits a target: its words, how often, rank and category, a tick for yesterday, and removing it (with an undo). Its history is kept. */
+/** Edits a target: its words, how often, rank and category, and removing it (with an undo). Its history is kept. */
 @Composable
 private fun TargetEditor(model: AppModel, h: app.pokeplan.app.TaskSeries, onClose: () -> Unit) {
     val store = model.store
@@ -182,19 +196,11 @@ private fun TargetEditor(model: AppModel, h: app.pokeplan.app.TaskSeries, onClos
     var days by remember(id) { mutableStateOf((h.target as? HabitTarget.Weekdays)?.days ?: setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)) }
     var times by remember(id) { mutableStateOf((h.target as? HabitTarget.PerWeek)?.times ?: (h.target as? HabitTarget.PerMonth)?.times ?: 3) }
     var category by remember(id) { mutableStateOf(h.template.category) }
-    val yesterday = store.today.minus(DatePeriod(days = 1))
-    val didYesterday = yesterday in h.completions
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Title")
             DifficultyPicker(rank) { rank = it }
             TargetOptions(kind, { kind = it }, days, { days = it }, times, { times = it }, category, { category = it })
-            // A past day can be ticked or unticked; only today's tick pays.
-            PixelButton(
-                if (didYesterday) "Yesterday: done. Undo" else "Tick yesterday",
-                { if (didYesterday) store.undoFrequencyTask(id, yesterday) else store.completeFrequencyTask(id, yesterday) },
-                color = Pixel.InkSoft, compact = true,
-            )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Save", {
                     store.editFrequencyTask(id, title, targetOf(kind, days, times), rank, category)

@@ -1,5 +1,6 @@
 package app.pokeplan.app
 
+import kotlinx.datetime.plus
 import app.pokeplan.core.dex.Region
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.PartyIds
@@ -328,6 +329,7 @@ class HomeStoreTest {
         assertEquals(3, list.size)
         assertEquals(soap.id, (list[0] as RestockLine.Low).supply.id)
         assertEquals(setOf("Batteries", "Rice"), list.drop(1).map { (it as RestockLine.Manual).entry.name }.toSet())
+        assertEquals("Enter how much there is now.", s.home.restocked(soap.id, null), "a low supply leaves the list only with a quantity")
         assertNull(s.home.restocked(soap.id, 6000))
         assertEquals(6000L, s.home.data.supplies.first { it.id == soap.id }.quantityMilli)
         assertNull(s.home.restocked(rice.id, 8000, byHand.id))
@@ -349,6 +351,21 @@ class HomeStoreTest {
         assertEquals(1, s.home.data.warranties.size)
         assertNotNull(s.home.addAsset(" ").refused)
         assertTrue(s.spy.events.isEmpty(), "creating schedules, warranties and notes never pays")
+    }
+
+    @Test
+    fun editingAScheduleKeepsTheDateItCountsFromUnlessTheDateOrTheKindOfRepeatChanged() {
+        val s = setup()
+        val made = assertNotNull(s.home.addSchedule("Filter", LocalDate(2026, 1, 31), Recurrence(RepeatKind.MONTHLY)).record)
+        val moved = made.copy(nextDue = LocalDate(2026, 2, 28)) // where a month-end schedule stands after its first service
+        s.home.restore(s.home.data.copy(schedules = listOf(moved)))
+        val renamed = assertNotNull(s.home.updateSchedule(moved.copy(title = "Water filter", firstDue = LocalDate(2026, 2, 28))).record)
+        assertEquals(LocalDate(2026, 1, 31), renamed.firstDue, "a rename does not make the 31st drift to the 28th")
+        assertEquals(LocalDate(2026, 3, 31), HomeRules.advance(renamed, LocalDate(2026, 2, 28)).nextDue)
+        val redated = assertNotNull(s.home.updateSchedule(renamed.copy(nextDue = LocalDate(2026, 3, 10))).record)
+        assertEquals(LocalDate(2026, 3, 10), redated.firstDue, "a new date is a new start")
+        val weekly = assertNotNull(s.home.updateSchedule(redated.copy(recurrence = Recurrence(RepeatKind.WEEKLY))).record)
+        assertEquals(weekly.nextDue, weekly.firstDue)
     }
 
     @Test
@@ -603,5 +620,24 @@ class HomeStoreTest {
         assertTrue(assertNotNull(s.home.complete(c.id).record).paid)
         assertEquals(points, s.game.homeEggMeter())
         assertEquals(1, s.game.data.player.partyOf(PartyIds.HOME).size)
+    }
+
+    @Test
+    fun aRecordOfWorkAndAWarrantyCanBeCorrected() {
+        val s = setup()
+        val asset = assertNotNull(s.home.addAsset("Kettle").record)
+        val w = assertNotNull(s.home.addWarranty(asset.id, "Shop", startDay = LocalDate(2026, 1, 1), expiryDay = LocalDate(2027, 1, 1)).record)
+        val fixed = assertNotNull(s.home.updateWarranty(w.copy(expiryDay = LocalDate(2028, 3, 4), provider = " Other shop ")).record)
+        assertEquals(LocalDate(2028, 3, 4), fixed.expiryDay)
+        assertEquals("Other shop", fixed.provider)
+        assertNotNull(s.home.updateWarranty(w.copy(expiryDay = LocalDate(2025, 1, 1))).refused)
+
+        val r = assertNotNull(s.home.logMaintenance("Descaled").record)
+        val moved = assertNotNull(s.home.updateMaintenanceRecord(r.copy(day = LocalDate(2026, 11, 1), title = " Descaled the kettle ", cost = "PHP 50")).record)
+        assertEquals(LocalDate(2026, 11, 1), moved.day)
+        assertEquals("Descaled the kettle", moved.title)
+        assertEquals(r.paid, moved.paid, "a correction never pays and never takes back")
+        assertNotNull(s.home.updateMaintenanceRecord(r.copy(day = today.plus(kotlinx.datetime.DatePeriod(days = 1)))).refused)
+        assertNotNull(s.home.updateMaintenanceRecord(r.copy(title = " ")).refused)
     }
 }

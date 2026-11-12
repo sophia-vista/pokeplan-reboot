@@ -60,7 +60,7 @@ import kotlinx.datetime.plus
 /** Setting up a new event: its title, all day or at a time, its colour, then when (its days, or tap an hour and nudge it), then Add. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit, add: () -> Unit, hours: Boolean = true, cancel: () -> Unit) {
+internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit, add: () -> Unit, hours: Boolean = true, today: LocalDate = draft.day, cancel: () -> Unit) {
     val at = LocalTime(draft.start / 60, draft.start % 60)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -72,7 +72,7 @@ internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit,
             EventColors(draft.color) { change(draft.copy(color = it)) }
             RepeatPicker(draft.repeat) { change(draft.copy(repeat = it)) }
             if (draft.allDay) {
-                DaySpanPicker(draft.day, draft.lastDay, { change(draft.movedTo(it)) }) { change(draft.copy(lastDay = it)) }
+                DaySpanPicker(draft.day, draft.lastDay, today, { change(draft.movedTo(it)) }) { change(draft.copy(lastDay = it)) }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelIconButton("plus", "Add", add, Pixel.Green, enabled = draft.title.isNotBlank())
                     PixelIconButton("close", "Cancel", cancel, Pixel.InkSoft)
@@ -84,11 +84,17 @@ internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit,
                     (if (hours) " Tap ${if (week) "a day's hour" else "an hour"} to change it." else "") + " Events never pay.",
                 style = MaterialTheme.typography.bodyMedium,
             )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelButton("-15", { change(draft.copy(start = shifted(at, -15).let { it.hour * 60 + it.minute }).let { it.copy(minutes = PlanEvent.fit(it.start, it.minutes)) }) }, color = Pixel.InkSoft, compact = true)
-                PixelButton("+15", { change(draft.copy(start = shifted(at, 15).let { it.hour * 60 + it.minute }).let { it.copy(minutes = PlanEvent.fit(it.start, it.minutes)) }) }, color = Pixel.InkSoft, compact = true)
-                PixelButton("Shorter", { change(draft.copy(minutes = PlanEvent.fit(draft.start, draft.minutes - DayTimeline.SNAP_MINUTES))) }, color = Pixel.InkSoft, enabled = draft.minutes > DayTimeline.SNAP_MINUTES, compact = true)
-                PixelButton("Longer", { change(draft.copy(minutes = PlanEvent.fit(draft.start, draft.minutes + DayTimeline.SNAP_MINUTES))) }, color = Pixel.InkSoft, compact = true)
+            PixelDateField(draft.day, today, Pixel.Blue, { it?.let { d -> change(draft.copy(day = d, lastDay = d)) } }, presets = listOf("Today" to 0, "Tomorrow" to 1))
+            PixelTimeField(
+                at, { t -> t?.let { change(draft.copy(start = it.hour * 60 + it.minute).let { d -> d.copy(minutes = PlanEvent.fit(d.start, d.minutes)) }) } },
+                Pixel.Blue, label = "Starts", steps = listOf(15, 60),
+            )
+            PixelDurationField(
+                draft.minutes, { m -> m?.let { change(draft.copy(minutes = PlanEvent.fit(draft.start, it))) } }, Pixel.Blue, label = "Length",
+                presets = listOf(30, 60, 90, 120), step = DayTimeline.SNAP_MINUTES,
+                max = 24 * 60 - draft.start, min = 1,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelIconButton("plus", "Add", add, Pixel.Green, enabled = draft.title.isNotBlank())
                 PixelIconButton("close", "Cancel", cancel, Pixel.InkSoft)
             }
@@ -124,7 +130,7 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, follow
                 } else PixelIconButton("trash", "Delete", { val before = model.data.events; store.deleteEvent(event.id); close(); model.offerUndo("Deleted: ${event.title}") { store.restoreEvents(before) } }, Pixel.Red)
             }
             if (event.allDay) {
-                DaySpanPicker(event.day, event.endDay, { follow(store.updateEvent(event.id, day = it)) }) { store.updateEvent(event.id, lastDay = it) }
+                DaySpanPicker(event.day, event.endDay, store.today, { follow(store.updateEvent(event.id, day = it)) }) { store.updateEvent(event.id, lastDay = it) }
                 if (repeats) Text("Changes here are made to every one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     PixelButton("At a time", { store.updateEvent(event.id, allDay = false); close() }, color = Pixel.InkSoft, compact = true)
@@ -139,11 +145,16 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, follow
                     else "Tap another hour to move it.",
                 style = MaterialTheme.typography.bodyMedium,
             )
+            PixelDateField(event.day, store.today, Pixel.Blue, { it?.let { d -> follow(store.updateEvent(event.id, day = d)) } }, presets = listOf("Today" to 0, "Tomorrow" to 1))
+            PixelTimeField(
+                event.start, { t -> t?.let { store.updateEvent(event.id, start = it) } }, Pixel.Blue, label = "Starts", steps = listOf(15, 60),
+            )
+            PixelDurationField(
+                event.minutes, { m -> m?.let { store.updateEvent(event.id, minutes = it) } }, Pixel.Blue, label = "Length",
+                presets = listOf(30, 60, 90, 120), step = DayTimeline.SNAP_MINUTES,
+                max = 24 * 60 - (event.start.hour * 60 + event.start.minute), min = 1,
+            )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                PixelButton("-15", { store.updateEvent(event.id, start = shifted(event.start, -15)) }, color = Pixel.InkSoft, compact = true)
-                PixelButton("+15", { store.updateEvent(event.id, start = shifted(event.start, 15)) }, color = Pixel.InkSoft, compact = true)
-                PixelButton("Shorter", { store.updateEvent(event.id, minutes = event.minutes - DayTimeline.SNAP_MINUTES) }, color = Pixel.InkSoft, enabled = event.minutes > DayTimeline.SNAP_MINUTES, compact = true)
-                PixelButton("Longer", { store.updateEvent(event.id, minutes = event.minutes + DayTimeline.SNAP_MINUTES) }, color = Pixel.InkSoft, compact = true)
                 PixelButton("All day", { store.updateEvent(event.id, allDay = true) }, color = Pixel.InkSoft, compact = true)
                 deletes()
                 PixelIconButton("check", "Done", { store.updateEvent(event.id, title = title); close() }, Pixel.Green)
@@ -232,18 +243,13 @@ private fun EventColors(selected: Long?, pick: (Long) -> Unit) {
     }
 }
 
-/** The first and last day of an all-day event, each with ‹ › to move it a day; the last never comes before the first. */
+/** The first and last day of an all-day event, each typed or picked; the last never comes before the first. */
 @Composable
-private fun DaySpanPicker(first: LocalDate, last: LocalDate, setFirst: (LocalDate) -> Unit, setLast: (LocalDate) -> Unit) {
+private fun DaySpanPicker(first: LocalDate, last: LocalDate, today: LocalDate, setFirst: (LocalDate) -> Unit, setLast: (LocalDate) -> Unit) {
     val days = first.daysUntil(last) + 1
     Text("${first.short()}${if (days > 1) " to ${last.short()}, $days days" else ", one day"}. Events never pay.", style = MaterialTheme.typography.bodyMedium)
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text("Starts", Modifier.width(56.dp), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        ArrowButton("‹", "Start a day earlier", enabled = true) { setFirst(first.minus(DatePeriod(days = 1))) }
-        ArrowButton("›", "Start a day later", enabled = true) { setFirst(first.plus(DatePeriod(days = 1))) }
-        Spacer(Modifier.width(Spacing.M))
-        Text("Ends", Modifier.width(44.dp), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        ArrowButton("‹", "End a day earlier", enabled = last > first) { setLast(last.minus(DatePeriod(days = 1))) }
-        ArrowButton("›", "End a day later", enabled = true) { setLast(last.plus(DatePeriod(days = 1))) }
-    }
+    FieldLabel("Starts")
+    PixelDateField(first, today, Pixel.Blue, { it?.let(setFirst) }, presets = listOf("Today" to 0, "Tomorrow" to 1))
+    FieldLabel("Ends")
+    PixelDateField(last, today, Pixel.Blue, { it?.let(setLast) }, presets = emptyList(), min = first)
 }

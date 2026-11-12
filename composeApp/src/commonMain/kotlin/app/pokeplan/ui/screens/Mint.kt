@@ -402,7 +402,8 @@ private fun ActivityView(model: AppModel) {
     var toId by remember { mutableStateOf<String?>(null) }
     var categoryId by remember { mutableStateOf<String?>(null) }
     var up by remember { mutableStateOf(true) }
-    var day by remember { mutableStateOf<kotlinx.datetime.LocalDate?>(null) }
+    // null: it happened just now (read when Save is pressed).
+    var payAt by remember { mutableStateOf<Long?>(null) }
     var more by remember { mutableStateOf(false) }
     var addingCategory by remember { mutableStateOf(false) }
     var payee by remember { mutableStateOf("") }
@@ -424,13 +425,13 @@ private fun ActivityView(model: AppModel) {
     fun save() {
         val minor = Money.parse(amount, currency)
         if (minor == null) { message = "Check the amount." to NoticeTone.WARNING; return }
-        val at = day?.takeIf { it != mint.today }?.let { mint.noonOf(it) } ?: model.store.nowMillis
+        val at = payAt ?: model.store.nowMillis
         val out = mint.record(
             type, minor, from!!.id, toAccountId = if (type == TxType.TRANSFER) to?.id else null,
             categoryId = categoryId.takeIf { type != TxType.TRANSFER && type != TxType.ADJUSTMENT }, payee = payee, note = note, atMillis = at, up = up,
         )
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
-        else { message = null; model.say("Saved."); day = null; amount = ""; payee = ""; note = ""; more = false; model.haptic() }
+        else { message = null; model.say("Saved."); payAt = null; amount = ""; payee = ""; note = ""; more = false; model.haptic() }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -464,9 +465,9 @@ private fun ActivityView(model: AppModel) {
                 }
                 if (addingCategory) NewCategoryRow(mint, kind) { categoryId = it.id; addingCategory = false }
             }
-            PixelButton(if (more) "Fewer options" else "Date, payee and a note", { more = !more }, color = Pixel.InkSoft, compact = true)
+            PixelMomentField(payAt ?: model.store.nowMillis, { payAt = it }, model.store.nowMillis, ModuleAccent.MINT.accent, label = "When")
+            PixelButton(if (more) "Fewer options" else "Payee and a note", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
-                PixelDatePicker(day ?: mint.today, mint.today, ModuleAccent.MINT.accent, { day = it })
                 PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source, optional", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
                 PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note, optional", keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences))
             }
@@ -528,7 +529,7 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
     var payee by remember(t.id) { mutableStateOf(t.payee) }
     var note by remember(t.id) { mutableStateOf(t.note) }
     var refused by remember(t.id) { mutableStateOf<String?>(null) }
-    var day by remember(t.id) { mutableStateOf(t.day) }
+    var at by remember(t.id) { mutableStateOf(t.atMillis) }
     var categoryId by remember(t.id) { mutableStateOf(t.categoryId) }
     var accountId by remember(t.id) { mutableStateOf(t.accountId) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
@@ -536,8 +537,7 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
             PixelField(amount, { amount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount (${t.currency})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
             PixelField(payee, { payee = it.take(MintRules.NAME_MAX * 2) }, Modifier.fillMaxWidth(), label = "Payee or source", singleLine = true)
             PixelField(note, { note = it.take(MintRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note")
-            SectionLabel("Date")
-            PixelDatePicker(day, mint.today, ModuleAccent.MINT.accent, { day = it })
+            PixelMomentField(at, { at = it }, model.store.nowMillis, ModuleAccent.MINT.accent, label = "When", nowKey = false)
             val accounts = model.mintData.accounts.filter { (it.status == AccountStatus.ACTIVE && it.currency == t.currency) || it.id == t.accountId }
             if (accounts.size > 1 && t.type != TxType.TRANSFER) {
                 SectionLabel("Account")
@@ -556,8 +556,6 @@ private fun TransactionOptions(model: AppModel, t: Transaction, onDone: () -> Un
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Save", {
                     val minor = Money.parse(amount, t.currency)
-                    // A day that was not changed keeps the record's own time; another day is noon of it.
-                    val at = if (day == t.day) t.atMillis else mint.noonOf(day)
                     if (minor == null) refused = "Check the amount."
                     else mint.updateTransaction(t.copy(amountMinor = minor, payee = payee, note = note, atMillis = at, accountId = accountId, categoryId = categoryId)).let { if (it.record != null) { editing = false; onDone() } else refused = it.refused }
                 }, Modifier.weight(1f), ModuleAccent.MINT.accent, compact = true)
@@ -671,14 +669,17 @@ private fun BillsView(model: AppModel) {
     var editId by remember { mutableStateOf<String?>(null) }
     var editName by remember { mutableStateOf("") }
     var editAmount by remember { mutableStateOf("") }
+    var editFirst by remember { mutableStateOf<LocalDate?>(null) }
+    var editFrequency by remember { mutableStateOf(Frequency.MONTHLY) }
     var message by remember { mutableStateOf<String?>(null) }
     var openKey by remember { mutableStateOf<String?>(null) }
     var partial by remember { mutableStateOf("") }
+    var paidOn by remember { mutableStateOf<LocalDate?>(null) }
     var manage by remember { mutableStateOf(false) }
     // Settling takes the occurrence off the list, so every settlement offers an undo.
     fun settle(o: Occurrence, status: SettleStatus, paid: Long, label: String) {
         val before = model.mintData
-        if (mint.settle(o.bill.id, o.dueDay, status, paid)) { openKey = null; model.offerUndo("$label: ${o.bill.name}") { mint.restore(before) } }
+        if (mint.settle(o.bill.id, o.dueDay, status, paid, paidDay = paidOn ?: today)) { paidOn = null; openKey = null; model.offerUndo("$label: ${o.bill.name}") { mint.restore(before) } }
     }
     val currency = data.settings.currency
     val upcoming = MintRules.upcoming(data, today, 45)
@@ -687,12 +688,14 @@ private fun BillsView(model: AppModel) {
             PixelTitle("To settle")
             upcoming.forEach { o ->
                 val key = o.bill.id + o.dueDay
-                OccurrenceRow(model, o, openKey == key) { openKey = if (openKey == key) null else key; partial = "" }
+                OccurrenceRow(model, o, openKey == key) { openKey = if (openKey == key) null else key; partial = ""; paidOn = null }
                 if (openKey == key) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
                     val full = o.remainingMinor ?: o.bill.expectedMinor
                     Text("Marking a bill paid does not add a transaction; add one in Activity if you want the money to leave an account.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                     if (full == null) PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount paid (${o.bill.currency})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
                     else PixelField(partial, { partial = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Paid so far, if only part (${o.bill.currency})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    SectionLabel("Settled on")
+                    PixelDateField(paidOn ?: today, today, ModuleAccent.MINT.accent, { paidOn = it }, presets = listOf("Today" to 0, "Yesterday" to -1), max = today)
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                         PixelButton("Paid", {
                             val paid = if (full == null) Money.parse(partial, o.bill.currency) else o.bill.expectedMinor
@@ -734,7 +737,7 @@ private fun BillsView(model: AppModel) {
             if (manage) data.bills.forEach { b ->
                 ListRow(
                     trail = { Text(b.expectedMinor?.let { mint.show(it, b.currency) } ?: "varies", style = MaterialTheme.typography.titleSmall) },
-                    onClick = { editId = if (editId == b.id) null else b.id; editName = b.name; editAmount = b.expectedMinor?.let { Money.plain(it, b.currency) }.orEmpty() }, onClickLabel = "Edit",
+                    onClick = { editId = if (editId == b.id) null else b.id; editName = b.name; editAmount = b.expectedMinor?.let { Money.plain(it, b.currency) }.orEmpty(); editFirst = b.firstDue; editFrequency = b.frequency }, onClickLabel = "Edit",
                 ) {
                     Column {
                         Text(b.name, style = MaterialTheme.typography.bodyLarge)
@@ -742,11 +745,20 @@ private fun BillsView(model: AppModel) {
                     }
                 }
                 if (editId == b.id) {
-                    // The name and the amount can change (rent goes up); the schedule stays, so no past occurrence is rewritten.
+                    // The name and the amount can change (rent goes up). The first due day and how often can change until a payment is
+                    // recorded against the bill, so no settled occurrence is ever rewritten.
+                    val scheduleOpen = data.billPayments.none { it.billId == b.id }
                     val minor = if (editAmount.isBlank()) null else Money.parse(editAmount, b.currency)
                     PixelField(editName, { editName = it.take(MintRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words))
                     PixelField(editAmount, { editAmount = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(16) }, Modifier.fillMaxWidth(), label = "Amount (${b.currency}), blank if it changes", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
-                    PixelButton("Save", { if (mint.updateBill(b.copy(name = editName, expectedMinor = minor)).record != null) editId = null }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = editName.isNotBlank() && (editAmount.isBlank() || minor != null), compact = true)
+                    if (scheduleOpen) {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                            Frequency.entries.forEach { f -> Chip(f.label, f == editFrequency, { editFrequency = f }) }
+                        }
+                        SectionLabel("First due")
+                        PixelDateField(editFirst ?: b.firstDue, today, ModuleAccent.MINT.accent, { editFirst = it }, presets = listOf("Today" to 0, "In a week" to 7, "In a month" to 30))
+                    } else Text("Its schedule is fixed because payments are recorded. To change it, pause this bill and add a new one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                    PixelButton("Save", { if (mint.updateBill(b.copy(name = editName, expectedMinor = minor, firstDue = editFirst ?: b.firstDue, frequency = editFrequency)).let { r -> message = r.refused; r.record != null }) editId = null }, Modifier.fillMaxWidth(), ModuleAccent.MINT.accent, enabled = editName.isNotBlank() && (editAmount.isBlank() || minor != null), compact = true)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     PixelButton(if (b.status == PlanStatus.PAUSED) "Resume" else "Pause", { mint.setBillStatus(b.id, if (b.status == PlanStatus.PAUSED) PlanStatus.ACTIVE else PlanStatus.PAUSED) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)

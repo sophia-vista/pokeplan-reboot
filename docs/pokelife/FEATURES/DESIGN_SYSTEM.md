@@ -159,6 +159,7 @@ The following are canonical component families. Implement shared variants rather
 - Use input types and keyboards appropriate to the data. Preserve user input through validation errors and interruptions.
 - Advanced options are collapsed or placed in a secondary step where practical.
 - Do not use dialogue-box framing to make fields cramped; writing and data entry need comfortable content width.
+- **Exact entry (owner, 12 November 2026: "I am a very exact person"):** every date, time of day and length can be typed, never only picked from keys or nudged by a stepper. A date field (`PixelDateField`) is quick keys, a month to tap *and* a text box taking `2026-11-07`, `7/11/2026` (day first, four-digit year) or `7 Nov 2026`; a time field (`PixelTimeField`) takes `9`, `930`, `21:05`, `9:30 pm`, `noon`; a length field (`PixelDurationField`) takes `45`, `1h30`, `1:30`; a moment (`PixelMomentField`) is a day and a time. Each reads back what it understood ("Thu 12 Nov 2026", "9:30 am", "1 h 30 min") and says what it takes when the text is not yet a value; a valid value is applied at once, so Save always reads what is on the screen. The rules are `ExactInput` in app-core (tested once, every spelling). A number that could be read two ways is never guessed. Whatever a record's date or time is when it is made, it can be corrected afterwards; a correction never pays and never takes back (rewards follow the first save).
 
 ### 6.5 Lists and list rows
 

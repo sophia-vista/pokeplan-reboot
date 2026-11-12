@@ -190,6 +190,29 @@ class ScreenshotTest {
         }
     }
 
+    /** The exact-entry fields (typed date, time, length, moment), in both palettes. */
+    @Test
+    fun exactFields() {
+        val store = started()
+        listOf(false, true).forEach { dark ->
+            render("exact-fields-${if (dark) "dark" else "light"}", height = 1500, frames = 8) {
+                PixelTheme(dark) {
+                    Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                        androidx.compose.foundation.layout.Column(Modifier.padding(16.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
+                            var day by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<kotlinx.datetime.LocalDate?>(store.today) }
+                            var time by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<kotlinx.datetime.LocalTime?>(kotlinx.datetime.LocalTime(9, 30)) }
+                            var minutes by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<Int?>(90) }
+                            var at by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(store.nowMillis - 3_600_000L) }
+                            app.pokeplan.ui.screens.PixelDateTimeField(day, time, store.today, Pixel.Blue, { d, t -> day = d; time = t }, label = "Deadline", noDayLabel = "No deadline")
+                            app.pokeplan.ui.screens.PixelDurationField(minutes, { minutes = it }, Pixel.Blue, label = "Estimate", noneLabel = "No estimate", presets = listOf(15, 30, 45, 60, 90))
+                            app.pokeplan.ui.screens.PixelMomentField(at, { at = it }, store.nowMillis, Pixel.Blue, label = "It ended")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /** The Kanto layer's whole dungeon list, tall: each card's title, types and tiles must belong to the same dungeon. */
     @Test
     fun worldMapKantoList() {
