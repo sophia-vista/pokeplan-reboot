@@ -228,13 +228,13 @@ The canonical set is the 17 documents listed in `PRODUCT_BIBLE.md` section 11; `
 - The `docs/pokelife/` tree is the only current specification authority.
 - Update the owning canonical document when a requirement changes, then dependent cross-references and backlog items in the same change.
 - Never infer implementation status from specification presence.
-- Still stale and not to be mistaken for current: `CLAUDE.md` details (habits, the reminder list, widgets described as Glance), `docs/design.md` (habits as Today items, strict-mode and milestone text, Mega/Dynamax claims), `docs/ecosystem.md` (Care cloud sync, superseded visitor and buddy sections), `HOME.md` 16 status line, `HEAL.md` 322 and 496 against the on-by-default rule at 532, `DATA_AND_MIGRATIONS.md` 10.5.1 (documents list), `INTEGRATIONS_AND_PRIVACY.md` manifest sections (an open gap, not a done state), `TEST_STRATEGY.md` file counts (0.123.0 baseline), `GEAR.md` (Choose and Measure grouping, Pokégear name), and the `MODULES/*.md` acceptance boxes, which are all unticked and carry no built/partial status.
+- Still stale and not to be mistaken for current: `CLAUDE.md` details (habits, the reminder list, widgets described as Glance), `docs/design.md` (habits as Today items, strict-mode and milestone text, Mega/Dynamax claims), `HOME.md` 16 status line, `HEAL.md` 322 and 496 against the on-by-default rule at 532, `DATA_AND_MIGRATIONS.md` 10.5.1 (documents list), `INTEGRATIONS_AND_PRIVACY.md` manifest sections (an open gap, not a done state), `TEST_STRATEGY.md` file counts (0.123.0 baseline), `GEAR.md` (Choose and Measure grouping, Pokégear name), and the `MODULES/*.md` acceptance boxes, which are all unticked and carry no built/partial status.
 
 ## 9. Owner decisions of 6 November 2026
 
 Recorded in their authoritative documents; listed here so the plan reads in one place.
 
-1. These docs are the source of truth over `docs/design.md`, `docs/ecosystem.md` and `docs/economy.md` (see `README.md`).
+1. These docs are the source of truth over the older `docs/design.md` and `docs/economy.md` (see `README.md`).
 2. Pokémon roles: global buddy (cosmetic); a party of one lead plus five per module, bonuses for that module only; WORLD expedition teams; GEAR helpers (visual only). `FEATURES/POKEMON_ECOSYSTEM.md` 2.2. REP-009.
 3. Module map: PLAN, CARE, HEAL, MINT, HOME, LINK, GEAR, WORLD; no Grow and no Explore. Bible section 4.
 4. Local-only has priority: no work on Supabase, accounts, sync or the server reward function. Bible section 3. REP-012.

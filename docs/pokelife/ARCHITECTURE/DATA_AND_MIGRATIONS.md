@@ -2,10 +2,10 @@
 
 **Version:** 1.1  
 **Status:** Approved target architecture (owner, 6 November 2026; implementation details such as the database choice stay subject to their stated feasibility spike)  
-**Baseline inspected:** PokéLife source archive `pokeplan-reboot-main (5).zip`, version `0.123.0`  
+**Baseline:** PokéLife `0.123.0` (the last JSON-only version); the database is live since 0.129.0  
 **Review date:** 6 November 2026
 
-> This document defines the target local-first data architecture, persistence contracts, backup lifecycle, and migration requirements. It distinguishes verified behavior in 0.123.0 from recommendations. Product behavior remains owned by the Product Bible and module/feature specifications; this document owns the technical data foundation. A source file's presence is evidence of implementation, not proof of end-to-end correctness or release readiness.
+> This document defines the local-first data architecture, persistence contracts, backup lifecycle, and migration requirements, and records the design facts the code relies on. Product behavior remains owned by the Product Bible and module/feature specifications; this document owns the technical data foundation.
 
 ## 1. Purpose and architectural principles
 
@@ -26,36 +26,15 @@ The architecture follows these principles:
 
 ## 2. Evidence and status from version 0.123.0
 
-The following are confirmed by inspection of the supplied source archive. They are not the target architecture.
-
-| Area | Confirmed implementation | Assessment |
-|---|---|---|
-| Language and UI | Kotlin Multiplatform and Compose Multiplatform | Reusable foundation; Android is the product priority |
-| Core modules | `pokemon-core`, `plan-core`, `care-core`, `world-core`, `app-core`, `composeApp`, `androidApp` | Some domain separation exists; it does not yet represent the final eight-module product |
-| Main persistence | `androidApp/.../SaveFile.kt` creates `save.json`; `GameStore` persists serialized `AppData` through `SavedDocument` | Single JSON document for much of the app, including PLAN, shared Pokémon, GEAR, and WORLD state |
-| CARE persistence | `careStorage()` creates a separate `care.json`; `CareStore` persists `CareData` independently | Separate save and separate commit boundary |
-| Storage abstraction | `Storage` exposes `load`, `save`, and `keepAside`; `MemoryStorage` supports tests | Simple document storage contract, not a relational repository abstraction |
-| File storage | `FileStorage` writes a temporary file and attempts rename; on failure it falls back to writing the destination directly | Better than a direct-only write, but the fallback is not an atomic replacement guarantee |
-| Save decoding | `SavedDocument` decodes JSON, applies `tidy`, and preserves unreadable input with `keepAside` | Valuable corruption-preservation behavior to retain and strengthen |
-| Save schema | `AppData.SCHEMA` is currently `1`; many fields have defaults | Default-field compatibility exists; this is not a sequential schema migration framework |
-| IDs | `newId(nowMillis, rng)` creates time-plus-random string IDs | Existing IDs must be preserved; new IDs should not depend on wall-clock uniqueness |
-| Pokémon | `OwnedPokemon` is an individual entity with an ID, species/form, nature, ability, IVs/EVs, level, friendship, shiny state, held item, and party metadata | Valuable individual identity and progression model to preserve and normalize |
-| Rewards | `RewardEngine` applies activity rules and returns state/reward outcomes; stores call into shared World/reward interfaces | Reusable domain logic; reward persistence and source mutation are not yet one universal relational transaction |
-| Compatibility tests | `SaveCompatibilityTest` checks missing default-valued fields, stored enum names, and old save behavior | Useful regression tests; expand to real fixtures and explicit migration tests |
-| Cloud pathways | Account/session fields, cloud document methods, Supabase schema/functions, and optional CARE sync exist | Conflict with the approved no-account/no-cloud-sync product direction; retire after local data is secured |
+The 0.123.0 baseline kept two JSON documents (`save.json` holding `AppData`, `care.json` holding `CareData`) through `SavedDocument` and `Storage`, with one integer `schema`, time-plus-random string IDs, a temp-file-and-rename write with a direct-write fallback, and optional Supabase pathways (retired in 0.130.0, no account or cloud). The database replaced them (section 4.5); the two JSON files survive only as the rollback copy and the importer's input (section 12). Saves from `SavedDocument` that cannot be read are kept aside, never overwritten; that principle stays.
 
 ### 2.1 Important existing failure windows
 
-- `SavedDocument.write()` assigns its in-memory `value` before calling `storage.save()`. A failed save can therefore leave the process observing a value that was not durably persisted.
-- `FileStorage.save()` normally writes a temporary file and renames it, but its direct-write fallback can expose a partial destination if the fallback is interrupted.
-- CARE's completion and its call into the shared reward/World interface cross two separately persisted stores. A process failure between those writes can leave a completion and its reward out of sync.
-- JSON compatibility through default values does not explicitly transform changed meanings, split/merged records, IDs, or relationships.
-
-The target must close these windows with database transactions, a single authority, explicit migration steps, and an idempotent event/reward pipeline.
+The JSON design had four failure windows: the in-memory value was set before the write succeeded; the direct-write fallback could expose a partial file; a CARE completion and its reward crossed two separately persisted stores; and default-valued JSON fields did not transform changed meanings, splits or relationships. The database closes them with transactions, a single authority, explicit migration steps and an idempotent event/reward pipeline (sections 8 and 11).
 
 ### 2.2 Source material and precedence
 
-Use the latest approved files under `/PokéLife/` as product and module authorities. The source archive's `docs/ecosystem.md`, historical Pokémon progression documents, and the earlier `02_DATA_MODEL_AND_PRIVACY.md` are useful evidence, not competing current authorities. The canonical shared Pokémon domain specification is `FEATURES/POKEMON_ECOSYSTEM.md`; this document owns physical persistence, repository boundaries, transactions, backup/restore, migration execution and recovery, while the Pokémon Ecosystem document owns shared Pokémon domain semantics.
+Use the latest approved files under `docs/pokelife/` as product and module authorities. `docs/ecosystem.md`, `docs/design.md` and historical progression documents are evidence of what the code does, not competing authorities. The canonical shared Pokémon domain specification is `FEATURES/POKEMON_ECOSYSTEM.md`; this document owns physical persistence, repository boundaries, transactions, backup/restore, migration execution and recovery, while the Pokémon Ecosystem document owns shared Pokémon domain semantics.
 
 ## 3. Target application architecture
 
@@ -150,6 +129,20 @@ The application and Android entry points such as widgets or notification actions
 ### 4.4 Database version metadata
 
 Maintain a schema version in SQLite's migration mechanism and a small application metadata table. Record the installed app version separately from the database schema version. App version changes do not automatically imply a schema migration, and a schema migration does not imply a product-content reset.
+
+### 4.5 Database rules as built
+
+SQLDelight 2.4.1 on SQLite with the Android driver was confirmed by a spike (Kotlin 2.4.21, AGP 9 KMP library plugin, no workaround); Room is not used. The module is `:data` (Android and JVM targets; desktop and web keep JSON stores and never open the database).
+
+- **Foreign keys are off by default in SQLite.** The Android driver sets them in `onConfigure`, `JvmDatabase` sets them, and `DataStore.open` reads `PRAGMA foreign_keys` back and refuses to run without it. A test proves the ownership rules fail without them.
+- **Rules in the schema:** one owner per Pokémon (section 7.3), `CHECK (slot BETWEEN 1 AND 6)` for a party, nonnegative balances and stacks, IV/EV/level/friendship `CHECK`s. Rules that depend on other rows (module eligibility) stay in the domain layer.
+- **Versioning:** the schema version is `PRAGMA user_version`. A new file is created at the current version; an older one is migrated step by step in one transaction; a newer one is refused with `NewerSchemaException` and not touched; a file that has tables but no version is refused.
+- **Migrations are checked by the build:** `schemaOutputDirectory` is set, every released schema is committed as `data/databases/N.db`, `verifyMigrations` is on and `jvmTest` depends on `verifyCommonMainDataDbMigration`. A schema edit without a numbered `.sqm` migration fails the build.
+- **SQLite on Android 8 is 3.18:** no upsert, and `VACUUM INTO` (3.27) is not used in common code. The Android backup is a WAL checkpoint, then a copy, under the single writer. A manual `BEGIN` over a file-backed JDBC driver is unsound (the driver may give the next statement another connection), so the store always uses the driver's own transaction.
+- **Process:** widgets, reminder receivers and notification actions run in the app's single process (no `android:process` in the manifest) and use the same repositories through one process-wide handle, so section 4.3 needs no multi-process SQLite. Moving any of them to another process reopens that decision.
+- **Ownership in code:** shared tables (`owned_pokemon`, `pokemon_place`, `dex_history`, `bag_stack`, `currency_balance`, `reward_event`, `reward_ledger_entry`, `outbox_event`, `processed_event`, `migration_history`, `app_meta`) are written only by the shared Pokémon and economy service; a module asks for an acquisition, grant or spend and never inserts `owned_pokemon` or changes a balance. Module tables are written only by that module's repository. Repositories call the transaction coordinator, never `SqlDriver`; generated queries stay `internal` to `:data`; projections are views or rebuilt queries, never a second editable copy.
+- **IDs and time:** every legacy ID is kept as the `TEXT` primary key; instants are epoch milliseconds; legacy local dates stay ISO text. Module ids in tables are upper case (`PLAN`, `CARE`, ...); the importer maps the legacy `plan` and `care`.
+- **Device self-check:** debug builds have a second launcher icon, **DB check** (`DeviceSelfCheck`). It runs on a throwaway `selfcheck.db`, never on `pokelife.db` or the save: SQLite version, foreign keys, journal mode, rollback, a refused orphan row, 5000 timed inserts, checkpoint then backup copy then reopen, and a reopen after close. It passed on the owner's phone on 6 November 2026 (build 217) and the owner chose not to schedule further formal device checks ("no need to test, just go"). **Still unproven on a device:** low storage, a process kill during a write, the 600,000-round passphrase timing, Keystore key creation on a phone without a hardware keystore, and the Android cloud-restore path.
 
 ## 5. Domain ownership and authoritative records
 
@@ -259,13 +252,11 @@ The following is a logical catalogue, not a mandate to create one table for ever
 
 ### 7.3.0 Decision: the app keeps reading one `AppData` through the split *(owner delegated, 7 November 2026, REP-014)*
 
-The shared Pokémon, Bag and ledger tables are the live authority since schema 6 (0.135.0), and the app reaches them **the way it reaches PLAN's tables**: `LiveDocuments` splits every save into PLAN's part, the player's part and the rest, writes the first two as rows and puts the save back together on a read, so `GameStore`, the reward engine and every screen still read and write one `AppData` and the rules stay pure and tested. The typed repositories (`PokemonRepository`, `EconomyRepository`) are the tables' own API and are used by the split and the importer, not yet by the app.
+The shared Pokémon, Bag and ledger tables are the live authority since schema 6, and the app reaches them **the way it reaches PLAN's tables**: `LiveDocuments` splits every save into PLAN's part, the player's part and the rest, writes the first two as rows and puts the save back together on a read, so `GameStore`, the reward engine and every screen still read and write one `AppData` and the rules stay pure and tested. The reasons: all of them are written against `AppData` and tested that way, and the typed repositories cannot be adopted one module at a time while PLAN, CARE, WORLD, GEAR and the widgets all read the Pokémon list. The typed repositories (`PokemonRepository`, `EconomyRepository`) are the tables' own API and are used by the split and the importer, not yet by the app. `app-core` also targets web, which has no SQLite, so a typed repository port must live behind an interface there.
 
-What the typed repositories still need before the app can move onto them (a later REP-014 step, per module as each is refactored): a `GameStore` that asks them for one Pokémon, one party or one balance instead of holding the whole list; a reward-bearing action that calls `EconomyRepository.settle` with its **real** event (`<module>:<source record>:<kind>`) instead of the live write's net change of one save (section 8.4 "As built"); the WORLD team and GEAR helper places moved into `pokemon_place` (their records are still inside the `save` row); `pokemon_history` (acquisition and evolution facts) and held-item references; and World's rules taking the balance as an input so `WorldData.poke` can go.
+**Still needed before the app can move onto the typed repositories** (per module, as each is refactored): a `GameStore` that asks them for one Pokémon, one party or one balance instead of holding the whole list; the WORLD team and GEAR helper places moved into `pokemon_place` (they are inside the `save` row, and the write refuses a Pokémon named there and in the table); `pokemon_history` (acquisition and evolution facts) and held-item references; and World's rules taking the balance as an input so the in-memory `WorldData.poke` can go (it is `@Transient`, never stored).
 
-**Step 1 as built (0.144.0, REP-014): module rewards settle their real events.** `AppData.ledgerNotes` holds one `LedgerNote` per paid HEAL, MINT or HOME event (`GameStore.heal/mint/home` through `noted`): the event's own id (`home:chore:<id>:<day>`), source module, opaque reference, broad kind and what it changed in the Poké balance and the Bag. `PokemonTables.settleNotes` settles each note through `EconomyRepository.settle` under that id (idempotent: an id already in the ledger is skipped) **before** the net change, which still brings the tables to the document, so a note that does not match the save (or one that would go below zero) is corrected, never trusted. The ledger now says *why* for these three modules. Still open from the list above: the other items (repositories asked by `GameStore`, WORLD and GEAR places in `pokemon_place`, `pokemon_history`, World taking the balance as an input) are unchanged.
-
-**Step 2 as built (0.150.0, REP-014): PLAN's and CARE's rewards settle their real events too.** Every PLAN reward site (`achieve` for a task, a recurring task's day; a step; a milestone; a weekly review; a mini-quest; the welcome-back gift; a focus session and Magic Guard) and both CARE sites (`care`, `befriend`) and the Shop purchase go through `noted`, with ids `plan:task:<task>:complete`, `plan:series:<series>:<epochDay>`, `plan:step:<task>:<step>`, `plan:milestone:<goal>:<milestone>`, `plan:review:<weekStartEpochDay>`, `plan:quest:<epochDay>:<quest>`, `plan:welcome:<lastActiveEpochDay>`, `plan:focus:<new Pokémon id>`, `care:<kind>:<epochDay>:<count paid that day>`, `care:befriend:<new Pokémon id>` and `app:shop:<millis>`. `CareEvent` is unchanged: the kind, the day and the day's paid count name it, and the daily cap guarantees a count never repeats. A note holds no title, only an opaque id and the amounts. Still open: the repositories asked by `GameStore`, WORLD and GEAR places in `pokemon_place`, `pokemon_history`, and World taking the balance as an input.
+**Real ledger events (built).** `AppData.ledgerNotes` holds one `LedgerNote` per paid event: the event's own id, source module, opaque reference, broad kind and what it changed in the Poké balance and the Bag. `PokemonTables.settleNotes` settles each through `EconomyRepository.settle` under that id (an id already in the ledger is skipped) **before** the net change, which still brings the tables to the document, so a note that does not match the save (or would go below zero) is corrected, never trusted. Ids: HEAL, MINT and HOME `<module>:<kind>:<record id>` (HOME `home:chore:<id>:<day>`); PLAN `plan:task:<task>:complete`, `plan:series:<series>:<epochDay>`, `plan:step:<task>:<step>`, `plan:milestone:<goal>:<milestone>`, `plan:review:<weekStartEpochDay>`, `plan:quest:<epochDay>:<quest>`, `plan:welcome:<lastActiveEpochDay>`, `plan:focus:<new Pokémon id>`; CARE `care:<kind>:<epochDay>:<count paid that day>` and `care:befriend:<new Pokémon id>`; the Shop `app:shop:<millis>`. `CareEvent` is unchanged (the daily cap guarantees a count never repeats). A note holds no title, only an opaque id and the amounts.
 
 ### 7.3.1 Expanded Pokémon item and progression records
 
@@ -292,20 +283,32 @@ Item definitions must declare acquisition source families. Item grants, purchase
 
 ### 7.4 Module-owned entity families
 
-**As built:** CARE's records are in `care_*` (schema 4, 0.132.0) and PLAN's in `plan_*` (schema 5, 0.133.0), each as `key, position, day, json` tables plus a `*_state` table for single values (and `plan_day` for the rest and active days). PLAN shares the `AppData` document with the player, so `LiveDocuments` splits every save into PLAN's part (tables) and the rest (the `save` row) and puts them together on a read; a Habit record no longer exists (merged into recurring tasks, `MODULES/PLAN.md` section 11.2).
-
-**As built, the shared tables (schema 6, 0.135.0):** `owned_pokemon` (typed columns, the order they were owned in `position`, the origin exactly as the save has it, any field a newer build adds in `extra_json`), `pokemon_place`, `dex_history`, `player_progress` (Egg meter, trainer points), `bag_stack`, `currency_balance`, `reward_event` and `reward_ledger_entry`, and `pokemon_state` for the few single values with no table (the party leads, the roles version, anything a newer build adds to the player, the favourites and origins of Pokémon that are gone). `PokemonTables` takes that part of the save apart and puts it back; the `save` row keeps only what is neither PLAN's nor the player's (settings, World, GEAR, quests, the reward log, counters). `evidence/REP-014-shared-tables.md`.
+**As built:** every module's records are in its own tables, one family per kind of record so a private kind can be read, exported or erased on its own. PLAN: `plan_task`, `plan_list`, `plan_event`, `plan_series`, `plan_goal`, `plan_review`, `plan_focus_record`, `plan_day` (rest days and active days) and `plan_state` (the running focus session and how it ended, completions waiting out their undo, the pick, emergency pauses, the legacy habits). A Habit record no longer exists (merged into recurring tasks, `MODULES/PLAN.md` section 11.2). The next subsection gives the layout and the activation recipe all of them share.
 
 Detailed fields remain in module specifications. The data layer should accommodate at least these families:
 
 - **PLAN:** `task`, `task_occurrence`, `task_series`/recurrence, `subtask`, `task_list`, `project`, `goal`, `milestone`, `focus_session`, `focus_history`, and any explicitly approved calendar cache.
-- **CARE:** `self_care_routine`, `routine_completion`, `diary_card_entry`, `journal_entry`, `note`, `mood_check_in`, `skill_practice`, `entry_tag`, and `entry_link`. *Built first (0.132.0, schema 4):* `care_routine`, `care_routine_completion`, `care_diary_card`, `care_journal_entry`, `care_calm_break`, `care_skill_practice`, `care_visitor`, `care_dismissed_visitor` and `care_state`, each record table holding its key, position, day and the record as JSON (`evidence/REP-014-care-tables.md`).
-- **HEAL (as built, 0.136.0, schema 7):** `heal_activity`, `heal_hydration`, `heal_sleep`, `heal_measurement`, `heal_goal` and `heal_state`, created in tables from the start with no document row (`HealTables`, `MODULES/HEAL.md` section 22); activation sets a marker and imports a `heal` document row if a restore left one. Planned, not built: `health_metric_definition`, `health_observation`, `activity_session`, `workout`, `exercise_set`, `food_entry`, `nutrition_summary`, `sleep_session`, `body_measurement`, `health_source`, and `import_batch`.
-- **MINT (as built, 0.141.0, schema 8):** `mint_account`, `mint_category`, `mint_transaction`, `mint_budget`, `mint_bill`, `mint_bill_payment`, `mint_reconciliation`, `mint_review` and `mint_state`, created in tables from the start with no document row (`MintTables`, `MODULES/MINT.md` section 22); every amount an integer in minor units inside the record's JSON, **every row sealed (AES-256-GCM, Android Keystore key) and every backup or kept-aside copy of Mint sealed**: this is the first use of section 10.4's encryption, chosen for Mint only (`evidence/REP-014-mint.md` section 6). Planned, not built (the logical families below): `financial_account`, `account_snapshot`, `transaction`, `budget`, `budget_period`, `bill`, `bill_occurrence`, `payment_record`, `debt`, `savings_goal`, and provider import provenance.
+- **CARE:** `self_care_routine`, `routine_completion`, `diary_card_entry`, `journal_entry`, `note`, `mood_check_in`, `skill_practice`, `entry_tag`, and `entry_link`. *As built (schema 4):* `care_routine`, `care_routine_completion`, `care_diary_card`, `care_journal_entry`, `care_calm_break`, `care_skill_practice`, `care_visitor`, `care_dismissed_visitor` and `care_state`; the two private record types (diary card, journal) are separate tables.
+- **HEAL (as built, schema 7):** `heal_activity`, `heal_hydration`, `heal_sleep`, `heal_measurement`, `heal_goal` and `heal_state`, created from the start with no document row (`HealTables`, `MODULES/HEAL.md` section 22); **every row sealed** (section 10.4.1). Planned, not built: `health_metric_definition`, `health_observation`, `activity_session`, `workout`, `exercise_set`, `food_entry`, `nutrition_summary`, `sleep_session`, `body_measurement`, `health_source`, and `import_batch`.
+- **MINT (as built, schema 8):** `mint_account`, `mint_category`, `mint_transaction`, `mint_budget`, `mint_bill`, `mint_bill_payment`, `mint_reconciliation`, `mint_review` and `mint_state`, created from the start with no document row (`MintTables`, `MODULES/MINT.md` section 22); every amount an integer in minor units inside the record's JSON; **every row, backup and kept-aside copy sealed** (section 10.4.1). Planned, not built (the logical families below): `financial_account`, `account_snapshot`, `transaction`, `budget`, `budget_period`, `bill`, `bill_occurrence`, `payment_record`, `debt`, `savings_goal`, and provider import provenance.
 - **HOME:** `household_area`, `chore`, `chore_occurrence`, `inventory_item`, `inventory_adjustment`, `asset`, `maintenance_schedule`, `maintenance_record`, `warranty`, `reference_record`, and attachment references.
 - **LINK:** `contact`, `relationship_note`, `important_date`, `follow_up`, `contact_method`, and explicit contact-to-record links.
 - **GEAR:** tool preferences and intentionally retained history only; ephemeral conversions/calculations should remain transient.
 - **WORLD:** `campaign_progress`, `story_state`, `expedition`, `expedition_team_member`, `mission`, `dungeon_progress`, `settlement_state`, and other WORLD-owned game state.
+
+### 7.4.1 Record tables and activation recipe
+
+**Layout.** A record table has the columns the app asks by (`key`, `position`, `day`) and the record itself as JSON in `json`. A `*_state` table holds the single-value fields (settings, drafts, anything a newer build adds). The typed model (`CareData`, `HealData`, ...) stays the one definition of a record, so there is no second field mapping to drift, `:data` stays independent of the `*-core` modules, and a field this build does not know is kept, not dropped. The cost is that SQL cannot filter on a field inside `json`; when a screen needs such a query, the column is added with a migration. The `*Tables` classes take the JSON apart on save and put it back on load under unchanged stores; `RecordRows` diffs, so a save writes only the rows that changed (tests count them with triggers) and a deleted record rewrites the later positions.
+
+**Shared Pokémon tables.** `owned_pokemon` (typed columns, `position` for the order they were owned in, `origin_json` exactly as the save has it with `origin_how` and `origin_region` as lookup columns, `extra_json` for unknown fields), `pokemon_place`, `dex_history`, `player_progress` (Egg meter, trainer points), `bag_stack`, `currency_balance`, `reward_event`, `reward_ledger_entry`, and `pokemon_state` for the single values with no table (party leads, the roles version, anything a newer build adds to the player, the favourites and origins of Pokémon that are gone). `pokemon_place` has `owned_id` as primary key, `UNIQUE (kind, ref, slot)` (exactly one buddy, one Pokémon per slot) and a `CHECK` tying each kind to its shape; no row is the PC. The save row keeps only what is neither PLAN's nor the player's (settings, World, GEAR, quests, the reward log, counters).
+
+**One place per Pokémon.** In the table: the primary key, the unique slot and the single buddy; `setParty`, `setBuddy` and `setGuardians` each take the Pokémon from its old place and close up the slots left behind. Across the tables and the `save` row (WORLD teams and GEAR helpers are checked, not constrained): a write naming a Pokémon in two places (buddy and party, Guardian and buddy, a World team and the table, a helper and the table) is refused whole before any row is written. A Pokémon World gives (a Guardian included) arrives with no place, that is in the PC. The legacy importer applies the same rule and reports a `place_conflict` warning for each Pokémon it moves.
+
+**Activation** (`LiveDocuments.move<Module>ToTables`, run on every start, a no-op once done). In one transaction: (1) for the Pokémon move only, the save goes through `LiveDocuments.normalizer` (`GameStore.normalizeDocument`, set by `LiveStore`: numbers in range, the Poké merge recorded, one place per Pokémon, habits merged), so an older save is brought up to date exactly as loading would; (2) the old row is kept whole as `aside:<document>:<purpose>:<millis>` (for example `aside:save:pokemon:<millis>`, `aside:care:tables:<millis>`); (3) the rows are written, with the balances as **one opening-balance event** (`live:save:opening-balance`, source `MIGRATION`, the Poké merge's two legacy values in its metadata), nothing else paid and nothing in the outbox; (4) the marker is set in `app_meta` (`care_store=tables`, `plan_store=tables`, `pokemon_store=tables`); (5) the whole document is read back and compared with the original (`LiveDocuments.canonical`: empty lists, the order of a set and a Bag entry of zero are not told apart) and the ledger reconciles. Any difference, a Pokémon in two places, a buddy or Guardian that is not owned, or tables that already hold something (a legacy import) rolls everything back; the old row stays the live save and the move is tried again at the next start. After activation nothing writes the old row (one authority). HEAL, MINT, HOME and LINK have no earlier document: activation only sets the marker and, if a restore left a document row of that name, imports it, reads it back equal and keeps the row aside.
+
+**Backup and restore through the split.** The daily backup assembles `save.json`, `care.json` and the module documents from all their parts; `replaceAll` passes a restored save through the same check and split, so an old 0.123.0 backup restores without loss, and a save the tables cannot represent is refused and the current save kept. A backup without a module's document (an older one) leaves that module alone and never wipes it. A build older than the schema refuses the file (`NewerSchemaException`); the way back is the newest backup in `filesDir/backups/`, whose documents are in the old shape, and the kept-aside rows.
+
+**Known cost.** A write reads all rows of the tables it diffs (a few hundred to a few thousand rows); not measured on a device.
 
 ### 7.5 Constraints and indexes
 
@@ -369,7 +372,7 @@ If the product explicitly permits a new reward after a genuine new occurrence, t
 
 Reward ledger entries are append-only. Do not rewrite old ledger deltas to make a balance look correct. For a legitimate reversal, append a compensating entry linked to the original event and preserve the reason/policy. A correction must not allow a repeated action to pay twice. Materialized balances are projections that can be reconciled from the ledger.
 
-**As built (0.135.0, REP-014): the ledger is the only writer of the balance and the Bag.** `currency_balance` and `bag_stack` change only inside `EconomyRepository.settle`, in the same transaction as their ledger entries. The save no longer stores `coins` or `inventory` as such: a live write compares the document with the tables and turns the difference into **one ledger event** (`save:<n>`, source `APP`, kind `net-change`, one entry per asset that moved), and a read gives the balances back from the tables, so a balance can always be rebuilt from the ledger (`EconomyRepository.reconcile()`, checked after the move and in the tests). A write that changes nothing writes nothing, and a save that would take the balance or a stack below zero is refused whole. The events are honest about being coarse: they say *how much* changed in one action, not *why*; the per-source events (`PLAN:<task>:complete`, ...) arrive as each module's reward sites are moved onto `settle` (section 7.3.0).
+**As built: the ledger is the only writer of the balance and the Bag.** `currency_balance` and `bag_stack` change only inside `EconomyRepository.settle`, in the same transaction as their ledger entries. The save does not store `coins` or `inventory`: a live write compares the document with the tables and turns the difference into **one ledger event** (`save:<n>`, source `APP`, kind `net-change`, one entry per asset that moved), and a read gives the balances back from the tables, so a balance can always be rebuilt from the ledger (`EconomyRepository.reconcile()`). A write that changes nothing writes nothing, and a save that would take a balance or a stack below zero is refused whole, the other changes in it rolled back too. Net-change events say *how much*, not *why*; the real per-source events are in section 7.3.0.
 
 ### 8.5 Transactional outbox
 
@@ -378,6 +381,15 @@ Insert outbox events in the same transaction as the source change and reward. A 
 ### 8.6 Cross-domain workflows
 
 Avoid distributed transactions because all participating data is local. Coordinate through the single database transaction when an operation truly needs atomic cross-domain state. Otherwise use outbox events and eventual projections. Do not let a generic event bus become a second source of truth.
+
+### 8.7 Settlement rules as built
+
+- **Event identity.** `reward_event.event_id` is the primary key and equals the idempotency key: `<sourceModule>:<sourceRecordId>:<eventKind>`, plus `:<occurrenceId>` where the product allows a new reward for a new occurrence (a recurring task's date, a routine's day). Never a timestamp, a title or a random id.
+- **A retry** is detected by the existing `event_id` before any side effect; the repository returns the recorded settlement and changes nothing.
+- **Policy version.** `reward_event.policy_version` stores `RewardRules.VERSION`; events written by the legacy importer use the policy `legacy-0.123.0` and never re-run the engine.
+- **Ledger and balances.** The repository exposes no update or delete of a ledger entry (triggers refuse it even for raw SQL); a reversal is a new entry whose `reverses_entry_id` points at the original. `currency_balance` and `bag_stack.quantity` change in the ledger entry's transaction with `CHECK (>= 0)`; a spend that would go below zero fails the whole transaction; `reconcile()` recomputes both from the ledger.
+- **Undo.** Undoing a real-life action before settlement removes it without a reward. After settlement it appends a compensating ledger event; it never reuses the original key and never lets the repeated action pay twice (`POKEMON_ECOSYSTEM.md` section 12.5). PLAN's 10-second undo window for a completed task is a PLAN rule, stored with the task.
+- **Currency migration.** `newPoké = legacyCoins + legacyWorldPoké` (`POKEMON_ECOSYSTEM.md` section 11.2), written as one opening-balance entry (section 12.7).
 
 ## 9. Offline-first behavior
 
@@ -424,6 +436,42 @@ Create a consistent SQLite snapshot using the supported SQLite backup mechanism 
 ### 10.4 Encryption and destinations
 
 Use app-private storage for working data. Support a user-selected document destination through Android's document picker. Offer optional archive encryption with a user-controlled password/recovery credential and a modern authenticated encryption format; do not invent or store a recoverable password on the server. Clearly warn that losing the only encryption credential can make the archive unrecoverable. Backup destination access is explicit and revocable.
+
+### 10.4.1 Sealing of Mint and Heal (as built)
+
+**Decision.** MINT's rows are encrypted at rest with an Android Keystore key and every copy of Mint that leaves its tables is sealed (owner delegated the choice, 8 November 2026); HEAL is sealed the same way (owner decision, 8 November 2026, `IMPLEMENTATION_GUIDE.md` section 3.2). Reasons: `allowBackup` is still true (owner decision: left for now), so Android's cloud backup copies the app's files, and sealed rows make that copy useless to anyone but this phone; a Keystore key needs no password and no prompt, so the modules open like every other (Mint's access gate is a separate feature); SQLCipher would add a native library, a new driver and a migration of the live file, none verifiable here, and would lock the game's own data to a key the player cannot move. HOME and LINK are not sealed (no owner decision); they can be sealed the same way. CARE is not sealed either.
+
+**Cipher and keys.** `RowCipher` seals and opens a text: `m1.` plus the URL-safe Base64 of the IV and ciphertext, AES-256-GCM (`AesGcmCipher`, provider-chosen random IV, a context string as associated data so a text sealed for one use never opens as another). Mint's key: alias `pokelife.mint.v1`, associated data `pokelife-mint`. Heal's own key: alias `pokelife.heal.v1`, associated data `pokelife-heal`, so one module's key can be lost without the other. Both are made inside the Keystore, non-exportable, with no screen-lock prompt. Rows are compared by what they say, not by ciphertext (`RecordRows.Codec`), so a save still writes only the rows that changed.
+
+**What is sealed.**
+
+| Where | Sealed form |
+|---|---|
+| Rows of `mint_*` and `heal_*` (records and settings) | `m1.` text, the `day` column empty: a table shows no figure, name, currency, measurement, time, note or date |
+| `snapshot()` of the live documents (the daily backup in `filesDir/backups/` and "Save a copy") | Mint and Heal sealed whole with the phone's key |
+| Documents kept aside (`aside:mint:*`, `aside:heal:*`: a migration, a restore, an unreadable document) | sealed |
+| A passphrase backup | Mint and Heal sealed under the passphrase (below) |
+
+`BackupBundle` accepts a sealed Mint or Heal document. **Still in clear:** the other modules (Android's cloud backup carries Plan, Care, Home and Link in clear, and Mint and Heal only as text this phone's key opens); settings and notification text (the hydration reminder says the same words for everyone and holds an opaque slot id; a snoozed bill reminder's `reminder_hold` row holds an opaque bill id and a due day); the Pokémon, Bag, Poké balance and ledger, which hold no health or money figure (a `HealEvent` or `MintEvent` carries only `{id, kind, time, ref}`). Sealing hides records from a copy of the files, not from the running app, a rooted phone while it is open, a screenshot, or an unlocked screen; nothing here is an access gate. `scrub` cannot reach flash blocks the phone's storage keeps after a delete.
+
+**Failure modes.**
+
+| Case | Result |
+|---|---|
+| No key on this run, **Mint** | Refuses to start (fail closed) |
+| No key, Heal **sealed** | Fail closed: `healStorage` is memory only for the run, nothing is read or written (`HealLockedException`), the rows open again at the next start with the key |
+| No key, Heal **not yet sealed** (Keystore failed on an old install) | Heal keeps working in clear for that run and is sealed at the first start with the key. The one difference from Mint: Heal already existed in clear, and locking the player out of their records would be worse |
+| Database copied to another phone (the key opens none of it) | Reads as empty; the first write sets the old rows aside, still sealed, as `aside:<module>:locked:<hash>`, then starts empty |
+| A backup sealed with another phone's key is restored | Changes nothing; kept as `aside:<module>:locked:<millis>`, sealed. The same for a sealed document when this run has no key |
+| A backup from an older build (module in clear) is restored | Written and sealed by the table's own write |
+| Recovery from a damaged database | `LiveStore.openOrRecover` gives the new database both keys **before** restoring the newest backup, so a sealed Mint or Heal in it is restored, not kept aside as locked |
+| A passphrase backup on a phone that cannot open Mint or Heal | Refused with a note; a module that is not sealed is sealed under the passphrase as it is |
+
+**Moving an install whose Heal is in clear** (Heal was in clear from 0.136.0 to 0.153.0; Mint was always sealed). `HealTables.seal(nowMillis)` runs at every start and does nothing once done: (1) in one transaction it rewrites every row of the six tables as sealed text (day emptied), seals every plaintext `aside:heal:*` copy, sets the marker `heal_sealed` in `app_meta`, reads the whole document back with the key and compares it, and checks that no row is left in clear; any difference rolls everything back and Heal stays as it was, tried again at the next start; (2) `scrub()` runs `VACUUM` and a truncating WAL checkpoint (best effort, outside any transaction) so free pages and the log do not keep the old clear rows; (3) `LiveBackup.refreshAfterSealing` takes a fresh sealed backup and deletes older daily copies that hold Heal in clear (if the new one cannot be written, the old ones stay and rotate out). A fresh install is sealed from its first row. No schema change.
+
+**Portable (passphrase) backup.** A *separate, opt-in* file format, so the daily backups and the tables keep needing no passphrase. `PassphraseSealer` (`p1.` texts, `Pbkdf2Sealer`): the passphrase is stretched with PBKDF2-HMAC-SHA256 (600,000 rounds, OWASP 2023; random salt; the iteration count is stored in each text so it can be raised later, at most 5,000,000 accepted) into the key of AES-256-GCM, with a context string as associated data. Minimum 10 characters. The passphrase is never stored and a lost one cannot be recovered; the screen says so before it is used. `open` returns null for a wrong passphrase or a damaged text and never throws. One passphrase seals Mint and Heal in the same file. `BackupBundle.stage` accepts `p1.` texts as a Mint or Heal document; restore converts a portable document to plain JSON in memory only and lets `LiveDocuments.replaceAll` seal it with the phone's key as it writes. Only a fresh copy or an automatic backup can be made portable, not a file already saved. The 600,000-round timing is not measured on a device (it runs on a worker thread). The way to move Mint or Heal between phones without a passphrase is the module's own Export, a readable file.
+
+**Tests that must keep existing.** A clear install is sealed once, reads back equal and shows nothing in any stored text; kept-aside copies are sealed; no key leaves Heal in clear and working, and a sealed Heal with no key reads as locked and writes nothing; another phone's key sets rows aside sealed before any write; a snapshot and a backup file hold no Mint or Heal in clear and restore on the same phone; a backup from another key changes nothing; an older build's clear backup is sealed on restore; a passphrase backup opens on another phone only with the passphrase; a module that cannot be opened here cannot be made portable; daily copies made before the seal are replaced; a sealing that cannot finish leaves the rows in clear; no amount, name, currency or note appears in the file.
 
 ### 10.5 Export formats
 
@@ -497,28 +545,12 @@ If any step fails, stop writes, preserve diagnostic information without logging 
 
 ### 12.1 Legacy files and structures confirmed in source
 
-- Android main save: `filesDir/save.json`, created by `saveStorage()`.
-- Android CARE save: `filesDir/care.json`, created by `careStorage()`.
-- Main aggregate: `AppData` in `app-core/.../AppData.kt`, with `schema = 1` and serialized fields including `player`, settings, PLAN data, reward log, WORLD data, GEAR state, origins, Dex history, account/cloud state, and device-specific values.
-- CARE aggregate: `CareData` in `care-core` and its independent `CareStore`.
-- Main store: `GameStore`; persistence through `SavedDocument` and `Storage`.
-- CARE store: `CareStore`; separate `SavedDocument` and `Storage`, with reward calls through `World`.
-- Android storage adapter: `FileStorage` in `app-core` platform source, using temporary-file replacement with direct-write fallback.
-- Save compatibility: `SaveCompatibilityTest`, including default-field loading and serialized enum-name stability.
-- Legacy cloud-related structures: account/session and sync-related data in the main and CARE pathways; these are not part of the target product.
+- Android main save `filesDir/save.json` (`AppData`, `schema = 1`: player, settings, PLAN data, reward log, WORLD data, GEAR state, origins, Dex history, account/cloud state, device-specific values) and CARE save `filesDir/care.json` (`CareData`). The legacy account/session and cloud-sync structures are not part of the product.
+- Compatibility is protected by `SaveCompatibilityTest` (default-field loading, serialized enum-name stability) and by five 0.123.0 saves committed in `app-core/src/jvmTest/resources/fixtures/0.123.0/` (`SaveFixtureTest`).
 
 ### 12.2 Pre-migration inventory
 
-Before implementing the importer, inspect the exact tagged/release source and collect representative real user save fixtures. Inventory:
-
-- Every serialized property in `AppData`, `PlayerState`, `CareData`, `WorldData`, `Settings`, `GearData`, and all nested records.
-- All enum serialized names and legacy aliases, including region/party IDs and reward kinds.
-- Every persisted identifier and reference, including owned Pokémon, party IDs, buddy, tasks, task series/occurrences, reminders, goals, focus history, CARE routines/logs/journal/diary entries, World teams/expeditions/story state, item IDs, reward history, origins, form/shiny history, and utility settings.
-- All old file names, backup/unreadable copies, web storage keys where applicable, and optional CARE cloud copies. Do not import cloud state automatically.
-- Any duplicated values that can be derived from canonical records; retain source values until reconciliation confirms safe derivation.
-- Legacy values that no longer appear in current enums or reference catalogs.
-
-Build fixtures from anonymized or consented real saves covering small/large collections, evolved and shiny specimens, duplicates, independent module parties, WORLD team assignments and PC, full reward history, active expeditions, completed story arcs, CARE private content, pending focus/reminder state, and older historical schema shapes.
+Before any change to the importer, keep the fixtures current: every serialized property in `AppData`, `PlayerState`, `CareData`, `WorldData`, `Settings` and `GearData`, all enum names and legacy aliases, every persisted identifier and reference, and values that no longer appear in current enums or catalogs. The fixtures must cover small and large collections, evolved and shiny specimens, duplicates, independent module parties, WORLD team assignments and PC, full reward history, active expeditions, CARE private content and pending focus/reminder state. They are generated by the code; add an anonymized copy of a real phone save when a migration test needs real-world shape. Do not import cloud state automatically.
 
 ### 12.3 Mapping strategy
 
@@ -556,9 +588,22 @@ Where old data has no stable occurrence identity, derive a deterministic legacy 
 
 ### 12.6 Cutover and retirement
 
-The first database release should support an explicit one-time import from `save.json` and `care.json`. Keep legacy files read-only and untouched throughout import and post-import verification. On success, store a migration completion marker and make the database authoritative. Do not keep dual writes indefinitely; they create divergent sources of truth. If a rollback is required before the retention gate, restore the original JSON-backed app build/data path from the verified backup. Retire old storage code and cloud pathways only after the new path has passed release acceptance and backup retention requirements.
+The database became the live store in 0.129.0 (owner decision, 6 November 2026: "yes, as one PR"), after the real first-start import of the owner's save kept all data. Rules that remain:
 
-**As built (0.135.0, REP-014): the Pokémon, Bag and ledger tables.** `LiveDocuments.movePokemonToTables` runs after PLAN's move on every start and does nothing once done. In one transaction it (1) passes the whole save through the app's own load check (`LiveDocuments.normalizer`, which `LiveStore` sets to `GameStore.normalizeDocument`: numbers in range, the Poké merge recorded, one place per Pokémon, habits merged), so a save from before those rules is brought up to them exactly as the app would on loading it; (2) keeps the old save whole under `aside:save:pokemon:<millis>`; (3) writes the rows, with the balances as **one opening-balance event** (`live:save:opening-balance`, source `MIGRATION`, the Poké merge's two legacy values kept in its metadata) and nothing else paid, nothing published to the outbox; (4) sets the marker `pokemon_store=tables`; (5) reads the whole save back and compares it with the checked one (`LiveDocuments.canonical`: a set is a set, a Bag entry of zero is no stack) and reconciles the ledger. Any difference, a Pokémon in two places, a buddy or Guardian that is not owned, or tables that already hold something (a legacy import) throws and rolls the whole transaction back, so the `save` row stays the live save and the move is tried again at the next start. The daily backup still assembles `save.json` from all three parts, and a restore (`replaceAll`) passes the backup's save through the same check and the same split. Not measured on a device.
+- **Two documents, one table.** `live_document` (schema 2) holds the documents `save` and `care` exactly as the app serialises them; each save is one transaction. The module tables of section 7.4.1 take documents over one by one.
+- **Activation** (`LiveDocuments.activate`, on every start, a no-op once active): in one transaction copy `save.json` and `care.json` in, read each back and require it byte-equal, set the marker `live_store = database`. Any failure rolls everything back and the files stay the live store. A fresh install activates with no documents. **No dual writes:** the legacy files are never written after activation, and are the rollback copy; the daily backup (`LiveBackup`, `filesDir/backups/<millis>/`, newest 3, a `DONE` marker last, an unfinished one never used) uses the same format, so putting its two files back in `filesDir` with an older build returns to the JSON app.
+- **Corruption:** if the open or `integrity_check`/`foreign_key_check` fails with a corrupt-file error, the whole database (and `-wal`, `-shm`) is renamed `*.corrupt-<millis>`, never deleted, and the newest backup is restored (the marker set from it), else the legacy files are imported. A database from a newer build is left untouched. Once the database has been live (flag file `live.active`), a failed open does **not** fall back to the stale JSON files: the storage refuses, so nothing is overwritten.
+- **Restore:** `LiveBackup.restoreNewest` keeps the documents it replaces as `aside:<name>:<millis>` in the same transaction, so a restore can be undone.
+- **Retirement:** desktop and web keep their JSON stores. Retire the JSON code and files only after release acceptance and the backup retention requirements (the cloud path is already gone).
+
+### 12.7 The legacy importer as built
+
+`LegacyJsonImporter` reads `save.json` and `care.json` **as text** (never writing them) and does not deserialize into the app's classes: it has no dependency on `app-core`, so nothing can be dropped by a model that does not know a field. One transaction; identity is the SHA-256 of both inputs, so the same inputs cannot import twice and a different save is refused until the marker is cleared deliberately; it self-verifies counts, balances, the Bag, the Dex, party slots, `integrity_check` and `foreign_key_check` before committing, and records `migration_history`.
+
+- **Shared side** goes into the tables field by field (the favourite flag and the origin are columns; unknown fields go to `extra_json`), with the five Dex sets, Egg meter and trainer points. **Parties:** each Pokémon with `inParty` goes into the party of its `partyId` in listed order; the old PLAN buddy becomes slot 1 of PLAN's party and the starting global buddy; the old `careLeadId` becomes slot 1 of CARE's party; a party over six keeps its first six and records a warning for each other member (they stay owned).
+- **Poké and the Bag:** `coins + WorldData.poke` becomes one opening-balance ledger event `legacy:<migrationId>:opening-balance` (policy `legacy-0.123.0`) with both source values, the save schema and the migration id in its metadata; the Bag is `PlayerState.inventory` plus `WorldData.items`, summed per item. The engine never runs, so nothing is paid twice; the reward log is kept in the sidecar for display only.
+- **Everything else** (tasks, lists, series, habits, goals, focus, settings, quests, GEAR, WORLD without `poke` and `items`, the reward log, all of `care.json`) is stored as raw JSON in `legacy_sidecar`, one row per legacy field (an unhandled player field goes to `player.<field>`); a test proves every top-level field of the fixture is mapped or in the sidecar.
+- **Not imported on purpose:** the signed-in account and session (`AppData.account`) and Care's cloud-copy state (`CareData.cloud`); each records a warning.
 
 ## 13. Interrupted writes, corruption, and recovery
 
@@ -708,15 +753,11 @@ All data lifecycle UI follows `FEATURES/DESIGN_SYSTEM.md`. Use its PMD-inspired 
 
 ## 17. Implementation sequence and gates
 
-1. **Source inventory and fixtures:** freeze the exact 0.123.0 baseline; inventory all serialized data and create representative fixtures.
-2. **Database spike:** validate SQLDelight/SQLite with current KMP toolchain, Android lifecycle, backup snapshot, and migration tests.
-3. **Core schema and repository contracts:** implement app metadata, module ownership boundaries, shared Pokémon/economy contracts, and transaction coordinator.
-4. **Legacy importer:** implement `save.json` and `care.json` parsing, ID mapping, deterministic imports, and validation before any cutover.
-5. **Atomic reward/outbox foundation:** make completion, reward ledger, balances, Pokémon grants, and events transactional.
-6. **Domain migration:** migrate modules incrementally behind repository APIs while retaining one database and clear module ownership.
-7. **Backup/restore and recovery:** validate full archive round trips, interrupted restore, corruption, and low-storage handling.
-8. **Cloud-path retirement:** remove Supabase/account/sync dependencies only after local migration, backup, and offline acceptance pass.
-9. **Release verification:** run full tests, migration fixtures, device tests, UI/accessibility review, and recovery drills.
+The source inventory and fixtures, the database spike, the core schema and repositories, the legacy importer, the atomic reward/outbox foundation, the cutover and the module table moves are done. What remains, in order:
+
+1. **Domain migration:** the typed repositories per module (section 7.3.0), keeping one database and clear module ownership.
+2. **Backup archive and recovery:** the full archive of section 10.2 (database snapshot, attachments, checksums, optional encryption), a restore screen with preview, user-chosen backup destinations, per-kind export of a backup, interrupted-restore, corruption and low-storage drills on a device.
+3. **Release verification:** full tests, migration fixtures, device tests, UI/accessibility review and recovery drills.
 
 Do not broaden module implementation while the data foundation or migration gate is failing. The exact feature roadmap remains in `IMPLEMENTATION_GUIDE.md`.
 
