@@ -114,7 +114,6 @@ private fun HealMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             ModuleLeadStage(model, Module.HEAL, model.data.player.healLead, model.store.moduleEvent(app.pokeplan.app.GameStore.HEAL_LOG_PREFIX), openPokemon = openPokemon)
-            RewardBox(model)
             TutorialCard(model, Tutorials.HEAL_WALK, healActivities = data.activities.size)
             TodayCard(model)
             MenuGrid(
@@ -203,7 +202,6 @@ private fun ActivityView(model: AppModel) {
         if (out.record == null) message = (out.refused ?: "That could not be saved.") to NoticeTone.WARNING
         else { message = null; model.say("Saved."); note = ""; distance = ""; more = false; model.haptic(); model.effect(Sfx.HEAL) }
     }
-    RewardBox(model)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("What did you do?")
@@ -309,7 +307,6 @@ private fun HydrationView(model: AppModel) {
         message = if (out.record == null) out.refused else null
         if (out.record != null) { model.haptic(); model.effect(Sfx.HEAL); custom = "" }
     }
-    RewardBox(model)
     val total = HealRules.hydrationOn(data, day)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {

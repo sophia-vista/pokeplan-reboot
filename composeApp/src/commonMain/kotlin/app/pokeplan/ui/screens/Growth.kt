@@ -257,7 +257,6 @@ internal fun GoalsView(model: AppModel) {
 @Composable
 internal fun ReviewView(model: AppModel) {
     val store = model.store
-    RewardBox(model)
     if (!store.canReview()) {
         TextBox { Text("This week's review is done. See you next week!", style = MaterialTheme.typography.bodyLarge) }
         return

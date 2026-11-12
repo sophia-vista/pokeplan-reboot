@@ -152,7 +152,6 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             ModuleLeadStage(model, Module.PLAN, data.player.planLead, store.moduleEvent(null), resting = session != null, openPokemon = openPokemon)
-            RewardBox(model)
             TutorialCard(model, app.pokeplan.app.Tutorials.PLAN_FOCUS)
             PlanPartyPanel(model, openPokemon)
             SectionLabel("Today", icon = PlanSection.PLANNER.icon)

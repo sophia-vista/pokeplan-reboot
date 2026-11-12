@@ -80,7 +80,6 @@ fun FocusScreen(model: AppModel, openPokemon: ((String) -> Unit)? = null, onBack
 /** How the last session ended: the rewards, then a way back in after a cold egg, or a way to meet the one that hatched. */
 @Composable
 private fun Ends(model: AppModel, openPokemon: ((String) -> Unit)?) {
-    RewardBox(model)
     val end = model.data.lastFocusEnd
     // The session's own sound when it ends: the success jingle (the egg's when it hatched), or the soft error.
     LaunchedEffect(end) { if (end != null) model.effect(if (!end.completed) Sfx.ERROR else if (model.data.rewardLog.lastOrNull()?.rewards?.any { it is Reward.Hatched } == true) Sfx.EGG_GET else Sfx.FOCUS_END) }

@@ -134,7 +134,6 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         ) {
             // What to do comes before the party and the visitors: a new player sees "Add a routine" without scrolling past six empty slots.
             CareBuddy(model, openPokemon)
-            RewardBox(model)
             TutorialCard(model, app.pokeplan.app.Tutorials.CARE_BREATH, careBreaks = care.breaks.size)
             SectionLabel("Today", icon = CareSection.ROUTINES.icon)
             if (today.isEmpty()) {
@@ -351,7 +350,6 @@ private fun RoutinesView(model: AppModel) {
         title = ""; more = false; time = null; days = emptySet()
     }
 
-    RewardBox(model)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -508,7 +506,6 @@ private fun CalmBreakView(model: AppModel) {
         if (start != null) StatusIcon(StatusKind.SLEEP, (3 * LocalDensity.current.density).roundToInt(), Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.XXL + 96.dp).offset(x = 36.dp), loop = true, animate = !reduce)
     }
     if (start == null) {
-        RewardBox(model)
         result?.let { line -> TextBox { Text(line, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) } }
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -663,7 +660,6 @@ private fun SkillsView(model: AppModel) {
     val practised = care.practisedToday()
     val skill = open?.let { Skills.byId(it) }
 
-    RewardBox(model)
     if (skill != null) {
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {

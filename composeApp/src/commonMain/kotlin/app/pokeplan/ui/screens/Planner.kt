@@ -132,7 +132,6 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
                     Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
                     verticalArrangement = Arrangement.spacedBy(Spacing.L),
                 ) {
-                    RewardBox(model)
                     QuickAddBox(model, View.INBOX)
                     // Smart lists, after Apple Reminders and Things: each tile says how many it holds, so the menu is also a glance at the day.
                     ListTiles(
@@ -156,7 +155,6 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
         }
 
         SectionScaffold(current.label, null, onBack = { view = null }, icon = current.icon, color = ModuleAccent.PLAN.header) {
-            RewardBox(model)
             when (current) {
                 View.TARGETS -> FrequencyView(model)
                 View.DAY -> DayView(model, pendingIds, startWeek)
