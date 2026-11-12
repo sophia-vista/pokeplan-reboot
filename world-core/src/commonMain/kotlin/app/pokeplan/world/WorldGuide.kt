@@ -4,7 +4,7 @@ package app.pokeplan.world
 data class NextStep(val title: String, val reason: String, val dungeonId: String? = null)
 
 /**
- * The World landing's one suggestion (docs/pokelife/MODULES/WORLD.md, "show the next recommended destination and why"): the first open dungeon
+ * The World landing's one suggestion (docs/pokelife/MODULES/WORLD.md section 14, "show the next recommended destination and why"): the first open dungeon
  * not yet cleared, else what the nearest closed dungeon is waiting for, else a line about what an all-cleared World still offers.
  * Plain data in, plain words out, so it is tested without a screen.
  */

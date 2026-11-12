@@ -1232,7 +1232,7 @@ class ScreenshotTest {
         collection("collection-xl-menu", -1, fontScale = 1.3f)
     }
 
-    /** Every control in every state, light and dark and at 130% text: the design system on one page (docs/pokelife/FEATURES/DESIGN_SYSTEM.md, Controls). */
+    /** Every control in every state, light and dark and at 130% text: the design system on one page (docs/pokelife/FEATURES/DESIGN_SYSTEM.md section 5.6). */
     @Test
     fun componentGallery() {
         for ((suffix, dark, scale) in listOf(Triple("", false, 1f), Triple("-dark", true, 1f), Triple("-xl", false, 1.3f))) {

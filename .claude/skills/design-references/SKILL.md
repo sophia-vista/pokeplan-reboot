@@ -79,7 +79,7 @@ Clonix (a dark full-screen menu of large words), Aveon (a cream side panel of pl
 full-height photo), Orchid (a floating pill nav over a blurred colour background).
 
 **Take this**
-- Static: the four bottom tabs, each an icon and a label, the selected one filled (ui-ux-brief §4). Nothing nested.
+- Static: the four bottom tabs, each an icon and a label, the selected one filled (DESIGN_SYSTEM.md 5.5). Nothing nested.
 - Clonix's full-screen list of large words is close to our section menus: `MenuGrid`'s big cards with real item
   icons, one tap to a section, Back to return.
 - Breadcrumbs, made small: `SectionScaffold`'s title and Back, and the system back gesture, always.
@@ -118,7 +118,7 @@ poster), Tines and Numa (giant headlines with 3D objects).
 
 **Take this**
 - One action per screen that matters, as a `PixelButton`: Start focus, Add task, Hatch. Everything else is a plain
-  row or a secondary button (ui-ux-brief §4, Surfaces and depth).
+  row or a secondary button (DESIGN_SYSTEM.md 5.7, Surfaces and depth).
 - plnty's single field with one button: naming the trainer, quick-add's title field, a nickname. The rest of the
   form waits behind "more" (design.md, Planner).
 - Augustus's white space: a reward sheet shows what was earned (`RewardBox`, real item icons), one line, one Done.
@@ -140,7 +140,7 @@ Ethan+ AI ("Nothing at this address."), Sruthi (tic-tac-toe), Ente (a game), UPC
   ("The PC is empty", then what fills it).
 - Speak in the game's own terms (WithUPI, Tribe AI): the party, the PC, the Bag, an egg. Say what still works, e.g.
   that progress is kept on the device while offline, and never blame the person.
-- Every list has an empty, a loading and an error state (ui-ux-brief §9).
+- Every list has an empty, a loading and an error state (DESIGN_SYSTEM.md 6.10).
 
 **Not that**
 - Games inside an error screen, glitch effects, giant numerals, dark dead ends with no way back.

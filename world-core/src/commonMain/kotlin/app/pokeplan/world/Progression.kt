@@ -3,7 +3,7 @@ package app.pokeplan.world
 import app.pokeplan.core.pokemon.Items
 
 /**
- * The long-term tracks (docs/pokelife/MODULES/WORLD.md). Each is a small, optional bonus that never changes how long a floor
+ * The long-term tracks (docs/pokelife/MODULES/WORLD.md section 14). Each is a small, optional bonus that never changes how long a floor
  * takes (so offline progress stays the same however often the app settles); all numbers are *(tune)*.
  */
 
@@ -71,7 +71,7 @@ object SwapShop {
 }
 
 /**
- * Abilities that help a skill (docs/pokelife/MODULES/WORLD.md: skills tie to what a Pokémon can do; the Dex has abilities, not moves).
+ * Abilities that help a skill (docs/pokelife/MODULES/WORLD.md section 14: skills tie to what a Pokémon can do; the Dex has abilities, not moves).
  * Each member of a team whose ability is on a skill's list counts as one level of that skill while the team explores, up to
  * [MAX_BONUS] levels (the skill's own level may go past 10 that way). *(tune)*
  */

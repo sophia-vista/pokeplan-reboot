@@ -1535,7 +1535,7 @@ class GameStore(
     fun isFavorite(id: String): Boolean = id in data.favorites
 
     /** Stars or unstars a Pokémon; a starred one cannot be transferred. */
-    // ----- World: the dungeon game (docs/pokelife/MODULES/WORLD.md). Its rules are in world-core; this keeps its save and moves what it finds into the shared collection and Bag -----
+    // ----- World: the dungeon game (docs/pokelife/MODULES/WORLD.md section 14). Its rules are in world-core; this keeps its save and moves what it finds into the shared collection and Bag -----
 
     /** What the teams brought back since the player last dismissed the report (kept in memory only: the reward log is the record), or null when nothing came. */
     private var worldSummary: ReportSummary? = null
@@ -1579,7 +1579,7 @@ class GameStore(
         return report
     }
 
-    /** The story's end: the Guardian, Primal Dialga, joins the Guardian collection once (docs/pokelife/MODULES/WORLD.md). The mastery bonus is [app.pokeplan.world.Story.GUARDIAN_BONUS]. */
+    /** The story's end: the Guardian, Primal Dialga, joins the Guardian collection once (docs/pokelife/MODULES/WORLD.md section 14). The mastery bonus is [app.pokeplan.world.Story.GUARDIAN_BONUS]. */
     private fun worldGuardian() {
         val w = data.world
         if (!w.guardianDone || w.guardianGranted) return
@@ -1760,7 +1760,7 @@ class GameStore(
         data.world.recall(team)?.let { next -> update { it.copy(world = next) } }
     }
 
-    /** Recruits the find at [index] into the shared collection: the same persistent Pokémon as any other (docs/pokelife/MODULES/WORLD.md). Null when there is none. */
+    /** Recruits the find at [index] into the shared collection: the same persistent Pokémon as any other (docs/pokelife/MODULES/WORLD.md section 14). Null when there is none. */
     fun worldRecruit(index: Int): OwnedPokemon? {
         val find = data.world.finds.getOrNull(index) ?: return null
         val mon = grantPokemon(find.speciesId, WORLD_SOURCE, Origin.How.WORLD)

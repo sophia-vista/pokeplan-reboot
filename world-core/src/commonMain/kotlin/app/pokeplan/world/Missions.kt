@@ -3,7 +3,7 @@ package app.pokeplan.world
 import app.pokeplan.core.pokemon.Items
 import kotlinx.serialization.Serializable
 
-/** What a mission asks (docs/pokelife/MODULES/WORLD.md). */
+/** What a mission asks (docs/pokelife/MODULES/WORLD.md section 14). */
 enum class MissionKind(val label: String) {
     EXPLORE("Explore"), COLLECT("Find items"), RESCUE("Rescue"), DELIVER("Deliver"), ESCORT("Escort"), DEFEAT("Defeat"),
     INVESTIGATION("Investigate"), CHALLENGE("Challenge"), STORY("Story"),
@@ -13,7 +13,7 @@ enum class MissionKind(val label: String) {
  * A job on the board. [EXPLORE] is done when any team reaches [floor] of [dungeonId] while it is accepted; [COLLECT] when
  * [count] berries have been found anywhere; [RESCUE] when a team reaches [floor] of [dungeonId], and the lost Pokémon
  * ([rescued], a species id) then waits among the Finds; [ESCORT] is an Explore job that only counts for a team of at least [count]
- * Pokémon, and [DEFEAT] one that only counts for a team whose power is at least [count] (docs/pokelife/MODULES/WORLD.md). The three kinds of WORLD.md 2.4:
+ * Pokémon, and [DEFEAT] one that only counts for a team whose power is at least [count] (docs/pokelife/MODULES/WORLD.md section 14). The three kinds of WORLD.md 2.4:
  * [INVESTIGATION] is done when [count] side paths (floor events a team member could open) were opened in [dungeonId] while it is accepted;
  * [CHALLENGE] is an Explore job that only counts for a team of at most [count] Pokémon (a small team on purpose, the opposite of an Escort);
  * [STORY] is done when the story of [dungeonId]'s region has opened chapter [count] (its progress is the story's own, not floors). A job that is [once] never comes back; the others are repeatable.

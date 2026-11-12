@@ -4,7 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** The numbers the town draws its weather by come from Red Rescue Team's own code and files (docs/pokelife/evidence/WEATHER-original.md). */
+/** The numbers the town draws its weather by come from Red Rescue Team's own code and files (docs/pokelife/FEATURES/LAUNCHER.md section 4.4). */
 class GbaWeatherTest {
     @Test
     fun snowAndBlizzardFramesLastAsLongAsTheGamesDurationsSay() {

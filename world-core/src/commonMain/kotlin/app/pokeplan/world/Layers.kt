@@ -1,7 +1,7 @@
 package app.pokeplan.world
 
 /**
- * A layer of the World map (docs/pokelife/MODULES/WORLD.md, "Kanto, the first region layer"): the two Mystery Dungeon arcs (Rescue Team and
+ * A layer of the World map (docs/pokelife/MODULES/WORLD.md section 14, "Kanto, the first region layer"): the two Mystery Dungeon arcs (Rescue Team and
  * Explorers) and each mainline region are layers side by side. Every layer is open from the first day; a layer has its own dungeons, story chapters and
  * Guardian, while teams, rank, Poké and the Bag are shared.
  */

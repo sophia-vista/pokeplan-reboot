@@ -37,7 +37,7 @@ enum class RegionLook(val scene: String, private val module: ModuleAccent) {
     /** A meadow: grass and Care's green. */
     CARE(BuddyScene.CARE, ModuleAccent.CARE),
 
-    /** The World game (docs/pokelife/MODULES/WORLD.md): a forest to begin in, and violet at the end of the rainbow. */
+    /** The World game (docs/pokelife/MODULES/WORLD.md section 14): a forest to begin in, and violet at the end of the rainbow. */
     WORLD("forest", ModuleAccent.WORLD),
 
     /** The Heal module (docs/pokelife MODULES/HEAL.md): an open route, and teal. A utility surface: the scene is only a quiet backdrop. */
