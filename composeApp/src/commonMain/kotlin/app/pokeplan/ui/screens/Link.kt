@@ -87,42 +87,6 @@ private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalizati
 @Composable
 private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
 
-/** A plain list row: a lead, a title with one quiet line under it, a trail, all on one centre line, with a 48 dp target. No box of its own. */
-@Composable
-private fun LRow(
-    title: String, detail: String = "", lead: @Composable () -> Unit = {}, trail: @Composable () -> Unit = {},
-    onClick: (() -> Unit)? = null, onClickLabel: String? = null,
-) {
-    Row(
-        Modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target)
-            .let { if (onClick != null) it.clip(PixelShape).focusRing(PixelShape).clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick) else it }
-            .padding(vertical = Spacing.XS),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
-    ) {
-        lead()
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            if (detail.isNotEmpty()) Text(detail, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        }
-        trail()
-    }
-}
-
-@Composable
-private fun Tabs(labels: List<String>, selected: Int, onSelect: (Int) -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-        labels.forEachIndexed { i, l -> Chip(l, i == selected, { onSelect(i) }, Modifier.weight(1f)) }
-    }
-}
-
-@Composable
-private fun DateField(label: String, value: LocalDate?, onChange: (LocalDate?) -> Unit, today: LocalDate) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        PixelDateField(value, today, accent, onChange, presets = listOf("Today" to 0, "Tomorrow" to 1, "In a week" to 7), noneLabel = "None")
-    }
-}
-
 // ----- Moving between sections ------------------------------------------------------------------------------------------------
 
 private class LinkJump(val section: LinkSection, val id: String? = null, val tab: Int? = null)
@@ -246,7 +210,7 @@ private fun LinkOverview(model: AppModel) {
             if (due.isNotEmpty()) {
                 SectionLabel("Follow-ups")
                 due.take(5).forEach { f ->
-                    LRow(
+                    RecordRow(
                         f.title, followUpLine(data, f, today),
                         lead = { PixelIconButton("check", "Mark ${f.title} done", { link.complete(f.id); model.haptic() }, accent) },
                         onClick = { go(model, LinkSection.FOLLOW_UPS, f.id, 0) }, onClickLabel = "Open follow-ups",
@@ -258,7 +222,7 @@ private fun LinkOverview(model: AppModel) {
                 SectionLabel("Dates")
                 soon.take(4).forEach { u ->
                     val who = u.date.personId?.let { id -> data.people.firstOrNull { it.id == id }?.let(LinkRules::displayName) }
-                    LRow(u.date.title, listOfNotNull(who, dateLine(u)).joinToString(" · "), onClick = { go(model, LinkSection.DATES, u.date.id) }, onClickLabel = "Open dates")
+                    RecordRow(u.date.title, listOfNotNull(who, dateLine(u)).joinToString(" · "), onClick = { go(model, LinkSection.DATES, u.date.id) }, onClickLabel = "Open dates")
                 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -281,7 +245,7 @@ private fun LinkSearch(model: AppModel) {
             PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search Link", singleLine = true)
             if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             hits.forEach { h ->
-                LRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); query = "" }, onClickLabel = "Open")
+                RecordRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); query = "" }, onClickLabel = "Open")
             }
         }
     }
@@ -346,7 +310,7 @@ private fun PeopleView(model: AppModel) {
             val upTo = maxOf(shown, people.indexOfFirst { it.id == openId } + 1)
             people.take(upTo).forEachIndexed { i, p ->
                 if (i > 0) Rule()
-                LRow(
+                RecordRow(
                     LinkRules.displayName(p), listOfNotNull(p.category.takeIf { it.isNotBlank() }, p.organization.takeIf { it.isNotBlank() }).joinToString(" · "),
                     onClick = { openId = if (openId == p.id) null else p.id }, onClickLabel = if (openId == p.id) "Close the profile" else "Open the profile",
                 )
@@ -366,7 +330,7 @@ private fun PersonProfile(model: AppModel, p: Person, firstTab: Int?, onClose: (
             PersonForm(model, p, onDone = { editing = false })
             return@Column
         }
-        Tabs(listOf("Overview", "Notes", "Follow-ups"), tab) { tab = it }
+        ModuleTabs(listOf("Overview", "Notes", "Follow-ups"), tab, accent) { tab = it }
         when (tab) {
             0 -> PersonOverview(model, p, onEdit = { editing = true }, onClose = onClose)
             1 -> PersonNotes(model, p)
@@ -411,10 +375,10 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
         "Called" to p.preferred, "Phone" to p.phone, "Email" to p.email, "Organization" to p.organization, "Role" to p.role, "Address" to p.address,
     ).filter { it.second.isNotBlank() }
     if (lines.isEmpty() && p.tags.isEmpty() && dates.isEmpty() && next == null) Text("Only a name so far. Add what is useful, nothing more.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-    lines.forEach { (k, v) -> LRow(v, k) }
+    lines.forEach { (k, v) -> RecordRow(v, k) }
     if (p.tags.isNotEmpty()) Text(p.tags.joinToString("  ") { "#$it" }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-    dates.forEach { d -> LinkRules.next(d, today)?.let { u -> LRow(d.title, dateLine(u)) } ?: LRow(d.title, "${d.day}/${d.month}${d.year?.let { "/$it" }.orEmpty()}") }
-    next?.let { LRow(it.title, dueText(it, today) ?: "Next follow-up") }
+    dates.forEach { d -> LinkRules.next(d, today)?.let { u -> RecordRow(d.title, dateLine(u)) } ?: RecordRow(d.title, "${d.day}/${d.month}${d.year?.let { "/$it" }.orEmpty()}") }
+    next?.let { RecordRow(it.title, dueText(it, today) ?: "Next follow-up") }
     val contact = model.phone?.takeIf { it.canContact }
     if (contact != null && (p.phone.isNotBlank() || p.email.isNotBlank())) Actions {
         if (p.phone.isNotBlank()) {
@@ -453,7 +417,7 @@ private fun PersonNotes(model: AppModel, p: Person) {
     if (notes.isEmpty()) Text("No notes yet.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     notes.forEachIndexed { i, n ->
         if (i > 0) Rule()
-        LRow(
+        RecordRow(
             n.text.lineSequence().first(), "${dayOf(n.atMillis).short()}${if (n.text.contains('\n')) " · …" else ""}",
             onClick = { editing = if (editing == n.id) null else n.id; draft = n.text }, onClickLabel = if (editing == n.id) "Close the note" else "Open the note",
         )
@@ -481,13 +445,13 @@ private fun PersonFollowUps(model: AppModel, p: Person) {
         PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.weight(1f), placeholder = "Add a follow-up", singleLine = true, keyboardOptions = sentenceKeys)
         PixelButton("Add", { if (link.addFollowUp(title, p.id, due).record != null) { title = ""; due = null; model.haptic() } }, color = accent, enabled = title.isNotBlank())
     }
-    DateField("Day, optional", due, { due = it }, today)
+    DateField("Day, optional", due, { due = it }, today, accent, optional = true)
     val open = link.openFollowUps(p.id)
     val history = link.followUpHistory(p.id).take(10)
     if (open.isEmpty() && history.isEmpty()) Text("Nothing to follow up.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     open.forEach { f ->
         val task = planTask(model, f)
-        LRow(
+        RecordRow(
             f.title, listOfNotNull(task?.let(::planWord), dueText(f, today)).joinToString(" · "),
             lead = { if (task == null) PixelIconButton("check", "Mark ${f.title} done", { link.complete(f.id); model.haptic() }, accent) },
             onClick = { openId = if (openId == f.id) null else f.id }, onClickLabel = if (openId == f.id) "Hide options" else "Show options",
@@ -495,7 +459,7 @@ private fun PersonFollowUps(model: AppModel, p: Person) {
         if (openId == f.id) FollowUpOptions(model, f) { openId = null }
     }
     history.forEach { f ->
-        LRow(f.title, closedLine(f, today), trail = { if (planTask(model, f) == null) PixelButton("Reopen", { link.reopen(f.id) }, color = Pixel.InkSoft, compact = true) })
+        RecordRow(f.title, closedLine(f, today), trail = { if (planTask(model, f) == null) PixelButton("Reopen", { link.reopen(f.id) }, color = Pixel.InkSoft, compact = true) })
     }
 }
 
@@ -564,7 +528,7 @@ private fun DatesView(model: AppModel) {
                 if (i > 0) Rule()
                 val who = d.personId?.let { id -> data.people.firstOrNull { it.id == id }?.let(LinkRules::displayName) }
                 val line = if (u != null) dateLine(u) else "Passed · ${LinkRules.observed(d.month, d.day, d.year ?: today.year).short()}"
-                LRow(d.title, listOfNotNull(who, line).joinToString(" · "), onClick = { openId = if (openId == d.id) null else d.id }, onClickLabel = if (openId == d.id) "Close the date" else "Open the date")
+                RecordRow(d.title, listOfNotNull(who, line).joinToString(" · "), onClick = { openId = if (openId == d.id) null else d.id }, onClickLabel = if (openId == d.id) "Close the date" else "Open the date")
                 if (openId == d.id) Column(Modifier.padding(bottom = Spacing.S)) { DateForm(model, d, onDone = { openId = null }) }
             }
         }
@@ -676,11 +640,11 @@ private fun FollowUpsView(model: AppModel) {
             PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.weight(1f), placeholder = "Add a follow-up", singleLine = true, keyboardOptions = sentenceKeys)
             PixelButton("Add", { if (link.addFollowUp(title, null, newDue).record != null) { title = ""; newDue = null; model.haptic() } }, color = accent, enabled = title.isNotBlank())
         }
-        DateField("Day, optional", newDue, { newDue = it }, today)
+        DateField("Day, optional", newDue, { newDue = it }, today, accent, optional = true)
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Tabs(listOf("Open", "History"), tab) { tab = it; openId = null }
+            ModuleTabs(listOf("Open", "History"), tab, accent) { tab = it; openId = null }
             val rows = if (tab == 0) link.openFollowUps() else link.followUpHistory().take(60)
             if (rows.isEmpty()) PixelTitle(if (data.followUps.isEmpty()) "No follow-ups yet" else if (tab == 0) "Nothing open" else "Nothing here yet")
             rows.forEachIndexed { i, f ->
@@ -688,7 +652,7 @@ private fun FollowUpsView(model: AppModel) {
                 val task = planTask(model, f)
                 val detail = if (tab == 0) listOfNotNull(task?.let(::planWord), followUpLine(data, f, today).takeIf { it.isNotEmpty() }).joinToString(" · ")
                 else listOfNotNull(f.personId?.let { id -> data.people.firstOrNull { it.id == id }?.let(LinkRules::displayName) }, closedLine(f, today)).joinToString(" · ")
-                LRow(
+                RecordRow(
                     f.title, detail,
                     lead = { if (f.status == FollowUpStatus.OPEN && task == null) PixelIconButton("check", "Mark ${f.title} done", { link.complete(f.id); model.haptic() }, accent) },
                     trail = { if (f.status != FollowUpStatus.OPEN && task == null) PixelButton("Reopen", { link.reopen(f.id) }, color = Pixel.InkSoft, compact = true) },
@@ -718,7 +682,7 @@ private fun FollowUpOptions(model: AppModel, f: FollowUp, onDone: () -> Unit) {
             return@Column
         }
         PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
-        DateField("Day, optional", due, { due = it }, model.store.today)
+        DateField("Day, optional", due, { due = it }, model.store.today, accent, optional = true)
         PersonPicker(data.people, personId) { personId = it }
         PixelField(note, { note = it.take(LinkRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note, optional", minLines = 2, keyboardOptions = sentenceKeys)
         Actions {

@@ -281,10 +281,15 @@ class MintStore(
         return Logged(b)
     }
 
-    fun updateBudgetAmount(id: String, plannedMinor: Long): Boolean {
-        if (MintRules.checkAmount(plannedMinor) is Check.Refused) return false
-        update { d -> d.copy(budgets = d.budgets.map { if (it.id == id) it.copy(plannedMinor = plannedMinor) else it }) }
-        return true
+    /** Changes a budget's planned amount and its period. Spending is derived, so nothing else moves; a second budget for the same category and period is refused. */
+    fun updateBudget(id: String, plannedMinor: Long, period: BudgetPeriod): Logged<Budget> {
+        val old = data.budgets.firstOrNull { it.id == id } ?: return Logged(null, "That budget is gone.")
+        (MintRules.checkAmount(plannedMinor) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        if (data.budgets.any { it.id != id && it.status != PlanStatus.ARCHIVED && it.currency == old.currency && it.period == period && it.categoryId == old.categoryId })
+            return Logged(null, "There is already a budget for that.")
+        val next = old.copy(plannedMinor = plannedMinor, period = period)
+        update { d -> d.copy(budgets = d.budgets.map { if (it.id == id) next else it }) }
+        return Logged(next)
     }
 
     fun setBudgetStatus(id: String, status: PlanStatus) = update { d -> d.copy(budgets = d.budgets.map { if (it.id == id) it.copy(status = status) else it }) }
