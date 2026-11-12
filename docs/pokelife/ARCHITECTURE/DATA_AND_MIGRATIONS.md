@@ -34,7 +34,7 @@ The JSON design had four failure windows: the in-memory value was set before the
 
 ### 2.2 Source material and precedence
 
-Use the latest approved files under `docs/pokelife/` as product and module authorities. `docs/ecosystem.md`, `docs/design.md` and historical progression documents are evidence of what the code does, not competing authorities. The canonical shared Pokémon domain specification is `FEATURES/POKEMON_ECOSYSTEM.md`; this document owns physical persistence, repository boundaries, transactions, backup/restore, migration execution and recovery, while the Pokémon Ecosystem document owns shared Pokémon domain semantics.
+Use the latest approved files under `docs/pokelife/` as product and module authorities. `docs/design.md` (what the code does today) and historical progression documents are evidence, not competing authorities. The canonical shared Pokémon domain specification is `FEATURES/POKEMON_ECOSYSTEM.md`; this document owns physical persistence, repository boundaries, transactions, backup/restore, migration execution and recovery, while the Pokémon Ecosystem document owns shared Pokémon domain semantics.
 
 ## 3. Target application architecture
 
@@ -131,8 +131,8 @@ SQLDelight 2.4.1 on SQLite with the Android driver was confirmed by a spike (Kot
 - **Migrations are checked by the build:** `schemaOutputDirectory` is set, every released schema is committed as `data/databases/N.db`, `verifyMigrations` is on and `jvmTest` depends on `verifyCommonMainDataDbMigration`. A schema edit without a numbered `.sqm` migration fails the build.
 - **SQLite on Android 8 is 3.18:** no upsert, and `VACUUM INTO` (3.27) is not used in common code. The Android backup is a WAL checkpoint, then a copy, under the single writer. A manual `BEGIN` over a file-backed JDBC driver is unsound (the driver may give the next statement another connection), so the store always uses the driver's own transaction.
 - **Process:** widgets, reminder receivers and notification actions run in the app's single process (no `android:process` in the manifest) and use the same repositories through one process-wide handle, so section 4.3 needs no multi-process SQLite. Moving any of them to another process reopens that decision.
-- **Ownership in code:** shared tables (`owned_pokemon`, `pokemon_place`, `dex_history`, `bag_stack`, `currency_balance`, `reward_event`, `reward_ledger_entry`, `outbox_event`, `processed_event`, `migration_history`, `app_meta`) are written only by the shared Pokémon and economy service; a module asks for an acquisition, grant or spend and never inserts `owned_pokemon` or changes a balance. Module tables are written only by that module's repository. Repositories call the transaction coordinator, never `SqlDriver`; generated queries stay `internal` to `:data`; projections are views or rebuilt queries, never a second editable copy.
-- **IDs and time:** every legacy ID is kept as the `TEXT` primary key; instants are epoch milliseconds; legacy local dates stay ISO text. Module ids in tables are upper case (`PLAN`, `CARE`, ...); the importer maps the legacy `plan` and `care`.
+- **Ownership in code:** shared tables (`owned_pokemon`, `pokemon_place`, `dex_history`, `bag_stack`, `currency_balance`, `reward_event`, `reward_ledger_entry`, `outbox_event`, `processed_event`, `migration_history`, `app_meta`) are written only by the shared Pokémon and economy service, module tables only by that module's repository; repositories call the transaction coordinator, never `SqlDriver`; generated queries stay `internal` to `:data`.
+- **IDs:** every legacy ID is kept as the `TEXT` primary key; module ids in tables are upper case (`PLAN`, `CARE`, ...), the importer maps the legacy `plan` and `care`; legacy local dates stay ISO text.
 - **Device self-check:** debug builds have a second launcher icon, **DB check** (`DeviceSelfCheck`). It runs on a throwaway `selfcheck.db`, never on `pokelife.db` or the save: SQLite version, foreign keys, journal mode, rollback, a refused orphan row, 5000 timed inserts, checkpoint then backup copy then reopen, and a reopen after close. It passed on the owner's phone on 6 November 2026 (build 217) and the owner chose not to schedule further formal device checks ("no need to test, just go"). **Still unproven on a device:** low storage, a process kill during a write, the 600,000-round passphrase timing, Keystore key creation on a phone without a hardware keystore, and the Android cloud-restore path.
 
 ## 5. Domain ownership and authoritative records
@@ -169,7 +169,7 @@ Every canonical record has exactly one owner. Cross-module screens use read-only
 
 ### 5.2 Read models and projections
 
-A dashboard or cross-module view may combine data from multiple repositories into a derived read model. A projection is rebuildable and is never a second editable canonical record. Store a projection only when performance requires it, mark it as derived, and define invalidation/rebuild behavior. A linked record stores the target module and opaque target ID, not a serialized copy of the target record.
+A dashboard or cross-module view may combine data from several repositories into a derived read model. A projection is rebuildable and is never a second editable canonical record; store one only when performance requires it, mark it derived, and define invalidation/rebuild. A linked record stores the target module and an opaque target ID, not a copy of the target.
 
 ## 6. Shared contracts and services
 
@@ -241,7 +241,7 @@ The following is a logical catalogue, not a mandate to create one table for ever
 | `attachment` | Stable attachment ID, private relative path, media type, size, checksum, owner module/reference; deletion state |
 | `migration_history` | Applied migration version, checksum, start/completion state, and outcome |
 
-### 7.3.0 Decision: the app keeps reading one `AppData` through the split *(owner delegated, 7 November 2026, REP-014)*
+### 7.3.0 Decision: the app keeps reading one `AppData` through the split *(owner delegated, 7 November 2026)*
 
 The shared Pokémon, Bag and ledger tables are the live authority since schema 6, and the app reaches them **the way it reaches PLAN's tables**: `LiveDocuments` splits every save into PLAN's part, the player's part and the rest, writes the first two as rows and puts the save back together on a read, so `GameStore`, the reward engine and every screen still read and write one `AppData` and the rules stay pure and tested. The reasons: all of them are written against `AppData` and tested that way, and the typed repositories cannot be adopted one module at a time while PLAN, CARE, WORLD, GEAR and the widgets all read the Pokémon list. The typed repositories (`PokemonRepository`, `EconomyRepository`) are the tables' own API and are used by the split and the importer, not yet by the app. `app-core` also targets web, which has no SQLite, so a typed repository port must live behind an interface there.
 
@@ -298,8 +298,6 @@ Detailed fields remain in module specifications. The data layer should accommoda
 **Activation** (`LiveDocuments.move<Module>ToTables`, run on every start, a no-op once done). In one transaction: (1) for the Pokémon move only, the save goes through `LiveDocuments.normalizer` (`GameStore.normalizeDocument`, set by `LiveStore`: numbers in range, the Poké merge recorded, one place per Pokémon, habits merged), so an older save is brought up to date exactly as loading would; (2) the old row is kept whole as `aside:<document>:<purpose>:<millis>` (for example `aside:save:pokemon:<millis>`, `aside:care:tables:<millis>`); (3) the rows are written, with the balances as **one opening-balance event** (`live:save:opening-balance`, source `MIGRATION`, the Poké merge's two legacy values in its metadata), nothing else paid and nothing in the outbox; (4) the marker is set in `app_meta` (`care_store=tables`, `plan_store=tables`, `pokemon_store=tables`); (5) the whole document is read back and compared with the original (`LiveDocuments.canonical`: empty lists, the order of a set and a Bag entry of zero are not told apart) and the ledger reconciles. Any difference, a Pokémon in two places, a buddy or Guardian that is not owned, or tables that already hold something (a legacy import) rolls everything back; the old row stays the live save and the move is tried again at the next start. After activation nothing writes the old row (one authority). HEAL, MINT, HOME and LINK have no earlier document: activation only sets the marker and, if a restore left a document row of that name, imports it, reads it back equal and keeps the row aside.
 
 **Backup and restore through the split.** The daily backup assembles `save.json`, `care.json` and the module documents from all their parts; `replaceAll` passes a restored save through the same check and split, so an old 0.123.0 backup restores without loss, and a save the tables cannot represent is refused and the current save kept. A backup without a module's document (an older one) leaves that module alone and never wipes it. A build older than the schema refuses the file (`NewerSchemaException`); the way back is the newest backup in `filesDir/backups/`, whose documents are in the old shape, and the kept-aside rows.
-
-**Known cost.** A write reads all rows of the tables it diffs (a few hundred to a few thousand rows); not measured on a device.
 
 ### 7.5 Constraints and indexes
 
@@ -462,13 +460,13 @@ Use app-private storage for working data. Support a user-selected document desti
 
 **Portable (passphrase) backup.** A *separate, opt-in* file format, so the daily backups and the tables keep needing no passphrase. `PassphraseSealer` (`p1.` texts, `Pbkdf2Sealer`): the passphrase is stretched with PBKDF2-HMAC-SHA256 (600,000 rounds, OWASP 2023; random salt; the iteration count is stored in each text so it can be raised later, at most 5,000,000 accepted) into the key of AES-256-GCM, with a context string as associated data. Minimum 10 characters. The passphrase is never stored and a lost one cannot be recovered; the screen says so before it is used. `open` returns null for a wrong passphrase or a damaged text and never throws. One passphrase seals Mint and Heal in the same file. `BackupBundle.stage` accepts `p1.` texts as a Mint or Heal document; restore converts a portable document to plain JSON in memory only and lets `LiveDocuments.replaceAll` seal it with the phone's key as it writes. Only a fresh copy or an automatic backup can be made portable, not a file already saved. The 600,000-round timing is not measured on a device (it runs on a worker thread). The way to move Mint or Heal between phones without a passphrase is the module's own Export, a readable file.
 
-**Tests that must keep existing.** A clear install is sealed once, reads back equal and shows nothing in any stored text; kept-aside copies are sealed; no key leaves Heal in clear and working, and a sealed Heal with no key reads as locked and writes nothing; another phone's key sets rows aside sealed before any write; a snapshot and a backup file hold no Mint or Heal in clear and restore on the same phone; a backup from another key changes nothing; an older build's clear backup is sealed on restore; a passphrase backup opens on another phone only with the passphrase; a module that cannot be opened here cannot be made portable; daily copies made before the seal are replaced; a sealing that cannot finish leaves the rows in clear; no amount, name, currency or note appears in the file.
+**Tests that must keep existing:** a clear install is sealed once and shows nothing in any stored text; kept-aside copies are sealed; no key leaves Heal in clear and working, a sealed module with no key reads as locked and writes nothing; another phone's key sets rows aside sealed before any write; snapshots and backup files hold no Mint or Heal in clear and restore on the same phone; a backup from another key changes nothing; an older build's clear backup is sealed on restore; a passphrase backup opens elsewhere only with the passphrase; a module that cannot be opened here cannot be made portable; a sealing that cannot finish leaves the rows in clear.
 
 ### 10.5 Export formats
 
 Provide a complete restorable backup separately from readable exports. Human-readable JSON/CSV exports may be offered per module or for selected records, with stable IDs, schema/format version, timestamps, provenance, and relationship references. A partial CSV export is not a full backup. JSON export must have an explicit schema and must not silently omit data necessary for restoration.
 
-### 10.5.1 As built (0.133.0, REP-008)
+### 10.5.1 As built
 
 The live-documents half of the archive above exists as **one JSON file** (`BackupBundle`, `pokelife-backup` format version 1): the documents `save` and `care` exactly as the app serialises them (plus the module documents, section 10.4.1), the database schema they were taken at, the time and a SHA-256 of the documents. The app keeps daily backups as folders (`LiveBackup`, newest three, a `DONE` marker last) and can write any of them, or a fresh one, as a bundle through Android's document picker (`CreateDocument`); a bundle is chosen with `OpenDocument`. There is no `database.sqlite` payload, attachments or whole-archive encryption yet (no module has attachments).
 
@@ -556,20 +554,11 @@ The importer (section 12.7) reads the two source files as immutable inputs and p
 
 ### 12.4 IDs and cross-file reconciliation
 
-CARE and main-save data may reference shared progression indirectly. The importer must create an old-ID-to-new-ID map only when necessary and preserve original IDs otherwise. Cross-file relationships are resolved after both files have been parsed. A missing optional reference is recorded as an import warning and preserved in the migration sidecar; do not fabricate a target record.
-
-Where old data has no stable occurrence identity, derive a deterministic legacy occurrence key from the source record ID plus its canonical date/occurrence identity. Record the derivation rule and test collisions. Do not use current time or random values during migration.
+Preserve original IDs; create an old-to-new map only when a legacy ID is invalid or collides. Resolve cross-file relationships after both files are parsed; a missing optional reference is an import warning preserved in the sidecar, never a fabricated record. Where old data has no stable occurrence identity, derive a deterministic legacy occurrence key from the source record ID plus its canonical date, record the rule and test collisions; never use current time or random values.
 
 ### 12.5 Reward migration and replay protection
 
-- Import current balances and historical reward log as distinct source facts.
-- Create an opening-balance ledger entry where necessary to establish a reconciled ledger without inventing historical transaction details.
-- Import legacy paid markers/counters as historical eligibility state only when their semantics are clear.
-- Create a reward idempotency registry for known paid source occurrences where possible.
-- Do not replay historical PLAN, CARE, WORLD, or other activity as fresh rewards.
-- Do not grant newly introduced module rewards for old activity.
-- Ensure CARE's independent save and shared World reward state do not produce duplicate or missing credit during consolidation.
-- Compare final Poké balance, item quantities, candies, rank/progression, individual owned Pokémon count, and known historical reward totals against the source.
+Import current balances and the historical reward log as distinct facts; establish the ledger with an opening-balance entry (section 12.7). Import legacy paid markers and counters as eligibility state only where their semantics are clear, and register known paid source occurrences in the idempotency registry. Do not replay historical PLAN, CARE, WORLD or other activity as fresh rewards, and do not grant newly introduced module rewards for old activity. Compare the final Poké balance, item quantities, candies, rank, owned Pokémon count and known reward totals against the source.
 
 ### 12.6 Cutover and retirement
 
@@ -726,11 +715,8 @@ Data lifecycle UI (backup/restore status, migration warnings, import summaries, 
 
 ### 16.8 UI and release
 
-- [ ] Data lifecycle screens follow the shared PMD dialogue-box design system.
-- [ ] Dense inventories and diagnostics use readable lists/tables rather than excessive framed cards.
-- [ ] Light/dark themes, large text, TalkBack, keyboard/focus, and reduced motion pass.
-- [ ] Migration, backup, restore, corruption, permission, empty, loading, and failure states are tested on device.
-- [ ] Performance and storage use are profiled on target Android hardware.
+- [ ] Data lifecycle screens follow the shared design system (section 15); light/dark, large text, TalkBack, keyboard/focus and reduced motion pass.
+- [ ] Migration, backup, restore, corruption, permission, empty, loading and failure states are tested on device, and performance and storage use are profiled on target Android hardware.
 - [ ] No cloud account or synchronization path is required for local data integrity.
 
 ## 17. Implementation sequence and gates

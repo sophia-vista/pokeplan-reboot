@@ -10,7 +10,7 @@ import java.io.File
 data class CheckLine(val name: String, val ok: Boolean, val detail: String)
 
 /**
- * The on-device database checks (docs/pokelife/evidence/REP-006-sqldelight-spike.md section 3), run against a throwaway file
+ * The on-device database checks (docs/pokelife/ARCHITECTURE/DATA_AND_MIGRATIONS.md section 4.5), run against a throwaway file
  * in app-private storage that is deleted afterwards. It never opens or touches `pokelife.db` or the JSON save, so running it
  * cannot harm the player's data. Covers the Android driver, foreign keys, WAL, transaction rollback, kill-safe commits, the
  * backup copy (checkpoint then copy) and a timing; the widgets' access and MINT encryption need separate work.

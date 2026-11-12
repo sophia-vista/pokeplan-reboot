@@ -17,7 +17,7 @@ import kotlinx.serialization.json.contentOrNull
  * `heal_state` for the settings), so a kind can be read ([readKind]), exported or erased ([erase]) on its own; erasing HEAL ([clear]) touches
  * nothing outside the `heal_*` tables: not the Pokémon, the Bag, the ledger, Plan or Care.
  *
- * **Sealed since 0.154.0** (owner decision, 8 November 2026; `evidence/REP-014-heal-sealing.md`): Heal's records are the most personal data after Mint's, so
+ * **Sealed since 0.154.0** (owner decision, 8 November 2026; `DATA_AND_MIGRATIONS.md` section 10.4.1): Heal's records are the most personal data after Mint's, so
  * [seal] rewrites every row as AES-GCM text under the phone's Keystore key (`DataStore.healCipher`), once, with a read-back, and from then on a row holds neither a
  * measurement, a sleep time nor a date in clear, and every copy of Heal that leaves the tables (a backup, a kept-aside document) is sealed too. Before [seal] has
  * run (an install older than 0.154.0, or a phone whose Keystore gave no key) the rows are read and written in clear exactly as before.

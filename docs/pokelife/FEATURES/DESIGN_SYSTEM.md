@@ -129,7 +129,7 @@ Use the minimum elevation needed to express hierarchy. Density may vary by conte
 - **Layout breakpoints:** compact (under 600 dp) one column with the tab bar at the bottom; medium (600 to 839 dp) a centred column at most 640 dp wide; expanded (840 dp and up) the same column plus a 96 dp side rail with the four tabs. At 1.3x text and up a button never sits beside text that no longer fits; it goes underneath.
 - **Tab icons** are real item sprites, one per destination: Home `town-map`, Modules `explorer-kit`, Pokémon `poke-ball`, Me `member-card`. A section's icon is at the start of its header; when the header has Back, it moves to the end.
 
-### 5.6 Controls and states (ui-ux-brief 5.1)
+### 5.6 Controls and states
 
 Every tappable key (button, tab, chip, arrow, segment) is one `PixelKey` (`theme/Controls.kt`): the same stair-cornered outline, states and a 48 dp target; a control only picks its key colour and content. `ScreenshotTest.componentGallery` renders every state (`components.png`, `-dark`, `-xl` at 130% text).
 
@@ -149,7 +149,7 @@ Other shared parts: `Notice(text, tone)` (Info, Warning, Danger) is one calm sen
 
 **UI tap sounds:** a tap on a button, tab, chip or arrow plays a click (`CONFIRM`, `BACK`, or `CURSOR` for tabs, chips and arrows) at `TAP_GAIN` (6%) of the Sound effects volume (`UiSound.kt`); game sounds keep their full volume.
 
-### 5.7 Screen and copy principles (ui-ux-brief 4 and 6)
+### 5.7 Screen and copy principles
 
 - Pokémon supplies the personality; the productivity interface supplies the clarity. The game layer must not become another demanding task system: keep actions fast, make progression understandable, never punish a missed day, and keep productivity usable without engaging with game mechanics.
 - Background texture is selective (the dither is the only texture); depth is subtle; thick pixel treatments are for important game actions and reward moments. No coloured strip on the left edge of a card: status shows in words, an icon or the button.

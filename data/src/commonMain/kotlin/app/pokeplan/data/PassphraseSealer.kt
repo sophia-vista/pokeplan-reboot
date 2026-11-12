@@ -2,7 +2,7 @@ package app.pokeplan.data
 
 /**
  * Seals a private text under a **passphrase the player chose**, so a backup of Mint opens on any phone that is given the passphrase (docs/pokelife
- * `MODULES/MINT.md` section 22, `evidence/REP-014-mint.md` section 6). The device-sealed form (`m1.`, [RowCipher]) opens only on the phone that holds the Keystore key;
+ * `MODULES/MINT.md` section 22, `ARCHITECTURE/DATA_AND_MIGRATIONS.md` section 10.4.1). The device-sealed form (`m1.`, [RowCipher]) opens only on the phone that holds the Keystore key;
  * this is the portable form (`p1.`), made only for a backup file the player asks to be portable, never for the tables.
  *
  * The passphrase is stretched with PBKDF2-HMAC-SHA256 (a random salt and a stored iteration count, so the count can be raised later without breaking a file),
