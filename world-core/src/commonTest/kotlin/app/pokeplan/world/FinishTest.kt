@@ -156,6 +156,38 @@ class ClockAndDayTest {
     }
 
     @Test
+    fun aClockSetBackAndForwardAgainDoesNotCountTheSameHoursTwice() {
+        val hour = 3_600_000L
+        val start = WorldData().assign(1, listOf("a", "b"))!!.start(1, "tiny-woods", 0L)!!
+        val honest = WorldSim.settle(start, roster, 10 * hour).data
+        val climbed = honest.team(1)!!.expedition!!.floorsClimbed
+        // Set back eight hours, then forward to the real time again a moment later: nothing really passed.
+        val back = WorldSim.settle(honest, roster, 2 * hour).data
+        val mark = honest.team(1)!!.expedition!!.settledTo
+        assertEquals(mark, back.rewoundFrom, "the settle point it came from is kept")
+        val forward = WorldSim.settle(back, roster, 10 * hour).data
+        assertEquals(climbed, forward.team(1)!!.expedition!!.floorsClimbed, "the eight hours were counted once already")
+        assertEquals(0L, forward.rewoundFrom, "and the mark is cleared once the clock is past it")
+        assertEquals(mark, forward.team(1)!!.expedition!!.settledTo)
+        // From there the climb goes on as usual, and the next floor is forecast from the real settle point.
+        assertEquals(WorldSim.nextFloorAt(honest, roster, 10 * hour), WorldSim.nextFloorAt(forward, roster, 10 * hour))
+        assertTrue(WorldSim.settle(forward, roster, 14 * hour).data.team(1)!!.expedition!!.floorsClimbed > climbed)
+    }
+
+    @Test
+    fun timeSpentOnTheEarlierClockStillCounts() {
+        val hour = 3_600_000L
+        val start = WorldData().assign(1, listOf("a", "b"))!!.start(1, "tiny-woods", 0L)!!
+        val back = WorldSim.settle(WorldSim.settle(start, roster, 10 * hour).data, roster, 2 * hour).data
+        val before = back.team(1)!!.expedition!!.floorsClimbed
+        // Four real hours on the earlier clock: the team climbs (no freeze), and the forecast does not wait for the old clock.
+        assertTrue(WorldSim.nextFloorAt(back, roster, 2 * hour)!! < 10 * hour)
+        val stay = WorldSim.settle(back, roster, 6 * hour).data
+        assertTrue(stay.team(1)!!.expedition!!.floorsClimbed > before)
+        assertTrue(stay.rewoundFrom > 6 * hour, "still behind the old clock")
+    }
+
+    @Test
     fun aDailyJobComesBackAtThePlayersMidnightNotUtcs() {
         val hour = 3_600_000L
         val day = 24 * hour

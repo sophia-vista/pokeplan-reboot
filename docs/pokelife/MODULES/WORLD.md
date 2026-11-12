@@ -164,6 +164,7 @@ Requirements:
 - Stable expedition/team/floor/reward identifiers.
 - Preserve fractional elapsed time between settlements where the cap is not exceeded.
 - Clock rollback must not freeze a team until the clock catches up; reconcile the settlement timestamp safely.
+  - *Implemented (0.173.0):* the settlement point follows a clock set back, and the moment it came from is kept (`WorldData.rewoundFrom`); when the clock reaches that moment again, each team's settlement point moves up to it, so a clock set back and forward again does not credit the same stretch twice. What a team climbs on the earlier clock is kept, so the most a back-and-forward change can add is the time really spent on the earlier clock.
 - Time-zone changes must not create or erase elapsed progress; use absolute instants for elapsed-time calculations.
 - Handle process death, reboot, app update, interrupted settlement, multiple active teams and repeated settlement idempotently.
 - No reward or floor may be paid twice after retry, migration or restore.
