@@ -434,6 +434,28 @@ class GameStoreTest {
     }
 
     @Test
+    fun aGoalAndItsMilestonesCanBeEditedAndRemoved() {
+        val (s, _) = started()
+        val goal = s.addGoal("Learn guitar")
+        s.addMilestone(goal.id, "First chord")
+        s.addMilestone(goal.id, "Second chord")
+        val target = s.today.plus(DatePeriod(days = 40))
+        s.editGoal(goal.id, "  Learn the guitar ", app.pokeplan.plan.Category.PERSONAL, target)
+        assertEquals("Learn the guitar", s.data.goals.single().title)
+        assertEquals(target, s.data.goals.single().targetDate)
+        s.editGoal(goal.id, " ", app.pokeplan.plan.Category.PERSONAL, null)
+        assertEquals("Learn the guitar", s.data.goals.single().title, "a blank title keeps the old one")
+        assertEquals(null, s.data.goals.single().targetDate)
+        val first = s.data.goals.single().milestones.first()
+        s.renameMilestone(goal.id, first.id, "First chord, A minor")
+        assertEquals("First chord, A minor", s.data.goals.single().milestones.first().title)
+        s.deleteMilestone(goal.id, first.id)
+        assertEquals(1, s.data.goals.single().milestones.size)
+        s.deleteGoal(goal.id)
+        assertTrue(s.data.goals.isEmpty())
+    }
+
+    @Test
     fun aMilestoneTickedStraightAwayPaysNothing() {
         val (s, _) = started()
         val goal = s.addGoal("Learn guitar")

@@ -20,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
+import app.pokeplan.app.ExactInput
+import app.pokeplan.app.GearTimer
 import app.pokeplan.app.GearTimers
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.gear.QUICK_TIMER_MINUTES
@@ -50,7 +52,8 @@ internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
     LaunchedEffect(foreground) { while (foreground) { now = store.nowMillis; store.timersTick(); delay(500) } }
     val timers = model.data.gear.timers
     var label by remember { mutableStateOf("") }
-    var minutesText by remember { mutableStateOf("") }
+    var typedSeconds by remember { mutableStateOf<Long?>(null) }
+    var editingId by remember { mutableStateOf<String?>(null) }
     val ringing = timers.filter { it.finished }
 
     if (ringing.isNotEmpty()) TextBox {
@@ -75,8 +78,10 @@ internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelIconButton("reload", "Reset", { store.timerReset(t.id) }, Pixel.InkSoft)
+                    PixelIconButton("pencil", "Edit", { editingId = if (editingId == t.id) null else t.id }, Pixel.InkSoft)
                     PixelIconButton("trash", "Delete", { store.timerRemove(t.id) }, Pixel.InkSoft)
                 }
+                if (editingId == t.id) TimerEditor(t) { name, ms -> store.timerEdit(t.id, name, ms); editingId = null; onUse() }
             }
         }
     }
@@ -89,12 +94,41 @@ internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
                     PixelButton("$m min", { store.timerAdd(label, m * 60_000L)?.let { store.timerStart(it.id); label = "" }; onUse() }, color = Pixel.Blue, compact = true, enabled = timers.size < GearTimers.MAX_TIMERS)
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                PixelField(minutesText, { minutesText = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(6) }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), placeholder = "Minutes")
-                val minutes = minutesText.replace(',', '.').toDoubleOrNull()
-                PixelButton("Start", { minutes?.let { m -> store.timerAdd(label, (m * 60_000).toLong())?.let { t -> store.timerStart(t.id); label = ""; minutesText = "" } }; onUse() }, Modifier.weight(0.6f), Pixel.Blue, compact = true, enabled = minutes != null && minutes > 0 && timers.size < GearTimers.MAX_TIMERS)
-            }
+            TimerLength(typedSeconds, { typedSeconds = it })
+            PixelButton(
+                "Start", { typedSeconds?.let { sec -> store.timerAdd(label, sec * 1000)?.let { t -> store.timerStart(t.id); label = ""; typedSeconds = null } }; onUse() },
+                Modifier.fillMaxWidth(), Pixel.Blue, compact = true, enabled = typedSeconds != null && timers.size < GearTimers.MAX_TIMERS,
+            )
         }
+    }
+}
+
+/** A length typed as hours, minutes and seconds (`90`, `1h30`, `1:30:00`, `45s`); a bare number is minutes, and what it was read as is shown. */
+@Composable
+internal fun TimerLength(seconds: Long?, onChange: (Long?) -> Unit) {
+    TypedValueField(
+        seconds, onChange, { ExactInput.parseDurationSeconds(it, 'm') }, { formatHms(it) }, { formatHms(it) },
+        placeholder = "Length: 90, 1h30, 1:30:00, 45s", takes = "A length such as 25, 1h30, 1:30:00 or 45s", allowEmpty = true, label = "Length",
+        reject = { if (it * 1000 !in GearTimers.MIN_MS..GearTimers.MAX_MS) "Between ${formatHms(GearTimers.MIN_MS / 1000)} and ${formatHms(GearTimers.MAX_MS / 1000)}" else null },
+    )
+}
+
+internal fun formatHms(totalSeconds: Long): String {
+    val h = totalSeconds / 3600
+    val m = totalSeconds % 3600 / 60
+    val s = totalSeconds % 60
+    return if (h > 0) "$h:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}" else "$m:${s.toString().padStart(2, '0')}"
+}
+
+/** Renames a timer and sets its length; saving puts it back to ready. */
+@Composable
+private fun TimerEditor(t: GearTimer, onSave: (String, Long) -> Unit) {
+    var name by remember(t.id) { mutableStateOf(t.label) }
+    var seconds by remember(t.id) { mutableStateOf<Long?>(t.durationMs / 1000) }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        PixelField(name, { name = it.take(24) }, Modifier.fillMaxWidth(), singleLine = true, label = "Name")
+        TimerLength(seconds, { seconds = it })
+        PixelButton("Save (it goes back to ready)", { seconds?.let { onSave(name, it * 1000) } }, Modifier.fillMaxWidth(), Pixel.Green, compact = true, enabled = seconds != null)
     }
 }
 

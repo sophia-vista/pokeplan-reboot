@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
+import app.pokeplan.app.ExactInput
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelIconButton
 import app.pokeplan.ui.theme.Spacing
@@ -44,7 +45,7 @@ fun PixelDatePicker(
 fun PixelDateField(
     value: LocalDate?, today: LocalDate, accent: Color, onChange: (LocalDate?) -> Unit, modifier: Modifier = Modifier,
     presets: List<Pair<String, Int>> = listOf("Today" to 0, "Tomorrow" to 1), noneLabel: String? = null, max: LocalDate? = null, min: LocalDate? = null,
-    mondayFirst: Boolean = true, initiallyOpen: Boolean = false,
+    mondayFirst: Boolean = true, initiallyOpen: Boolean = false, typed: Boolean = true,
 ) {
     var open by remember { mutableStateOf(initiallyOpen) }
     val shown = value ?: today
@@ -58,6 +59,20 @@ fun PixelDateField(
             }
             val custom = value != null && presets.none { today.plus(DatePeriod(days = it.second)) == value }
             TabButton(if (custom) value!!.short() else "Pick a date", custom || open, { open = !open }, key = accent)
+        }
+        if (typed) {
+            TypedValueField(
+                value, onChange, { ExactInput.parseDate(it, today) }, { ExactInput.formatDate(it) }, { it.long() },
+                placeholder = "2026-11-07 or 7 Nov 2026", takes = "Type a date such as 2026-11-07, 7/11/2026 or 7 Nov 2026",
+                allowEmpty = noneLabel != null,
+                reject = { d ->
+                    when {
+                        max != null && d > max -> "Not after ${max.long()}"
+                        min != null && d < min -> "Not before ${min.long()}"
+                        else -> null
+                    }
+                },
+            )
         }
         if (open) {
             val grid = monthGrid(today, offset, mondayFirst)

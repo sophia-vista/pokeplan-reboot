@@ -1,5 +1,6 @@
 package app.pokeplan.app
 
+import kotlinx.datetime.plus
 import app.pokeplan.core.dex.Region
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.PartyIds
@@ -603,5 +604,24 @@ class HomeStoreTest {
         assertTrue(assertNotNull(s.home.complete(c.id).record).paid)
         assertEquals(points, s.game.homeEggMeter())
         assertEquals(1, s.game.data.player.partyOf(PartyIds.HOME).size)
+    }
+
+    @Test
+    fun aRecordOfWorkAndAWarrantyCanBeCorrected() {
+        val s = setup()
+        val asset = assertNotNull(s.home.addAsset("Kettle").record)
+        val w = assertNotNull(s.home.addWarranty(asset.id, "Shop", startDay = LocalDate(2026, 1, 1), expiryDay = LocalDate(2027, 1, 1)).record)
+        val fixed = assertNotNull(s.home.updateWarranty(w.copy(expiryDay = LocalDate(2028, 3, 4), provider = " Other shop ")).record)
+        assertEquals(LocalDate(2028, 3, 4), fixed.expiryDay)
+        assertEquals("Other shop", fixed.provider)
+        assertNotNull(s.home.updateWarranty(w.copy(expiryDay = LocalDate(2025, 1, 1))).refused)
+
+        val r = assertNotNull(s.home.logMaintenance("Descaled").record)
+        val moved = assertNotNull(s.home.updateMaintenanceRecord(r.copy(day = LocalDate(2026, 11, 1), title = " Descaled the kettle ", cost = "PHP 50")).record)
+        assertEquals(LocalDate(2026, 11, 1), moved.day)
+        assertEquals("Descaled the kettle", moved.title)
+        assertEquals(r.paid, moved.paid, "a correction never pays and never takes back")
+        assertNotNull(s.home.updateMaintenanceRecord(r.copy(day = today.plus(kotlinx.datetime.DatePeriod(days = 1)))).refused)
+        assertNotNull(s.home.updateMaintenanceRecord(r.copy(title = " ")).refused)
     }
 }

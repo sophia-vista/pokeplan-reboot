@@ -544,13 +544,11 @@ private fun TaskWhenTab(model: AppModel, task: Task) {
     val store = model.store
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         FieldLabel("Move to")
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            val today = store.today
-            TabButton("Today", task.planned == today, { store.updateTask(task.copy(planned = today)) })
-            TabButton("Tomorrow", task.planned == today.plus(DatePeriod(days = 1)), { store.updateTask(task.copy(planned = today.plus(DatePeriod(days = 1)))) })
-            TabButton("Next week", task.planned == today.plus(DatePeriod(days = 7)), { store.updateTask(task.copy(planned = today.plus(DatePeriod(days = 7)))) })
-            TabButton("No date", task.planned == null && task.due == null, { store.updateTask(task.copy(planned = null, plannedTime = null, due = null)) })
-        }
+        PixelDateField(
+            task.planned, store.today, Pixel.Blue,
+            { day -> store.updateTask(if (day == null) task.copy(planned = null, plannedTime = null, due = null) else task.copy(planned = day)) },
+            presets = listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7), noneLabel = "No date",
+        )
         if (store.activeLists.isNotEmpty()) {
             FieldLabel("List")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -601,6 +599,8 @@ private fun TaskEditTab(model: AppModel, task: Task, onSaved: () -> Unit, onDele
     var category by remember(task.id) { mutableStateOf(task.category) }
     var notes by remember(task.id) { mutableStateOf(task.notes) }
     var dueDay by remember(task.id) { mutableStateOf(task.due?.date) }
+    // A deadline keeps its time of day; with none typed it is the end of that day (23:59).
+    var dueTime by remember(task.id) { mutableStateOf(task.due?.time?.takeIf { it != LocalTime(23, 59) }) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Title")
         PixelField(
@@ -610,19 +610,19 @@ private fun TaskEditTab(model: AppModel, task: Task, onSaved: () -> Unit, onDele
         DifficultyPicker(rank) { rank = it }
         FieldLabel("Category")
         CategoryChips(category) { category = it ?: category }
-        // A deadline is not the day you plan to do it (that is "Move to"); it keeps its time of day, or 23:59.
-        DayPicker("Deadline", dueDay, store.today, listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7), noneLabel = "No deadline") { dueDay = it }
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelButton("-5", { minutes = (minutes - 5).coerceAtLeast(0) }, color = Pixel.InkSoft, compact = true)
-            Text(if (minutes == 0) "No estimate" else "$minutes min", style = MaterialTheme.typography.bodyLarge)
-            PixelButton("+5", { minutes += 5 }, color = Pixel.InkSoft, compact = true)
-        }
+        // A deadline is not the day you plan to do it (that is "Move to"); with no time it is the end of that day, 23:59.
+        PixelDateTimeField(
+            dueDay, dueTime, store.today, Pixel.Blue, { d, t -> dueDay = d; dueTime = t }, label = "Deadline",
+            noDayLabel = "No deadline", timeNoneLabel = "End of day (23:59)", timePresets = TIME_PRESETS,
+            dayPresets = listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7),
+        )
+        PixelDurationField(minutes.takeIf { it > 0 }, { minutes = it ?: 0 }, Pixel.Blue, label = "Estimate", noneLabel = "No estimate", presets = listOf(15, 30, 45, 60, 90))
         PixelButton("Save", {
             store.updateTask(
                 task.copy(
                     title = title.trim().ifEmpty { task.title }, rank = rank, estimateMinutes = minutes.takeIf { it > 0 },
                     category = category, notes = notes.trim(),
-                    due = dueDay?.let { LocalDateTime(it, task.due?.time ?: LocalTime(23, 59)) },
+                    due = dueDay?.let { LocalDateTime(it, dueTime ?: LocalTime(23, 59)) },
                 ),
             )
             model.say("Saved.")
@@ -655,23 +655,13 @@ private fun RepeatRow(model: AppModel, task: Task) {
     if (note.isNotEmpty()) Text(note, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
-/** A few common times and a 15-minute nudge, rather than a clock dial. */
+/** The time of day a task is planned for: typed, a few common times as keys, and small steps. */
 @Composable
 private fun PlannedTime(model: AppModel, task: Task) {
-    val store = model.store
-    val time = task.plannedTime
-    FieldLabel("At")
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        TabButton("Any time", time == null, { store.setPlannedTime(task.id, null) })
-        TIME_PRESETS.forEach { preset -> TabButton(clock(preset), time == preset, { store.setPlannedTime(task.id, preset) }) }
-    }
-    if (time != null) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelButton("-15", { store.setPlannedTime(task.id, shifted(time, -15)) }, color = Pixel.InkSoft, compact = true)
-            Text(clock(time), style = MaterialTheme.typography.bodyLarge)
-            PixelButton("+15", { store.setPlannedTime(task.id, shifted(time, 15)) }, color = Pixel.InkSoft, compact = true)
-        }
-    }
+    PixelTimeField(
+        task.plannedTime, { model.store.setPlannedTime(task.id, it) }, Pixel.Blue, label = "At",
+        presets = TIME_PRESETS, noneLabel = "Any time",
+    )
 }
 
 private val TIME_PRESETS = listOf(LocalTime(9, 0), LocalTime(12, 0), LocalTime(15, 0), LocalTime(19, 0))

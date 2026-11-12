@@ -344,19 +344,27 @@ class CareStore(
 
     // --- diary card, journal (private, never paid) --------------------------------------------------------------------
 
-    fun diaryToday(): DiaryCard? = data.diary.firstOrNull { it.day == today }
+    fun diaryToday(): DiaryCard? = diaryOn(today)
 
-    /** Saves today's diary card, replacing the one saved earlier today. Ratings are kept from 0 to 5. */
-    fun saveDiary(feelings: Map<Emotion, Int>, urges: Map<String, Int> = emptyMap(), skills: Set<String> = emptySet(), note: String? = null): DiaryCard {
+    /** The card kept for [day], or null. */
+    fun diaryOn(day: LocalDate): DiaryCard? = data.diary.firstOrNull { it.day == day }
+
+    /**
+     * Saves the diary card for [forDay] (today by default; a day after today is today), replacing the one saved earlier for that day, so
+     * a forgotten day can be filled in or a card corrected. Ratings are kept from 0 to 5.
+     */
+    fun saveDiary(feelings: Map<Emotion, Int>, urges: Map<String, Int> = emptyMap(), skills: Set<String> = emptySet(), note: String? = null, forDay: LocalDate = today): DiaryCard {
+        val day = if (forDay > today) today else forDay
+        val existing = diaryOn(day)
         val card = DiaryCard(
-            diaryToday()?.id ?: newId(), today, nowMillis,
+            existing?.id ?: newId(), day, nowMillis,
             feelings.mapValues { it.value.coerceIn(0, 5) },
             urges.filterKeys { it.isNotBlank() }.mapValues { it.value.coerceIn(0, 5) },
             skills.filter { Skills.byId(it) != null }.toSet(),
             note?.trim()?.ifEmpty { null },
-            mood = diaryToday()?.mood,
+            mood = existing?.mood,
         )
-        update { d -> d.copy(diary = d.diary.filterNot { it.day == today } + card) }
+        update { d -> d.copy(diary = d.diary.filterNot { it.day == day } + card) }
         return card
     }
 
@@ -382,9 +390,11 @@ class CareStore(
     fun skipPrompt() = update { d -> d.copy(skippedPrompts = mapOf(today to (d.skippedPrompts[today] ?: 0) + 1)) }
 
     /** Adds a journal entry; [promptId] when it answers today's prompt. A blank entry is not kept. */
-    fun write(text: String, promptId: String? = null, tags: Set<String> = emptySet()): JournalEntry? {
+    fun write(text: String, promptId: String? = null, tags: Set<String> = emptySet(), atMillis: Long? = null): JournalEntry? {
         if (text.isBlank()) return null
-        val entry = JournalEntry(newId(), nowMillis, today, text.trim(), promptId, tags.map { it.trim() }.filter { it.isNotEmpty() }.toSet())
+        // An entry can be dated to a moment that has passed (a forgotten day); never to one still to come.
+        val at = (atMillis ?: nowMillis).coerceAtMost(nowMillis)
+        val entry = JournalEntry(newId(), at, at.toLocalDateTime(zone).date, text.trim(), promptId, tags.map { it.trim() }.filter { it.isNotEmpty() }.toSet())
         update { it.copy(journal = it.journal + entry, journalDraft = "") }
         return entry
     }
@@ -398,9 +408,17 @@ class CareStore(
         document.update { it.copy(journalDraft = text.take(5_000)) }
     }
 
-    fun editEntry(id: String, text: String) {
+    /** Changes an entry's words and, when given, its tags and the moment it is dated to (never one still to come). */
+    fun editEntry(id: String, text: String, atMillis: Long? = null, tags: Set<String>? = null) {
         if (text.isBlank()) return
-        update { d -> d.copy(journal = d.journal.map { if (it.id == id) it.copy(text = text.trim()) else it }) }
+        update { d ->
+            d.copy(journal = d.journal.map { e ->
+                if (e.id != id) e else {
+                    val at = (atMillis ?: e.atMillis).coerceAtMost(nowMillis)
+                    e.copy(text = text.trim(), atMillis = at, day = at.toLocalDateTime(zone).date, tags = tags?.map { it.trim() }?.filter { it.isNotEmpty() }?.toSet() ?: e.tags)
+                }
+            })
+        }
     }
 
     fun deleteEntry(id: String) = update { d -> d.copy(journal = d.journal.filterNot { it.id == id }) }

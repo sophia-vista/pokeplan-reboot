@@ -381,6 +381,16 @@ class HomeStore(
         return Logged(data.maintenance.first { it.id == r.id }, rewards = rewards.orEmpty())
     }
 
+    /** Corrects a record of work: its words, item, day, notes and cost. What it paid stays as it was: an edit never pays and never takes back. */
+    fun updateMaintenanceRecord(r: MaintenanceRecord): Logged<MaintenanceRecord> {
+        val old = data.maintenance.firstOrNull { it.id == r.id } ?: return Logged(null, "That record is gone.")
+        (HomeRules.checkTitle(r.title, "work") as? Check.Refused)?.let { return Logged(null, it.reason) }
+        if (r.day > today) return Logged(null, "That day has not come yet.")
+        val next = old.copy(title = r.title.trim(), assetId = r.assetId, day = r.day, notes = r.notes.trim().take(HomeRules.NOTE_MAX), cost = r.cost.trim().take(HomeRules.TITLE_MAX))
+        update { d -> d.copy(maintenance = d.maintenance.map { if (it.id == r.id) next else it }) }
+        return Logged(next)
+    }
+
     fun deleteMaintenanceRecord(id: String) = update { d -> d.copy(maintenance = d.maintenance.filterNot { it.id == id }) }
 
     // --- reference notes ---------------------------------------------------------------------------------------------------
