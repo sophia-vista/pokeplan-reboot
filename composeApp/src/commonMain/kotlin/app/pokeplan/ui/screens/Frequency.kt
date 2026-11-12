@@ -84,7 +84,7 @@ internal fun FrequencyView(model: AppModel) {
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
-                PixelIconButton("plus", "Add", ::add, Pixel.Red, enabled = ready)
+                PixelIconButton("plus", "Add", ::add, app.pokeplan.ui.theme.ModuleAccent.PLAN.accent, enabled = ready)
             }
             PixelButton(if (more) "Fewer options" else "How often, and what kind", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
@@ -119,7 +119,7 @@ internal fun FrequencyView(model: AppModel) {
         }
     }
     val targets = model.data.series.filter { it.isFrequency }
-    if (targets.isEmpty()) EmptyState(emptyTitle(View.TARGETS), emptyLine(View.TARGETS), icon = View.TARGETS.icon, action = "Add a task" to { model.addTaskRequested = true })
+    if (targets.isEmpty()) EmptyState(emptyTitle(View.TARGETS), emptyLine(View.TARGETS), icon = View.TARGETS.icon, addAbove = "Add a target")
     targets.forEach { h ->
         val target = h.target ?: return@forEach
         val doneToday = store.today in h.completions

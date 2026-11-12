@@ -156,7 +156,7 @@ private fun GoalsSummary(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Goal progress")
             if (goals.isEmpty()) {
-                Text("No goals yet. Add one under Me, Goals.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                Text("No goals yet. Add one under Plan, Goals.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 return@Column
             }
             Text(

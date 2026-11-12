@@ -248,6 +248,10 @@ class AppModel(
     /** Offers [undo] under [label] in the undo bar, replacing an earlier offer. Take [snapshot]s before the change, restore them in [undo]. */
     fun offerUndo(label: String, undo: () -> Unit) { undoItem = app.pokeplan.ui.screens.UndoItem(label, undo) }
 
+    /** A calm break in progress (its start in epoch millis, its length in seconds), kept here so leaving Care's screen for a moment does not lose it. */
+    var calmBreakStartedAt: Long? by mutableStateOf(null)
+    var calmBreakSeconds: Int by mutableStateOf(60)
+
     /** A task picked on Home or in the Planner to focus on; the Focus screen offers it when it opens. */
     var focusTaskId: String? by mutableStateOf(null)
 

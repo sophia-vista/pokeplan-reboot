@@ -160,7 +160,7 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
             when (current) {
                 View.TARGETS -> FrequencyView(model)
                 View.DAY -> DayView(model, pendingIds, startWeek)
-                View.ALL -> AllTasksView(model, live.filter { it.id !in pendingIds }, card(showList = true))
+                View.ALL -> AllTasksView(model, live.filter { it.id !in pendingIds }, card(showList = true), onAdd = { model.addTaskRequested = true; view = View.TODAY })
                 else -> {
                     if (current == View.TODAY || current == View.INBOX) QuickAddBox(model, current)
                     val shown = tasksFor(current)
@@ -173,7 +173,16 @@ fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = fal
                         View.INBOX -> WhenGroups(model, shown, card)
                         else -> if (shown.isNotEmpty()) TaskGroup(null, shown, card = card)
                     }
-                    if (shown.isEmpty() && current != View.TODAY) EmptyState(emptyTitle(current), emptyLine(current), icon = current.icon, action = "Add a task" to { model.addTaskRequested = true })
+                    if (shown.isEmpty() && current != View.TODAY) EmptyState(
+                        emptyTitle(current), emptyLine(current), icon = current.icon,
+                        // Only Today and Inbox have a quick-add box; Next 7 days and Done send the player to Today with the keyboard open.
+                        addAbove = if (current == View.INBOX) "Add a task" else null,
+                        action = when (current) {
+                            View.UPCOMING -> "Add a task" to { model.addTaskRequested = true; view = View.TODAY }
+                            View.DONE -> "Open Today" to { view = View.TODAY }
+                            else -> null
+                        },
+                    )
                 }
             }
         }
@@ -549,7 +558,8 @@ private fun TaskWhenTab(model: AppModel, task: Task) {
             TabButton("Today", task.planned == today, { store.updateTask(task.copy(planned = today)) })
             TabButton("Tomorrow", task.planned == today.plus(DatePeriod(days = 1)), { store.updateTask(task.copy(planned = today.plus(DatePeriod(days = 1)))) })
             TabButton("Next week", task.planned == today.plus(DatePeriod(days = 7)), { store.updateTask(task.copy(planned = today.plus(DatePeriod(days = 7)))) })
-            TabButton("No date", task.planned == null && task.due == null, { store.updateTask(task.copy(planned = null, plannedTime = null, due = null)) })
+            // Only the planned day goes: a deadline is edited on the Edit tab and stays.
+            TabButton("No date", task.planned == null, { store.updateTask(task.copy(planned = null, plannedTime = null)) })
         }
         if (store.activeLists.isNotEmpty()) {
             FieldLabel("List")
@@ -618,9 +628,10 @@ private fun TaskEditTab(model: AppModel, task: Task, onSaved: () -> Unit, onDele
             PixelButton("+5", { minutes += 5 }, color = Pixel.InkSoft, compact = true)
         }
         PixelButton("Save", {
+            if (title.isBlank()) { model.say("A task needs a title."); return@PixelButton }
             store.updateTask(
                 task.copy(
-                    title = title.trim().ifEmpty { task.title }, rank = rank, estimateMinutes = minutes.takeIf { it > 0 },
+                    title = title.trim(), rank = rank, estimateMinutes = minutes.takeIf { it > 0 },
                     category = category, notes = notes.trim(),
                     due = dueDay?.let { LocalDateTime(it, task.due?.time ?: LocalTime(23, 59)) },
                 ),
@@ -630,7 +641,7 @@ private fun TaskEditTab(model: AppModel, task: Task, onSaved: () -> Unit, onDele
         }, Modifier.fillMaxWidth(), Pixel.Green)
         HorizontalDivider(color = Pixel.Border)
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelButton("Won't do", { store.wontDo(task.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            PixelButton("Won't do", { store.wontDo(task.id); model.offerUndo("Won't do: ${task.title}") { store.reopen(task.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.Danger)
         }
     }

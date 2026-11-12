@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.171.4
+
+The easy fixes left by the Plan audit and the Care review (`docs/pokelife/evidence/PLAN-AUDIT-0.167.2.md`, `CARE-REVIEW-0.167.2.md`). No reward number changes.
+
+- **Plan.** "Add a task" in the empty Next 7 days and All tasks now opens Today with the keyboard up (it did nothing and left the keyboard to pop up later); the empty Done offers "Open Today"; the empty Inbox and Targets point at the field above them, and Targets says "Add a target". "No date" clears the planned day only, not the deadline. Saving a task with a blank title is refused ("A task needs a title.") instead of keeping the old one and saying "Saved." "Won't do" offers Undo like Delete. Progress points at Plan, Goals.
+- **Care.** The sweet berry is offered to a visitor even when the Bag holds all five flavours (it was cut after four). The Meadow's two corner labels are readable in the dark palette. A journal entry opens on a tap to read the whole of it, and the journal and the earlier diary cards end with Show older, so none is out of reach. A diary card's urge ratings show in its history row. A calm break survives leaving the screen for a moment and is finished in an effect, not during drawing (one left for more than ten minutes past its length is dropped, not paid). Surprise me changes after each time played, not only with the minute. Words: routines earn Exp. Candy and a little friendship (not berries); the Egg meter line counts a play; `befriend` says up to four a day. Removed the dead `CareRules.paidOn`.
+- Left for the owner or for a bigger change: the list at the end of the session that made this entry, in `docs/pokelife/IMPLEMENTATION_BACKLOG.md` (REP-029).
+
 ## 0.171.3
 
 WORLD story rewrite, first pass (scripts only; no rules, rewards or scene ids change).

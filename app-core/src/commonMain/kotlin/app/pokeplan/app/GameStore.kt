@@ -525,7 +525,7 @@ class GameStore(
     }
 
     /**
-     * Makes a friend of a Care visitor, once a day: the egg's dice come from the oldest egg ticket (the day's key is
+     * Makes a friend of a Care visitor, up to [BEFRIEND_DAILY_CAP] a day: the egg's dice come from the oldest egg ticket (the day's key is
      * `befriend:<epochDay>`, the ticket is spent with it) or, with none, from the device. Returns null when nothing was paid.
      */
     override fun befriend(event: BefriendEvent): List<Reward>? {

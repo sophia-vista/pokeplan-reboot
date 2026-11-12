@@ -12,6 +12,8 @@
 - Befriending ends in the owner's cutscene (`Cutscenes.kt`: the visitor leaves an egg, it hatches).
 - The world caps every kind a day by its own counter (`GameStore.CARE_DAILY_CAP`), so Care's own caps cannot be farmed by deleting a paid routine and adding another.
 
+**Fixed in 0.171.4:** B2, B3, B5, B7, B8, B10, and B4 in part (a tap reads the whole entry; Show older reaches every entry and card; editing an entry is not built). Left: B1, B6, B9 (REP-029).
+
 ## 2. Bugs (each confirmed by reading the code)
 
 | # | What happens | Where | Fix |

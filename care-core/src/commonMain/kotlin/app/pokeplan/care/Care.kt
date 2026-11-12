@@ -171,10 +171,6 @@ object CareRules {
 
     fun skillsPaidOn(data: CareData, date: LocalDate): Int = data.practices.count { it.day == date && it.paid }
 
-    /** Whether any care paid on [date]: befriending a visitor needs one. */
-    fun paidOn(data: CareData, date: LocalDate): Boolean =
-        routinesPaidOn(data, date) > 0 || breaksPaidOn(data, date) > 0 || skillsPaidOn(data, date) > 0
-
     /** Whether practising [skillId] on [date] can pay: not already paid today, and under the day's limit. */
     fun skillPaysOn(data: CareData, skillId: String, date: LocalDate): Boolean =
         data.practices.none { it.day == date && it.skillId == skillId && it.paid } && skillsPaidOn(data, date) < SKILLS_PAID_PER_DAY

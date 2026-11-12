@@ -17,6 +17,8 @@ The weak points are, in order:
 3. **Depth.** The daily screen (Today) is three levels down, a target four, and Plan's page shows its first task below the fold.
 4. **Six small defects** that make buttons do nothing or lose data silently (section 2).
 
+**Fixed in 0.171.4:** D1, D2, D3, D5, D6, the red Targets add key, and a confirm on Give up. Left: D4 and the rest (REP-029).
+
 ## 2. Defects (wrong today, small to fix)
 
 | # | What happens | Where |

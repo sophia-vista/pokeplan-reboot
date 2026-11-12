@@ -108,15 +108,15 @@ internal fun MeadowView(model: AppModel, goPlay: (String) -> Unit) {
             // The queue and the Care Egg stay small in the corners.
             Text(
                 if (waiting == 0) "No one waiting" else "$waiting waiting",
-                style = MaterialTheme.typography.labelMedium, color = Pixel.Ink,
-                modifier = Modifier.align(Alignment.TopStart).padding(Spacing.S).clip(PixelShape).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.75f)).padding(horizontal = Spacing.S, vertical = 2.dp)
+                style = MaterialTheme.typography.labelMedium, color = androidx.compose.ui.graphics.Color.White,
+                modifier = Modifier.align(Alignment.TopStart).padding(Spacing.S).clip(PixelShape).background(Pixel.Scrim.copy(alpha = 0.5f)).padding(horizontal = Spacing.S, vertical = 2.dp)
                     .semantics { contentDescription = if (waiting == 0) "No visitors waiting" else "$waiting visitors waiting for a place" },
             )
             val points = model.store.careEggMeter()
             Text(
                 "Care Egg $points/${app.pokeplan.core.reward.RewardEngine.CARE_EGG_METER_SIZE}",
-                style = MaterialTheme.typography.labelMedium, color = Pixel.Ink,
-                modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.S).clip(PixelShape).background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.75f)).padding(horizontal = Spacing.S, vertical = 2.dp),
+                style = MaterialTheme.typography.labelMedium, color = androidx.compose.ui.graphics.Color.White,
+                modifier = Modifier.align(Alignment.TopEnd).padding(Spacing.S).clip(PixelShape).background(Pixel.Scrim.copy(alpha = 0.5f)).padding(horizontal = Spacing.S, vertical = 2.dp),
             )
         }
         reunion?.let { r ->

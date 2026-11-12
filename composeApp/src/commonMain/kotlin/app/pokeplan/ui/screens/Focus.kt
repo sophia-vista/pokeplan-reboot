@@ -312,8 +312,10 @@ private fun RunningView(model: AppModel) {
         } else {
             PixelButton("Pause ($pausesLeft)", { store.focusEvent(FocusEvent.EmergencyPauseStarted) }, Modifier.weight(1f), Pixel.Blue, enabled = pausesLeft > 0 && !paused)
         }
-        // Giving up is the way out, not the thing to do, so it stays the quiet button.
-        PixelButton("Give up", { store.focusEvent(FocusEvent.GaveUp) }, Modifier.weight(1f), Pixel.InkSoft)
+        // Giving up is the way out, not the thing to do, so it stays the quiet button; a first tap asks, a second within four seconds gives up.
+        var sure by remember { mutableStateOf(false) }
+        LaunchedEffect(sure) { if (sure) { kotlinx.coroutines.delay(4_000); sure = false } }
+        PixelButton(if (sure) "Really give up?" else "Give up", { if (sure) store.focusEvent(FocusEvent.GaveUp) else sure = true }, Modifier.weight(1f), if (sure) Pixel.Danger else Pixel.InkSoft)
     }
 }
 
