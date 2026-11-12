@@ -35,7 +35,7 @@ import app.pokeplan.ui.theme.TextBox
 
 /** What a sensor tool says when this phone cannot do it: never a made-up reading. */
 @Composable
-private fun Missing(what: String, why: String) {
+internal fun Missing(what: String, why: String) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("$what is not available here.", style = MaterialTheme.typography.titleSmall)

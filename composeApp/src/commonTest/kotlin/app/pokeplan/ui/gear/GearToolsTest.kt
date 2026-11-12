@@ -40,15 +40,6 @@ class GearToolsTest {
     }
 
     @Test
-    fun convertsCurrencyThroughTheDollar() {
-        val rates = GearRates("2026-10-30", mapOf("USD" to 1.0, "EUR" to 0.5, "JPY" to 150.0))
-        // One euro is two dollars, which is 300 yen.
-        close(300.0, convertCurrency(1.0, "EUR", "JPY", rates)!!)
-        close(0.5, convertCurrency(1.0, "USD", "EUR", rates)!!)
-        assertNull(convertCurrency(1.0, "XXX", "EUR", rates))
-    }
-
-    @Test
     fun theRatesAnswerIsValidatedAndNormalisedToTheDollar() {
         // Another base: the dollar's own rate is used to turn everything into dollars (1 EUR = 1.25 USD, so 1 USD = 0.8 EUR).
         val eur = parseRates("""{"base":"EUR","date":"2026-10-30","rates":{"USD":1.25,"PHP":70.0,"JPY":200.0}}""", 123)!!

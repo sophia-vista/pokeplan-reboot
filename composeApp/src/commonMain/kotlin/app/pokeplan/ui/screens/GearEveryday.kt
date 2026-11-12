@@ -75,7 +75,7 @@ internal fun EverydayTool(model: AppModel, onUse: () -> Unit) {
                 Sum.SAVINGS -> {
                     field(0, "Start with"); field(1, "Yearly interest percent"); field(2, "Years"); field(3, "Add each month (0)")
                     val s = num(0); val i = num(1); val y = num(2)
-                    if (s == null || i == null || y == null) null else Everyday.savings(s, i, y, 12, num(3) ?: 0.0)?.let { listOf("After $y years ${Everyday.money(it)}") }
+                    if (s == null || i == null || y == null) null else Everyday.savings(s, i, y, 12, num(3) ?: 0.0)?.let { listOf("After ${trim(y)} years ${Everyday.money(it)}") }
                 }
                 Sum.TRIP -> {
                     field(0, "Distance"); field(1, "Distance per litre or gallon"); field(2, "Price of one litre or gallon")
