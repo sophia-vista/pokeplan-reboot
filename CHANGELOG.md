@@ -5,6 +5,20 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.171.2
+
+Gear audit (end to end: the 18 tools, their saved state, the Android adapters). Nothing here pays, so no reward number changes.
+
+- **The calculator's Ans key gives the last answer.** It typed the value of the sum being written onto its own end ("2+3" became "2+35").
+- **A time converted in the World clock follows today's summer time.** It was worked out for 1 January 2000, so London or New York were an hour out for half the year.
+- **The Picker's "Skip last" skips the last pick.** With motion on and the history off it skipped whichever name the roll happened to flash last.
+- **The Sound meter's quietest, average and loudest follow the offset.** They kept the offset the tool was opened with.
+- **Currency does not fetch on every opening.** The reference rates are a working day old most of the day (and all weekend), so each opening asked the service again; a copy fetched in the last 6 hours is now used, and Refresh still asks.
+- **One row over a tool instead of two or three.** The star and the helper share a row; a tool with no helper shows no "Helper / Show" strip (GEAR.md section 6: never an empty placeholder), and the large helper box with "Make it small" is gone. A helper is still chosen from the row when you own one that fits.
+- A search with no match says so with one way back; "After 5.0 years" reads "5 years"; the QR tool shows no empty scan box where there is no scanner.
+- Removed: `GearTool.blurb` and `move`, `GearData.helperCompact` and `currencyPair`, `convertCurrency` (none was read; old saves load, unknown keys are ignored), a second copy of the "not available here" box and 50 unused imports in `GearTools.kt`.
+- Left for the owner: REP-028 in `docs/pokelife/IMPLEMENTATION_BACKLOG.md`.
+
 ## 0.171.1
 
 Mint audit: fixes only. No reward number changes.

@@ -225,12 +225,9 @@ data class GearData(
     /** Favourite tools, by [app.pokeplan.core.pokemon.GearTool] name, and the ones used last (newest first). */
     val favorites: List<String> = emptyList(),
     val recents: List<String> = emptyList(),
-    /** Whether the helper Pokémon is shown in full (false: a small strip that can be opened). */
-    val helperCompact: Boolean = true,
-    /** The currency amounts are shown in first, the ones on the board, and the pair last used. */
+    /** The currency amounts are shown in first, and the ones on the board. */
     val homeCurrency: String = "PHP",
     val currencyBoard: List<String> = listOf("USD", "JPY", "EUR", "KRW", "CNY"),
-    val currencyPair: String = "",
     /** Rates the player entered (a money changer's quote), by currency code, in units of that currency per one unit of the home currency. */
     val manualRates: Map<String, Double> = emptyMap(),
     /** Percent and fixed fee for the "what it really costs" mode, kept for next time. */

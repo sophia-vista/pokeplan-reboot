@@ -70,10 +70,12 @@ internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
     fun pick() {
         if (options.size < 2 || picking) return
         picking = true
+        // The pick to skip is the one on show now, taken before the roll below puts other names up.
+        val last = if (skipLast && count == 1) gear.pickerHistory.firstOrNull() ?: shown.singleOrNull() else null
         scope.launch {
             // A quick roll through the list before it settles, unless motion is off.
             if (!reduce) repeat(8) { shown = listOf(options.random()); delay(70L + it * 18L) }
-            val result = if (count == 1) listOfNotNull(Randomizer.pick(options, gear.pickerWeights, Random, avoid = if (skipLast) gear.pickerHistory.firstOrNull() ?: shown.firstOrNull() else null))
+            val result = if (count == 1) listOfNotNull(Randomizer.pick(options, gear.pickerWeights, Random, avoid = last))
             else Randomizer.pickMany(options, gear.pickerWeights, count, Random)
             shown = result
             if (gear.pickerHistoryOn) store.changeGear { g -> g.copy(pickerHistory = (result + g.pickerHistory).take(GearData.MAX_HISTORY)) }
@@ -109,7 +111,7 @@ internal fun PickerTool(model: AppModel, onUse: () -> Unit) {
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                             PixelIconButton("minus", "Less likely", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights + (option to (weight - 1).coerceAtLeast(1))) } }, Pixel.InkSoft, enabled = weight > 1)
                             PixelIconButton("plus", "More", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights + (option to (weight + 1).coerceAtMost(Randomizer.MAX_WEIGHT))) } }, Pixel.InkSoft, enabled = weight < Randomizer.MAX_WEIGHT)
-                            PixelIconButton("trash", "Remove", { store.setPickerOptions(options - option); store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights - option) } }, Pixel.InkSoft)
+                            PixelIconButton("trash", "Remove", { store.changeGear { g -> g.copy(pickerWeights = g.pickerWeights - option) }; store.setPickerOptions(options - option) }, Pixel.InkSoft)
                         }
                     }
                 }

@@ -50,21 +50,12 @@ import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.launch
 import kotlin.time.TimeSource
 
-@Composable
-private fun NotHere(what: String, why: String) {
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("$what is not available here.", style = MaterialTheme.typography.titleSmall)
-            Text(why, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        }
-    }
-}
 
 /** Waypoints: mark where the phone is (one reading, asked for when you press the button; nothing is tracked) and see how far and which way each saved place is. */
 @Composable
 internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.services.location
-    if (feed == null) return NotHere("Waypoints", "This device has no location to read (the desktop and web apps have none).")
+    if (feed == null) return Missing("Waypoints", "This device has no location to read (the desktop and web apps have none).")
     val store = model.store
     val gear = model.data.gear
     val clipboard = LocalClipboardManager.current
@@ -127,7 +118,7 @@ internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
 @Composable
 internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
     val feed = model.services.sound
-    if (feed == null) return NotHere("The sound meter", "This device has no microphone for Gear to read.")
+    if (feed == null) return Missing("The sound meter", "This device has no microphone for Gear to read.")
     val store = model.store
     val offset = model.data.gear.soundOffsetDb
     var dbFs by remember { mutableStateOf<Float?>(null) }
@@ -145,10 +136,8 @@ internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
             smooth = smooth?.let { it + (level - it) * 0.35f } ?: level
             dbFs = smooth
             val s = smooth!!
-            if (s > -119f) {
-                val est = SoundMath.estimate(s, offset)
-                low = low?.let { minOf(it, est) } ?: est; high = high?.let { maxOf(it, est) } ?: est; sum += est; count++
-            }
+            // Kept below full scale, so changing the offset moves the quietest, average and loudest with the reading.
+            if (s > -119f) { low = low?.let { minOf(it, s) } ?: s; high = high?.let { maxOf(it, s) } ?: s; sum += s; count++ }
             val spec = SoundMath.spectrum(frame, 1024)
             pitch = SoundMath.dominantHz(spec, rate)
             // Twenty-four bands, each a block of bins, on a gentle curve so the low pitches are not squashed.
@@ -161,13 +150,13 @@ internal fun SoundTool(model: AppModel, onUse: () -> Unit) {
         onUse()
         onDispose { stop?.invoke() }
     }
-    if (problem.isNotEmpty()) return NotHere("The sound meter", problem)
+    if (problem.isNotEmpty()) return Missing("The sound meter", problem)
     val est = dbFs?.let { SoundMath.estimate(it, offset) }
     TextBox {
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(est?.let { "${it.toInt()} dB" } ?: "Listening", style = MaterialTheme.typography.displaySmall)
             est?.let { Text(SoundMath.describe(it), style = MaterialTheme.typography.bodyLarge) }
-            if (count > 0) Text("Quietest ${low!!.toInt()}, average ${(sum / count).toInt()}, loudest ${high!!.toInt()} dB", style = MaterialTheme.typography.bodyMedium)
+            if (count > 0) Text("Quietest ${SoundMath.estimate(low!!, offset).toInt()}, average ${SoundMath.estimate((sum / count).toFloat(), offset).toInt()}, loudest ${SoundMath.estimate(high!!, offset).toInt()} dB", style = MaterialTheme.typography.bodyMedium)
             Canvas(Modifier.fillMaxWidth().height(96.dp)) {
                 val n = bands.size.coerceAtLeast(1); val w = size.width / n
                 val peak = (bands.maxOrNull() ?: 0f).coerceAtLeast(2f)
@@ -213,10 +202,9 @@ internal fun QrTool(model: AppModel, onUse: () -> Unit) {
             }
         }
     }
-    TextBox {
+    if (scanner != null) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            FieldLabel("Scan a code")
-            if (scanner != null) PixelButton("Open the scanner", { scanNote = ""; scanner.scan { r -> scanned = r; scanNote = if (r == null) "Nothing was scanned." else ""; onUse() } }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+            PixelButton("Scan a code", { scanNote = ""; scanner.scan { r -> scanned = r; scanNote = if (r == null) "Nothing was scanned." else ""; onUse() } }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
             if (scanNote.isNotEmpty()) Text(scanNote, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             scanned?.let { r ->
                 val reading = app.pokeplan.ui.gear.QrPayload.read(r)
