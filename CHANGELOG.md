@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.171.1
+## 0.171.3
 
 HOME audit (end to end: rules, store, reminders, screens). No reward number changes; `RewardRules.VERSION` is unchanged.
 
@@ -16,8 +16,32 @@ HOME audit (end to end: rules, store, reminders, screens). No reward number chan
 - **"Bought" on a low supply asks for the new quantity.** Saving it blank did nothing and left the supply on the list.
 - **A chore's instructions show when it is opened**, as maintenance instructions already did; they were visible only inside the edit form.
 - Faster: the chore list reads the history once instead of once per chore, and the Home menu works out the overview once, not twice. Smaller: an unreachable branch and a wrapper in `Schedules`, and a never-set error in the schedule options, are gone.
-- What was left for the owner to decide is REP-028 in the backlog.
+- What was left for the owner to decide is REP-029 in the backlog.
 
+## 0.171.2
+
+Gear audit (end to end: the 18 tools, their saved state, the Android adapters). Nothing here pays, so no reward number changes.
+
+- **The calculator's Ans key gives the last answer.** It typed the value of the sum being written onto its own end ("2+3" became "2+35").
+- **A time converted in the World clock follows today's summer time.** It was worked out for 1 January 2000, so London or New York were an hour out for half the year.
+- **The Picker's "Skip last" skips the last pick.** With motion on and the history off it skipped whichever name the roll happened to flash last.
+- **The Sound meter's quietest, average and loudest follow the offset.** They kept the offset the tool was opened with.
+- **Currency does not fetch on every opening.** The reference rates are a working day old most of the day (and all weekend), so each opening asked the service again; a copy fetched in the last 6 hours is now used, and Refresh still asks.
+- **One row over a tool instead of two or three.** The star and the helper share a row; a tool with no helper shows no "Helper / Show" strip (GEAR.md section 6: never an empty placeholder), and the large helper box with "Make it small" is gone. A helper is still chosen from the row when you own one that fits.
+- A search with no match says so with one way back; "After 5.0 years" reads "5 years"; the QR tool shows no empty scan box where there is no scanner.
+- Removed: `GearTool.blurb` and `move`, `GearData.helperCompact` and `currencyPair`, `convertCurrency` (none was read; old saves load, unknown keys are ignored), a second copy of the "not available here" box and 50 unused imports in `GearTools.kt`.
+- Left for the owner: REP-028 in `docs/pokelife/IMPLEMENTATION_BACKLOG.md`.
+
+## 0.171.1
+
+Mint audit: fixes only. No reward number changes.
+
+- **A transfer goes where the screen says.** The destination shown as chosen is now the one saved; before, with accounts in two currencies, the default could be an account in the other currency and the transfer was refused.
+- **Activity shows all of its history.** The list stopped at 50 records with no way further except search; it now has "Show more". The quick "Income" or "Transfer" key on the overview no longer sticks for the next visit.
+- **Bills.** The first due day is any date (the shared date picker), not five fixed offsets. A bill's name and amount can be edited (tap it under "Your bills"). Paid, part paid and skipped each offer an undo, since a settled occurrence leaves the list. A part payment that covers the whole bill is saved as paid.
+- **Weekly review** uses the app's first day of the week on the screen, as the rule already did.
+- **Faster with a long history:** every account's balance is worked out in one pass over the records; the Activity search is not redone on every keystroke in the entry form; the import preview looks for look-alikes by day.
+- Removed: the "Close" key under a record (tapping the row closes it).
 ## 0.171.0
 
 Link audit (end to end: rules, store, screens, reminders, tables). No reward number changes.

@@ -64,12 +64,13 @@ internal fun WorldClockTool(model: AppModel, onUse: () -> Unit) {
             }
         }
     }
-    ConvertCard(ids, onUse)
-    DateCard(store.now.date.let { LocalDate(it.year, it.monthNumber, it.dayOfMonth) }, onUse)
+    val today = store.now.date.let { LocalDate(it.year, it.monthNumber, it.dayOfMonth) }
+    ConvertCard(ids, today, onUse)
+    DateCard(today, onUse)
 }
 
 @Composable
-private fun ConvertCard(ids: List<String>, onUse: () -> Unit) {
+private fun ConvertCard(ids: List<String>, today: LocalDate, onUse: () -> Unit) {
     var text by remember { mutableStateOf("") }
     val from = ids.firstOrNull() ?: return
     val parts = text.trim().split(':', '.')
@@ -79,7 +80,8 @@ private fun ConvertCard(ids: List<String>, onUse: () -> Unit) {
             FieldLabel("A time at home, elsewhere")
             PixelField(text, { text = it.take(5); onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii), label = "Time at home, like 21:30")
             if (h != null && h in 0..23 && m in 0..59) {
-                val base = LocalDateTime(2000, 1, 1, h, m)
+                // Today's date, so the answer follows the summer time in force now.
+                val base = LocalDateTime(today.year, today.monthNumber, today.dayOfMonth, h, m)
                 ids.drop(1).forEach { id ->
                     val there = WorldClock.convert(base, from, id)
                     val name = WorldClock.place(id)?.name ?: id

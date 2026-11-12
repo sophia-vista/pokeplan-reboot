@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import app.pokeplan.ui.AppModel
+import app.pokeplan.ui.gear.RATES_REFETCH_MS
 import app.pokeplan.ui.gear.CalcEngine
 import app.pokeplan.ui.gear.CalcResult
 import app.pokeplan.ui.gear.Currencies
@@ -59,7 +60,8 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
         // A failed fetch never touches the rates already kept.
         if (fresh != null) { store.saveGearRates(fresh); status = "" } else status = (client.lastError ?: "Offline.") + (if (rates != null) " Showing the last rates." else "")
     }
-    LaunchedEffect(Unit) { if (rates == null || rates.date < store.today.toString().take(10)) refresh() }
+    // The reference rates change once a working day, so a copy fetched in the last few hours is not fetched again on every opening.
+    LaunchedEffect(Unit) { if (rates == null || (rates.date < store.today.toString().take(10) && store.nowMillis - rates.fetchedAtMillis !in 0..RATES_REFETCH_MS)) refresh() }
 
     TextBox {
         if (rates == null) {
@@ -69,7 +71,7 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
             }
             return@TextBox
         }
-                val codes = remember(rates) { rates.perUsd.keys.toList() }
+        val codes = remember(rates) { rates.perUsd.keys.toList() }
         val rows = Currencies.rows(home, gear.currencyBoard, rates.perUsd.keys)
         // One amount is being typed, in one currency: every other row is worked out from it (so rounding never drifts between rows).
         var active by remember { mutableStateOf(rows.firstOrNull() ?: home) }
