@@ -190,6 +190,12 @@ class CareStore(
         return data.visitors
     }
 
+    /**
+     * Brings the day's arrivals and a possible reunion, once per day. Care's landing page and the Meadow call this when they open, so the
+     * landing page knows a friend is back too; the getters below still do the same on first use, for callers that skip it.
+     */
+    fun arrive() { visitors(); reunion() }
+
     /** The visitors in the meadow, and the ones waiting for a place. */
     fun meadow(): List<Visitor> = Visitors.meadow(visitors())
     fun queued(): List<Visitor> = Visitors.queue(visitors())
@@ -326,8 +332,8 @@ class CareStore(
     /** An activity to suggest for [key] today. It never expires and ignoring it costs nothing. */
     fun suggestion(key: String): PlayActivity = CarePlay.suggestion(key, data.play[key], today)
 
-    /** "Surprise me": an activity for [key]. */
-    fun surprise(key: String): PlayActivity = CarePlay.surprise(key, nowMillis / 60_000L)
+    /** "Surprise me": an activity for [key]; it changes with the minute and with each time they have played, so it is not the same one for a whole minute. */
+    fun surprise(key: String): PlayActivity = CarePlay.surprise(key, nowMillis / 60_000L + (data.play[key]?.times ?: 0) * 1009L)
 
     /**
      * Spends time with the owned Pokémon [pokemonId] doing [activity]. It always happens and can be repeated freely; the first time with each

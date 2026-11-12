@@ -333,7 +333,7 @@ Support:
 - Optional account/category scope.
 - Active, paused and archived states.
 
-A budget stores the planned amount and period. Actual spending is derived from eligible posted transactions. Transfers are excluded. Refund treatment is explicit and consistent (normally offsets the originating category's spending). Pending transactions may be shown separately or included by user preference, but must never be silently mixed with posted actuals.
+A budget stores the planned amount and period; both can be edited afterwards, and a change that would make a second budget for the same category, currency and period is refused (0.173.0). Actual spending is derived from eligible posted transactions. Transfers are excluded. Refund treatment is explicit and consistent (normally offsets the originating category's spending). Pending transactions may be shown separately or included by user preference, but must never be silently mixed with posted actuals.
 
 ### 7.2 Budget display
 
@@ -379,6 +379,8 @@ A `BillOccurrence` represents one expected obligation for one due period. It tra
 Status transitions must be explicit and reversible where practical. A paid occurrence can link to an actual transaction. Marking a bill paid does not fabricate a transaction. Recording a transaction does not automatically mark a bill paid unless a reliable match is confirmed or the user explicitly chooses the action.
 
 Partial payments retain remaining due amount. Variable bills allow the actual amount to be entered when known. Skipping an occurrence must not silently delete the recurring bill definition.
+
+A settled occurrence (paid or skipped) stays reachable for 60 days after its due day (`MintRules.settled`, the Bills section's "Settled lately"): it can be settled again with another amount, day or status, which replaces the earlier settlement, or taken back to unsettled (0.173.0).
 
 ### 8.3 Recurrence
 

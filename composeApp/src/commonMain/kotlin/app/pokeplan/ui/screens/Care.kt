@@ -138,7 +138,6 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
         ) {
             // What to do comes before the party and the visitors: a new player sees "Add a routine" without scrolling past six empty slots.
             CareBuddy(model, openPokemon)
-            RewardBox(model)
             TutorialCard(model, app.pokeplan.app.Tutorials.CARE_BREATH, careBreaks = care.breaks.size)
             SectionLabel("Today", icon = CareSection.ROUTINES.icon)
             if (today.isEmpty()) {
@@ -208,7 +207,7 @@ private fun CareBuddy(model: AppModel, openPokemon: (String) -> Unit) {
 private fun VisitorsCard(model: AppModel) {
     val care = model.care
     // The day's arrivals are made the first time they are asked for.
-    LaunchedEffect(care.today) { care.visitors() }
+    LaunchedEffect(care.today) { care.arrive() }
     val all = model.careData.visitors
     val meadow = Visitors.meadow(all)
     val waiting = Visitors.queue(all)
@@ -355,7 +354,6 @@ private fun RoutinesView(model: AppModel) {
         title = ""; more = false; time = null; days = emptySet()
     }
 
-    RewardBox(model)
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -386,7 +384,7 @@ private fun RoutinesView(model: AppModel) {
         }
     }
     Text(
-        "The first ${CareRules.ROUTINES_PAID_PER_DAY} routines you finish each day earn friendship and berries. There are no streaks: a quiet day costs nothing.",
+        "The first ${CareRules.ROUTINES_PAID_PER_DAY} routines you finish each day earn Exp. Candy and a little friendship. There are no streaks: a quiet day costs nothing.",
         style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
     )
 }
@@ -453,8 +451,8 @@ private const val BREATH_MILLIS = 10_000
 private fun CalmBreakView(model: AppModel) {
     val care = model.care
     val reduce = model.data.settings.reduceMotion
-    var seconds by remember { mutableStateOf(CareRules.BREAK_MIN_SECONDS) }
-    var startedAt by remember { mutableStateOf<Long?>(null) }
+    var seconds by model::calmBreakSeconds
+    var startedAt by model::calmBreakStartedAt
     var result by remember { mutableStateOf<String?>(null) }
     val buddy = model.store.careBuddy
     var wake by remember { mutableStateOf(0) }
@@ -479,7 +477,9 @@ private fun CalmBreakView(model: AppModel) {
 
     val start = startedAt
     val elapsed = if (start == null) 0L else (model.now - start).coerceAtLeast(0)
-    if (start != null && elapsed >= seconds * 1000L) finish(seconds)
+    val timeUp = start != null && elapsed >= seconds * 1000L
+    // A break left for much longer than its length (the screen was closed and opened later) is dropped, not paid.
+    LaunchedEffect(timeUp) { if (timeUp) { if (elapsed > (seconds + 600) * 1000L) startedAt = null else finish(seconds) } }
 
     val breath = if (start == null) -1L else elapsed / BREATH_MILLIS
     LaunchedEffect(breath) { if (breath >= 0 && !reduce) { breathing = true; wake++ } }
@@ -503,7 +503,6 @@ private fun CalmBreakView(model: AppModel) {
         if (start != null) StatusIcon(StatusKind.SLEEP, (3 * LocalDensity.current.density).roundToInt(), Modifier.align(Alignment.BottomCenter).padding(bottom = Spacing.XXL + 96.dp).offset(x = 36.dp), loop = true, animate = !reduce)
     }
     if (start == null) {
-        RewardBox(model)
         result?.let { line -> TextBox { Text(line, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) } }
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -640,17 +639,21 @@ private fun DiaryView(model: AppModel) {
             if (done) Text("Saved", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         }
     }
-    val past = data.diary.filter { it.day != care.today }.sortedByDescending { it.day }.take(14)
+    var pastShown by remember { mutableStateOf(14) }
+    val pastAll = data.diary.filter { it.day != care.today }.sortedByDescending { it.day }
+    val past = pastAll.take(pastShown)
     if (past.isNotEmpty()) SectionLabel("Earlier cards")
     past.forEach { c ->
         ListRow(onClick = { cardDay = c.day; done = false }, onClickLabel = "Open this card to edit", trail = { PixelIconButton("trash", "Delete", { val before = model.careData; care.deleteDiary(c.id); model.offerUndo("Deleted: diary card") { care.restore(before) } }, Pixel.InkSoft) }) {
             Text(c.day.short(), style = MaterialTheme.typography.bodyLarge)
             val strongest = c.feelings.entries.sortedByDescending { it.value }.filter { it.value > 0 }.take(3)
             if (strongest.isNotEmpty()) Text(strongest.joinToString(", ") { "${it.key.label} ${it.value}" }, style = MaterialTheme.typography.bodyMedium)
+            if (c.urges.isNotEmpty()) Text("Urges: " + c.urges.entries.joinToString(", ") { "${it.key} ${it.value}" }, style = MaterialTheme.typography.bodyMedium)
             if (c.skills.isNotEmpty()) Text("Skills: " + c.skills.mapNotNull { Skills.byId(it)?.name }.joinToString(", "), style = MaterialTheme.typography.bodyMedium)
             c.note?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
         }
     }
+    if (pastAll.size > pastShown) PixelButton("Show older", { pastShown += 14 }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
 }
 
 // ----- Skills ---------------------------------------------------------------------------------------------------------
@@ -663,7 +666,6 @@ private fun SkillsView(model: AppModel) {
     val practised = care.practisedToday()
     val skill = open?.let { Skills.byId(it) }
 
-    RewardBox(model)
     if (skill != null) {
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -760,7 +762,9 @@ private fun JournalView(model: AppModel) {
         query, { query = it.take(60) }, Modifier.fillMaxWidth(), singleLine = true,
         placeholder = "Search the journal",
     )
-    val entries = care.searchJournal(query).take(30)
+    var shown by remember { mutableStateOf(30) }
+    val found = care.searchJournal(query)
+    val entries = found.take(shown)
     if (data.journal.isNotEmpty() && entries.isEmpty()) EmptyState("Nothing found", "No entry has \"${query.trim()}\" in it.", icon = CareSection.JOURNAL.icon, action = "Clear the search" to { query = "" })
     entries.forEach { e ->
         ListRow(
@@ -776,6 +780,7 @@ private fun JournalView(model: AppModel) {
         }
         if (editingId == e.id) JournalEditor(model, e) { editingId = null }
     }
+    if (found.size > shown) PixelButton("Show older", { shown += 30 }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
 }
 
 /** An entry's words, tags and the exact moment it is dated to. */
@@ -853,7 +858,7 @@ private fun TrendsView(model: AppModel) {
     }
 }
 
-/** How far the next Care Egg is: every routine, calm break and skill fills it a little. */
+/** How far the next Care Egg is: every routine, calm break, skill and play fills it a little. */
 @Composable
 private fun CareEggMeter(model: AppModel) {
     model.data // observe the save: the store itself is not Compose state
@@ -864,7 +869,7 @@ private fun CareEggMeter(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(label, style = MaterialTheme.typography.bodyLarge)
             PixelBar(points.toFloat() / size, color = Pixel.Green, label = label)
-            Text("A routine adds 1, a calm break or a skill 2.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Text("A routine or a play adds 1, a calm break or a skill 2.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }
