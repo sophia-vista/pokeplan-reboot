@@ -1,6 +1,6 @@
 ---
 name: design-references
-description: Ideas from 16 design-reference sites (navbar.gallery, cta.gallery, supahero.io, 404s.design, detail.design, minimal.gallery, a1.gallery, seesaw.website, maxibestof.one and seven component libraries such as interior.dev, beui.dev and uiarc.dev), translated from websites to PokéPlan's app screens and filtered through its rules (real game assets only, gentle by design, Reduce motion), with an avoid list of trends that clash. Use before designing or restyling a screen, tab, menu, empty or error state, reward moment, onboarding step or micro-interaction in composeApp or the widgets, or when someone asks what a reference site suggests.
+description: Ideas from 16 design-reference sites (navigation, calls to action, empty states, micro-interactions, lists, component libraries), translated from websites to PokéPlan's app screens and filtered through its rules (real game assets only, gentle by design, Reduce motion), with an avoid list of trends that clash. Use before designing or restyling a screen, tab, menu, empty or error state, reward moment, onboarding step or micro-interaction in composeApp or the widgets, or when someone asks what a reference site suggests.
 ---
 
 # Design references
@@ -13,9 +13,10 @@ translated to a screen, a tab or a moment in the app.
 **Laws of UX:** `docs/laws-of-ux-review.md` checks every screen against lawsofux.com and lists what was fixed, what
 already held and what is left; read it with this file, and keep it current when a screen changes.
 
-**Order of authority:** `CLAUDE.md`, `docs/design.md` (game rules, Look and feel, ADHD-friendly design, Ideas adopted
-from other apps) and `docs/ui-ux-brief.md` (tokens, component states, accessibility) always win. This file only gives
-ideas. Nothing here changes a game rule, a reward or a number. If an idea needs a new dependency or a new kind of
+**Order of authority:** `CLAUDE.md`, `docs/pokelife/FEATURES/DESIGN_SYSTEM.md` (sections 5.1 and 12A) and the
+`docs/pokelife/` spec of the module win; then `docs/design.md` (what the code does today: Look and feel, ADHD-friendly
+design, Ideas adopted from other apps) and `docs/ui-ux-brief.md` (tokens, component states, accessibility). This file
+only gives ideas. Nothing here changes a game rule, a reward or a number. If an idea needs a new dependency or a new kind of
 asset, ask the owner first.
 
 **Not captured:** maxibestof.one sits behind a Cloudflare bot check that blocked curl and the headless browser on both
@@ -27,9 +28,9 @@ them by hand if you need them.
 1. Find the part of the app you're designing below. Read "take this" and "not that".
 2. Check the avoid list. If the idea is on it, drop it.
 3. Build it from what exists: colours and sizes from `Pixel` and `Spacing` in `theme/PixelTheme.kt`; `TextBox`,
-   `PixelButton`, `GameBox` there; `ScreenHeader`, `NamePlate`, `SectionLabel`, `StatChip`, `ListRow`, `RankBadge`,
-   `ExpBar` in `theme/Widgets.kt`; `MenuGrid` and `SectionScaffold` in `screens/Menu.kt`; `EmptyState` in
-   `screens/Planner.kt`; `RewardBox` and `UndoRows` in `screens/Components.kt`. No one-off colours or sizes.
+   `PixelButton`, `GameBox`, `ExpBar` there; `ScreenHeader`, `SectionLabel`, `StatChip`, `ListRow`, `RankBadge` in
+   `theme/Widgets.kt`; `MenuGrid` and `SectionScaffold` in `screens/Menu.kt`; `EmptyState` in `screens/Planner.kt`;
+   `RewardBox` and `UndoBar` in `screens/Components.kt`. No one-off colours or sizes.
 4. Check it in `ScreenshotTest` (light and dark, and at a large font scale), with Reduce motion on, and at a narrow
    phone width.
 
@@ -41,7 +42,7 @@ them by hand if you need them.
   chrome (panels, buttons, bars) is drawn in code.
 - **Gentle by design:** low friction, few choices, sensible defaults, warm neutral words, no shame. Overdue is calm,
   never a red alarm. A missed day never costs anything.
-- **The buddy never chats:** no speech bubbles, needs or mood meters; one emoji reaction only for a real event or a tap.
+- **The buddy never chats:** no speech bubbles, needs or mood meters; one status-icon reaction (`ReactionIcon`, no emoji) only for a real event or a tap.
 - **Motion:** every animation has a still version for Reduce motion, ceremonies are skippable, nothing flashes, and
   nothing moves while someone is reading or typing. The real idle animations of sprites are the one thing that loops.
 - **`DayBackground` is the page:** screens never paint their own opaque background over it.
@@ -85,8 +86,8 @@ full-height photo), Orchid (a floating pill nav over a blurred colour background
 - Clonix's full-screen list of large words is close to our section menus: `MenuGrid`'s big cards with real item
   icons, one tap to a section, Back to return.
 - Breadcrumbs, made small: `SectionScaffold`'s title and Back, and the system back gesture, always.
-- Side Bar: on wide desktop and web windows a labelled side rail can stand in for the bottom tabs (same four
-  sections, same order). Phones keep the bottom tabs.
+- Side Bar: on wide desktop and web windows (dev conveniences only; Android is the product) a labelled side rail can
+  stand in for the bottom tabs (same four sections, same order). Phones keep the bottom tabs.
 - Announcement: one slim, dismissible line for something that really changed (What's new, tomorrow's spotlight
   type). One at a time, never stacked.
 - Search Bar: only where lists get long (Planner All, Pokédex), at the top of that list, never in the tab bar.
@@ -104,7 +105,7 @@ Antler and KARO (huge type).
 - The picture carries the screen, with very little text (Dream Design Laboratory, Lando Norris). Ours: the buddy,
   large and animated in its scene (`BuddyStage`), level and progress small in a corner.
 - Text in its own space beside or under the picture, never over it (Treize grammes). Over a scene, use a panel
-  (`NamePlate`, `TextBox`) rather than bare text.
+  (`TextBox`) rather than bare text.
 - One headline, one line, one button (Dribbble). Ours: the title screen and each onboarding step: one question,
   sensible default already chosen, one PixelButton.
 
