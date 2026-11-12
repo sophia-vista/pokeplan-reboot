@@ -1,0 +1,90 @@
+# PokéLife UI/UX review at 0.172.0
+
+12 November 2026. Every screen the `ScreenshotTest` suite renders (432 PNGs: each module and section, first use, empty, dark and 1.3× text, the launcher, World and the cutscenes) was read against three references and the app's own rules:
+
+- [Laws of UX](https://lawsofux.com/) (30 laws), [UX Design Institute's 21 laws](https://www.uxdesigninstitute.com/blog/laws-of-ux/) (all also on Laws of UX) and [Laws of UI](https://www.uilaws.com/) (13; adds Symmetry, Rule of Thirds, White Space, Colour, Typography Hierarchy, Consistency, Contrast, Closure, Continuity).
+- `FEATURES/DESIGN_SYSTEM.md` 5.1 and 12A, and the [0.165.1 design review](DESIGN-REVIEW-0.165.1.md) with the owner's answers.
+- **The owner's bar (12 November 2026):** "as perfect as Linear's website or Apple Notes: simple purpose, simple architecture, simple design, simple implementation. Cut taglines, helper text and secondary labels. If a screen needs them to make sense, fix the layout. Every decision should elevate UX, DX and AX at once, without breaking anything."
+
+Screenshot names below are the files `./gradlew :composeApp:jvmTest --tests "*ScreenshotTest*"` writes to `composeApp/build/screenshots/` (about 17 minutes). No code changed in this review.
+
+## 1. Verdict
+
+The visual language is consistent and the World, cutscenes, Meadow and HOME's "Needs a look" list already meet the bar: a picture, one line, one action. The utility modules do not. Their screens are long because they explain themselves, ask for every field at once and stack every part of the module on its landing page. The fix is mostly deletion and five shared components, which helps users (less to read and tap), developers (fewer parameters and one way to do each thing) and agents (a component with no caption slot cannot grow a caption; a test that counts words catches what a rule in prose does not).
+
+## 2. The bar, made testable
+
+| Rule | Test on a screenshot | Laws |
+|---|---|---|
+| One purpose per screen | The title says it; nothing else on the screen needs a heading to explain why it is there | Occam's Razor, Selective Attention, Prägnanz |
+| One primary action | Exactly one filled key; it is the thing most people come for | Von Restorff, Fitts's Law, Contrast |
+| No text that explains | No sentence under a title, field, switch or chart; rules live in Help, once | Cognitive Load, Paradox of the Active User |
+| One input per value | A date, time or amount is one row; the picker opens on tap | Hick's Law, Tesler's Law, Postel's Law |
+| One frame per group | Rows divided by a line inside one dialogue box; never a box per row or a box in a box | Common Region, Proximity, White Space |
+| One colour per module | Every key, chip, frame and bar inside a module is its accent; neutral ink otherwise | Similarity, Consistency, Colour |
+| Say each fact once | A name, rank, figure or date appears once per screen | Working Memory, Typography Hierarchy |
+
+## 3. The twelve findings
+
+| # | Finding | Seen in | Fix | UX / DX / AX |
+|---|---|---|---|---|
+| 1 | **Screens explain themselves.** About 450 sentence-length strings (8+ words) sit in the UI code outside comments, Help, What's New, tutorials and the story. Every Settings switch has a paragraph (Heal Field Research is 7 lines; Mint Bill reminders 6; HOME and LINK reminders 8). Heal Connections and Mint Import are research notes shipped as UI ("UnionBank has a developer portal for businesses, and the BSP has an Open Finance framework..."; a card for "Reading payment notifications: Not built"). The Atlas legend is prose ("Diamond: open. Circle with a tick: cleared..."). "Your target is 2 L. No rush." is the exact reassurance 12A bans. The perks sentence ("Open at rank Trainer. Your party is already growing them.") is on six module pages. | heal-xl-settings, mint-settings, home-xl-settings, link-settings-reminders, heal-connections, mint-import, world-map, heal-xl-hydration, plan-full | Delete. A rule a user needs goes in Help once. Cards for features that do not exist go. A legend becomes symbols that read on their own (or a Help entry). | UX: less to read. DX: `SettingRow(title, toggle)` and `MenuCard(icon, title)` lose their body parameter. AX: a `CopyBudgetTest` fails on any UI string over 8 words outside `Help.kt`, `WhatsNew.kt` and the story text. |
+| 2 | **Three inputs and an echo for one value.** A date is preset chips + an ISO text field ("2026-11-13") + an echo line ("Fri 13 Nov 2026") + a month grid; a time is a field + echo ("9:30 am") + six nudge keys (−1h −15 −1 +1 +15 +1h) + Now; a length is presets + field + echo + −5/+5. Logging a night's sleep is two of these (about 30 controls); logging a walk about 30; an expense two screens. | date-picker-light, exact-fields-light, heal-xl-sleep, heal-activity, mint-activity, care-journal, heal-xl-hydration | One `WhenField` row showing "Today, 9:30" (and one `AmountField`): tap opens one sheet with presets, the calendar and the time. Defaults to now; most logs never open it. | UX: logging is 2 taps. DX: one component replaces `DateField` + time field + nudges in about 20 places. AX: one API to call. |
+| 3 | **Module pages stack every part of the module, the work last.** Lead stage, payouts, a 5-second tutorial card, a summary, menu cards, a "<X> Research is on · <X> Egg 0 of 4" caption, the party grid with empty slots, the perks sentence. Care's landing page has seven sections; Plan's Today is below the party. | plan-full, care-full, heal-menu, mint-menu, home-menu, link-menu | One scaffold for every module page: the lead strip, **Today** (only what is due, each with its one action), then the sections. The party (six slots, owner's decision 5) becomes one row "Party · 3 of 6" that opens it; the research line and the perks sentence go. | UX: the work is in the first screen (Pareto, Serial Position). DX: `ModulePage(lead, today, sections)`. AX: one template, eight modules. |
+| 4 | **Navigation is menus of cards, two levels deep.** Plan → Planner (7 cards + Lists) → Today is three taps to the main list. World → Journal is another 4-card menu. Me is a stats card and two cards. The Pokémon tab is five cards in five module colours. | plan-full, planner, world-archive, me-menu, collection-quests | Plan opens on Today. Sections as rows with icon, title and count (Reminders, Things, iOS Settings). Me becomes one settings list under the profile. **Owner decision:** CLAUDE.md and 12A ask for a menu of cards; this asks for rows where the items are destinations with counts. | UX: fewer taps (Hick, Jakob). DX/AX: one `SectionList`. |
+| 5 | **Add forms are always open above the list.** Accounts, Bills, Budgets (17 category chips), Link Dates (12 month keys), Heal Goals, Targets, Notes: the empty form is the first thing on the screen and the records come after it. | mint-accounts, mint-bills-reminders, mint-xl-budgets, link-xl-dates, heal-xl-goals, planner-habits | List first. One "+" key in the header opens a sheet with the one or two fields that matter (name, amount); the rest behind "More". Apple Notes: the list, then one compose key. | UX: the records lead. DX/AX: one `RecordSheet` for add and edit (also closes REP-025 a). |
+| 6 | **Colour says nothing.** LINK's blue is the generic key colour in Plan (Add a task box, All tasks filters, Day/Week/Month, Focus), Care (Play chips), Heal (Add a drink, Edit keys, goal bar) and every Gear tool frame; Heal's Goals card is MINT ochre; the 5-second keys are green in Mint and Link; Plan's chart bars are blue; the tab bar turns the module's colour (5.1 says neutral chrome); the Pokémon tab is a rainbow of module colours that mean nothing there. Still open from 0.165.1 section 3. | planner, focus-setup, care-play, heal-menu, gear-*, plan-growth, dark-planner, collection-menu | A `LocalModuleAccent` set by the module scaffold; `PixelButton`, chips, frames and bars read it; `Pixel.Blue` leaves the shared components. Neutral ink outside modules. | UX: colour means "this module" (Similarity). DX: no colour argument on most calls. AX: an agent cannot pick the wrong colour. |
+| 7 | **A box per row and boxes in boxes.** Help (each question its own box), Bag, Care routines and Today, Heal and Mint history, Mint accounts, budgets, bills and activity (boxes inside a box), World skills, Link Visitors. Still open from 0.165.1. | me-help, collection-bag, care-routines, heal-xl-hydration, mint-accounts, mint-xl-budgets, world-skills | One dialogue box per group; rows divided by a line. | UX: Common Region reads again. DX/AX: one `RowList`. |
+| 8 | **Rewards block the work.** Unseen payouts render as a stack of panels at the top of every Care page until OK; the Home reward is a dialogue in the page; Plan's Review lists five or six reward chips per session; World's "Since you last looked" is a log ("1 side paths opened with field moves; 1 passed by (no one who could open them)"). Still open from 0.165.1. | care-full, care-routines, care-calm, care-skills, home-rewards, plan-review, world-menu, world-teams | One celebration (the lead's portrait, the total, one key) over the page, once; afterwards a single line in history. | UX: Peak-End. DX/AX: one `Celebration` host instead of per-screen panels. |
+| 9 | **The same fact two to four times.** A Pokémon's name three times and types twice on its page; trainer rank on the Home and Me headers; a budget as "₱1,845.50 of ₱8,000.00", "23%", a bar and "₱6,154.50 left"; the focus timer "25:00" and "Focused 0 of 25 min"; the exploration rank in the World header and a card under it; Mint's overview as Net position, Available and the sum that makes it. | pokemon-detail-whole, home, me, mint-xl-budgets, focus-running, world-menu, mint-menu | Keep the one the user acts on (Available; time left; the bar with one figure); the rest on tap. | UX: Working Memory. DX/AX: fewer strings and states. |
+| 10 | **The primary action does not stand out, and checkboxes move.** Focus has two starts ("Start 25 min" outline, "Just 5 minutes"); Save keys are outlines; Gear puts a lone "Star" key on its own row above every tool; the check key is on the right in Planner and Link Follow-ups, on the left in HOME, alone on its own row in Plan's Next up; the Pokédex entry's Back is on the right. | focus-setup, plan-full, planner-today, home-xl-chores, gear-*, pokedex-entry | One filled primary key per screen. The check is the leading element of every checkable row. Star is a header icon. Back is always top left. | UX: Von Restorff, Jakob, Fitts. DX/AX: `CheckRow` with the check built in. |
+| 11 | **Layout bugs in the screenshots.** (a) Care "How is today?": five mood keys with `Modifier.weight(1f)` cut to "Ro…", "Ok…", "Go…", "Gr…" (`Care.kt` 883). (b) Mint → Settings → Categories: three keys beside each name wrap it a letter at a time ("Groce ries", "Eatin g out", `Mint.kt` 1000 to 1006). (c) Link Follow-ups at 1.3×: the "Day, optional" label is drawn over the "Add a follow-up" placeholder (`Link.kt` 486). (d) Heal Goals: the "Drinks a day (ml)" chip renders in a larger bold face. (e) Planner week view at phone width cuts titles to four letters ("Lunc", "Stud"). (f) World Finds leaks a log tag ("exploring: 325 Poké, Dry Berry x2…"). (g) Targets' empty state offers "Add a task". (h) `mint-account-edit` has no page gutter (check whether this is the test harness). | care-full, mint-settings, link-xl-follow_ups, heal-xl-goals, planner-week, world-bag, planner-habits, mint-account-edit | Fix each; a, b and e disappear with findings 5 and 10 (row tap → sheet; a 3-day or agenda view on phones). | — |
+| 12 | **Still open from 0.165.1:** "Home" is a tab and a module (the HOME page's header says "Home"); the diary uses emoji faces (12A rule 4); the five "do it for 5 seconds" cards ("A 5 second walk gives you a first Pokémon for Heal's party") are pretend actions repeated in five modules. | home-menu, care-diary, first-plan, first-care, heal-menu-empty, mint-menu-empty, link-menu-empty | Rename the module (owner); PMD emotion portraits for moods; the first real record hatches the first Pokémon, from one shared component. | — |
+
+## 4. Cut list (copy to delete, no layout change needed)
+
+Each line is a category with examples; together they are most of finding 1.
+
+- **Paragraphs under switches:** every Settings screen of Heal, Mint, HOME, LINK; Mint's "Name the bill" and "Your quiet hours and focus sessions still hold a reminder back."
+- **Privacy and method reassurance:** "Your records stay on this phone...", "Calculated from the records on this phone. Transfers between your accounts are left out...", "The last sums are kept on this phone only.", "Never a full number, a PIN or a code.", "Heal never sets one for you.", "Everyday randomness for choosing a dinner... not for gambling" (twice).
+- **Unavailable features:** "Exporting is not available on this device." (four modules), "Choosing a file is not available on this device.", the payment-notification and bank cards in Import, Huawei in Connections.
+- **Instructions the control already shows:** "Breathe in as the circle grows, out as it shrinks.", "Hold one and drag it to an hour, or tap it, then an hour.", "Type a sum, for example 2 + 3 × 4", "Tap a marker.", "0 is not at all, 5 is very strongly. Leave out any you like.", "Stay with it, and keep the phone still.", "Answer: Fill in the numbers above."
+- **Secondary labels and prefixes:** "Trainer rank:", "EXP", "50 points to Apprentice", "No lead yet", the module taglines on Home ("Routines and calm", "Dungeons and expeditions"), "Next up", "Today's question", "Lead: Abra, Lv. 1", "Task:", "Focus: 25 min", "Mint: 1 bill to settle", "C: Medium, Personal", ", optional" in field labels, "Bank account · Daily spending".
+- **Echo lines:** the formatted date under every ISO field, "30 min" under "30", "metre to kilometre", "Counted from Thu 12 Nov 9:00."
+- **Repeated status captions:** "<X> Research is on · <X> Egg 0 of 4" (five modules), the perks sentence (six), "Care Egg: 0 of 3 / A routine adds 1, a calm break or a skill 2."
+- **Chart method:** "Where your effort went" and its four lines; "Tasks ticked off in each of the last 6 weeks (weeks start on Monday)"; eight rows of "Week of 2 Nov: not rated".
+
+## 5. Module notes
+
+| Module | Keep | Change first |
+|---|---|---|
+| Home tab | Buddy stage; "Also today" idea | Header to name + rank + bar; module cards to one Today list (each due item with its action, the row is the tap target); no taglines; the streak inside the header, not a box at the bottom |
+| Me | Profile | Merge with Settings into one list; Help as one box of rows |
+| PLAN | Next up, Planner sections with counts | Open on Today; check leading; difficulty letter (E to A) out of the leading slot (a dot or nothing); All tasks filters behind one Filter key; task sheet When tab as one `WhenField` + repeat + remind; Progress without the method text |
+| Focus | Egg stage | One filled Start; "Another length" as a fifth preset; running screen: time, egg, Pause, Give up |
+| CARE | Meadow (the model screen), Calm | Landing page per finding 3; mood keys fixed; diary with portraits; Skills without the DBT paragraph and per-skill descriptions (in Help); Trends shows only rated weeks |
+| HEAL | Quick drink amounts | Lead with +150/+250/+330/+500; sleep as one range ("23:00 → 07:00"); Activity as type + length + Save; Connections to source, status and Read now |
+| MINT | Overview totals, bill rows | Available as the one big figure; add an expense with amount first, category as one picker; Bills shows this month only; Import to one "Import a CSV"; Categories row tap → sheet |
+| HOME | "Needs a look" (best block in the app) | Module rename; one add key instead of four; search in the header |
+| LINK | "Coming up" | Follow-up overlap; Dates form in a sheet with a date field, not 12 month keys; filters and sort separated |
+| Pokémon | PC, hatch and evolution scenes | Detail: hero, one action row (Feed, Move to…, More), then details; one neutral colour on the tab's cards; Bag as one box of rows |
+| WORLD | Map, recruit card, story player | "Since you last looked" to a headline and icons; legend out; Settings into World's menu (one switch); Journal's 4-card menu as rows |
+| GEAR | Calculator keypad, Stopwatch | Rose accent instead of blue; Star in the header; Picker rows: tap to edit, swipe or long-press for the rest (with an accessible menu); research text in Currency to one "ECB rate, 12 Nov" line |
+| Launcher | Town, grid | Out of scope for the module rules (3.2); "Back" as a full-width box row could be a header like the app's |
+
+## 6. Order of work
+
+Each batch is one PR, gated by `./gradlew jvmTest compileKotlinWasmJs` and the screenshots of the screens it touches in both palettes. Nothing here changes a save, a rule or a reward.
+
+1. **Bugs and cuts** (findings 11 and 1, section 4): delete the copy, fix 11 c, d, f, g, h; add `CopyBudgetTest`. Text-only changes may break tests that assert the deleted strings: update those tests in the same commit.
+2. **One accent** (finding 6): `LocalModuleAccent`; remove `Pixel.Blue` from shared parts; neutral tab bar (or update 5.1 if the owner prefers the coloured bar).
+3. **`WhenField` and `AmountField`** (finding 2), then the Heal and Mint log forms on top of them.
+4. **`ModulePage` scaffold** (findings 3, 5, 7, 8, 10): Today first, add sheets, one frame per group, one celebration, leading checks. Module by module, Plan first.
+5. **Navigation** (finding 4), after the owner's decision.
+
+## 7. For the owner to decide
+
+1. **Rows or cards for section menus** (finding 4). CLAUDE.md and 12A ask for a menu of cards; the review recommends rows with counts where a section has records (Planner, Pokémon, World Journal) and cards only where it does not.
+2. **Coloured or neutral tab bar inside a module** (finding 6; 5.1 says neutral, the code colours it).
+3. **The 5-second first-Pokémon cards** (finding 12): replace with the first real record in each module, or keep one shared card.
+4. **A new name for the HOME module** (finding 12), so "Home" is only the tab.
