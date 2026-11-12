@@ -174,7 +174,6 @@ private fun MintMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             ModuleLeadStage(model, Module.MINT, model.data.player.mintLead, model.store.moduleEvent(app.pokeplan.app.GameStore.MINT_LOG_PREFIX), openPokemon = openPokemon)
-            RewardBox(model)
             TutorialCard(model, Tutorials.MINT_TALLY, mintRecords = data.accounts.size + data.transactions.size)
             OverviewCard(model)
             MenuGrid(
@@ -794,7 +793,6 @@ private fun MintReviewView(model: AppModel) {
     val data = model.mintData
     val today = model.store.today
     val currency = data.settings.currency
-    RewardBox(model)
     val (from, end) = MintRules.periodOf(BudgetPeriod.MONTHLY, today)
     val spent = MintRules.spent(data, from, end, currency)
     val earned = MintRules.earned(data, from, end, currency)

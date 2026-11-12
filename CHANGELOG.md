@@ -5,6 +5,15 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.172.1
+
+The easy fixes left by the Plan audit and the Care review (`docs/pokelife/evidence/PLAN-AUDIT-0.167.2.md`, `CARE-REVIEW-0.167.2.md`), the owner's answers of 12 November 2026, and the Home dashboard. No reward number changes.
+
+- **Plan.** "Add a task" in the empty Next 7 days and All tasks opens Today with the keyboard up (it did nothing); the empty Done offers "Open Today"; the empty Inbox and Targets point at the field above them, and Targets says "Add a target". "No date" clears the planned day only, not the deadline. "Won't do" offers Undo. A task's edits are saved as they are made (a short pause after typing, and when the tab closes): no Save key, nothing lost by switching tabs. Steps can be renamed, removed and unticked; a goal's milestone can be unticked; a goal deleted from its editor offers Undo; a target can be edited (words, how often, rank, category) and deleted with Undo; a finished task can be deleted. Unticking keeps "paid", so ticking again pays nothing more. The calendar pages freely back and forward, and a week is the calendar week from the day Settings sets. Every delete in Plan is grey; the Targets add key is no longer red; Give up asks "Really give up?" first; Progress points at Plan, Goals.
+- **Care.** The sweet berry is offered to a visitor even when the Bag holds all five flavours. The Meadow's corner labels are readable in the dark palette. A visitor is visited or played with in the Meadow itself, and Care Play's invite list is your own Pokémon with Show more. The journal and the earlier diary cards end with Show older, and a diary card's urge ratings show in its history row. A calm break survives leaving the screen and finishes in an effect, not during drawing (one left for ten minutes past its length is dropped, not paid). Surprise me changes after each time played. Care's landing and the Meadow call `arrive()` once. Words: routines earn Exp. Candy and a little friendship (not berries); the Egg meter line counts a play; `befriend` says up to four a day. Removed the dead `CareRules.paidOn`.
+- **Home dashboard.** The new-rewards box shows on Home only (it showed on every module page, so a World Pokémon appeared in Care). A Quick log card (task, +250 ml, expense, and how is today in one tap), and "Also today" adds Mint bills due in the next 3 days and Link dates this week (counts only, never a name or an amount; nothing for a locked or gated module).
+- Left for the owner or for a bigger change: REP-030 in `docs/pokelife/IMPLEMENTATION_BACKLOG.md`.
+
 ## 0.172.0
 
 Exact dates, times and lengths in every module, and edit screens where a record could only be added or deleted (owner, 12 November 2026: "I would prefer to input specific dates and times, to have edit functions"). No reward number changes; `RewardRules.VERSION` is unchanged, and a correction never pays and never takes back.

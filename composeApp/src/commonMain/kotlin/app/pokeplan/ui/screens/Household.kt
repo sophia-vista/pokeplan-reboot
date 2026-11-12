@@ -206,7 +206,6 @@ private fun HouseholdMenu(model: AppModel, onBack: () -> Unit, openPokemon: (Str
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             ModuleLeadStage(model, Module.HOME, model.data.player.homeLead, model.store.moduleEvent(app.pokeplan.app.GameStore.HOME_LOG_PREFIX), openPokemon = openPokemon)
-            RewardBox(model)
             TutorialCard(model, Tutorials.HOME_TIDY, homeRecords = data.chores.size + data.supplies.size + data.assets.size)
             HouseholdOverview(model, overview)
             HouseholdSearch(model)
@@ -443,7 +442,6 @@ private fun ChoresView(model: AppModel) {
     val due = shown.filter { inDueTab(it, today) }
     val upcoming = shown.filter { v -> v !in due && !((v.state == ChoreState.DONE || v.state == ChoreState.SKIPPED) && v.chore.recurrence.kind == RepeatKind.ONCE) }
     val archived = data.chores.filter { it.status == RecordStatus.ARCHIVED }
-    RewardBox(model)
     TextBox { ChoreForm(model, null, onDone = {}) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -815,7 +813,6 @@ private fun MaintenanceView(model: AppModel) {
     val history = HomeRules.maintenanceHistory(data).take(60)
     val assets = data.assets.filter { !it.archived }
     val archivedAssets = data.assets.filter { it.archived }
-    RewardBox(model)
     if (tab == 0) TextBox { ScheduleForm(model, null, onDone = {}) }
     if (tab == 1) TextBox { AssetForm(model, null, onDone = {}) }
     TextBox {

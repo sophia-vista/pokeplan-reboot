@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import app.pokeplan.plan.Category
 import app.pokeplan.ui.theme.FieldLabel
+import app.pokeplan.ui.theme.ModuleAccent
 import app.pokeplan.ui.theme.Pixel
 import app.pokeplan.ui.theme.PixelButton
 import app.pokeplan.ui.theme.Spacing
@@ -66,28 +67,18 @@ internal fun CategoryChips(selected: Category?, allowNone: Boolean = false, onSe
 }
 
 /**
- * A day, optional: a few presets counted from [today] (label to days ahead), "No date", and, once a day is set, a nudge of
- * [step] days each way with the date between. [label] names the field.
+ * A day, optional: a few presets counted from [today] (label to days ahead), "No date", and "Pick a date" for a month to tap.
+ * [label] names the field.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun DayPicker(
     label: String, value: LocalDate?, today: LocalDate, presets: List<Pair<String, Int>>, noneLabel: String = "No date",
-    step: Int = 1, onChange: (LocalDate?) -> Unit,
+    onChange: (LocalDate?) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         FieldLabel(label)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            TabButton(noneLabel, value == null, { onChange(null) })
-            presets.forEach { (name, days) ->
-                val day = today.plus(DatePeriod(days = days))
-                TabButton(name, value == day, { onChange(day) })
-            }
-        }
-        if (value != null) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelButton(if (step == 1) "-1 day" else "-$step days", { onChange(value.plus(DatePeriod(days = -step))) }, color = Pixel.InkSoft, compact = true)
-            Text(value.short(), style = MaterialTheme.typography.bodyLarge)
-            PixelButton(if (step == 1) "+1 day" else "+$step days", { onChange(value.plus(DatePeriod(days = step))) }, color = Pixel.InkSoft, compact = true)
-        }
+        // Presets for the common days; "Pick a date" opens the month for any other (the shared picker, with no limit either way).
+        PixelDateField(value, today, ModuleAccent.PLAN.accent, onChange, presets = presets, noneLabel = noneLabel)
     }
 }

@@ -117,6 +117,7 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
             // The global buddy lives here: Home is the one place that shows it (Plan and the other modules show their own party).
             HomeBuddyStage(model) { data.player.buddyId?.let(openPokemon) }
             RewardBox(model)
+            QuickLogCard(model, go)
 
             PlanRegionCard(model, go)
             if (data.settings.careModule) CareRegionCard(model, go)
@@ -241,6 +242,42 @@ private fun CareRegionCard(model: AppModel, go: (Place) -> Unit) {
     }
 }
 
+/** How many days ahead "bills due soon" looks, and how many "dates this week" counts. */
+private const val SOON_DAYS = 3
+private const val LINK_DATES_DAYS = 7
+
+/**
+ * The few things done many times a day, one tap each, so a drink or a mood does not take four taps through Modules: a task, a
+ * glass of water, how today is, and an expense. A module that is switched off or locked has no key here. Nothing shows a figure.
+ */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun QuickLogCard(model: AppModel, go: (Place) -> Unit) {
+    model.careData; model.healData // the mood and the water redraw their own keys
+    val locked = model.data.settings.lockedModules
+    val moods = listOf("Rough", "Low", "Okay", "Good", "Great")
+    val mood = if (model.data.settings.careModule && Module.CARE.name !in locked) model.care.diaryToday()?.mood else -1
+    TextBox {
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
+            PixelTitle("Quick log")
+            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                PixelButton("Task", { model.addTaskRequested = true; go(Place.PLANNER) }, color = ModuleAccent.PLAN.accent, compact = true)
+                if (Module.HEAL.name !in locked) PixelButton("+250 ml", { model.heal.logDrink(250); model.haptic(); model.effect(Sfx.HEAL) }, color = ModuleAccent.HEAL.accent, compact = true)
+                if (Module.MINT.name !in locked && !model.mintData.settings.gate) PixelButton("Expense", { go(Place.MINT) }, color = ModuleAccent.MINT.accent, compact = true)
+            }
+            if (mood != -1) {
+                Text("How is today?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+                    moods.forEachIndexed { i, name ->
+                        val level = i + 1
+                        TabButton(name, mood == level, { model.care.setMood(if (mood == level) null else level); model.haptic() }, Modifier.weight(1f), key = ModuleAccent.CARE.accent)
+                    }
+                }
+            }
+        }
+    }
+}
+
 /**
  * What else is waiting today, from the modules that have nothing of their own on Home (design review, 11 November 2026): a line only for
  * what is due, in the module's own colour, with the one key that goes there. Words are counts, never a bill, a chore or a person's name,
@@ -256,7 +293,10 @@ private fun AlsoTodayCard(model: AppModel, go: (Place) -> Unit) {
     val rows = buildList<@Composable () -> Unit> {
         if (!model.mintData.settings.gate) {
             val due = app.pokeplan.mint.MintRules.upcoming(model.mintData, today, 0).count { it.state == app.pokeplan.mint.OccurrenceState.DUE || it.state == app.pokeplan.mint.OccurrenceState.OVERDUE }
+            // Counts only, never a bill's name or amount: Home is on show to whoever holds the phone.
+            val soon = app.pokeplan.mint.MintRules.upcoming(model.mintData, today, SOON_DAYS).count { it.state == app.pokeplan.mint.OccurrenceState.UPCOMING }
             if (due > 0) add { StepRow("Mint: ${count(due, "bill", "bills")} to settle", "Open", ModuleAccent.MINT.accent) { go(Place.MINT) } }
+            else if (soon > 0) add { StepRow("Mint: ${count(soon, "bill", "bills")} due in $SOON_DAYS days", "Open", ModuleAccent.MINT.accent) { go(Place.MINT) } }
         }
         if (Module.HOME.name !in locked) {
             val o = app.pokeplan.home.HomeRules.overview(model.homeData, today)
@@ -266,6 +306,8 @@ private fun AlsoTodayCard(model: AppModel, go: (Place) -> Unit) {
         if (Module.LINK.name !in locked) {
             val n = model.link.dueNow().size
             if (n > 0) add { StepRow("Link: ${count(n, "follow-up", "follow-ups")} due", "Open", ModuleAccent.LINK.accent) { go(Place.LINK) } }
+            val dates = model.link.upcoming(LINK_DATES_DAYS).size
+            if (dates > 0) add { StepRow("Link: ${count(dates, "date", "dates")} this week", "Open", ModuleAccent.LINK.accent) { go(Place.LINK) } }
         }
         if (Module.HEAL.name !in locked && (model.healData.hydration.isNotEmpty() || model.healData.settings.hydrationTargetMl != null)) {
             val ml = app.pokeplan.heal.HealRules.hydrationOn(model.healData, today) ?: 0
