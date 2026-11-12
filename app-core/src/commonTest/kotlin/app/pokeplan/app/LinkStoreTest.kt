@@ -11,9 +11,12 @@ import app.pokeplan.link.DateKind
 import app.pokeplan.link.FollowUpStatus
 import app.pokeplan.link.LinkKinds
 import app.pokeplan.link.LinkRules
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.Json
@@ -323,6 +326,35 @@ class LinkStoreTest {
         assertFalse(done.paid)
         assertTrue(s.spy.events.isEmpty())
         assertEquals(0, s.game.linkEggMeter())
+    }
+
+    @Test
+    fun aFollowUpPlanFinishedCannotBeReopenedHereAndFollowsItsTaskBackToOpen() {
+        val s = setup()
+        val f = s.followUp("Send the photos")
+        val task = assertNotNull(s.link.convertToPlan(f.id))
+        s.clock.advanceMinutes(30)
+        s.game.completeTask(task.taskId)
+        s.link.syncFromPlan()
+        assertEquals(FollowUpStatus.COMPLETED, s.link.data.followUps.single().status)
+        s.link.reopen(f.id)
+        assertEquals(FollowUpStatus.COMPLETED, s.link.data.followUps.single().status, "PLAN owns the completion, so it is reopened there")
+        s.game.reopen(task.taskId)
+        s.link.syncFromPlan()
+        assertEquals(FollowUpStatus.OPEN, s.link.data.followUps.single().status, "LINK shows what the task is")
+        assertTrue(s.spy.events.isEmpty())
+    }
+
+    @Test
+    fun dueNowLeavesOutWhatPlanOwnsAndWhatIsNotDueYet() {
+        val s = setup()
+        val a = assertNotNull(s.link.addFollowUp("Late one", due = today.minus(2, DateTimeUnit.DAY)).record)
+        val b = assertNotNull(s.link.addFollowUp("In Plan", due = today).record)
+        s.link.addFollowUp("Later", due = today.plus(3, DateTimeUnit.DAY))
+        s.link.addFollowUp("No day")
+        assertEquals(setOf(a.id, b.id), s.link.dueNow().map { it.id }.toSet())
+        s.link.convertToPlan(b.id)
+        assertEquals(listOf(a.id), s.link.dueNow().map { it.id })
     }
 
     @Test

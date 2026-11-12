@@ -264,7 +264,7 @@ private fun AlsoTodayCard(model: AppModel, go: (Place) -> Unit) {
             if (n > 0) add { StepRow("Home: ${count(n, "thing", "things")} to do", "Open", ModuleAccent.HOME.accent) { go(Place.HOUSEHOLD) } }
         }
         if (Module.LINK.name !in locked) {
-            val n = model.linkData.followUps.count { app.pokeplan.link.LinkRules.state(it, today) == app.pokeplan.link.FollowUpState.DUE }
+            val n = model.link.dueNow().size
             if (n > 0) add { StepRow("Link: ${count(n, "follow-up", "follow-ups")} due", "Open", ModuleAccent.LINK.accent) { go(Place.LINK) } }
         }
         if (Module.HEAL.name !in locked && (model.healData.hydration.isNotEmpty() || model.healData.settings.hydrationTargetMl != null)) {

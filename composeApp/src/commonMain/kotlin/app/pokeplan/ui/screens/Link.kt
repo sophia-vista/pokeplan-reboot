@@ -139,8 +139,8 @@ private fun takeJump(section: LinkSection): LinkJump? = pendingLinkJump?.takeIf 
 
 /** The line under Link's card in Modules: how many follow-ups are due today, or what the module is for. Never a name or a word of a record. */
 internal fun linkSubtitle(model: AppModel): String {
-    val today = model.store.today
-    val n = model.linkData.followUps.count { LinkRules.state(it, today) == FollowUpState.DUE }
+    model.linkData // the save changes, so the count is read again
+    val n = model.link.dueNow().size
     return if (n > 0) "$n due" else "people, dates, follow-ups"
 }
 
@@ -223,6 +223,10 @@ private fun planWord(t: app.pokeplan.plan.Task): String = when (t.state) { TaskS
 
 private fun dueText(f: FollowUp, today: LocalDate): String? = f.due?.let { if (it < today) "Due since ${it.short()}" else if (it == today) "Due today" else "Due ${it.short()}" }
 
+/** "Done · 3 Nov" or "Cancelled · 3 Nov": the day it was closed, read from the moment it was (a cancelled follow-up has no completion day). */
+private fun closedLine(f: FollowUp, today: LocalDate): String =
+    "${if (f.status == FollowUpStatus.COMPLETED) "Done" else "Cancelled"} · ${(f.completedMillis?.let(::dayOf) ?: f.completedDay ?: today).short()}"
+
 private fun followUpLine(data: app.pokeplan.link.LinkData, f: FollowUp, today: LocalDate): String {
     val who = f.personId?.let { id -> data.people.firstOrNull { it.id == id }?.let(LinkRules::displayName) }
     return listOfNotNull(who, dueText(f, today)).joinToString(" · ")
@@ -234,7 +238,7 @@ private fun LinkOverview(model: AppModel) {
     val data = model.linkData
     val link = model.link
     val today = model.store.today
-    val due = LinkRules.open(data, today).filter { LinkRules.state(it, today) == FollowUpState.DUE && planTask(model, it) == null }
+    val due = link.dueNow()
     val soon = LinkRules.upcoming(data, today, 14)
     val attention = due.isNotEmpty() || soon.isNotEmpty()
     TextBox {
@@ -295,6 +299,8 @@ private fun openHit(model: AppModel, kind: HitKind, id: String) {
 
 // ----- People -----------------------------------------------------------------------------------------------------------------
 
+private const val DIRECTORY_PAGE = 40
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PeopleView(model: AppModel) {
@@ -308,6 +314,7 @@ private fun PeopleView(model: AppModel) {
     var sort by remember { mutableStateOf(Sort.NAME) }
     var openId by remember { mutableStateOf(jump?.id) }
     var message by remember { mutableStateOf<String?>(null) }
+    var shown by remember { mutableStateOf(DIRECTORY_PAGE) }
     val people = link.directory(query, category, null, favorites, sort)
     RewardBox(model)
     TextBox {
@@ -337,14 +344,17 @@ private fun PeopleView(model: AppModel) {
                 Chip(if (sort == Sort.NAME) "By name" else "Recent", false, { sort = if (sort == Sort.NAME) Sort.RECENT else Sort.NAME })
             }
             if (people.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            people.forEachIndexed { i, p ->
+            // A long directory is shown a page at a time (the screen is one scrolling column, so every row shown is composed); an open profile is always in view.
+            val upTo = maxOf(shown, people.indexOfFirst { it.id == openId } + 1)
+            people.take(upTo).forEachIndexed { i, p ->
                 if (i > 0) Rule()
                 LRow(
                     LinkRules.displayName(p), listOfNotNull(p.category.takeIf { it.isNotBlank() }, p.organization.takeIf { it.isNotBlank() }).joinToString(" · "),
                     onClick = { openId = if (openId == p.id) null else p.id }, onClickLabel = if (openId == p.id) "Close the profile" else "Open the profile",
                 )
-                if (openId == p.id) PersonProfile(model, p, jump?.tab) { openId = null }
+                if (openId == p.id) PersonProfile(model, p, jump?.tab?.takeIf { jump.id == p.id }) { openId = null }
             }
+            if (people.size > upTo) PixelButton("Show ${minOf(DIRECTORY_PAGE, people.size - upTo)} more of ${people.size - upTo}", { shown = upTo + DIRECTORY_PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
     }
 }
@@ -374,6 +384,7 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     val data = model.linkData
     val today = model.store.today
     var asking by remember(p.id) { mutableStateOf(false) }
+    var addingDate by remember(p.id) { mutableStateOf(false) }
     var keepDates by remember(p.id) { mutableStateOf(true) }
     var keepFollowUps by remember(p.id) { mutableStateOf(true) }
     val dates = data.dates.filter { it.personId == p.id }
@@ -381,13 +392,21 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     if (asking) {
         val nd = dates.size
         val nf = data.followUps.count { it.personId == p.id }
-        Text("Delete ${LinkRules.displayName(p)} and their notes? This cannot be undone.", style = MaterialTheme.typography.bodyLarge)
+        Text("Delete ${LinkRules.displayName(p)} and their notes?", style = MaterialTheme.typography.bodyLarge)
         if (nd > 0) ToggleRow(if (nd == 1) "Keep their date" else "Keep their $nd dates", keepDates, detail = "Kept dates stay, with no person on them.") { keepDates = it }
         if (nf > 0) ToggleRow(if (nf == 1) "Keep their follow-up" else "Keep their $nf follow-ups", keepFollowUps, detail = "Kept follow-ups stay, with no person on them.") { keepFollowUps = it }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelButton("Delete", { link.deletePerson(p.id, keepDates, keepFollowUps); onClose() }, Modifier.weight(1f), Pixel.Danger, compact = true)
+            PixelButton("Delete", {
+                val before = model.linkData
+                link.deletePerson(p.id, keepDates, keepFollowUps); onClose()
+                model.offerUndo("Deleted: ${LinkRules.displayName(p)}") { link.restore(before) }
+            }, Modifier.weight(1f), Pixel.Danger, compact = true)
             PixelButton("Keep them", { asking = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
+        return
+    }
+    if (addingDate) {
+        DateForm(model, null, onDone = { addingDate = false }, presetPerson = p.id)
         return
     }
     val lines = listOf(
@@ -411,7 +430,10 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
         PixelButton(if (p.favorite) "Unpin" else "Pin", { link.setFavorite(p.id, !p.favorite) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
     }
-    PixelButton("Close", onClose, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+    Actions {
+        PixelButton("Add a date", { addingDate = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+        PixelButton("Close", onClose, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+    }
 }
 
 @Composable
@@ -467,7 +489,7 @@ private fun PersonFollowUps(model: AppModel, p: Person) {
         LRow(f.title, listOfNotNull(task?.let(::planWord), dueText(f, today)).joinToString(" · "), lead = { if (task == null) PixelIconButton("check", "Mark ${f.title} done", { link.complete(f.id); model.haptic() }, accent) })
     }
     history.forEach { f ->
-        LRow(f.title, "${if (f.status == FollowUpStatus.COMPLETED) "Done" else "Cancelled"} · ${(f.completedDay ?: today).short()}", trail = { PixelButton("Reopen", { link.reopen(f.id) }, color = Pixel.InkSoft, compact = true) })
+        LRow(f.title, closedLine(f, today), trail = { if (planTask(model, f) == null) PixelButton("Reopen", { link.reopen(f.id) }, color = Pixel.InkSoft, compact = true) })
     }
 }
 
@@ -485,6 +507,7 @@ private fun PersonForm(model: AppModel, p: Person, onDone: () -> Unit) {
     var address by remember(p.id) { mutableStateOf(p.address) }
     var category by remember(p.id) { mutableStateOf(p.category) }
     var tags by remember(p.id) { mutableStateOf(p.tags.joinToString(", ")) }
+    var newCategory by remember(p.id) { mutableStateOf("") }
     var message by remember(p.id) { mutableStateOf<String?>(null) }
     val similar = link.possibleDuplicates(name, phone, email, exceptId = p.id)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -498,6 +521,10 @@ private fun PersonForm(model: AppModel, p: Person, onDone: () -> Unit) {
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Chip("No category", category.isBlank(), { category = "" })
             LinkRules.categories(data).forEach { c -> Chip(c, category.equals(c, ignoreCase = true), { category = c }) }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            PixelField(newCategory, { newCategory = it.take(LinkRules.TAG_MAX) }, Modifier.weight(1f), placeholder = "New category", singleLine = true, keyboardOptions = wordKeys)
+            PixelButton("Add", { link.addCategory(newCategory); category = newCategory.trim(); newCategory = "" }, color = accent, enabled = newCategory.isNotBlank())
         }
         PixelField(tags, { tags = it.take(120) }, Modifier.fillMaxWidth(), label = "Tags, separated by commas", singleLine = true)
         if (similar.isNotEmpty()) Text("This may be ${similar.joinToString(" or ") { LinkRules.displayName(it) }}, already in your list. Nothing is merged.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -541,7 +568,7 @@ private fun DatesView(model: AppModel) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Unit) {
+private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Unit, presetPerson: String? = null) {
     val link = model.link
     val data = model.linkData
     val key = initial?.id ?: "new"
@@ -551,7 +578,7 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
     var day by remember(key) { mutableStateOf(initial?.day?.toString().orEmpty()) }
     var year by remember(key) { mutableStateOf(initial?.year?.toString().orEmpty()) }
     var annual by remember(key) { mutableStateOf(initial?.annual ?: true) }
-    var personId by remember(key) { mutableStateOf(initial?.personId) }
+    var personId by remember(key) { mutableStateOf(initial?.personId ?: presetPerson) }
     var note by remember(key) { mutableStateOf(initial?.note.orEmpty()) }
     var message by remember(key) { mutableStateOf<String?>(null) }
     var asking by remember(key) { mutableStateOf(false) }
@@ -593,13 +620,17 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
                     val out = if (initial == null) link.addDate(kind, title, m, d, year.toIntOrNull(), annual, personId, note)
                     else link.updateDate(initial.copy(kind = kind, title = title, month = m, day = d, year = year.toIntOrNull(), annual = annual, personId = personId, note = note))
                     if (out.record == null) message = out.refused ?: "That could not be saved."
-                    else { message = null; model.haptic(); if (initial == null) { title = ""; month = ""; day = ""; year = ""; note = ""; personId = null } else onDone() }
+                    else {
+                        message = null; model.haptic()
+                        // Added from a profile, it closes; added from the Dates list, the form clears for the next one.
+                        if (initial == null && presetPerson == null) { title = ""; month = ""; day = ""; year = ""; note = ""; personId = null } else onDone()
+                    }
                 }
             }, Modifier.weight(1f), accent, enabled = title.isNotBlank() && month.isNotBlank() && day.isNotBlank(), compact = true)
             if (initial != null) {
                 PixelButton("Close", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-            }
+            } else if (presetPerson != null) PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
         message?.let { Report(model, it, NoticeTone.WARNING) }
     }
@@ -650,11 +681,11 @@ private fun FollowUpsView(model: AppModel) {
                 if (i > 0) Rule()
                 val task = planTask(model, f)
                 val detail = if (tab == 0) listOfNotNull(task?.let(::planWord), followUpLine(data, f, today).takeIf { it.isNotEmpty() }).joinToString(" · ")
-                else listOfNotNull(f.personId?.let { id -> data.people.firstOrNull { it.id == id }?.let(LinkRules::displayName) }, "${if (f.status == FollowUpStatus.COMPLETED) "Done" else "Cancelled"} · ${(f.completedDay ?: today).short()}").joinToString(" · ")
+                else listOfNotNull(f.personId?.let { id -> data.people.firstOrNull { it.id == id }?.let(LinkRules::displayName) }, closedLine(f, today)).joinToString(" · ")
                 LRow(
                     f.title, detail,
                     lead = { if (f.status == FollowUpStatus.OPEN && task == null) PixelIconButton("check", "Mark ${f.title} done", { link.complete(f.id); model.haptic() }, accent) },
-                    trail = { if (f.status != FollowUpStatus.OPEN) PixelButton("Reopen", { link.reopen(f.id) }, color = Pixel.InkSoft, compact = true) },
+                    trail = { if (f.status != FollowUpStatus.OPEN && task == null) PixelButton("Reopen", { link.reopen(f.id) }, color = Pixel.InkSoft, compact = true) },
                     onClick = { openId = if (openId == f.id) null else f.id }, onClickLabel = if (openId == f.id) "Hide options" else "Show options",
                 )
                 if (openId == f.id) FollowUpOptions(model, f) { openId = null }
@@ -716,7 +747,6 @@ private fun LinkSettingsView(model: AppModel) {
     var note by remember { mutableStateOf<String?>(null) }
     var asking by remember { mutableStateOf<LinkKinds?>(null) }
     var askingAll by remember { mutableStateOf(false) }
-    var category by remember { mutableStateOf("") }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Postcard Trail")
@@ -740,18 +770,6 @@ private fun LinkSettingsView(model: AppModel) {
                 }
                 Text("Your quiet hours and focus sessions still hold a reminder back.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 ToggleRow("Name it", data.settings.reminderNames, detail = "After you unlock your phone it shows the date's or follow-up's title. Never a person, a note or a number.") { link.setReminderNames(it) }
-            }
-        }
-    }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Categories")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                LinkRules.categories(data).forEach { c -> Chip(c, false, {}) }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelField(category, { category = it.take(LinkRules.TAG_MAX) }, Modifier.weight(1f), placeholder = "Add a category", singleLine = true, keyboardOptions = wordKeys)
-                PixelButton("Add", { link.addCategory(category); category = "" }, color = accent, enabled = category.isNotBlank())
             }
         }
     }
