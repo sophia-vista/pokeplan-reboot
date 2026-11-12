@@ -45,6 +45,8 @@ internal fun CalculatorTool(model: AppModel, onUse: () -> Unit) {
     var answered by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
     var scientific by remember { mutableStateOf(false) }
+    // The last answer `=` gave, for the Ans key.
+    var lastAnswer by remember { mutableStateOf<String?>(null) }
     val clipboard = LocalClipboardManager.current
     val live = if (expr.isBlank()) null else CalcEngine.evaluate(expr, gear.calcDegrees)
     val liveValue = (live as? CalcResult.Value)
@@ -60,7 +62,7 @@ internal fun CalculatorTool(model: AppModel, onUse: () -> Unit) {
         when (val r = CalcEngine.evaluate(expr, gear.calcDegrees)) {
             is CalcResult.Value -> {
                 if (gear.calcHistoryOn) store.changeGear { g -> g.copy(calcHistory = (listOf("$expr = ${r.text}") + g.calcHistory).take(GearData.MAX_HISTORY)) }
-                expr = r.text; answered = true; showError = false
+                expr = r.text; lastAnswer = r.text; answered = true; showError = false
             }
             is CalcResult.Error -> showError = true
         }
@@ -88,7 +90,7 @@ internal fun CalculatorTool(model: AppModel, onUse: () -> Unit) {
             keys("4" to { key("4", true) }, "5" to { key("5", true) }, "6" to { key("6", true) }, "×" to { key("×") }, accent = ops)
             keys("1" to { key("1", true) }, "2" to { key("2", true) }, "3" to { key("3", true) }, "−" to { key("−") }, accent = ops)
             keys("0" to { key("0", true) }, "." to { key(".", true) }, "%" to { key("%") }, "+" to { key("+") }, accent = ops)
-            keys("Sci" to { scientific = !scientific }, "^" to { key("^") }, "Ans" to { liveValue?.let { key(it.text, true) } }, "=" to { equals() }, accent = ops)
+            keys("Sci" to { scientific = !scientific }, "^" to { key("^") }, "Ans" to { lastAnswer?.let { key(it, true) } }, "=" to { equals() }, accent = ops)
             if (scientific) {
                 keys("sin" to { key("sin(", true) }, "cos" to { key("cos(", true) }, "tan" to { key("tan(", true) }, if (gear.calcDegrees) "Deg" to { store.changeGear { it.copy(calcDegrees = false) } } else "Rad" to { store.changeGear { it.copy(calcDegrees = true) } })
                 keys("asin" to { key("asin(", true) }, "acos" to { key("acos(", true) }, "atan" to { key("atan(", true) }, "!" to { key("!") })

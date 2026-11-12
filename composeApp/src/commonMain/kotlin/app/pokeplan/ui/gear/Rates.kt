@@ -12,6 +12,9 @@ import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
+/** How long a fetched copy of the rates is used before opening the tool asks again (Refresh always asks). */
+const val RATES_REFETCH_MS = 6 * 3_600_000L
+
 /** Where the rates come from, shown beside them. */
 const val RATES_SOURCE = "Frankfurter (European Central Bank daily reference rates)"
 
@@ -81,11 +84,4 @@ fun ratesFreshness(rates: GearRates, nowMillis: Long): String {
         ", fetched " + when { minutes < 1 -> "just now"; minutes < 60 -> "$minutes min ago"; minutes < 24 * 60 -> "${minutes / 60} h ago"; else -> "${minutes / (24 * 60)} days ago" }
     } else ""
     return "Rates of ${rates.date}$age, from $source. Reference rates, not what a bank or money changer gives."
-}
-
-/** [amount] of [from] in [to] at [rates] (units of each currency for a dollar); null when either currency is unknown. */
-fun convertCurrency(amount: Double, from: String, to: String, rates: GearRates): Double? {
-    val a = rates.perUsd[from] ?: return null
-    val b = rates.perUsd[to] ?: return null
-    return amount / a * b
 }

@@ -29,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.GearHelper
-import app.pokeplan.core.dex.Dex
 import app.pokeplan.core.pokemon.GearTool
 import app.pokeplan.ui.AnimatedSprite
 import app.pokeplan.ui.AppModel
@@ -44,10 +43,9 @@ import app.pokeplan.ui.theme.TextBox
 import kotlinx.coroutines.delay
 
 /**
- * The Pokégear (docs/ecosystem.md, "Pokégear: utilities and helper Pokémon"): a hub of handy tools reachable from anywhere.
- * Every tool works from the first day; a helper Pokémon (one of the tool's signature line that the player chose
- * request) is flavour only: its sprite beside the tool and one reaction when the tool is used. Nothing here pays anything
- * or is read by any other module.
+ * Gear (docs/pokelife/MODULES/GEAR.md): a hub of handy tools. Every tool works from the first day; a helper Pokémon (one of the
+ * tool's signature line that the player chose) is looks only: its sprite over the tool and one reaction when the tool is used.
+ * Nothing here pays anything or is read by any other module.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -67,6 +65,10 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
             fun entry(t: ToolInfo) = MenuEntry(t.tool.name, t.tool.icon, t.tool.label)
             if (query.isNotBlank()) {
                 val found = ToolCatalog.search(query, gear.favorites, gear.recents)
+                if (found.isEmpty()) {
+                    Text("No tool by that name", style = MaterialTheme.typography.titleSmall)
+                    PixelButton("Show every tool", { query = "" }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
+                }
                 found.forEach { t -> PixelButton("${t.tool.label}: ${t.description}", { query = ""; open = t.tool }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true) }
             } else {
                 val starred = gear.favorites.mapNotNull { n -> GearTool.entries.firstOrNull { it.name == n } }
@@ -91,11 +93,6 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
         // Opening a tool puts it first among the ones used lately (a short list kept on this phone).
         LaunchedEffect(tool) { store.gearUsed(tool) }
         SectionScaffold(tool.label, null, { open = null }, icon = tool.icon, color = ModuleAccent.GEAR.header) {
-            val starred = tool.name in gear.favorites
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                Spacer(Modifier.weight(1f))
-                PixelButton(if (starred) "Starred" else "Star", { store.gearFavorite(tool, !starred) }, color = if (starred) Pixel.Green else Pixel.InkSoft, compact = true)
-            }
             HelperBar(model, tool, used)
             val onUse: () -> Unit = { used++ }
             when (tool) {
@@ -122,66 +119,38 @@ fun GearScreen(model: AppModel, start: GearTool? = null, onClose: () -> Unit) {
     }
 }
 
-/** The helper of a tool: its sprite and name, and a way to change it. [used] changes on each use of the tool. */
+/**
+ * One row over a tool: its helper (only when one was chosen: a small sprite and one reaction after a use), a way to choose one when the player
+ * owns a Pokémon that can help, and the star. A tool with no helper shows no placeholder. [used] changes on each use of the tool.
+ */
 @Composable
 private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
     val store = model.store
-    val helper = store.gearHelper(tool)
+    val helper = (store.gearHelper(tool) as? GearHelper.Owned)?.pokemon
+    val candidates = store.gearCandidates(tool)
     var choosing by remember(tool) { mutableStateOf(false) }
-    // One emoji over the helper after each use, then it fades.
     var reaction by remember(tool) { mutableStateOf(false) }
     LaunchedEffect(used) { if (used > 0) { reaction = true; delay(1400); reaction = false } }
-    val reduce = model.data.settings.reduceMotion
-    val compact = model.data.gear.helperCompact
-    // A small strip by default, so the helper never takes the room the tool needs; "Show" opens the full bar and "Make it small" folds it back.
-    if (compact) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+    val starred = tool.name in model.data.gear.favorites
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        if (helper != null) {
             Box(Modifier.size(Sizes.IconL)) {
-                when (helper) {
-                    is GearHelper.Owned -> AnimatedSprite(helper.pokemon.form.id, helper.pokemon.isShiny, helper.pokemon.nickname, size = Sizes.IconL, animate = false)
-                    GearHelper.None -> ItemIcon(tool.icon, Modifier.align(Alignment.Center), size = Sizes.Icon, description = null)
-                }
+                AnimatedSprite(helper.form.id, helper.isShiny, helper.nickname, size = Sizes.IconL, animate = false)
+                if (reaction) reactionFor(tool).let { (art, name) -> if (art) ItemIcon(name, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = Sizes.Icon, description = null) else Glyph(name, Pixel.Blue, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = Sizes.Icon) }
             }
-            Text(when (helper) { is GearHelper.Owned -> "${helper.pokemon.nickname} helps"; GearHelper.None -> "Helper" }, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            PixelButton("Show", { store.changeGear { it.copy(helperCompact = false) } }, color = Pixel.InkSoft, compact = true)
-        }
-        return
+            Text(helper.nickname, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 1)
+        } else Spacer(Modifier.weight(1f))
+        if (candidates.isNotEmpty()) PixelButton(if (choosing) "Done" else "Helper", { choosing = !choosing }, color = Pixel.InkSoft, compact = true)
+        PixelButton(if (starred) "Starred" else "Star", { store.gearFavorite(tool, !starred) }, color = if (starred) Pixel.Green else Pixel.InkSoft, compact = true)
     }
-    TextBox {
+    if (choosing) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                Box(Modifier.size(Sizes.SpriteM)) {
-                    when (helper) {
-                        is GearHelper.Owned -> AnimatedSprite(helper.pokemon.form.id, helper.pokemon.isShiny, helper.pokemon.nickname, size = Sizes.SpriteM, animate = !reduce)
-                        GearHelper.None -> ItemIcon(tool.icon, Modifier.align(Alignment.Center), size = Spacing.Target, description = null)
-                    }
-                    if (reaction && helper !is GearHelper.None) reactionFor(tool).let { (art, name) -> if (art) ItemIcon(name, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = 28.dp, description = null) else Glyph(name, Pixel.Blue, Modifier.align(Alignment.TopEnd).offset(x = 8.dp, y = (-4).dp), size = 28.dp) }
-                }
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                    when (helper) {
-                        is GearHelper.Owned -> {
-                            Text("${helper.pokemon.nickname} helps", style = MaterialTheme.typography.titleSmall)
-                        }
-                        GearHelper.None -> {
-                            Text("No helper yet", style = MaterialTheme.typography.titleSmall)
-                            Text("The tool works without one.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                        }
-                    }
+            candidates.forEach { p ->
+                ChoiceRow(selected = helper?.id == p.id, onClick = { store.assignGearHelper(tool, p.id); choosing = false }, lead = { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = Sizes.IconL, animate = false) }) {
+                    Text("${p.nickname}, level ${p.level}", style = MaterialTheme.typography.bodyLarge)
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                PixelButton("Make it small", { store.changeGear { it.copy(helperCompact = true) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                if (store.gearCandidates(tool).isNotEmpty()) PixelButton(if (choosing) "Done" else "Change helper", { choosing = !choosing }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-            }
-            if (choosing) {
-                FieldLabel("Who helps ${tool.label}")
-                store.gearCandidates(tool).forEach { p ->
-                    ChoiceRow(selected = helper is GearHelper.Owned && helper.pokemon.id == p.id, onClick = { store.assignGearHelper(tool, p.id) }, lead = { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = Sizes.IconL, animate = false) }) {
-                        Text("${p.nickname}, level ${p.level}", style = MaterialTheme.typography.bodyLarge)
-                    }
-                }
-                if (model.data.gearHelpers[tool.name] != null) PixelButton("The best friend helps", { store.clearGearHelper(tool) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
-            }
+            if (helper != null) PixelButton("No helper", { store.clearGearHelper(tool); choosing = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
     }
 }
