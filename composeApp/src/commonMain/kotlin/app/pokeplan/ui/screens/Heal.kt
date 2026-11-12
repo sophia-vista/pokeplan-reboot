@@ -237,15 +237,17 @@ private fun ActivityView(model: AppModel) {
         "Field Research is off, so this only keeps your history. Turn it on in Settings to find Pokémon from sessions of ${HealRules.RESEARCH_MIN_MINUTES} minutes or more.",
         style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
     )
-    val all = model.healData.activities.sortedByDescending { it.startMillis }
+    val activities = model.healData.activities
+    val all = remember(activities) { activities.sortedByDescending { it.startMillis } }
+    var shown by remember { mutableStateOf(PAGE) }
     if (all.isEmpty()) EmptyState("Nothing logged yet", "A type and how long it lasted are enough. Walks, stretching and everything else count.", icon = HealSection.ACTIVITY.icon, addAbove = "Log activity")
     else {
         SectionLabel("History")
-        all.take(30).forEach { a ->
+        all.take(shown).forEach { a ->
             ActivityRow(a) { open = if (open == a.id) null else a.id }
             if (open == a.id) ActivityOptions(model, a) { open = null }
         }
-        if (all.size > 30) Text("${all.size - 30} older ones are kept. Export them in Settings.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        if (all.size > shown) ShowOlder { shown += PAGE }
     }
 }
 
@@ -261,7 +263,6 @@ private fun ActivityRow(a: ActivityRecord, onClick: () -> Unit) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ActivityOptions(model: AppModel, a: ActivityRecord, onDone: () -> Unit) {
-    var asking by remember(a.id) { mutableStateOf(false) }
     var editing by remember(a.id) { mutableStateOf(false) }
     var type by remember(a.id) { mutableStateOf(a.type) }
     var minutes by remember(a.id) { mutableStateOf(a.minutes.toString()) }
@@ -282,15 +283,9 @@ private fun ActivityOptions(model: AppModel, a: ActivityRecord, onDone: () -> Un
                     }, Modifier.weight(1f), Pixel.Green, compact = true)
                     PixelButton("Cancel", { editing = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
-            } else if (asking) {
-                Text("Delete this activity? What it earned stays earned.", style = MaterialTheme.typography.bodyLarge)
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    PixelButton("Delete", { model.heal.deleteActivity(a.id); onDone() }, Modifier.weight(1f), Pixel.Danger, compact = true)
-                    PixelButton("Keep it", { asking = false }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                }
             } else Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.Blue, compact = true)
-                PixelButton("Delete", { asking = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                PixelButton("Delete", { val before = model.healData; model.heal.deleteActivity(a.id); model.offerUndo("Deleted: activity") { model.heal.restore(before) }; onDone() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 PixelButton("Close", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             }
         }
@@ -395,18 +390,26 @@ private fun SleepView(model: AppModel) {
             }
         }
     }
-    val nights = data.sleep.sortedByDescending { it.endMillis }
+    val nights = remember(data.sleep) { data.sleep.sortedByDescending { it.endMillis } }
+    var shown by remember { mutableStateOf(PAGE) }
     if (nights.isEmpty()) EmptyState("No nights logged", "Add how long you slept whenever you like. Heal never tells you a night was too short or too long.", icon = HealSection.SLEEP.icon, addAbove = "Log a night")
     else {
         SectionLabel("History")
-        nights.take(21).forEach { s ->
+        nights.take(shown).forEach { s ->
             ListRow(trail = { PixelButton("Delete", { val before = model.healData; heal.deleteSleep(s.id); model.offerUndo("Deleted: sleep") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true) }) {
                 Text(HealRules.duration(s.minutes), style = MaterialTheme.typography.bodyLarge)
                 Text("${clockText(s.startMillis.localTime())} to ${clockText(s.endMillis.localTime())}, woke ${s.day.short()}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             }
         }
+        if (nights.size > shown) ShowOlder { shown += PAGE }
     }
 }
+
+/** How many rows of a history show at first, and how many more each "Show older" adds: every record stays reachable, and a long history is not laid out at once. */
+private const val PAGE = 30
+
+@Composable
+private fun ShowOlder(onClick: () -> Unit) = PixelButton("Show older", onClick, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
 
 @Composable
 private fun Stepper(label: String, value: String, minus: () -> Unit, plus: () -> Unit) {
@@ -459,9 +462,10 @@ private fun BodyView(model: AppModel) {
             message?.let { (text, tone) -> Report(model, text, tone) }
         }
     }
-    ToggleRow("Show my weight on Today", data.settings.showMeasurementsOnToday, detail = "Off by default.") { heal.setShowMeasurementsOnToday(it) }
+    ToggleRow("Show my weight on Today", data.settings.showMeasurementsOnToday) { heal.setShowMeasurementsOnToday(it) }
     if (data.measurements.isEmpty()) EmptyState("Nothing here", "You never need to enter a body measurement to use Heal.", icon = HealSection.BODY.icon, addAbove = "Add a measurement")
     else {
+        var shown by remember { mutableStateOf(10) }
         MeasureType.entries.forEach { t ->
             val own = data.measurements.filter { it.type == t }
             if (own.isEmpty()) return@forEach
@@ -469,13 +473,14 @@ private fun BodyView(model: AppModel) {
             own.map { it.unit }.distinct().forEach { u ->
                 HealRules.trendText(data, t, u)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
             }
-            own.sortedByDescending { it.atMillis }.take(10).forEach { m ->
+            own.sortedByDescending { it.atMillis }.take(shown).forEach { m ->
                 ListRow(trail = { PixelButton("Delete", { val before = model.healData; heal.deleteMeasurement(m.id); model.offerUndo("Deleted: measurement") { heal.restore(before) } }, color = Pixel.InkSoft, compact = true) }) {
                     Text((m.label.takeIf { it.isNotBlank() }?.let { "$it: " }.orEmpty()) + HealUnits.show(m, m.unit), style = MaterialTheme.typography.bodyLarge)
                     Text(m.day.short(), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
             }
         }
+        if (MeasureType.entries.any { t -> data.measurements.count { it.type == t } > shown }) ShowOlder { shown += PAGE }
     }
 }
 
@@ -494,8 +499,8 @@ private fun GoalsHealView(model: AppModel) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 GoalKind.entries.forEach { k -> TabButton(k.label, k == kind, { kind = k }) }
             }
-            PixelField(target, { target = it.filter(Char::isDigit).take(6) }, Modifier.fillMaxWidth(), label = "Target (${kind.unit})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-            PixelButton("Add goal", { target.toIntOrNull()?.let { heal.addGoal(kind, it); target = "" } }, Modifier.fillMaxWidth(), Pixel.Green, enabled = (target.toIntOrNull() ?: 0) > 0)
+            PixelField(target, { target = it.filter(Char::isDigit).take(5) }, Modifier.fillMaxWidth(), label = "Target (${kind.unit})", singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+            PixelButton("Add goal", { target.toIntOrNull()?.let { heal.addGoal(kind, it); target = "" } }, Modifier.fillMaxWidth(), Pixel.Green, enabled = HealRules.goalTargetOk(kind, target.toIntOrNull() ?: 0))
         }
     }
     if (data.goals.isEmpty()) EmptyState("No goals", "Heal works fine without one.", icon = HealSection.GOALS.icon, addAbove = "Add a goal")
@@ -609,8 +614,4 @@ private fun HealSettingsView(model: AppModel) {
             } else PixelButton("Erase all Heal records", { askingAll = true; asking = null }, Modifier.fillMaxWidth(), Pixel.Danger, compact = true)
         }
     }
-    Text(
-        "Health Connect is under Connections. Heal is complete without it, and without a watch.",
-        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-    )
 }

@@ -165,7 +165,7 @@ object LinkRules {
             (category == null || p.category.equals(category, ignoreCase = true)) &&
                 (tag == null || p.tags.any { it.equals(tag, ignoreCase = true) }) &&
                 (!favoritesOnly || p.favorite) &&
-                (q.isEmpty() || listOf(p.name, p.preferred, p.organization, p.role, p.category, p.tags.joinToString(" ")).any { it.lowercase().contains(q) })
+                (q.isEmpty() || matches(p, q))
         }
         return if (sort == Sort.RECENT) found.sortedByDescending { it.updatedMillis } else found.sortedBy { displayName(it).lowercase() }
     }
@@ -175,6 +175,13 @@ object LinkRules {
         (STARTING_CATEGORIES + data.settings.categories + data.people.map { it.category }).filter { it.isNotBlank() }.distinctBy { it.lowercase() }
 
     private fun digits(s: String) = s.filter { it.isDigit() }
+
+    /** Whether a person's words contain [q] (already lower case): name, alias, organization, role, category, tags, email, address, and a phone number however it is spaced. */
+    private fun matches(p: Person, q: String): Boolean {
+        if (listOf(p.name, p.preferred, p.organization, p.role, p.category, p.email, p.address, p.phone, p.tags.joinToString(" ")).any { it.lowercase().contains(q) }) return true
+        val d = digits(q)
+        return d.length >= 3 && digits(p.phone).contains(d)
+    }
 
     /**
      * People who may be the same as ([name], [phone], [email]), to suggest and never to merge (LINK.md 2.1): the same name or preferred name with case
@@ -202,7 +209,7 @@ object LinkRules {
         fun has(vararg parts: String?): Boolean = parts.any { it != null && it.lowercase().contains(q) }
         fun person(id: String?): String? = id?.let { i -> data.people.firstOrNull { it.id == i }?.let(::displayName) }
         val hits = mutableListOf<Hit>()
-        data.people.filter { has(it.name, it.preferred, it.organization, it.role, it.category, it.tags.joinToString(" ")) }
+        data.people.filter { matches(it, q) }
             .forEach { hits += Hit(HitKind.PERSON, it.id, displayName(it), it.organization.ifBlank { it.category }) }
         data.notes.filter { has(it.text) }.forEach { n -> hits += Hit(HitKind.NOTE, n.personId, person(n.personId) ?: "Note", n.text.lineSequence().first().take(80)) }
         data.dates.filter { has(it.title, it.note, person(it.personId)) }.forEach { hits += Hit(HitKind.DATE, it.id, it.title, person(it.personId).orEmpty()) }

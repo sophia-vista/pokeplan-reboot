@@ -173,6 +173,28 @@ class HealStoreTest {
     }
 
     @Test
+    fun aNightThatHasNotEndedAndAWeekOfEightDaysAreRefused() {
+        val s = setup()
+        assertEquals("That night is not over yet.", s.heal.logSleep(saturday - 3_600_000L, saturday + 3_600_000L).refused)
+        assertTrue(s.heal.data.sleep.isEmpty())
+        assertNull(s.heal.addGoal(GoalKind.WEEKLY_ACTIVE_DAYS, 8))
+        assertNotNull(s.heal.addGoal(GoalKind.WEEKLY_ACTIVE_DAYS, 7))
+    }
+
+    @Test
+    fun aPaidRecordIsSavedAlreadyMarkedInOneWrite() {
+        val s = setup()
+        var writes = 0
+        val stop = s.heal.observe { writes++ }
+        val before = writes
+        assertTrue(assertNotNull(s.heal.logActivity(ActivityType.RUN, 20).record).paid)
+        assertTrue(assertNotNull(s.heal.logDrink(250).record).paid)
+        assertEquals(2, writes - before)
+        assertTrue(s.heal.data.activities.single().paid && s.heal.data.hydration.single().paid)
+        stop()
+    }
+
+    @Test
     fun aGoalPausedOrMissedLeavesItsRecordsAndPaysNothingLess() {
         val s = setup()
         s.heal.logActivity(ActivityType.WALK, 20)

@@ -203,6 +203,19 @@ class LinkRulesTest {
     }
 
     @Test
+    fun aPersonIsFoundByPhoneEmailOrAddressHoweverThePhoneIsSpaced() {
+        val ana = Person("1", "Ana Cruz", phone = "+63 917 000 1234", email = "ana@example.com", address = "12 Mabini Street")
+        val data = LinkData(people = listOf(ana, Person("2", "Ben")))
+        fun ids(q: String) = LinkRules.directory(data, q).map { it.id }
+        assertEquals(listOf("1"), ids("917000"), "digits match across spaces")
+        assertEquals(listOf("1"), ids("0001234"))
+        assertEquals(listOf("1"), ids("ana@example"))
+        assertEquals(listOf("1"), ids("mabini"))
+        assertEquals(listOf("1"), LinkRules.search(data, "91700").map { it.id })
+        assertTrue(ids("99").isEmpty() && LinkRules.search(data, "99").isEmpty(), "one or two digits are not a phone search")
+    }
+
+    @Test
     fun theDocumentSurvivesARoundTrip() {
         val data = LinkData(
             people = listOf(Person("1", "Ana", tags = listOf("a"))), notes = listOf(PersonNote("n", "1", "t", 5)), dates = listOf(date(2, 29, 2000)),
