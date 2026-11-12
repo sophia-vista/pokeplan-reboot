@@ -7,7 +7,7 @@ import kotlin.random.Random
 
 /**
  * The real scenes Pokémon stand in (assets/scenes), dimmed at night. A region's lead stands in its region's scene (Plan's
- * town, Care's meadow: docs/ecosystem.md section 11, "Three visual layers"); a Pokédex entry shows a scene from its type.
+ * town, Care's meadow: docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md, "Three visual layers"); a Pokédex entry shows a scene from its type.
  */
 object BuddyScene {
     /** Plan's region scene: a town street, where the Plan buddy stands in the app and the widgets. */

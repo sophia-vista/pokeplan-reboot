@@ -77,7 +77,7 @@ data class AppData(
     val lastSeenVersion: String = "0.1.0",
     /** Pokémon the player starred: they cannot be transferred by accident. Stays on this device's save. */
     val favorites: Set<String> = emptySet(),
-    /** The World game's save: teams, expeditions, finds, items and rank (docs/world.md). Client-side; stays on this device's save. */
+    /** The World game's save: teams, expeditions, finds, items and rank (docs/pokelife/MODULES/WORLD.md). Client-side; stays on this device's save. */
     val world: WorldData = WorldData(),
     /** The Pokémon the player chose to help each Pokégear tool, by tool name to Pokémon id. A tool with none shows its own icon (nothing is picked or lent by itself). Cosmetic; stays on this device's save. */
     val gearHelpers: Map<String, String> = emptyMap(),
@@ -320,7 +320,7 @@ data class Settings(
     val streakReminderHour: Int = 20,
     /** A recap of the week on Sunday evening (Android). */
     val weeklyRecap: Boolean = true,
-    /** The Care module in Modules (docs/ecosystem.md, section 6). Off only hides it: Care's own save is kept. */
+    /** The Care module in Modules (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md). Off only hides it: Care's own save is kept. */
     val careModule: Boolean = true,
     /** World's expedition boxes scroll their floor while the team walks. */
     val worldScroll: Boolean = true,

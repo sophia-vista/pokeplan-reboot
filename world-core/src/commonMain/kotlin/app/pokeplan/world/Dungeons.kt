@@ -3,7 +3,7 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
-/** The broad kinds of place the world map is made of (docs/world.md, section 14). Only the first few are in the MVP. */
+/** The broad kinds of place the world map is made of (docs/pokelife/MODULES/WORLD.md). Only the first few are in the MVP. */
 enum class WorldRegion(val label: String) { GREENLANDS("Greenlands"), MOUNTAINS("Mountains"), UNDERGROUND("Underground"), AQUATIC("Aquatic"), FROZEN("Frozen"), ANCIENT("Ancient"), SKY("Sky"), OTHERWORLDLY("Otherworldly") }
 
 /** A wild Pokémon a dungeon can show on floors [fromFloor] to [toFloor], with a relative [weight]. */
@@ -16,7 +16,7 @@ data class MilestoneReward(val itemId: String? = null, val count: Int = 0, val p
  * A dungeon: [floors] to climb, the wild Pokémon [wild] that can be found, the [favored] types whose members explore it
  * faster, how long a floor takes a team with no power at all ([baseFloorSeconds]), the rank it needs, and a milestone reward for
  * each floor reached the first time. [canon] is false for a place that is PMD-inspired rather than a canon dungeon, and the
- * species tables here are illustrative until they are checked against a source game (docs/world.md, section 5).
+ * species tables here are illustrative until they are checked against a source game (docs/pokelife/MODULES/WORLD.md).
  */
 data class DungeonDef(
     val id: String,

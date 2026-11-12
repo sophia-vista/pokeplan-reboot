@@ -88,7 +88,7 @@ import kotlin.time.Clock as SystemClock
 
 /**
  * The bottom tabs, each with the real game item that stands for it. Home, Pokémon and Me are the shared world; each life
- * module (Plan, and the ones to come) lives in Modules (docs/ecosystem.md, section 3).
+ * module (Plan, and the ones to come) lives in Modules (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md).
  */
 enum class Tab(val label: String, val icon: String) {
     HOME("Home", "town-map"), MODULES("Modules", "explorer-kit"), COLLECTION("Pokémon", "poke-ball"), ME("Me", "member-card"),

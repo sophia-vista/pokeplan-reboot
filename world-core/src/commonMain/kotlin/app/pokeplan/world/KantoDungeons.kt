@@ -4,7 +4,7 @@ import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
 /**
- * The nine dungeons of the Kanto layer (docs/world.md, "Kanto, the first region layer"), from Pokémon Red, Blue, FireRed and LeafGreen.
+ * The nine dungeons of the Kanto layer (docs/pokelife/MODULES/WORLD.md, "Kanto, the first region layer"), from Pokémon Red, Blue, FireRed and LeafGreen.
  * Their wild tables are Kanto's regional dex (species 1 to 151), by each place's habitat in the games; legendaries are never found
  * (they are quests, [Legends]). Floors, floor times, milestones and the rank gates are starting values *(tune)*, checked with
  * `:world-core:simulateWorldEconomy`. [DungeonDef.chapter] is a chapter of [KantoStory].

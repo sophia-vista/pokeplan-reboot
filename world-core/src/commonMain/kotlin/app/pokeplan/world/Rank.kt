@@ -1,7 +1,7 @@
 package app.pokeplan.world
 
 /**
- * The exploration team's rank, the module's own progression (docs/world.md, section 9), separate from any Pokémon's level.
+ * The exploration team's rank, the module's own progression (docs/pokelife/MODULES/WORLD.md), separate from any Pokémon's level.
  * The names follow Explorers of Sky's Explorer Rank. [points] is the Exploration XP that reaches it *(tune)*; rank opens
  * dungeons ([DungeonDef.needs]) and expedition teams ([teamSlots]).
  */

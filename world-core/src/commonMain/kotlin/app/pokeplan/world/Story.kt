@@ -1,7 +1,7 @@
 package app.pokeplan.world
 
 /**
- * The story foundation (docs/world.md, section 15): chapters that each introduce a mechanic or a meaning, and the Guardian
+ * The story foundation (docs/pokelife/MODULES/WORLD.md): chapters that each introduce a mechanic or a meaning, and the Guardian
  * at the end. A chapter opens when its condition is met and is never lost: missing a day does not undo story progress. The
  * Rescue Team and Explorers chapters here are title cards (their scenes are not written); the Mew opening and the Kanto, Johto, Hoenn and
  * Sinnoh episodes are authored in `story/`.
@@ -9,10 +9,10 @@ package app.pokeplan.world
 data class Chapter(val number: Int, val title: String, val summary: String, val unlocks: String, val needsRank: ExplorerRank, val needsDungeons: Int)
 
 object Story {
-    /** The Guardian candidates (docs/world.md): the first is the strongest PMD reference. Its mastery bonus is illustrative. */
+    /** The Guardian candidates (docs/pokelife/MODULES/WORLD.md): the first is the strongest PMD reference. Its mastery bonus is illustrative. */
     const val GUARDIAN = "Primal Dialga"
 
-    /** The species the Guardian gives (Dialga) and its form: Primal Dialga, a form of its own in the Dex (not the Dialga of Sinnoh, docs/ecosystem.md). */
+    /** The species the Guardian gives (Dialga) and its form: Primal Dialga, a form of its own in the Dex (not the Dialga of Sinnoh, docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md). */
     const val GUARDIAN_SPECIES = 483
     const val GUARDIAN_FORM = "dialga-primal"
     const val GUARDIAN_BONUS = "Temporal Mastery: every expedition climbs 10% faster"

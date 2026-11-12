@@ -119,6 +119,45 @@ Use a 4 dp-based spacing scale and named semantic tokens. Initial scale: `space0
 
 Use the minimum elevation needed to express hierarchy. Density may vary by context (e.g. finance tables vs. reflective writing), but tap targets, readable type, border language and spacing semantics remain consistent.
 
+### 5.5 Code tokens and type scale (as built)
+
+`Pixel` in `PixelTheme.kt` holds the colours in code, light / dark: Paper `#F7F5F0` / `#14151F` (`background`), Panel `#FFFFFF` / `#1F2132` (`surface`), Shade `#ECECF2` / `#2B2E44` (empty tracks, secondary surfaces), Border `#E1E1E8` / `#3A3E58`, Ink `#252637` / `#ECEDF5`, InkSoft `#666B7E` / `#A9AEC4`, Red `#D23B2E` / `#F2665A`, Blue `#2C6CCC` / `#5B96EE` (selection, focus, links), Green `#1E7F52` / `#34B07A` (success, a running session), Warning `#946000` / `#D99A1E`, Danger `#B42332` / `#EC6A75` (data at risk only), Chrome `#2B3050` (both). Night, Scrim, Violet, Pink, Teal and Amber are identity or overlay colours, never state. Red text-on-fill is 4.8:1; text is at least 4.5:1 (3:1 only for 24 sp or bold 18.66 sp and up); no colour literal outside `theme/`, the day palette and `PmdPalette`. Pokémon type colours stay in their own palette and never colour unrelated controls. Colour means one thing: red the main action, green done or running, blue selected or focused.
+
+- **Spacing (`Spacing`):** 1 and 2 dp hairlines, 4 `XS`, 8 `S`, 12 `M`, 16 `L`, 20 `XL` / `Page`, 24 `XXL` / `Section`; no 6 or 10 dp. A dialogue box keeps `BoxX` 24 dp sideways and `BoxY` 18 dp above and below. `Spacing.Target` = 48 dp; no literal 44. Icon and sprite sizes come from `Sizes` (`IconS` 24, `Icon` 32, `IconL` 40, `SpriteS` 56, `SpriteM` 72, `SpriteL` 96 dp).
+- **Type scale:** four sizes, never below 12 sp: 24 (screen titles, big numbers), 18 (section titles and button labels, pixel font bold), 16 (body), 14 (secondary lines, labels, tab labels). When a screen seems to need another size, use weight, colour and spacing. Titles, labels and buttons use the dialogue bitmap font (`PixelTitle`, `PixelLabel`: dark on light, white on dark and on coloured faces; a text it cannot draw falls back to the Pokémon DP font); body, descriptions and user text are Pokémon DP regular. The dialogue font (`PmdText`) is the only font of the World / launcher register and is not used in utility screens; long text there is cut with "...". In a World box, text starts 9 art pixels inside the fill (3 for the box's inset, 6 for the line where the cursor goes). Widgets use 15 sp for a title and 13 sp for the rest.
+- **Motion:** purposeful only (a screen change, a reward, a buddy reaction); everything stops under Reduce motion, and anything that loops pauses when the screen is off or the app is in the background. Scenes and towns fade in over 150 ms (`rememberFadeIn`; instant under Reduce motion); no spinners.
+- **Layout breakpoints:** compact (under 600 dp) one column with the tab bar at the bottom; medium (600 to 839 dp) a centred column at most 640 dp wide; expanded (840 dp and up) the same column plus a 96 dp side rail with the four tabs. At 1.3x text and up a button never sits beside text that no longer fits; it goes underneath.
+- **Tab icons** are real item sprites, one per destination: Home `town-map`, Modules `explorer-kit`, Pokémon `poke-ball`, Me `member-card`. A section's icon is at the start of its header; when the header has Back, it moves to the end.
+
+### 5.6 Controls and states (ui-ux-brief 5.1)
+
+Every tappable key (button, tab, chip, arrow, segment) is one `PixelKey` (`theme/Controls.kt`): the same stair-cornered outline, states and a 48 dp target; a control only picks its key colour and content. `ScreenshotTest.componentGallery` renders every state (`components.png`, `-dark`, `-xl` at 130% text).
+
+| State | Face | Outline | Letters | Notes |
+|---|---|---|---|---|
+| Rest | panel | key colour | key colour (ink for neutral keys) | |
+| Hovered | key at 10% over the panel | key colour | key colour | pointer only |
+| Pressed | key colour | key colour | white | shrinks to 98% unless Reduce motion |
+| Selected | key colour | key colour | white | tabs, chips, segments; announced as `selected`; pressed goes darker |
+| Focused | any of the above | plus a 2 dp blue ring on the touch target (`Modifier.focusRing`, placed before the `clickable`) | | keyboard and D-pad only |
+| Disabled | panel | border | ink-soft at 55% | not tappable |
+| Loading | as disabled | border | three blinking pixels | not tappable; blinks even under Reduce motion |
+
+Neutral keys (`InkSoft`, `Ink`, `Gray`) look grey with ink letters; a light key colour (yellow) gets darker letters; colour is never the only signal; keys in wrapped rows fill their 48 dp target and buttons are 38 dp (32 compact) inside it. Rows (`ChoiceRow`, `ListRow`), `Notice` and `StatChip` share the key outline. `PixelField` (`theme/Fields.kt`) has the same idea: rest (panel, border), focused (2 dp blue), error (2 dp danger; the error text replaces the helper line and is announced), disabled (shade, letters at 55%), read-only. Use a label when the field is alone on a line and a placeholder beside a button. `ListRow` (when tappable) and `NavButton` also hover (a faint tint) and press (98% scale).
+
+Other shared parts: `Notice(text, tone)` (Info, Warning, Danger) is one calm sentence saying what happened and what to do, announced politely; Danger only where data could be lost. `MenuGrid` is two columns, a lone last card spanning the full width. A completion offers Undo. Component states to cover: task cards (active, overdue, completed, selected), completion (pending, completing, completed, undo available), Pokémon cards (normal, selected, active companion, unavailable), timer (idle, running, paused, complete, interrupted), form fields (empty, focused, filled, invalid, disabled).
+
+**UI tap sounds:** a tap on a button, tab, chip or arrow plays a click (`CONFIRM`, `BACK`, or `CURSOR` for tabs, chips and arrows) at `TAP_GAIN` (6%) of the Sound effects volume (`UiSound.kt`); game sounds keep their full volume.
+
+### 5.7 Screen and copy principles (ui-ux-brief 4 and 6)
+
+- Pokémon supplies the personality; the productivity interface supplies the clarity. The game layer must not become another demanding task system: keep actions fast, make progression understandable, never punish a missed day, and keep productivity usable without engaging with game mechanics.
+- Background texture is selective (the dither is the only texture); depth is subtle; thick pixel treatments are for important game actions and reward moments. No coloured strip on the left edge of a card: status shows in words, an icon or the button.
+- Copy: no middle dot (·) as a separator (a comma or a new line); no "tap here to..." hints; plain friendly words for players of the games, no made-up terms (say "Long-term", not "long road"); ask the player to decide only where they already mean to choose, and show no setting that does nothing yet.
+- Screen requirements: Home keeps one primary call to action, the next useful action more prominent than secondary stats, never obscured by the tab bar, with first-run, no-task and all-done states. Planner: creating a task needs only a title; difficulty grades E/D/C/B/A are explained and have accessible labels; edit, reschedule and delete are discoverable and swipe has a visible alternative; recurring tasks never treat a missed occurrence as personal failure. Focus: timer state obvious; Deep Focus says what it restricts, what counts as success and how to exit; elapsed time is not silently corrupted by backgrounding (timestamps, not ticks); elapsed is distinct from successfully focused; reward feedback brief and skippable. Pokémon: Dex shows seen, owned and undiscovered; animations for levelling, hatching and evolution are brief and skippable. Me: every metric has a definition and a time range; time allocation, completed tasks and goal progress are not interchangeable.
+- Navigation: keep the four tabs; preserve the selected tab and scroll position; confirm destructive or hard-to-reverse actions, not routine completion; fixed navigation never covers scrollable content or primary actions; notifications and animations are dismissible; avoid flashing and long reward animations.
+- Reward principles: reward meaningful effort, not the creation of many low-value tasks; longer focus is not so rewarding that people skip breaks; formulas stay understandable; no random rewards that feel unfair; core productivity is never locked behind game engagement.
+
 ## 6. Reusable component catalogue
 
 The following are canonical component families. Implement shared variants rather than separate copies per module. Each component must define anatomy, sizing, semantics, focus behavior, interaction states, light/dark appearance and screenshot coverage.
@@ -199,8 +238,8 @@ The following are canonical component families. Implement shared variants rather
 - `EmptyState`: concise explanation and one useful next action; no unrelated feature promotion.
 - `LoadingState`: stable placeholder or restrained progress feedback; never spinner-only for long waits.
 - `ErrorState`: what failed, whether data is safe, and the next useful action (retry, edit, reconnect or continue offline).
-- `SuccessFeedback`: compact confirmation, inline state change or restrained toast/dialogue panel. Avoid repeated reward-like fanfare for routine actions. **One feedback line (0.165.0):** saved, reward and error all go through `AppModel.say` or `Report` and show in one bar above the tabs (`FeedbackHost`), the same on every screen; a screen never draws its own message box. A problem that stays until it is fixed uses `Report` (kept up while the screen holds it); a field that cannot be read still says so under the field.
-- **Empty states (0.165.0):** every `EmptyState` has one button, in the primary colour: where something can be added, it adds (or moves to the field above); otherwise it takes the player to the thing that fills the list (a focus session for eggs, Clear for a search or filters that found nothing).
+- `SuccessFeedback`: compact confirmation, inline state change or restrained toast/dialogue panel. Avoid repeated reward-like fanfare for routine actions. **One feedback line:** saved, reward and error all go through `AppModel.say` or `Report` and show in one bar above the tabs (`FeedbackHost`), the same on every screen; a screen never draws its own message box. A problem that stays until it is fixed uses `Report` (kept up while the screen holds it); a field that cannot be read still says so under the field.
+- **Empty states:** every `EmptyState` has one button, in the primary colour: where something can be added, it adds (or moves to the field above); otherwise it takes the player to the thing that fills the list (a focus session for eggs, Clear for a search or filters that found nothing).
 - Include stale/offline, permission-denied and partial-data states where relevant.
 
 ### 6.11 Tooltips and contextual menus
@@ -239,12 +278,13 @@ Every interactive component must account for the applicable states: default, pre
 - Respect Android Reduce Motion and app-level motion preferences. Avoid parallax or continuous decorative movement in utility modules.
 - Charts and visual statistics require textual summaries and accessible data labels.
 - Dialogue-box semantics must be exposed as grouped content with meaningful reading order; do not announce ornamental borders or tails.
+- Clickable tiles (Pokédex, PC, starters) have a role and a spoken label; Pokédex states, Growth numbers and focus time are written in words beside any colour or bar; long task names and localization must not break layouts; layouts work on short screens and varied aspect ratios; task, timer and reward behaviour survives interruption and restart. Open: the SpriteCollab credit line is deliberately faint (owner's choice, 0.13.0) and below 4.5:1.
 
 ## 10. Pixel-art rendering rules
 
 - Use nearest-neighbor sampling for pixel art; preserve source dimensions and pixel grid.
 - Prefer integer scale factors where practical. If fractional scaling is unavoidable, inspect for uneven pixel widths and shimmering.
-- Use nine-slice scaling for framed dialogue assets so corners remain intact.
+- Use nine-slice scaling for framed dialogue assets (section 4).
 - Do not apply blur, bilinear smoothing, glow, noise overlays or arbitrary texture to pixel art.
 - Pixel art is content, not a substitute for accessible text labels.
 - Respect source asset provenance and licence requirements defined in the asset specification.
@@ -257,7 +297,6 @@ Every interactive component must account for the applicable states: default, pre
 - Prefer standard Compose/Android controls where they provide better semantics and accessibility, then apply shared visual styling. Do not replace robust native behavior solely to imitate game UI.
 - Use `Modifier.semantics`, appropriate roles, state descriptions and custom actions where needed. Verify TalkBack traversal on actual devices.
 - Support dynamic type with responsive constraints and content measurement. Avoid hard-coded heights for dialogue boxes, cards, fields or buttons.
-- Add screenshot/golden tests for component variants, light/dark themes, font scaling, empty/error/loading/success states and narrow/wide widths.
 - Validate pixel rendering on device and emulator at the actual target density; do not rely on previews alone.
 
 ## 12. Module application checklist

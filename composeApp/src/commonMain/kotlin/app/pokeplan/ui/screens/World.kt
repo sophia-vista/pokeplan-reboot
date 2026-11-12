@@ -80,7 +80,7 @@ import app.pokeplan.world.WorldTeam
 import kotlinx.coroutines.delay
 
 /**
- * World (docs/world.md): the dungeon game. Send expedition teams into dungeons; they climb floors on their own, offline
+ * World (docs/pokelife/MODULES/WORLD.md): the dungeon game. Send expedition teams into dungeons; they climb floors on their own, offline
  * too, and bring back items, treasure and Pokémon to recruit. The map, the expeditions, the camp and the finds and bag are
  * its sections. Its progression (rank, Poké, dungeon depth) is its own; the Pokémon it recruits are the shared collection's.
  */

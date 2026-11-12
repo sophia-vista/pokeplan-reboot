@@ -310,17 +310,7 @@ Do not simply delete `Habit` and rename `Recurrence`. The unified model must pre
 
 Do not lose historical completion or reward data.
 
-**As built (0.133.0):** a Habit is gone as a record. A save from before loads with each habit merged, once and without paying anything, into a **recurring task with a frequency target** (`TaskSeries.target`; the target shapes are the habit's, so stored targets keep reading): same id (so a goal that links it still does), creation day, completion days (its recurring-task completion history) and the day it last paid (its idempotency record, `paidOn`), and the original habits are kept in `legacyHabits` with the merge time (`habitsMergedAtMillis`), so nothing is discarded and the merge can be checked by hand. Mapping used:
-
-| Habit | Recurring task |
-|---|---|
-| Daily | Daily frequency target |
-| Per week / per month | Weekly / monthly frequency target (`completed / target` this week or month, `Frequency.progress`) |
-| Chosen weekdays | **Kept as a frequency target ("chosen days")**, not turned into a calendar recurrence: a weekday recurrence would create a task for each day (a different reward and overdue behaviour) and the habit's history has no such tasks. This differs from the table above and is the one documented exception |
-| Forgiving streak | Derived from the target's completions (`TaskSeries.asHabit().streak`), shown secondary: only from a streak of 2, after the period progress |
-| One payment a day | `paidOn` plus the completion set: undoing and ticking again the same day pays nothing |
-
-The Planner's Habits view is now **Targets** (progress first, e.g. `2 / 3 this week`). Limits, per section 5.6's rule to ship the subset that is safe: one completion per day per target (the completion set is days), and the scope of an edit is the whole definition.
+**Habit merge (0.133.0):** a Habit is no longer a record. Old saves merge each habit once, paying nothing, into a recurring task with a frequency target (`TaskSeries.target`): same id, creation day, completion days and last paid day (`paidOn`); the originals stay in `legacyHabits` with the merge time (`habitsMergedAtMillis`). Mapping: Daily -> daily target; per week / per month -> weekly / monthly target (`completed / target`, `Frequency.progress`); **chosen weekdays stay a frequency target ("chosen days")**, not a calendar recurrence (a weekday recurrence would create a task per day, with different reward and overdue behaviour; this is the one documented exception to the table above); the forgiving streak is derived from the target's completions (`TaskSeries.asHabit().streak`), secondary, shown only from a streak of 2 after the period progress; one payment a day is `paidOn` plus the completion set, so undo and tick again the same day pays nothing. The Planner's Habits view is now **Targets** (e.g. `2 / 3 this week`). Limits (section 5.6): one completion per day per target, and an edit applies to the whole definition.
 
 ### 11.3 CARE remains separate
 
@@ -376,67 +366,11 @@ Do not duplicate shared reminder settings or behavior in PLAN.
 
 ## 14. Implementation priorities
 
-### P0 — Architecture and reliability
-
-- Confirm canonical ownership boundaries.
-- Define unified recurring-task domain.
-- Audit existing task, recurrence, Habit, and focus paths.
-- Implement and validate PLAN against the shared reminder contract in `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`.
-- Preserve CARE routine ownership and persistence.
-- Define migration and reward idempotency.
-- Test task completion and recurring occurrences.
-- Test focus recovery through interruption/process death.
-- Verify PLAN integration against the shared reminder feature acceptance tests.
-
-### P1 — Core PLAN experience
-
-- Today, Inbox, quick capture, task detail/editing, completion/undo/archive/delete.
-- Upcoming, lists, basic projects.
-- Calendar agenda/basic calendar view.
-- Unified recurring tasks: daily, weekday, weekly, monthly recurrence/frequency targets.
-- Focus timer and history.
-- PLAN task/event reminder integration using `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`.
-- Read-only Google/device calendar integration.
-- PLAN reward event integration.
-- PMD dialogue-box visual system across screens.
-- Full light/dark-mode review.
-
-### P2 — Planning depth and refinements
-
-- Goals and milestones.
-- Advanced project organization.
-- More recurrence editing options.
-- Richer calendar interactions.
-- Optional linked CARE agenda entries.
-- Focus statistics/trends.
-- Optional widgets and quick actions.
-- Accessibility and interaction refinements.
-
-Do not delay P1 because P2 is unfinished.
+The order and status are tracked in `../IMPLEMENTATION_BACKLOG.md`. Priorities: P0 architecture and reliability (ownership boundaries, unified recurring-task domain, shared reminder contract, migration and reward idempotency, task/recurrence/focus recovery tests); P1 core experience (Today, Inbox, capture, Upcoming, lists, basic projects, calendar agenda, recurring tasks, focus timer and history, reminders, read-only calendar, reward events); P2 depth (goals and milestones, advanced projects, more recurrence editing, richer calendar, linked CARE agenda entries, focus statistics, widgets). Do not delay P1 because P2 is unfinished.
 
 ## 15. Audit and implementation safeguards
 
-Before modifying code, inspect the current working branch; the prior static audit used source archive version `0.123.0`, and later changes may exist. The previous audit did not establish a successful build or runtime test.
-
-### Tasks and recurrence
-
-Preserve/test task creation/editing, completion/undo, due dates, recurrence generation/edits, missed occurrences, occurrence identity, historical completion records, reward payment history, and frequency-target calculations.
-
-### Focus
-
-Preserve/test start/pause/resume, background/screen-off behavior, process-death recovery, cancellation, completion, linked-task behavior, and reward idempotency.
-
-### CARE
-
-Preserve/test routine completion history, once-per-day payment protection, five paid routines/day limit, weekly rhythm milestone, editing/archiving, trends, local-first storage, optional sync, and notification actions.
-
-### Shared reminders
-
-Validate the shared service and cross-module behavior against `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`. PLAN-specific tests cover source cancellation/rescheduling, action routing, focus-state integration, and stale PLAN records.
-
-### UI
-
-Review all primary screens for excessive captions, redundant labels, inconsistent padding, nested-card overload, dark-mode contrast, task/event distinctions, navigation depth, and loading/empty/error states. A visual rewrite does not prove underlying task/reminder logic is correct.
+Before modifying code, inspect the current branch. Preserve and test: task creation/editing, completion/undo, due dates, recurrence generation and edits, missed occurrences, occurrence identity, completion and payment history, frequency-target calculations; focus start/pause/resume, background and screen-off behaviour, process-death recovery, cancellation, completion, linked-task behaviour and reward idempotency; CARE routine history, once-per-day payment, the five-paid-routines-a-day limit, weekly rhythm milestone and notification actions; PLAN reminder cancellation, rescheduling, action routing, focus-state integration and stale records (shared reminders: `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`). Review screens for excessive captions, nested-card overload, dark-mode contrast, task/event distinctions and loading/empty/error states; a visual rewrite does not prove the logic correct.
 
 ## 16. Acceptance criteria
 
@@ -504,28 +438,11 @@ Not in initial scope unless separately approved: team/collaborative project mana
 
 ## 18. Documentation alignment
 
-The following source-of-truth boundaries are reflected in this revision:
-
-| Document | Authoritative responsibility |
-|---|---|
-| Product Bible | Defines the current eight-module architecture and distinguishes PLAN planning recurrence from CARE self-care routines. |
-| `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture` | Owns shared reminder contracts, scheduling, quiet hours, focus deferral, notification delivery, recovery, privacy, and cross-module acceptance. |
-| `../MODULES/CARE.md` | Owns CARE routine/Diary Card reminder preferences and CARE-specific action semantics; links to the shared feature. |
-| This PLAN specification | Owns PLAN task/event reminder requests and PLAN-specific action semantics; does not define shared scheduler behavior. |
-| Implementation Guide | Tracks shared reminder implementation and migration against the feature specification. |
-
-The Product Bible now assigns planning recurrence to PLAN and self-care routines to CARE. PLAN Habits behavior is consolidated into recurring tasks rather than maintained as a separate record type. The shared reminder feature is maintained once under `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`.
+Shared reminders are owned by `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; CARE reminder preferences and action semantics by `CARE.md`; PLAN task/event reminder requests by this file. The Product Bible assigns planning recurrence to PLAN and self-care routines to CARE; PLAN Habits are consolidated into recurring tasks.
 
 ## 19. Architecture summary
 
-Shared persistence, record identity, transaction handling, reward idempotency, backup/restore and migration follow `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`. PLAN owns its task and planning records; linked module records remain authoritative in their owning modules.
-
-- **PLAN — planning and execution:** tasks, recurring tasks, flexible frequency targets, lists, projects, goals, milestones, calendar, focus.
-- **CARE — self-care and reflection:** self-care routines, diary cards, journal, mood, therapeutic tools, CARE completion history and progression.
-- **Shared features:** cross-module reminder scheduling and delivery are specified in `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; reusable visual rules are specified in `../FEATURES/DESIGN_SYSTEM.md`.
-- **WORLD — progression and adventure:** receives minimal, idempotent activity events from the owning module; does not own planning or self-care records.
-
-The result is one unified PLAN planning system rather than overlapping task, habit, and calendar features; CARE retains its self-care identity and routine behavior; reminder delivery is standardized without merging module data or reward ownership.
+Shared persistence, record identity, transactions, reward idempotency, backup/restore and migration follow `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`. PLAN owns its task and planning records; linked records stay authoritative in their owning modules. WORLD receives minimal, idempotent activity events and owns no planning or self-care records.
 
 ## Shared Pokémon ecosystem contract
 

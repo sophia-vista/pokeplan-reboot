@@ -6,7 +6,7 @@ import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.OwnedPokemon
 import kotlin.random.Random
 
-/** A field move: what a team member can do on a floor to open a side path (docs/world-module.md, "Floor events"). */
+/** A field move: what a team member can do on a floor to open a side path (docs/pokelife/MODULES/WORLD.md, "Floor events"). */
 enum class FieldMove(val identifier: String, val label: String) {
     CUT("cut", "Cut"), SURF("surf", "Surf"), ROCK_SMASH("rock-smash", "Rock Smash"), STRENGTH("strength", "Strength"),
     FLASH("flash", "Flash"), DIG("dig", "Dig"), FLY("fly", "Fly");

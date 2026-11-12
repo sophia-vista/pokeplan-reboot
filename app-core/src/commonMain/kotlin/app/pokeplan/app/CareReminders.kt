@@ -15,7 +15,7 @@ import kotlinx.datetime.plus
 data class RoutineReminder(val routineId: String, val title: String, val day: LocalDate, val atMillis: Long)
 
 /**
- * Care's routine reminders (docs/ecosystem.md, section 6): one at each routine's own time, on the days it is meant for, while
+ * Care's routine reminders (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md): one at each routine's own time, on the days it is meant for, while
  * it is not done yet that day. Gentle: no repeats, no streak talk, nothing when Care or its reminders are off. The user chose
  * the time, so rest days (Plan's) do not move it. Delivery follows the shared [ReminderPolicy]: the global quiet hours
  * (INTEGRATIONS_AND_PRIVACY.md, section 9.4; no module may bypass them) and a focus session, which holds it until its end.

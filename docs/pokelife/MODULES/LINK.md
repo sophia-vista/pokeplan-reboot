@@ -210,7 +210,7 @@ LINK owns the following canonical records:
 | Contact source mapping | Import provenance and reconciliation |
 | Postcard Trail state | LINK's optional acquisition progress and idempotency references |
 
-**As built (0.144.0 Plan's half, 0.145.0 LINK's half, REP-014).** `GameStore.convertFollowUp(followUpId, title, planned, due)` makes the PLAN task for a converted follow-up (one task per follow-up id; `TaskLink(LINK_FOLLOW_UP, id)`), after which PLAN owns its completion and pays it once by Plan's rules (paid once, so a reopen never pays again); `GameStore.linkedTask(LINK_FOLLOW_UP, id)` gives LINK the task and its state to display; `unlinkTask` leaves a normal PLAN task. LINK must not pay for a follow-up that has a linked task: `FollowUp.converted` is set when the follow-up is handed over (`LinkStore.convertToPlan`) and never cleared, so unlinking or deleting the task does not make LINK pay; while the task exists LINK refuses to finish or cancel the follow-up (`LinkStore.IN_PLAN`) and a task finished in PLAN is mirrored as completed without a reward (`syncFromPlan`). `TaskLinksTest` covers it.
+**Conversion rules (built).** `GameStore.convertFollowUp` makes one PLAN task per follow-up id (`TaskLink(LINK_FOLLOW_UP, id)`); PLAN then owns its completion and pays it once by Plan's rules, and `GameStore.linkedTask` gives LINK the task and its state to display. `unlinkTask` leaves a normal PLAN task. `FollowUp.converted` is set on handover and never cleared, so unlinking or deleting the task never makes LINK pay; while the task exists LINK refuses to finish or cancel the follow-up, and a task finished in PLAN is mirrored as completed without a reward.
 
 ### 4.1 Cross-module boundaries
 
@@ -386,21 +386,9 @@ The design-system document owns reusable component rules, typography, spacing, b
 
 ---
 
-## 11. Existing implementation audit and reuse policy
+## 11. Reuse policy
 
-The reviewed source archive `0.123.0` has no first-class LINK module, contact/relationship domain models, device-contact import adapter or LINK permission flow. The archive includes legacy reminder infrastructure, but LINK must use the shared reminder contract rather than creating another scheduler. Existing code is evidence, not authority; the target architecture and this specification govern implementation.
-
-### 11.1 Reuse
-
-- Shared module shell, navigation, local persistence, encryption, backup/export and migration foundations after architecture review.
-- Shared reminder scheduler and delivery through LINK source adapters.
-- Shared Pokémon collection, acquisition and reward services.
-- Shared design-system components after audit against `FEATURES/DESIGN_SYSTEM.md`.
-- Android Contacts provider only through a permission-aware platform adapter.
-
-### 11.2 Build
-
-Create a LINK domain with independent models, repositories, use cases, local persistence, search indexing, import reconciliation, Postcard Trail state and tests. Keep Android Contacts APIs in the Android platform layer; common LINK domain logic must not depend on Android framework classes or Compose.
+Existing code is evidence, not authority. LINK reuses the shared module shell, local persistence, encryption, backup/export and migration foundations, the shared reminder scheduler (through LINK source adapters), the shared Pokémon collection, acquisition and reward services, the shared design-system components, and the Android Contacts provider only through a permission-aware platform adapter. LINK has its own domain (models, repositories, persistence, search, import reconciliation, Postcard Trail state); Android Contacts APIs stay in the Android platform layer and common LINK logic depends on no Android or Compose class.
 
 ### 11.3 Avoid or retire
 
@@ -415,76 +403,9 @@ Create a LINK domain with independent models, repositories, use cases, local per
 
 ---
 
-## 12. Implementation phases and exit gates
+## 12. Remaining work
 
-LINK follows Phase 8 in the dependency-first Implementation Guide. HOME and LINK can share architecture work but remain separate domains and acceptance gates.
-
-### Phase 1 — LINK domain and persistence
-
-- Define Contact, RelationshipNote, ImportantDate, FollowUp and ContactSource models.
-- Define stable IDs, timestamps, provenance, deletion and migration behavior.
-- Establish repositories and local persistence in the approved architecture.
-- Define cross-module reference contracts and the minimal reward event schema.
-
-**Exit gate:** every record has one owner; records survive process death and migrations; no dependency on PLAN/CARE storage.
-
-### Phase 2 — Manual contacts and profiles
-
-- People directory, quick add, profile overview and editing.
-- Optional categories, tags, favorites and duplicate suggestions.
-- Empty states and safe deletion.
-
-**Exit gate:** manual LINK use is complete without permissions or internet.
-
-### Phase 3 — Notes and search
-
-- Relationship notes and dated context.
-- Unified local search and filters.
-- Export and deletion behavior.
-
-**Exit gate:** notes remain private and searchable; search index can be rebuilt without data loss.
-
-### Phase 4 — Important dates
-
-- Date types, annual/one-time recurrence and unknown-year support.
-- Leap-day and time-zone behavior.
-- LINK reminder source integration.
-
-**Exit gate:** date recurrence is deterministic; no duplicate calendar ownership or reminders.
-
-### Phase 5 — Follow-ups and reminders
-
-- Quick capture, due dates, statuses and completion history.
-- Shared reminder integration and privacy-safe notification content.
-- PLAN conversion/link contract.
-
-**Exit gate:** reminders recover after reboot/process death; conversion creates no duplicate task, completion or reward.
-
-### Phase 6 — Optional device-contact import
-
-- Explicit permission flow and import preview.
-- User-selected import, duplicate reconciliation and field provenance.
-- Re-import and permission-revocation behavior.
-
-**Exit gate:** no silent merge or overwrite; manual LINK remains fully usable when permission is denied.
-
-### Phase 7 — Postcard Trail
-
-- User setting and opt-out behavior.
-- Eligible completion event policy and idempotency.
-- Encounter/recruitment integration with shared Pokémon services.
-- Economy simulation and anti-farming tests.
-
-**Exit gate:** only eligible user-completed follow-ups contribute; no personal contact data leaves LINK; disabled progression does not affect utility.
-
-### Phase 8 — Polish and acceptance
-
-- Visual refinement and shared component audit.
-- Accessibility, responsive layout and dark mode.
-- Large-directory/search performance.
-- Backup, restore, migration, deletion and real-device permission testing.
-
-**Exit gate:** all core workflows pass product, privacy, offline, reliability and accessibility acceptance.
+Phases 1 to 5, 7 and 8 of the former plan (domain and persistence, manual contacts, notes and search, dates, follow-ups and reminders, Postcard Trail, polish) are built; see section 15. What remains is the optional device-contact import (phase 6): explicit permission flow and import preview, user-selected import, duplicate reconciliation and field provenance, re-import and permission-revocation behavior. **Exit gate:** no silent merge or overwrite; manual LINK remains fully usable when permission is denied. Real-device testing of the whole module is also still to do (`../IMPLEMENTATION_BACKLOG.md`).
 
 ---
 
@@ -530,39 +451,24 @@ LINK follows Phase 8 in the dependency-first Implementation Guide. HOME and LINK
 
 ## 14. Documentation alignment
 
-| Document | Authoritative responsibility |
-|---|---|
-| `../PRODUCT_BIBLE.md` | Product-wide module map, ownership, privacy and shared Pokémon rules |
-| `../IMPLEMENTATION_GUIDE.md` | Baseline implementation status, dependency order and delivery roadmap |
-| `../MODULES/PLAN.md` | Tasks, calendar and execution after explicit follow-up conversion |
-| `../MODULES/CARE.md` | Private reflection and self-care; no LINK record ownership |
-| `../MODULES/HOME.md` | Household records; may reference a LINK-owned service contact |
-| `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture` | Shared reminder scheduling, policy, delivery and recovery |
-| `../FEATURES/DESIGN_SYSTEM.md` | Shared PMD dialogue-box visual language and reusable components |
-| Shared Pokémon/economy specification | Collection, reward ledger, acquisition contracts and economy balance |
-| Future `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` | Permission and sensitive-data architecture |
-| `../ARCHITECTURE/DATA_AND_MIGRATIONS.md` | Shared persistence, transaction, encryption boundary, export, backup, restore and migration contracts |
+This document is the single detailed requirements source for LINK. Product-wide rules: `../PRODUCT_BIBLE.md`; delivery order: `../IMPLEMENTATION_GUIDE.md`; PLAN conversion target: `PLAN.md`; HOME may reference a LINK-owned service contact: `HOME.md`; shared reminders and permissions: `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; shared persistence, encryption boundary, export, backup and migration: `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`; visual language: `../FEATURES/DESIGN_SYSTEM.md`; Pokémon and economy: `../FEATURES/POKEMON_ECOSYSTEM.md`.
 
-This document is the single detailed requirements source for LINK. Shared scheduling, visual rules, Pokémon ownership and technical foundations remain in their respective canonical documents; do not duplicate their implementation rules here.
+## 15. As built: the manual slice
 
-## 15. As built (0.145.0, REP-014): the manual slice
+*Compiled for Android; not yet run on a device. No device-contact import or widget exists.*
 
-*Built and tested on the JVM, compiled for Android; **not run on a device**. No reminder, device-contact import or widget was started.*
+A menu with an overview on top and four destinations. **Overview**: only what needs attention (follow-ups that are due, with a tick; dates in the next 14 days), quick-add, and one search over people, notes, dates and follow-ups. **People** (2.1, 2.2): a directory sorted by name or by what changed last (never ranked), filters for Pinned and relationship words, a person needs only a name, a profile with Overview, Notes (dated lines, newest first) and Follow-ups, duplicate suggestions by name, phone digits or email (suggested, never merged), and a delete (with Undo) that asks what to do with their dates and follow-ups. The directory and search also find a person by phone (however spaced), email and address, and show 40 people at a time. **Dates** (2.3): birthday, anniversary, milestone or custom, day and month with an optional year, every year or once, an optional person; the next time comes with "turns N" when the year is known. **29 February is observed on 28 February in a year without one** (`LinkRules.observed`). **Follow-ups** (2.4): title only, optional person, day and note; Open and History; done, cancelled (shows its day), reopened. A late one is just "Due since…", no escalation. **Make it a Plan task** (on the follow-up's options): PLAN owns the task and its reward, Link shows "In Plan" with no tick, and "Stop linking to Plan" lets it go; a follow-up PLAN finished is reopened in PLAN (Link follows its task both ways, unpaid); "due" counts on Home and Modules leave out follow-ups Plan owns. **Settings**: Postcard Trail on or off, export and erase by kind; a person gets a new category from their own form.
 
-**What exists.** A menu with an overview on top and four destinations. **Overview**: only what needs attention (follow-ups that are due, with a tick; dates in the next 14 days), quick-add, and one search over people, notes, dates and follow-ups. **People** (2.1, 2.2): a directory sorted by name or by what changed last (never ranked), filters for Pinned and relationship words, a person needs only a name, a profile with Overview, Notes (dated lines, newest first) and Follow-ups, an edit form, duplicate suggestions by name, phone digits or email (suggested, never merged), and a delete that asks what to do with their dates and follow-ups. **Dates** (2.3): birthday, anniversary, milestone or custom, day and month with an optional year, every year or once, an optional person; the next time it comes with "turns N" when the year is known. **29 February is observed on 28 February in a year without one** (`LinkRules.observed`). **Follow-ups** (2.4): title only, optional person, day and note; Open and History; done, cancelled, reopened. A late one is just "Due since…", no escalation. **Make it a Plan task** (2.4, on the follow-up's options, through `GameStore.convertFollowUp`): from then on PLAN owns the task and its reward, Link shows "In Plan" with no tick, Link never pays for that follow-up (`GameStore.link` refuses it), and "Stop linking to Plan" lets it go. **Settings**: Postcard Trail on or off, categories, export and erase by kind.
-
-**Postcard Trail (section 9), as built** *(numbers are *(tune)* starting values; `RewardRules.VERSION` 20, `docs/economy.md`)*:
+**Postcard Trail (section 9), as built** *(numbers are *(tune)* starting values; `docs/economy.md`)*:
 - **On by default** (every acquisition method is), off in Settings without touching a record. Only one thing pays: a **follow-up finished** (2 Rare Candies; at most 3 paid a day). Adding or importing people, notes, dates, tags and favourites, editing, rescheduling, cancelling and reopening never pay.
 - **Idempotent by follow-up.** The event id is `link:followup:<follow-up id>`, the game remembers it (`AppData.linkPaid`, newest 1000) and the follow-up keeps `paid`, so reopening and finishing again, a restore or a replay pays once. Nothing is clawed back by a reopen.
-- **What leaves LINK** is exactly `LinkEvent`: id, module ("link"), an opaque `ref`, the broad kind (`followup_completed`), the time and the policy version. `LinkStoreTest` and `LinkTablesTest` check that no name, number, email, organization, tag, note, date or follow-up title reaches the event, the shared save, the reward log or the shared tables.
+- **What leaves LINK** is exactly `LinkEvent`: id, module ("link"), an opaque `ref`, the broad kind (`followup_completed`), the time and the policy version. No name, number, email, organization, tag, note, date or follow-up title may reach the event, the shared save, the reward log or the shared tables.
 - A payment is candies, a little friendship for Link's lead, a trainer point and a point on the track; **3 points (three finished follow-ups) find a Postcard Egg** from the **Link Region** (`tools/species/regions/link.txt`) into Link's party. Link's party perks (Candy finder: Normal, Flying, Water, Grass, Bug, Ground; Friendship gain: Fairy, Fighting, Electric, Psychic, Fire, Dragon; capped at +25%) only change what Postcard Trail pays.
 - **First-run tutorial** (POKEMON_ECOSYSTEM.md 10.2.1): a 5-second postcard gives one Link Region Pokémon into Link's party, leading it, once per save. A new Pokémon arrives as "Postcard Trail delivered…" in a scene of its own (the route).
 
-**Data (section 4).** `link_*` tables from the start (schema 10): `link_person`, `link_note`, `link_date`, `link_followup` (each row `key, position, day, json`) and `link_state` (settings); `LinkTables` reads, exports or erases one family alone. Link is in the daily backup and the backup file; a backup made before Link leaves Link alone. Not sealed (no owner decision), like Home.
+**Data (section 4).** `link_*` tables: `link_person`, `link_note`, `link_date`, `link_followup` (each row `key, position, day, json`) and `link_state` (settings); `LinkTables` reads, exports or erases one family alone. Link is in the daily backup and the backup file; a backup made before Link leaves Link alone. Not sealed (no owner decision), like Home.
 
-**Reminders (5), built in 0.143.0:** off until the user turns Link's reminders on, then per date (the day of, or 1, 3 or 7 days before) and per follow-up (on its day); one nudge each, generic lock-screen text, quiet hours and focus sessions respected; a follow-up handed to Plan is Plan's to remind about.
-
-**Audit changes (0.171.0):** the directory and search also find a person by phone (however spaced), email and address; a person's profile can add a date for them (3.3); deleting a person offers Undo; the directory shows 40 people at a time; a person can get a new category from their own form (Settings no longer has a Categories box with chips that did nothing); a cancelled follow-up shows the day it was cancelled; a follow-up PLAN finished is reopened in PLAN (Link follows its task both ways, unpaid); and "due" counts on Home and Modules leave out follow-ups Plan owns, as the Overview already did.
+**Reminders (5), built:** off until the user turns Link's reminders on, then per date (the day of, or 1, 3 or 7 days before) and per follow-up (on its day); one nudge each, generic lock-screen text, quiet hours and focus sessions respected; a follow-up handed to Plan is Plan's to remind about.
 
 **Not built, not offered:** importing device contacts and the Contacts permission (6.1), a link from HOME to a contact, contact source mapping and provenance, widgets, and a passphrase-sealed backup.
 

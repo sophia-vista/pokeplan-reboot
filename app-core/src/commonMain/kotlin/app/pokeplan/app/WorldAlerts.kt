@@ -3,7 +3,7 @@ package app.pokeplan.app
 import app.pokeplan.world.WorldSim
 
 /**
- * When World's "a job is done" notification is due (docs/world.md): at the earliest moment an exploring team will finish an
+ * When World's "a job is done" notification is due (docs/pokelife/MODULES/WORLD.md): at the earliest moment an exploring team will finish an
  * accepted job. The Android side sets one alarm for it, settles World when it goes off and announces only jobs that really are done.
  */
 object WorldAlerts {

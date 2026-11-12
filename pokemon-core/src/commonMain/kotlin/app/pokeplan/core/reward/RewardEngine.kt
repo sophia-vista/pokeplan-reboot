@@ -152,7 +152,7 @@ data class EffortEvent(
 )
 
 /**
- * A Care visitor became a friend (docs/ecosystem.md, section 6, "Befriending"): the species the player chose to befriend.
+ * A Care visitor became a friend (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md, "Befriending"): the species the player chose to befriend.
  * Carries nothing but the visitor, so no routine, mood or note ever reaches the world.
  */
 @Serializable
@@ -184,7 +184,7 @@ data class AchievementEvent(
 )
 
 /**
- * What a Care moment was (docs/ecosystem.md, section 6). Diary cards, journal entries and notes are never events: they earn
+ * What a Care moment was (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md). Diary cards, journal entries and notes are never events: they earn
  * nothing. A practised skill carries no word of which skill it was.
  */
 @Serializable

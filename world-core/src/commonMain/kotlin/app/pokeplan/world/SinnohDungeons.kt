@@ -4,7 +4,7 @@ import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
 /**
- * The nine dungeons of the Sinnoh layer (docs/world.md, "Sinnoh"), from Pokémon Diamond, Pearl, Platinum, Brilliant Diamond and Shining
+ * The nine dungeons of the Sinnoh layer (docs/pokelife/MODULES/WORLD.md, "Sinnoh"), from Pokémon Diamond, Pearl, Platinum, Brilliant Diamond and Shining
  * Pearl. Their wild tables are the Sinnoh regional dex, by each place's habitat in the games; legendaries are never found (they are
  * quests, [Legends]). Floors, floor times, milestones and the rank gates are starting values *(tune)*. [DungeonDef.chapter] is a chapter
  * of [SinnohStory].
