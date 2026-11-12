@@ -28,7 +28,7 @@ import app.pokeplan.ui.theme.PixelTitle
 import app.pokeplan.ui.theme.Spacing
 import app.pokeplan.ui.theme.TextBox
 
-/** The modules whose records are private and that can ask for the phone's screen lock (Mint has its own switch, in its settings). */
+/** The modules whose records are private and that can ask for the phone's screen lock from Settings (Mint has its own switch, in its settings, and the same door). */
 internal val gateableModules = listOf(Module.CARE, Module.HEAL, Module.HOME, Module.LINK)
 
 private fun locked(model: AppModel, gate: DeviceGate, key: String, now: Long): Boolean {
@@ -38,16 +38,25 @@ private fun locked(model: AppModel, gate: DeviceGate, key: String, now: Long): B
 }
 
 /**
- * The optional screen-lock door in front of a private module (Care's journal, Heal, Home, Link): with the switch on in Settings and a screen lock on the phone,
- * the module shows a locked card until the person proves themselves with the phone's own lock (PIN, pattern, password, fingerprint or face, whichever the phone
- * offers), and closes again after the app or the module has been left for a while. A door only, like Mint's: nothing is encrypted with it and no password is made.
+ * The optional screen-lock door in front of a private module (Care's journal, Heal, Home, Link), switched on in Settings → Privacy (`Settings.lockedModules`).
+ * Mint's door is the same one, switched on in Mint's own settings (MINT.md section 13.2).
+ */
+@Composable
+internal fun ModuleGate(model: AppModel, module: Module, content: @Composable () -> Unit) =
+    ScreenLockGate(model, module, module.name in model.data.settings.lockedModules, content)
+
+/**
+ * The one screen-lock door every private module uses: with [on] and a screen lock on the phone, the module shows a locked card until the person proves
+ * themselves with the phone's own lock (PIN, pattern, password, fingerprint or face, whichever the phone offers), and closes again after the app or the
+ * module has been left for longer than [DeviceGate.GRACE_MILLIS]. A door only: nothing is encrypted with it and no password is made, so it can never make
+ * a record unreadable. Without a gate or a lock on the phone it shows the module at once.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-internal fun ModuleGate(model: AppModel, module: Module, content: @Composable () -> Unit) {
+internal fun ScreenLockGate(model: AppModel, module: Module, on: Boolean, content: @Composable () -> Unit) {
     val gate = model.gate
     val key = module.name
-    if (gate == null || key !in model.data.settings.lockedModules || !gate.available()) { content(); return }
+    if (gate == null || !on || !gate.available()) { content(); return }
     var isLocked by remember { mutableStateOf(locked(model, gate, key, model.store.nowMillis)) }
     var failed by remember { mutableStateOf(false) }
     DisposableEffect(Unit) { onDispose { model.moduleLeftAt[key] = model.store.nowMillis } }

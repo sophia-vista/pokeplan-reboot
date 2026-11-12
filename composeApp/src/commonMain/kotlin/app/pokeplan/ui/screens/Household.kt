@@ -101,34 +101,6 @@ private val sentenceKeys = KeyboardOptions(capitalization = KeyboardCapitalizati
 @Composable
 private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) = TabButton(label, selected, onClick, modifier, key = accent)
 
-/** A plain list row: a lead, a title with one quiet line under it, a trail, all on one centre line, with a 48 dp target. No box of its own. */
-@Composable
-private fun HRow(
-    title: String, detail: String = "", warn: Boolean = false, lead: @Composable () -> Unit = {}, trail: @Composable () -> Unit = {},
-    onClick: (() -> Unit)? = null, onClickLabel: String? = null,
-) {
-    Row(
-        Modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target)
-            .let { if (onClick != null) it.clip(PixelShape).focusRing(PixelShape).clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick) else it }
-            .padding(vertical = Spacing.XS),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
-    ) {
-        lead()
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            if (detail.isNotEmpty()) Text(detail, style = MaterialTheme.typography.bodyMedium, color = if (warn) Pixel.Warning else Pixel.InkSoft)
-        }
-        trail()
-    }
-}
-
-@Composable
-private fun Tabs(labels: List<String>, selected: Int, onSelect: (Int) -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-        labels.forEachIndexed { i, l -> Chip(l, i == selected, { onSelect(i) }, Modifier.weight(1f)) }
-    }
-}
-
 // ----- Ticking work off ---------------------------------------------------------------------------------------------------------
 
 /** Marks a chore done from any list, and offers to take it back: a tick on the overview or on an overdue chore leaves no row to undo it from. */
@@ -206,7 +178,6 @@ private fun HouseholdMenu(model: AppModel, onBack: () -> Unit, openPokemon: (Str
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             ModuleLeadStage(model, Module.HOME, model.data.player.homeLead, model.store.moduleEvent(app.pokeplan.app.GameStore.HOME_LOG_PREFIX), openPokemon = openPokemon)
-            RewardBox(model)
             TutorialCard(model, Tutorials.HOME_TIDY, homeRecords = data.chores.size + data.supplies.size + data.assets.size)
             HouseholdOverview(model, overview)
             HouseholdSearch(model)
@@ -248,7 +219,7 @@ private fun HouseholdOverview(model: AppModel, o: Overview) {
             if (chores.isNotEmpty()) {
                 SectionLabel("Chores")
                 chores.take(5).forEach { v ->
-                    HRow(
+                    RecordRow(
                         v.chore.title, choreLine(data, v, today), warn = v.state == ChoreState.OVERDUE,
                         lead = { PixelIconButton("check", "Mark ${v.chore.title} done", { tickChore(model, v) }, accent) },
                         onClick = { go(model, HouseholdSection.CHORES, v.chore.id, 0) }, onClickLabel = "Open chores",
@@ -259,7 +230,7 @@ private fun HouseholdOverview(model: AppModel, o: Overview) {
             if (upkeep.isNotEmpty()) {
                 SectionLabel("Maintenance")
                 upkeep.take(5).forEach { v ->
-                    HRow(
+                    RecordRow(
                         v.schedule.title, scheduleLine(data, v), warn = v.state == DueState.OVERDUE,
                         lead = { PixelIconButton("check", "Mark ${v.schedule.title} done", { tickMaintenance(model, v.schedule) }, accent) },
                         onClick = { go(model, HouseholdSection.MAINTENANCE, v.schedule.id, 0) }, onClickLabel = "Open maintenance",
@@ -269,7 +240,7 @@ private fun HouseholdOverview(model: AppModel, o: Overview) {
             if (low.isNotEmpty()) {
                 SectionLabel("Running low")
                 low.take(5).forEach { s ->
-                    HRow(
+                    RecordRow(
                         s.name, "Low · ${quantityText(s)}",
                         trail = { PixelButton("Not now", { home.dismissLow(s.id) }, color = Pixel.InkSoft, compact = true) },
                         onClick = { go(model, HouseholdSection.SUPPLIES, s.id, 2) }, onClickLabel = "Open the restock list",
@@ -280,7 +251,7 @@ private fun HouseholdOverview(model: AppModel, o: Overview) {
                 SectionLabel("Warranties")
                 warranties.take(3).forEach { w ->
                     val asset = data.assets.firstOrNull { it.id == w.assetId }
-                    HRow(
+                    RecordRow(
                         asset?.name ?: "Warranty", listOfNotNull("Ends ${w.expiryDay?.short()}", w.provider.takeIf { it.isNotBlank() }).joinToString(" · "),
                         onClick = { go(model, HouseholdSection.MAINTENANCE, w.assetId, 1) }, onClickLabel = "Open belongings",
                     )
@@ -307,7 +278,7 @@ private fun HouseholdSearch(model: AppModel) {
             PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search the household", singleLine = true)
             if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             hits.forEach { h ->
-                HRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); query = "" }, onClickLabel = "Open")
+                RecordRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); query = "" }, onClickLabel = "Open")
             }
         }
     }
@@ -361,19 +332,6 @@ private fun scheduleLine(data: app.pokeplan.home.HomeData, v: app.pokeplan.home.
     val s = v.schedule
     val when_ = if (v.state == DueState.PAUSED) "Paused · ${s.nextDue.short()}" else if (v.state == DueState.DUE) "Due today" else "${v.state.label} · ${s.nextDue.short()}"
     return listOfNotNull(when_, data.assets.firstOrNull { it.id == s.assetId }?.name, repeatText(s.recurrence).takeIf { it.isNotEmpty() }).joinToString(" · ")
-}
-
-/** A date for a chore, an asset or a warranty: quick keys, a month to tap, or the exact day typed (owner, 12 November 2026); [past] limits it to today and before. */
-@Composable
-private fun DateField(label: String, value: LocalDate?, onChange: (LocalDate?) -> Unit, today: LocalDate, optional: Boolean = false, past: Boolean = false) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        PixelDateField(
-            value, today, accent, onChange,
-            presets = if (past) listOf("Today" to 0, "Yesterday" to -1, "A week ago" to -7) else listOf("Today" to 0, "Tomorrow" to 1, "In a week" to 7),
-            noneLabel = if (optional) "None" else null, max = if (past) today else null,
-        )
-    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -443,11 +401,10 @@ private fun ChoresView(model: AppModel) {
     val due = shown.filter { inDueTab(it, today) }
     val upcoming = shown.filter { v -> v !in due && !((v.state == ChoreState.DONE || v.state == ChoreState.SKIPPED) && v.chore.recurrence.kind == RepeatKind.ONCE) }
     val archived = data.chores.filter { it.status == RecordStatus.ARCHIVED }
-    RewardBox(model)
     TextBox { ChoreForm(model, null, onDone = {}) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Tabs(listOf("Due", "Upcoming", "History"), tab) { tab = it; openId = null }
+            ModuleTabs(listOf("Due", "Upcoming", "History"), tab, accent) { tab = it; openId = null }
             val usedAreas = data.areas.filter { a -> !a.archived && data.chores.any { it.areaId == a.id } }
             if (usedAreas.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Chip("All areas", area == null, { area = null })
@@ -474,12 +431,12 @@ private fun ChoresView(model: AppModel) {
                             EntryStatus.SKIPPED -> "Skipped"
                             EntryStatus.DEFERRED -> "Put off" + (e.deferTo?.let { " to ${it.short()}" } ?: "")
                         }
-                        HRow(title, listOfNotNull("$word · ${e.day.short()}", e.note.takeIf { it.isNotBlank() }).joinToString(" · "))
+                        RecordRow(title, listOfNotNull("$word · ${e.day.short()}", e.note.takeIf { it.isNotBlank() }).joinToString(" · "))
                     }
                     if (archived.isNotEmpty()) {
                         PixelButton(if (showArchived) "Hide archived" else "Archived (${archived.size})", { showArchived = !showArchived }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                         if (showArchived) archived.forEach { c ->
-                            HRow(c.title, "Archived", trail = {
+                            RecordRow(c.title, "Archived", trail = {
                                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                                     PixelButton("Restore", { home.setChoreStatus(c.id, RecordStatus.ACTIVE) }, color = accent, compact = true)
                                     PixelIconButton("trash", "Delete ${c.title}", { val before = model.homeData; home.deleteChore(c.id); model.offerUndo("Deleted: ${c.title}") { home.restore(before) } }, Pixel.InkSoft)
@@ -497,7 +454,7 @@ private fun ChoresView(model: AppModel) {
 private fun ChoreRow(model: AppModel, v: ChoreView, today: LocalDate, open: Boolean, onClick: () -> Unit) {
     val home = model.home
     val finished = v.state == ChoreState.DONE || v.state == ChoreState.SKIPPED
-    HRow(
+    RecordRow(
         v.chore.title, choreLine(model.homeData, v, today), warn = v.state == ChoreState.OVERDUE,
         lead = { if (!finished && v.state != ChoreState.PAUSED) PixelIconButton("check", "Mark ${v.chore.title} done", { tickChore(model, v) }, accent) },
         trail = {
@@ -588,7 +545,7 @@ private fun ChoreForm(model: AppModel, initial: Chore?, onDone: () -> Unit, onCa
         if (more) {
             SectionLabel("Repeat")
             RepeatEditor(repeat) { repeat = it }
-            DateField(if (repeat.kind == RepeatKind.ONCE) "Date, optional" else "First date", first, { first = it }, today, optional = repeat.kind == RepeatKind.ONCE)
+            DateField(if (repeat.kind == RepeatKind.ONCE) "Date, optional" else "First date", first, { first = it }, today, accent, optional = repeat.kind == RepeatKind.ONCE)
             AreaChips(data.areas, areaId) { areaId = it }
             PixelField(category, { category = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
             PixelField(minutes, { minutes = it.filter(Char::isDigit).take(4) }, Modifier.fillMaxWidth(), label = "Minutes, optional", singleLine = true, keyboardOptions = numberKeys)
@@ -619,14 +576,14 @@ private fun SuppliesView(model: AppModel) {
     TextBox { SupplyForm(model, null, onDone = {}) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Tabs(listOf("All", "Low", "Restock"), tab) { tab = it; openId = null }
+            ModuleTabs(listOf("All", "Low", "Restock"), tab, accent) { tab = it; openId = null }
             when (tab) {
                 0, 1 -> {
                     val rows = if (tab == 0) active else low
                     if (rows.isEmpty()) PixelTitle(if (tab == 0) "No supplies yet" else "Nothing is low")
                     rows.forEachIndexed { i, s ->
                         if (i > 0) Rule()
-                        HRow(
+                        RecordRow(
                             s.name, listOfNotNull("Low".takeIf { HomeRules.isLow(s) }, s.category.takeIf { it.isNotBlank() }, areaName(data, s.areaId)).joinToString(" · "), warn = HomeRules.isLow(s),
                             trail = { Text(quantityText(s), style = MaterialTheme.typography.titleSmall) },
                             onClick = { openId = if (openId == s.id) null else s.id }, onClickLabel = if (openId == s.id) "Hide options" else "Show options",
@@ -636,7 +593,7 @@ private fun SuppliesView(model: AppModel) {
                     if (tab == 0 && archived.isNotEmpty()) {
                         PixelButton(if (showArchived) "Hide archived" else "Archived (${archived.size})", { showArchived = !showArchived }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                         if (showArchived) archived.forEach { s ->
-                            HRow(s.name, "Archived", trail = {
+                            RecordRow(s.name, "Archived", trail = {
                                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                                     PixelButton("Restore", { home.setSupplyArchived(s.id, false) }, color = accent, compact = true)
                                     PixelIconButton("trash", "Delete ${s.name}", { val before = model.homeData; home.deleteSupply(s.id); model.offerUndo("Deleted: ${s.name}") { home.restore(before) } }, Pixel.InkSoft)
@@ -702,7 +659,7 @@ private fun RestockTab(model: AppModel, focus: String?) {
         val key = when (line) { is RestockLine.Low -> "low:${line.supply.id}"; is RestockLine.Manual -> "entry:${line.entry.id}" }
         val title = when (line) { is RestockLine.Low -> line.supply.name; is RestockLine.Manual -> line.entry.name }
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            HRow(
+            RecordRow(
                 title, if (line is RestockLine.Low) "Low · ${quantityText(line.supply)}" + if (line.supply.lowDismissed) " · not now" else "" else supply?.let { quantityText(it) }.orEmpty(),
                 warn = line is RestockLine.Low,
                 trail = {
@@ -815,18 +772,17 @@ private fun MaintenanceView(model: AppModel) {
     val history = HomeRules.maintenanceHistory(data).take(60)
     val assets = data.assets.filter { !it.archived }
     val archivedAssets = data.assets.filter { it.archived }
-    RewardBox(model)
     if (tab == 0) TextBox { ScheduleForm(model, null, onDone = {}) }
     if (tab == 1) TextBox { AssetForm(model, null, onDone = {}) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Tabs(listOf("Upcoming", "Items", "History"), tab) { tab = it; openId = null }
+            ModuleTabs(listOf("Upcoming", "Items", "History"), tab, accent) { tab = it; openId = null }
             when (tab) {
                 0 -> {
                     if (views.isEmpty()) PixelTitle("No maintenance yet")
                     views.forEachIndexed { i, v ->
                         if (i > 0) Rule()
-                        HRow(
+                        RecordRow(
                             v.schedule.title, scheduleLine(data, v), warn = v.state == DueState.OVERDUE,
                             lead = { if (v.state != DueState.PAUSED) PixelIconButton("check", "Mark ${v.schedule.title} done", { tickMaintenance(model, v.schedule) }, accent) },
                             trail = { if (v.state == DueState.PAUSED) PixelButton("Resume", { home.setScheduleStatus(v.schedule.id, RecordStatus.ACTIVE) }, color = Pixel.InkSoft, compact = true) },
@@ -844,7 +800,7 @@ private fun MaintenanceView(model: AppModel) {
                         val warranties = data.warranties.filter { it.assetId == a.id }
                         val states = warranties.map { HomeRules.warrantyState(it, today) }
                         val word = if (WarrantyState.ENDING in states) "Warranty ends soon" else if (WarrantyState.ACTIVE in states || WarrantyState.UNDATED in states) "Covered" else if (states.isNotEmpty()) "Warranty expired" else null
-                        HRow(
+                        RecordRow(
                             a.name, listOfNotNull(listOf(a.brand, a.model).filter { it.isNotBlank() }.joinToString(" ").takeIf { it.isNotBlank() }, areaName(data, a.areaId), word).joinToString(" · "),
                             warn = WarrantyState.ENDING in states,
                             onClick = { openId = if (openId == a.id) null else a.id }, onClickLabel = if (openId == a.id) "Hide details" else "Show details",
@@ -854,7 +810,7 @@ private fun MaintenanceView(model: AppModel) {
                     if (archivedAssets.isNotEmpty()) {
                         PixelButton(if (showArchived) "Hide archived" else "Archived (${archivedAssets.size})", { showArchived = !showArchived }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                         if (showArchived) archivedAssets.forEach { a ->
-                            HRow(a.name, "Archived", trail = {
+                            RecordRow(a.name, "Archived", trail = {
                                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                                     PixelButton("Restore", { home.setAssetArchived(a.id, false) }, color = accent, compact = true)
                                     PixelIconButton("trash", "Delete ${a.name}", { val before = model.homeData; home.deleteAsset(a.id); model.offerUndo("Deleted: ${a.name}") { home.restore(before) } }, Pixel.InkSoft)
@@ -869,7 +825,7 @@ private fun MaintenanceView(model: AppModel) {
                     history.forEachIndexed { i, r ->
                         if (i > 0) Rule()
                         var asking by remember(r.id) { mutableStateOf(false) }
-                        HRow(
+                        RecordRow(
                             r.title, listOfNotNull(r.day.short(), data.assets.firstOrNull { it.id == r.assetId }?.name, r.notes.takeIf { it.isNotBlank() }, r.cost.takeIf { it.isNotBlank() }).joinToString(" · "),
                             trail = {
                                 PixelIconButton("pencil", "Edit ${r.title}", { editingRec = if (editingRec == r.id) null else r.id }, Pixel.InkSoft)
@@ -951,7 +907,7 @@ private fun ScheduleForm(model: AppModel, initial: MaintenanceSchedule?, onDone:
         } else PixelField(title, { title = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Maintenance", singleLine = true, keyboardOptions = wordKeys)
         if (adding) PixelButton(if (more) "Fewer options" else "Date, repeat and item", { more = !more }, color = Pixel.InkSoft, compact = true)
         if (more) {
-            DateField(if (adding) "First due" else "Next due", due, { due = it }, today)
+            DateField(if (adding) "First due" else "Next due", due, { due = it }, today, accent)
             SectionLabel("Repeat")
             RepeatEditor(repeat) { repeat = it }
             if (repeat.kind != RepeatKind.ONCE) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -980,7 +936,7 @@ private fun MaintenanceRecordForm(model: AppModel, r: MaintenanceRecord, onDone:
     var message by remember(r.id) { mutableStateOf<String?>(null) }
     Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         PixelField(title, { title = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "What was done", singleLine = true, keyboardOptions = wordKeys)
-        DateField("Day", day, { day = it }, today, past = true)
+        DateField("Day", day, { day = it }, today, accent, past = true)
         AssetChips(model.homeData.assets, assetId) { assetId = it }
         PixelField(notes, { notes = it.take(HomeRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", keyboardOptions = sentenceKeys)
         PixelField(cost, { cost = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Cost, optional", singleLine = true)
@@ -1012,7 +968,7 @@ private fun LogWorkForm(model: AppModel, onDone: () -> Unit) {
     var message by remember { mutableStateOf<String?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         PixelField(title, { title = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "What was done", singleLine = true, keyboardOptions = wordKeys)
-        DateField("Day", day, { day = it }, today, past = true)
+        DateField("Day", day, { day = it }, today, accent, past = true)
         AssetChips(data.assets, assetId) { assetId = it }
         PixelField(notes, { notes = it.take(HomeRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", keyboardOptions = sentenceKeys)
         PixelField(cost, { cost = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Cost, optional", singleLine = true)
@@ -1053,7 +1009,7 @@ private fun AssetDetail(model: AppModel, a: Asset, onDone: () -> Unit) {
         if (warranties.isNotEmpty()) SectionLabel("Warranty")
         warranties.forEach { w ->
             val state = HomeRules.warrantyState(w, today)
-            HRow(
+            RecordRow(
                 listOf(w.provider, w.coverage).filter { it.isNotBlank() }.joinToString(" · ").ifBlank { "Warranty" },
                 listOfNotNull(state.label, w.expiryDay?.let { "until ${it.short()}" }, w.reference.takeIf { it.isNotBlank() }).joinToString(" · "), warn = state == WarrantyState.ENDING,
                 trail = { PixelIconButton("trash", "Delete this warranty", { val before = model.homeData; home.deleteWarranty(w.id); model.offerUndo("Deleted: warranty") { home.restore(before) } }, Pixel.InkSoft) },
@@ -1065,10 +1021,10 @@ private fun AssetDetail(model: AppModel, a: Asset, onDone: () -> Unit) {
         if (warranty == "") WarrantyForm(model, a.id, null) { warranty = null }
         else PixelButton("Add warranty", { warranty = "" }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         if (schedules.isNotEmpty()) SectionLabel("Maintenance")
-        schedules.forEach { v -> HRow(v.schedule.title, scheduleLine(data, v).substringBefore(" · ${data.assets.firstOrNull { it.id == a.id }?.name}"), warn = v.state == DueState.OVERDUE) }
+        schedules.forEach { v -> RecordRow(v.schedule.title, scheduleLine(data, v).substringBefore(" · ${data.assets.firstOrNull { it.id == a.id }?.name}"), warn = v.state == DueState.OVERDUE) }
         if (history.isNotEmpty()) SectionLabel("History")
         history.forEach { r ->
-            HRow(
+            RecordRow(
                 r.title, listOfNotNull(r.day.short(), r.notes.takeIf { it.isNotBlank() }, r.cost.takeIf { it.isNotBlank() }).joinToString(" · "),
                 trail = { PixelIconButton("pencil", "Edit ${r.title}", { editingRecord = if (editingRecord == r.id) null else r.id }, Pixel.InkSoft) },
             )
@@ -1094,8 +1050,8 @@ private fun WarrantyForm(model: AppModel, assetId: String, initial: Warranty?, o
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         PixelField(provider, { provider = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Provider", singleLine = true, keyboardOptions = wordKeys)
         PixelField(coverage, { coverage = it.take(HomeRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Coverage, optional", keyboardOptions = sentenceKeys)
-        DateField("Starts, optional", start, { start = it }, today, optional = true, past = true)
-        DateField("Ends, optional", end, { end = it }, today, optional = true)
+        DateField("Starts, optional", start, { start = it }, today, accent, optional = true, past = true)
+        DateField("Ends, optional", end, { end = it }, today, accent, optional = true)
         PixelField(reference, { reference = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Reference, optional", singleLine = true)
         Actions {
             PixelButton("Save", {
@@ -1144,7 +1100,7 @@ private fun AssetForm(model: AppModel, initial: Asset?, onDone: () -> Unit, onCa
             PixelField(brand, { brand = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Brand, optional", singleLine = true, keyboardOptions = wordKeys)
             PixelField(modelName, { modelName = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Model, optional", singleLine = true)
             PixelField(serial, { serial = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Serial number, optional", singleLine = true)
-            DateField("Bought, optional", bought, { bought = it }, today, optional = true, past = true)
+            DateField("Bought, optional", bought, { bought = it }, today, accent, optional = true, past = true)
             AreaChips(data.areas, areaId) { areaId = it }
             PixelField(notes, { notes = it.take(HomeRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", minLines = 2, keyboardOptions = sentenceKeys)
         }
@@ -1188,7 +1144,7 @@ private fun NotesView(model: AppModel) {
             if (notes.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             notes.forEachIndexed { i, n ->
                 if (i > 0) Rule()
-                HRow(
+                RecordRow(
                     n.title, listOfNotNull(n.category.takeIf { it.isNotBlank() }, n.text.lineSequence().firstOrNull { it.isNotBlank() }?.take(80)).joinToString(" · "),
                     onClick = { openId = if (openId == n.id) null else n.id }, onClickLabel = if (openId == n.id) "Close the note" else "Open the note",
                 )
@@ -1322,7 +1278,7 @@ private fun AreasBox(model: AppModel) {
             PixelTitle("Areas")
             data.areas.forEachIndexed { i, a ->
                 if (i > 0) Rule()
-                HRow(
+                RecordRow(
                     a.name, if (a.archived) "Archived" else "",
                     onClick = { openId = if (openId == a.id) null else a.id; renaming = a.name; asking = null }, onClickLabel = if (openId == a.id) "Hide options" else "Show options",
                     trail = {

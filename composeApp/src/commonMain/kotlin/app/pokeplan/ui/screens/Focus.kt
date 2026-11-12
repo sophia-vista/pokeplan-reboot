@@ -80,7 +80,6 @@ fun FocusScreen(model: AppModel, openPokemon: ((String) -> Unit)? = null, onBack
 /** How the last session ended: the rewards, then a way back in after a cold egg, or a way to meet the one that hatched. */
 @Composable
 private fun Ends(model: AppModel, openPokemon: ((String) -> Unit)?) {
-    RewardBox(model)
     val end = model.data.lastFocusEnd
     // The session's own sound when it ends: the success jingle (the egg's when it hatched), or the soft error.
     LaunchedEffect(end) { if (end != null) model.effect(if (!end.completed) Sfx.ERROR else if (model.data.rewardLog.lastOrNull()?.rewards?.any { it is Reward.Hatched } == true) Sfx.EGG_GET else Sfx.FOCUS_END) }
@@ -311,8 +310,10 @@ private fun RunningView(model: AppModel) {
         } else {
             PixelButton("Pause ($pausesLeft)", { store.focusEvent(FocusEvent.EmergencyPauseStarted) }, Modifier.weight(1f), Pixel.Blue, enabled = pausesLeft > 0 && !paused)
         }
-        // Giving up is the way out, not the thing to do, so it stays the quiet button.
-        PixelButton("Give up", { store.focusEvent(FocusEvent.GaveUp) }, Modifier.weight(1f), Pixel.InkSoft)
+        // Giving up is the way out, not the thing to do, so it stays the quiet button; a first tap asks, a second within four seconds gives up.
+        var sure by remember { mutableStateOf(false) }
+        LaunchedEffect(sure) { if (sure) { kotlinx.coroutines.delay(4_000); sure = false } }
+        PixelButton(if (sure) "Really give up?" else "Give up", { if (sure) store.focusEvent(FocusEvent.GaveUp) else sure = true }, Modifier.weight(1f), if (sure) Pixel.Danger else Pixel.InkSoft)
     }
 }
 

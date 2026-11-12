@@ -5,7 +5,7 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
-## 0.172.2
+## 0.173.1
 
 Reminder and World clock fixes left by the 0.167.2 follow-up (REP-026 a, b, d). No reward number changes; `RewardRules.VERSION` is unchanged.
 
@@ -13,6 +13,22 @@ Reminder and World clock fixes left by the 0.167.2 follow-up (REP-026 a, b, d). 
 - **Two reminders can no longer share one alarm** (REP-026 b). An alarm and a notification button are now told apart by the reminder's id in the intent itself, not only by `id.hashCode()`, so two ids with the same hash no longer replace each other's alarm (or make one notification's Done act on the other). The alarms an older version set are cancelled once.
 - **World: a clock set back and forward again no longer pays the same hours twice** (REP-026 d). Teams still climb on the earlier clock (no freeze), but the moment the clock was set back from is kept (`WorldData.rewoundFrom`), and when the clock reaches it again each team's settle point moves up to it (WORLD.md 3.1). The most a back-and-forward change can add is the time really spent on the earlier clock.
 - Still open: REP-026 (c), asking before a damaged database with no backup falls back to the old files.
+## 0.173.0
+
+The rest of REP-025: corrections in Mint, and one copy of the parts Home, Link and Mint shared. No reward number changes; `RewardRules.VERSION` is unchanged.
+
+- **Mint: settle a bill again.** A paid or skipped occurrence used to leave the Bills list for good. It now waits under "Settled lately" for 60 days, where its amount and day can be put right (Paid, Part or Skip again) or the settlement taken back, with Undo. A partly paid bill opens with what was paid so far already filled in.
+- **Mint: a budget's period can change** with its amount (weekly to monthly and back); a second budget for the same category and period is refused, as when adding.
+- **One screen-lock door.** Mint's lock and the lock in front of Care, Heal, Home and Link were two copies of the same code; they are now one (`ScreenLockGate`). Nothing changes on screen.
+- **Home and Link share their list row, tabs and date field** (`ModuleParts.kt`); nothing changes on screen.
+## 0.172.1
+
+The easy fixes left by the Plan audit and the Care review (`docs/pokelife/evidence/PLAN-AUDIT-0.167.2.md`, `CARE-REVIEW-0.167.2.md`), the owner's answers of 12 November 2026, and the Home dashboard. No reward number changes.
+
+- **Plan.** "Add a task" in the empty Next 7 days and All tasks opens Today with the keyboard up (it did nothing); the empty Done offers "Open Today"; the empty Inbox and Targets point at the field above them, and Targets says "Add a target". "No date" clears the planned day only, not the deadline. "Won't do" offers Undo. A task's edits are saved as they are made (a short pause after typing, and when the tab closes): no Save key, nothing lost by switching tabs. Steps can be renamed, removed and unticked; a goal's milestone can be unticked; a goal deleted from its editor offers Undo; a target can be edited (words, how often, rank, category) and deleted with Undo; a finished task can be deleted. Unticking keeps "paid", so ticking again pays nothing more. The calendar pages freely back and forward, and a week is the calendar week from the day Settings sets. Every delete in Plan is grey; the Targets add key is no longer red; Give up asks "Really give up?" first; Progress points at Plan, Goals.
+- **Care.** The sweet berry is offered to a visitor even when the Bag holds all five flavours. The Meadow's corner labels are readable in the dark palette. A visitor is visited or played with in the Meadow itself, and Care Play's invite list is your own Pokémon with Show more. The journal and the earlier diary cards end with Show older, and a diary card's urge ratings show in its history row. A calm break survives leaving the screen and finishes in an effect, not during drawing (one left for ten minutes past its length is dropped, not paid). Surprise me changes after each time played. Care's landing and the Meadow call `arrive()` once. Words: routines earn Exp. Candy and a little friendship (not berries); the Egg meter line counts a play; `befriend` says up to four a day. Removed the dead `CareRules.paidOn`.
+- **Home dashboard.** The new-rewards box shows on Home only (it showed on every module page, so a World Pokémon appeared in Care). A Quick log card (task, +250 ml, expense, and how is today in one tap), and "Also today" adds Mint bills due in the next 3 days and Link dates this week (counts only, never a name or an amount; nothing for a locked or gated module).
+- Left for the owner or for a bigger change: REP-030 in `docs/pokelife/IMPLEMENTATION_BACKLOG.md`.
 
 ## 0.172.0
 
