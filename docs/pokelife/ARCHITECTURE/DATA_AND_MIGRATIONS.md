@@ -99,16 +99,7 @@ application shell
 
 ### 4.1 Recommendation
 
-Use **SQLite with SQLDelight** as the target relational persistence technology, subject to a small Phase 1 feasibility spike against the current Gradle/Kotlin Multiplatform versions and Android deployment target. Because Android is the only product platform (`PRODUCT_BIBLE.md` section 3), the spike judges the Android driver only; the repository's desktop and web builds do not need the database and may keep an in-memory or JSON development store.
-
-Reasons:
-
-- The supplied project is Kotlin Multiplatform/Compose, so SQLDelight offers typed SQL and generated Kotlin interfaces while retaining SQLite as the durable engine.
-- SQLite supplies transactions, foreign keys, uniqueness constraints, indexes, and mature local-file behavior.
-- The Android driver can be hosted in the Android platform layer while domain contracts remain common Kotlin.
-- SQL schema migrations can be versioned and tested independently from the legacy JSON importer.
-
-Do not introduce Room solely by habit: it is a reasonable Android-only alternative, but the current codebase is KMP. If the feasibility spike demonstrates that SQLDelight materially harms maintainability or Android reliability, compare Room plus an explicit Android-only data boundary before changing this recommendation. Do not implement two competing database stacks.
+**Decided:** SQLite with SQLDelight (the spike of section 4.5 found nothing that harms maintainability or Android reliability). Because Android is the only product platform (`PRODUCT_BIBLE.md` section 3), only the Android driver is judged; desktop and web builds keep an in-memory or JSON development store. SQLDelight gives typed SQL and generated Kotlin interfaces over a mature engine (transactions, foreign keys, uniqueness constraints, indexes), the Android driver sits in the platform layer while domain contracts stay common Kotlin, and schema migrations are versioned and tested independently of the legacy JSON importer. Do not implement two competing database stacks; Room is not introduced.
 
 ### 4.2 Database file and connection policy
 
@@ -479,11 +470,11 @@ Provide a complete restorable backup separately from readable exports. Human-rea
 
 ### 10.5.1 As built (0.133.0, REP-008)
 
-What exists is the live-documents half of the archive above, as **one JSON file** (`BackupBundle`, `pokelife-backup` format version 1): the documents `save` and `care` exactly as the app serialises them, the database schema they were taken at, the time and a SHA-256 of the documents. The app keeps its daily backups as folders (`LiveBackup`, newest three, a `DONE` marker last) and can write any of them, or a fresh one, as a bundle through Android's document picker (`CreateDocument`); a bundle is chosen with `OpenDocument`. There is no `database.sqlite` payload, attachments or encryption yet (no module has attachments; MINT's rows and backups are sealed with a Keystore key, and a backup file can carry Mint sealed under a player's passphrase instead, 0.142.0).
+The live-documents half of the archive above exists as **one JSON file** (`BackupBundle`, `pokelife-backup` format version 1): the documents `save` and `care` exactly as the app serialises them (plus the module documents, section 10.4.1), the database schema they were taken at, the time and a SHA-256 of the documents. The app keeps daily backups as folders (`LiveBackup`, newest three, a `DONE` marker last) and can write any of them, or a fresh one, as a bundle through Android's document picker (`CreateDocument`); a bundle is chosen with `OpenDocument`. There is no `database.sqlite` payload, attachments or whole-archive encryption yet (no module has attachments).
 
-**Restore, as built:** the chosen file is read whole and **staged**: `BackupBundle.stage` refuses a file that is not a backup, is cut short or damaged, fails its checksum, holds a document this build does not know, or comes from a newer format or schema, and changes nothing. A bundle that passes is shown to the player (its date and contents) and only on confirmation is swapped in by `LiveDocuments.replaceAll`: one transaction, in which each replaced document is first kept as `aside:<name>:<millis>`, so a restore can be undone and a failure part way (the write of the second document, say) rolls the first back too. PLAN's and CARE's tables follow the documents, because the swap goes through the same write path as every save. The app reloads both stores after a restore. A backup is skipped, never half written, when the phone lacks room for twice its size plus 5 MB (`LiveBackup.lowStorage`), and a save that fails for lack of storage rolls back whole (SQLite's transaction), is reported in Settings → Backups, and the next save that fits writes everything again.
+**Restore:** the chosen file is read whole and **staged**: `BackupBundle.stage` refuses a file that is not a backup, is cut short or damaged, fails its checksum, holds a document this build does not know, or comes from a newer format or schema, and changes nothing. A bundle that passes is previewed (its date and contents) and only on confirmation swapped in by `LiveDocuments.replaceAll`: one transaction, in which each replaced document is first kept as `aside:<name>:<millis>`, so a restore can be undone and a failure part way rolls the first write back too. The tables follow the documents, because the swap uses the same write path as every save. The app reloads its stores after a restore. A backup is skipped, never half written, when the phone lacks room for twice its size plus 5 MB (`LiveBackup.lowStorage`); a save that fails for lack of storage rolls back whole, is reported in Settings → Backups, and the next save that fits writes everything again.
 
-**Cut short:** a write that is interrupted before its commit (the process killed) leaves every table at the last committed state, across the save row, PLAN's tables and CARE's tables (`BackupRestoreTest`, simulated by dropping the connection inside the transaction; a real kill on a device is still unproven).
+A write interrupted before its commit leaves every table at the last committed state (`BackupRestoreTest`, simulated by dropping the connection inside the transaction; a real kill on a device is unproven).
 
 ### 10.6 Restore workflow
 
@@ -554,20 +545,14 @@ Before any change to the importer, keep the fixtures current: every serialized p
 
 ### 12.3 Mapping strategy
 
-Use a dedicated `LegacyJsonImporter` that reads the two source files as immutable inputs and produces typed intermediate records. Do not deserialize into the new domain entities and immediately overwrite the originals.
+The importer (section 12.7) reads the two source files as immutable inputs and produces typed intermediate records; it does not deserialize into the new domain entities and overwrite the originals.
 
-- Map `AppData.player` into shared Pokémon/economy records, preserving every owned specimen ID and its individual attributes.
-- Map species/form/shiny/seen history independently of current ownership so Dex history survives transfers.
-- Map party membership, buddy, favorites, held items, candy progress, IVs/EVs, nature, ability, gender, friendship, level, origin, and acquisition timestamps.
-- Map `AppData` PLAN, WORLD, GEAR, settings, and device-specific state into their new owning domains.
-- Map `CareData` into CARE-owned records and preserve journal, diary card, routine, completion, skill, and trend-relevant history.
-- Map existing reward logs for display/history only. Do not turn historical log rows into new reward events or credit balances a second time.
-- Map any persisted balances and inventory once, then reconcile them against the imported historical ledger only where the source has enough information to prove equivalence. If not, preserve the source balance as an opening-balance entry with provenance rather than inventing missing ledger detail.
-- Preserve source timestamps and date/time semantics. Record the source time zone where available; do not reinterpret local dates as UTC instants.
-- Preserve user-authored text and attachments. If a field cannot be represented yet, retain its raw JSON in a migration sidecar keyed by legacy path/record ID until a reviewed mapping exists.
-- Map legacy enum names through explicit tables. Never rely on Kotlin enum ordinal order.
-- Do not import account credentials, refresh tokens, cloud sessions, or server-only synchronization metadata. Explain retirement of cloud sync without deleting local data.
-- Treat external calendar selections, device-specific picker values, exchange-rate caches, and permissions as device-specific preferences; migrate only what remains meaningful and safe.
+- Map Dex/seen/shiny history independently of current ownership so it survives transfers; preserve every owned specimen ID and its individual attributes (party membership, buddy, favourites, held items, candy progress, IVs/EVs, nature, ability, gender, friendship, level, origin, acquisition timestamps).
+- Map existing reward logs for display/history only. Never turn historical log rows into reward events or credit balances a second time. Map persisted balances and inventory once; where the source cannot prove equivalence with a ledger, preserve the balance as an opening-balance entry with provenance rather than inventing ledger detail.
+- Preserve source timestamps and date/time semantics; record the source time zone where available; do not reinterpret local dates as UTC instants.
+- Preserve user-authored text. A field that cannot be represented yet is retained as raw JSON in the sidecar keyed by legacy path/record ID until a reviewed mapping exists.
+- Map legacy enum names through explicit tables, never by ordinal.
+- Do not import account credentials, refresh tokens, cloud sessions or server-only sync metadata. Treat external calendar selections, picker values, exchange-rate caches and permissions as device-specific preferences; migrate only what remains meaningful and safe.
 
 ### 12.4 IDs and cross-file reconciliation
 
@@ -659,16 +644,13 @@ Retention must reflect domain semantics and privacy requirements.
 
 ## 15. Data-related UI and shared PMD design system
 
-All data lifecycle UI follows `FEATURES/DESIGN_SYSTEM.md`. Use its PMD-inspired dialogue-box geometry and shared components without turning every data row into a speech bubble.
+Data lifecycle UI (backup/restore status, migration warnings, import summaries, destructive confirmations, corruption recovery, permission explanations) follows `FEATURES/DESIGN_SYSTEM.md` and its shared dialogue-box components, light/dark, large text, TalkBack, 48 dp targets and reduced motion.
 
-- Backup/restore status, migration warnings, import summaries, destructive confirmations, corruption recovery, and permission explanations use the shared `PrimaryDialogueBox`, `SecondaryDialogueBox`, `DialogueDialog`, `ConfirmationPrompt`, `AlertPrompt`, `EmptyState`, `LoadingState`, `ErrorState`, and `SuccessFeedback` patterns as appropriate.
-- Keep messages concise and factual: what happened, whether the original data is safe, what action is available, and what happens next.
-- Destructive restore/erase operations explain whether current data will be replaced and require deliberate confirmation.
-- Migration progress must not imply success until verification completes. Interrupted migration clearly states that the original save remains preserved when that is true.
-- Show backup date, archive version, schema compatibility, included modules, and record counts in readable rows or a compact table.
-- Use normal lists/tables for record counts, file inventories, transaction-like histories, and diagnostic details. Do not place every item in a separate dialogue box.
-- Do not display raw JSON, database paths, SQL errors, tokens, or sensitive payloads by default. Provide a safe technical detail route only when useful.
-- Follow the shared light/dark, typography, spacing, responsive sizing, TalkBack, 48 dp touch-target, focus, and reduced-motion requirements.
+- Keep messages concise and factual: what happened, whether the original data is safe, what action is available, what happens next.
+- Destructive restore/erase operations say whether current data will be replaced and require deliberate confirmation.
+- Migration progress must not imply success until verification completes; an interrupted migration states that the original save remains preserved when that is true.
+- Show backup date, archive version, schema compatibility, included modules and record counts in a readable list or compact table, not one dialogue box per item.
+- Do not display raw JSON, database paths, SQL errors, tokens or sensitive payloads by default.
 
 ## 16. Testing and acceptance criteria
 
