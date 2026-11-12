@@ -12,29 +12,29 @@ Mew's Unofficial Welcome: plays first on a new save; belongs to no region.
 - {buddy} appears
 - {buddy} walks
 
-*{player} and {buddy} are on their way through the settlement when something small and pink darts between them.*
+*Midday in the settlement. {player} and {buddy} are carrying lunch to their usual wall when something small and pink darts between them.*
 
 - Mew appears
 - Mew: !
 - Mew walks
 - Mew leaves
 
-*It snatched something on the way past. And it is gone around the corner.*
+*The lunch bundle is gone. So is the pink thing, around the corner, humming.*
 
-**{buddy}** (surprised): Hey! That was ours!
+**{buddy}** (surprised): Hey! That was ours! I queued for that!
 
 - {buddy} walks
 - Mew appears
 
-*The trail ends at the far end of the lane. The pink Pokémon waves, then ripples into another shape and back again.*
+*At the far end of the lane stands the baker's Furret, waving. Then it ripples like a puddle and is a small pink Pokémon again.*
 
 **{buddy}** (surprised): Wait. You were the one who took it?
 
 **Mew** (happy): Mew!
 
-**{buddy}** (angry): Give it back!
+**{buddy}** (angry): Give it back! There are two buns in there and one of them is {player}'s!
 
-*Mew floats backwards toward the edge of town, holding the thing just out of reach. It is very clearly an invitation.*
+*Mew floats backwards toward the edge of town, swinging the bundle just out of reach. It keeps checking that they are following.*
 
 **{buddy}** (determined): It's a trap.
 
@@ -52,17 +52,21 @@ Mew's Unofficial Welcome: plays first on a new save; belongs to no region.
 - Mew appears
 - Sentret appears
 
-*Mew leads them to a path they have never used. A few small Pokémon stand around a dropped satchel.*
+*Mew leads them down a path they have never used. In the grass lies a small satchel, and a Sentret stands guard over it on the tip of its tail.*
 
-**{buddy}** (normal): Is this what you wanted to show us?
+**Sentret** (worried): It isn't mine! It was here when I got here! I'm only watching it until somebody sensible comes!
 
-*Mew points at the satchel, then at a narrow way into the Mystery Dungeon beyond.*
+**{buddy}** (normal): We're not sure we count. We're chasing our lunch.
 
-**{buddy}** (worried): You want us to go in there?
+*Mew points at the satchel. Then at a narrow gap in the trees, where the light goes green and strange.*
+
+**{buddy}** (worried): That's a Mystery Dungeon. You want us to go in there?
 
 - Mew: !
 
-**{buddy}** (determined): Fine. But if this is another prank, you're carrying the bag home.
+**Sentret** (worried): Somebody small went in this morning and didn't come out. I counted. I'm good at counting.
+
+**{buddy}** (determined): Fine. We'll look. But if this is another prank, pink one, you're carrying the bag home.
 
 - {buddy} walks
 - {buddy} leaves
@@ -74,17 +78,23 @@ Mew's Unofficial Welcome: plays first on a new save; belongs to no region.
 
 *The woods are quiet. Sunlight comes down in pieces, and every few steps something small rustles out of the way.*
 
+**{buddy}** (normal): Stay close, {player}. The paths in here are never the same twice. That's the whole trouble with them.
+
 - Mew appears
 - Sentret appears
 - Sentret walks
 
-**Sentret** (surprised): Oh! You found my bag! I got split from my group and... and I lost it in the roots.
+*Between two roots sits a second Sentret, much smaller than the first, trying very hard not to cry.*
 
-**{buddy}** (worried): So this wasn't just about chasing us. Someone actually needed help.
+**Sentret** (surprised): My bag! You found my bag! I got split from my big brother and then I dropped it and then the path moved!
 
-*Mew watches from a low branch, unusually quiet.*
+**{buddy}** (worried): So this wasn't only about chasing us. Someone actually needed help.
 
-**{buddy}** (determined): Let's get the satchel back to where it belongs.
+*Mew watches from a low branch, unusually quiet. It has stopped swinging the lunch.*
+
+**{buddy}** (happy): Your brother is standing on his tail at the edge of the woods, counting. Come on. We'll walk you out.
+
+**Sentret** (happy): He counts when he's scared. Don't tell him I told you.
 
 - {buddy} walks
 - {buddy} leaves
@@ -96,21 +106,25 @@ Mew's Unofficial Welcome: plays first on a new save; belongs to no region.
 - Mew appears
 - Sentret appears
 
-*Back in town, the satchel's owner is much happier. Pelly, who handles requests for the local exploration centre, has already heard.*
+*Back in town, two Sentret are talking over each other. Pelly, who keeps the request board at the exploration centre, has heard all of it twice.*
 
-**Pelly** (happy): You two went into the woods, found the owner, and brought the satchel back?
+**Pelly** (happy): So. You two went into the woods, found the little one, and brought the bag out as well?
 
 **{buddy}** (normal): We were following a thief.
 
-**Pelly** (normal): That is not how I would recommend finding your first job. But it did help someone.
+*Mew studies a cloud with great interest.*
 
-**{buddy}** (normal): So this is what exploration teams do? Take requests and help Pokémon?
+**Pelly** (normal): That is not how I would recommend finding your first job. But somebody is going home tonight because of it.
 
-**Pelly** (happy): That is the idea. Rescue, delivery, retrieval, escort, investigation. Some jobs are simple. Some take a whole team.
+**Sentret** (joyous): They didn't even ask for anything! I have three acorns. They can have two!
 
-*Pelly nods toward the request board by the door.*
+**{buddy}** (normal): Keep your acorns. ...Is this what exploration teams do, then? Take requests and help Pokémon?
 
-**Pelly** (normal): You choose what to take. Read the objective and the reward before you set out.
+**Pelly** (happy): That's the idea. Rescue, delivery, retrieval, escort, investigation. Some jobs are simple. Some take a whole team.
+
+*Pelly tips her beak toward the request board by the door. It is crowded with notes in every kind of pawwriting.*
+
+**Pelly** (normal): You choose what to take. Read the objective and the reward before you set out. And eat first. I can hear your stomach from here.
 
 #### Scene: The team  
 `intro-mew-5` · stage · background city · cast: {buddy}, Braviary (Braviary), Mew (Mew)
@@ -119,7 +133,7 @@ Mew's Unofficial Welcome: plays first on a new save; belongs to no region.
 - Braviary appears
 - Mew appears
 
-*Braviary reads the team's report in silence. It takes a little while.*
+*Braviary keeps the team register. He reads the report in silence, one talon holding the page flat. It takes a little while.*
 
 **Braviary** (normal): You went into an unfamiliar dungeon without checking the route, your supplies, or what lived there.
 
@@ -127,11 +141,17 @@ Mew's Unofficial Welcome: plays first on a new save; belongs to no region.
 
 - Mew: !
 
-**Braviary** (normal): I see. The reason appears to be standing right there.
+**Braviary** (normal): I see. The reason appears to be floating right there, eating a bun.
 
-**Braviary** (normal): If you mean to keep exploring, register as a team and learn to prepare.
+**{buddy}** (angry): That's MY bun!
+
+*Braviary closes the report. Something at the corner of his beak might, on a kinder bird, be a smile.*
+
+**Braviary** (normal): You also brought a child home. So. If you mean to keep exploring, register as a team and learn to prepare.
 
 **Braviary** (normal): Choose who goes, check what they are good at, and make sure the assignment suits them. A bigger team is not automatically a better one.
+
+**{buddy}** (surprised): A team. Us. ...{player}, did we just get a job?
 
 #### Scene: Mew's real test  
 `intro-mew-6` · dungeon · dungeon tiny-woods · cast: {buddy}, Mew (Mew), Sentret (Sentret)
@@ -147,17 +167,19 @@ Mew's Unofficial Welcome: plays first on a new save; belongs to no region.
 
 - Mew walks
 
-**{buddy}** (determined): It's testing us. It wants to see if we chase the first thing we notice.
+*Pink shapes scatter into the trees, giggling in six directions at once. {buddy} takes one step after the nearest, and stops.*
 
-*The real trail is the one that leaves small things behind. Someone really is lost in all this, and finding them matters more than catching Mew.*
+**{buddy}** (determined): No. It's testing us. It wants to see if we chase the first thing we notice.
+
+*Only one trail leaves anything behind: an acorn, then another, set down carefully. Someone really is out here, and that matters more than catching Mew.*
 
 - Sentret appears
 
-**Sentret** (surprised): The pink ones all ran past me! One of them told me to wait here!
+**Sentret** (surprised): The pink ones all ran past me! One of them said to wait right here and be brave, so I'm being brave!
 
-**{buddy}** (happy): Wait here a moment longer. We will take you home.
+**{buddy}** (happy): You're doing it very well. Be brave a moment longer. We'll take you home.
 
-*When the confusion is settled, the copies pop away one by one. The real Mew floats down in front of them.*
+*When the little one is safe, the copies pop away one by one, like bubbles. The real Mew floats down in front of the pair.*
 
 **Mew** (happy): Mew!
 
@@ -165,7 +187,7 @@ Mew's Unofficial Welcome: plays first on a new save; belongs to no region.
 
 - Mew: !
 
-*Mew hands back the first thing it took and bows its head. Then it looks at the pair, a little shyly.*
+*Mew holds out the lunch bundle from this morning. One bun is left, a little squashed. It bows its head, and peeks up to see how that went.*
 
 **{buddy}** (surprised): You're... asking to come with us?
 
@@ -173,7 +195,9 @@ Mew's Unofficial Welcome: plays first on a new save; belongs to no region.
 
 **Mew** (joyous): Mew mew!
 
-**{buddy}** (happy): All right. But no stealing our lunch.
+*{buddy} looks at you. You are already breaking the last bun into three.*
+
+**{buddy}** (happy): All right. You're in. But no more stealing our lunch.
 
 *Mew has already noticed the food stall on the way home.*
 
@@ -185,19 +209,21 @@ Mew's Unofficial Welcome: plays first on a new save; belongs to no region.
 - Braviary appears
 - Mew appears
 
-*The team's registration is done. The board now shows work for teams of every rank.*
+*Morning at the exploration centre. The team's name is in Braviary's register, the ink barely dry, and the board is full.*
 
-**Pelly** (happy): Your first proper expedition board. There are jobs here for teams of different ranks.
+**Pelly** (happy): Your first proper expedition board! There are jobs here for teams of every rank. Take your time. The notes don't bite.
 
-**Braviary** (normal): Your rank follows your work. Finish assignments, help others, and take on harder places when you are ready.
+**Braviary** (normal): Your rank follows your work. Finish assignments, help others, and take on harder places when you are ready. Not before.
 
-**{buddy}** (happy): So we can choose where to go?
+**{buddy}** (happy): So we just... choose where to go?
 
 **Braviary** (normal): Within what your team can do. The world is larger than this settlement. You will find it one expedition at a time.
 
-*Mew taps a notice with its tail. The notice is upside down.*
+**Pelly** (happy): And come back and tell me about it. I only ever hear the endings when a team remembers to report.
 
-**{buddy}** (normal): I don't think that's how you read a job.
+*Mew taps a notice with its tail. The notice is upside down. The place on it is nowhere near the Frontier.*
+
+**{buddy}** (normal): I don't think that's how you read a job. ...{player}, why is it smiling like that?
 
 - Mew: ?
 ## Rescue Team
@@ -209,99 +235,103 @@ Pokémon Square, a rumour about a team that arrived before the disasters, and a 
 *Summary:* A Pokémon with no memory of arriving is found, and the first rescue becomes the beginning of a team.
 
 #### Scene: The voice in the grass  
-`rescue-1-voice` · dialogue · background meadow · cast: {buddy}, Mew (Mew)
+`rescue-1-voice` · dialogue · background fa-wild-plains · cast: {buddy}, Mew (Mew)
 
 - {buddy} appears
 - Mew appears
 
-*The Frontier's forest disappears in a wash of green light. The team lands in soft grass beneath an unfamiliar sky.*
+*One moment, the request board at home. The next, a wash of green light, and soft grass under an unfamiliar sky.*
 
-**{buddy}** (surprised): That was not a normal portal.
+**{buddy}** (surprised): That was not a normal job notice.
 
-*Mew floats upside down in front of them, looking delighted.*
+*Mew floats upside down in front of them, holding the notice. It is still upside down too.*
 
 **Mew** (happy): Mew!
 
-**{buddy}** (worried): You brought us somewhere without asking.
+**{buddy}** (worried): You brought us somewhere without asking. Again. We hadn't even had breakfast.
 
-*Mew tilts its head, then points toward the distant settlement.*
+*Mew tilts its head, then points down the hill. The air shimmers. For a heartbeat there are two of the same valley.*
 
-**{buddy}** (normal): Is this a place you want us to see?
+*One is quiet and overgrown. The other is full of Pokémon hurrying through a busy morning, a long time ago.*
 
-*Mew nods. The air shimmers. For a heartbeat, the team sees two versions of the same landscape.*
+**{buddy}** (surprised): A memory? ...No. It smells like bread. Memories don't smell like bread.
 
-*One is quiet and empty. The other is full of Pokémon hurrying through a busy day.*
+*Mew circles them once. The valley settles into the busy one, and stays.*
 
-**{buddy}** (surprised): A memory?
+**{buddy}** (normal): These are days that really happened, aren't they. And you want us to see them from the inside.
 
-*Mew circles them. The image settles into the busy version.*
+**Mew** (happy): Mew mew.
 
-**{buddy}** (determined): All right. We'll look around. But you're explaining this when we get back.
+**{buddy}** (determined): All right. We'll look around. Carefully. It's somebody else's story, {player}. We're guests in it.
 
-*Mew gives a cheerful cry and vanishes into the trees.*
+*Mew gives a cheerful cry and is gone into the trees, leaving the notice behind. It reads: Pokémon Square. Help wanted.*
 
 - Mew cries out
 - Mew leaves
 #### Scene: Pokémon Square  
-`rescue-1-square` · stage · background city · cast: {buddy}, Kecleon (Kecleon), Gulpin (Gulpin), Persian (Persian), Wigglytuff (Wigglytuff)
+`rescue-1-square` · stage · background map:pokemon-square · cast: {buddy}, Kecleon (Kecleon), Gulpin (Gulpin), Persian (Persian), Wigglytuff (Wigglytuff)
 
 - Kecleon appears
 - Gulpin appears
 - Persian appears
 - Wigglytuff appears
 
-*Pokémon Square is busy. Kecleon tends his shop, Gulpin arranges items outside his stall, and several Pokémon argue over the notice board.*
+*Pokémon Square is busy. Kecleon is rearranging his counter for the third time, and Gulpin is telling a customer, slowly, why not to hurry lunch.*
 
 - {buddy} appears
 - {buddy} walks
 
-**{buddy}** (happy): Welcome to Pokémon Square! It's not much, but you'll get used to it.
+**Kecleon** (happy): New faces! Welcome, welcome! Looking for anything? Supplies? A bargain? A very reasonable bargain?
 
-**Kecleon** (happy): Welcome, welcome! Looking for anything? Supplies? A bargain? A very reasonable bargain?
+**{buddy}** (normal): We just got here.
 
-**{buddy}** (normal): We just got here, Kecleon.
+**Kecleon** (surprised): And? Looking is free! Touching is nearly free!
 
-**Kecleon** (surprised): And? Looking is free!
+**Gulpin** (happy): Let them breathe, Kecleon. They've got the look of travellers who skipped breakfast. I know that look. I respect it.
 
-*Gulpin chuckles from his stall.*
+**Wigglytuff** (joyous): Travellers! Oh, how lovely! Are you friends with the other new one? The square is all new friends this week!
 
-**Gulpin** (happy): Let them breathe, Kecleon. They haven't even had lunch.
+**{buddy}** (normal): The other new one?
 
-**{buddy}** (worried): Actually... that's a good point. Have you eaten?
+**Persian** (normal): A stranger was found in the woods this morning. No memory of the road here. Our little neighbour has already made a team of the pair of them.
 
-*You shake your head.*
+**Persian** (normal): They ran off to their first rescue before I could open an account for them. Most irregular.
 
-**{buddy}** (surprised): You haven't? Oh. Right. We should fix that.
+*The ground gives a short shiver. Kecleon's display slides a paw's width. Nobody in the square even looks up.*
 
-*The square's request board catches your eye. A small Caterpie is standing in front of it, looking increasingly distressed.*
+- the screen shakes
+
+**{buddy}** (worried): ...Does that happen a lot here?
+
+**Gulpin** (normal): More than it used to. You get so you hold your soup.
+
+*By the notice board, a small Caterpie is turning in a tight, worried circle.*
 
 #### Scene: A tiny rescue  
-`rescue-1-caterpie` · dialogue · background meadow · cast: {buddy}, Caterpie (Caterpie)
+`rescue-1-caterpie` · dialogue · background map:sinister-woods-entry · cast: {buddy}, Caterpie (Caterpie)
 
 - {buddy} appears
 - Caterpie appears
 
-**Caterpie** (worried): Excuse me... Are you a rescue team?
+**Caterpie** (worried): Excuse me... Are you a rescue team too?
 
-**{buddy}** (surprised): Us? Well, not exactly. We're...
+**{buddy}** (surprised): Us? Not exactly. We're more... visiting.
 
-**Caterpie** (worried): My friend Metapod went into Tiny Woods and hasn't come back!
+**Caterpie** (happy): The new team just carried me out of Tiny Woods! A crack opened right under me! They were so brave!
 
-*Caterpie's antennae droop.*
+**Caterpie** (worried): But Metapod was with me. Metapod went the other way. And the team's already hurt, and I didn't want to ask them twice...
 
-**Caterpie** (worried): I know it's not very far. But what if something happened? I don't know what to do.
+*Caterpie's antennae droop almost to the ground.*
 
-*{buddy} looks at you. This is not the kind of day either of you expected.*
+**Caterpie** (worried): Metapod can't run. Metapod can't even walk very much. Metapod mostly waits.
 
-**{buddy}** (determined): We'll go find them.
+*{buddy} looks at you. Guests in somebody else's story, they said. You are already facing the woods.*
 
-**Caterpie** (surprised): You will?
+**{buddy}** (happy): ...Yes. I thought so too.
 
-**{buddy}** (happy): Of course. That's what we're here for. ...I think.
+**{buddy}** (determined): We'll go and find Metapod. You stay here and be the one who's waiting when we get back. That's a job too.
 
-*{buddy} gives you a quick, uncertain glance.*
-
-**{buddy}** (normal): Come on. Let's not keep Caterpie waiting.
+**Caterpie** (surprised): You will? I'll wait SO hard!
 
 #### Scene: Tiny Woods  
 `rescue-1-tiny-woods` · dungeon · dungeon tiny-woods · cast: {buddy}, Metapod (Metapod)
@@ -309,252 +339,266 @@ Pokémon Square, a rumour about a team that arrived before the disasters, and a 
 - {buddy} appears
 - {buddy} walks
 
-*Sunlight filters through the canopy. The woods are peaceful, but unfamiliar sounds echo between the trees.*
-
-*Near a bend in the path, a small shape is wedged between two roots.*
+*Sunlight filters through the canopy. A fresh crack runs across the path, and somewhere ahead something goes tok, tok, tok, very patiently.*
 
 - Metapod appears
+
+*Near a bend, a small green shape is wedged between two roots. It has been hardening for hours, on principle.*
 
 **Metapod** (worried): ...Metapod.
 
 - {buddy} walks
 
-**{buddy}** (surprised): There you are! Caterpie's been worried sick!
+**{buddy}** (surprised): There you are! Caterpie has worn a groove in the square, worrying about you.
 
-*The two of you help Metapod out. It wobbles, then settles.*
+*The two of you ease Metapod out of the roots. It wobbles. It settles. It thinks about what has happened.*
 
-**{buddy}** (happy): There. Not a scratch.
+**Metapod** (normal): ...Was not scared.
 
-**Metapod** (happy): Metapod!
+**{buddy}** (happy): Of course not.
 
-**{buddy}** (happy): I think that's a thank-you.
+**Metapod** (sad): ...Was a little scared.
 
-*On the way back, {buddy} keeps glancing at you.*
+**{buddy}** (happy): That's allowed. We'll carry you. You tell us if we bump anything.
 
-**{buddy}** (normal): You didn't hesitate back there.
+*On the way back, {buddy} keeps glancing over at you.*
 
-*{buddy} looks ahead.*
-
-**{buddy}** (happy): I think we're going to make a good team.
+**{buddy}** (normal): You didn't stop to think back there. You just went. I like that I didn't have to ask.
 
 #### Scene: A team takes shape  
-`rescue-1-team` · stage · background city · cast: {buddy}, Caterpie (Caterpie), Persian (Persian)
+`rescue-1-team` · stage · background map:square · cast: {buddy}, Caterpie (Caterpie), Metapod (Metapod), Persian (Persian)
 
 - {buddy} appears
+- Metapod appears
 - Caterpie appears
 
-*Back at the square, Caterpie is overjoyed to see Metapod.*
+*Caterpie has waited so hard there is a small bare patch in the grass.*
 
-**Caterpie** (joyous): Metapod! You're okay!
+**Caterpie** (joyous): Metapod! You're okay! You're really okay!
 
-*The two friends celebrate. Caterpie turns to you.*
+**Metapod** (happy): ...Metapod.
 
-**Caterpie** (happy): Thank you! I won't forget this!
+**Caterpie** (happy): Metapod says thank you very much and that you carry gently.
 
-*Persian, who has been watching from the square, approaches.*
+**{buddy}** (surprised): You got all of that from one word?
+
+**Caterpie** (happy): We've been friends a long time.
 
 - Persian appears
 - Persian walks
 
-**Persian** (normal): A rescue completed without a team badge, a proper base, or even a plan. Hm.
+**Persian** (normal): Two rescues before noon, by two teams the square had never heard of yesterday. I shall need a new page in the ledger.
 
-**{buddy}** (worried): We had a plan.
+**{buddy}** (worried): We're not really a rescue team. We're only passing through.
 
-**Persian** (normal): You followed a path into the woods and brought someone back.
+**Persian** (normal): Mm. Passing through with someone else's friend on your back.
 
-**{buddy}** (normal): ...A simple plan.
+**Persian** (happy): The Rescue Team has its base on the hill. You may have the loft over my bank. It is dry. It is quiet after closing. I count very softly.
 
-**Persian** (happy): Still. Pokémon who help others are welcome here. If you intend to keep doing it, you should make it official.
+**{buddy}** (surprised): A loft? For us? We can't pay you anything.
 
-*Persian gestures toward an empty patch of land outside the square.*
+**Persian** (normal): You may pay me by taking the requests those two cannot get to. The board has been filling faster than it empties.
 
-**Persian** (normal): There is a place you could use as a base. Nothing fancy. It will need work.
+*{buddy} turns to you. Behind them, on the hill, a lamp is being lit in the window of the other team's base.*
 
-**{buddy}** (surprised): A base? For us?
-
-**Persian** (happy): Every rescue team needs somewhere to return to.
-
-*{buddy} turns to you. The uncertainty has not entirely gone away, but there is a little excitement in their expression.*
-
-**{buddy}** (determined): What do you say? Shall we become a rescue team?
+**{buddy}** (determined): What do you say, {player}? The second-best rescue team in Pokémon Square?
 
 ### Chapter 2: The World Needs Helping
 
 *Summary:* The team takes more requests as the disasters grow worse.
 
-#### Scene: The first morning at the base  
-`rescue-2-base` · dialogue · background meadow · cast: {buddy}
+#### Scene: The first morning in the loft  
+`rescue-2-base` · dialogue · background map:square · cast: {buddy}
 
 - {buddy} appears
 
-*Morning light falls across the team's new base. It is small, a little dusty, and not particularly impressive.*
+*Morning light comes through the one round window of the loft. Below, very softly, someone is counting.*
 
-**{buddy}** (happy): Our very own rescue base!
+**{buddy}** (happy): Our very own rescue loft!
 
-*{buddy} steps inside. A little dust puffs into the air.*
+*{buddy} stretches, and bumps the roof beam, and a little dust comes down like slow snow.*
 
-**{buddy}** (surprised): ...It needs some work.
+**{buddy}** (surprised): ...It needs some work. And a taller roof.
 
-*{buddy} looks around, then grins.*
+**{buddy}** (happy): But there's a nail for the request notes, and the window faces the hill. Look. Their lamp's already out. They left before dawn.
 
-**{buddy}** (happy): But it's ours.
-
-*Outside, the ground gives a faint shudder. A few pebbles tumble from the hillside.*
+*The floor shudders. Downstairs, the counting stops, waits, and starts again from one.*
 
 - the screen shakes
 
-**{buddy}** (worried): Was that an earthquake?
+**{buddy}** (worried): That's the third since yesterday. Poor Persian.
 
-*The shaking stops.*
-
-**{buddy}** (normal): Maybe a small one. They've been happening more often lately.
+**{buddy}** (determined): Come on. If the Rescue Team's taken the big one, there'll be a dozen small ones nobody's read yet.
 
 #### Scene: Whiscash's warning  
-`rescue-2-whiscash` · dialogue · background city · cast: {buddy}, Whiscash (Whiscash)
+`rescue-2-whiscash` · dialogue · background map:square · cast: {buddy}, Whiscash (Whiscash)
 
 - {buddy} appears
 - Whiscash appears
 
-*At the pond, Whiscash floats with his eyes half closed. He looks as though he has been waiting for someone to ask him a question.*
+*At the pond, Whiscash floats with his eyes half closed. He has the look of someone who has been waiting all week to be asked a question.*
 
-**Whiscash** (happy): Wooo-hooo! A new rescue team! Come closer, young ones!
+**Whiscash** (happy): Wooo-hooo! The team from the bank loft! Come closer, young ones. Mind the lilies. They are older than you.
 
 **{buddy}** (normal): Hello, Whiscash. We wanted to ask about the earthquakes.
 
-**Whiscash** (normal): Ahhh. The ground has been restless. The mountains rumble, the seas swell, and even the quiet places have begun to tremble.
+**Whiscash** (normal): Ahhh. The ground has been restless. The mountains rumble, the rivers forget their beds. Even my pond sloshes, and my pond has manners.
 
 **{buddy}** (worried): Is it going to get worse?
 
-**Whiscash** (normal): The world has its own rhythms. Sometimes they change. Sometimes they are warning us.
+**Whiscash** (normal): The world has its rhythms. Sometimes they change. Sometimes they are trying to tell us something, and we are slow.
 
-*Whiscash opens one eye.*
+*Whiscash opens one eye and turns it toward the hill.*
 
-**Whiscash** (normal): There is an older tale about a rescue team that arrived shortly before the great disasters began.
+**Whiscash** (normal): Now. Frightened Pokémon like a reason. And the easiest reason is always whoever arrived last.
 
-**{buddy}** (worried): So the team caused them?
+**{buddy}** (worried): The Rescue Team's newcomer. The one who can't remember.
 
-**Whiscash** (normal): That is what some Pokémon believed. It was easier to blame a newcomer than to admit that nobody understood what was happening.
+**Whiscash** (normal): And after that one, you two. Wooo-hooo. You are the newest thing in the square by a whole morning.
 
-**{buddy}** (normal): Did the team leave?
+**{buddy}** (angry): We didn't shake anything. We've only carried a Metapod.
 
-**Whiscash** (normal): They kept helping. That is the part worth remembering.
+**Whiscash** (happy): I know it. The pond knows it. But nobody asks the pond.
+
+**Whiscash** (normal): So keep helping, little ones. It will not stop the talk. It is simply the right thing to be doing while they talk.
 
 #### Scene: The first signs  
-`rescue-2-disasters` · dungeon · dungeon mt-steel · cast: {buddy}
+`rescue-2-disasters` · dungeon · dungeon mt-steel · cast: {buddy}, Dugtrio (Dugtrio)
 
 - {buddy} appears
 - {buddy} walks
+- Dugtrio appears
 
-*Across the region, disasters interrupt ordinary life.*
+*Mt. Steel. High above, the Rescue Team is climbing after a Diglett carried off to the summit. At the foot, Dugtrio keeps popping up and down.*
 
-*A sudden tremor cracks the floor of a cave. Diglett scrambles to safety.*
+**Dugtrio** (worried): We are calm. We are calm. We are NOT calm. He is so small! He has never been higher than a molehill!
+
+**{buddy}** (happy): They'll bring him down. We saw them go up. They didn't even stop to look at how high it was.
 
 - the screen shakes
 
-*A river swells without warning. Wooper and Quagsire help stranded Pokémon reach higher ground.*
+*The mountain shrugs. Stones come skipping down the slope, and a family of Aron scatters in every direction.*
 
-*A gust tears through a forest. Hoothoot cling to branches as leaves spiral through the air.*
+**{buddy}** (determined): {player}, the little ones! Get them under the overhang. I'll take the left side!
 
-**{buddy}** (worried): These aren't ordinary accidents.
+*It is not a famous rescue. It is seven Aron, counted twice, and one of them carried because it would not let go of a particularly good rock.*
 
-**{buddy}** (determined): We'll keep taking requests. If Pokémon are in trouble, we can at least help them.
+**Dugtrio** (surprised): You stayed down here. With us. For the small job.
 
-*The team earns a reputation. Requests arrive faster than they can be pinned to the board.*
+**{buddy}** (happy): Somebody has to hold the bottom of the mountain.
+
+*Far above, a cheer. Then a very small voice, getting closer: Papa! Papa! I flew!*
+
+**Dugtrio** (joyous): He FLEW? We are going to faint. All three of us. Catch the middle one.
+
+*That night there are nine new notes on the loft's nail. {buddy} reads every one out loud, like good news.*
 
 ### Chapter 3: The Fugitive
 
 *Summary:* A rumour turns the square against the team.
 
 #### Scene: The dream  
-`rescue-3-dream` · dialogue · background dampcave · cast: Gardevoir (Gardevoir)
+`rescue-3-dream` · dialogue · background map:nightmare · cast: Gardevoir (Gardevoir)
 
 - Gardevoir appears
 
-*You stand in a dark place. A Gardevoir appears, her outline faint and distant.*
+*You are asleep in the loft, and then you are standing somewhere dark. A Gardevoir is there, faint, like a shape seen through rain.*
 
-**Gardevoir** (worried): Please... You must leave.
+**Gardevoir** (surprised): Oh. You are not the one I was waiting for.
 
-*The ground trembles. The darkness ripples.*
+*She looks at you for a long moment. Not unkindly.*
 
-**Gardevoir** (sad): They will come for you. They won't understand.
+**Gardevoir** (normal): But you walk near them. I have seen you on the same roads. So I will ask you instead.
 
-*She reaches toward you, but the dream begins to break apart.*
+**Gardevoir** (worried): Please. You must leave the square. They will come for the newcomers. They will not understand.
 
-**Gardevoir** (worried): I'm sorry. I couldn't protect you.
+*The dark ripples, like the pond when the ground shakes.*
 
-*You wake.*
+**Gardevoir** (sad): I could not protect someone, once. I am sorry. I would spare you that, if I could.
+
+*She reaches toward you. The dream comes apart like wet paper, and you wake to {buddy} snoring and the first grey light.*
 
 #### Scene: Gengar's story  
-`rescue-3-gengar` · stage · background city · cast: {buddy}, Gengar (Gengar), Ekans (Ekans), Medicham (Medicham)
+`rescue-3-gengar` · stage · background map:pokemon-square · cast: {buddy}, Gengar (Gengar), Ekans (Ekans), Medicham (Medicham)
 
 - Gengar appears
 - Ekans appears
 - Medicham appears
 
-*Gengar has gathered a small crowd near the square's notice board.*
+*A crowd has gathered at the notice board. In the middle of it is a wide purple grin with a Gengar attached.*
 
-**Gengar** (happy): Oh, don't mind me. I was just telling a little story.
+**Gengar** (happy): Kekeh! Oh, don't mind me. I was only telling a little story. An old one. Hardly worth the listening.
 
-**Ekans** (happy): The old omen? The one about a strange team arriving before the disasters?
+**Ekans** (happy): The one about the curse? And the Pokémon who ran away from it?
 
-**Gengar** (happy): That's the one! The tale says a newcomer appears whenever the world is about to turn upside down.
+**Gengar** (happy): That's the one! They say that Pokémon comes back one day, with no memory at all. And when it does, the world tips over.
 
-**Medicham** (worried): And you think the Rescue Team is that omen?
+**Medicham** (worried): No memory. Like the Rescue Team's newcomer.
 
-**Gengar** (normal): I didn't say that. I only said it's an interesting coincidence.
-
-*Gengar notices you.*
+**Gengar** (normal): Now, I never said that. I only said it's a very interesting week to have forgotten where you came from. Kekeh!
 
 - {buddy} appears
 - {buddy} walks
 - Gengar: !
 
-**Gengar** (surprised): Ah! And here is the visiting team. You arrived just as the rumors began.
+**Gengar** (surprised): And here's the other pair nobody knew a month ago! My, the square is filling up with mysteries.
 
-**{buddy}** (angry): We arrived because Mew brought us here. We didn't cause anything.
+**{buddy}** (angry): We came down the hill road and you all watched us do it. And they've done nothing but pull your neighbours out of holes.
 
-**Gengar** (normal): I never said you did. I only wonder why so many unusual things happen around newcomers.
+**Gengar** (normal): Did I say otherwise? I'm only a storyteller. What Pokémon do with a story is hardly my business.
 
-**{buddy}** (determined): Then investigate the facts. Don't turn frightened Pokémon against a team that is trying to help.
+**{buddy}** (determined): It's exactly your business. You're choosing the story.
 
-**Gengar** (happy): If you say so.
+*For one moment the grin slips, as if something behind it has been touched. Then it is back, wider than before.*
 
-*Gengar turns away, smiling.*
+**Gengar** (happy): Kekeh. If you say so.
 
 - Gengar walks
 - Gengar leaves
+
+*The crowd does not break up. It only gets quieter, which is worse.*
+
 #### Scene: The square turns  
-`rescue-3-exile` · stage · background city · cast: {buddy}, Alakazam (Alakazam), Charizard (Charizard), Tyranitar (Tyranitar)
+`rescue-3-exile` · stage · background map:pokemon-square · cast: {buddy}, Alakazam (Alakazam), Charizard (Charizard), Tyranitar (Tyranitar), Caterpie (Caterpie)
 
 - {buddy} appears
 
-*Whispers follow you through the square. Some Pokémon avoid your eyes. Others stare openly.*
+*By evening the whispers have a shape. The Rescue Team has been given until morning to leave. After that, every team in the land may hunt them.*
 
-**{buddy}** (worried): They really believe him...
-
-*Alakazam approaches with Charizard and Tyranitar.*
+**{buddy}** (sad): They saved half of these Pokémon. Kecleon won't even look at their hill.
 
 - Alakazam appears
 - Charizard appears
 - Tyranitar appears
 
-**Alakazam** (normal): We have heard the rumors. We have also seen your team's work.
+*Alakazam's team crosses the square. The three most respected rescuers anywhere, and none of them looks proud tonight.*
 
-**{buddy}** (worried): Then you know we didn't cause the disasters.
+**{buddy}** (angry): You can't believe this. You've seen their work!
 
-**Alakazam** (normal): We know that there is no proof. But the square is frightened, and frightened Pokémon are not always reasonable.
+**Alakazam** (normal): I believe there is no proof. I also believe a frightened square will do something worse if it is given nothing to do.
 
-**Charizard** (angry): If you stay, this could turn ugly.
+**Alakazam** (sad): So there will be a chase. I gave my word on it. At dawn, we follow them.
 
-**{buddy}** (angry): So we're supposed to leave?
+**Charizard** (normal): The north road's the coldest way out. Nobody sensible goes that way. Nobody'd think to look there first.
 
-**Tyranitar** (normal): For now. Until we know more.
+**Charizard** (angry): ...I'm talking to myself. Don't listen.
 
-*{buddy} looks at you, then back at the three rescuers.*
+**Tyranitar** (normal): Take a blanket.
 
-**{buddy}** (sad): Fine. We'll go.
+*Tyranitar sets a folded blanket on the ground, very carefully, as though it had fallen there by accident.*
 
-*The two of you leave the square. Nobody follows.*
+- Caterpie appears
+- Caterpie walks
+
+**Caterpie** (teary): I told everyone it isn't true! Nobody listened, because I'm small! But I told them!
+
+**{buddy}** (happy): We heard you, Caterpie. That counts. Keep telling them.
+
+*On the hill, the lamp in the base window goes out. {buddy} picks up the blanket.*
+
+**{buddy}** (determined): They shouldn't have to be alone out there. And somebody ought to be walking behind them who isn't hunting them.
+
+**{buddy}** (normal): North road, {player}. Before dawn.
 
 - {buddy} walks
 - {buddy} leaves
@@ -563,173 +607,179 @@ Pokémon Square, a rumour about a team that arrived before the disasters, and a 
 *Summary:* Branded as a danger, the team travels through harsh country with Absol.
 
 #### Scene: A stranger in the snow  
-`rescue-4-absol` · stage · background icecave · cast: {buddy}, Absol (Absol)
+`rescue-4-absol` · dungeon · dungeon frosty-forest · cast: {buddy}, Absol (Absol)
 
 - {buddy} appears
 - {buddy} walks
 
-*Snow falls over a forest of pale trees. The wind carries a low, distant rumble.*
+*Days north. Snow falls over a forest of pale trees. There are two sets of tracks ahead, half filled in, and the wind is working on the rest.*
 
-**{buddy}** (worried): I don't like this place. The snow is getting heavier.
+**{buddy}** (worried): They came this way. They're still a day ahead. How are they walking so fast on no sleep?
 
-*A white shape watches from between the trees.*
+*A white shape is standing between the trees. It has been standing there for some time.*
 
 - Absol appears
 
-**Absol** (normal): You should turn back.
+**Absol** (normal): You are following the fugitives.
 
-**{buddy}** (surprised): Who are you?
+**{buddy}** (angry): We're not hunting them! If you're here to say they cause the disasters, save your breath. It's cold enough.
 
-**Absol** (normal): Someone who has learned not to ignore warnings.
-
-**{buddy}** (angry): If you're here to tell us we're causing the disasters, save your breath.
-
-**Absol** (surprised): I never said that.
-
-*Absol steps into view.*
+**Absol** (surprised): I did not say that. I have never thought it.
 
 - Absol walks
 
-**Absol** (normal): I can sense disasters before they happen. I have followed their signs from one region to another.
+**Absol** (normal): I feel disasters before they come. It is like a tooth that aches before rain. I have followed the ache from one land to the next.
 
 **{buddy}** (worried): Then you know what's causing them?
 
-**Absol** (sad): No. Only that something is coming. And that Pokémon often blame the one who appears just before trouble begins.
+**Absol** (sad): No. Only that it is not two tired Pokémon running through snow. It is far bigger. And it is above us.
 
-*Absol looks at you.*
+*Absol looks at the tracks, and then, for the first time, properly at you.*
 
-**Absol** (normal): I know what it is like to be mistaken for an omen. If you will allow it, I would like to travel with you.
+**Absol** (normal): Wherever I arrive, something breaks soon after. So I am the one villages chase away. I know this road they are on.
 
-**{buddy}** (happy): You can join us. We could use someone who knows what to look for.
+**Absol** (normal): I mean to catch them up and offer what I can. You are going the same way. Slower. With a blanket.
+
+**{buddy}** (happy): It's a good blanket. ...Walk with us. Three's warmer than two.
 
 #### Scene: A hard night  
-`rescue-4-camp` · dialogue · background mountain · cast: {buddy}, Absol (Absol)
+`rescue-4-camp` · dialogue · background map:fugitives-snow-forest · cast: {buddy}, Absol (Absol)
 
 - {buddy} appears
 - Absol appears
 
-*The three of you shelter beneath a rocky overhang. Wind howls outside.*
+*A rocky overhang, a small fire, and Tyranitar's blanket around all three. Outside, the wind is saying something long and unfriendly.*
 
-**{buddy}** (sad): Do you think the others will ever believe us?
+**{buddy}** (sad): Do you think the square will ever take it back? What they said?
 
-**Absol** (normal): Some will. Some won't. You cannot build your life around convincing every Pokémon who misunderstands you.
+**Absol** (normal): Some will. Some will not. You cannot build your life out of convincing every Pokémon who has misjudged you.
 
 **{buddy}** (worried): That's easy to say when you're used to being alone.
 
-*Absol looks away.*
+*Absol looks away, into the fire.*
 
-**Absol** (sad): It is not easy. I simply learned that waiting for others to understand can become its own kind of prison.
+**Absol** (sad): It is not easy. I only learned that waiting to be understood can become its own kind of cage.
 
-*There is a long pause. {buddy} nudges a berry toward Absol.*
+*A long quiet. {buddy} rolls a berry across the stone until it bumps against Absol's paw.*
 
-**{buddy}** (normal): You should eat. You look like you haven't had a proper meal in days.
+**{buddy}** (normal): Eat. You look like you haven't had a proper meal since the last village threw you out.
 
-**Absol** (surprised): ...Thank you.
+**Absol** (surprised): ...It was the one before that.
 
-*For the first time, Absol's expression softens.*
+**{buddy}** (happy): Then have two.
+
+*Absol eats both. Far ahead in the dark, very small, another fire is burning. Two shapes sit close beside it.*
+
+**{buddy}** (happy): There they are. Look, {player}. They've still got each other.
+
+**Absol** (normal): Yes. That is usually how it is survived.
 
 ### Chapter 5: The Sky Is Falling
 
 *Summary:* The meteor, the legendary birds and Rayquaza.
 
 #### Scene: The mountain's message  
-`rescue-5-ninetales` · stage · background mountain · cast: {buddy}, Ninetales (Ninetales), Alakazam (Alakazam)
+`rescue-5-ninetales` · stage · background fa-sky-blue-plains · cast: {buddy}, Ninetales (Ninetales), Absol (Absol)
 
 - {buddy} appears
+- Absol appears
 - Ninetales appears
 
-*Atop a remote mountain, Ninetales watches the clouds move below.*
+*The top of the frozen mountain. The Rescue Team has only just gone down again, and the snow where they stood is still warm.*
 
-**Ninetales** (normal): So. The one from the old tale has come.
+**Ninetales** (normal): More visitors. A thousand quiet years, and then two teams in one afternoon. I should have tidied.
 
-**{buddy}** (worried): You know about the story?
+**{buddy}** (worried): You're the Ninetales from the legend. The one with the curse.
 
-**Ninetales** (normal): I know what happened. A curse was laid upon a Pokémon long ago. A Gardevoir gave everything to protect her partner.
+**Ninetales** (normal): I am. And I have just told your friends what I will tell you. The Pokémon from that old tale is not their newcomer.
 
-*Ninetales turns toward you.*
+**{buddy}** (joyous): It isn't? Then they're innocent! You said so! Out loud!
 
-**Ninetales** (normal): But the tale was never a verdict. It was a warning about how easily fear becomes cruelty.
+**Ninetales** (happy): Out loud, to Alakazam himself. He had caught up with them here. He took it rather well, for someone who has been wrong for weeks.
 
-**{buddy}** (angry): Then tell everyone! Tell them we didn't cause this!
+**Absol** (normal): And the one from the tale? The one a Gardevoir shielded?
 
-**Ninetales** (sad): They must learn it for themselves.
+**Ninetales** (sad): Ran. And has been hiding from it ever since, behind a very wide grin. That is all I will say. It is not my tale to finish.
 
-*The sky darkens. A distant flash lights the clouds.*
+*The sky darkens in the middle of the day. Far above the clouds, something flashes.*
 
 - a flash
 
-**Ninetales** (worried): The disasters are not the work of one Pokémon. Something is falling from the sky.
+**Ninetales** (worried): The shaking was never one Pokémon's doing. The world is out of balance because something is falling toward it.
+
+**Ninetales** (normal): Your friends have gone to learn what. Go after them, little second team. You have been doing it well so far.
 
 #### Scene: The legendary birds  
-`rescue-5-birds` · cinematic · background thunderplains · cast: {buddy}, Articuno (Articuno), Zapdos (Zapdos), Moltres (Moltres)
+`rescue-5-birds` · cinematic · background fa-legendary-island · cast: {buddy}, Articuno (Articuno), Zapdos (Zapdos), Moltres (Moltres)
 
 - {buddy} appears
 
-*The air turns bitterly cold. A shadow sweeps across the snow.*
+*The road home runs under three mountains. Today all three of their guardians are in the sky at once, and none of them is pleased.*
 
 - Articuno appears
 - Articuno cries out
 
-**Articuno** (angry): Who trespasses upon my mountain?
-
-**{buddy}** (worried): We need to reach the sky. Something is coming.
-
-**Articuno** (angry): The mountain is restless. The air is disturbed. I will not allow strangers to pass.
-
-*Lightning splits the clouds. Zapdos descends onto a nearby ridge.*
+**Articuno** (angry): First the fugitives. Now more feet on my snow. My mountain has not slept in days.
 
 - Zapdos appears
 - Zapdos cries out
+- sound: STORY_ELECTRICITY
 - a flash
 
-**Zapdos** (angry): Enough! The whole sky is crackling. I can feel it in my wings!
-
-*Moltres appears in a burst of heat.*
+**Zapdos** (angry): Nor mine! The whole sky itches! I can feel it in every feather and I can't FIND it!
 
 - Moltres appears
 - Moltres cries out
+- sound: STORY_FIRE
 - the screen shakes
 
-**Moltres** (angry): And my flames have not burned steadily for days.
+**Moltres** (angry): My flame gutters like a cheap candle. I have never guttered. Someone will answer for it.
 
-*The three birds glare at one another.*
+*Three great heads swing down toward one very small team.*
 
-**{buddy}** (worried): You're all feeling the same thing. Whatever is coming is affecting the whole world!
+**{buddy}** (worried): It isn't us! It isn't anyone down here! You're all feeling the same thing, because it's coming from above all of you!
 
-*Articuno studies the distant sky. For a moment, the anger gives way to concern.*
+*A silence. The birds look at one another, perhaps for the first time in an age.*
 
-**Articuno** (normal): Then prove it. Show us what you have seen.
+**Articuno** (normal): ...The small one is right. It is not on any mountain. It is over them.
+
+**Zapdos** (surprised): Then why are we shouting at each other? I had a whole storm ready!
+
+**Moltres** (normal): Go, little ones. Whoever means to mend the sky, tell them three mountains are watching. And that we would be obliged.
 
 #### Scene: The falling star  
-`rescue-5-meteor` · cinematic · background mountain · cast: {buddy}, Absol (Absol), Rayquaza (Rayquaza)
+`rescue-5-meteor` · cinematic · background map:comet · cast: {buddy}, Absol (Absol), Xatu (Xatu)
 
 - {buddy} appears
 - Absol appears
+- Xatu appears
 
-*A burning point appears beyond the clouds. It grows brighter, larger, and impossibly close.*
+*The Hill of the Ancients. Xatu has been staring at the sun for longer than the square has had a name. Today he is looking a little to the left of it.*
 
-**{buddy}** (surprised): That's no ordinary star...
+**Xatu** (normal): ...
 
-**Absol** (worried): The disasters. The tremors. The strange weather. They were warnings.
+**{buddy}** (worried): Is he... all right?
 
-*The sky tears with a streak of fire.*
+**Absol** (surprised): He is looking at it. The thing I have been feeling. I had not thought anyone could see it.
+
+**Xatu** (normal): A star. Falling. It has been falling since before the first tremor. The world felt it coming and shook.
+
+*Above them, a burning point slides out from behind a cloud. It is brighter than it was a breath ago.*
 
 - a flash
 - the screen shakes
-- Rayquaza appears
-- Rayquaza cries out
 
-**Rayquaza** (angry): Who summons me to the heavens?
+**{buddy}** (surprised): That's no ordinary star...
 
-**{buddy}** (determined): We need your help. A meteor is on its way!
+**Xatu** (normal): One power can break it. High above, where the sky ends. I have sent the Rescue Team to the tower of clouds to ask.
 
-**Rayquaza** (angry): I guard the skies. I know what approaches them.
+**{buddy}** (worried): Just the two of them? Up there? Did anyone go with them?
 
-**{buddy}** (worried): Then you know it will destroy everything!
+*Xatu turns his head, very slowly, and looks at {buddy} with both eyes.*
 
-*Rayquaza looks toward the approaching meteor.*
+**Xatu** (normal): I see a second team on those stairs. I did not send it. I see it anyway.
 
-**Rayquaza** (normal): I will not let it pass.
+**{buddy}** (determined): ...I suppose that settles that.
 
 #### Scene: A path through the clouds  
 `rescue-5-ascent` · dungeon · dungeon sky-tower · cast: {buddy}, Absol (Absol)
@@ -739,130 +789,149 @@ Pokémon Square, a rumour about a team that arrived before the disasters, and a 
 - Absol appears
 - Absol walks
 
-*The climb is exhausting. The air thins, the wind grows sharp, and the world below becomes a patchwork of clouds and distant mountains.*
+*The tower is made of cloud that has agreed, for now, to be stairs. The world below is a patchwork. The Rescue Team's prints are on every step.*
 
 **{buddy}** (worried): I thought the sky would be... friendlier.
 
-**Absol** (normal): It is not a place that was made for walking.
+**Absol** (normal): It was not made for walking.
 
-**{buddy}** (happy): You could have mentioned that before we started.
+**{buddy}** (happy): You could have mentioned that at the bottom.
 
 **Absol** (normal): You would have come anyway.
 
-*{buddy} pauses, then laughs despite the exhaustion.*
+*{buddy} stops for breath, and laughs, which wastes most of it.*
 
 **{buddy}** (happy): ...Yeah. Probably.
+
+*On one step, a berry has been left. A few steps on, another. Somebody ahead guessed they were being followed, and by whom.*
+
+**{buddy}** (teary): They knew. All this time. And they left us lunch.
 
 #### Scene: Rayquaza's decision  
 `rescue-5-rayquaza` · cinematic · dungeon sky-tower · cast: {buddy}, Rayquaza (Rayquaza)
 
 - {buddy} appears
 
-*At the summit, Rayquaza coils above the clouds. The meteor burns across the heavens.*
+*The summit. The Rescue Team is already there, small and scorched and standing very straight, before a shape that fills the sky.*
 
 - Rayquaza appears
+- Rayquaza cries out
+- sound: STORY_WIND_HIGH
 
-**Rayquaza** (normal): You have climbed far for a request that may cost you everything.
+**Rayquaza** (normal): I have heard you, rescuers. You climbed into my sky and fought me to be heard. Few have dared. None so small.
 
-**{buddy}** (determined): We didn't come this far to watch the world end.
+*One great eye turns. It has found the second pair, at the top of the stairs, out of breath.*
 
-**Rayquaza** (normal): Brave words. But bravery does not make you invulnerable.
+**Rayquaza** (angry): And these? More, come to ask?
 
-*Rayquaza turns toward the meteor.*
+**{buddy}** (determined): No. They've already asked. We came so they wouldn't be asking alone.
 
-**Rayquaza** (determined): Stand back.
+**Rayquaza** (normal): ...Hm. Two to ask. Two to stand behind them. Your world sends better than it knows.
 
-*Green light gathers around Rayquaza. The sky shakes. A brilliant beam strikes the meteor, splitting it into blazing fragments.*
+**Rayquaza** (determined): Stand back. All of you.
+
+*Green light gathers. The air itself leans away. A beam goes up into the dark and meets the star.*
 
 - a flash
 - the screen shakes
 - Rayquaza cries out
 
-*The largest pieces burn away high above the clouds. The shockwave rolls across the world.*
+*The star breaks into a thousand harmless sparks. They fall for a long time, like the gentlest fireworks there have ever been.*
 
-**{buddy}** (surprised): You did it...
+**{buddy}** (joyous): They did it. {player}, they actually did it.
 
-**Rayquaza** (normal): The danger has passed. For now.
-
-*Rayquaza looks down at the two small Pokémon before it.*
-
-**Rayquaza** (normal): You did not come seeking power. You came because others needed help. Remember that when the world begins to praise you.
+**Rayquaza** (normal): Go down, little ones. When the world praises those two, see that they still get their sleep.
 
 ### Chapter 6: A Place to Return To
 
 *Summary:* The square learns the truth, and the team has a home.
 
 #### Scene: The square again  
-`rescue-6-return` · stage · background city · cast: {buddy}, Alakazam (Alakazam), Charizard (Charizard), Tyranitar (Tyranitar), Gengar (Gengar)
+`rescue-6-return` · stage · background map:pokemon-square · cast: {buddy}, Alakazam (Alakazam), Charizard (Charizard), Tyranitar (Tyranitar), Gengar (Gengar), Kecleon (Kecleon)
 
 - {buddy} appears
 - Alakazam appears
 - Charizard appears
 - Tyranitar appears
 - Gengar appears
+- Kecleon appears
 
-*The square falls quiet as the team approaches. Alakazam steps forward.*
+*The whole square has turned out. The Rescue Team is somewhere in the middle of it, being hugged by a Wigglytuff and unable to escape.*
 
-**Alakazam** (sad): We owe you an apology.
+**Alakazam** (sad): I have made my apology to them. I owe one here as well. You walked behind them the whole way, and I let the square drive you both out.
 
-**Charizard** (sad): We should have listened.
+**Charizard** (normal): You used the north road, then.
 
-**Tyranitar** (normal): You saved us, even after we turned you away.
+**{buddy}** (happy): Somebody was talking to himself about it.
 
-**{buddy}** (normal): We didn't do it so you'd owe us anything.
+**Charizard** (happy): Hmph. Can't think who.
 
-*Gengar edges away from the crowd.*
+**Tyranitar** (normal): Blanket?
+
+**{buddy}** (happy): It kept three of us warm. Here. Thank you.
+
+**Tyranitar** (normal): Keep it.
+
+**Kecleon** (joyous): And I say everything is half price today! ...For heroes. And their friends. Looking is still free!
+
+*At the edge of the crowd, a purple shape is moving quietly toward the road.*
 
 - Gengar walks
 
-**{buddy}** (angry): And you. You started all of this.
+**{buddy}** (normal): Gengar.
 
-**Gengar** (normal): I told a story. Pokémon believed what they wanted to believe.
+**Gengar** (normal): I told a story. Pokémon believed what they wanted to. Kekeh.
 
-**Alakazam** (angry): You used their fear for your own amusement.
-
-**Gengar** (normal): Hmph.
-
-*Gengar slips away before anyone can stop him.*
+*It is the same line as before. But he does not manage the grin, and he does not look at the hill.*
 
 - Gengar leaves
 
-**{buddy}** (sad): I don't think he'll ever apologize.
+**{buddy}** (sad): He's not sorry yet.
 
-**Alakazam** (normal): Perhaps not. But the rest of us can do better.
+**Alakazam** (normal): No. But he has stopped laughing, and with that one, it is where sorry begins. Leave him the road. He will need it to come back by.
 
-#### Scene: Back at the base  
-`rescue-6-home` · stage · background meadow · cast: {buddy}, Absol (Absol), Caterpie (Caterpie)
+#### Scene: Back at the loft  
+`rescue-6-home` · stage · background map:square · cast: {buddy}, Absol (Absol), Caterpie (Caterpie), Persian (Persian), Mew (Mew)
 
 - {buddy} appears
 - Absol appears
+- Persian appears
 
-*The base is still small. The roof still needs work. But someone has left fresh berries by the entrance.*
+*Evening. The loft is still small. The beam is still low. But there are fresh berries on the stair, and nine thank-you notes on the nail.*
 
 - Caterpie appears
 - Caterpie walks
 
-**Caterpie** (joyous): You're back!
+**Caterpie** (joyous): You're back! I told everyone you'd come back! Metapod said so too! Metapod said it twice!
 
-**{buddy}** (happy): We are.
+**{buddy}** (happy): Twice! That's practically a speech.
 
-**Caterpie** (happy): I told everyone you'd come back!
+**Persian** (happy): The loft is yours for as long as you want it. I have grown used to the footsteps. They are bad for my counting. I find I do not mind.
 
-*Absol watches the two of you from the doorway.*
+**Absol** (normal): The Rescue Team has asked me to stay on with them. Nobody has ever asked me to stay anywhere.
 
-**Absol** (normal): You have a place here now.
+**{buddy}** (normal): What did you say?
 
-**{buddy}** (happy): We do.
+**Absol** (happy): That I would need a moment. Then I said yes before the moment was over.
 
-*{buddy} looks at you.*
+*On the hill, the lamp is lit in the base window. In the loft's round window, something small and pink is sitting, swinging its tail.*
 
-**{buddy}** (normal): Funny. At first, I thought we were just helping you figure out where you came from.
+- Mew appears
 
-*They glance toward the request board.*
+**{buddy}** (sad): ...Oh. It's time, isn't it. These days are over. They were over long before we got here.
 
-**{buddy}** (happy): I think we found something else along the way.
+**Mew** (normal): Mew.
 
-*Outside, another request arrives.*
+**{buddy}** (happy): They stayed, though. That's how it really went. The newcomer stayed, and the square kept them. I'm glad we saw that part.
+
+*{buddy} takes one note from the nail, the one in Caterpie's wobbly writing, and tucks it away. Mew pretends not to notice.*
+
+**{buddy}** (happy): Come on, {player}. There's a board at home with our name on it. And we never did get that breakfast.
+
+- Mew cries out
+- a flash
+
+*Green light, and the smell of bread. Behind you, faintly, a small voice is still telling everyone that you will come back. Mew has left the door open.*
 
 ## Explorers
 
@@ -873,274 +942,284 @@ Treasure Town, the Exploration Guild and a thief of time.
 *Summary:* A ring of light drops the team on a beach beside Treasure Town.
 
 #### Scene: Washed ashore  
-`explorers-1-beach` · stage · background beach · cast: {buddy}, Koffing (Koffing)
+`explorers-1-beach` · stage · background map:sky-h01p99a · cast: {buddy}, Hoopa (Hoopa), Koffing (Koffing), Zubat (Zubat)
 
-*Waves roll over the shore. A ring of light closes above the water. The team lands on the sand in a tangle of limbs and startled cries.*
-
-- {buddy} appears
-
-**{buddy}** (surprised): Hoopa could have warned us about the landing!
-
-*The ring shrinks to a glowing speck and disappears.*
-
-**{buddy}** (worried): We are definitely not on the Frontier coast.
-
-*The beach stretches toward a town. A pair of Koffing drift past, snickering, with a small satchel between them.*
-
-- Koffing appears
-- Koffing walks
-
-**{buddy}** (normal): At least the locals are familiar.
-
-*The Koffing notice the team and hurry toward the rocks.*
-
-- Koffing: !
-- Koffing walks
-- Koffing leaves
-
-**{buddy}** (angry): Hey! You two! Give that back!
-
-*The Koffing flee with a small object. {buddy} starts after them, then looks back at you.*
-
-- {buddy} walks
-
-**{buddy}** (worried): Sorry. I can't just let them get away. Can you stand?
-
-*The two of you pursue the thieves.*
-
-#### Scene: The stolen treasure  
-`explorers-1-cliff` · dungeon · dungeon waterfall-cave · cast: {buddy}, Koffing (Koffing), Zubat (Zubat)
+*A gold ring opens in the air over the Frontier's request board. It closes over a beach. In between, there is a great deal of falling.*
 
 - {buddy} appears
-- {buddy} walks
+- Hoopa appears
 
-*The path narrows into a rocky passage. The Koffing hover near the exit, laughing.*
+**Hoopa** (joyous): Ta-da! Were you surprised? You were surprised! Hoopa saw your faces!
+
+**{buddy}** (angry): You dropped us out of the SKY. We were reading the board. Mew said that notice was a job!
+
+**Hoopa** (happy): It is a job! Hoopa found a whole other world next door. Very good town, very good guild, very good apples. Go and see!
+
+**{buddy}** (worried): A whole other... {player}, that's not our sea. Ours doesn't have that many bubbles.
+
+*It is evening here. Krabby on the rocks are blowing bubbles into the sunset, and nobody in this world seems to think that is remarkable.*
+
+**Hoopa** (happy): Hoopa will come back with the ring! Later! Probably! Bye-bye!
+
+- Hoopa leaves
+
+**{buddy}** (surprised): Probably?!
+
+*Down the beach, shouting. A Koffing and a Zubat shoot past, sniggering, with something small that glints. Two Pokémon are running after them.*
 
 - Koffing appears
 - Zubat appears
+- Koffing walks
+- Zubat walks
 
-**Koffing** (happy): Hehehe! Look what we found!
+**Koffing** (happy): Whoa-ho-ho! Finders keepers, you little chicken!
 
-**Zubat** (happy): Shiny! Shiny!
+- Koffing walks
+- Zubat walks
+- Koffing leaves
+- Zubat leaves
 
-**{buddy}** (angry): That's not yours! Give it back!
+*One of the two chasing is shaking all over, and going anyway. The other looks as if it only woke up on this sand an hour ago. They vanish into a cave.*
 
-**Koffing** (angry): Finders keepers!
+**{buddy}** (determined): Somebody just got robbed. And we're standing here discussing bubbles. Come on!
 
-*The Koffing attack. After the encounter, they retreat and drop the stolen object.*
+- {buddy} walks
+- {buddy} leaves
+#### Scene: The stolen treasure  
+`explorers-1-cliff` · dungeon · dungeon beach-cave · cast: {buddy}, Koffing (Koffing), Zubat (Zubat)
+
+- {buddy} appears
+- {buddy} walks
+
+*Beach Cave. Somewhere deeper in, there is a scuffle, a yelp, and a small brave voice saying: Give. It. BACK.*
+
+**{buddy}** (happy): They don't need us. Listen to that. The shaky one's furious.
+
+- Koffing appears
+- Zubat appears
+- Koffing walks
+- Zubat walks
+
+*The two bullies come flying back out, considerably less pleased with themselves, and find the tunnel has acquired a visiting team.*
+
+**Zubat** (worried): Heh-heh... uh. There's more of them.
+
+**Koffing** (angry): So we lost the shiny thing. Fine! We'll take THEIR bag instead. Hand it over, tourists!
+
+**{buddy}** (determined): There's half a bun and a job notice in it. And you're not having either.
 
 - the screen shakes
+
+*It is a short argument. {player} wins most of it.*
+
+**Koffing** (surprised): Wh-whoa! We were only kidding! The Chief's gonna hear about this!
+
 - Koffing walks
 - Koffing leaves
 - Zubat walks
 - Zubat leaves
-- {buddy} walks
 
-**{buddy}** (happy): Got it!
+*From the back of the cave, two voices, breathless and laughing. One of them is saying: I did it. I really did it. Did you see?*
 
-*{buddy} picks up the item, then looks at you.*
+**{buddy}** (happy): They got it back themselves. Good for them.
 
-**{buddy}** (normal): You helped me back there. Thanks.
+*{buddy} listens a moment longer, then turns for the entrance.*
 
-*A faint ring-shaped mark glimmers in the wet sand where the portal closed.*
+**{buddy}** (normal): Let's leave them to it. That sounded like the start of something, and it isn't ours.
 
-**{buddy}** (surprised): Hoopa's mark. So the passage brought us here deliberately.
-
-**{buddy}** (normal): We should find the town and ask for directions. If the ring opens again, I want to know where it leads before we step through.
+**{buddy}** (happy): Hoopa said there's a town. And a guild. And apples. I am choosing to believe the apples.
 
 #### Scene: Treasure Town  
-`explorers-1-town` · stage · background city · cast: {buddy}, Kecleon (Kecleon), Marill (Marill), Azurill (Azurill), Duskull (Duskull)
+`explorers-1-town` · stage · background map:sky-t00p02 · cast: {buddy}, Kecleon (Kecleon), Marill (Marill), Azurill (Azurill), Duskull (Duskull)
 
-*Treasure Town is lively. Shops line the square, and Pokémon come and go carrying supplies.*
+*Treasure Town at dusk. Lanterns are coming on along the path, and every shop is trying to close and sell one last thing at the same time.*
 
 - {buddy} appears
 - Kecleon appears
 - Duskull appears
 
-**Kecleon** (happy): Welcome! Welcome! Fresh stock today!
+**Kecleon** (happy): Welcome to the Kecleon Market~! New in town? You have the sandy look of the new in town!
 
-**{buddy}** (normal): We'll come back later, Kecleon.
+**{buddy}** (surprised): Very new. Is there a Kecleon running a shop in every world?
 
-**Kecleon** (happy): I'll be here! Unless I sell out!
+**Kecleon** (happy): I certainly hope so~! My brother says we are a universal constant.
 
-*Marill and Azurill hurry past.*
+**Duskull** (normal): Deposits... withdrawals... I keep them safe. I never sleep. It is not as sad as it sounds.
 
 - Marill appears
 - Azurill appears
 - Marill walks
 - Azurill walks
 
-**Marill** (worried): Excuse us! We have to find someone!
+**Azurill** (worried): Marill, wait! My legs are shorter than yours!
 
-**Azurill** (worried): Hurry, Marill!
+**Marill** (worried): Sorry! Excuse us! We have to buy apples before closing or Mama will worry!
 
-*They disappear around a corner.*
+**Kecleon** (happy): For you two? One on the house~. Tell your mother to rest.
 
 - Marill walks
 - Azurill walks
 - Marill leaves
 - Azurill leaves
 
-**{buddy}** (normal): Something's always happening here.
+**{buddy}** (happy): It's a nice town. Everyone knows everyone.
 
-*{buddy} points toward a building on the hill.*
+**Kecleon** (normal): If you need a bed, try Wigglytuff's Guild, up the steps. They take anyone with a brave heart. Or a loud voice. One of the two.
 
-**{buddy}** (happy): That's the Exploration Guild. If anyone knows about that fragment, it'll be someone there.
+*On the bluff above the town stands a tent shaped like a very large, very cheerful Wigglytuff.*
+
+**{buddy}** (normal): ...Of course it is.
 
 #### Scene: The guild's entrance  
-`explorers-1-guild` · stage · background city · cast: {buddy}, Diglett (Diglett), Chatot (Chatot), Wigglytuff (Wigglytuff)
+`explorers-1-guild` · stage · background map:sky-g01p01a · cast: {buddy}, Diglett (Diglett), Loudred (Loudred), Chatot (Chatot), Wigglytuff (Wigglytuff)
 
-*The guild's entrance is guarded by a Diglett lookout. The two of you approach the grate.*
+*In front of the guild there is a grate in the ground. The two from the beach must have crossed it not long ago: there are sandy prints all round it.*
 
 - {buddy} appears
-- Diglett appears
+- {buddy} walks
 
-**Diglett** (normal): Halt! Who goes there?
+*{buddy} steps onto the grate.*
 
-**{buddy}** (surprised): It's me! I'm here to join the guild!
+**Diglett** (surprised): Pokémon detected! Pokémon detected!
 
-**Diglett** (normal): Name?
+- {buddy}: !
 
-**{buddy}** (happy): I'm {buddy}. And this is---
+**Loudred** (angry): WHOSE FOOTPRINT? WHOSE FOOTPRINT?
 
-*You introduce yourself.*
+**Diglett** (worried): The footprint is... the footprint is... um. I don't know it. It isn't in any of my footprints.
 
-**Diglett** (normal): Hm. Two applicants. Wait here.
+**Loudred** (angry): WHAT DO YOU MEAN, YOU DON'T KNOW? KNOWING IS YOUR ONE JOB!
 
-*Diglett disappears underground. A moment later, Chatot appears.*
+**Diglett** (teary): It's a nice footprint! It's just from very far away!
 
-- Diglett leaves
+**{buddy}** (happy): It's all right! We ARE from very far away. That's a good sentry. Don't shout at him.
+
 - Chatot appears
 
-**Chatot** (normal): So, you're the new applicants. Hm. You look... enthusiastic.
+**Chatot** (normal): Squawk! More applicants? We took two not an hour ago. This is a guild, not a harbour.
 
-**{buddy}** (happy): We are!
+**{buddy}** (normal): We're not staying for good. We fell out of a ring. We need somewhere to sleep until it comes back.
 
-**Chatot** (normal): Enthusiasm is not a substitute for discipline. The guild has rules, schedules, and responsibilities.
-
-**{buddy}** (worried): Right. Of course.
-
-*From somewhere inside the guild comes a cheerful voice.*
+**Chatot** (normal): That is the least convincing application I have heard in my career, and I have heard Bidoof's.
 
 - Wigglytuff appears
 - Wigglytuff walks
 
-**Wigglytuff** (happy): Friends!
+**Wigglytuff** (joyous): Friends! Friendly friends from far away!
 
-**Chatot** (surprised): Guildmaster! Please don't interrupt the entrance examination!
-
-**Wigglytuff** (happy): But they're here!
-
-**Chatot** (angry): I can see that!
-
-*Wigglytuff leans toward the two applicants.*
+**Chatot** (surprised): Guildmaster, I have not finished assessing...
 
 - Wigglytuff walks
 
-**Wigglytuff** (happy): Welcome! Do you like apples?
+**Wigglytuff** (happy): Do you like Perfect Apples?
 
-**{buddy}** (surprised): ...Apples?
+**{buddy}** (surprised): We've... been told they're very good?
 
-**Wigglytuff** (happy): Hee-hee! Good answer!
+**Wigglytuff** (joyous): Then you're a visiting team! That's a thing now! YOOM-TAH!
 
-*Chatot sighs.*
+- a flash
+- sound: STORY_TEAM_CHARM
 
-**Chatot** (normal): Please ignore that. Come inside. We'll begin your registration.
+*Chatot shuts his beak on several objections at once. Nobody argues with a YOOM-TAH.*
+
+**Chatot** (normal): ...Visitors work like everyone else. Dinner is at dusk. Do not, under any circumstances, touch the Guildmaster's apple.
 
 ### Chapter 2: Guild Life
 
 *Summary:* The Guild's work, its residents and the first signs that time is skipping.
 
 #### Scene: The guild's morning  
-`explorers-2-morning` · stage · background city · cast: {buddy}, Chatot (Chatot), Wigglytuff (Wigglytuff), Bidoof (Bidoof), Sunflora (Sunflora), Loudred (Loudred)
+`explorers-2-morning` · stage · background map:sky-g01p07a · cast: {buddy}, Chatot (Chatot), Wigglytuff (Wigglytuff), Bidoof (Bidoof), Sunflora (Sunflora), Loudred (Loudred)
 
-*The guild is already noisy. Loudred's voice shakes dust from the rafters.*
+*Two straw beds in a round room. The window is the sea. {buddy} is asleep with one foot in the air, and the morning is about to arrive all at once.*
 
 - {buddy} appears
 - Loudred appears
+
+**Loudred** (angry): UP AND AT 'EM! IT'S MORNING!
+
+- the screen shakes
+- {buddy}: !
+
+**{buddy}** (surprised): We're up! We're up! Is something on fire?
+
+**Loudred** (happy): NO! THAT'S JUST HOW MORNING SOUNDS!
+
 - Chatot appears
-
-**Loudred** (happy): GOOD MORNING!
-
-**Chatot** (angry): Loudred! The morning briefing has not started!
-
-**Loudred** (surprised): But it's morning!
-
 - Sunflora appears
-
-**Sunflora** (happy): Oh! The new team is here! Good morning!
-
 - Bidoof appears
 
-**Bidoof** (happy): Hey, hey! Welcome! I'm Bidoof. If you need help with anything, just ask!
+*The whole guild lines up for the morning cheer. The visiting team does not know the words. The visiting team is carried along regardless.*
 
-**{buddy}** (happy): Thanks! Everyone seems nice.
+**Chatot** (normal): All together now! One!
 
-**Bidoof** (normal): Heheh. Most of the time.
+**Sunflora** (joyous): DON'T SHIRK WORK!
 
-**Chatot** (normal): This is an exploration guild, not a holiday camp. You'll learn to read the boards, prepare supplies, and report your findings.
+**Bidoof** (joyous): Two! RUN AWAY AND PAY!
+
+**Loudred** (joyous): THREE! SMILES GO FOR MILES!
+
+**Bidoof** (happy): Golly, you did great! I had to mouth it for my whole first week. I'm Bidoof. I was the newest. Now there's FOUR of you newer than me!
+
+**Sunflora** (happy): Oh my gosh, he's been telling everyone since supper. 'I'm a senior now.' Eek! It's adorable.
 
 - Wigglytuff appears
 - Wigglytuff walks
 
-**Wigglytuff** (happy): And eat plenty!
+**Chatot** (normal): The new recruits go to the job board. As for our visitors... Bidoof. You will show them a dungeon. A SMALL dungeon.
 
-**Chatot** (angry): Guildmaster!
+**Bidoof** (surprised): Me? In charge? Oh, by golly. Yup yup! I won't let you down! Probably!
 
-*Wigglytuff smiles. Chatot takes a long breath.*
-
-**Chatot** (normal): Your first assignment is simple. Accompany Bidoof on a short expedition.
-
-**Bidoof** (surprised): Me? Oh! Well, sure! I'd be happy to!
+**Wigglytuff** (happy): And bring back a story! Stories are the best treasure. After apples.
 
 #### Scene: Bidoof's lesson  
-`explorers-2-bidoof` · dungeon · dungeon thunderwave-cave · cast: {buddy}, Bidoof (Bidoof)
+`explorers-2-bidoof` · dungeon · dungeon drenched-bluff · cast: {buddy}, Bidoof (Bidoof)
 
 - {buddy} appears
 - {buddy} walks
 - Bidoof appears
 - Bidoof walks
 
-*Bidoof walks ahead, stopping every few steps to point out something interesting.*
+*Drenched Bluff. Bidoof leads from the front, stopping every few steps to point at something he feels strongly about.*
 
-**Bidoof** (happy): See that? A perfect spot for a treasure chest!
+**Bidoof** (happy): Now, see that? That there is a perfect spot for a treasure chest!
 
 **{buddy}** (happy): That's a rock.
 
-**Bidoof** (normal): Aye. But it could be hiding something.
+**Bidoof** (normal): Yup yup. But it could be hiding something. A good explorer checks.
 
-*Bidoof nudges the rock. It does not move.*
+*Bidoof nudges the rock. The rock does not move. Bidoof nudges it again, out of politeness.*
 
-**Bidoof** (surprised): Huh.
+**Bidoof** (surprised): Huh. Well. Now we KNOW, and knowing's half of exploring.
 
-**{buddy}** (happy): Maybe the treasure is the rock.
+**{buddy}** (happy): What's the other half?
 
-**Bidoof** (happy): Heheh! Could be!
+**Bidoof** (happy): Snacks, mostly. I brought three apples. One each, and one in case we meet somebody sad.
 
-*Farther inside, the floor gives a faint pulse. The light seems to dim for a moment.*
+*Farther in, the trickle of water over the stones goes silent. A drip hangs under a ledge and does not fall. Then it falls.*
 
 - the screen shakes
 - fade to black
 - fade in
 
-**Bidoof** (worried): Did you feel that?
+**Bidoof** (worried): D-did you feel that?
 
 **{buddy}** (normal): The ground moved.
 
-**Bidoof** (worried): Not like an earthquake. More like... something skipped.
+**Bidoof** (worried): Not like a quake. More like the whole place... skipped. Like when you blink, only it was the bluff that blinked.
 
-*Bidoof looks around, suddenly serious.*
+*Bidoof looks very small for a moment. Then he squares up, and holds out the third apple.*
 
-**Bidoof** (normal): Let's head back and tell Chatot.
+**Bidoof** (normal): I reckon we're the somebody sad. Half each. Then we go straight back and tell Chatot. That's what a senior does.
 
 ### Chapter 3: The Famous Explorer
 
 *Summary:* Dusknoir arrives, admired and unsettling.
 
 #### Scene: A celebrated arrival  
-`explorers-3-dusknoir` · stage · background city · cast: {buddy}, Dusknoir (Dusknoir), Chatot (Chatot), Wigglytuff (Wigglytuff), Kecleon (Kecleon), Sunflora (Sunflora), Loudred (Loudred)
+`explorers-3-dusknoir` · stage · background map:sky-t00p02 · cast: {buddy}, Dusknoir (Dusknoir), Chatot (Chatot), Wigglytuff (Wigglytuff), Kecleon (Kecleon), Sunflora (Sunflora), Loudred (Loudred)
 
-*The town square is crowded. Pokémon whisper excitedly as a distinguished Dusknoir approaches.*
+*Weeks pass, the way they do when there is work. Then one morning the whole town is in the square at once, on tiptoe.*
 
 - {buddy} appears
 - Kecleon appears
@@ -1151,177 +1230,175 @@ Treasure Town, the Exploration Guild and a thief of time.
 - Dusknoir appears
 - Dusknoir walks
 
-**Kecleon** (happy): A famous explorer! Here in Treasure Town!
+**Kecleon** (happy): The great Dusknoir~! Here, in our little market! He explores alone, you know. Alone!
 
-**Sunflora** (happy): I've heard so much about him!
+**Sunflora** (joyous): Oh my gosh, he's even taller than they say! Eek! He looked this way!
 
-**Loudred** (happy): I BET HE'S REALLY STRONG!
+**Loudred** (happy): I BET HE'S NEVER BEEN LOST! NOT ONCE!
 
-**Chatot** (normal): Everyone, please. Let our guest speak.
+**Chatot** (normal): Everyone, please! Give our distinguished guest room to breathe. Assuming he breathes. Squawk. Forgive me.
 
-**Dusknoir** (happy): Thank you. It is a pleasure to be here.
+**Dusknoir** (happy): You are too kind. All of you. It has been a long while since anywhere was glad to see me.
 
-*Dusknoir's single eye moves across the crowd. It pauses briefly on {player}.*
-
-**Dusknoir** (normal): And who might you be?
-
-**{buddy}** (happy): We're a new team at the guild!
-
-**Dusknoir** (happy): Ah. New explorers. The world always has room for those willing to venture into the unknown.
-
-*Dusknoir looks again at the Relic Fragment.*
+*He talks a while with the guild's new recruits, and bends low to hear the quiet one, the one from the beach. Then the single eye moves on. It stops.*
 
 - Dusknoir: !
 
-**Dusknoir** (surprised): That fragment...
+**Dusknoir** (normal): And you two. You are not from Treasure Town.
 
-**{buddy}** (normal): You recognize it?
+**{buddy}** (happy): We're a visiting team! From... a long way off.
 
-**Dusknoir** (normal): Perhaps. There are many old relics in this world. I would be interested to hear where you found it.
+**Dusknoir** (normal): Yes. I know the look. Someone standing very carefully in a world that is not theirs.
 
-**{buddy}** (happy): We found it near the beach.
+**{buddy}** (surprised): How would you know that look?
 
-**Dusknoir** (normal): I see.
+*Dusknoir smiles. The pause goes on a little too long.*
 
-*Dusknoir smiles, but the pause lasts a little too long.*
-
-**Dusknoir** (happy): I hope we meet again.
+**Dusknoir** (happy): I have travelled a great deal. Welcome. I hope this place is kind to you. It is kinder than most.
 
 #### Scene: A private warning  
-`explorers-3-warning` · dialogue · background city · cast: {buddy}, Dusknoir (Dusknoir)
+`explorers-3-warning` · dialogue · background map:sky-g01p01b · cast: {buddy}, Dusknoir (Dusknoir)
 
 - {buddy} appears
 - Dusknoir appears
 
-*Later, Dusknoir finds the two of you outside the guild.*
+*That evening, {buddy} is on the guild steps, sharing the day's last apple with you. A tall shadow joins the two already there.*
 
-**Dusknoir** (normal): May I ask you something?
+**Dusknoir** (normal): May I sit? I find I have had enough of being admired for one day.
 
-**{buddy}** (normal): Sure.
+**{buddy}** (happy): Sure. Apple? There's a bit left. It's a Perfect one. Don't tell Chatot.
 
-**Dusknoir** (normal): Have you noticed anything unusual in the dungeons? A strange light, perhaps. A place where the air feels... incomplete?
+**Dusknoir** (surprised): ...Thank you. No one has offered me food in a very long time. Where I am from, there is not much to offer.
 
-**{buddy}** (worried): We felt something on our last expedition.
+*He holds the piece of apple without eating it, turning it in the last light as if it were something that might go out.*
 
-**Dusknoir** (normal): I thought as much.
+**Dusknoir** (normal): Tell me. In the dungeons. Have you felt a place where the air seemed... unfinished? Where a moment did not arrive?
 
-*Dusknoir looks toward the horizon.*
+**{buddy}** (worried): At the bluff. Everything skipped. Bidoof shared his apple about it.
 
-**Dusknoir** (normal): If you encounter anything unusual, tell me. Time is more fragile than most Pokémon realize.
+**Dusknoir** (normal): I thought as much. Time is more fragile than most Pokémon know. Those who have lived without it never forget.
 
-*He turns to leave.*
-
-**{buddy}** (worried): That's a strange thing to say.
+**{buddy}** (worried): Lived without it? That's a strange thing to say.
 
 **Dusknoir** (happy): Is it?
 
+*He rises. He has still not eaten the apple. He has not put it down, either.*
+
+**Dusknoir** (normal): If you see anything strange, come to me first. Before the guild. It would be safer. For everyone.
+
 - Dusknoir leaves
 
-*He disappears into the crowd.*
+**{buddy}** (worried): He's nice. Everyone says so. ...{player}, why did that feel like being measured for something?
 
 ### Chapter 4: The Thief of Time
 
 *Summary:* Time gears begin to vanish.
 
 #### Scene: The frozen pond  
-`explorers-4-frozen` · dungeon · dungeon glacier-palace · cast: {buddy}, Bidoof (Bidoof)
+`explorers-4-frozen` · dungeon · dungeon crystal-cave · cast: {buddy}, Bidoof (Bidoof)
 
 - {buddy} appears
 - {buddy} walks
 - Bidoof appears
 - Bidoof walks
 
-*The water in a cavern pond is frozen in the shape of a splash. A drop hangs in midair.*
+*A routine job: a lost scarf in Crystal Cave. In the third chamber there is a pond, and the pond is wrong.*
 
-**Bidoof** (surprised): That's... not right.
+*A splash stands up out of the water like glass. A single drop hangs above it, halfway to nowhere.*
 
-**{buddy}** (worried): The water stopped.
+**Bidoof** (surprised): Golly. That's... that's not right.
 
-**Bidoof** (normal): Not froze. Stopped. Look at that drop!
+**{buddy}** (worried): It's frozen.
 
-*The drop remains suspended.*
+**Bidoof** (normal): Not froze. Stopped. Touch it. It's not even cold. It just isn't... happening.
 
-**Bidoof** (worried): I've heard stories about Time Gears. They're hidden in places where time flows strong.
+**Bidoof** (worried): My grandma told me about Time Gears. Hidden in quiet places, keeping time turning. She said nobody takes one. Not even the bad ones.
 
-**{buddy}** (normal): Time Gears?
+**{buddy}** (normal): Why not even the bad ones?
 
-**Bidoof** (normal): Ancient treasures. They're supposed to keep time moving in the world. Nobody's meant to take them.
+**Bidoof** (normal): 'Cause bad ones want tomorrow to come too, she said. Everybody does.
 
-*Something moves at the far end of the cavern. A shadow slips between the rocks.*
+*At the far end of the cavern, something moves. Quick, green, low to the ground. For an instant it looks back.*
 
 - {buddy}: !
 
 **{buddy}** (surprised): Hey! Who's there?
 
-*The figure vanishes.*
+*Nobody. Only the drop, still waiting to fall.*
 
 #### Scene: The accusation  
-`explorers-4-grovyle` · cinematic · background forest · cast: {buddy}, Grovyle (Grovyle)
+`explorers-4-grovyle` · cinematic · background map:sky-p02p01a · cast: {buddy}, Grovyle (Grovyle)
 
 - {buddy} appears
 
-*Deep in a forest, a Time Gear rests within an ancient stone structure. A green Pokémon approaches silently.*
+*The trail leads to a forest where the leaves have begun to hang still. In a ring of old stones, something small and blue-green is turning in the air.*
 
 - Grovyle appears
 
-**Grovyle** (normal): One more.
+*A Grovyle stands before it. He does not snatch. He stands there a moment, the way you stand at a door you do not want to open.*
 
-*Grovyle takes the Time Gear. The surrounding light fades.*
+**Grovyle** (normal): Forgive me. One more.
+
+*He takes the Time Gear. The light drains out of the clearing like water from a paw.*
 
 - a flash
 - fade to black
 - fade in
 - {buddy}: !
 
-**{buddy}** (angry): Stop!
+**{buddy}** (angry): Stop! Put it back! You're killing the whole forest!
 
-*Grovyle turns. There is no surprise in his expression.*
+*Grovyle turns. No surprise. No anger either. He looks like someone who has not slept in a year.*
 
-**Grovyle** (normal): You're too late.
+**Grovyle** (normal): I know what it does. I have seen where it ends. That is why I can't put it back.
 
-**{buddy}** (determined): Put it back!
+**{buddy}** (determined): That doesn't make any sense!
 
-**Grovyle** (normal): I can't.
-
-*Grovyle leaps into the shadows and escapes.*
+**Grovyle** (sad): No. I don't expect it will, for a while. Don't follow me. I would rather not hurt someone who shouts for a forest.
 
 - Grovyle walks
 - Grovyle leaves
+
+*A leaf that was falling beside {buddy} has stopped, a whisker from the ground.*
+
 #### Scene: The guild's investigation  
-`explorers-4-briefing` · stage · background city · cast: {buddy}, Chatot (Chatot), Dusknoir (Dusknoir), Loudred (Loudred), Sunflora (Sunflora)
+`explorers-4-briefing` · stage · background map:sky-g01p02a · cast: {buddy}, Chatot (Chatot), Dusknoir (Dusknoir), Loudred (Loudred), Sunflora (Sunflora), Bidoof (Bidoof)
 
 - {buddy} appears
 - Chatot appears
 - Loudred appears
 - Sunflora appears
+- Bidoof appears
 - Dusknoir appears
 
-**Chatot** (angry): A Time Gear has been stolen! This is a serious matter!
+**Chatot** (angry): Three Time Gears! THREE! Squawk! In all my years! I must lie down. I cannot lie down. I am in charge.
 
-**Loudred** (angry): THEN WE'LL CATCH HIM!
+**Loudred** (angry): THEN WE CATCH HIM! ALL OF US! I'LL YELL HIM OUT OF THE BUSHES!
 
-**Sunflora** (worried): But what happens to the forest without its Time Gear?
+**Sunflora** (worried): But what happens to the forest? There were Sunkern living there. Oh my gosh, I know some of them...
 
-**Dusknoir** (normal): Time will stop there. Eventually, the disturbance may spread.
+**Dusknoir** (normal): Time stops there. Then it spreads. The thief is called Grovyle. I have hunted him a long way. He is clever, and he is ruthless.
 
-**Chatot** (normal): Dusknoir, you know more about this than we do. Can you help us?
+**{buddy}** (normal): He said sorry to it. To the gear. Before he took it.
 
-**Dusknoir** (normal): I will do what I can.
+*The hall goes quiet. Dusknoir's eye rests on {buddy} for a moment.*
 
-*Dusknoir looks toward {player}.*
+**Dusknoir** (normal): ...A thief may be sorry and still be a thief. Do not let a sad face slow you. That is how he has got this far.
 
-**Dusknoir** (normal): You have encountered the thief before. If you see him again, do not approach alone.
+**Chatot** (normal): Our two new recruits have volunteered for the search. Volunteered! I did not even have to glare. Visitors, you will back them up.
 
-**{buddy}** (determined): We're not going to let him take another one.
+**Bidoof** (determined): I'll go too! I've got apples for everybody. Sad ones included.
 
-**Dusknoir** (normal): Courage is admirable. But it is not always enough.
+**{buddy}** (determined): We're in. But Chatot... I think we should find out why, as well as where.
+
+**Dusknoir** (normal): Curiosity is admirable. It is not always safe.
 
 ### Chapter 5: The Hidden Future
 
 *Summary:* What the future is, and who has seen it.
 
 #### Scene: The future's shadow  
-`explorers-5-reveal` · cinematic · background dampcave · cast: {buddy}, Grovyle (Grovyle), Dusknoir (Dusknoir)
+`explorers-5-reveal` · cinematic · background map:sky-p05p01a · cast: {buddy}, Grovyle (Grovyle), Dusknoir (Dusknoir)
 
 - {buddy} appears
 - Grovyle appears
@@ -1369,7 +1446,7 @@ Treasure Town, the Exploration Guild and a thief of time.
 **Dusknoir** (angry): And I will not fail.
 
 #### Scene: Celebi  
-`explorers-5-celebi` · stage · background forest · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi)
+`explorers-5-celebi` · stage · background map:sky-p02p01a · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi)
 
 - {buddy} appears
 - Grovyle appears
@@ -1406,7 +1483,7 @@ Treasure Town, the Exploration Guild and a thief of time.
 *Summary:* The way to the heart of the trouble.
 
 #### Scene: The Hidden Land  
-`explorers-6-hidden-land` · stage · background mountain · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi)
+`explorers-6-hidden-land` · dungeon · dungeon hidden-land · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi)
 
 - {buddy} appears
 - {buddy} walks
@@ -1436,7 +1513,7 @@ Treasure Town, the Exploration Guild and a thief of time.
 **Grovyle** (normal): But you came this far. That counts for something.
 
 #### Scene: The passage to the future  
-`explorers-6-future` · cinematic · background dampcave · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi), Dusknoir (Dusknoir)
+`explorers-6-future` · cinematic · background map:sky-v25p01a · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi), Dusknoir (Dusknoir)
 
 - {buddy} appears
 - Grovyle appears
@@ -1471,7 +1548,7 @@ Treasure Town, the Exploration Guild and a thief of time.
 *Summary:* The Temporal Tower and its Guardian.
 
 #### Scene: The dark future  
-`explorers-7-dark-future` · cinematic · background dampcave · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi), Dusknoir (Dusknoir)
+`explorers-7-dark-future` · cinematic · background map:sky-p05p01a · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi), Dusknoir (Dusknoir)
 
 - {buddy} appears
 - Grovyle appears
@@ -1516,6 +1593,7 @@ Treasure Town, the Exploration Guild and a thief of time.
 
 - Primal Dialga appears
 - Primal Dialga cries out
+- sound: STORY_TEMPORAL
 - a flash
 - the screen shakes
 
@@ -1558,7 +1636,7 @@ Treasure Town, the Exploration Guild and a thief of time.
 **Dialga** (normal): The flow... has returned.
 
 #### Scene: The choice to return  
-`explorers-7-sacrifice` · stage · background dampcave · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi), Dusknoir (Dusknoir)
+`explorers-7-sacrifice` · stage · background map:sky-v26p02a · cast: {buddy}, Grovyle (Grovyle), Celebi (Celebi), Dusknoir (Dusknoir)
 
 - {buddy} appears
 - Dusknoir appears
@@ -1602,7 +1680,7 @@ Treasure Town, the Exploration Guild and a thief of time.
 *Summary:* After the storm, a morning in Treasure Town.
 
 #### Scene: A guild breakfast  
-`explorers-8-guild` · stage · background city · cast: {buddy}, Chatot (Chatot), Wigglytuff (Wigglytuff), Bidoof (Bidoof), Sunflora (Sunflora), Loudred (Loudred)
+`explorers-8-guild` · stage · background map:sky-g01p06a · cast: {buddy}, Chatot (Chatot), Wigglytuff (Wigglytuff), Bidoof (Bidoof), Sunflora (Sunflora), Loudred (Loudred)
 
 - {buddy} appears
 - Loudred appears
@@ -1769,11 +1847,13 @@ The Genetic Crisis: Team Rocket's experiments, the legendary birds, Mewtwo and M
 
 - Zapdos appears
 - Zapdos cries out
+- sound: STORY_ELECTRICITY
 - a flash
 - Articuno appears
 - Articuno cries out
 - Moltres appears
 - Moltres cries out
+- sound: STORY_FIRE
 - the screen shakes
 
 **{buddy}** (surprised): The legendary birds. They are heading to Cerulean.
@@ -1838,6 +1918,7 @@ The Genetic Crisis: Team Rocket's experiments, the legendary birds, Mewtwo and M
 - a flash
 - the screen shakes
 - Mewtwo cries out
+- sound: STORY_OMINOUS
 
 **Mewtwo** (normal): I was made, not born. I did not ask for this power.
 
@@ -2004,6 +2085,7 @@ The Sacred Balance: the burned tower, the sky and the sea, Ho-Oh and Lugia.
 - a flash
 - the screen shakes
 - Lugia cries out
+- sound: STORY_WIND_HIGH
 
 **Lugia** (normal): You have walked through fire and ash. The sea knows your name.
 
@@ -2041,6 +2123,7 @@ The Sacred Balance: the burned tower, the sky and the sea, Ho-Oh and Lugia.
 - a flash
 - the screen shakes
 - Ho-Oh cries out
+- sound: STORY_HUMMING
 
 **Ho-Oh** (normal): Sea and sky, fire and ash, they have been apart too long.
 
@@ -2188,9 +2271,11 @@ The Primal Awakening: Team Magma and Team Aqua, Groudon, Kyogre and Rayquaza.
 - Groudon appears
 - the screen shakes
 - Groudon cries out
+- sound: STORY_RUMBLE
 - Kyogre appears
 - a flash
 - Kyogre cries out
+- sound: STORY_FLOOD
 
 *Above, the sky roars. The sun burns and the sea rises at once.*
 
@@ -2240,6 +2325,7 @@ The Primal Awakening: Team Magma and Team Aqua, Groudon, Kyogre and Rayquaza.
 - a flash
 - the screen shakes
 - Rayquaza cries out
+- sound: STORY_WIND_HIGH
 
 **Rayquaza** (normal): Two quarrelling beasts and two foolish teams. I have watched them long enough.
 
@@ -2401,6 +2487,7 @@ The Distortion of Creation: Team Galactic, time and space, Dialga, Palkia and Gi
 - a flash
 - the screen shakes
 - Dialga cries out
+- sound: STORY_TEMPORAL
 
 **Dialga** (normal): Those who bend time will find it bends back.
 
