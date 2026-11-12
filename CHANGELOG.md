@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.171.1
+
+Mint audit: fixes only. No reward number changes.
+
+- **A transfer goes where the screen says.** The destination shown as chosen is now the one saved; before, with accounts in two currencies, the default could be an account in the other currency and the transfer was refused.
+- **Activity shows all of its history.** The list stopped at 50 records with no way further except search; it now has "Show more". The quick "Income" or "Transfer" key on the overview no longer sticks for the next visit.
+- **Bills.** The first due day is any date (the shared date picker), not five fixed offsets. A bill's name and amount can be edited (tap it under "Your bills"). Paid, part paid and skipped each offer an undo, since a settled occurrence leaves the list. A part payment that covers the whole bill is saved as paid.
+- **Weekly review** uses the app's first day of the week on the screen, as the rule already did.
+- **Faster with a long history:** every account's balance is worked out in one pass over the records; the Activity search is not redone on every keystroke in the entry form; the import preview looks for look-alikes by day.
+- Removed: the "Close" key under a record (tapping the row closes it).
 ## 0.171.0
 
 Link audit (end to end: rules, store, screens, reminders, tables). No reward number changes.

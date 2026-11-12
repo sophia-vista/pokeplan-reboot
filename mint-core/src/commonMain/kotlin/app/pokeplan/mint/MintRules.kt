@@ -102,7 +102,18 @@ object MintRules {
         return AccountBalance(account, posted, pending)
     }
 
-    fun balances(data: MintData): List<AccountBalance> = data.accounts.map { balance(data, it) }
+    /** Every account's balance in one pass over the records (the same figures as [balance] for each), so a long history costs one walk, not one per account. */
+    fun balances(data: MintData): List<AccountBalance> {
+        val byId = data.accounts.associateBy { it.id }
+        val posted = HashMap<String, Long>()
+        val pending = HashMap<String, Long>()
+        for (t in data.transactions) {
+            val into = when (t.status) { TxStatus.POSTED -> posted; TxStatus.PENDING -> pending; else -> continue }
+            byId[t.accountId]?.let { a -> effect(t, a)?.let { into[a.id] = (into[a.id] ?: 0L) + it } }
+            if (t.toAccountId != null && t.toAccountId != t.accountId) byId[t.toAccountId]?.let { a -> effect(t, a)?.let { into[a.id] = (into[a.id] ?: 0L) + it } }
+        }
+        return data.accounts.map { AccountBalance(it, it.openingMinor + (posted[it.id] ?: 0L), pending[it.id] ?: 0L) }
+    }
 
     /** Assets less liabilities, per currency, over active accounts. Never converted across currencies: each currency has its own line. */
     fun netPosition(data: MintData): Map<String, Long> {
