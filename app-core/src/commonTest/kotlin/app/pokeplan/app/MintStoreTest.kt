@@ -253,6 +253,40 @@ class MintStoreTest {
     }
 
     @Test
+    fun aBudgetsAmountAndPeriodCanChangeButNotIntoADuplicate() {
+        val s = setup()
+        val monthly = assertNotNull(s.mint.addBudget(10_000, "PHP", BudgetPeriod.MONTHLY, "cat-food").record)
+        val weekly = assertNotNull(s.mint.addBudget(2_000, "PHP", BudgetPeriod.WEEKLY, null).record)
+        val changed = assertNotNull(s.mint.updateBudget(monthly.id, 3_000, BudgetPeriod.WEEKLY).record)
+        assertEquals(3_000, changed.plannedMinor); assertEquals(BudgetPeriod.WEEKLY, changed.period)
+        assertEquals(changed, s.mint.data.budgets.first { it.id == monthly.id })
+        assertNotNull(s.mint.updateBudget(weekly.id, 2_000, BudgetPeriod.MONTHLY).record, "the overall budget is its own kind")
+        assertNull(s.mint.addBudget(1_000, "PHP", BudgetPeriod.WEEKLY, "cat-food").record)
+        val another = assertNotNull(s.mint.addBudget(9_000, "PHP", BudgetPeriod.MONTHLY, "cat-food").record)
+        assertNotNull(s.mint.updateBudget(another.id, 9_000, BudgetPeriod.WEEKLY).refused, "two budgets for food every week")
+        assertEquals(BudgetPeriod.MONTHLY, s.mint.data.budgets.first { it.id == another.id }.period)
+        assertNotNull(s.mint.updateBudget(another.id, -5, BudgetPeriod.MONTHLY).refused)
+        assertNotNull(s.mint.updateBudget("gone", 5, BudgetPeriod.MONTHLY).refused)
+    }
+
+    @Test
+    fun aSettledOccurrenceStaysReachableToSettleAgain() {
+        val s = setup()
+        val bill = assertNotNull(s.mint.addBill("Water", "PHP", Frequency.MONTHLY, LocalDate(2026, 10, 7), 80_000).record)
+        val due = LocalDate(2026, 11, 7)
+        assertTrue(s.mint.settle(bill.id, due, SettleStatus.PAID, 80_000))
+        assertTrue(s.mint.settle(bill.id, LocalDate(2026, 10, 7), SettleStatus.SKIPPED))
+        assertTrue(MintRules.upcoming(s.mint.data, s.mint.today).none { it.dueDay == due }, "a paid occurrence leaves the list to settle")
+        assertEquals(listOf(due, LocalDate(2026, 10, 7)), MintRules.settled(s.mint.data, s.mint.today).map { it.dueDay }, "but is kept, latest first")
+        assertTrue(s.mint.settle(bill.id, due, SettleStatus.PAID, 75_000), "the amount paid is put right")
+        val again = MintRules.settled(s.mint.data, s.mint.today).first()
+        assertEquals(75_000L, again.payment?.paidMinor); assertEquals(1, s.mint.data.billPayments.count { it.dueDay == due })
+        assertTrue(s.mint.settle(bill.id, due, SettleStatus.PARTIAL, 40_000))
+        assertTrue(MintRules.settled(s.mint.data, s.mint.today).none { it.dueDay == due }, "partly paid is back in the list to settle")
+        assertEquals(40_000L, MintRules.upcoming(s.mint.data, s.mint.today).first { it.dueDay == due }.remainingMinor)
+    }
+
+    @Test
     fun payingABillMakesNoTransactionAndCanBeTakenBack() {
         val s = setup()
         val bill = assertNotNull(s.mint.addBill("Internet", "PHP", Frequency.MONTHLY, LocalDate(2026, 11, 7), 150_000).record)

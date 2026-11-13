@@ -240,6 +240,17 @@ object MintRules {
             .filter { it.state != OccurrenceState.PAID && it.state != OccurrenceState.SKIPPED }
             .sortedBy { it.dueDay }
 
+    /**
+     * Occurrences settled as paid or skipped and due in the last [OVERDUE_DAYS] days or ahead, latest first: the ones [upcoming] leaves out, so a wrong
+     * amount or a slip of the finger can still be settled again or taken back. Partly paid ones are in [upcoming] already.
+     */
+    fun settled(data: MintData, today: LocalDate): List<Occurrence> {
+        val from = today.minus(DatePeriod(days = OVERDUE_DAYS))
+        return data.billPayments.filter { it.dueDay >= from && it.status != SettleStatus.PARTIAL }
+            .mapNotNull { p -> data.bills.firstOrNull { it.id == p.billId }?.let { occurrence(data, it, p.dueDay, today) } }
+            .sortedByDescending { it.dueDay }
+    }
+
     // --- reconciliation ----------------------------------------------------------------------------------------------------
 
     /** The difference the user would be accepting: what the statement says minus what Mint's records say (positive means Mint is short). */

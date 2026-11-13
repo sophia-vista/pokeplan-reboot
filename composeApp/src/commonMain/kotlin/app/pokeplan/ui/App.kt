@@ -140,11 +140,7 @@ class AppModel(
     /** Chooses a statement file for MINT's CSV import; null where there is none, and then the import is not offered. */
     val textFiles: TextFileChooser? = null,
 ) {
-    /** When Mint was last opened with the gate (millis), and when the Mint screens were last left; see `MintGate` in screens/Mint.kt. */
-    var mintUnlockedAt: Long = 0L
-    var mintLeftAt: Long = 0L
-
-    /** The same for the other modules behind the screen lock (`Settings.lockedModules`), by module name; see `ModuleGate`. */
+    /** When each module behind the screen lock was last opened with it and last left (millis), by module name; see `ScreenLockGate` in screens/ModuleGate.kt. */
     val moduleUnlockedAt: MutableMap<String, Long> = mutableMapOf()
     val moduleLeftAt: MutableMap<String, Long> = mutableMapOf()
 

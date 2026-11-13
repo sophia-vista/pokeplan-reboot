@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.173.0
+
+The rest of REP-025: corrections in Mint, and one copy of the parts Home, Link and Mint shared. No reward number changes; `RewardRules.VERSION` is unchanged.
+
+- **Mint: settle a bill again.** A paid or skipped occurrence used to leave the Bills list for good. It now waits under "Settled lately" for 60 days, where its amount and day can be put right (Paid, Part or Skip again) or the settlement taken back, with Undo. A partly paid bill opens with what was paid so far already filled in.
+- **Mint: a budget's period can change** with its amount (weekly to monthly and back); a second budget for the same category and period is refused, as when adding.
+- **One screen-lock door.** Mint's lock and the lock in front of Care, Heal, Home and Link were two copies of the same code; they are now one (`ScreenLockGate`). Nothing changes on screen.
+- **Home and Link share their list row, tabs and date field** (`ModuleParts.kt`); nothing changes on screen.
 ## 0.172.1
 
 The easy fixes left by the Plan audit and the Care review, the owner's answers of 12 November 2026, and the Home dashboard. No reward number changes.
