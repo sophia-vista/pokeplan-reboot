@@ -136,16 +136,22 @@ object WorldSim {
         var out = data
         val perTeam = mutableMapOf<Int, List<WorldEvent>>()
         val memberFloors = mutableMapOf<String, Int>()
+        var rewound = data.rewoundFrom
         for (team in data.teams) {
-            val trip = team.expedition ?: continue
-            val dungeon = Dungeons.byId(trip.dungeonId) ?: continue
+            val stored = team.expedition ?: continue
+            val dungeon = Dungeons.byId(stored.dungeonId) ?: continue
             val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
             if (members.isEmpty()) continue
-            // A clock set back (or a time zone change on a phone that keeps local time) must not freeze the climb until it catches up.
-            if (trip.settledTo > now) {
-                out = out.withTeam((out.team(team.id) ?: team).copy(expedition = trip.copy(settledTo = now)))
+            // A clock set back (or a time zone change on a phone that keeps local time) must not freeze the climb until it catches up,
+            // so the settle point follows it back; the moment it came from is kept, so the same stretch of clock is not counted again later.
+            if (stored.settledTo > now) {
+                rewound = maxOf(rewound, stored.settledTo)
+                out = out.withTeam((out.team(team.id) ?: team).copy(expedition = stored.copy(settledTo = now)))
                 continue
             }
+            // The clock is back past where it was set back from: the time before that moment was settled once already (WORLD.md 3.1).
+            val trip = if (rewound in (stored.settledTo + 1)..now) stored.copy(settledTo = rewound) else stored
+            if (trip != stored) out = out.withTeam((out.team(team.id) ?: team).copy(expedition = trip))
             val per = floorMillis(dungeon, power(members, dungeon), data.guardianDone, data.legendFaster(dungeon))
             val until = min(now, trip.settledTo + MAX_AWAY_MILLIS)
             val floors = ((until - trip.settledTo) / per).toInt()
@@ -173,7 +179,7 @@ object WorldSim {
                 acc
             }.map { (l, n) -> if (n > 1) l.copy(text = l.text.removeSuffix(".") + " ($n times).") else l }
         out = Choices.expire(out, now)
-        return WorldReport(out.copy(lastSeenAt = now, journal = (out.journal + lines).takeLast(WorldData.JOURNAL_SIZE)), perTeam, memberFloors)
+        return WorldReport(out.copy(lastSeenAt = now, rewoundFrom = if (rewound <= now) 0 else rewound, journal = (out.journal + lines).takeLast(WorldData.JOURNAL_SIZE)), perTeam, memberFloors)
     }
 
     /**
@@ -187,7 +193,7 @@ object WorldSim {
             val dungeon = Dungeons.byId(trip.dungeonId) ?: continue
             val members = team.members.mapNotNull { id -> roster.firstOrNull { it.id == id } }
             if (members.isEmpty()) continue
-            val at = if (trip.settledTo > now) now else trip.settledTo + floorMillis(dungeon, power(members, dungeon), data.guardianDone, data.legendFaster(dungeon))
+            val at = if (trip.settledTo > now) now else doneAt(data, trip, 1, floorMillis(dungeon, power(members, dungeon), data.guardianDone, data.legendFaster(dungeon)))
             if (next == null || at < next) next = at
         }
         return next
@@ -218,11 +224,23 @@ object WorldSim {
                 // The next floor to climb is index floorsClimbed; floors rise to the top of the dungeon, then start again at 1.
                 val next = trip.floorsClimbed % dungeon.floors
                 val floors = maxOf(0, m.floor - 1 - next) + 1
-                val at = trip.settledTo + floors * floorMillis(dungeon, power, data.guardianDone, data.legendFaster(dungeon))
+                val at = doneAt(data, trip, floors, floorMillis(dungeon, power, data.guardianDone, data.legendFaster(dungeon)))
                 if (out[m.id]?.let { it <= at } != true) out[m.id] = at
             }
         }
         return out
+    }
+
+    /**
+     * When [trip] will have climbed [floors] more floors of [per]: from its settle point, but a floor that would pass the moment the clock was set back
+     * from counts from that moment (the time before it was settled already). Only a forecast; [settle] moves the settle point itself.
+     */
+    private fun doneAt(data: WorldData, trip: Expedition, floors: Int, per: Long): Long {
+        val plain = trip.settledTo + floors * per
+        val mark = data.rewoundFrom
+        if (mark <= trip.settledTo || plain <= mark) return plain
+        // The floors that fit before the mark are climbed on the earlier clock; the rest count from the mark.
+        return mark + (floors - (mark - trip.settledTo) / per).toInt() * per
     }
 
     /** What the player reads in the expedition log for [event], or null for the many floors that are not worth a line. */
