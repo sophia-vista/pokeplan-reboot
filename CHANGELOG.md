@@ -5,6 +5,21 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.174.0
+
+The UI/UX review of every screen (REP-031) and its fixes, against Laws of UX, Laws of UI and the owner's bar: "as simple as Linear or Apple Notes; cut taglines, helper text and secondary labels; if a screen needs them, fix the layout." `RewardRules.VERSION` is 22 (one rule change, below).
+
+- **Screens stop explaining themselves.** About 450 sentence-length strings were in the screens; the paragraphs under Settings switches, privacy and method notes, unavailable-feature notes, legends written as prose, research notes in Mint Import and Heal Connections, the perks and research captions on every module page, "Label:" prefixes and echo lines are gone. `CopyBudgetTest` fails on a new caption of eight or more words in `screens/`; a long string that is a result, warning or game line says so with `// copy-ok`. `EmptyState` is a title and one action (its line parameter is gone).
+- **One input per value.** A date is one row of keys (the typed box opens with the calendar); times and lengths lost their nudge keys and their "9:30 am" echo; a typed value is rewritten in the app's spelling when the box loses focus.
+- **One colour per module.** Each module screen sets its own tone (`ModuleTone`), and `Pixel.Tone` replaced the blue and green defaults inside modules, so keys, chips, frames and bars match the module wherever a screen is drawn. Heal's Goals and Care's Trends cards take their module's colour; the Pokémon tab is neutral.
+- **Module pages lead with the work**: lead stage, today's items, the section cards, then the party, which is one row of six sprites. Lists sit in one box with lines between rows (Help, Bag, routines, history, accounts, bills, budgets, skills). Add forms open from one key. Checks come first on every checkable row.
+- **Sections that hold records are rows with counts** (`MenuList`, owner's decision): the Planner's views, the Pokémon tab, World's Journal and Me.
+- **A module's first Pokémon comes with its first real record** (owner's decision), not a 5-second demo card (`GameStore.firstRecordEgg`; `POKEMON_ECOSYSTEM.md` 10.2.1, `docs/economy.md`).
+- **HOME shows as Nest** (owner's decision), so "Home" is only the tab; code ids and saves keep HOME.
+- **The tab bar keeps the module's colour inside a module** (owner's decision; `DESIGN_SYSTEM.md` 5.1 now says so).
+- **Fixed:** Care's mood keys cut to "Ro…" (also in Home's Quick log); Mint category names wrapping a letter at a time; Link's follow-up label drawn over its placeholder at large text; a Heal goal chip in the wrong font (the pixel font has no brackets); week titles cut to four letters on phones (three days at a time now); a log tag leaking into World's Finds; Back on the right of the Pokédex entry.
+- Plan: one Start key, the Planner's filters behind one key. Mint: Available first, categories as rows. World: the "Since you last looked" report is a headline and the finds. Gear: the star sits in the helper bar; the Picker shows its keys on the tapped row.
+
 ## 0.173.1
 
 Reminder and World clock fixes left by the 0.167.2 follow-up (REP-026 a, b, d). No reward number changes; `RewardRules.VERSION` is unchanged.
