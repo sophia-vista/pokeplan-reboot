@@ -39,6 +39,16 @@ android {
             signingConfig = signingConfigs.getByName("shared")
         }
     }
+    // REP-033: the Android code is tested on the JVM with Robolectric (reminders, receivers, widgets' read of the save, sealing, LiveStore recovery).
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+        unitTests.all {
+            // Robolectric fetches its Android jars itself; the Google mirror of Maven Central is not rate-limited like the shared proxy.
+            it.systemProperty("robolectric.dependency.repo.url", "https://maven-central.storage-download.googleapis.com/maven2")
+            it.systemProperty("robolectric.logging.enabled", "false")
+            it.maxHeapSize = "2g"
+        }
+    }
 }
 
 dependencies {
@@ -52,4 +62,10 @@ dependencies {
     implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
     // HEAL's optional, read-only Health Connect import (androidx, no telemetry, no network of its own; reviewed under INTEGRATIONS_AND_PRIVACY.md 12.1).
     implementation("androidx.health.connect:connect-client:1.1.0")
+
+    testImplementation(kotlin("test-junit"))
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.16")
+    testImplementation("androidx.test:core-ktx:1.6.1")
+    testImplementation(libs.kotlinx.coroutines.test)
 }

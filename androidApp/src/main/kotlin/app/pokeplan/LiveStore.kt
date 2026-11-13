@@ -131,6 +131,19 @@ object LiveStore {
         }
     }
 
+    /**
+     * What a process death does to this object, for the Android tests (REP-033): the connection is closed and the next [get] opens and recovers the database
+     * again as a fresh start would. Never called by the app.
+     */
+    @Synchronized
+    internal fun forgetForTests() {
+        runCatching { store?.close() }
+        store = null
+        gaveUp = false
+        backupStore = null
+        writeFailed = false
+    }
+
     /** The storage for one document; the file only when the database was never active and cannot be opened. */
     fun storage(context: Context, name: String, legacyFile: String): Storage {
         val s = get(context)
