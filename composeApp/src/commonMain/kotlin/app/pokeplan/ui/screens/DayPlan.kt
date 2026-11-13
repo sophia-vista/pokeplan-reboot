@@ -604,7 +604,7 @@ private fun Tray(tasks: List<Task>, picked: String?, pick: (String) -> Unit, gri
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("To plan", style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
-            if (hint) Text("Hold one and drag it to an hour, or tap it, then an hour.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            if (hint) Text("Tap one, then an hour (or drag).", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 tasks.forEach { t -> key(t.id) {
                     val anchor = remember { Anchor() }

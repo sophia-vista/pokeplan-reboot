@@ -12,8 +12,8 @@ Plan's dates (REP-030, PLAN.md sections 4.7 and 5.1). No reward number changes; 
 - **One set of day keys** wherever a task or a Plan event gets a day (Move to, Deadline, quick add, a new or edited event): Today, Tomorrow, **This weekend**, **Next week** (the coming Monday), **Pick a day** and No date. A key that names the same day as an earlier one is left out, so two never light up together. Quick add gets Pick a day too.
 - **Repeat says more:** Yearly joins the keys, and Weekly takes every 1 to 4 weeks and the weekdays. A repeating task reads it in words ("repeats every 2 weeks on Mon, Thu"), and one the keys cannot show (every 3 days) is said in words instead of "Custom".
 - **Reminders:** 30 min and 2 hours before join the keys, and **Other** takes a typed length before, up to a week.
-- **A moved day of a repeating task says "This one only"** and where it came from; the others keep their days.
-- **The Calendar's tray says how to place a task** (hold and drag, or tap then an hour) until the first task has a time.
+- **A moved day of a repeating task says "this one only"** and where it came from; the others keep their days.
+- **The Calendar's tray says how to place a task** ("Tap one, then an hour (or drag).") until the first task has a time.
 - Removed the day-load estimate against an "awake" window: it was worked out but never shown.
 
 ## 0.177.0

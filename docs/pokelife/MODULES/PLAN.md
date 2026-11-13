@@ -179,7 +179,7 @@ Examples:
 
 Calendar recurrence: daily, selected weekdays, weekly on selected days, monthly by date, monthly by weekday position if reliable, and yearly if required by existing use cases.
 
-As built (0.178.0): the task card's Repeat offers Never, Daily, Weekdays, Weekly, Monthly (on the start's day of the month) and Yearly; Weekly then takes **every 1 to 4 weeks** and the **weekdays** (at least one stays chosen), and the card reads it in words ("repeats every 2 weeks on Mon, Thu"). A repeat made elsewhere that the keys cannot show (every 3 days) is said in words. Moving one day of a repeating task moves that day only, and its When tab says so ("This one only, moved from Tue 17 Nov. The others keep their days.").
+As built (0.178.0): the task card's Repeat offers Never, Daily, Weekdays, Weekly, Monthly (on the start's day of the month) and Yearly; Weekly then takes **every 1 to 4 weeks** and the **weekdays** (at least one stays chosen), and the card reads it in words ("repeats every 2 weeks on Mon, Thu"). A repeat made elsewhere that the keys cannot show (every 3 days) is said in words. Moving one day of a repeating task moves that day only, and its When tab says so ("Moved from Tue 17 Nov: this one only.").
 
 Frequency targets: daily target, weekly target with count, monthly target with count. Avoid custom recurrence expressions initially.
 

@@ -545,7 +545,7 @@ private fun TaskWhenTab(model: AppModel, task: Task) {
         )
         // Moving one day of a repeating task moves that day only (PLAN.md section 5.2): say so, and where it came from.
         task.instanceDay()?.takeIf { task.movedOccurrence }?.let { from ->
-            Text("This one only, moved from ${from.short()}. The others keep their days.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            Text("Moved from ${from.short()}: this one only.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
         if (store.activeLists.isNotEmpty()) {
             FieldLabel("List")
