@@ -37,6 +37,7 @@ server); `Transfer`, `Items`, `Perks`, `Rules` (`CandyRules`, `FriendshipRules`,
 | **Legendary or mythical quest** claimed | That Pokémon (out of the party; it can be shiny) | `Quests` |
 | **Friend's gift** opened | 3 Rare Candies (one gift per friend a day) | `platform.send_gift` |
 | **Starter** | The starter (never shiny) and a tutorial task that pays at once | `GameStore.start` |
+| **A module's first real record** (Plan, Care, Heal, Mint, Home, Link; once per save) | One Common egg of the module's region, hatched into its party and leading it (the first of a species pays as usual) | `GameStore.firstRecordEgg`, `RewardEngine.tutorialEgg` |
 | **Petting the buddy** | Friendship (pet), up to 10 a day | `PET_DAILY_CAP` |
 | **Care: routine done** (first tick of the day for that routine) | Buddy friendship (routine) · 3 Rare Candies · 1 point on Care's Egg meter · 1 trainer point. At most 5 routines a day | `CARE_POINTS`, `CARE_CANDIES`, `CARE_EGG_POINTS`, `CareRules.ROUTINES_PAID_PER_DAY` |
 | **Care's Egg meter full** (3 points: a routine 1, a calm break or a skill 2, a rhythm 0) | A Care Egg from the Care Region, rolled as a 15 minute session (species not caught yet × 6), hatched at once into Care's party (else the PC); it leads Care if there is no lead; the rest carries over. Kept by the app (counter `care-egg-meter`), never sent to the server | `RewardEngine.careEgg`, `CARE_EGG_METER_SIZE` |
