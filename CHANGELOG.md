@@ -12,6 +12,7 @@ Where a Pokémon is, shown where it matters (REP-009, the last open part). No re
 - **The Gear helper list says where each Pokémon is now** ("In Mint's party", "Your buddy"), since choosing one takes it from there, and leaves out a team on an expedition (choosing one was refused without a word).
 - **"Move to..." on a Pokémon reads its real place.** The PC row said "Here" for the buddy, a Guardian, a World team member or a Gear helper, and its button did nothing for them; it now sends a Guardian, a team member or a helper back to the PC (`GameStore.sendToPc`), and stays off for the buddy (choose another buddy instead). On an expedition under way, Make buddy and Move to... are off.
 - A Gear helper's place names its tool ("Helping the Flashlight").
+
 ## 0.175.1
 
 Automated Android tests, first slice (REP-033; owner: automated tests over manual phone checks).
