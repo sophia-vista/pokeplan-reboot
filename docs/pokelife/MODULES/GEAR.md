@@ -2,9 +2,8 @@
 
 **Version:** 1.0  
 **Status:** Specified / approved  
-**Baseline reviewed:** source archive `0.123.0`; implementation review dated 5 November 2026  
 **Product owner:** PokéLife  
-**Canonical scope:** GEAR tool catalog, tool behavior, local state, device capability use, and optional Ranger-style minigame
+**Canonical scope:** GEAR tool catalog, tool behavior, local state, device capability use
 
 > This document defines the approved GEAR product requirements. It does not claim that the existing implementation already meets them. The Product Bible defines product-wide principles; the Implementation Guide tracks implementation status and delivery order; the shared design system and reminder feature own cross-module behavior.
 
@@ -333,29 +332,11 @@ Helper Pokémon are an optional visual identity element, not a GEAR system of pr
 
 ## 7. Optional Ranger-style capture minigame
 
-The existing minigame is an optional entertainment feature, not a tool requirement and not a Pokémon acquisition system. Inspect and preserve its existing implementation foundation before changing it; document current mechanics, touch handling, drawing pipeline, assets and tests before refactoring.
-
-**Target feel**
-- Continuous touch-drawn capture loops with responsive path rendering and collision detection.
-- Pokémon move around the play area, react to the player's movement and respond to loop contact in a way that feels closer to Pokémon Ranger capture gameplay.
-- Capture progress builds through successful loops and can be interrupted by movement, hazards or contact according to clear rules.
-- Species/behavior profiles create understandable variation in movement, speed, size and difficulty without unfair or unreadable behavior.
-- Short rounds with quick restart/exit; no lengthy setup or forced tutorial after first exposure.
-- Support finger and stylus input, varied screen sizes, touch slop, pointer cancellation and interrupted gestures.
-- Clear feedback for capture progress, interruption and completion. Optional sound/haptics respect settings.
+**Not built.** The code has no capture minigame; this is an idea only. If it is ever made: short rounds of touch-drawn capture loops around moving Pokémon (finger and stylus, cancellation-safe, deterministic timing independent of frame rate, loop stopped when hidden), as pure entertainment.
 
 **Strict boundaries**
-- No Pokémon recruitment, collection additions, eggs, items, XP, friendship, levels, currency, unlocks, quests, achievements or module progression.
-- No reward ledger events. No advantage in World or any life module.
-- The minigame can be played, ignored or removed without affecting GEAR or PokéLife utility workflows.
-- Difficulty changes are for entertainment only and must not gate tools or content.
-
-**Implementation constraints**
-- Do not replace the current minigame wholesale without a code audit. Reuse the current drawing/input/collision/animation foundation where it is sound.
-- Keep game-loop timing deterministic enough for tests; avoid tying simulation progress to frame rate.
-- Handle touch cancellation, app pause/resume, orientation changes and process interruption without stuck pointer state.
-- Keep rendering bounded and stop the loop when not visible.
-- Validate accessibility alternatives where feasible; do not make the minigame a required workflow.
+- No Pokémon recruitment, collection additions, eggs, items, XP, friendship, levels, currency, unlocks, quests, achievements or module progression. No reward ledger events. No advantage in World or any life module.
+- It can be played, ignored or removed without affecting GEAR or PokéLife utility workflows; difficulty never gates tools or content.
 
 ## 8. Data ownership and relationships
 
@@ -413,28 +394,24 @@ GEAR uses the **utility presentation** defined by `../FEATURES/DESIGN_SYSTEM.md`
 - Keep values, units and primary controls legible. Dense specialist tools use structured rows, charts and compact sections rather than giant cards.
 - Use the helper-sprite rule in Section 6; tool icon fallback remains the normal tool/item icon.
 - Pokémon art never blocks input, consumes the work area or competes with results.
-- No continuous decorative motion. Animations in the Ranger-style minigame are functional and respect reduced motion.
+- No continuous decorative motion. Animations are functional and respect reduced motion.
 - Verify light/dark themes, enlarged text, TalkBack, keyboard behavior, focus, 48 dp targets and narrow/wide layouts.
 - Preserve crisp nearest-neighbor pixel rendering and asset provenance for all helper sprites and item icons.
 
 ## 11. Implementation and migration requirements
 
-**Baseline inventory (0.123.0 review)**
-The existing implementation contains 18 tools and supporting code, including `screens/Gear.kt`, `screens/Gear*`, `ui/gear/ToolCatalog.kt`, `Currencies.kt`, `Rates.kt`, `Light.kt`, `Units.kt`, `Everyday.kt`, `WorldClock.kt`, `Geo.kt`, `Qr.kt`, `SoundMath.kt`, `NetworkCheck.kt`, `app-core/.../GearTimers.kt`, `AppData.kt`, and Android adapters such as `AndroidGearServices.kt`, `AndroidTorch.kt` and `AndroidSensorFeed.kt`. This is an audit inventory, not a claim that each file is complete or that the current behavior meets this specification.
-
 **Reuse-first audit**
 - Trace each of the 18 tools end-to-end: UI → state → persistence → common domain logic → platform adapter → permissions → lifecycle → tests.
 - Preserve stable serialized names and existing `GearRates` compatibility. Add explicit migrations/adapters for schema changes.
 - Review the current currency multi-row board and manual rate implementation before redesign. Extend it into the multi-row editable Currency Converter Pro workspace; do not throw away the existing board without evidence.
-- Review the existing capture minigame implementation before modifying it. Preserve sound input/rendering/collision foundations.
-- Verify `DEVICE_ONLY` and `cloudPart()` exclusions for GEAR data. Older audit notes are historical; current behavior must be proven by tests, not assumed from prior findings.
-- Do not rely on code presence as evidence of release readiness. The reviewed environment did not establish a successful full build, complete test run or real-device behavior.
+- Verify `DEVICE_ONLY` and `cloudPart()` exclusions for GEAR data. Current behavior must be proven by tests, not assumed.
+- Do not rely on code presence as evidence of release readiness.
 
 **Suggested delivery order**
 - **P0 — correctness and privacy:** data ownership, local-only serialization, migrations, arithmetic correctness, currency rate integrity, timer lifecycle/notification policy, permission boundaries, sensor lifecycle and QR safety.
 - **P1 — core tool quality:** GEAR home/catalog; calculator; Currency Converter Pro; unit converter; timer; stopwatch; flashlight; picker and coin/dice.
 - **P2 — specialist tools:** everyday calculators; world clock; compass/level/barometer; device check; waypoints; sound meter; QR; network check.
-- **P3 — optional polish:** minigame capture feel, shortcuts/widgets, additional tool candidates only after the 18-tool core meets acceptance.
+- **P3 — optional polish:** shortcuts/widgets, additional tool candidates only after the 18-tool core meets acceptance.
 
 Do not start P3 additions while P0 data/privacy or P1 core-tool quality is failing.
 
@@ -470,14 +447,8 @@ GEAR is accepted only when all applicable criteria pass:
 - Test permission grant/denial/revocation, app backgrounding, process death, reboot, low-memory conditions, orientation changes and multi-window where supported.
 - Verify notifications and alarm behavior on supported Android versions and target Samsung hardware.
 - Test on Galaxy S26 Ultra and smaller reference widths; verify light/dark, font scaling, TalkBack, keyboard, focus, touch targets and reduced motion.
-- Profile sensor sampling, flashlight, camera scanning, sound meter, minigame frame loop, memory and battery. No continuous work while hidden.
+- Profile sensor sampling, flashlight, camera scanning, sound meter, memory and battery. No continuous work while hidden.
 - Capture screenshot/golden tests for representative tools and states; verify on-device rendering rather than relying on previews alone.
-
-### Minigame
-- Capture loops respond to finger and stylus input with stable drawing and collision behavior.
-- Pokémon movement/reactions and capture progress/interruption are understandable and tested independently of frame rate.
-- Pause/resume, pointer cancellation, orientation change and exit never leave stuck input or background rendering.
-- Playing the minigame never changes collection, rewards, inventory, friendship or progression.
 
 ## 13. Explicit deferred candidates
 
@@ -498,7 +469,7 @@ Do not add weather, habit tracking, health tracking, expense tracking or another
 
 ## Shared Pokémon ecosystem contract
 
-GEAR has **no Pokémon acquisition method, party, progression, XP, items or Poké rewards**. Helper Pokémon may appear as visual-only tool icons, headers or restrained reactions. The Ranger-style capture minigame is entertainment only and does not recruit Pokémon or grant shared rewards. See `../FEATURES/POKEMON_ECOSYSTEM.md`.
+GEAR has **no Pokémon acquisition method, party, progression, XP, items or Poké rewards**. Helper Pokémon may appear as visual-only tool icons, headers or restrained reactions. The Ranger-style capture minigame (section 7, not built) would be entertainment only. See `../FEATURES/POKEMON_ECOSYSTEM.md`.
 
 ---
 

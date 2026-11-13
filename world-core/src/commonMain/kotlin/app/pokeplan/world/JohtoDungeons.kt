@@ -4,7 +4,7 @@ import app.pokeplan.core.dex.PokemonType
 import app.pokeplan.core.pokemon.Items
 
 /**
- * The nine dungeons of the Johto layer (docs/world.md, "Johto"), from Pokémon Gold, Silver, Crystal, HeartGold and SoulSilver. Their
+ * The nine dungeons of the Johto layer (docs/pokelife/MODULES/WORLD.md section 14, "Johto"), from Pokémon Gold, Silver, Crystal, HeartGold and SoulSilver. Their
  * wild tables are Johto's own species (the Johto dex, 152 to 251, with the Kanto species that live there), by each place's habitat in
  * the games; legendaries are never found (they are quests, [Legends]; the three beasts and Celebi are side legendaries of the modules).
  * Floors, floor times, milestones and the rank gates are starting values *(tune)*. [DungeonDef.chapter] is a chapter of [JohtoStory].

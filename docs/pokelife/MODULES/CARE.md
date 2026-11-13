@@ -3,10 +3,9 @@
 **Version:** 1.4  
 **Status:** Owner-approved target specification  
 **Decision status:** Owner-approved requirements incorporated directly below  
-**Baseline reviewed:** Source archive `0.123.0`  
 **Last consolidated:** 5 November 2026
 
-> This document defines the intended CARE experience. It is not a claim that every feature is already implemented. The Product Bible remains the product-wide authority; this file is the single detailed source of truth for CARE. The Implementation Guide records current implementation status and delivery work. Approved decisions are incorporated into the relevant requirements below; there is no separate CARE decision register. The shared visual source of truth is `../FEATURES/DESIGN_SYSTEM.md`; CARE must follow it and may define only the adaptations specific to CARE. Shared reminder scheduling, delivery, global quiet hours, focus deferral and recovery are defined in `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; this document defines only CARE-owned reminder sources, preferences and action semantics.
+> This is the single detailed source of truth for CARE; the Product Bible is the product-wide authority and `../IMPLEMENTATION_BACKLOG.md` records delivery status. Visual rules: `../FEATURES/DESIGN_SYSTEM.md`. Shared reminder scheduling, delivery, quiet hours, focus deferral and recovery: `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`; this file defines only CARE-owned reminder sources, preferences and action semantics.
 
 ## 1. Purpose and boundaries
 
@@ -26,32 +25,13 @@ CARE does not own HEAL activity, fitness/workouts, nutrition, hydration, sleep, 
 
 ## 2. Visual presentation
 
-CARE uses the shared PMD dialogue-box visual grammar defined in
-`../FEATURES/DESIGN_SYSTEM.md`. It must not introduce a separate CARE
-design language. Its presentation can be calmer and more expressive than
-PLAN, but shared typography, spacing, padding, pixel border treatment,
-button styles, surface tokens, interaction states and accessibility
-remain consistent.
+CARE follows `../FEATURES/DESIGN_SYSTEM.md` and introduces no separate design language; it may be calmer and more expressive than PLAN. CARE-specific adaptations:
 
-- Use compact primary/secondary dialogue-box surfaces for Today actions,
-  routine summaries, check-in status, prompts and concise feedback.
-- Use a more expressive dialogue-box treatment for buddy/visitor
-  interactions and authored Pokémon responses where this improves the
-  experience; do not turn the whole CARE landing into a chat transcript.
-- Diary Card and Journal prioritize writing comfort, legibility and
-  usable content width. Their input areas must not inherit cramped game
-  dialogue typography or fixed speech-bubble dimensions.
-- Calm tools use restrained panels and clear controls; animation,
-  decorative effects and sound remain optional and subordinate to the
-  exercise.
-- Care Garden/Meadow retains its scene-first composition. Contextual
-  Pokémon interaction panels, visitor details and progress feedback use
-  shared dialogue-box components rather than bespoke visual chrome.
-- Keep routine rows, history, trends and skills content scannable; do
-  not wrap every row, metric or paragraph in its own dialogue box.
-- All CARE surfaces support light/dark themes, system text scaling,
-  TalkBack, minimum touch targets and reduced motion. Sensitive content
-  must remain readable without relying on color or decorative cues.
+- Compact dialogue-box surfaces for Today actions, routine summaries, check-in status, prompts and feedback; a more expressive treatment for buddy/visitor interaction (do not turn the landing into a chat transcript).
+- Diary Card and Journal prioritize writing comfort, legibility and content width; their inputs must not inherit cramped game dialogue typography or fixed speech-bubble sizes.
+- Calm tools use restrained panels; animation, effects and sound are optional and subordinate.
+- Care Garden/Meadow keeps its scene-first composition; its panels use shared components.
+- Do not wrap every routine row, metric or paragraph in its own box. Sensitive content must stay readable without relying on colour.
 
 ## 3. CARE landing and navigation
 
@@ -264,7 +244,7 @@ Rules:
 - Reunion interactions may include unique dialogue, reactions and references to the original visit and relationship history.
 - No separate keepsake collection, memento album or keepsake inventory.
 
-### 6.8 Adopted numbers and adaptations (built in 0.132.0) *(tune)*
+### 6.8 Adopted numbers and adaptations *(tune)*
 
 The sections above say what visitors are; these are the numbers the code uses and the places it had to decide.
 
@@ -274,12 +254,10 @@ The sections above say what visitors are; these are the numbers the code uses an
 - **A visit** has no fixed length: it ends when all five kinds are done, when the visitor is warm enough, or when the player leaves, and what it warmed is kept either way. After a visit the visitor rests three hours before another visit counts (playing with it is always possible). There is no daily limit on visits; the pace of friends is set by arrivals.
 - **Friends the world cannot pay today** (its daily limit of friends, `GameStore.BEFRIEND_DAILY_CAP`): the visit ends, the visitor stays, ready, and its next visit makes it a friend.
 - **Dismissal:** asked once, keeps what the visitor earned (nothing already given is taken back), and the visitor is kept (the last twenty) so it can be asked back, to the end of the queue with its warmth.
-- **Built in 0.133.0** (the four items 0.132.0 left out):
-  - **Reunions (6.7):** a befriended visitor is remembered (`CareData.friends`: species, form, visitor id, the day, whether it stayed). Once a day, with a 20% chance (the same for the same device and day), one friend may come back to say hello if none is waiting and it has not been back for 3 days. It holds no meadow place and does not count towards the 4 and 6, never expires, pays nothing and gives no egg or recruitment; greeting it says a line that remembers the day you became friends.
-  - **Egg inheritance (6.6):** an egg a friend leaves (not a visitor that stays) may take a temperament from it: the visitor's nature (40%), its strong stat raised to an IV of at least 24 (40%), and, rarely (5%), a second strong stat to at least 28 along with the other two. A visitor's nature and strong stat come from its id, so they are stable; what an egg takes comes from the visitor and the egg together, so it is the same on a retry. Shininess, ability, species and level are never touched. The hatchling's origin record (`Origin.visitor`: visitor, day, traits, a note such as "Left by a Pikachu you befriended; it took Jolly nature") is shown on its page.
-  - **Care Play (4):** time with the buddy, a visitor or any owned Pokémon (invited without touching a party). Six activities map to the five kinds of care (grooming, toy play, a treat, cheering on, gentle touch, quiet time), each a short run of taps that can be stopped any time; suggested (never expires), browsed or "Surprise me". Every Pokémon has a primary and a secondary liked kind from its id, undiscovered until it shows them (a delighted or happy reaction records the kind; any other reaction is pleasant and records nothing). The first time with each Pokémon on a day pays `CareKind.PLAY` (1 friendship step to that Pokémon, 1 Rare Candy, 1 point on Care's Egg meter, at most 6 a day); repeats pay nothing and are unlimited.
-  - **Meadow (5):** one fixed scene (Care → Meadow): the buddy in the middle and four visitor spots, no scrolling or roaming; tap is a reaction with a 0.9 s cooldown (a tap during it changes nothing and plays no cry), long press (or the "Details" accessibility action) opens a compact panel with identity, discovered likes and the way into Care Play; the queue and Care Egg progress sit small in the corners; a returning friend appears below with "Say hello". Reduced motion stops the animations.
-  - Rewards: `RewardRules.VERSION` 16 (only Care Play is new; nothing else changed).
+- **Reunions (6.7):** a befriended visitor is remembered (`CareData.friends`: species, form, visitor id, the day, whether it stayed). Once a day, with a 20% chance (the same for the same device and day), one friend may come back to say hello if none is waiting and it has not been back for 3 days. It holds no meadow place and does not count towards the 4 and 6, never expires, pays nothing and gives no egg or recruitment; greeting it says a line that remembers the day you became friends.
+- **Egg inheritance (6.6):** an egg a friend leaves (not a visitor that stays) may take a temperament from it: the visitor's nature (40%), its strong stat raised to an IV of at least 24 (40%), and, rarely (5%), a second strong stat to at least 28 along with the other two. A visitor's nature and strong stat come from its id, so they are stable; what an egg takes comes from the visitor and the egg together, so it is the same on a retry. Shininess, ability, species and level are never touched. The hatchling's origin record (`Origin.visitor`: visitor, day, traits, a note such as "Left by a Pikachu you befriended; it took Jolly nature") is shown on its page.
+- **Care Play (4):** time with the buddy, a visitor or any owned Pokémon (invited without touching a party). Six activities map to the five kinds of care (grooming, toy play, a treat, cheering on, gentle touch, quiet time), each a short run of taps that can be stopped any time; suggested (never expires), browsed or "Surprise me". Every Pokémon has a primary and a secondary liked kind from its id, undiscovered until it shows them (a delighted or happy reaction records the kind; any other reaction is pleasant and records nothing). The first time with each Pokémon on a day pays `CareKind.PLAY` (1 friendship step to that Pokémon, 1 Rare Candy, 1 point on Care's Egg meter, at most 6 a day); repeats pay nothing and are unlimited.
+- **Meadow (5):** one fixed scene (Care → Meadow): the buddy in the middle and four visitor spots, no scrolling or roaming; tap is a reaction with a 0.9 s cooldown (a tap during it changes nothing and plays no cry), long press (or the "Details" accessibility action) opens a compact panel with identity, discovered likes and the way into Care Play; the queue and Care Egg progress sit small in the corners; a returning friend appears below with "Say hello". Reduced motion stops the animations.
 
 ## 7. Asset and animation policy
 
@@ -303,26 +281,7 @@ Implementation requirements:
 
 ## 8. Current implementation reuse and refactor direction
 
-The reviewed 0.123.0 baseline already has a substantial CARE foundation: routines, calm breaks, Diary Card, Skills, Journal, Trends, reminders, visitor interaction scenes, visitor relationship/recruitment, Care Egg progress, and CARE rewards.
-
-Preserve and audit before replacing:
-- Existing CARE screens, records, reminders and history.
-- Existing visitor interaction scene and five interaction categories.
-- Existing species reactions, berry handling, interaction prompts, visitor favorites and free-play actions.
-- Existing visitor relationship/recruitment and Care Egg plumbing.
-- Existing shared Pokémon, Bag and egg-hatching services.
-
-Refactor gaps:
-- Remove the visitor unlock prerequisite that requires completing a paid CARE activity.
-- Remove one-visit-per-day and rigid three-distinct-actions-per-visit requirements.
-- Remove three-day visitor departure and relationship-progress reset.
-- Replace daily relationship-day attendance with persistent flexible meaningful-interaction progress.
-- Replace visitor random favorite as a proxy for permanent Pokémon preferences; keep per-visitor favorites distinct from persistent individual preference data.
-- Add buddy/owned-Pokémon Care Play access and the fixed Meadow scene.
-- Ensure visitor queue, four-slot capacity, returning befriended visitors and the egg/direct-recruitment outcome are consistent with shared collection state.
-- Audit existing reward formulas; do not invent new XP or currency. CARE grants no module XP.
-
-Do not claim a feature is complete because a screen, model or asset exists. Verify end-to-end behavior, persistence, migration, tests and device presentation.
+The visitor model replaced the older rules (a paid-activity unlock, one visit a day, three distinct actions a visit, three-day departure with progress reset, relationship-day attendance) with persistent flexible interaction progress (6.3, 6.4, 6.8); Care Play and the fixed Meadow are built. Reuse the existing visitor scene, five interaction categories, species reactions, berry handling and shared Pokémon, Bag and egg services; keep per-visitor favourites distinct from the persistent per-Pokémon preference data; grant no module XP and invent no new currency. Do not claim a feature complete because a screen, model or asset exists: verify end-to-end behaviour, persistence, migration, tests and device presentation.
 
 ## 9. Data and event ownership
 

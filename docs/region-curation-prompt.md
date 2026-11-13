@@ -1,7 +1,7 @@
 # Curating a module region
 
 Every life module with a region (Plan, Care, Heal, Mint, Home, Link) has its own: a hand-curated dex of about 150 to 180 species (every species is in exactly one), open to every
-player once the module ships ("Module regions" in [ecosystem.md](ecosystem.md), section 4). This kit is how a region's
+player once the module ships ("Module regions" in [POKEMON_ECOSYSTEM.md](pokelife/FEATURES/POKEMON_ECOSYSTEM.md)). This kit is how a region's
 list is chosen, in a separate chat or with Claude Code, and brought back. The lists live in `tools/species/regions/`
 (`plan.txt`, `care.txt`, `heal.txt`, `mint.txt`, `household.txt`, `link.txt`, one per `Region` entry). All six were curated together in 0.139.0 (docs/design.md, "Species lists"); this kit is for changing one.
 

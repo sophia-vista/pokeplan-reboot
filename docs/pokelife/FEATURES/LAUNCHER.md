@@ -3,7 +3,6 @@
 **Version:** 1.0  
 **Status:** Approved specification  
 **Scope:** PMD-inspired in-app home environment and optional Android default-home replacement  
-**Baseline audited:** Existing Android launcher implementation, source archive 0.123.0  
 **Approved:** 5 November 2026
 
 > This document is the authoritative specification for the PokéLife home environment and optional Android launcher. It defines target behavior, not a claim that every capability is already implemented. The Product Bible owns product-wide principles; the Implementation Guide tracks source status and delivery.
@@ -84,6 +83,18 @@ Multiple home pages form one continuous environment. Horizontal page movement sh
 ### 4.3 Environment presets and atmosphere
 
 Provide a polished default scene before adding many variants. Support a small curated set of built-in environments, day/night presentation based on local time, optional weather presentation, manual atmospheric overrides, seasonal appearance options and optional ambient effects (e.g. rain, leaves or particles). Weather and seasonal effects are cosmetic and must never affect rewards, availability, deadlines or progression.
+
+### 4.4 Weather layers (as built, from Red Rescue Team's own code)
+
+The town's weather imitates the original game's ground-screen weather (pret/pmd-red `src/ground_weather.c`); the numbers live in `GbaWeather.kt`, the layers are rebuilt from the game's files by `tools/weather/decode_bg.py` (needs a read-only checkout of `pret/pmd-red`; no ROM is used), and the per-weather colour lookup is `WeatherGrade.kt` (from `assets/weather/ramps.tsv`, written by `tools/weather/extract_ramps.py`). Weather is cosmetic (section 4.3).
+
+- **Tick:** the game runs at 59.7275 Hz; all timings below count ticks. A tile-animation frame lasts its duration plus one tick; all tile animations have 16 frames and wrap, so a small tile repeats over the screen. Layers are drawn at a whole-number scale without smoothing, and snow and blizzard are fixed to the screen (pinned to the camera).
+- **Snow** (W03P01): 5 ticks (83.7 ms) a frame; **blizzard** (W03P03): 2 ticks (33.5 ms) a frame, no veil. Both composite opaque where a flake has a pixel and show nothing of the scene beneath it (`BLDALPHA` 0x1000).
+- **Clouds** (W01, kind 9): the game's blue (82, 115, 189) at 4/16 = 25% over the scene (`BLDALPHA` 0x40c, `TEXTURE_ALPHA`), moving 0.5 px a tick right and 0.25 px a tick up (30 and 15 px a second), in whole game pixels, wrapping. Kind 15 (grey texture, W06) is also a quarter, moving right 0.5 px a tick; kind 14 (streaks, W05) moves right 0.25 px a tick.
+- **Sandstorm:** no tint; both textures (`sand-1`, `sand-2`, 120 x 32, opaque, so they only work blended) at 25%, scrolling 0.5 and 0.25 px a tick like the two layers that scroll. Their art belongs to the dungeon's sandstorm effect (239); speed and blend are borrowed from the ground layers.
+- **Rain:** the 61-frame sheet (240 x 160) is the dungeon's rain effect (16), a shower that builds up (15 opaque pixels at frame 0, 266 at frame 41, 23 at frame 60) and fades; it plays frames 0 to 60 round and round at 70 ms. The game's real frame durations and loop points are not decoded.
+- **Colour ramps:** for dungeon-tile towns each tile colour goes through the weather's own ramp (`out5 = ramp[channel] * brightness / 256 & 0x1F` on the 8-bit value `v5 * 8 + 7`), a lookup and not a tint (a straight line is off by up to 31 of 255). Clear is the identity. What each does to black: sunny lifts to 15; sandstorm to 63 with blue crushed (white becomes 255, 255, 207: yellow-brown); cloudy to 31, 31, 63 and white to 231, 231, 255; rain sinks red and green and lifts blue (0, 0, 39); hail 0, 15, 31; fog flattens to grey (black 87, white 239); snow 0, 23, 39 and white 231.
+- **Open:** decode the rain (effect 16) and sandstorm (239) effect animations; the game takes about a second to move to a new ramp while the town changes at once; ground kinds 0 to 8 (map-specific layers), the dungeon's sunny and fog weathers and weather transitions are not used.
 
 ## 5. Main navigation and app access
 

@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * A collecting region. The module regions ([isModule]) are hand-curated lists, one per life module
- * (`tools/species/regions/<name>.txt`, "Module regions" in docs/ecosystem.md). A module region is open to everyone once its
+ * (`tools/species/regions/<name>.txt`, "Module regions" in docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md). A module region is open to everyone once its
  * module ships ([released]); until then it is hidden. [PLAN] was the Home Region and keeps its stored name `HOME` (saves,
  * plan.focus_sessions, the reward function).
  *

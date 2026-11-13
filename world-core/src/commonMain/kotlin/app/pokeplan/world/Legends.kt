@@ -3,7 +3,7 @@ package app.pokeplan.world
 import app.pokeplan.core.dex.PokemonType
 
 /**
- * A legendary quest of a layer (docs/ecosystem.md, "World regions"): clear [dungeonId] [clears] times (and, for the end of the story,
+ * A legendary quest of a layer (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md, "World regions"): clear [dungeonId] [clears] times (and, for the end of the story,
  * once its layer's Guardian has been faced) and [speciesId] joins the collection, as a Guardian of that layer. Not eggs and not finds:
  * the Pokémon is given once. [type] is the type whose explorers it makes faster in the layer's dungeons that favour it, if any.
  */

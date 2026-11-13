@@ -37,7 +37,7 @@ Single-activity-per-flow app, with all backend access funnelled through one clas
 - **Game rules live in models and screens, not the database:**
   - `models/Egg` rolls a rarity (Common, Uncommon, Rare, Super Rare) from a 100-slot pool using tables keyed by timer length, with boosted tables when Deep Focus is on, then picks a random Pokémon of that rarity.
   - `FocusTimerFragment` runs the countdown. `onPause()` stops and resets the timer (no egg), and in Deep Focus `onSensorChanged` does the same when accelerometer movement passes a threshold. Other behaviour toggles are `SharedPreferences` keys.
-  - The candy rewards for finishing a task are computed in `TaskDetailsActivity` from the task priority (**5 pays the most**, 1 the least; an earlier version of this file said the opposite), using per-priority rate arrays. The rewrite renames priority to a difficulty rank E to A with the same direction.
+  - The candy rewards for finishing a task are computed in `TaskDetailsActivity` from the task priority (**5 pays the most**, 1 the least), using per-priority rate arrays. The rewrite renames priority to a difficulty rank E to A with the same direction.
   - `UserPokemon` holds a Pokémon's level and state. Ten Rare Candies make one level, one Super Candy evolves, and evolution is only allowed at the species' set level.
 - **Models:** `UserDetails`, `UserTask`, `UserPokemon` are the Firebase-serialised objects (`setValue` / `getValue(Class)`), so keep their getters, setters and no-arg constructors compatible with Firebase's reflection when changing fields. `Pokemon` and `Pokedex` are the static species data.
 - **Lists:** RecyclerView screens use the `adapters/` + `viewholders/` pairs (Task, Pokedex, Pokemon party, Pokemon PC, Faqs).

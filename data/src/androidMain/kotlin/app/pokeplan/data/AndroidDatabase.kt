@@ -9,7 +9,7 @@ import app.pokeplan.data.db.DataDb
  * Opens the product database in app-private storage. Foreign keys are switched on in `onConfigure`, before the file is
  * used, and [DataStore.open] reads the setting back and refuses to run without it.
  *
- * Not yet exercised on a device (docs/pokelife/evidence/REP-007-gate-a-review.md, section 5): it compiles, nothing more.
+ * The live store on Android since 0.129.0 (docs/pokelife/ARCHITECTURE/DATA_AND_MIGRATIONS.md section 4.5).
  */
 object AndroidDatabase {
     const val FILE_NAME = "pokelife.db"

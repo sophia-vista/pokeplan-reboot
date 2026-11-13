@@ -1,7 +1,7 @@
 package app.pokeplan.data
 
 /**
- * Seals and opens a private text (the encryption decision for MINT, docs/pokelife `evidence/REP-014-mint.md` section 6, owner delegated 8 November 2026; for HEAL the owner decided on 8 November 2026 to do the same, `evidence/REP-014-heal-sealing.md`).
+ * Seals and opens a private text (the encryption decision for MINT, docs/pokelife `ARCHITECTURE/DATA_AND_MIGRATIONS.md` section 10.4.1, owner delegated 8 November 2026; for HEAL the owner decided on 8 November 2026 to do the same, the same section).
  * A sealed text starts with [PREFIX] so it can never be mistaken for JSON; [open] returns null for a text sealed with another key, a damaged one, or one that
  * is not sealed, and never throws. The Android implementation uses a key that lives in the Android Keystore and never leaves it (`KeystoreMintKey`).
  */

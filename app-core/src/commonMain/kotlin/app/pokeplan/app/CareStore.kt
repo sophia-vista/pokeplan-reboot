@@ -43,7 +43,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlin.random.Random
 
 /**
- * The Care module on this device (docs/ecosystem.md, section 6): its own save in its own [storage] (`care.json`), apart
+ * The Care module on this device (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md): its own save in its own [storage] (`care.json`), apart
  * from Plan's. It reaches the shared world only through [world], with events that carry no text, mood or health value.
  * Doing earns (a routine, a calm break, a practised skill, a week with a rhythm); entering anything sensitive (a diary card,
  * a note, a journal entry) never does.
