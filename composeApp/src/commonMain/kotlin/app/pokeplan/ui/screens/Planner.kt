@@ -88,105 +88,68 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import kotlinx.datetime.minus
 
-internal enum class View(val label: String, val icon: String) {
-    TODAY("Today", "oaks-parcel"), DAY("Calendar", "town-map"), INBOX("Inbox", "seal-bag"), UPCOMING("Next 7 days", "timer-ball"), TARGETS("Targets", "heart-scale"), DONE("Done", "premier-ball"),
-    // Last, because widgets and shortcuts open a view by its index.
-    ALL("All tasks", "scope-lens"),
+/** Where a quick-add box files a task when the words name no day: Today plans it for today, the Inbox and a list leave it undated. */
+internal enum class AddTo { TODAY, INBOX }
+
+/** Which task card is open on a page, so a page opens one card at a time. */
+@androidx.compose.runtime.Stable
+internal class CardHost { var expanded by mutableStateOf<String?>(null) }
+
+/** A task row that opens into its card; [showList] adds the list's name to the details (off inside that list). */
+internal fun taskCards(model: AppModel, host: CardHost, showList: Boolean = true): @Composable (Task, LocalDate?) -> Unit = { t, day ->
+    TaskCard(model, t, day, host.expanded == t.id, { host.expanded = if (host.expanded == t.id) null else t.id }, onDeleted = { model.deletedTask = t; host.expanded = null }, showList = showList)
 }
 
+/** Plan's tasks as its pages show them: not deleted, and not one just ticked off and waiting out its undo. */
+internal fun planTasks(model: AppModel): List<Task> {
+    val pending = model.data.pending.map { it.original.id }.toSet()
+    return model.data.tasks.filter { it.state != TaskState.DELETED && it.id !in pending }
+}
+
+/**
+ * One of Plan's task pages behind the Today menu (PLAN.md section 3): Inbox, Upcoming, Lists, Calendar, Targets and All tasks.
+ * [open] goes to another section (Upcoming's Calendar key); [toToday] goes back to Today, where the quick-add box is.
+ */
 @Composable
-fun PlannerScreen(model: AppModel, startView: Int = -1, startWeek: Boolean = false, onBack: (() -> Unit)? = null) = app.pokeplan.ui.theme.ModuleTone(app.pokeplan.ui.theme.ModuleAccent.PLAN) { PlannerBody(model, startView, startWeek, onBack) }
+internal fun PlanView(model: AppModel, section: PlanSection, onBack: () -> Unit, open: (PlanSection) -> Unit, toToday: () -> Unit, startWeek: Boolean = false) =
+    app.pokeplan.ui.theme.ModuleTone(ModuleAccent.PLAN) { PlanViewBody(model, section, onBack, open, toToday, startWeek) }
 
 @Composable
-private fun PlannerBody(model: AppModel, startView: Int, startWeek: Boolean, onBack: (() -> Unit)?) {
-    var view by remember { mutableStateOf(View.entries.getOrNull(startView)) }
-    var expanded by remember { mutableStateOf<String?>(null) }
-    // A list opened from the menu's Lists section (TickTick's lists); null shows the menu or the smart list in [view].
-    var openList by remember { mutableStateOf<String?>(null) }
+private fun PlanViewBody(model: AppModel, section: PlanSection, onBack: () -> Unit, open: (PlanSection) -> Unit, toToday: () -> Unit, startWeek: Boolean) {
+    val host = remember { CardHost() }
     val store = model.store
-    val live = model.data.tasks.filter { it.state != TaskState.DELETED }
-    val pendingIds = model.data.pending.map { it.original.id }.toSet()
-
-    fun tasksFor(v: View): List<Task> = when (v) {
-        View.TODAY -> store.todayTasks()
-        View.INBOX -> TaskViews.inbox(live)
-        View.UPCOMING -> TaskViews.upcoming(live, store.now)
-        View.DONE -> live.filter { it.state == TaskState.DONE }.sortedByDescending { it.completedAtMillis }.take(30)
-        View.TARGETS, View.DAY, View.ALL -> emptyList()
-    }.filter { it.id !in pendingIds }
-
-    fun card(showList: Boolean): @Composable (Task, LocalDate?) -> Unit = { t, day ->
-        TaskCard(model, t, day, expanded == t.id, { expanded = if (expanded == t.id) null else t.id }, onDeleted = { model.deletedTask = t; expanded = null }, showList = showList)
+    val live = planTasks(model)
+    if (section == PlanSection.LISTS) {
+        // A list slides in from the Lists page and back out; each keeps its scroll position.
+        var openList by remember { mutableStateOf<String?>(null) }
+        ScreenSwitch(openList, depth = { if (it == null) 0 else 1 }) { id ->
+            val list = id?.let { i -> model.data.lists.firstOrNull { it.id == i } }
+            if (list != null) ListScreen(model, list, TaskViews.inList(live, list.id), taskCards(model, host, showList = false)) { openList = null }
+            else SectionScaffold(section.label, null, onBack = onBack, icon = section.icon, color = ModuleAccent.PLAN.header) { ListsSection(model, live) { openList = it } }
+        }
+        return
     }
-
-    // A list or a smart list slides in from the menu and back out; each keeps its scroll position.
-    ScreenSwitch(view to openList, depth = { (v, l) -> if (v == null && l == null) 0 else 1 }) { (pageView, pageList) ->
-        val list = pageList?.let { id -> model.data.lists.firstOrNull { it.id == id } }
-        if (list != null) {
-            ListScreen(model, list, TaskViews.inList(live, list.id).filter { it.id !in pendingIds }, card(showList = false)) { openList = null }
-            return@ScreenSwitch
-        }
-
-        val current = pageView
-        if (current == null) {
-            val today = tasksFor(View.TODAY)
-            val doneToday = store.doneToday()
-            Column(Modifier.fillMaxSize()) {
-                ScreenHeader("Planner", icon = "journal", onBack = onBack, color = ModuleAccent.PLAN.header)
-                Column(
-                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.L),
-                ) {
-                    QuickAddBox(model, View.INBOX)
-                    MenuList(
-                        View.entries.map { v ->
-                            val count = when (v) {
-                                View.TODAY -> today.size
-                                View.DAY -> 0
-                                View.INBOX, View.UPCOMING -> tasksFor(v).size
-                                View.TARGETS -> 0
-                                View.DONE -> doneToday
-                                View.ALL -> live.count { it.isOpen }
-                            }
-                            val text = if (v == View.TARGETS) store.frequencyTasks().let { hs -> if (hs.isEmpty()) "" else "${hs.count { store.today in it.completions }}/${hs.size}" } else if (count > 0) "$count" else ""
-                            MenuEntry(v.name, v.icon, v.label, tint = ModuleAccent.PLAN.accent, count = text)
-                        },
-                    ) { key -> view = View.valueOf(key) }
-                    ListsSection(model, live) { openList = it }
-                }
+    val pendingIds = model.data.pending.map { it.original.id }.toSet()
+    val card = taskCards(model, host)
+    val calendarKey: (@Composable () -> Unit)? = if (section != PlanSection.UPCOMING) null else ({ PixelButton("Calendar", { open(PlanSection.CALENDAR) }, color = Pixel.InkSoft, compact = true) })
+    SectionScaffold(section.label, null, onBack = onBack, icon = section.icon, color = ModuleAccent.PLAN.header, trailing = calendarKey) {
+        when (section) {
+            PlanSection.TARGETS -> FrequencyView(model)
+            PlanSection.CALENDAR -> { DayView(model, pendingIds, startWeek); CalendarSettings(model) }
+            PlanSection.ALL -> AllTasksView(model, live, card, onAdd = { model.addTaskRequested = true; toToday() })
+            PlanSection.INBOX -> {
+                QuickAddBox(model, AddTo.INBOX)
+                val shown = TaskViews.inbox(live)
+                if (shown.isEmpty()) EmptyState("The inbox is empty", icon = section.icon, addAbove = "Add a task")
+                else TaskGroup(null, shown.sortedByDescending { it.createdAtMillis }, card = card)
             }
-            return@ScreenSwitch
-        }
-
-        SectionScaffold(current.label, null, onBack = { view = null }, icon = current.icon, color = ModuleAccent.PLAN.header) {
-            when (current) {
-                View.TARGETS -> FrequencyView(model)
-                View.DAY -> DayView(model, pendingIds, startWeek)
-                View.ALL -> AllTasksView(model, live.filter { it.id !in pendingIds }, card(showList = true), onAdd = { model.addTaskRequested = true; view = View.TODAY })
-                else -> {
-                    if (current == View.TODAY || current == View.INBOX) QuickAddBox(model, current)
-                    val shown = tasksFor(current)
-                    val card = card(showList = true)
-                    when (current) {
-                        View.TODAY -> TodayList(model, shown, card)
-                        // Soon by the day each task is on, Done by the day it was finished (Todoist's Upcoming, Things' Logbook).
-                        View.UPCOMING -> shown.groupBy { it.planned ?: it.due!!.date }.forEach { (day, ts) -> TaskGroup(dayName(model, day), ts, dayOf = day, card = card) }
-                        View.DONE -> shown.groupBy { store.dayOf(it.completedAtMillis ?: 0L) }.forEach { (day, ts) -> TaskGroup(dayName(model, day), ts, card = card) }
-                        View.INBOX -> WhenGroups(model, shown, card)
-                        else -> if (shown.isNotEmpty()) TaskGroup(null, shown, card = card)
-                    }
-                    if (shown.isEmpty() && current != View.TODAY) EmptyState(
-                        emptyTitle(current), icon = current.icon,
-                        // Only Today and Inbox have a quick-add box; Next 7 days and Done send the player to Today with the keyboard open.
-                        addAbove = if (current == View.INBOX) "Add a task" else null,
-                        action = when (current) {
-                            View.UPCOMING -> "Add a task" to { model.addTaskRequested = true; view = View.TODAY }
-                            View.DONE -> "Open Today" to { view = View.TODAY }
-                            else -> null
-                        },
-                    )
-                }
+            PlanSection.UPCOMING -> {
+                // By the day each task is on (Todoist's Upcoming), with no cap on how far ahead.
+                val shown = TaskViews.upcoming(live, store.now)
+                shown.groupBy { it.planned ?: it.due!!.date }.forEach { (day, ts) -> TaskGroup(dayName(model, day), ts, dayOf = day, card = card) }
+                if (shown.isEmpty()) EmptyState("Nothing coming up", icon = section.icon, action = "Add a task" to { model.addTaskRequested = true; toToday() })
             }
+            else -> {}
         }
     }
 }
@@ -203,12 +166,19 @@ private fun dayName(model: AppModel, day: LocalDate): String {
 }
 
 /**
- * Today, after Things and Todoist: how the day is going, then the tasks from before (with one button to bring them to
- * today), then today's, then "This evening". Every group sits in one panel, rows split by lines.
+ * Plan's Today (PLAN.md section 3.1), after Things and Todoist: how the day is going, the task to do next (with Focus on this
+ * and Pick for me, +10% candies), the tasks from before (with one button to bring them to today), today's, today's unmet
+ * frequency targets, "This evening", and what was finished today folded away. Every group sits in one panel, rows split by
+ * lines. [onFocus] is null where there is no Focus (desktop and the web).
  */
 @Composable
-private fun TodayList(model: AppModel, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit) {
+internal fun TodayList(model: AppModel, onFocus: ((Task) -> Unit)?) {
     val store = model.store
+    val data = model.data
+    val host = remember { CardHost() }
+    val card = taskCards(model, host)
+    val tasks = store.openTodayTasks()
+    val targets = store.frequencyTasks().filter { store.frequencyDueToday(it) }
     val done = store.doneToday()
     if (tasks.isNotEmpty() || done > 0) {
         val total = tasks.size + done
@@ -217,22 +187,68 @@ private fun TodayList(model: AppModel, tasks: List<Task>, card: @Composable (Tas
             app.pokeplan.ui.theme.PixelBar(done.toFloat() / total, Modifier.weight(1f), label = "$done of $total done")
         }
     }
-    if (tasks.isEmpty()) {
-        if (done > 0) EmptyState("All clear for today", icon = View.TODAY.icon, sleeper = true, action = "Add another" to { model.addTaskRequested = true })
-        else EmptyState(emptyTitle(View.TODAY), icon = View.TODAY.icon, sleeper = true, action = "Add a task" to { model.addTaskRequested = true })
-        return
+    if (tasks.isEmpty() && targets.isEmpty()) {
+        if (done > 0) EmptyState("All clear for today", icon = PlanSection.TODAY_ICON, sleeper = true, action = "Add another" to { model.addTaskRequested = true })
+        else EmptyState("Nothing planned for today", icon = PlanSection.TODAY_ICON, sleeper = true, action = "Add a task" to { model.addTaskRequested = true })
     }
-    val before = TaskViews.overdue(tasks, store.now).toSet()
-    val (day, evening) = tasks.filter { it !in before }.partition { !TaskViews.isEvening(it) }
+    // The picked task, else the first of today's own (an overdue one stays under "From before", with its Move to today).
+    val late = TaskViews.overdue(tasks, store.now).toSet()
+    val next = tasks.firstOrNull { it.id == data.pickedTaskId } ?: tasks.firstOrNull { it !in late && !TaskViews.isEvening(it) } ?: tasks.firstOrNull { it !in late } ?: tasks.firstOrNull()
+    if (next != null) NextUp(
+        task = next,
+        onDone = { model.completeTask(next.id) },
+        onFocus = onFocus?.let { f -> { f(next) } },
+        onChoose = if (tasks.size > 1 || data.pickedTaskId != next.id) ({ store.pickForMe() }) else null,
+        picked = next.id == data.pickedTaskId,
+        day = store.today,
+    )
+    val rest = tasks.filter { it.id != next?.id }
+    val before = TaskViews.overdue(rest, store.now).toSet()
+    val (day, evening) = rest.filter { it !in before }.partition { !TaskViews.isEvening(it) }
     // Planned for an earlier day can move to today; a deadline that has passed stays as it is (moving the plan would not change it).
-    val movable = before.filter { it.due == null }
+    val movable = late.filter { it.due == null }
     if (before.isNotEmpty()) TaskGroup(
         "From before", before.toList(), color = Pixel.Warning,
         action = if (movable.isEmpty()) null else "Move to today" to { movable.forEach { store.updateTask(it.copy(planned = store.today)) } },
         card = card,
     )
-    if (day.isNotEmpty()) TaskGroup(if (before.isEmpty() && evening.isEmpty()) null else "Today", day, dayOf = store.today, card = card)
+    if (day.isNotEmpty()) TaskGroup(if (before.isEmpty() && evening.isEmpty() && targets.isEmpty()) null else "Today", day, dayOf = store.today, card = card)
+    if (targets.isNotEmpty()) TargetGroup(model, targets)
     if (evening.isNotEmpty()) TaskGroup("This evening", evening, dayOf = store.today, card = card)
+    // What was finished today, folded away (Reopen is on each row).
+    if (done > 0) {
+        var showDone by remember { mutableStateOf(false) }
+        PixelButton(if (showDone) "Hide done" else "Done today ($done)", { showDone = !showDone }, color = Pixel.InkSoft, compact = true)
+        if (showDone) TaskGroup(null, data.tasks.filter { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }.sortedByDescending { it.completedAtMillis }, card = card)
+    }
+}
+
+/** Today's frequency targets not yet met, as a group of rows with the same check key as a task; the Targets page edits them. */
+@Composable
+private fun TargetGroup(model: AppModel, targets: List<app.pokeplan.app.TaskSeries>) {
+    val store = model.store
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        Row(Modifier.fillMaxWidth().padding(top = Spacing.S), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Text("Targets", style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+            Text("${targets.size}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        }
+        val shape = PixelShape
+        Column(Modifier.fillMaxWidth().background(Pixel.Panel, shape).border(Sizes.Hairline, Pixel.Border, shape).clip(shape)) {
+            targets.forEachIndexed { i, h ->
+                if (i > 0) HorizontalDivider(Modifier.padding(start = Spacing.M), color = Pixel.Border)
+                Row(
+                    Modifier.fillMaxWidth().defaultMinSize(minHeight = 64.dp).padding(Spacing.M),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
+                ) {
+                    PixelIconButton("check", "Done", { model.effect(app.pokeplan.ui.Sfx.HABIT_TICK); store.completeFrequencyTask(h.template.id) }, Pixel.Green)
+                    Column(Modifier.weight(1f)) {
+                        TaskTitleLine(h.template, MaterialTheme.typography.bodyLarge)
+                        store.frequencyProgress(h)?.let { Text(it.label(), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) }
+                    }
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -289,14 +305,6 @@ fun EmptyState(
     }
 }
 
-internal fun emptyTitle(view: View) = when (view) {
-    View.TODAY -> "Nothing planned for today"
-    View.INBOX -> "The inbox is empty"
-    View.UPCOMING -> "Nothing coming up"
-    View.DONE -> "Nothing finished yet"
-    View.TARGETS -> "No targets yet"
-    View.DAY, View.ALL -> ""
-}
 
 
 /** What the difficulty ranks mean. Harder tasks earn more; it is how hard it feels, not how urgent it is. */
@@ -350,7 +358,7 @@ private fun daysToWeekend(today: LocalDate): Int = today.dayOfWeek.isoDayNumber.
 
 /** Add a task with just a title; the chips pick a day and "More options" adds difficulty. "Call mum tomorrow 5pm 30m" is understood too. */
 @Composable
-internal fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
+internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) {
     var text by remember { mutableStateOf("") }
     var rank by remember { mutableStateOf(Rank.C) }
     var day by remember { mutableStateOf<Int?>(null) } // null: as typed / the view's default; 0 today; 1 tomorrow; WEEKEND; NO_DATE
@@ -380,7 +388,7 @@ internal fun QuickAddBox(model: AppModel, view: View, listId: String? = null) {
                 picked == NO_DATE -> null
                 picked == WEEKEND -> model.store.today.plus(DatePeriod(days = daysToWeekend(model.store.today)))
                 picked != null -> model.store.today.plus(DatePeriod(days = picked))
-                else -> parsed.planned ?: if (parsed.due == null && view == View.TODAY) model.store.today else null
+                else -> parsed.planned ?: if (parsed.due == null && addTo == AddTo.TODAY && listId == null) model.store.today else null
             }
             val made = model.store.addTask(
                 title = parsed.title.ifBlank { text.trim() }, rank = parsed.rank ?: rank,

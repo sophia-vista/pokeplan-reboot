@@ -35,4 +35,14 @@ object Frequency {
         }
         is HabitTarget.PerMonth -> FrequencyProgress(completions.count { it.year == today.year && it.monthNumber == today.monthNumber }, target.times, "this month")
     }
+
+    /**
+     * Whether the target shows on Today (PLAN.md section 3.1): not done today, today one of its days (for chosen weekdays), and its
+     * period not met yet. A target met for the week asks for nothing more that week.
+     */
+    fun dueToday(target: FrequencyTarget, completions: Set<LocalDate>, today: LocalDate, weekStart: DayOfWeek = DayOfWeek.MONDAY): Boolean {
+        if (today in completions) return false
+        if (target is HabitTarget.Weekdays && today.dayOfWeek !in target.days) return false
+        return !progress(target, completions, today, weekStart).reached
+    }
 }

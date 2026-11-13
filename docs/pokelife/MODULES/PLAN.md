@@ -69,11 +69,13 @@ CARE retains ownership of its routine and Diary Card reminder preferences and so
 
 Use a small, stable navigation structure. Avoid a separate destination for every feature.
 
+**As built (owner, 12 November 2026):** Modules → Plan **is** Today. Below today's work sits one menu of rows with counts: **Inbox**, **Upcoming**, **Lists**, **Calendar**, **Focus** and **More**. More holds the places visited less often: **Progress** (with the weekly review as a card when one is ready, and past reviews), **Goals**, **Targets** (frequency targets) and **All tasks** (search and filters, with a **Done** preset that shows finished and won't-do tasks). There is no Planner menu, no separate Review or Done destination and no Plan settings page: the usual focus length and Deep Focus are what the last session was started with (Focus setup), and the week start and calendars sit at the foot of the Calendar.
+
 Primary destinations:
 
-1. **Today** — actionable view for the current day.
-2. **Inbox** — captured and unprocessed tasks.
-3. **Upcoming** — future tasks and commitments.
+1. **Today** — actionable view for the current day (the module's page).
+2. **Inbox** — captured and unprocessed tasks: no list and no date.
+3. **Upcoming** — future tasks and commitments, with no day cap; a Calendar key in its header.
 4. **Lists** — projects and task groupings.
 5. **Focus** — start and manage focus sessions.
 
@@ -94,11 +96,13 @@ Suggested order:
 7. Compact focus entry point.
 8. Completed items, collapsed by default.
 
+As built: the lead's stage, quick add, the day's progress, the task to do next with **Focus on this** and **Pick for me**, then From before (with Move to today), Today, today's unmet frequency targets (as a group, ticked with the same check key as a task), This evening, "Done today" folded, the menu, and the party as one row.
+
 Do not fill Today with future tasks merely because they are incomplete. Do not automatically treat unscheduled tasks as due today. Overdue tasks remain visible until resolved or rescheduled. Completed tasks should not dominate. Linked CARE records must be distinguishable and must not generate PLAN rewards. Today remains useful when empty, with a restrained empty state and capture action.
 
 ### 3.2 Inbox
 
-Inbox is the low-friction destination for anything the user does not want to organize immediately. Title-only capture is valid. A task does not require a list, project, due date, priority, recurrence, or reminder.
+Inbox is the low-friction destination for anything the user does not want to organize immediately: an open task with no list and no date. Giving it a date or a list takes it out of the Inbox. Title-only capture is valid. A task does not require a list, project, due date, priority, recurrence, or reminder.
 
 Inbox processing may keep the task in Inbox, assign a date/list/project, add recurrence/priority/notes/subtasks, convert to a PLAN event where appropriate, archive, or delete. Do not force mandatory triage.
 

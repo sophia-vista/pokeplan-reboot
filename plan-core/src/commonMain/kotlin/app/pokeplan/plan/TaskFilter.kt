@@ -1,7 +1,7 @@
 package app.pokeplan.plan
 
 /**
- * What the Planner's "All tasks" view shows: a search over title and notes, and one choice each for category, list, rank
+ * What Plan's "All tasks" view shows: a search over title and notes, and one choice each for category, list, rank
  * and status. A null choice means "any". Deleted tasks never match.
  */
 data class TaskFilter(
@@ -10,12 +10,18 @@ data class TaskFilter(
     /** A list's id, [INBOX] for tasks in no list, or null for any list. */
     val listId: String? = null,
     val rank: Rank? = null,
-    /** Open by default; null means any state (finished and "won't do" included). */
-    val state: TaskState? = TaskState.OPEN,
+    /** Open by default; [Status.FINISHED] is the Done preset (done and "won't do"); [Status.ANY] is every state. */
+    val status: Status = Status.OPEN,
 ) {
+    enum class Status(val label: String) { OPEN("Open"), FINISHED("Done"), ANY("Any") }
+
     fun matches(task: Task): Boolean {
         if (task.state == TaskState.DELETED) return false
-        if (state != null && task.state != state) return false
+        when (status) {
+            Status.OPEN -> if (task.state != TaskState.OPEN) return false
+            Status.FINISHED -> if (task.state != TaskState.DONE && task.state != TaskState.WONT_DO) return false
+            Status.ANY -> {}
+        }
         if (category != null && task.category != category) return false
         if (rank != null && task.rank != rank) return false
         if (listId != null && (if (listId == INBOX) task.listId != null else task.listId != listId)) return false

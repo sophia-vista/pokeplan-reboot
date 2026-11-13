@@ -1022,6 +1022,9 @@ class GameStore(
     /** How far [series] is in its current period: "2 / 3 this week". */
     fun frequencyProgress(series: TaskSeries): FrequencyProgress? = series.target?.let { Frequency.progress(it, series.completions, today, firstDayOfWeek) }
 
+    /** Whether a target is one of Today's: not done today and its period not met ([Frequency.dueToday]). */
+    fun frequencyDueToday(series: TaskSeries): Boolean = series.target?.let { Frequency.dueToday(it, series.completions, today, firstDayOfWeek) } ?: false
+
     /** The streak of a frequency task, forgiving and secondary (PLAN.md section 5.4). */
     fun frequencyStreak(series: TaskSeries): Int = series.asHabit()?.streak(today, data.restDays, perks.extraForgivenDays, firstDayOfWeek) ?: 0
 
@@ -1102,11 +1105,14 @@ class GameStore(
 
     fun canReview(): Boolean = Reviews.canComplete(weekStart, today, data.reviews)
 
-    /** Finishes this week's review: optionally moves unfinished tasks to [carryTo], and pays a berry. */
-    fun completeReview(note: String?, carryTo: LocalDate? = null) {
+    /**
+     * Finishes this week's review: optionally moves unfinished tasks to [carryTo], and pays a berry. [movedIds] are the tasks the
+     * review already moved one by one (Move or Later), recorded with the carried ones.
+     */
+    fun completeReview(note: String?, carryTo: LocalDate? = null, movedIds: Collection<String> = emptyList()) {
         check(canReview()) { "this week was already reviewed" }
         val carried = if (carryTo != null) reviewSummary().unfinished.map { Reviews.carryForward(it, carryTo) } else emptyList()
-        val review = Reviews.complete(weekStart, nowMillis, note, carried, data.reviews)
+        val review = Reviews.complete(weekStart, nowMillis, note, carried, data.reviews).let { r -> r.copy(carriedForwardTaskIds = (r.carriedForwardTaskIds + movedIds).distinct()) }
         val berry = Items.randomBerry(rng)
         update { d ->
             val byId = carried.associateBy { it.id }

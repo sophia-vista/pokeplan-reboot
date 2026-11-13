@@ -107,7 +107,7 @@ internal fun ListScreen(model: AppModel, list: TaskList, tasks: List<Task>, card
     SectionScaffold(list.name, if (list.archived) "Archived list" else null, onBack = back, icon = list.icon, color = ModuleAccent.PLAN.header) {
         if (editing) ListEditor(model, list) { kept -> editing = false; if (kept == null) back() }
         else PixelButton("Edit list", { editing = true }, color = Pixel.InkSoft, compact = true)
-        if (!list.archived) QuickAddBox(model, View.INBOX, listId = list.id)
+        if (!list.archived) QuickAddBox(model, AddTo.INBOX, listId = list.id)
         WhenGroups(model, tasks, card)
         if (tasks.isEmpty()) EmptyState("Nothing in ${list.name}", icon = list.icon, action = "Add a task" to { model.addTaskRequested = true })
     }

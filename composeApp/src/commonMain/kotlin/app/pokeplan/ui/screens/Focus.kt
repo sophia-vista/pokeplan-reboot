@@ -187,7 +187,12 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
         // FocusRules.EMERGENCY_PAUSES_PER_DAY pauses of up to FocusRules.EMERGENCY_PAUSE_MILLIS a day, paused time doesn't count; Give up stops at any time.
     }
     Column(Modifier.fillMaxWidth().padding(horizontal = Spacing.M, vertical = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelButton("Start $minutes min", { model.effect(Sfx.FOCUS_START); store.startFocus(minutes, deep, taskId); store.dismissFocusEnd() }, Modifier.fillMaxWidth(), ModuleAccent.PLAN.accent)
+        PixelButton("Start $minutes min", {
+            model.effect(Sfx.FOCUS_START)
+            // The length and Deep Focus chosen here become the usual ones (Plan has no settings page of its own).
+            if (settings.defaultFocusMinutes != minutes || settings.deepFocus != deep) store.changeSettings { it.copy(defaultFocusMinutes = minutes, deepFocus = deep) }
+            store.startFocus(minutes, deep, taskId); store.dismissFocusEnd()
+        }, Modifier.fillMaxWidth(), ModuleAccent.PLAN.accent)
     }
 }
 

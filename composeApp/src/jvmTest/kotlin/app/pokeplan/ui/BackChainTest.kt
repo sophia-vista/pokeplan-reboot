@@ -60,37 +60,22 @@ class BackChainTest {
     }
 
     @Test
-    fun planSectionsGoBackToThePlanMenuThenToModules() {
-        for (section in PlanSection.entries.filter { it != PlanSection.PLANNER && it != PlanSection.FOCUS }) {
+    fun planSectionsGoBackToTodayThenToModules() {
+        // A section of More goes back to More first; every other section goes back to Today, Plan's page.
+        for (section in PlanSection.entries) {
             val m = model().also { it.module = Module.PLAN; it.planSection = section }
             scene({ app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }) { s ->
                 s.settle()
+                if (section.parent != null) {
+                    s.back()
+                    assertEquals(PlanSection.MORE, m.planSection, "Back from Plan's ${section.label} lands on More")
+                }
                 s.back()
-                assertNull(m.planSection, "Back from Plan's ${section.label} lands on Plan's menu")
+                assertNull(m.planSection, "Back from Plan's ${section.label} lands on Today")
                 assertEquals(Module.PLAN, m.module)
                 s.back()
-                assertNull(m.module, "and Back from Plan's menu lands on Modules")
+                assertNull(m.module, "and Back from Today lands on Modules")
             }
-        }
-    }
-
-    @Test
-    fun theFocusScreenGoesBackToThePlanMenu() {
-        val m = model().also { it.module = Module.PLAN; it.planSection = PlanSection.FOCUS }
-        scene({ app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }) { s -> s.settle(); s.back(); assertNull(m.planSection); assertEquals(Module.PLAN, m.module) }
-    }
-
-    @Test
-    fun aPlannerViewGoesBackToThePlannerMenuThenToPlan() {
-        // "Add task" opens the Planner on Today (a view); Back steps out of the view, then out of the Planner.
-        val m = model().also { it.module = Module.PLAN; it.planSection = PlanSection.PLANNER; it.addTaskRequested = true }
-        scene({ app.pokeplan.ui.screens.ModulesScreen(m, focusTab = true) {} }) { s ->
-            s.settle()
-            s.back()
-            assertEquals(PlanSection.PLANNER, m.planSection, "the first Back closes the view and shows the Planner's menu")
-            s.back()
-            assertNull(m.planSection, "the second Back leaves the Planner for Plan's menu")
-            assertEquals(Module.PLAN, m.module)
         }
     }
 
