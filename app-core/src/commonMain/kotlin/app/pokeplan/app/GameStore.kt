@@ -568,11 +568,11 @@ class GameStore(
 
     // --- tasks --------------------------------------------------------------------------------------------------------
 
-    /** Adds a task. Everything but the title is optional. */
+    /** Adds a task. Everything but the title is optional; with no [category] it takes its list's ([defaultCategory]). */
     fun addTask(
         title: String,
         rank: Rank = Rank.C,
-        category: Category = Category.PERSONAL,
+        category: Category? = null,
         planned: LocalDate? = null,
         due: LocalDateTime? = null,
         estimateMinutes: Int? = null,
@@ -584,7 +584,7 @@ class GameStore(
         evening: Boolean = false,
     ): Task {
         val task = Task(
-            id = newId(), title = title.trim(), notes = notes, rank = rank, category = category, planned = planned, due = due,
+            id = newId(), title = title.trim(), notes = notes, rank = rank, category = category ?: defaultCategory(listId), planned = planned, due = due,
             plannedTime = plannedTime?.takeIf { planned != null }, evening = evening && planned != null,
             estimateMinutes = estimateMinutes, createdAtMillis = nowMillis, listId = listId?.takeIf { id -> data.lists.any { it.id == id } },
         )
@@ -687,14 +687,17 @@ class GameStore(
     fun listNamed(name: String): TaskList? = activeLists.firstOrNull { it.name.equals(name.trim(), ignoreCase = true) }
 
     /** Makes a list. A blank name is not a list. */
-    fun addList(name: String, color: Long = TaskList.COLORS.first(), icon: String = TaskList.ICONS.first()): TaskList? {
+    fun addList(name: String, color: Long = TaskList.COLORS.first(), icon: String = TaskList.ICONS.first(), category: Category? = null): TaskList? {
         val clean = name.trim().take(TaskList.MAX_NAME).ifEmpty { return null }
-        val list = TaskList(newId(), clean, color, icon)
+        val list = TaskList(newId(), clean, color, icon, category = category)
         update { it.copy(lists = it.lists + list) }
         return list
     }
 
-    /** Renames, recolours, re-icons or archives a list. */
+    /** The category a new task in list [listId] starts with: the list's own, else Personal (the Inbox and a list with none). */
+    fun defaultCategory(listId: String?): Category = data.lists.firstOrNull { it.id == listId }?.category ?: Category.PERSONAL
+
+    /** Renames, recolours, re-icons, re-categorises or archives a list. Its tasks keep their own categories. */
     fun updateList(list: TaskList) = update { d ->
         d.copy(lists = d.lists.map { if (it.id == list.id) list.copy(name = list.name.trim().take(TaskList.MAX_NAME).ifEmpty { it.name }) else it })
     }
@@ -1039,6 +1042,23 @@ class GameStore(
     /** Changes a goal's words, area and target date (null: no date to aim for). A blank title keeps the old one. Milestones and progress are untouched. */
     fun editGoal(goalId: String, title: String, category: Category, targetDate: LocalDate?) {
         update { d -> d.copy(goals = d.goals.map { g -> if (g.id == goalId) g.copy(title = title.trim().ifEmpty { g.title }, category = category, targetDate = targetDate) else g }) }
+    }
+
+    /** The goal task [taskId] is linked to, if any: a task counts toward at most one goal. */
+    fun goalOf(taskId: String): Goal? = data.goals.firstOrNull { taskId in it.linkedTaskIds }
+
+    /**
+     * Links task [taskId] to goal [goalId], taking it from any other goal first; null unlinks it. A link pays nothing: it only
+     * counts the task toward a goal without milestones ([GoalRules.progress]), and finishing a goal stays the player's choice.
+     */
+    fun linkTaskToGoal(taskId: String, goalId: String?) {
+        if (data.tasks.none { it.id == taskId }) return
+        update { d ->
+            d.copy(goals = d.goals.map { g ->
+                val linked = g.linkedTaskIds - taskId
+                g.copy(linkedTaskIds = if (g.id == goalId) linked + taskId else linked)
+            })
+        }
     }
 
     /** Removes a goal and its milestones. Candies already paid stay paid; the tasks linked to it stay as tasks. */

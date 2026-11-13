@@ -876,6 +876,38 @@ class GameStoreTest {
     }
 
     @Test
+    fun a_list_gives_its_category_to_new_tasks_only() {
+        val (s, _) = started()
+        val gym = s.addList("Gym")!!
+        val old = s.addTask("Old", listId = gym.id)
+        s.updateList(gym.copy(category = app.pokeplan.plan.Category.HEALTH))
+        assertEquals(app.pokeplan.plan.Category.HEALTH, s.addTask("Run", listId = gym.id).category)
+        // A category named for the task wins; the Inbox and the tasks already in the list keep theirs.
+        assertEquals(app.pokeplan.plan.Category.WORK, s.addTask("Plan", category = app.pokeplan.plan.Category.WORK, listId = gym.id).category)
+        assertEquals(app.pokeplan.plan.Category.PERSONAL, s.addTask("Stray").category)
+        assertEquals(app.pokeplan.plan.Category.PERSONAL, s.data.tasks.first { it.id == old.id }.category)
+    }
+
+    @Test
+    fun a_task_links_to_one_goal_at_a_time_and_the_link_pays_nothing() {
+        val (s, _) = started()
+        val guitar = s.addGoal("Learn guitar")
+        val fit = s.addGoal("Get fit")
+        val task = s.addTask("Practise chords")
+        val coins = s.data.player.coins
+        s.linkTaskToGoal(task.id, guitar.id)
+        assertEquals(guitar.id, s.goalOf(task.id)?.id)
+        s.linkTaskToGoal(task.id, fit.id)
+        assertEquals(fit.id, s.goalOf(task.id)?.id)
+        assertTrue(s.data.goals.first { it.id == guitar.id }.linkedTaskIds.isEmpty())
+        s.linkTaskToGoal(task.id, null)
+        assertNull(s.goalOf(task.id))
+        s.linkTaskToGoal("no-such-task", fit.id)
+        assertTrue(s.data.goals.all { it.linkedTaskIds.isEmpty() })
+        assertEquals(coins, s.data.player.coins)
+    }
+
+    @Test
     fun an_all_day_event_spans_its_days_and_moves_as_one() {
         val (s, _) = started()
         val first = s.today

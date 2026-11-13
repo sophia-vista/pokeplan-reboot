@@ -114,7 +114,7 @@ internal fun ListScreen(model: AppModel, list: TaskList, tasks: List<Task>, card
 }
 
 /**
- * Makes a list ([list] null) or edits one: its name, one of eight colours and a real item icon; an existing list can also
+ * Makes a list ([list] null) or edits one: its name, one of eight colours, a real item icon and the category its new tasks start with; an existing list can also
  * be archived (hidden from the menu, tasks kept) or deleted (its tasks go back to the Inbox). [done] gets the list's id,
  * or null when it was deleted or nothing was made.
  */
@@ -124,6 +124,7 @@ private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit
     var name by remember { mutableStateOf(list?.name ?: "") }
     var color by remember { mutableStateOf(list?.color ?: TaskList.COLORS.first()) }
     var icon by remember { mutableStateOf(list?.icon ?: TaskList.ICONS.first()) }
+    var category by remember { mutableStateOf(list?.category) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelField(
@@ -159,10 +160,13 @@ private fun ListEditor(model: AppModel, list: TaskList?, done: (String?) -> Unit
                     ) { ItemIcon(id, size = 36.dp, description = null) }
                 }
             }
+            // The category a task added here starts with; tap the chosen one again for none (Personal, as in the Inbox).
+            FieldLabel("New tasks are")
+            CategoryChips(category, allowNone = true) { category = it }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton(if (list == null) "Make list" else "Save", {
-                    if (list == null) done(store.addList(name, color, icon)?.id)
-                    else { store.updateList(list.copy(name = name, color = color, icon = icon)); done(list.id) }
+                    if (list == null) done(store.addList(name, color, icon, category)?.id)
+                    else { store.updateList(list.copy(name = name, color = color, icon = icon, category = category)); done(list.id) }
                 }, Modifier.weight(1f), enabled = name.isNotBlank(), compact = true)
                 PixelIconButton("close", "Cancel", { done(list?.id) }, Pixel.InkSoft)
             }
