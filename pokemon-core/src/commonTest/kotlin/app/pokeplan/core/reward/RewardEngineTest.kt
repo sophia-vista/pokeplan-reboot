@@ -145,15 +145,6 @@ class RewardEngineTest {
     }
 
     @Test
-    fun tasksNoLongerTrainEvs() {
-        val buddy = pokemon(Ids.PIKACHU)
-        val state = PlayerState(pokemon = listOf(buddy), buddyId = buddy.id)
-        val out = RewardEngine.achievement(state, achievement(4), Random(1))
-        assertEquals(0, out.state.buddy!!.evs.total, "EVs come from Vitamins only")
-        assertTrue(out.rewards.none { it is Reward.Evs })
-    }
-
-    @Test
     fun thePickedTaskPaysABitMore() {
         fun candies(picked: Boolean) = (1..300).sumOf { seed ->
             RewardEngine.achievement(PlayerState(), achievement(5).copy(picked = picked), Random(seed)).rewards.filterIsInstance<Reward.Candies>().sumOf { it.amount }

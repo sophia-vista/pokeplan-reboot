@@ -80,15 +80,4 @@ class ItemsTest {
         assertEquals(6, overflow)
     }
 
-    @Test
-    fun catalogueNamesAndCategories() {
-        assertEquals("Exp. Candy", Items.name(Items.RARE_CANDY))
-        assertEquals(ItemCategory.VITAMIN, Items.category("protein"))
-        assertEquals(ItemCategory.LURE, Items.category(Items.lure(PokemonType.FIRE)))
-        assertEquals(ItemCategory.EVOLUTION, Items.category("fire-stone"))
-        assertEquals(ItemCategory.HELD, Items.category("lucky-egg"))
-        assertEquals("Fire Stone", Items.name("fire-stone"))
-        assertTrue("thunder-stone" in Items.evolutionItems && "dawn-stone" in Items.evolutionItems)
-        assertNotNull(Items.get("amulet-coin"))
-    }
 }

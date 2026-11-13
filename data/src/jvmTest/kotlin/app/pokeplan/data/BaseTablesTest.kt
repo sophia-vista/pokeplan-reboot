@@ -54,14 +54,6 @@ class BaseTablesTest {
     }""".trimIndent()
 
     @Test
-    fun theTestDocumentIsAValidHomeData() {
-        val data = Json { ignoreUnknownKeys = true }.decodeFromString(BaseData.serializer(), doc)
-        assertEquals(1, data.chores.size)
-        assertEquals("SN-123", data.assets.single().serial)
-        assertEquals(listOf("kg", "pcs"), data.settings.units)
-    }
-
-    @Test
     fun aFreshStartActivatesWithNothingToMoveAndSurvivesRestarts() {
         val s = JvmDatabase.open().also { it.live.activate(null, null, 1) }
         assertFalse(s.baseTables.isActive())

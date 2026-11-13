@@ -807,7 +807,7 @@ class ScreenshotTest {
         store.markRewardsSeen(); store.markVersionSeen(AppVersion.NAME)
         val others = store.data.player.pokemon.filter { it.id != store.data.player.buddyId }
         val ids = app.pokeplan.core.pokemon.PartyIds
-        listOf(ids.PLAN, ids.HEAL, ids.MINT, ids.HOME, ids.LINK).forEachIndexed { i, party -> others.getOrNull(i)?.let { store.setInParty(it.id, true, party) } }
+        listOf(ids.PLAN, ids.HEAL, ids.MINT, ids.BASE, ids.LINK).forEachIndexed { i, party -> others.getOrNull(i)?.let { store.setInParty(it.id, true, party) } }
         others.getOrNull(5)?.let { p -> store.worldAssign(0, listOf(p.id)) }
         val model = AppModel(store)
         for (dark in listOf(false, true)) {

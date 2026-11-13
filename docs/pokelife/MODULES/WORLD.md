@@ -56,17 +56,17 @@ WORLD has five primary destinations. Secondary functions remain contextual rathe
 
 | Destination | Purpose | Primary contents |
 |---|---|---|
-| **Base** | Exploration headquarters and community | Rank summary, facilities, active team summary, Finds, Guild attention and story continuation |
+| **Town** (called Base until 13 November 2026, when the BASE module took the name) | Exploration headquarters and community | Rank summary, facilities, active team summary, Finds, Guild attention and story continuation |
 | **Atlas** | Geographic exploration | Regions, maps, settlements, routes, landmarks, dungeons and Guardian locations |
 | **Expeditions** | Main gameplay loop | Team roster, team presets, dungeon selection, active expeditions, recall and expedition reports |
 | **Guild** | Requests and objectives | Rescue, retrieval, delivery, escort, investigation, challenge and story requests |
 | **Journal** | Discoveries and history | Research notebook, expedition history, dungeon records, recruitment history, story archive and Guardian records |
 
-Facilities are reached through Base. Research and story history live in Journal. Team setup is available from Expeditions and may be opened contextually from a dungeon. Bag access opens the shared Bag; it is not a WORLD-owned inventory screen.
+Facilities are reached through Town. Research and story history live in Journal. Team setup is available from Expeditions and may be opened contextually from a dungeon. Bag access opens the shared Bag; it is not a WORLD-owned inventory screen.
 
-### 2.1 Base — exploration headquarters
+### 2.1 Town — exploration headquarters
 
-Base is the player's central home within WORLD. It should feel like a functioning Pokémon settlement rather than a dense management dashboard.
+Town is the player's central home within WORLD. It should feel like a functioning Pokémon settlement rather than a dense management dashboard.
 
 Landing hierarchy:
 1. Exploration Rank and next meaningful milestone.
@@ -78,7 +78,7 @@ Landing hierarchy:
 7. Current regional story progress.
 8. Facility shortcuts.
 
-**Implemented (0.135.0):** the Base page now opens on the headquarters picture, as big as the width allows (the team base of the first partner from the Rescue Team games, plain, under construction or finished as the Camp grows), then the rank strip and a menu of the places in it (Facilities, Research, Café, Kecleon Shop, Swap Shop, Dojo). Each opens its own page, with a banner from the Square, Pokémon Square or the Dojo; before, every facility, research step, the Café and every shop stood in one long list. The primary action and the story, Finds and Guild lines of the landing hierarchy live on the WORLD menu above it, not on this page.
+**Implemented (0.135.0):** the Base page (now Town) opens on the headquarters picture, as big as the width allows (the team base of the first partner from the Rescue Team games, plain, under construction or finished as the Camp grows), then the rank strip and a menu of the places in it (Facilities, Research, Café, Kecleon Shop, Swap Shop, Dojo). Each opens its own page, with a banner from the Square, Pokémon Square or the Dojo; before, every facility, research step, the Café and every shop stood in one long list. The primary action and the story, Finds and Guild lines of the landing hierarchy live on the WORLD menu above it, not on this page.
 
 The primary action is state-dependent: begin the introductory adventure for a new save; prepare a team when none is active; review an expedition when teams are away; recruit a Pokémon when Finds are waiting; review a completed request when a claim is ready; or continue a chapter when a story scene is available. Do not show every available statistic and shortcut at once.
 
@@ -214,7 +214,7 @@ Preserve the current level-10 skill ceiling as a baseline. Pokémon abilities ma
 
 ### 3.4 Facilities and settlement
 
-Facilities are useful, limited systems inside Base, not a regional city-management simulator. Preserve and refine:
+Facilities are useful, limited systems inside Town, not a regional city-management simulator. Preserve and refine:
 - **Exploration Camp:** expedition/treasure-related bonuses and community identity.
 - **Research Lab:** Exploration XP or research-related bonuses.
 - **Spinda's Café:** temporary expedition bonus purchased with shared Bag berries.
@@ -243,7 +243,7 @@ Events must be deterministic per expedition/floor seed. A missing capability may
 Expeditions must have meaningful outcomes without making Pokémon disposable or turning failure into a punishment loop.
 
 - A team may clear a floor, encounter a setback, retreat or be defeated. These outcomes are resolved by the shared expedition model and recorded against the floor's stable event ID.
-- A defeated or forced-to-retreat team returns safely to Base. Pokémon are never permanently lost, injured for a real-time recovery duration, or made unavailable by a punitive timer.
+- A defeated or forced-to-retreat team returns safely to Town. Pokémon are never permanently lost, injured for a real-time recovery duration, or made unavailable by a punitive timer.
 - A failed floor may award reduced/partial floor rewards according to a transparent, versioned outcome rule. Do not award the full clear reward for an uncleared floor, but preserve rewards from earlier completed floors.
 - Previously earned rewards, completed floors, discoveries, Finds and XP are never rolled back because a later floor fails.
 - Recall is always available. Recall settles eligible elapsed progress up to the recall instant, then returns the team; it does not erase completed-floor outcomes.
@@ -321,7 +321,7 @@ Flow:
 1. A deterministic expedition floor encounter identifies a species and records the encounter.
 2. The species is added to WORLD's regional research notebook as discovered.
 3. A Find record is created with stable identity, species/form, dungeon, floor, time and encounter provenance.
-4. The Find appears in Base and Journal.
+4. The Find appears in Town and Journal.
 5. The user chooses to recruit it.
 6. Shared Pokémon service creates one persistent owned instance with acquisition source `WORLD / Exploration Find`.
 7. WORLD marks the Find as recruited/closed and records the shared owned-Pokémon ID.
@@ -558,7 +558,7 @@ The supplied source archive contains a substantial WORLD foundation. The impleme
 
 **Strength model:** current power sums Pokémon levels and applies a 20% favored-type bonus per matching member. Floor time uses `base / (1 + power / 100)`, with a 25% minimum, plus mastery/legendary modifiers. Retain as a tested starting point and migrate toward the shared simplified battle identity model using stats, types, moves and abilities. Do not replace with opaque math or assume the current formula is final.
 
-**Navigation:** the current landing/navigation was simplified in 0.121.0. Reconcile the existing UI into the target Base, Atlas, Expeditions, Guild and Journal destinations. Reuse screens and components that pass UX/accessibility review; move skills, facilities, research, recruitment and settings into contextual destinations.
+**Navigation:** the current landing/navigation was simplified in 0.121.0. Reconcile the existing UI into the target Town, Atlas, Expeditions, Guild and Journal destinations. Reuse screens and components that pass UX/accessibility review; move skills, facilities, research, recruitment and settings into contextual destinations.
 
 **Expedition presentation:** improve team suitability, dungeon preview, active status, progress summaries, reward explanation and report readability. Clearly separate guaranteed, milestone and chance-based rewards.
 
@@ -597,7 +597,7 @@ WORLD work follows the dependency-first roadmap in the Implementation Guide. Do 
 **Exit criteria:** existing saves migrate without data loss, duplicate Pokémon, duplicate rewards, duplicated currency or duplicated items; interrupted migration resumes safely.
 
 ### Phase 1 — Core gameplay and navigation (P1)
-- Implement Base, Atlas, Expeditions, Guild and Journal on the shared app shell.
+- Implement Town, Atlas, Expeditions, Guild and Journal on the shared app shell.
 - Complete team assignment, presets, dungeon selection and suitability explanation.
 - Integrate shared collection, Finds/recruitment, Bag, Poké, Exploration Rank and reward ledger.
 - Implement per-floor individual Pokémon XP for each participating member.
