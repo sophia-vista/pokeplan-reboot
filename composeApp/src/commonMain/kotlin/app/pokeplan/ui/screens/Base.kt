@@ -176,7 +176,7 @@ private fun BaseMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
-            ModuleLeadStage(model, Module.HOME, model.data.player.baseLead, model.store.moduleEvent(app.pokeplan.app.GameStore.HOME_LOG_PREFIX), openPokemon = openPokemon)
+            ModuleLeadStage(model, Module.HOME, model.data.player.baseLead, model.store.moduleEvent(app.pokeplan.app.GameStore.BASE_LOG_PREFIX), openPokemon = openPokemon)
             FirstRecordEgg(model, Tutorials.BASE_TIDY, data.chores.size + data.supplies.size + data.assets.size)
             BaseSearch(model)
             BaseOverview(model, overview)
