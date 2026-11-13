@@ -1,9 +1,9 @@
 package app.pokeplan.app
 
-import app.pokeplan.core.reward.HomeEvent
+import app.pokeplan.core.reward.BaseEvent
 import app.pokeplan.core.reward.Reward
-import app.pokeplan.home.Recurrence
-import app.pokeplan.home.RepeatKind
+import app.pokeplan.base.Recurrence
+import app.pokeplan.base.RepeatKind
 import app.pokeplan.plan.LinkKind
 import app.pokeplan.plan.TaskState
 import kotlinx.datetime.LocalDate
@@ -31,20 +31,20 @@ class TaskLinksTest {
     private val saturday = LocalDateTime(2026, 11, 7, 18, 0).toInstant(utc).toEpochMilliseconds()
 
     private class Spy(val inner: GameStore) : World {
-        val events = mutableListOf<HomeEvent>()
+        val events = mutableListOf<BaseEvent>()
         override fun care(event: app.pokeplan.core.reward.CareEvent) = inner.care(event)
-        override fun home(event: HomeEvent): List<Reward>? { events += event; return inner.home(event) }
+        override fun base(event: BaseEvent): List<Reward>? { events += event; return inner.base(event) }
     }
 
-    private class Setup(val game: GameStore, val home: HomeStore, val spy: Spy, val clock: FakeClock)
+    private class Setup(val game: GameStore, val home: BaseStore, val spy: Spy, val clock: FakeClock)
 
     /** The app wires this the same way: the owner is registered once and Home's changes sync the projections. */
     private fun setup(): Setup {
         val clock = FakeClock(saturday)
         val game = GameStore(MemoryStorage(), clock, utc, Random(7)).also { it.start("Sophia", 25) }
         val spy = Spy(game)
-        val home = HomeStore(MemoryStorage(), clock, spy, utc, rng = Random(3))
-        game.registerLinkOwner(HomeLinkOwner(home))
+        val home = BaseStore(MemoryStorage(), clock, spy, utc, rng = Random(3))
+        game.registerLinkOwner(BaseLinkOwner(home))
         home.observe { game.syncLinks() }
         return Setup(game, home, spy, clock)
     }
@@ -130,7 +130,7 @@ class TaskLinksTest {
         s.game.completeTask(task.id)
         s.clock.advanceMinutes(1); s.game.tick()
         // HOME was asked twice but its event id names the occurrence, so the game paid one.
-        assertEquals(1, s.game.data.homePaid.size)
+        assertEquals(1, s.game.data.basePaid.size)
     }
 
     @Test fun `reopening a linked task takes back HOME's completion and won't do is HOME's skip`() {
@@ -144,7 +144,7 @@ class TaskLinksTest {
         assertTrue(s.home.data.entries.isEmpty())
         assertEquals(TaskState.OPEN, s.tasks.single().state)
         s.game.wontDo(task.id)
-        assertEquals(app.pokeplan.home.EntryStatus.SKIPPED, s.home.data.entries.single().status)
+        assertEquals(app.pokeplan.base.EntryStatus.SKIPPED, s.home.data.entries.single().status)
         assertEquals(TaskState.WONT_DO, s.tasks.single().state)
         assertEquals(0, s.spy.events.size - 1, "only the first completion was paid")
     }
@@ -182,9 +182,9 @@ class TaskLinksTest {
         val s = setup()
         val chore = s.weeklyChore()
         s.game.linkChore(chore.id)
-        s.home.setChoreStatus(chore.id, app.pokeplan.home.RecordStatus.PAUSED)
+        s.home.setChoreStatus(chore.id, app.pokeplan.base.RecordStatus.PAUSED)
         assertEquals(TaskState.WONT_DO, s.tasks.single().state)
-        s.home.setChoreStatus(chore.id, app.pokeplan.home.RecordStatus.ACTIVE)
+        s.home.setChoreStatus(chore.id, app.pokeplan.base.RecordStatus.ACTIVE)
         assertEquals(TaskState.OPEN, s.tasks.single().state)
         s.home.deleteChore(chore.id)
         assertEquals(TaskState.DELETED, s.tasks.single().state)
@@ -205,9 +205,9 @@ class TaskLinksTest {
         val clock = FakeClock(saturday)
         val shared = MemoryStorage()
         val game = GameStore(shared, clock, utc, Random(7)).also { it.start("Sophia", 25) }
-        val home = HomeStore(MemoryStorage(), clock, game, utc, rng = Random(3))
+        val home = BaseStore(MemoryStorage(), clock, game, utc, rng = Random(3))
         val chore = home.addChore("Vacuum", Recurrence(RepeatKind.WEEKLY), LocalDate(2026, 11, 7)).record!!
-        game.registerLinkOwner(HomeLinkOwner(home))
+        game.registerLinkOwner(BaseLinkOwner(home))
         val task = game.linkChore(chore.id)!!
         // A store that has no owner (a widget before it knows Home) leaves the task and the chore exactly as they were.
         val widget = GameStore(shared, clock, utc, Random(1))

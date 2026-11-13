@@ -1,32 +1,32 @@
 package app.pokeplan.app
 
-import app.pokeplan.core.reward.HomeEvent
-import app.pokeplan.core.reward.HomeKind
+import app.pokeplan.core.reward.BaseEvent
+import app.pokeplan.core.reward.BaseKind
 import app.pokeplan.core.reward.Reward
-import app.pokeplan.home.Asset
-import app.pokeplan.home.Check
-import app.pokeplan.home.Chore
-import app.pokeplan.home.ChoreEntry
-import app.pokeplan.home.ChoreState
-import app.pokeplan.home.ChoreView
-import app.pokeplan.home.EntryStatus
-import app.pokeplan.home.HomeArea
-import app.pokeplan.home.HomeData
-import app.pokeplan.home.HomeKinds
-import app.pokeplan.home.HomeRules
-import app.pokeplan.home.HomeSettings
-import app.pokeplan.home.MaintenanceRecord
-import app.pokeplan.home.MaintenanceSchedule
-import app.pokeplan.home.Quantity
-import app.pokeplan.home.RecordStatus
-import app.pokeplan.home.Recurrence
-import app.pokeplan.home.Reference
-import app.pokeplan.home.RepeatKind
-import app.pokeplan.home.RestockEntry
-import app.pokeplan.home.SchedulePolicy
-import app.pokeplan.home.StockAdjustment
-import app.pokeplan.home.Supply
-import app.pokeplan.home.Warranty
+import app.pokeplan.base.Asset
+import app.pokeplan.base.Check
+import app.pokeplan.base.Chore
+import app.pokeplan.base.ChoreEntry
+import app.pokeplan.base.ChoreState
+import app.pokeplan.base.ChoreView
+import app.pokeplan.base.EntryStatus
+import app.pokeplan.base.BaseArea
+import app.pokeplan.base.BaseData
+import app.pokeplan.base.BaseKinds
+import app.pokeplan.base.BaseRules
+import app.pokeplan.base.BaseSettings
+import app.pokeplan.base.MaintenanceRecord
+import app.pokeplan.base.MaintenanceSchedule
+import app.pokeplan.base.Quantity
+import app.pokeplan.base.RecordStatus
+import app.pokeplan.base.Recurrence
+import app.pokeplan.base.Reference
+import app.pokeplan.base.RepeatKind
+import app.pokeplan.base.RestockEntry
+import app.pokeplan.base.SchedulePolicy
+import app.pokeplan.base.StockAdjustment
+import app.pokeplan.base.Supply
+import app.pokeplan.base.Warranty
 import app.pokeplan.plan.toLocalDateTime
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -37,7 +37,7 @@ import kotlin.random.Random
 
 /**
  * The Home module on this device (docs/pokelife `MODULES/HOME.md`): its own save in its own [storage], apart from every other module's, kept by
- * `HomeTables` in the live database. Everything in it is private: it reaches the shared world only through [world], with a [HomeEvent] that carries a
+ * `BaseTables` in the live database. Everything in it is private: it reaches the shared world only through [world], with a [BaseEvent] that carries a
  * stable id, the module, an opaque record reference, the broad kind and the time, and **never** a title, an area, a supply, an asset, a serial, a cost
  * or a note.
  *
@@ -45,18 +45,18 @@ import kotlin.random.Random
  * changing a quantity, a warranty, a note or the restocking list never pays. A chore occurrence is paid once however many times it is undone and done
  * again: the event id names the occurrence, and the game remembers it.
  */
-class HomeStore(
+class BaseStore(
     storage: Storage,
     private val clock: Clock,
     private val world: World,
     private val zone: TimeZone = TimeZone.currentSystemDefault(),
     private val rng: Random = Random,
 ) {
-    private val document = SavedDocument(storage, HomeData.serializer(), json, tidy = { tidy(it) }) { tidy(HomeData()) }
+    private val document = SavedDocument(storage, BaseData.serializer(), json, tidy = { tidy(it) }) { tidy(BaseData()) }
 
-    val data: HomeData get() = document.value
+    val data: BaseData get() = document.value
 
-    fun observe(listener: (HomeData) -> Unit): () -> Unit = document.observe(listener)
+    fun observe(listener: (BaseData) -> Unit): () -> Unit = document.observe(listener)
 
     private val nowMillis: Long get() = clock.nowMillis()
     val today: LocalDate get() = nowMillis.toLocalDateTime(zone).date
@@ -67,28 +67,28 @@ class HomeStore(
     /** Picks up what another store in this process (a widget, a notification) wrote; cheap when nothing was. */
     fun sync() = document.sync()
 
-    private fun update(change: (HomeData) -> HomeData) = document.update(change)
+    private fun update(change: (BaseData) -> BaseData) = document.update(change)
 
     /** Puts back a [snapshot] taken before a delete, for the undo bar. */
-    fun restore(snapshot: HomeData) = update { snapshot }
+    fun restore(snapshot: BaseData) = update { snapshot }
 
     private fun newId(): String = newId(nowMillis, rng)
 
-    private fun pay(kind: HomeKind, id: String, ref: String): List<Reward>? =
-        if (!data.settings.progression) null else world.home(HomeEvent("home:${kind.name.lowercase()}:$id", kind, nowMillis, ref))
+    private fun pay(kind: BaseKind, id: String, ref: String): List<Reward>? =
+        if (!data.settings.progression) null else world.base(BaseEvent("home:${kind.name.lowercase()}:$id", kind, nowMillis, ref))
 
     // --- areas -------------------------------------------------------------------------------------------------------------
 
-    fun addArea(name: String): HomeArea? {
-        val n = name.trim().take(HomeRules.TITLE_MAX)
+    fun addArea(name: String): BaseArea? {
+        val n = name.trim().take(BaseRules.TITLE_MAX)
         if (n.isEmpty() || data.areas.any { it.name.equals(n, ignoreCase = true) && !it.archived }) return null
-        val a = HomeArea(newId(), n)
+        val a = BaseArea(newId(), n)
         update { it.copy(areas = it.areas + a) }
         return a
     }
 
     fun renameArea(id: String, name: String) {
-        val n = name.trim().take(HomeRules.TITLE_MAX)
+        val n = name.trim().take(BaseRules.TITLE_MAX)
         if (n.isNotEmpty()) update { d -> d.copy(areas = d.areas.map { if (it.id == id) it.copy(name = n) else it }) }
     }
 
@@ -124,8 +124,8 @@ class HomeStore(
         category: String = "", minutes: Int? = null,
     ): Logged<Chore> {
         val due = firstDue ?: if (recurrence.kind != RepeatKind.ONCE) today else null
-        val c = Chore(newId(), title.trim(), instructions.trim(), areaId, category.trim().take(HomeRules.TITLE_MAX), recurrence, due, minutes, createdMillis = nowMillis, updatedMillis = nowMillis)
-        (HomeRules.checkChore(c) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val c = Chore(newId(), title.trim(), instructions.trim(), areaId, category.trim().take(BaseRules.TITLE_MAX), recurrence, due, minutes, createdMillis = nowMillis, updatedMillis = nowMillis)
+        (BaseRules.checkChore(c) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { it.copy(chores = it.chores + c) }
         return Logged(c)
     }
@@ -138,10 +138,10 @@ class HomeStore(
         val old = data.chores.firstOrNull { it.id == c.id } ?: return Logged(null, "That chore is gone.")
         val due = c.firstDue ?: if (c.recurrence.kind != RepeatKind.ONCE) old.firstDue ?: today else null
         val next = old.copy(
-            title = c.title.trim(), instructions = c.instructions.trim(), areaId = c.areaId, category = c.category.trim().take(HomeRules.TITLE_MAX),
+            title = c.title.trim(), instructions = c.instructions.trim(), areaId = c.areaId, category = c.category.trim().take(BaseRules.TITLE_MAX),
             recurrence = c.recurrence, firstDue = due, minutes = c.minutes, updatedMillis = nowMillis,
         )
-        (HomeRules.checkChore(next) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        (BaseRules.checkChore(next) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { d -> d.copy(chores = d.chores.map { if (it.id == c.id) next else it }) }
         return Logged(next)
     }
@@ -152,13 +152,13 @@ class HomeStore(
     /** Deletes a chore and what was done about it. Prefer archiving, which keeps the history. */
     fun deleteChore(id: String) = update { d -> d.copy(chores = d.chores.filterNot { it.id == id }, entries = d.entries.filterNot { it.choreId == id }) }
 
-    fun choreViews(): List<ChoreView> = HomeRules.views(data, today)
+    fun choreViews(): List<ChoreView> = BaseRules.views(data, today)
 
-    fun choreView(id: String): ChoreView? = data.chores.firstOrNull { it.id == id }?.let { HomeRules.view(data, it, today) }
+    fun choreView(id: String): ChoreView? = data.chores.firstOrNull { it.id == id }?.let { BaseRules.view(data, it, today) }
 
     private fun openOccurrence(id: String): Pair<Chore, LocalDate>? {
         val chore = data.chores.firstOrNull { it.id == id } ?: return null
-        val v = HomeRules.view(data, chore, today)
+        val v = BaseRules.view(data, chore, today)
         if (v.state == ChoreState.DONE || v.state == ChoreState.SKIPPED || v.state == ChoreState.PAUSED || v.state == ChoreState.ARCHIVED) return null
         return chore to (v.occurrence ?: today)
     }
@@ -172,9 +172,9 @@ class HomeStore(
     fun complete(choreId: String, note: String = ""): Logged<ChoreEntry> {
         val (chore, occurrence) = openOccurrence(choreId) ?: return Logged(null, "That chore is not waiting.")
         val before = data
-        val entry = ChoreEntry(newId(), chore.id, occurrence, EntryStatus.DONE, today, nowMillis, note.trim().take(HomeRules.NOTE_MAX))
+        val entry = ChoreEntry(newId(), chore.id, occurrence, EntryStatus.DONE, today, nowMillis, note.trim().take(BaseRules.NOTE_MAX))
         putEntry(entry)
-        val rewards = if (HomeRules.chorePays(before, today)) pay(HomeKind.CHORE, "${chore.id}:$occurrence", entry.id) else null
+        val rewards = if (BaseRules.chorePays(before, today)) pay(BaseKind.CHORE, "${chore.id}:$occurrence", entry.id) else null
         if (rewards != null) update { d -> d.copy(entries = d.entries.map { if (it.id == entry.id) it.copy(paid = true) else it }) }
         return Logged(data.entries.first { it.id == entry.id }, rewards = rewards.orEmpty())
     }
@@ -182,7 +182,7 @@ class HomeStore(
     /** Skips the current occurrence: it leaves the due list and the schedule goes on (HOME.md 4.2). Nothing is paid. */
     fun skip(choreId: String, note: String = ""): Boolean {
         val (chore, occurrence) = openOccurrence(choreId) ?: return false
-        putEntry(ChoreEntry(newId(), chore.id, occurrence, EntryStatus.SKIPPED, today, nowMillis, note.trim().take(HomeRules.NOTE_MAX)))
+        putEntry(ChoreEntry(newId(), chore.id, occurrence, EntryStatus.SKIPPED, today, nowMillis, note.trim().take(BaseRules.NOTE_MAX)))
         return true
     }
 
@@ -200,8 +200,8 @@ class HomeStore(
     // --- supplies ----------------------------------------------------------------------------------------------------------
 
     fun addSupply(name: String, unit: String = "", quantityMilli: Long? = null, lowMilli: Long? = null, category: String = "", areaId: String? = null, notes: String = ""): Logged<Supply> {
-        val s = Supply(newId(), name.trim(), category.trim().take(HomeRules.TITLE_MAX), quantityMilli, unit.trim(), lowMilli, areaId, notes.trim(), createdMillis = nowMillis, updatedMillis = nowMillis)
-        (HomeRules.checkSupply(s) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val s = Supply(newId(), name.trim(), category.trim().take(BaseRules.TITLE_MAX), quantityMilli, unit.trim(), lowMilli, areaId, notes.trim(), createdMillis = nowMillis, updatedMillis = nowMillis)
+        (BaseRules.checkSupply(s) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { it.copy(supplies = it.supplies + s) }
         return Logged(s)
     }
@@ -209,25 +209,25 @@ class HomeStore(
     /** Changes a supply's name, unit, threshold, category, area and notes. The quantity changes only through [setQuantity] and [adjust], which leave a trace. */
     fun updateSupply(s: Supply): Logged<Supply> {
         val old = data.supplies.firstOrNull { it.id == s.id } ?: return Logged(null, "That supply is gone.")
-        val next = old.copy(name = s.name.trim(), unit = s.unit.trim(), lowMilli = s.lowMilli, category = s.category.trim().take(HomeRules.TITLE_MAX), areaId = s.areaId, notes = s.notes.trim(), updatedMillis = nowMillis)
-        (HomeRules.checkSupply(next) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val next = old.copy(name = s.name.trim(), unit = s.unit.trim(), lowMilli = s.lowMilli, category = s.category.trim().take(BaseRules.TITLE_MAX), areaId = s.areaId, notes = s.notes.trim(), updatedMillis = nowMillis)
+        (BaseRules.checkSupply(next) as? Check.Refused)?.let { return Logged(null, it.reason) }
         update { d -> d.copy(supplies = d.supplies.map { if (it.id == s.id) next else it }) }
         return Logged(next)
     }
 
     private fun changeQuantity(id: String, after: Long?, reason: String) = update { d ->
         val old = d.supplies.firstOrNull { it.id == id } ?: return@update d
-        val adj = StockAdjustment(newId(), id, old.quantityMilli, after, reason.trim().take(HomeRules.TITLE_MAX), nowMillis)
+        val adj = StockAdjustment(newId(), id, old.quantityMilli, after, reason.trim().take(BaseRules.TITLE_MAX), nowMillis)
         d.copy(
             supplies = d.supplies.map { if (it.id == id) it.copy(quantityMilli = after, lowDismissed = false, updatedMillis = nowMillis) else it },
-            adjustments = (d.adjustments + adj).takeLast(HomeRules.ADJUSTMENTS_KEPT),
+            adjustments = (d.adjustments + adj).takeLast(BaseRules.ADJUSTMENTS_KEPT),
         )
     }
 
     /** Sets the quantity directly; null makes it unknown (which is not zero). Never pays. */
     fun setQuantity(id: String, milli: Long?, reason: String = ""): String? {
         if (data.supplies.none { it.id == id }) return "That supply is gone."
-        (HomeRules.checkQuantity(milli) as? Check.Refused)?.let { return it.reason }
+        (BaseRules.checkQuantity(milli) as? Check.Refused)?.let { return it.reason }
         changeQuantity(id, milli, reason)
         return null
     }
@@ -241,7 +241,7 @@ class HomeStore(
         val now = s.quantityMilli ?: return "The quantity is unknown. Set it first."
         val after = now + deltaMilli
         if (after < 0) return "That is more than is left. Set the quantity instead."
-        (HomeRules.checkQuantity(after) as? Check.Refused)?.let { return it.reason }
+        (BaseRules.checkQuantity(after) as? Check.Refused)?.let { return it.reason }
         changeQuantity(id, after, reason)
         return null
     }
@@ -255,7 +255,7 @@ class HomeStore(
 
     /** Writes something on the restocking list by hand: a [supplyId] the user chose, or any [name]. Not a purchase, a task or a transaction. */
     fun addRestock(name: String, supplyId: String? = null): RestockEntry? {
-        val label = name.trim().take(HomeRules.TITLE_MAX).ifEmpty { data.supplies.firstOrNull { it.id == supplyId }?.name ?: return null }
+        val label = name.trim().take(BaseRules.TITLE_MAX).ifEmpty { data.supplies.firstOrNull { it.id == supplyId }?.name ?: return null }
         if (supplyId != null && data.restock.any { it.supplyId == supplyId }) return null
         val e = RestockEntry(newId(), label, supplyId, nowMillis)
         update { it.copy(restock = it.restock + e) }
@@ -269,7 +269,7 @@ class HomeStore(
      * needs the quantity (nothing else takes it off). Pays nothing.
      */
     fun restocked(supplyId: String, newQuantityMilli: Long?, entryId: String? = null): String? {
-        if (newQuantityMilli == null && entryId == null && data.supplies.any { it.id == supplyId && HomeRules.isLow(it) }) return "Enter how much there is now."
+        if (newQuantityMilli == null && entryId == null && data.supplies.any { it.id == supplyId && BaseRules.isLow(it) }) return "Enter how much there is now."
         val reason = newQuantityMilli?.let { setQuantity(supplyId, it, "Restocked") }
         if (reason != null) return reason
         update { d -> d.copy(restock = d.restock.filterNot { it.id == entryId || it.supplyId == supplyId }) }
@@ -279,18 +279,18 @@ class HomeStore(
     // --- belongings (durable items), warranties ---------------------------------------------------------------------------
 
     fun addAsset(name: String, category: String = "", brand: String = "", model: String = "", serial: String = "", purchaseDay: LocalDate? = null, areaId: String? = null, notes: String = ""): Logged<Asset> {
-        (HomeRules.checkTitle(name, "item") as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val a = Asset(newId(), name.trim(), category.trim().take(HomeRules.TITLE_MAX), brand.trim().take(HomeRules.TITLE_MAX), model.trim().take(HomeRules.TITLE_MAX), serial.trim().take(HomeRules.TITLE_MAX), purchaseDay, areaId, notes.trim().take(HomeRules.NOTE_MAX), createdMillis = nowMillis, updatedMillis = nowMillis)
+        (BaseRules.checkTitle(name, "item") as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val a = Asset(newId(), name.trim(), category.trim().take(BaseRules.TITLE_MAX), brand.trim().take(BaseRules.TITLE_MAX), model.trim().take(BaseRules.TITLE_MAX), serial.trim().take(BaseRules.TITLE_MAX), purchaseDay, areaId, notes.trim().take(BaseRules.NOTE_MAX), createdMillis = nowMillis, updatedMillis = nowMillis)
         update { it.copy(assets = it.assets + a) }
         return Logged(a)
     }
 
     fun updateAsset(a: Asset): Logged<Asset> {
         val old = data.assets.firstOrNull { it.id == a.id } ?: return Logged(null, "That item is gone.")
-        (HomeRules.checkTitle(a.name, "item") as? Check.Refused)?.let { return Logged(null, it.reason) }
+        (BaseRules.checkTitle(a.name, "item") as? Check.Refused)?.let { return Logged(null, it.reason) }
         val next = old.copy(
-            name = a.name.trim(), category = a.category.trim().take(HomeRules.TITLE_MAX), brand = a.brand.trim().take(HomeRules.TITLE_MAX), model = a.model.trim().take(HomeRules.TITLE_MAX),
-            serial = a.serial.trim().take(HomeRules.TITLE_MAX), purchaseDay = a.purchaseDay, areaId = a.areaId, notes = a.notes.trim().take(HomeRules.NOTE_MAX), updatedMillis = nowMillis,
+            name = a.name.trim(), category = a.category.trim().take(BaseRules.TITLE_MAX), brand = a.brand.trim().take(BaseRules.TITLE_MAX), model = a.model.trim().take(BaseRules.TITLE_MAX),
+            serial = a.serial.trim().take(BaseRules.TITLE_MAX), purchaseDay = a.purchaseDay, areaId = a.areaId, notes = a.notes.trim().take(BaseRules.NOTE_MAX), updatedMillis = nowMillis,
         )
         update { d -> d.copy(assets = d.assets.map { if (it.id == a.id) next else it }) }
         return Logged(next)
@@ -315,7 +315,7 @@ class HomeStore(
     fun addWarranty(assetId: String, provider: String = "", coverage: String = "", startDay: LocalDate? = null, expiryDay: LocalDate? = null, reference: String = "", notes: String = ""): Logged<Warranty> {
         if (data.assets.none { it.id == assetId }) return Logged(null, "That item is gone.")
         if (startDay != null && expiryDay != null && expiryDay < startDay) return Logged(null, "The end date is before the start.")
-        val w = Warranty(newId(), assetId, provider.trim().take(HomeRules.TITLE_MAX), coverage.trim().take(HomeRules.NOTE_MAX), startDay, expiryDay, reference.trim().take(HomeRules.TITLE_MAX), notes.trim().take(HomeRules.NOTE_MAX), nowMillis)
+        val w = Warranty(newId(), assetId, provider.trim().take(BaseRules.TITLE_MAX), coverage.trim().take(BaseRules.NOTE_MAX), startDay, expiryDay, reference.trim().take(BaseRules.TITLE_MAX), notes.trim().take(BaseRules.NOTE_MAX), nowMillis)
         update { it.copy(warranties = it.warranties + w) }
         return Logged(w)
     }
@@ -324,7 +324,7 @@ class HomeStore(
         val old = data.warranties.firstOrNull { it.id == w.id } ?: return Logged(null, "That warranty is gone.")
         val start = w.startDay; val end = w.expiryDay
         if (start != null && end != null && end < start) return Logged(null, "The end date is before the start.")
-        val next = old.copy(provider = w.provider.trim().take(HomeRules.TITLE_MAX), coverage = w.coverage.trim().take(HomeRules.NOTE_MAX), startDay = w.startDay, expiryDay = w.expiryDay, reference = w.reference.trim().take(HomeRules.TITLE_MAX), notes = w.notes.trim().take(HomeRules.NOTE_MAX))
+        val next = old.copy(provider = w.provider.trim().take(BaseRules.TITLE_MAX), coverage = w.coverage.trim().take(BaseRules.NOTE_MAX), startDay = w.startDay, expiryDay = w.expiryDay, reference = w.reference.trim().take(BaseRules.TITLE_MAX), notes = w.notes.trim().take(BaseRules.NOTE_MAX))
         update { d -> d.copy(warranties = d.warranties.map { if (it.id == w.id) next else it }) }
         return Logged(next)
     }
@@ -335,9 +335,9 @@ class HomeStore(
 
     /** A schedule for an item or for the household. Making one never pays; only doing the work does. */
     fun addSchedule(title: String, firstDue: LocalDate, recurrence: Recurrence = Recurrence(), policy: SchedulePolicy = SchedulePolicy.FIXED, assetId: String? = null, instructions: String = ""): Logged<MaintenanceSchedule> {
-        (HomeRules.checkTitle(title, "maintenance") as? Check.Refused)?.let { return Logged(null, it.reason) }
-        (HomeRules.checkRecurrence(recurrence, firstDue) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val s = MaintenanceSchedule(newId(), title.trim(), assetId, instructions.trim().take(HomeRules.TEXT_MAX), recurrence, policy, firstDue, firstDue, createdMillis = nowMillis)
+        (BaseRules.checkTitle(title, "maintenance") as? Check.Refused)?.let { return Logged(null, it.reason) }
+        (BaseRules.checkRecurrence(recurrence, firstDue) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val s = MaintenanceSchedule(newId(), title.trim(), assetId, instructions.trim().take(BaseRules.TEXT_MAX), recurrence, policy, firstDue, firstDue, createdMillis = nowMillis)
         update { it.copy(schedules = it.schedules + s) }
         return Logged(s)
     }
@@ -349,9 +349,9 @@ class HomeStore(
      */
     fun updateSchedule(s: MaintenanceSchedule): Logged<MaintenanceSchedule> {
         val old = data.schedules.firstOrNull { it.id == s.id } ?: return Logged(null, "That schedule is gone.")
-        (HomeRules.checkTitle(s.title, "maintenance") as? Check.Refused)?.let { return Logged(null, it.reason) }
-        (HomeRules.checkRecurrence(s.recurrence, s.nextDue) as? Check.Refused)?.let { return Logged(null, it.reason) }
-        val next = old.copy(title = s.title.trim(), assetId = s.assetId, instructions = s.instructions.trim().take(HomeRules.TEXT_MAX), recurrence = s.recurrence, policy = s.policy, firstDue = if (s.nextDue != old.nextDue || s.recurrence.kind != old.recurrence.kind) s.nextDue else old.firstDue, nextDue = s.nextDue)
+        (BaseRules.checkTitle(s.title, "maintenance") as? Check.Refused)?.let { return Logged(null, it.reason) }
+        (BaseRules.checkRecurrence(s.recurrence, s.nextDue) as? Check.Refused)?.let { return Logged(null, it.reason) }
+        val next = old.copy(title = s.title.trim(), assetId = s.assetId, instructions = s.instructions.trim().take(BaseRules.TEXT_MAX), recurrence = s.recurrence, policy = s.policy, firstDue = if (s.nextDue != old.nextDue || s.recurrence.kind != old.recurrence.kind) s.nextDue else old.firstDue, nextDue = s.nextDue)
         update { d -> d.copy(schedules = d.schedules.map { if (it.id == s.id) next else it }) }
         return Logged(next)
     }
@@ -370,21 +370,21 @@ class HomeStore(
         if (s.status == RecordStatus.ARCHIVED) return Logged(null, "That schedule is finished.")
         if (day > today) return Logged(null, "That day has not come yet.")
         val before = data
-        val r = MaintenanceRecord(newId(), s.title, s.assetId, s.id, day, notes.trim().take(HomeRules.NOTE_MAX), cost.trim().take(HomeRules.TITLE_MAX), nowMillis)
-        update { d -> d.copy(maintenance = d.maintenance + r, schedules = d.schedules.map { if (it.id == s.id) HomeRules.advance(s, day) else it }) }
-        val rewards = if (HomeRules.maintenancePays(before, day)) pay(HomeKind.MAINTENANCE, "${s.id}:${s.nextDue}", r.id) else null
+        val r = MaintenanceRecord(newId(), s.title, s.assetId, s.id, day, notes.trim().take(BaseRules.NOTE_MAX), cost.trim().take(BaseRules.TITLE_MAX), nowMillis)
+        update { d -> d.copy(maintenance = d.maintenance + r, schedules = d.schedules.map { if (it.id == s.id) BaseRules.advance(s, day) else it }) }
+        val rewards = if (BaseRules.maintenancePays(before, day)) pay(BaseKind.MAINTENANCE, "${s.id}:${s.nextDue}", r.id) else null
         if (rewards != null) update { d -> d.copy(maintenance = d.maintenance.map { if (it.id == r.id) it.copy(paid = true) else it }) }
         return Logged(data.maintenance.first { it.id == r.id }, rewards = rewards.orEmpty())
     }
 
     /** Records one piece of work done that is on no schedule. Pays like [completeMaintenance]; it can be paid once per record. */
     fun logMaintenance(title: String, assetId: String? = null, notes: String = "", cost: String = "", day: LocalDate = today): Logged<MaintenanceRecord> {
-        (HomeRules.checkTitle(title, "work") as? Check.Refused)?.let { return Logged(null, it.reason) }
+        (BaseRules.checkTitle(title, "work") as? Check.Refused)?.let { return Logged(null, it.reason) }
         if (day > today) return Logged(null, "That day has not come yet.")
         val before = data
-        val r = MaintenanceRecord(newId(), title.trim(), assetId, null, day, notes.trim().take(HomeRules.NOTE_MAX), cost.trim().take(HomeRules.TITLE_MAX), nowMillis)
+        val r = MaintenanceRecord(newId(), title.trim(), assetId, null, day, notes.trim().take(BaseRules.NOTE_MAX), cost.trim().take(BaseRules.TITLE_MAX), nowMillis)
         update { it.copy(maintenance = it.maintenance + r) }
-        val rewards = if (HomeRules.maintenancePays(before, day)) pay(HomeKind.MAINTENANCE, r.id, r.id) else null
+        val rewards = if (BaseRules.maintenancePays(before, day)) pay(BaseKind.MAINTENANCE, r.id, r.id) else null
         if (rewards != null) update { d -> d.copy(maintenance = d.maintenance.map { if (it.id == r.id) it.copy(paid = true) else it }) }
         return Logged(data.maintenance.first { it.id == r.id }, rewards = rewards.orEmpty())
     }
@@ -392,9 +392,9 @@ class HomeStore(
     /** Corrects a record of work: its words, item, day, notes and cost. What it paid stays as it was: an edit never pays and never takes back. */
     fun updateMaintenanceRecord(r: MaintenanceRecord): Logged<MaintenanceRecord> {
         val old = data.maintenance.firstOrNull { it.id == r.id } ?: return Logged(null, "That record is gone.")
-        (HomeRules.checkTitle(r.title, "work") as? Check.Refused)?.let { return Logged(null, it.reason) }
+        (BaseRules.checkTitle(r.title, "work") as? Check.Refused)?.let { return Logged(null, it.reason) }
         if (r.day > today) return Logged(null, "That day has not come yet.")
-        val next = old.copy(title = r.title.trim(), assetId = r.assetId, day = r.day, notes = r.notes.trim().take(HomeRules.NOTE_MAX), cost = r.cost.trim().take(HomeRules.TITLE_MAX))
+        val next = old.copy(title = r.title.trim(), assetId = r.assetId, day = r.day, notes = r.notes.trim().take(BaseRules.NOTE_MAX), cost = r.cost.trim().take(BaseRules.TITLE_MAX))
         update { d -> d.copy(maintenance = d.maintenance.map { if (it.id == r.id) next else it }) }
         return Logged(next)
     }
@@ -404,18 +404,18 @@ class HomeStore(
     // --- reference notes ---------------------------------------------------------------------------------------------------
 
     fun addReference(title: String, text: String = "", category: String = "", areaId: String? = null, assetId: String? = null): Logged<Reference> {
-        (HomeRules.checkTitle(title, "note") as? Check.Refused)?.let { return Logged(null, it.reason) }
-        if (text.length > HomeRules.TEXT_MAX) return Logged(null, "That note is too long.")
-        val r = Reference(newId(), title.trim(), text.trim(), category.trim().take(HomeRules.TITLE_MAX), areaId, assetId, nowMillis, nowMillis)
+        (BaseRules.checkTitle(title, "note") as? Check.Refused)?.let { return Logged(null, it.reason) }
+        if (text.length > BaseRules.TEXT_MAX) return Logged(null, "That note is too long.")
+        val r = Reference(newId(), title.trim(), text.trim(), category.trim().take(BaseRules.TITLE_MAX), areaId, assetId, nowMillis, nowMillis)
         update { it.copy(references = it.references + r) }
         return Logged(r)
     }
 
     fun updateReference(r: Reference): Logged<Reference> {
         val old = data.references.firstOrNull { it.id == r.id } ?: return Logged(null, "That note is gone.")
-        (HomeRules.checkTitle(r.title, "note") as? Check.Refused)?.let { return Logged(null, it.reason) }
-        if (r.text.length > HomeRules.TEXT_MAX) return Logged(null, "That note is too long.")
-        val next = old.copy(title = r.title.trim(), text = r.text.trim(), category = r.category.trim().take(HomeRules.TITLE_MAX), areaId = r.areaId, assetId = r.assetId, updatedMillis = nowMillis)
+        (BaseRules.checkTitle(r.title, "note") as? Check.Refused)?.let { return Logged(null, it.reason) }
+        if (r.text.length > BaseRules.TEXT_MAX) return Logged(null, "That note is too long.")
+        val next = old.copy(title = r.title.trim(), text = r.text.trim(), category = r.category.trim().take(BaseRules.TITLE_MAX), areaId = r.areaId, assetId = r.assetId, updatedMillis = nowMillis)
         update { d -> d.copy(references = d.references.map { if (it.id == r.id) next else it }) }
         return Logged(next)
     }
@@ -424,11 +424,11 @@ class HomeStore(
 
     // --- search ------------------------------------------------------------------------------------------------------------
 
-    fun search(text: String) = HomeRules.search(data, text)
+    fun search(text: String) = BaseRules.search(data, text)
 
     // --- settings ------------------------------------------------------------------------------------------------------------
 
-    private fun settings(change: (HomeSettings) -> HomeSettings) = update { it.copy(settings = change(it.settings)) }
+    private fun settings(change: (BaseSettings) -> BaseSettings) = update { it.copy(settings = change(it.settings)) }
 
     /** Turns Habitat Discovery (the reward) on or off. Off never touches a record and never hides a feature. */
     fun setProgression(on: Boolean) = settings { it.copy(progression = on) }
@@ -465,16 +465,16 @@ class HomeStore(
     // --- export and erase (one kind at a time, or all) ----------------------------------------------------------------------
 
     /** The chosen kinds of record (all by default) as readable JSON, exactly as saved. Nothing of the game is in it. */
-    fun export(kinds: Set<HomeKinds> = HomeKinds.entries.toSet()): String = HomeExport.json(data, kinds)
+    fun export(kinds: Set<BaseKinds> = BaseKinds.entries.toSet()): String = BaseExport.json(data, kinds)
 
     /**
      * Erases every record of [kind]. Records that pointed at what was erased keep their own words and lose the pointer; nothing else is touched: other
      * kinds, the settings, Pokémon, Poké, the Bag and the other modules stay.
      */
-    fun erase(kind: HomeKinds) = update { HomeExport.without(it, kind) }
+    fun erase(kind: BaseKinds) = update { BaseExport.without(it, kind) }
 
     /** Erases all of HOME's records (not its settings, not what Habitat Discovery paid). */
-    fun eraseAll() = update { d -> HomeKinds.entries.fold(d) { acc, k -> HomeExport.without(acc, k) } }
+    fun eraseAll() = update { d -> BaseKinds.entries.fold(d) { acc, k -> BaseExport.without(acc, k) } }
 
     companion object {
         const val MAX_LEAD_DAYS = 14
@@ -482,8 +482,8 @@ class HomeStore(
         val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 
         /** A document that was never offered the starting areas gets them once, with stable ids, so a fresh install can file a chore at once. */
-        internal fun tidy(d: HomeData): HomeData = if (d.settings.areasSeeded) d else d.copy(
-            areas = d.areas + HomeRules.STARTING_AREAS.map { name -> HomeArea("area-" + name.lowercase().replace(' ', '-'), name) }.filter { s -> d.areas.none { it.id == s.id } },
+        internal fun tidy(d: BaseData): BaseData = if (d.settings.areasSeeded) d else d.copy(
+            areas = d.areas + BaseRules.STARTING_AREAS.map { name -> BaseArea("area-" + name.lowercase().replace(' ', '-'), name) }.filter { s -> d.areas.none { it.id == s.id } },
             settings = d.settings.copy(areasSeeded = true),
         )
 
@@ -493,34 +493,34 @@ class HomeStore(
 }
 
 /** Export and erase by kind, pure and free of the game: one place that knows which fields of the document each kind is. */
-object HomeExport {
+object BaseExport {
     private val pretty = Json { encodeDefaults = true; prettyPrint = true }
 
-    private val fields: Map<HomeKinds, List<String>> = mapOf(
-        HomeKinds.AREAS to listOf("areas"),
-        HomeKinds.CHORES to listOf("chores", "entries"),
-        HomeKinds.SUPPLIES to listOf("supplies", "adjustments", "restock"),
-        HomeKinds.ASSETS to listOf("assets", "schedules", "maintenance", "warranties"),
-        HomeKinds.REFERENCES to listOf("references"),
+    private val fields: Map<BaseKinds, List<String>> = mapOf(
+        BaseKinds.AREAS to listOf("areas"),
+        BaseKinds.CHORES to listOf("chores", "entries"),
+        BaseKinds.SUPPLIES to listOf("supplies", "adjustments", "restock"),
+        BaseKinds.ASSETS to listOf("assets", "schedules", "maintenance", "warranties"),
+        BaseKinds.REFERENCES to listOf("references"),
     )
 
-    fun json(data: HomeData, kinds: Set<HomeKinds>): String {
-        val all = HomeStore.json.encodeToJsonElement(HomeData.serializer(), data) as JsonObject
+    fun json(data: BaseData, kinds: Set<BaseKinds>): String {
+        val all = BaseStore.json.encodeToJsonElement(BaseData.serializer(), data) as JsonObject
         val chosen = all.filterKeys { key -> fields.any { (kind, names) -> kind in kinds && key in names } }
         return pretty.encodeToString(JsonObject.serializer(), JsonObject(mapOf("format" to JsonPrimitive("pokelife-home-export"), "unit" to JsonPrimitive("quantities are in thousandths of their unit")) + chosen))
     }
 
-    fun without(d: HomeData, kind: HomeKinds): HomeData = when (kind) {
-        HomeKinds.AREAS -> d.copy(
+    fun without(d: BaseData, kind: BaseKinds): BaseData = when (kind) {
+        BaseKinds.AREAS -> d.copy(
             areas = emptyList(), chores = d.chores.map { it.copy(areaId = null) }, supplies = d.supplies.map { it.copy(areaId = null) },
             assets = d.assets.map { it.copy(areaId = null) }, references = d.references.map { it.copy(areaId = null) },
         )
-        HomeKinds.CHORES -> d.copy(chores = emptyList(), entries = emptyList())
-        HomeKinds.SUPPLIES -> d.copy(supplies = emptyList(), adjustments = emptyList(), restock = emptyList())
-        HomeKinds.ASSETS -> d.copy(
+        BaseKinds.CHORES -> d.copy(chores = emptyList(), entries = emptyList())
+        BaseKinds.SUPPLIES -> d.copy(supplies = emptyList(), adjustments = emptyList(), restock = emptyList())
+        BaseKinds.ASSETS -> d.copy(
             assets = emptyList(), schedules = emptyList(), maintenance = emptyList(), warranties = emptyList(),
             references = d.references.map { it.copy(assetId = null) },
         )
-        HomeKinds.REFERENCES -> d.copy(references = emptyList())
+        BaseKinds.REFERENCES -> d.copy(references = emptyList())
     }
 }

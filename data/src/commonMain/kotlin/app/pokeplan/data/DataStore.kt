@@ -24,7 +24,7 @@ class DataStore private constructor(internal val driver: SqlDriver) {
     val planTables = PlanTables(this)
     val healTables = HealTables(this)
     val mintTables = MintTables(this)
-    val homeTables = HomeTables(this)
+    val baseTables = BaseTables(this)
     val linkTables = LinkTables(this)
 
     /**

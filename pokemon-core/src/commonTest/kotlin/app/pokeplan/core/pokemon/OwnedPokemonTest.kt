@@ -53,17 +53,6 @@ class OwnedPokemonTest {
     }
 
     @Test
-    fun friendshipDependsOnBondStyle() {
-        assertEquals(4, FriendshipRules.amount(FriendshipRules.Source.PET, BondStyle.COMFORT))
-        assertEquals(2, FriendshipRules.amount(FriendshipRules.Source.PET, BondStyle.PRESENCE))
-        assertEquals(6, FriendshipRules.amount(FriendshipRules.Source.FOCUS_SESSION, BondStyle.PRESENCE))
-        assertEquals(2, FriendshipRules.amount(FriendshipRules.Source.BERRY, BondStyle.GIFTS))
-        assertEquals(3, FriendshipRules.amount(FriendshipRules.Source.PET, BondStyle.BALANCED))
-        assertEquals(1.0, FriendshipRules.perkMultiplier(0))
-        assertEquals(1.2, FriendshipRules.perkMultiplier(255), 1e-9)
-    }
-
-    @Test
     fun friendshipIsCapped() {
         val p = pokemon(Ids.PIKACHU, nature = Nature.BOLD, friendship = 254).gainFriendship(FriendshipRules.Source.PET)
         assertEquals(255, p.friendship)

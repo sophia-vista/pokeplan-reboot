@@ -62,7 +62,7 @@ object LauncherSearch {
         LauncherDestination("Care", "soothe-bell", Place.CARE, listOf("mood", "routine", "calm", "diary", "meadow")),
         LauncherDestination("Heal", "potion", Place.HEAL, listOf("health", "water", "sleep", "activity", "hydration", "exercise")),
         LauncherDestination("Mint", "amulet-coin", Place.MINT, listOf("money", "budget", "bills", "finance", "accounts")),
-        LauncherDestination("Home", "chipped-pot", Place.HOUSEHOLD, listOf("household", "chores", "supplies", "maintenance")),
+        LauncherDestination("Base", "chipped-pot", Place.HOUSEHOLD, listOf("household", "chores", "supplies", "maintenance")),
         LauncherDestination("Link", "link-cord", Place.LINK, listOf("people", "contacts", "dates", "birthday", "follow-up")),
         LauncherDestination("Gear", "explorer-kit", Place.GEAR, listOf("tools", "utilities", "pokegear")),
         LauncherDestination("World", "town-map", Place.WORLD, listOf("dungeon", "expedition", "guild")),

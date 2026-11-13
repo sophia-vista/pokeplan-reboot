@@ -23,7 +23,7 @@ object BackupBundle {
     const val VERSION = 1
 
     /** The documents a bundle may carry; anything else is refused rather than written into the live store. */
-    val KNOWN = setOf(LiveDocuments.SAVE, LiveDocuments.CARE, LiveDocuments.HEAL, LiveDocuments.MINT, LiveDocuments.HOME, LiveDocuments.LINK)
+    val KNOWN = setOf(LiveDocuments.SAVE, LiveDocuments.CARE, LiveDocuments.HEAL, LiveDocuments.MINT, LiveDocuments.BASE, LiveDocuments.LINK)
 
     /** The documents that leave the phone sealed: Mint always, Heal since 0.154.0 (they are sealed to this phone's keys, or under a passphrase for a portable backup). */
     val SEALED = listOf(LiveDocuments.MINT, LiveDocuments.HEAL)

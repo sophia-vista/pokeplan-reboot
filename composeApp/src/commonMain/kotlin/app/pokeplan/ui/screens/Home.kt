@@ -277,7 +277,7 @@ private fun QuickLogCard(model: AppModel, go: (Place) -> Unit) {
  */
 @Composable
 private fun AlsoTodayCard(model: AppModel, go: (Place) -> Unit) {
-    model.mintData; model.homeData; model.linkData; model.healData // redraw when any of them changes
+    model.mintData; model.baseData; model.linkData; model.healData // redraw when any of them changes
     val today = model.store.today
     val locked = model.data.settings.lockedModules
     fun count(n: Int, one: String, many: String) = if (n == 1) "1 $one" else "$n $many"
@@ -290,7 +290,7 @@ private fun AlsoTodayCard(model: AppModel, go: (Place) -> Unit) {
             else if (soon > 0) add { TodayRow(Module.MINT, "${count(soon, "bill", "bills")} due in $SOON_DAYS days") { go(Place.MINT) } }
         }
         if (Module.HOME.name !in locked) {
-            val o = app.pokeplan.home.HomeRules.overview(model.homeData, today)
+            val o = app.pokeplan.base.BaseRules.overview(model.baseData, today)
             val n = o.chores.size + o.maintenance.size
             if (n > 0) add { TodayRow(Module.HOME, "${count(n, "thing", "things")} to do") { go(Place.HOUSEHOLD) } }
         }

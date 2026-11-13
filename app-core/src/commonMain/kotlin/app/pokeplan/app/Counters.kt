@@ -2,7 +2,7 @@ package app.pokeplan.app
 
 import app.pokeplan.core.reward.CareKind
 import app.pokeplan.core.reward.HealKind
-import app.pokeplan.core.reward.HomeKind
+import app.pokeplan.core.reward.BaseKind
 import app.pokeplan.core.reward.LinkMoment
 import app.pokeplan.core.reward.MintKind
 import kotlinx.datetime.LocalDate
@@ -72,10 +72,10 @@ internal object Counters {
     /** MINT moments of [kind] paid in the period: the day for a reconciled account, the week's first day for a review. */
     fun mint(kind: MintKind): PeriodCounter = mint.getValue(kind)
 
-    private val home = HomeKind.entries.associateWith { PeriodCounter("home-${it.name}-") }
+    private val home = BaseKind.entries.associateWith { PeriodCounter("home-${it.name}-") }
 
     /** HOME moments of [kind] paid today. */
-    fun home(kind: HomeKind): PeriodCounter = home.getValue(kind)
+    fun base(kind: BaseKind): PeriodCounter = home.getValue(kind)
 
     /** Points towards the next Habitat Egg. It carries over from day to day. */
     const val HOME_EGG_METER = "home-egg-meter"

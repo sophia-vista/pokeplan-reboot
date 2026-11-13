@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.175.0
+
+The HOME module is now **Base**, after Hoenn's Secret Bases (owner, 13 November 2026), and World's Base is now **Town**; a leaner test suite. No reward number changes; `RewardRules.VERSION` is unchanged, and nothing stored on the phone changes.
+
+- **Base.** Replaces the "Nest" label 0.174.0 gave the module (the owner's final choice is Base). Modules → Base, its party, perks, region ("Base Region"), tutorial ("a 5 second tidy of your secret base"), reminders channel, the launcher's search and every place that named the module say Base; its scene is a secret base under the trees (`forest`). "Home" now means only the Home tab. In code: `base-core` (package `app.pokeplan.base`), `BaseStore`, `BaseData`, `BaseRules`, `BaseEvent`, `BaseTables`, `screens/Base.kt` and the rest. Stored names stay so no migration is needed: the `home_*` tables, save keys (`homeLeadId` and `homePaid` through `@SerialName`), ledger and reminder ids, and the constants stored by name (`Region.HOUSEHOLD`, `Module.HOME`, `Place.HOUSEHOLD`, `ReminderModule.HOME`). New reward-log entries start "Base: "; old "Home: " entries are still read.
+- **Town.** World's headquarters destination (facilities, Skills, Finds) is called Town, so one screen never shows two Bases (`WorldSection.TOWN`, WORLD.md section 2).
+- **Fewer, more important tests** (Bible section 3, REP-050): `LegacyJsonImporter`, used only by its 9 tests, is deleted with them (REP-025 d), and 11 tests of constants, copy, a test fixture or a removed feature are gone; a Gear test loses its retired-loan half.
+- Docs: the owner's decisions of 13 November 2026 (lean tests, BASE, Town) in the Product Bible; REP-049 (Secret Base decorations) and REP-050 in the backlog.
 ## 0.174.0
 
 The UI/UX review of every screen (REP-031) and its fixes, against Laws of UX, Laws of UI and the owner's bar: "as simple as Linear or Apple Notes; cut taglines, helper text and secondary labels; if a screen needs them, fix the layout." `RewardRules.VERSION` is 22 (one rule change, below).

@@ -36,29 +36,29 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.app.Tutorials
 import app.pokeplan.plan.LinkKind
 import app.pokeplan.plan.TaskState
-import app.pokeplan.home.Asset
-import app.pokeplan.home.Chore
-import app.pokeplan.home.ChoreState
-import app.pokeplan.home.ChoreView
-import app.pokeplan.home.DueState
-import app.pokeplan.home.EntryStatus
-import app.pokeplan.home.HitKind
-import app.pokeplan.home.HomeArea
-import app.pokeplan.home.HomeKinds
-import app.pokeplan.home.HomeRules
-import app.pokeplan.home.MaintenanceRecord
-import app.pokeplan.home.MaintenanceSchedule
-import app.pokeplan.home.Overview
-import app.pokeplan.home.Quantity
-import app.pokeplan.home.RecordStatus
-import app.pokeplan.home.Recurrence
-import app.pokeplan.home.Reference
-import app.pokeplan.home.RepeatKind
-import app.pokeplan.home.RestockLine
-import app.pokeplan.home.SchedulePolicy
-import app.pokeplan.home.Supply
-import app.pokeplan.home.Warranty
-import app.pokeplan.home.WarrantyState
+import app.pokeplan.base.Asset
+import app.pokeplan.base.Chore
+import app.pokeplan.base.ChoreState
+import app.pokeplan.base.ChoreView
+import app.pokeplan.base.DueState
+import app.pokeplan.base.EntryStatus
+import app.pokeplan.base.HitKind
+import app.pokeplan.base.BaseArea
+import app.pokeplan.base.BaseKinds
+import app.pokeplan.base.BaseRules
+import app.pokeplan.base.MaintenanceRecord
+import app.pokeplan.base.MaintenanceSchedule
+import app.pokeplan.base.Overview
+import app.pokeplan.base.Quantity
+import app.pokeplan.base.RecordStatus
+import app.pokeplan.base.Recurrence
+import app.pokeplan.base.Reference
+import app.pokeplan.base.RepeatKind
+import app.pokeplan.base.RestockLine
+import app.pokeplan.base.SchedulePolicy
+import app.pokeplan.base.Supply
+import app.pokeplan.base.Warranty
+import app.pokeplan.base.WarrantyState
 import app.pokeplan.ui.AppModel
 import app.pokeplan.ui.Report
 import app.pokeplan.ui.theme.ModuleAccent
@@ -85,12 +85,12 @@ import kotlinx.datetime.plus
  * notes, and settings. Utility presentation (HOME.md section 11): a few panels, plain rows with a 48 dp target, no box per record. Nothing here
  * judges: overdue is a word, never a failure, and no screen shows money.
  */
-enum class HouseholdSection(val label: String, val icon: String) {
+enum class BaseSection(val label: String, val icon: String) {
     CHORES("Chores", "cracked-pot"), SUPPLIES("Supplies", "seal-bag"), MAINTENANCE("Maintenance", "iron"), NOTES("Notes", "oaks-letter"),
     SETTINGS("Settings", "storage-key"),
 }
 
-private val accent: androidx.compose.ui.graphics.Color @Composable get() = ModuleAccent.HOME.accent
+private val accent: androidx.compose.ui.graphics.Color @Composable get() = ModuleAccent.BASE.accent
 
 private val numberKeys = KeyboardOptions(keyboardType = KeyboardType.Number)
 private val decimalKeys = KeyboardOptions(keyboardType = KeyboardType.Decimal)
@@ -104,60 +104,60 @@ private fun Chip(label: String, selected: Boolean, onClick: () -> Unit, modifier
 
 /** Marks a chore done from any list, and offers to take it back: a tick on the overview or on an overdue chore leaves no row to undo it from. */
 private fun tickChore(model: AppModel, v: ChoreView) {
-    val entry = model.home.complete(v.chore.id).record ?: return
+    val entry = model.base.complete(v.chore.id).record ?: return
     model.haptic()
-    model.offerUndo("Done: ${v.chore.title}") { model.home.undo(entry.id) }
+    model.offerUndo("Done: ${v.chore.title}") { model.base.undo(entry.id) }
 }
 
 /** Records a schedule's work as done, and offers to take it back (the record goes and the schedule returns to its date; nothing is paid twice). */
 private fun tickMaintenance(model: AppModel, s: MaintenanceSchedule, notes: String = "", cost: String = "") {
-    val before = model.homeData
-    if (model.home.completeMaintenance(s.id, notes, cost).record == null) return
+    val before = model.baseData
+    if (model.base.completeMaintenance(s.id, notes, cost).record == null) return
     model.haptic()
-    model.offerUndo("Done: ${s.title}") { model.home.restore(before) }
+    model.offerUndo("Done: ${s.title}") { model.base.restore(before) }
 }
 
 // ----- Moving between sections ------------------------------------------------------------------------------------------------
 
-private class Jump(val section: HouseholdSection, val id: String? = null, val tab: Int? = null)
+private class Jump(val section: BaseSection, val id: String? = null, val tab: Int? = null)
 
 /** Where the next section should open (a search hit, an overview line); read once when the section appears. */
 private var pendingJump: Jump? = null
 
-private fun go(model: AppModel, section: HouseholdSection, id: String? = null, tab: Int? = null) {
+private fun go(model: AppModel, section: BaseSection, id: String? = null, tab: Int? = null) {
     pendingJump = Jump(section, id, tab)
-    model.homeSection = section
+    model.baseSection = section
 }
 
-private fun takeJump(section: HouseholdSection): Jump? = pendingJump?.takeIf { it.section == section }?.also { pendingJump = null }
+private fun takeJump(section: BaseSection): Jump? = pendingJump?.takeIf { it.section == section }?.also { pendingJump = null }
 
 /** The line under the household's card in Modules: how much waits today, or what the module is for. Never a private word of the household. */
-internal fun householdSubtitle(model: AppModel): String {
-    val n = HomeRules.overview(model.homeData, model.store.today).chores.size
+internal fun baseSubtitle(model: AppModel): String {
+    val n = BaseRules.overview(model.baseData, model.store.today).chores.size
     return if (n > 0) "$n to do today" else "chores, supplies, upkeep"
 }
 
 @Composable
-internal fun HouseholdScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
-    ScreenSwitch(model.homeSection, depth = { if (it == null) 0 else 1 }) { section -> HouseholdPage(model, section, openPokemon) }
+internal fun BaseScreen(model: AppModel, openPokemon: (String) -> Unit = {}) {
+    ScreenSwitch(model.baseSection, depth = { if (it == null) 0 else 1 }) { section -> BasePage(model, section, openPokemon) }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun HouseholdPage(model: AppModel, section: HouseholdSection?, openPokemon: (String) -> Unit) {
+private fun BasePage(model: AppModel, section: BaseSection?, openPokemon: (String) -> Unit) {
     if (section == null) {
         val toModules = { model.module = null }
         BackHandler(enabled = true, onBack = toModules)
-        HouseholdMenu(model, toModules, openPokemon)
+        BaseMenu(model, toModules, openPokemon)
         return
     }
-    SectionScaffold(section.label, null, onBack = { model.homeSection = null }, icon = section.icon, color = Module.HOME.look.header) {
+    SectionScaffold(section.label, null, onBack = { model.baseSection = null }, icon = section.icon, color = Module.HOME.look.header) {
         when (section) {
-            HouseholdSection.CHORES -> ChoresView(model)
-            HouseholdSection.SUPPLIES -> SuppliesView(model)
-            HouseholdSection.MAINTENANCE -> MaintenanceView(model)
-            HouseholdSection.NOTES -> NotesView(model)
-            HouseholdSection.SETTINGS -> HouseholdSettingsView(model)
+            BaseSection.CHORES -> ChoresView(model)
+            BaseSection.SUPPLIES -> SuppliesView(model)
+            BaseSection.MAINTENANCE -> MaintenanceView(model)
+            BaseSection.NOTES -> NotesView(model)
+            BaseSection.SETTINGS -> BaseSettingsView(model)
         }
     }
 }
@@ -165,31 +165,31 @@ private fun HouseholdPage(model: AppModel, section: HouseholdSection?, openPokem
 // ----- Menu -------------------------------------------------------------------------------------------------------------------
 
 @Composable
-private fun HouseholdMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) -> Unit) {
-    val data = model.homeData
+private fun BaseMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) -> Unit) {
+    val data = model.baseData
     val today = model.store.today
-    val tint = ModuleAccent.HOME.accent
-    val overview = HomeRules.overview(data, today)
+    val tint = ModuleAccent.BASE.accent
+    val overview = BaseRules.overview(data, today)
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(Module.HOME.label, onBack = onBack, color = Module.HOME.look.header)
         Column(
             Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Spacing.Page, vertical = Spacing.L),
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
-            ModuleLeadStage(model, Module.HOME, model.data.player.homeLead, model.store.moduleEvent(app.pokeplan.app.GameStore.HOME_LOG_PREFIX), openPokemon = openPokemon)
-            FirstRecordEgg(model, Tutorials.HOME_TIDY, data.chores.size + data.supplies.size + data.assets.size)
-            HouseholdSearch(model)
-            HouseholdOverview(model, overview)
+            ModuleLeadStage(model, Module.HOME, model.data.player.baseLead, model.store.moduleEvent(app.pokeplan.app.GameStore.BASE_LOG_PREFIX), openPokemon = openPokemon)
+            FirstRecordEgg(model, Tutorials.BASE_TIDY, data.chores.size + data.supplies.size + data.assets.size)
+            BaseSearch(model)
+            BaseOverview(model, overview)
             MenuGrid(
                 listOf(
-                    MenuEntry(HouseholdSection.CHORES.name, HouseholdSection.CHORES.icon, "Chores", if (data.chores.isEmpty()) "add one" else "${overview.chores.size} to do today", tint = tint),
-                    MenuEntry(HouseholdSection.SUPPLIES.name, HouseholdSection.SUPPLIES.icon, "Supplies", if (data.supplies.isEmpty()) "add one" else "${overview.low.size} low", tint = tint),
-                    MenuEntry(HouseholdSection.MAINTENANCE.name, HouseholdSection.MAINTENANCE.icon, "Maintenance", if (data.schedules.isEmpty() && data.assets.isEmpty()) "add one" else "${overview.maintenance.size} due or soon", tint = tint),
-                    MenuEntry(HouseholdSection.NOTES.name, HouseholdSection.NOTES.icon, "Notes", if (data.references.isEmpty()) "add one" else "${data.references.size} notes", tint = tint),
-                    MenuEntry(HouseholdSection.SETTINGS.name, HouseholdSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
+                    MenuEntry(BaseSection.CHORES.name, BaseSection.CHORES.icon, "Chores", if (data.chores.isEmpty()) "add one" else "${overview.chores.size} to do today", tint = tint),
+                    MenuEntry(BaseSection.SUPPLIES.name, BaseSection.SUPPLIES.icon, "Supplies", if (data.supplies.isEmpty()) "add one" else "${overview.low.size} low", tint = tint),
+                    MenuEntry(BaseSection.MAINTENANCE.name, BaseSection.MAINTENANCE.icon, "Maintenance", if (data.schedules.isEmpty() && data.assets.isEmpty()) "add one" else "${overview.maintenance.size} due or soon", tint = tint),
+                    MenuEntry(BaseSection.NOTES.name, BaseSection.NOTES.icon, "Notes", if (data.references.isEmpty()) "add one" else "${data.references.size} notes", tint = tint),
+                    MenuEntry(BaseSection.SETTINGS.name, BaseSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
                 ),
-            ) { key -> model.homeSection = HouseholdSection.valueOf(key) }
-            HomePartyPanel(model, openPokemon)
+            ) { key -> model.baseSection = BaseSection.valueOf(key) }
+            BasePartyPanel(model, openPokemon)
         }
     }
 }
@@ -198,9 +198,9 @@ private fun HouseholdMenu(model: AppModel, onBack: () -> Unit, openPokemon: (Str
 
 /** Only what needs attention (HOME.md 3.1): chores due or overdue, maintenance due or soon, low supplies and warranties ending soon; never a count of everything. */
 @Composable
-private fun HouseholdOverview(model: AppModel, o: Overview) {
-    val data = model.homeData
-    val home = model.home
+private fun BaseOverview(model: AppModel, o: Overview) {
+    val data = model.baseData
+    val home = model.base
     val today = model.store.today
     val hidden = data.settings.hidden
     val chores = if ("chores" in hidden) emptyList() else o.chores
@@ -217,10 +217,10 @@ private fun HouseholdOverview(model: AppModel, o: Overview) {
                     RecordRow(
                         v.chore.title, choreLine(data, v, today), warn = v.state == ChoreState.OVERDUE,
                         lead = { PixelIconButton("check", "Mark ${v.chore.title} done", { tickChore(model, v) }, accent) },
-                        onClick = { go(model, HouseholdSection.CHORES, v.chore.id, 0) }, onClickLabel = "Open chores",
+                        onClick = { go(model, BaseSection.CHORES, v.chore.id, 0) }, onClickLabel = "Open chores",
                     )
                 }
-                if (chores.size > 5) PixelButton("All ${chores.size} chores", { go(model, HouseholdSection.CHORES, tab = 0) }, color = Pixel.InkSoft, compact = true)
+                if (chores.size > 5) PixelButton("All ${chores.size} chores", { go(model, BaseSection.CHORES, tab = 0) }, color = Pixel.InkSoft, compact = true)
             }
             if (upkeep.isNotEmpty()) {
                 SectionLabel("Maintenance")
@@ -228,7 +228,7 @@ private fun HouseholdOverview(model: AppModel, o: Overview) {
                     RecordRow(
                         v.schedule.title, scheduleLine(data, v), warn = v.state == DueState.OVERDUE,
                         lead = { PixelIconButton("check", "Mark ${v.schedule.title} done", { tickMaintenance(model, v.schedule) }, accent) },
-                        onClick = { go(model, HouseholdSection.MAINTENANCE, v.schedule.id, 0) }, onClickLabel = "Open maintenance",
+                        onClick = { go(model, BaseSection.MAINTENANCE, v.schedule.id, 0) }, onClickLabel = "Open maintenance",
                     )
                 }
             }
@@ -238,7 +238,7 @@ private fun HouseholdOverview(model: AppModel, o: Overview) {
                     RecordRow(
                         s.name, "Low · ${quantityText(s)}",
                         trail = { PixelButton("Not now", { home.dismissLow(s.id) }, color = Pixel.InkSoft, compact = true) },
-                        onClick = { go(model, HouseholdSection.SUPPLIES, s.id, 2) }, onClickLabel = "Open the restock list",
+                        onClick = { go(model, BaseSection.SUPPLIES, s.id, 2) }, onClickLabel = "Open the restock list",
                     )
                 }
             }
@@ -248,28 +248,28 @@ private fun HouseholdOverview(model: AppModel, o: Overview) {
                     val asset = data.assets.firstOrNull { it.id == w.assetId }
                     RecordRow(
                         asset?.name ?: "Warranty", listOfNotNull("Ends ${w.expiryDay?.short()}", w.provider.takeIf { it.isNotBlank() }).joinToString(" · "),
-                        onClick = { go(model, HouseholdSection.MAINTENANCE, w.assetId, 1) }, onClickLabel = "Open belongings",
+                        onClick = { go(model, BaseSection.MAINTENANCE, w.assetId, 1) }, onClickLabel = "Open belongings",
                     )
                 }
             }
             var adding by remember { mutableStateOf(false) }
             if (!adding) PixelButton("Add", { adding = true }, Modifier.fillMaxWidth(), compact = true)
             else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelButton("Chore", { go(model, HouseholdSection.CHORES) }, Modifier.weight(1f), compact = true)
-                PixelButton("Stock", { go(model, HouseholdSection.SUPPLIES) }, Modifier.weight(1f), compact = true)
-                PixelButton("Item", { go(model, HouseholdSection.MAINTENANCE, tab = 1) }, Modifier.weight(1f), compact = true)
-                PixelButton("Note", { go(model, HouseholdSection.NOTES) }, Modifier.weight(1f), compact = true)
+                PixelButton("Chore", { go(model, BaseSection.CHORES) }, Modifier.weight(1f), compact = true)
+                PixelButton("Stock", { go(model, BaseSection.SUPPLIES) }, Modifier.weight(1f), compact = true)
+                PixelButton("Item", { go(model, BaseSection.MAINTENANCE, tab = 1) }, Modifier.weight(1f), compact = true)
+                PixelButton("Note", { go(model, BaseSection.NOTES) }, Modifier.weight(1f), compact = true)
             }
         }
     }
 }
 
 @Composable
-private fun HouseholdSearch(model: AppModel) {
-    val data = model.homeData
+private fun BaseSearch(model: AppModel) {
+    val data = model.baseData
     if (data.chores.isEmpty() && data.supplies.isEmpty() && data.assets.isEmpty() && data.references.isEmpty() && data.schedules.isEmpty()) return
     var query by remember { mutableStateOf("") }
-    val hits = model.home.search(query).take(8)
+    val hits = model.base.search(query).take(8)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search the household", singleLine = true)
         if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -280,14 +280,14 @@ private fun HouseholdSearch(model: AppModel) {
 }
 
 private fun openHit(model: AppModel, kind: HitKind, id: String) {
-    val data = model.homeData
+    val data = model.baseData
     when (kind) {
-        HitKind.CHORE -> go(model, HouseholdSection.CHORES, id, if (model.home.choreView(id)?.let { inDueTab(it, model.store.today) } == true) 0 else 1)
-        HitKind.SUPPLY -> go(model, HouseholdSection.SUPPLIES, id, 0)
-        HitKind.ASSET -> go(model, HouseholdSection.MAINTENANCE, id, 1)
-        HitKind.MAINTENANCE -> go(model, HouseholdSection.MAINTENANCE, id, 0)
-        HitKind.WARRANTY -> go(model, HouseholdSection.MAINTENANCE, data.warranties.firstOrNull { it.id == id }?.assetId, 1)
-        HitKind.REFERENCE -> go(model, HouseholdSection.NOTES, id)
+        HitKind.CHORE -> go(model, BaseSection.CHORES, id, if (model.base.choreView(id)?.let { inDueTab(it, model.store.today) } == true) 0 else 1)
+        HitKind.SUPPLY -> go(model, BaseSection.SUPPLIES, id, 0)
+        HitKind.ASSET -> go(model, BaseSection.MAINTENANCE, id, 1)
+        HitKind.MAINTENANCE -> go(model, BaseSection.MAINTENANCE, id, 0)
+        HitKind.WARRANTY -> go(model, BaseSection.MAINTENANCE, data.warranties.firstOrNull { it.id == id }?.assetId, 1)
+        HitKind.REFERENCE -> go(model, BaseSection.NOTES, id)
     }
 }
 
@@ -299,7 +299,7 @@ private fun repeatText(r: Recurrence): String {
     return if (r.kind == RepeatKind.WEEKLY && r.weekdays.isNotEmpty()) "$base on ${r.weekdays.sorted().joinToString(", ") { dayNames[it - 1] }}" else base
 }
 
-private fun areaName(data: app.pokeplan.home.HomeData, id: String?): String? = id?.let { a -> data.areas.firstOrNull { it.id == a }?.name }
+private fun areaName(data: app.pokeplan.base.BaseData, id: String?): String? = id?.let { a -> data.areas.firstOrNull { it.id == a }?.name }
 
 private fun quantityText(s: Supply): String {
     // "1 bottles" reads wrong: one of a plural unit drops its s (a unit like "kg" or "L" has none to drop).
@@ -307,7 +307,7 @@ private fun quantityText(s: Supply): String {
     return Quantity.format(s.quantityMilli) + if (s.quantityMilli != null && unit.isNotEmpty()) " $unit" else ""
 }
 
-private fun choreLine(data: app.pokeplan.home.HomeData, v: ChoreView, today: LocalDate): String {
+private fun choreLine(data: app.pokeplan.base.BaseData, v: ChoreView, today: LocalDate): String {
     val first = when (v.state) {
         ChoreState.OVERDUE -> "Overdue · ${v.dueDay?.short()}"
         ChoreState.DUE -> "Due today"
@@ -323,7 +323,7 @@ private fun choreLine(data: app.pokeplan.home.HomeData, v: ChoreView, today: Loc
     return listOfNotNull(first.takeIf { it.isNotEmpty() }, next, areaName(data, v.chore.areaId), repeatText(v.chore.recurrence).takeIf { it.isNotEmpty() }, v.chore.minutes?.let { "$it min" }).joinToString(" · ")
 }
 
-private fun scheduleLine(data: app.pokeplan.home.HomeData, v: app.pokeplan.home.ScheduleView): String {
+private fun scheduleLine(data: app.pokeplan.base.BaseData, v: app.pokeplan.base.ScheduleView): String {
     val s = v.schedule
     val when_ = if (v.state == DueState.PAUSED) "Paused · ${s.nextDue.short()}" else if (v.state == DueState.DUE) "Due today" else "${v.state.label} · ${s.nextDue.short()}"
     return listOfNotNull(when_, data.assets.firstOrNull { it.id == s.assetId }?.name, repeatText(s.recurrence).takeIf { it.isNotEmpty() }).joinToString(" · ")
@@ -340,7 +340,7 @@ private fun RepeatEditor(r: Recurrence, onChange: (Recurrence) -> Unit) {
     if (r.kind != RepeatKind.ONCE) {
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             Text("Every", style = MaterialTheme.typography.bodyLarge)
-            PixelField(every, { t -> every = t.filter(Char::isDigit).take(2); onChange(r.copy(every = (every.toIntOrNull() ?: 1).coerceIn(1, HomeRules.EVERY_MAX))) }, Modifier.width(88.dp), singleLine = true, keyboardOptions = numberKeys)
+            PixelField(every, { t -> every = t.filter(Char::isDigit).take(2); onChange(r.copy(every = (every.toIntOrNull() ?: 1).coerceIn(1, BaseRules.EVERY_MAX))) }, Modifier.width(88.dp), singleLine = true, keyboardOptions = numberKeys)
             Text(r.kind.unit + if (r.every == 1) "" else "s", style = MaterialTheme.typography.bodyLarge)
         }
         if (r.kind == RepeatKind.WEEKLY) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -351,7 +351,7 @@ private fun RepeatEditor(r: Recurrence, onChange: (Recurrence) -> Unit) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun AreaChips(areas: List<HomeArea>, selected: String?, onPick: (String?) -> Unit) {
+private fun AreaChips(areas: List<BaseArea>, selected: String?, onPick: (String?) -> Unit) {
     val shown = areas.filter { !it.archived || it.id == selected }
     if (shown.isEmpty()) return
     SectionLabel("Area")
@@ -383,11 +383,11 @@ private fun inDueTab(v: ChoreView, today: LocalDate): Boolean = v.state in openS
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ChoresView(model: AppModel) {
-    val home = model.home
-    val data = model.homeData
+    val home = model.base
+    val data = model.baseData
     val today = model.store.today
-    val jump = remember { takeJump(HouseholdSection.CHORES) }
-    val views = HomeRules.views(data, today)
+    val jump = remember { takeJump(BaseSection.CHORES) }
+    val views = BaseRules.views(data, today)
     var tab by remember { mutableStateOf(jump?.tab ?: 0) }
     var area by remember { mutableStateOf<String?>(null) }
     var openId by remember { mutableStateOf(jump?.id) }
@@ -416,7 +416,7 @@ private fun ChoresView(model: AppModel) {
                     }
                 }
                 else -> {
-                    val history = HomeRules.history(data).take(60)
+                    val history = BaseRules.history(data).take(60)
                     if (history.isEmpty()) PixelTitle("Nothing here yet")
                     history.forEachIndexed { i, e ->
                         if (i > 0) Rule()
@@ -434,7 +434,7 @@ private fun ChoresView(model: AppModel) {
                             RecordRow(c.title, "Archived", trail = {
                                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                                     PixelButton("Restore", { home.setChoreStatus(c.id, RecordStatus.ACTIVE) }, color = accent, compact = true)
-                                    PixelIconButton("trash", "Delete ${c.title}", { val before = model.homeData; home.deleteChore(c.id); model.offerUndo("Deleted: ${c.title}") { home.restore(before) } }, Pixel.InkSoft)
+                                    PixelIconButton("trash", "Delete ${c.title}", { val before = model.baseData; home.deleteChore(c.id); model.offerUndo("Deleted: ${c.title}") { home.restore(before) } }, Pixel.InkSoft)
                                 }
                             })
                         }
@@ -447,10 +447,10 @@ private fun ChoresView(model: AppModel) {
 
 @Composable
 private fun ChoreRow(model: AppModel, v: ChoreView, today: LocalDate, open: Boolean, onClick: () -> Unit) {
-    val home = model.home
+    val home = model.base
     val finished = v.state == ChoreState.DONE || v.state == ChoreState.SKIPPED
     RecordRow(
-        v.chore.title, choreLine(model.homeData, v, today), warn = v.state == ChoreState.OVERDUE,
+        v.chore.title, choreLine(model.baseData, v, today), warn = v.state == ChoreState.OVERDUE,
         lead = { if (!finished && v.state != ChoreState.PAUSED) PixelIconButton("check", "Mark ${v.chore.title} done", { tickChore(model, v) }, accent) },
         trail = {
             val entry = v.entry
@@ -463,7 +463,7 @@ private fun ChoreRow(model: AppModel, v: ChoreView, today: LocalDate, open: Bool
 
 @Composable
 private fun ChoreOptions(model: AppModel, v: ChoreView, today: LocalDate, onDone: () -> Unit) {
-    val home = model.home
+    val home = model.base
     var editing by remember(v.chore.id) { mutableStateOf(false) }
     var asking by remember(v.chore.id) { mutableStateOf(false) }
     val id = v.chore.id
@@ -495,7 +495,7 @@ private fun ChoreOptions(model: AppModel, v: ChoreView, today: LocalDate, onDone
             if (linked) PixelButton("Remove from Plan", { model.store.data.tasks.firstOrNull { it.link?.ref == id && it.state != TaskState.DELETED }?.let { t -> model.store.unlinkTask(t.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             else PixelButton("Show in Plan", { model.store.linkChore(id) }, Modifier.weight(1f), accent, compact = true)
         }
-        if (model.homeData.settings.reminders && v.chore.status == RecordStatus.ACTIVE) Actions {
+        if (model.baseData.settings.reminders && v.chore.status == RecordStatus.ACTIVE) Actions {
             PixelButton(if (v.chore.remind) "Reminder on" else "Remind me", { home.setChoreRemind(id, !v.chore.remind) }, Modifier.weight(1f), if (v.chore.remind) accent else Pixel.InkSoft, compact = true)
         }
         Actions {
@@ -508,8 +508,8 @@ private fun ChoreOptions(model: AppModel, v: ChoreView, today: LocalDate, onDone
 /** Adds a chore (title and an Add key; the rest behind a toggle) or, with [initial], edits one. */
 @Composable
 private fun ChoreForm(model: AppModel, initial: Chore?, onDone: () -> Unit, onCancel: (() -> Unit)? = null) {
-    val home = model.home
-    val data = model.homeData
+    val home = model.base
+    val data = model.baseData
     val today = model.store.today
     val adding = initial == null
     var title by remember { mutableStateOf(initial?.title.orEmpty()) }
@@ -533,18 +533,18 @@ private fun ChoreForm(model: AppModel, initial: Chore?, onDone: () -> Unit, onCa
     }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         if (adding) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelField(title, { title = it.take(HomeRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add a chore", singleLine = true, keyboardOptions = wordKeys)
+            PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add a chore", singleLine = true, keyboardOptions = wordKeys)
             PixelButton("Add", ::save, color = accent, enabled = title.isNotBlank())
-        } else PixelField(title, { title = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Chore", singleLine = true, keyboardOptions = wordKeys)
+        } else PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Chore", singleLine = true, keyboardOptions = wordKeys)
         if (adding) PixelButton(if (more) "Fewer options" else "Repeat and details", { more = !more }, color = Pixel.InkSoft, compact = true)
         if (more) {
             SectionLabel("Repeat")
             RepeatEditor(repeat) { repeat = it }
             DateField(if (repeat.kind == RepeatKind.ONCE) "Date, optional" else "First date", first, { first = it }, today, accent, optional = repeat.kind == RepeatKind.ONCE)
             AreaChips(data.areas, areaId) { areaId = it }
-            PixelField(category, { category = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
+            PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
             PixelField(minutes, { minutes = it.filter(Char::isDigit).take(4) }, Modifier.fillMaxWidth(), label = "Minutes, optional", singleLine = true, keyboardOptions = numberKeys)
-            PixelField(instructions, { instructions = it.take(HomeRules.TEXT_MAX) }, Modifier.fillMaxWidth(), label = "Instructions, optional", minLines = 2, keyboardOptions = sentenceKeys)
+            PixelField(instructions, { instructions = it.take(BaseRules.TEXT_MAX) }, Modifier.fillMaxWidth(), label = "Instructions, optional", minLines = 2, keyboardOptions = sentenceKeys)
         }
         if (!adding) Actions {
             PixelButton("Save", ::save, Modifier.weight(1f), accent, enabled = title.isNotBlank(), compact = true)
@@ -559,14 +559,14 @@ private fun ChoreForm(model: AppModel, initial: Chore?, onDone: () -> Unit, onCa
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SuppliesView(model: AppModel) {
-    val home = model.home
-    val data = model.homeData
-    val jump = remember { takeJump(HouseholdSection.SUPPLIES) }
+    val home = model.base
+    val data = model.baseData
+    val jump = remember { takeJump(BaseSection.SUPPLIES) }
     var tab by remember { mutableStateOf(jump?.tab ?: 0) }
     var openId by remember { mutableStateOf(jump?.id.takeIf { jump?.tab != 2 }) }
     var showArchived by remember { mutableStateOf(false) }
     val active = data.supplies.filter { !it.archived }.sortedBy { it.name.lowercase() }
-    val low = HomeRules.lowSupplies(data, includeQuieted = true)
+    val low = BaseRules.lowSupplies(data, includeQuieted = true)
     val archived = data.supplies.filter { it.archived }
     TextBox { SupplyForm(model, null, onDone = {}) }
     TextBox {
@@ -579,7 +579,7 @@ private fun SuppliesView(model: AppModel) {
                     rows.forEachIndexed { i, s ->
                         if (i > 0) Rule()
                         RecordRow(
-                            s.name, listOfNotNull("Low".takeIf { HomeRules.isLow(s) }, s.category.takeIf { it.isNotBlank() }, areaName(data, s.areaId)).joinToString(" · "), warn = HomeRules.isLow(s),
+                            s.name, listOfNotNull("Low".takeIf { BaseRules.isLow(s) }, s.category.takeIf { it.isNotBlank() }, areaName(data, s.areaId)).joinToString(" · "), warn = BaseRules.isLow(s),
                             trail = { Text(quantityText(s), style = MaterialTheme.typography.titleSmall) },
                             onClick = { openId = if (openId == s.id) null else s.id }, onClickLabel = if (openId == s.id) "Hide options" else "Show options",
                         )
@@ -591,7 +591,7 @@ private fun SuppliesView(model: AppModel) {
                             RecordRow(s.name, "Archived", trail = {
                                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                                     PixelButton("Restore", { home.setSupplyArchived(s.id, false) }, color = accent, compact = true)
-                                    PixelIconButton("trash", "Delete ${s.name}", { val before = model.homeData; home.deleteSupply(s.id); model.offerUndo("Deleted: ${s.name}") { home.restore(before) } }, Pixel.InkSoft)
+                                    PixelIconButton("trash", "Delete ${s.name}", { val before = model.baseData; home.deleteSupply(s.id); model.offerUndo("Deleted: ${s.name}") { home.restore(before) } }, Pixel.InkSoft)
                                 }
                             })
                         }
@@ -605,7 +605,7 @@ private fun SuppliesView(model: AppModel) {
 
 @Composable
 private fun SupplyOptions(model: AppModel, s: Supply, onDone: () -> Unit) {
-    val home = model.home
+    val home = model.base
     var editing by remember(s.id) { mutableStateOf(false) }
     var asking by remember(s.id) { mutableStateOf(false) }
     var setText by remember(s.id) { mutableStateOf("") }
@@ -626,7 +626,7 @@ private fun SupplyOptions(model: AppModel, s: Supply, onDone: () -> Unit) {
                 else { refused = home.setQuantity(s.id, milli, "Set by hand"); if (refused == null) setText = "" }
             }, color = Pixel.InkSoft, compact = true)
         }
-        if (model.homeData.settings.reminders && s.lowMilli != null) Actions {
+        if (model.baseData.settings.reminders && s.lowMilli != null) Actions {
             PixelButton(if (s.remind) "Low-stock reminder on" else "Tell me when low", { home.setSupplyRemind(s.id, !s.remind) }, Modifier.weight(1f), if (s.remind) accent else Pixel.InkSoft, compact = true)
         }
         Actions {
@@ -640,9 +640,9 @@ private fun SupplyOptions(model: AppModel, s: Supply, onDone: () -> Unit) {
 
 @Composable
 private fun RestockTab(model: AppModel, focus: String?) {
-    val home = model.home
-    val data = model.homeData
-    val lines = HomeRules.restockList(data)
+    val home = model.base
+    val data = model.baseData
+    val lines = BaseRules.restockList(data)
     var name by remember { mutableStateOf("") }
     var askingKey by remember { mutableStateOf<String?>(focus?.let { "low:$it" }) }
     var quantity by remember { mutableStateOf("") }
@@ -687,7 +687,7 @@ private fun RestockTab(model: AppModel, focus: String?) {
         }
     }
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-        PixelField(name, { name = it.take(HomeRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add to the list", singleLine = true, keyboardOptions = wordKeys)
+        PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add to the list", singleLine = true, keyboardOptions = wordKeys)
         PixelButton("Add", { if (home.addRestock(name) != null) name = "" }, color = accent, enabled = name.isNotBlank())
     }
     refused?.let { Report(model, it, NoticeTone.WARNING) }
@@ -696,8 +696,8 @@ private fun RestockTab(model: AppModel, focus: String?) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SupplyForm(model: AppModel, initial: Supply?, onDone: () -> Unit, onCancel: (() -> Unit)? = null) {
-    val home = model.home
-    val data = model.homeData
+    val home = model.base
+    val data = model.baseData
     val adding = initial == null
     var name by remember { mutableStateOf(initial?.name.orEmpty()) }
     var unit by remember { mutableStateOf(initial?.unit.orEmpty()) }
@@ -723,9 +723,9 @@ private fun SupplyForm(model: AppModel, initial: Supply?, onDone: () -> Unit, on
     }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         if (adding) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelField(name, { name = it.take(HomeRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add a supply", singleLine = true, keyboardOptions = wordKeys)
+            PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add a supply", singleLine = true, keyboardOptions = wordKeys)
             PixelButton("Add", ::save, color = accent, enabled = name.isNotBlank())
-        } else PixelField(name, { name = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Supply", singleLine = true, keyboardOptions = wordKeys)
+        } else PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Supply", singleLine = true, keyboardOptions = wordKeys)
         if (adding) PixelButton(if (more) "Fewer options" else "Quantity and details", { more = !more }, color = Pixel.InkSoft, compact = true)
         if (more) {
             if (adding) PixelField(quantity, { quantity = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(), label = "Quantity, blank if unknown", singleLine = true, keyboardOptions = decimalKeys)
@@ -740,8 +740,8 @@ private fun SupplyForm(model: AppModel, initial: Supply?, onDone: () -> Unit, on
             }
             PixelField(low, { low = it.filter { c -> c.isDigit() || c == '.' || c == ',' }.take(12) }, Modifier.fillMaxWidth(), label = "Low at or under, blank for none", singleLine = true, keyboardOptions = decimalKeys)
             AreaChips(data.areas, areaId) { areaId = it }
-            PixelField(category, { category = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
-            PixelField(notes, { notes = it.take(HomeRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", minLines = 2, keyboardOptions = sentenceKeys)
+            PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
+            PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", minLines = 2, keyboardOptions = sentenceKeys)
         }
         if (!adding) Actions {
             PixelButton("Save", ::save, Modifier.weight(1f), accent, enabled = name.isNotBlank(), compact = true)
@@ -755,16 +755,16 @@ private fun SupplyForm(model: AppModel, initial: Supply?, onDone: () -> Unit, on
 
 @Composable
 private fun MaintenanceView(model: AppModel) {
-    val home = model.home
-    val data = model.homeData
+    val home = model.base
+    val data = model.baseData
     val today = model.store.today
-    val jump = remember { takeJump(HouseholdSection.MAINTENANCE) }
+    val jump = remember { takeJump(BaseSection.MAINTENANCE) }
     var tab by remember { mutableStateOf(jump?.tab ?: 0) }
     var openId by remember { mutableStateOf(jump?.id) }
     var logging by remember { mutableStateOf(false) }
     var showArchived by remember { mutableStateOf(false) }
-    val views = HomeRules.schedules(data, today)
-    val history = HomeRules.maintenanceHistory(data).take(60)
+    val views = BaseRules.schedules(data, today)
+    val history = BaseRules.maintenanceHistory(data).take(60)
     val assets = data.assets.filter { !it.archived }
     val archivedAssets = data.assets.filter { it.archived }
     if (tab == 0) TextBox { ScheduleForm(model, null, onDone = {}) }
@@ -793,7 +793,7 @@ private fun MaintenanceView(model: AppModel) {
                     assets.forEachIndexed { i, a ->
                         if (i > 0) Rule()
                         val warranties = data.warranties.filter { it.assetId == a.id }
-                        val states = warranties.map { HomeRules.warrantyState(it, today) }
+                        val states = warranties.map { BaseRules.warrantyState(it, today) }
                         val word = if (WarrantyState.ENDING in states) "Warranty ends soon" else if (WarrantyState.ACTIVE in states || WarrantyState.UNDATED in states) "Covered" else if (states.isNotEmpty()) "Warranty expired" else null
                         RecordRow(
                             a.name, listOfNotNull(listOf(a.brand, a.model).filter { it.isNotBlank() }.joinToString(" ").takeIf { it.isNotBlank() }, areaName(data, a.areaId), word).joinToString(" · "),
@@ -808,7 +808,7 @@ private fun MaintenanceView(model: AppModel) {
                             RecordRow(a.name, "Archived", trail = {
                                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                                     PixelButton("Restore", { home.setAssetArchived(a.id, false) }, color = accent, compact = true)
-                                    PixelIconButton("trash", "Delete ${a.name}", { val before = model.homeData; home.deleteAsset(a.id); model.offerUndo("Deleted: ${a.name}") { home.restore(before) } }, Pixel.InkSoft)
+                                    PixelIconButton("trash", "Delete ${a.name}", { val before = model.baseData; home.deleteAsset(a.id); model.offerUndo("Deleted: ${a.name}") { home.restore(before) } }, Pixel.InkSoft)
                                 }
                             })
                         }
@@ -840,7 +840,7 @@ private fun MaintenanceView(model: AppModel) {
 
 @Composable
 private fun ScheduleOptions(model: AppModel, s: MaintenanceSchedule, onDone: () -> Unit) {
-    val home = model.home
+    val home = model.base
     var editing by remember(s.id) { mutableStateOf(false) }
     var asking by remember(s.id) { mutableStateOf(false) }
     var notes by remember(s.id) { mutableStateOf("") }
@@ -852,13 +852,13 @@ private fun ScheduleOptions(model: AppModel, s: MaintenanceSchedule, onDone: () 
             return@Column
         }
         if (s.instructions.isNotBlank()) Text(s.instructions, style = MaterialTheme.typography.bodyLarge)
-        PixelField(notes, { notes = it.take(HomeRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", keyboardOptions = sentenceKeys)
-        PixelField(cost, { cost = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Cost, optional", singleLine = true)
+        PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", keyboardOptions = sentenceKeys)
+        PixelField(cost, { cost = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Cost, optional", singleLine = true)
         Actions {
             if (s.status != RecordStatus.PAUSED) PixelButton("Done", { tickMaintenance(model, s, notes, cost); onDone() }, Modifier.weight(1f), accent, compact = true)
             PixelButton("Edit", { editing = true }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
         }
-        if (model.homeData.settings.reminders && s.status == RecordStatus.ACTIVE) Actions {
+        if (model.baseData.settings.reminders && s.status == RecordStatus.ACTIVE) Actions {
             PixelButton(if (s.remind) "Reminder on" else "Remind me", { home.setScheduleRemind(s.id, !s.remind) }, Modifier.weight(1f), if (s.remind) accent else Pixel.InkSoft, compact = true)
         }
         Actions {
@@ -873,8 +873,8 @@ private fun ScheduleOptions(model: AppModel, s: MaintenanceSchedule, onDone: () 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ScheduleForm(model: AppModel, initial: MaintenanceSchedule?, onDone: () -> Unit, onCancel: (() -> Unit)? = null) {
-    val home = model.home
-    val data = model.homeData
+    val home = model.base
+    val data = model.baseData
     val today = model.store.today
     val adding = initial == null
     var title by remember { mutableStateOf(initial?.title.orEmpty()) }
@@ -897,9 +897,9 @@ private fun ScheduleForm(model: AppModel, initial: MaintenanceSchedule?, onDone:
     }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         if (adding) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelField(title, { title = it.take(HomeRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add maintenance", singleLine = true, keyboardOptions = wordKeys)
+            PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add maintenance", singleLine = true, keyboardOptions = wordKeys)
             PixelButton("Add", ::save, color = accent, enabled = title.isNotBlank() && due != null)
-        } else PixelField(title, { title = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Maintenance", singleLine = true, keyboardOptions = wordKeys)
+        } else PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Maintenance", singleLine = true, keyboardOptions = wordKeys)
         if (adding) PixelButton(if (more) "Fewer options" else "Date, repeat and item", { more = !more }, color = Pixel.InkSoft, compact = true)
         if (more) {
             DateField(if (adding) "First due" else "Next due", due, { due = it }, today, accent)
@@ -909,7 +909,7 @@ private fun ScheduleForm(model: AppModel, initial: MaintenanceSchedule?, onDone:
                 SchedulePolicy.entries.forEach { p -> Chip(p.label, p == policy, { policy = p }) }
             }
             AssetChips(data.assets, assetId) { assetId = it }
-            PixelField(instructions, { instructions = it.take(HomeRules.TEXT_MAX) }, Modifier.fillMaxWidth(), label = "Instructions, optional", minLines = 2, keyboardOptions = sentenceKeys)
+            PixelField(instructions, { instructions = it.take(BaseRules.TEXT_MAX) }, Modifier.fillMaxWidth(), label = "Instructions, optional", minLines = 2, keyboardOptions = sentenceKeys)
         }
         if (!adding) Actions {
             PixelButton("Save", ::save, Modifier.weight(1f), accent, enabled = title.isNotBlank() && due != null, compact = true)
@@ -930,17 +930,17 @@ private fun MaintenanceRecordForm(model: AppModel, r: MaintenanceRecord, onDone:
     var cost by remember(r.id) { mutableStateOf(r.cost) }
     var message by remember(r.id) { mutableStateOf<String?>(null) }
     Column(Modifier.padding(bottom = Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        PixelField(title, { title = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "What was done", singleLine = true, keyboardOptions = wordKeys)
+        PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "What was done", singleLine = true, keyboardOptions = wordKeys)
         DateField("Day", day, { day = it }, today, accent, past = true)
-        AssetChips(model.homeData.assets, assetId) { assetId = it }
-        PixelField(notes, { notes = it.take(HomeRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", keyboardOptions = sentenceKeys)
-        PixelField(cost, { cost = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Cost, optional", singleLine = true)
+        AssetChips(model.baseData.assets, assetId) { assetId = it }
+        PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", keyboardOptions = sentenceKeys)
+        PixelField(cost, { cost = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Cost, optional", singleLine = true)
         Actions {
             PixelButton("Save", {
                 val d = day
                 if (d == null) message = "Choose the day."
                 else {
-                    val out = model.home.updateMaintenanceRecord(r.copy(title = title, day = d, assetId = assetId, notes = notes, cost = cost))
+                    val out = model.base.updateMaintenanceRecord(r.copy(title = title, day = d, assetId = assetId, notes = notes, cost = cost))
                     if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
                 }
             }, Modifier.weight(1f), accent, enabled = title.isNotBlank() && day != null, compact = true)
@@ -952,8 +952,8 @@ private fun MaintenanceRecordForm(model: AppModel, r: MaintenanceRecord, onDone:
 
 @Composable
 private fun LogWorkForm(model: AppModel, onDone: () -> Unit) {
-    val home = model.home
-    val data = model.homeData
+    val home = model.base
+    val data = model.baseData
     val today = model.store.today
     var title by remember { mutableStateOf("") }
     var day by remember { mutableStateOf<LocalDate?>(today) }
@@ -962,11 +962,11 @@ private fun LogWorkForm(model: AppModel, onDone: () -> Unit) {
     var cost by remember { mutableStateOf("") }
     var message by remember { mutableStateOf<String?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        PixelField(title, { title = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "What was done", singleLine = true, keyboardOptions = wordKeys)
+        PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "What was done", singleLine = true, keyboardOptions = wordKeys)
         DateField("Day", day, { day = it }, today, accent, past = true)
         AssetChips(data.assets, assetId) { assetId = it }
-        PixelField(notes, { notes = it.take(HomeRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", keyboardOptions = sentenceKeys)
-        PixelField(cost, { cost = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Cost, optional", singleLine = true)
+        PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", keyboardOptions = sentenceKeys)
+        PixelField(cost, { cost = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Cost, optional", singleLine = true)
         PixelButton("Save", {
             val d = day
             if (d == null) message = "Choose the day."
@@ -982,8 +982,8 @@ private fun LogWorkForm(model: AppModel, onDone: () -> Unit) {
 
 @Composable
 private fun AssetDetail(model: AppModel, a: Asset, onDone: () -> Unit) {
-    val home = model.home
-    val data = model.homeData
+    val home = model.base
+    val data = model.baseData
     val today = model.store.today
     var editing by remember(a.id) { mutableStateOf(false) }
     var asking by remember(a.id) { mutableStateOf(false) }
@@ -991,8 +991,8 @@ private fun AssetDetail(model: AppModel, a: Asset, onDone: () -> Unit) {
     var editingRecord by remember(a.id) { mutableStateOf<String?>(null) }
     if (editing) { AssetForm(model, a, onDone = { editing = false }, onCancel = { editing = false }); return }
     val warranties = data.warranties.filter { it.assetId == a.id }
-    val schedules = HomeRules.schedules(data, today).filter { it.schedule.assetId == a.id }
-    val history = HomeRules.maintenanceHistory(data, a.id).take(10)
+    val schedules = BaseRules.schedules(data, today).filter { it.schedule.assetId == a.id }
+    val history = BaseRules.maintenanceHistory(data, a.id).take(10)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.padding(bottom = Spacing.S)) {
         if (asking) {
             Confirm("Delete this item? Its warranties go. Its maintenance schedules and records stay as general ones; archiving keeps everything together.", "Delete", onConfirm = { home.deleteAsset(a.id); onDone() }, onKeep = { asking = false })
@@ -1003,15 +1003,15 @@ private fun AssetDetail(model: AppModel, a: Asset, onDone: () -> Unit) {
         ).filter { it.second.isNotBlank() }.forEach { (k, v) -> Text("$k: $v", style = MaterialTheme.typography.bodyLarge) }
         if (warranties.isNotEmpty()) SectionLabel("Warranty")
         warranties.forEach { w ->
-            val state = HomeRules.warrantyState(w, today)
+            val state = BaseRules.warrantyState(w, today)
             RecordRow(
                 listOf(w.provider, w.coverage).filter { it.isNotBlank() }.joinToString(" · ").ifBlank { "Warranty" },
                 listOfNotNull(state.label, w.expiryDay?.let { "until ${it.short()}" }, w.reference.takeIf { it.isNotBlank() }).joinToString(" · "), warn = state == WarrantyState.ENDING,
-                trail = { PixelIconButton("trash", "Delete this warranty", { val before = model.homeData; home.deleteWarranty(w.id); model.offerUndo("Deleted: warranty") { home.restore(before) } }, Pixel.InkSoft) },
+                trail = { PixelIconButton("trash", "Delete this warranty", { val before = model.baseData; home.deleteWarranty(w.id); model.offerUndo("Deleted: warranty") { home.restore(before) } }, Pixel.InkSoft) },
                 onClick = { warranty = if (warranty == w.id) null else w.id }, onClickLabel = "Edit this warranty",
             )
             if (warranty == w.id) WarrantyForm(model, a.id, w) { warranty = null }
-            if (model.homeData.settings.reminders && w.expiryDay != null) PixelButton(if (w.remind) "Reminder on" else "Remind me before it ends", { home.setWarrantyRemind(w.id, !w.remind) }, Modifier.fillMaxWidth(), if (w.remind) accent else Pixel.InkSoft, compact = true)
+            if (model.baseData.settings.reminders && w.expiryDay != null) PixelButton(if (w.remind) "Reminder on" else "Remind me before it ends", { home.setWarrantyRemind(w.id, !w.remind) }, Modifier.fillMaxWidth(), if (w.remind) accent else Pixel.InkSoft, compact = true)
         }
         if (warranty == "") WarrantyForm(model, a.id, null) { warranty = null }
         else PixelButton("Add warranty", { warranty = "" }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
@@ -1043,15 +1043,15 @@ private fun WarrantyForm(model: AppModel, assetId: String, initial: Warranty?, o
     var reference by remember { mutableStateOf(initial?.reference.orEmpty()) }
     var message by remember { mutableStateOf<String?>(null) }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        PixelField(provider, { provider = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Provider", singleLine = true, keyboardOptions = wordKeys)
-        PixelField(coverage, { coverage = it.take(HomeRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Coverage, optional", keyboardOptions = sentenceKeys)
+        PixelField(provider, { provider = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Provider", singleLine = true, keyboardOptions = wordKeys)
+        PixelField(coverage, { coverage = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Coverage, optional", keyboardOptions = sentenceKeys)
         DateField("Starts, optional", start, { start = it }, today, accent, optional = true, past = true)
         DateField("Ends, optional", end, { end = it }, today, accent, optional = true)
-        PixelField(reference, { reference = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Reference, optional", singleLine = true)
+        PixelField(reference, { reference = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Reference, optional", singleLine = true)
         Actions {
             PixelButton("Save", {
-                val out = if (initial == null) model.home.addWarranty(assetId, provider, coverage, start, end, reference)
-                else model.home.updateWarranty(initial.copy(provider = provider, coverage = coverage, startDay = start, expiryDay = end, reference = reference))
+                val out = if (initial == null) model.base.addWarranty(assetId, provider, coverage, start, end, reference)
+                else model.base.updateWarranty(initial.copy(provider = provider, coverage = coverage, startDay = start, expiryDay = end, reference = reference))
                 if (out.record == null) message = out.refused ?: "That could not be saved." else onDone()
             }, Modifier.weight(1f), accent, compact = true)
             PixelButton("Cancel", onDone, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -1062,8 +1062,8 @@ private fun WarrantyForm(model: AppModel, assetId: String, initial: Warranty?, o
 
 @Composable
 private fun AssetForm(model: AppModel, initial: Asset?, onDone: () -> Unit, onCancel: (() -> Unit)? = null) {
-    val home = model.home
-    val data = model.homeData
+    val home = model.base
+    val data = model.baseData
     val today = model.store.today
     val adding = initial == null
     var name by remember { mutableStateOf(initial?.name.orEmpty()) }
@@ -1086,18 +1086,18 @@ private fun AssetForm(model: AppModel, initial: Asset?, onDone: () -> Unit, onCa
     }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         if (adding) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelField(name, { name = it.take(HomeRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add an item", singleLine = true, keyboardOptions = wordKeys)
+            PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add an item", singleLine = true, keyboardOptions = wordKeys)
             PixelButton("Add", ::save, color = accent, enabled = name.isNotBlank())
-        } else PixelField(name, { name = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Item", singleLine = true, keyboardOptions = wordKeys)
+        } else PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Item", singleLine = true, keyboardOptions = wordKeys)
         if (adding) PixelButton(if (more) "Fewer options" else "Brand, model and more", { more = !more }, color = Pixel.InkSoft, compact = true)
         if (more) {
-            PixelField(category, { category = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
-            PixelField(brand, { brand = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Brand, optional", singleLine = true, keyboardOptions = wordKeys)
-            PixelField(modelName, { modelName = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Model, optional", singleLine = true)
-            PixelField(serial, { serial = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Serial number, optional", singleLine = true)
+            PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
+            PixelField(brand, { brand = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Brand, optional", singleLine = true, keyboardOptions = wordKeys)
+            PixelField(modelName, { modelName = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Model, optional", singleLine = true)
+            PixelField(serial, { serial = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Serial number, optional", singleLine = true)
             DateField("Bought, optional", bought, { bought = it }, today, accent, optional = true, past = true)
             AreaChips(data.areas, areaId) { areaId = it }
-            PixelField(notes, { notes = it.take(HomeRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", minLines = 2, keyboardOptions = sentenceKeys)
+            PixelField(notes, { notes = it.take(BaseRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Notes, optional", minLines = 2, keyboardOptions = sentenceKeys)
         }
         if (!adding) Actions {
             PixelButton("Save", ::save, Modifier.weight(1f), accent, enabled = name.isNotBlank(), compact = true)
@@ -1111,9 +1111,9 @@ private fun AssetForm(model: AppModel, initial: Asset?, onDone: () -> Unit, onCa
 
 @Composable
 private fun NotesView(model: AppModel) {
-    val home = model.home
-    val data = model.homeData
-    val jump = remember { takeJump(HouseholdSection.NOTES) }
+    val home = model.base
+    val data = model.baseData
+    val jump = remember { takeJump(BaseSection.NOTES) }
     var title by remember { mutableStateOf("") }
     var query by remember { mutableStateOf("") }
     var openId by remember { mutableStateOf(jump?.id) }
@@ -1124,7 +1124,7 @@ private fun NotesView(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             if (data.references.isNotEmpty()) PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search notes", singleLine = true)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelField(title, { title = it.take(HomeRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add a note", singleLine = true, keyboardOptions = sentenceKeys)
+                PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add a note", singleLine = true, keyboardOptions = sentenceKeys)
                 PixelButton("Add", {
                     val out = home.addReference(title)
                     if (out.record == null) message = out.refused else { title = ""; message = null; openId = out.record!!.id; model.haptic() }
@@ -1146,8 +1146,8 @@ private fun NotesView(model: AppModel) {
 
 @Composable
 private fun NoteEditor(model: AppModel, n: Reference, onDone: () -> Unit) {
-    val home = model.home
-    val data = model.homeData
+    val home = model.base
+    val data = model.baseData
     var title by remember(n.id) { mutableStateOf(n.title) }
     var text by remember(n.id) { mutableStateOf(n.text) }
     var category by remember(n.id) { mutableStateOf(n.category) }
@@ -1160,9 +1160,9 @@ private fun NoteEditor(model: AppModel, n: Reference, onDone: () -> Unit) {
             Confirm("Delete this note?", "Delete", onConfirm = { home.deleteReference(n.id); onDone() }, onKeep = { asking = false })
             return@Column
         }
-        PixelField(title, { title = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
-        PixelField(text, { text = it.take(HomeRules.TEXT_MAX) }, Modifier.fillMaxWidth(), label = "Note", minLines = 5, keyboardOptions = sentenceKeys)
-        PixelField(category, { category = it.take(HomeRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
+        PixelField(title, { title = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
+        PixelField(text, { text = it.take(BaseRules.TEXT_MAX) }, Modifier.fillMaxWidth(), label = "Note", minLines = 5, keyboardOptions = sentenceKeys)
+        PixelField(category, { category = it.take(BaseRules.TITLE_MAX) }, Modifier.fillMaxWidth(), label = "Category, optional", singleLine = true, keyboardOptions = sentenceKeys)
         AreaChips(data.areas, areaId) { areaId = it }
         AssetChips(data.assets, assetId) { assetId = it }
         Actions {
@@ -1181,12 +1181,12 @@ private fun NoteEditor(model: AppModel, n: Reference, onDone: () -> Unit) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun HouseholdSettingsView(model: AppModel) {
-    val home = model.home
-    val data = model.homeData
+private fun BaseSettingsView(model: AppModel) {
+    val home = model.base
+    val data = model.baseData
     val settings = data.settings
     var note by remember { mutableStateOf<String?>(null) }
-    var asking by remember { mutableStateOf<HomeKinds?>(null) }
+    var asking by remember { mutableStateOf<BaseKinds?>(null) }
     var askingAll by remember { mutableStateOf(false) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -1232,26 +1232,26 @@ private fun HouseholdSettingsView(model: AppModel) {
             if (files != null) {
                 PixelButton("Export everything", { note = files.save("pokelife-home.json", home.export()) }, Modifier.fillMaxWidth(), accent, compact = true)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    HomeKinds.entries.forEach { k -> PixelButton("Export ${k.label.lowercase()}", { note = files.save("pokelife-home-${k.name.lowercase()}.json", home.export(setOf(k))) }, color = Pixel.InkSoft, compact = true) }
+                    BaseKinds.entries.forEach { k -> PixelButton("Export ${k.label.lowercase()}", { note = files.save("pokelife-home-${k.name.lowercase()}.json", home.export(setOf(k))) }, color = Pixel.InkSoft, compact = true) }
                 }
             }
             note?.let { Report(model, it) }
-            HomeKinds.entries.forEach { k ->
+            BaseKinds.entries.forEach { k ->
                 if (asking == k) Confirm(
-                    if (k == HomeKinds.ASSETS) "Erase all belongings with their maintenance and warranties? This cannot be undone." else "Erase all ${k.label.lowercase()}? This cannot be undone.",
+                    if (k == BaseKinds.ASSETS) "Erase all belongings with their maintenance and warranties? This cannot be undone." else "Erase all ${k.label.lowercase()}? This cannot be undone.",
                     "Erase", "Keep them", onConfirm = { home.erase(k); asking = null }, onKeep = { asking = null },
                 ) else PixelButton("Erase ${k.label.lowercase()}", { asking = k; askingAll = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             }
-            if (askingAll) Confirm("Erase every Home record? This cannot be undone.", "Erase all", "Keep them", onConfirm = { home.eraseAll(); askingAll = false }, onKeep = { askingAll = false })
-            else PixelButton("Erase all Home records", { askingAll = true; asking = null }, Modifier.fillMaxWidth(), Pixel.Danger, compact = true)
+            if (askingAll) Confirm("Erase every Base record? This cannot be undone.", "Erase all", "Keep them", onConfirm = { home.eraseAll(); askingAll = false }, onKeep = { askingAll = false })
+            else PixelButton("Erase all Base records", { askingAll = true; asking = null }, Modifier.fillMaxWidth(), Pixel.Danger, compact = true)
         }
     }
 }
 
 @Composable
 private fun AreasBox(model: AppModel) {
-    val home = model.home
-    val data = model.homeData
+    val home = model.base
+    val data = model.baseData
     var name by remember { mutableStateOf("") }
     var openId by remember { mutableStateOf<String?>(null) }
     var renaming by remember { mutableStateOf("") }
@@ -1275,7 +1275,7 @@ private fun AreasBox(model: AppModel) {
                     if (asking == a.id) Confirm("Delete this area? What names it stays, with no area.", "Delete", onConfirm = { home.deleteArea(a.id); openId = null; asking = null }, onKeep = { asking = null })
                     else {
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                            PixelField(renaming, { renaming = it.take(HomeRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Name", singleLine = true, keyboardOptions = wordKeys)
+                            PixelField(renaming, { renaming = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Name", singleLine = true, keyboardOptions = wordKeys)
                             PixelButton("Rename", { home.renameArea(a.id, renaming) }, color = accent, enabled = renaming.isNotBlank() && renaming.trim() != a.name, compact = true)
                         }
                         Actions {
@@ -1286,7 +1286,7 @@ private fun AreasBox(model: AppModel) {
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelField(name, { name = it.take(HomeRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add an area", singleLine = true, keyboardOptions = wordKeys)
+                PixelField(name, { name = it.take(BaseRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add an area", singleLine = true, keyboardOptions = wordKeys)
                 PixelButton("Add", { if (home.addArea(name) != null) name = "" }, color = accent, enabled = name.isNotBlank())
             }
         }

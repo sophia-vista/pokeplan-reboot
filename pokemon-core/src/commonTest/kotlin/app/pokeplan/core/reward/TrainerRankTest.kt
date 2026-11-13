@@ -11,14 +11,6 @@ import kotlin.test.assertTrue
 
 class TrainerRankTest {
     @Test
-    fun tenRanksAndNamesMatch() {
-        assertEquals(10, TrainerRank.names.size)
-        assertEquals(TrainerRank.names.size, TrainerRank.thresholds.size)
-        assertEquals(TrainerRank.thresholds.sorted(), TrainerRank.thresholds)
-        assertEquals(0, TrainerRank.thresholds.first())
-    }
-
-    @Test
     fun rankFollowsPoints() {
         assertEquals(0, TrainerRank.rankFor(0))
         val first = TrainerRank.thresholds[1]

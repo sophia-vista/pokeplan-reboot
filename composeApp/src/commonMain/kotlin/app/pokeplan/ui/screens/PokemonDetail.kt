@@ -392,7 +392,7 @@ private fun PlacePicker(model: AppModel, p: OwnedPokemon) {
         if (model.data.settings.careModule) Slot("Care party", PartyIds.CARE, app.pokeplan.ui.theme.ModuleAccent.CARE.accent, player.careLead?.id) { store.setCareLead(p.id) } else null,
         Slot("Heal party", PartyIds.HEAL, app.pokeplan.ui.theme.ModuleAccent.HEAL.accent, player.healLead?.id) { store.setHealLead(p.id) },
         Slot("Mint party", PartyIds.MINT, app.pokeplan.ui.theme.ModuleAccent.MINT.accent, player.mintLead?.id) { store.setMintLead(p.id) },
-        Slot("Home party", PartyIds.HOME, app.pokeplan.ui.theme.ModuleAccent.HOME.accent, player.homeLead?.id) { store.setHomeLead(p.id) },
+        Slot("Base party", PartyIds.BASE, app.pokeplan.ui.theme.ModuleAccent.BASE.accent, player.baseLead?.id) { store.setBaseLead(p.id) },
         Slot("Link party", PartyIds.LINK, app.pokeplan.ui.theme.ModuleAccent.LINK.accent, player.linkLead?.id) { store.setLinkLead(p.id) },
     )
     fun moved(ok: Boolean, toPc: Boolean) { if (ok) model.effect(if (toPc) Sfx.MOVE_DROP else Sfx.RECRUIT) }

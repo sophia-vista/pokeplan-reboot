@@ -163,6 +163,6 @@ object PartyIds {
     const val CARE = "care"
     const val HEAL = "heal"
     const val MINT = "mint"
-    const val HOME = "home"
+    const val BASE = "home"
     const val LINK = "link"
 }

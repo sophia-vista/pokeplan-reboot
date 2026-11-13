@@ -38,10 +38,12 @@ PokéLife must remain useful when the user ignores game systems. Pokémon must b
 
 - **Personal use only.** PokéLife is built for the owner's own phone and is never published (no Play Store, no public release). Work that exists only for a public release is dropped: a protected release key (REP-005; the committed key may stay), store and Play-policy justifications such as `QUERY_ALL_PACKAGES`, store listings. Licence duties still apply (CC BY-NC credits, REP-015), and so does everything that protects the owner's data.
 - **Automated tests over manual checks.** Section 9's "actual-device verification" is met by automated tests that exercise the Android code (Robolectric on the JVM where it can, instrumented tests only where it cannot), real screenshot comparison in both palettes and at large text, and simulated process death, kill and corruption. No session hands the owner a manual checklist; the owner reports defects and possible optimisations as they come up in daily use.
-- **Module priorities.** PLAN, CARE and WORLD are used daily and get depth first. MINT, HEAL, HOME and GEAR are to reach the level of a specialist app in their category. LINK is set up once and then left alone: it should need no regular attention (import, reminders that just work, nothing to tend).
-- **HOME is single-user.** No household sharing or shared lists between people.
+- **Module priorities.** PLAN, CARE and WORLD are used daily and get depth first. MINT, HEAL, BASE and GEAR are to reach the level of a specialist app in their category. LINK is set up once and then left alone: it should need no regular attention (import, reminders that just work, nothing to tend).
+- **BASE is single-user.** No household sharing or shared lists between people.
 - **English only.** No localisation.
 - **A watch is wanted** if one can be supported: a feasibility check first, against the owner's actual watch (the Huawei Watch Fit 4 Pro, which is not Wear OS; `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` section 5.2), with the phone's notification actions on the watch as the baseline.
+- **Lean tests.** A test exists to guard something that matters: a rule that pays, moves or changes a Pokémon, privacy and sealing, saving, migration and recovery, and the Android behaviour REP-033 covers. No test for a constant, a label or copy, a feature that was removed, or the absence of something removed, and no copy of a test per module when the modules share the code path. A test that no longer guards anything is deleted with the code it tested.
+- **HOME is renamed BASE**, after Hoenn's Secret Bases (the module's look and words borrow from them; its scene is a secret base under the trees). "Home" now means only the Home tab. WORLD's destination that was called Base is now **Town**. Code follows the new name (`base-core`, `app.pokeplan.base`, `Base*`); stored names stay as they were (the `home_*` tables, save keys, ledger ids, and the `Region.HOUSEHOLD`, `Module.HOME`, `Place.HOUSEHOLD` and `ReminderModule.HOME` constants), so no migration is needed. `MODULES/HOME.md` keeps its file name until the docs reset (REP-032).
 
 ## 4. Canonical module map and ownership
 
@@ -51,12 +53,12 @@ PokéLife must remain useful when the user ignores game systems. Pokémon must b
 | CARE | Self-care routines, reflection, Diary Cards, journal, mood/context check-ins, coping tools, Care Play and visitor state | CARE |
 | HEAL | Activity, workouts, nutrition, hydration, sleep/recovery, measurements, personal health records and imports | HEAL |
 | MINT | Accounts, balance snapshots, transactions, transfers, budgets, savings targets, bills and financial reports | MINT; provider remains authoritative for provider-originated facts |
-| HOME | Chores, household inventory, supplies, assets, maintenance, warranties and household reference | HOME |
+| BASE | Chores, household inventory, supplies, assets, maintenance, warranties and household reference | BASE |
 | LINK | Contacts, relationship notes, important dates and unconverted follow-ups | LINK |
 | GEAR | Utility-specific settings and records for calculators, converters, timers, clocks, sensors and device tools | GEAR |
 | WORLD | Expeditions, dungeons, missions, campaigns, story, settlement, Exploration Finds and Exploration Rank events | WORLD |
 
-There is no separate Explore module. WORLD is the Pokémon adventure; HEAL owns physical health; HOME owns household management; LINK owns relationships.
+There is no separate Explore module. WORLD is the Pokémon adventure; HEAL owns physical health; BASE owns household management; LINK owns relationships.
 
 These docs replace the older module plans (owner decision, 6 November 2026): Health is HEAL, Finance is MINT, Connect is LINK, Pokégear is GEAR, Explore is folded into WORLD, and **Grow is not a module** (goals, projects and milestones belong to PLAN; reflection belongs to CARE). The eight modules above are the complete set.
 
@@ -64,7 +66,7 @@ These docs replace the older module plans (owner decision, 6 November 2026): Hea
 
 - A linked record is a reference or read-only projection, not a second canonical copy.
 - CARE owns self-care routines; PLAN does not absorb them into planning recurrence.
-- HOME owns a chore completion when a PLAN task is merely linked to that chore; the action must not pay twice.
+- BASE owns a chore completion when a PLAN task is merely linked to that chore; the action must not pay twice.
 - MINT owns bill and payment state. A linked PLAN task does not prove that a bill was paid.
 - LINK owns a follow-up until the user explicitly converts it into a PLAN task. Conversion preserves one canonical completion and reward owner.
 - GEAR may calculate or display information but does not take ownership of another module's records.
@@ -127,7 +129,7 @@ Owner decisions of 11 November 2026:
 - Health imports retain source, timestamp, units, provenance, and freshness. Huawei Watch Fit access is feasibility-dependent and must be verified on the actual device/firmware before being advertised.
 - Philippine financial provider integrations must be described honestly. Notification parsing or manual import is not a bank API and does not establish a live balance connection.
 - No background location tracking, location history, location-derived Pokémon encounters, SMS reading, or broad notification access in the baseline.
-- Private CARE, HEAL, MINT, HOME, and LINK content never enters WORLD or shared reward presentation. Only the specific minimal event contracts approved in the owning module and Pokémon specification may cross that boundary.
+- Private CARE, HEAL, MINT, BASE, and LINK content never enters WORLD or shared reward presentation. Only the specific minimal event contracts approved in the owning module and Pokémon specification may cross that boundary.
 
 `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` owns cross-module Android permissions, provider adapters, integration capability status, privacy/security boundaries, and consent. `ARCHITECTURE/DATA_AND_MIGRATIONS.md` owns persistence, transactions, IDs, backup/restore, schema migration, and recovery. `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` Section 9 owns shared reminder scheduling, quiet hours, focus deferral, delivery, action routing, recovery, and reminder privacy.
 

@@ -33,7 +33,7 @@ class GoldenVectorTest {
         val heal = json.encodeToString(HealEvent.serializer(), HealEvent("heal:activity:k1", HealKind.ACTIVITY, nowMillis = 1_700_000_000_000, ref = "k1"))
         val mint = json.encodeToString(MintEvent.serializer(), MintEvent("mint:reconciled:k1", MintKind.RECONCILED, nowMillis = 1_700_000_000_000, ref = "k1"))
         val link = json.encodeToString(LinkEvent.serializer(), LinkEvent("link:followup:k1", LinkMoment.FOLLOW_UP, nowMillis = 1_700_000_000_000, ref = "k1"))
-        val home = json.encodeToString(HomeEvent.serializer(), HomeEvent("home:chore:k1", HomeKind.CHORE, nowMillis = 1_700_000_000_000, ref = "k1"))
+        val home = json.encodeToString(BaseEvent.serializer(), BaseEvent("home:chore:k1", BaseKind.CHORE, nowMillis = 1_700_000_000_000, ref = "k1"))
         return buildJsonObject {
             put("rulesVersion", RewardRules.VERSION)
             put("state", stateJson)
@@ -54,7 +54,7 @@ class GoldenVectorTest {
             put("mintOutcome", RewardJson.mint(stateJson, mint, 5))
             put("homeEvent", home)
             put("homeSeed", 5)
-            put("homeOutcome", RewardJson.home(stateJson, home, 5))
+            put("homeOutcome", RewardJson.base(stateJson, home, 5))
             put("linkEvent", link)
             put("linkSeed", 5)
             put("linkOutcome", RewardJson.link(stateJson, link, 5))

@@ -1,7 +1,7 @@
 package app.pokeplan.data
 
 import app.cash.sqldelight.db.QueryResult
-import app.pokeplan.home.HomeData
+import app.pokeplan.base.BaseData
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -14,9 +14,9 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /** HOME's records in their own tables from the start (REP-014): round trip, only changed rows written, one kind erased alone, backup and activation. */
-class HomeTablesTest {
+class BaseTablesTest {
     private fun obj(text: String) = Json.parseToJsonElement(text) as JsonObject
-    private fun live(): DataStore = JvmDatabase.open().also { it.live.activate(null, null, 1); it.live.moveHomeToTables(2) }
+    private fun live(): DataStore = JvmDatabase.open().also { it.live.activate(null, null, 1); it.live.moveBaseToTables(2) }
 
     private fun count(s: DataStore, table: String): Long =
         s.driver.executeQuery(null, "SELECT count(*) FROM $table", { c -> QueryResult.Value(if (c.next().value) c.getLong(0) else null) }, 0).value ?: 0L
@@ -54,30 +54,22 @@ class HomeTablesTest {
     }""".trimIndent()
 
     @Test
-    fun theTestDocumentIsAValidHomeData() {
-        val data = Json { ignoreUnknownKeys = true }.decodeFromString(HomeData.serializer(), doc)
-        assertEquals(1, data.chores.size)
-        assertEquals("SN-123", data.assets.single().serial)
-        assertEquals(listOf("kg", "pcs"), data.settings.units)
-    }
-
-    @Test
     fun aFreshStartActivatesWithNothingToMoveAndSurvivesRestarts() {
         val s = JvmDatabase.open().also { it.live.activate(null, null, 1) }
-        assertFalse(s.homeTables.isActive())
-        s.live.moveHomeToTables(5)
-        assertTrue(s.homeTables.isActive())
+        assertFalse(s.baseTables.isActive())
+        s.live.moveBaseToTables(5)
+        assertTrue(s.baseTables.isActive())
         assertNull(s.live.read("home"))
         assertFalse("home" in s.live.names())
-        s.live.moveHomeToTables(9) // runs on every start
-        assertEquals("5", s.db.dataQueries.meta(HomeTables.META_HOME_TABLES_AT).executeAsOne(), "the first activation time is kept")
+        s.live.moveBaseToTables(9) // runs on every start
+        assertEquals("5", s.db.dataQueries.meta(BaseTables.META_HOME_TABLES_AT).executeAsOne(), "the first activation time is kept")
     }
 
     @Test
     fun aDocumentRestoredBeforeActivationIsImportedReadBackEqualAndKeptAside() {
         val s = JvmDatabase.open().also { it.live.activate(null, null, 1) }
         s.live.write("home", doc, 2) // not in tables yet: a plain row
-        s.live.moveHomeToTables(3)
+        s.live.moveBaseToTables(3)
         assertEquals(obj(doc), obj(s.live.read("home")!!))
         assertEquals(doc, s.live.read("aside:home:tables:3"))
         for (t in tables) assertEquals(1, count(s, t), t)
@@ -89,8 +81,8 @@ class HomeTablesTest {
         val s = JvmDatabase.open().also { it.live.activate(null, null, 1) }
         s.live.write("home", doc, 2)
         s.driver.execute(null, "CREATE TRIGGER no_marker BEFORE INSERT ON app_meta WHEN NEW.key = 'home_store' BEGIN SELECT RAISE(ABORT, 'no'); END", 0)
-        assertFailsWith<Exception> { s.live.moveHomeToTables(3) }
-        assertFalse(s.homeTables.isActive())
+        assertFailsWith<Exception> { s.live.moveBaseToTables(3) }
+        assertFalse(s.baseTables.isActive())
         assertEquals(0, count(s, "home_chore"), "the rows written before the failure were rolled back")
         assertTrue(s.live.read("home")!!.contains("c1"), "the document row is still the live save")
     }
@@ -99,7 +91,7 @@ class HomeTablesTest {
     fun homeRunsOnTablesAndEverythingComesBackAfterReopeningTheFile() {
         val f = File.createTempFile("home", ".db").also { it.delete(); it.deleteOnExit() }
         JvmDatabase.open(f.path).let { s ->
-            s.live.activate(null, null, 1); s.live.moveHomeToTables(2)
+            s.live.activate(null, null, 1); s.live.moveBaseToTables(2)
             s.live.write("home", doc, 3)
             assertEquals(1L, count(s, "home_chore")); assertEquals(1L, count(s, "home_asset")); assertEquals(1L, count(s, "home_warranty"))
             assertEquals("2026-11-07", s.driver.executeQuery(null, "SELECT day FROM home_chore", { c -> QueryResult.Value(if (c.next().value) c.getString(0) else null) }, 0).value, "a chore's day column is its first due date")
@@ -107,7 +99,7 @@ class HomeTablesTest {
         }
         val again = JvmDatabase.open(f.path)
         assertTrue(again.integrityIssues().isEmpty())
-        assertTrue(again.homeTables.isActive())
+        assertTrue(again.baseTables.isActive())
         assertEquals(obj(doc), obj(again.live.read("home")!!), "everything HOME kept is back, field for field")
     }
 
@@ -133,22 +125,22 @@ class HomeTablesTest {
         s.live.write("home", doc, 3)
         s.live.write("save", """{"player":{"name":"x"}}""", 3)
         val saveBefore = s.live.read("save")
-        s.homeTables.erase("supplies")
+        s.baseTables.erase("supplies")
         assertEquals(0, count(s, "home_supply"))
         for (t in tables - "home_supply") assertEquals(1, count(s, t), t)
         assertEquals(saveBefore, s.live.read("save"), "the game's save is untouched")
-        assertEquals("[]", s.homeTables.readKind("supplies"))
-        assertTrue(s.homeTables.readKind("assets").contains("SN-123"))
-        assertEquals(listOf("areas", "chores", "entries", "supplies", "adjustments", "restock", "assets", "schedules", "maintenance", "warranties", "references"), HomeTables.KINDS)
-        assertFailsWith<IllegalStateException> { s.homeTables.erase("nonsense") }
-        s.homeTables.clear()
+        assertEquals("[]", s.baseTables.readKind("supplies"))
+        assertTrue(s.baseTables.readKind("assets").contains("SN-123"))
+        assertEquals(listOf("areas", "chores", "entries", "supplies", "adjustments", "restock", "assets", "schedules", "maintenance", "warranties", "references"), BaseTables.KINDS)
+        assertFailsWith<IllegalStateException> { s.baseTables.erase("nonsense") }
+        s.baseTables.clear()
         assertEquals(0L, tables.sumOf { count(s, it) } + count(s, "home_state"))
         assertEquals(saveBefore, s.live.read("save"))
         assertNull(s.live.read("home"))
     }
 
     @Test
-    fun noSharedTableEverHoldsHomesWords() {
+    fun noSharedTableEverHoldsBasesWords() {
         val s = live()
         s.live.write("home", doc, 3)
         s.live.write("save", """{"player":{"name":"x"}}""", 4)

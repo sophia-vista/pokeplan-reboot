@@ -292,7 +292,7 @@ object Guardians {
     }
 
     /** The modules that have a Guardian slot, in slot order (slot 1 is Plan's): `pokemon_place` stores the slot, so the order never changes. */
-    val MODULES: List<String> = listOf(PartyIds.PLAN, PartyIds.CARE, PartyIds.HEAL, PartyIds.MINT, PartyIds.HOME, PartyIds.LINK)
+    val MODULES: List<String> = listOf(PartyIds.PLAN, PartyIds.CARE, PartyIds.HEAL, PartyIds.MINT, PartyIds.BASE, PartyIds.LINK)
 
     /** A Guardian's signature in another module's buckets: its type perk at [SIGNATURE_PERCENT] (the second type half), by that module's [bucketOf]. */
     fun <B> signatureIn(p: OwnedPokemon, bucketOf: (PokemonType) -> B?): Map<B, Double> {
@@ -434,22 +434,22 @@ object MintPerks {
 }
 
 /** What Home's party can improve (POKEMON_ECOSYSTEM.md section 2.2.1). Perks only change what Habitat Discovery pays, never anything in HOME's records. */
-enum class HomeBucket(val label: String, val effect: String) {
+enum class BaseBucket(val label: String, val effect: String) {
     CANDY_FINDER("Candy finder", "a chance of an extra Exp. Candy from a chore or a piece of maintenance done"),
     FRIENDSHIP_GAIN("Friendship gain", "a chance of extra friendship from a chore or a piece of maintenance done"),
 }
 
 /** Home's perks: the lead gives its type perk in full, the rest of Home's party a quarter, each bucket capped like Plan's. */
-object HomePerks {
-    fun bucket(type: PokemonType): HomeBucket? = when (type) {
-        PokemonType.GRASS, PokemonType.NORMAL, PokemonType.BUG, PokemonType.GROUND, PokemonType.FIRE, PokemonType.WATER -> HomeBucket.CANDY_FINDER
-        PokemonType.FAIRY, PokemonType.FLYING, PokemonType.ICE, PokemonType.ELECTRIC, PokemonType.PSYCHIC, PokemonType.GHOST -> HomeBucket.FRIENDSHIP_GAIN
+object BasePerks {
+    fun bucket(type: PokemonType): BaseBucket? = when (type) {
+        PokemonType.GRASS, PokemonType.NORMAL, PokemonType.BUG, PokemonType.GROUND, PokemonType.FIRE, PokemonType.WATER -> BaseBucket.CANDY_FINDER
+        PokemonType.FAIRY, PokemonType.FLYING, PokemonType.ICE, PokemonType.ELECTRIC, PokemonType.PSYCHIC, PokemonType.GHOST -> BaseBucket.FRIENDSHIP_GAIN
         else -> null
     }
 
     /** One Pokémon's Home perks as percent per bucket (primary type full, second type half), from its level and friendship. */
-    fun typePerks(p: OwnedPokemon): Map<HomeBucket, Double> {
-        val result = mutableMapOf<HomeBucket, Double>()
+    fun typePerks(p: OwnedPokemon): Map<BaseBucket, Double> {
+        val result = mutableMapOf<BaseBucket, Double>()
         val power = 0.5 * p.level / CandyRules.MAX_LEVEL + 0.5 * p.friendship / FriendshipRules.MAX
         for ((index, type) in p.perkTypes.withIndex()) {
             val bucket = bucket(type) ?: continue
@@ -459,9 +459,9 @@ object HomePerks {
     }
 
     /** The percent per bucket for a party led by [lead], with the module's [guardian] on top of the cap (see [Guardians]); empty with neither. */
-    fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList(), guardian: OwnedPokemon? = null): Map<HomeBucket, Double> {
+    fun total(lead: OwnedPokemon?, party: List<OwnedPokemon> = emptyList(), guardian: OwnedPokemon? = null): Map<BaseBucket, Double> {
         if (lead == null && guardian == null) return emptyMap()
-        val sums = mutableMapOf<HomeBucket, Double>()
+        val sums = mutableMapOf<BaseBucket, Double>()
         lead?.let { typePerks(it) }?.forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v }
         party.filter { it.id != lead?.id }.take(5).forEach { a ->
             typePerks(a).forEach { (b, v) -> sums[b] = (sums[b] ?: 0.0) + v * Perks.ASSIST_SHARE }

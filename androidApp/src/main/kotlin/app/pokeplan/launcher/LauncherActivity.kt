@@ -409,7 +409,7 @@ class LauncherActivity : ComponentActivity(), LauncherHost {
         return app.pokeplan.ui.launcher.BatteryStatus(level * 100 / scale, status == android.os.BatteryManager.BATTERY_STATUS_CHARGING || status == android.os.BatteryManager.BATTERY_STATUS_FULL)
     }
 
-    override fun openHomeSettings() {
+    override fun openBaseSettings() {
         try {
             startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
         } catch (e: Exception) {

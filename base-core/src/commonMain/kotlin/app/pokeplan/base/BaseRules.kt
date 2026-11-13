@@ -1,4 +1,4 @@
-package app.pokeplan.home
+package app.pokeplan.base
 
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -138,7 +138,7 @@ data class Overview(val chores: List<ChoreView>, val maintenance: List<ScheduleV
  * backlog is never listed), **unknown is not zero**, **derived facts are not stored** (overdue, low, due soon come from the records and the date),
  * and **only done work can earn** (what pays is decided here and carries no household word).
  */
-object HomeRules {
+object BaseRules {
     const val TITLE_MAX = 80
     const val NOTE_MAX = 2000
     const val TEXT_MAX = 8000
@@ -207,7 +207,7 @@ object HomeRules {
      * Where [chore] stands on [today]. For a repeating chore only the latest occurrence up to today is considered, so a month away leaves one overdue
      * chore, not thirty (HOME.md 4.2); one the user did, skipped or put off is read from its entry; an occurrence done early counts too.
      */
-    fun view(data: HomeData, chore: Chore, today: LocalDate): ChoreView = view(chore, data.entries.filter { it.choreId == chore.id }, today)
+    fun view(data: BaseData, chore: Chore, today: LocalDate): ChoreView = view(chore, data.entries.filter { it.choreId == chore.id }, today)
 
     /** [view] with the chore's own [entries] already picked out, so a list of chores reads the history once and not once per chore. */
     private fun view(chore: Chore, entries: List<ChoreEntry>, today: LocalDate): ChoreView {
@@ -242,7 +242,7 @@ object HomeRules {
     }
 
     /** Every chore that is not archived, most pressing first: overdue (oldest first), due today, upcoming by date, whenever, then done and paused. */
-    fun views(data: HomeData, today: LocalDate): List<ChoreView> {
+    fun views(data: BaseData, today: LocalDate): List<ChoreView> {
         val entries = data.entries.groupBy { it.choreId }
         return data.chores.filter { it.status != RecordStatus.ARCHIVED }.map { view(it, entries[it.id].orEmpty(), today) }
             .sortedWith(compareBy<ChoreView> { order(it.state) }.thenBy { it.dueDay ?: LocalDate(9999, 1, 1) }.thenBy { it.chore.title.lowercase() })
@@ -257,7 +257,7 @@ object HomeRules {
     fun attention(views: List<ChoreView>): List<ChoreView> = views.filter { it.state == ChoreState.OVERDUE || it.state == ChoreState.DUE }
 
     /** What was done, skipped or put off, newest first (HOME.md 4.2 History). Chores that were later archived keep their history. */
-    fun history(data: HomeData, choreId: String? = null): List<ChoreEntry> =
+    fun history(data: BaseData, choreId: String? = null): List<ChoreEntry> =
         data.entries.filter { choreId == null || it.choreId == choreId }.sortedWith(compareByDescending<ChoreEntry> { it.atMillis }.thenByDescending { it.dueDay })
 
     // --- supplies -----------------------------------------------------------------------------------------------------------
@@ -266,11 +266,11 @@ object HomeRules {
     fun isLow(s: Supply): Boolean = !s.archived && s.quantityMilli != null && s.lowMilli != null && s.quantityMilli <= s.lowMilli
 
     /** Low supplies the user has not quieted (what the overview shows). */
-    fun lowSupplies(data: HomeData, includeQuieted: Boolean = false): List<Supply> =
+    fun lowSupplies(data: BaseData, includeQuieted: Boolean = false): List<Supply> =
         data.supplies.filter { isLow(it) && (includeQuieted || !it.lowDismissed) }.sortedBy { it.name.lowercase() }
 
     /** The restocking list: every low supply, then what was written in by hand (HOME.md 4.3). It is not a purchase, a task or a transaction. */
-    fun restockList(data: HomeData): List<RestockLine> =
+    fun restockList(data: BaseData): List<RestockLine> =
         lowSupplies(data, includeQuieted = true).map { RestockLine.Low(it) } +
             data.restock.map { e -> RestockLine.Manual(e, e.supplyId?.let { id -> data.supplies.firstOrNull { it.id == id } }) }
 
@@ -289,7 +289,7 @@ object HomeRules {
     }
 
     /** Active schedules, most pressing first. */
-    fun schedules(data: HomeData, today: LocalDate): List<ScheduleView> =
+    fun schedules(data: BaseData, today: LocalDate): List<ScheduleView> =
         data.schedules.filter { it.status != RecordStatus.ARCHIVED }.map { scheduleView(it, today) }.sortedWith(compareBy<ScheduleView> { it.state == DueState.PAUSED }.thenBy { it.schedule.nextDue })
 
     /**
@@ -318,12 +318,12 @@ object HomeRules {
     }
 
     /** Maintenance records, newest first, for one asset or for all. */
-    fun maintenanceHistory(data: HomeData, assetId: String? = null): List<MaintenanceRecord> =
+    fun maintenanceHistory(data: BaseData, assetId: String? = null): List<MaintenanceRecord> =
         data.maintenance.filter { assetId == null || it.assetId == assetId }.sortedWith(compareByDescending<MaintenanceRecord> { it.day }.thenByDescending { it.atMillis })
 
     // --- the overview ---------------------------------------------------------------------------------------------------------
 
-    fun overview(data: HomeData, today: LocalDate): Overview = Overview(
+    fun overview(data: BaseData, today: LocalDate): Overview = Overview(
         chores = attention(views(data, today)),
         maintenance = schedules(data, today).filter { it.state == DueState.OVERDUE || it.state == DueState.DUE || it.state == DueState.SOON },
         low = lowSupplies(data),
@@ -333,10 +333,10 @@ object HomeRules {
     // --- Habitat Discovery: what may pay (HOME.md section 9) ---------------------------------------------------------------
 
     /** Whether a chore done on [day] may be paid: Habitat Discovery is on and the day's share is not used. The game checks once per occurrence too. */
-    fun chorePays(data: HomeData, day: LocalDate): Boolean = data.settings.progression && data.entries.count { it.paid && it.day == day } < CHORES_PAID_PER_DAY
+    fun chorePays(data: BaseData, day: LocalDate): Boolean = data.settings.progression && data.entries.count { it.paid && it.day == day } < CHORES_PAID_PER_DAY
 
     /** Whether a piece of maintenance done on [day] may be paid, on the same terms. */
-    fun maintenancePays(data: HomeData, day: LocalDate): Boolean = data.settings.progression && data.maintenance.count { it.paid && it.day == day } < MAINTENANCE_PAID_PER_DAY
+    fun maintenancePays(data: BaseData, day: LocalDate): Boolean = data.settings.progression && data.maintenance.count { it.paid && it.day == day } < MAINTENANCE_PAID_PER_DAY
 
     // --- search ---------------------------------------------------------------------------------------------------------------
 
@@ -344,7 +344,7 @@ object HomeRules {
      * Every record whose words contain [text] (case ignored), by kind then title. Local and offline; each hit names its kind and opens its own record,
      * so what no list shows is left out: archived chores, supplies and items, finished one-time maintenance, and the warranties of an archived item.
      */
-    fun search(data: HomeData, text: String): List<Hit> {
+    fun search(data: BaseData, text: String): List<Hit> {
         val q = text.trim().lowercase()
         if (q.isEmpty()) return emptyList()
         fun has(vararg parts: String?): Boolean = parts.any { it != null && it.lowercase().contains(q) }

@@ -332,7 +332,7 @@ private fun ArrivalScene(model: AppModel, scene: Cutscene.Hatch, kind: Acquisiti
 
     val name = p.nickname
     val shiny = p.isShiny
-    val scenery = when (kind) { Acquisition.ARRIVAL -> BuddyScene.CARE; Acquisition.FIELD -> BuddyScene.HEAL; Acquisition.HABITAT -> BuddyScene.HOME; Acquisition.POSTCARD -> BuddyScene.LINK; else -> BuddyScene.MINT }
+    val scenery = when (kind) { Acquisition.ARRIVAL -> BuddyScene.CARE; Acquisition.FIELD -> BuddyScene.HEAL; Acquisition.HABITAT -> BuddyScene.BASE; Acquisition.POSTCARD -> BuddyScene.LINK; else -> BuddyScene.MINT }
     SceneFrame({ arrived = true }, flash.value, if (shiny) FlashGold else FlashWhite) {
         SceneStage(scenery, 260.dp) {
             // The slot the Pokémon stands in; it enters from the left (Care), the right (Heal), the floor (Mint) or from above (Home).

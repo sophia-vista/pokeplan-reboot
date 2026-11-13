@@ -10,16 +10,16 @@ import kotlinx.serialization.json.contentOrNull
 /**
  * HOME's records in their own tables from the start (schema version 9, REP-014; docs/pokelife `MODULES/HOME.md` and
  * `ARCHITECTURE/DATA_AND_MIGRATIONS.md` section 7.4). HOME, like HEAL, never had a document row: the app reads and writes it as one JSON document,
- * `HomeData`, so the rules stay pure and tested, and this class is what stands under it, as [HealTables] stands under Heal's. Nothing is sealed (that is Mint's alone).
+ * `BaseData`, so the rules stay pure and tested, and this class is what stands under it, as [HealTables] stands under Heal's. Nothing is sealed (that is Mint's alone).
  *
  * **One table family per kind of record** (`home_area`, `home_chore`, `home_entry`, `home_supply`, `home_adjustment`, `home_restock`, `home_asset`,
  * `home_schedule`, `home_maintenance`, `home_warranty`, `home_reference`, plus `home_state` for the settings), so a kind can be read ([readKind]), exported or
  * erased ([erase]) on its own; erasing HOME ([clear]) touches nothing outside the `home_*` tables: not the Pokémon, the Bag, the ledger, Plan, Care or Heal.
  *
- * It works on the JSON, not on `HomeData`, so `:data` stays independent of the module and a field it has never heard of (a newer build's) lands in
+ * It works on the JSON, not on `BaseData`, so `:data` stays independent of the module and a field it has never heard of (a newer build's) lands in
  * `home_state`, or stays inside its record's `json`, instead of being dropped. A write only touches the rows that changed, in one transaction.
  */
-class HomeTables(private val store: DataStore) {
+class BaseTables(private val store: DataStore) {
     private val q get() = store.db.dataQueries
     private val rows = RecordRows(store)
 
@@ -47,7 +47,7 @@ class HomeTables(private val store: DataStore) {
             if (parsed != null) {
                 replaceRows(parsed)
                 val back = assemble()
-                check(back != null && canonical(back) == canonical(parsed)) { "the Home records did not read back equal" }
+                check(back != null && canonical(back) == canonical(parsed)) { "the Base records did not read back equal" }
             }
             q.setMeta(META_HOME_TABLES, ACTIVE)
             q.setMeta(META_HOME_TABLES_AT, nowMillis.toString())
@@ -55,7 +55,7 @@ class HomeTables(private val store: DataStore) {
         return parsed != null
     }
 
-    /** One kind of record ([HomeTables.KINDS] names them) as a JSON array, for export; empty when there is none. */
+    /** One kind of record ([BaseTables.KINDS] names them) as a JSON array, for export; empty when there is none. */
     fun readKind(field: String): String {
         val slice = SLICES.firstOrNull { it.field == field } ?: error("unknown kind of HOME record: $field")
         return store.transaction { JSON.encodeToString(JsonElement.serializer(), JsonArray(rows.records(slice.table).map { JSON.parseToJsonElement(it.json) })) }
@@ -130,7 +130,7 @@ class HomeTables(private val store: DataStore) {
         /** The document fields that are a kind of private record, each with its own table family. */
         val KINDS: List<String> = SLICES.map { it.field }
 
-        private fun parse(text: String): JsonObject = JSON.parseToJsonElement(text) as? JsonObject ?: error("the Home document is not a JSON object")
+        private fun parse(text: String): JsonObject = JSON.parseToJsonElement(text) as? JsonObject ?: error("the Base document is not a JSON object")
 
         /** The document with what a read back cannot tell apart left out: an empty list of records is not stored (nothing to put in a table). */
         private fun canonical(document: JsonObject): JsonObject =

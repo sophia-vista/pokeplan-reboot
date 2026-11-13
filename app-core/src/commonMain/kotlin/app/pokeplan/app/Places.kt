@@ -33,9 +33,9 @@ object Places {
         return Place.Pc
     }
 
-    /** The name a player reads for a module's party: "Plan", "Care", "Heal", "Mint" or "Home". */
+    /** The name a player reads for a module's party: "Plan", "Care", "Heal", "Mint" or "Base". */
     private fun partyName(partyId: String): String = when (partyId) {
-        PartyIds.PLAN -> "Plan"; PartyIds.CARE -> "Care"; PartyIds.HEAL -> "Heal"; PartyIds.MINT -> "Mint"; PartyIds.HOME -> "Home"
+        PartyIds.PLAN -> "Plan"; PartyIds.CARE -> "Care"; PartyIds.HEAL -> "Heal"; PartyIds.MINT -> "Mint"; PartyIds.BASE -> "Base"
         else -> partyId.replaceFirstChar { it.uppercase() }
     }
 
@@ -48,7 +48,7 @@ object Places {
         is Place.Party -> {
             val lead = when (place.partyId) {
                 PartyIds.PLAN -> d.player.planLeadId; PartyIds.CARE -> d.player.careLeadId; PartyIds.HEAL -> d.player.healLeadId
-                PartyIds.MINT -> d.player.mintLeadId; PartyIds.HOME -> d.player.homeLeadId; else -> null
+                PartyIds.MINT -> d.player.mintLeadId; PartyIds.BASE -> d.player.baseLeadId; else -> null
             }
             if (lead == id) "${partyName(place.partyId)}'s lead, in ${partyName(place.partyId)}'s party" else "In ${partyName(place.partyId)}'s party"
         }
@@ -83,7 +83,7 @@ object Places {
             val members = p.pokemon.filter { it.inParty && it.partyId == party }
             return chosen?.takeIf { c -> members.any { it.id == c } } ?: members.firstOrNull()?.id
         }
-        return p.copy(planLeadId = lead(PartyIds.PLAN, p.planLeadId), careLeadId = lead(PartyIds.CARE, p.careLeadId), healLeadId = lead(PartyIds.HEAL, p.healLeadId), mintLeadId = lead(PartyIds.MINT, p.mintLeadId), homeLeadId = lead(PartyIds.HOME, p.homeLeadId), linkLeadId = lead(PartyIds.LINK, p.linkLeadId))
+        return p.copy(planLeadId = lead(PartyIds.PLAN, p.planLeadId), careLeadId = lead(PartyIds.CARE, p.careLeadId), healLeadId = lead(PartyIds.HEAL, p.healLeadId), mintLeadId = lead(PartyIds.MINT, p.mintLeadId), baseLeadId = lead(PartyIds.BASE, p.baseLeadId), linkLeadId = lead(PartyIds.LINK, p.linkLeadId))
     }
 
     /**

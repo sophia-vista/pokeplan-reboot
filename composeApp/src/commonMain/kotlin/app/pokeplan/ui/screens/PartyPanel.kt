@@ -43,8 +43,8 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.core.pokemon.CareBucket
 import app.pokeplan.core.pokemon.HealBucket
 import app.pokeplan.core.pokemon.HealPerks
-import app.pokeplan.core.pokemon.HomeBucket
-import app.pokeplan.core.pokemon.HomePerks
+import app.pokeplan.core.pokemon.BaseBucket
+import app.pokeplan.core.pokemon.BasePerks
 import app.pokeplan.core.pokemon.LinkBucket
 import app.pokeplan.core.pokemon.LinkPerks
 import app.pokeplan.core.pokemon.MintBucket
@@ -272,14 +272,14 @@ private fun EmptySlot(modifier: Modifier, compact: Boolean = false) {
 
 /** Home's party in its module: its lead first, and its two perks (which only change what Habitat Discovery pays) once the rank opens them, as Mint's. */
 @Composable
-fun HomePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
+fun BasePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val player = model.data.player
-    val party = player.partyOf(PartyIds.HOME)
+    val party = player.partyOf(PartyIds.BASE)
     val opened = model.store.sees(Feature.PERKS)
-    val totals = HomePerks.total(player.homeLead, party, player.guardianOf(app.pokeplan.core.pokemon.PartyIds.HOME))
+    val totals = BasePerks.total(player.baseLead, party, player.guardianOf(app.pokeplan.core.pokemon.PartyIds.BASE))
     PartyPanel(
-        model, party, player.homeLead?.id, lead = "Lead", perksTitle = "Nest perks",
-        perks = if (opened) HomeBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
+        model, party, player.baseLead?.id, lead = "Lead", perksTitle = "Base perks",
+        perks = if (opened) BaseBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
         onOpen = onOpen,
     )
 }

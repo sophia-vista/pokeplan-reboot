@@ -26,7 +26,7 @@ class NavigationTest {
         model().apply { open(Place.CARE, true); assertEquals(Module.CARE, module); assertNull(careSection) }
         model().apply { open(Place.HEAL, true); assertEquals(Module.HEAL, module); assertNull(healSection) }
         model().apply { open(Place.MINT, true); assertEquals(Module.MINT, module); assertNull(mintSection) }
-        model().apply { open(Place.HOUSEHOLD, true); assertEquals(Module.HOME, module); assertNull(homeSection) }
+        model().apply { open(Place.HOUSEHOLD, true); assertEquals(Module.HOME, module); assertNull(baseSection) }
         model().apply { open(Place.LINK, true); assertEquals(Module.LINK, module); assertNull(linkSection) }
         model().apply { open(Place.WORLD, true); assertEquals(Module.WORLD, module); assertNull(worldSection) }
         model().apply { open(Place.PARTY, true); assertTrue(openParty) }
