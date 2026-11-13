@@ -23,7 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.HorizontalDivider
-import kotlinx.datetime.isoDayNumber
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.runtime.DisposableEffect
@@ -40,6 +39,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.GameStore
 import app.pokeplan.plan.MonthlyRule
+import app.pokeplan.plan.PlanDays
+import app.pokeplan.plan.instanceDay
+import app.pokeplan.plan.movedOccurrence
+import app.pokeplan.plan.words
 import app.pokeplan.plan.QuickAdd
 import app.pokeplan.plan.Rank
 import app.pokeplan.plan.ReminderOffset
@@ -317,50 +320,55 @@ fun DifficultyPicker(selected: Rank, onSelect: (Rank) -> Unit) {
     }
 }
 
-/** The ways a task can repeat from the planner; the engine's [Repeat] can say more (every 2 weeks, yearly), these are the common four. */
+/**
+ * The ways a task can repeat from the planner. Weekly then takes the weeks between (every 1 to 4) and the weekdays ([RepeatRow]);
+ * the engine's [Repeat] can say more (every 3 days), which shows as CUSTOM in words.
+ */
 internal enum class RepeatKind(val label: String) {
-    NEVER("Never"), DAILY("Daily"), WEEKDAYS("Weekdays"), WEEKLY("Weekly"), MONTHLY("Monthly"), CUSTOM("Custom");
+    NEVER("Never"), DAILY("Daily"), WEEKDAYS("Weekdays"), WEEKLY("Weekly"), MONTHLY("Monthly"), YEARLY("Yearly"), CUSTOM("Custom");
 
-    /** The repeat to start from [start]: monthly on its day of the month, weekly on the weekday of the start. Null for NEVER and CUSTOM. */
+    /** The repeat to start from [start]: monthly on its day of the month, weekly on the weekday of the start, yearly on its date. Null for NEVER and CUSTOM. */
     fun toRepeat(start: LocalDate): Repeat? = when (this) {
         NEVER, CUSTOM -> null
         DAILY -> Repeat.Daily()
         WEEKDAYS -> Repeat.Weekly(days = WORKDAYS)
         WEEKLY -> Repeat.Weekly()
         MONTHLY -> Repeat.Monthly(rule = MonthlyRule.DayOfMonth(start.day))
+        YEARLY -> Repeat.Yearly()
     }
 
     companion object {
         private val WORKDAYS = setOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)
-        val PICKABLE = listOf(NEVER, DAILY, WEEKDAYS, WEEKLY, MONTHLY)
+        val PICKABLE = listOf(NEVER, DAILY, WEEKDAYS, WEEKLY, MONTHLY, YEARLY)
 
         fun of(repeat: Repeat?): RepeatKind = when {
             repeat == null -> NEVER
             repeat is Repeat.Daily && repeat.every == 1 -> DAILY
             repeat is Repeat.Weekly && repeat.every == 1 && repeat.days == WORKDAYS -> WEEKDAYS
-            repeat is Repeat.Weekly && repeat.every == 1 && repeat.days.size <= 1 -> WEEKLY
+            repeat is Repeat.Weekly -> WEEKLY
             repeat is Repeat.Monthly && repeat.every == 1 -> MONTHLY
+            repeat is Repeat.Yearly && repeat.every == 1 -> YEARLY
             else -> CUSTOM
         }
     }
 }
 
-private const val WEEKEND = 100
-
-private const val NO_DATE = -1
+/** "repeats weekly on Mon, Thu" for a repeating task, null for one that does not repeat. */
+internal fun repeatsMarker(store: GameStore, task: Task): String? =
+    store.seriesOf(task)?.recurrence?.let { "repeats " + it.repeat.words(it.start) }
 
 /** The most of a shared text that is typed into quick add. */
 private const val QUICK_ADD_SHARED_MAX = 200
-
-/** Days from [today] to the coming Saturday (today on a Saturday or Sunday). */
-private fun daysToWeekend(today: LocalDate): Int = today.dayOfWeek.isoDayNumber.let { if (it >= 6) 0 else 6 - it }
 
 /** Add a task with just a title; the chips pick a day and "More options" adds difficulty. "Call mum tomorrow 5pm 30m" is understood too. */
 @Composable
 internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) {
     var text by remember { mutableStateOf("") }
     var rank by remember { mutableStateOf(Rank.C) }
-    var day by remember { mutableStateOf<Int?>(null) } // null: as typed / the view's default; 0 today; 1 tomorrow; WEEKEND; NO_DATE
+    // The day chosen with a key; with none ([day] null and not [noDate]) the day is what the text says or the view's default.
+    var day by remember { mutableStateOf<LocalDate?>(null) }
+    var noDate by remember { mutableStateOf(false) }
+    var picking by remember { mutableStateOf(false) }
     var repeat by remember { mutableStateOf(RepeatKind.NEVER) }
     val focus = remember { FocusRequester() }
     // "Add task" from a widget or the app icon's shortcut lands here with the keyboard open.
@@ -382,11 +390,9 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
     fun add() {
         if (text.isNotBlank()) {
             val parsed = QuickAdd.parse(text, model.store.today)
-            val picked = day
             val planned: LocalDate? = when {
-                picked == NO_DATE -> null
-                picked == WEEKEND -> model.store.today.plus(DatePeriod(days = daysToWeekend(model.store.today)))
-                picked != null -> model.store.today.plus(DatePeriod(days = picked))
+                noDate -> null
+                day != null -> day
                 else -> parsed.planned ?: if (parsed.due == null && addTo == AddTo.TODAY && listId == null) model.store.today else null
             }
             val made = model.store.addTask(
@@ -401,7 +407,7 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
             )
             // A repeating task starts on its day (today when it has none) and the next ones are made ahead.
             repeat.toRepeat(made.planned ?: model.store.today)?.let { model.store.makeRepeating(made.id, it) }
-            text = ""; day = null; more = false; repeat = RepeatKind.NEVER
+            text = ""; day = null; noDate = false; picking = false; more = false; repeat = RepeatKind.NEVER
         }
     }
     TextBox {
@@ -418,15 +424,26 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
             }
             // What the line was understood as, so a typed "tomorrow 5pm #Social !B" is never a guess (Tesler: the app does the parsing, and shows it).
             val parsed = QuickAdd.parse(text, model.store.today)
-            val understood = QuickAdd.hints(if (day != null) parsed.copy(planned = null) else parsed, model.store.today)
+            val understood = QuickAdd.hints(if (day != null || noDate) parsed.copy(planned = null) else parsed, model.store.today)
             if (understood.isNotEmpty()) Text("Understood: " + understood.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             // The rest waits until there is something to add, so the box is one field and one button (cta.gallery, plnty).
             if (text.isBlank() && !more) return@Column
-            // When: tap a chip to choose a day, tap it again to go back to what the text says ("tomorrow 5pm") or the view's default.
+            // When: Plan's day keys (PlanDays); tap one again to go back to what the text says ("tomorrow 5pm") or the view's default.
+            val today = model.store.today
+            val keyed = PlanDays.presets(today).map { (label, ahead) -> label to today.plus(DatePeriod(days = ahead)) }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                listOf("Today" to 0, "Tomorrow" to 1, "Weekend" to WEEKEND, "No date" to NO_DATE).forEach { (label, value) ->
-                    TabButton(label, day == value, { day = if (day == value) null else value })
+                keyed.forEach { (label, d) ->
+                    TabButton(label, day == d, { day = if (day == d) null else d; noDate = false; picking = false })
                 }
+                val other = day?.takeIf { d -> keyed.none { it.second == d } }
+                TabButton(other?.short() ?: "Pick a day", other != null || picking, { picking = !picking })
+                TabButton("No date", noDate, { noDate = !noDate; day = null; picking = false })
+            }
+            if (picking) {
+                PixelDatePicker(
+                    day ?: today, today, Pixel.Tone, { day = it; noDate = false; picking = false },
+                    presets = emptyList(), max = null, mondayFirst = model.store.data.settings.weekStartsOnMonday, initiallyOpen = true,
+                )
             }
             PixelButton(if (more) "Fewer options" else "More options", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
@@ -466,8 +483,7 @@ internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Bo
                 }
                 // Overdue tasks sit under Today's calm "From before" heading, so the row needs no alarm of its own (docs/design.md, No shame).
                 // A finished task's plan no longer matters: the Done list is grouped by the day it was finished.
-                val kind = store.seriesOf(task)?.let { RepeatKind.of(it.recurrence?.repeat) }
-                val line = if (task.isOpen) taskMeta(task, day, kind?.let { if (it == RepeatKind.CUSTOM) "repeats" else "repeats ${it.label.lowercase()}" }) else ""
+                val line = if (task.isOpen) taskMeta(task, day, repeatsMarker(store, task)) else ""
                 // Its list, by name and colour, as TickTick shows it in the smart lists (not inside the list itself).
                 val shownList = list?.takeIf { showList }
                 if (line.isNotEmpty() || shownList != null) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
@@ -524,8 +540,13 @@ private fun TaskWhenTab(model: AppModel, task: Task) {
         PixelDateField(
             task.planned, store.today, Pixel.Tone,
             { day -> store.updateTask(task.copy(planned = day, plannedTime = if (day == null) null else task.plannedTime)) },
-            presets = listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7), noneLabel = "No date",
+            presets = PlanDays.presets(store.today), noneLabel = "No date", pickLabel = "Pick a day",
+            mondayFirst = store.data.settings.weekStartsOnMonday,
         )
+        // Moving one day of a repeating task moves that day only (PLAN.md section 5.2): say so, and where it came from.
+        task.instanceDay()?.takeIf { task.movedOccurrence }?.let { from ->
+            Text("This one only, moved from ${from.short()}. The others keep their days.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        }
         if (store.activeLists.isNotEmpty()) {
             FieldLabel("List")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -555,14 +576,11 @@ private fun TaskWhenTab(model: AppModel, task: Task) {
 }
 
 /** What the folded "Time and repeat" row says: "Any time, no reminder, does not repeat" or "At 9:00, 1 reminder, repeats weekly". */
-private fun timeAndRepeat(model: AppModel, task: Task): String {
-    val kind = RepeatKind.of(model.store.seriesOf(task)?.recurrence?.repeat)
-    return listOf(
-        task.plannedTime?.let { "At ${clock(it)}" } ?: "Any time",
-        when (task.reminders.size) { 0 -> "no reminder"; 1 -> "1 reminder"; else -> "${task.reminders.size} reminders" },
-        when (kind) { RepeatKind.NEVER -> "does not repeat"; RepeatKind.CUSTOM -> "repeats"; else -> "repeats ${kind.label.lowercase()}" },
-    ).joinToString(", ")
-}
+private fun timeAndRepeat(model: AppModel, task: Task): String = listOf(
+    task.plannedTime?.let { "At ${clock(it)}" } ?: "Any time",
+    when (task.reminders.size) { 0 -> "no reminder"; 1 -> "1 reminder"; else -> "${task.reminders.size} reminders" },
+    repeatsMarker(model.store, task) ?: "does not repeat",
+).joinToString(", ")
 
 /** A task's difficulty as a small tag after its title: the letter in a thin frame, its meaning read out. */
 @Composable
@@ -642,7 +660,7 @@ private fun TaskEditTab(model: AppModel, task: Task, onDeleted: () -> Unit) {
         PixelDateTimeField(
             dueDay, dueTime, store.today, Pixel.Tone, { d, t -> dueDay = d; dueTime = t }, label = "Deadline",
             noDayLabel = "No deadline", timeNoneLabel = "End of day (23:59)", timePresets = TIME_PRESETS,
-            dayPresets = listOf("Today" to 0, "Tomorrow" to 1, "Next week" to 7),
+            dayPresets = PlanDays.presets(store.today), pickLabel = "Pick a day",
         )
         PixelDurationField(minutes.takeIf { it > 0 }, { minutes = it ?: 0 }, Pixel.Tone, label = "Estimate", noneLabel = "No estimate", presets = listOf(15, 30, 45, 60, 90))
         // Edits are saved as they are made (a short pause after typing, and when the tab closes), so nothing is lost by switching tabs.
@@ -681,22 +699,52 @@ private fun GoalChoice(model: AppModel, task: Task) {
     }
 }
 
-/** Whether and how the task repeats: the four common ways, or Never to stop (the days ahead that are still untouched go). */
+/**
+ * Whether and how the task repeats: the common ways, or Never to stop (the days ahead that are still untouched go). Weekly then
+ * takes how many weeks apart (every 1 to 4) and which weekdays; one that came from elsewhere (every 3 days) is said in words.
+ */
 @Composable
-private fun RepeatRow(model: AppModel, task: Task) {
+internal fun RepeatRow(model: AppModel, task: Task) {
     val store = model.store
     val series = store.seriesOf(task)
-    val kind = RepeatKind.of(series?.recurrence?.repeat)
+    val recurrence = series?.recurrence
+    val kind = RepeatKind.of(recurrence?.repeat)
     FieldLabel("Repeat")
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         RepeatKind.PICKABLE.forEach { k ->
             TabButton(k.label, kind == k, {
+                if (k == kind) return@TabButton
                 if (k == RepeatKind.NEVER) store.stopRepeating(task.id)
-                else k.toRepeat(series?.recurrence?.start ?: task.planned ?: store.today)?.let { store.makeRepeating(task.id, it) }
+                else k.toRepeat(recurrence?.start ?: task.planned ?: store.today)?.let { store.makeRepeating(task.id, it) }
             })
         }
     }
+    if (kind == RepeatKind.CUSTOM && recurrence != null) {
+        Text("Repeats ${recurrence.repeat.words(recurrence.start)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+    }
+    val weekly = recurrence?.repeat as? Repeat.Weekly ?: return
+    if (kind != RepeatKind.WEEKLY) return
+    FieldLabel("Every")
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        (1..4).forEach { n ->
+            TabButton(if (n == 1) "Week" else "$n weeks", weekly.every == n, { if (weekly.every != n) store.makeRepeating(task.id, weekly.copy(every = n)) })
+        }
+    }
+    FieldLabel("On")
+    val on = weekly.days.ifEmpty { setOf(recurrence.start.dayOfWeek) }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        PlanDays.week(store.data.settings.weekStart).forEach { d ->
+            val name = dayNames[d.ordinal]
+            // At least one day stays chosen; tapping the last one does nothing.
+            TabButton(name.take(2), d in on, {
+                val next = if (d in on) on - d else on + d
+                if (next.isNotEmpty()) store.makeRepeating(task.id, weekly.copy(days = next))
+            }, Modifier.semantics { contentDescription = fullDayName(d) })
+        }
+    }
 }
+
+private fun fullDayName(d: DayOfWeek) = d.name.lowercase().replaceFirstChar { it.uppercase() }
 
 /** The time of day a task is planned for: typed, a few common times as keys, and small steps. */
 @Composable
@@ -717,22 +765,39 @@ internal fun shifted(t: LocalTime, minutes: Int): LocalTime {
     return LocalTime(total / 60, total % 60)
 }
 
-/** Up to three reminders, counted from the planned time or the deadline; a task without a day has nothing to count from. */
+/**
+ * Up to three reminders, counted from the planned time or the deadline; a task without a day has nothing to count from. The
+ * common offsets are keys, "Other" takes a typed length before (up to a week), and one typed earlier shows as its own key.
+ */
 @Composable
-private fun RemindMe(model: AppModel, task: Task) {
+internal fun RemindMe(model: AppModel, task: Task) {
     FieldLabel("Remind me")
     val base = Reminders.baseTime(task)
     if (base == null) {
         Text("Give it a day first.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         return
     }
+    val room = task.reminders.size < Reminders.MAX_PER_TASK
+    var typing by remember(task.id) { mutableStateOf(false) }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        ReminderOffset.PRESETS.forEach { offset ->
+        (ReminderOffset.PRESETS + task.reminders).distinct().forEach { offset ->
             val on = offset in task.reminders
             TabButton(offset.label, on, {
                 if (on) model.store.setReminders(task.id, task.reminders - offset)
-                else if (task.reminders.size < Reminders.MAX_PER_TASK) model.store.setReminders(task.id, task.reminders + offset)
-            })
+                else if (room) model.store.setReminders(task.id, task.reminders + offset)
+            }, enabled = on || room)
+        }
+        if (room) TabButton("Other", typing, { typing = !typing })
+    }
+    if (typing && room) {
+        var minutes by remember(task.id) { mutableStateOf<Int?>(null) }
+        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+            PixelDurationField(minutes, { minutes = it }, Pixel.Tone, Modifier.weight(1f), presets = emptyList(), max = ReminderOffset.MAX_BEFORE_MINUTES)
+            PixelButton("Add", {
+                val offset = minutes?.let { ReminderOffset.Before(it) }
+                if (offset != null && offset !in task.reminders) model.store.setReminders(task.id, task.reminders + offset)
+                minutes = null; typing = false
+            }, color = Pixel.Tone, compact = true, enabled = minutes != null)
         }
     }
     if (!model.store.data.settings.reminders) Text("Reminders are off in Settings.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)

@@ -61,8 +61,11 @@ object DayTimeline {
         return (end - startMinute).coerceIn(SNAP_MINUTES, (DAY_END - startMinute).coerceAtLeast(SNAP_MINUTES))
     }
 
-    /** How long a block lasts: its estimate, or [DayLoad.DEFAULT_ESTIMATE_MINUTES]; it stops at midnight. */
-    fun minutes(t: Task): Int = t.estimateMinutes ?: DayLoad.DEFAULT_ESTIMATE_MINUTES
+    /** Tasks without an estimate take this many minutes on the hours. *(tune)* */
+    const val DEFAULT_ESTIMATE_MINUTES = 30
+
+    /** How long a block lasts: its estimate, or [DEFAULT_ESTIMATE_MINUTES]; it stops at midnight. */
+    fun minutes(t: Task): Int = t.estimateMinutes ?: DEFAULT_ESTIMATE_MINUTES
 
     /**
      * The plan for [day]. Blocks are the open and finished tasks planned that day at a time; the tray is the open ones

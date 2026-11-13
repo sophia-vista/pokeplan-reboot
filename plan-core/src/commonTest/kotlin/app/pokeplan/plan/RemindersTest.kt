@@ -91,7 +91,7 @@ class RemindersTest {
 
     @Test
     fun labelsAndTheLimitOnATask() {
-        assertEquals(listOf("At the time", "10 min before", "1 hour before", "1 day before"), ReminderOffset.PRESETS.map { it.label })
+        assertEquals(listOf("At the time", "10 min before", "30 min before", "1 hour before", "2 hours before", "1 day before"), ReminderOffset.PRESETS.map { it.label })
         assertFailsWith<IllegalArgumentException> { task().copy(reminders = List(4) { ReminderOffset.Before(it + 1) }) }
     }
 }

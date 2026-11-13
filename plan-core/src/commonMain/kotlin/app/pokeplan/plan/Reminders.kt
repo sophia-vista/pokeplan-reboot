@@ -24,8 +24,11 @@ sealed interface ReminderOffset {
     }
 
     companion object {
-        /** The choices the task card offers. */
-        val PRESETS: List<ReminderOffset> = listOf(AtTime, Before(10), Before(60), Before(24 * 60))
+        /** The choices the task card offers as keys; any other length before is typed ([MAX_BEFORE_MINUTES] at most). */
+        val PRESETS: List<ReminderOffset> = listOf(AtTime, Before(10), Before(30), Before(60), Before(2 * 60), Before(24 * 60))
+
+        /** The longest a typed reminder may come before: a week. */
+        const val MAX_BEFORE_MINUTES = 7 * 24 * 60
     }
 }
 
