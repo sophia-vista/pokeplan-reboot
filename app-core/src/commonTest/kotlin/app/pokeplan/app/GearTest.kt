@@ -63,7 +63,7 @@ class GearTest {
         val a = store.grantPokemon(179, "test").id
         assertEquals("Resting in the PC", Places.label(store.data, a))
         store.assignGearHelper(GearTool.FLASHLIGHT, a)
-        assertEquals("Helping a Gear tool", Places.label(store.data, a))
+        assertEquals("Helping the Flashlight", Places.label(store.data, a))
         val b = store.grantPokemon(25, "test").id
         store.setInParty(b, true, app.pokeplan.core.pokemon.PartyIds.MINT)
         assertTrue(Places.label(store.data, b).endsWith("Mint's party"), Places.label(store.data, b))
@@ -74,5 +74,31 @@ class GearTest {
         assertTrue(store.worldAssign(1, listOf(d)))
         assertTrue(Places.label(store.data, d).startsWith("On "), Places.label(store.data, d))
         assertEquals("Your buddy", Places.label(store.data, store.data.player.buddyId!!))
+    }
+
+    @Test
+    fun anyPlaceButTheBuddyCanBeSentBackToThePc() {
+        val store = store()
+        val helper = store.grantPokemon(179, "test").id
+        store.assignGearHelper(GearTool.FLASHLIGHT, helper)
+        assertTrue(store.sendToPc(helper))
+        assertEquals(Place.Pc, store.placeOf(helper))
+        assertFalse(store.sendToPc(helper), "already in the PC")
+        val member = store.grantPokemon(4, "test").id
+        assertTrue(store.worldAssign(1, listOf(member)))
+        assertTrue(store.sendToPc(member))
+        assertTrue(store.data.world.teams.none { member in it.members })
+        assertFalse(store.sendToPc(store.data.player.buddyId!!), "the buddy is changed by choosing another")
+    }
+
+    @Test
+    fun aTeamOutExploringIsNotOfferedAsAHelper() {
+        val store = store()
+        val out = store.grantPokemon(179, "test").id
+        assertTrue(store.worldAssign(1, listOf(out)))
+        assertTrue(store.worldStart(1, "tiny-woods"))
+        assertTrue(store.gearCandidates(GearTool.FLASHLIGHT).none { it.id == out })
+        assertFalse(store.assignGearHelper(GearTool.FLASHLIGHT, out))
+        assertFalse(store.sendToPc(out))
     }
 }

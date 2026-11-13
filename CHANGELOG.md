@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.175.2
+
+Where a Pokémon is, shown where it matters (REP-009, the last open part). No reward number changes; `RewardRules.VERSION` is unchanged, and nothing stored on the phone changes.
+
+- **The Gear helper list says where each Pokémon is now** ("In Mint's party", "Your buddy"), since choosing one takes it from there, and leaves out a team on an expedition (choosing one was refused without a word).
+- **"Move to..." on a Pokémon reads its real place.** The PC row said "Here" for the buddy, a Guardian, a World team member or a Gear helper, and its button did nothing for them; it now sends a Guardian, a team member or a helper back to the PC (`GameStore.sendToPc`), and stays off for the buddy (choose another buddy instead). On an expedition under way, Make buddy and Move to... are off.
+- A Gear helper's place names its tool ("Helping the Flashlight").
+
 ## 0.175.0
 
 The HOME module is now **Base**, after Hoenn's Secret Bases (owner, 13 November 2026), and World's Base is now **Town**; a leaner test suite. No reward number changes; `RewardRules.VERSION` is unchanged, and nothing stored on the phone changes.

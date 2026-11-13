@@ -1427,6 +1427,17 @@ class GameStore(
         return moveTo(id) { d -> d.copy(player = d.player.copy(pokemon = d.player.pokemon.map { if (it.id == id) it.copy(inParty = true, partyId = partyId) else it })) }
     }
 
+    /**
+     * Sends [id] to the PC from whatever place it is in (a party, a Guardian slot, a World team, a Pokégear helper). Refused for the buddy (choosing
+     * another buddy moves this one; the app always keeps a face), for Plan's last party member (as [setInParty]), on an expedition under way, and
+     * when it is already in the PC.
+     */
+    fun sendToPc(id: String): Boolean = when (val place = Places.of(data, id)) {
+        Place.Pc, Place.Buddy -> false
+        is Place.Party -> setInParty(id, false)
+        else -> moveTo(id) { it }
+    }
+
     /** Makes [id], who must be in Plan's party, its lead: the Pokémon that takes Plan's friendship and gives its perks. */
     fun setPlanLead(id: String): Boolean {
         val p = pokemon(id)
@@ -1877,7 +1888,7 @@ class GameStore(
 
     /** The owned Pokémon who can help [tool], the friendliest first (then the higher level, then by id so it is stable). */
     fun gearCandidates(tool: GearTool): List<OwnedPokemon> =
-        data.player.pokemon.filter { tool.helps(it.speciesId) }.sortedWith(compareByDescending<OwnedPokemon> { it.friendship }.thenByDescending { it.level }.thenBy { it.id })
+        data.player.pokemon.filter { tool.helps(it.speciesId) && Places.movable(data, it.id) }.sortedWith(compareByDescending<OwnedPokemon> { it.friendship }.thenByDescending { it.level }.thenBy { it.id })
 
     /** Who helps [tool] now: the one the player chose (while they still own them), else no one. */
     fun gearHelper(tool: GearTool): GearHelper {
