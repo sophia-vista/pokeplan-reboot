@@ -128,7 +128,7 @@ internal fun FrequencyView(model: AppModel) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelField(
                     title, { title = it }, Modifier.weight(1f), singleLine = true,
-                    placeholder = "New target, like read every day",
+                    placeholder = "New target",
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
@@ -141,23 +141,20 @@ internal fun FrequencyView(model: AppModel) {
         }
     }
     val targets = model.data.series.filter { it.isFrequency }
-    if (targets.isEmpty()) EmptyState(emptyTitle(View.TARGETS), emptyLine(View.TARGETS), icon = View.TARGETS.icon, addAbove = "Add a target")
+    if (targets.isEmpty()) EmptyState(emptyTitle(View.TARGETS), icon = View.TARGETS.icon, addAbove = "Add a target")
     var editing by remember { mutableStateOf<String?>(null) }
     targets.forEach { h ->
         val target = h.target ?: return@forEach
         val doneToday = store.today in h.completions
         val progress = store.frequencyProgress(h)
         ListRow(
-            lead = { RankBadge(h.template.rank) },
-            trail = {
-                Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                    PixelIconButton("pencil", "Edit ${h.template.title}", { editing = if (editing == h.template.id) null else h.template.id }, Pixel.Blue)
-                    if (doneToday) PixelIconButton("undo", "Undo", { store.undoFrequencyTask(h.template.id) }, Pixel.InkSoft)
-                    else PixelIconButton("check", "Done", { model.effect(Sfx.HABIT_TICK); store.completeFrequencyTask(h.template.id) }, Pixel.Green)
-                }
+            lead = {
+                if (doneToday) PixelIconButton("undo", "Undo", { store.undoFrequencyTask(h.template.id) }, Pixel.InkSoft)
+                else PixelIconButton("check", "Done", { model.effect(Sfx.HABIT_TICK); store.completeFrequencyTask(h.template.id) }, Pixel.Green)
             },
+            trail = { PixelIconButton("pencil", "Edit ${h.template.title}", { editing = if (editing == h.template.id) null else h.template.id }, Pixel.Tone) },
         ) {
-            Text(h.template.title, style = MaterialTheme.typography.bodyLarge)
+            TaskTitleLine(h.template, MaterialTheme.typography.bodyLarge)
             // Progress in the period comes first; the streak is secondary and only shown once there is one (PLAN.md section 5.4).
             val streak = store.frequencyStreak(h)
             Text(
@@ -174,12 +171,12 @@ internal fun FrequencyView(model: AppModel) {
         var day by remember(h.template.id) { mutableStateOf(store.today.minus(DatePeriod(days = 1))) }
         PixelButton(if (other) "Close" else "Another day", { other = !other }, color = Pixel.InkSoft, compact = true)
         if (other) {
-            PixelDateField(day, store.today, Pixel.Blue, { it?.let { d -> day = d } }, presets = listOf("Today" to 0, "Yesterday" to -1), max = store.today)
+            PixelDateField(day, store.today, Pixel.Tone, { it?.let { d -> day = d } }, presets = listOf("Today" to 0, "Yesterday" to -1), max = store.today)
             val done = day in h.completions
             PixelButton(
                 if (done) "Take back ${day.short()}" else "Mark ${day.short()} done",
                 { if (done) store.undoFrequencyTask(h.template.id, day) else store.completeFrequencyTask(h.template.id, day) },
-                Modifier.fillMaxWidth(), if (done) Pixel.InkSoft else Pixel.Green, compact = true,
+                Modifier.fillMaxWidth(), if (done) Pixel.InkSoft else Pixel.Tone, compact = true,
             )
         }
     }
@@ -198,14 +195,14 @@ private fun TargetEditor(model: AppModel, h: app.pokeplan.app.TaskSeries, onClos
     var category by remember(id) { mutableStateOf(h.template.category) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, label = "Title")
+            PixelField(title, { title = it }, Modifier.fillMaxWidth(), singleLine = true, placeholder = "Title")
             DifficultyPicker(rank) { rank = it }
             TargetOptions(kind, { kind = it }, days, { days = it }, times, { times = it }, category, { category = it })
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelButton("Save", {
                     store.editFrequencyTask(id, title, targetOf(kind, days, times), rank, category)
                     onClose()
-                }, Modifier.weight(1f), Pixel.Green, enabled = title.isNotBlank() && (kind != HabitKind.WEEKDAYS || days.isNotEmpty()))
+                }, Modifier.weight(1f), enabled = title.isNotBlank() && (kind != HabitKind.WEEKDAYS || days.isNotEmpty()))
                 PixelIconButton("trash", "Delete ${h.template.title}", {
                     val before = model.data.series
                     store.deleteFrequencyTask(id)

@@ -107,7 +107,7 @@ class CapabilitiesTest {
         val none = CapabilityStatus(Capability.BAROMETER, false, note = "Few phones have one.")
         val free = CapabilityStatus(Capability.TORCH, true)
         assertTrue(ready.usableNow && !ready.needsAsking && free.usableNow)
-        assertTrue(!ask.usableNow && ask.needsAsking && ask.describe().contains("asked for when you use it"))
+        assertTrue(!ask.usableNow && ask.needsAsking && ask.describe().contains("asks first"))
         assertTrue(!none.usableNow && !none.needsAsking && none.describe().startsWith("Barometer: not available."))
     }
 }

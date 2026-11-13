@@ -43,13 +43,18 @@ private const val SHOWN = 60
 internal fun AllTasksView(model: AppModel, tasks: List<Task>, card: @Composable (Task, LocalDate?) -> Unit, onAdd: () -> Unit) {
     var filter by remember { mutableStateOf(TaskFilter()) }
     val lists = model.store.activeLists
+    var filtering by remember { mutableStateOf(false) }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelField(
-                filter.query, { filter = filter.copy(query = it) }, Modifier.fillMaxWidth(), singleLine = true,
-                placeholder = "Search titles and notes",
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelField(
+                    filter.query, { filter = filter.copy(query = it) }, Modifier.weight(1f), singleLine = true,
+                    placeholder = "Search",
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                )
+                PixelButton("Filter", { filtering = !filtering }, compact = true)
+            }
+            if (filtering) Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             FieldLabel("Status")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 listOf("Open" to TaskState.OPEN, "Done" to TaskState.DONE, "Any" to null).forEach { (label, state) ->
@@ -70,16 +75,13 @@ internal fun AllTasksView(model: AppModel, tasks: List<Task>, card: @Composable 
                 Rank.entries.forEach { r -> RankBadge(r, selected = filter.rank == r, onClick = { filter = filter.copy(rank = if (filter.rank == r) null else r) }) }
             }
             if (filter.isNarrowed) PixelButton("Clear all", { filter = TaskFilter() }, color = Pixel.InkSoft, compact = true)
+            }
         }
     }
     val found = filter.apply(tasks)
-    Text(
-        if (found.size > SHOWN) "Showing the first $SHOWN of ${found.size}" else if (found.size == 1) "1 task" else "${found.size} tasks",
-        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-    )
+    if (found.size > SHOWN) Text("Showing the first $SHOWN of ${found.size}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     if (found.isEmpty()) EmptyState(
         if (filter.isNarrowed) "Nothing matches" else "No open tasks",
-        if (filter.isNarrowed) "Try fewer filters or other words." else "Add one from Today or the Inbox.",
         icon = "scope-lens",
         action = if (filter.isNarrowed) "Clear filters" to { filter = TaskFilter() } else "Add a task" to onAdd,
     ) else TaskGroup(null, found.take(SHOWN), card = card)

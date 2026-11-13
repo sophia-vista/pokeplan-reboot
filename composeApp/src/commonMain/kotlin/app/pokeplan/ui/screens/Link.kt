@@ -33,7 +33,6 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.Tutorials
-import app.pokeplan.core.reward.RewardEngine
 import app.pokeplan.link.DateKind
 import app.pokeplan.link.FollowUp
 import app.pokeplan.link.FollowUpState
@@ -149,9 +148,9 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             ModuleLeadStage(model, Module.LINK, model.data.player.linkLead, model.store.moduleEvent(app.pokeplan.app.GameStore.LINK_LOG_PREFIX), openPokemon = openPokemon)
-            TutorialCard(model, Tutorials.LINK_POSTCARD, linkRecords = data.people.size + data.dates.size + data.followUps.size)
-            LinkOverview(model)
+            FirstRecordEgg(model, Tutorials.LINK_POSTCARD, data.people.size + data.dates.size + data.followUps.size)
             LinkSearch(model)
+            LinkOverview(model)
             MenuGrid(
                 listOf(
                     MenuEntry(LinkSection.PEOPLE.name, LinkSection.PEOPLE.icon, "People", if (data.people.isEmpty()) "add one" else "${data.people.size} people", tint = tint),
@@ -160,10 +159,6 @@ private fun LinkMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
                     MenuEntry(LinkSection.SETTINGS.name, LinkSection.SETTINGS.icon, "Settings", "Postcard Trail, your data", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.linkSection = LinkSection.valueOf(key) }
-            Text(
-                if (data.settings.postcardTrail) "Postcard Trail is on · Postcard ${model.store.linkEggMeter()} of ${RewardEngine.LINK_EGG_METER_SIZE}" else "Postcard Trail is off",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
             LinkPartyPanel(model, openPokemon)
         }
     }
@@ -225,10 +220,12 @@ private fun LinkOverview(model: AppModel) {
                     RecordRow(u.date.title, listOfNotNull(who, dateLine(u)).joinToString(" · "), onClick = { go(model, LinkSection.DATES, u.date.id) }, onClickLabel = "Open dates")
                 }
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelButton("Person", { go(model, LinkSection.PEOPLE) }, Modifier.weight(1f), accent, compact = true)
-                PixelButton("Date", { go(model, LinkSection.DATES) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelButton("Follow-up", { go(model, LinkSection.FOLLOW_UPS) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            var adding by remember { mutableStateOf(false) }
+            if (!adding) PixelButton("Add", { adding = true }, Modifier.fillMaxWidth(), compact = true)
+            else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelButton("Person", { go(model, LinkSection.PEOPLE) }, Modifier.weight(1f), compact = true)
+                PixelButton("Date", { go(model, LinkSection.DATES) }, Modifier.weight(1f), compact = true)
+                PixelButton("Follow-up", { go(model, LinkSection.FOLLOW_UPS) }, Modifier.weight(1f), compact = true)
             }
         }
     }
@@ -240,13 +237,11 @@ private fun LinkSearch(model: AppModel) {
     if (data.people.isEmpty() && data.dates.isEmpty() && data.followUps.isEmpty()) return
     var query by remember { mutableStateOf("") }
     val hits = model.link.search(query).take(8)
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search Link", singleLine = true)
-            if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            hits.forEach { h ->
-                RecordRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); query = "" }, onClickLabel = "Open")
-            }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search Link", singleLine = true)
+        if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        hits.forEach { h ->
+            RecordRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); query = "" }, onClickLabel = "Open")
         }
     }
 }
@@ -290,20 +285,18 @@ private fun PeopleView(model: AppModel) {
             }
             message?.let { Report(model, it, NoticeTone.WARNING) }
             val similar = if (name.isBlank()) emptyList() else link.possibleDuplicates(name)
-            if (similar.isNotEmpty()) Text("Already in your list: ${similar.joinToString { LinkRules.displayName(it) }}. You can still add another.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        }
-    }
-    if (data.people.isEmpty()) return
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            if (similar.isNotEmpty()) Text("Already in your list: ${similar.joinToString { LinkRules.displayName(it) }}. You can still add another.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
+            if (data.people.isNotEmpty()) {
             PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search people", singleLine = true)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Chip("All", category == null && !favorites, { category = null; favorites = false })
                 if (data.people.any { it.favorite }) Chip("Pinned", favorites, { favorites = !favorites; category = null })
                 LinkRules.categories(data).filter { c -> data.people.any { it.category.equals(c, ignoreCase = true) } }.forEach { c ->
                     Chip(c, category == c, { category = if (category == c) null else c; favorites = false })
                 }
-                Chip(if (sort == Sort.NAME) "By name" else "Recent", false, { sort = if (sort == Sort.NAME) Sort.RECENT else Sort.NAME })
+            }
+            PixelButton(if (sort == Sort.NAME) "By name" else "Recent", { sort = if (sort == Sort.NAME) Sort.RECENT else Sort.NAME }, color = Pixel.InkSoft, compact = true)
             }
             if (people.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             // A long directory is shown a page at a time (the screen is one scrolling column, so every row shown is composed); an open profile is always in view.
@@ -317,6 +310,7 @@ private fun PeopleView(model: AppModel) {
                 if (openId == p.id) PersonProfile(model, p, jump?.tab?.takeIf { jump.id == p.id }) { openId = null }
             }
             if (people.size > upTo) PixelButton("Show ${minOf(DIRECTORY_PAGE, people.size - upTo)} more of ${people.size - upTo}", { shown = upTo + DIRECTORY_PAGE }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+            }
         }
     }
 }
@@ -355,8 +349,8 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
         val nd = dates.size
         val nf = data.followUps.count { it.personId == p.id }
         Text("Delete ${LinkRules.displayName(p)} and their notes?", style = MaterialTheme.typography.bodyLarge)
-        if (nd > 0) ToggleRow(if (nd == 1) "Keep their date" else "Keep their $nd dates", keepDates, detail = "Kept dates stay, with no person on them.") { keepDates = it }
-        if (nf > 0) ToggleRow(if (nf == 1) "Keep their follow-up" else "Keep their $nf follow-ups", keepFollowUps, detail = "Kept follow-ups stay, with no person on them.") { keepFollowUps = it }
+        if (nd > 0) ToggleRow(if (nd == 1) "Keep their date" else "Keep their $nd dates", keepDates, detail = "Kept dates stay, with no person on them.") { keepDates = it } // copy-ok: result
+        if (nf > 0) ToggleRow(if (nf == 1) "Keep their follow-up" else "Keep their $nf follow-ups", keepFollowUps, detail = "Kept follow-ups stay, with no person on them.") { keepFollowUps = it } // copy-ok: result
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelButton("Delete", {
                 val before = model.linkData
@@ -374,7 +368,6 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     val lines = listOf(
         "Called" to p.preferred, "Phone" to p.phone, "Email" to p.email, "Organization" to p.organization, "Role" to p.role, "Address" to p.address,
     ).filter { it.second.isNotBlank() }
-    if (lines.isEmpty() && p.tags.isEmpty() && dates.isEmpty() && next == null) Text("Only a name so far. Add what is useful, nothing more.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     lines.forEach { (k, v) -> RecordRow(v, k) }
     if (p.tags.isNotEmpty()) Text(p.tags.joinToString("  ") { "#$it" }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     dates.forEach { d -> LinkRules.next(d, today)?.let { u -> RecordRow(d.title, dateLine(u)) } ?: RecordRow(d.title, "${d.day}/${d.month}${d.year?.let { "/$it" }.orEmpty()}") }
@@ -382,10 +375,10 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     val contact = model.phone?.takeIf { it.canContact }
     if (contact != null && (p.phone.isNotBlank() || p.email.isNotBlank())) Actions {
         if (p.phone.isNotBlank()) {
-            PixelButton("Call", { contact.call(p.phone) }, Modifier.weight(1f), Pixel.Blue, compact = true)
-            PixelButton("Message", { contact.message(p.phone) }, Modifier.weight(1f), Pixel.Blue, compact = true)
+            PixelButton("Call", { contact.call(p.phone) }, Modifier.weight(1f), Pixel.Tone, compact = true)
+            PixelButton("Message", { contact.message(p.phone) }, Modifier.weight(1f), Pixel.Tone, compact = true)
         }
-        if (p.email.isNotBlank()) PixelButton("Email", { contact.email(p.email) }, Modifier.weight(1f), Pixel.Blue, compact = true)
+        if (p.email.isNotBlank()) PixelButton("Email", { contact.email(p.email) }, Modifier.weight(1f), Pixel.Tone, compact = true)
     }
     Actions {
         PixelButton("Edit", onEdit, Modifier.weight(1f), accent, compact = true)
@@ -445,7 +438,7 @@ private fun PersonFollowUps(model: AppModel, p: Person) {
         PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.weight(1f), placeholder = "Add a follow-up", singleLine = true, keyboardOptions = sentenceKeys)
         PixelButton("Add", { if (link.addFollowUp(title, p.id, due).record != null) { title = ""; due = null; model.haptic() } }, color = accent, enabled = title.isNotBlank())
     }
-    DateField("Day, optional", due, { due = it }, today, accent, optional = true)
+    DateField("Day", due, { due = it }, today, accent, optional = true)
     val open = link.openFollowUps(p.id)
     val history = link.followUpHistory(p.id).take(10)
     if (open.isEmpty() && history.isEmpty()) Text("Nothing to follow up.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
@@ -482,12 +475,12 @@ private fun PersonForm(model: AppModel, p: Person, onDone: () -> Unit) {
     val similar = link.possibleDuplicates(name, phone, email, exceptId = p.id)
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         PixelField(name, { name = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Name", singleLine = true, keyboardOptions = wordKeys)
-        PixelField(preferred, { preferred = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Called, optional", singleLine = true, keyboardOptions = wordKeys)
-        PixelField(phone, { phone = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Phone, optional", singleLine = true, keyboardOptions = phoneKeys)
-        PixelField(email, { email = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Email, optional", singleLine = true, keyboardOptions = emailKeys)
-        PixelField(organization, { organization = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Organization, optional", singleLine = true, keyboardOptions = wordKeys)
-        PixelField(role, { role = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Role, optional", singleLine = true, keyboardOptions = wordKeys)
-        PixelField(address, { address = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Address, optional", singleLine = true, keyboardOptions = wordKeys)
+        PixelField(preferred, { preferred = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Called", singleLine = true, keyboardOptions = wordKeys)
+        PixelField(phone, { phone = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Phone", singleLine = true, keyboardOptions = phoneKeys)
+        PixelField(email, { email = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Email", singleLine = true, keyboardOptions = emailKeys)
+        PixelField(organization, { organization = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Organization", singleLine = true, keyboardOptions = wordKeys)
+        PixelField(role, { role = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Role", singleLine = true, keyboardOptions = wordKeys)
+        PixelField(address, { address = it.take(LinkRules.FIELD_MAX) }, Modifier.fillMaxWidth(), label = "Address", singleLine = true, keyboardOptions = wordKeys)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Chip("No category", category.isBlank(), { category = "" })
             LinkRules.categories(data).forEach { c -> Chip(c, category.equals(c, ignoreCase = true), { category = c }) }
@@ -497,7 +490,7 @@ private fun PersonForm(model: AppModel, p: Person, onDone: () -> Unit) {
             PixelButton("Add", { link.addCategory(newCategory); category = newCategory.trim(); newCategory = "" }, color = accent, enabled = newCategory.isNotBlank())
         }
         PixelField(tags, { tags = it.take(120) }, Modifier.fillMaxWidth(), label = "Tags, separated by commas", singleLine = true)
-        if (similar.isNotEmpty()) Text("This may be ${similar.joinToString(" or ") { LinkRules.displayName(it) }}, already in your list. Nothing is merged.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        if (similar.isNotEmpty()) Text("This may be ${similar.joinToString(" or ") { LinkRules.displayName(it) }}, already in your list. Nothing is merged.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
         Actions {
             PixelButton("Save", {
                 val out = link.updatePerson(p.copy(name = name, preferred = preferred, phone = phone, email = email, organization = organization, role = role, address = address, category = category, tags = LinkRules.tags(tags)))
@@ -519,10 +512,9 @@ private fun DatesView(model: AppModel) {
     val today = model.store.today
     val jump = remember { takeJump(LinkSection.DATES) }
     var openId by remember { mutableStateOf(jump?.id) }
-    TextBox { DateForm(model, null, onDone = {}) }
+    var adding by remember { mutableStateOf(false) }
     val all = link.allDates()
-    if (all.isEmpty()) return
-    TextBox {
+    if (all.isNotEmpty()) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             all.forEachIndexed { i, (d, u) ->
                 if (i > 0) Rule()
@@ -533,6 +525,8 @@ private fun DatesView(model: AppModel) {
             }
         }
     }
+    if (adding) TextBox { DateForm(model, null, onDone = { adding = false }) }
+    else PixelButton("Add a date", { adding = true }, Modifier.fillMaxWidth(), compact = true)
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -570,9 +564,10 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
             PixelField(day, { day = it.filter(Char::isDigit).take(2) }, Modifier.weight(1f), label = "Day", singleLine = true, keyboardOptions = numberKeys)
             PixelField(year, { year = it.filter(Char::isDigit).take(4) }, Modifier.weight(1f), label = "Year", placeholder = "unknown", singleLine = true, keyboardOptions = numberKeys)
         }
-        ToggleRow("Every year", annual, detail = "A 29 February is kept on 28 February in years without one.") { annual = it }
+        // Help: a 29 February is kept on 28 February in years without one.
+        ToggleRow("Every year", annual) { annual = it }
         PersonPicker(data.people, personId) { personId = it }
-        PixelField(note, { note = it.take(LinkRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note, optional", singleLine = true, keyboardOptions = sentenceKeys)
+        PixelField(note, { note = it.take(LinkRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", singleLine = true, keyboardOptions = sentenceKeys)
         if (initial != null && data.settings.reminders) {
             val saved = data.dates.firstOrNull { it.id == initial.id }?.remindDays
             SectionLabel("Remind me")
@@ -584,7 +579,7 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
         Actions {
             PixelButton(if (initial == null) "Add" else "Save", {
                 val m = month.toIntOrNull(); val d = day.toIntOrNull()
-                if (m == null || d == null) message = "Write the day and the month as numbers."
+                if (m == null || d == null) message = "Write the day and the month as numbers." // copy-ok: result
                 else {
                     val out = if (initial == null) link.addDate(kind, title, m, d, year.toIntOrNull(), annual, personId, note)
                     else link.updateDate(initial.copy(kind = kind, title = title, month = m, day = d, year = year.toIntOrNull(), annual = annual, personId = personId, note = note))
@@ -613,7 +608,7 @@ private fun PersonPicker(people: List<Person>, selected: String?, onPick: (Strin
     var query by remember { mutableStateOf("") }
     val chosen = people.firstOrNull { it.id == selected }
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), label = "Person, optional", placeholder = chosen?.let { LinkRules.displayName(it) } ?: "Search to choose", singleLine = true)
+        PixelField(query, { query = it.take(30) }, Modifier.fillMaxWidth(), label = "Person", placeholder = chosen?.let { LinkRules.displayName(it) } ?: "Search to choose", singleLine = true)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Chip("No one", selected == null, { onPick(null) })
             chosen?.let { Chip(LinkRules.displayName(it), true, { onPick(null) }) }
@@ -636,11 +631,13 @@ private fun FollowUpsView(model: AppModel) {
     var newDue by remember { mutableStateOf<LocalDate?>(null) }
     var openId by remember { mutableStateOf(jump?.id) }
     TextBox {
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.weight(1f), placeholder = "Add a follow-up", singleLine = true, keyboardOptions = sentenceKeys)
-            PixelButton("Add", { if (link.addFollowUp(title, null, newDue).record != null) { title = ""; newDue = null; model.haptic() } }, color = accent, enabled = title.isNotBlank())
+        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.weight(1f), placeholder = "Add a follow-up", singleLine = true, keyboardOptions = sentenceKeys)
+                PixelButton("Add", { if (link.addFollowUp(title, null, newDue).record != null) { title = ""; newDue = null; model.haptic() } }, color = accent, enabled = title.isNotBlank())
+            }
+            DateField("Day", newDue, { newDue = it }, today, accent, optional = true)
         }
-        DateField("Day, optional", newDue, { newDue = it }, today, accent, optional = true)
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -682,9 +679,9 @@ private fun FollowUpOptions(model: AppModel, f: FollowUp, onDone: () -> Unit) {
             return@Column
         }
         PixelField(title, { title = it.take(LinkRules.NAME_MAX) }, Modifier.fillMaxWidth(), label = "Title", singleLine = true, keyboardOptions = sentenceKeys)
-        DateField("Day, optional", due, { due = it }, model.store.today, accent, optional = true)
+        DateField("Day", due, { due = it }, model.store.today, accent, optional = true)
         PersonPicker(data.people, personId) { personId = it }
-        PixelField(note, { note = it.take(LinkRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note, optional", minLines = 2, keyboardOptions = sentenceKeys)
+        PixelField(note, { note = it.take(LinkRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note", minLines = 2, keyboardOptions = sentenceKeys)
         Actions {
             PixelButton("Save", {
                 val out = link.updateFollowUp(f.copy(title = title, due = due, note = note, personId = personId))
@@ -720,40 +717,33 @@ private fun LinkSettingsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Postcard Trail")
-            ToggleRow(
-                "Find Pokémon from finished follow-ups", data.settings.postcardTrail,
-                detail = "A follow-up you finish counts once; people, notes, dates and edits never do. Off keeps everything in Link.",
-            ) { link.setPostcardTrail(it) }
+            // Help: a follow-up you finish counts once; people, notes, dates and edits never do.
+            ToggleRow("Find Pokémon from finished follow-ups", data.settings.postcardTrail) { link.setPostcardTrail(it) }
         }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Reminders")
-            ToggleRow(
-                "Remind me about dates and follow-ups", data.settings.reminders,
-                detail = "Off by default, and each date and follow-up is switched on by itself. One reminder each, never a nag for something late. The lock screen only says that you have a reminder, and dismissing one changes nothing.",
-            ) { link.setReminders(it) }
+            ToggleRow("Remind me about dates and follow-ups", data.settings.reminders) { link.setReminders(it) }
             if (data.settings.reminders) {
                 SectionLabel("At")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     listOf(8, 9, 12, 18, 20).forEach { h -> Chip("${h.toString().padStart(2, '0')}:00", h == data.settings.reminderHour, { link.setReminderHour(h) }) }
                 }
-                Text("Your quiet hours and focus sessions still hold a reminder back.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                ToggleRow("Name it", data.settings.reminderNames, detail = "After you unlock your phone it shows the date's or follow-up's title. Never a person, a note or a number.") { link.setReminderNames(it) }
+                ToggleRow("Name it", data.settings.reminderNames) { link.setReminderNames(it) }
             }
         }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Your data")
-            Text("Your records stay on this phone, and nobody is ever contacted by the app. Erasing Link never touches your Pokémon, your Poké or the other modules.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             val files = model.files
             if (files != null) {
                 PixelButton("Export everything", { note = files.save("pokelife-link.json", link.export()) }, Modifier.fillMaxWidth(), accent, compact = true)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     LinkKinds.entries.forEach { k -> PixelButton("Export ${k.label.lowercase()}", { note = files.save("pokelife-link-${k.name.lowercase()}.json", link.export(setOf(k))) }, color = Pixel.InkSoft, compact = true) }
                 }
-            } else Text("Exporting is not available on this device.", style = MaterialTheme.typography.bodyMedium)
+            }
             note?.let { Report(model, it) }
             LinkKinds.entries.forEach { k ->
                 if (asking == k) Confirm(

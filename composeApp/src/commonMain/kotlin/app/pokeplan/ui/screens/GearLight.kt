@@ -71,15 +71,14 @@ internal fun FlashlightTool(model: AppModel, onUse: () -> Unit) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             if (torch != null) {
-                Text(if (on) "The flashlight is on." else "The phone's flashlight is off.", style = MaterialTheme.typography.bodyLarge)
-                PixelButton(if (on) "Turn off" else "Turn on", { sos = false; on = torch.set(!on); onUse() }, Modifier.fillMaxWidth(), if (on) Pixel.InkSoft else Pixel.Blue)
-            } else Text("This device has no flashlight, so the screen is the light.", style = MaterialTheme.typography.bodyLarge)
+                PixelButton(if (on) "Turn off" else "Turn on", { sos = false; on = torch.set(!on); onUse() }, Modifier.fillMaxWidth(), if (on) Pixel.InkSoft else Pixel.Tone)
+            }
             PixelButton("Screen light", { screen = true; onUse() }, Modifier.fillMaxWidth(), Pixel.InkSoft)
             if (torch != null) {
                 if (!sos) {
                     PixelButton("SOS signal", { warned = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true, enabled = !reduce)
                     if (warned) {
-                        Text("This flashes the light on and off. Do not use it if flashing lights bother you. It stops when you tap Stop, leave the tool, or after five minutes.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
+                        Text("This flashes the light on and off. Do not use it if flashing lights bother you. It stops when you tap Stop, leave the tool, or after five minutes.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red) // copy-ok: result
                         PixelButton("Start the SOS", { warned = false; sos = true; onUse() }, Modifier.fillMaxWidth(), Pixel.Red, compact = true)
                     }
                 } else PixelButton("Stop the SOS", { sos = false }, Modifier.fillMaxWidth(), Pixel.Red)
@@ -92,14 +91,14 @@ internal fun FlashlightTool(model: AppModel, onUse: () -> Unit) {
             Column(Modifier.fillMaxWidth().padding(Spacing.L).background(Color(0xCC000000)).padding(Spacing.M), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 FieldLabel("Colour")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    LightColors.all.forEach { c -> PixelButton(c.label, { store.changeGear { it.copy(lightColor = c.id) } }, color = if (c.id == color.id) Pixel.Blue else Pixel.InkSoft, compact = true) }
+                    LightColors.all.forEach { c -> PixelButton(c.label, { store.changeGear { it.copy(lightColor = c.id) } }, color = if (c.id == color.id) Pixel.Tone else Pixel.InkSoft, compact = true) }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                     PixelButton("Dimmer", { store.changeGear { it.copy(lightBrightness = (it.lightBrightness - 0.15f).coerceAtLeast(0.05f)) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     Text("${(gear.lightBrightness * 100).toInt()}%", style = MaterialTheme.typography.bodyLarge, color = Color.White)
                     PixelButton("Brighter", { store.changeGear { it.copy(lightBrightness = (it.lightBrightness + 0.15f).coerceAtMost(1f)) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
-                Text(color.note.ifEmpty { "Brightness here dims the picture; the phone's own brightness is set in its settings." }, style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                Text(color.note, style = MaterialTheme.typography.bodyMedium, color = Color.White)
                 PixelIconButton("close", "Close", { screen = false }, Pixel.Red)
             }
         }

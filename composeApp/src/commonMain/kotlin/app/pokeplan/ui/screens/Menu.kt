@@ -67,6 +67,8 @@ data class MenuEntry(val key: String, val icon: String, val title: String, val d
     val sound: app.pokeplan.ui.Sfx = app.pokeplan.ui.Sfx.CURSOR,
     /** Takes a whole row to itself, laid out sideways. */
     val wide: Boolean = false,
+    /** What a row of [MenuList] shows at its end: how many records the section holds ("4", "2 due"); empty for none. */
+    val count: String = "",
 )
 
 private val menuShape = DialogueShape
@@ -86,6 +88,36 @@ fun MenuGrid(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
         rows.forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 row.forEach { e -> if (row.size == 1) MenuCard(e, Modifier.fillMaxWidth(), wide = true) { onOpen(e.key) } else MenuCard(e, Modifier.weight(1f)) { onOpen(e.key) } }
+            }
+        }
+    }
+}
+
+/**
+ * A section menu as rows in one dialogue box (owner, 13 November 2026: rows where the sections hold records, like a list of
+ * lists): the item icon, the title and the section's [MenuEntry.count] on one centre line, a line between rows.
+ */
+@Composable
+fun MenuList(entries: List<MenuEntry>, onOpen: (String) -> Unit) {
+    val ui = app.pokeplan.ui.LocalUiSound.current
+    app.pokeplan.ui.theme.TextBox {
+        Column {
+            entries.forEachIndexed { i, e ->
+                if (i > 0) androidx.compose.material3.HorizontalDivider(color = Pixel.Border)
+                Row(
+                    Modifier.fillMaxWidth().height(androidx.compose.foundation.layout.IntrinsicSize.Min)
+                        .clickable(role = Role.Button, enabled = !e.pending) { ui(e.sound); onOpen(e.key) }
+                        .semantics(mergeDescendants = true) { contentDescription = listOf(e.title, e.count).filter { it.isNotEmpty() }.joinToString(", ") }
+                        .padding(vertical = Spacing.M),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
+                ) {
+                    ItemIcon(e.icon, size = Sizes.Icon, description = null)
+                    Text(e.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                    if (e.badge > 0) Box(Modifier.size(22.dp).background(Pixel.Red, DialogueShape), contentAlignment = Alignment.Center) {
+                        Text("${e.badge}", style = MaterialTheme.typography.labelMedium, color = Color.White)
+                    }
+                    if (e.count.isNotEmpty()) Text(e.count, style = MaterialTheme.typography.bodyLarge, color = Pixel.InkSoft)
+                }
             }
         }
     }

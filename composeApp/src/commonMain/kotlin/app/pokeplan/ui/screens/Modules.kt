@@ -30,7 +30,7 @@ import app.pokeplan.ui.theme.Spacing
  * life; everything done in any of them looks after the same Pokémon, which live in the shared tabs (Home, Pokémon, Me).
  */
 enum class Module(val label: String, val icon: String, val look: RegionLook) {
-    PLAN("Plan", "journal", RegionLook.PLAN), CARE("Care", "soothe-bell", RegionLook.CARE), HEAL("Heal", "potion", RegionLook.HEAL), MINT("Mint", "amulet-coin", RegionLook.MINT), HOME("Home", "chipped-pot", RegionLook.HOME), LINK("Link", "link-cord", RegionLook.LINK), WORLD("World", "town-map", RegionLook.WORLD),
+    PLAN("Plan", "journal", RegionLook.PLAN), CARE("Care", "soothe-bell", RegionLook.CARE), HEAL("Heal", "potion", RegionLook.HEAL), MINT("Mint", "amulet-coin", RegionLook.MINT), HOME("Nest", "chipped-pot", RegionLook.HOME), LINK("Link", "link-cord", RegionLook.LINK), WORLD("World", "town-map", RegionLook.WORLD),
 }
 
 /** Plan's screens: tasks and focus, and the trends, goals and weekly review that read them. */
@@ -152,14 +152,12 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
             verticalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
             ModuleLeadStage(model, Module.PLAN, data.player.planLead, store.moduleEvent(null), resting = session != null, openPokemon = openPokemon)
-            TutorialCard(model, app.pokeplan.app.Tutorials.PLAN_FOCUS)
-            PlanPartyPanel(model, openPokemon)
+            FirstRecordEgg(model, app.pokeplan.app.Tutorials.PLAN_FOCUS, model.data.tasks.count { it.completedAtMillis != null })
             SectionLabel("Today", icon = PlanSection.PLANNER.icon)
             if (open.isEmpty()) {
                 val doneToday = data.tasks.any { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
                 EmptyState(
                     if (doneToday) "All done for today" else "Nothing planned for today",
-                    if (doneToday) "Rest, or add one more if you feel like it." else "One small thing is plenty. Each one you finish pays candies.",
                     action = "Add a task" to { model.addTaskRequested = true; model.planSection = PlanSection.PLANNER },
                 )
             } else {
@@ -188,6 +186,7 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
                     MenuEntry(PlanSection.SETTINGS.name, PlanSection.SETTINGS.icon, "Settings", "focus, week, calendars", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.planSection = PlanSection.valueOf(key) }
+            PlanPartyPanel(model, openPokemon)
         }
     }
 }

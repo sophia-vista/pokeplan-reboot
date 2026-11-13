@@ -4,7 +4,13 @@ import app.pokeplan.ui.theme.Sizes
 import app.pokeplan.ui.Place
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
@@ -55,33 +61,38 @@ internal fun BagView(model: AppModel) {
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 listOf(1, 10).forEach { n ->
-                    PixelButton("Buy $n", { if (store.buyRareCandies(n) > 0) model.effect(Sfx.HEAL) }, Modifier.weight(1f), Pixel.Green, compact = true, enabled = afford >= n)
+                    PixelButton("Buy $n", { if (store.buyRareCandies(n) > 0) model.effect(Sfx.HEAL) }, Modifier.weight(1f), Pixel.Tone, compact = true, enabled = afford >= n)
                 }
-                PixelButton("Buy $afford", { if (store.buyRareCandies(afford) > 0) model.effect(Sfx.HEAL) }, Modifier.weight(1f), Pixel.Green, compact = true, enabled = afford > 10)
+                PixelButton("Buy $afford", { if (store.buyRareCandies(afford) > 0) model.effect(Sfx.HEAL) }, Modifier.weight(1f), Pixel.Tone, compact = true, enabled = afford > 10)
             }
         }
     }
-    if (items.isEmpty()) EmptyState("The bag is empty", "Finish tasks and focus sessions to find candies, berries and more.", icon = "seal-bag", sleeper = true, action = "Start a focus session" to { model.open(Place.FOCUS, true) })
+    if (items.isEmpty()) EmptyState("The bag is empty", icon = "seal-bag", sleeper = true, action = "Start a focus session" to { model.open(Place.FOCUS, true) })
     items.groupBy { Items.category(it.key) }.forEach { (category, group) ->
         SectionLabel(category.bagLabel())
-        group.forEach { (id, n) ->
-            val holdable = Items.holdable(id) && store.sees(Feature.HELD_ITEMS)
-            val training = Items.category(id) == ItemCategory.TRAINING || Items.category(id) == ItemCategory.TERA
-            val usable = holdable || ((!training || store.sees(Feature.TRAINING_ITEMS)) && player.party.any { store.canUse(id, it) })
-            val toggle = { open = if (open == id) null else id }
-            // A usable item says so with its own Use button, so it does not look the same as one that only sits in the bag.
-            ListRow(
-                lead = { ItemIcon(id, size = Sizes.IconL) },
-                onClick = if (usable) toggle else null,
-                onClickLabel = "Use ${Items.name(id)}",
-                trail = {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+        TextBox {
+            Column {
+                group.forEachIndexed { index, (id, n) ->
+                    val holdable = Items.holdable(id) && store.sees(Feature.HELD_ITEMS)
+                    val training = Items.category(id) == ItemCategory.TRAINING || Items.category(id) == ItemCategory.TERA
+                    val usable = holdable || ((!training || store.sees(Feature.TRAINING_ITEMS)) && player.party.any { store.canUse(id, it) })
+                    val toggle = { open = if (open == id) null else id }
+                    if (index > 0) HorizontalDivider(color = Pixel.Border)
+                    // A usable item says so with its own Use button, so it does not look the same as one that only sits in the bag.
+                    Row(
+                        Modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target)
+                            .let { if (usable) it.clickable(onClickLabel = "Use ${Items.name(id)}", role = Role.Button, onClick = toggle) else it }
+                            .padding(vertical = Spacing.S),
+                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
+                    ) {
+                        ItemIcon(id, size = Sizes.IconL)
+                        Text(Items.name(id), Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
                         Text("x$n", style = MaterialTheme.typography.titleMedium)
                         if (usable) PixelButton(if (open == id) "Close" else if (holdable) "Give" else "Use", toggle, color = Pixel.InkSoft, compact = true)
                     }
-                },
-            ) { Text(Items.name(id), style = MaterialTheme.typography.bodyLarge) }
-            if (open == id) UseItemBox(model, id, holdable) { open = null }
+                    if (open == id) Box(Modifier.padding(bottom = Spacing.S)) { UseItemBox(model, id, holdable) { open = null } }
+                }
+            }
         }
     }
 }
@@ -100,39 +111,37 @@ private fun UseItemBox(model: AppModel, id: String, holdable: Boolean, close: ()
         target = null
         if (!store.data.player.inventory.has(id)) close()
     }
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            val who = target
-            when {
-                who != null && id == Items.BOTTLE_CAP -> {
-                    Text("Which stat should ${who.nickname} max out?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        Stat.entries.filter { who.ivs[it] < StatCalculator.MAX_IV }.forEach { st ->
-                            PixelButton(st.label, { done(store.useItem(ItemUse.BottleCap(st), who.id)) }, color = Pixel.Blue, compact = true)
-                        }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        val who = target
+        when {
+            who != null && id == Items.BOTTLE_CAP -> {
+                Text("Which stat should ${who.nickname} max out?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Stat.entries.filter { who.ivs[it] < StatCalculator.MAX_IV }.forEach { st ->
+                        PixelButton(st.label, { done(store.useItem(ItemUse.BottleCap(st), who.id)) }, color = Pixel.Tone, compact = true)
                     }
                 }
-                who != null && id == Items.NATURE_MINT -> {
-                    Text("Which nature for ${who.nickname}?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                        Nature.entries.filter { it != who.nature }.forEach { n ->
-                            val detail = if (n.raised == null) "" else " (+${n.raised!!.label} -${n.lowered!!.label})"
-                            PixelButton(n.name.lowercase().replaceFirstChar { it.uppercase() } + detail, { done(store.useItem(ItemUse.NatureMint(n), who.id)) }, color = Pixel.Blue, compact = true)
-                        }
+            }
+            who != null && id == Items.NATURE_MINT -> {
+                Text("Which nature for ${who.nickname}?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+                    Nature.entries.filter { it != who.nature }.forEach { n ->
+                        val detail = if (n.raised == null) "" else " (+${n.raised!!.label} -${n.lowered!!.label})"
+                        PixelButton(n.name.lowercase().replaceFirstChar { it.uppercase() } + detail, { done(store.useItem(ItemUse.NatureMint(n), who.id)) }, color = Pixel.Tone, compact = true)
                     }
                 }
-                else -> {
-                    Text(if (holdable) "Give to hold:" else "Use on:", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                    party.filter { holdable || store.canUse(id, it) }.forEach { p ->
-                        val label = if (holdable && p.heldItem != null) "${p.nickname} (holds ${Items.name(p.heldItem!!)})" else p.nickname
-                        PixelButton(label, {
-                            when {
-                                holdable -> done(store.holdItem(p.id, id))
-                                id == Items.BOTTLE_CAP || id == Items.NATURE_MINT -> target = p
-                                else -> done(store.useItem(id, p.id))
-                            }
-                        }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
-                    }
+            }
+            else -> {
+                Text(if (holdable) "Give to hold:" else "Use on:", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                party.filter { holdable || store.canUse(id, it) }.forEach { p ->
+                    val label = if (holdable && p.heldItem != null) "${p.nickname} (holds ${Items.name(p.heldItem!!)})" else p.nickname
+                    PixelButton(label, {
+                        when {
+                            holdable -> done(store.holdItem(p.id, id))
+                            id == Items.BOTTLE_CAP || id == Items.NATURE_MINT -> target = p
+                            else -> done(store.useItem(id, p.id))
+                        }
+                    }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true)
                 }
             }
         }

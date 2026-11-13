@@ -61,7 +61,7 @@ internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
             Text("Time is up: ${ringing.joinToString(", ") { it.label }}", style = MaterialTheme.typography.titleSmall, color = Pixel.Red)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelIconButton("stop", "Stop", { store.timersDismissFinished(); onUse() }, Pixel.Red)
-                PixelButton("+1 min", { ringing.forEach { store.timerAddTime(it.id, 60_000) }; onUse() }, Modifier.weight(1f), Pixel.Blue, compact = true)
+                PixelButton("+1 min", { ringing.forEach { store.timerAddTime(it.id, 60_000) }; onUse() }, Modifier.weight(1f), Pixel.Tone, compact = true)
             }
         }
     }
@@ -73,7 +73,7 @@ internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
                 Text(if (t.running) "Running" else if (t.paused) "Paused" else "Ready: ${formatTimer(t.durationMs)}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     if (t.running) PixelIconButton("pause", "Pause", { store.timerPause(t.id); onUse() }, Pixel.InkSoft)
-                    else PixelButton(if (t.paused) "Resume" else "Start", { store.timerStart(t.id); onUse() }, Modifier.weight(1f), Pixel.Blue, compact = true)
+                    else PixelButton(if (t.paused) "Resume" else "Start", { store.timerStart(t.id); onUse() }, Modifier.weight(1f), Pixel.Tone, compact = true)
                     PixelButton("+1 min", { store.timerAddTime(t.id, 60_000); onUse() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -91,23 +91,23 @@ internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
             PixelField(label, { label = it.take(24) }, Modifier.fillMaxWidth(), singleLine = true, label = "Name (optional)")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 QUICK_TIMER_MINUTES.forEach { m ->
-                    PixelButton("$m min", { store.timerAdd(label, m * 60_000L)?.let { store.timerStart(it.id); label = "" }; onUse() }, color = Pixel.Blue, compact = true, enabled = timers.size < GearTimers.MAX_TIMERS)
+                    PixelButton("$m min", { store.timerAdd(label, m * 60_000L)?.let { store.timerStart(it.id); label = "" }; onUse() }, color = Pixel.Tone, compact = true, enabled = timers.size < GearTimers.MAX_TIMERS)
                 }
             }
             TimerLength(typedSeconds, { typedSeconds = it })
             PixelButton(
                 "Start", { typedSeconds?.let { sec -> store.timerAdd(label, sec * 1000)?.let { t -> store.timerStart(t.id); label = ""; typedSeconds = null } }; onUse() },
-                Modifier.fillMaxWidth(), Pixel.Blue, compact = true, enabled = typedSeconds != null && timers.size < GearTimers.MAX_TIMERS,
+                Modifier.fillMaxWidth(), Pixel.Tone, compact = true, enabled = typedSeconds != null && timers.size < GearTimers.MAX_TIMERS,
             )
         }
     }
 }
 
-/** A length typed as hours, minutes and seconds (`90`, `1h30`, `1:30:00`, `45s`); a bare number is minutes, and what it was read as is shown. */
+/** A length typed as hours, minutes and seconds (`90`, `1h30`, `1:30:00`, `45s`); a bare number is minutes. */
 @Composable
 internal fun TimerLength(seconds: Long?, onChange: (Long?) -> Unit) {
     TypedValueField(
-        seconds, onChange, { ExactInput.parseDurationSeconds(it, 'm') }, { formatHms(it) }, { formatHms(it) },
+        seconds, onChange, { ExactInput.parseDurationSeconds(it, 'm') }, { formatHms(it) },
         placeholder = "Length: 90, 1h30, 1:30:00, 45s", takes = "A length such as 25, 1h30, 1:30:00 or 45s", allowEmpty = true, label = "Length",
         reject = { if (it * 1000 !in GearTimers.MIN_MS..GearTimers.MAX_MS) "Between ${formatHms(GearTimers.MIN_MS / 1000)} and ${formatHms(GearTimers.MAX_MS / 1000)}" else null },
     )
@@ -128,7 +128,7 @@ private fun TimerEditor(t: GearTimer, onSave: (String, Long) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         PixelField(name, { name = it.take(24) }, Modifier.fillMaxWidth(), singleLine = true, label = "Name")
         TimerLength(seconds, { seconds = it })
-        PixelButton("Save (it goes back to ready)", { seconds?.let { onSave(name, it * 1000) } }, Modifier.fillMaxWidth(), Pixel.Green, compact = true, enabled = seconds != null)
+        PixelButton("Save (it goes back to ready)", { seconds?.let { onSave(name, it * 1000) } }, Modifier.fillMaxWidth(), Pixel.Tone, compact = true, enabled = seconds != null)
     }
 }
 
@@ -147,8 +147,8 @@ internal fun StopwatchTool(model: AppModel, onUse: () -> Unit) {
             Text(formatStopwatch(elapsed), Modifier.fillMaxWidth(), style = MaterialTheme.typography.headlineLarge, maxLines = 1)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 if (watch.running) PixelIconButton("pause", "Pause", { store.stopwatchPause(); onUse() }, Pixel.InkSoft)
-                else PixelButton(if (watch.accumulatedMs > 0) "Resume" else "Start", { store.stopwatchStart(); onUse() }, Modifier.weight(1f), Pixel.Blue, compact = true)
-                PixelButton("Lap", { store.stopwatchLap(); onUse() }, Modifier.weight(1f), Pixel.Blue, compact = true, enabled = watch.running)
+                else PixelButton(if (watch.accumulatedMs > 0) "Resume" else "Start", { store.stopwatchStart(); onUse() }, Modifier.weight(1f), Pixel.Tone, compact = true)
+                PixelButton("Lap", { store.stopwatchLap(); onUse() }, Modifier.weight(1f), Pixel.Tone, compact = true, enabled = watch.running)
                 PixelIconButton("reload", "Reset", { store.stopwatchReset() }, Pixel.InkSoft, enabled = watch.running || watch.accumulatedMs > 0 || watch.laps.isNotEmpty())
             }
             if (splits.isNotEmpty()) {

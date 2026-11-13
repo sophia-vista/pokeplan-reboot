@@ -4,6 +4,7 @@
 **Status:** Approved product specification  
 **Module:** HOME  
 **Scope:** Personal household management  
+**Shown as:** **Nest** (owner, 13 November 2026): the app shows this module as "Nest" (its menu card, header, party, perks and region, "Nest Region") so "Home" is only the first tab; code ids, saves and the docs keep HOME  
 **Last updated:** 5 November 2026
 
 > This document is the single source of truth for HOME-specific product behavior, data ownership, workflows, progression, privacy adaptations, implementation direction and acceptance criteria. Product-wide rules remain in the Product Bible; shared reminder behavior, visual components, data lifecycle and Pokémon/economy services remain in their respective shared specifications. Do not duplicate those systems here.

@@ -27,10 +27,12 @@ import androidx.compose.material3.MaterialTheme
 import app.pokeplan.ui.WhatsNew
 import app.pokeplan.ui.AppVersion
 import androidx.compose.ui.semantics.semantics
+import app.pokeplan.ui.theme.spoken
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -96,7 +98,7 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(
             title = data.trainerName,
-            subtitle = "Trainer rank: ${TrainerRank.nameFor(points)}",
+            subtitle = TrainerRank.nameFor(points) + store.streak.current.let { if (it > 0) ", $it day${if (it == 1) "" else "s"} streak" else "" },
             icon = "town-map",
             footer = { RankProgress(points) },
             trailing = {
@@ -124,7 +126,6 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
             AlsoTodayCard(model, go)
             WorldRegionCard(model, go)
 
-            StreakCard(model)
             if (store.sees(Feature.MINI_QUESTS)) MiniQuestsCard(model, go)
             RecentCard(model, go)
         }
@@ -138,7 +139,7 @@ fun HomeScreen(model: AppModel, openPokemon: (String) -> Unit = {}, go: (Place) 
  */
 @Composable
 private fun RegionCard(
-    name: String, icon: String, look: RegionLook, darkness: Float, lead: OwnedPokemon?, leadLine: String, status: String,
+    name: String, icon: String, look: RegionLook, darkness: Float, lead: OwnedPokemon?, status: String?,
     still: Boolean, onOpen: () -> Unit, step: @Composable () -> Unit,
 ) {
     val shape = DialogueShape
@@ -157,8 +158,8 @@ private fun RegionCard(
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 PixelTitle(name)
-                Text(leadLine, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 2)
-                Text(status, style = MaterialTheme.typography.bodyMedium)
+                if (lead != null) Text(leadLine(lead), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft, maxLines = 2)
+                if (status != null) Text(status, style = MaterialTheme.typography.bodyMedium)
             }
             Text("›", style = MaterialTheme.typography.titleLarge, color = Pixel.InkSoft)
         }
@@ -188,7 +189,7 @@ private fun StepRow(text: String, action: String?, color: Color = Pixel.Green, l
     }
 }
 
-private fun leadLine(p: OwnedPokemon) = "Lead: ${p.nickname}, Lv. ${p.level}"
+private fun leadLine(p: OwnedPokemon) = "${p.nickname}, Lv. ${p.level}"
 
 /** Plan: its buddy, today's tasks, and the next one with Done (the picked one first), or the running focus session. */
 @Composable
@@ -202,12 +203,12 @@ private fun PlanRegionCard(model: AppModel, go: (Place) -> Unit) {
     val doneToday = data.tasks.count { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
     val total = doneToday + open.size
     RegionCard(
-        Module.PLAN.label, Module.PLAN.icon, Module.PLAN.look, BuddyScene.darkness(store.now.hour, store.now.minute), lead, lead?.let(::leadLine) ?: "No lead yet",
-        if (total == 0) "Tasks and focus" else "$doneToday of $total tasks done today",
+        Module.PLAN.label, Module.PLAN.icon, Module.PLAN.look, BuddyScene.darkness(store.now.hour, store.now.minute), lead,
+        if (total == 0) null else "$doneToday of $total tasks done today",
         still = data.settings.reduceMotion, onOpen = { go(Place.PLAN) },
     ) {
         when {
-            data.focus != null -> StepRow("An egg is incubating", "Open", Pixel.Blue) { go(Place.FOCUS) }
+            data.focus != null -> StepRow("An egg is incubating", "Open", Pixel.Tone) { go(Place.FOCUS) }
             next != null -> StepRow(next.title, "Done", lead = { RankBadge(next.rank) }) { model.completeTask(next.id) }
             doneToday > 0 -> StepRow("All done for today", null)
             else -> StepRow("Nothing planned for today", "Add a task", ModuleAccent.PLAN.accent) { model.addTaskRequested = true; go(Place.PLANNER) }
@@ -225,19 +226,17 @@ private fun CareRegionCard(model: AppModel, go: (Place) -> Unit) {
     val today = care.todayRoutines()
     val done = today.count { it.doneOn(care.today) }
     val next = today.firstOrNull { !it.doneOn(care.today) }
-    val shown = lead ?: model.store.careBuddy
     RegionCard(
         Module.CARE.label, Module.CARE.icon, Module.CARE.look, BuddyScene.darkness(model.store.now.hour, model.store.now.minute), lead,
-        lead?.let(::leadLine) ?: shown?.let { "No lead yet: ${it.nickname} helps out" } ?: "No lead yet",
-        if (today.isEmpty()) "Routines and calm" else "$done of ${today.size} routines today",
+        if (today.isEmpty()) null else "$done of ${today.size} routines today",
         still = model.data.settings.reduceMotion, onOpen = { go(Place.CARE) },
     ) {
         val open = { section: CareSection -> go(Place.CARE); model.careSection = section }
         when {
             next != null -> StepRow(next.title, "Done") { model.effect(Sfx.SELECT); model.haptic(); care.completeRoutine(next.id) }
-            today.isNotEmpty() -> StepRow("Routines done for today. A calm break is always there.", "Calm break", Pixel.Blue) { open(CareSection.CALM) }
-            model.careData.routines.none { !it.archived } -> StepRow("Small things you do for yourself, like a glass of water.", "Add a routine", Pixel.Green) { open(CareSection.ROUTINES) }
-            else -> StepRow("No routines today. A calm break is always there.", "Calm break", Pixel.Blue) { open(CareSection.CALM) }
+            today.isNotEmpty() -> StepRow("Routines done for today", "Calm break", Pixel.Tone) { open(CareSection.CALM) }
+            model.careData.routines.none { !it.archived } -> StepRow("No routines yet", "Add a routine", Pixel.Green) { open(CareSection.ROUTINES) }
+            else -> StepRow("No routines today", "Calm break", Pixel.Tone) { open(CareSection.CALM) }
         }
     }
 }
@@ -255,7 +254,6 @@ private const val LINK_DATES_DAYS = 7
 private fun QuickLogCard(model: AppModel, go: (Place) -> Unit) {
     model.careData; model.healData // the mood and the water redraw their own keys
     val locked = model.data.settings.lockedModules
-    val moods = listOf("Rough", "Low", "Okay", "Good", "Great")
     val mood = if (model.data.settings.careModule && Module.CARE.name !in locked) model.care.diaryToday()?.mood else -1
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -265,15 +263,8 @@ private fun QuickLogCard(model: AppModel, go: (Place) -> Unit) {
                 if (Module.HEAL.name !in locked) PixelButton("+250 ml", { model.heal.logDrink(250); model.haptic(); model.effect(Sfx.HEAL) }, color = ModuleAccent.HEAL.accent, compact = true)
                 if (Module.MINT.name !in locked && !model.mintData.settings.gate) PixelButton("Expense", { go(Place.MINT) }, color = ModuleAccent.MINT.accent, compact = true)
             }
-            if (mood != -1) {
-                Text("How is today?", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                    moods.forEachIndexed { i, name ->
-                        val level = i + 1
-                        TabButton(name, mood == level, { model.care.setMood(if (mood == level) null else level); model.haptic() }, Modifier.weight(1f), key = ModuleAccent.CARE.accent)
-                    }
-                }
-            }
+            if (mood != -1) MoodKeys(mood) { model.care.setMood(it); model.haptic() }
+            RestDayRow(model)
         }
     }
 }
@@ -295,23 +286,23 @@ private fun AlsoTodayCard(model: AppModel, go: (Place) -> Unit) {
             val due = app.pokeplan.mint.MintRules.upcoming(model.mintData, today, 0).count { it.state == app.pokeplan.mint.OccurrenceState.DUE || it.state == app.pokeplan.mint.OccurrenceState.OVERDUE }
             // Counts only, never a bill's name or amount: Home is on show to whoever holds the phone.
             val soon = app.pokeplan.mint.MintRules.upcoming(model.mintData, today, SOON_DAYS).count { it.state == app.pokeplan.mint.OccurrenceState.UPCOMING }
-            if (due > 0) add { StepRow("Mint: ${count(due, "bill", "bills")} to settle", "Open", ModuleAccent.MINT.accent) { go(Place.MINT) } }
-            else if (soon > 0) add { StepRow("Mint: ${count(soon, "bill", "bills")} due in $SOON_DAYS days", "Open", ModuleAccent.MINT.accent) { go(Place.MINT) } }
+            if (due > 0) add { TodayRow(Module.MINT, "${count(due, "bill", "bills")} to settle") { go(Place.MINT) } }
+            else if (soon > 0) add { TodayRow(Module.MINT, "${count(soon, "bill", "bills")} due in $SOON_DAYS days") { go(Place.MINT) } }
         }
         if (Module.HOME.name !in locked) {
             val o = app.pokeplan.home.HomeRules.overview(model.homeData, today)
             val n = o.chores.size + o.maintenance.size
-            if (n > 0) add { StepRow("Home: ${count(n, "thing", "things")} to do", "Open", ModuleAccent.HOME.accent) { go(Place.HOUSEHOLD) } }
+            if (n > 0) add { TodayRow(Module.HOME, "${count(n, "thing", "things")} to do") { go(Place.HOUSEHOLD) } }
         }
         if (Module.LINK.name !in locked) {
             val n = model.link.dueNow().size
-            if (n > 0) add { StepRow("Link: ${count(n, "follow-up", "follow-ups")} due", "Open", ModuleAccent.LINK.accent) { go(Place.LINK) } }
+            if (n > 0) add { TodayRow(Module.LINK, "${count(n, "follow-up", "follow-ups")} due") { go(Place.LINK) } }
             val dates = model.link.upcoming(LINK_DATES_DAYS).size
-            if (dates > 0) add { StepRow("Link: ${count(dates, "date", "dates")} this week", "Open", ModuleAccent.LINK.accent) { go(Place.LINK) } }
+            if (dates > 0) add { TodayRow(Module.LINK, "${count(dates, "date", "dates")} this week") { go(Place.LINK) } }
         }
         if (Module.HEAL.name !in locked && (model.healData.hydration.isNotEmpty() || model.healData.settings.hydrationTargetMl != null)) {
             val ml = app.pokeplan.heal.HealRules.hydrationOn(model.healData, today) ?: 0
-            add { StepRow("Heal: $ml ml of water so far", "+250 ml", ModuleAccent.HEAL.accent) { model.heal.logDrink(250); model.haptic(); model.effect(Sfx.HEAL) } }
+            add { TodayRow(Module.HEAL, "$ml ml of water so far") { go(Place.HEAL) } }
         }
     }
     if (rows.isEmpty()) return
@@ -320,6 +311,19 @@ private fun AlsoTodayCard(model: AppModel, go: (Place) -> Unit) {
             PixelTitle("Also today")
             rows.forEach { it() }
         }
+    }
+}
+
+/** One line of "Also today": the module's icon and name as a small tag, what is waiting, and the whole row opens the module. */
+@Composable
+private fun TodayRow(module: Module, text: String, onOpen: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().defaultMinSize(minHeight = Spacing.Target).clickable(onClickLabel = "Open ${module.label}", role = Role.Button, onClick = onOpen),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S),
+    ) {
+        ItemIcon(module.icon, size = Sizes.IconS, description = module.label)
+        Text(text, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+        Text("›", style = MaterialTheme.typography.titleLarge, color = Pixel.InkSoft)
     }
 }
 
@@ -333,25 +337,12 @@ private fun WorldRegionCard(model: AppModel, go: (Place) -> Unit) {
     val out = world.teams.count { it.expedition != null }
     RegionCard(
         Module.WORLD.label, Module.WORLD.icon, Module.WORLD.look, BuddyScene.darkness(model.store.now.hour, model.store.now.minute), lead,
-        team?.let { "${it.title}: ${lead?.nickname ?: "no members yet"}" } ?: "No team yet",
-        if (out == 0) "Dungeons and expeditions" else if (out == 1) "1 team out exploring" else "$out teams out exploring",
+        if (out == 0) null else if (out == 1) "1 team out exploring" else "$out teams out exploring",
         still = data.settings.reduceMotion, onOpen = { go(Place.WORLD) },
     ) {
         val where = team?.expedition?.let { app.pokeplan.world.Dungeons.byId(it.dungeonId)?.name }
         if (where != null) StepRow("Exploring $where", "Open") { go(Place.WORLD) }
         else StepRow("Send a team into a dungeon", "Open", ModuleAccent.WORLD.accent) { go(Place.WORLD) }
-    }
-}
-
-/** The streak, which any region's effort keeps, and the rest day that pauses it. */
-@Composable
-private fun StreakCard(model: AppModel) {
-    val streak = model.store.streak.current
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text(if (streak == 0) "Do one thing today to start a streak." else "Streak: $streak day${if (streak == 1) "" else "s"}", style = MaterialTheme.typography.bodyLarge)
-            RestDayRow(model)
-        }
     }
 }
 
@@ -420,13 +411,15 @@ fun HomeBuddyStage(model: AppModel, onOpen: () -> Unit) {
 internal fun NextUp(task: Task, onDone: () -> Unit, onFocus: (() -> Unit)?, onChoose: (() -> Unit)?, picked: Boolean = false) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            Text(if (picked) "Picked for you: +10% candies" else "Next up", style = MaterialTheme.typography.labelMedium, color = if (picked) Pixel.Green else Pixel.InkSoft)
-            Text(task.title, style = MaterialTheme.typography.titleSmall, maxLines = 3)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                RankBadge(task.rank)
-                Text(listOf(task.rank.title, taskMeta(task)).filter { it.isNotEmpty() }.joinToString(", "), style = MaterialTheme.typography.bodyMedium)
+            if (picked) Text("Picked for you: +10% candies", style = MaterialTheme.typography.labelMedium, color = Pixel.Green)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
+                PixelIconButton("check", "Done", onDone, Pixel.Green)
+                Column(Modifier.weight(1f)) {
+                    TaskTitleLine(task, MaterialTheme.typography.titleSmall)
+                    val meta = taskMeta(task)
+                    if (meta.isNotEmpty()) Text(meta, style = MaterialTheme.typography.bodyMedium)
+                }
             }
-            PixelIconButton("check", "Done", onDone, Pixel.Green)
             if (onFocus != null || onChoose != null) Row(horizontalArrangement = Arrangement.spacedBy(Spacing.M), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 if (onFocus != null) PixelButton("Focus on this", onFocus, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 if (onChoose != null) PixelButton(if (picked) "Pick another" else "Pick for me", onChoose, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -435,31 +428,35 @@ internal fun NextUp(task: Task, onDone: () -> Unit, onFocus: (() -> Unit)?, onCh
     }
 }
 
-/** A task as one compact row: rank badge, title and details, a Done key. */
+/** A task's title with its difficulty letter as a small tag after it. */
+@Composable
+internal fun TaskTitleLine(task: Task, style: androidx.compose.ui.text.TextStyle) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        Text(task.title, Modifier.weight(1f, fill = false), style = style, maxLines = 3)
+        Text(task.rank.letter.toString(), Modifier.semantics { contentDescription = task.rank.spoken }, style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+    }
+}
+
+/** A task as one compact row: a Done key first, then the title with its difficulty tag and details. */
 @Composable
 fun TaskRow(task: Task, onDone: () -> Unit) {
-    ListRow(
-        lead = { RankBadge(task.rank) },
-        trail = { PixelIconButton("check", "Done", onDone, Pixel.Green) },
-    ) {
-        Text(task.title, style = MaterialTheme.typography.bodyLarge, maxLines = 4)
+    ListRow(lead = { PixelIconButton("check", "Done", onDone, Pixel.Green) }) {
+        TaskTitleLine(task, MaterialTheme.typography.bodyLarge)
         val meta = taskMeta(task)
         if (meta.isNotEmpty()) Text(meta, style = MaterialTheme.typography.bodyMedium)
     }
 }
 
-/** Progress to the next trainer rank, as an EXP bar like the games', with the words beside it. */
+/** Progress to the next trainer rank, as an EXP bar like the games'. */
 @Composable
 private fun RankProgress(points: Int) {
     val rank = TrainerRank.rankFor(points)
     val low = TrainerRank.thresholds[rank]
     val high = TrainerRank.thresholds.getOrNull(rank + 1)
     val next = TrainerRank.pointsToNext(points)
+    // The figure is for screen readers only; the bar speaks for itself.
     val label = if (next == null) "Top rank" else "$next points to ${TrainerRank.names[rank + 1]}"
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-        ExpBar(if (high == null) 1f else (points - low).toFloat() / (high - low), label, color = Pixel.Yellow)
-        Text(label, style = MaterialTheme.typography.labelMedium, color = Color.White)
-    }
+    ExpBar(if (high == null) 1f else (points - low).toFloat() / (high - low), label, tag = "", color = Pixel.Yellow)
 }
 
 /** A rest day pauses the streak without using the week's free miss; a day that already counted needs none. */
@@ -472,8 +469,8 @@ private fun RestDayRow(model: AppModel) {
     var refused by remember { mutableStateOf(false) }
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
         Text(
-            if (resting) "Today is a rest day. Rest well." else if (refused) "No rest days left this month." else "Need a break? Rest days keep your streak.",
-            Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+            if (resting) "Rest day" else if (refused) "No rest days left this month" else "Rest day",
+            Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge,
         )
         PixelButton(if (resting) "Undo" else "Rest today", { refused = !store.toggleRestDay(day) }, color = Pixel.InkSoft, compact = true)
     }
@@ -502,7 +499,7 @@ private fun MiniQuestsCard(model: AppModel, go: (Place) -> Unit) {
                             store.completeMiniQuest(q.id)
                             model.effect(Sfx.FOCUS_START); store.startFocus(FocusRules.justFiveMinutes().minutesRoundedUp, deepFocus = false, taskId = oldest.id)
                             go(Place.FOCUS)
-                        }, color = Pixel.Blue, compact = true)
+                        }, color = Pixel.Tone, compact = true)
                         else -> PixelIconButton("check", "Done", { if (store.completeMiniQuest(q.id)) model.effect(Sfx.HEAL) }, Pixel.Green)
                     }
                 }
@@ -527,7 +524,7 @@ private fun WelcomeBackCard(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Welcome back!")
-            Text("It's good to see you. Here's a little something to start again with.", style = MaterialTheme.typography.bodyLarge)
+            Text("It's good to see you. Here's a little something to start again with.", style = MaterialTheme.typography.bodyLarge) // copy-ok: game
             PixelButton("Open the gift", { model.store.claimWelcomeBack(); model.effect(Sfx.HEAL) }, Modifier.fillMaxWidth(), Pixel.Green)
         }
     }

@@ -50,8 +50,8 @@ internal fun partyIdOf(region: Region): String = when (region) {
     Region.CARE -> PartyIds.CARE; Region.HEAL -> PartyIds.HEAL; Region.MINT -> PartyIds.MINT; Region.HOUSEHOLD -> PartyIds.HOME; Region.LINK -> PartyIds.LINK; else -> PartyIds.PLAN
 }
 
-/** A module's short name: "Plan", "Care", "Heal", "Mint", "Home" or "Link". */
-internal fun moduleName(region: Region): String = if (region == Region.HOUSEHOLD) "Home" else region.label.removeSuffix(" Region")
+/** A module's short name: "Plan", "Care", "Heal", "Mint", "Nest" or "Link". */
+internal fun moduleName(region: Region): String = if (region == Region.HOUSEHOLD) "Nest" else region.label.removeSuffix(" Region")
 
 /** A module's short name from its party id, for the detail page and the Guardian lists. */
 internal fun moduleNameOf(partyId: String): String = partyId.replaceFirstChar { it.uppercase() }
@@ -143,7 +143,6 @@ internal fun GuardianChoice(model: AppModel, p: OwnedPokemon) {
         }
     }
     if (model.data.player.moduleGuardians.containsValue(p.id)) Text(guardianPerkText(p, model.data.player.moduleGuardians.entries.first { it.value == p.id }.key), style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
-    else Text("Choose a module: its Guardian slot gives that module a big boost.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
 }
 
 /**
@@ -171,7 +170,7 @@ internal fun GuardianSlot(model: AppModel, region: Region, accent: Color) {
                     }
                 }
             } else {
-                Text("Empty. A legendary or mythical Pokémon here gives ${moduleName(region)} a big boost, in ${moduleName(region)} only.", style = MaterialTheme.typography.bodyMedium)
+                Text("Empty", style = MaterialTheme.typography.bodyMedium)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 if (candidates.isNotEmpty()) PixelButton(if (picking) "Hide the list" else if (current == null) "Choose a Guardian" else "Change", { picking = !picking }, Modifier.weight(1f), accent, compact = true)

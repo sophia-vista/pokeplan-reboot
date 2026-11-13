@@ -130,7 +130,7 @@ internal fun MeadowView(model: AppModel, goPlay: (String) -> Unit) {
                     Column(Modifier.weight(1f)) {
                         Text("$name came back to say hello.", style = MaterialTheme.typography.bodyLarge)
                     }
-                    PixelButton("Say hello", { line = model.care.greetReunion(); model.cry(r.friend.speciesId) }, color = Pixel.Green, compact = true)
+                    PixelButton("Say hello", { line = model.care.greetReunion(); model.cry(r.friend.speciesId) }, color = Pixel.Tone, compact = true)
                 }
             }
         }
@@ -171,12 +171,12 @@ private fun PokemonPlayPanel(model: AppModel, key: String, species: String, nick
             PixelTitle(if (nickname != null && nickname != species) "$nickname, $species" else species)
             if (warmth != null) Text("Warmth ${warmth.first} of ${warmth.second}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Text(
-                if (known.isEmpty()) "You have not found out what it likes yet. Spending time together shows it, little by little."
+                if (known.isEmpty()) "Likes: unknown yet"
                 else "Likes: " + known.joinToString(", ") { it.playName() },
                 style = MaterialTheme.typography.bodyMedium,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                if (action != null) PixelButton(action.first, action.second, color = Pixel.Green, compact = true)
+                if (action != null) PixelButton(action.first, action.second, color = Pixel.Tone, compact = true)
                 PixelButton("Close", onClose, color = Pixel.InkSoft, compact = true)
             }
         }
@@ -209,7 +209,7 @@ internal fun PlayView(model: AppModel, initial: String?) {
     var inviting by remember { mutableStateOf(false) }
     var invited by remember { mutableStateOf(24) }
     val pokemon = all.firstOrNull { it.id == chosen }
-    if (pokemon == null) { EmptyState("No one to spend time with yet", "Hatch an egg first.", action = "Start a focus session" to { model.open(Place.FOCUS, true) }); return }
+    if (pokemon == null) { EmptyState("No one to spend time with yet", action = "Start a focus session" to { model.open(Place.FOCUS, true) }); return }
     val name = pokemon.nickname
     val known = care.discoveredLikes(pokemon.id)
     fun finish(done: PlayActivity) {
@@ -223,10 +223,7 @@ internal fun PlayView(model: AppModel, initial: String?) {
                 AnimatedSprite(pokemon.form.id, pokemon.isShiny, name, Modifier.size(Sizes.SpriteM), size = Sizes.SpriteM, animate = !model.data.settings.reduceMotion)
                 Column(Modifier.weight(1f)) {
                     PixelTitle(name)
-                    Text(
-                        if (known.isEmpty()) "Its likes are still a surprise." else "Likes: " + known.joinToString(", ") { it.playName() },
-                        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                    )
+                    if (known.isNotEmpty()) Text("Likes: " + known.joinToString(", ") { it.playName() }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 }
                 PixelButton(if (inviting) "Done" else "Someone else", { inviting = !inviting }, color = Pixel.InkSoft, compact = true)
             }
@@ -245,16 +242,15 @@ internal fun PlayView(model: AppModel, initial: String?) {
             val running = activity
             if (running == null) {
                 val suggested = care.suggestion(pokemon.id)
-                Text("Suggestion: ${suggested.label}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    PlayActivity.entries.forEach { a -> PixelButton(a.label, { activity = a; taps = 0; result = null }, color = if (a == suggested) Pixel.Green else Pixel.Blue, compact = true) }
-                    PixelButton("Surprise me", { activity = care.surprise(pokemon.id); taps = 0; result = null }, color = Pixel.Warning, compact = true)
+                    PlayActivity.entries.forEach { a -> TabButton(a.label, a == suggested, { activity = a; taps = 0; result = null }) }
+                    PixelButton("Surprise me", { activity = care.surprise(pokemon.id); taps = 0; result = null }, color = Pixel.Tone, compact = true)
                 }
             } else {
                 Text("${running.label}: ${running.verb}", style = MaterialTheme.typography.bodyLarge)
-                PixelBar(taps.toFloat() / running.taps, color = Pixel.Green, label = "${running.label}: $taps of ${running.taps}")
+                PixelBar(taps.toFloat() / running.taps, color = Pixel.Tone, label = "${running.label}: $taps of ${running.taps}")
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    PixelButton(running.verb, { model.haptic(); taps++; if (taps >= running.taps) finish(running) }, color = Pixel.Green)
+                    PixelButton(running.verb, { model.haptic(); taps++; if (taps >= running.taps) finish(running) }, color = Pixel.Tone)
                     PixelButton("Stop for now", { activity = null; taps = 0 }, color = Pixel.InkSoft, compact = true)
                 }
             }
