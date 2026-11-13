@@ -320,7 +320,7 @@ fun ExpBar(fraction: Float, label: String, modifier: Modifier = Modifier, tag: S
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp),
     ) {
-        Text(tag, style = MaterialTheme.typography.bodyLarge.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold), color = tagColor)
+        if (tag.isNotEmpty()) Text(tag, style = MaterialTheme.typography.bodyLarge.copy(fontFamily = pixelFont(), fontWeight = FontWeight.Bold), color = tagColor)
         Box(
             Modifier.weight(1f).height(14.dp).drawBehind {
                 val p = 2.dp.toPx()

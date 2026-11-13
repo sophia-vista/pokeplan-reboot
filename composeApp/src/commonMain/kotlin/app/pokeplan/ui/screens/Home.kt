@@ -254,7 +254,6 @@ private const val LINK_DATES_DAYS = 7
 private fun QuickLogCard(model: AppModel, go: (Place) -> Unit) {
     model.careData; model.healData // the mood and the water redraw their own keys
     val locked = model.data.settings.lockedModules
-    val moods = listOf("Rough", "Low", "Okay", "Good", "Great")
     val mood = if (model.data.settings.careModule && Module.CARE.name !in locked) model.care.diaryToday()?.mood else -1
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
@@ -264,15 +263,7 @@ private fun QuickLogCard(model: AppModel, go: (Place) -> Unit) {
                 if (Module.HEAL.name !in locked) PixelButton("+250 ml", { model.heal.logDrink(250); model.haptic(); model.effect(Sfx.HEAL) }, color = ModuleAccent.HEAL.accent, compact = true)
                 if (Module.MINT.name !in locked && !model.mintData.settings.gate) PixelButton("Expense", { go(Place.MINT) }, color = ModuleAccent.MINT.accent, compact = true)
             }
-            if (mood != -1) {
-                // Full words that wrap onto a second line rather than clip (Care's shared MoodKeys replaces this when it lands).
-                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    moods.forEachIndexed { i, name ->
-                        val level = i + 1
-                        TabButton(name, mood == level, { model.care.setMood(if (mood == level) null else level); model.haptic() }, key = ModuleAccent.CARE.accent)
-                    }
-                }
-            }
+            if (mood != -1) MoodKeys(mood) { model.care.setMood(it); model.haptic() }
             RestDayRow(model)
         }
     }
