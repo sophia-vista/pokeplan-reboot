@@ -3,6 +3,7 @@ package app.pokeplan.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -75,12 +76,13 @@ internal fun ScreenLockGate(model: AppModel, module: Module, on: Boolean, conten
     LaunchedEffect(Unit) { ask() }
     val toModules = { model.module = null }
     BackHandler(enabled = true, onBack = toModules)
-    TextBox {
+    // The card sits at the top of the page with the gutter and fits its content; a parent that fills the screen must not stretch it.
+    Column(Modifier.fillMaxWidth().padding(Spacing.L)) { TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("${module.label} is locked")
             if (failed) Report(model, "That did not open it.", tone = NoticeTone.WARNING)
             PixelButton("Unlock", ::ask, Modifier.fillMaxWidth(), module.look.accent)
             PixelButton("Back", toModules, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
         }
-    }
+    } }
 }

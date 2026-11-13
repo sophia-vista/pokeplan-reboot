@@ -1024,7 +1024,8 @@ class ScreenshotTest {
         settings?.invoke(model)
         model.module = app.pokeplan.ui.screens.Module.MINT
         model.mintSection = section
-        render(name, fontScale = fontScale, height = height) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
+        // The lock is a title and two keys: little to draw.
+        render(name, fontScale = fontScale, height = height, minBytes = if (gate && section == null) 3_000 else 5_000) { PixelTheme(dark = dark) { Box(Modifier.fillMaxSize().background(Pixel.Paper)) { app.pokeplan.ui.screens.ModulesScreen(model, focusTab = true) {} } } }
     }
 
     @Test
