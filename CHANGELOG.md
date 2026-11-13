@@ -5,6 +5,14 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.176.1
+
+Where a Pokémon is, shown where it matters (REP-009, the last open part). No reward number changes; `RewardRules.VERSION` is unchanged, and nothing stored on the phone changes.
+
+- **The Gear helper list says where each Pokémon is now** ("In Mint's party", "Your buddy"), since choosing one takes it from there, and leaves out a team on an expedition (choosing one was refused without a word).
+- **"Move to..." on a Pokémon reads its real place.** The PC row said "Here" for the buddy, a Guardian, a World team member or a Gear helper, and its button did nothing for them; it now sends a Guardian, a team member or a helper back to the PC (`GameStore.sendToPc`), and stays off for the buddy (choose another buddy instead). On an expedition under way, Make buddy and Move to... are off.
+- A Gear helper's place names its tool ("Helping the Flashlight").
+
 ## 0.176.0
 
 Plan's structure (REP-030, PLAN.md section 3): Modules → Plan is Today, with one menu. No reward number changes; `RewardRules.VERSION` is unchanged, and nothing stored on the phone changes.
@@ -15,6 +23,7 @@ Plan's structure (REP-030, PLAN.md section 3): Modules → Plan is Today, with o
 - **The weekly review is a card in Progress** when one is ready: each unfinished task has Move (tomorrow), Later (next week's first day) and Won't do (with Undo); past reviews and their notes are listed under Progress.
 - **Done is a preset of All tasks** (the Done key beside Search), and shows won't-do tasks too (`TaskFilter.Status`).
 - **Plan's settings page is retired:** the length and Deep Focus a session starts with become the usual ones; the week start and the phone's calendars sit at the foot of the Calendar.
+
 ## 0.175.1
 
 Automated Android tests, first slice (REP-033; owner: automated tests over manual phone checks).

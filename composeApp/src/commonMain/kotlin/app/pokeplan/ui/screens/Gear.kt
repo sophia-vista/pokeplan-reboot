@@ -145,7 +145,13 @@ private fun HelperBar(model: AppModel, tool: GearTool, used: Int) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             candidates.forEach { p ->
                 ChoiceRow(selected = helper?.id == p.id, onClick = { store.assignGearHelper(tool, p.id); choosing = false }, lead = { AnimatedSprite(p.form.id, p.isShiny, p.nickname, size = Sizes.IconL, animate = false) }) {
-                    Text("${p.nickname}, level ${p.level}", style = MaterialTheme.typography.bodyLarge)
+                    Column {
+                        Text("${p.nickname}, level ${p.level}", style = MaterialTheme.typography.bodyLarge)
+                        // Choosing one takes it from where it is (one place only), so a party member or the buddy says so before the tap.
+                        if (helper?.id != p.id && store.placeOf(p.id) != app.pokeplan.app.Place.Pc) {
+                            Text(app.pokeplan.app.Places.label(model.data, p.id), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                        }
+                    }
                 }
             }
             if (helper != null) PixelButton("No helper", { store.clearGearHelper(tool); choosing = false }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)

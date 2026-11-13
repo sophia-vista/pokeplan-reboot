@@ -54,7 +54,7 @@ object Places {
         }
         is Place.Guardian -> "${partyName(place.module)}'s Guardian"
         is Place.WorldTeam -> "On ${d.world.team(place.team)?.title ?: "a World team"}"
-        is Place.GearHelper -> "Helping a Gear tool"
+        is Place.GearHelper -> "Helping the ${app.pokeplan.core.pokemon.GearTool.entries.firstOrNull { it.name == place.tool }?.label ?: "Pokégear"}"
         Place.Pc -> "Resting in the PC"
     }
 

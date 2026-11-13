@@ -326,15 +326,17 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
     Text(app.pokeplan.app.Places.label(model.data, p.id), style = MaterialTheme.typography.bodyLarge)
     if (isGuardian) GuardianChoice(model, p)
     var moving by remember(p.id) { mutableStateOf(false) }
+    // A Pokémon on an expedition under way stays with its team until it ends (the label above says which team).
+    val movable = app.pokeplan.app.Places.movable(model.data, p.id)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-        PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p) }, color = Pixel.InkSoft, enabled = !isBuddy && !isGuardian, compact = true)
-        PixelButton(if (moving) "Close" else "Move to...", { moving = !moving }, color = Pixel.InkSoft, compact = true)
+        PixelButton(if (isBuddy) "Is your buddy" else "Make buddy", { store.setBuddy(p.id); model.cry(p) }, color = Pixel.InkSoft, enabled = !isBuddy && !isGuardian && movable, compact = true)
+        PixelButton(if (moving) "Close" else "Move to...", { moving = !moving }, color = Pixel.InkSoft, enabled = movable || moving, compact = true)
         if (!p.species.isSpecial) {
             val starred = store.isFavorite(p.id)
             PixelButton(if (starred) "Starred" else "Star", { store.toggleFavorite(p.id) }, color = if (starred) Pixel.Warning else Pixel.InkSoft, compact = true)
         }
     }
-    if (moving) PlacePicker(model, p)
+    if (moving && movable) PlacePicker(model, p)
 }
 
 /** Where it came from: how it joined and the day. Pokémon from before origins were kept show the day only. */
@@ -385,7 +387,10 @@ private fun TransferBox(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
 private fun PlacePicker(model: AppModel, p: OwnedPokemon) {
     val store = model.store
     val player = model.data.player
-    val here = if (p.inParty) p.partyId else null
+    // Where it is now, from the one place it holds: the PC row says "Here" only for a Pokémon that really is in the PC (not the buddy, a
+    // Guardian, a team member or a helper), and its button sends one of those back (the buddy is changed by choosing another).
+    val place = store.placeOf(p.id)
+    val here = (place as? app.pokeplan.app.Place.Party)?.partyId
     class Slot(val label: String, val partyId: String, val accent: androidx.compose.ui.graphics.Color, val lead: String?, val makeLead: () -> Unit)
     val slots = listOfNotNull(
         Slot("Plan party", PartyIds.PLAN, app.pokeplan.ui.theme.ModuleAccent.PLAN.accent, player.planLead?.id) { store.setPlanLead(p.id) },
@@ -399,8 +404,8 @@ private fun PlacePicker(model: AppModel, p: OwnedPokemon) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("PC", Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-            if (here == null) Text("Here", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            else PixelButton("Move here", { moved(store.setInParty(p.id, false), true) }, color = Pixel.InkSoft, compact = true)
+            if (place == app.pokeplan.app.Place.Pc) Text("Here", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            else PixelButton("Move here", { moved(store.sendToPc(p.id), true) }, color = Pixel.InkSoft, enabled = place != app.pokeplan.app.Place.Buddy, compact = true)
         }
         slots.forEach { slot ->
             val count = player.partyOf(slot.partyId).size
