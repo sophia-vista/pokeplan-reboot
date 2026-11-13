@@ -136,9 +136,9 @@ internal fun PokedexView(model: AppModel, view: DexView, change: (DexView) -> Un
     }
     if (shown.isEmpty()) {
         when {
-            text.isNotEmpty() -> EmptyState("Nothing matches", "Try another name or number, or clear the search.", action = "Clear the search" to { change(view.copy(search = "")) })
-            view.filter == DexFilter.CAUGHT -> EmptyState("None caught here yet", "Hatch eggs in this region to fill it in.", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
-            else -> EmptyState("All caught!", "Every Pokémon in this list is yours.", action = "Show them all" to { change(view.copy(filter = DexFilter.entries.first())) })
+            text.isNotEmpty() -> EmptyState("Nothing matches", action = "Clear the search" to { change(view.copy(search = "")) })
+            view.filter == DexFilter.CAUGHT -> EmptyState("None caught here yet", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
+            else -> EmptyState("All caught!", action = "Show them all" to { change(view.copy(filter = DexFilter.entries.first())) })
         }
     } else {
         // An index, not a wall of cards: number, sprite, name and one quiet line per row, with a hairline between rows.

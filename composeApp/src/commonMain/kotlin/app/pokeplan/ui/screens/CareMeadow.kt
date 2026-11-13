@@ -209,7 +209,7 @@ internal fun PlayView(model: AppModel, initial: String?) {
     var inviting by remember { mutableStateOf(false) }
     var invited by remember { mutableStateOf(24) }
     val pokemon = all.firstOrNull { it.id == chosen }
-    if (pokemon == null) { EmptyState("No one to spend time with yet", "Hatch an egg first.", action = "Start a focus session" to { model.open(Place.FOCUS, true) }); return }
+    if (pokemon == null) { EmptyState("No one to spend time with yet", action = "Start a focus session" to { model.open(Place.FOCUS, true) }); return }
     val name = pokemon.nickname
     val known = care.discoveredLikes(pokemon.id)
     fun finish(done: PlayActivity) {

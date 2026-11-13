@@ -50,8 +50,8 @@ internal fun partyIdOf(region: Region): String = when (region) {
     Region.CARE -> PartyIds.CARE; Region.HEAL -> PartyIds.HEAL; Region.MINT -> PartyIds.MINT; Region.HOUSEHOLD -> PartyIds.HOME; Region.LINK -> PartyIds.LINK; else -> PartyIds.PLAN
 }
 
-/** A module's short name: "Plan", "Care", "Heal", "Mint", "Home" or "Link". */
-internal fun moduleName(region: Region): String = if (region == Region.HOUSEHOLD) "Home" else region.label.removeSuffix(" Region")
+/** A module's short name: "Plan", "Care", "Heal", "Mint", "Nest" or "Link". */
+internal fun moduleName(region: Region): String = if (region == Region.HOUSEHOLD) "Nest" else region.label.removeSuffix(" Region")
 
 /** A module's short name from its party id, for the detail page and the Guardian lists. */
 internal fun moduleNameOf(partyId: String): String = partyId.replaceFirstChar { it.uppercase() }

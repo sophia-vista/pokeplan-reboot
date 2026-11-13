@@ -31,7 +31,7 @@ enum class Region(val label: String, val isModule: Boolean = false, val released
     /** The finance module's region (Ledger Research): steady Steel, Rock and Ground keepers, fossils and gems. Released with the Mint screens. */
     MINT("Mint Region", isModule = true),
     /** The household module's region (kitchen, pantry, closet, garden): hearth, garden and pet Pokémon. Released with the Home screens. */
-    HOUSEHOLD("Home Region", isModule = true),
+    HOUSEHOLD("Nest Region", isModule = true),
     /** The connection module's region (Postcard Trail): postal birds, loyal dogs, pairs and signallers. Not released until the module ships. */
     LINK("Link Region", isModule = true),
     ;

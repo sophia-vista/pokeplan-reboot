@@ -82,7 +82,6 @@ internal fun AllTasksView(model: AppModel, tasks: List<Task>, card: @Composable 
     if (found.size > SHOWN) Text("Showing the first $SHOWN of ${found.size}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     if (found.isEmpty()) EmptyState(
         if (filter.isNarrowed) "Nothing matches" else "No open tasks",
-        if (filter.isNarrowed) "Try fewer filters or other words." else "Add one from Today or the Inbox.",
         icon = "scope-lens",
         action = if (filter.isNarrowed) "Clear filters" to { filter = TaskFilter() } else "Add a task" to onAdd,
     ) else TaskGroup(null, found.take(SHOWN), card = card)

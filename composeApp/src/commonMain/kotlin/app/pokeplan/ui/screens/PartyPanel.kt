@@ -278,7 +278,7 @@ fun HomePartyPanel(model: AppModel, onOpen: (String) -> Unit) {
     val opened = model.store.sees(Feature.PERKS)
     val totals = HomePerks.total(player.homeLead, party, player.guardianOf(app.pokeplan.core.pokemon.PartyIds.HOME))
     PartyPanel(
-        model, party, player.homeLead?.id, lead = "Lead", perksTitle = "Home perks",
+        model, party, player.homeLead?.id, lead = "Lead", perksTitle = "Nest perks",
         perks = if (opened) HomeBucket.entries.mapNotNull { b -> totals[b]?.takeIf { it > 0 }?.let { PerkLine(b.label, it) } } else emptyList(),
         onOpen = onOpen,
     )

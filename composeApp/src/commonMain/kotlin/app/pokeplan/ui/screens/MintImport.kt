@@ -52,7 +52,7 @@ internal fun MintImportView(model: AppModel) {
 
     if (chooser == null) return
     if (accounts.isEmpty()) {
-        EmptyState("Add an account first", null, icon = "member-card", action = "Add account" to { model.mintSection = MintSection.ACCOUNTS })
+        EmptyState("Add an account first", icon = "member-card", action = "Add account" to { model.mintSection = MintSection.ACCOUNTS })
         return
     }
     // Help: pick the account, then a CSV from your bank or e-wallet app; it is read on this phone, once, and not kept. Mint never asks for a password, PIN or code.

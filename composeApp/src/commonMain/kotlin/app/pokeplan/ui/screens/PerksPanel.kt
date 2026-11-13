@@ -237,7 +237,7 @@ fun HomePerksCard(model: AppModel) {
     val totals = HomePerks.total(lead, party, model.data.player.guardianOf(app.pokeplan.core.pokemon.PartyIds.HOME))
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Home perks")
+            PixelTitle("Nest perks")
             if (!model.store.sees(Feature.PERKS)) {
                 Text(PERKS_LOCKED, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 return@Column

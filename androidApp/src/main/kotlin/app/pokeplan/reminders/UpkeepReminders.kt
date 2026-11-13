@@ -24,7 +24,7 @@ object UpkeepReminders {
     fun show(context: Context, request: ReminderRequest, title: String) {
         val kind = HomeReminderKind.of(request.kind) ?: return
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
-        manager.createNotificationChannel(NotificationChannel(Channels.HOME_UPKEEP, "Home reminders", NotificationManager.IMPORTANCE_LOW).apply { lockscreenVisibility = Notification.VISIBILITY_PRIVATE })
+        manager.createNotificationChannel(NotificationChannel(Channels.HOME_UPKEEP, "Nest reminders", NotificationManager.IMPORTANCE_LOW).apply { lockscreenVisibility = Notification.VISIBILITY_PRIVATE })
         val id = notificationId(request.sourceRef, request.kind)
         val open = PendingIntent.getActivity(
             context, id, Intent(context, MainActivity::class.java).putExtra(MainActivity.EXTRA_TAB, Place.HOUSEHOLD.name),

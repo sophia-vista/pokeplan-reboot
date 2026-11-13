@@ -48,7 +48,7 @@ internal fun QuestsView(model: AppModel) {
         )
     }
     if (active.isEmpty() && available.isEmpty()) {
-        EmptyState("No quests yet", "Quests open as your trainer rank grows.", icon = "oaks-letter", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
+        EmptyState("No quests yet", icon = "oaks-letter", action = "Start a focus session" to { model.open(Place.FOCUS, true) })
     }
     if (active.isNotEmpty()) SectionLabel("In progress")
     active.forEach { q -> QuestCard(model, q) }

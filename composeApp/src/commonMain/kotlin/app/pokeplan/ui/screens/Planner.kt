@@ -176,7 +176,7 @@ private fun PlannerBody(model: AppModel, startView: Int, startWeek: Boolean, onB
                         else -> if (shown.isNotEmpty()) TaskGroup(null, shown, card = card)
                     }
                     if (shown.isEmpty() && current != View.TODAY) EmptyState(
-                        emptyTitle(current), emptyLine(current), icon = current.icon,
+                        emptyTitle(current), icon = current.icon,
                         // Only Today and Inbox have a quick-add box; Next 7 days and Done send the player to Today with the keyboard open.
                         addAbove = if (current == View.INBOX) "Add a task" else null,
                         action = when (current) {
@@ -218,8 +218,8 @@ private fun TodayList(model: AppModel, tasks: List<Task>, card: @Composable (Tas
         }
     }
     if (tasks.isEmpty()) {
-        if (done > 0) EmptyState("All clear for today", "$done finished. The rest can wait for tomorrow.", icon = View.TODAY.icon, sleeper = true, action = "Add another" to { model.addTaskRequested = true })
-        else EmptyState(emptyTitle(View.TODAY), emptyLine(View.TODAY), icon = View.TODAY.icon, sleeper = true, action = "Add a task" to { model.addTaskRequested = true })
+        if (done > 0) EmptyState("All clear for today", icon = View.TODAY.icon, sleeper = true, action = "Add another" to { model.addTaskRequested = true })
+        else EmptyState(emptyTitle(View.TODAY), icon = View.TODAY.icon, sleeper = true, action = "Add a task" to { model.addTaskRequested = true })
         return
     }
     val before = TaskViews.overdue(tasks, store.now).toSet()
@@ -269,7 +269,7 @@ internal fun TaskGroup(
  */
 @Composable
 fun EmptyState(
-    title: String, line: String? = null, icon: String? = null, action: Pair<String, () -> Unit>? = null, sleeper: Boolean = false,
+    title: String, icon: String? = null, action: Pair<String, () -> Unit>? = null, sleeper: Boolean = false,
     /** For a list whose form sits right above it: the button is labelled [addAbove] and moves the focus to the field above, so there is always one next step on the screen. */
     addAbove: String? = null,
 ) {
@@ -281,7 +281,7 @@ fun EmptyState(
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M)) {
             if (buddy != null) AnimatedSprite(buddy.form.id, buddy.isShiny, "", size = Sizes.SpriteS, animate = !LocalReduceMotion.current, ground = 4.dp, action = SpriteAction.SLEEP, actionKey = 1)
             else if (icon != null) ItemIcon(icon, size = Sizes.IconL, description = null)
-            Column(Modifier.weight(1f).semantics(mergeDescendants = true) { if (line != null) contentDescription = "$title. $line" }, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+            Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
                 Text(title, style = MaterialTheme.typography.titleSmall)
                 if (action != null) PixelButton(action.first, action.second, Modifier.padding(top = Spacing.XS), Pixel.Tone, compact = true)
             }
@@ -298,14 +298,6 @@ internal fun emptyTitle(view: View) = when (view) {
     View.DAY, View.ALL -> ""
 }
 
-internal fun emptyLine(view: View) = when (view) {
-    View.TODAY -> "Add one above, or plan one for today from the inbox or the calendar."
-    View.INBOX -> "Tasks you add outside a list land here. File them in a list from a task's options."
-    View.UPCOMING -> "Tasks planned for the next 7 days show up here."
-    View.DONE -> "Tasks you finish show up here, newest first."
-    View.TARGETS -> "Targets are small things you want to do often, like three times a week."
-    View.DAY, View.ALL -> null
-}
 
 /** What the difficulty ranks mean. Harder tasks earn more; it is how hard it feels, not how urgent it is. */
 @Composable

@@ -4,6 +4,7 @@
 **Status:** Approved product specification  
 **Module:** HOME  
 **Scope:** Personal household management  
+**Shown as:** **Nest** (owner, 13 November 2026): the app shows this module as "Nest" (its menu card, header, party, perks and region, "Nest Region") so "Home" is only the first tab; code ids, saves and the docs keep HOME  
 **Baseline audit:** PokéLife source `0.123.0`, as documented in `IMPLEMENTATION_GUIDE.md`  
 **Last updated:** 5 November 2026
 

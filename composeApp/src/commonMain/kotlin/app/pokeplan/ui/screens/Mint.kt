@@ -401,7 +401,7 @@ private fun ActivityView(model: AppModel) {
     val to = targets.firstOrNull { it.id == toId } ?: targets.firstOrNull()
     var limit by remember { mutableStateOf(PAGE) }
     if (open.isEmpty()) {
-        EmptyState("Add an account first", null, icon = "member-card", action = "Add account" to { model.mintSection = MintSection.ACCOUNTS })
+        EmptyState("Add an account first", icon = "member-card", action = "Add account" to { model.mintSection = MintSection.ACCOUNTS })
         return
     }
     fun save() {
