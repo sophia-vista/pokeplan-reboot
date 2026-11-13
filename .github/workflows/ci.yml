@@ -73,16 +73,17 @@ jobs:
           else
             echo "needed=false" >> "$GITHUB_OUTPUT"
           fi
-      - name: Android app compiles
+      # The Android tests (REP-033) run on the JVM with Robolectric: the reminders, the receivers, the widgets' save, the sealing, LiveStore recovery.
+      - name: Android app compiles and its tests pass
         if: ${{ !contains(github.event.pull_request.labels.*.name, 'apk') && (steps.android.outputs.needed == 'true' || contains(github.event.pull_request.labels.*.name, 'android')) }}
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
-          ./gradlew :androidApp:compileDebugKotlin --no-daemon
+          ./gradlew :androidApp:testDebugUnitTest --no-daemon
       - name: Android debug app (label "apk")
         if: ${{ contains(github.event.pull_request.labels.*.name, 'apk') }}
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
-          ./gradlew :androidApp:assembleDebug --no-daemon
+          ./gradlew :androidApp:testDebugUnitTest :androidApp:assembleDebug --no-daemon
       - name: Keep the APK
         if: ${{ contains(github.event.pull_request.labels.*.name, 'apk') }}
         uses: actions/upload-artifact@v4
