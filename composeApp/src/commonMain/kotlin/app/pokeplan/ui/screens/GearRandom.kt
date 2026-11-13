@@ -152,7 +152,7 @@ internal fun CoinTool(model: AppModel, onUse: () -> Unit) {
     val scope = rememberCoroutineScope()
     fun roll(spec: String) {
         val r = Randomizer.roll(spec, Random)
-        rolled = r?.text ?: "That is not a roll. Try 2d6, d20 or 3d8+2 (up to ${Randomizer.MAX_DICE} dice of 2 to ${Randomizer.MAX_SIDES} sides)."
+        rolled = r?.text ?: "That is not a roll. Try 2d6, d20 or 3d8+2 (up to ${Randomizer.MAX_DICE} dice of 2 to ${Randomizer.MAX_SIDES} sides)." // copy-ok: result
         if (r != null && historyOn) store.changeGear { g -> g.copy(diceHistory = (listOf(r.text) + g.diceHistory).take(GearData.MAX_HISTORY)) }
         onUse()
     }

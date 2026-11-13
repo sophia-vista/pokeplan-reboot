@@ -158,7 +158,6 @@ private fun PlanMenu(model: AppModel, focusTab: Boolean, onBack: () -> Unit, ope
                 val doneToday = data.tasks.any { it.state == TaskState.DONE && (it.completedAtMillis ?: 0L) >= store.startOfTodayMillis }
                 EmptyState(
                     if (doneToday) "All done for today" else "Nothing planned for today",
-                    if (doneToday) "Rest, or add one more if you feel like it." else "One small thing is plenty. Each one you finish pays candies.",
                     action = "Add a task" to { model.addTaskRequested = true; model.planSection = PlanSection.PLANNER },
                 )
             } else {

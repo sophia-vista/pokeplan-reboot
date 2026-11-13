@@ -69,9 +69,9 @@ internal fun GrowthView(model: AppModel) {
                 val pct = (acc.averageRatio * 100).roundToInt()
                 Text(
                     when (acc.bias) {
-                        Insights.Bias.UNDERESTIMATES -> "Tasks take about $pct% of what you guess. Adding a little time to estimates may help."
-                        Insights.Bias.OVERESTIMATES -> "Tasks take about $pct% of what you guess: you're quicker than you think."
-                        Insights.Bias.ABOUT_RIGHT -> "Your guesses are about right ($pct% of the estimate)."
+                        Insights.Bias.UNDERESTIMATES -> "Tasks take about $pct% of what you guess" // copy-ok: result
+                        Insights.Bias.OVERESTIMATES -> "Tasks take about $pct% of what you guess" // copy-ok: result
+                        Insights.Bias.ABOUT_RIGHT -> "Your guesses are about right ($pct% of the estimate)." // copy-ok: result
                     },
                     style = MaterialTheme.typography.bodyLarge,
                 )
@@ -84,7 +84,7 @@ internal fun GrowthView(model: AppModel) {
             // Help: the share counts ${"$"}{Insights.MINUTES_PER_TASK_POINT} minutes of focus as one task; focus without a task counts as Personal.
             // Only the areas with something in them get a row.
             val busy = Category.entries.filter { wheel.score(it) > 0 }
-            if (busy.isEmpty()) Text("Nothing finished in the last $days days yet.", style = MaterialTheme.typography.bodyLarge)
+            if (busy.isEmpty()) Text("Nothing finished in the last $days days yet.", style = MaterialTheme.typography.bodyLarge) // copy-ok: result
             busy.forEach { c ->
                 val tasks = wheel.tasksDone[c] ?: 0
                 val minutes = wheel.focusMinutes[c] ?: 0

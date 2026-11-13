@@ -575,7 +575,7 @@ private fun PickedPanel(model: AppModel, task: Task, days: List<LocalDate>, clos
             Text(task.title, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text(
                 if (time == null || day == null) "Tap an hour to plan it."
-                else "${if (days.size > 1) day.short() + ", " else "At "}${clock(time)} for ${duration(length)}. Tap another hour to move it.",
+                else "${if (days.size > 1) day.short() + ", " else "At "}${clock(time)} for ${duration(length)}",
                 style = MaterialTheme.typography.bodyMedium,
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {

@@ -430,7 +430,7 @@ private fun ActivityView(model: AppModel) {
             }
             if (type == TxType.TRANSFER) {
                 SectionLabel("To")
-                if (targets.isEmpty()) Text("Add a second account in the same currency.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                if (targets.isEmpty()) Text("Add a second account in the same currency.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     targets.forEach { a -> Chip(a.name, a.id == to?.id, { toId = a.id }) }
                 }

@@ -65,7 +65,7 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
     TextBox {
         if (rates == null) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Text(status.ifEmpty { "No rates yet. Connect to the internet once to fetch them; they are kept for when you are offline." }, style = MaterialTheme.typography.bodyLarge)
+                Text(status.ifEmpty { "No rates yet" }, style = MaterialTheme.typography.bodyLarge)
                 PixelButton("Fetch rates", { refresh() }, Modifier.fillMaxWidth(), Pixel.Tone)
             }
             return@TextBox
@@ -88,7 +88,7 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
 
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(status.ifEmpty { "ECB rate, " + (runCatching { LocalDate.parse(rates.date).let { d -> "${d.dayOfMonth} ${d.month.name.take(3).lowercase().replaceFirstChar { c -> c.uppercase() }}" } }.getOrNull() ?: rates.date) }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            if (age != null && age > 5) Text("These rates are $age days old. Refresh when you are online before you rely on them.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
+            if (age != null && age > 5) Text("Rates are $age days old", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
 
             rows.forEachIndexed { i, code ->
                 val r = Currencies.rate(active, code, rates, home, gear.manualRates)
@@ -122,7 +122,7 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
 
             // Your own rate for the home pair: what the changer offered, in units of the other currency per one of the home currency.
             if (foreign != home) {
-                FieldLabel("A rate you were offered ($foreign per 1 $home)")
+                FieldLabel("Offered rate ($foreign per 1 $home)")
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelField(manualText, { manualText = it.take(14) }, Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), placeholder = "Your rate", error = if (manualText.isNotBlank() && manualText.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 && it.isFinite() } == null) "Enter a rate above 0, like 56.2." else null)
                     PixelButton("Use", { manualText.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 && it.isFinite() }?.let { v -> store.changeGear { g -> g.copy(manualRates = g.manualRates + (foreign to v)) } } }, Modifier.weight(0.5f), Pixel.Tone, compact = true)
@@ -153,13 +153,13 @@ internal fun CurrencyTool(model: AppModel, onUse: () -> Unit) {
                 val price = priceText.replace(',', '.').toDoubleOrNull()
                 val reference = Currencies.rate(home, foreign, rates, home, emptyMap())
                 val cost = if (price == null || reference == null || foreign == home) null else Travel.estimate(price, reference, gear.manualRates[foreign], gear.feePercent, gear.feeFixed)
-                if (foreign == home) Text("Pick the other currency as the one you are paying in.", style = MaterialTheme.typography.bodyMedium)
+                if (foreign == home) Text("Pick the other currency as the one you are paying in.", style = MaterialTheme.typography.bodyMedium) // copy-ok: result
                 else if (cost == null) Text("Type the price to see it.", style = MaterialTheme.typography.bodyMedium)
                 else {
                     Text("Reference estimate: ${Currencies.format(cost.reference, home)}", style = MaterialTheme.typography.bodyLarge)
                     Text("At ${if (gear.manualRates[foreign] != null) "your rate" else "the reference rate"}: ${Currencies.format(cost.atQuotedRate, home)}", style = MaterialTheme.typography.bodyMedium)
                     Text("Fees: ${Currencies.format(cost.fees, home)}", style = MaterialTheme.typography.bodyMedium)
-                    Text("You pay about ${Currencies.format(cost.total, home)}, ${Currencies.format(cost.extra, home)} (${CalcEngine.format(kotlin.math.round(cost.extraPercent * 100) / 100)}%) more than the reference.", style = MaterialTheme.typography.titleSmall)
+                    Text("You pay about ${Currencies.format(cost.total, home)}, ${Currencies.format(cost.extra, home)} (${CalcEngine.format(kotlin.math.round(cost.extraPercent * 100) / 100)}%) more than the reference.", style = MaterialTheme.typography.titleSmall) // copy-ok: result
                 }
             }
             PixelButton("Refresh rates", { refresh() }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)

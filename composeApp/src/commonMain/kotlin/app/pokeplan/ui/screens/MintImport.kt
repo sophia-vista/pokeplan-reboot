@@ -90,7 +90,7 @@ internal fun MintImportView(model: AppModel) {
                     if (cols.debit == null && cols.credit == null) {
                         Picker("Amount", header, cols.amount) { columns = cols.copy(amount = it) }
                         ToggleRow("Charges are shown as plus", cols.flip) { columns = cols.copy(flip = it) }
-                        PixelButton("It has separate money out and money in columns", { columns = cols.copy(amount = null, debit = 0.coerceAtMost(header.lastIndex), credit = 1.coerceAtMost(header.lastIndex)) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+                        PixelButton("It has separate money out and money in columns", { columns = cols.copy(amount = null, debit = 0.coerceAtMost(header.lastIndex), credit = 1.coerceAtMost(header.lastIndex)) }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true) // copy-ok: result
                     } else {
                         Picker("Money out", header, cols.debit) { columns = cols.copy(debit = it) }
                         Picker("Money in", header, cols.credit) { columns = cols.copy(credit = it) }
@@ -101,18 +101,18 @@ internal fun MintImportView(model: AppModel) {
                     StatementImport.DateOrder.entries.forEach { o ->
                         TabButton("${o.label}, like ${o.example}", read.order == o, { order = o }, Modifier.fillMaxWidth(), key = ModuleAccent.MINT.accent)
                     }
-                    if (!read.orderCertain) Notice("This file's dates could be read either way. Check the preview below before you add anything.", tone = NoticeTone.WARNING)
+                    if (!read.orderCertain) Notice("This file's dates could be read either way. Check the preview below before you add anything.", tone = NoticeTone.WARNING) // copy-ok: result
                 }
             }
             val preview = read.preview
-            if (preview == null) Notice("Choose which column is the date and which is the amount.", tone = NoticeTone.WARNING)
+            if (preview == null) Notice("Choose which column is the date and which is the amount.", tone = NoticeTone.WARNING) // copy-ok: result
             else {
                 val keep = preview.rows.filter { it.state != StatementImport.RowState.PROBLEM && it.state != StatementImport.RowState.DUPLICATE && (it.keptByDefault != (it.line in flipped)) }.map { it.line }.toSet()
                 TextBox {
                     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                         PixelTitle("Preview")
                         Text(
-                            "${preview.new} new, ${preview.duplicates} already added, ${preview.possible} may match a record you wrote, ${preview.problems} unreadable." +
+                            "${preview.new} new, ${preview.duplicates} already added, ${preview.possible} may match a record you wrote, ${preview.problems} unreadable." + // copy-ok: result
                                 (if (preview.firstDay != null) " ${preview.firstDay} to ${preview.lastDay}." else ""),
                             style = MaterialTheme.typography.bodyLarge,
                         )

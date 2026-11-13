@@ -140,7 +140,7 @@ private fun Bid.text() = when (this) {
     Bid.LOOK -> "It looks up at you."
     Bid.NUDGE -> "It nudges your hand."
     Bid.SHOW -> "It brings you something small."
-    Bid.PLAY -> "It does a little hop and looks back at you."
+    Bid.PLAY -> "It does a little hop and looks back at you." // copy-ok: game
     Bid.SETTLE -> "It curls up a little closer."
 }
 
@@ -379,10 +379,10 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
     }
 
     val line = when {
-        doing == CareAction.TOUCH -> "Tap where to pat $name: its head, under its chin, or its back."
-        doing == CareAction.TIME -> "Press and hold $name to sit together for a moment."
-        doing == CareAction.SERVICE -> "Swipe back and forth across the meadow to tidy $name's spot."
-        doing == CareAction.GIFT -> "Drag a treat to $name, or tap one to offer it."
+        doing == CareAction.TOUCH -> "Tap where to pat $name: its head, under its chin, or its back." // copy-ok: game
+        doing == CareAction.TIME -> "Press and hold $name to sit together for a moment." // copy-ok: game
+        doing == CareAction.SERVICE -> "Swipe back and forth across the meadow to tidy $name's spot." // copy-ok: game
+        doing == CareAction.GIFT -> "Drag a treat to $name, or tap one to offer it." // copy-ok: game
         doing == CareAction.WORDS -> "What do you say to $name?"
         bid != null -> bid.text()
         else -> null
@@ -414,10 +414,10 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
 private fun visitEndedLine(name: String, result: app.pokeplan.care.BefriendResult): String {
     val hatched = result.rewards.filterIsInstance<Reward.Hatched>().firstOrNull()?.pokemon
     return when {
-        result.friend && result.joined -> "$name wants to stay with you! It joined you."
-        result.friend -> "$name left you an Egg before heading home. It hatched: ${hatched?.nickname ?: "a new friend"}!"
-        result.waiting -> "$name is ready to be your friend. It will wait for the next visit: a few friends a day is plenty."
-        else -> "$name enjoyed the visit. It will be ready for another in a few hours, and you can still play with it."
+        result.friend && result.joined -> "$name wants to stay with you! It joined you." // copy-ok: game
+        result.friend -> "$name left you an Egg before heading home. It hatched: ${hatched?.nickname ?: "a new friend"}!" // copy-ok: game
+        result.waiting -> "$name is ready to be your friend. It will wait for the next visit: a few friends a day is plenty." // copy-ok: game
+        else -> "$name enjoyed the visit. It will be ready for another in a few hours, and you can still play with it." // copy-ok: game
     }
 }
 

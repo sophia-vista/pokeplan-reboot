@@ -471,7 +471,7 @@ class ScreenshotTest {
         render("planner-repeating-event", height = 1200) {
             PixelTheme {
                 Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
-                    androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) { app.pokeplan.ui.screens.EventPanel(model, shown, week = false, {}) {} }
+                    androidx.compose.foundation.layout.Column(Modifier.padding(16.dp)) { app.pokeplan.ui.screens.EventPanel(model, shown, {}) {} }
                 }
             }
         }

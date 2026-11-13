@@ -92,7 +92,7 @@ private fun Ends(model: AppModel, openPokemon: ((String) -> Unit)?) {
         // The hatch is the peak of the loop, so its end leads straight to the new Pokémon rather than to a bare OK.
         val hatched = model.data.rewardLog.asReversed().firstNotNullOfOrNull { e -> e.rewards.filterIsInstance<Reward.Hatched>().lastOrNull() }?.pokemon
         val owned = hatched?.takeIf { h -> model.data.player.pokemon.any { it.id == h.id } }
-        val line = if (end.guarded) "The session ended early, but Magic Guard kept your egg safe, and it hatched! (Once a week.)" else "Your egg hatched! Have a look at your Pokémon."
+        val line = if (end.guarded) "The session ended early, but Magic Guard kept your egg safe, and it hatched! (Once a week.)" else "Your egg hatched! Have a look at your Pokémon." // copy-ok: result
         SpeakerBox(model, Emotion.JOYOUS) { Text(line, style = MaterialTheme.typography.bodyLarge) }
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), modifier = Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             if (owned != null && openPokemon != null) {
@@ -113,7 +113,7 @@ private fun FailedBox(model: AppModel, reason: FailReason?) {
             Text(FocusRules.FAILED_MESSAGE, style = MaterialTheme.typography.titleMedium)
             Text(
                 when (reason) {
-                    FailReason.LEFT_APP -> "You left the app for more than 10 seconds."
+                    FailReason.LEFT_APP -> "You left the app for more than 10 seconds." // copy-ok: result
                     FailReason.MOVED_PHONE -> "The phone moved during Deep Focus."
                     else -> "You stopped early."
                 },

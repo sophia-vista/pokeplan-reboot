@@ -43,7 +43,7 @@ internal fun QuestsView(model: AppModel) {
     val world = data.world
     if (app.pokeplan.world.Missions.boardOpen(world)) TextBox {
         Text(
-            "World jobs: ${world.missions.size} taken, ${world.missions.count { it.done }} done and ready to report. They are on the mission board, in Modules, World, Missions.",
+            "World jobs: ${world.missions.size} taken, ${world.missions.count { it.done }} ready to report", // copy-ok: result
             style = MaterialTheme.typography.bodyLarge,
         )
     }
@@ -54,7 +54,7 @@ internal fun QuestsView(model: AppModel) {
     active.forEach { q -> QuestCard(model, q) }
     if (available.isNotEmpty()) SectionLabel("Available")
     available.take(12).forEach { q -> QuestCard(model, q) }
-    if (available.size > 12) TextBox { Text("${available.size - 12} more are open. Finish one to see the next.", style = MaterialTheme.typography.bodyMedium) }
+    if (available.size > 12) TextBox { Text("${available.size - 12} more open", style = MaterialTheme.typography.bodyMedium) }
     if (locked.isNotEmpty()) {
         SectionLabel("Coming up")
         locked.forEach { q ->

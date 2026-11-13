@@ -524,7 +524,7 @@ private fun WelcomeBackCard(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("Welcome back!")
-            Text("It's good to see you. Here's a little something to start again with.", style = MaterialTheme.typography.bodyLarge)
+            Text("It's good to see you. Here's a little something to start again with.", style = MaterialTheme.typography.bodyLarge) // copy-ok: game
             PixelButton("Open the gift", { model.store.claimWelcomeBack(); model.effect(Sfx.HEAL) }, Modifier.fillMaxWidth(), Pixel.Green)
         }
     }

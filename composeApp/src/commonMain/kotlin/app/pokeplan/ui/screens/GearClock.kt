@@ -87,7 +87,7 @@ private fun ConvertCard(ids: List<String>, today: LocalDate, onUse: () -> Unit) 
                     val name = WorldClock.place(id)?.name ?: id
                     if (there != null) Text("$name: ${WorldClock.clockText(there, false)}" + if (there.date != base.date) (if (there.date > base.date) " next day" else " the day before") else "", style = MaterialTheme.typography.bodyLarge)
                 }
-            } else if (text.isNotBlank()) Text("Type a time as hours and minutes, like 21:30.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            } else if (text.isNotBlank()) Text("Like 21:30", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         }
     }
 }
@@ -104,7 +104,7 @@ private fun DateCard(today: LocalDate, onUse: () -> Unit) {
             if (date != null) {
                 val d = WorldClock.daysBetween(today, date)
                 Text(
-                    when { d == 0 -> "That is today."; d > 0 -> "$d days from today (${d / 7} weeks and ${d % 7} days)."; else -> "${-d} days ago." } + " Day ${WorldClock.dayOfYear(date)} of the year, a ${date.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }}.",
+                    when { d == 0 -> "That is today."; d > 0 -> "$d days from today (${d / 7} weeks and ${d % 7} days)."; else -> "${-d} days ago." } + " Day ${WorldClock.dayOfYear(date)} of the year, a ${date.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }}.", // copy-ok: result
                     style = MaterialTheme.typography.bodyLarge,
                 )
                 PixelField(days, { days = it.take(5); onUse() }, Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), label = "Add days to it (or minus)")

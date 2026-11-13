@@ -67,7 +67,7 @@ private fun PerkBucket.effect() = when (this) {
     PerkBucket.SUPER_CANDY_CHANCE -> "more Super Candies"
     PerkBucket.ITEM_FINDER -> "more item drops"
     PerkBucket.SHINY_HUNTER -> "better shiny odds"
-    PerkBucket.STREAK_KEEPER -> "at ${Perks.STREAK_KEEPER_THRESHOLD.roundToInt()}%, a second missed day a week is forgiven"
+    PerkBucket.STREAK_KEEPER -> "at ${Perks.STREAK_KEEPER_THRESHOLD.roundToInt()}%, a second missed day a week is forgiven" // copy-ok: what the perk does
     PerkBucket.COINS -> "more Poké"
 }
 
@@ -123,8 +123,8 @@ fun PartyPerksCard(model: AppModel) {
                 return@Column
             }
             PerkBucket.entries.filter { totals[it] > 0 }.forEach { b -> PerkRow(b.label(), totals[b], Perks.BUCKET_CAP + Guardians.BUCKET_CAP) }
-            if (totals.keepsFailedEgg) Text("Magic Guard: once a week a failed session of 5 minutes or more still hatches its egg.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
-            if (totals.extraForgivenDays > 0) Text("Streak keeper: a second missed day a week is forgiven.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green)
+            if (totals.keepsFailedEgg) Text("Magic Guard: once a week a failed session of 5 minutes or more still hatches its egg.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green) // copy-ok: what the perk does
+            if (totals.extraForgivenDays > 0) Text("Streak keeper: a second missed day a week is forgiven.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green) // copy-ok: what the perk does
             PixelButton(if (open) "Hide where they come from" else "Where they come from", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
             if (open) {
                 val byBucket = sources.groupBy { it.bucket }

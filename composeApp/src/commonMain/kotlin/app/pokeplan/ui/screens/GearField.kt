@@ -65,7 +65,7 @@ internal fun WaypointsTool(model: AppModel, onUse: () -> Unit) {
     var editing by remember { mutableStateOf<String?>(null) }
     var editText by remember { mutableStateOf("") }
     fun locate(save: Boolean) {
-        busy = true; message = "Looking for a fix. Outdoors with a clear sky is best."
+        busy = true; message = "Looking for a fix…"
         feed.fix { fix, reason ->
             busy = false
             if (fix == null) { message = reason ?: "No fix."; return@fix }
@@ -193,7 +193,7 @@ internal fun QrTool(model: AppModel, onUse: () -> Unit) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 QrCode.Level.entries.forEach { l -> TabButton(when (l) { QrCode.Level.L -> "Low repair"; QrCode.Level.M -> "Medium"; QrCode.Level.Q -> "High"; QrCode.Level.H -> "Highest" }, level == l, { level = l }) }
             }
-            if (text.isNotEmpty() && code == null) Text("That is too long for a code at this level (${text.encodeToByteArray().size} bytes; the most is ${QrCode.capacity(level)}). Pick Low repair or shorten it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
+            if (text.isNotEmpty() && code == null) Text("That is too long for a code at this level (${text.encodeToByteArray().size} bytes; the most is ${QrCode.capacity(level)}). Pick Low repair or shorten it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red) // copy-ok: result
             code?.let { c ->
                 Canvas(Modifier.size(240.dp).background(Color.White)) {
                     val quiet = 4; val cells = c.size + quiet * 2; val cell = size.minDimension / cells
@@ -211,7 +211,7 @@ internal fun QrTool(model: AppModel, onUse: () -> Unit) {
                 Text(reading.kind.label, style = MaterialTheme.typography.titleSmall)
                 Text(r, style = MaterialTheme.typography.bodyLarge)
                 reading.warnings.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger) }
-                Text("Nothing was opened. Check it before you use it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+                Text("Nothing was opened. Check it before you use it.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     PixelIconButton("copy", "Copy what was scanned", { clipboard.setText(AnnotatedString(r)) })
                     PixelIconButton("arrow-up", "Make a code from it", { text = r.take(400) })

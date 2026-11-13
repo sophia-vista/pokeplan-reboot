@@ -107,7 +107,7 @@ internal fun LevelTool(model: AppModel, onUse: () -> Unit) {
                 }
             }
             Text(if (t == null) "Reading the sensor" else if (level) "Level" else SensorMath.degreesText(t.fromFlat) + " off", style = MaterialTheme.typography.headlineMedium)
-            if (t != null) Text("Forward and back ${SensorMath.degreesText(t.pitch)}, left and right ${SensorMath.degreesText(t.roll)}", style = MaterialTheme.typography.bodyLarge)
+            if (t != null) Text("Forward and back ${SensorMath.degreesText(t.pitch)}, left and right ${SensorMath.degreesText(t.roll)}", style = MaterialTheme.typography.bodyLarge) // copy-ok: result
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelIconButton("check", "Call this flat", { tilt?.let { zero = it } })
                 PixelIconButton("reload", "Back to true flat", { zero = SensorMath.Tilt(0f, 0f) })
@@ -133,7 +133,7 @@ internal fun BarometerTool(model: AppModel, onUse: () -> Unit) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(hpa?.let { SensorMath.pressureText(it) } ?: "Reading the sensor", style = MaterialTheme.typography.headlineMedium)
-            hpa?.let { p -> SensorMath.altitudeMeters(p, sea)?.let { Text("About ${it.toInt()} m above the level where the pressure is ${SensorMath.pressureText(sea)}", style = MaterialTheme.typography.bodyLarge) } }
+            hpa?.let { p -> SensorMath.altitudeMeters(p, sea)?.let { Text("About ${it.toInt()} m above the level where the pressure is ${SensorMath.pressureText(sea)}", style = MaterialTheme.typography.bodyLarge) } } // copy-ok: result
             FieldLabel("Pressure at sea level today")
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 PixelIconButton("minus", "One hPa lower", { store.changeGear { it.copy(seaLevelHpa = (it.seaLevelHpa - 1f).coerceAtLeast(950f)) } })

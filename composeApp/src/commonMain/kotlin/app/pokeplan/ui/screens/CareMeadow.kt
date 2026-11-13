@@ -171,7 +171,7 @@ private fun PokemonPlayPanel(model: AppModel, key: String, species: String, nick
             PixelTitle(if (nickname != null && nickname != species) "$nickname, $species" else species)
             if (warmth != null) Text("Warmth ${warmth.first} of ${warmth.second}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Text(
-                if (known.isEmpty()) "You have not found out what it likes yet. Spending time together shows it, little by little."
+                if (known.isEmpty()) "Likes: unknown yet"
                 else "Likes: " + known.joinToString(", ") { it.playName() },
                 style = MaterialTheme.typography.bodyMedium,
             )

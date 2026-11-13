@@ -209,7 +209,7 @@ private fun MovesBox(model: AppModel, p: OwnedPokemon) = DetailBox("Moves") {
         if (p.moves.isNotEmpty()) PixelButton("Natural", { store.setMoves(p.id, emptyList()) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
     }
     if (choosing) {
-        Text("Up to ${app.pokeplan.core.pokemon.Moveset.MAX}. Tap to put a move in or out.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        Text("Up to ${app.pokeplan.core.pokemon.Moveset.MAX}", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         val chosen = active.map { it.identifier }
         app.pokeplan.core.pokemon.Moveset.learnable(p).forEach { m ->
             val on = m.identifier in chosen
@@ -253,7 +253,7 @@ private fun GrowthBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean, sta
             val partner = player.party.maxOfOrNull { it.level } ?: p.level
             val need = CandyRules.candiesNeeded(p.level, partner)
             Text("Next level: ${p.candyProgress} of $need Exp. Candies", style = soft, color = Pixel.InkSoft)
-            PixelBar(p.candyProgress.toFloat() / need, color = Pixel.Yellow, label = "${p.candyProgress} of $need Exp. Candies to the next level")
+            PixelBar(p.candyProgress.toFloat() / need, color = Pixel.Yellow, label = "${p.candyProgress} of $need Exp. Candies to the next level") // copy-ok: confirmation
             val have = player.inventory[Items.RARE_CANDY]
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 ItemIcon("rare-candy", size = Sizes.Icon, description = null)
@@ -360,11 +360,11 @@ private fun TransferBox(model: AppModel, p: OwnedPokemon, back: () -> Unit) {
             val soft = MaterialTheme.typography.bodyMedium
             when {
                 block != null -> Text(block.reason, style = soft, color = Pixel.InkSoft)
-                store.isFavorite(p.id) -> Text("Starred Pokémon cannot be transferred. Unstar it first.", style = soft, color = Pixel.InkSoft)
+                store.isFavorite(p.id) -> Text("Starred Pokémon cannot be transferred. Unstar it first.", style = soft, color = Pixel.InkSoft) // copy-ok: confirmation
                 !confirm -> PixelButton("Transfer", { confirm = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
                 else -> {
                     val quote = Transfer.quote(p)
-                    Text("Send ${p.nickname} away for ${quote.rareCandies} Exp. Candies and ${quote.coins} Poké?", style = MaterialTheme.typography.bodyLarge)
+                    Text("Send ${p.nickname} away for ${quote.rareCandies} Exp. Candies and ${quote.coins} Poké?", style = MaterialTheme.typography.bodyLarge) // copy-ok: confirmation
                     quote.warnings.forEach { Text(it, style = soft, color = Pixel.Red) }
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         PixelButton("Transfer", { if (store.transfer(p.id)) { model.effect(Sfx.ESCAPE); back() } }, Modifier.weight(1f), Pixel.Danger, compact = true)

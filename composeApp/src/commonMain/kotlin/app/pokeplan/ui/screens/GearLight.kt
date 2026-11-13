@@ -78,7 +78,7 @@ internal fun FlashlightTool(model: AppModel, onUse: () -> Unit) {
                 if (!sos) {
                     PixelButton("SOS signal", { warned = true }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true, enabled = !reduce)
                     if (warned) {
-                        Text("This flashes the light on and off. Do not use it if flashing lights bother you. It stops when you tap Stop, leave the tool, or after five minutes.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red)
+                        Text("This flashes the light on and off. Do not use it if flashing lights bother you. It stops when you tap Stop, leave the tool, or after five minutes.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Red) // copy-ok: result
                         PixelButton("Start the SOS", { warned = false; sos = true; onUse() }, Modifier.fillMaxWidth(), Pixel.Red, compact = true)
                     }
                 } else PixelButton("Stop the SOS", { sos = false }, Modifier.fillMaxWidth(), Pixel.Red)
@@ -98,7 +98,7 @@ internal fun FlashlightTool(model: AppModel, onUse: () -> Unit) {
                     Text("${(gear.lightBrightness * 100).toInt()}%", style = MaterialTheme.typography.bodyLarge, color = Color.White)
                     PixelButton("Brighter", { store.changeGear { it.copy(lightBrightness = (it.lightBrightness + 0.15f).coerceAtMost(1f)) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                 }
-                Text(color.note.ifEmpty { "Brightness here dims the picture; the phone's own brightness is set in its settings." }, style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                Text(color.note, style = MaterialTheme.typography.bodyMedium, color = Color.White)
                 PixelIconButton("close", "Close", { screen = false }, Pixel.Red)
             }
         }

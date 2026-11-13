@@ -276,7 +276,7 @@ private fun VisitorsCard(model: AppModel) {
             // Sending a visitor away is a deliberate choice, not a chore: it asks once, keeps what the visitor earned and can be undone.
             if (open != null && visit == null) {
                 if (sendAway == open.speciesId) {
-                    Text("Send ${Dex.species(open.speciesId).name} away? It keeps what it has earned, and you can ask it back.", style = MaterialTheme.typography.bodyMedium)
+                    Text("Send ${Dex.species(open.speciesId).name} away? It keeps what it has earned, and you can ask it back.", style = MaterialTheme.typography.bodyMedium) // copy-ok: result
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         PixelButton("Send away", { care.dismiss(open.speciesId); sendAway = null; playing = null; note = null }, color = Pixel.InkSoft, compact = true)
                         PixelButton("Keep", { sendAway = null }, color = Pixel.Tone, compact = true)
@@ -499,8 +499,8 @@ private fun CalmBreakView(model: AppModel) {
         if (!reduce) { waking = true; wake++ }
         result = when {
             paid -> "A calm break, done. Well rested."
-            short -> "That one was under a minute, so it doesn't earn anything. It still counts in Trends."
-            else -> "Today's calm breaks have all earned already. This one still counts in Trends."
+            short -> "That one was under a minute, so it doesn't earn anything. It still counts in Trends." // copy-ok: result
+            else -> "Today's calm breaks have all earned already. This one still counts in Trends." // copy-ok: result
         }
     }
 

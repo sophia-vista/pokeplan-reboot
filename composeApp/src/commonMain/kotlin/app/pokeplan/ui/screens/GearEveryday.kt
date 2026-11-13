@@ -60,7 +60,7 @@ internal fun EverydayTool(model: AppModel, onUse: () -> Unit) {
                     if (a == null || b == null) null else listOfNotNull(
                         Everyday.percentOf(a, b)?.let { "${trim(a)}% of ${trim(b)} is ${trim(it)}" },
                         Everyday.whatPercent(a, b)?.let { "${trim(a)} is ${trim(it)}% of ${trim(b)}" },
-                        Everyday.percentChange(a, b)?.let { "From ${trim(a)} to ${trim(b)} is a change of ${trim(it)}%" },
+                        Everyday.percentChange(a, b)?.let { "From ${trim(a)} to ${trim(b)} is a change of ${trim(it)}%" }, // copy-ok: result
                     )
                 }
                 Sum.SALE -> {

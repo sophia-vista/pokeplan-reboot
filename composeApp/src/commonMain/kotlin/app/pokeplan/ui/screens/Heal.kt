@@ -427,7 +427,7 @@ private fun SleepView(model: AppModel) {
             PixelMomentField(asleep, { asleep = it }, nowMillis, ModuleAccent.HEAL.accent, label = "Fell asleep", nowKey = false, dayPresets = listOf("Today" to 0, "Yesterday" to -1))
             PixelMomentField(woke, { woke = it }, nowMillis, ModuleAccent.HEAL.accent, label = "Woke up", nowKey = false)
             Text(
-                if (woke > asleep) "Slept for ${HealRules.duration(((woke - asleep) / 60_000L).toInt())}." else "Waking up has to be after falling asleep.",
+                if (woke > asleep) "Slept for ${HealRules.duration(((woke - asleep) / 60_000L).toInt())}." else "Waking up has to be after falling asleep.", // copy-ok: result
                 style = MaterialTheme.typography.bodyLarge, color = if (woke > asleep) Pixel.Ink else Pixel.Danger,
             )
             PixelButton("Save", ::save, Modifier.fillMaxWidth(), Pixel.Tone, enabled = woke > asleep)

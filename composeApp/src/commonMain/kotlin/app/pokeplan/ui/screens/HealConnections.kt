@@ -76,7 +76,7 @@ internal fun HealConnectionsView(model: AppModel) {
                 val connected = settings.healthKinds.isNotEmpty()
                 PixelButton(if (connected) "Change what Heal may read" else "Allow in Health Connect", {
                     heal.setHealthKinds(draft)
-                    if (draft.isNotEmpty()) health.request(draft) { granted = it; note = if (it.isEmpty()) "Nothing was allowed. Heal reads nothing, and everything you logged is still here." else null }
+                    if (draft.isNotEmpty()) health.request(draft) { granted = it; note = if (it.isEmpty()) "Nothing was allowed. Heal reads nothing, and everything you logged is still here." else null } // copy-ok: result
                 }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = draft.isNotEmpty(), compact = true)
                 if (connected) {
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -85,13 +85,13 @@ internal fun HealConnectionsView(model: AppModel) {
                     }
                     PixelButton("Read now", {
                         val kinds = settings.healthKinds.intersect(granted)
-                        if (kinds.isEmpty()) note = "Android has not allowed any of these. Choose \"Change what Heal may read\" to ask again, or open Health Connect."
+                        if (kinds.isEmpty()) note = "Nothing allowed yet"
                         else {
                             busy = true; note = null
                             health.read(kinds, days) { read, problem ->
                                 busy = false
-                                if (read == null) note = problem ?: "Health Connect could not be read. Nothing was changed."
-                                else { pending = read; if (read.failed) note = "Only part of it could be read. You can add what came and try again later." }
+                                if (read == null) note = problem ?: "Health Connect could not be read. Nothing was changed." // copy-ok: result
+                                else { pending = read; if (read.failed) note = "Only part of it could be read. You can add what came and try again later." } // copy-ok: result
                             }
                         }
                     }, Modifier.fillMaxWidth(), Pixel.Tone, enabled = !busy, compact = true, loading = busy)
@@ -106,7 +106,7 @@ internal fun HealConnectionsView(model: AppModel) {
                     PixelButton("Open Health Connect", { health.openSettings() }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     if (connected) PixelButton("Disconnect", {
                         heal.setHealthKinds(emptySet()); pending = null
-                        health.revoke { ok -> granted = emptySet(); note = if (ok) "Disconnected. Heal reads nothing now. The records already added stay until you delete them." else "Heal stopped reading. Android did not take the permissions back: open Health Connect to do that." }
+                        health.revoke { ok -> granted = emptySet(); note = if (ok) "Disconnected. Heal reads nothing now. The records already added stay until you delete them." else "Heal stopped reading. Android did not take the permissions back: open Health Connect to do that." } // copy-ok: result
                     }, Modifier.weight(1f), Pixel.Danger, compact = true)
                 }
             }

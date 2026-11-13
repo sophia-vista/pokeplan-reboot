@@ -285,7 +285,7 @@ private fun PeopleView(model: AppModel) {
             }
             message?.let { Report(model, it, NoticeTone.WARNING) }
             val similar = if (name.isBlank()) emptyList() else link.possibleDuplicates(name)
-            if (similar.isNotEmpty()) Text("Already in your list: ${similar.joinToString { LinkRules.displayName(it) }}. You can still add another.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            if (similar.isNotEmpty()) Text("Already in your list: ${similar.joinToString { LinkRules.displayName(it) }}. You can still add another.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
             if (data.people.isNotEmpty()) {
             PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search people", singleLine = true)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -349,8 +349,8 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
         val nd = dates.size
         val nf = data.followUps.count { it.personId == p.id }
         Text("Delete ${LinkRules.displayName(p)} and their notes?", style = MaterialTheme.typography.bodyLarge)
-        if (nd > 0) ToggleRow(if (nd == 1) "Keep their date" else "Keep their $nd dates", keepDates, detail = "Kept dates stay, with no person on them.") { keepDates = it }
-        if (nf > 0) ToggleRow(if (nf == 1) "Keep their follow-up" else "Keep their $nf follow-ups", keepFollowUps, detail = "Kept follow-ups stay, with no person on them.") { keepFollowUps = it }
+        if (nd > 0) ToggleRow(if (nd == 1) "Keep their date" else "Keep their $nd dates", keepDates, detail = "Kept dates stay, with no person on them.") { keepDates = it } // copy-ok: result
+        if (nf > 0) ToggleRow(if (nf == 1) "Keep their follow-up" else "Keep their $nf follow-ups", keepFollowUps, detail = "Kept follow-ups stay, with no person on them.") { keepFollowUps = it } // copy-ok: result
         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
             PixelButton("Delete", {
                 val before = model.linkData
@@ -368,7 +368,6 @@ private fun PersonOverview(model: AppModel, p: Person, onEdit: () -> Unit, onClo
     val lines = listOf(
         "Called" to p.preferred, "Phone" to p.phone, "Email" to p.email, "Organization" to p.organization, "Role" to p.role, "Address" to p.address,
     ).filter { it.second.isNotBlank() }
-    if (lines.isEmpty() && p.tags.isEmpty() && dates.isEmpty() && next == null) Text("Only a name so far. Add what is useful, nothing more.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     lines.forEach { (k, v) -> RecordRow(v, k) }
     if (p.tags.isNotEmpty()) Text(p.tags.joinToString("  ") { "#$it" }, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     dates.forEach { d -> LinkRules.next(d, today)?.let { u -> RecordRow(d.title, dateLine(u)) } ?: RecordRow(d.title, "${d.day}/${d.month}${d.year?.let { "/$it" }.orEmpty()}") }
@@ -491,7 +490,7 @@ private fun PersonForm(model: AppModel, p: Person, onDone: () -> Unit) {
             PixelButton("Add", { link.addCategory(newCategory); category = newCategory.trim(); newCategory = "" }, color = accent, enabled = newCategory.isNotBlank())
         }
         PixelField(tags, { tags = it.take(120) }, Modifier.fillMaxWidth(), label = "Tags, separated by commas", singleLine = true)
-        if (similar.isNotEmpty()) Text("This may be ${similar.joinToString(" or ") { LinkRules.displayName(it) }}, already in your list. Nothing is merged.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        if (similar.isNotEmpty()) Text("This may be ${similar.joinToString(" or ") { LinkRules.displayName(it) }}, already in your list. Nothing is merged.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft) // copy-ok: result
         Actions {
             PixelButton("Save", {
                 val out = link.updatePerson(p.copy(name = name, preferred = preferred, phone = phone, email = email, organization = organization, role = role, address = address, category = category, tags = LinkRules.tags(tags)))
@@ -580,7 +579,7 @@ private fun DateForm(model: AppModel, initial: ImportantDate?, onDone: () -> Uni
         Actions {
             PixelButton(if (initial == null) "Add" else "Save", {
                 val m = month.toIntOrNull(); val d = day.toIntOrNull()
-                if (m == null || d == null) message = "Write the day and the month as numbers."
+                if (m == null || d == null) message = "Write the day and the month as numbers." // copy-ok: result
                 else {
                     val out = if (initial == null) link.addDate(kind, title, m, d, year.toIntOrNull(), annual, personId, note)
                     else link.updateDate(initial.copy(kind = kind, title = title, month = m, day = d, year = year.toIntOrNull(), annual = annual, personId = personId, note = note))

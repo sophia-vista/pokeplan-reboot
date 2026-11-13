@@ -39,12 +39,12 @@ internal fun durationText(millis: Long): String {
 /** The steps of [SpeedExplanation] as plain lines, in the order the numbers are used. Abilities are listed last, as help for skills and not for speed. */
 internal fun speedLines(e: SpeedExplanation): List<String> = buildList {
     add("Levels of the team: ${e.levels}.")
-    add(if (e.favoredMembers == 0) "No one is of a type this place favours (+0)." else "${e.favoredMembers} of the team ${if (e.favoredMembers == 1) "is" else "are"} of a favoured type: +20% of their levels, +${oneDecimal(e.favoredBonus)}.")
+    add(if (e.favoredMembers == 0) "No one is of a type this place favours (+0)." else "${e.favoredMembers} of the team ${if (e.favoredMembers == 1) "is" else "are"} of a favoured type: +20% of their levels, +${oneDecimal(e.favoredBonus)}.") // copy-ok: game
     if (e.identityLines.isNotEmpty()) {
-        add("Moves, abilities and held items add +${oneDecimal(e.identityBonus)} (a share of each level):")
+        add("Moves, abilities and held items add +${oneDecimal(e.identityBonus)} (a share of each level):") // copy-ok: game
         addAll(e.identityLines)
-    } else add("No move, ability or held item of this team helps here (+0).")
-    add("Power: ${oneDecimal(e.power)}. A floor takes the base time (${durationText(e.baseMillis)}) divided by 1 + power/100, so ${durationText(e.afterPowerMillis)}${if (e.atMinimum) ", the shortest it can be (a quarter of the base)" else ""}.")
+    } else add("No move, ability or held item of this team helps here (+0).") // copy-ok: game
+    add("Power ${oneDecimal(e.power)}: ${durationText(e.afterPowerMillis)} a floor${if (e.atMinimum) " (the shortest)" else ""}")
     if (e.masteryPercent > 0) add("Temporal Mastery: ${e.masteryPercent}% faster.")
     if (e.legendPercent > 0) add("Legendary Guardians of this region: ${e.legendPercent}% faster.")
     add("Result: a floor takes about ${durationText(e.floorMillis)}.")
