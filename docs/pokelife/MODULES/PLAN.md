@@ -156,6 +156,10 @@ Subtasks belong to one parent and can be completed independently. Parent complet
 
 Available from Today, Inbox, and other main PLAN destinations. Title entry is immediate; Enter/primary action saves. Default destination is Inbox unless context makes another destination obvious. Date/list assignment may be secondary. Preserve typed content if the editor is accidentally dismissed. Do not open a full-screen editor for simple title-only capture unless platform constraints require it.
 
+### 4.7 Dates
+
+As built (0.178.0): one set of day keys wherever a task or a Plan event gets a day (Move to, Deadline, quick add, a new or edited event): **Today, Tomorrow, This weekend** (the coming Saturday), **Next week** (the coming Monday), **Pick a day** (the shared month picker, `PixelDateField`) and, for a task's day or deadline, **No date**. A key that names the same day as an earlier one is left out (on a Friday, Tomorrow is the weekend), so two keys never light up together (`PlanDays`). A time is typed (`9`, `930`, `9pm`) or picked from four common times. Reminders: At the time, 10 min, 30 min, 1 hour, 2 hours, 1 day before, or **Other**, a typed length up to a week; three at most per task. Goals keep their own long horizons (In a month, In 3 months, In 6 months). The day-load estimate against an "awake" window was dropped: it was never shown.
+
 ## 5. Recurring tasks and flexible frequency targets
 
 There is no separate PLAN Habits record type or primary Habits section. One recurring-task system supports both calendar recurrence and flexible frequency targets. It combines useful capabilities of existing `Recurrence` and `Habit` implementations without forcing users to choose between overlapping concepts.
@@ -174,6 +178,8 @@ Examples:
 ### 5.1 Recurrence modes
 
 Calendar recurrence: daily, selected weekdays, weekly on selected days, monthly by date, monthly by weekday position if reliable, and yearly if required by existing use cases.
+
+As built (0.178.0): the task card's Repeat offers Never, Daily, Weekdays, Weekly, Monthly (on the start's day of the month) and Yearly; Weekly then takes **every 1 to 4 weeks** and the **weekdays** (at least one stays chosen), and the card reads it in words ("repeats every 2 weeks on Mon, Thu"). A repeat made elsewhere that the keys cannot show (every 3 days) is said in words. Moving one day of a repeating task moves that day only, and its When tab says so ("Moved from Tue 17 Nov: this one only.").
 
 Frequency targets: daily target, weekly target with count, monthly target with count. Avoid custom recurrence expressions initially.
 

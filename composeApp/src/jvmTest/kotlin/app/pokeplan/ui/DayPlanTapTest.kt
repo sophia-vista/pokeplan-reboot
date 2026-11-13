@@ -38,11 +38,11 @@ class DayPlanTapTest {
         fun tap(x: Float, y: Float) { scene.sendPointerEvent(PointerEventType.Press, Offset(x, y)); settle(2); scene.sendPointerEvent(PointerEventType.Release, Offset(x, y)); settle() }
         settle()
         shot("daytap-0")
-        tap(180f, 554f)
+        tap(180f, 604f)
         shot("daytap-1")
-        // With a task picked, its panel sits above "To plan" and the hours start under both: 8:00 is at about y 996 and every hour is
-        // 96 px, so 14:00 starts at about 1572.
-        tap(300f, 1590f)
+        // With a task picked, its panel sits above "To plan" (with its how-to line, shown until a task has a time) and the hours start
+        // under both: 8:00 is at about y 1046 and every hour is 96 px, so 14:00 starts at about 1622.
+        tap(300f, 1640f)
         shot("daytap-2")
         scene.close()
         val picked = store.data.tasks.first { it.title == "Finish your first task" }

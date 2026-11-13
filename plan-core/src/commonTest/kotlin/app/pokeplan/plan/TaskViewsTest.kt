@@ -88,15 +88,4 @@ class TaskViewsTest {
         val two = listOf(t("easy", planned = today, rank = Rank.E), t("hard", planned = today, rank = Rank.A))
         assertEquals(listOf("hard", "easy"), TaskViews.today(two, now).map { it.id })
     }
-
-    @Test
-    fun dayLoadComparesPlannedMinutesWithFreeTime() {
-        val light = DayLoad.compute(listOf(t("a", planned = today, estimate = 60), t("b", planned = today)), busyMinutes = 120)
-        assertEquals(90, light.plannedMinutes, "an unestimated task counts as 30 minutes")
-        assertEquals(14 * 60 - 120, light.freeMinutes)
-        assertEquals(DayLoad.Level.CALM, light.level)
-        assertEquals(DayLoad.Level.FULL, DayLoad(80, 90).level)
-        assertEquals(DayLoad.Level.OVER, DayLoad(120, 90).level)
-        assertEquals(DayLoad.Level.OVER, DayLoad(10, 0).level, "no free time at all")
-    }
 }

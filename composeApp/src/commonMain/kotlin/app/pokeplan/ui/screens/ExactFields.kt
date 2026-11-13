@@ -127,12 +127,13 @@ fun PixelDateTimeField(
     onChange: (kotlinx.datetime.LocalDate?, LocalTime?) -> Unit, modifier: Modifier = Modifier, label: String? = null,
     noDayLabel: String? = "No date", timeNoneLabel: String? = "Any time", timePresets: List<LocalTime> = emptyList(),
     dayPresets: List<Pair<String, Int>> = listOf("Today" to 0, "Tomorrow" to 1), max: kotlinx.datetime.LocalDate? = null, min: kotlinx.datetime.LocalDate? = null,
+    pickLabel: String = "Pick a date",
 ) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
         if (label != null) FieldLabel(label)
         PixelDateField(
             day, today, accent, { onChange(it, if (it == null) null else time) }, presets = dayPresets, noneLabel = noDayLabel,
-            max = max, min = min,
+            max = max, min = min, pickLabel = pickLabel,
         )
         if (day != null) PixelTimeField(time, { onChange(day, it) }, accent, presets = timePresets, noneLabel = timeNoneLabel)
     }

@@ -38,14 +38,15 @@ fun PixelDatePicker(
 
 /**
  * [PixelDatePicker] for a date that may be missing: with a [noneLabel] ("None", "No deadline") the field gets a key for no date and
- * [value] may be null. Without a limit ([max] and [min] null) any day can be chosen, for a due date or a warranty end.
+ * [value] may be null. Without a limit ([max] and [min] null) any day can be chosen, for a due date or a warranty end. [pickLabel]
+ * names the key that opens the month (Plan says "Pick a day").
  */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun PixelDateField(
     value: LocalDate?, today: LocalDate, accent: Color, onChange: (LocalDate?) -> Unit, modifier: Modifier = Modifier,
     presets: List<Pair<String, Int>> = listOf("Today" to 0, "Tomorrow" to 1), noneLabel: String? = null, max: LocalDate? = null, min: LocalDate? = null,
-    mondayFirst: Boolean = true, initiallyOpen: Boolean = false, typed: Boolean = true,
+    mondayFirst: Boolean = true, initiallyOpen: Boolean = false, typed: Boolean = true, pickLabel: String = "Pick a date",
 ) {
     var open by remember { mutableStateOf(initiallyOpen) }
     val shown = value ?: today
@@ -58,7 +59,7 @@ fun PixelDateField(
                 TabButton(label, value == day, { onChange(day); open = false }, key = accent)
             }
             val custom = value != null && presets.none { today.plus(DatePeriod(days = it.second)) == value }
-            TabButton(if (custom) value!!.short() else "Pick a date", custom || open, { open = !open }, key = accent)
+            TabButton(if (custom) value!!.short() else pickLabel, custom || open, { open = !open }, key = accent)
         }
         if (typed && open) {
             TypedValueField(

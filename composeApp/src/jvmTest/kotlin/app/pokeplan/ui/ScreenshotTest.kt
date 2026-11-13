@@ -199,6 +199,30 @@ class ScreenshotTest {
         }
     }
 
+    /** Plan's dates: a weekly repeat every 2 weeks on chosen days, a typed reminder, and a moved day's "This one only" note. */
+    @Test
+    fun taskRepeatAndReminders() {
+        val store = started()
+        val task = store.addTask("Water the plants", planned = store.today)
+        store.makeRepeating(task.id, app.pokeplan.plan.Repeat.Weekly(every = 2, days = setOf(kotlinx.datetime.DayOfWeek.MONDAY, kotlinx.datetime.DayOfWeek.THURSDAY)))
+        store.setReminders(task.id, listOf(app.pokeplan.plan.ReminderOffset.AtTime, app.pokeplan.plan.ReminderOffset.Before(45)))
+        store.tick()
+        val later = store.data.tasks.first { it.seriesId != null && it.id != task.id && it.planned != null }
+        store.updateTask(later.copy(planned = later.planned!!.plus(kotlinx.datetime.DatePeriod(days = 1))))
+        val model = AppModel(store)
+        listOf(false, true).forEach { dark ->
+            render("task-repeat-${if (dark) "dark" else "light"}", height = 1800, frames = 8) {
+                PixelTheme(dark) {
+                    androidx.compose.foundation.layout.Column(Modifier.fillMaxSize().background(Pixel.Paper).padding(16.dp), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
+                        app.pokeplan.ui.screens.RepeatRow(model, store.data.tasks.first { it.id == task.id })
+                        app.pokeplan.ui.screens.RemindMe(model, store.data.tasks.first { it.id == task.id })
+                        app.pokeplan.ui.screens.TaskCard(model, store.data.tasks.first { it.id == later.id }, null, expanded = true, toggle = {}, onDeleted = {})
+                    }
+                }
+            }
+        }
+    }
+
     /** The exact-entry fields (typed date, time, length, moment), in both palettes. */
     @Test
     fun exactFields() {

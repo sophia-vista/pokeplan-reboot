@@ -77,7 +77,6 @@ import app.pokeplan.plan.CalendarEvent
 import app.pokeplan.plan.SpanLayout
 import app.pokeplan.plan.DaySpan
 import app.pokeplan.plan.Category
-import app.pokeplan.plan.DayLoad
 import app.pokeplan.plan.DayTimeline
 import app.pokeplan.plan.EventRepeat
 import app.pokeplan.plan.PlanEvent
@@ -366,7 +365,8 @@ internal fun DayView(model: AppModel, hidden: Set<String>, startWeek: Boolean = 
             if (chosen != null) PickedPanel(model, chosen, days) { picked = null }
             if (chosenEvent != null) EventPanel(model, chosenEvent, { picked = it }) { picked = null }
 
-            Tray(tray + undated, picked, pick, grid, ::drop)
+            // How to place a task is said on the tray until the first one has a time (then it is in Help only).
+            Tray(tray + undated, picked, pick, grid, ::drop, hint = model.data.tasks.none { it.plannedTime != null })
 
             // The calendar itself, on one panel: the days (in a week), the all-day row, then the hours.
             Column(
@@ -596,14 +596,15 @@ private fun PickedPanel(model: AppModel, task: Task, days: List<LocalDate>, clos
  * The tasks still waiting for an hour, on one panel like Structured's inbox and Sunsama's backlog: a wrapping run of chips,
  * each with its category's colour.
  */
-// Help: hold a chip and drag it to an hour, or tap it, then an hour.
+// Help says how too: hold a chip and drag it to an hour, or tap it, then an hour; [hint] says it here until the first placement.
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Tray(tasks: List<Task>, picked: String?, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit) {
+private fun Tray(tasks: List<Task>, picked: String?, pick: (String) -> Unit, grid: Grid, drop: (Drag) -> Unit, hint: Boolean) {
     if (tasks.isEmpty()) return
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text("To plan", style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+            if (hint) Text("Tap one, then an hour (or drag).", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 tasks.forEach { t -> key(t.id) {
                     val anchor = remember { Anchor() }

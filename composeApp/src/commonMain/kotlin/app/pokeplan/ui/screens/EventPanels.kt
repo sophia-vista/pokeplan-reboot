@@ -1,5 +1,6 @@
 package app.pokeplan.ui.screens
 
+import app.pokeplan.plan.PlanDays
 import app.pokeplan.ui.theme.DialogueShape
 
 import app.pokeplan.ui.theme.PixelShape
@@ -80,7 +81,7 @@ internal fun NewEventPanel(draft: Draft, change: (Draft) -> Unit, add: () -> Uni
                 }
                 return@Column
             }
-            PixelDateField(draft.day, today, Pixel.Tone, { it?.let { d -> change(draft.copy(day = d, lastDay = d)) } }, presets = listOf("Today" to 0, "Tomorrow" to 1))
+            PixelDateField(draft.day, today, Pixel.Tone, { it?.let { d -> change(draft.copy(day = d, lastDay = d)) } }, presets = PlanDays.presets(today), pickLabel = "Pick a day")
             PixelTimeField(
                 at, { t -> t?.let { change(draft.copy(start = it.hour * 60 + it.minute).let { d -> d.copy(minutes = PlanEvent.fit(d.start, d.minutes)) }) } },
                 Pixel.Tone, label = "Starts",
@@ -134,7 +135,7 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, follow: (String) -> U
                 }
                 return@Column
             }
-            PixelDateField(event.day, store.today, Pixel.Tone, { it?.let { d -> follow(store.updateEvent(event.id, day = d)) } }, presets = listOf("Today" to 0, "Tomorrow" to 1))
+            PixelDateField(event.day, store.today, Pixel.Tone, { it?.let { d -> follow(store.updateEvent(event.id, day = d)) } }, presets = PlanDays.presets(store.today), pickLabel = "Pick a day")
             PixelTimeField(
                 event.start, { t -> t?.let { store.updateEvent(event.id, start = it) } }, Pixel.Tone, label = "Starts",
             )
@@ -236,7 +237,7 @@ private fun EventColors(selected: Long?, pick: (Long) -> Unit) {
 @Composable
 private fun DaySpanPicker(first: LocalDate, last: LocalDate, today: LocalDate, setFirst: (LocalDate) -> Unit, setLast: (LocalDate) -> Unit) {
     FieldLabel("Starts")
-    PixelDateField(first, today, Pixel.Tone, { it?.let(setFirst) }, presets = listOf("Today" to 0, "Tomorrow" to 1))
+    PixelDateField(first, today, Pixel.Tone, { it?.let(setFirst) }, presets = PlanDays.presets(today), pickLabel = "Pick a day")
     FieldLabel("Ends")
     PixelDateField(last, today, Pixel.Tone, { it?.let(setLast) }, presets = emptyList(), min = first)
 }

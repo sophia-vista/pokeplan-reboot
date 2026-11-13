@@ -85,36 +85,3 @@ object TaskViews {
         return compareBy<Task>({ overdue(it) }, { it.planned ?: it.due?.date ?: now.date }, { timeOf(it) ?: LocalTime(23, 59) }, { -it.rank.tier })
     }
 }
-
-/** How full a day is: planned minutes against free time. */
-data class DayLoad(val plannedMinutes: Int, val freeMinutes: Int) {
-    enum class Level { CALM, FULL, OVER }
-
-    val ratio: Double get() = if (freeMinutes <= 0) Double.POSITIVE_INFINITY else plannedMinutes.toDouble() / freeMinutes
-
-    val level: Level get() = when {
-        ratio <= 0.8 -> Level.CALM
-        ratio <= 1.0 -> Level.FULL
-        else -> Level.OVER
-    }
-
-    companion object {
-        /** Tasks without an estimate count as this many minutes. *(tune)* */
-        const val DEFAULT_ESTIMATE_MINUTES = 30
-
-        /**
-         * [tasks] are the tasks planned for the day; [busyMinutes] is time taken by imported calendar events.
-         * Free time is the waking window ([wakeStart] to [wakeEnd]) minus the busy minutes.
-         */
-        fun compute(
-            tasks: List<Task>,
-            busyMinutes: Int = 0,
-            wakeStart: LocalTime = LocalTime(8, 0),
-            wakeEnd: LocalTime = LocalTime(22, 0),
-        ): DayLoad {
-            val awake = (wakeEnd.hour * 60 + wakeEnd.minute) - (wakeStart.hour * 60 + wakeStart.minute)
-            val planned = tasks.filter { it.isOpen }.sumOf { it.estimateMinutes ?: DEFAULT_ESTIMATE_MINUTES }
-            return DayLoad(planned, (awake - busyMinutes).coerceAtLeast(0))
-        }
-    }
-}
