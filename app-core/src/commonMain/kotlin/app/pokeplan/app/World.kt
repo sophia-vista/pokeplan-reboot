@@ -3,7 +3,7 @@ package app.pokeplan.app
 import app.pokeplan.core.reward.BefriendEvent
 import app.pokeplan.core.reward.CareEvent
 import app.pokeplan.core.reward.HealEvent
-import app.pokeplan.core.reward.HomeEvent
+import app.pokeplan.core.reward.BaseEvent
 import app.pokeplan.core.reward.LinkEvent
 import app.pokeplan.core.reward.MintEvent
 import app.pokeplan.core.reward.Reward
@@ -32,7 +32,7 @@ interface World {
      * Pays a HOME moment (Habitat Discovery) from the minimal event; null when nothing was paid (not started, already paid, or today's share is used).
      * The world learns nothing but the event's id, module, opaque reference, kind and time: no chore, area, supply, asset or note.
      */
-    fun home(event: HomeEvent): List<Reward>? = null
+    fun base(event: BaseEvent): List<Reward>? = null
 
     /**
      * Pays a LINK moment (Postcard Trail) from the minimal event; null when nothing was paid (not started, already paid, or today's share is used).

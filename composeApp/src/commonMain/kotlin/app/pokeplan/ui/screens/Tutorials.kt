@@ -36,7 +36,7 @@ internal fun TutorialCard(model: AppModel, id: String, careBreaks: Int = 0, heal
     val plan = id == Tutorials.PLAN_FOCUS
     val heal = id == Tutorials.HEAL_WALK
     val mint = id == Tutorials.MINT_TALLY
-    val home = id == Tutorials.HOME_TIDY
+    val home = id == Tutorials.BASE_TIDY
     val link = id == Tutorials.LINK_POSTCARD
     var running by remember(id) { mutableStateOf(false) }
     var seconds by remember(id) { mutableStateOf(0f) }
@@ -57,7 +57,7 @@ internal fun TutorialCard(model: AppModel, id: String, careBreaks: Int = 0, heal
                     if (plan) "A ${Tutorials.DEMO_SECONDS} second focus gives you a first Pokémon for Plan's party."
                     else if (heal) "A ${Tutorials.DEMO_SECONDS} second walk gives you a first Pokémon for Heal's party."
                     else if (mint) "A ${Tutorials.DEMO_SECONDS} second tally gives you a first Pokémon for Mint's party."
-                    else if (home) "A ${Tutorials.DEMO_SECONDS} second tidy gives you a first Pokémon for Home's party."
+                    else if (home) "A ${Tutorials.DEMO_SECONDS} second tidy of your secret base gives you a first Pokémon for its party."
                     else if (link) "A ${Tutorials.DEMO_SECONDS} second postcard gives you a first Pokémon for Link's party."
                     else "One breath gives you a first Pokémon for Care's party.",
                     style = MaterialTheme.typography.bodyLarge,

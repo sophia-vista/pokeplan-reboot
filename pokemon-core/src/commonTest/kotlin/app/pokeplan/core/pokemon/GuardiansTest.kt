@@ -107,9 +107,9 @@ class GuardiansTest {
         val strong = pokemon(Ids.GARCHOMP, level = 100, friendship = 255)
         val party = List(6) { strong.copy(id = "m$it") }
         val groundish = guardian("groudon")
-        val capped = HomePerks.total(party.first(), party)
-        val with = HomePerks.total(party.first(), party, groundish)
+        val capped = BasePerks.total(party.first(), party)
+        val with = BasePerks.total(party.first(), party, groundish)
         for ((b, v) in with) assertTrue(v <= Perks.BUCKET_CAP + Guardians.BUCKET_CAP + 1e-9, "$b $v")
-        assertTrue(with.entries.any { (b, v) -> v > (capped[b] ?: 0.0) } || HomePerks.bucket(groundish.form.types.first()) == null)
+        assertTrue(with.entries.any { (b, v) -> v > (capped[b] ?: 0.0) } || BasePerks.bucket(groundish.form.types.first()) == null)
     }
 }

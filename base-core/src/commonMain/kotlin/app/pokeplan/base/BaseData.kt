@@ -1,4 +1,4 @@
-package app.pokeplan.home
+package app.pokeplan.base
 
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 /**
  * Everything HOME keeps is a household record (docs/pokelife `MODULES/HOME.md` section 5): areas, chores and what was done about them, supplies,
  * assets, maintenance, warranties and reference notes. Derived facts (a chore is overdue, a supply is low, a service is due) are never stored: they
- * are worked out from these records and the date, by [HomeRules].
+ * are worked out from these records and the date, by [BaseRules].
  */
 @Serializable
 enum class RepeatKind(val label: String, val unit: String) {
@@ -26,7 +26,7 @@ enum class RecordStatus { ACTIVE, PAUSED, ARCHIVED }
 
 /** An optional label for where something is (HOME.md 4.1), never a hierarchy. Archiving keeps every record that names it. */
 @Serializable
-data class HomeArea(val id: String, val name: String, val archived: Boolean = false)
+data class BaseArea(val id: String, val name: String, val archived: Boolean = false)
 
 /**
  * A household responsibility (HOME.md 4.2). Only the title is required. [firstDue] is the date of the first occurrence (null: an unscheduled chore
@@ -101,7 +101,7 @@ data class Supply(
     val remind: Boolean = false,
 )
 
-/** A light record of one change of quantity (HOME.md 4.3), bounded by [HomeRules.ADJUSTMENTS_KEPT]. Not a consumption ledger. */
+/** A light record of one change of quantity (HOME.md 4.3), bounded by [BaseRules.ADJUSTMENTS_KEPT]. Not a consumption ledger. */
 @Serializable
 data class StockAdjustment(val id: String, val supplyId: String, val beforeMilli: Long?, val afterMilli: Long?, val reason: String = "", val atMillis: Long = 0)
 
@@ -201,10 +201,10 @@ data class Reference(
  * maintenance done) ever leaves HOME, and off at any time without touching a record.
  */
 @Serializable
-data class HomeSettings(
+data class BaseSettings(
     val progression: Boolean = true,
     val tutorialSeen: Boolean = false,
-    val units: List<String> = HomeRules.STARTING_UNITS,
+    val units: List<String> = BaseRules.STARTING_UNITS,
     /** Overview sections the user folded away: "chores", "supplies", "maintenance". */
     val hidden: List<String> = emptyList(),
     /** Whether the starting areas were offered once (so deleting them all does not bring them back). */
@@ -221,10 +221,10 @@ data class HomeSettings(
     val reminderNames: Boolean = false,
 )
 
-/** Everything HOME keeps on this device, as one document that `HomeTables` takes apart into one table family per kind of record. It holds nothing about Pokémon or rewards. */
+/** Everything HOME keeps on this device, as one document that `BaseTables` takes apart into one table family per kind of record. It holds nothing about Pokémon or rewards. */
 @Serializable
-data class HomeData(
-    val areas: List<HomeArea> = emptyList(),
+data class BaseData(
+    val areas: List<BaseArea> = emptyList(),
     val chores: List<Chore> = emptyList(),
     val entries: List<ChoreEntry> = emptyList(),
     val supplies: List<Supply> = emptyList(),
@@ -235,11 +235,11 @@ data class HomeData(
     val maintenance: List<MaintenanceRecord> = emptyList(),
     val warranties: List<Warranty> = emptyList(),
     val references: List<Reference> = emptyList(),
-    val settings: HomeSettings = HomeSettings(),
+    val settings: BaseSettings = BaseSettings(),
 )
 
 /** The kinds of private record, each kept in its own table family (`home_area`, ...); the names are stable. */
-enum class HomeKinds(val label: String) {
+enum class BaseKinds(val label: String) {
     AREAS("Areas"),
     CHORES("Chores and their history"),
     SUPPLIES("Supplies and the restocking list"),

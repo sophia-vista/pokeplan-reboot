@@ -1,6 +1,6 @@
 package app.pokeplan.app
 
-import app.pokeplan.home.ChoreState
+import app.pokeplan.base.ChoreState
 import app.pokeplan.plan.LinkKind
 import app.pokeplan.plan.TaskLink
 import kotlinx.datetime.LocalDate
@@ -45,9 +45,9 @@ interface LinkOwner {
 
 /**
  * HOME's side of the link (HOME.md 2.1): the chore is HOME's, its schedule, occurrences and history stay in HOME, and a linked task is a reference by the chore's
- * id. Completing it from PLAN runs [HomeStore.complete], the one completion, which pays Habitat Discovery once for that occurrence however it is ticked.
+ * id. Completing it from PLAN runs [BaseStore.complete], the one completion, which pays Habitat Discovery once for that occurrence however it is ticked.
  */
-class HomeLinkOwner(private val home: HomeStore) : LinkOwner {
+class BaseLinkOwner(private val home: BaseStore) : LinkOwner {
     override val kind = LinkKind.HOME_CHORE
 
     override fun project(link: TaskLink): LinkState {
@@ -66,7 +66,7 @@ class HomeLinkOwner(private val home: HomeStore) : LinkOwner {
 
     override fun undo(link: TaskLink): Boolean {
         val v = home.choreView(link.ref) ?: return false
-        val entry = v.entry?.takeIf { it.status == app.pokeplan.home.EntryStatus.DONE } ?: return false
+        val entry = v.entry?.takeIf { it.status == app.pokeplan.base.EntryStatus.DONE } ?: return false
         home.undo(entry.id)
         return true
     }

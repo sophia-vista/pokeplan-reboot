@@ -1,7 +1,7 @@
 package app.pokeplan.app
 
-import app.pokeplan.home.Recurrence
-import app.pokeplan.home.RepeatKind
+import app.pokeplan.base.Recurrence
+import app.pokeplan.base.RepeatKind
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -14,7 +14,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class HomeRemindersTest {
+class BaseRemindersTest {
     private class FakeClock(var millis: Long) : Clock {
         override fun nowMillis() = millis
         fun advanceDays(n: Int) { millis += n * 86_400_000L }
@@ -25,15 +25,15 @@ class HomeRemindersTest {
     private val saturdayEvening = LocalDateTime(2026, 11, 7, 18, 0).toInstant(utc).toEpochMilliseconds()
     private val today = LocalDate(2026, 11, 7)
 
-    private class Setup(val game: GameStore, val home: HomeStore, val clock: FakeClock)
+    private class Setup(val game: GameStore, val home: BaseStore, val clock: FakeClock)
 
     private fun setup(): Setup {
         val clock = FakeClock(saturdayEvening)
         val game = GameStore(MemoryStorage(), clock, utc, Random(7)).also { it.start("Sophia", 25) }
-        return Setup(game, HomeStore(MemoryStorage(), clock, game, utc, rng = Random(3)), clock)
+        return Setup(game, BaseStore(MemoryStorage(), clock, game, utc, rng = Random(3)), clock)
     }
 
-    private fun Setup.upcoming() = HomeReminders.upcoming(home.data, game.data, clock.nowMillis(), utc)
+    private fun Setup.upcoming() = BaseReminders.upcoming(home.data, game.data, clock.nowMillis(), utc)
     private fun at(y: Int, m: Int, d: Int, h: Int = 9) = LocalDateTime(y, m, d, h, 0).toInstant(utc).toEpochMilliseconds()
 
     @Test fun `nothing asks until Home and the record are both turned on`() {
@@ -44,7 +44,7 @@ class HomeRemindersTest {
         assertTrue(s.upcoming().isEmpty(), "the master switch is still off")
         s.home.setReminders(true)
         val r = s.upcoming().single()
-        assertEquals(HomeReminderKind.CHORE, r.kind)
+        assertEquals(BaseReminderKind.CHORE, r.kind)
         assertEquals(at(2026, 11, 8), r.atMillis)
         // A chore whose own reminder is off never asks, whatever the switch says.
         s.home.setChoreRemind(chore.id, false)
@@ -83,11 +83,11 @@ class HomeRemindersTest {
         // Forty days before the 7th of December is already past; a month-long lead would not be in the days the scheduler plans over either.
         assertEquals(1, s.upcoming().size)
         s.home.setWarrantyLeadDays(29)
-        assertEquals(at(2026, 11, 8), s.upcoming().single { it.kind == HomeReminderKind.WARRANTY }.atMillis)
+        assertEquals(at(2026, 11, 8), s.upcoming().single { it.kind == BaseReminderKind.WARRANTY }.atMillis)
         // Doing the maintenance moves the schedule on: the old reminder is no longer wanted.
-        assertTrue(HomeReminders.stillWanted(s.home.data, HomeReminderKind.MAINTENANCE, sch.id, "2026-11-10", s.home.today))
+        assertTrue(BaseReminders.stillWanted(s.home.data, BaseReminderKind.MAINTENANCE, sch.id, "2026-11-10", s.home.today))
         s.home.completeMaintenance(sch.id)
-        assertFalse(HomeReminders.stillWanted(s.home.data, HomeReminderKind.MAINTENANCE, sch.id, "2026-11-10", s.home.today))
+        assertFalse(BaseReminders.stillWanted(s.home.data, BaseReminderKind.MAINTENANCE, sch.id, "2026-11-10", s.home.today))
     }
 
     @Test fun `a low supply asks once and a quieted or restocked one does not`() {
@@ -98,7 +98,7 @@ class HomeRemindersTest {
         assertTrue(s.upcoming().isEmpty(), "not low yet")
         s.home.setQuantity(sup.id, 400)
         val r = s.upcoming().single()
-        assertEquals(HomeReminderKind.LOW_STOCK, r.kind)
+        assertEquals(BaseReminderKind.LOW_STOCK, r.kind)
         assertEquals(at(2026, 11, 8), r.atMillis, "the first 09:00 after it became low (it is evening)")
         // Once its hour is past it never repeats by itself.
         s.clock.advanceHours(24)
@@ -107,7 +107,7 @@ class HomeRemindersTest {
         s.clock.advanceHours(-24)
         s.home.dismissLow(sup.id)
         assertTrue(s.upcoming().isEmpty())
-        assertFalse(HomeReminders.stillWanted(s.home.data, HomeReminderKind.LOW_STOCK, sup.id, "", s.home.today))
+        assertFalse(BaseReminders.stillWanted(s.home.data, BaseReminderKind.LOW_STOCK, sup.id, "", s.home.today))
     }
 
     @Test fun `pausing deleting or turning Home off stops a reminder that is already planned`() {
@@ -115,12 +115,12 @@ class HomeRemindersTest {
         s.home.setReminders(true)
         val chore = s.home.addChore("Vacuum", Recurrence(RepeatKind.WEEKLY), LocalDate(2026, 11, 8)).record!!
         s.home.setChoreRemind(chore.id, true)
-        val adapter = HomeReminderAdapter({ s.home.data }, { s.game.data }, { s.home.today }) { id -> s.home.complete(id).record != null }
+        val adapter = BaseReminderAdapter({ s.home.data }, { s.game.data }, { s.home.today }) { id -> s.home.complete(id).record != null }
         val request = adapter.requests(s.clock.nowMillis(), utc).single()
         assertTrue(adapter.isStillWanted(request))
-        s.home.setChoreStatus(chore.id, app.pokeplan.home.RecordStatus.PAUSED)
+        s.home.setChoreStatus(chore.id, app.pokeplan.base.RecordStatus.PAUSED)
         assertFalse(adapter.isStillWanted(request))
-        s.home.setChoreStatus(chore.id, app.pokeplan.home.RecordStatus.ACTIVE)
+        s.home.setChoreStatus(chore.id, app.pokeplan.base.RecordStatus.ACTIVE)
         assertTrue(adapter.isStillWanted(request))
         s.home.setReminders(false)
         assertFalse(adapter.isStillWanted(request))
@@ -135,7 +135,7 @@ class HomeRemindersTest {
         s.home.setReminders(true)
         val chore = s.home.addChore("Clean the secret room", Recurrence(RepeatKind.WEEKLY), LocalDate(2026, 11, 8)).record!!
         s.home.setChoreRemind(chore.id, true)
-        val adapter = HomeReminderAdapter({ s.home.data }, { s.game.data }, { s.home.today }) { true }
+        val adapter = BaseReminderAdapter({ s.home.data }, { s.game.data }, { s.home.today }) { true }
         val request = adapter.requests(s.clock.nowMillis(), utc).single()
         assertFalse(request.id.contains("secret"), request.id)
         assertEquals("A chore is due", adapter.present(request)?.title)
@@ -149,14 +149,14 @@ class HomeRemindersTest {
         val chore = s.home.addChore("Vacuum", Recurrence(RepeatKind.WEEKLY), LocalDate(2026, 11, 8)).record!!
         s.home.setChoreRemind(chore.id, true)
         s.clock.advanceDays(1); s.clock.advanceHours(-10)
-        val adapter = HomeReminderAdapter({ s.home.data }, { s.game.data }, { s.home.today }) { id -> s.home.complete(id).record != null }
+        val adapter = BaseReminderAdapter({ s.home.data }, { s.game.data }, { s.home.today }) { id -> s.home.complete(id).record != null }
         val request = adapter.requests(s.clock.nowMillis(), utc).single()
         val router = ReminderRouter(listOf(adapter))
         assertEquals(ActionResult.DONE, router.handle(request, ReminderActions.DONE))
-        assertEquals(1, s.game.data.homePaid.size)
+        assertEquals(1, s.game.data.basePaid.size)
         // The same notification tapped again is stale: nothing waits, nothing is paid.
         assertEquals(ActionResult.STALE, router.handle(request, ReminderActions.DONE))
-        assertEquals(1, s.game.data.homePaid.size)
+        assertEquals(1, s.game.data.basePaid.size)
         // A snooze and a dismiss are not reward-bearing and touch no record.
         assertEquals(ActionResult.DISMISSED, router.handle(request, ReminderActions.DISMISS))
         // Maintenance offers no Done.

@@ -746,7 +746,7 @@ fun taskMeta(t: Task, day: LocalDate? = null, repeats: String? = null): String =
     }
     if (t.reminders.isNotEmpty() && t.isOpen) add("reminder")
     // A projection of a Home chore: Home completes it and pays it, Plan only shows it (PRODUCT_BIBLE.md section 4).
-    if (t.ownedElsewhere) add("from Home")
+    if (t.ownedElsewhere) add("from Base")
     if (t.subtasks.isNotEmpty()) add("${t.subtasks.count { it.done }}/${t.subtasks.size} steps")
     if (repeats != null) add(repeats)
 }.joinToString(", ")

@@ -335,8 +335,8 @@ private fun RoleBox(model: AppModel, p: OwnedPokemon, isGuardian: Boolean) = Det
     val inHeal = p.inParty && p.partyId == PartyIds.HEAL
     val inMint = p.inParty && p.partyId == PartyIds.MINT
     val isMintLead = p.id == player.mintLead?.id
-    val inHome = p.inParty && p.partyId == PartyIds.HOME
-    val isHomeLead = p.id == player.homeLead?.id
+    val inBase = p.inParty && p.partyId == PartyIds.BASE
+    val isBaseLead = p.id == player.baseLead?.id
     val inLink = p.inParty && p.partyId == PartyIds.LINK
     val isLinkLead = p.id == player.linkLead?.id
     val isHealLead = p.id == player.healLead?.id
@@ -416,7 +416,7 @@ private fun PlacePicker(model: AppModel, p: OwnedPokemon) {
         if (model.data.settings.careModule) Slot("Care party", PartyIds.CARE, app.pokeplan.ui.theme.ModuleAccent.CARE.accent, player.careLead?.id) { store.setCareLead(p.id) } else null,
         Slot("Heal party", PartyIds.HEAL, app.pokeplan.ui.theme.ModuleAccent.HEAL.accent, player.healLead?.id) { store.setHealLead(p.id) },
         Slot("Mint party", PartyIds.MINT, app.pokeplan.ui.theme.ModuleAccent.MINT.accent, player.mintLead?.id) { store.setMintLead(p.id) },
-        Slot("Home party", PartyIds.HOME, app.pokeplan.ui.theme.ModuleAccent.HOME.accent, player.homeLead?.id) { store.setHomeLead(p.id) },
+        Slot("Base party", PartyIds.BASE, app.pokeplan.ui.theme.ModuleAccent.BASE.accent, player.baseLead?.id) { store.setBaseLead(p.id) },
         Slot("Link party", PartyIds.LINK, app.pokeplan.ui.theme.ModuleAccent.LINK.accent, player.linkLead?.id) { store.setLinkLead(p.id) },
     )
     PixelButton(if (open) "Close" else "Move to...", { open = !open }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)

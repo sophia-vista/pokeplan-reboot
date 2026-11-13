@@ -203,7 +203,7 @@ private fun BackupsCard(model: AppModel) {
     var shown by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
     val hide = if (shown) androidx.compose.ui.text.input.VisualTransformation.None else PasswordVisualTransformation()
-    fun restored(text: String) { model.store.reload(); model.care.reload(); model.heal.reload(); model.mint.reload(); model.home.reload(); model.link.reload(); entries = backups.automatic(); note = text }
+    fun restored(text: String) { model.store.reload(); model.care.reload(); model.heal.reload(); model.mint.reload(); model.base.reload(); model.link.reload(); entries = backups.automatic(); note = text }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             GlyphTitle("Backups", "download")
@@ -289,9 +289,9 @@ private fun DataCard(model: AppModel) {
                     }
                 }
                 "device" -> {
-                    Text("Erase this device? Everything here is removed and the app starts over: tasks, Pokémon, settings, and every Care, Heal, Mint and Home record, with the daily backups. A copy you saved as a file is not touched. This cannot be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
+                    Text("Erase this device? Everything here is removed and the app starts over: tasks, Pokémon, settings, and every Care, Heal, Mint and Base record, with the daily backups. A copy you saved as a file is not touched. This cannot be undone.", style = MaterialTheme.typography.bodyMedium, color = Pixel.Danger)
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        PixelIconButton("trash", "Erase", { store.eraseDevice(); model.care.erase(); model.heal.eraseAll(); model.mint.eraseAll(); model.home.eraseAll(); note = model.backups?.eraseLeftovers()?.ifBlank { null }; asking = null }, Pixel.Danger)
+                        PixelIconButton("trash", "Erase", { store.eraseDevice(); model.care.erase(); model.heal.eraseAll(); model.mint.eraseAll(); model.base.eraseAll(); note = model.backups?.eraseLeftovers()?.ifBlank { null }; asking = null }, Pixel.Danger)
                         PixelButton("Keep it", { asking = null }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
                     }
                 }

@@ -52,9 +52,9 @@ object ModuleIds {
     const val CARE = "CARE"
     const val HEAL = "HEAL"
     const val MINT = "MINT"
-    const val HOME = "HOME"
+    const val BASE = "HOME"
     const val LINK = "LINK"
-    val WITH_PARTY = setOf(PLAN, CARE, HEAL, MINT, HOME, LINK)
+    val WITH_PARTY = setOf(PLAN, CARE, HEAL, MINT, BASE, LINK)
     const val PARTY_CAPACITY = 6
 }
 

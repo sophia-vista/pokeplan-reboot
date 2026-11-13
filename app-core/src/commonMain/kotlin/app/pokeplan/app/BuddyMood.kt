@@ -22,8 +22,8 @@ object BuddyScene {
     /** Mint's region scene: a quiet cave of rock and ore, for the steady keepers. */
     const val MINT = "dampcave"
 
-    /** Home's region scene: the town, for the household's upkeep. */
-    const val HOME = "city"
+    /** Base's region scene: a secret base under the trees, after Hoenn's Secret Bases (owner, 13 November 2026), for the household's upkeep. */
+    const val BASE = "forest"
 
     /** Link's region scene: the route, a postcard trail. */
     const val LINK = "route"

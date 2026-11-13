@@ -30,7 +30,7 @@ import app.pokeplan.core.pokemon.CareBucket
 import app.pokeplan.core.pokemon.CarePerks
 import app.pokeplan.core.pokemon.Guardians
 import app.pokeplan.core.pokemon.HealPerks
-import app.pokeplan.core.pokemon.HomePerks
+import app.pokeplan.core.pokemon.BasePerks
 import app.pokeplan.core.pokemon.LinkPerks
 import app.pokeplan.core.pokemon.MintPerks
 import app.pokeplan.core.pokemon.OwnedPokemon
@@ -47,11 +47,11 @@ import app.pokeplan.ui.theme.TextBox
 
 /** The party id (`PartyIds`) of a module's region: where its party, its lead and its Guardian are kept. */
 internal fun partyIdOf(region: Region): String = when (region) {
-    Region.CARE -> PartyIds.CARE; Region.HEAL -> PartyIds.HEAL; Region.MINT -> PartyIds.MINT; Region.HOUSEHOLD -> PartyIds.HOME; Region.LINK -> PartyIds.LINK; else -> PartyIds.PLAN
+    Region.CARE -> PartyIds.CARE; Region.HEAL -> PartyIds.HEAL; Region.MINT -> PartyIds.MINT; Region.HOUSEHOLD -> PartyIds.BASE; Region.LINK -> PartyIds.LINK; else -> PartyIds.PLAN
 }
 
-/** A module's short name: "Plan", "Care", "Heal", "Mint", "Home" or "Link". */
-internal fun moduleName(region: Region): String = if (region == Region.HOUSEHOLD) "Home" else region.label.removeSuffix(" Region")
+/** A module's short name: "Plan", "Care", "Heal", "Mint", "Base" or "Link". */
+internal fun moduleName(region: Region): String = if (region == Region.HOUSEHOLD) "Base" else region.label.removeSuffix(" Region")
 
 /** A module's short name from its party id, for the detail page and the Guardian lists. */
 internal fun moduleNameOf(partyId: String): String = partyId.replaceFirstChar { it.uppercase() }
@@ -124,7 +124,7 @@ internal fun guardianPerkText(p: OwnedPokemon, partyId: String): String {
         PartyIds.CARE -> words(Guardians.signatureIn(p, CarePerks::bucket)) { it.label }
         PartyIds.HEAL -> words(Guardians.signatureIn(p, HealPerks::bucket)) { it.label }
         PartyIds.MINT -> words(Guardians.signatureIn(p, MintPerks::bucket)) { it.label }
-        PartyIds.HOME -> words(Guardians.signatureIn(p, HomePerks::bucket)) { it.label }
+        PartyIds.BASE -> words(Guardians.signatureIn(p, BasePerks::bucket)) { it.label }
         PartyIds.LINK -> words(Guardians.signatureIn(p, LinkPerks::bucket)) { it.label }
         else -> words(Guardians.signature(p)) { it.label() }
     }.ifEmpty { "no perk in this module" }

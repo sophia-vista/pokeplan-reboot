@@ -96,7 +96,7 @@ class GearTest {
         store.setInParty(b, true, app.pokeplan.core.pokemon.PartyIds.MINT)
         assertTrue(Places.label(store.data, b).endsWith("Mint's party"), Places.label(store.data, b))
         val c = store.grantPokemon(1, "test").id
-        store.setInParty(c, true, app.pokeplan.core.pokemon.PartyIds.HOME)
+        store.setInParty(c, true, app.pokeplan.core.pokemon.PartyIds.BASE)
         assertTrue("Home's" in Places.label(store.data, c))
         val d = store.grantPokemon(4, "test").id
         assertTrue(store.worldAssign(1, listOf(d)))

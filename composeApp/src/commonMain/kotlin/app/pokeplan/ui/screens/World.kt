@@ -85,12 +85,12 @@ import kotlinx.coroutines.delay
  * its sections. Its progression (rank, Poké, dungeon depth) is its own; the Pokémon it recruits are the shared collection's.
  */
 /**
- * World's five destinations (WORLD.md section 2): Base, Atlas ([MAP]), Expeditions ([TEAMS]), Guild ([MISSIONS]) and Journal ([ARCHIVE]).
- * [SKILLS] and [BAG] (Finds) are reached from the Base, [SETTINGS] from the small button under the destinations; they stay sections of their own so a
+ * World's five destinations (WORLD.md section 2): Town, Atlas ([MAP]), Expeditions ([TEAMS]), Guild ([MISSIONS]) and Journal ([ARCHIVE]).
+ * [SKILLS] and [BAG] (Finds) are reached from the Town, [SETTINGS] from the small button under the destinations; they stay sections of their own so a
  * shortcut (the landing's "Open Finds") can open them directly.
  */
 enum class WorldSection(val label: String, val icon: String) {
-    MAP("Atlas", "town-map"), MISSIONS("Guild", "oaks-parcel"), SKILLS("Skills", "ability-capsule"), BASE("Base", "scope-lens"), ARCHIVE("Journal", "oaks-letter"), TEAMS("Expeditions", "exp-share"), BAG("Finds", "seal-bag"), SETTINGS("Settings", "storage-key"),
+    MAP("Atlas", "town-map"), MISSIONS("Guild", "oaks-parcel"), SKILLS("Skills", "ability-capsule"), TOWN("Town", "scope-lens"), ARCHIVE("Journal", "oaks-letter"), TEAMS("Expeditions", "exp-share"), BAG("Finds", "seal-bag"), SETTINGS("Settings", "storage-key"),
 }
 
 private const val NAP_MILLIS = 30_000L
@@ -126,7 +126,7 @@ private fun WorldPage(model: AppModel, section: WorldSection?, openPokemon: (Str
             WorldSection.MAP -> WorldMapView(model)
             WorldSection.MISSIONS -> WorldMissionsView(model)
             WorldSection.SKILLS -> WorldSkillsView(model)
-            WorldSection.BASE -> WorldBaseView(model)
+            WorldSection.TOWN -> WorldTownView(model)
             WorldSection.ARCHIVE -> WorldJournalView(model)
             WorldSection.TEAMS -> WorldTeamsView(model)
             WorldSection.BAG -> WorldBagView(model)
@@ -166,7 +166,7 @@ private fun WorldMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String)
             // The five destinations, big (WORLD.md section 2); Settings is the one small button.
             MenuGrid(
                 listOf(
-                    MenuEntry(WorldSection.BASE.name, WorldSection.BASE.icon, WorldSection.BASE.label, if (world.finds.isEmpty()) "Camp level ${world.facilityLevel(Facility.CAMP)}" else "${world.finds.size} to meet", badge = world.researchReady().size + world.finds.size, tint = ModuleAccent.WORLD.accent),
+                    MenuEntry(WorldSection.TOWN.name, WorldSection.TOWN.icon, WorldSection.TOWN.label, if (world.finds.isEmpty()) "Camp level ${world.facilityLevel(Facility.CAMP)}" else "${world.finds.size} to meet", badge = world.researchReady().size + world.finds.size, tint = ModuleAccent.WORLD.accent),
                     MenuEntry(WorldSection.MAP.name, WorldSection.MAP.icon, WorldSection.MAP.label, "${Dungeons.all.size} dungeons", tint = ModuleAccent.WORLD.accent),
                     MenuEntry(WorldSection.TEAMS.name, WorldSection.TEAMS.icon, WorldSection.TEAMS.label, if (out == 0) "no team out" else "$out out", tint = ModuleAccent.WORLD.accent),
                     MenuEntry(WorldSection.MISSIONS.name, WorldSection.MISSIONS.icon, WorldSection.MISSIONS.label, if (!Missions.boardOpen(world)) "opens in the story" else "${world.missions.size} taken", badge = world.missions.count { it.done }, tint = ModuleAccent.WORLD.accent),
@@ -515,16 +515,16 @@ private fun WorldSkillsView(model: AppModel) {
     }
 }
 
-/** The pages of the Base: its landing is the headquarters map and a menu, so nothing but the one page you opened is on screen (docs/pokelife/MODULES/WORLD.md section 2.1). */
-private enum class BasePage(val label: String, val icon: String) {
+/** The pages of the Town: its landing is the headquarters map and a menu, so nothing but the one page you opened is on screen (docs/pokelife/MODULES/WORLD.md section 2.1). */
+private enum class TownPage(val label: String, val icon: String) {
     FACILITIES("Facilities", "heart-scale"), CAFE("Café", "soothe-bell"),
     KECLEON("Kecleon Shop", "rare-candy"), SWAP("Swap Shop", "amulet-coin"), DOJO("Dojo", "scope-lens"),
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun WorldBaseView(model: AppModel) {
-    var page by remember { mutableStateOf<BasePage?>(null) }
+private fun WorldTownView(model: AppModel) {
+    var page by remember { mutableStateOf<TownPage?>(null) }
     val world = model.data.world
     val open = page
     if (open == null) {
@@ -532,31 +532,31 @@ private fun WorldBaseView(model: AppModel) {
         WorldMapHero(baseMap(starterSpecies(model.data), world.facilityLevel(Facility.CAMP)), "Exploration base", "Camp level ${world.facilityLevel(Facility.CAMP)} of ${Facility.MAX_LEVEL}")
         RankStrip(model)
         MenuGrid(
-            BasePage.entries.map { p ->
+            TownPage.entries.map { p ->
                 val detail = when (p) {
-                    BasePage.FACILITIES -> "Camp level ${world.facilityLevel(Facility.CAMP)}"
-                    BasePage.CAFE -> "a brew for the road"
-                    BasePage.KECLEON -> "${world.candyPrice} Poké a candy"
-                    BasePage.SWAP -> "berry for berry"
-                    BasePage.DOJO -> "${app.pokeplan.world.Dojo.COST} Poké a lesson"
+                    TownPage.FACILITIES -> "Camp level ${world.facilityLevel(Facility.CAMP)}"
+                    TownPage.CAFE -> "a brew for the road"
+                    TownPage.KECLEON -> "${world.candyPrice} Poké a candy"
+                    TownPage.SWAP -> "berry for berry"
+                    TownPage.DOJO -> "${app.pokeplan.world.Dojo.COST} Poké a lesson"
                 }
                 MenuEntry(p.name, p.icon, p.label, detail, tint = Module.WORLD.look.accent)
             } + listOf(
-                // Finds wait at the Base (WORLD.md 2.1); skills are the explorers' rank work. Both are sections of their own, opened from here.
+                // Finds wait in the Town (WORLD.md 2.1); skills are the explorers' rank work. Both are sections of their own, opened from here.
                 MenuEntry(WorldSection.BAG.name, WorldSection.BAG.icon, WorldSection.BAG.label, if (world.finds.isEmpty()) "no one waiting" else "${world.finds.size} to meet", badge = world.finds.size, tint = Module.WORLD.look.accent),
                 MenuEntry(WorldSection.SKILLS.name, WorldSection.SKILLS.icon, WorldSection.SKILLS.label, "${app.pokeplan.world.WorldSkill.entries.size} skills", tint = Module.WORLD.look.accent),
             ),
-        ) { key -> WorldSection.entries.firstOrNull { it.name == key && (it == WorldSection.BAG || it == WorldSection.SKILLS) }?.let { model.worldSection = it } ?: run { page = BasePage.valueOf(key) } }
+        ) { key -> WorldSection.entries.firstOrNull { it.name == key && (it == WorldSection.BAG || it == WorldSection.SKILLS) }?.let { model.worldSection = it } ?: run { page = TownPage.valueOf(key) } }
         Text("Storage is the shared Bag.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
         return
     }
     BackHandler(enabled = true) { page = null }
     val store = model.store
     val play = !(model.data.settings.reduceMotion || model.powerSaving)
-    PixelButton("Back to the base", { page = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
+    PixelButton("Back to the town", { page = null }, Modifier.fillMaxWidth(), Pixel.InkSoft, compact = true)
     when (open) {
-        BasePage.FACILITIES -> {
-    FieldLabel("Base")
+        TownPage.FACILITIES -> {
+    FieldLabel("Town")
     Facility.entries.forEach { f ->
         val level = world.facilityLevel(f)
         // The Camp: the Pokémon recruited from your finds live in its yard (they are in your collection too, with the rest).
@@ -574,7 +574,7 @@ private fun WorldBaseView(model: AppModel) {
         }
     }
         }
-        BasePage.CAFE -> {
+        TownPage.CAFE -> {
     WorldBanner("cafe", "Spinda's Café", "A brew for the road", sky = Color(0xFF29180F), top = true, height = 150.dp)
     var steam by remember { mutableStateOf(0) }
     val clock = model.worldNow.takeIf { it > 0 } ?: model.store.nowMillis
@@ -593,7 +593,7 @@ private fun WorldBaseView(model: AppModel) {
         }
     }
         }
-        BasePage.KECLEON -> {
+        TownPage.KECLEON -> {
             WorldBanner("pokemon-square", "Kecleon Shop", "Exp. Candy, for Poké", height = 150.dp)
     FieldLabel("Kecleon Shop")
     TextBox {
@@ -604,7 +604,7 @@ private fun WorldBaseView(model: AppModel) {
         }
     }
         }
-        BasePage.SWAP -> {
+        TownPage.SWAP -> {
             WorldBanner("square", "Croagunk Swap Shop", "Berry for berry", height = 150.dp)
     FieldLabel("Croagunk Swap Shop")
     var swapFrom by remember { mutableStateOf(app.pokeplan.world.SwapShop.flavors[0]) }
@@ -627,7 +627,7 @@ private fun WorldBaseView(model: AppModel) {
         }
     }
         }
-        BasePage.DOJO -> {
+        TownPage.DOJO -> {
             WorldBanner("makuhita-dojo", "Makuhita's Dojo", "${model.data.player.coins} Poké to spend", height = 150.dp)
     FieldLabel("Dojo")
     TextBox {

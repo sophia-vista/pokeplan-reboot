@@ -5,8 +5,8 @@ import app.pokeplan.app.CareStore
 import app.pokeplan.app.Clock
 import app.pokeplan.app.GameStore
 import app.pokeplan.app.HealStore
-import app.pokeplan.app.HomeLinkOwner
-import app.pokeplan.app.HomeStore
+import app.pokeplan.app.BaseLinkOwner
+import app.pokeplan.app.BaseStore
 import app.pokeplan.app.LinkStore
 import app.pokeplan.app.MintStore
 import app.pokeplan.app.MemoryStorage
@@ -42,7 +42,7 @@ fun healStorage(context: Context): Storage {
  * The Home module's own save (private household records, serial numbers among them), apart from every other module's: its own tables in the database,
  * created there from the start (`home.json` exists only as a fallback while the database has never opened). No widget reads it.
  */
-fun homeStorage(context: Context): Storage = LiveStore.storage(context, "home", "home.json")
+fun baseStorage(context: Context): Storage = LiveStore.storage(context, "home", "home.json")
 
 /**
  * The Link module's own save (people, notes, dates and follow-ups), apart from every other module's: its own tables in the database, created there from
@@ -68,8 +68,8 @@ fun healStore(context: Context, world: GameStore = widgetStore(context)): HealSt
     )
 
 /** Home's store outside the app (reminders): its own records; a chore reminder's "Done" completes the chore like the app does and pays Habitat Discovery into [world]. */
-fun homeStore(context: Context, world: GameStore = widgetStore(context)): HomeStore =
-    HomeStore(homeStorage(context), Clock { System.currentTimeMillis() }, world)
+fun baseStore(context: Context, world: GameStore = widgetStore(context)): BaseStore =
+    BaseStore(baseStorage(context), Clock { System.currentTimeMillis() }, world)
 
 /** Link's store outside the app (reminders): its own records; a follow-up reminder's "Done" completes it like the app does and pays Postcard Trail into [world]. */
 fun linkStore(context: Context, world: GameStore = widgetStore(context)): LinkStore =
@@ -85,6 +85,6 @@ fun widgetStore(context: Context): GameStore {
     val game = GameStore(saveStorage(context), clock)
     // A task linked to a Home chore is completed by Home (PRODUCT_BIBLE.md section 4), so a widget or a notification that ticks one needs Home's store.
     // It is opened only when such a task exists; without an owner a linked task is left exactly as it is.
-    if (game.data.tasks.any { it.ownedElsewhere }) game.registerLinkOwner(HomeLinkOwner(HomeStore(homeStorage(context), clock, game)))
+    if (game.data.tasks.any { it.ownedElsewhere }) game.registerLinkOwner(BaseLinkOwner(BaseStore(baseStorage(context), clock, game)))
     return game
 }

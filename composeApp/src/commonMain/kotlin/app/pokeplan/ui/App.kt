@@ -44,13 +44,13 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.app.AppData
 import app.pokeplan.app.CareStore
 import app.pokeplan.app.HealStore
-import app.pokeplan.app.HomeLinkOwner
-import app.pokeplan.app.HomeStore
+import app.pokeplan.app.BaseLinkOwner
+import app.pokeplan.app.BaseStore
 import app.pokeplan.app.LinkStore
 import app.pokeplan.app.MintStore
-import app.pokeplan.home.HomeData
+import app.pokeplan.base.BaseData
 import app.pokeplan.link.LinkData
-import app.pokeplan.ui.screens.HouseholdSection
+import app.pokeplan.ui.screens.BaseSection
 import app.pokeplan.ui.screens.LinkSection
 import app.pokeplan.mint.MintData
 import app.pokeplan.ui.screens.MintSection
@@ -120,7 +120,7 @@ class AppModel(
     /** The Mint module's own store (private financial records); it pays Ledger Research into [store] with a minimal event that holds no figure. */
     val mint: MintStore = MintStore(MemoryStorage(), Clock { store.nowMillis }, store),
     /** The Home module's own store (private household records); it pays Habitat Discovery into [store] with a minimal event that holds no household word. */
-    val home: HomeStore = HomeStore(MemoryStorage(), Clock { store.nowMillis }, store),
+    val base: BaseStore = BaseStore(MemoryStorage(), Clock { store.nowMillis }, store),
     /** The Link module's own store (private people, notes, dates and follow-ups); it pays Postcard Trail into [store] with a minimal event that holds no word of a person. */
     val link: LinkStore = LinkStore(MemoryStorage(), Clock { store.nowMillis }, store),
     /** The phone's flashlight for the Pokégear; null where there is none (the tool then lights the screen). */
@@ -205,11 +205,11 @@ class AppModel(
     var mintSection: MintSection? by mutableStateOf(null)
     var mintStartType: app.pokeplan.mint.TxType? by mutableStateOf(null)
 
-    var homeData: HomeData by mutableStateOf(home.data)
+    var baseData: BaseData by mutableStateOf(base.data)
         private set
 
     /** The screen open inside Home (null shows Home's menu). */
-    var homeSection: HouseholdSection? by mutableStateOf(null)
+    var baseSection: BaseSection? by mutableStateOf(null)
 
     var linkData: LinkData by mutableStateOf(link.data)
         private set
@@ -303,7 +303,7 @@ class AppModel(
     fun tick() {
         store.tick()
         // A reminder's "Done" may have changed a module's records while the app is open (the game's own save is picked up in store.tick()).
-        care.sync(); heal.sync(); mint.sync(); home.sync(); link.sync()
+        care.sync(); heal.sync(); mint.sync(); base.sync(); link.sync()
         now = store.nowMillis
     }
 
@@ -321,7 +321,7 @@ class AppModel(
             Place.CARE -> { module = Module.CARE; careSection = null }
             Place.HEAL -> { module = Module.HEAL; healSection = null }
             Place.MINT -> { module = Module.MINT; mintSection = null }
-            Place.HOUSEHOLD -> { module = Module.HOME; homeSection = null }
+            Place.HOUSEHOLD -> { module = Module.HOME; baseSection = null }
             Place.LINK -> { module = Module.LINK; linkSection = null }
             Place.PARTY -> openParty = true
             Place.GEAR -> gearOpen = true
@@ -336,8 +336,8 @@ class AppModel(
         heal.observe { healData = it }
         mint.observe { mintData = it }
         // A PLAN task linked to a HOME chore is a projection: HOME completes and pays it, and the task follows (PRODUCT_BIBLE.md section 4).
-        store.registerLinkOwner(HomeLinkOwner(home))
-        home.observe { homeData = it; store.syncLinks() }
+        store.registerLinkOwner(BaseLinkOwner(base))
+        base.observe { baseData = it; store.syncLinks() }
         link.observe { linkData = it }
     }
 }
@@ -359,7 +359,7 @@ fun App(
     /** Where the Mint module keeps its records (its own tables on Android); in memory only when the platform gives none. */
     mintStorage: Storage? = null,
     /** Where the Home module keeps its records (its own tables on Android); in memory only when the platform gives none. */
-    homeStorage: Storage? = null,
+    baseStorage: Storage? = null,
     /** Where the Link module keeps its records (its own tables on Android); in memory only when the platform gives none. */
     linkStorage: Storage? = null,
     focusTab: Boolean = true,
@@ -394,7 +394,7 @@ fun App(
     /** Called after every change to Mint's records (the Android app keeps bill reminders up to date). Only the host's own reminder code looks inside; nothing is sent anywhere. */
     onMintChanged: ((MintData) -> Unit)? = null,
     /** Called after every change to Home's records (the Android app keeps Home's reminders up to date). Only the host's own reminder code looks inside; nothing is sent anywhere. */
-    onHomeChanged: ((HomeData) -> Unit)? = null,
+    onBaseChanged: ((BaseData) -> Unit)? = null,
     /** Called after every change to Link's records (the Android app keeps Link's reminders up to date). Only the host's own reminder code looks inside; nothing is sent anywhere. */
     onLinkChanged: ((LinkData) -> Unit)? = null,
     /** Called when the app switches between the light and dark colours, so the host can match the system bar icons. */
@@ -406,9 +406,9 @@ fun App(
         val care = CareStore(careStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val heal = HealStore(healStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
         val mint = MintStore(mintStorage ?: MemoryStorage(), clock, store, weekStart = { store.data.settings.weekStart })
-        val home = HomeStore(homeStorage ?: MemoryStorage(), clock, store)
+        val base = BaseStore(baseStorage ?: MemoryStorage(), clock, store)
         val link = LinkStore(linkStorage ?: MemoryStorage(), clock, store)
-        AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, home, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.sharedText = startSharedText; it.open(start, focusTab) }
+        AppModel(store, motion, cries, haptics, files, calendars, phone, care, heal, mint, base, link, torch, capabilities, sensors, services, backups, deviceGate, health, textFiles).also { it.openPokemonId = startPokemon; it.addTaskRequested = startAddTask; it.sharedText = startSharedText; it.open(start, focusTab) }
     }
     // The phone's power saver is read now and then; World's animations stand still while it is on.
     LaunchedEffect(model) { while (true) { model.powerSaving = phone?.powerSaving == true; kotlinx.coroutines.delay(30_000) } }
@@ -433,9 +433,9 @@ fun App(
         onMintChanged(model.mint.data)
         onDispose(stop)
     }
-    if (onHomeChanged != null) DisposableEffect(model.home) {
-        val stop = model.home.observe(onHomeChanged)
-        onHomeChanged(model.home.data)
+    if (onBaseChanged != null) DisposableEffect(model.base) {
+        val stop = model.base.observe(onBaseChanged)
+        onBaseChanged(model.base.data)
         onDispose(stop)
     }
     if (onLinkChanged != null) DisposableEffect(model.link) {
@@ -449,7 +449,7 @@ fun App(
             model.care.reload()
             model.heal.reload()
             model.mint.reload()
-            model.home.reload()
+            model.base.reload()
             model.link.reload()
         }
     }

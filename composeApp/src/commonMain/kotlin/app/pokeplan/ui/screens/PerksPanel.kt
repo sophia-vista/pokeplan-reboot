@@ -27,8 +27,8 @@ import app.pokeplan.core.pokemon.OwnedPokemon
 import app.pokeplan.core.pokemon.CareBucket
 import app.pokeplan.core.pokemon.HealBucket
 import app.pokeplan.core.pokemon.HealPerks
-import app.pokeplan.core.pokemon.HomeBucket
-import app.pokeplan.core.pokemon.HomePerks
+import app.pokeplan.core.pokemon.BaseBucket
+import app.pokeplan.core.pokemon.BasePerks
 import app.pokeplan.core.pokemon.LinkBucket
 import app.pokeplan.core.pokemon.LinkPerks
 import app.pokeplan.core.pokemon.MintBucket
@@ -246,14 +246,14 @@ fun MintPerksCard(model: AppModel) {
 
 /** Home's party perks, laid out like [MintPerksCard]. They only change what Habitat Discovery pays; nothing in HOME's records depends on them. */
 @Composable
-fun HomePerksCard(model: AppModel) {
+fun BasePerksCard(model: AppModel) {
     val player = model.data.player
-    val lead = player.homeLead
-    val party = player.partyOf(PartyIds.HOME)
-    val totals = HomePerks.total(lead, party, model.data.player.guardianOf(app.pokeplan.core.pokemon.PartyIds.HOME))
+    val lead = player.baseLead
+    val party = player.partyOf(PartyIds.BASE)
+    val totals = BasePerks.total(lead, party, model.data.player.guardianOf(app.pokeplan.core.pokemon.PartyIds.BASE))
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelTitle("Home perks")
+            PixelTitle("Base perks")
             if (!model.store.sees(Feature.PERKS)) {
                 Text(PERKS_LOCKED, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
                 return@Column
@@ -261,7 +261,7 @@ fun HomePerksCard(model: AppModel) {
             if (lead == null) {
                 return@Column
             }
-            val shown = HomeBucket.entries.filter { (totals[it] ?: 0.0) > 0 }
+            val shown = BaseBucket.entries.filter { (totals[it] ?: 0.0) > 0 }
             shown.forEach { b -> PerkRow(b.label, totals[b] ?: 0.0, Perks.BUCKET_CAP) }
             Text(
                 "Up to +${Perks.BUCKET_CAP.roundToInt()}% a bucket, only on what Habitat Discovery pays. They never change a record or a schedule.",

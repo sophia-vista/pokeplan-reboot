@@ -6,8 +6,8 @@ plugins {
 }
 
 // The Home module's rules (docs/pokelife MODULES/HOME.md): chores and their schedules, supplies, assets and maintenance, warranties and
-// reference notes. No UI and no game: it knows nothing about Pokémon, rewards or the other modules. The app meets it through HomeStore
-// (app-core), which pays Habitat Discovery through the minimal HomeEvent only.
+// reference notes. No UI and no game: it knows nothing about Pokémon, rewards or the other modules. The app meets it through BaseStore
+// (app-core), which pays Habitat Discovery through the minimal BaseEvent only.
 kotlin {
     jvm()
 

@@ -14,7 +14,7 @@ enum class ModuleAccent(val header: Color, private val bright: Color) {
     GEAR(Color(0xFFB83A4B), Color(0xFFF0707F)),
     PLAN(Color(0xFFB35309), Color(0xFFEE9040)),
     MINT(Color(0xFF8A6700), Color(0xFFD4A82A)),
-    HOME(Color(0xFF4D7C0F), Color(0xFF8DB83A)),
+    BASE(Color(0xFF4D7C0F), Color(0xFF8DB83A)),
     CARE(Color(0xFF1E7F52), Color(0xFF34B07A)),
     HEAL(Color(0xFF0F766E), Color(0xFF2DB5A8)),
     LINK(Color(0xFF2C6CCC), Color(0xFF5B96EE)),
@@ -47,7 +47,7 @@ enum class RegionLook(val scene: String, private val module: ModuleAccent) {
     MINT(BuddyScene.MINT, ModuleAccent.MINT),
 
     /** The Home module (docs/pokelife MODULES/HOME.md): the town, and green. A utility surface: the scene is only a quiet backdrop. */
-    HOME(BuddyScene.HOME, ModuleAccent.HOME),
+    BASE(BuddyScene.BASE, ModuleAccent.BASE),
 
     /** The Link module (docs/pokelife MODULES/LINK.md): a route for the postcard trail, and blue. A utility surface: the scene is only a quiet backdrop. */
     LINK(BuddyScene.LINK, ModuleAccent.LINK),

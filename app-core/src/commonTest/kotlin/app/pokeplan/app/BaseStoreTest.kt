@@ -4,20 +4,20 @@ import kotlinx.datetime.plus
 import app.pokeplan.core.dex.Region
 import app.pokeplan.core.pokemon.Items
 import app.pokeplan.core.pokemon.PartyIds
-import app.pokeplan.core.reward.HomeEvent
-import app.pokeplan.core.reward.HomeKind
+import app.pokeplan.core.reward.BaseEvent
+import app.pokeplan.core.reward.BaseKind
 import app.pokeplan.core.reward.Reward
 import app.pokeplan.core.reward.RewardEngine
-import app.pokeplan.home.ChoreState
-import app.pokeplan.home.EntryStatus
-import app.pokeplan.home.HitKind
-import app.pokeplan.home.HomeKinds
-import app.pokeplan.home.HomeRules
-import app.pokeplan.home.RecordStatus
-import app.pokeplan.home.Recurrence
-import app.pokeplan.home.RepeatKind
-import app.pokeplan.home.RestockLine
-import app.pokeplan.home.SchedulePolicy
+import app.pokeplan.base.ChoreState
+import app.pokeplan.base.EntryStatus
+import app.pokeplan.base.HitKind
+import app.pokeplan.base.BaseKinds
+import app.pokeplan.base.BaseRules
+import app.pokeplan.base.RecordStatus
+import app.pokeplan.base.Recurrence
+import app.pokeplan.base.RepeatKind
+import app.pokeplan.base.RestockLine
+import app.pokeplan.base.SchedulePolicy
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -32,7 +32,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class HomeStoreTest {
+class BaseStoreTest {
     private class FakeClock(var millis: Long) : Clock {
         override fun nowMillis() = millis
         fun advanceDays(n: Int) { millis += n * 86_400_000L }
@@ -44,12 +44,12 @@ class HomeStoreTest {
 
     /** A world that records every event it is sent, so a test can see exactly what crosses the boundary. */
     private class Spy(val inner: GameStore) : World {
-        val events = mutableListOf<HomeEvent>()
+        val events = mutableListOf<BaseEvent>()
         override fun care(event: app.pokeplan.core.reward.CareEvent) = inner.care(event)
-        override fun home(event: HomeEvent): List<Reward>? { events += event; return inner.home(event) }
+        override fun base(event: BaseEvent): List<Reward>? { events += event; return inner.base(event) }
     }
 
-    private class Setup(val game: GameStore, val storage: MemoryStorage, var home: HomeStore, val spy: Spy, val clock: FakeClock)
+    private class Setup(val game: GameStore, val storage: MemoryStorage, var home: BaseStore, val spy: Spy, val clock: FakeClock)
 
     private fun setup(started: Boolean = true): Setup {
         val clock = FakeClock(saturday)
@@ -57,10 +57,10 @@ class HomeStoreTest {
         if (started) game.start("Sophia", 25)
         val spy = Spy(game)
         val storage = MemoryStorage()
-        return Setup(game, storage, HomeStore(storage, clock, spy, utc, rng = Random(3)), spy, clock)
+        return Setup(game, storage, BaseStore(storage, clock, spy, utc, rng = Random(3)), spy, clock)
     }
 
-    private fun Setup.reopen() { home = HomeStore(storage, clock, spy, utc, rng = Random(11)) }
+    private fun Setup.reopen() { home = BaseStore(storage, clock, spy, utc, rng = Random(11)) }
 
     private val Setup.candies get() = game.data.player.inventory[Items.RARE_CANDY] ?: 0
 
@@ -76,7 +76,7 @@ class HomeStoreTest {
     @Test
     fun theStartingAreasAreSeededOnceAndDeletingThemAllDoesNotBringThemBack() {
         val s = setup()
-        assertEquals(HomeRules.STARTING_AREAS, s.home.data.areas.map { it.name })
+        assertEquals(BaseRules.STARTING_AREAS, s.home.data.areas.map { it.name })
         assertTrue(s.home.data.settings.areasSeeded)
         s.home.data.areas.map { it.id }.forEach { s.home.deleteArea(it) }
         assertTrue(s.home.data.areas.isEmpty())
@@ -85,7 +85,7 @@ class HomeStoreTest {
         // Reopening an untouched store does not duplicate them either.
         val t = setup()
         t.reopen(); t.reopen()
-        assertEquals(HomeRules.STARTING_AREAS.size, t.home.data.areas.size)
+        assertEquals(BaseRules.STARTING_AREAS.size, t.home.data.areas.size)
     }
 
     // --- chores -----------------------------------------------------------------------------------------------------------------
@@ -108,9 +108,9 @@ class HomeStoreTest {
         for (bad in listOf(
             s.home.addChore("   "),
             s.home.addChore("x", Recurrence(RepeatKind.DAILY, every = 0)),
-            s.home.addChore("x", Recurrence(RepeatKind.DAILY, every = HomeRules.EVERY_MAX + 1)),
+            s.home.addChore("x", Recurrence(RepeatKind.DAILY, every = BaseRules.EVERY_MAX + 1)),
             s.home.addChore("x", Recurrence(RepeatKind.WEEKLY, weekdays = listOf(8))),
-            s.home.addChore("x".repeat(HomeRules.TITLE_MAX + 1)),
+            s.home.addChore("x".repeat(BaseRules.TITLE_MAX + 1)),
         )) { assertNull(bad.record); assertNotNull(bad.refused) }
         assertTrue(s.home.data.chores.isEmpty())
     }
@@ -131,8 +131,8 @@ class HomeStoreTest {
         assertTrue(entry.paid && out.rewards.isNotEmpty() && out.rewards.any { it is Reward.Candies })
         assertTrue(s.candies > before)
         val e = s.spy.events.single()
-        assertEquals(HomeKind.CHORE, e.kind)
-        val text = GameStore.json.encodeToString(HomeEvent.serializer(), e)
+        assertEquals(BaseKind.CHORE, e.kind)
+        val text = GameStore.json.encodeToString(BaseEvent.serializer(), e)
         assertEquals(setOf("id", "kind", "nowMillis", "ref", "module"), GameStore.json.parseToJsonElement(text).jsonObject.keys)
         assertEquals("home", GameStore.json.parseToJsonElement(text).jsonObject.getValue("module").jsonPrimitive.content)
         val shared = GameStore.json.encodeToString(AppData.serializer(), s.game.data)
@@ -158,7 +158,7 @@ class HomeStoreTest {
         assertFalse(assertNotNull(second.record).paid)
         assertTrue(second.rewards.isEmpty())
         assertEquals(afterFirst, s.candies, "no second candy")
-        assertEquals(1, s.game.data.homePaid.size)
+        assertEquals(1, s.game.data.basePaid.size)
         assertEquals(2, s.spy.events.size)
         assertEquals(s.spy.events[0].id, s.spy.events[1].id, "the event names the occurrence")
     }
@@ -168,10 +168,10 @@ class HomeStoreTest {
         val s = setup()
         val ids = (1..6).map { s.chore("Chore $it").id }
         val results = ids.map { s.home.complete(it) }
-        assertEquals(List(HomeRules.CHORES_PAID_PER_DAY) { true } + false, results.map { assertNotNull(it.record).paid })
+        assertEquals(List(BaseRules.CHORES_PAID_PER_DAY) { true } + false, results.map { assertNotNull(it.record).paid })
         assertTrue(results.last().rewards.isEmpty())
         assertEquals(6, s.home.data.entries.count { it.status == EntryStatus.DONE })
-        assertEquals(HomeRules.CHORES_PAID_PER_DAY, s.spy.events.size, "no event for the unpaid sixth")
+        assertEquals(BaseRules.CHORES_PAID_PER_DAY, s.spy.events.size, "no event for the unpaid sixth")
         assertTrue(ids.all { s.home.choreView(it)!!.state == ChoreState.DONE })
     }
 
@@ -252,7 +252,7 @@ class HomeStoreTest {
         s.home.setChoreStatus(c.id, RecordStatus.ARCHIVED)
         assertTrue(s.home.choreViews().isEmpty(), "archived is out of the active views")
         assertEquals(1, s.home.data.entries.size)
-        assertEquals(1, HomeRules.history(s.home.data, c.id).size)
+        assertEquals(1, BaseRules.history(s.home.data, c.id).size)
         s.home.setChoreStatus(c.id, RecordStatus.ACTIVE)
         assertEquals(ChoreState.DONE, s.home.choreView(c.id)!!.state)
         val other = s.chore("Other")
@@ -305,15 +305,15 @@ class HomeStoreTest {
         val s = setup()
         val sup = assertNotNull(s.home.addSupply("Soap", "bottles", 2000, 2000).record)
         val unknown = assertNotNull(s.home.addSupply("Mystery", "pieces", null, 2000).record)
-        assertEquals(listOf(sup.id), HomeRules.lowSupplies(s.home.data).map { it.id })
-        assertFalse(HomeRules.isLow(unknown))
+        assertEquals(listOf(sup.id), BaseRules.lowSupplies(s.home.data).map { it.id })
+        assertFalse(BaseRules.isLow(unknown))
         s.home.dismissLow(sup.id)
-        assertTrue(HomeRules.lowSupplies(s.home.data).isEmpty())
-        assertEquals(1, HomeRules.lowSupplies(s.home.data, includeQuieted = true).size)
-        assertTrue(HomeRules.restockList(s.home.data).single() is RestockLine.Low, "still on the restocking list")
+        assertTrue(BaseRules.lowSupplies(s.home.data).isEmpty())
+        assertEquals(1, BaseRules.lowSupplies(s.home.data, includeQuieted = true).size)
+        assertTrue(BaseRules.restockList(s.home.data).single() is RestockLine.Low, "still on the restocking list")
         s.home.setQuantity(sup.id, 1000)
         assertFalse(s.home.data.supplies.first { it.id == sup.id }.lowDismissed)
-        assertEquals(1, HomeRules.lowSupplies(s.home.data).size, "low again after a change")
+        assertEquals(1, BaseRules.lowSupplies(s.home.data).size, "low again after a change")
     }
 
     @Test
@@ -325,7 +325,7 @@ class HomeStoreTest {
         val byHand = assertNotNull(s.home.addRestock("", rice.id))
         assertEquals("Rice", byHand.name)
         assertNull(s.home.addRestock("again", rice.id), "one entry per supply")
-        val list = HomeRules.restockList(s.home.data)
+        val list = BaseRules.restockList(s.home.data)
         assertEquals(3, list.size)
         assertEquals(soap.id, (list[0] as RestockLine.Low).supply.id)
         assertEquals(setOf("Batteries", "Rice"), list.drop(1).map { (it as RestockLine.Manual).entry.name }.toSet())
@@ -334,7 +334,7 @@ class HomeStoreTest {
         assertEquals(6000L, s.home.data.supplies.first { it.id == soap.id }.quantityMilli)
         assertNull(s.home.restocked(rice.id, 8000, byHand.id))
         s.home.removeRestock(manual.id)
-        assertTrue(HomeRules.restockList(s.home.data).isEmpty())
+        assertTrue(BaseRules.restockList(s.home.data).isEmpty())
         assertTrue(s.home.data.adjustments.all { it.reason == "Restocked" })
         assertTrue(s.spy.events.isEmpty(), "supply, quantity and restock edits never send an event")
     }
@@ -361,7 +361,7 @@ class HomeStoreTest {
         s.home.restore(s.home.data.copy(schedules = listOf(moved)))
         val renamed = assertNotNull(s.home.updateSchedule(moved.copy(title = "Water filter", firstDue = LocalDate(2026, 2, 28))).record)
         assertEquals(LocalDate(2026, 1, 31), renamed.firstDue, "a rename does not make the 31st drift to the 28th")
-        assertEquals(LocalDate(2026, 3, 31), HomeRules.advance(renamed, LocalDate(2026, 2, 28)).nextDue)
+        assertEquals(LocalDate(2026, 3, 31), BaseRules.advance(renamed, LocalDate(2026, 2, 28)).nextDue)
         val redated = assertNotNull(s.home.updateSchedule(renamed.copy(nextDue = LocalDate(2026, 3, 10))).record)
         assertEquals(LocalDate(2026, 3, 10), redated.firstDue, "a new date is a new start")
         val weekly = assertNotNull(s.home.updateSchedule(redated.copy(recurrence = Recurrence(RepeatKind.WEEKLY))).record)
@@ -381,8 +381,8 @@ class HomeStoreTest {
         assertEquals(sched.id, rec.scheduleId); assertEquals(asset.id, rec.assetId)
         assertEquals(LocalDate(2026, 12, 7), s.home.data.schedules.single().nextDue)
         val e = s.spy.events.single()
-        assertEquals(HomeKind.MAINTENANCE, e.kind)
-        val text = GameStore.json.encodeToString(HomeEvent.serializer(), e)
+        assertEquals(BaseKind.MAINTENANCE, e.kind)
+        val text = GameStore.json.encodeToString(BaseEvent.serializer(), e)
         val shared = GameStore.json.encodeToString(AppData.serializer(), s.game.data)
         for (secret in secrets) { assertTrue(secret !in text, "event leaked $secret"); assertTrue(secret !in shared, "save holds $secret") }
         // Put the schedule back on the same due date: the second completion of that date is not paid again.
@@ -393,7 +393,7 @@ class HomeStoreTest {
         assertTrue(again.rewards.isEmpty())
         assertEquals(2, s.home.data.maintenance.size)
         assertEquals(s.spy.events[0].id, s.spy.events[1].id, "the event names schedule and due date")
-        assertEquals(1, s.game.data.homePaid.size)
+        assertEquals(1, s.game.data.basePaid.size)
     }
 
     @Test
@@ -422,7 +422,7 @@ class HomeStoreTest {
         assertTrue(a.paid); assertNull(a.scheduleId); assertEquals("Zorblax-cost-4500", a.cost)
         assertTrue(assertNotNull(s.home.logMaintenance("Fixed the tap").record).paid)
         assertFalse(assertNotNull(s.home.logMaintenance("Fixed the lamp").record).paid, "past the day's share")
-        assertEquals(HomeRules.MAINTENANCE_PAID_PER_DAY, s.spy.events.size)
+        assertEquals(BaseRules.MAINTENANCE_PAID_PER_DAY, s.spy.events.size)
         assertNotNull(s.home.logMaintenance(" ").refused)
         s.clock.advanceDays(1)
         assertTrue(assertNotNull(s.home.logMaintenance("Fixed the fan").record).paid, "the next day pays again")
@@ -492,11 +492,11 @@ class HomeStoreTest {
         s.fill()
         val json = GameStore.json
         fun keys(text: String) = json.parseToJsonElement(text).jsonObject.keys
-        val chores = s.home.export(setOf(HomeKinds.CHORES))
+        val chores = s.home.export(setOf(BaseKinds.CHORES))
         assertEquals(setOf("format", "unit", "chores", "entries"), keys(chores))
         assertEquals("pokelife-home-export", json.parseToJsonElement(chores).jsonObject.getValue("format").jsonPrimitive.content)
         assertTrue("Zorblax-9000 sweep" in chores && "Zorblax-supply" !in chores && "Quuxville-Annex" !in chores && "SN-ZORBLAX-0042" !in chores)
-        val assets = s.home.export(setOf(HomeKinds.ASSETS, HomeKinds.AREAS))
+        val assets = s.home.export(setOf(BaseKinds.ASSETS, BaseKinds.AREAS))
         assertEquals(setOf("format", "unit", "areas", "assets", "schedules", "maintenance", "warranties"), keys(assets))
         assertTrue("SN-ZORBLAX-0042" in assets && "Zorblax-9000 sweep" !in assets)
         val all = s.home.export()
@@ -511,22 +511,22 @@ class HomeStoreTest {
         val area = s.fill()
         val player = s.game.data.player
         val settings = s.home.data.settings
-        s.home.erase(HomeKinds.AREAS)
+        s.home.erase(BaseKinds.AREAS)
         var d = s.home.data
         assertTrue(d.areas.isEmpty())
         assertEquals("Zorblax-9000 sweep", d.chores.single().title); assertNull(d.chores.single().areaId)
         assertNull(d.supplies.single().areaId); assertNull(d.assets.single().areaId); assertNull(d.references.single().areaId)
         assertEquals(1, d.entries.size)
         assertTrue(area !in s.home.export())
-        s.home.erase(HomeKinds.ASSETS)
+        s.home.erase(BaseKinds.ASSETS)
         d = s.home.data
         assertTrue(d.assets.isEmpty() && d.schedules.isEmpty() && d.maintenance.isEmpty() && d.warranties.isEmpty())
         assertNull(d.references.single().assetId); assertEquals("Manual", d.references.single().title)
         assertEquals(1, d.chores.size, "other kinds stay")
-        s.home.erase(HomeKinds.CHORES)
+        s.home.erase(BaseKinds.CHORES)
         assertTrue(s.home.data.chores.isEmpty() && s.home.data.entries.isEmpty())
         assertEquals(1, s.home.data.supplies.size)
-        s.home.erase(HomeKinds.SUPPLIES)
+        s.home.erase(BaseKinds.SUPPLIES)
         assertTrue(s.home.data.supplies.isEmpty() && s.home.data.adjustments.isEmpty() && s.home.data.restock.isEmpty())
         assertEquals(1, s.home.data.references.size)
         s.home.eraseAll()
@@ -561,65 +561,65 @@ class HomeStoreTest {
         assertTrue(before.chores.isNotEmpty() && before.entries.isNotEmpty() && before.maintenance.isNotEmpty())
         s.reopen()
         assertEquals(before, s.home.data)
-        assertEquals(before, HomeStore(MemoryStorage(HomeStore.json.encodeToString(app.pokeplan.home.HomeData.serializer(), before)), s.clock, s.spy, utc).data)
+        assertEquals(before, BaseStore(MemoryStorage(BaseStore.json.encodeToString(app.pokeplan.base.BaseData.serializer(), before)), s.clock, s.spy, utc).data)
     }
 
     // --- the tutorial -------------------------------------------------------------------------------------------------------------------
 
     @Test
     fun theTidyTutorialIsOfferedAfterOnboardingOnlyWhileHomeHasNoRecords() {
-        assertFalse(setup(started = false).game.tutorialOffered(Tutorials.HOME_TIDY, homeRecords = 0))
+        assertFalse(setup(started = false).game.tutorialOffered(Tutorials.BASE_TIDY, homeRecords = 0))
         val s = setup()
-        assertTrue(s.game.tutorialOffered(Tutorials.HOME_TIDY, homeRecords = 0))
-        assertFalse(s.game.tutorialOffered(Tutorials.HOME_TIDY, homeRecords = 1))
+        assertTrue(s.game.tutorialOffered(Tutorials.BASE_TIDY, homeRecords = 0))
+        assertFalse(s.game.tutorialOffered(Tutorials.BASE_TIDY, homeRecords = 1))
     }
 
     @Test
-    fun theTidyTutorialGivesOneHouseholdPokemonIntoHomesPartyAsLeadOnceWithNoRecordMeterOrCap() {
+    fun theTidyTutorialGivesOneHouseholdPokemonIntoBasesPartyAsLeadOnceWithNoRecordMeterOrCap() {
         val s = setup()
-        val rewards = assertNotNull(s.game.completeTutorial(Tutorials.HOME_TIDY))
+        val rewards = assertNotNull(s.game.completeTutorial(Tutorials.BASE_TIDY))
         val egg = rewards.filterIsInstance<Reward.Hatched>().single().pokemon
-        assertEquals(egg.id, s.game.data.player.partyOf(PartyIds.HOME).single().id)
-        assertEquals(Place.Party(PartyIds.HOME), s.game.placeOf(egg.id))
+        assertEquals(egg.id, s.game.data.player.partyOf(PartyIds.BASE).single().id)
+        assertEquals(Place.Party(PartyIds.BASE), s.game.placeOf(egg.id))
         assertEquals(Region.HOUSEHOLD, s.game.data.origins[egg.id]?.region)
         assertEquals(Origin.How.HABITAT_EGG, s.game.data.origins[egg.id]?.how)
-        assertEquals(egg.id, s.game.data.player.homeLead?.id)
+        assertEquals(egg.id, s.game.data.player.baseLead?.id)
         assertEquals(0, s.game.homeEggMeter())
-        assertTrue(s.game.data.homePaid.isEmpty() && s.game.data.activeDays.isEmpty())
+        assertTrue(s.game.data.basePaid.isEmpty() && s.game.data.activeDays.isEmpty())
         assertTrue(s.home.data.chores.isEmpty() && s.home.data.entries.isEmpty())
-        assertFalse(s.game.tutorialOffered(Tutorials.HOME_TIDY))
-        assertNull(s.game.completeTutorial(Tutorials.HOME_TIDY))
-        assertEquals(1, s.game.data.player.partyOf(PartyIds.HOME).size)
+        assertFalse(s.game.tutorialOffered(Tutorials.BASE_TIDY))
+        assertNull(s.game.completeTutorial(Tutorials.BASE_TIDY))
+        assertEquals(1, s.game.data.player.partyOf(PartyIds.BASE).size)
         assertEquals(2, s.game.data.player.pokemon.size)
     }
 
     // --- the Habitat Egg ----------------------------------------------------------------------------------------------------------
 
     @Test
-    fun enoughPaidChoresFindAHabitatEggIntoHomesPartyAndTheMeterWraps() {
+    fun enoughPaidChoresFindAHabitatEggIntoBasesPartyAndTheMeterWraps() {
         val s = setup()
         val c = s.chore("Dishes", daily)
-        val points = RewardEngine.HOME_EGG_POINTS.getValue(HomeKind.CHORE)
+        val points = RewardEngine.HOME_EGG_POINTS.getValue(BaseKind.CHORE)
         val needed = RewardEngine.HOME_EGG_METER_SIZE / points
-        assertEquals(0, s.game.data.player.partyOf(PartyIds.HOME).size)
+        assertEquals(0, s.game.data.player.partyOf(PartyIds.BASE).size)
         for (day in 1..needed) {
             val entry = assertNotNull(s.home.complete(c.id).record)
             assertTrue(entry.paid, "day $day pays")
             if (day < needed) {
                 assertEquals(day * points, s.game.homeEggMeter())
-                assertEquals(0, s.game.data.player.partyOf(PartyIds.HOME).size, "no egg yet on day $day")
+                assertEquals(0, s.game.data.player.partyOf(PartyIds.BASE).size, "no egg yet on day $day")
                 s.clock.advanceDays(1)
             }
         }
-        val egg = s.game.data.player.partyOf(PartyIds.HOME).single()
+        val egg = s.game.data.player.partyOf(PartyIds.BASE).single()
         assertEquals(Origin.How.HABITAT_EGG, s.game.data.origins[egg.id]?.how)
         assertEquals(Region.HOUSEHOLD, s.game.data.origins[egg.id]?.region)
-        assertEquals(egg.id, s.game.data.player.homeLead?.id)
+        assertEquals(egg.id, s.game.data.player.baseLead?.id)
         assertEquals(0, s.game.homeEggMeter(), "the meter wraps")
         s.clock.advanceDays(1)
         assertTrue(assertNotNull(s.home.complete(c.id).record).paid)
         assertEquals(points, s.game.homeEggMeter())
-        assertEquals(1, s.game.data.player.partyOf(PartyIds.HOME).size)
+        assertEquals(1, s.game.data.player.partyOf(PartyIds.BASE).size)
     }
 
     @Test

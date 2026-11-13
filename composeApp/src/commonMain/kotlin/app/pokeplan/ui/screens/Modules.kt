@@ -30,7 +30,7 @@ import app.pokeplan.ui.theme.Spacing
  * life; everything done in any of them looks after the same Pokémon, which live in the shared tabs (Home, Pokémon, Me).
  */
 enum class Module(val label: String, val icon: String, val look: RegionLook) {
-    PLAN("Plan", "journal", RegionLook.PLAN), CARE("Care", "soothe-bell", RegionLook.CARE), HEAL("Heal", "potion", RegionLook.HEAL), MINT("Mint", "amulet-coin", RegionLook.MINT), HOME("Home", "chipped-pot", RegionLook.HOME), LINK("Link", "link-cord", RegionLook.LINK), WORLD("World", "town-map", RegionLook.WORLD),
+    PLAN("Plan", "journal", RegionLook.PLAN), CARE("Care", "soothe-bell", RegionLook.CARE), HEAL("Heal", "potion", RegionLook.HEAL), MINT("Mint", "amulet-coin", RegionLook.MINT), HOME("Base", "chipped-pot", RegionLook.BASE), LINK("Link", "link-cord", RegionLook.LINK), WORLD("World", "town-map", RegionLook.WORLD),
 }
 
 /** Plan's screens: tasks and focus, and the trends, goals and weekly review that read them. */
@@ -52,7 +52,7 @@ fun ModulesScreen(model: AppModel, focusTab: Boolean, openPokemon: (String) -> U
             Module.CARE -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.CARE.look.accent)) { ModuleGate(model, Module.CARE) { CareScreen(model, openPokemon) } }
             Module.HEAL -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.HEAL.look.accent)) { ModuleGate(model, Module.HEAL) { HealScreen(model, openPokemon) } }
             Module.MINT -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.MINT.look.accent)) { MintScreen(model, openPokemon) }
-            Module.HOME -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.HOME.look.accent)) { ModuleGate(model, Module.HOME) { HouseholdScreen(model, openPokemon) } }
+            Module.HOME -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.HOME.look.accent)) { ModuleGate(model, Module.HOME) { BaseScreen(model, openPokemon) } }
             Module.LINK -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.LINK.look.accent)) { ModuleGate(model, Module.LINK) { LinkScreen(model, openPokemon) } }
             Module.WORLD -> androidx.compose.runtime.CompositionLocalProvider(LocalFrameTone provides frameToneOf(Module.WORLD.look.accent)) { WorldScreen(model, openPokemon) }
             null -> ModulesMenu(model)
@@ -65,7 +65,7 @@ private fun ModulesMenu(model: AppModel) {
     model.careData // redraw when Care changes
     model.healData // and when Heal does
     model.mintData // and Mint
-    model.homeData // and Home
+    model.baseData // and Home
     model.linkData // and Link
     val today = model.store.todayTasks().size
     Column(Modifier.fillMaxSize()) {
@@ -83,7 +83,7 @@ private fun ModulesMenu(model: AppModel) {
                     MenuEntry("GEAR", "explorer-kit", "Gear", tint = ModuleAccent.GEAR.accent, wide = true, sound = Sfx.DOOR_ENTER),
                     MenuEntry(Module.PLAN.name, Module.PLAN.icon, Module.PLAN.label, if (today == 0) "tasks and focus" else "$today to do today", tint = ModuleAccent.PLAN.accent, sound = Sfx.DOOR_ENTER),
                     MenuEntry(Module.MINT.name, Module.MINT.icon, Module.MINT.label, mintSubtitle(model), tint = ModuleAccent.MINT.accent, sound = Sfx.DOOR_ENTER),
-                    MenuEntry(Module.HOME.name, Module.HOME.icon, Module.HOME.label, householdSubtitle(model), tint = ModuleAccent.HOME.accent, sound = Sfx.DOOR_ENTER),
+                    MenuEntry(Module.HOME.name, Module.HOME.icon, Module.HOME.label, baseSubtitle(model), tint = ModuleAccent.BASE.accent, sound = Sfx.DOOR_ENTER),
                     if (!model.data.settings.careModule) null else MenuEntry(
                         Module.CARE.name, Module.CARE.icon, Module.CARE.label, if (routinesLeft == 0) "routines and calm" else if (routinesLeft == 1) "1 routine today" else "$routinesLeft routines today", tint = ModuleAccent.CARE.accent,
                     ),

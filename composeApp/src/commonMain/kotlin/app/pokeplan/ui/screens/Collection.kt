@@ -157,18 +157,18 @@ fun CollectionScreen(model: AppModel, startSection: Int = -1, startOpen: String?
 }
 
 private fun partyOf(player: app.pokeplan.core.reward.PlayerState, region: Region): List<OwnedPokemon> = when (region) {
-    Region.CARE -> player.partyOf(PartyIds.CARE); Region.HEAL -> player.partyOf(PartyIds.HEAL); Region.MINT -> player.partyOf(PartyIds.MINT); Region.HOUSEHOLD -> player.partyOf(PartyIds.HOME); Region.LINK -> player.partyOf(PartyIds.LINK); else -> player.party
+    Region.CARE -> player.partyOf(PartyIds.CARE); Region.HEAL -> player.partyOf(PartyIds.HEAL); Region.MINT -> player.partyOf(PartyIds.MINT); Region.HOUSEHOLD -> player.partyOf(PartyIds.BASE); Region.LINK -> player.partyOf(PartyIds.LINK); else -> player.party
 }
 
 private fun leadOf(player: app.pokeplan.core.reward.PlayerState, region: Region): OwnedPokemon? = when (region) {
-    Region.CARE -> player.careLead; Region.HEAL -> player.healLead; Region.MINT -> player.mintLead; Region.HOUSEHOLD -> player.homeLead; Region.LINK -> player.linkLead; else -> player.planLead
+    Region.CARE -> player.careLead; Region.HEAL -> player.healLead; Region.MINT -> player.mintLead; Region.HOUSEHOLD -> player.baseLead; Region.LINK -> player.linkLead; else -> player.planLead
 }
 
-private fun accentOf(region: Region) = when (region) { Region.CARE -> RegionLook.CARE; Region.HEAL -> RegionLook.HEAL; Region.MINT -> RegionLook.MINT; Region.HOUSEHOLD -> RegionLook.HOME; Region.LINK -> RegionLook.LINK; else -> RegionLook.PLAN }.accent
+private fun accentOf(region: Region) = when (region) { Region.CARE -> RegionLook.CARE; Region.HEAL -> RegionLook.HEAL; Region.MINT -> RegionLook.MINT; Region.HOUSEHOLD -> RegionLook.BASE; Region.LINK -> RegionLook.LINK; else -> RegionLook.PLAN }.accent
 
 @Composable
 private fun PerksOf(model: AppModel, region: Region) = when (region) {
-    Region.CARE -> CarePerksCard(model); Region.HEAL -> HealPerksCard(model); Region.MINT -> MintPerksCard(model); Region.HOUSEHOLD -> HomePerksCard(model); Region.LINK -> LinkPerksCard(model); else -> PartyPerksCard(model)
+    Region.CARE -> CarePerksCard(model); Region.HEAL -> HealPerksCard(model); Region.MINT -> MintPerksCard(model); Region.HOUSEHOLD -> BasePerksCard(model); Region.LINK -> LinkPerksCard(model); else -> PartyPerksCard(model)
 }
 
 /** One region's party: its six places (a tap opens one), and its perks behind one button. */
@@ -182,8 +182,8 @@ private fun PartyGroup(
         val how = if (region == Region.CARE) "Open a Pokémon and choose \"To Care party\", or befriend a visitor. Until then Care warms your Plan buddy. Its first member leads."
         else if (region == Region.HEAL) "Open a Pokémon and choose \"To Heal party\", or try Field Research in Heal. Its first member leads."
         else if (region == Region.MINT) "Open a Pokémon and choose \"To Mint party\", or try the tally in Mint. Its first member leads."
-        else if (region == Region.HOUSEHOLD) "Open a Pokémon and choose \"To Home party\", or try the tidy in Home. Its first member leads."
-        else if (region == Region.HOUSEHOLD) "Open a Pokémon and choose \"To Home party\", or try the tidy in Home. Its first member leads."
+        else if (region == Region.HOUSEHOLD) "Open a Pokémon and choose \"To Base party\", or try the tidy in Home. Its first member leads."
+        else if (region == Region.HOUSEHOLD) "Open a Pokémon and choose \"To Base party\", or try the tidy in Home. Its first member leads."
         else if (region == Region.LINK) "Open a Pokémon and choose \"To Link party\", or try the postcard in Link. Its first member leads."
         else "Hatch an egg with a focus session, or move a Pokémon here from the PC."
         EmptyState("No one here yet", how, icon = "poke-ball", sleeper = true, action = "Start a focus session" to { model.open(Place.FOCUS, true) })
