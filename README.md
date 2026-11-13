@@ -17,7 +17,7 @@ A fun productivity, growth and self-improvement app for Pokémon lovers. Finish 
 | **Launcher** | An optional Android home screen: widget grid, other apps' widgets, a town where your Pokémon walk about, weather, folders and an app list. |
 | **Shared** | Home (your buddy), the Pokédex and collection (the National Dex with Mystery Dungeon sprites), the Bag, Pokémon care (candies, friendship, evolution), and Me. |
 
-Rules of the game are written down: [`docs/design.md`](docs/design.md) (what to build), [`docs/economy.md`](docs/economy.md) (every reward, sink and cap), [`docs/ecosystem.md`](docs/ecosystem.md) (the modules and the roadmap), [`docs/world.md`](docs/world.md) and [`docs/world-story-engine.md`](docs/world-story-engine.md).
+Rules of the game are written down: [`docs/design.md`](docs/design.md) (what to build), [`docs/economy.md`](docs/economy.md) (every reward, sink and cap), [`docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md`](docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md) (the modules and the roadmap), [`docs/pokelife/MODULES/WORLD.md`](docs/pokelife/MODULES/WORLD.md) and [`docs/world-story-engine.md`](docs/world-story-engine.md).
 
 ## How it is built
 

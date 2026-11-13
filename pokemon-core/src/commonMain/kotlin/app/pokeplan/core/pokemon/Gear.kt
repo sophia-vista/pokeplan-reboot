@@ -1,7 +1,7 @@
 package app.pokeplan.core.pokemon
 
 /**
- * The Pokégear's tools (docs/ecosystem.md, "Pokégear: utilities and helper Pokémon"). Each tool always works; a helper
+ * The Pokégear's tools (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md, "Pokégear: utilities and helper Pokémon"). Each tool always works; a helper
  * Pokémon is flavour only: its sprite beside the tool and one reaction when the tool is used. A Pokémon can help a tool
  * if it is in the tool's [signature] line (the species ids, regional forms sharing their species). A tool never pays
  * anything: it records no effort, candy, item, egg or rank point.

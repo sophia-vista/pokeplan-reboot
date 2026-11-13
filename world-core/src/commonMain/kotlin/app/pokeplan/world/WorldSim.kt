@@ -75,7 +75,7 @@ data class WorldReport(
 }
 
 /**
- * The dungeon simulation (docs/world.md, sections 5 and 6). A team climbs one floor after another on its own, and a floor
+ * The dungeon simulation (docs/pokelife/MODULES/WORLD.md section 14). A team climbs one floor after another on its own, and a floor
  * takes [floorMillis] given the team and the dungeon. What each floor gives is rolled from a random generator seeded by the
  * team, the expedition and the floor's number alone, so the result is the same whether the app settles every second or once
  * after a day away (offline progress is exactly as good as staying). Progress while away is capped at [MAX_AWAY_MILLIS].

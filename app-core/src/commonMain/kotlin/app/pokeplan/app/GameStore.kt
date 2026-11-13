@@ -342,7 +342,7 @@ class GameStore(
 
     /**
      * Pays a Care moment into the shared world, at most [CARE_DAILY_CAP] of each kind a day whatever the Care module asks
-     * (ecosystem.md, section 5: each module's share is capped). Returns null when nothing was paid (not started, or capped).
+     * (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md: each module's share is capped). Returns null when nothing was paid (not started, or capped).
      * The log says only "Care" and the kind, never what the routine was.
      */
     override fun care(event: CareEvent): List<Reward>? {
@@ -1535,7 +1535,7 @@ class GameStore(
     fun isFavorite(id: String): Boolean = id in data.favorites
 
     /** Stars or unstars a Pokémon; a starred one cannot be transferred. */
-    // ----- World: the dungeon game (docs/world.md). Its rules are in world-core; this keeps its save and moves what it finds into the shared collection and Bag -----
+    // ----- World: the dungeon game (docs/pokelife/MODULES/WORLD.md section 14). Its rules are in world-core; this keeps its save and moves what it finds into the shared collection and Bag -----
 
     /** What the teams brought back since the player last dismissed the report (kept in memory only: the reward log is the record), or null when nothing came. */
     private var worldSummary: ReportSummary? = null
@@ -1579,7 +1579,7 @@ class GameStore(
         return report
     }
 
-    /** The story's end: the Guardian, Primal Dialga, joins the Guardian collection once (docs/world.md, section 15). The mastery bonus is [app.pokeplan.world.Story.GUARDIAN_BONUS]. */
+    /** The story's end: the Guardian, Primal Dialga, joins the Guardian collection once (docs/pokelife/MODULES/WORLD.md section 14). The mastery bonus is [app.pokeplan.world.Story.GUARDIAN_BONUS]. */
     private fun worldGuardian() {
         val w = data.world
         if (!w.guardianDone || w.guardianGranted) return
@@ -1588,7 +1588,7 @@ class GameStore(
     }
 
     /**
-     * The legendary quests of the layers (docs/ecosystem.md, "World regions"): each Pokémon whose quest is met (its dungeon cleared enough
+     * The legendary quests of the layers (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md, "World regions"): each Pokémon whose quest is met (its dungeon cleared enough
      * times, and for the end of a layer's story its Guardian faced) joins the Guardian collection once. They are not eggs; the reward line
      * is in the log.
      */
@@ -1760,7 +1760,7 @@ class GameStore(
         data.world.recall(team)?.let { next -> update { it.copy(world = next) } }
     }
 
-    /** Recruits the find at [index] into the shared collection: the same persistent Pokémon as any other (docs/world.md, section 12). Null when there is none. */
+    /** Recruits the find at [index] into the shared collection: the same persistent Pokémon as any other (docs/pokelife/MODULES/WORLD.md section 14). Null when there is none. */
     fun worldRecruit(index: Int): OwnedPokemon? {
         val find = data.world.finds.getOrNull(index) ?: return null
         val mon = grantPokemon(find.speciesId, WORLD_SOURCE, Origin.How.WORLD)
@@ -1902,7 +1902,7 @@ class GameStore(
     /** Changes what the Pokégear tools remember. Device-only; changes nothing else and pays nothing. */
     fun changeGear(change: (GearData) -> GearData) = update { it.copy(gear = change(it.gear)) }
 
-    // --- Pokégear timers and stopwatch (docs/pokegear-audit.md): utilities that pay nothing ---------------------------------
+    // --- Pokégear timers and stopwatch: utilities that pay nothing ---------------------------------
 
     fun timerAdd(label: String, durationMs: Long): GearTimer? {
         val id = newId()

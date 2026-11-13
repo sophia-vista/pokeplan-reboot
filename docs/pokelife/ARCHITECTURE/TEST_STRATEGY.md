@@ -48,17 +48,15 @@ The primary physical acceptance target is the **Samsung Galaxy S26 Ultra**. Reco
 
 ## 3. Existing test baseline and migration posture
 
-The inspected `pokeplan-reboot-main (5).zip` repository snapshot contains **89 Kotlin test source files** across `commonTest` and `jvmTest`, plus legacy Java example test sources. Existing coverage spans Pokémon progression and ownership, rewards, PLAN task/focus/recurrence rules, CARE rules and stores, WORLD progression/story systems, GEAR utilities, launcher models/layout, persistence/compatibility, navigation and Compose screenshots.
+The repository has about 150 Kotlin test files outside `legacy-android/` (Pokémon progression and ownership, rewards and the golden vector, PLAN, CARE, HEAL, MINT, HOME, LINK, WORLD, GEAR, persistence and compatibility, reminders, navigation, Compose screenshots). The database, sealing, backup/restore and importer tests run on the JVM against real SQLite files and the five committed 0.123.0 fixtures (`app-core/src/jvmTest/resources/fixtures/0.123.0/`). A file's existence is not an execution report; the run result is what counts (section 1).
 
-The repository includes useful tests to preserve and adapt. This inventory is not a test execution report and does not establish that any test currently passes. The inspected archive did not establish an active, comprehensive Android instrumented suite for the target application; legacy example tests must not be counted as production acceptance coverage. Existing screenshot tests must be evaluated for actual image comparison: a test that only asserts that drawing occurred is not a visual golden test.
+**Known gaps (still true):**
 
-Before refactoring or replacing existing tests:
+- `androidApp` has no test source set and there is no instrumented suite: widgets, reminders and notification buttons, permissions and boot recovery are untested off a device. The only on-device check is the debug **DB check** icon (`DeviceSelfCheck`, `DATA_AND_MIGRATIONS.md` section 4.5). Legacy example tests do not count as acceptance coverage.
+- `ScreenshotTest` renders screens to PNG and asserts only that the encoded image is larger than a minimum size (it protects against a blank screen, not a visual change). It is **not a golden test** and must not be counted as visual regression coverage in a release gate; approved golden images, font-scale and dark-mode comparisons do not exist yet.
+- The real kill during a write, low storage and the Keystore path are proven on the JVM only (`DATA_AND_MIGRATIONS.md` section 4.5).
 
-1. Map each existing test to the new domain or module contract it protects.
-2. Preserve meaningful behavior and regression cases, updating obsolete assumptions only with an explicit specification decision.
-3. Identify tests tied to legacy architecture and replace them with tests at the new ownership boundary.
-4. Record baseline test execution separately from source inventory.
-5. Do not remove a test solely because it fails during migration; determine whether it exposes a regression or obsolete behavior.
+When tests are replaced at a new ownership boundary: map each to the contract it protects, preserve meaningful regressions, update obsolete assumptions only with an explicit specification decision, and do not remove a test merely because it fails during migration (decide whether it exposes a regression or obsolete behavior).
 
 ## 4. Unit and domain tests
 
@@ -97,6 +95,8 @@ Repository tests must exercise the real persistence implementation wherever prac
 - Durable outbox/event state where asynchronous processing is used.
 
 Tests must assert authoritative records and derived projections separately. Rebuilding a projection must not mutate source records or create reward events.
+
+Required database-specific tests: foreign keys are read back as enabled on every connection and the store refuses to open without them; a schema edit without a numbered migration fails the build (`verifyCommonMainDataDbMigration` against the committed `data/databases/N.db`); a newer schema is left untouched; a save writes only the rows that changed (counted with triggers); the ledger cannot be edited or emptied even by raw SQL; an activation that cannot finish leaves the old row live; tests do not log or write Heal/Mint rows unsealed (`DATA_AND_MIGRATIONS.md` section 10.4.1).
 
 ## 6. Data migrations, backup and recovery
 
@@ -276,6 +276,8 @@ Test the actual storage, integration and data-boundary design described in `ARCH
 Required checks include private storage and backup boundaries, encryption requirements, backup integrity, token/credential handling, secure intents and deep links, permission denial/revocation, export and deletion behavior, notification privacy, log/crash-report redaction, network egress, dependency vulnerabilities, release signing and secret handling.
 
 Use synthetic data. Never commit real financial, health, journal or identity data to fixtures. Assert that CARE journal content, HEAL measurements and MINT financial details do not leak through shared Pokémon events, reward envelopes, analytics, logs, notifications, screenshots or diagnostics. Test unauthorized access and malformed external input. Security findings must be triaged by severity; unresolved critical findings block release.
+
+Sealing tests that must exist are listed in `DATA_AND_MIGRATIONS.md` section 10.4.1: no figure, name, note or date of Mint or Heal in any stored text, snapshot, backup file or kept-aside copy; fail-closed without the key; another phone's key sets rows aside sealed; the passphrase backup opens only with the passphrase.
 
 ## 17. External integration failure and permission revocation
 

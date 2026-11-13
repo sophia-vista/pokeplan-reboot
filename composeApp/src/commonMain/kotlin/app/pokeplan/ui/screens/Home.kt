@@ -83,7 +83,7 @@ import app.pokeplan.ui.theme.TextBox
 import app.pokeplan.ui.theme.title
 
 /**
- * Home is the world at a glance (docs/ecosystem.md, section 11): the trainer, every region with its lead and its one most
+ * Home is the world at a glance (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md): the trainer, every region with its lead and its one most
  * useful next step, then the day's streak, mini-quests and what happened lately. It is not Plan's dashboard: the planner,
  * focus and each lead's scene stay inside their region. Nothing here punishes a quiet day.
  */

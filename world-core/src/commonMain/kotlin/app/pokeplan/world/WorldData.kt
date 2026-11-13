@@ -34,7 +34,7 @@ data class Expedition(val dungeonId: String, val startedAt: Long, val settledTo:
 
 /**
  * An expedition team: up to [MAX_MEMBERS] Pokémon of the shared collection by id, and what it is doing. A Pokémon belongs to
- * one team at a time (docs/world.md, section 6): assigned, it cannot join another until recalled.
+ * one team at a time (docs/pokelife/MODULES/WORLD.md section 14): assigned, it cannot join another until recalled.
  */
 @Serializable
 data class WorldTeam(

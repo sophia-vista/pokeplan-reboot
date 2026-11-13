@@ -3,10 +3,9 @@
 **Version:** 1.0  
 **Status:** Owner-approved target specification  
 **Decision status:** Field Research approved as HEAL's Pokémon acquisition identity  
-**Baseline reviewed:** Source archive `0.123.0`, as documented in the Implementation Guide  
 **Last consolidated:** 5 November 2026
 
-> This document defines the intended HEAL experience and its module-specific contracts. It is not a claim that HEAL or any health-provider integration is already implemented. The Product Bible remains the product-wide authority; the Implementation Guide records implementation status and delivery work. Shared visual rules are owned by `../FEATURES/DESIGN_SYSTEM.md`; shared reminder scheduling and delivery are owned by `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`.
+> This document defines the intended HEAL experience and its module-specific contracts. The Product Bible is the product-wide authority; `../IMPLEMENTATION_BACKLOG.md` records delivery status. Shared visual rules: `../FEATURES/DESIGN_SYSTEM.md`; shared reminders: `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture`.
 
 ## 1. Purpose and product role
 
@@ -400,113 +399,41 @@ Recover interrupted workouts and meal entry drafts where appropriate. Partial im
 
 ## 16. Visual presentation
 
-HEAL follows the shared PMD dialogue-box visual system in `../FEATURES/DESIGN_SYSTEM.md` and uses its **utility presentation** intensity. It must feel like a polished PMD-inspired module, not a conventional medical dashboard with Pokémon decorations.
+HEAL follows `../FEATURES/DESIGN_SYSTEM.md` and uses its **utility presentation** intensity: a polished PMD-inspired module, not a medical dashboard with Pokémon decorations. HEAL-specific adaptations:
 
-- Use shared dialogue-box/panel components for the Today summary, concise contextual prompts, workout completion feedback, Field Research discoveries, connection/import status and primary quick actions.
-- Dense measurement histories, nutrition tables, timelines, workout sets, forms and charts use efficient native-feeling layouts with selective shared framing. Do not wrap every metric, row or paragraph in a dialogue box.
-- Use restrained line charts for trends, compact bars for activity summaries, clear numeric values and readable historical timelines. Provide textual equivalents and accessible labels.
-- Do not use excessive progress rings, medical-style gauges, arbitrary composite scores or red/green judgments of normal variation.
-- The selected buddy may appear contextually and react to eligible completion/discovery events. It must not comment unsolicitedly on weight, food choices, sleep quality or medical measurements.
-- Keep animations and sound subordinate, optional and consistent with shared accessibility/motion/sound preferences. Do not add continuous decorative movement to utility screens.
-- Support light/dark themes, dynamic text scaling, TalkBack, minimum 48 dp touch targets, reduced motion, responsive widths and chart accessibility.
+- Shared dialogue-box components for the Today summary, concise prompts, workout completion feedback, Field Research discoveries, connection/import status and primary quick actions. Dense histories, nutrition tables, timelines, sets, forms and charts use efficient layouts with selective framing; do not box every metric or row.
+- Restrained line charts for trends, compact bars for activity summaries, clear numbers, textual equivalents and accessible labels. No excessive progress rings, medical-style gauges, composite scores or red/green judgments of normal variation.
+- The buddy may appear contextually and react to eligible completion/discovery events; it must not comment unsolicited on weight, food, sleep quality or medical measurements.
+- No continuous decorative movement on utility screens.
 
-The design-system document owns reusable component rules, typography, spacing, borders, states and accessibility. HEAL may define content-specific chart layouts but cannot fork shared component anatomy or global tokens.
+HEAL may define content-specific chart layouts but cannot fork shared component anatomy or global tokens.
 
-## 17. Existing implementation audit and reuse policy
+## 17. Reuse policy
 
-The reviewed `0.123.0` baseline, as recorded in `IMPLEMENTATION_GUIDE.md`, has no first-class HEAL module. The guide identifies HEAL as missing and does not establish a working Huawei Health, Health Connect or wearable integration. Do not treat a proposal, dependency, asset, permission declaration or generic sensor utility as a completed HEAL workflow.
+HEAL is an independent domain with its own models, repositories, local persistence, domain rules, import coordinator, provider interfaces, Field Research state and tests. Android/provider APIs belong in platform adapters; common HEAL domain logic must not depend on Compose or Android framework classes. Logical groupings (`activity`, `fitness`, `nutrition`, `sleep`, `measurements`, `healthrecords`, `goals`, `history`, `imports`, `research`) are not a requirement for one Gradle module each.
 
 ### 17.1 Reuse
 
-- Shared Pokémon collection, Pokédex, Bag, currency, reward ledger and acquisition interfaces, after the shared ecosystem phase has established stable contracts.
-- Shared app shell, module registry, navigation, local data lifecycle, permission coordinator, export/backup/encryption foundations and integration interfaces when they meet the target architecture.
-- Shared design-system components and chart primitives only after review against `FEATURES/DESIGN_SYSTEM.md`.
-- Shared reminder scheduler and delivery through the HEAL source adapter contract.
-- Existing generic unit-conversion utilities from GEAR where appropriate; HEAL remains responsible for health-specific semantics and presentation.
-
-### 17.2 Build
-
-Create HEAL as an independent domain with its own models, repositories, local persistence, application/domain rules, import coordinator, provider interfaces, Field Research progression state and tests. Android/provider APIs belong in platform adapters; common HEAL domain logic must not depend on Compose or Android framework classes.
-
-Conceptual package grouping may include `activity`, `fitness`, `nutrition`, `sleep`, `measurements`, `healthrecords`, `goals`, `history`, `imports`, `research`, `repositories` and `tests`. These are logical boundaries, not a requirement for one Gradle module per folder.
+Shared Pokémon collection, Pokédex, Bag, currency, reward ledger and acquisition interfaces; the app shell, navigation, local data lifecycle, permission coordinator and export/backup/encryption foundations; shared design-system components; the shared reminder scheduler through the HEAL source adapter; GEAR's generic unit-conversion utilities (HEAL owns health-specific semantics and presentation).
 
 ### 17.3 Replace or avoid
 
-- Do not add health fields to PLAN task models or CARE persistence.
-- Do not place all health data in a miscellaneous global save object.
-- Do not let UI screens call Huawei/Health Connect APIs directly.
-- Do not couple common domain models to Android Health Connect types.
+- Do not add health fields to PLAN task models or CARE persistence, or put health data in a miscellaneous global save object.
+- Do not let UI screens call Huawei/Health Connect APIs directly, or couple common domain models to Health Connect types.
 - Do not create a second Pokémon collection, Bag, currency, egg system or reward ledger.
-- Do not preserve cloud sync or Supabase as a hidden HEAL dependency.
 - Do not claim an integration works until tested on the actual device, firmware, region and app version.
-- Do not preserve legacy architecture merely to avoid designing a proper HEAL domain; preserve user data and proven shared business rules.
 
 ## 18. Implementation phases and exit gates
 
-HEAL follows the dependency-first roadmap in the Implementation Guide. Do not start a later phase while the preceding foundation or privacy gate is failing.
+Dependency-first order; do not start a later phase while the preceding foundation or privacy gate fails. Status is in `../IMPLEMENTATION_BACKLOG.md`.
 
-### Phase 0 — HEAL domain foundation
-
-- Establish HEAL ownership and module boundary.
-- Define common record metadata, units, source/provenance semantics and repositories.
-- Integrate with the approved local database, encryption, backup/export and migration architecture.
-- Define provider-neutral interfaces and Field Research event boundary.
-
-**Exit gate:** HEAL has one authoritative owner for every record type; no dependency on PLAN/CARE persistence; source and unit semantics are testable.
-
-### Phase 1 — Manual activity and fitness
-
-- Today dashboard shell and quick actions.
-- Manual activity logging and history.
-- Exercise library, workout sessions, sets and templates.
-- Basic health goals and body measurements.
-
-**Exit gate:** activity and fitness workflows work offline, recover interruptions, preserve timestamps and survive process death.
-
-### Phase 2 — Nutrition and sleep
-
-- Food/serving model and saved foods.
-- Meal logging and nutrient provenance.
-- Hydration.
-- Sleep and supported recovery records.
-- History, summaries and charts.
-
-**Exit gate:** nutrition and sleep histories can be maintained manually; unknown values remain unknown; no mandatory online lookup.
-
-### Phase 3 — Wearable/provider feasibility and imports
-
-- Test Huawei Watch Fit 4 Pro against actual phone, region, app version and firmware.
-- Evaluate official Huawei Health interfaces, Health Connect compatibility, legitimate exports and maintained free bridges.
-- Implement only verified provider adapters.
-- Add permission, freshness, import preview, reconciliation, deduplication and disconnect/delete behavior.
-
-**Exit gate:** each advertised metric has verified provenance and history behavior; repeated imports are idempotent; manual data is not silently overwritten; unsupported paths are clearly marked blocked.
-
-### Phase 4 — Personal health records and reminders
-
-- Medication, symptom, appointment and health-note records.
-- Optional HEAL reminder source adapter for medication and appointments, plus optional hydration/goal reminders.
-- Secure export, selected deletion and provider data controls.
-
-**Exit gate:** private records remain local and are never passed to progression; reminder delivery uses the shared contract; no clinical dosage logic exists.
-
-### Phase 5 — Field Research integration
-
-- HEAL regional identity and acquisition configuration.
-- Eligible event policy, opt-in controls, deduplication and payment history.
-- Encounter/recruitment integration with shared Pokémon services.
-- Reward generosity and anti-farming simulations.
-
-**Exit gate:** no sensitive measurement or record is exposed; events are idempotent; historical imports do not reward; acquisition is generous and comparable with other modules.
-
-### Phase 6 — Polish and acceptance
-
-- Refine configurable Today dashboard, trends and history.
-- Accessibility, responsive layouts, dark mode and reduced motion.
-- Performance, large-history, import recovery and migration testing.
-- Real-device verification of supported integrations.
-
-**Exit gate:** all core workflows pass functional, privacy, offline, accessibility, performance and real-device acceptance; unresolved provider limitations are documented without overstated support.
+- **Phase 0, domain foundation:** one authoritative owner per record type, no dependency on PLAN/CARE persistence, testable source and unit semantics.
+- **Phase 1, manual activity and fitness:** Today shell, activity, exercise library, workout sessions, sets, templates, basic goals and body measurements. Gate: offline, interruption recovery, timestamps preserved, survives process death.
+- **Phase 2, nutrition and sleep:** food/serving model, saved foods, meals with nutrient provenance, hydration, sleep and recovery records, history and charts. Gate: unknown values stay unknown; no mandatory online lookup.
+- **Phase 3, wearable/provider feasibility and imports:** test the Huawei Watch Fit 4 Pro on the actual phone, region, app version and firmware; implement only verified adapters; permissions, freshness, preview, reconciliation, deduplication, disconnect/delete. Gate: each advertised metric has verified provenance and history behaviour, repeated imports are idempotent, manual data is never silently overwritten, unsupported paths are marked blocked.
+- **Phase 4, personal health records and reminders:** medication, symptom, appointment and note records; reminder adapter for medication, appointments, hydration and goals; secure export and selected deletion. Gate: private records stay local and never reach progression; no clinical dosage logic.
+- **Phase 5, Field Research integration:** regional identity, eligibility policy, opt-out control, deduplication, payment history, shared encounter integration, generosity and anti-farming simulations. Gate: no sensitive data exposed, events idempotent, historical imports never reward, acquisition comparable with other modules.
+- **Phase 6, polish and acceptance:** configurable Today, trends, accessibility, dark mode, reduced motion, performance, large-history, import recovery, migration, and real-device verification. Gate: functional, privacy, offline, accessibility, performance and real-device acceptance pass; provider limits documented without overstated support.
 
 ## 19. Acceptance criteria
 
@@ -557,43 +484,31 @@ Not in scope unless separately approved:
 
 ## 21. Documentation alignment
 
-| Document | Authoritative responsibility |
-|---|---|
-| `../PRODUCT_BIBLE.md` | Product-wide module map, ownership, privacy and shared Pokémon rules |
-| `../IMPLEMENTATION_GUIDE.md` | Baseline implementation status, dependency order and delivery roadmap |
-| `../MODULES/PLAN.md` | Planning tasks and commitments; explicit links to HEAL records only |
-| `../MODULES/CARE.md` | Emotional self-care, routines and private reflection; no HEAL record ownership |
-| `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md#9-shared-reminder-and-notification-architecture` | Shared reminder scheduling, policy, delivery and recovery |
-| `../FEATURES/DESIGN_SYSTEM.md` | Shared PMD dialogue-box visual language and reusable components |
-| Shared Pokémon/economy specification | Collection, Bag, reward ledger, regional acquisition contracts and economy balance |
-| Future `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` | Cross-platform provider contracts and sensitive-data architecture when created |
-| `../ARCHITECTURE/DATA_AND_MIGRATIONS.md` | Shared persistence, transaction, export, backup, restore, migration and recovery contracts |
+Product-wide module map, ownership, privacy and shared Pokémon rules: `../PRODUCT_BIBLE.md`. Delivery status: `../IMPLEMENTATION_BACKLOG.md`. Explicit links only: `PLAN.md`, `CARE.md`. Shared reminders and sensitive-data architecture: `../ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md`. Visual language: `../FEATURES/DESIGN_SYSTEM.md`. Persistence, export, backup, restore, migration and recovery: `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`. Collection, Bag, reward ledger and economy balance: the shared Pokémon/economy specification. This document is the single detailed requirements source for HEAL; do not duplicate those documents' implementation rules here.
 
-This document is the single detailed requirements source for HEAL. Shared scheduling, visual rules, Pokémon ownership and technical foundations remain in their respective canonical documents; do not duplicate their implementation rules here.
+## 22. As built: the manual slice
 
-## 22. As built (0.136.0, REP-014): the manual slice
-
-*Built and tested on the JVM, compiled for Android; **not run on a device**. Provider integration came in 0.162.0 (section 22A); the Settings screen points to it.*
+*Not run on a device.*
 
 **What exists.** Section 2's Today card and menu; **activity** (type, minutes, when it ended, optional distance and note; edit, delete), **hydration** (quick amounts, any amount, the day's total, an optional target the player sets, history), **sleep** (a finished night, never a stage or a score), **body measurements** (weight, body fat, waist, hip, other; kept in the unit entered; kept off Today unless asked; a trend sentence only from three comparable entries, with no word that judges), **optional goals** (weekly active minutes, weekly active days, a daily drink total; pause, put away, delete; "so far", never "failed"), and a Settings page (Field Research, hydration target and reminders, weight unit, export and erase by kind). Not built, and not offered: the exercise library, workout sessions and templates (section 4), meals and nutrients (section 5), personal health records (section 8), Today customisation, imports (section 10), a consolidated History, and charts.
 
 **Field Research (section 12), as built** *(numbers are *(tune)* starting values; `RewardRules.VERSION` 17, `docs/economy.md`)*:
-- **On by default** (owner, 8 November 2026: every acquisition method starts on; 0.136.0 had it off until turned on), and off in Settings at any time. Turning it off keeps every record and loses nothing. A save that already stored the old default keeps its value.
-- Only two things can pay, both only for a record **created now** (never edited or backfilled): an **activity** of at least 10 minutes that ended no more than 12 hours ago and not in the future (3 a day), and the **day's first drink** (1 a day). Sleep, measurements, goals, notes, calories and everything else never pay. Imported and derived records never pay (Health Connect records exist since 0.162.0 and never pay; see 22A).
+- **On by default** (owner, 8 November 2026: every acquisition method starts on), and off in Settings at any time. Turning it off keeps every record and loses nothing. A save that already stored the old default keeps its value.
+- Only two things can pay, both only for a record **created now** (never edited or backfilled): an **activity** of at least 10 minutes that ended no more than 12 hours ago and not in the future (3 a day), and the **day's first drink** (1 a day). Sleep, measurements, goals, notes, calories and everything else never pay. Imported and derived records never pay (Health Connect records never pay; see 22A).
 - A payment is **4 Rare Candies, a berry and a little friendship for Heal's lead** (an activity) or **1 Rare Candy** (the drink), a point of trainer rank, and points towards a **Field Egg** (2 and 1; 4 fill the meter), which hatches into Heal's party from the **Heal Region** (`tools/species/regions/heal.txt`, about 66 hatchable lines of sporty, outdoor and energetic Pokémon, ending with its patrons Raikou, Entei and Suicune).
 - The event the shared world receives is exactly `HealEvent`: a stable `id` (`heal:<kind>:<record id>`), `module` ("heal"), an opaque `ref` (the record's random key), the broad `kind` (`activity_logged` or `participation`) and the time. No duration, distance, type of activity, volume or note exists in it. The game remembers the paid ids (`AppData.healPaid`, the newest 1000), so a replay (an edit, a delete, a restore of an older backup, a migration) never pays twice; the record also keeps `paid`.
 - Heal's party (a lead and five) is a place like any other (POKEMON_ECOSYSTEM.md section 2.2): joining takes a Pokémon from where it was. Its perks (Friendship gain: Fighting, Normal, Fire, Electric, Flying, Dragon; Berry finder: Water, Grass, Ground, Ice, Bug, Fairy; capped at +25% a bucket) change only what Field Research pays, never a record or a total. Heal works fully with an empty party.
 - **First-run tutorial** (POKEMON_ECOSYSTEM.md section 10.2.1): a 5-second walk in Heal gives one Common Heal Region Pokémon into Heal's party, leading it, once per save (`Tutorials.HEAL_WALK`); it creates no record, event, meter point, streak or cap use, and a player who has already logged an activity is not offered it.
 
-**Data (section 14).** `heal_*` tables from the start (schema 7): `heal_activity`, `heal_hydration`, `heal_sleep`, `heal_measurement`, `heal_goal` (one family per kind, each row `key, position, day, json`) and `heal_state` (the settings). `HealTables` can read, export (`readKind`) or erase (`erase`) one family alone and `clear` all of HEAL, touching nothing outside `heal_*`; the app's own Export and Erase in Heal's Settings do the same through the store. Heal is in the daily backup and the backup bundle (`BackupBundle.KNOWN`); restoring a backup made before Heal existed leaves Heal's records alone. **Sealed since 0.154.0 (owner decision 6, 8 November 2026; `evidence/REP-014-heal-sealing.md`):** every row is AES-256-GCM text under Heal's own Android Keystore key (`HealTables.seal`, once, read back; an install that had Heal in clear is moved at its first start with the key), the daily backup, the backup file and every kept-aside copy hold Heal sealed, and the passphrase backup seals it with Mint. A phone without the key opens a sealed Heal as empty and keeps the old rows aside, sealed. **Not done:** per-kind export of a *backup*, and an access gate for Heal (Mint has one).
+**Data (section 14).** `heal_*` tables from the start (schema 7): `heal_activity`, `heal_hydration`, `heal_sleep`, `heal_measurement`, `heal_goal` (one family per kind, each row `key, position, day, json`) and `heal_state` (the settings). `HealTables` can read, export (`readKind`) or erase (`erase`) one family alone and `clear` all of HEAL, touching nothing outside `heal_*`; the app's own Export and Erase in Heal's Settings do the same through the store. Heal is in the daily backup and the backup bundle (`BackupBundle.KNOWN`); restoring a backup made before Heal existed leaves Heal's records alone. **Sealed since 0.154.0 (owner decision 6, 8 November 2026; sealing: `../ARCHITECTURE/DATA_AND_MIGRATIONS.md`):** every row is AES-256-GCM text under Heal's own Android Keystore key (`HealTables.seal`, once, read back; an install that had Heal in clear is moved at its first start with the key), the daily backup, the backup file and every kept-aside copy hold Heal sealed, and the passphrase backup seals it with Mint. A phone without the key opens a sealed Heal as empty and keeps the old rows aside, sealed. **Not done:** per-kind export of a *backup*, and an access gate for Heal (Mint has one).
 
 **Reminders (section 13), as built.** Hydration only, off until the player adds a time (up to three a day), through the shared scheduler (`HealReminderAdapter`): the request holds only an opaque slot (`hyd-1000`), the words are the same for everyone ("A moment for a drink?"), the notification is private on the lock screen, the only button is "In 30 min" (there is no "done": a reminder is not a record and pays nothing), it follows the global quiet hours and focus deferral, and it stays silent once the player's own target for the day is met. Medication, appointment, goal check-in and the other sources of the table in section 13 are not built.
 
-**Audit, 0.170.1.** A night whose end is still to come is refused (only a finished night is a record, section 2.2); an active-days goal is 1 to 7; every history pages with "Show older" so no record is out of reach; every single delete offers Undo; a paid record is saved in one write. The store has no edit for a drink or a night (delete and add again).
+**Audit rules.** A night whose end is still to come is refused (only a finished night is a record, section 2.2); an active-days goal is 1 to 7; every history pages with "Show older" so no record is out of reach; every single delete offers Undo; a paid record is saved in one write. The store has no edit for a drink or a night (delete and add again).
 
-## 22A. As built (0.162.0, REP-014): Health Connect, read only
+## 22A. As built: Health Connect, read only
 
-*Built and tested on the JVM, compiled for Android; **not run on a device**. Health Connect has not been tried on a real phone, and **nothing about the Huawei Watch Fit 4 Pro has been verified**.*
+*Health Connect has not been tried on a real phone, and **nothing about the Huawei Watch Fit 4 Pro has been verified**.*
 
 **Classification** (`INTEGRATIONS_AND_PRIVACY.md` section 2): Health Connect is an *Android platform API*; Huawei Health is *unsupported or unverified* and is shown so in Heal → Connections. Section 10.1's feasibility matrix (each metric on the actual watch, phone, region and firmware) is **not done**; until it is, Heal claims no Huawei metric. What the code does allow: whatever Huawei Health writes into Health Connect on the player's phone is read like any other app's, and every imported record shows the app that wrote it, which is itself the evidence the matrix needs.
 
@@ -609,9 +524,9 @@ This document is the single detailed requirements source for HEAL. Shared schedu
 
 **Disconnect and delete** (distinct, as `INTEGRATIONS_AND_PRIVACY.md` section 10.3 asks): *Disconnect* clears the chosen kinds, revokes Android's permissions and keeps every imported record; *Delete what an app added* removes the imported records of one writing app (or all) and nothing the player wrote. The Erase buttons in Settings still erase by kind.
 
-**Android:** `androidx.health.connect:connect-client:1.1.0` (dependency review, section 12.1: androidx, no telemetry, no network of its own); five `READ_*` permissions in the manifest; the `com.google.android.apps.healthdata` query; `HealthRationaleActivity` answering `ACTION_SHOW_PERMISSIONS_RATIONALE` and the Android 14 `VIEW_PERMISSION_USAGE` alias; `AndroidHealthConnect`.
+**Android:** `androidx.health.connect:connect-client:1.1.0` (androidx, no telemetry, no network of its own); five `READ_*` permissions; the `com.google.android.apps.healthdata` query; `HealthRationaleActivity` (`ACTION_SHOW_PERMISSIONS_RATIONALE` and the Android 14 `VIEW_PERMISSION_USAGE` alias); `AndroidHealthConnect`.
 
-**Desk research (`evidence/REP-014-integration-research.md`):** Huawei Health is reported not to write into Health Connect itself; Huawei's Health Kit needs a developer registration and a per-app approval that only the owner can start (until then no scopes, no adapter); a third-party bridge the player installs could feed Health Connect and so this import, but is unofficial and unverified, and HEAL never depends on it. **Still to do:** the real-device verification of every advertised metric on Android 13 and earlier (the Health Connect app) and 14 and later; the Huawei feasibility matrix (steps, workouts, heart rate, sleep and stages, weight and the rest, with history depth and sync delay); Huawei Health export import; heart rate, resting heart rate, HRV, stress, SpO2 and steps records in Heal (no record exists for them); background and historical reads (not requested on purpose); duplicate matching across imported sources; distance from `DistanceRecord`.
+**Desk research:** Huawei Health is reported not to write into Health Connect itself; Huawei's Health Kit needs a developer registration and a per-app approval that only the owner can start (until then no scopes, no adapter); a third-party bridge the player installs could feed Health Connect and so this import, but is unofficial and unverified, and HEAL never depends on it. **Still to do:** real-device verification of every advertised metric on Android 13 and earlier (the Health Connect app) and 14 and later; the Huawei feasibility matrix (steps, workouts, heart rate, sleep and stages, weight and the rest, with history depth and sync delay); Huawei Health export import; heart rate, resting heart rate, HRV, stress, SpO2 and steps records in Heal (no record exists for them); background and historical reads (not requested on purpose); duplicate matching across imported sources; distance from `DistanceRecord`.
 
 ## Shared Pokémon ecosystem contract
 

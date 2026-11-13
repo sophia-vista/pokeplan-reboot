@@ -26,7 +26,7 @@ import app.pokeplan.ui.theme.SectionLabel
 import app.pokeplan.ui.theme.Spacing
 
 /**
- * The life modules (docs/ecosystem.md, section 4), each a section of the Modules tab. Each one is a different part of
+ * The life modules (docs/pokelife/FEATURES/POKEMON_ECOSYSTEM.md), each a section of the Modules tab. Each one is a different part of
  * life; everything done in any of them looks after the same Pokémon, which live in the shared tabs (Home, Pokémon, Me).
  */
 enum class Module(val label: String, val icon: String, val look: RegionLook) {

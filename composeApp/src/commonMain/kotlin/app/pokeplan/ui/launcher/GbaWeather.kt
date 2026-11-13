@@ -2,7 +2,7 @@ package app.pokeplan.ui.launcher
 
 /**
  * What Red Rescue Team's own code says about the weather layers of its ground screens (pret/pmd-red `src/ground_weather.c`, `src/ground_bg.c`), as
- * numbers the town can draw by. The trace, and which sheet is which layer, is in `docs/pokelife/evidence/WEATHER-original.md`; the layers are
+ * numbers the town can draw by. The trace, and which sheet is which layer, is in `docs/pokelife/FEATURES/LAUNCHER.md` section 4.4 and `ASSETS_AND_AUDIO.md` section 5.6; the layers are
  * rebuilt from the game's own files by `tools/weather/decode_bg.py`. Positions are in the game's own pixels (the town scales them by whole numbers).
  */
 internal object GbaWeather {
