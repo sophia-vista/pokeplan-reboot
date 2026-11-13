@@ -36,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import app.pokeplan.app.Tutorials
 import app.pokeplan.plan.LinkKind
 import app.pokeplan.plan.TaskState
-import app.pokeplan.core.reward.RewardEngine
 import app.pokeplan.home.Asset
 import app.pokeplan.home.Chore
 import app.pokeplan.home.ChoreState
@@ -179,21 +178,17 @@ private fun HouseholdMenu(model: AppModel, onBack: () -> Unit, openPokemon: (Str
         ) {
             ModuleLeadStage(model, Module.HOME, model.data.player.homeLead, model.store.moduleEvent(app.pokeplan.app.GameStore.HOME_LOG_PREFIX), openPokemon = openPokemon)
             TutorialCard(model, Tutorials.HOME_TIDY, homeRecords = data.chores.size + data.supplies.size + data.assets.size)
-            HouseholdOverview(model, overview)
             HouseholdSearch(model)
+            HouseholdOverview(model, overview)
             MenuGrid(
                 listOf(
                     MenuEntry(HouseholdSection.CHORES.name, HouseholdSection.CHORES.icon, "Chores", if (data.chores.isEmpty()) "add one" else "${overview.chores.size} to do today", tint = tint),
                     MenuEntry(HouseholdSection.SUPPLIES.name, HouseholdSection.SUPPLIES.icon, "Supplies", if (data.supplies.isEmpty()) "add one" else "${overview.low.size} low", tint = tint),
                     MenuEntry(HouseholdSection.MAINTENANCE.name, HouseholdSection.MAINTENANCE.icon, "Maintenance", if (data.schedules.isEmpty() && data.assets.isEmpty()) "add one" else "${overview.maintenance.size} due or soon", tint = tint),
                     MenuEntry(HouseholdSection.NOTES.name, HouseholdSection.NOTES.icon, "Notes", if (data.references.isEmpty()) "add one" else "${data.references.size} notes", tint = tint),
-                    MenuEntry(HouseholdSection.SETTINGS.name, HouseholdSection.SETTINGS.icon, "Settings", "Habitat Discovery, areas, your data", tint = Pixel.InkSoft),
+                    MenuEntry(HouseholdSection.SETTINGS.name, HouseholdSection.SETTINGS.icon, "Settings", tint = Pixel.InkSoft),
                 ),
             ) { key -> model.homeSection = HouseholdSection.valueOf(key) }
-            Text(
-                if (data.settings.progression) "Habitat Discovery is on · Habitat Egg ${model.store.homeEggMeter()} of ${RewardEngine.HOME_EGG_METER_SIZE}" else "Habitat Discovery is off",
-                style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-            )
             HomePartyPanel(model, openPokemon)
         }
     }
@@ -257,11 +252,13 @@ private fun HouseholdOverview(model: AppModel, o: Overview) {
                     )
                 }
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-                PixelButton("Chore", { go(model, HouseholdSection.CHORES) }, Modifier.weight(1f), accent, compact = true)
-                PixelButton("Stock", { go(model, HouseholdSection.SUPPLIES) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelButton("Item", { go(model, HouseholdSection.MAINTENANCE, tab = 1) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
-                PixelButton("Note", { go(model, HouseholdSection.NOTES) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+            var adding by remember { mutableStateOf(false) }
+            if (!adding) PixelButton("Add", { adding = true }, Modifier.fillMaxWidth(), compact = true)
+            else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                PixelButton("Chore", { go(model, HouseholdSection.CHORES) }, Modifier.weight(1f), compact = true)
+                PixelButton("Stock", { go(model, HouseholdSection.SUPPLIES) }, Modifier.weight(1f), compact = true)
+                PixelButton("Item", { go(model, HouseholdSection.MAINTENANCE, tab = 1) }, Modifier.weight(1f), compact = true)
+                PixelButton("Note", { go(model, HouseholdSection.NOTES) }, Modifier.weight(1f), compact = true)
             }
         }
     }
@@ -273,13 +270,11 @@ private fun HouseholdSearch(model: AppModel) {
     if (data.chores.isEmpty() && data.supplies.isEmpty() && data.assets.isEmpty() && data.references.isEmpty() && data.schedules.isEmpty()) return
     var query by remember { mutableStateOf("") }
     val hits = model.home.search(query).take(8)
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search the household", singleLine = true)
-            if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-            hits.forEach { h ->
-                RecordRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); query = "" }, onClickLabel = "Open")
-            }
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search the household", singleLine = true)
+        if (query.isNotBlank() && hits.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+        hits.forEach { h ->
+            RecordRow(h.title, listOf(h.kind.label, h.detail.takeIf { it.isNotBlank() }).filterNotNull().joinToString(" · "), onClick = { openHit(model, h.kind, h.id); query = "" }, onClickLabel = "Open")
         }
     }
 }
@@ -1127,6 +1122,7 @@ private fun NotesView(model: AppModel) {
     val notes = data.references.filter { matching == null || it.id in matching }.sortedByDescending { it.updatedMillis }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+            if (data.references.isNotEmpty()) PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search notes", singleLine = true)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
                 PixelField(title, { title = it.take(HomeRules.TITLE_MAX) }, Modifier.weight(1f), placeholder = "Add a note", singleLine = true, keyboardOptions = sentenceKeys)
                 PixelButton("Add", {
@@ -1135,12 +1131,6 @@ private fun NotesView(model: AppModel) {
                 }, color = accent, enabled = title.isNotBlank())
             }
             message?.let { Report(model, it, NoticeTone.WARNING) }
-        }
-    }
-    if (data.references.isEmpty()) return
-    TextBox {
-        Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            PixelField(query, { query = it.take(40) }, Modifier.fillMaxWidth(), placeholder = "Search notes", singleLine = true)
             if (notes.isEmpty()) Text("Nothing matches.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             notes.forEachIndexed { i, n ->
                 if (i > 0) Rule()
@@ -1201,19 +1191,14 @@ private fun HouseholdSettingsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Habitat Discovery")
-            ToggleRow(
-                "Find Pokémon from finished work", settings.progression,
-                detail = "A chore or a piece of maintenance you finish can find a Habitat Egg; adding, editing, quantities and notes never do.",
-            ) { home.setProgression(it) }
+            // Help: a chore or a piece of maintenance you finish can find a Habitat Egg; adding, editing, quantities and notes never do.
+            ToggleRow("Find Pokémon from finished work", settings.progression) { home.setProgression(it) }
         }
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Reminders")
-            ToggleRow(
-                "Remind me about the home", settings.reminders,
-                detail = "Off by default, and each chore, job, supply and warranty is switched on by itself. One reminder each, never a daily nag for something late. It never shows a quantity or a serial number, and it never records anything for you.",
-            ) { home.setReminders(it) }
+            ToggleRow("Remind me about the home", settings.reminders) { home.setReminders(it) }
             if (settings.reminders) {
                 SectionLabel("At")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -1227,8 +1212,7 @@ private fun HouseholdSettingsView(model: AppModel) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     listOf(7 to "A week before", 14 to "2 weeks", 30 to "A month", 60 to "2 months").forEach { (d, l) -> Chip(l, d == settings.warrantyLeadDays, { home.setWarrantyLeadDays(d) }) }
                 }
-                Text("Your quiet hours and focus sessions still hold a reminder back.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-                ToggleRow("Name it", settings.reminderNames, detail = "After you unlock your phone it says which chore, job or supply. The lock screen only says what kind.") { home.setReminderNames(it) }
+                ToggleRow("Name it", settings.reminderNames) { home.setReminderNames(it) }
             }
         }
     }
@@ -1244,14 +1228,13 @@ private fun HouseholdSettingsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Your data")
-            Text("Your records stay on this phone. Erasing Home never touches your Pokémon, your Poké or the other modules.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             val files = model.files
             if (files != null) {
                 PixelButton("Export everything", { note = files.save("pokelife-home.json", home.export()) }, Modifier.fillMaxWidth(), accent, compact = true)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     HomeKinds.entries.forEach { k -> PixelButton("Export ${k.label.lowercase()}", { note = files.save("pokelife-home-${k.name.lowercase()}.json", home.export(setOf(k))) }, color = Pixel.InkSoft, compact = true) }
                 }
-            } else Text("Exporting is not available on this device.", style = MaterialTheme.typography.bodyMedium)
+            }
             note?.let { Report(model, it) }
             HomeKinds.entries.forEach { k ->
                 if (asking == k) Confirm(
