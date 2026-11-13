@@ -5,6 +5,8 @@ import app.pokeplan.ui.theme.drawPixelDisc
 import app.pokeplan.ui.theme.drawPixelRing
 
 import app.pokeplan.ui.theme.ModuleAccent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.platform.LocalDensity
 import app.pokeplan.ui.StatusKind
@@ -139,16 +141,22 @@ private fun CareMenu(model: AppModel, onBack: () -> Unit, openPokemon: (String) 
             // What to do comes before the party and the visitors: a new player sees "Add a routine" without scrolling past six empty slots.
             CareBuddy(model, openPokemon)
             TutorialCard(model, app.pokeplan.app.Tutorials.CARE_BREATH, careBreaks = care.breaks.size)
-            SectionLabel("Today", icon = CareSection.ROUTINES.icon)
             if (today.isEmpty()) {
                 EmptyState(
                     if (care.routines.none { !it.archived }) "No routines yet" else "Nothing planned for today",
-                    "Small things you do for yourself, like a glass of water or a stretch.",
                     action = "Add a routine" to { model.careSection = CareSection.ROUTINES }, sleeper = true,
                 )
-            } else today.forEach { RoutineRow(model, it) }
-            CareEggMeter(model)
+            } else TextBox {
+                Column {
+                    SectionLabel("Today", icon = CareSection.ROUTINES.icon)
+                    today.forEachIndexed { i, r ->
+                        if (i > 0) HorizontalDivider(color = Pixel.Border)
+                        RoutineLine(model, r)
+                    }
+                }
+            }
             MoodRow(model)
+            CareEggMeter(model)
             MenuGrid(
                 listOf(
                     MenuEntry(CareSection.ROUTINES.name, CareSection.ROUTINES.icon, "Routines", if (today.isEmpty()) "none today" else "$done of ${today.size} today", tint = ModuleAccent.CARE.accent),
@@ -223,10 +231,11 @@ private fun VisitorsCard(model: AppModel) {
             PixelTitle("Visitors")
             note?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
             if (open != null) VisitorScene(model, open, visit?.takeIf { it.speciesId == open.speciesId }, { note = it }) { playing = null }
-            meadow.forEach { v ->
+            meadow.forEachIndexed { i, v ->
                 val species = Dex.species(v.speciesId)
                 val resting = care.resting(v)
-                ListRow(
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
+                PlainRow(
                     lead = {
                         AnimatedSprite(
                             Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, species.name,
@@ -236,16 +245,15 @@ private fun VisitorsCard(model: AppModel) {
                     },
                     trail = {
                         when {
-                            visit?.speciesId == v.speciesId -> Text("Visiting", style = MaterialTheme.typography.labelMedium, color = Pixel.Green)
+                            visit?.speciesId == v.speciesId -> Text("Visiting", style = MaterialTheme.typography.labelMedium, color = Pixel.Tone)
                             care.canVisit(v) -> PixelButton("Visit", {
                                 if (care.startVisit(v.speciesId) == null) note = "Not now." else { playing = null; note = null; model.haptic(); model.cry(v.speciesId) }
-                            }, color = Pixel.Green, compact = true)
+                            }, color = Pixel.Tone, compact = true)
                             else -> PixelButton(if (playing == v.speciesId) "Playing" else "Play", {
                                 playing = v.speciesId; note = null; model.haptic()
                             }, color = Pixel.InkSoft, enabled = visit == null && playing != v.speciesId, compact = true)
                         }
                     },
-                    highlight = false,
                 ) {
                     Column {
                         Text(species.name, style = MaterialTheme.typography.bodyLarge)
@@ -278,17 +286,27 @@ private fun VisitorsCard(model: AppModel) {
             val away = model.careData.dismissed
             if (away.isNotEmpty()) {
                 PixelButton(if (showAway) "Hide sent away" else "Sent away (${away.size})", { showAway = !showAway }, color = Pixel.InkSoft, compact = true)
-                if (showAway) away.asReversed().forEach { v ->
+                if (showAway) away.asReversed().forEachIndexed { i, v ->
                     val species = Dex.species(v.speciesId)
-                    ListRow(
+                    if (i > 0) HorizontalDivider(color = Pixel.Border)
+                    PlainRow(
                         lead = { Sprite(Dex.form(v.formIdentifier)?.id ?: Dex.defaultForm(v.speciesId).id, false, species.name, size = Sizes.IconL) },
                         trail = { PixelButton("Ask back", { note = if (care.restore(v.id)) "${species.name} is back, waiting for a place." else "No room just now." }, color = Pixel.Tone, compact = true) },
-                        highlight = false,
                     ) { Text(species.name, style = MaterialTheme.typography.bodyLarge) }
                 }
             }
             MetAlbum(model)
         }
+    }
+}
+
+/** A row inside a box that already frames it: [lead], [content] and [trail] on one centre line, no frame of its own. */
+@Composable
+private fun PlainRow(lead: @Composable () -> Unit, trail: @Composable () -> Unit, content: @Composable () -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(vertical = Spacing.XS), horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically) {
+        lead()
+        Box(Modifier.weight(1f)) { content() }
+        trail()
     }
 }
 
@@ -305,27 +323,30 @@ private fun MetAlbum(model: AppModel) {
 
 // ----- Routines -------------------------------------------------------------------------------------------------------
 
-/** A routine with Done (or Undo once done today) and one quiet line: its time and days. */
+/** One routine line: its check key first, then its title and one quiet line (time and days). Rows of a list sit in one box. */
 @Composable
-private fun RoutineRow(model: AppModel, routine: Routine, onOpen: (() -> Unit)? = null) {
+private fun RoutineLine(model: AppModel, routine: Routine, onOpen: (() -> Unit)? = null) {
     val care = model.care
     val doneToday = routine.doneOn(care.today)
     val due = routine.isDueOn(care.today)
-    ListRow(
-        onClick = onOpen, onClickLabel = if (onOpen != null) "Show options" else null,
-        trail = {
-            when {
-                routine.archived || !due -> Unit
-                doneToday -> PixelIconButton("undo", "Undo", { care.undoRoutine(routine.id) }, Pixel.InkSoft)
-                else -> PixelIconButton("check", "Done", { model.effect(Sfx.SELECT); model.haptic(); care.completeRoutine(routine.id) }, Pixel.Green)
-            }
-        },
+    Row(
+        Modifier.fillMaxWidth()
+            .let { if (onOpen != null) it.clickable(onClickLabel = "Show options", role = Role.Button, onClick = onOpen) else it }
+            .padding(vertical = Spacing.S),
+        horizontalArrangement = Arrangement.spacedBy(Spacing.M), verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(routine.title, style = MaterialTheme.typography.bodyLarge)
-        Text(
-            listOfNotNull(if (doneToday) "Done today" else null, routine.time?.let { clock(it) }, routineDays(routine.days)).joinToString(", "),
-            style = MaterialTheme.typography.bodyMedium,
-        )
+        when {
+            routine.archived || !due -> Unit
+            doneToday -> PixelIconButton("undo", "Undo", { care.undoRoutine(routine.id) }, Pixel.InkSoft)
+            else -> PixelIconButton("check", "Done", { model.effect(Sfx.SELECT); model.haptic(); care.completeRoutine(routine.id) })
+        }
+        Column(Modifier.weight(1f)) {
+            Text(routine.title, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                listOfNotNull(if (doneToday) "Done today" else null, routine.time?.let { clock(it) }, routineDays(routine.days)).joinToString(", "),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
     }
 }
 
@@ -363,7 +384,7 @@ private fun RoutinesView(model: AppModel) {
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { add() }),
                 )
-                PixelIconButton("plus", "Add", ::add, Pixel.Green, enabled = title.isNotBlank())
+                PixelIconButton("plus", "Add", ::add, enabled = title.isNotBlank())
             }
             PixelButton(if (more) "Fewer options" else "A time, and which days", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) RoutineFields(time, { time = it }, days, { days = it })
@@ -371,22 +392,30 @@ private fun RoutinesView(model: AppModel) {
     }
 
     val (archived, active) = data.routines.partition { it.archived }
-    if (active.isEmpty()) EmptyState("No routines yet", "Add one above: drink water, stretch, take a walk, wind down.", icon = CareSection.ROUTINES.icon, addAbove = "Add a routine")
-    active.sortedWith(compareBy(nullsLast()) { it.time }).forEach { r ->
-        RoutineRow(model, r) { open = if (open == r.id) null else r.id }
-        if (open == r.id) RoutineOptions(model, r) { open = null }
+    if (active.isEmpty()) EmptyState("No routines yet", icon = CareSection.ROUTINES.icon, addAbove = "Add a routine")
+    // Help: the first CareRules.ROUTINES_PAID_PER_DAY routines finished each day earn Exp. Candy and a little friendship; no streaks.
+    val sorted = active.sortedWith(compareBy(nullsLast()) { it.time })
+    if (sorted.isNotEmpty()) TextBox {
+        Column {
+            sorted.forEachIndexed { i, r ->
+                if (i > 0) HorizontalDivider(color = Pixel.Border)
+                RoutineLine(model, r) { open = if (open == r.id) null else r.id }
+                if (open == r.id) RoutineOptions(model, r, framed = false) { open = null }
+            }
+        }
     }
     if (archived.isNotEmpty()) {
         SectionLabel("Put away")
-        archived.forEach { r ->
-            RoutineRow(model, r) { open = if (open == r.id) null else r.id }
-            if (open == r.id) RoutineOptions(model, r) { open = null }
+        TextBox {
+            Column {
+                archived.forEachIndexed { i, r ->
+                    if (i > 0) HorizontalDivider(color = Pixel.Border)
+                    RoutineLine(model, r) { open = if (open == r.id) null else r.id }
+                    if (open == r.id) RoutineOptions(model, r, framed = false) { open = null }
+                }
+            }
         }
     }
-    Text(
-        "The first ${CareRules.ROUTINES_PAID_PER_DAY} routines you finish each day earn Exp. Candy and a little friendship. There are no streaks: a quiet day costs nothing.",
-        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-    )
 }
 
 /** The time and the days of a routine, to set when it is added and when it is edited. */
@@ -399,20 +428,19 @@ private fun RoutineFields(time: LocalTime?, onTime: (LocalTime?) -> Unit, days: 
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             DayOfWeek.entries.forEach { d -> TabButton(dayNames[d.ordinal], d in days, { onDays(if (d in days) days - d else days + d) }) }
         }
-        Text(if (days.isEmpty()) "No day chosen means every day." else routineDays(days), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
     }
 }
 
 /** Edit a routine's name, time and days (what it earned and when it was done stay), put it away (kept for trends) or back, or delete it, which asks first. */
 @Composable
-internal fun RoutineOptions(model: AppModel, routine: Routine, startEditing: Boolean = false, onDone: () -> Unit) {
+internal fun RoutineOptions(model: AppModel, routine: Routine, startEditing: Boolean = false, framed: Boolean = true, onDone: () -> Unit) {
     var asking by remember { mutableStateOf(false) }
     var editing by remember(routine.id) { mutableStateOf(startEditing) }
     var title by remember(routine.id) { mutableStateOf(routine.title) }
     var time by remember(routine.id) { mutableStateOf(routine.time) }
     var days by remember(routine.id) { mutableStateOf(routine.days) }
     if (editing) {
-        TextBox {
+        val body: @Composable () -> Unit = {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 PixelTitle("Edit routine")
                 PixelField(
@@ -421,11 +449,12 @@ internal fun RoutineOptions(model: AppModel, routine: Routine, startEditing: Boo
                 )
                 RoutineFields(time, { time = it }, days, { days = it })
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    PixelIconButton("check", "Save", { model.care.updateRoutine(routine.copy(title = title.trim(), time = time, days = days)); editing = false; onDone() }, Pixel.Green, enabled = title.isNotBlank())
+                    PixelIconButton("check", "Save", { model.care.updateRoutine(routine.copy(title = title.trim(), time = time, days = days)); editing = false; onDone() }, enabled = title.isNotBlank())
                     PixelIconButton("close", "Cancel", { editing = false; title = routine.title; time = routine.time; days = routine.days }, Pixel.InkSoft)
                 }
             }
         }
+        if (framed) TextBox { body() } else Box(Modifier.padding(vertical = Spacing.S)) { body() }
         return
     }
     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -506,15 +535,11 @@ private fun CalmBreakView(model: AppModel) {
         result?.let { line -> TextBox { Text(line, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) } }
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-                Text("Breathe in as the circle grows, out as it shrinks.", style = MaterialTheme.typography.bodyLarge)
                 Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                     listOf(60, 120).forEach { s -> TabButton(if (s == 60) "1 minute" else "2 minutes", seconds == s, { seconds = s }, Modifier.weight(1f)) }
                 }
                 PixelButton("Start", { result = null; waking = false; model.haptic(); model.effect(Sfx.CALM_BREAK_START); startedAt = model.now }, Modifier.fillMaxWidth(), Pixel.Tone)
-                Text(
-                    "Up to ${CareRules.BREAKS_PAID_PER_DAY} calm breaks a day earn friendship and a berry.",
-                    style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-                )
+                // Help: up to CareRules.BREAKS_PAID_PER_DAY calm breaks a day earn friendship and a berry.
             }
         }
     } else {
@@ -585,10 +610,9 @@ private fun DiaryView(model: AppModel) {
     }
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-            PixelTitle(if (cardDay == care.today) "How strongly did you feel each of these today?" else "How strongly did you feel each of these on ${cardDay.short()}?")
-            Text("0 is not at all, 5 is very strongly. Leave out any you like.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            PixelTitle("Feelings")
             Emotion.entries.forEach { e ->
-                Rating("${e.emoji} ${e.label}", feelings[e]) { v -> feelings = if (v == null) feelings - e else feelings + (e to v); done = false }
+                Rating(e.label, feelings[e]) { v -> feelings = if (v == null) feelings - e else feelings + (e to v); done = false }
             }
         }
     }
@@ -620,7 +644,6 @@ private fun DiaryView(model: AppModel) {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
             PixelTitle("Skills you used")
             val shown = if (allSkills) Skills.all else Skills.all.filter { it.id in skills || it.id in care.practisedToday() }
-            if (shown.isEmpty()) Text("None yet today, and that's fine.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 shown.forEach { k -> TabButton(k.name, k.id in skills, { skills = if (k.id in skills) skills - k.id else skills + k.id; done = false }) }
             }
@@ -636,7 +659,7 @@ private fun DiaryView(model: AppModel) {
                 model.effect(Sfx.SELECT)
                 done = true
             }, Modifier.fillMaxWidth(), ModuleAccent.CARE.accent, enabled = feelings.isNotEmpty() || urges.isNotEmpty() || skills.isNotEmpty() || note.isNotBlank())
-            if (done) Text("Saved", style = MaterialTheme.typography.bodyMedium, color = Pixel.Green, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+            if (done) Text("Saved", style = MaterialTheme.typography.bodyMedium, color = Pixel.Tone, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         }
     }
     var pastShown by remember { mutableStateOf(14) }
@@ -683,25 +706,23 @@ private fun SkillsView(model: AppModel) {
         }
         return
     }
-    Text(
-        "Skills from DBT (dialectical behaviour therapy), as short reminders. Try one, then tick that you practised it: up to " +
-            "${CareRules.SKILLS_PAID_PER_DAY} skills a day earn friendship and a berry.",
-        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-    )
+    // Help: skills come from DBT; up to CareRules.SKILLS_PAID_PER_DAY a day earn friendship and a berry. A reminder, not therapy; in danger, call the local emergency number.
     app.pokeplan.care.SkillGroup.entries.forEach { group ->
         SectionLabel(group.label)
-        Text(group.line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
-        Skills.inGroup(group).forEach { k ->
-            ListRow(onClick = { open = k.id }, onClickLabel = "Open ${k.name}") {
-                Text(k.name, style = MaterialTheme.typography.bodyLarge)
-                Text(if (k.id in practised) "Practised today" else k.use, style = MaterialTheme.typography.bodyMedium)
+        TextBox {
+            Column {
+                Skills.inGroup(group).forEachIndexed { i, k ->
+                    if (i > 0) HorizontalDivider(color = Pixel.Border)
+                    Column(
+                        Modifier.fillMaxWidth().clickable(onClickLabel = "Open ${k.name}", role = Role.Button) { open = k.id }.padding(vertical = Spacing.S),
+                    ) {
+                        Text(k.name, style = MaterialTheme.typography.bodyLarge)
+                        Text(if (k.id in practised) "Practised today" else k.use, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
             }
         }
     }
-    Text(
-        "This is a reminder, not therapy. A therapist or a DBT skills group teaches these properly. If you are in danger, call your local emergency number.",
-        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
-    )
 }
 
 // ----- Journal --------------------------------------------------------------------------------------------------------
@@ -731,7 +752,6 @@ private fun JournalView(model: AppModel) {
 
     if (prompt != null && answering == null) TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-            Text("Today's question", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             Text(prompt.text, style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 PixelButton("Write about this", { answering = prompt.id }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
@@ -815,10 +835,17 @@ private fun TrendsView(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("The last 7 days")
-            Text("Routines done: ${care.routinesLast7Days()}", style = MaterialTheme.typography.bodyLarge)
-            Text("Skills used: ${care.skillsLast7Days()}", style = MaterialTheme.typography.bodyLarge)
-            Text("Calm breaks: ${care.calmMinutesLast7Days()} min", style = MaterialTheme.typography.bodyLarge)
-            Text("Your best week: ${care.bestWeek()} routines", style = MaterialTheme.typography.bodyLarge)
+            listOf(
+                "Routines" to "${care.routinesLast7Days()}",
+                "Skills" to "${care.skillsLast7Days()}",
+                "Calm breaks" to "${care.calmMinutesLast7Days()} min",
+                "Best week" to "${care.bestWeek()}",
+            ).forEach { (label, value) ->
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                    Text(value, style = MaterialTheme.typography.bodyLarge)
+                }
+            }
         }
     }
     val moods = care.moodDays(14)
@@ -839,14 +866,14 @@ private fun TrendsView(model: AppModel) {
             PixelTitle("Feelings, week by week")
             val weeks = care.feelingWeeks(8)
             if (weeks.all { it.cards == 0 }) {
-                Text("Fill in a diary card now and then and your weeks show here.", style = MaterialTheme.typography.bodyLarge)
+                Text("No ratings yet", style = MaterialTheme.typography.bodyLarge)
                 return@Column
             }
             @OptIn(ExperimentalLayoutApi::class)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 Emotion.entries.forEach { e -> TabButton(e.label, e == emotion, { emotion = e }) }
             }
-            weeks.asReversed().forEach { w ->
+            weeks.asReversed().filter { it.averages[emotion] != null }.forEach { w ->
                 val avg = w.averages[emotion]
                 val label = if (avg == null) "not rated" else "${emotion.label} ${(avg * 10).roundToInt() / 10.0} of 5, ${w.cards} card${if (w.cards == 1) "" else "s"}"
                 Column(Modifier.semantics(mergeDescendants = true) {}) {
@@ -868,28 +895,33 @@ private fun CareEggMeter(model: AppModel) {
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             Text(label, style = MaterialTheme.typography.bodyLarge)
-            PixelBar(points.toFloat() / size, color = Pixel.Green, label = label)
-            Text("A routine or a play adds 1, a calm break or a skill 2.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            PixelBar(points.toFloat() / size, color = Pixel.Tone, label = label)
         }
     }
 }
 
 private val moodNames = listOf("Rough", "Low", "Okay", "Good", "Great")
 
-/** "How is today?" in one tap: five keys, no card to fill in, nothing paid. Tapping the chosen one again takes it back. */
+/** Five mood keys that wrap onto a second line rather than cut a word; tapping the chosen one again takes it back ([onPick] gets null). */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun MoodKeys(chosen: Int?, onPick: (Int?) -> Unit) {
+    FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS), verticalArrangement = Arrangement.spacedBy(Spacing.XS)) {
+        moodNames.forEachIndexed { i, name ->
+            val level = i + 1
+            TabButton(name, chosen == level, { onPick(if (chosen == level) null else level) }, key = ModuleAccent.CARE.accent)
+        }
+    }
+}
+
+/** "How is today?" in one tap: five keys, no card to fill in, nothing paid. */
 @Composable
 private fun MoodRow(model: AppModel) {
     model.careData // redraw when Care changes
-    val chosen = model.care.diaryToday()?.mood
     TextBox {
         Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             PixelTitle("How is today?")
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.XS)) {
-                moodNames.forEachIndexed { i, name ->
-                    val level = i + 1
-                    TabButton(name, chosen == level, { model.care.setMood(if (chosen == level) null else level); model.haptic() }, Modifier.weight(1f), key = ModuleAccent.CARE.accent)
-                }
-            }
+            MoodKeys(model.care.diaryToday()?.mood) { model.care.setMood(it); model.haptic() }
         }
     }
 }

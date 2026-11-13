@@ -374,25 +374,21 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         )
         val progress = if (doing == CareAction.TIME) hold.value else if (doing == CareAction.SERVICE) swept else 0f
         if (doing == CareAction.TIME || doing == CareAction.SERVICE) Box(Modifier.align(Alignment.BottomStart).padding(Spacing.S).width(120.dp)) {
-            PixelBar(progress, color = Pixel.Green, label = if (doing == CareAction.TIME) "Sitting together" else "Tidying")
+            PixelBar(progress, color = Pixel.Tone, label = if (doing == CareAction.TIME) "Sitting together" else "Tidying")
         }
     }
 
-    Text(
-        when {
-            doing == CareAction.TOUCH -> "Tap where to pat $name: its head, under its chin, or its back."
-            doing == CareAction.TIME -> "Press and hold $name to sit together for a moment."
-            doing == CareAction.SERVICE -> "Swipe back and forth across the meadow to tidy $name's spot."
-            doing == CareAction.GIFT -> "Drag a treat to $name, or tap one to offer it. Each kind of Pokémon likes one berry flavour."
-            doing == CareAction.WORDS -> "What do you say to $name?"
-            bid != null -> "${bid.text()} Tap $name to answer."
-            visiting -> "Care for $name any way you like, each kind once a visit. It has a favourite, and little moments it may offer. Leave whenever you like: what it warmed stays."
-            play == Play.PAT -> "Tap $name to pat it."
-            play == Play.TREAT -> "Drag the treat to $name, or tap it."
-            play == Play.TAG -> "Tap anywhere in the meadow and $name bounds over."
-            else -> "Play with $name as long as you like. Playing is just for fun: it never counts as a visit."
-        },
-        style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
+    val line = when {
+        doing == CareAction.TOUCH -> "Tap where to pat $name: its head, under its chin, or its back."
+        doing == CareAction.TIME -> "Press and hold $name to sit together for a moment."
+        doing == CareAction.SERVICE -> "Swipe back and forth across the meadow to tidy $name's spot."
+        doing == CareAction.GIFT -> "Drag a treat to $name, or tap one to offer it."
+        doing == CareAction.WORDS -> "What do you say to $name?"
+        bid != null -> bid.text()
+        else -> null
+    }
+    if (line != null) Text(
+        line, style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft,
         modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
     )
     if (doing == CareAction.WORDS) FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -402,15 +398,12 @@ internal fun VisitorScene(model: AppModel, visitor: Visitor, visit: Visit?, say:
         if (visit != null) {
             CareAction.entries.forEach { given ->
                 val chosen = doing == given
-                PixelButton(
-                    given.label(), { doing = if (chosen) null else given; swept = 0f },
-                    color = if (chosen) Pixel.Tone else Pixel.Green, enabled = given !in visit.actions, compact = true,
-                )
+                TabButton(given.label(), chosen, { doing = if (chosen) null else given; swept = 0f }, enabled = given !in visit.actions)
             }
             PixelIconButton("check", "Leave the visit", { leave() }, Pixel.InkSoft)
         } else {
             Play.entries.forEach { kind ->
-                PixelButton(kind.label, { play = if (play == kind) null else kind }, color = if (play == kind) Pixel.Tone else Pixel.Tone, compact = true)
+                TabButton(kind.label, play == kind, { play = if (play == kind) null else kind })
             }
             PixelIconButton("check", "Done", { say(null); onClose() }, Pixel.InkSoft)
         }
