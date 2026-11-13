@@ -87,11 +87,11 @@ internal fun NewEventPanel(draft: Draft, week: Boolean, change: (Draft) -> Unit,
             PixelDateField(draft.day, today, Pixel.Blue, { it?.let { d -> change(draft.copy(day = d, lastDay = d)) } }, presets = listOf("Today" to 0, "Tomorrow" to 1))
             PixelTimeField(
                 at, { t -> t?.let { change(draft.copy(start = it.hour * 60 + it.minute).let { d -> d.copy(minutes = PlanEvent.fit(d.start, d.minutes)) }) } },
-                Pixel.Blue, label = "Starts", steps = listOf(15, 60),
+                Pixel.Blue, label = "Starts",
             )
             PixelDurationField(
                 draft.minutes, { m -> m?.let { change(draft.copy(minutes = PlanEvent.fit(draft.start, it))) } }, Pixel.Blue, label = "Length",
-                presets = listOf(30, 60, 90, 120), step = DayTimeline.SNAP_MINUTES,
+                presets = listOf(30, 60, 90, 120),
                 max = 24 * 60 - draft.start, min = 1,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
@@ -147,11 +147,11 @@ internal fun EventPanel(model: AppModel, event: PlanEvent, week: Boolean, follow
             )
             PixelDateField(event.day, store.today, Pixel.Blue, { it?.let { d -> follow(store.updateEvent(event.id, day = d)) } }, presets = listOf("Today" to 0, "Tomorrow" to 1))
             PixelTimeField(
-                event.start, { t -> t?.let { store.updateEvent(event.id, start = it) } }, Pixel.Blue, label = "Starts", steps = listOf(15, 60),
+                event.start, { t -> t?.let { store.updateEvent(event.id, start = it) } }, Pixel.Blue, label = "Starts",
             )
             PixelDurationField(
                 event.minutes, { m -> m?.let { store.updateEvent(event.id, minutes = it) } }, Pixel.Blue, label = "Length",
-                presets = listOf(30, 60, 90, 120), step = DayTimeline.SNAP_MINUTES,
+                presets = listOf(30, 60, 90, 120),
                 max = 24 * 60 - (event.start.hour * 60 + event.start.minute), min = 1,
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {

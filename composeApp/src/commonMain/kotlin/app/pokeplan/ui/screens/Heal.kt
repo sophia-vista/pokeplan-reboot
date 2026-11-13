@@ -212,7 +212,7 @@ private fun ActivityView(model: AppModel) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                 ActivityType.entries.forEach { t -> TabButton(t.label, t == type, { type = t }) }
             }
-            PixelDurationField(minutes, { minutes = it }, ModuleAccent.HEAL.accent, label = "How long", presets = listOf(15, 30, 45, 60), step = 5)
+            PixelDurationField(minutes, { minutes = it }, ModuleAccent.HEAL.accent, label = "How long", presets = listOf(15, 30, 45, 60))
             PixelMomentField(endedAt ?: model.store.nowMillis, { endedAt = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "It ended")
             PixelButton(if (more) "Fewer options" else "Distance and a note", { more = !more }, color = Pixel.InkSoft, compact = true)
             if (more) {
@@ -268,7 +268,7 @@ private fun ActivityOptions(model: AppModel, a: ActivityRecord, onDone: () -> Un
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     ActivityType.entries.forEach { t -> TabButton(t.label, t == type, { type = t }) }
                 }
-                PixelDurationField(minutes, { minutes = it }, ModuleAccent.HEAL.accent, label = "How long", presets = listOf(15, 30, 45, 60), step = 5)
+                PixelDurationField(minutes, { minutes = it }, ModuleAccent.HEAL.accent, label = "How long", presets = listOf(15, 30, 45, 60))
                 PixelMomentField(started, { started = it }, model.store.nowMillis, ModuleAccent.HEAL.accent, label = "It started", nowKey = false)
                 error?.let { Report(model, it, NoticeTone.WARNING) }
                 PixelField(note, { note = it.take(HealRules.NOTE_MAX) }, Modifier.fillMaxWidth(), label = "Note")
@@ -314,7 +314,7 @@ private fun HydrationView(model: AppModel) {
             PixelTitle(if (day == today) "Today" else day.short())
             PixelDatePicker(day, today, ModuleAccent.HEAL.accent, { day = it })
             PixelTimeField(
-                time, { time = it }, ModuleAccent.HEAL.accent, label = "At", noneLabel = if (day == today) "Now" else "Noon", steps = listOf(5, 60),
+                time, { time = it }, ModuleAccent.HEAL.accent, label = "At", noneLabel = if (day == today) "Now" else "Noon",
                 reject = { t -> if (day == today && t > model.store.nowMillis.localTime()) "That time has not happened yet" else null },
             )
             Text(if (total == null) "Nothing logged yet" else ml(total), style = MaterialTheme.typography.titleSmall)
@@ -418,7 +418,7 @@ private fun SleepView(model: AppModel) {
         TextBox {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                 PixelTitle("Wake-up alarm")
-                PixelTimeField(alarm, { it?.let { t -> alarm = t } }, ModuleAccent.HEAL.accent, label = "Ring at", steps = listOf(5, 15, 60), wrap = true)
+                PixelTimeField(alarm, { it?.let { t -> alarm = t } }, ModuleAccent.HEAL.accent, label = "Ring at")
                 PixelButton("Set the alarm", { phone.setAlarm(alarm.hour, alarm.minute, "PokéLife") }, Modifier.fillMaxWidth(), Pixel.Blue)
             }
         }
@@ -651,13 +651,13 @@ private fun HealSettingsView(model: AppModel) {
             Text("Off by default. Up to ${HealSettings.MAX_REMINDERS} a day, quiet during your quiet hours. They only ask if you would like a drink; they never say how much.", style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
             settings.hydrationReminders.forEach { t ->
                 Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    PixelTimeField(t, { nt -> nt?.let { heal.setHydrationReminders(settings.hydrationReminders - t + it) } }, ModuleAccent.HEAL.accent, Modifier.weight(1f), steps = listOf(15, 60), wrap = true)
+                    PixelTimeField(t, { nt -> nt?.let { heal.setHydrationReminders(settings.hydrationReminders - t + it) } }, ModuleAccent.HEAL.accent, Modifier.weight(1f))
                     PixelButton("Remove", { heal.setHydrationReminders(settings.hydrationReminders - t) }, color = Pixel.InkSoft, compact = true)
                 }
             }
             if (settings.hydrationReminders.size < HealSettings.MAX_REMINDERS) {
                 var next by remember(settings.hydrationReminders) { mutableStateOf(if (settings.hydrationReminders.isEmpty()) LocalTime(10, 0) else shift(settings.hydrationReminders.last(), 120)) }
-                PixelTimeField(next, { it?.let { t -> next = t } }, ModuleAccent.HEAL.accent, label = "New reminder", steps = listOf(15, 60), wrap = true)
+                PixelTimeField(next, { it?.let { t -> next = t } }, ModuleAccent.HEAL.accent, label = "New reminder")
                 PixelButton("Add a reminder at ${clockText(next)}", { heal.setHydrationReminders(settings.hydrationReminders + next) }, Modifier.fillMaxWidth(), Pixel.Blue, compact = true)
             }
         }

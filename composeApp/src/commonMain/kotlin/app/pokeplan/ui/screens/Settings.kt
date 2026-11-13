@@ -114,11 +114,11 @@ internal fun SettingsView(model: AppModel) {
         if (settings.reminders) {
             PixelTimeField(
                 settings.quietHours.start, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(start = it)) } } },
-                Pixel.Blue, label = "Quiet from", steps = listOf(15, 60), wrap = true,
+                Pixel.Blue, label = "Quiet from",
             )
             PixelTimeField(
                 settings.quietHours.end, { t -> t?.let { store.changeSettings { s -> s.copy(quietHours = s.quietHours.copy(end = it)) } } },
-                Pixel.Blue, label = "Quiet until", steps = listOf(15, 60), wrap = true,
+                Pixel.Blue, label = "Quiet until",
             )
             ToggleRow("Repeat until answered", settings.repeatReminders) { store.changeSettings { s -> s.copy(repeatReminders = it) } }
         }
@@ -375,7 +375,7 @@ internal fun PlanSettings(model: AppModel) {
         ToggleRow("Deep Focus by default", settings.deepFocus) { store.changeSettings { s -> s.copy(deepFocus = it) } }
         PixelDurationField(
             settings.defaultFocusMinutes, { m -> m?.let { store.changeSettings { s -> s.copy(defaultFocusMinutes = it) } } }, Pixel.Blue,
-            label = "Usual focus length", presets = listOf(15, 25, 45, 60), step = 5, min = FocusRules.RETRY_MINUTES, max = FocusRules.MAX_MINUTES,
+            label = "Usual focus length", presets = listOf(15, 25, 45, 60), min = FocusRules.RETRY_MINUTES, max = FocusRules.MAX_MINUTES,
         )
     }
     SettingsGroup("Week", "calendar") {

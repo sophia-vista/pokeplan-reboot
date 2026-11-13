@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import app.pokeplan.app.ExactInput
@@ -27,14 +28,15 @@ import kotlinx.datetime.LocalTime
 import kotlinx.datetime.toInstant
 
 /**
- * A text box that holds a typed value (a date, a time, a length) and tells the owner what it understood. Every valid
+ * A text box that holds a typed value (a date, a time, a length); when it loses focus it rewrites what was typed in the one
+ * spelling the app uses, so there is no second line saying what it understood. Every valid
  * spelling is applied at once ([onChange]), so Save always reads what is on the screen; while the text is not yet a value
  * (`9:` on the way to `9:30`) the last good value stays and the field only says what it takes. When the value changes from
  * outside (a key, a stepper) the text is rewritten to match; typing is never rewritten under the cursor.
  */
 @Composable
 internal fun <T : Any> TypedValueField(
-    value: T?, onChange: (T?) -> Unit, parse: (String) -> T?, format: (T) -> String, preview: (T) -> String?,
+    value: T?, onChange: (T?) -> Unit, parse: (String) -> T?, format: (T) -> String,
     placeholder: String, takes: String, modifier: Modifier = Modifier, label: String? = null, allowEmpty: Boolean = false,
     reject: (T) -> String? = { null },
 ) {
@@ -52,8 +54,8 @@ internal fun <T : Any> TypedValueField(
                 it.isBlank() && allowEmpty -> onChange(null)
             }
         },
-        modifier, label = label, placeholder = placeholder, singleLine = true,
-        helper = if (parsed != null && refusal == null) preview(parsed) else null,
+        modifier.onFocusChanged { if (!it.isFocused && parsed != null && refusal == null) text = format(parsed) },
+        label = label, placeholder = placeholder, singleLine = true,
         error = when {
             refusal != null -> refusal
             text.isNotBlank() && parsed == null -> takes
@@ -64,15 +66,14 @@ internal fun <T : Any> TypedValueField(
 }
 
 /**
- * A time of day you can type (`9`, `930`, `21:05`, `9pm`), with the common times as keys and small steps either way. With a
- * [noneLabel] the time may be missing ("Any time"). Steps are in minutes and stop at 00:00 and 23:59 rather than wrapping a
- * day, unless [wrap] says the time is a clock on its own (an alarm).
+ * A time of day you can type (`9`, `930`, `21:05`, `9pm`), with the common times as keys. With a [noneLabel] the time may be
+ * missing ("Any time").
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PixelTimeField(
     value: LocalTime?, onChange: (LocalTime?) -> Unit, accent: Color, modifier: Modifier = Modifier, label: String? = null,
-    presets: List<LocalTime> = emptyList(), noneLabel: String? = null, steps: List<Int> = listOf(1, 15, 60), wrap: Boolean = false,
+    presets: List<LocalTime> = emptyList(), noneLabel: String? = null,
     defaultTime: LocalTime = LocalTime(9, 0), reject: (LocalTime) -> String? = { null },
 ) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -87,46 +88,23 @@ fun PixelTimeField(
             PixelButton("Set a time", { onChange(defaultTime) }, color = Pixel.InkSoft, compact = true)
         } else {
             TypedValueField(
-                value, onChange, { ExactInput.parseTime(it) }, { ExactInput.formatTime(it) }, { clockWords(it) },
+                value, onChange, { ExactInput.parseTime(it) }, { ExactInput.formatTime(it) },
                 placeholder = "HH:MM", takes = "Type a time such as 9:30, 21:05 or 9pm",
                 allowEmpty = noneLabel != null, reject = reject,
             )
-            if (value != null && steps.isNotEmpty()) {
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                    steps.reversed().forEach { s -> StepKey("-" + stepName(s)) { onChange(stepTime(value, -s, wrap)) } }
-                    steps.forEach { s -> StepKey("+" + stepName(s)) { onChange(stepTime(value, s, wrap)) } }
-                }
-            }
         }
     }
 }
 
-private fun stepName(minutes: Int) = if (minutes % 60 == 0) "${minutes / 60}h" else "$minutes"
-
-@Composable
-private fun StepKey(text: String, onClick: () -> Unit) = PixelButton(text, onClick, color = Pixel.InkSoft, compact = true)
-
-internal fun stepTime(t: LocalTime, minutes: Int, wrap: Boolean): LocalTime {
-    val raw = t.hour * 60 + t.minute + minutes
-    val total = if (wrap) ((raw % 1440) + 1440) % 1440 else raw.coerceIn(0, 24 * 60 - 1)
-    return LocalTime(total / 60, total % 60)
-}
-
-/** "9:30 am" / "9:30 pm" under a 24-hour box, so the typed time is read back the way the clock on the wall says it. */
-internal fun clockWords(t: LocalTime): String {
-    val h = if (t.hour % 12 == 0) 12 else t.hour % 12
-    return "$h:${t.minute.toString().padStart(2, '0')} ${if (t.hour < 12) "am" else "pm"}"
-}
-
 /**
- * A length you can type (`45`, `1h30`, `1:30`, `90m`) with the common lengths as keys and a step either way. [minutes] is
+ * A length you can type (`45`, `1h30`, `1:30`, `90m`) with the common lengths as keys. [minutes] is
  * null for none when [noneLabel] is given.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PixelDurationField(
     minutes: Int?, onChange: (Int?) -> Unit, accent: Color, modifier: Modifier = Modifier, label: String? = null,
-    presets: List<Int> = listOf(15, 30, 45, 60), noneLabel: String? = null, step: Int = 5, max: Int = 24 * 60, min: Int = 1,
+    presets: List<Int> = listOf(15, 30, 45, 60), noneLabel: String? = null, max: Int = 24 * 60, min: Int = 1,
 ) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
         if (label != null) FieldLabel(label)
@@ -135,15 +113,10 @@ fun PixelDurationField(
             presets.forEach { p -> TabButton(ExactInput.formatMinutes(p), minutes == p, { onChange(p) }, key = accent) }
         }
         TypedValueField(
-            minutes, onChange, { ExactInput.parseDurationMinutes(it) }, { it.toString() }, { ExactInput.formatMinutes(it) },
+            minutes, onChange, { ExactInput.parseDurationMinutes(it) }, { ExactInput.formatMinutes(it) },
             placeholder = "Minutes, or 1h30", takes = "Whole minutes, such as 45, 1h30 or 1:30", allowEmpty = noneLabel != null,
             reject = { if (it < min || it > max) "Between $min min and ${ExactInput.formatMinutes(max)}" else null },
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
-            val now = minutes ?: 0
-            StepKey("-$step") { onChange((now - step).takeIf { it >= min }) }
-            StepKey("+$step") { onChange((now + step).coerceAtMost(max)) }
-        }
     }
 }
 
@@ -185,7 +158,7 @@ fun PixelMomentField(
             presets = dayPresets, max = if (future) null else now.date,
         )
         PixelTimeField(
-            at.time, { t -> t?.let { onChange(moment(at.date, it)) } }, accent, steps = listOf(1, 15, 60),
+            at.time, { t -> t?.let { onChange(moment(at.date, it)) } }, accent,
             reject = { t -> if (!future && at.date == now.date && t > now.time) "That time has not happened yet" else null },
         )
         if (nowKey) PixelButton("Now", { onChange(nowMillis - nowMillis % 60_000L) }, color = Pixel.InkSoft, compact = true)

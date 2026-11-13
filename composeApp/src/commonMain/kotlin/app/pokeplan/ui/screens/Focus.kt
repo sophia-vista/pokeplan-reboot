@@ -163,7 +163,7 @@ private fun ColumnScope.SetupView(model: AppModel, top: @Composable () -> Unit) 
                 var custom by remember { mutableStateOf(minutes !in listOf(15, 25, 45, 60)) }
                 if (!custom) TabButton("Another length", false, { custom = true }, Modifier.fillMaxWidth())
                 else PixelDurationField(
-                    minutes, { if (it != null) minutes = it }, Pixel.Blue, presets = emptyList(), step = 5,
+                    minutes, { if (it != null) minutes = it }, Pixel.Blue, presets = emptyList(),
                     min = FocusRules.RETRY_MINUTES, max = FocusRules.MAX_MINUTES,
                 )
             }

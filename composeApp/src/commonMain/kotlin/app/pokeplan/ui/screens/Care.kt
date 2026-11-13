@@ -394,7 +394,7 @@ private fun RoutinesView(model: AppModel) {
 @Composable
 private fun RoutineFields(time: LocalTime?, onTime: (LocalTime?) -> Unit, days: Set<DayOfWeek>, onDays: (Set<DayOfWeek>) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
-        PixelTimeField(time, onTime, ModuleAccent.CARE.accent, label = "Time", noneLabel = "No time", steps = listOf(5, 15, 60))
+        PixelTimeField(time, onTime, ModuleAccent.CARE.accent, label = "Time", noneLabel = "No time")
         PixelTitle("Days")
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
             DayOfWeek.entries.forEach { d -> TabButton(dayNames[d.ordinal], d in days, { onDays(if (d in days) days - d else days + d) }) }

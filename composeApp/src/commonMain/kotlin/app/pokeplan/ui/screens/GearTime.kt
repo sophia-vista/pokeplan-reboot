@@ -103,11 +103,11 @@ internal fun TimerTool(model: AppModel, onUse: () -> Unit) {
     }
 }
 
-/** A length typed as hours, minutes and seconds (`90`, `1h30`, `1:30:00`, `45s`); a bare number is minutes, and what it was read as is shown. */
+/** A length typed as hours, minutes and seconds (`90`, `1h30`, `1:30:00`, `45s`); a bare number is minutes. */
 @Composable
 internal fun TimerLength(seconds: Long?, onChange: (Long?) -> Unit) {
     TypedValueField(
-        seconds, onChange, { ExactInput.parseDurationSeconds(it, 'm') }, { formatHms(it) }, { formatHms(it) },
+        seconds, onChange, { ExactInput.parseDurationSeconds(it, 'm') }, { formatHms(it) },
         placeholder = "Length: 90, 1h30, 1:30:00, 45s", takes = "A length such as 25, 1h30, 1:30:00 or 45s", allowEmpty = true, label = "Length",
         reject = { if (it * 1000 !in GearTimers.MIN_MS..GearTimers.MAX_MS) "Between ${formatHms(GearTimers.MIN_MS / 1000)} and ${formatHms(GearTimers.MAX_MS / 1000)}" else null },
     )
