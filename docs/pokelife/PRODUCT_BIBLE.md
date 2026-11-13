@@ -34,6 +34,15 @@ PokéLife must remain useful when the user ignores game systems. Pokémon must b
 - Health, finance, relationship, journal, and household content remain within their owning domains. Shared progression receives only explicitly approved minimal, non-sensitive event metadata.
 - No game mechanic may make real-life utility conditional on game participation or currency.
 
+### Owner decisions of 13 November 2026 (answering the product review)
+
+- **Personal use only.** PokéLife is built for the owner's own phone and is never published (no Play Store, no public release). Work that exists only for a public release is dropped: a protected release key (REP-005; the committed key may stay), store and Play-policy justifications such as `QUERY_ALL_PACKAGES`, store listings. Licence duties still apply (CC BY-NC credits, REP-015), and so does everything that protects the owner's data.
+- **Automated tests over manual checks.** Section 9's "actual-device verification" is met by automated tests that exercise the Android code (Robolectric on the JVM where it can, instrumented tests only where it cannot), real screenshot comparison in both palettes and at large text, and simulated process death, kill and corruption. No session hands the owner a manual checklist; the owner reports defects and possible optimisations as they come up in daily use.
+- **Module priorities.** PLAN, CARE and WORLD are used daily and get depth first. MINT, HEAL, HOME and GEAR are to reach the level of a specialist app in their category. LINK is set up once and then left alone: it should need no regular attention (import, reminders that just work, nothing to tend).
+- **HOME is single-user.** No household sharing or shared lists between people.
+- **English only.** No localisation.
+- **A watch is wanted** if one can be supported: a feasibility check first, against the owner's actual watch (the Huawei Watch Fit 4 Pro, which is not Wear OS; `ARCHITECTURE/INTEGRATIONS_AND_PRIVACY.md` section 5.2), with the phone's notification actions on the watch as the baseline.
+
 ## 4. Canonical module map and ownership
 
 | Module | Product responsibility | Canonical data owner |
@@ -82,7 +91,7 @@ Product-wide invariants:
 - **Parties:** six per module stay; the role section of a Pokémon is simplified instead (one "Move to..." place picker rather than a button per role).
 - **Candies:** Exp. Candy (XS to XL) is the everyday wage and Rare Candy the occasional prize; Super Candy stays as the evolution item (level evolutions keep their Super Candy cost for now). Re-balancing changes payouts, so bump `RewardRules.VERSION` and update `docs/economy.md`.
 - **Shiny odds** stay 1 in 128, and the module-named Pokédexes stay as they are.
-- **Growth rates, base friendship** (everything starts at 70) and evolution at the level itself remain open (REP-031).
+- **Growth rates, base friendship** (everything starts at 70) and evolution at the level itself remain open (REP-048).
 
 ### Expanded Pokémon ecosystem scope
 
