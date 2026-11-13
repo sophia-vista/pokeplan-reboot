@@ -35,6 +35,7 @@ import app.pokeplan.plan.Category
 import app.pokeplan.plan.Insights
 import app.pokeplan.plan.Goal
 import app.pokeplan.plan.GoalRules
+import app.pokeplan.plan.TaskState
 import androidx.compose.runtime.mutableStateMapOf
 import app.pokeplan.plan.Reviews
 import app.pokeplan.ui.AppModel
@@ -217,8 +218,10 @@ internal fun GoalsView(model: AppModel) {
                     )
                 }
                 // The words beside the bar say how close the goal is; the nearer it looks, the likelier it gets finished.
-                val done = g.milestones.count { it.isDone }
-                val progress = "$done of ${g.milestones.size} milestones"
+                // A goal with no milestones counts the tasks linked to it (from a task's Edit tab) instead.
+                val linked = model.data.tasks.filter { it.id in g.linkedTaskIds && it.state != TaskState.DELETED && it.state != TaskState.WONT_DO }
+                val progress = if (g.milestones.isEmpty() && linked.isNotEmpty()) "${linked.count { it.state == TaskState.DONE }} of ${linked.size} tasks"
+                    else "${g.milestones.count { it.isDone }} of ${g.milestones.size} milestones"
                 PixelBar(GoalRules.progress(g, model.data.tasks).toFloat(), color = Pixel.Tone, label = progress)
                 g.milestones.forEach { m ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {

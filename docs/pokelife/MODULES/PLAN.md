@@ -279,7 +279,7 @@ PLAN follows the shared PMD dialogue-box visual system and reusable component ru
 
 ### 10.1 Task and planning surfaces
 
-Task cards prioritize the completion control, title, relevant date/recurrence, then optional priority/list context. Do not display every available field on every card. The title remains primary; metadata is concise and secondary. Today, Inbox, Upcoming, Lists, and Calendar should use shared dialogue-box surfaces without nesting containers or turning every row into a large card.
+Task cards prioritize the completion control, title, relevant date/recurrence, then optional priority/list context. Do not display every available field on every card. As built (0.177.0): the check key first on every row (a finished task's reopens it), the rank as a small tag after the title, the When tab folded to the day and the list with a "Time and repeat" row that unfolds the time, reminders and repeat, a Goal row on the Edit tab (one goal per task, no reward), Reopen and Delete on a finished task, and a list's optional category for the tasks added to it. The title remains primary; metadata is concise and secondary. Today, Inbox, Upcoming, Lists, and Calendar should use shared dialogue-box surfaces without nesting containers or turning every row into a large card.
 
 ### 10.2 Focus presentation
 

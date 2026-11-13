@@ -5,6 +5,16 @@ below 1.0, a new feature bumps the minor number and a fix bumps the patch number
 ships something; the first merge with a new number publishes that version's own GitHub release (the rolling "Latest build"
 release always has the newest merge).
 
+## 0.177.0
+
+Plan's task row and card (REP-030, PLAN.md section 10.1). No reward number changes; `RewardRules.VERSION` is unchanged, and nothing stored on the phone needs a migration (a list's category is a new optional field).
+
+- **The check key comes first on every row.** A finished task's is ticked in a quiet colour and a won't-do task's is a cross; tapping either reopens it (the Reopen button no longer pushes the title aside). The rank is a small framed tag after the title.
+- **The When tab is the day and the list**, then one **Time and repeat** row that says what is set ("Any time, no reminder, does not repeat") and unfolds the time, reminders and repeat.
+- **A finished task's card has Reopen and Delete** side by side.
+- **A list can carry a category** ("New tasks are" in Edit list): a task added to it, by its quick add or with `#List`, starts with it unless the words name one. The tasks already in the list keep theirs.
+- **A task can count toward a goal** (Goal on the Edit tab: None or an unfinished goal; one goal at a time). A goal with no milestones shows "N of M tasks" on its card. Linking pays nothing.
+
 ## 0.176.1
 
 Where a Pokémon is, shown where it matters (REP-009, the last open part). No reward number changes; `RewardRules.VERSION` is unchanged, and nothing stored on the phone changes.

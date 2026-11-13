@@ -39,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.pokeplan.app.GameStore
-import app.pokeplan.plan.Category
 import app.pokeplan.plan.MonthlyRule
 import app.pokeplan.plan.QuickAdd
 import app.pokeplan.plan.Rank
@@ -392,7 +391,8 @@ internal fun QuickAddBox(model: AppModel, addTo: AddTo, listId: String? = null) 
             }
             val made = model.store.addTask(
                 title = parsed.title.ifBlank { text.trim() }, rank = parsed.rank ?: rank,
-                category = parsed.category ?: Category.PERSONAL,
+                // With none in the words, the list's own category (Personal in the Inbox).
+                category = parsed.category,
                 planned = planned, due = parsed.due, estimateMinutes = parsed.estimateMinutes,
                 // "#Groceries" files it in that list; inside a list, the list itself.
                 listId = listId ?: parsed.listName?.let { model.store.listNamed(it)?.id },
@@ -453,12 +453,16 @@ internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Bo
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Spacing.M),
         ) {
-            if (task.state == TaskState.OPEN) PixelIconButton("check", "Done", { model.completeTask(task.id) }, Pixel.Green)
-            else PixelButton("Reopen", { store.reopen(task.id) }, color = Pixel.InkSoft, compact = true)
+            // The check key always comes first, so every row lines up: a finished one is ticked in a quiet colour and reopens it.
+            when (task.state) {
+                TaskState.OPEN -> PixelIconButton("check", "Done", { model.completeTask(task.id) }, Pixel.Green)
+                TaskState.WONT_DO -> PixelIconButton("close", "Reopen", { store.reopen(task.id) }, Pixel.InkSoft)
+                else -> PixelIconButton("check", "Reopen", { store.reopen(task.id) }, Pixel.InkSoft)
+            }
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
                     Text(task.title, Modifier.weight(1f, fill = false), style = MaterialTheme.typography.bodyLarge, maxLines = 4, overflow = TextOverflow.Ellipsis, color = if (task.isOpen) Pixel.Ink else Pixel.InkSoft)
-                    Text(task.rank.letter.toString(), Modifier.semantics { contentDescription = task.rank.spoken }, style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft)
+                    RankTag(task.rank)
                 }
                 // Overdue tasks sit under Today's calm "From before" heading, so the row needs no alarm of its own (docs/design.md, No shame).
                 // A finished task's plan no longer matters: the Done list is grouped by the day it was finished.
@@ -482,9 +486,12 @@ internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Bo
             Box(Modifier.fillMaxWidth().background(Pixel.Shade.copy(alpha = 0.5f)).padding(Spacing.M)) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.M)) {
                     if (task.state != TaskState.OPEN) {
-                        TaskStepsTab(model, task)
-                        // A finished task can be deleted too (the undo bar brings it back for a while).
-                        PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.InkSoft)
+                        if (task.notes.isNotBlank() || task.subtasks.isNotEmpty()) TaskStepsTab(model, task)
+                        // A finished task can be reopened or deleted (the undo bar brings a deleted one back for a while).
+                        Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalAlignment = Alignment.CenterVertically) {
+                            PixelButton("Reopen", { store.reopen(task.id) }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
+                            PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.InkSoft)
+                        }
                     }
                     else {
                         Row(horizontalArrangement = Arrangement.spacedBy(Spacing.S)) {
@@ -504,7 +511,10 @@ internal fun TaskCard(model: AppModel, task: Task, day: LocalDate?, expanded: Bo
 
 internal enum class CardTab(val label: String) { WHEN("When"), STEPS("Steps"), EDIT("Edit") }
 
-/** When and where a task goes: the day, the list, the time, the reminder and whether it repeats. */
+/**
+ * When and where a task goes: the day and the list, then one "Time and repeat" row that says what is set and opens the time,
+ * the reminders and the repeat (most tasks need none of them, so they stay folded).
+ */
 @Composable
 private fun TaskWhenTab(model: AppModel, task: Task) {
     val store = model.store
@@ -523,10 +533,44 @@ private fun TaskWhenTab(model: AppModel, task: Task) {
                 store.activeLists.forEach { l -> TabButton(l.name, task.listId == l.id, { store.moveToList(task.id, l.id) }) }
             }
         }
-        PlannedTime(model, task)
-        RemindMe(model, task)
-        RepeatRow(model, task)
+        var more by remember(task.id) { mutableStateOf(false) }
+        Row(
+            Modifier.fillMaxWidth().clip(PixelShape)
+                .clickable(onClickLabel = if (more) "Hide time and repeat" else "Change time and repeat", role = Role.Button) { more = !more }
+                .defaultMinSize(minHeight = Spacing.Target).semantics(mergeDescendants = true) {},
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.M),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("Time and repeat", style = MaterialTheme.typography.bodyLarge)
+                Text(timeAndRepeat(model, task), style = MaterialTheme.typography.bodyMedium, color = Pixel.InkSoft)
+            }
+            Text(if (more) "Hide" else "Change", style = MaterialTheme.typography.labelLarge, color = Pixel.Tone)
+        }
+        if (more) {
+            PlannedTime(model, task)
+            RemindMe(model, task)
+            RepeatRow(model, task)
+        }
     }
+}
+
+/** What the folded "Time and repeat" row says: "Any time, no reminder, does not repeat" or "At 9:00, 1 reminder, repeats weekly". */
+private fun timeAndRepeat(model: AppModel, task: Task): String {
+    val kind = RepeatKind.of(model.store.seriesOf(task)?.recurrence?.repeat)
+    return listOf(
+        task.plannedTime?.let { "At ${clock(it)}" } ?: "Any time",
+        when (task.reminders.size) { 0 -> "no reminder"; 1 -> "1 reminder"; else -> "${task.reminders.size} reminders" },
+        when (kind) { RepeatKind.NEVER -> "does not repeat"; RepeatKind.CUSTOM -> "repeats"; else -> "repeats ${kind.label.lowercase()}" },
+    ).joinToString(", ")
+}
+
+/** A task's difficulty as a small tag after its title: the letter in a thin frame, its meaning read out. */
+@Composable
+private fun RankTag(rank: Rank) {
+    Box(
+        Modifier.border(Sizes.Hairline, Pixel.Border, PixelShape).padding(horizontal = Spacing.XS).semantics { contentDescription = rank.spoken },
+        contentAlignment = Alignment.Center,
+    ) { Text(rank.letter.toString(), style = MaterialTheme.typography.labelMedium, color = Pixel.InkSoft) }
 }
 
 /** A task's notes and small steps; an open task also gets the field to add a step. */
@@ -593,6 +637,7 @@ private fun TaskEditTab(model: AppModel, task: Task, onDeleted: () -> Unit) {
         DifficultyPicker(rank) { rank = it }
         FieldLabel("Category")
         CategoryChips(category) { category = it ?: category }
+        GoalChoice(model, task)
         // A deadline is not the day you plan to do it (that is "Move to"); with no time it is the end of that day, 23:59.
         PixelDateTimeField(
             dueDay, dueTime, store.today, Pixel.Tone, { d, t -> dueDay = d; dueTime = t }, label = "Deadline",
@@ -619,6 +664,20 @@ private fun TaskEditTab(model: AppModel, task: Task, onDeleted: () -> Unit) {
             PixelButton("Won't do", { store.wontDo(task.id); model.offerUndo("Won't do: ${task.title}") { store.reopen(task.id) } }, Modifier.weight(1f), Pixel.InkSoft, compact = true)
             PixelIconButton("trash", "Delete", { store.deleteTask(task.id); onDeleted() }, Pixel.InkSoft)
         }
+    }
+}
+
+/** The goal a task counts toward (PLAN.md section 3.6): None or one of the goals not yet finished. Linking pays nothing. */
+@Composable
+private fun GoalChoice(model: AppModel, task: Task) {
+    val store = model.store
+    val linked = store.goalOf(task.id)
+    val goals = model.data.goals.filter { it.completedAtMillis == null || it.id == linked?.id }
+    if (goals.isEmpty()) return
+    FieldLabel("Goal")
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.S), verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
+        TabButton("None", linked == null, { store.linkTaskToGoal(task.id, null) })
+        goals.forEach { g -> TabButton(g.title, linked?.id == g.id, { store.linkTaskToGoal(task.id, g.id) }) }
     }
 }
 

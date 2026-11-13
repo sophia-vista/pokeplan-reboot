@@ -169,13 +169,23 @@ class ScreenshotTest {
         }
     }
 
-    /** The open task card is a sheet of three tabs (When, Steps, Edit), in both palettes. */
+    /** The open task card is a sheet of three tabs (When, Steps, Edit), in both palettes; a finished one has Reopen and Delete. */
     @Test
     fun taskCardSheet() {
         val store = started()
         val task = store.addTask("Write the report", planned = store.today)
         store.addSubtask(task.id, "Outline it")
+        store.linkTaskToGoal(task.id, store.addGoal("Get promoted").id)
+        val finished = store.addTask("Reply to mail", planned = store.today)
+        store.completeTask(finished.id)
         val model = AppModel(store)
+        render("task-card-done-light", height = 700, frames = 8) {
+            PixelTheme(false) {
+                Box(Modifier.fillMaxSize().background(Pixel.Paper)) {
+                    app.pokeplan.ui.screens.TaskCard(model, store.data.tasks.first { it.id == finished.id }, store.today, expanded = true, toggle = {}, onDeleted = {})
+                }
+            }
+        }
         listOf(false, true).forEach { dark ->
             app.pokeplan.ui.screens.CardTab.entries.forEach { tab ->
                 render("task-card-${tab.name.lowercase()}-${if (dark) "dark" else "light"}", height = 1400, frames = 8) {
